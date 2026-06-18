@@ -1,0 +1,37 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local/generated search outputs.
+runtime/phase3a*/
+runtime/phase3b*/
+runtime/phase3c*/
+runtime/search_memory/
+reports/phase3a*/
+reports/phase3b*/
+reports/phase3c*/
+
+# Keep curated evidence already committed via explicit git add.
+!reports/phase3cd_ast_primitive_assumption_audit_20260618/
+!reports/phase3ce_unsafe_motif_quarantine_audit_20260618/
+!reports/phase3ce1_search_memory_blocked_view_20260618/
+!reports/phase3ce1_g2_input_gate_smoke_20260618/
+!reports/phase3ce2_typed_primitive_candidate_pack_canary_20260618/
+!reports/phase3ce2_typed_primitive_evaluator_smoke_20260618/
+!reports/phase3ce2_fullwidth_realdata_eval_20260618/
+!reports/phase3ce2_fullwidth_validation_panel_20260618/
+!reports/phase3cf_reward_gated_large_search_prelaunch_20260618/
+!reports/phase3code_verify_ca_bridge_smoke_20260618/
+!reports/phase3code_verify_bz_smoke_20260618/
+!runtime/phase3ce1_search_memory_blocked_view_20260618/
+
+# External data should stay outside git.
+data/
+*.parquet
+*.zip
+*.rar
+*.7z

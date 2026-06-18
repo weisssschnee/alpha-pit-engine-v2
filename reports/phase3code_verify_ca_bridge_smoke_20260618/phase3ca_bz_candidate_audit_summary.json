@@ -1,0 +1,15 @@
+{
+  "candidate_count": 3,
+  "created_at": "2026-06-18T02:09:22.603890+00:00",
+  "decision": "PHASE3CA_BZ_CANDIDATE_AUDIT_READY",
+  "deduped_source_candidate_count": 896,
+  "experiment_id": "20260616_phase3ca_build_bz_candidate_audit",
+  "metric_boundary": "This is a ranking bridge into BZ, not reward proof.",
+  "sources": [
+    {
+      "root": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cb_local_fresh_variant_20260617",
+      "top_decision_files": 7
+    }
+  ],
+  "top_n": 3
+}

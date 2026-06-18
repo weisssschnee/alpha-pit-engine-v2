@@ -1,0 +1,28 @@
+{
+  "code_count": 5134,
+  "created_at": "2026-06-18T05:09:41.433964+00:00",
+  "date_max": "2025-04-11",
+  "date_min": "2025-04-09",
+  "decision": "PHASE3CE2_FULLWIDTH_TRUE1MIN_VALIDATION_PANEL_BUILT",
+  "event_derived_panel": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3ce2_event_derived_daily_panel_202406_202512\\phase3ce2_event_derived_daily_panel.parquet",
+  "input_grain": "trade_time_1min",
+  "note": "full-width selected-date true-1min rows; no 1D fallback and no minute resampling",
+  "output_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3ce2_fullwidth_validation_panel_20260618\\phase3ce2_fullwidth_true1min_validation_panel.parquet",
+  "read_dates_including_previous_close_dates": [
+    "2025-04-09",
+    "2025-04-10",
+    "2025-04-11"
+  ],
+  "reports": {
+    "event_date_ranking": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce2_fullwidth_validation_panel_20260618\\phase3ce2_fullwidth_validation_event_date_ranking.csv",
+    "shard_rows": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce2_fullwidth_validation_panel_20260618\\phase3ce2_fullwidth_validation_shard_rows.csv"
+  },
+  "rows": 3710677,
+  "selected_event_dates": [
+    "2025-04-10",
+    "2025-04-11"
+  ],
+  "shard_count": 16,
+  "shard_manifest": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\phase3au_aq_only_shard_manifest.csv",
+  "trade_time_count": 723
+}

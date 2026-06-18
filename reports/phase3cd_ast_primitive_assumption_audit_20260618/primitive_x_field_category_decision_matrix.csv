@@ -1,0 +1,113 @@
+primitive,primitive_status,field_category,decision,reason
+CSRank/Rank,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+CSRank/Rank,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+CSRank/Rank,existing,sparse_event,REQUIRES_TYPED_ROUTE,event semantics must be preserved
+CSRank/Rank,existing,discrete_state,REQUIRES_TYPED_ROUTE,state semantics must be preserved
+CSRank/Rank,existing,coverage_sensitive,REQUIRES_COVERAGE_GATE,coverage masks can dominate output geometry
+CSRank/Rank,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+CSRank/Rank,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+CSRank/Rank,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+ZScore,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+ZScore,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+ZScore,existing,sparse_event,BLOCK_OR_TYPED_REWRITE,ordinary continuous primitive mismatches sparse-event semantics
+ZScore,existing,discrete_state,BLOCK_OR_TYPED_REWRITE,ordinary primitive treats state as continuous
+ZScore,existing,coverage_sensitive,REQUIRES_COVERAGE_GATE,coverage masks can dominate output geometry
+ZScore,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+ZScore,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+ZScore,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Mean/Std/WMA/Med/Kurt/Skew,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+Mean/Std/WMA/Med/Kurt/Skew,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+Mean/Std/WMA/Med/Kurt/Skew,existing,sparse_event,BLOCK_OR_TYPED_REWRITE,ordinary continuous primitive mismatches sparse-event semantics
+Mean/Std/WMA/Med/Kurt/Skew,existing,discrete_state,BLOCK_OR_TYPED_REWRITE,ordinary primitive treats state as continuous
+Mean/Std/WMA/Med/Kurt/Skew,existing,coverage_sensitive,BOUNDED_FACTOR_PACK_FIRST,coverage and PIT availability must be audited
+Mean/Std/WMA/Med/Kurt/Skew,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+Mean/Std/WMA/Med/Kurt/Skew,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Mean/Std/WMA/Med/Kurt/Skew,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Delta/Delay,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+Delta/Delay,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+Delta/Delay,existing,sparse_event,BLOCK_OR_TYPED_REWRITE,ordinary continuous primitive mismatches sparse-event semantics
+Delta/Delay,existing,discrete_state,REQUIRES_TYPED_ROUTE,state semantics must be preserved
+Delta/Delay,existing,coverage_sensitive,BOUNDED_FACTOR_PACK_FIRST,coverage and PIT availability must be audited
+Delta/Delay,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+Delta/Delay,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Delta/Delay,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Mom,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+Mom,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+Mom,existing,sparse_event,BLOCK_OR_TYPED_REWRITE,ordinary continuous primitive mismatches sparse-event semantics
+Mom,existing,discrete_state,BLOCK_OR_TYPED_REWRITE,ordinary primitive treats state as continuous
+Mom,existing,coverage_sensitive,REQUIRES_COVERAGE_GATE,coverage masks can dominate output geometry
+Mom,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+Mom,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Mom,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Corr/Cov,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+Corr/Cov,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+Corr/Cov,existing,sparse_event,BLOCK_OR_TYPED_REWRITE,ordinary continuous primitive mismatches sparse-event semantics
+Corr/Cov,existing,discrete_state,BLOCK_OR_TYPED_REWRITE,ordinary primitive treats state as continuous
+Corr/Cov,existing,coverage_sensitive,REQUIRES_COVERAGE_GATE,coverage masks can dominate output geometry
+Corr/Cov,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+Corr/Cov,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Corr/Cov,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+CSResidual,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+CSResidual,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+CSResidual,existing,sparse_event,BLOCK_OR_TYPED_REWRITE,ordinary continuous primitive mismatches sparse-event semantics
+CSResidual,existing,discrete_state,BLOCK_OR_TYPED_REWRITE,ordinary primitive treats state as continuous
+CSResidual,existing,coverage_sensitive,REQUIRES_COVERAGE_GATE,coverage masks can dominate output geometry
+CSResidual,existing,membership_or_group_key,REQUIRES_SEPARATE_GROUP_AUDIT,membership geometry must be PIT/churn audited first
+CSResidual,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+CSResidual,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Div,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+Div,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+Div,existing,sparse_event,BLOCK_OR_TYPED_REWRITE,ordinary continuous primitive mismatches sparse-event semantics
+Div,existing,discrete_state,BLOCK_OR_TYPED_REWRITE,ordinary primitive treats state as continuous
+Div,existing,coverage_sensitive,REQUIRES_COVERAGE_GATE,coverage masks can dominate output geometry
+Div,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+Div,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Div,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Log,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+Log,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+Log,existing,sparse_event,REQUIRES_TYPED_ROUTE,event semantics must be preserved
+Log,existing,discrete_state,REQUIRES_TYPED_ROUTE,state semantics must be preserved
+Log,existing,coverage_sensitive,BOUNDED_FACTOR_PACK_FIRST,coverage and PIT availability must be audited
+Log,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+Log,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Log,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Sign,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+Sign,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+Sign,existing,sparse_event,REQUIRES_TYPED_ROUTE,event semantics must be preserved
+Sign,existing,discrete_state,REQUIRES_TYPED_ROUTE,state semantics must be preserved
+Sign,existing,coverage_sensitive,BOUNDED_FACTOR_PACK_FIRST,coverage and PIT availability must be audited
+Sign,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+Sign,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Sign,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Mul/Add/Sub,existing,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+Mul/Add/Sub,existing,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+Mul/Add/Sub,existing,sparse_event,REQUIRES_TYPED_ROUTE,event semantics must be preserved
+Mul/Add/Sub,existing,discrete_state,REQUIRES_TYPED_ROUTE,state semantics must be preserved
+Mul/Add/Sub,existing,coverage_sensitive,BOUNDED_FACTOR_PACK_FIRST,coverage and PIT availability must be audited
+Mul/Add/Sub,existing,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+Mul/Add/Sub,existing,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+Mul/Add/Sub,existing,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+EventAge/SinceLastEvent/EventCount,proposed_typed,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+EventAge/SinceLastEvent/EventCount,proposed_typed,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+EventAge/SinceLastEvent/EventCount,proposed_typed,sparse_event,PREFERRED_TYPED_ROUTE,event primitive matches sparse-event semantics
+EventAge/SinceLastEvent/EventCount,proposed_typed,discrete_state,REQUIRES_TYPED_ROUTE,state semantics must be preserved
+EventAge/SinceLastEvent/EventCount,proposed_typed,coverage_sensitive,BOUNDED_FACTOR_PACK_FIRST,coverage and PIT availability must be audited
+EventAge/SinceLastEvent/EventCount,proposed_typed,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+EventAge/SinceLastEvent/EventCount,proposed_typed,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+EventAge/SinceLastEvent/EventCount,proposed_typed,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+StateAge/StateDwell/StateTransition/WindowStateCount,proposed_typed,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+StateAge/StateDwell/StateTransition/WindowStateCount,proposed_typed,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+StateAge/StateDwell/StateTransition/WindowStateCount,proposed_typed,sparse_event,REQUIRES_TYPED_ROUTE,event semantics must be preserved
+StateAge/StateDwell/StateTransition/WindowStateCount,proposed_typed,discrete_state,PREFERRED_TYPED_ROUTE,state primitive matches discrete-state semantics
+StateAge/StateDwell/StateTransition/WindowStateCount,proposed_typed,coverage_sensitive,BOUNDED_FACTOR_PACK_FIRST,coverage and PIT availability must be audited
+StateAge/StateDwell/StateTransition/WindowStateCount,proposed_typed,membership_or_group_key,BLOCK_AS_FORMULA_INPUT,may be context key only; not direct numeric input
+StateAge/StateDwell/StateTransition/WindowStateCount,proposed_typed,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+StateAge/StateDwell/StateTransition/WindowStateCount,proposed_typed,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+ValidRatioGate/MaskedCorr/MaskedZScore/SafeCSResidual,proposed_typed,continuous_minute,ALLOW_WITH_EXISTING_GUARDS,ordinary 1min continuous field
+ValidRatioGate/MaskedCorr/MaskedZScore/SafeCSResidual,proposed_typed,firstn_minute_derived,ALLOW_WITH_CUTOFF_CONTRACT,field is valid only after its first-N minute cutoff
+ValidRatioGate/MaskedCorr/MaskedZScore/SafeCSResidual,proposed_typed,sparse_event,BLOCK_OR_TYPED_REWRITE,ordinary continuous primitive mismatches sparse-event semantics
+ValidRatioGate/MaskedCorr/MaskedZScore/SafeCSResidual,proposed_typed,discrete_state,BLOCK_OR_TYPED_REWRITE,ordinary primitive treats state as continuous
+ValidRatioGate/MaskedCorr/MaskedZScore/SafeCSResidual,proposed_typed,coverage_sensitive,PREFERRED_TYPED_ROUTE,coverage is an explicit guard
+ValidRatioGate/MaskedCorr/MaskedZScore/SafeCSResidual,proposed_typed,membership_or_group_key,REQUIRES_SEPARATE_GROUP_AUDIT,membership geometry must be PIT/churn audited first
+ValidRatioGate/MaskedCorr/MaskedZScore/SafeCSResidual,proposed_typed,timestamp_or_key,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs
+ValidRatioGate/MaskedCorr/MaskedZScore/SafeCSResidual,proposed_typed,text_or_label,BLOCK,key/text/label/cutoff fields are not numeric alpha inputs

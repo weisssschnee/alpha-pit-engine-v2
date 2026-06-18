@@ -1,0 +1,53 @@
+{
+  "blockers": [],
+  "command_manifest": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cf_reward_gated_large_search_prelaunch_20260618\\phase3cf_command_manifest.json",
+  "created_at": "2026-06-18T18:05:24.032787+00:00",
+  "decision": "PHASE3CF_LARGE_SEARCH_PRELAUNCH_READY",
+  "evidence": [
+    {
+      "exists": true,
+      "name": "ce1_summary",
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\PHASE3CE1_TYPED_PRIMITIVE_GATE_IMPLEMENTATION_SUMMARY_20260618.md"
+    },
+    {
+      "exists": true,
+      "name": "ce2_fullwidth_eval_summary",
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3ce2_fullwidth_realdata_eval_20260618\\phase3as_true_1min_sidecar_canary_eval_summary.json"
+    },
+    {
+      "exists": true,
+      "name": "ce2_fullwidth_compact_summary",
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3ce2_fullwidth_realdata_eval_20260618\\phase3ce2_fullwidth_eval_compact_summary.csv"
+    },
+    {
+      "exists": true,
+      "name": "ce2_fullwidth_panel_summary",
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3ce2_fullwidth_validation_panel_20260618\\phase3ce2_fullwidth_validation_panel_summary.json"
+    },
+    {
+      "exists": true,
+      "name": "ce2_fullwidth_still_blocked",
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3ce2_fullwidth_phase3ar_sidecar_adapter_20260618\\phase3ar_still_blocked_formula_rows.json"
+    },
+    {
+      "exists": true,
+      "name": "typed_gate_contract",
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\PHASE3CE1_TYPED_PRIMITIVE_GATE_CONTRACT_20260618.md"
+    },
+    {
+      "exists": true,
+      "name": "search_memory_blocked_view",
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3ce1_search_memory_blocked_view_20260618\\phase3ce1_search_memory_blocked_view_summary.json"
+    }
+  ],
+  "primary_launch_target": "company_heavy",
+  "ready_to_launch": true,
+  "run_plan": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\run_plans\\phase3cf_reward_gated_large_search_run_plan_20260618.json",
+  "search_lanes": {
+    "bs_adaptive_ucb_cem": "fresh + adaptive UCB/CEM, entropy floor retained",
+    "bt_ast_fresh": "AST fresh/hybrid variants, fresh quota retained",
+    "bz_fragment_replay": "Sortino/MCMC/day-block/cost fragment replay gate",
+    "ca_bridge": "dedupe/ranking bridge into BZ only"
+  },
+  "secondary_launch_target": "local_checkpoint_only"
+}

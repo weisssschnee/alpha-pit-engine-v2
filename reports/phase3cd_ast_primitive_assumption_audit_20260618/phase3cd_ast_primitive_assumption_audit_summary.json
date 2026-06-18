@@ -1,0 +1,49 @@
+{
+  "created_at": "2026-06-18T02:26:34.743050+00:00",
+  "decision": "PHASE3CD_TYPED_PRIMITIVE_GATE_READY_DIAGNOSTIC_ONLY",
+  "experiment_id": "20260618_phase3cd_ast_primitive_assumption_audit",
+  "field_category_count": 8,
+  "group_key_risk_counts": {
+    "context_reference": 1,
+    "key_declared_not_formula_input": 2,
+    "membership_or_event_context_reference": 55,
+    "planned_transform_requires_group_membership_audit": 1
+  },
+  "group_key_scan_hits": 59,
+  "hard_boundary": [
+    "diagnostic design artifact only",
+    "no official X0/R3 changes",
+    "no large search until new-field typed primitive gate exists",
+    "ordinary AST primitives remain allowed only for audited continuous minute fields"
+  ],
+  "matrix_decision_counts": {
+    "ALLOW_WITH_CUTOFF_CONTRACT": 14,
+    "ALLOW_WITH_EXISTING_GUARDS": 14,
+    "BLOCK": 28,
+    "BLOCK_AS_FORMULA_INPUT": 12,
+    "BLOCK_OR_TYPED_REWRITE": 15,
+    "BOUNDED_FACTOR_PACK_FIRST": 7,
+    "PREFERRED_TYPED_ROUTE": 3,
+    "REQUIRES_COVERAGE_GATE": 6,
+    "REQUIRES_SEPARATE_GROUP_AUDIT": 2,
+    "REQUIRES_TYPED_ROUTE": 11
+  },
+  "matrix_rows": 112,
+  "official_chain_mutation": false,
+  "outputs": {
+    "field_category_route_matrix": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cd_ast_primitive_assumption_audit_20260618\\field_category_route_matrix.csv",
+    "group_key_usage_audit": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cd_ast_primitive_assumption_audit_20260618\\group_key_usage_audit.csv",
+    "primitive_assumption_matrix": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cd_ast_primitive_assumption_audit_20260618\\primitive_assumption_matrix.csv",
+    "primitive_x_field_category_decision_matrix": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cd_ast_primitive_assumption_audit_20260618\\primitive_x_field_category_decision_matrix.csv",
+    "registry_field_route_sample": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cd_ast_primitive_assumption_audit_20260618\\registry_field_route_sample.csv",
+    "report": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cd_ast_primitive_assumption_audit_20260618\\PHASE3CD_AST_PRIMITIVE_ASSUMPTION_AUDIT_20260618.md",
+    "typed_primitive_registry": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cd_ast_primitive_assumption_audit_20260618\\typed_primitive_registry.json",
+    "typed_primitive_spec": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cd_ast_primitive_assumption_audit_20260618\\typed_primitive_spec.csv",
+    "unsafe_limit_motif_rewrite_queue": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3cd_ast_primitive_assumption_audit_20260618\\unsafe_limit_motif_rewrite_queue.csv"
+  },
+  "primitive_count": 14,
+  "registry_sample_rows": 508,
+  "search_launched": false,
+  "status": "ok",
+  "unsafe_limit_motif_rows": 16
+}

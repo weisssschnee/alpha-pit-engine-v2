@@ -1,0 +1,81 @@
+{
+  "advisory_runtime_hit_counts_by_layer": {
+    "advisory_runtime_registry": 1880,
+    "search_memory": 234
+  },
+  "advisory_runtime_positive_hit_count": 2114,
+  "ce2_stop_condition_count": 7,
+  "created_at": "2026-06-18T03:17:25.616910+00:00",
+  "decision": "PHASE3CE_QUARANTINE_AUDIT_READY_DIAGNOSTIC_ONLY",
+  "experiment_id": "20260618_phase3ce_unsafe_motif_quarantine_audit",
+  "gate_placement_required": [
+    "candidate_materialization",
+    "phase3r_diagnostic_ledger",
+    "phase3aa_shared_pool_enrichment",
+    "factor_pack_preflight_integration",
+    "g2_selector_input"
+  ],
+  "hard_boundary": [
+    "diagnostic only",
+    "no official X0/R3 mutation",
+    "zero official book hits only applies to scanned official book roots",
+    "CE1 active runtime gate still not implemented by this audit"
+  ],
+  "official_book_positive_hit_count": 0,
+  "official_book_zero_match_claim": true,
+  "official_chain_mutation": false,
+  "official_hit_counts_by_layer": {},
+  "outputs": {
+    "advisory_runtime_positive_scan": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce_unsafe_motif_quarantine_audit_20260618\\advisory_runtime_positive_scan.csv",
+    "ce2_typed_canary_stop_conditions": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce_unsafe_motif_quarantine_audit_20260618\\ce2_typed_canary_stop_conditions.csv",
+    "official_registry_positive_scan": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce_unsafe_motif_quarantine_audit_20260618\\official_registry_positive_scan.csv",
+    "report": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce_unsafe_motif_quarantine_audit_20260618\\PHASE3CE_UNSAFE_MOTIF_QUARANTINE_AUDIT_20260618.md",
+    "search_memory_decay_bias_audit": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce_unsafe_motif_quarantine_audit_20260618\\search_memory_decay_bias_audit.csv",
+    "unsafe_candidate_quarantine": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce_unsafe_motif_quarantine_audit_20260618\\unsafe_candidate_quarantine.csv",
+    "unsafe_entry_point_summary": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce_unsafe_motif_quarantine_audit_20260618\\unsafe_entry_point_summary.csv",
+    "unsafe_expression_overlap_matrix": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce_unsafe_motif_quarantine_audit_20260618\\unsafe_expression_overlap_matrix.csv",
+    "unsafe_motif_signature_registry": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3ce_unsafe_motif_quarantine_audit_20260618\\unsafe_motif_signature_registry.csv"
+  },
+  "quarantine_entry_point_counts": {
+    "advisory_runtime_registry": 1880,
+    "cn_factor_pack_candidate_integration": 3310,
+    "phase3r_limit_motif_pack_diagnostic": 392,
+    "preflight_artifact": 3680,
+    "report_materialization": 10339,
+    "runtime_artifact": 10636,
+    "search_memory": 234,
+    "src_formula_gen_v2_motif_pack_limit_diagnostic": 16
+  },
+  "quarantine_hit_count": 30487,
+  "quarantine_hit_counts_by_layer": {
+    "advisory_runtime_registry": 1880,
+    "candidate_pool_or_preflight": 6990,
+    "diagnostic_report": 10339,
+    "motif_definition": 16,
+    "phase3r_candidate_generation": 392,
+    "runtime_artifact": 10636,
+    "search_memory": 234
+  },
+  "quarantine_unique_expression_digest_count": 1632,
+  "scanned_advisory_runtime_roots": [
+    "runtime\\registries",
+    "runtime\\field_registry",
+    "runtime\\search_memory"
+  ],
+  "scanned_official_book_roots": [
+    "runtime\\baselines"
+  ],
+  "scanned_quarantine_roots": [
+    "src\\our_system_phase2\\formula_gen_v2",
+    "src\\our_system_phase2\\runtime",
+    "reports",
+    "runtime"
+  ],
+  "search_launched": false,
+  "search_memory_decay_or_ttl_detected": false,
+  "search_memory_unsafe_hit_count": 234,
+  "search_memory_unsafe_unique_expression_digest_count": 24,
+  "signature_count": 16,
+  "status": "ok",
+  "tracked_entry_point_unique_expression_union_count": 1487
+}

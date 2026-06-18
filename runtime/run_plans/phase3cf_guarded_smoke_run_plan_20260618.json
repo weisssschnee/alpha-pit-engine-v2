@@ -1,0 +1,57 @@
+{
+  "phase": "Phase3CF",
+  "run_type": "guarded_true1min_smoke",
+  "created_at": "2026-06-18",
+  "status": "prepared_for_company_test",
+  "purpose": "Validate guarded feedback and guarded CA bridge before any large search resumes.",
+  "grain": "trade_time_1min",
+  "forbidden_backbones": [
+    "phase2_stock_tdx_official_*",
+    "phase3n_stock_tdx_official_*",
+    "tdx_official_vipdoc",
+    "old_1d_daily_kline_panels"
+  ],
+  "company_budget": {
+    "lanes": [
+      "phase3bs_adaptive_ucb_cem_practice",
+      "phase3bt_ast_algorithm_bakeoff",
+      "phase3ca_build_bz_candidate_audit"
+    ],
+    "max_shards": 8,
+    "sample_trade_times_per_shard": 96,
+    "seed_candidates": 192,
+    "per_arm_candidates": 192,
+    "top_decisions": 128,
+    "ca_top_n": 64
+  },
+  "guardrails": {
+    "wrong_lag_hard_reject": true,
+    "high_corr_hard_reject_in_ca_bridge": true,
+    "min_feedback_eligible": 32,
+    "learning_rate": 0.2,
+    "entropy_floor": 0.08,
+    "bz_fragment_replay": "not_in_smoke"
+  },
+  "pass_conditions": {
+    "clean_top_share_min": 0.35,
+    "feedback_eligible_min": 16,
+    "wrong_lag_top_share_max": 0.05,
+    "high_corr_top_share_max": 0.35
+  },
+  "stop_conditions": [
+    "legacy_1d_backbone_detected",
+    "wrong_lag_still_dominates_top_decisions",
+    "guarded_ca_candidate_count_lt_8",
+    "company_memory_pressure_or_oom_repeats"
+  ],
+  "allowed_language": {
+    "before_bz": "guarded proxy diagnostics only",
+    "forbidden": [
+      "deployable",
+      "promotion",
+      "beats_X0",
+      "production",
+      "alpha proof"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+﻿primitive,expression,expectation,signal_nonnull,signal_unique,signal_min,signal_max,first_valid_trade_time,status
+EventCount,"CSRank(EventCount($limit_up_any_close_not_open_in_t10,5))",rolling event count becomes non-null after full window,48,6,0.25,1.0,2026-06-01 09:35:00,pass
+EventAge,CSRank(EventAge($limit_up_any_close_not_open_in_t10)),age is NaN before first event and grows after event,36,4,0.3333333333333333,1.0,2026-06-01 09:34:00,pass
+StateDwell,"CSRank(StateDwell($high_board_rank,5))",state dwell tracks consecutive same finite state,64,1,0.625,0.625,2026-06-01 09:31:00,pass
+WindowStateCount,"CSRank(WindowStateCount($high_board_rank,10))",rolling nonzero finite-state count,28,4,0.375,1.0,2026-06-01 09:40:00,pass
+ValidRatioGate,"CSRank(ValidRatioGate($turnover_ratio,6,0.8))",coverage-poor early rows are masked,52,6,0.25,1.0,2026-06-01 09:31:00,pass
+MaskedZScore,"CSRank(MaskedZScore($turnover_ratio,6,0.8))",coverage-gated cross-sectional zscore,52,6,0.25,1.0,2026-06-01 09:31:00,pass
+MaskedCorr,"CSRank(MaskedCorr($turnover_ratio,$amount,6,0.5))",coverage-gated rolling relation,48,8,0.25,1.0,2026-06-01 09:33:00,pass
+SafeCSResidual,"CSRank(SafeCSResidual($turnover_ratio,$amount,2,2,0.5))",cross-sectional residual only when regression geometry is valid,56,10,0.25,1.0,2026-06-01 09:31:00,pass

@@ -1,0 +1,98 @@
+{
+  "phase3_version": "phase3ce2-typed-primitive-candidate-pack-canary-v1-2026-06-18",
+  "created_at": "2026-06-18T04:11:57+00:00",
+  "output_root": "reports\\phase3ce2_typed_primitive_candidate_pack_canary_20260618",
+  "registry_version": "phase3ce1_typed_primitive_gate_v1_20260618",
+  "source_rows": 4725,
+  "fields_by_category": {
+    "sparse_event": [
+      "limit_up_any_close_not_open_in_t10",
+      "limit_up_any_close_not_open_in_t2",
+      "limit_up_any_close_not_open_in_t3",
+      "limit_up_any_close_not_open_in_t4",
+      "limit_up_any_close_not_open_in_t5",
+      "limit_up_any_close_not_open_in_t6",
+      "limit_up_any_close_not_open_in_t7",
+      "limit_up_any_close_not_open_in_t8",
+      "limit_up_any_close_not_open_in_t9",
+      "limit_up_any_open_not_close_in_t10",
+      "limit_up_any_open_not_close_in_t2",
+      "limit_up_any_open_not_close_in_t3",
+      "limit_up_any_open_not_close_in_t4",
+      "limit_up_any_open_not_close_in_t5",
+      "limit_up_any_open_not_close_in_t6",
+      "limit_up_any_open_not_close_in_t7"
+    ],
+    "discrete_state": [
+      "high_board_rank",
+      "is_market_high_board",
+      "ctx_sent_lb_2_num",
+      "ctx_sent_lb_3_num",
+      "ctx_sent_max_lb_num",
+      "ctx_ths_hot_rank",
+      "ctx_ths_hot_rank_diff",
+      "ctx_zls_lb_2_num_lag1",
+      "ctx_zls_max_lb_num_lag1",
+      "ctx_zls_lb_3_num_lag1",
+      "ctx_zls_lb_h_num_lag1",
+      "ctx_zls_rank_lag1"
+    ],
+    "coverage_sensitive": [
+      "turnover_ratio",
+      "turnover_ratio_real",
+      "final_float_market_cap",
+      "fund_ocf_to_assets",
+      "fund_cash_to_assets",
+      "fund_debt_to_assets",
+      "fund_current_ratio",
+      "fund_netprofit_margin",
+      "ctx_fund_bs_cash_to_assets",
+      "ctx_fund_ps_netprofit_margin",
+      "ctx_fund_ps_operate_profit_margin",
+      "ctx_fund_cf_operate_cash_to_netprofit",
+      "ctx_fund_ps_research_to_income",
+      "ctx_mkt_updown_dt",
+      "m1_first5_vwap_return_vs_open",
+      "m1_open_gap_vs_preclose"
+    ]
+  },
+  "field_category_counts": {
+    "coverage_sensitive": 48,
+    "discrete_state": 24,
+    "sparse_event": 32
+  },
+  "primitive_counts": {
+    "EventAge": 16,
+    "EventCount": 16,
+    "MaskedZScore": 16,
+    "SafeCSResidual": 16,
+    "StateDwell": 12,
+    "ValidRatioGate": 16,
+    "WindowStateCount": 12
+  },
+  "candidate_rows": 104,
+  "typed_gate_allowed_rows": 104,
+  "typed_gate_rejected_rows": 0,
+  "g2_input_allowed_rows": 104,
+  "g2_input_rejected_rows": 0,
+  "evaluator_support_status": "implemented_in_real_market_validation",
+  "stop_condition_status": [
+    {
+      "check_id": "ce2_01_entry_path",
+      "status": "pass",
+      "evidence": "{\"coverage_sensitive\": 48, \"discrete_state\": 24, \"sparse_event\": 32}"
+    },
+    {
+      "check_id": "ce2_02_old_primitive_leak",
+      "status": "pass",
+      "evidence": "typed_rejected=0, g2_rejected=0"
+    },
+    {
+      "check_id": "ce2_03_to_ce2_07_runtime_semantic_tests",
+      "status": "ready_for_semantic_smoke",
+      "evidence": "runtime evaluator exposes typed primitive operators; still requires semantic smoke, placebo/lag/fragment replay"
+    }
+  ],
+  "decision": "PASS_TYPED_PRIMITIVE_ENTRY_PATH_EVALUATOR_READY_HOLD_SEMANTIC_PROOF",
+  "schema_version": "phase2-v2_1-prototype-v1"
+}

@@ -1,0 +1,9 @@
+primitive,input_category,output_semantics,required_guards,replaces
+EventAge(field),sparse_event|timestamped_event,minutes_or_bars_since_event_or_nan_before_event,observable_time_contract|lag_if_no_intraday_timestamp,Delta/Mom on event flag
+"EventCount(field, window)",sparse_event,count of events in rolling per-code or cross-section window,min_event_count|min_valid_ratio,"Mean(event_flag, window)"
+"EventTransition(prev_state, next_state)",sparse_event|discrete_state,typed transition such as touch_not_close or break_after_board,state_lifecycle_definition|tradability_check,Sign(Delta(state))
+"StateDwell(state, window)",discrete_state,duration or count of staying in a finite state,finite_state_contract|missing_state_policy,"Mean(state, window)|ZScore(state)"
+"WindowStateCount(state, window)",discrete_state,rolling count of a target state,state_value_contract|min_observation_count,"Mean(binary_state, window)"
+"ValidRatioGate(x, window, min_ratio)",coverage_sensitive,mask or gated signal only when coverage is sufficient,min_ratio >= 0.8 default unless explicitly justified,blind Corr/Cov/ZScore on sparse coverage
+"MaskedCorr(x, y, window, min_ratio)",coverage_sensitive|continuous_minute,rolling corr with joint-valid coverage gate,joint_valid_ratio|min_unique_values|block_limit_freeze_windows_if_needed,"Corr(x,y,window) on mixed coverage fields"
+"SafeCSResidual(y, x, min_n, min_x_unique, min_valid_ratio)",coverage_sensitive|continuous_control,cross-sectional residual only when regression geometry is valid,block membership keys|min_n>=20|min_valid_ratio,CSResidual on event/state/membership-sensitive fields

@@ -1,0 +1,50 @@
+{
+  "phase": "Phase3BY",
+  "run_type": "true1min_reward_gated_large_search_prepared",
+  "status": "prepared_not_launched",
+  "created_at": "2026-06-16",
+  "purpose": "Repeat Phase3BV-scale true-1min search only after candidate generation is coupled to reward audit gates instead of algorithm-arm proxy score alone.",
+  "input_roots": {
+    "true1min_shards_company": "D:/HermesWorker/workspace/phase3aj_new_data_current/runtime/phase3au_company_full_true1min_sharded_20260611",
+    "phase3bv_company_report": "reports/phase3bv_company_large_ast_fresh_search_20260616",
+    "phase3bv_local_report": "reports/phase3bv_local_large_ast_fresh_search_20260616",
+    "phase3bx_reward_audit": "reports/phase3bx_bv_sortino_mcmc_audit_20260616"
+  },
+  "required_gates": [
+    "true_trade_time_1min_only",
+    "search_memory_blocking",
+    "wrong_lag_hard_block",
+    "signal_corr_decongestion",
+    "proxy_sortino_mcmc_audit",
+    "turnover_block",
+    "strict_replay_queue_for_top_candidates"
+  ],
+  "search_allocation": {
+    "feedback_heavier_fresh_tail": 0.5,
+    "fresh_entropy_control": 0.2,
+    "cem_feedback_control": 0.15,
+    "pure_fresh_rx_control": 0.1,
+    "reserved_new_fields_or_residual": 0.05
+  },
+  "budget_same_order_as_bv": {
+    "max_shards": 10,
+    "sample_trade_times_per_shard": 112,
+    "seed_candidates": 384,
+    "winner_replay_candidates": 640,
+    "variant_candidates": 768,
+    "top_decisions": 320
+  },
+  "forbidden": [
+    "do_not_report_research_quality_score_as_sortino",
+    "do_not_promote_from_proxy_ic_only",
+    "do_not_modify_x0_r3",
+    "do_not_use_old_1d_stock_panel_for_true1min_claims",
+    "do_not_kill_crypto_line_processes"
+  ],
+  "launch_state": {
+    "company_cn_processes": "stopped_on_user_request",
+    "local_cn_processes": "stopped_on_user_request",
+    "ready_to_launch": false,
+    "requires_user_command": true
+  }
+}

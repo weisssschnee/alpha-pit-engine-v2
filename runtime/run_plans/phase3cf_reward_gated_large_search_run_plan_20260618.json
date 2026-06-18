@@ -1,0 +1,105 @@
+{
+  "phase": "Phase3CF",
+  "run_type": "reward_gated_true1min_large_search_prelaunch",
+  "status": "prepared_pending_prelaunch_check",
+  "created_at": "2026-06-18",
+  "purpose": "Launch the next true-1min large search only after CE2 typed primitives, sidecar materialization, and full-width trade_time validation are frozen.",
+  "primary_backbone": {
+    "grain": "trade_time_1min",
+    "local_shards": "runtime/phase3au_aq_only_true1min_sharded_20260611",
+    "company_shards": "D:/HermesWorker/workspace/phase3aj_new_data_current/runtime/phase3au_company_full_true1min_sharded_20260611",
+    "forbidden_backbones": [
+      "phase2_stock_tdx_official_*",
+      "phase3n_stock_tdx_official_*",
+      "tdx_official_vipdoc",
+      "old_1d_daily_kline_panels"
+    ]
+  },
+  "required_prelaunch_evidence": [
+    "reports/PHASE3CE1_TYPED_PRIMITIVE_GATE_CONTRACT_20260618.md",
+    "reports/PHASE3CE1_TYPED_PRIMITIVE_GATE_IMPLEMENTATION_SUMMARY_20260618.md",
+    "reports/phase3ce2_fullwidth_realdata_eval_20260618/phase3as_true_1min_sidecar_canary_eval_summary.json",
+    "reports/phase3ce2_fullwidth_realdata_eval_20260618/phase3ce2_fullwidth_eval_compact_summary.csv",
+    "runtime/phase3ce2_fullwidth_phase3ar_sidecar_adapter_20260618/phase3ar_still_blocked_formula_rows.json",
+    "reports/phase3ce1_search_memory_blocked_view_20260618/phase3ce1_search_memory_blocked_view_summary.json",
+    "reports/phase3ce1_search_memory_blocked_view_20260618/search_memory_blocked_keys.csv"
+  ],
+  "launch_lanes": {
+    "lane_a_bs_adaptive_ucb_cem": {
+      "role": "fresh plus adaptive UCB/CEM search with entropy floor",
+      "company_budget": {
+        "seed_candidates": 512,
+        "adaptive_cem_candidates": 512,
+        "adaptive_hybrid_candidates": 512,
+        "cem_dominant_ucb_candidates": 512,
+        "cem_dominant_rx_candidates": 512,
+        "max_shards": 16,
+        "sample_trade_times_per_shard": 96,
+        "top_decisions": 320
+      }
+    },
+    "lane_b_bt_ast_fresh": {
+      "role": "AST fresh/hybrid generation with fresh quota preserved",
+      "company_budget": {
+        "seed_candidates": 512,
+        "cem_candidates": 512,
+        "hybrid_candidates": 512,
+        "dominant_candidates": 512,
+        "fresh_hybrid_candidates": 512,
+        "max_shards": 16,
+        "sample_trade_times_per_shard": 96,
+        "top_decisions": 320
+      }
+    },
+    "lane_c_ca_bridge": {
+      "role": "dedupe and rank top search outputs into BZ input; not proof",
+      "top_n": 128
+    },
+    "lane_d_bz_fragment_replay": {
+      "role": "reward gate by fragments, Sortino, MCMC, day-block, turnover, and cost",
+      "company_budget": {
+        "candidate_limit": 128,
+        "max_shards": 16,
+        "sample_trade_times_per_shard": 180,
+        "horizons": "1,5,15,30",
+        "cost_bps": 5.0
+      }
+    }
+  },
+  "local_role": {
+    "default": "checkpoint_or_light_parallel_only",
+    "reason": "heavy run should prefer company machine; local can run reduced checkpoint if idle",
+    "max_shards": 8,
+    "sample_trade_times_per_shard": 64
+  },
+  "hard_gates": [
+    "typed_primitive_construction_gate_active",
+    "sidecar_pit_cutoff_materialization_active",
+    "trade_time_cross_section_evaluation_active",
+    "search_memory_blocked_view_available",
+    "CE1_blocked_memory_view_loaded_by_search_generators",
+    "wrong_lag_hard_block_required",
+    "fragment_replay_required_before_candidate_language",
+    "X0_R3_read_only"
+  ],
+  "stop_conditions": [
+    "legacy_1d_backbone_detected",
+    "ce2_prelaunch_evidence_missing",
+    "top_cluster_share_gt_0.25_at_checkpoint",
+    "wrong_lag_family_dominates_top_decisions",
+    "BZ_followup_count_zero_after_large_budget_and_same_family_repetition",
+    "company_memory_pressure_or_oom_repeats"
+  ],
+  "allowed_language": {
+    "after_search_before_bz": "proxy-ranked candidates only",
+    "after_bz_hold": "diagnostic family, no promotion",
+    "after_bz_followup": "follow-up candidate requiring deeper validation",
+    "forbidden": [
+      "deployable",
+      "promotion",
+      "beats_X0",
+      "production",
+      "alpha proof"
+    ]
+  }
+}

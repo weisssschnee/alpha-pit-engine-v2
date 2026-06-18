@@ -1,0 +1,35 @@
+{
+  "company_heavy": {
+    "bs_adaptive_ucb_cem": "'D:\\HermesWorker\\workspace\\.venv\\Scripts\\python.exe' app.py phase3bs-adaptive-ucb-cem-practice --allow-diagnostic -- --shard-root 'D:\\HermesWorker\\workspace\\phase3aj_new_data_current\\runtime\\phase3au_company_full_true1min_sharded_20260611' --memory-root runtime/search_memory --output-root runtime/phase3cf_bs_adaptive_ucb_cem_20260618 --report-root reports/phase3cf_bs_adaptive_ucb_cem_20260618 --seed-candidates 512 --adaptive-cem-candidates 512 --adaptive-hybrid-candidates 512 --cem-dominant-ucb-candidates 512 --cem-dominant-rx-candidates 512 --max-shards 16 --sample-trade-times-per-shard 96 --top-decisions 320 --horizons 1,5,15,30 --min-obs-per-time 20 --seed-exploration 0.35 --learning-rate 0.20 --entropy-floor 0.18 --min-feedback-eligible 32",
+    "bt_ast_fresh": "'D:\\HermesWorker\\workspace\\.venv\\Scripts\\python.exe' app.py phase3bt-ast-algorithm-bakeoff --allow-diagnostic -- --shard-root 'D:\\HermesWorker\\workspace\\phase3aj_new_data_current\\runtime\\phase3au_company_full_true1min_sharded_20260611' --memory-root runtime/search_memory --output-root runtime/phase3cf_bt_ast_fresh_20260618 --report-root reports/phase3cf_bt_ast_fresh_20260618 --max-shards 16 --sample-trade-times-per-shard 96 --seed-candidates 512 --cem-candidates 512 --hybrid-candidates 512 --dominant-candidates 512 --fresh-hybrid-candidates 512 --top-decisions 320 --horizons 1,5,15,30 --min-obs-per-time 20 --seed-exploration 0.45 --learning-rate 0.20 --entropy-floor 0.20 --min-feedback-eligible 32",
+    "bz_fragment_replay": "'D:\\HermesWorker\\workspace\\.venv\\Scripts\\python.exe' app.py phase3bz-fragment-replay-audit --allow-diagnostic -- --bx-audit runtime/phase3cf_bz_candidate_audit_20260618/phase3ca_bz_candidate_audit.csv --shard-root 'D:\\HermesWorker\\workspace\\phase3aj_new_data_current\\runtime\\phase3au_company_full_true1min_sharded_20260611' --output-root runtime/phase3cf_bz_fragment_replay_20260618 --report-root reports/phase3cf_bz_fragment_replay_20260618 --candidate-limit 128 --max-shards 16 --sample-trade-times-per-shard 180 --horizons 1,5,15,30 --min-obs-per-time 20 --cost-bps 5 --numexpr-threads 8",
+    "ca_bridge": "'D:\\HermesWorker\\workspace\\.venv\\Scripts\\python.exe' app.py phase3ca-build-bz-candidate-audit --allow-diagnostic -- --source-root reports/phase3cf_bs_adaptive_ucb_cem_20260618 --source-root reports/phase3cf_bt_ast_fresh_20260618 --output-root runtime/phase3cf_bz_candidate_audit_20260618 --top-n 128",
+    "cd_repo": "Set-Location 'D:\\HermesWorker\\workspace\\alpha_pit_true1min_engine_20260619'",
+    "set_pythonpath": "$env:PYTHONPATH='src'"
+  },
+  "created_at": "2026-06-18T18:05:24.030776+00:00",
+  "execution_order": [
+    "bs_adaptive_ucb_cem",
+    "bt_ast_fresh",
+    "ca_bridge",
+    "bz_fragment_replay"
+  ],
+  "hard_boundaries": [
+    "true trade_time 1min shards only",
+    "no old 1D/tdx official backbone",
+    "X0/R3 read-only",
+    "CA bridge is ranking only, not proof",
+    "BZ fragment replay is mandatory before followup language",
+    "do not kill unrelated crypto-line processes"
+  ],
+  "local_checkpoint": {
+    "bs_adaptive_ucb_cem": "'G:\\PythonProject\\.venv\\Scripts\\python.exe' app.py phase3bs-adaptive-ucb-cem-practice --allow-diagnostic -- --shard-root 'G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611' --memory-root runtime/search_memory --output-root runtime/phase3cf_bs_adaptive_ucb_cem_20260618 --report-root reports/phase3cf_bs_adaptive_ucb_cem_20260618 --seed-candidates 256 --adaptive-cem-candidates 256 --adaptive-hybrid-candidates 256 --cem-dominant-ucb-candidates 256 --cem-dominant-rx-candidates 256 --max-shards 8 --sample-trade-times-per-shard 64 --top-decisions 160 --horizons 1,5,15,30 --min-obs-per-time 20 --seed-exploration 0.35 --learning-rate 0.20 --entropy-floor 0.18 --min-feedback-eligible 32",
+    "bt_ast_fresh": "'G:\\PythonProject\\.venv\\Scripts\\python.exe' app.py phase3bt-ast-algorithm-bakeoff --allow-diagnostic -- --shard-root 'G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611' --memory-root runtime/search_memory --output-root runtime/phase3cf_bt_ast_fresh_20260618 --report-root reports/phase3cf_bt_ast_fresh_20260618 --max-shards 8 --sample-trade-times-per-shard 64 --seed-candidates 256 --cem-candidates 256 --hybrid-candidates 256 --dominant-candidates 256 --fresh-hybrid-candidates 256 --top-decisions 160 --horizons 1,5,15,30 --min-obs-per-time 20 --seed-exploration 0.45 --learning-rate 0.20 --entropy-floor 0.20 --min-feedback-eligible 32",
+    "bz_fragment_replay": "'G:\\PythonProject\\.venv\\Scripts\\python.exe' app.py phase3bz-fragment-replay-audit --allow-diagnostic -- --bx-audit runtime/phase3cf_bz_candidate_audit_20260618/phase3ca_bz_candidate_audit.csv --shard-root 'G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611' --output-root runtime/phase3cf_bz_fragment_replay_20260618 --report-root reports/phase3cf_bz_fragment_replay_20260618 --candidate-limit 64 --max-shards 8 --sample-trade-times-per-shard 120 --horizons 1,5,15,30 --min-obs-per-time 20 --cost-bps 5 --numexpr-threads 8",
+    "ca_bridge": "'G:\\PythonProject\\.venv\\Scripts\\python.exe' app.py phase3ca-build-bz-candidate-audit --allow-diagnostic -- --source-root reports/phase3cf_bs_adaptive_ucb_cem_20260618 --source-root reports/phase3cf_bt_ast_fresh_20260618 --output-root runtime/phase3cf_bz_candidate_audit_20260618 --top-n 64",
+    "cd_repo": "Set-Location 'G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619'",
+    "set_pythonpath": "$env:PYTHONPATH='src'"
+  },
+  "phase": "Phase3CF",
+  "purpose": "reward-gated true1min large search launch commands after CE2 typed primitive validation"
+}

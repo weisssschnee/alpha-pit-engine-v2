@@ -1,0 +1,5 @@
+﻿check_id,status,evidence
+event_age_before_first_event_nan,pass,pre_event_nonnull=0
+event_age_resets_on_event,pass,event_bar_age=0.0
+event_count_requires_full_window,pass,first4_nonnull=0
+valid_ratio_gate_masks_low_coverage,pass,low_coverage_nonnull=0

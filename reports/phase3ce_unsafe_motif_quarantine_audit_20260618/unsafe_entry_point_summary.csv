@@ -1,0 +1,9 @@
+source_layer,first_materialization_entry_point,hit_count,unique_expression_digest_count,unique_path_count
+runtime_artifact,runtime_artifact,10636,1442,1052
+diagnostic_report,report_materialization,10339,1585,68
+candidate_pool_or_preflight,preflight_artifact,3680,1343,5
+candidate_pool_or_preflight,cn_factor_pack_candidate_integration,3310,982,6
+advisory_runtime_registry,advisory_runtime_registry,1880,982,2
+phase3r_candidate_generation,phase3r_limit_motif_pack_diagnostic,392,102,13
+search_memory,search_memory,234,24,10
+motif_definition,src_formula_gen_v2_motif_pack_limit_diagnostic,16,16,1

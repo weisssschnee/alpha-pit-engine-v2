@@ -1,0 +1,198 @@
+{
+  "field_category_policy": {
+    "continuous_minute": {
+      "examples": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "vwap",
+        "amount",
+        "volume",
+        "ret_1m",
+        "intraday_ret_from_open"
+      ],
+      "risk_level": "low",
+      "selector_route": "ordinary_formula_allowed"
+    },
+    "coverage_sensitive": {
+      "examples": [
+        "RZRQ",
+        "rzye",
+        "billboard_net_amount",
+        "holder_num",
+        "pe_ttm",
+        "pb",
+        "float_market_cap_yuan"
+      ],
+      "risk_level": "high",
+      "selector_route": "bounded_factor_pack_or_coverage_guarded_primitive"
+    },
+    "discrete_state": {
+      "examples": [
+        "is_limit_up",
+        "is_st",
+        "limit_up_streak_ge_2",
+        "market_high_board",
+        "lb_2_num",
+        "max_lb_num"
+      ],
+      "risk_level": "high",
+      "selector_route": "typed_state_primitive_only"
+    },
+    "firstn_minute_derived": {
+      "examples": [
+        "m1_first5_amount",
+        "m1_first15_amount",
+        "m1_first30_range",
+        "m1_first30_vwap_return_vs_open"
+      ],
+      "risk_level": "medium_cutoff_sensitive",
+      "selector_route": "ordinary_formula_allowed_with_open_cutoff_contract"
+    },
+    "membership_or_group_key": {
+      "examples": [
+        "industry",
+        "sector",
+        "sector_code",
+        "plate_code",
+        "concept",
+        "board"
+      ],
+      "risk_level": "high_group_geometry",
+      "selector_route": "context_or_group_key_only_not_formula_input"
+    },
+    "sparse_event": {
+      "examples": [
+        "up_limit_time",
+        "limit_up_event",
+        "limit_up_touch_not_close",
+        "open_board_record",
+        "break_board_after_streak_ge_3"
+      ],
+      "risk_level": "high",
+      "selector_route": "typed_event_primitive_only"
+    },
+    "text_or_label": {
+      "examples": [
+        "reason",
+        "stock_name",
+        "plate_name",
+        "next_open_pct",
+        "future_return",
+        "label_1m"
+      ],
+      "risk_level": "critical_leakage_or_non_numeric",
+      "selector_route": "blocked_or_nlp_diagnostic_only"
+    },
+    "timestamp_or_key": {
+      "examples": [
+        "date",
+        "exec_date",
+        "trade_time",
+        "notice_date",
+        "update_time",
+        "report_date",
+        "code",
+        "stock_code"
+      ],
+      "risk_level": "critical_leakage",
+      "selector_route": "blocked_key_or_cutoff_only"
+    }
+  },
+  "official_chain_mutation": false,
+  "ordinary_ast_allowed_categories": [
+    "continuous_minute",
+    "firstn_minute_derived"
+  ],
+  "ordinary_ast_blocked_categories": [
+    "sparse_event",
+    "discrete_state",
+    "coverage_sensitive",
+    "membership_or_group_key",
+    "timestamp_or_key",
+    "text_or_label"
+  ],
+  "pre_search_gates": [
+    {
+      "gate": "candidate_pack_new_field_presence",
+      "requirement": "new-field canary must show nonzero sparse_event/discrete_state/coverage_sensitive fields when that lane is requested"
+    },
+    {
+      "gate": "ordinary_ast_category_block",
+      "requirement": "ordinary AST generator must reject blocked categories before candidate materialization"
+    },
+    {
+      "gate": "event_state_typed_rewrite",
+      "requirement": "limit/open-board/high-board fields must enter through EventAge/EventCount/EventTransition/StateDwell/WindowStateCount"
+    },
+    {
+      "gate": "coverage_guard",
+      "requirement": "fundamental/RZRQ/billboard/holder/capacity fields require ValidRatioGate before Corr/Cov/ZScore/CSResidual"
+    },
+    {
+      "gate": "membership_group_audit",
+      "requirement": "industry/sector/plate/concept fields remain context keys until PIT membership and group churn are audited"
+    }
+  ],
+  "schema_version": "phase3cd_typed_primitive_registry_v1",
+  "status": "diagnostic_gate_ready_not_evaluator_enabled",
+  "typed_primitives": [
+    {
+      "input_category": "sparse_event|timestamped_event",
+      "output_semantics": "minutes_or_bars_since_event_or_nan_before_event",
+      "primitive": "EventAge(field)",
+      "replaces": "Delta/Mom on event flag",
+      "required_guards": "observable_time_contract|lag_if_no_intraday_timestamp"
+    },
+    {
+      "input_category": "sparse_event",
+      "output_semantics": "count of events in rolling per-code or cross-section window",
+      "primitive": "EventCount(field, window)",
+      "replaces": "Mean(event_flag, window)",
+      "required_guards": "min_event_count|min_valid_ratio"
+    },
+    {
+      "input_category": "sparse_event|discrete_state",
+      "output_semantics": "typed transition such as touch_not_close or break_after_board",
+      "primitive": "EventTransition(prev_state, next_state)",
+      "replaces": "Sign(Delta(state))",
+      "required_guards": "state_lifecycle_definition|tradability_check"
+    },
+    {
+      "input_category": "discrete_state",
+      "output_semantics": "duration or count of staying in a finite state",
+      "primitive": "StateDwell(state, window)",
+      "replaces": "Mean(state, window)|ZScore(state)",
+      "required_guards": "finite_state_contract|missing_state_policy"
+    },
+    {
+      "input_category": "discrete_state",
+      "output_semantics": "rolling count of a target state",
+      "primitive": "WindowStateCount(state, window)",
+      "replaces": "Mean(binary_state, window)",
+      "required_guards": "state_value_contract|min_observation_count"
+    },
+    {
+      "input_category": "coverage_sensitive",
+      "output_semantics": "mask or gated signal only when coverage is sufficient",
+      "primitive": "ValidRatioGate(x, window, min_ratio)",
+      "replaces": "blind Corr/Cov/ZScore on sparse coverage",
+      "required_guards": "min_ratio >= 0.8 default unless explicitly justified"
+    },
+    {
+      "input_category": "coverage_sensitive|continuous_minute",
+      "output_semantics": "rolling corr with joint-valid coverage gate",
+      "primitive": "MaskedCorr(x, y, window, min_ratio)",
+      "replaces": "Corr(x,y,window) on mixed coverage fields",
+      "required_guards": "joint_valid_ratio|min_unique_values|block_limit_freeze_windows_if_needed"
+    },
+    {
+      "input_category": "coverage_sensitive|continuous_control",
+      "output_semantics": "cross-sectional residual only when regression geometry is valid",
+      "primitive": "SafeCSResidual(y, x, min_n, min_x_unique, min_valid_ratio)",
+      "replaces": "CSResidual on event/state/membership-sensitive fields",
+      "required_guards": "block membership keys|min_n>=20|min_valid_ratio"
+    }
+  ]
+}

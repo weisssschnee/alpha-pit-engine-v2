@@ -1,0 +1,17 @@
+kind,a,b,a_hit_count,a_unique_expression_digest_count,b_unique_expression_digest_count,intersection_count,union_count,jaccard,a_covered_by_b,b_covered_by_a
+single,phase3r,,392,102,,,,,,
+single,preflight,,3680,1343,,,,,,
+single,cn_factor_pack,,3310,982,,,,,,
+single,advisory_registry,,1880,982,,,,,,
+single,search_memory,,234,24,,,,,,
+pairwise,phase3r,preflight,392,102,1343,33,1412,0.023371,0.323529,0.024572
+pairwise,phase3r,cn_factor_pack,392,102,982,14,1070,0.013084,0.137255,0.014257
+pairwise,phase3r,advisory_registry,392,102,982,14,1070,0.013084,0.137255,0.014257
+pairwise,phase3r,search_memory,392,102,24,0,126,0.0,0.0,0.0
+pairwise,preflight,cn_factor_pack,3680,1343,982,931,1394,0.667862,0.693224,0.948065
+pairwise,preflight,advisory_registry,3680,1343,982,931,1394,0.667862,0.693224,0.948065
+pairwise,preflight,search_memory,3680,1343,24,0,1367,0.0,0.0,0.0
+pairwise,cn_factor_pack,advisory_registry,3310,982,982,982,982,1.0,1.0,1.0
+pairwise,cn_factor_pack,search_memory,3310,982,24,0,1006,0.0,0.0,0.0
+pairwise,advisory_registry,search_memory,1880,982,24,0,1006,0.0,0.0,0.0
+union,all_tracked_entry_points,,9496,1487,,,,,,

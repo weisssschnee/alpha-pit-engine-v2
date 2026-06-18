@@ -1,0 +1,8 @@
+check_id,stop_condition,why_it_matters,required_output
+ce2_01_entry_path,typed canary candidate pack contains zero sparse_event/discrete_state/coverage_sensitive fields despite requesting those lanes,would mean new fields still have no real search path,candidate_field_category_attribution.csv
+ce2_02_old_primitive_leak,any blocked category appears inside ordinary Mean/ZScore/Mom/Corr/Cov/CSResidual/Div without typed rewrite,would show CE1 gate is not active at the actual entry point,typed_gate_violation.csv
+ce2_03_coverage_mask_alpha,true field performance does not beat coverage-mask placebo and shuffled-field placebo,prevents fundamental/RZRQ/billboard coverage availability from masquerading as alpha,coverage_placebo_audit.csv
+ce2_04_event_start_bias,EventAge/EventCount/StateDwell output shifts mainly at dataset coverage start or recording-regime boundary,prevents event primitives from encoding data-vendor availability rather than event lifecycle,event_observable_boundary_audit.csv
+ce2_05_same_count_placebo,event-state candidates fail same-count random placebo or matched-control excess test,prevents sparse high-annualized slices from passing by sample luck,event_state_placebo_audit.csv
+ce2_06_wrong_lag,wrong-lag or same-day unavailable variant is stronger than PIT-correct variant,hard block for leakage and timestamp misuse,lag_contract_audit.csv
+ce2_07_fragment_replay,typed canary passes proxy metrics but fails BZ-style fragment replay with cost and day-block MCMC,keeps CE2 from repeating proxy-reward hacking,fragment_replay_summary.csv

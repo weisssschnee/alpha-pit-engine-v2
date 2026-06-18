@@ -1,0 +1,60 @@
+path,line,match,risk
+src\our_system_phase2\services\real_market_validation.py,59,"""sector"",",membership_or_event_context_reference
+src\our_system_phase2\services\real_market_validation.py,707,"if column == ""sector"":",membership_or_event_context_reference
+src\our_system_phase2\services\real_market_validation.py,2645,"""sector_neutralization_not_run"",",membership_or_event_context_reference
+src\our_system_phase2\services\real_market_validation.py,2782,"group_column: str = ""sector"",",membership_or_event_context_reference
+src\our_system_phase2\services\real_market_validation.py,2882,"""sectors_per_code_median"": float(code_group_counts.median()) if not code_group_counts.empty else None,",membership_or_event_context_reference
+src\our_system_phase2\services\real_market_validation.py,2918,"""stock_level_pit_industry_join_not_run"",",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,21,role_templates:,key_declared_not_formula_input
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,25,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,32,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,38,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,45,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,50,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,54,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,59,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,63,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,71,"templates: [""{B}""]",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,75,"templates: [""Mul({B},{C})""]",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,79,"templates: [""Mul({B},{S})""]",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,83,"templates: [""Mul({B},Mul({C},{S}))""]",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,88,"templates: [""{B}""]",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,93,"templates: [""Mul({B},{C})""]",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_core.yaml,111,seed_templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,30,"- ""$break_board_after_streak_ge_2""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,31,"- ""$break_board_after_streak_ge_3""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,46,high_board:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,47,"- ""$high_board_rank""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,48,"- ""$market_high_board""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,49,"- ""$is_market_high_board""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,51,"- ""$post_market_high_board_tplus_1""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,52,"- ""$post_market_high_board_tplus_2""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,53,"- ""$break_after_high_board_tplus_1""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,54,"- ""$break_after_high_board_tplus_2""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,72,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,78,"- ""CSRank(Mean({high_board},{w1}))""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,83,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,89,"- ""CSRank(Mul(ZScore(Mean({flow},{w2})),ZScore(Mean({high_board},{w1}))))""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,90,"- ""CSRank(CSResidual(ZScore(Mean({high_board},{w1})),CSRank(Log($final_float_market_cap))))""",membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,92,templates:,membership_or_event_context_reference
+src\our_system_phase2\formula_gen_v2\motif_pack_limit_diagnostic.yaml,106,"close_touch_break_high_board_fields: ""must be lagged for after-open selection""",membership_or_event_context_reference
+src\our_system_phase2\runtime\phase3aq_true_1min_formula_adapter.py,39,"""role"": ""cross_section_group_key"",",key_declared_not_formula_input
+src\our_system_phase2\runtime\cn_integrated_field_utility_map_v1.py,45,"""sector"",",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_integrated_field_utility_map_v1.py,46,"""sector_code"",",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_integrated_field_utility_map_v1.py,47,"""sector_source"",",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_integrated_field_utility_map_v1.py,48,"""sector_confidence"",",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_integrated_field_utility_map_v1.py,180,"return values.groupby(frame[""date""], sort=False, group_keys=False).apply(label_day)",context_reference
+src\our_system_phase2\runtime\cn_integrated_field_utility_map_v1.py,460,"work = frame[[""date"", ""code"", ""forward_return"", ""R3_liquidity_low"", ""sector"", ""size_bucket"", ""liquidity_bucket""]].copy()",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,39,"PLATE_FUND_PROBE = DATA_ROOT / ""cn_zzshare_plate_fund_completeness_probe_v1_20260602""",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,135,"if any(token in text for token in (""up_limit"", ""uplimit"", ""limit"", ""open_board"", ""fd_"", ""auction"", ""lb_"", ""tiandi"", ""ditian"", ""damian"", ""mian"", ""zb_num"")):",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,147,"if any(token in text for token in (""plate"", ""sector"", ""industry"", ""theme"")):",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,187,"""allowed_transforms"": ""notice_lagged_latest|quarter_delta|ttm_proxy|ratio|rank_xsection|winsorize|sector_residual"",",planned_transform_requires_group_membership_audit
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,196,"""allowed_transforms"": ""event_flag|event_age|auction_pressure|seal_strength|open_board_transition|matched_control"",",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,213,"if source_group in {""plate_fund_probe"", ""advanced_zzshare_probe""}:",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,305,"return ""add_regime_interaction_templates_and_placebo_audit""",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,307,"return ""add_lagged_heat_rank_templates_after_update_time_audit""",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,309,"return ""add_rank_delta_ratio_templates""",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,344,"(""plate_fund_probe"", PLATE_FUND_PROBE / ""plate_fund_completeness_probe.csv""),",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,433,"""plate_fund_and_advanced_probe"": ""probe-only until full historical silver/PIT panel exists"",",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,439,"""silverize plate fund and advanced zzshare probes before selector use"",",membership_or_event_context_reference
+src\our_system_phase2\runtime\cn_new_data_asset_integration_v1.py,479,"""- Plate fund and advanced ZZShare probes remain data-engineering backlog, not selector inputs."",",membership_or_event_context_reference

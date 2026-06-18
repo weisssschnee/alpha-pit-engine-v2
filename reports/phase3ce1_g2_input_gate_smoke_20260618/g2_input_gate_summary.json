@@ -1,0 +1,32 @@
+{
+  "phase3_version": "phase3ce1-g2-input-gate-smoke-v1-2026-06-18",
+  "created_at": "2026-06-18T03:58:27+00:00",
+  "input_path": "reports\\phase3ce1_factor_pack_preflight_gate_smoke_20260618\\cn_factor_pack_candidate_integration.csv",
+  "output_root": "reports\\phase3ce1_g2_input_gate_smoke_20260618",
+  "registry_version": "phase3ce1_typed_primitive_gate_v1_20260618",
+  "scope": "typed_primitive_gate_at_g2_selector_input_no_selector_no_replay",
+  "input_rows": 760,
+  "allowed_rows": 3,
+  "rejected_rows": 757,
+  "input_existing_decision_counts": {
+    "allow": 3,
+    "blocked_unsafe_known_structure": 725,
+    "reject_membership_key_formula_input": 32
+  },
+  "allowed_decision_counts": {
+    "allow": 3
+  },
+  "rejected_decision_counts": {
+    "blocked_unsafe_known_structure": 725,
+    "reject_membership_key_formula_input": 32
+  },
+  "rejected_reason_counts": {
+    "membership/group fields are context keys until group geometry audit": 32,
+    "ordinary continuous primitive consumed sparse event or discrete state field": 725
+  },
+  "rejected_gate_reason_counts": {
+    "upstream typed gate already rejected row": 757
+  },
+  "decision": "PASS_G2_INPUT_GATE_ACTIVE",
+  "schema_version": "phase2-v2_1-prototype-v1"
+}
