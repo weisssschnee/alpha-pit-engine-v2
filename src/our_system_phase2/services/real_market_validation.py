@@ -319,6 +319,72 @@ def _cross_section_key(frame: pd.DataFrame) -> pd.Series:
     return frame["date"]
 
 
+def fast_rank_pct_by_group(values: pd.Series, group: pd.Series) -> pd.Series:
+    """Memory-stable equivalent of groupby(...).rank(pct=True)."""
+    numeric = pd.to_numeric(values, errors="coerce")
+    arr = numeric.to_numpy(dtype=float, copy=False)
+    codes, _ = pd.factorize(group, sort=False)
+    out = np.full(len(arr), np.nan, dtype=float)
+    valid_code_mask = codes >= 0
+    if not bool(valid_code_mask.any()):
+        return pd.Series(out, index=values.index)
+
+    order = np.argsort(codes, kind="stable")
+    sorted_codes = codes[order]
+    boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
+    for start, end in zip(boundaries[:-1], boundaries[1:]):
+        if sorted_codes[start] < 0:
+            continue
+        idx = order[start:end]
+        part = arr[idx]
+        valid = np.isfinite(part)
+        n = int(valid.sum())
+        if n == 0:
+            continue
+        valid_pos = np.flatnonzero(valid)
+        valid_values = part[valid_pos]
+        value_order = np.argsort(valid_values, kind="mergesort")
+        sorted_values = valid_values[value_order]
+        tie_bounds = np.flatnonzero(np.r_[True, sorted_values[1:] != sorted_values[:-1], True])
+        ranks = np.empty(n, dtype=float)
+        for tie_start, tie_end in zip(tie_bounds[:-1], tie_bounds[1:]):
+            # pandas rank(method="average", pct=True): average 1-based rank / group valid count.
+            avg_rank = ((tie_start + 1) + tie_end) / 2.0
+            ranks[value_order[tie_start:tie_end]] = avg_rank / n
+        out[idx[valid_pos]] = ranks
+    return pd.Series(out, index=values.index)
+
+
+def fast_zscore_by_group(values: pd.Series, group: pd.Series) -> pd.Series:
+    """Memory-stable equivalent of groupby(...).transform zscore with ddof=1 std."""
+    numeric = pd.to_numeric(values, errors="coerce")
+    arr = numeric.to_numpy(dtype=float, copy=False)
+    codes, _ = pd.factorize(group, sort=False)
+    out = np.full(len(arr), np.nan, dtype=float)
+    valid_code_mask = codes >= 0
+    if not bool(valid_code_mask.any()):
+        return pd.Series(out, index=values.index)
+
+    order = np.argsort(codes, kind="stable")
+    sorted_codes = codes[order]
+    boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
+    for start, end in zip(boundaries[:-1], boundaries[1:]):
+        if sorted_codes[start] < 0:
+            continue
+        idx = order[start:end]
+        part = arr[idx]
+        valid = np.isfinite(part)
+        n = int(valid.sum())
+        if n < 2:
+            continue
+        mean = float(np.nanmean(part))
+        std = float(np.nanstd(part, ddof=1))
+        if not math.isfinite(std) or std == 0.0:
+            continue
+        out[idx[valid]] = (part[valid] - mean) / std
+    return pd.Series(out, index=values.index)
+
+
 def _cross_sectional_residual(frame: pd.DataFrame, left: pd.Series, right: pd.Series) -> pd.Series:
     result = pd.Series(np.nan, index=frame.index, dtype=float)
     for index in frame.groupby(_cross_section_key(frame), sort=False).groups.values():
@@ -437,10 +503,7 @@ def _state_dwell(frame: pd.DataFrame, value: pd.Series, *, window: int | None = 
 
 def _masked_zscore(frame: pd.DataFrame, value: pd.Series, *, window: int, min_ratio: float) -> pd.Series:
     gated = pd.to_numeric(value, errors="coerce").where(_rolling_valid_ratio(frame, value, window=window) >= min_ratio)
-    group_key = _cross_section_key(frame)
-    mean = gated.groupby(group_key, sort=False).transform("mean")
-    std = gated.groupby(group_key, sort=False).transform("std").replace(0, np.nan)
-    return (gated - mean) / std
+    return fast_zscore_by_group(gated, _cross_section_key(frame))
 
 
 def _masked_relation(
@@ -515,7 +578,7 @@ def evaluate_panel_expression(
 
     if name_lower in {"csrank", "rank"} and len(args) == 1:
         value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        return store(value.groupby(_cross_section_key(frame), sort=False).rank(pct=True))
+        return store(fast_rank_pct_by_group(value, _cross_section_key(frame)))
     if name_lower == "abs" and len(args) == 1:
         return store(evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags).abs())
     if name_lower == "sign" and len(args) == 1:
@@ -526,10 +589,7 @@ def evaluate_panel_expression(
         return store(-evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags))
     if name_lower == "zscore" and len(args) == 1:
         value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        group_key = _cross_section_key(frame)
-        mean = value.groupby(group_key, sort=False).transform("mean")
-        std = value.groupby(group_key, sort=False).transform("std").replace(0, np.nan)
-        return store((value - mean) / std)
+        return store(fast_zscore_by_group(value, _cross_section_key(frame)))
     if name_lower == "csresidual" and len(args) == 2:
         left = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
         right = evaluate_panel_expression(frame, args[1], cache=cache, field_lags=field_lags)

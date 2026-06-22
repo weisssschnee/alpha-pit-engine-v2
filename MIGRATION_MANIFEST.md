@@ -29,6 +29,7 @@ phase3bu_ast_fresh_winner_variants.py
 phase3bx_bv_sortino_mcmc_audit.py
 phase3bz_fragment_replay_audit.py
 phase3ca_build_bz_candidate_audit.py
+phase3cm_train_portfolio_sortino_reward_audit.py
 phase3cf_large_search_prelaunch.py
 ```
 
@@ -123,5 +124,6 @@ next hardening step is to add tests that assert:
 1. app.py exposes no legacy 1D route
 2. guarded feedback keeps CEM/UCB unchanged when clean feedback < threshold
 3. CA bridge hard-rejects wrong-lag and high-correlation rows by default
-4. BZ replay is the first reward-like validation gate
+4. BZ replay remains diagnostic-only and cannot be used as the search reward
+5. Phase3CM train portfolio Sortino reward audit is the next reward target before large search restart
 ```

@@ -1,0 +1,72 @@
+{
+  "phase": "Phase3CM",
+  "run_type": "train_portfolio_sortino_reward_chain_prelaunch",
+  "status": "prepared_no_search_started",
+  "created_at": "2026-06-23",
+  "purpose": "Replace fragment-level slice Sortino as the search reward target with true1min train-set portfolio Sortino reward audit.",
+  "primary_backbone": {
+    "grain": "trade_time_1min",
+    "local_shards": "runtime/phase3au_aq_only_true1min_sharded_20260611",
+    "company_shards": "D:/HermesWorker/workspace/phase3aj_new_data_current/runtime/phase3au_company_full_true1min_sharded_20260611",
+    "forbidden_backbones": [
+      "old_1d_daily_kline_panels",
+      "tdx_official_vipdoc",
+      "phase2_stock_tdx_official_*",
+      "phase3n_stock_tdx_official_*"
+    ]
+  },
+  "route_sequence": [
+    {
+      "route": "phase3ca-build-bz-candidate-audit",
+      "role": "dedupe and hard-reject wrong-lag/high-corr proxy outputs; ranking bridge only"
+    },
+    {
+      "route": "phase3cm-train-portfolio-sortino-reward-audit",
+      "role": "compute train/validation/holdout portfolio Sortino reward curves; search feedback target"
+    },
+    {
+      "route": "phase3bz-fragment-replay-audit",
+      "role": "optional diagnostic slice replay only; not reward"
+    }
+  ],
+  "reward_contract": {
+    "primary_reward": "train_reward from Phase3CM",
+    "train_reward_components": [
+      "train equal-weight horizon-sleeve day Sortino",
+      "worst train horizon day Sortino",
+      "train day-block MCMC p25 Sortino",
+      "turnover penalty",
+      "horizon instability penalty",
+      "inherited blocker penalty"
+    ],
+    "validation_use": "arm allocation and kill-line checks only",
+    "holdout_use": "reported but forbidden as optimizer feedback",
+    "fragment_sortino_use": "diagnostic slice replay only"
+  },
+  "hard_gates": [
+    "true_trade_time_1min_shards_only",
+    "no_legacy_1d_input",
+    "typed_primitive_gate_active",
+    "wrong_lag_hard_reject_before_reward",
+    "train_validation_holdout_split_required",
+    "holdout_not_used_for_search_feedback",
+    "X0_R3_read_only"
+  ],
+  "default_cm_parameters": {
+    "candidate_limit": 64,
+    "max_shards": 8,
+    "sample_trade_times_per_shard": 240,
+    "horizons": "1,5,15,30",
+    "train_fraction": 0.6,
+    "validation_fraction": 0.2,
+    "cost_bps": 5.0,
+    "top_quantile": 0.2,
+    "write_pnl_rows": false
+  },
+  "blocked_actions": [
+    "start large search before Phase3CM smoke passes",
+    "feed BZ fragment_sortino directly into CEM/UCB as primary reward",
+    "optimize holdout Sortino",
+    "call any proxy-ranked row a candidate/proof without CM reward audit"
+  ]
+}

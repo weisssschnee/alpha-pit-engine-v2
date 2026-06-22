@@ -27,7 +27,7 @@ import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.parquet as pq
 
-from our_system_phase2.services.real_market_validation import evaluate_panel_expression
+from our_system_phase2.services.real_market_validation import evaluate_panel_expression, fast_rank_pct_by_group
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -190,7 +190,7 @@ def _future_returns(frame: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFr
 
 
 def _rank_by_group(values: pd.Series, group: pd.Series) -> pd.Series:
-    return pd.to_numeric(values, errors="coerce").groupby(group, sort=False).rank(pct=True)
+    return fast_rank_pct_by_group(values, group)
 
 
 def _pearson(x: pd.Series, y: pd.Series) -> float | None:
@@ -323,6 +323,7 @@ def _run_materialization(
     horizons: tuple[int, ...],
     sample_trade_times_per_shard: int | None,
     min_obs_per_time: int,
+    pairwise_candidate_limit: int = 96,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     fields = sorted({field for row in candidates for field in row["fields_list"]})
     max_window = max((int(row["max_window"]) for row in candidates), default=0)
@@ -341,7 +342,11 @@ def _run_materialization(
     }
 
     metric_rows: list[dict[str, Any]] = []
-    vector_frames: list[pd.DataFrame] = []
+    pairwise_limit = max(0, int(pairwise_candidate_limit))
+    pairwise_hashes = {
+        str(row["expression_hash"])
+        for row in (candidates[:pairwise_limit] if pairwise_limit > 0 else [])
+    }
     audit_meta = {
         "panel_count": len(panels),
         "panel_paths": [str(path) for path in panels],
@@ -349,10 +354,12 @@ def _run_materialization(
         "max_expression_window": max_window,
         "max_horizon": max_horizon,
         "sample_trade_times_per_shard": sample_trade_times_per_shard,
+        "pairwise_candidate_limit": pairwise_limit,
+        "pairwise_candidate_count": len(pairwise_hashes),
         "shards": [],
     }
     per_candidate_metric_accum: dict[tuple[str, int], list[dict[str, Any]]] = {}
-    per_candidate_signal_chunks: dict[str, list[pd.Series]] = {str(row["expression_hash"]): [] for row in candidates}
+    per_candidate_signal_chunks: dict[str, list[pd.Series]] = {expr_hash: [] for expr_hash in pairwise_hashes}
 
     for shard_index, panel in enumerate(panels):
         schema = set(pq.ParquetFile(panel).schema_arrow.names)
@@ -405,21 +412,8 @@ def _run_materialization(
             prev_rank = _rank_by_group(signal_prev, eval_frame["trade_time"])
             future_rank = _rank_by_group(signal_future, eval_frame["trade_time"])
 
-            vec = pd.DataFrame(
-                {
-                    "row_key": (
-                        "s"
-                        + str(shard_index).zfill(2)
-                        + "|"
-                        + eval_frame["trade_time"].astype(str)
-                        + "|"
-                        + eval_frame["code"].astype(str)
-                    ),
-                    expr_hash: signal_rank.to_numpy(dtype=float),
-                }
-            )
-            vector_frames.append(vec)
-            per_candidate_signal_chunks[expr_hash].append(pd.Series(signal_rank.to_numpy(dtype=float), index=vec["row_key"]))
+            if expr_hash in per_candidate_signal_chunks:
+                per_candidate_signal_chunks[expr_hash].append(pd.Series(signal_rank.to_numpy(dtype=float)))
 
             for horizon in horizons:
                 row = {
@@ -483,7 +477,7 @@ def _run_materialization(
             aggregate_rows.append(_score_row(out, direction=direction, horizon=primary_horizon))
 
     signal_vectors = {
-        expr_hash: pd.concat(chunks).sort_index()
+        expr_hash: pd.concat(chunks, ignore_index=True, copy=False)
         for expr_hash, chunks in per_candidate_signal_chunks.items()
         if chunks
     }

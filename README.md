@@ -12,13 +12,15 @@ archive and reference source. This repository is the clean working entry for:
 - search-memory blocked views
 - guarded BS/BT/BU fresh search with CEM/UCB feedback guards
 - CA bridge into BZ candidate audit
-- BZ fragment replay, Sortino, and MCMC style validation
+- BZ fragment replay as diagnostic slice validation
+- Phase3CM train portfolio Sortino reward audit for search feedback
 
 ## Hard Boundaries
 
 - Do not use old 1D kline paths for true1min claims.
 - Do not promote X0/R3 from this repository. They are read-only benchmarks.
 - Do not treat proxy IC or active-day metrics as proof.
+- Do not treat fragment-level slice Sortino as the search reward.
 - Do not let CEM/UCB learn from sparse clean feedback.
 - Do not delete unsafe search-memory keys; reclassify them as blocked structures.
 
@@ -40,6 +42,7 @@ phase3bt-ast-algorithm-bakeoff
 phase3bu-ast-fresh-winner-variants
 phase3ca-build-bz-candidate-audit
 phase3bz-fragment-replay-audit
+phase3cm-train-portfolio-sortino-reward-audit
 phase3ce-unsafe-motif-quarantine-audit
 phase3ce1-search-memory-blocked-view
 phase3ce1-g2-input-gate-smoke

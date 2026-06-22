@@ -20,7 +20,7 @@ Allowed work:
 - typed primitive gate implementation and audits
 - unsafe motif quarantine and blocked memory views
 - guarded CEM/UCB/RX/AST search
-- CA bridge and BZ fragment replay validation
+- CA bridge, BZ fragment diagnostic replay, and CM train portfolio Sortino reward audit
 - company/local launch scripts for this chain
 
 Disallowed by default:
@@ -35,7 +35,8 @@ Disallowed by default:
 
 - Set `PYTHONPATH=src` before running.
 - Use `app.py` routes; do not add broad historical routes casually.
-- Treat BZ fragment replay as the first reward-like gate.
+- Treat BZ fragment replay as a diagnostic slice replay, not the search reward.
+- Treat Phase3CM train portfolio Sortino as the next reward audit target before any large search restart.
 - Treat CEM as an optimizer, not as reward-hacking defense.
 - Keep company-machine heavy work isolated from crypto-line tasks.
 
