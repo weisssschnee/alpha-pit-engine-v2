@@ -1,6 +1,6 @@
 # Phase3CN Reward Feedback Wiring 2026-06-23
 
-Decision: `PHASE3CN_CN0_CN1_IMPLEMENTED_NO_SEARCH_STARTED`
+Decision: `PHASE3CN_CN0_CN3_IMPLEMENTED_NO_SEARCH_STARTED`
 
 ## Scope
 
@@ -21,6 +21,19 @@ CN1 CM reward table standardization:
 CN1 feedback memory builder:
   app route:
     phase3cn-feedback-memory-smoke
+
+CN2 searcher feedback inputs:
+  BS/BT/BU now expose:
+    --feedback-table
+    --arm-score-table
+    --family-memory
+    --blocked-family-table
+    --exploit-allowed-family-table
+    --arm-id
+
+CN3 searcher feedback guard smoke:
+  app route:
+    phase3cn-searcher-feedback-smoke
 ```
 
 The feedback builder writes:
@@ -96,16 +109,28 @@ Holdout:
   excluded from arm_score
 ```
 
+## Searcher Guard
+
+```text
+External Phase3CN feedback is guarded before CEM/UCB mutation:
+  if feedback table is absent:
+    legacy in-run seed feedback path remains unchanged
+
+  if feedback table is present and clean_feedback_count < threshold:
+    CEM/UCB policy scores remain unchanged
+    feedback.updated=false
+
+  if feedback table is present but no exploit-allowed family exists:
+    CEM/UCB policy scores remain unchanged
+
+Holdout:
+  columns may be present
+  optimizer does not use them for arm score or update permission
+```
+
 ## Remaining CN Work
 
 ```text
-CN2:
-  add --feedback-table / --family-memory / --blocked-family-table to BS/BT/BU
-
-CN3:
-  add searcher feedback smoke:
-    clean feedback < threshold => CEM/UCB unchanged
-
 CN4:
   integrated smoke:
     search output -> CA -> CM -> CN feedback memory
@@ -113,7 +138,7 @@ CN4:
 
 ## Next Stage
 
-Do not start Phase3CP medium search until CN2/CN3 prove that searchers consume feedback safely and do not update from sparse clean feedback.
+Do not start Phase3CP medium search until CN4 proves the end-to-end feedback loop on a bounded non-search or tiny-search fixture.
 
 ## Smoke Verification
 
@@ -154,3 +179,25 @@ family_reasons: top_family_share_cap|high_turnover
 ```
 
 This verifies the intended guard: a proxy/CEM winner with negative CM reward does not become exploit feedback.
+
+## Searcher Feedback Smoke Verification
+
+The searcher feedback smoke was run to verify the consumer side without running search:
+
+```text
+route:
+  phase3cn-searcher-feedback-smoke
+
+checked:
+  BS/BT/BU feedback args present
+  low clean feedback blocks update
+  CEM/UCB policy scores unchanged
+  holdout columns present but not used for score
+
+result:
+  decision: PHASE3CN_SEARCHER_FEEDBACK_GUARD_PASS_DIAGNOSTIC_ONLY
+  clean_feedback_count: 0
+  feedback_update_allowed: false
+  policy_scores_unchanged: true
+  holdout_used_for_score: false
+```

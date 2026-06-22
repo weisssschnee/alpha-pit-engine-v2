@@ -1,0 +1,37 @@
+{
+  "all_searchers_have_feedback_args": true,
+  "created_at": "2026-06-22T18:52:00.123077+00:00",
+  "decision": "PHASE3CN_SEARCHER_FEEDBACK_GUARD_PASS_DIAGNOSTIC_ONLY",
+  "experiment_id": "20260623_phase3cn_searcher_feedback_smoke",
+  "feedback_context": {
+    "arm_id": "cem_exploit",
+    "arm_row_count": 1,
+    "blocked_family_count": 1,
+    "clean_feedback_count": 0,
+    "eligible_source": "arm_score_table",
+    "exploit_allowed_family_count": 0,
+    "family_row_count": 1,
+    "feedback_row_count": 1,
+    "feedback_update_allowed": false,
+    "guardrail": "external clean feedback below threshold or no exploit-allowed family; CEM/UCB feedback left unchanged",
+    "holdout_columns_present": true,
+    "holdout_used_for_score": false,
+    "min_clean_feedback": 8,
+    "provided": true,
+    "source_tables": {
+      "synthetic": "phase3cn_searcher_feedback_smoke_low_feedback"
+    }
+  },
+  "guard_blocks_update": true,
+  "holdout_read_only": true,
+  "policy_scores_unchanged": true,
+  "required_args": [
+    "--feedback-table",
+    "--arm-score-table",
+    "--family-memory",
+    "--blocked-family-table",
+    "--exploit-allowed-family-table",
+    "--arm-id"
+  ],
+  "search_generation": false
+}

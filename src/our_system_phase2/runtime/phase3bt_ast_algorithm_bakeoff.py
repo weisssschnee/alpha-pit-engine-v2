@@ -49,6 +49,11 @@ from our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice import (
     _policy_with_feedback,
     _round_metrics,
 )
+from our_system_phase2.services.search_feedback import (
+    annotate_policy_with_external_feedback,
+    load_search_feedback_context,
+    policy_blocked_by_external_feedback,
+)
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -291,6 +296,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--learning-rate", type=float, default=0.55)
     parser.add_argument("--entropy-floor", type=float, default=0.02)
     parser.add_argument("--min-feedback-eligible", type=int, default=32)
+    parser.add_argument("--feedback-table", type=Path, default=None)
+    parser.add_argument("--arm-score-table", type=Path, default=None)
+    parser.add_argument("--family-memory", type=Path, default=None)
+    parser.add_argument("--blocked-family-table", type=Path, default=None)
+    parser.add_argument("--exploit-allowed-family-table", type=Path, default=None)
+    parser.add_argument("--arm-id", default="typed_ast_fresh")
     args = parser.parse_args(argv)
 
     output_root = _resolve(args.output_root)
@@ -302,6 +313,15 @@ def main(argv: list[str] | None = None) -> int:
     blocked = _load_memory_hashes(args.memory_root) | _prior_hashes(PRIOR_HASH_FILES)
 
     seed_policy = _build_policy(PRIOR_DECISION_FILES, exploration=args.seed_exploration)
+    external_feedback = load_search_feedback_context(
+        feedback_table=_resolve(args.feedback_table) if args.feedback_table else None,
+        arm_score_table=_resolve(args.arm_score_table) if args.arm_score_table else None,
+        family_memory=_resolve(args.family_memory) if args.family_memory else None,
+        blocked_family_table=_resolve(args.blocked_family_table) if args.blocked_family_table else None,
+        exploit_allowed_family_table=_resolve(args.exploit_allowed_family_table) if args.exploit_allowed_family_table else None,
+        arm_id=args.arm_id,
+        min_clean_feedback=args.min_feedback_eligible,
+    )
     seed_candidates = _tag_bt_candidates(
         _generate_rx_ucb_candidates(args.seed_candidates, blocked, seed_policy, include_residual=False),
         "phase3bt_seed_ast_rx_ucb_fresh",
@@ -318,13 +338,17 @@ def main(argv: list[str] | None = None) -> int:
         top_decisions=args.top_decisions,
     )
 
-    adaptive_policy = _policy_with_feedback(
-        seed_policy,
-        seed_decisions,
-        learning_rate=args.learning_rate,
-        entropy_floor=args.entropy_floor,
-        min_eligible=args.min_feedback_eligible,
-    )
+    if external_feedback.provided and not external_feedback.feedback_update_allowed:
+        adaptive_policy = policy_blocked_by_external_feedback(seed_policy, external_feedback)
+    else:
+        adaptive_policy = _policy_with_feedback(
+            seed_policy,
+            seed_decisions,
+            learning_rate=args.learning_rate,
+            entropy_floor=args.entropy_floor,
+            min_eligible=args.min_feedback_eligible,
+        )
+        adaptive_policy = annotate_policy_with_external_feedback(adaptive_policy, external_feedback)
     used = blocked | {str(row.get("expression_hash")) for row in seed_candidates}
     cem_candidates = _tag_bt_candidates(
         _generate_cem_elite_candidates(
@@ -454,6 +478,7 @@ def main(argv: list[str] | None = None) -> int:
             "learning_rate": args.learning_rate,
             "entropy_floor": args.entropy_floor,
             "min_feedback_eligible": args.min_feedback_eligible,
+            "phase3cn_feedback": external_feedback.to_dict(),
         },
         "python_executable": sys.executable,
         "package_versions": _package_versions(),

@@ -1,0 +1,4 @@
+route,file,required_args,missing_args,pass
+phase3bs-adaptive-ucb-cem-practice,src/our_system_phase2/runtime/phase3bs_adaptive_ucb_cem_practice.py,--feedback-table|--arm-score-table|--family-memory|--blocked-family-table|--exploit-allowed-family-table|--arm-id,,true
+phase3bt-ast-algorithm-bakeoff,src/our_system_phase2/runtime/phase3bt_ast_algorithm_bakeoff.py,--feedback-table|--arm-score-table|--family-memory|--blocked-family-table|--exploit-allowed-family-table|--arm-id,,true
+phase3bu-ast-fresh-winner-variants,src/our_system_phase2/runtime/phase3bu_ast_fresh_winner_variants.py,--feedback-table|--arm-score-table|--family-memory|--blocked-family-table|--exploit-allowed-family-table|--arm-id,,true

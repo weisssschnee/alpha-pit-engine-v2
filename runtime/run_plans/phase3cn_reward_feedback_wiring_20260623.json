@@ -1,7 +1,7 @@
 {
   "phase": "Phase3CN",
   "run_type": "reward_feedback_wiring",
-  "status": "cn0_cn1_implemented_no_search_started",
+  "status": "cn0_cn3_implemented_no_search_started",
   "created_at": "2026-06-23",
   "purpose": "Turn Phase3CM train_reward into standardized feedback memory consumable by future searchers and schedulers.",
   "tree_position": {
@@ -19,6 +19,10 @@
   "implemented_routes": {
     "phase3cn-feedback-memory-smoke": {
       "role": "read Phase3CM reward outputs and write search feedback memory, arm scores, family scores, blocked families, and exploit-allowed families",
+      "search_generation": false
+    },
+    "phase3cn-searcher-feedback-smoke": {
+      "role": "prove BS/BT/BU expose Phase3CN feedback inputs and sparse or blocked feedback leaves CEM/UCB policy unchanged",
       "search_generation": false
     }
   },

@@ -15,6 +15,7 @@ ROUTES: dict[str, str] = {
     "phase3ca-build-bz-candidate-audit": "our_system_phase2.runtime.phase3ca_build_bz_candidate_audit",
     "phase3cm-train-portfolio-sortino-reward-audit": "our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit",
     "phase3cn-feedback-memory-smoke": "our_system_phase2.runtime.phase3cn_feedback_memory_smoke",
+    "phase3cn-searcher-feedback-smoke": "our_system_phase2.runtime.phase3cn_searcher_feedback_smoke",
     "phase3ce-unsafe-motif-quarantine-audit": "our_system_phase2.runtime.phase3ce_unsafe_motif_quarantine_audit",
     "phase3ce1-search-memory-blocked-view": "our_system_phase2.runtime.phase3ce1_search_memory_blocked_view",
     "phase3ce1-g2-input-gate-smoke": "our_system_phase2.runtime.phase3ce1_g2_input_gate_smoke",
