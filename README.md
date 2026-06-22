@@ -14,6 +14,7 @@ archive and reference source. This repository is the clean working entry for:
 - CA bridge into BZ candidate audit
 - BZ fragment replay as diagnostic slice validation
 - Phase3CM train portfolio Sortino reward audit for search feedback
+- Phase3CN feedback memory wiring before multi-arm search restart
 
 ## Hard Boundaries
 
@@ -43,6 +44,7 @@ phase3bu-ast-fresh-winner-variants
 phase3ca-build-bz-candidate-audit
 phase3bz-fragment-replay-audit
 phase3cm-train-portfolio-sortino-reward-audit
+phase3cn-feedback-memory-smoke
 phase3ce-unsafe-motif-quarantine-audit
 phase3ce1-search-memory-blocked-view
 phase3ce1-g2-input-gate-smoke

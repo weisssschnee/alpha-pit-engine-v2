@@ -25,7 +25,67 @@ Search status:
   next large search blocked until Phase3CM reward wiring is complete
 ```
 
-## Iteration Tree
+## Forward Iteration Tree
+
+```text
+Phase3CN  Reward Feedback Wiring
+  - CN0: candidate schema unification
+  - CN1: CM reward table standardization
+  - CN2: BS/BT/BU consume feedback_table
+  - CN3: CEM/UCB feedback guard tests
+  - CN4: integrated smoke
+
+Phase3CO  Multi-Arm Scheduler
+  - CO0: arm definition and budget table
+  - CO1: family_id / motif_id / cluster_id unification
+  - CO2: arm health calculation
+  - CO3: family-level kill / freeze / downweight
+  - CO4: scheduler smoke
+
+Phase3CP  Reward-Gated Medium Search
+  - CP0: 5-arm controlled generation
+  - CP1: CA bridge top queue
+  - CP2: CM train_reward audit
+  - CP3: validation kill-line
+  - CP4: family memory writeback
+  - CP5: next-budget decision
+
+Phase3CQ  Efficient Large Search Restart
+  - CQ0: fastpath throughput check
+  - CQ1: rolling checkpoint search
+  - CQ2: adaptive budget allocation
+  - CQ3: MAP-Elites-lite archive
+  - CQ4: full CM / BZ diagnostic / holdout report
+  - CQ5: promotion queue, not deployment
+
+Phase3CR  Challenger Algorithms
+  - CR0: MCTS-M0 no-neural local repair
+  - CR1: archive-prior MCTS
+  - CR2: policy/value supervised warm-start
+  - CR3: GFlowNet / novelty branch
+  - CR4: same-budget challenger decision
+
+Phase3CS  Proof Escalation
+  - CS0: full-shard CM reward
+  - CS1: non-gap replay
+  - CS2: new-vs-memory / crowding audit
+  - CS3: regime / event / turnover stress
+  - CS4: shadow-forward pack
+  - CS5: candidate book decision
+```
+
+Priority:
+
+```text
+CN must be completed first.
+CO follows CN.
+CP is the first real medium search.
+CQ is the efficient large search restart.
+CR enters only after CN/CO/CP are stable.
+CS is proof escalation and must not feed search optimization.
+```
+
+## Historical Evidence Path
 
 ```text
 Phase3CD
@@ -69,6 +129,12 @@ Phase3CM
   -> demotes fragment_sortino to diagnostic-only
   -> introduces train / validation / holdout portfolio reward audit
   -> next search must optimize train_reward, not proxy IC or fragment slices
+
+Phase3CN
+  reward feedback wiring
+  -> turns CM train_reward into search feedback memory
+  -> standardizes candidate schema and family feedback tables
+  -> blocks large search restart until searchers safely consume feedback
 ```
 
 ## Evidence Map
@@ -84,6 +150,7 @@ Phase3CM
 | CG | What fastpath assumptions were packaged? | `reports/PHASE3CG_TRUE1MIN_FASTPATH_PREP_20260619.md` |
 | CL | Did proxy/CEM winners survive fragment replay? | `reports/PHASE3CL_TRUE1MIN_FRAGMENT_REPLAY_AUDIT_20260622.md` |
 | CM | What replaces fragment Sortino as the reward target? | `reports/PHASE3CM_TRAIN_SORTINO_REWARD_CHAIN_20260623.md` |
+| CN | How does CM reward become search feedback memory? | `reports/PHASE3CN_REWARD_FEEDBACK_WIRING_20260623.md` |
 
 ## Reward Evolution
 
@@ -146,11 +213,11 @@ Retained:
 Before any large search restart:
 
 ```text
-1. Wire BS/BT/CEM/UCB search feedback to Phase3CM train_reward.
-2. Use validation metrics only for arm allocation and kill-line checks.
-3. Keep holdout metrics read-only and excluded from optimizer feedback.
-4. Keep BZ fragment replay as diagnostic-only.
-5. Preserve fresh-search budget so CEM cannot collapse the search space.
+1. Finish Phase3CN searcher feedback consumption.
+2. Add Phase3CO multi-arm scheduler.
+3. Run Phase3CP medium closed-loop search.
+4. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
+5. Keep BZ fragment replay diagnostic-only and holdout read-only.
 ```
 
 Success for the next stage is not a high proxy score. It is a candidate family

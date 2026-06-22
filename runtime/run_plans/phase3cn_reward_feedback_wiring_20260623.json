@@ -1,0 +1,80 @@
+{
+  "phase": "Phase3CN",
+  "run_type": "reward_feedback_wiring",
+  "status": "cn0_cn1_implemented_no_search_started",
+  "created_at": "2026-06-23",
+  "purpose": "Turn Phase3CM train_reward into standardized feedback memory consumable by future searchers and schedulers.",
+  "tree_position": {
+    "must_precede": [
+      "Phase3CO multi-arm scheduler",
+      "Phase3CP reward-gated medium search",
+      "Phase3CQ rolling large search"
+    ],
+    "blocked_until_complete": [
+      "large search restart",
+      "CEM exploit on proxy elite",
+      "MCTS/RL mainline challenger"
+    ]
+  },
+  "implemented_routes": {
+    "phase3cn-feedback-memory-smoke": {
+      "role": "read Phase3CM reward outputs and write search feedback memory, arm scores, family scores, blocked families, and exploit-allowed families",
+      "search_generation": false
+    }
+  },
+  "candidate_schema_required_fields": [
+    "candidate_id",
+    "expression_hash",
+    "expression",
+    "generator_arm",
+    "generator_route",
+    "seed",
+    "round_id",
+    "parent_id",
+    "mutation_type",
+    "field_family",
+    "primitive_family",
+    "event_state_family",
+    "horizon_bucket",
+    "turnover_bucket",
+    "family_id",
+    "motif_id",
+    "subtree_hashes",
+    "proxy_quality",
+    "aligned_ic_mean",
+    "spread_hit_rate",
+    "mean_one_way_turnover",
+    "blocker_flags",
+    "phase3ca_proxy_quality",
+    "train_reward",
+    "train_reward_decision",
+    "train_reward_blockers",
+    "validation_day_sortino",
+    "validation_mcmc_prob_gt_0",
+    "holdout_day_sortino",
+    "holdout_mcmc_prob_gt_0"
+  ],
+  "feedback_memory_outputs": [
+    "phase3cn_search_feedback_memory.csv",
+    "phase3cn_arm_score_table.csv",
+    "phase3cn_family_score_table.csv",
+    "phase3cn_blocked_family_table.csv",
+    "phase3cn_exploit_allowed_family_table.csv",
+    "phase3cn_feedback_memory_summary.json"
+  ],
+  "hard_rules": [
+    "holdout fields are read-only and excluded from arm_score",
+    "CEM/UCB feedback update is forbidden when clean_feedback_count < min_clean_feedback",
+    "proxy-high CM-negative family becomes rewardhack/freeze or block candidate",
+    "wrong-lag/high-corr families are blocked before exploit",
+    "BZ fragment replay remains diagnostic-only"
+  ],
+  "exit_gate_for_phase3cn": [
+    "BS/BT/BU emit unified candidate schema or can be normalized by schema adapter",
+    "CA bridge preserves generator_arm/family_id/motif_id",
+    "CM writes phase3cm_train_reward.csv",
+    "CN feedback memory writes arm/family/block/exploit tables",
+    "searcher feedback smoke proves clean feedback shortage does not update CEM/UCB",
+    "holdout fields exist but are not read by optimizer"
+  ]
+}

@@ -39,6 +39,7 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
     _write_csv,
     _write_json,
 )
+from our_system_phase2.services.candidate_schema import normalize_candidate_schema
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 
 
@@ -504,6 +505,7 @@ def _candidate_summary(candidate: dict[str, Any], rows: list[dict[str, Any]], ho
         "train_reward_blockers": "|".join(blockers),
         "train_reward_decision": decision,
     }
+    reward_row.update(normalize_candidate_schema(reward_row))
     return split_rows, reward_row
 
 
@@ -685,9 +687,11 @@ def main(argv: list[str] | None = None) -> int:
         _write_csv(output_root / "phase3cm_portfolio_pnl_rows.csv", pnl_rows)
     _write_csv(output_root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
     _write_csv(output_root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
+    _write_csv(output_root / "phase3cm_train_reward.csv", reward_rows)
     _write_csv(output_root / "phase3cm_shard_meta.csv", shard_meta)
     _write_json(output_root / "phase3cm_train_reward_audit_summary.json", summary)
     _write_csv(report_root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
+    _write_csv(report_root / "phase3cm_train_reward.csv", reward_rows)
     _write_csv(report_root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
     _write_json(report_root / "phase3cm_train_reward_audit_summary.json", summary)
     (report_root / "PHASE3CM_TRAIN_PORTFOLIO_SORTINO_REWARD_AUDIT_20260623.md").write_text(

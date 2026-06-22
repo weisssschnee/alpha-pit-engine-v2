@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from our_system_phase2.services.candidate_schema import normalize_candidate_schema
+
 
 REPO = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUT_ROOT = Path("reports/phase3ca_company_reward_gated_candidates_20260616")
@@ -141,6 +143,7 @@ def _normalize_row(row: dict[str, str], *, run: str, source_file: Path, source_r
             "metric_boundary": "Phase3CA proxy ranking only; BZ fragment replay is required before followup.",
         }
     )
+    out.update(normalize_candidate_schema(out))
     return out
 
 
