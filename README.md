@@ -64,3 +64,11 @@ They are not committed here.
 ## Migration Status
 
 See `MIGRATION_MANIFEST.md` for imported assets and exclusions.
+
+## Iteration Tree
+
+The current external-facing research path is indexed here:
+
+```text
+reports/PHASE3_TRUE1MIN_ITERATION_TREE_20260623.md
+```
