@@ -14,6 +14,8 @@
     }
   ],
   "passed_over_limit_count": 8,
+  "passed_total_count": 12,
   "rejected_missing_field_count": 0,
+  "selection_mode": "ca_ranked",
   "shard_root": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611"
 }

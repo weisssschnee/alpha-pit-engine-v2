@@ -12,23 +12,23 @@ Reads Phase3CM train reward outputs and writes standardized search feedback memo
 - candidates: `4`
 - families: `4`
 - exploit-allowed families: `0`
-- blocked/frozen families: `2`
+- blocked/frozen families: `4`
 
 ## Arm Scores
 
 | arm | rows | clean | update | median reward | validation rate | wrong-lag/corr | rewardhack | top family | score |
 |---|---:|---:|---|---:|---:|---:|---:|---:|---:|
-| `rx_ucb_fresh` | 2 | 0 | `false` | -0.61839196 | 0.5 | 0.0 | 0.0 | 0.5 | 0.88160804 |
-| `cem_exploit` | 2 | 0 | `false` | -1.028523 | 0.0 | 0.0 | 0.0 | 0.5 | -0.028523 |
+| `rx_ucb_fresh` | 2 | 0 | `false` | -0.61839196 | 0.5 | 0.0 | 1.0 | 0.5 | 0.38160804 |
+| `typed_ast_fresh` | 2 | 0 | `false` | -1.028523 | 0.0 | 0.0 | 1.0 | 0.5 | -0.528523 |
 
 ## Top Families
 
 | family | status | rows | median reward | clean | validation | reasons |
 |---|---|---:|---:|---:|---:|---|
-| `ed6b86d1110a56ffa4` | `freeze` | 1 | -0.58857199 | 0 | 0 | `high_turnover` |
-| `6dfdc2653ce052bd27` | `normal` | 1 | -0.64821192 | 0 | 1 | `` |
-| `9e96ab1433d465d733` | `normal` | 1 | -0.84887634 | 0 | 0 | `` |
-| `e1320d40a94aee9778` | `freeze` | 1 | -1.20816966 | 0 | 0 | `high_turnover` |
+| `82d605af753316a0b5` | `freeze` | 1 | -0.58857199 | 0 | 0 | `proxy_high_cm_negative` |
+| `6dfdc2653ce052bd27` | `freeze` | 1 | -0.64821192 | 0 | 1 | `proxy_high_cm_negative` |
+| `9e96ab1433d465d733` | `freeze` | 1 | -0.84887634 | 0 | 0 | `proxy_high_cm_negative` |
+| `dd0cbfd4948290aab1` | `freeze` | 1 | -1.20816966 | 0 | 0 | `proxy_high_cm_negative` |
 
 ## Boundary
 

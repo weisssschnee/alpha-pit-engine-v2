@@ -1,7 +1,7 @@
 {
   "allow_high_corr": false,
   "candidate_count": 12,
-  "created_at": "2026-06-23T01:57:12.273563+00:00",
+  "created_at": "2026-06-23T02:10:46.481273+00:00",
   "decision": "PHASE3CA_BZ_CANDIDATE_AUDIT_READY",
   "deduped_source_candidate_count": 16,
   "experiment_id": "20260616_phase3ca_build_bz_candidate_audit",

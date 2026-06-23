@@ -1,3 +1,3 @@
 generator_arm,candidate_count,clean_feedback_count,min_clean_feedback,feedback_update_allowed,positive_train_reward_rate,median_train_reward,validation_survival_rate,new_family_rate,low_turnover_rate,rewardhack_family_rate,wrong_lag_reject_rate,top_family_concentration,exploit_allowed_family_count,arm_score
-rx_ucb_fresh,2,0,2,false,0.0,-0.61839196,0.5,1.0,0.5,0.0,0.0,0.5,0,0.88160804
-cem_exploit,2,0,2,false,0.0,-1.028523,0.0,1.0,0.5,0.0,0.0,0.5,0,-0.028523
+rx_ucb_fresh,2,0,2,false,0.0,-0.61839196,0.5,1.0,1.0,1.0,0.0,0.5,0,0.38160804
+typed_ast_fresh,2,0,2,false,0.0,-1.028523,0.0,1.0,1.0,1.0,0.0,0.5,0,-0.528523

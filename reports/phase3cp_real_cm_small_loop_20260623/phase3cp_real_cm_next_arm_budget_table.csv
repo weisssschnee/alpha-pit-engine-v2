@@ -1,7 +1,7 @@
 arm_id,route_hint,role,category,base_share,min_share,max_share,health_score,feedback_decision,scheduler_action,scheduler_reason,clean_feedback_count,feedback_update_allowed,target_share,candidate_budget
-rx_ucb_fresh,phase3bs-adaptive-ucb-cem-practice,broad fresh typed exploration,fresh,0.26,0.2,0.42,-0.2375,feedback_guarded,schedule,CN feedback_update_allowed=false; exploit update must stay capped,0,false,0.26953125,138
-typed_ast_fresh,phase3bt-ast-algorithm-bakeoff,AST-aware fresh generation,fresh,0.22,0.18,0.36,0,cold_start,fresh_floor,no CN feedback for this arm; use fresh/control floor only,0,false,0.26367188,135
-challenger_repair,future-phase3cr-repair,repair/challenger branch,fresh,0.16,0.08,0.24,0,cold_start,fresh_floor,no CN feedback for this arm; use fresh/control floor only,0,false,0.18554688,95
-event_state,future-event-state-generator,typed event-state lane,event,0.14,0.06,0.22,0,cold_start,event_floor,no CN feedback for this arm; use fresh/control floor only,0,false,0.1640625,84
-cem_exploit,phase3bs-adaptive-ucb-cem-practice,guarded exploit around proven clean families,exploit,0.14,0,0.06,-0.3,feedback_guarded,probe_only,CEM exploit capped until CN clean feedback and exploit families are sufficient,0,false,0.01953125,10
+rx_ucb_fresh,phase3bs-adaptive-ucb-cem-practice,broad fresh typed exploration,fresh,0.26,0.2,0.42,-0.3,feedback_guarded,schedule,CN feedback_update_allowed=false; exploit update must stay capped,0,false,0.26367188,135
+typed_ast_fresh,phase3bt-ast-algorithm-bakeoff,AST-aware fresh generation,fresh,0.22,0.18,0.36,-0.3,feedback_guarded,schedule,CN feedback_update_allowed=false; exploit update must stay capped,0,false,0.23242188,119
+challenger_repair,future-phase3cr-repair,repair/challenger branch,fresh,0.16,0.08,0.24,0,cold_start,fresh_floor,no CN feedback for this arm; use fresh/control floor only,0,false,0.18359375,94
+event_state,future-event-state-generator,typed event-state lane,event,0.14,0.06,0.22,0,cold_start,event_floor,no CN feedback for this arm; use fresh/control floor only,0,false,0.16210938,83
+cem_exploit,phase3bs-adaptive-ucb-cem-practice,guarded exploit around proven clean families,exploit,0.14,0,0.06,0,cold_start,probe_only,CEM exploit capped until CN clean feedback and exploit families are sufficient,0,false,0.06054688,31
 random_orthogonal,control-random-orthogonal,control and novelty baseline,control,0.08,0.04,0.14,0,cold_start,schedule,no CN feedback for this arm; use fresh/control floor only,0,false,0.09765625,50

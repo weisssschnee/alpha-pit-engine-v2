@@ -27,6 +27,8 @@
     "phase3cp_real_cm_candidate_audit.csv",
     "phase3cp_real_cm_field_gate_rejects.csv",
     "phase3cm_train_reward/phase3cm_train_reward.csv",
+    "phase3cp_real_cm_lineage_consistency.csv",
+    "phase3cp_real_cm_lineage_consistency_summary.json",
     "phase3cn_feedback_memory/phase3cn_search_feedback_memory.csv",
     "phase3cp_real_cm_next_arm_budget_table.csv",
     "phase3cp_real_cm_next_family_action_table.csv",
@@ -36,6 +38,7 @@
     "shard_root must exist and must not contain suspicious old 1D path markers",
     "CA remains ranking-only",
     "CM field gate must reject candidates whose expression fields are not available in the selected true1min shard schemas",
+    "CM reward output lineage must preserve candidate_id and generator_arm from the CM input table",
     "real Phase3CM train reward is the only feedback source for CN in this route",
     "holdout is report-only and does not feed CN or CO",
     "X0/R3 remain read-only",
@@ -46,8 +49,30 @@
     "CA bridge produces candidates",
     "at least one CA candidate passes true1min field gate",
     "Phase3CM route runs with fast_mode=true",
+    "CM lineage consistency check reports zero mismatches",
     "CN memory rows match Phase3CM candidate count",
     "next CO budget allocation equals requested reschedule budget"
   ],
-  "next_phase": "Phase3CQ only after Phase3CP real-CM small loop produces validation-surviving CM-positive families"
+  "selection_modes": {
+    "ca_ranked": "use CA-ranked order for CM candidate limit",
+    "arm_balanced": "round-robin CM candidates across generator arms after CA and field gate"
+  },
+  "verified_runs": [
+    {
+      "report_root": "reports/phase3cp_real_cm_small_loop_20260623",
+      "selection_mode": "ca_ranked",
+      "generated_candidates": 16,
+      "cm_candidates": 4,
+      "followup_count": 0
+    },
+    {
+      "report_root": "reports/phase3cp_real_cm_balanced_loop_20260623",
+      "selection_mode": "arm_balanced",
+      "generated_candidates": 36,
+      "cm_candidates": 12,
+      "followup_count": 0,
+      "notable_near_pass": "event_state candidate phase3cp_00030 has positive train/validation/holdout Sortino but fails turnover gate"
+    }
+  ],
+  "next_phase": "Do not enter Phase3CQ yet; rerun Phase3CP with lower-turnover event-state/fresh variants first"
 }

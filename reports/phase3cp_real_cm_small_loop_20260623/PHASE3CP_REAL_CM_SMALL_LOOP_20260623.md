@@ -10,11 +10,13 @@ ca_candidate_count: 12
 cm_field_gate_passed: 4
 cm_field_gate_rejected_missing: 0
 cm_field_gate_passed_over_limit: 8
+cm_selection_mode: ca_ranked
+cm_lineage_consistent: True
 cm_candidate_count: 4
 cm_followup_count: 0
 cn_candidate_count: 4
 next_allocated_budget: 512
-next_fresh_share: 0.71875
+next_fresh_share: 0.6796875
 ```
 
 ## Checks
@@ -29,6 +31,7 @@ true1min_shard_root_exists: True
 suspicious_1d_path_blocked: True
 cm_fast_mode: True
 cm_candidate_count_ok: True
+cm_lineage_consistent: True
 cn_memory_matches_cm: True
 reschedule_total_ok: True
 holdout_not_optimizer_input: True

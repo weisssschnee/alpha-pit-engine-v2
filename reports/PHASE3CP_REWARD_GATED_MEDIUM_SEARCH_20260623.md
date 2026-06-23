@@ -126,6 +126,7 @@ ca_candidate_count: 12
 cm_field_gate_passed: 4
 cm_field_gate_rejected_missing: 0
 cm_field_gate_passed_over_limit: 8
+cm_lineage_consistent: true
 cm_candidate_count: 4
 cm_followup_count: 0
 cn_candidate_count: 4
@@ -142,10 +143,10 @@ train_reward_range:
 
 next_budget:
   allocated_budget: 512
-  fresh_share: 0.71875
-  cem_exploit_budget: 10
+  fresh_share: 0.6796875
+  cem_exploit_budget: 31
   exploit_allowed_family_count: 0
-  blocked_or_frozen_family_count: 2
+  blocked_or_frozen_family_count: 4
 ```
 
 Interpretation:
@@ -162,7 +163,71 @@ Output evidence:
 reports/phase3cp_real_cm_small_loop_20260623/PHASE3CP_REAL_CM_SMALL_LOOP_20260623.md
 reports/phase3cp_real_cm_small_loop_20260623/phase3cp_real_cm_small_loop_summary.json
 reports/phase3cp_real_cm_small_loop_20260623/phase3cp_real_cm_candidate_audit.csv
+reports/phase3cp_real_cm_small_loop_20260623/phase3cp_real_cm_lineage_consistency.csv
 reports/phase3cp_real_cm_small_loop_20260623/phase3cm_train_reward/phase3cm_train_reward.csv
 reports/phase3cp_real_cm_small_loop_20260623/phase3cn_feedback_memory/phase3cn_search_feedback_memory.csv
 reports/phase3cp_real_cm_small_loop_20260623/phase3cp_real_cm_next_arm_budget_table.csv
+```
+
+## Real CM Arm-Balanced Rerun
+
+```text
+route:
+  phase3cp-real-cm-small-loop
+
+selection_mode:
+  arm_balanced
+
+decision:
+  PHASE3CP_REAL_CM_SMALL_LOOP_PASS_DIAGNOSTIC_ONLY
+
+generated_candidates: 36
+ca_candidate_count: 30
+cm_field_gate_passed: 12
+cm_field_gate_rejected_missing: 0
+cm_field_gate_passed_over_limit: 18
+cm_lineage_consistent: true
+cm_candidate_count: 12
+cm_followup_count: 0
+cn_candidate_count: 12
+
+next_budget:
+  allocated_budget: 1024
+  fresh_share: 0.71972656
+  cem_exploit_budget: 62
+  exploit_allowed_family_count: 0
+  blocked_or_frozen_family_count: 9
+```
+
+Arm result:
+
+```text
+event_state:
+  count: 2
+  best_train_reward: -0.01381677
+  note: best row has positive train/validation/holdout Sortino but fails turnover gate
+
+rx_ucb_fresh:
+  count: 3
+  best_train_reward: -0.37184462
+
+challenger_repair:
+  count: 2
+  best_train_reward: -0.50444835
+
+typed_ast_fresh:
+  count: 3
+  best_train_reward: -0.86557817
+
+random_orthogonal:
+  count: 2
+  best_train_reward: -0.89071584
+```
+
+Interpretation:
+
+```text
+The balanced rerun confirms the earlier negative reward checkpoint. It also
+identifies the next best engineering direction: generate lower-turnover
+event-state/opening-state variants before any Phase3CQ large-search restart.
 ```

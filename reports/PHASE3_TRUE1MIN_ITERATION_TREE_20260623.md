@@ -50,7 +50,7 @@ Phase3CP  Reward-Gated Medium Search
   - CP3: validation kill-line
   - CP4: family memory writeback
   - CP5: next-budget decision
-  - status: real-CM small loop passed wiring, produced zero followup families
+  - status: real-CM small/balanced loops passed wiring, produced zero followup families
 
 Phase3CQ  Efficient Large Search Restart
   - CQ0: fastpath throughput check
@@ -157,7 +157,10 @@ Phase3CP
 Phase3CP real CM small loop
   -> replaces the controlled CM fixture with phase3cm-train-portfolio-sortino-reward-audit
   -> uses explicit true1min shard root and field-availability gate before CM
-  -> 16 generated, 12 CA rows, 4 CM rows, 0 followup
+  -> fixes CM reward lineage so generator_arm/candidate_id survive reward output
+  -> ca_ranked: 16 generated, 12 CA rows, 4 CM rows, 0 followup
+  -> arm_balanced: 36 generated, 30 CA rows, 12 CM rows, 0 followup
+  -> best arm-balanced row is event_state but fails turnover gate
   -> proves wiring, but does not authorize large-search expansion
 ```
 
@@ -181,6 +184,7 @@ Phase3CP real CM small loop
 | CP smoke | Does a CO-budgeted generation pass close CA/CM/CN/CO loop? | `reports/PHASE3CP_REWARD_GATED_MEDIUM_SEARCH_20260623.md` |
 | CP smoke outputs | What candidates, CA table, CN memory, and next budgets were produced? | `reports/phase3cp_reward_gated_medium_search_smoke_20260623/PHASE3CP_REWARD_GATED_MEDIUM_SEARCH_SMOKE_20260623.md` |
 | CP real CM small loop | Can CP replace the fixture with real train portfolio Sortino reward? | `reports/phase3cp_real_cm_small_loop_20260623/PHASE3CP_REAL_CM_SMALL_LOOP_20260623.md` |
+| CP real CM balanced loop | Does arm-balanced CM sampling expose a better direction than CA-ranked top rows? | `reports/phase3cp_real_cm_balanced_loop_20260623/PHASE3CP_REAL_CM_SMALL_LOOP_20260623.md` |
 
 ## Reward Evolution
 
@@ -230,7 +234,9 @@ phase3cp-real-cm-small-loop:
   reads CP/CO budget table, generates candidates, CA-ranks them, field-gates
   against true1min shard schemas, runs real CM train portfolio Sortino reward,
   writes CN feedback memory, and emits next CO budgets
-  diagnostic-only; zero followup in the first small run
+  supports `ca_ranked` and `arm_balanced` CM selection
+  checks CM lineage consistency before CN/CO feedback
+  diagnostic-only; zero followup in the current small and balanced runs
 
 phase3bz-fragment-replay-audit:
   optional diagnostic replay
@@ -261,9 +267,9 @@ Retained:
 Before any large search restart:
 
 ```text
-1. Treat the first Phase3CP real-CM small loop as a negative reward checkpoint.
-2. Do not enter Phase3CQ scale-up from this checkpoint because followup_count=0.
-3. Improve candidate generation / family targeting, then rerun CP real-CM at a larger bounded budget.
+1. Treat the Phase3CP real-CM small and balanced loops as negative reward checkpoints.
+2. Do not enter Phase3CQ scale-up because followup_count=0 in both runs.
+3. Target lower-turnover event-state/opening-state variants, then rerun CP real-CM at a larger bounded budget.
 4. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
 5. Keep BZ fragment replay diagnostic-only and holdout read-only.
 ```

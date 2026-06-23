@@ -2,7 +2,7 @@
   "ca_summary": {
     "allow_high_corr": false,
     "candidate_count": 12,
-    "created_at": "2026-06-23T01:57:12.273563+00:00",
+    "created_at": "2026-06-23T02:10:46.481273+00:00",
     "decision": "PHASE3CA_BZ_CANDIDATE_AUDIT_READY",
     "deduped_source_candidate_count": 16,
     "experiment_id": "20260616_phase3ca_build_bz_candidate_audit",
@@ -21,6 +21,7 @@
     "ca_has_candidates": true,
     "cm_candidate_count_ok": true,
     "cm_fast_mode": true,
+    "cm_lineage_consistent": true,
     "cn_memory_matches_cm": true,
     "field_gate_has_cm_candidates": true,
     "generated_budget_ok": true,
@@ -45,7 +46,7 @@
     },
     "candidate_count": 4,
     "cost_bps": 5.0,
-    "created_at": "2026-06-23T01:57:20.394925+00:00",
+    "created_at": "2026-06-23T02:10:56.886625+00:00",
     "decision": "PHASE3CM_TRAIN_REWARD_AUDIT_READY_DIAGNOSTIC_ONLY",
     "experiment_id": "20260623_phase3cm_train_portfolio_sortino_reward_audit",
     "fast_mode": true,
@@ -80,9 +81,9 @@
   },
   "cn_summary": {
     "arm_count": 2,
-    "blocked_family_count": 2,
+    "blocked_family_count": 4,
     "candidate_count": 4,
-    "created_at": "2026-06-23T01:57:20.507778+00:00",
+    "created_at": "2026-06-23T02:10:56.965705+00:00",
     "decision": "PHASE3CN_FEEDBACK_MEMORY_READY_DIAGNOSTIC_ONLY",
     "experiment_id": "20260623_phase3cn_feedback_memory_smoke",
     "exploit_allowed_family_count": 0,
@@ -100,7 +101,7 @@
     "train_threshold": 0.0,
     "validation_floor": 0.0
   },
-  "created_at": "2026-06-23T01:57:20.568722+00:00",
+  "created_at": "2026-06-23T02:10:56.994885+00:00",
   "decision": "PHASE3CP_REAL_CM_SMALL_LOOP_PASS_DIAGNOSTIC_ONLY",
   "experiment_id": "20260623_phase3cp_real_cm_small_loop",
   "field_gate_summary": {
@@ -119,7 +120,9 @@
       }
     ],
     "passed_over_limit_count": 8,
+    "passed_total_count": 12,
     "rejected_missing_field_count": 0,
+    "selection_mode": "ca_ranked",
     "shard_root": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611"
   },
   "generated_candidates": 16,
@@ -242,17 +245,22 @@
   ],
   "input_arm_budget_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cp_reward_gated_medium_search_smoke_20260623\\phase3cp_next_arm_budget_table.csv",
   "input_co_root": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cp_reward_gated_medium_search_smoke_20260623",
+  "lineage_consistency_summary": {
+    "checked_count": 4,
+    "lineage_consistent": true,
+    "mismatch_count": 0
+  },
   "metric_boundary": "small real-CM diagnostic loop; not alpha proof and not production promotion",
   "reschedule_summary": {
     "allocated_budget": 512,
-    "blocked_or_frozen_family_count": 2,
-    "cem_exploit_budget": 10,
+    "blocked_or_frozen_family_count": 4,
+    "cem_exploit_budget": 31,
     "cem_probe_cap_budget": 31,
     "cem_probe_cap_share": 0.06,
     "exploit_allowed_family_count": 0,
-    "fresh_budget": 368,
+    "fresh_budget": 348,
     "fresh_floor_share": 0.45,
-    "fresh_share": 0.71875,
+    "fresh_share": 0.6796875,
     "max_family_share": 0.25,
     "metric_boundary": "budget scheduler only; no search generation and no holdout optimization",
     "total_budget": 512

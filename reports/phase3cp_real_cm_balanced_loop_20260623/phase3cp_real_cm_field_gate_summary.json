@@ -1,0 +1,21 @@
+{
+  "available_field_count": 49,
+  "candidate_count": 12,
+  "max_shards_schema_checked": 1,
+  "missing_field_examples": [],
+  "panel_meta": [
+    {
+      "column_count": 49,
+      "has_amount": true,
+      "has_close": true,
+      "has_trade_time": true,
+      "has_volume": true,
+      "panel": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+    }
+  ],
+  "passed_over_limit_count": 18,
+  "passed_total_count": 30,
+  "rejected_missing_field_count": 0,
+  "selection_mode": "arm_balanced",
+  "shard_root": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611"
+}

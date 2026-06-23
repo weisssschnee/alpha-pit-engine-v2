@@ -157,13 +157,13 @@ def _filter_cm_feasible_candidates(
     shard_root: Path,
     max_shards: int,
     limit: int,
+    selection_mode: str,
     output_root: Path,
     report_root: Path,
 ) -> tuple[Path, dict[str, Any]]:
     available, panel_meta = _available_fields(shard_root, max_shards)
-    kept: list[dict[str, Any]] = []
+    passed: list[dict[str, Any]] = []
     rejected: list[dict[str, Any]] = []
-    pass_over_limit = 0
     for row in _read_csv(ca_table):
         expression = str(row.get("expression") or "")
         needed = set(_fields(expression))
@@ -177,10 +177,34 @@ def _filter_cm_feasible_candidates(
             continue
         item["cm_field_gate_decision"] = "PASS"
         item["cm_missing_fields"] = ""
-        if len(kept) < limit:
-            kept.append(item)
-        else:
-            pass_over_limit += 1
+        passed.append(item)
+
+    if selection_mode == "arm_balanced":
+        by_arm: dict[str, list[dict[str, Any]]] = {}
+        for row in passed:
+            by_arm.setdefault(str(row.get("generator_arm") or "unknown_arm"), []).append(row)
+        arm_order = [
+            "rx_ucb_fresh",
+            "typed_ast_fresh",
+            "challenger_repair",
+            "event_state",
+            "cem_exploit",
+            "random_orthogonal",
+            "unknown_arm",
+        ]
+        kept = []
+        while len(kept) < limit:
+            changed = False
+            for arm in arm_order:
+                bucket = by_arm.get(arm) or []
+                if bucket and len(kept) < limit:
+                    kept.append(bucket.pop(0))
+                    changed = True
+            if not changed:
+                break
+    else:
+        kept = passed[:limit]
+    pass_over_limit = max(0, len(passed) - len(kept))
 
     table = output_root / "phase3cp_real_cm_candidate_audit.csv"
     _write_csv(table, kept)
@@ -190,7 +214,9 @@ def _filter_cm_feasible_candidates(
     summary = {
         "candidate_count": len(kept),
         "rejected_missing_field_count": len(rejected),
+        "passed_total_count": len(passed),
         "passed_over_limit_count": pass_over_limit,
+        "selection_mode": selection_mode,
         "available_field_count": len(available),
         "shard_root": str(shard_root),
         "max_shards_schema_checked": max_shards,
@@ -209,6 +235,48 @@ def _filter_cm_feasible_candidates(
     if not kept:
         raise RuntimeError("no CA candidates passed the true1min CM field-availability gate")
     return table, summary
+
+
+def _audit_cm_lineage_consistency(
+    *,
+    candidate_table: Path,
+    cm_table: Path,
+    output_root: Path,
+    report_root: Path,
+) -> dict[str, Any]:
+    input_by_hash = {str(row.get("expression_hash") or ""): row for row in _read_csv(candidate_table)}
+    rows: list[dict[str, Any]] = []
+    mismatch_count = 0
+    for row in _read_csv(cm_table):
+        digest = str(row.get("expression_hash") or "")
+        source = input_by_hash.get(digest, {})
+        expected_arm = str(source.get("generator_arm") or "")
+        actual_arm = str(row.get("generator_arm") or "")
+        expected_candidate_id = str(source.get("candidate_id") or "")
+        actual_candidate_id = str(row.get("candidate_id") or "")
+        ok = bool(expected_arm and expected_arm == actual_arm and expected_candidate_id == actual_candidate_id)
+        if not ok:
+            mismatch_count += 1
+        rows.append(
+            {
+                "expression_hash": digest,
+                "expected_candidate_id": expected_candidate_id,
+                "actual_candidate_id": actual_candidate_id,
+                "expected_generator_arm": expected_arm,
+                "actual_generator_arm": actual_arm,
+                "lineage_consistent": str(ok).lower(),
+            }
+        )
+    _write_csv(output_root / "phase3cp_real_cm_lineage_consistency.csv", rows)
+    _write_csv(report_root / "phase3cp_real_cm_lineage_consistency.csv", rows)
+    summary = {
+        "checked_count": len(rows),
+        "mismatch_count": mismatch_count,
+        "lineage_consistent": mismatch_count == 0 and bool(rows),
+    }
+    _write_json(output_root / "phase3cp_real_cm_lineage_consistency_summary.json", summary)
+    _write_json(report_root / "phase3cp_real_cm_lineage_consistency_summary.json", summary)
+    return summary
 
 
 def _run_real_cm(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
@@ -268,6 +336,8 @@ def _render_md(summary: dict[str, Any]) -> str:
         f"cm_field_gate_passed: {summary['field_gate_summary']['candidate_count']}",
         f"cm_field_gate_rejected_missing: {summary['field_gate_summary']['rejected_missing_field_count']}",
         f"cm_field_gate_passed_over_limit: {summary['field_gate_summary']['passed_over_limit_count']}",
+        f"cm_selection_mode: {summary['field_gate_summary']['selection_mode']}",
+        f"cm_lineage_consistent: {summary['lineage_consistency_summary']['lineage_consistent']}",
         f"cm_candidate_count: {cm['candidate_count']}",
         f"cm_followup_count: {cm['followup_count']}",
         f"cn_candidate_count: {cn['candidate_count']}",
@@ -307,6 +377,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--generation-budget", type=int, default=32)
     parser.add_argument("--ca-top-n", type=int, default=24)
     parser.add_argument("--cm-candidate-limit", type=int, default=8)
+    parser.add_argument("--cm-selection-mode", choices=["ca_ranked", "arm_balanced"], default="ca_ranked")
     parser.add_argument("--cm-max-shards", type=int, default=1)
     parser.add_argument("--cm-sample-trade-times-per-shard", type=int, default=32)
     parser.add_argument("--cm-horizons", default="1,5,15")
@@ -353,12 +424,19 @@ def main(argv: list[str] | None = None) -> int:
         shard_root=shard_root,
         max_shards=args.cm_max_shards,
         limit=args.cm_candidate_limit,
+        selection_mode=args.cm_selection_mode,
         output_root=output_root,
         report_root=report_root,
     )
     cm_summary = _run_real_cm(args, cm_candidate_table, output_root, report_root)
 
     cm_table = output_root / "phase3cm_train_reward" / "phase3cm_train_reward.csv"
+    lineage_consistency_summary = _audit_cm_lineage_consistency(
+        candidate_table=cm_candidate_table,
+        cm_table=cm_table,
+        output_root=output_root,
+        report_root=report_root,
+    )
     cn_output_root = output_root / "phase3cn_feedback_memory"
     cn_report_root = report_root / "phase3cn_feedback_memory"
     cn_summary = build_feedback_memory(
@@ -402,6 +480,7 @@ def main(argv: list[str] | None = None) -> int:
         "suspicious_1d_path_blocked": "tdxofficial" not in shard_root_text and "\\1d" not in shard_root_text and "/1d" not in shard_root_text,
         "cm_fast_mode": bool(cm_summary.get("fast_mode")),
         "cm_candidate_count_ok": int(cm_summary["candidate_count"]) == min(int(args.cm_candidate_limit), int(field_gate_summary["candidate_count"])),
+        "cm_lineage_consistent": bool(lineage_consistency_summary["lineage_consistent"]),
         "cn_memory_matches_cm": int(cn_summary["candidate_count"]) == int(cm_summary["candidate_count"]),
         "reschedule_total_ok": int(reschedule_summary["allocated_budget"]) == int(args.reschedule_total_budget),
         "holdout_not_optimizer_input": True,
@@ -424,6 +503,7 @@ def main(argv: list[str] | None = None) -> int:
         "ca_summary": ca_summary,
         "field_gate_summary": field_gate_summary,
         "cm_summary": cm_summary,
+        "lineage_consistency_summary": lineage_consistency_summary,
         "cn_summary": cn_summary,
         "reschedule_summary": reschedule_summary,
         "metric_boundary": "small real-CM diagnostic loop; not alpha proof and not production promotion",
