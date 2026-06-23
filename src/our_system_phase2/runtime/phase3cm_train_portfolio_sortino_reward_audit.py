@@ -526,6 +526,44 @@ def _candidate_summary(candidate: dict[str, Any], rows: list[dict[str, Any]], ho
     return split_rows, reward_row
 
 
+def _write_incremental_checkpoint(
+    *,
+    output_root: Path,
+    report_root: Path,
+    reward_by_hash: dict[str, dict[str, Any]],
+    progress_rows: list[dict[str, Any]],
+    shard_meta: list[dict[str, Any]],
+    processed_candidate_shards: int,
+    candidate_count: int,
+    shard_count: int,
+    final: bool = False,
+) -> None:
+    partial_rewards = sorted(
+        reward_by_hash.values(),
+        key=lambda row: _f(row.get("train_reward"), -999.0),
+        reverse=True,
+    )
+    summary = {
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "experiment_id": "20260623_phase3cm_incremental_checkpoint",
+        "partial": not final,
+        "final": bool(final),
+        "candidate_count": int(candidate_count),
+        "shard_count": int(shard_count),
+        "processed_candidate_shards": int(processed_candidate_shards),
+        "partial_reward_count": len(partial_rewards),
+        "progress_row_count": len(progress_rows),
+        "completed_shards": len([row for row in shard_meta if row.get("shard_complete")]),
+        "latest_shard_index": shard_meta[-1].get("shard_index") if shard_meta else None,
+        "metric_boundary": "incremental partial checkpoint; not final reward unless final=true",
+    }
+    for root in (output_root, report_root):
+        _write_csv(root / "phase3cm_candidate_progress.csv", progress_rows)
+        _write_csv(root / "phase3cm_train_reward_partial.csv", partial_rewards)
+        _write_csv(root / "phase3cm_incremental_shard_meta.csv", shard_meta)
+        _write_json(root / "phase3cm_incremental_checkpoint_summary.json", summary)
+
+
 def _render_md(summary: dict[str, Any], rows: list[dict[str, Any]]) -> str:
     ranked = sorted(rows, key=lambda row: _f(row.get("train_reward"), -999.0), reverse=True)
     lines = [
@@ -591,6 +629,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write-pnl-rows", action="store_true")
     parser.add_argument("--fast-mode", action="store_true")
     parser.add_argument("--numexpr-threads", type=int, default=4)
+    parser.add_argument("--checkpoint-every-candidates", type=int, default=8)
+    parser.add_argument("--disable-incremental-checkpoints", action="store_true")
     args = parser.parse_args(argv)
 
     if args.fast_mode:
@@ -610,6 +650,9 @@ def main(argv: list[str] | None = None) -> int:
     panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
 
     rows_by_hash: dict[str, list[dict[str, Any]]] = {str(candidate["expression_hash"]): [] for candidate in candidates}
+    reward_by_hash: dict[str, dict[str, Any]] = {}
+    progress_rows: list[dict[str, Any]] = []
+    processed_candidate_shards = 0
     pnl_rows: list[dict[str, Any]] = []
     shard_meta: list[dict[str, Any]] = []
     for shard_index, panel in enumerate(panels):
@@ -623,7 +666,7 @@ def main(argv: list[str] | None = None) -> int:
         split_by_time = _split_map(signal_times, args.train_fraction, args.validation_fraction)
         expression_cache: dict[str, pd.Series] = {}
         shard_rows = 0
-        for candidate in candidates:
+        for candidate_index, candidate in enumerate(candidates, 1):
             rows = _candidate_portfolio_rows_from_frame(
                 candidate=candidate,
                 frame=frame,
@@ -638,13 +681,60 @@ def main(argv: list[str] | None = None) -> int:
                 top_quantile=args.top_quantile,
                 expression_cache=expression_cache,
             )
-            rows_by_hash[str(candidate["expression_hash"])].extend(rows)
+            expression_hash = str(candidate["expression_hash"])
+            rows_by_hash[expression_hash].extend(rows)
             shard_rows += len(rows)
+            processed_candidate_shards += 1
+            progress_rows.append(
+                {
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "candidate_id": candidate.get("candidate_id"),
+                    "expression_hash": expression_hash,
+                    "generator_arm": candidate.get("generator_arm"),
+                    "shard_index": shard_index,
+                    "candidate_index": candidate_index,
+                    "processed_candidate_shards": processed_candidate_shards,
+                    "rows_added": len(rows),
+                    "cumulative_rows_for_candidate": len(rows_by_hash[expression_hash]),
+                    "expression_cache_size": len(expression_cache),
+                    "checkpoint_partial": True,
+                }
+            )
+            if not args.disable_incremental_checkpoints:
+                _, reward_row = _candidate_summary(candidate, rows_by_hash[expression_hash], horizons, seed=20260623 + candidate_index)
+                reward_row["checkpoint_partial"] = True
+                reward_row["checkpoint_shards_seen"] = shard_index + 1
+                reward_row["checkpoint_processed_candidate_shards"] = processed_candidate_shards
+                reward_by_hash[expression_hash] = reward_row
+                if processed_candidate_shards % max(1, int(args.checkpoint_every_candidates)) == 0:
+                    _write_incremental_checkpoint(
+                        output_root=output_root,
+                        report_root=report_root,
+                        reward_by_hash=reward_by_hash,
+                        progress_rows=progress_rows,
+                        shard_meta=shard_meta,
+                        processed_candidate_shards=processed_candidate_shards,
+                        candidate_count=len(candidates),
+                        shard_count=len(panels),
+                    )
             if args.write_pnl_rows:
                 pnl_rows.extend(rows)
         meta["portfolio_pnl_rows"] = shard_rows
         meta["expression_cache_size"] = len(expression_cache)
+        meta["shard_complete"] = True
+        meta["processed_candidate_shards"] = processed_candidate_shards
         shard_meta.append(meta)
+        if not args.disable_incremental_checkpoints:
+            _write_incremental_checkpoint(
+                output_root=output_root,
+                report_root=report_root,
+                reward_by_hash=reward_by_hash,
+                progress_rows=progress_rows,
+                shard_meta=shard_meta,
+                processed_candidate_shards=processed_candidate_shards,
+                candidate_count=len(candidates),
+                shard_count=len(panels),
+            )
         del frame, eval_mask, eval_frame, labels, expression_cache
 
     split_horizon_rows: list[dict[str, Any]] = []
@@ -687,6 +777,8 @@ def main(argv: list[str] | None = None) -> int:
         "metric_boundary": "train portfolio Sortino reward audit; not production proof; holdout must not feed search",
         "fast_mode": bool(args.fast_mode),
         "numexpr_threads": int(args.numexpr_threads),
+        "incremental_checkpoints_enabled": not bool(args.disable_incremental_checkpoints),
+        "checkpoint_every_candidates": int(args.checkpoint_every_candidates),
         "python_executable": os.sys.executable,
         "package_versions": _package_versions(),
         "acceleration_contract": {
@@ -703,6 +795,18 @@ def main(argv: list[str] | None = None) -> int:
     }
     if args.write_pnl_rows:
         _write_csv(output_root / "phase3cm_portfolio_pnl_rows.csv", pnl_rows)
+    if not args.disable_incremental_checkpoints:
+        _write_incremental_checkpoint(
+            output_root=output_root,
+            report_root=report_root,
+            reward_by_hash={str(row.get("expression_hash")): row for row in reward_rows},
+            progress_rows=progress_rows,
+            shard_meta=shard_meta,
+            processed_candidate_shards=processed_candidate_shards,
+            candidate_count=len(candidates),
+            shard_count=len(panels),
+            final=True,
+        )
     _write_csv(output_root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
     _write_csv(output_root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
     _write_csv(output_root / "phase3cm_train_reward.csv", reward_rows)
