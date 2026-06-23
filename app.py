@@ -19,6 +19,7 @@ ROUTES: dict[str, str] = {
     "phase3cn-searcher-feedback-smoke": "our_system_phase2.runtime.phase3cn_searcher_feedback_smoke",
     "phase3co-multi-arm-scheduler-smoke": "our_system_phase2.runtime.phase3co_multi_arm_scheduler_smoke",
     "phase3cp-reward-gated-medium-search-smoke": "our_system_phase2.runtime.phase3cp_reward_gated_medium_search_smoke",
+    "phase3cp-real-cm-small-loop": "our_system_phase2.runtime.phase3cp_real_cm_small_loop",
     "phase3ce-unsafe-motif-quarantine-audit": "our_system_phase2.runtime.phase3ce_unsafe_motif_quarantine_audit",
     "phase3ce1-search-memory-blocked-view": "our_system_phase2.runtime.phase3ce1_search_memory_blocked_view",
     "phase3ce1-g2-input-gate-smoke": "our_system_phase2.runtime.phase3ce1_g2_input_gate_smoke",

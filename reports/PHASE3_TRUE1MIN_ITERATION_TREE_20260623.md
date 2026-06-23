@@ -50,7 +50,7 @@ Phase3CP  Reward-Gated Medium Search
   - CP3: validation kill-line
   - CP4: family memory writeback
   - CP5: next-budget decision
-  - status: smoke passed; next requires real Phase3CM audit run
+  - status: real-CM small loop passed wiring, produced zero followup families
 
 Phase3CQ  Efficient Large Search Restart
   - CQ0: fastpath throughput check
@@ -153,6 +153,12 @@ Phase3CP
   -> passes CA bridge, controlled CM fixture, CN memory, and CO reschedule
   -> does not yet run true Phase3CM portfolio reward audit
   -> next gate replaces fixture with true Phase3CM audit
+
+Phase3CP real CM small loop
+  -> replaces the controlled CM fixture with phase3cm-train-portfolio-sortino-reward-audit
+  -> uses explicit true1min shard root and field-availability gate before CM
+  -> 16 generated, 12 CA rows, 4 CM rows, 0 followup
+  -> proves wiring, but does not authorize large-search expansion
 ```
 
 ## Evidence Map
@@ -174,6 +180,7 @@ Phase3CP
 | CO smoke | Does the scheduler cap exploit/freeze families and keep fresh floor? | `reports/phase3co_multi_arm_scheduler_smoke_20260623/PHASE3CO_MULTI_ARM_SCHEDULER_SMOKE_20260623.md` |
 | CP smoke | Does a CO-budgeted generation pass close CA/CM/CN/CO loop? | `reports/PHASE3CP_REWARD_GATED_MEDIUM_SEARCH_20260623.md` |
 | CP smoke outputs | What candidates, CA table, CN memory, and next budgets were produced? | `reports/phase3cp_reward_gated_medium_search_smoke_20260623/PHASE3CP_REWARD_GATED_MEDIUM_SEARCH_SMOKE_20260623.md` |
+| CP real CM small loop | Can CP replace the fixture with real train portfolio Sortino reward? | `reports/phase3cp_real_cm_small_loop_20260623/PHASE3CP_REAL_CM_SMALL_LOOP_20260623.md` |
 
 ## Reward Evolution
 
@@ -219,6 +226,12 @@ phase3cp-reward-gated-medium-search-smoke:
   reads CO budget table and generates a small scheduler-controlled candidate set
   uses controlled CM reward fixture; not alpha proof
 
+phase3cp-real-cm-small-loop:
+  reads CP/CO budget table, generates candidates, CA-ranks them, field-gates
+  against true1min shard schemas, runs real CM train portfolio Sortino reward,
+  writes CN feedback memory, and emits next CO budgets
+  diagnostic-only; zero followup in the first small run
+
 phase3bz-fragment-replay-audit:
   optional diagnostic replay
   not primary reward
@@ -248,9 +261,11 @@ Retained:
 Before any large search restart:
 
 ```text
-1. Run Phase3CP real small loop by replacing the controlled CM fixture with true Phase3CM reward audit.
-2. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
-3. Keep BZ fragment replay diagnostic-only and holdout read-only.
+1. Treat the first Phase3CP real-CM small loop as a negative reward checkpoint.
+2. Do not enter Phase3CQ scale-up from this checkpoint because followup_count=0.
+3. Improve candidate generation / family targeting, then rerun CP real-CM at a larger bounded budget.
+4. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
+5. Keep BZ fragment replay diagnostic-only and holdout read-only.
 ```
 
 Success for the next stage is not a high proxy score. It is a candidate family

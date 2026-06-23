@@ -111,3 +111,58 @@ phase3cm-train-portfolio-sortino-reward-audit
 ```
 
 Then run a real small CP loop before any larger Phase3CQ restart.
+
+## Real CM Small Loop Verification
+
+```text
+route:
+  phase3cp-real-cm-small-loop
+
+decision:
+  PHASE3CP_REAL_CM_SMALL_LOOP_PASS_DIAGNOSTIC_ONLY
+
+generated_candidates: 16
+ca_candidate_count: 12
+cm_field_gate_passed: 4
+cm_field_gate_rejected_missing: 0
+cm_field_gate_passed_over_limit: 8
+cm_candidate_count: 4
+cm_followup_count: 0
+cn_candidate_count: 4
+
+real_cm_eval_used: true
+cm_fast_mode: true
+true1min_portfolio_eval: true
+shard_root:
+  G:\Project_V7_Rotation\alpha_pit_data_feature_workspace_20260531\runtime\phase3au_aq_only_true1min_sharded_20260611
+
+train_reward_range:
+  best: -0.58857199
+  worst: -1.20816966
+
+next_budget:
+  allocated_budget: 512
+  fresh_share: 0.71875
+  cem_exploit_budget: 10
+  exploit_allowed_family_count: 0
+  blocked_or_frozen_family_count: 2
+```
+
+Interpretation:
+
+```text
+The real-CM small loop proves the CP wiring can run with true train portfolio
+Sortino feedback. It does not produce a followup family. This is a negative
+reward checkpoint, not an alpha result.
+```
+
+Output evidence:
+
+```text
+reports/phase3cp_real_cm_small_loop_20260623/PHASE3CP_REAL_CM_SMALL_LOOP_20260623.md
+reports/phase3cp_real_cm_small_loop_20260623/phase3cp_real_cm_small_loop_summary.json
+reports/phase3cp_real_cm_small_loop_20260623/phase3cp_real_cm_candidate_audit.csv
+reports/phase3cp_real_cm_small_loop_20260623/phase3cm_train_reward/phase3cm_train_reward.csv
+reports/phase3cp_real_cm_small_loop_20260623/phase3cn_feedback_memory/phase3cn_search_feedback_memory.csv
+reports/phase3cp_real_cm_small_loop_20260623/phase3cp_real_cm_next_arm_budget_table.csv
+```

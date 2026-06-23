@@ -1,0 +1,53 @@
+{
+  "phase": "Phase3CP",
+  "run_type": "real_cm_small_loop",
+  "status": "implemented_diagnostic",
+  "created_at": "2026-06-23",
+  "purpose": "Replace the Phase3CP controlled CM fixture with the real true-1min Phase3CM train portfolio Sortino reward audit on a bounded small loop.",
+  "implemented_routes": {
+    "phase3cp-real-cm-small-loop": {
+      "role": "read CP/CO arm budgets, generate bounded candidates, pass CA, field-gate against true1min shards, run real Phase3CM train reward, build CN feedback memory, and emit next CO budgets",
+      "search_generation": true,
+      "true1min_portfolio_eval": true,
+      "cm_reward_source": "phase3cm_train_portfolio_sortino_reward_audit"
+    }
+  },
+  "default_inputs": {
+    "co_root": "reports/phase3cp_reward_gated_medium_search_smoke_20260623",
+    "arm_budget_table_fallback_order": [
+      "phase3cp_next_arm_budget_table.csv",
+      "phase3co_arm_budget_table.csv"
+    ],
+    "shard_root": "runtime/phase3au_aq_only_true1min_sharded_20260611"
+  },
+  "default_outputs": [
+    "phase3cp_real_cm_arm_execution_plan.csv",
+    "phase3cp_real_cm_all_generated_top_decisions.csv",
+    "phase3ca_bridge/phase3ca_bz_candidate_audit.csv",
+    "phase3cp_real_cm_candidate_audit.csv",
+    "phase3cp_real_cm_field_gate_rejects.csv",
+    "phase3cm_train_reward/phase3cm_train_reward.csv",
+    "phase3cn_feedback_memory/phase3cn_search_feedback_memory.csv",
+    "phase3cp_real_cm_next_arm_budget_table.csv",
+    "phase3cp_real_cm_next_family_action_table.csv",
+    "phase3cp_real_cm_small_loop_summary.json"
+  ],
+  "hard_rules": [
+    "shard_root must exist and must not contain suspicious old 1D path markers",
+    "CA remains ranking-only",
+    "CM field gate must reject candidates whose expression fields are not available in the selected true1min shard schemas",
+    "real Phase3CM train reward is the only feedback source for CN in this route",
+    "holdout is report-only and does not feed CN or CO",
+    "X0/R3 remain read-only",
+    "this small loop is diagnostic and not alpha proof"
+  ],
+  "exit_gate_for_small_loop": [
+    "generated candidate count equals requested generation budget",
+    "CA bridge produces candidates",
+    "at least one CA candidate passes true1min field gate",
+    "Phase3CM route runs with fast_mode=true",
+    "CN memory rows match Phase3CM candidate count",
+    "next CO budget allocation equals requested reschedule budget"
+  ],
+  "next_phase": "Phase3CQ only after Phase3CP real-CM small loop produces validation-surviving CM-positive families"
+}
