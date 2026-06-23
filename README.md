@@ -48,6 +48,7 @@ phase3cn-feedback-memory-smoke
 phase3cn-integrated-feedback-smoke
 phase3cn-searcher-feedback-smoke
 phase3co-multi-arm-scheduler-smoke
+phase3cp-reward-gated-medium-search-smoke
 phase3ce-unsafe-motif-quarantine-audit
 phase3ce1-search-memory-blocked-view
 phase3ce1-g2-input-gate-smoke

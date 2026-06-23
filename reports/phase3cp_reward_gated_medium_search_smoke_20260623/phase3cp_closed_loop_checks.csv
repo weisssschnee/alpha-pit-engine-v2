@@ -1,0 +1,2 @@
+co_budget_used,generated_budget_ok,ca_has_candidates,cm_fixture_has_candidates,cn_memory_has_candidates,initial_cem_probe_capped,initial_fresh_floor_ok,reschedule_total_ok,reschedule_fresh_floor_ok,holdout_not_optimizer_input
+true,true,true,true,true,true,true,true,true,true

@@ -50,6 +50,7 @@ Phase3CP  Reward-Gated Medium Search
   - CP3: validation kill-line
   - CP4: family memory writeback
   - CP5: next-budget decision
+  - status: smoke passed; next requires real Phase3CM audit run
 
 Phase3CQ  Efficient Large Search Restart
   - CQ0: fastpath throughput check
@@ -144,6 +145,14 @@ Phase3CO
   -> emits arm budget table and family action table
   -> caps CEM exploit when feedback_update_allowed=false
   -> preserves fresh budget floor before Phase3CP
+
+Phase3CP
+  reward-gated medium search smoke
+  -> reads CO budget table
+  -> generates small scheduler-controlled true1min expression set
+  -> passes CA bridge, controlled CM fixture, CN memory, and CO reschedule
+  -> does not yet run true Phase3CM portfolio reward audit
+  -> next gate replaces fixture with true Phase3CM audit
 ```
 
 ## Evidence Map
@@ -163,6 +172,8 @@ Phase3CO
 | CN integrated | Does the feedback contract close across CA/CM/CN/searcher guard? | `reports/phase3cn_integrated_feedback_smoke_20260623/PHASE3CN_INTEGRATED_FEEDBACK_SMOKE_20260623.md` |
 | CO | What budget plan controls Phase3CP search arms? | `reports/PHASE3CO_MULTI_ARM_SCHEDULER_20260623.md` |
 | CO smoke | Does the scheduler cap exploit/freeze families and keep fresh floor? | `reports/phase3co_multi_arm_scheduler_smoke_20260623/PHASE3CO_MULTI_ARM_SCHEDULER_SMOKE_20260623.md` |
+| CP smoke | Does a CO-budgeted generation pass close CA/CM/CN/CO loop? | `reports/PHASE3CP_REWARD_GATED_MEDIUM_SEARCH_20260623.md` |
+| CP smoke outputs | What candidates, CA table, CN memory, and next budgets were produced? | `reports/phase3cp_reward_gated_medium_search_smoke_20260623/PHASE3CP_REWARD_GATED_MEDIUM_SEARCH_SMOKE_20260623.md` |
 
 ## Reward Evolution
 
@@ -204,6 +215,10 @@ phase3co-multi-arm-scheduler-smoke:
   reads CN feedback memory and emits CP arm/family budgets
   no search launch and no true1min portfolio evaluation
 
+phase3cp-reward-gated-medium-search-smoke:
+  reads CO budget table and generates a small scheduler-controlled candidate set
+  uses controlled CM reward fixture; not alpha proof
+
 phase3bz-fragment-replay-audit:
   optional diagnostic replay
   not primary reward
@@ -233,7 +248,7 @@ Retained:
 Before any large search restart:
 
 ```text
-1. Implement Phase3CP medium closed-loop search from CO budgets.
+1. Run Phase3CP real small loop by replacing the controlled CM fixture with true Phase3CM reward audit.
 2. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
 3. Keep BZ fragment replay diagnostic-only and holdout read-only.
 ```

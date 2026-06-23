@@ -1,0 +1,47 @@
+{
+  "phase": "Phase3CP",
+  "run_type": "reward_gated_medium_search_smoke",
+  "status": "implemented_smoke_no_true1min_portfolio_eval",
+  "created_at": "2026-06-23",
+  "purpose": "Validate the CO-budgeted closed-loop search path before replacing the controlled CM fixture with true Phase3CM reward audit.",
+  "implemented_routes": {
+    "phase3cp-reward-gated-medium-search-smoke": {
+      "role": "read CO arm budgets, generate a small scheduler-controlled candidate set, pass CA, controlled CM fixture, CN memory, and CO reschedule",
+      "search_generation": true,
+      "true1min_portfolio_eval": false
+    }
+  },
+  "default_inputs": {
+    "co_root": "reports/phase3co_multi_arm_scheduler_smoke_20260623",
+    "arm_budget_table": "phase3co_arm_budget_table.csv",
+    "family_action_table": "phase3co_family_action_table.csv"
+  },
+  "default_outputs": [
+    "phase3cp_arm_execution_plan.csv",
+    "phase3cp_all_generated_top_decisions.csv",
+    "phase3ca_bridge/phase3ca_bz_candidate_audit.csv",
+    "phase3cm_reward_fixture/phase3cm_train_reward.csv",
+    "phase3cn_feedback_memory/phase3cn_search_feedback_memory.csv",
+    "phase3cp_next_arm_budget_table.csv",
+    "phase3cp_next_family_action_table.csv",
+    "phase3cp_closed_loop_summary.json"
+  ],
+  "hard_rules": [
+    "candidate generation must use Phase3CO budget table",
+    "CEM exploit must respect CO probe cap in the initial generation",
+    "fresh budget floor must be preserved",
+    "CA bridge remains ranking bridge only",
+    "controlled CM fixture is not alpha proof",
+    "holdout is not used as optimizer feedback",
+    "next real run must replace fixture with phase3cm-train-portfolio-sortino-reward-audit"
+  ],
+  "exit_gate_for_phase3cp_smoke": [
+    "generated candidate count equals requested smoke budget",
+    "CA bridge produces candidates",
+    "CM fixture rows match CA candidate count",
+    "CN memory rows match CA candidate count",
+    "CO reschedule allocation equals requested reschedule budget",
+    "reschedule fresh share remains above floor"
+  ],
+  "next_phase": "Phase3CP real small run using true Phase3CM reward audit"
+}

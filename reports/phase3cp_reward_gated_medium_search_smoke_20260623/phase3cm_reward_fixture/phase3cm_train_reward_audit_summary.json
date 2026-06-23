@@ -1,0 +1,7 @@
+{
+  "candidate_count": 24,
+  "created_at": "2026-06-23T01:42:28.993238+00:00",
+  "decision": "PHASE3CP_SMOKE_CM_FIXTURE_ONLY",
+  "followup_count": 8,
+  "metric_boundary": "controlled CP smoke fixture; replace with Phase3CM audit for real reward"
+}

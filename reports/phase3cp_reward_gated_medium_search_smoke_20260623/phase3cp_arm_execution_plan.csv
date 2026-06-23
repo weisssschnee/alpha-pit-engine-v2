@@ -1,0 +1,7 @@
+arm_id,route_hint,role,category,base_share,min_share,max_share,health_score,feedback_decision,scheduler_action,scheduler_reason,clean_feedback_count,feedback_update_allowed,target_share,candidate_budget,cp_smoke_candidate_budget,cp_smoke_share
+rx_ucb_fresh,phase3bs-adaptive-ucb-cem-practice,broad fresh typed exploration,fresh,0.26,0.2,0.42,0,cold_start,fresh_floor,no CN feedback for this arm; use fresh/control floor only,0,false,0.29882812,153,14,0.29166667
+typed_ast_fresh,phase3bt-ast-algorithm-bakeoff,AST-aware fresh generation,fresh,0.22,0.18,0.36,0,cold_start,fresh_floor,no CN feedback for this arm; use fresh/control floor only,0,false,0.25390625,130,12,0.25
+challenger_repair,future-phase3cr-repair,repair/challenger branch,fresh,0.16,0.08,0.24,0,cold_start,fresh_floor,no CN feedback for this arm; use fresh/control floor only,0,false,0.1796875,92,9,0.1875
+event_state,future-event-state-generator,typed event-state lane,event,0.14,0.06,0.22,0,cold_start,event_floor,no CN feedback for this arm; use fresh/control floor only,0,false,0.16015625,82,8,0.16666667
+cem_exploit,phase3bs-adaptive-ucb-cem-practice,guarded exploit around proven clean families,exploit,0.14,0,0.06,-0.28425,feedback_guarded,probe_only,CEM exploit capped until CN clean feedback and exploit families are sufficient,1,false,0.01367188,7,1,0.02083333
+random_orthogonal,control-random-orthogonal,control and novelty baseline,control,0.08,0.04,0.14,0,cold_start,schedule,no CN feedback for this arm; use fresh/control floor only,0,false,0.09375,48,4,0.08333333
