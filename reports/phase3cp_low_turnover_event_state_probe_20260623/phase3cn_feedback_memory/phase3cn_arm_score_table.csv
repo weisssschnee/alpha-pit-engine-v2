@@ -1,0 +1,2 @@
+generator_arm,candidate_count,clean_feedback_count,min_clean_feedback,feedback_update_allowed,positive_train_reward_rate,median_train_reward,validation_survival_rate,new_family_rate,low_turnover_rate,rewardhack_family_rate,wrong_lag_reject_rate,top_family_concentration,exploit_allowed_family_count,arm_score
+event_state,24,0,2,false,0.0,-0.76392913,0.08333333,0.20833333,1.0,1.0,0.0,0.25,0,-0.72226246

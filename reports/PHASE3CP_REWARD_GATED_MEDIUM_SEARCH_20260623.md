@@ -231,3 +231,74 @@ The balanced rerun confirms the earlier negative reward checkpoint. It also
 identifies the next best engineering direction: generate lower-turnover
 event-state/opening-state variants before any Phase3CQ large-search restart.
 ```
+
+## Low-Turnover Event-State Probe
+
+```text
+route:
+  phase3cp-low-turnover-event-state-probe
+
+generated_candidates: 64
+ca_candidate_count: 48
+cm_candidate_count: 24
+cm_followup_count: 0
+lineage_consistent: true
+
+result:
+  low-turnover smoothing reduced realized turnover to roughly 0.38-0.46 for
+  top rows, but train/validation reward collapsed.
+```
+
+Top rows:
+
+```text
+best_train_reward: -0.48827207
+best_train_sortino: -0.42657095
+best_validation_sortino: -0.61816916
+best_turnover: 0.38285492
+```
+
+Interpretation:
+
+```text
+The prior event_state near-pass was not fixed by simple smoothing. The edge, if
+real, is tied to a more reactive signal geometry; naive low-turnover transforms
+remove the return faster than they reduce cost.
+```
+
+## Top-Quantile Sensitivity And Confirmation
+
+```text
+arm_balanced top_quantile=0.30:
+  generated_candidates: 36
+  cm_candidate_count: 12
+  cm_followup_count: 1
+  followup_candidate: phase3cp_00030
+  train_reward: 0.3239756
+  train_day_sortino: 0.9850427
+  validation_day_sortino: 0.23401585
+  holdout_day_sortino: 2.36984576
+  turnover: 0.71037371
+
+family_status:
+  freeze
+  reason: same family also contains proxy-high / CM-negative member
+
+2-shard confirmation:
+  candidate: phase3cp_00030
+  max_shards: 2
+  sample_trade_times_per_shard: 96
+  top_quantile: 0.30
+  followup_count: 0
+  train_reward: -0.12542552
+  train_day_sortino: 0.02722219
+  validation_day_sortino: -0.39938356
+  turnover: 0.69663387
+```
+
+Decision:
+
+```text
+Do not launch Phase3CQ from this result.
+The topq30 followup is a useful diagnostic but fails larger confirmation.
+```

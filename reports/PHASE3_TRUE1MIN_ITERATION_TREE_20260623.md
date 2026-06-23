@@ -162,6 +162,13 @@ Phase3CP real CM small loop
   -> arm_balanced: 36 generated, 30 CA rows, 12 CM rows, 0 followup
   -> best arm-balanced row is event_state but fails turnover gate
   -> proves wiring, but does not authorize large-search expansion
+
+Phase3CP low-turnover event-state probe
+  -> generates smoothed/long-window variants around the best event_state near-pass motif
+  -> low-turnover variants reduce turnover but lose train/validation reward
+  -> top_quantile=0.30 creates one small-sample followup, but the family remains frozen
+  -> 2-shard confirmation rejects that followup
+  -> does not authorize Phase3CQ
 ```
 
 ## Evidence Map
@@ -185,6 +192,8 @@ Phase3CP real CM small loop
 | CP smoke outputs | What candidates, CA table, CN memory, and next budgets were produced? | `reports/phase3cp_reward_gated_medium_search_smoke_20260623/PHASE3CP_REWARD_GATED_MEDIUM_SEARCH_SMOKE_20260623.md` |
 | CP real CM small loop | Can CP replace the fixture with real train portfolio Sortino reward? | `reports/phase3cp_real_cm_small_loop_20260623/PHASE3CP_REAL_CM_SMALL_LOOP_20260623.md` |
 | CP real CM balanced loop | Does arm-balanced CM sampling expose a better direction than CA-ranked top rows? | `reports/phase3cp_real_cm_balanced_loop_20260623/PHASE3CP_REAL_CM_SMALL_LOOP_20260623.md` |
+| CP low-turnover event probe | Can the best event_state near-pass be repaired by lower-turnover variants? | `reports/phase3cp_low_turnover_event_state_probe_20260623/PHASE3CP_LOW_TURNOVER_EVENT_STATE_PROBE_20260623.md` |
+| CP topq30 confirmation | Does the topq30 event_state followup survive larger true-CM confirmation? | `reports/phase3cp_event_state_topq30_followup_confirm_20260623/phase3cm_train_reward/PHASE3CM_TRAIN_PORTFOLIO_SORTINO_REWARD_AUDIT_20260623.md` |
 
 ## Reward Evolution
 
@@ -238,6 +247,11 @@ phase3cp-real-cm-small-loop:
   checks CM lineage consistency before CN/CO feedback
   diagnostic-only; zero followup in the current small and balanced runs
 
+phase3cp-low-turnover-event-state-probe:
+  generates targeted low-turnover opening-state variants around the best
+  event_state near-pass motif
+  diagnostic-only; produced zero followup and shows naive smoothing kills reward
+
 phase3bz-fragment-replay-audit:
   optional diagnostic replay
   not primary reward
@@ -269,9 +283,10 @@ Before any large search restart:
 ```text
 1. Treat the Phase3CP real-CM small and balanced loops as negative reward checkpoints.
 2. Do not enter Phase3CQ scale-up because followup_count=0 in both runs.
-3. Target lower-turnover event-state/opening-state variants, then rerun CP real-CM at a larger bounded budget.
-4. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
-5. Keep BZ fragment replay diagnostic-only and holdout read-only.
+3. Do not continue naive low-turnover smoothing of the same event_state motif; it reduced turnover but killed reward.
+4. Broaden fresh generation beyond this motif and require multi-shard confirmation before CN exploit permission.
+5. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
+6. Keep BZ fragment replay diagnostic-only and holdout read-only.
 ```
 
 Success for the next stage is not a high proxy score. It is a candidate family

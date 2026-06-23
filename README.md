@@ -50,6 +50,7 @@ phase3cn-searcher-feedback-smoke
 phase3co-multi-arm-scheduler-smoke
 phase3cp-reward-gated-medium-search-smoke
 phase3cp-real-cm-small-loop
+phase3cp-low-turnover-event-state-probe
 phase3ce-unsafe-motif-quarantine-audit
 phase3ce1-search-memory-blocked-view
 phase3ce1-g2-input-gate-smoke

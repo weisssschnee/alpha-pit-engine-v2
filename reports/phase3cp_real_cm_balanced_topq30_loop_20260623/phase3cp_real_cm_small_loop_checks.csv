@@ -1,0 +1,2 @@
+budget_table_used,generated_budget_ok,ca_has_candidates,field_gate_has_cm_candidates,real_cm_eval_used,true1min_shard_root_exists,suspicious_1d_path_blocked,cm_fast_mode,cm_candidate_count_ok,cm_lineage_consistent,cn_memory_matches_cm,reschedule_total_ok,holdout_not_optimizer_input
+true,true,true,true,true,true,true,true,true,true,true,true,true

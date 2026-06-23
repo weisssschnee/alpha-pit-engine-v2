@@ -1,0 +1,49 @@
+{
+  "phase": "Phase3CP",
+  "run_type": "low_turnover_event_state_probe",
+  "status": "implemented_diagnostic",
+  "created_at": "2026-06-23",
+  "purpose": "Test whether the best Phase3CP arm-balanced event_state near-pass can be converted into a valid train reward candidate by reducing turnover through smoothing and related opening-state variants.",
+  "implemented_routes": {
+    "phase3cp-low-turnover-event-state-probe": {
+      "role": "generate low-turnover variants around range-location x first-minute-flow motifs, run CA, field gate, true Phase3CM, lineage consistency, and CN feedback memory",
+      "search_generation": true,
+      "true1min_portfolio_eval": true,
+      "cm_reward_source": "phase3cm_train_portfolio_sortino_reward_audit"
+    }
+  },
+  "verified_runs": [
+    {
+      "report_root": "reports/phase3cp_low_turnover_event_state_probe_20260623",
+      "generated_candidates": 64,
+      "ca_candidates": 48,
+      "cm_candidates": 24,
+      "followup_count": 0,
+      "result": "turnover fell materially but train/validation reward collapsed"
+    },
+    {
+      "report_root": "reports/phase3cp_real_cm_balanced_topq30_loop_20260623",
+      "generated_candidates": 36,
+      "cm_candidates": 12,
+      "top_quantile": 0.3,
+      "followup_count": 1,
+      "result": "single event_state followup appears in small sample but family is frozen because same family also contains CM-negative proxy-high member"
+    },
+    {
+      "report_root": "reports/phase3cp_event_state_topq30_followup_confirm_20260623",
+      "candidate_count": 1,
+      "max_shards": 2,
+      "sample_trade_times_per_shard": 96,
+      "top_quantile": 0.3,
+      "followup_count": 0,
+      "result": "the small-sample followup does not survive larger confirmation"
+    }
+  ],
+  "hard_rules": [
+    "do not treat top_quantile sensitivity as alpha proof",
+    "do not allow a single-candidate small-sample followup into exploit memory without larger confirmation",
+    "family freeze remains valid when a clean candidate shares family with CM-negative proxy-high candidates",
+    "Phase3CQ remains blocked until multi-shard CM-positive families survive"
+  ],
+  "next_phase": "Broaden fresh candidate generation beyond this motif; require multi-shard confirmation before CN exploit permission"
+}

@@ -1,0 +1,6 @@
+generator_arm,candidate_count,clean_feedback_count,min_clean_feedback,feedback_update_allowed,positive_train_reward_rate,median_train_reward,validation_survival_rate,new_family_rate,low_turnover_rate,rewardhack_family_rate,wrong_lag_reject_rate,top_family_concentration,exploit_allowed_family_count,arm_score
+event_state,2,1,2,false,0.5,-0.31501473,0.5,1.0,1.0,0.5,0.0,0.5,0,1.68498526
+rx_ucb_fresh,3,0,2,false,0.0,-0.60969415,0.33333333,1.0,1.0,1.0,0.0,0.33333333,0,0.39030585
+challenger_repair,2,0,2,false,0.0,-0.79998804,0.0,1.0,1.0,1.0,0.0,0.5,0,-0.29998805
+random_orthogonal,2,0,2,false,0.0,-0.88398276,0.0,1.0,1.0,1.0,0.0,0.5,0,-0.38398275
+typed_ast_fresh,3,0,2,false,0.0,-1.09496861,0.0,0.66666667,1.0,1.0,0.0,0.66666667,0,-1.09496861
