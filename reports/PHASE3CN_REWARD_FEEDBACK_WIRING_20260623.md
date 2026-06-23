@@ -136,12 +136,13 @@ Holdout:
 
 ```text
 After CN4:
-  Phase3CO scheduler design/implementation
+  Phase3CO scheduler implemented
+  next: Phase3CP medium closed-loop search
 ```
 
 ## Next Stage
 
-Do not start Phase3CP medium search until Phase3CO scheduler has explicit arm budgets and family freeze/downweight rules.
+Do not start Phase3CP outside Phase3CO arm budgets and family freeze/downweight rules.
 
 ## Smoke Verification
 

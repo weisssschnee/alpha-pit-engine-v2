@@ -22,7 +22,7 @@ Data backbone:
 Search status:
   no accepted alpha proof
   no deployable candidate
-  next medium search blocked until Phase3CO scheduler is explicit
+  next medium search allowed only through Phase3CO scheduler budgets
 ```
 
 ## Forward Iteration Tree
@@ -41,6 +41,7 @@ Phase3CO  Multi-Arm Scheduler
   - CO2: arm health calculation
   - CO3: family-level kill / freeze / downweight
   - CO4: scheduler smoke
+  - status: implemented, no search started
 
 Phase3CP  Reward-Gated Medium Search
   - CP0: 5-arm controlled generation
@@ -136,6 +137,13 @@ Phase3CN
   -> standardizes candidate schema and family feedback tables
   -> proves searchers safely consume feedback under sparse-evidence guard
   -> integrated contract smoke validates search output -> CA -> CM fixture -> CN -> guard
+
+Phase3CO
+  multi-arm scheduler
+  -> reads CN arm/family feedback tables
+  -> emits arm budget table and family action table
+  -> caps CEM exploit when feedback_update_allowed=false
+  -> preserves fresh budget floor before Phase3CP
 ```
 
 ## Evidence Map
@@ -153,6 +161,8 @@ Phase3CN
 | CM | What replaces fragment Sortino as the reward target? | `reports/PHASE3CM_TRAIN_SORTINO_REWARD_CHAIN_20260623.md` |
 | CN | How does CM reward become search feedback memory? | `reports/PHASE3CN_REWARD_FEEDBACK_WIRING_20260623.md` |
 | CN integrated | Does the feedback contract close across CA/CM/CN/searcher guard? | `reports/phase3cn_integrated_feedback_smoke_20260623/PHASE3CN_INTEGRATED_FEEDBACK_SMOKE_20260623.md` |
+| CO | What budget plan controls Phase3CP search arms? | `reports/PHASE3CO_MULTI_ARM_SCHEDULER_20260623.md` |
+| CO smoke | Does the scheduler cap exploit/freeze families and keep fresh floor? | `reports/phase3co_multi_arm_scheduler_smoke_20260623/PHASE3CO_MULTI_ARM_SCHEDULER_SMOKE_20260623.md` |
 
 ## Reward Evolution
 
@@ -190,6 +200,10 @@ phase3cn-integrated-feedback-smoke:
   contract smoke for CA -> CM reward fixture -> CN -> guarded searcher feedback
   no search launch and no true1min portfolio evaluation
 
+phase3co-multi-arm-scheduler-smoke:
+  reads CN feedback memory and emits CP arm/family budgets
+  no search launch and no true1min portfolio evaluation
+
 phase3bz-fragment-replay-audit:
   optional diagnostic replay
   not primary reward
@@ -219,10 +233,9 @@ Retained:
 Before any large search restart:
 
 ```text
-1. Add Phase3CO multi-arm scheduler.
-2. Run Phase3CP medium closed-loop search.
-3. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
-4. Keep BZ fragment replay diagnostic-only and holdout read-only.
+1. Implement Phase3CP medium closed-loop search from CO budgets.
+2. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
+3. Keep BZ fragment replay diagnostic-only and holdout read-only.
 ```
 
 Success for the next stage is not a high proxy score. It is a candidate family

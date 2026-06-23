@@ -1,0 +1,43 @@
+{
+  "checks": {
+    "cem_probe_cap_ok": true,
+    "exploit_family_ok": true,
+    "family_block_ok": true,
+    "fresh_floor_ok": true,
+    "total_budget_ok": true
+  },
+  "created_at": "2026-06-23T01:33:49.852013+00:00",
+  "decision": "PHASE3CO_MULTI_ARM_SCHEDULER_SMOKE_PASS_DIAGNOSTIC_ONLY",
+  "experiment_id": "20260623_phase3co_multi_arm_scheduler_smoke",
+  "input_paths": {
+    "arm_score_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_arm_score_table.csv",
+    "blocked_family_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_blocked_family_table.csv",
+    "exploit_allowed_family_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_exploit_allowed_family_table.csv",
+    "family_memory": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_family_score_table.csv",
+    "feedback_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_search_feedback_memory.csv"
+  },
+  "input_row_counts": {
+    "arm_score": 1,
+    "blocked_family": 1,
+    "exploit_allowed_family": 1,
+    "family": 2,
+    "feedback": 2
+  },
+  "metric_boundary": "scheduler smoke only; no candidate generation and no holdout optimization",
+  "scheduler_summary": {
+    "allocated_budget": 512,
+    "blocked_or_frozen_family_count": 1,
+    "cem_exploit_budget": 7,
+    "cem_probe_cap_budget": 31,
+    "cem_probe_cap_share": 0.06,
+    "exploit_allowed_family_count": 1,
+    "fresh_budget": 375,
+    "fresh_floor_share": 0.45,
+    "fresh_share": 0.73242188,
+    "max_family_share": 0.25,
+    "metric_boundary": "budget scheduler only; no search generation and no holdout optimization",
+    "total_budget": 512
+  },
+  "search_generation": false,
+  "true1min_portfolio_eval": false
+}

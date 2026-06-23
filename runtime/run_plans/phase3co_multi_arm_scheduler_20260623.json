@@ -1,0 +1,43 @@
+{
+  "phase": "Phase3CO",
+  "run_type": "multi_arm_scheduler_smoke",
+  "status": "implemented_no_search_started",
+  "created_at": "2026-06-23",
+  "purpose": "Turn Phase3CN arm/family feedback into explicit Phase3CP search budgets before any medium search restart.",
+  "implemented_routes": {
+    "phase3co-multi-arm-scheduler-smoke": {
+      "role": "read Phase3CN feedback tables and write arm budget plus family action tables",
+      "search_generation": false,
+      "true1min_portfolio_eval": false
+    }
+  },
+  "input_tables": [
+    "phase3cn_search_feedback_memory.csv",
+    "phase3cn_arm_score_table.csv",
+    "phase3cn_family_score_table.csv",
+    "phase3cn_blocked_family_table.csv",
+    "phase3cn_exploit_allowed_family_table.csv"
+  ],
+  "output_tables": [
+    "phase3co_arm_budget_table.csv",
+    "phase3co_family_action_table.csv",
+    "phase3co_scheduler_summary.json"
+  ],
+  "hard_rules": [
+    "no candidate generation inside scheduler",
+    "no true1min portfolio evaluation inside scheduler",
+    "holdout is not used for scheduler scoring",
+    "CEM exploit is capped when Phase3CN feedback_update_allowed=false",
+    "fresh arms keep a budget floor",
+    "blocked/frozen families get zero followup budget cap",
+    "exploit_allowed families get bounded followup budget cap"
+  ],
+  "exit_gate_for_phase3co": [
+    "allocated budget equals requested total budget",
+    "fresh share is at least fresh_floor_share",
+    "CEM budget respects cem_probe_cap_share when feedback is guarded",
+    "blocked/frozen family action exists with cap zero",
+    "exploit_allowed family action exists with positive cap"
+  ],
+  "next_phase": "Phase3CP reward-gated medium closed-loop search"
+}
