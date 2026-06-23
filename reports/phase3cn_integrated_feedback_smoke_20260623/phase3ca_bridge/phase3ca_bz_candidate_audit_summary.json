@@ -1,0 +1,17 @@
+{
+  "allow_high_corr": false,
+  "candidate_count": 2,
+  "created_at": "2026-06-23T01:25:43.566025+00:00",
+  "decision": "PHASE3CA_BZ_CANDIDATE_AUDIT_READY",
+  "deduped_source_candidate_count": 2,
+  "experiment_id": "20260616_phase3ca_build_bz_candidate_audit",
+  "hard_rejected_counts": {},
+  "metric_boundary": "This is a ranking bridge into BZ, not reward proof.",
+  "sources": [
+    {
+      "root": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\synthetic_search",
+      "top_decision_files": 1
+    }
+  ],
+  "top_n": 2
+}

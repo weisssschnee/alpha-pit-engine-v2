@@ -1,0 +1,22 @@
+{
+  "arm_count": 1,
+  "blocked_family_count": 1,
+  "candidate_count": 2,
+  "created_at": "2026-06-23T01:25:43.592023+00:00",
+  "decision": "PHASE3CN_FEEDBACK_MEMORY_READY_DIAGNOSTIC_ONLY",
+  "experiment_id": "20260623_phase3cn_feedback_memory_smoke",
+  "exploit_allowed_family_count": 1,
+  "family_count": 2,
+  "max_family_share": 0.8,
+  "max_turnover": 0.75,
+  "metric_boundary": "feedback memory only; no search generation; holdout is read-only and excluded from arm score",
+  "min_clean_feedback": 2,
+  "sources": [
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cm_reward_fixture\\phase3cm_train_reward.csv",
+      "rows": 2
+    }
+  ],
+  "train_threshold": 0.0,
+  "validation_floor": 0.0
+}

@@ -45,6 +45,7 @@ phase3ca-build-bz-candidate-audit
 phase3bz-fragment-replay-audit
 phase3cm-train-portfolio-sortino-reward-audit
 phase3cn-feedback-memory-smoke
+phase3cn-integrated-feedback-smoke
 phase3cn-searcher-feedback-smoke
 phase3ce-unsafe-motif-quarantine-audit
 phase3ce1-search-memory-blocked-view

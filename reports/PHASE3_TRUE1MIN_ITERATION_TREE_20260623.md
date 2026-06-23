@@ -22,7 +22,7 @@ Data backbone:
 Search status:
   no accepted alpha proof
   no deployable candidate
-  next large search blocked until Phase3CM reward wiring is complete
+  next medium search blocked until Phase3CO scheduler is explicit
 ```
 
 ## Forward Iteration Tree
@@ -134,7 +134,8 @@ Phase3CN
   reward feedback wiring
   -> turns CM train_reward into search feedback memory
   -> standardizes candidate schema and family feedback tables
-  -> blocks large search restart until searchers safely consume feedback
+  -> proves searchers safely consume feedback under sparse-evidence guard
+  -> integrated contract smoke validates search output -> CA -> CM fixture -> CN -> guard
 ```
 
 ## Evidence Map
@@ -151,6 +152,7 @@ Phase3CN
 | CL | Did proxy/CEM winners survive fragment replay? | `reports/PHASE3CL_TRUE1MIN_FRAGMENT_REPLAY_AUDIT_20260622.md` |
 | CM | What replaces fragment Sortino as the reward target? | `reports/PHASE3CM_TRAIN_SORTINO_REWARD_CHAIN_20260623.md` |
 | CN | How does CM reward become search feedback memory? | `reports/PHASE3CN_REWARD_FEEDBACK_WIRING_20260623.md` |
+| CN integrated | Does the feedback contract close across CA/CM/CN/searcher guard? | `reports/phase3cn_integrated_feedback_smoke_20260623/PHASE3CN_INTEGRATED_FEEDBACK_SMOKE_20260623.md` |
 
 ## Reward Evolution
 
@@ -184,6 +186,10 @@ phase3cm-train-portfolio-sortino-reward-audit:
   primary reward audit target for next search
   no search launch by itself
 
+phase3cn-integrated-feedback-smoke:
+  contract smoke for CA -> CM reward fixture -> CN -> guarded searcher feedback
+  no search launch and no true1min portfolio evaluation
+
 phase3bz-fragment-replay-audit:
   optional diagnostic replay
   not primary reward
@@ -213,11 +219,10 @@ Retained:
 Before any large search restart:
 
 ```text
-1. Finish Phase3CN searcher feedback consumption.
-2. Add Phase3CO multi-arm scheduler.
-3. Run Phase3CP medium closed-loop search.
-4. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
-5. Keep BZ fragment replay diagnostic-only and holdout read-only.
+1. Add Phase3CO multi-arm scheduler.
+2. Run Phase3CP medium closed-loop search.
+3. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
+4. Keep BZ fragment replay diagnostic-only and holdout read-only.
 ```
 
 Success for the next stage is not a high proxy score. It is a candidate family

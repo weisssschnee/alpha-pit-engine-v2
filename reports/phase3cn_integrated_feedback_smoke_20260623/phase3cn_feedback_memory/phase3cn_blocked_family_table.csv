@@ -1,0 +1,2 @@
+family_id,motif_id,field_family,primitive_family,event_state_family,horizon_bucket,turnover_bucket,candidate_count,family_share,median_train_reward,positive_train_reward_count,clean_count,validation_survivor_count,rewardhack_count,wrong_lag_or_corr_count,high_turnover_count,family_status,family_reasons
+50b3739ba3bb277607,f2602832bb5bd1be92,flow_amount_volume+opening_state+range_location,cross_sectional,opening_state,multi_or_unknown,extreme_turnover,1,0.5,-0.61,0,0,0,1,0,1,freeze,proxy_high_cm_negative|high_turnover

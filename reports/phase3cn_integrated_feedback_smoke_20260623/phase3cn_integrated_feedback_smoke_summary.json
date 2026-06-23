@@ -1,0 +1,109 @@
+{
+  "ca_summary": {
+    "allow_high_corr": false,
+    "candidate_count": 2,
+    "created_at": "2026-06-23T01:25:43.566025+00:00",
+    "decision": "PHASE3CA_BZ_CANDIDATE_AUDIT_READY",
+    "deduped_source_candidate_count": 2,
+    "experiment_id": "20260616_phase3ca_build_bz_candidate_audit",
+    "hard_rejected_counts": {},
+    "metric_boundary": "This is a ranking bridge into BZ, not reward proof.",
+    "sources": [
+      {
+        "root": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\synthetic_search",
+        "top_decision_files": 1
+      }
+    ],
+    "top_n": 2
+  },
+  "checks": {
+    "ca_candidate_count": 2,
+    "clean_feedback_count": 1,
+    "cn_candidate_count": 2,
+    "holdout_used_for_score": false,
+    "loose_update_allowed": true,
+    "strict_policy_scores_unchanged": true,
+    "strict_update_allowed": false
+  },
+  "cn_summary": {
+    "arm_count": 1,
+    "blocked_family_count": 1,
+    "candidate_count": 2,
+    "created_at": "2026-06-23T01:25:43.592023+00:00",
+    "decision": "PHASE3CN_FEEDBACK_MEMORY_READY_DIAGNOSTIC_ONLY",
+    "experiment_id": "20260623_phase3cn_feedback_memory_smoke",
+    "exploit_allowed_family_count": 1,
+    "family_count": 2,
+    "max_family_share": 0.8,
+    "max_turnover": 0.75,
+    "metric_boundary": "feedback memory only; no search generation; holdout is read-only and excluded from arm score",
+    "min_clean_feedback": 2,
+    "sources": [
+      {
+        "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cm_reward_fixture\\phase3cm_train_reward.csv",
+        "rows": 2
+      }
+    ],
+    "train_threshold": 0.0,
+    "validation_floor": 0.0
+  },
+  "created_at": "2026-06-23T01:25:43.609003+00:00",
+  "decision": "PHASE3CN_INTEGRATED_FEEDBACK_SMOKE_PASS_DIAGNOSTIC_ONLY",
+  "experiment_id": "20260623_phase3cn_integrated_feedback_smoke",
+  "loose_feedback_context": {
+    "arm_id": "cem_exploit",
+    "arm_row_count": 0,
+    "blocked_family_count": 1,
+    "clean_feedback_count": 1,
+    "eligible_source": "feedback_rows",
+    "exploit_allowed_family_count": 1,
+    "family_row_count": 2,
+    "feedback_row_count": 2,
+    "feedback_update_allowed": true,
+    "guardrail": "external Phase3CN feedback passed clean threshold; generator may use guarded feedback",
+    "holdout_columns_present": true,
+    "holdout_used_for_score": false,
+    "min_clean_feedback": 1,
+    "provided": true,
+    "source_tables": {
+      "blocked_family_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_blocked_family_table.csv",
+      "exploit_allowed_family_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_exploit_allowed_family_table.csv",
+      "family_memory": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_family_score_table.csv",
+      "feedback_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_search_feedback_memory.csv"
+    }
+  },
+  "paths": {
+    "ca_candidate_audit": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3ca_bridge\\phase3ca_bz_candidate_audit.csv",
+    "cm_reward_fixture": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cm_reward_fixture\\phase3cm_train_reward.csv",
+    "cn_feedback_memory": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_search_feedback_memory.csv",
+    "report_ca_candidate_audit": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cn_integrated_feedback_smoke_20260623\\phase3ca_bridge\\phase3ca_bz_candidate_audit.csv",
+    "report_cm_reward_fixture": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cn_integrated_feedback_smoke_20260623\\phase3cm_reward_fixture\\phase3cm_train_reward.csv",
+    "report_cn_feedback_memory": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_search_feedback_memory.csv",
+    "synthetic_search_top_decisions": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\synthetic_search\\round1_synthetic_fresh\\cn4_top_decisions.csv"
+  },
+  "search_generation": false,
+  "strict_feedback_context": {
+    "arm_id": "cem_exploit",
+    "arm_row_count": 1,
+    "blocked_family_count": 1,
+    "clean_feedback_count": 1,
+    "eligible_source": "arm_score_table",
+    "exploit_allowed_family_count": 1,
+    "family_row_count": 2,
+    "feedback_row_count": 2,
+    "feedback_update_allowed": false,
+    "guardrail": "external clean feedback below threshold or no exploit-allowed family; CEM/UCB feedback left unchanged",
+    "holdout_columns_present": true,
+    "holdout_used_for_score": false,
+    "min_clean_feedback": 2,
+    "provided": true,
+    "source_tables": {
+      "arm_score_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_arm_score_table.csv",
+      "blocked_family_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_blocked_family_table.csv",
+      "exploit_allowed_family_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_exploit_allowed_family_table.csv",
+      "family_memory": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_family_score_table.csv",
+      "feedback_table": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cn_integrated_feedback_smoke_20260623\\phase3cn_feedback_memory\\phase3cn_search_feedback_memory.csv"
+    }
+  },
+  "true1min_portfolio_eval": false
+}

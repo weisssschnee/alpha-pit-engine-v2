@@ -1,0 +1,2 @@
+ca_candidate_count,cn_candidate_count,clean_feedback_count,strict_update_allowed,loose_update_allowed,strict_policy_scores_unchanged,holdout_used_for_score
+2,2,1,false,true,true,false

@@ -1,7 +1,7 @@
 {
   "phase": "Phase3CN",
   "run_type": "reward_feedback_wiring",
-  "status": "cn0_cn3_implemented_no_search_started",
+  "status": "cn0_cn4_implemented_no_search_started",
   "created_at": "2026-06-23",
   "purpose": "Turn Phase3CM train_reward into standardized feedback memory consumable by future searchers and schedulers.",
   "tree_position": {
@@ -24,6 +24,11 @@
     "phase3cn-searcher-feedback-smoke": {
       "role": "prove BS/BT/BU expose Phase3CN feedback inputs and sparse or blocked feedback leaves CEM/UCB policy unchanged",
       "search_generation": false
+    },
+    "phase3cn-integrated-feedback-smoke": {
+      "role": "prove synthetic search output can pass CA bridge, controlled CM reward fixture, CN feedback memory, and searcher feedback guard",
+      "search_generation": false,
+      "true1min_portfolio_eval": false
     }
   },
   "candidate_schema_required_fields": [
@@ -79,6 +84,7 @@
     "CM writes phase3cm_train_reward.csv",
     "CN feedback memory writes arm/family/block/exploit tables",
     "searcher feedback smoke proves clean feedback shortage does not update CEM/UCB",
+    "integrated smoke proves synthetic search output can pass CA bridge, CM reward fixture, CN memory, and searcher guard",
     "holdout fields exist but are not read by optimizer"
   ]
 }

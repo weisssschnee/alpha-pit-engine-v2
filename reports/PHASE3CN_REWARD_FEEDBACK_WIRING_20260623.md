@@ -1,6 +1,6 @@
 # Phase3CN Reward Feedback Wiring 2026-06-23
 
-Decision: `PHASE3CN_CN0_CN3_IMPLEMENTED_NO_SEARCH_STARTED`
+Decision: `PHASE3CN_CN0_CN4_IMPLEMENTED_NO_SEARCH_STARTED`
 
 ## Scope
 
@@ -34,6 +34,10 @@ CN2 searcher feedback inputs:
 CN3 searcher feedback guard smoke:
   app route:
     phase3cn-searcher-feedback-smoke
+
+CN4 integrated feedback contract smoke:
+  app route:
+    phase3cn-integrated-feedback-smoke
 ```
 
 The feedback builder writes:
@@ -131,14 +135,13 @@ Holdout:
 ## Remaining CN Work
 
 ```text
-CN4:
-  integrated smoke:
-    search output -> CA -> CM -> CN feedback memory
+After CN4:
+  Phase3CO scheduler design/implementation
 ```
 
 ## Next Stage
 
-Do not start Phase3CP medium search until CN4 proves the end-to-end feedback loop on a bounded non-search or tiny-search fixture.
+Do not start Phase3CP medium search until Phase3CO scheduler has explicit arm budgets and family freeze/downweight rules.
 
 ## Smoke Verification
 
@@ -199,5 +202,38 @@ result:
   clean_feedback_count: 0
   feedback_update_allowed: false
   policy_scores_unchanged: true
+  holdout_used_for_score: false
+```
+
+## Integrated Feedback Smoke Verification
+
+The integrated smoke validates the interface chain without launching search:
+
+```text
+route:
+  phase3cn-integrated-feedback-smoke
+
+chain:
+  synthetic search top_decisions
+    -> Phase3CA candidate bridge
+    -> controlled Phase3CM reward fixture
+    -> Phase3CN feedback memory
+    -> search_feedback guard
+
+boundary:
+  no search generation
+  no true1min portfolio reward evaluation
+  validates schema handoff and feedback safety gates only
+
+result:
+  decision: PHASE3CN_INTEGRATED_FEEDBACK_SMOKE_PASS_DIAGNOSTIC_ONLY
+  ca_candidate_count: 2
+  cn_candidate_count: 2
+  clean_feedback_count: 1
+  strict_min_clean_feedback: 2
+  strict_update_allowed: false
+  loose_min_clean_feedback: 1
+  loose_update_allowed: true
+  strict_policy_scores_unchanged: true
   holdout_used_for_score: false
 ```
