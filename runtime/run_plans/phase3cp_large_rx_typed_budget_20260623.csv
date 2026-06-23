@@ -1,0 +1,7 @@
+arm_id,route_hint,role,category,target_share
+rx_ucb_fresh,phase3bs-adaptive-ucb-cem-practice,broad true1min rx/ucb fresh generation,fresh,0.55
+typed_ast_fresh,phase3bt-ast-algorithm-bakeoff,typed AST fresh generation,fresh,0.35
+challenger_repair,future-phase3cr-repair,disabled in this lane,fresh,0.00
+event_state,future-event-state-generator,disabled in this lane,event,0.00
+cem_exploit,phase3bs-adaptive-ucb-cem-practice,disabled in this lane,exploit,0.00
+random_orthogonal,control-random-orthogonal,orthogonal freshness control,control,0.10

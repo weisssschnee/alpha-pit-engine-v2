@@ -47,6 +47,12 @@ REPO = Path(__file__).resolve().parents[3]
 DEFAULT_CO_ROOT = Path("reports/phase3cp_reward_gated_medium_search_smoke_20260623")
 DEFAULT_OUTPUT_ROOT = Path("runtime/phase3cp_real_cm_small_loop_20260623")
 DEFAULT_REPORT_ROOT = Path("reports/phase3cp_real_cm_small_loop_20260623")
+DEFAULT_MEMORY_GLOBS = [
+    "**/*top_decisions.csv",
+    "**/*candidate_audit.csv",
+    "**/*generated_candidates.csv",
+    "**/*train_reward.csv",
+]
 
 
 def _resolve(path: Path) -> Path:
@@ -80,17 +86,50 @@ def _budget_table_path(co_root: Path, explicit: Path | None) -> Path:
     raise FileNotFoundError(f"no CP/CO arm budget table under {co_root}")
 
 
+def _load_memory_hashes(memory_roots: list[Path], memory_globs: list[str]) -> tuple[set[str], list[dict[str, Any]]]:
+    hashes: set[str] = set()
+    files_seen: set[Path] = set()
+    rows: list[dict[str, Any]] = []
+    for raw_root in memory_roots:
+        root = _resolve(raw_root)
+        if root.is_file():
+            files = [root]
+        elif root.is_dir():
+            files = []
+            for pattern in memory_globs:
+                files.extend(root.glob(pattern))
+        else:
+            rows.append({"memory_root": str(root), "exists": False, "file_count": 0, "hash_count": 0})
+            continue
+
+        before = len(hashes)
+        file_count = 0
+        for file_path in files:
+            file_path = file_path.resolve()
+            if file_path in files_seen or file_path.suffix.lower() != ".csv":
+                continue
+            files_seen.add(file_path)
+            file_count += 1
+            for row in _read_csv(file_path):
+                digest = str(row.get("expression_hash") or row.get("candidate_hash") or "").strip()
+                if digest and 8 <= len(digest) <= 128:
+                    hashes.add(digest)
+        rows.append({"memory_root": str(root), "exists": True, "file_count": file_count, "hash_count": len(hashes) - before})
+    return hashes, rows
+
+
 def _generate_candidates(
     *,
     budget_rows: list[dict[str, Any]],
     total_budget: int,
+    initial_blocked: set[str],
     output_root: Path,
     report_root: Path,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     scaled_plan = _scale_budgets(budget_rows, total_budget)
     policy = _build_policy(PRIOR_DECISION_FILES, exploration=0.94)
     generated: list[dict[str, Any]] = []
-    blocked: set[str] = set()
+    blocked: set[str] = set(initial_blocked)
     for arm in scaled_plan:
         budget = int(arm.get("cp_smoke_candidate_budget") or 0)
         rows = _generate_for_arm(arm, budget=budget, blocked=blocked, policy=policy, start_idx=len(generated) + 1)
@@ -389,6 +428,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--numexpr-threads", type=int, default=4)
     parser.add_argument("--min-clean-feedback", type=int, default=2)
     parser.add_argument("--reschedule-total-budget", type=int, default=512)
+    parser.add_argument("--memory-root", type=Path, action="append", default=[])
+    parser.add_argument("--memory-glob", action="append", default=DEFAULT_MEMORY_GLOBS)
     args = parser.parse_args(argv)
 
     co_root = _resolve(args.co_root)
@@ -406,9 +447,13 @@ def main(argv: list[str] | None = None) -> int:
 
     arm_budget_path = _budget_table_path(co_root, args.arm_budget_table)
     arm_budget_rows = read_csv_rows(arm_budget_path)
+    memory_hashes, memory_rows = _load_memory_hashes(args.memory_root, args.memory_glob)
+    _write_csv(output_root / "phase3cp_real_cm_memory_roots.csv", memory_rows)
+    _write_csv(report_root / "phase3cp_real_cm_memory_roots.csv", memory_rows)
     decisions, scaled_plan = _generate_candidates(
         budget_rows=arm_budget_rows,
         total_budget=args.generation_budget,
+        initial_blocked=memory_hashes,
         output_root=output_root,
         report_root=report_root,
     )
@@ -484,6 +529,7 @@ def main(argv: list[str] | None = None) -> int:
         "cn_memory_matches_cm": int(cn_summary["candidate_count"]) == int(cm_summary["candidate_count"]),
         "reschedule_total_ok": int(reschedule_summary["allocated_budget"]) == int(args.reschedule_total_budget),
         "holdout_not_optimizer_input": True,
+        "memory_blocklist_loaded": len(memory_hashes) >= 0,
     }
     passed = all(bool(value) for value in checks.values())
     summary = {
@@ -495,6 +541,8 @@ def main(argv: list[str] | None = None) -> int:
         "shard_root": str(shard_root),
         "generated_candidates": len(decisions),
         "generation_budget": int(args.generation_budget),
+        "memory_hash_count": len(memory_hashes),
+        "memory_roots": memory_rows,
         "search_generation": True,
         "true1min_portfolio_eval": True,
         "cm_reward_source": "phase3cm_train_portfolio_sortino_reward_audit",

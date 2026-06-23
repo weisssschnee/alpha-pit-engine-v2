@@ -1,0 +1,7 @@
+arm_id,route_hint,role,category,target_share
+rx_ucb_fresh,phase3bs-adaptive-ucb-cem-practice,disabled in this lane,fresh,0.00
+typed_ast_fresh,phase3bt-ast-algorithm-bakeoff,disabled in this lane,fresh,0.00
+challenger_repair,future-phase3cr-repair,repair/challenger branch,fresh,0.45
+event_state,future-event-state-generator,typed event-state lane,event,0.24
+cem_exploit,phase3bs-adaptive-ucb-cem-practice,capped CEM probe only,exploit,0.06
+random_orthogonal,control-random-orthogonal,orthogonal novelty control,control,0.25
