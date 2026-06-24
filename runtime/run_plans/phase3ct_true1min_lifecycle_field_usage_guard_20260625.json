@@ -1,0 +1,63 @@
+{
+  "phase": "Phase3CT",
+  "run_type": "true1min_lifecycle_field_usage_guard",
+  "created_at": "2026-06-25",
+  "purpose": "Prevent future true-1min searches from silently omitting sidecar/event/context fields, falling back to old 1D data, or claiming field usage when evaluated signals are empty.",
+  "required_before": [
+    "Phase3 true1min large search",
+    "Phase3CP/CM reward loop restart using augmented sidecars",
+    "Any claim that new event/context/fundamental fields are used in train/validation/test"
+  ],
+  "allowed_data_roots": [
+    "runtime/phase3au_aq_only_true1min_sharded_20260611",
+    "runtime/phase3cs_true1min_sidecar_augmented_shards_*",
+    "D:/ChengboRemote/data/phase3au_aq_only_true1min_sharded_20260611",
+    "D:/ChengboRemote/workspace/*/runtime/phase3cs_true1min_sidecar_augmented_shards_*"
+  ],
+  "forbidden_data_roots": [
+    "tdxofficial",
+    "old_1d",
+    "daily_stock_pit",
+    "legacy 1D default panel for true1min claims"
+  ],
+  "guard_routes": [
+    {
+      "route": "phase3cr-atom-lane-inventory-audit",
+      "role": "schema-bound atom/lane prelaunch gate"
+    },
+    {
+      "route": "phase3cs-build-true1min-sidecar-pack",
+      "role": "build PIT/cutoff sidecar pack"
+    },
+    {
+      "route": "phase3cs-augment-true1min-shards-with-sidecars",
+      "role": "write augmented true1min shard root without modifying original root"
+    },
+    {
+      "route": "phase3ct-true1min-lifecycle-field-usage-audit",
+      "role": "verify field lifecycle from schema to train/validation/test coverage and evaluated candidate usage"
+    }
+  ],
+  "hard_pass_requirements": [
+    "shard root contains true trade_time panels",
+    "schema-bound generation is active",
+    "candidate fields are a subset of the panel schema intersection",
+    "event_state and lagged_context fields have typed atoms when present",
+    "event_state and lagged_context candidate files show non-empty effective signal usage before success is claimed",
+    "candidate aggregate and top decisions are both audited when available",
+    "chronological train/validation/test field coverage is reported",
+    "future/label fields are blocked from candidates",
+    "X0/R3 are read-only"
+  ],
+  "known_20260625_result": {
+    "phase3ct_lifecycle_augmented_zls4_event_top_20260625": "HOLD_TRUE1MIN_LIFECYCLE_FIELD_USAGE_AUDIT",
+    "reason": "schema and split coverage passed, but the old event_state top_decisions had zero effective signal rows for event/context candidates"
+  },
+  "next_actions": [
+    "Use event and lagged-context atom quotas in Phase3BP for new event_state runs",
+    "Use schema-bound Phase3CP generation by default; require explicit allow-unbound-generation for legacy diagnostics",
+    "Re-run Phase3CT against new event_state top_decisions",
+    "Run Phase3CT against phase3bp_candidate_horizon_aggregate.csv as well as phase3bp_top_decisions.csv",
+    "Only then allow larger event/context search"
+  ]
+}

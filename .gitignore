@@ -27,6 +27,18 @@ reports/phase3c*/
 !reports/phase3cf_reward_gated_large_search_prelaunch_20260618/
 !reports/phase3code_verify_ca_bridge_smoke_20260618/
 !reports/phase3code_verify_bz_smoke_20260618/
+!reports/phase3ct_lifecycle_augmented_zls4_event_top_20260625/
+!reports/phase3ct_lifecycle_augmented_zls4_event_top_20260625/**
+!reports/phase3ct_event_atom_quota_probe_20260625/
+!reports/phase3ct_event_atom_quota_probe_20260625/**
+!reports/phase3ct_event_atom_quota_probe_20260625_field_usage_audit/
+!reports/phase3ct_event_atom_quota_probe_20260625_field_usage_audit/**
+!reports/phase3ct_event_context_quota_probe_20260625/
+!reports/phase3ct_event_context_quota_probe_20260625/**
+!reports/phase3ct_event_context_quota_probe_20260625_field_usage_audit/
+!reports/phase3ct_event_context_quota_probe_20260625_field_usage_audit/**
+!reports/phase3ct_controlled_data_inventory_20260625/
+!reports/phase3ct_controlled_data_inventory_20260625/**
 !runtime/phase3ce1_search_memory_blocked_view_20260618/
 
 # External data should stay outside git.

@@ -7,6 +7,7 @@ from importlib import import_module
 
 
 ROUTES: dict[str, str] = {
+    "phase3bp-true1min-search-algorithm-smoke": "our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke",
     "phase3bs-adaptive-ucb-cem-practice": "our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice",
     "phase3bt-ast-algorithm-bakeoff": "our_system_phase2.runtime.phase3bt_ast_algorithm_bakeoff",
     "phase3bu-ast-fresh-winner-variants": "our_system_phase2.runtime.phase3bu_ast_fresh_winner_variants",
@@ -21,6 +22,10 @@ ROUTES: dict[str, str] = {
     "phase3cp-reward-gated-medium-search-smoke": "our_system_phase2.runtime.phase3cp_reward_gated_medium_search_smoke",
     "phase3cp-real-cm-small-loop": "our_system_phase2.runtime.phase3cp_real_cm_small_loop",
     "phase3cp-low-turnover-event-state-probe": "our_system_phase2.runtime.phase3cp_low_turnover_event_state_probe",
+    "phase3cr-atom-lane-inventory-audit": "our_system_phase2.runtime.phase3cr_atom_lane_inventory_audit",
+    "phase3cs-build-true1min-sidecar-pack": "our_system_phase2.runtime.phase3cs_build_true1min_sidecar_pack",
+    "phase3cs-augment-true1min-shards-with-sidecars": "our_system_phase2.runtime.phase3cs_augment_true1min_shards_with_sidecars",
+    "phase3ct-true1min-lifecycle-field-usage-audit": "our_system_phase2.runtime.phase3ct_true1min_lifecycle_field_usage_audit",
     "phase3ce-unsafe-motif-quarantine-audit": "our_system_phase2.runtime.phase3ce_unsafe_motif_quarantine_audit",
     "phase3ce1-search-memory-blocked-view": "our_system_phase2.runtime.phase3ce1_search_memory_blocked_view",
     "phase3ce1-g2-input-gate-smoke": "our_system_phase2.runtime.phase3ce1_g2_input_gate_smoke",

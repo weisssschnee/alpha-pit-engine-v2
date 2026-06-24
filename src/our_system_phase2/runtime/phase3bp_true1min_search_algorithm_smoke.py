@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import pyarrow.parquet as pq
 
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import (
     DEFAULT_SHARD_ROOT,
@@ -37,12 +38,13 @@ from our_system_phase2.runtime.phase3bn_open_diversified_true1min_canary import 
     _load_memory_hashes,
     _prior_hashes,
 )
+from our_system_phase2.services.atom_lane_manifest import EPS, build_search_atoms
+from our_system_phase2.services.typed_primitive_gate import validate_expression
 
 
 REPO = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUT_ROOT = Path("runtime/phase3bp_true1min_search_algorithm_smoke_20260615")
 DEFAULT_REPORT_ROOT = Path("reports/phase3bp_true1min_search_algorithm_smoke_20260615")
-EPS = "0.000001"
 OP_RE = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*\(")
 WIN_RE = re.compile(r"(?<![A-Za-z0-9_])([1-9][0-9]{0,2})(?![A-Za-z0-9_])")
 FIELD_RE = re.compile(r"\$[A-Za-z_][A-Za-z0-9_]*")
@@ -61,7 +63,33 @@ PRIOR_HASH_FILES = [
     Path("reports/phase3bn_open_diversified_true1min_canary_20260615/phase3bn_top_decisions.csv"),
     Path("reports/phase3bo_mature_cem_bridge_true1min_pack_20260615/phase3bo_top_decisions.csv"),
 ]
-OPERATORS = {"Abs", "Add", "CSRank", "CSResidual", "Delay", "Div", "Mean", "Mom", "Mul", "Neg", "Sign", "Std", "Sub", "ZScore", "Delta"}
+OPERATORS = {
+    "Abs",
+    "Add",
+    "CSRank",
+    "CSResidual",
+    "Delay",
+    "Div",
+    "Mean",
+    "Mom",
+    "Mul",
+    "Neg",
+    "Sign",
+    "Std",
+    "Sub",
+    "ZScore",
+    "Delta",
+    "EventAge",
+    "SinceLastEvent",
+    "EventCount",
+    "StateAge",
+    "StateDwell",
+    "WindowStateCount",
+    "ValidRatioGate",
+    "MaskedZScore",
+    "MaskedCorr",
+    "SafeCSResidual",
+}
 
 
 def _resolve(path: Path) -> Path:
@@ -299,6 +327,14 @@ def _add_candidate(
     policy: dict[str, Any],
 ) -> None:
     expression = expression.strip()
+    verdict = validate_expression(
+        expression,
+        entry_lineage="phase3bp_generator",
+        materialization_stage="candidate_construction",
+        candidate_role="true1min_search_candidate",
+    )
+    if verdict.typed_gate_decision != "allow":
+        return
     digest = _hash(expression)
     if digest in seen or digest in blocked:
         return
@@ -325,56 +361,62 @@ def _add_candidate(
             "expected_direction": 1,
             "x0_r3_role": "read_only_research_candidate",
             "note": note,
+            "typed_gate_decision": verdict.typed_gate_decision,
+            "typed_gate_reason": verdict.typed_gate_reason,
+            "registry_version": verdict.registry_version,
         }
     )
 
 
-def _raw_atoms() -> list[dict[str, Any]]:
-    windows = [2, 3, 5, 8, 10, 15, 20, 30]
-    pairs = [(2, 5), (3, 8), (5, 15), (8, 20), (10, 30)]
-    prefixes = ["m1_first5", "m1_first15", "m1_first30"]
-    atoms: list[dict[str, Any]] = []
-    range_norm = f"Div(Sub($high,$low),Add(Abs($open),{EPS}))"
-    bar_loc = f"Div(Sub($close,$low),Add(Abs(Sub($high,$low)),{EPS}))"
-    for window in windows:
-        atoms.extend(
-            [
-                {"name": f"ret_delta_{window}", "lane": "rx_intraday_return", "expr": f"Delta($ret_1m,{window})", "side": "event"},
-                {"name": f"intraday_delta_{window}", "lane": "rx_intraday_return", "expr": f"Delta($intraday_ret_from_open,{window})", "side": "event"},
-                {"name": f"range_vol_{window}", "lane": "rx_range_location", "expr": f"Std({range_norm},{window})", "side": "state"},
-                {"name": f"bar_loc_shift_{window}", "lane": "rx_range_location", "expr": f"Sub({bar_loc},Mean({bar_loc},{window}))", "side": "event"},
-                {"name": f"amount_delta_{window}", "lane": "rx_flow_amount_volume", "expr": f"Delta($amount,{window})", "side": "state"},
-                {"name": f"volume_delta_{window}", "lane": "rx_flow_amount_volume", "expr": f"Delta($volume,{window})", "side": "state"},
-                {"name": f"ret_vol_{window}", "lane": "rx_volatility_state", "expr": f"Std($ret_1m,{window})", "side": "state"},
-            ]
-        )
-    for short, long in pairs:
-        atoms.extend(
-            [
-                {
-                    "name": f"amount_curve_{short}_{long}",
-                    "lane": "rx_flow_amount_volume",
-                    "expr": f"Div(Mean($amount,{short}),Add(Abs(Mean($amount,{long})),{EPS}))",
-                    "side": "state",
-                },
-                {
-                    "name": f"volume_curve_{short}_{long}",
-                    "lane": "rx_flow_amount_volume",
-                    "expr": f"Div(Mean($volume,{short}),Add(Abs(Mean($volume,{long})),{EPS}))",
-                    "side": "state",
-                },
-            ]
-        )
-    for prefix in prefixes:
-        atoms.extend(
-            [
-                {"name": f"{prefix}_amount", "lane": "rx_opening_amount", "expr": f"Div(${prefix}_amount,Add(Abs($amount),{EPS}))", "side": "event"},
-                {"name": f"{prefix}_vol", "lane": "rx_opening_amount", "expr": f"Div(${prefix}_vol,Add(Abs($volume),{EPS}))", "side": "state"},
-                {"name": f"{prefix}_range", "lane": "rx_opening_range", "expr": f"Div(${prefix}_range,Add(Abs($open),{EPS}))", "side": "event"},
-                {"name": f"{prefix}_vwap_open", "lane": "rx_opening_divergence", "expr": f"${prefix}_vwap_return_vs_open", "side": "event"},
-            ]
-        )
-    return atoms
+def _panel_schema_fields(panels: list[Path]) -> list[str]:
+    """Return fields present in every selected panel.
+
+    Candidate generation is schema-bound: a field listed in the global atom
+    manifest is not enough. It must exist in every panel used by the run.
+    """
+
+    field_sets: list[set[str]] = []
+    for panel in panels:
+        field_sets.append(set(pq.ParquetFile(panel).schema_arrow.names))
+    if not field_sets:
+        return []
+    common = set.intersection(*field_sets)
+    return sorted(common)
+
+
+def _raw_atoms(available_fields: list[str] | set[str] | None = None) -> list[dict[str, Any]]:
+    return build_search_atoms(available_fields)
+
+
+def _atom_rank_expr(atom: dict[str, Any]) -> str:
+    expr = str(atom["expr"])
+    if str(atom.get("transform_mode") or "") == "typed_rank":
+        return f"CSRank({expr})"
+    return f"CSRank(ZScore({expr}))"
+
+
+def _atom_inverted_expr(atom: dict[str, Any]) -> str:
+    return f"Neg({_atom_rank_expr(atom)})"
+
+
+def _atom_normalized_expr(atom: dict[str, Any]) -> str:
+    expr = str(atom["expr"])
+    if str(atom.get("transform_mode") or "") == "typed_rank":
+        return f"CSRank({expr})"
+    return f"ZScore({expr})"
+
+
+def _rank_atoms_for_interaction(atoms: list[dict[str, Any]], policy: dict[str, Any], max_count: int) -> list[dict[str, Any]]:
+    ranked = sorted(
+        atoms,
+        key=lambda atom: (
+            _policy_score(str(atom["expr"]), str(atom.get("lane") or ""), policy),
+            str(atom.get("field_class") or ""),
+            str(atom.get("name") or ""),
+        ),
+        reverse=True,
+    )
+    return ranked[: max(1, min(len(ranked), int(max_count)))]
 
 
 def _generate_rx_ucb_candidates(
@@ -383,14 +425,15 @@ def _generate_rx_ucb_candidates(
     policy: dict[str, Any],
     *,
     include_residual: bool,
+    available_fields: list[str] | set[str] | None = None,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
-    atoms = _raw_atoms()
+    atoms = _raw_atoms(available_fields)
     for atom in atoms:
         for transform, expression in {
-            "rank": f"CSRank(ZScore({atom['expr']}))",
-            "inverted": f"Neg(CSRank(ZScore({atom['expr']})))",
+            "rank": _atom_rank_expr(atom),
+            "inverted": _atom_inverted_expr(atom),
         }.items():
             _add_candidate(
                 rows,
@@ -404,14 +447,18 @@ def _generate_rx_ucb_candidates(
             )
     event_atoms = [atom for atom in atoms if atom["side"] == "event"]
     state_atoms = [atom for atom in atoms if atom["side"] == "state"]
+    event_atoms = _rank_atoms_for_interaction(event_atoms, policy, max(32, max_candidates))
+    state_atoms = _rank_atoms_for_interaction(state_atoms, policy, max(32, max_candidates))
     for left in event_atoms:
         for right in state_atoms:
             if left["name"].split("_")[0] == right["name"].split("_")[0]:
                 continue
             lane = f"rx_interaction::{left['lane']}::{right['lane']}"
+            left_norm = _atom_normalized_expr(left)
+            right_norm = _atom_normalized_expr(right)
             variants = {
-                "product": f"CSRank(Mul(ZScore({left['expr']}),ZScore({right['expr']})))",
-                "spread": f"CSRank(Sub(ZScore({left['expr']}),ZScore({right['expr']})))",
+                "product": f"CSRank(Mul({left_norm},{right_norm}))",
+                "spread": f"CSRank(Sub({left_norm},{right_norm}))",
             }
             if include_residual:
                 variants["residual"] = f"CSRank(CSResidual(CSRank({left['expr']}),CSRank({right['expr']})))"
@@ -447,6 +494,125 @@ def _generate_rx_ucb_candidates(
     return selected
 
 
+def _generate_event_state_candidates(
+    max_candidates: int,
+    blocked: set[str],
+    policy: dict[str, Any],
+    *,
+    include_interactions: bool = True,
+    available_fields: list[str] | set[str] | None = None,
+) -> list[dict[str, Any]]:
+    event_atom_rows: list[dict[str, Any]] = []
+    context_atom_rows: list[dict[str, Any]] = []
+    interaction_rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    atoms = _raw_atoms(available_fields)
+    event_atoms = [atom for atom in atoms if str(atom.get("role") or "") == "event_state_search"]
+    context_atoms = [atom for atom in atoms if str(atom.get("role") or "") == "lagged_context_search"]
+    state_atoms = [
+        atom
+        for atom in atoms
+        if atom["side"] == "state" and str(atom.get("field_class") or "") not in {"event_state"}
+    ]
+    event_atoms = _rank_atoms_for_interaction(event_atoms, policy, max(64, max_candidates * 2))
+    context_atoms = _rank_atoms_for_interaction(context_atoms, policy, max(64, max_candidates * 2))
+    state_atoms = _rank_atoms_for_interaction(state_atoms, policy, max(32, max_candidates))
+
+    for atom in event_atoms:
+        for transform, expression in {
+            "event_rank": _atom_rank_expr(atom),
+            "event_inverted": _atom_inverted_expr(atom),
+        }.items():
+            _add_candidate(
+                event_atom_rows,
+                seen,
+                blocked,
+                expression,
+                lane=f"typed_event_state::{atom['lane']}::{transform}",
+                source_generator="phase3bp_true1min_typed_event_state",
+                note=f"typed event atom {atom['name']} role={atom.get('role')} class={atom.get('field_class')}",
+                policy=policy,
+            )
+            if len(event_atom_rows) >= max_candidates and not include_interactions:
+                return event_atom_rows[:max_candidates]
+
+    for atom in context_atoms:
+        for transform, expression in {
+            "context_rank": _atom_rank_expr(atom),
+            "context_inverted": _atom_inverted_expr(atom),
+        }.items():
+            _add_candidate(
+                context_atom_rows,
+                seen,
+                blocked,
+                expression,
+                lane=f"typed_lagged_context::{atom['lane']}::{transform}",
+                source_generator="phase3bp_true1min_typed_event_state",
+                note=f"typed lagged context atom {atom['name']} role={atom.get('role')} class={atom.get('field_class')}",
+                policy=policy,
+            )
+
+    if include_interactions:
+        for left in event_atoms:
+            for right in state_atoms:
+                if len(interaction_rows) >= max_candidates * 4:
+                    break
+                left_norm = _atom_normalized_expr(left)
+                right_norm = _atom_normalized_expr(right)
+                for kind, expression in {
+                    "event_x_state": f"CSRank(Mul({left_norm},{right_norm}))",
+                    "event_minus_state": f"CSRank(Sub({left_norm},{right_norm}))",
+                }.items():
+                    _add_candidate(
+                        interaction_rows,
+                        seen,
+                        blocked,
+                        expression,
+                        lane=f"typed_event_interaction::{left['lane']}::{right['lane']}::{kind}",
+                        source_generator="phase3bp_true1min_typed_event_state",
+                        note=f"typed event interaction {left['name']} x {right['name']} {kind}",
+                        policy=policy,
+                    )
+                    if len(interaction_rows) >= max_candidates * 4:
+                        break
+
+    event_atom_rows.sort(key=lambda row: (float(row.get("policy_score") or 0.0), row["expression_hash"]), reverse=True)
+    context_atom_rows.sort(key=lambda row: (float(row.get("policy_score") or 0.0), row["expression_hash"]), reverse=True)
+    interaction_rows.sort(key=lambda row: (float(row.get("policy_score") or 0.0), row["expression_hash"]), reverse=True)
+
+    def select_from(rows: list[dict[str, Any]], limit: int, *, selected: list[dict[str, Any]], lane_counts: Counter[str], fieldset_counts: Counter[str]) -> None:
+        lane_cap = max(8, int(math.ceil(max_candidates * 0.35)))
+        fieldset_cap = 4
+        for row in rows:
+            if len(selected) >= limit:
+                break
+            lane = str(row.get("factor_lane"))
+            fieldset = str(row.get("fields"))
+            if lane_counts[lane] >= lane_cap:
+                continue
+            if fieldset_counts[fieldset] >= fieldset_cap:
+                continue
+            selected.append(row)
+            lane_counts[lane] += 1
+            fieldset_counts[fieldset] += 1
+
+    selected: list[dict[str, Any]] = []
+    lane_counts: Counter[str] = Counter()
+    fieldset_counts: Counter[str] = Counter()
+    event_atom_quota = min(max_candidates, max(16, int(math.ceil(max_candidates * 0.25))))
+    context_atom_quota = min(max_candidates, max(16, int(math.ceil(max_candidates * 0.25))))
+    select_from(event_atom_rows, event_atom_quota, selected=selected, lane_counts=lane_counts, fieldset_counts=fieldset_counts)
+    select_from(context_atom_rows, min(max_candidates, len(selected) + context_atom_quota), selected=selected, lane_counts=lane_counts, fieldset_counts=fieldset_counts)
+    select_from(interaction_rows, max_candidates, selected=selected, lane_counts=lane_counts, fieldset_counts=fieldset_counts)
+    if len(selected) < max_candidates:
+        select_from(event_atom_rows, max_candidates, selected=selected, lane_counts=lane_counts, fieldset_counts=fieldset_counts)
+    if len(selected) < max_candidates:
+        select_from(context_atom_rows, max_candidates, selected=selected, lane_counts=lane_counts, fieldset_counts=fieldset_counts)
+    for idx, row in enumerate(selected, 1):
+        row["candidate_id"] = f"phase3bp_event_{idx:05d}"
+    return selected
+
+
 def _proposal_score(row: dict[str, Any], policy: dict[str, Any]) -> float:
     base = float(row.get("policy_score") or 0.0)
     fields = set(str(row.get("fields") or "").split("|")) - {""}
@@ -466,6 +632,7 @@ def _generate_cem_elite_candidates(
     population_size: int,
     elite_frac: float,
     rounds: int,
+    available_fields: list[str] | set[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Prior-guided CEM-style elite resampling over true-1min expression atoms.
 
@@ -474,9 +641,11 @@ def _generate_cem_elite_candidates(
     strict minute materialization pass.
     """
 
-    atoms = _raw_atoms()
+    atoms = _raw_atoms(available_fields)
     event_atoms = [atom for atom in atoms if atom["side"] == "event"]
     state_atoms = [atom for atom in atoms if atom["side"] == "state"]
+    event_atoms = _rank_atoms_for_interaction(event_atoms, policy, max(48, max_candidates))
+    state_atoms = _rank_atoms_for_interaction(state_atoms, policy, max(48, max_candidates))
 
     def add_pool(pool: list[dict[str, Any]], seen: set[str], expression: str, lane: str, note: str) -> None:
         before = len(pool)
@@ -497,8 +666,8 @@ def _generate_cem_elite_candidates(
     seen: set[str] = set()
     for atom in atoms:
         for transform, expression in {
-            "rank": f"CSRank(ZScore({atom['expr']}))",
-            "inverted": f"Neg(CSRank(ZScore({atom['expr']})))",
+            "rank": _atom_rank_expr(atom),
+            "inverted": _atom_inverted_expr(atom),
         }.items():
             add_pool(pool, seen, expression, f"cem_atom::{atom['lane']}::{transform}", f"cem seed atom {atom['name']}")
     for left in event_atoms:
@@ -506,9 +675,9 @@ def _generate_cem_elite_candidates(
             if left["name"].split("_")[0] == right["name"].split("_")[0]:
                 continue
             variants = {
-                "product": f"CSRank(Mul(ZScore({left['expr']}),ZScore({right['expr']})))",
-                "spread": f"CSRank(Sub(ZScore({left['expr']}),ZScore({right['expr']})))",
-                "signed_state": f"CSRank(Mul(Sign(ZScore({left['expr']})),ZScore({right['expr']})))",
+                "product": f"CSRank(Mul({_atom_normalized_expr(left)},{_atom_normalized_expr(right)}))",
+                "spread": f"CSRank(Sub({_atom_normalized_expr(left)},{_atom_normalized_expr(right)}))",
+                "signed_state": f"CSRank(Mul(Sign({_atom_normalized_expr(left)}),{_atom_normalized_expr(right)}))",
             }
             if include_residual:
                 variants["residual"] = f"CSRank(CSResidual(CSRank({left['expr']}),CSRank({right['expr']})))"
@@ -556,13 +725,13 @@ def _generate_cem_elite_candidates(
                 if left["name"].split("_")[0] == right["name"].split("_")[0]:
                     continue
                 if (round_idx + int(_hash(left["name"] + right["name"], 8), 16)) % 3 == 0:
-                    expression = f"CSRank(Sub(ZScore({left['expr']}),ZScore(Mean({right['expr']},3))))"
+                    expression = f"CSRank(Sub({_atom_normalized_expr(left)},Mean({_atom_normalized_expr(right)},3)))"
                     kind = "elite_spread_mean3"
                 elif (round_idx + int(_hash(right["name"] + left["name"], 8), 16)) % 3 == 1:
-                    expression = f"CSRank(Mul(ZScore(Delta({left['expr']},2)),ZScore({right['expr']})))"
+                    expression = f"CSRank(Mul(Delta({_atom_normalized_expr(left)},2),{_atom_normalized_expr(right)}))"
                     kind = "elite_delta_product"
                 else:
-                    expression = f"Neg(CSRank(Mul(ZScore({left['expr']}),ZScore({right['expr']}))))"
+                    expression = f"Neg(CSRank(Mul({_atom_normalized_expr(left)},{_atom_normalized_expr(right)})))"
                     kind = "elite_inverted_product"
                 add_pool(
                     pool,
@@ -604,10 +773,11 @@ def _generate_hybrid_candidates(
     population_size: int,
     elite_frac: float,
     rounds: int,
+    available_fields: list[str] | set[str] | None = None,
 ) -> list[dict[str, Any]]:
     rx_budget = max(1, int(math.ceil(max_candidates * 0.45)))
     cem_budget = max_candidates - rx_budget
-    rx_rows = _generate_rx_ucb_candidates(rx_budget, blocked, policy, include_residual=False)
+    rx_rows = _generate_rx_ucb_candidates(rx_budget, blocked, policy, include_residual=False, available_fields=available_fields)
     cem_rows = _generate_cem_elite_candidates(
         cem_budget + max(8, cem_budget // 4),
         blocked | {str(row.get("expression_hash")) for row in rx_rows},
@@ -616,6 +786,7 @@ def _generate_hybrid_candidates(
         population_size=max(population_size, max_candidates * 3),
         elite_frac=elite_frac,
         rounds=rounds,
+        available_fields=available_fields,
     )
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -646,9 +817,10 @@ def _generate_candidates(
     population_size: int,
     elite_frac: float,
     rounds: int,
+    available_fields: list[str] | set[str] | None = None,
 ) -> list[dict[str, Any]]:
     if mode == "rx_ucb":
-        return _generate_rx_ucb_candidates(max_candidates, blocked, policy, include_residual=include_residual)
+        return _generate_rx_ucb_candidates(max_candidates, blocked, policy, include_residual=include_residual, available_fields=available_fields)
     if mode == "cem_elite":
         return _generate_cem_elite_candidates(
             max_candidates,
@@ -658,6 +830,7 @@ def _generate_candidates(
             population_size=population_size,
             elite_frac=elite_frac,
             rounds=rounds,
+            available_fields=available_fields,
         )
     if mode == "hybrid_rx_cem":
         return _generate_hybrid_candidates(
@@ -668,6 +841,15 @@ def _generate_candidates(
             population_size=population_size,
             elite_frac=elite_frac,
             rounds=rounds,
+            available_fields=available_fields,
+        )
+    if mode == "event_state":
+        return _generate_event_state_candidates(
+            max_candidates,
+            blocked,
+            policy,
+            include_interactions=True,
+            available_fields=available_fields,
         )
     raise ValueError(f"unknown algorithm mode: {mode}")
 
@@ -819,7 +1001,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--min-obs-per-time", type=int, default=20)
     parser.add_argument("--policy-exploration", type=float, default=0.45)
     parser.add_argument("--include-residual", action="store_true")
-    parser.add_argument("--algorithm-mode", choices=["rx_ucb", "cem_elite", "hybrid_rx_cem"], default="rx_ucb")
+    parser.add_argument("--algorithm-mode", choices=["rx_ucb", "cem_elite", "hybrid_rx_cem", "event_state"], default="rx_ucb")
     parser.add_argument("--cem-population-size", type=int, default=384)
     parser.add_argument("--cem-elite-frac", type=float, default=0.18)
     parser.add_argument("--cem-rounds", type=int, default=2)
@@ -829,6 +1011,8 @@ def main(argv: list[str] | None = None) -> int:
     report_root = _resolve(args.report_root)
     output_root.mkdir(parents=True, exist_ok=True)
     report_root.mkdir(parents=True, exist_ok=True)
+    panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
+    available_fields = _panel_schema_fields(panels)
     policy = _build_policy(PRIOR_DECISION_FILES, exploration=args.policy_exploration)
     blocked = _load_memory_hashes(args.memory_root) | _prior_hashes(PRIOR_HASH_FILES)
     candidates = _generate_candidates(
@@ -840,9 +1024,9 @@ def main(argv: list[str] | None = None) -> int:
         population_size=args.cem_population_size,
         elite_frac=args.cem_elite_frac,
         rounds=args.cem_rounds,
+        available_fields=available_fields,
     )
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
-    panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
     metric_rows, aggregate_rows, meta = _run_materialization(
         candidates=candidates,
         panels=panels,
@@ -869,6 +1053,9 @@ def main(argv: list[str] | None = None) -> int:
         "candidate_count": len(candidates),
         "blocked_hash_count": len(blocked),
         "panel_count": len(panels),
+        "schema_bound_generation": True,
+        "available_field_count": len(available_fields),
+        "available_fields": available_fields,
         "sample_trade_times_per_shard": args.sample_trade_times_per_shard,
         "horizons_min": list(horizons),
         "total_eval_rows": total_eval_rows,

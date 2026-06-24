@@ -1,0 +1,5 @@
+factor_lane,count,best_abs_aligned_ic,followup_count,future_wrong_lag_count
+typed_event_state::event_payload_state::event_inverted,5,0,0,0
+typed_event_state::event_payload_state::event_rank,4,0,0,0
+typed_event_interaction::event_payload_state::coverage_guarded_context::event_x_state,15,0,0,0
+typed_event_interaction::event_payload_state::coverage_guarded_context::event_minus_state,8,0,0,0

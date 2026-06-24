@@ -1,0 +1,519 @@
+{
+  "atom_summary": {
+    "atom_count": 241,
+    "available_field_count": 86,
+    "blocked_or_event_only_fields": [
+      "code",
+      "dataset_route_id",
+      "date",
+      "evt_uplimit_active",
+      "evt_uplimit_age_min",
+      "evt_uplimit_amount",
+      "evt_uplimit_auction_buy",
+      "evt_uplimit_auction_money",
+      "evt_uplimit_auction_offer",
+      "evt_uplimit_auction_pre1max_ratio",
+      "evt_uplimit_auction_turnover",
+      "evt_uplimit_cutoff_minute",
+      "evt_uplimit_fd_close",
+      "evt_uplimit_fd_max",
+      "evt_uplimit_type_code",
+      "evt_uplimit_up_limit_keep_times",
+      "exec_date",
+      "label_horizon",
+      "m1_first15_bars",
+      "m1_first30_bars",
+      "m1_first5_bars",
+      "signal_time",
+      "trade_time"
+    ],
+    "by_field_class": {
+      "direct_formula": 145,
+      "event_state": 24,
+      "lagged_context": 72
+    },
+    "by_lane": {
+      "coverage_guarded_context": 72,
+      "event_payload_state": 20,
+      "event_state": 2,
+      "rx_flow_amount_volume": 52,
+      "rx_intraday_price_location": 21,
+      "rx_intraday_return": 32,
+      "rx_opening_amount": 6,
+      "rx_opening_divergence": 12,
+      "rx_opening_range": 6,
+      "rx_range_location": 16,
+      "state_lifecycle": 2
+    },
+    "by_role": {
+      "event_state_search": 24,
+      "formula_search": 145,
+      "lagged_context_search": 72
+    },
+    "consumed_field_count": 75,
+    "consumed_fields": [
+      "amount",
+      "amount_yuan",
+      "close",
+      "ctx_sent_damian_num",
+      "ctx_sent_ditian_num",
+      "ctx_sent_down_num",
+      "ctx_sent_downlimit_num",
+      "ctx_sent_gt5_num",
+      "ctx_sent_lb_2_num",
+      "ctx_sent_lb_3_num",
+      "ctx_sent_lb_h_num",
+      "ctx_sent_lt5_num",
+      "ctx_sent_max_lb_num",
+      "ctx_sent_mian_num",
+      "ctx_sent_tiandi_num",
+      "ctx_sent_up_num",
+      "ctx_sent_uplimit_num",
+      "ctx_sent_zb_num",
+      "ctx_ths_hot_circulation_value",
+      "ctx_ths_hot_last_pct",
+      "ctx_ths_hot_last_price",
+      "ctx_ths_hot_rank",
+      "ctx_ths_hot_rank_diff",
+      "ctx_zls_df_num",
+      "ctx_zls_lbgd",
+      "ctx_zls_strong",
+      "ctx_zls_ztjs",
+      "evt_uplimit_active",
+      "evt_uplimit_age_min",
+      "evt_uplimit_amount",
+      "evt_uplimit_auction_buy",
+      "evt_uplimit_auction_money",
+      "evt_uplimit_auction_offer",
+      "evt_uplimit_auction_pre1max_ratio",
+      "evt_uplimit_auction_turnover",
+      "evt_uplimit_fd_close",
+      "evt_uplimit_fd_max",
+      "evt_uplimit_type_code",
+      "evt_uplimit_up_limit_keep_times",
+      "high",
+      "intraday_ret_from_open",
+      "low",
+      "m1_first15_amount",
+      "m1_first15_high",
+      "m1_first15_last_close",
+      "m1_first15_last_return_vs_open",
+      "m1_first15_low",
+      "m1_first15_range",
+      "m1_first15_vol",
+      "m1_first15_vwap",
+      "m1_first15_vwap_return_vs_open",
+      "m1_first30_amount",
+      "m1_first30_high",
+      "m1_first30_last_close",
+      "m1_first30_last_return_vs_open",
+      "m1_first30_low",
+      "m1_first30_range",
+      "m1_first30_vol",
+      "m1_first30_vwap",
+      "m1_first30_vwap_return_vs_open",
+      "m1_first5_amount",
+      "m1_first5_high",
+      "m1_first5_last_close",
+      "m1_first5_last_return_vs_open",
+      "m1_first5_low",
+      "m1_first5_range",
+      "m1_first5_vol",
+      "m1_first5_vwap",
+      "m1_first5_vwap_return_vs_open",
+      "open",
+      "pct_chg",
+      "ret_1m",
+      "vol",
+      "volume",
+      "vwap"
+    ],
+    "field_routes": {
+      "amount": "direct_formula",
+      "amount_yuan": "direct_formula",
+      "close": "direct_formula",
+      "code": "blocked_key_or_label",
+      "ctx_sent_damian_num": "lagged_context",
+      "ctx_sent_ditian_num": "lagged_context",
+      "ctx_sent_down_num": "lagged_context",
+      "ctx_sent_downlimit_num": "lagged_context",
+      "ctx_sent_gt5_num": "lagged_context",
+      "ctx_sent_lb_2_num": "lagged_context",
+      "ctx_sent_lb_3_num": "lagged_context",
+      "ctx_sent_lb_h_num": "lagged_context",
+      "ctx_sent_lt5_num": "lagged_context",
+      "ctx_sent_max_lb_num": "lagged_context",
+      "ctx_sent_mian_num": "lagged_context",
+      "ctx_sent_tiandi_num": "lagged_context",
+      "ctx_sent_up_num": "lagged_context",
+      "ctx_sent_uplimit_num": "lagged_context",
+      "ctx_sent_zb_num": "lagged_context",
+      "ctx_ths_hot_circulation_value": "lagged_context",
+      "ctx_ths_hot_last_pct": "lagged_context",
+      "ctx_ths_hot_last_price": "lagged_context",
+      "ctx_ths_hot_rank": "lagged_context",
+      "ctx_ths_hot_rank_diff": "lagged_context",
+      "ctx_zls_df_num": "lagged_context",
+      "ctx_zls_lbgd": "lagged_context",
+      "ctx_zls_strong": "lagged_context",
+      "ctx_zls_ztjs": "lagged_context",
+      "dataset_route_id": "blocked_key_or_label",
+      "date": "blocked_key_or_label",
+      "evt_uplimit_active": "event_state",
+      "evt_uplimit_age_min": "event_state",
+      "evt_uplimit_amount": "event_state",
+      "evt_uplimit_auction_buy": "event_state",
+      "evt_uplimit_auction_money": "event_state",
+      "evt_uplimit_auction_offer": "event_state",
+      "evt_uplimit_auction_pre1max_ratio": "event_state",
+      "evt_uplimit_auction_turnover": "event_state",
+      "evt_uplimit_cutoff_minute": "blocked_key_or_label",
+      "evt_uplimit_fd_close": "event_state",
+      "evt_uplimit_fd_max": "event_state",
+      "evt_uplimit_type_code": "event_state",
+      "evt_uplimit_up_limit_keep_times": "event_state",
+      "exec_date": "blocked_key_or_label",
+      "high": "direct_formula",
+      "intraday_ret_from_open": "direct_formula",
+      "label_horizon": "blocked_key_or_label",
+      "low": "direct_formula",
+      "m1_first15_amount": "direct_formula",
+      "m1_first15_bars": "blocked_key_or_label",
+      "m1_first15_high": "direct_formula",
+      "m1_first15_last_close": "direct_formula",
+      "m1_first15_last_return_vs_open": "direct_formula",
+      "m1_first15_low": "direct_formula",
+      "m1_first15_range": "direct_formula",
+      "m1_first15_vol": "direct_formula",
+      "m1_first15_vwap": "direct_formula",
+      "m1_first15_vwap_return_vs_open": "direct_formula",
+      "m1_first30_amount": "direct_formula",
+      "m1_first30_bars": "blocked_key_or_label",
+      "m1_first30_high": "direct_formula",
+      "m1_first30_last_close": "direct_formula",
+      "m1_first30_last_return_vs_open": "direct_formula",
+      "m1_first30_low": "direct_formula",
+      "m1_first30_range": "direct_formula",
+      "m1_first30_vol": "direct_formula",
+      "m1_first30_vwap": "direct_formula",
+      "m1_first30_vwap_return_vs_open": "direct_formula",
+      "m1_first5_amount": "direct_formula",
+      "m1_first5_bars": "blocked_key_or_label",
+      "m1_first5_high": "direct_formula",
+      "m1_first5_last_close": "direct_formula",
+      "m1_first5_last_return_vs_open": "direct_formula",
+      "m1_first5_low": "direct_formula",
+      "m1_first5_range": "direct_formula",
+      "m1_first5_vol": "direct_formula",
+      "m1_first5_vwap": "direct_formula",
+      "m1_first5_vwap_return_vs_open": "direct_formula",
+      "open": "direct_formula",
+      "pct_chg": "direct_formula",
+      "ret_1m": "direct_formula",
+      "signal_time": "blocked_key_or_label",
+      "trade_time": "blocked_key_or_label",
+      "vol": "direct_formula",
+      "volume": "direct_formula",
+      "vwap": "direct_formula"
+    },
+    "unconsumed_available_fields": [
+      "code",
+      "dataset_route_id",
+      "date",
+      "evt_uplimit_cutoff_minute",
+      "exec_date",
+      "label_horizon",
+      "m1_first15_bars",
+      "m1_first30_bars",
+      "m1_first5_bars",
+      "signal_time",
+      "trade_time"
+    ]
+  },
+  "blockers": [
+    "event_state_candidates_present_but_zero_effective_signal",
+    "lagged_context_candidates_present_but_zero_effective_signal"
+  ],
+  "candidate_file_count": 1,
+  "candidate_files": [
+    "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\reports\\phase3cs_augmented_zls4_event_state_bp_20260624\\phase3bp_top_decisions.csv"
+  ],
+  "candidate_usage_summary": {
+    "effective_used_field_count": 0,
+    "effective_used_lane_counts": {},
+    "files": [
+      {
+        "blocked_or_future_rows": 0,
+        "candidate_file": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\reports\\phase3cs_augmented_zls4_event_state_bp_20260624\\phase3bp_top_decisions.csv",
+        "effective_signal_rows": 0,
+        "missing_schema_rows": 0,
+        "row_count": 48,
+        "zero_signal_rows": 48
+      }
+    ],
+    "top_effective_fields": [],
+    "top_used_fields": [
+      [
+        "amount",
+        48
+      ],
+      [
+        "evt_uplimit_up_limit_keep_times",
+        26
+      ],
+      [
+        "evt_uplimit_type_code",
+        22
+      ],
+      [
+        "ctx_zls_strong",
+        4
+      ],
+      [
+        "ctx_sent_downlimit_num",
+        4
+      ],
+      [
+        "ctx_sent_ditian_num",
+        4
+      ],
+      [
+        "ctx_ths_hot_circulation_value",
+        3
+      ],
+      [
+        "ctx_sent_lb_2_num",
+        3
+      ],
+      [
+        "ctx_ths_hot_rank_diff",
+        3
+      ],
+      [
+        "ctx_sent_up_num",
+        3
+      ],
+      [
+        "ctx_zls_lbgd",
+        3
+      ],
+      [
+        "ctx_ths_hot_last_pct",
+        2
+      ],
+      [
+        "ctx_sent_lb_3_num",
+        2
+      ],
+      [
+        "ctx_sent_mian_num",
+        2
+      ],
+      [
+        "ctx_sent_lt5_num",
+        2
+      ],
+      [
+        "ctx_ths_hot_last_price",
+        2
+      ],
+      [
+        "ctx_ths_hot_rank",
+        2
+      ],
+      [
+        "ctx_sent_zb_num",
+        2
+      ],
+      [
+        "ctx_zls_df_num",
+        1
+      ],
+      [
+        "ctx_sent_down_num",
+        1
+      ],
+      [
+        "ctx_sent_damian_num",
+        1
+      ],
+      [
+        "ctx_sent_tiandi_num",
+        1
+      ],
+      [
+        "ctx_sent_gt5_num",
+        1
+      ],
+      [
+        "ctx_sent_max_lb_num",
+        1
+      ],
+      [
+        "ctx_zls_ztjs",
+        1
+      ]
+    ],
+    "used_field_count": 25,
+    "used_lane_counts": {
+      "direct_formula": 48,
+      "event_state": 48,
+      "lagged_context": 48
+    }
+  },
+  "created_at": "2026-06-24T16:21:04.006614+00:00",
+  "decision": "HOLD_TRUE1MIN_LIFECYCLE_FIELD_USAGE_AUDIT",
+  "experiment_id": "20260625_phase3ct_true1min_lifecycle_field_usage_audit",
+  "hard_boundary": [
+    "true trade_time shard panels only",
+    "field availability must be schema-bound",
+    "candidate fields must be subset of schema intersection",
+    "event/context fields must have typed atoms and effective signal usage before success can be claimed",
+    "old 1D paths and future/label fields are blocked"
+  ],
+  "lane_counts": {
+    "blocked_key_or_label": 11,
+    "direct_formula": 39,
+    "event_state": 12,
+    "lagged_context": 24
+  },
+  "panel_count": 4,
+  "panel_paths": [
+    "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+  ],
+  "schema_intersection_field_count": 86,
+  "schema_union_field_count": 86,
+  "shard_root": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624",
+  "sidecar_root": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_pack_zls_only_20260624",
+  "sidecar_summary": {
+    "exists": true,
+    "files": [
+      {
+        "columns": 7,
+        "exists": true,
+        "name": "phase3cs_stock_lagged_context.parquet",
+        "path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_pack_zls_only_20260624\\phase3cs_stock_lagged_context.parquet",
+        "rows": 6300,
+        "schema": [
+          "code",
+          "source_date",
+          "ctx_ths_hot_rank",
+          "ctx_ths_hot_rank_diff",
+          "ctx_ths_hot_last_pct",
+          "ctx_ths_hot_last_price",
+          "ctx_ths_hot_circulation_value"
+        ]
+      },
+      {
+        "columns": 20,
+        "exists": true,
+        "name": "phase3cs_market_lagged_context.parquet",
+        "path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_pack_zls_only_20260624\\phase3cs_market_lagged_context.parquet",
+        "rows": 582,
+        "schema": [
+          "source_date",
+          "ctx_sent_uplimit_num",
+          "ctx_sent_downlimit_num",
+          "ctx_sent_up_num",
+          "ctx_sent_down_num",
+          "ctx_sent_zb_num",
+          "ctx_sent_lb_2_num",
+          "ctx_sent_lb_3_num",
+          "ctx_sent_max_lb_num",
+          "ctx_sent_mian_num",
+          "ctx_sent_tiandi_num",
+          "ctx_sent_ditian_num",
+          "ctx_sent_damian_num",
+          "ctx_sent_gt5_num",
+          "ctx_sent_lt5_num",
+          "ctx_sent_lb_h_num",
+          "ctx_zls_df_num",
+          "ctx_zls_lbgd",
+          "ctx_zls_strong",
+          "ctx_zls_ztjs"
+        ]
+      },
+      {
+        "columns": 13,
+        "exists": true,
+        "name": "phase3cs_stock_event_context.parquet",
+        "path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_pack_zls_only_20260624\\phase3cs_stock_event_context.parquet",
+        "rows": 1668,
+        "schema": [
+          "code",
+          "source_date",
+          "evt_uplimit_cutoff_minute",
+          "evt_uplimit_amount",
+          "evt_uplimit_auction_buy",
+          "evt_uplimit_auction_money",
+          "evt_uplimit_auction_offer",
+          "evt_uplimit_auction_pre1max_ratio",
+          "evt_uplimit_auction_turnover",
+          "evt_uplimit_fd_close",
+          "evt_uplimit_fd_max",
+          "evt_uplimit_up_limit_keep_times",
+          "evt_uplimit_type_code"
+        ]
+      },
+      {
+        "exists": true,
+        "name": "phase3cs_sidecar_field_contract.csv",
+        "path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_pack_zls_only_20260624\\phase3cs_sidecar_field_contract.csv"
+      },
+      {
+        "exists": true,
+        "name": "phase3cs_sidecar_pack_summary.json",
+        "path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_pack_zls_only_20260624\\phase3cs_sidecar_pack_summary.json"
+      }
+    ],
+    "provided": true,
+    "root": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_pack_zls_only_20260624"
+  },
+  "split_lane_coverage": {
+    "direct_formula": {
+      "test_nonnull_fields": 39,
+      "test_nonzero_fields": 39,
+      "train_nonnull_fields": 39,
+      "train_nonzero_fields": 39,
+      "validation_nonnull_fields": 39,
+      "validation_nonzero_fields": 39
+    },
+    "event_state": {
+      "test_nonnull_fields": 12,
+      "test_nonzero_fields": 11,
+      "train_nonnull_fields": 8,
+      "train_nonzero_fields": 6,
+      "validation_nonnull_fields": 12,
+      "validation_nonzero_fields": 11
+    },
+    "lagged_context": {
+      "test_nonnull_fields": 24,
+      "test_nonzero_fields": 24,
+      "train_nonnull_fields": 20,
+      "train_nonzero_fields": 20,
+      "validation_nonnull_fields": 20,
+      "validation_nonzero_fields": 20
+    }
+  },
+  "split_policy": {
+    "date_count": 243,
+    "kind": "chronological_60_20_20_field_coverage"
+  },
+  "split_ranges": {
+    "test": {
+      "end": "2025-12-31",
+      "start": "2025-10-24"
+    },
+    "train": {
+      "end": "2025-08-07",
+      "start": "2025-01-02"
+    },
+    "validation": {
+      "end": "2025-10-23",
+      "start": "2025-08-08"
+    }
+  }
+}

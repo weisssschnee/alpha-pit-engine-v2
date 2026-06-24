@@ -27,12 +27,14 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     PRIOR_DECISION_FILES,
     _build_policy,
     _generate_cem_elite_candidates,
+    _generate_event_state_candidates,
     _generate_hybrid_candidates,
+    _panel_schema_fields,
     _generate_rx_ucb_candidates,
 )
 from our_system_phase2.runtime.phase3ca_build_bz_candidate_audit import build_candidate_table
 from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import build_feedback_memory
-from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import _write_csv, _write_json
+from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import DEFAULT_SHARD_ROOT, _discover_panels, _write_csv, _write_json
 from our_system_phase2.services.candidate_schema import normalize_candidate_schema, safe_float
 from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule, read_csv_rows
 
@@ -112,7 +114,15 @@ def _tag_generated(rows: list[dict[str, Any]], *, arm_id: str, source: str, rout
     return out
 
 
-def _generate_for_arm(arm: dict[str, Any], *, budget: int, blocked: set[str], policy: dict[str, Any], start_idx: int) -> list[dict[str, Any]]:
+def _generate_for_arm(
+    arm: dict[str, Any],
+    *,
+    budget: int,
+    blocked: set[str],
+    policy: dict[str, Any],
+    start_idx: int,
+    available_fields: list[str] | set[str] | None,
+) -> list[dict[str, Any]]:
     arm_id = str(arm.get("arm_id") or "")
     route_hint = str(arm.get("route_hint") or "")
     budget = max(0, int(budget))
@@ -127,6 +137,7 @@ def _generate_for_arm(arm: dict[str, Any], *, budget: int, blocked: set[str], po
             population_size=max(64, budget * 8),
             elite_frac=0.12,
             rounds=2,
+            available_fields=available_fields,
         )
         source = "phase3cp_cem_probe_from_co"
     elif arm_id == "typed_ast_fresh":
@@ -138,6 +149,7 @@ def _generate_for_arm(arm: dict[str, Any], *, budget: int, blocked: set[str], po
             population_size=max(96, budget * 6),
             elite_frac=0.18,
             rounds=2,
+            available_fields=available_fields,
         )
         source = "phase3cp_typed_ast_fresh_from_co"
     elif arm_id == "challenger_repair":
@@ -149,18 +161,18 @@ def _generate_for_arm(arm: dict[str, Any], *, budget: int, blocked: set[str], po
             population_size=max(96, budget * 6),
             elite_frac=0.20,
             rounds=2,
+            available_fields=available_fields,
         )
         source = "phase3cp_challenger_repair_from_co"
     elif arm_id == "event_state":
-        rows = _generate_rx_ucb_candidates(max(budget * 2, budget), blocked, policy, include_residual=False)
-        rows = [row for row in rows if "m1_first" in str(row.get("expression") or "") or "amount" in str(row.get("expression") or "")][:budget]
+        rows = _generate_event_state_candidates(budget, blocked, policy, include_interactions=True, available_fields=available_fields)
         source = "phase3cp_event_state_from_co"
     elif arm_id == "random_orthogonal":
-        rows = _generate_rx_ucb_candidates(max(budget * 2, budget), blocked, policy, include_residual=False)
+        rows = _generate_rx_ucb_candidates(max(budget * 2, budget), blocked, policy, include_residual=False, available_fields=available_fields)
         rows = list(reversed(rows))[:budget]
         source = "phase3cp_random_orthogonal_control_from_co"
     else:
-        rows = _generate_rx_ucb_candidates(budget, blocked, policy, include_residual=False)
+        rows = _generate_rx_ucb_candidates(budget, blocked, policy, include_residual=False, available_fields=available_fields)
         source = "phase3cp_rx_ucb_fresh_from_co"
     return _tag_generated(rows[:budget], arm_id=arm_id, source=source, route_hint=route_hint, start_idx=start_idx)
 
@@ -329,6 +341,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ca-top-n", type=int, default=24)
     parser.add_argument("--min-clean-feedback", type=int, default=4)
     parser.add_argument("--reschedule-total-budget", type=int, default=512)
+    parser.add_argument("--shard-root", type=Path, default=DEFAULT_SHARD_ROOT)
+    parser.add_argument("--schema-max-shards", type=int, default=4)
+    parser.add_argument("--allow-unbound-generation", action="store_true")
     args = parser.parse_args(argv)
 
     co_root = _resolve(args.co_root)
@@ -336,6 +351,14 @@ def main(argv: list[str] | None = None) -> int:
     report_root = _resolve(args.report_root)
     output_root.mkdir(parents=True, exist_ok=True)
     report_root.mkdir(parents=True, exist_ok=True)
+    schema_panels: list[Path] = []
+    available_fields: list[str] = []
+    try:
+        schema_panels = _discover_panels(_resolve(args.shard_root), args.schema_max_shards)
+        available_fields = _panel_schema_fields(schema_panels)
+    except Exception:
+        if not args.allow_unbound_generation:
+            raise
     arm_budget_rows = read_csv_rows(co_root / "phase3co_arm_budget_table.csv")
     family_action_rows = read_csv_rows(co_root / "phase3co_family_action_table.csv")
     scaled_plan = _scale_budgets(arm_budget_rows, args.smoke_total_candidates)
@@ -344,7 +367,14 @@ def main(argv: list[str] | None = None) -> int:
     blocked: set[str] = set()
     for arm in scaled_plan:
         budget = int(arm.get("cp_smoke_candidate_budget") or 0)
-        rows = _generate_for_arm(arm, budget=budget, blocked=blocked, policy=policy, start_idx=len(generated) + 1)
+        rows = _generate_for_arm(
+            arm,
+            budget=budget,
+            blocked=blocked,
+            policy=policy,
+            start_idx=len(generated) + 1,
+            available_fields=available_fields or None,
+        )
         for row in rows:
             blocked.add(str(row.get("expression_hash") or ""))
         generated.extend(rows)
@@ -425,6 +455,11 @@ def main(argv: list[str] | None = None) -> int:
         "true1min_portfolio_eval": False,
         "cm_reward_source": "controlled_fixture",
         "input_co_root": str(co_root),
+        "schema_bound_generation": bool(available_fields),
+        "schema_shard_root": str(_resolve(args.shard_root)),
+        "schema_panel_count": len(schema_panels),
+        "available_field_count": len(available_fields),
+        "available_fields": available_fields,
         "checks": checks,
         "initial_arm_plan": scaled_plan,
         "family_action_input_count": len(family_action_rows),

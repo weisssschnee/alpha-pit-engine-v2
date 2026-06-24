@@ -18,12 +18,20 @@ FIELD_RE = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)")
 
 ORDINARY_PRIMITIVES = (
     "Mean",
+    "Std",
+    "Delta",
+    "Delay",
+    "Wma",
+    "Med",
+    "Kurt",
+    "Skew",
     "ZScore",
     "Mom",
     "Corr",
     "Cov",
     "CSResidual",
     "Div",
+    "Log",
 )
 
 TYPED_PRIMITIVES = (
@@ -74,33 +82,41 @@ def field_category(field: str) -> str:
     name = field.lower().lstrip("$")
     if any(token in name for token in ("future", "label", "next_open", "next_close", "next_return")):
         return "text_or_label"
+    if name.endswith("cutoff_minute") or name.endswith("_time_minute"):
+        return "timestamp_or_key"
     if name in {"code", "symbol", "date", "trade_date", "trade_time", "notice_date", "report_date", "update_time"}:
         return "timestamp_or_key"
     if any(token in name for token in ("industry", "sector", "plate", "concept", "board_code", "theme")):
         return "membership_or_group_key"
+    if name.startswith("ctx_"):
+        return "coverage_sensitive"
     if any(token in name for token in ("limit", "uplimit", "open_board", "break_board", "fengdan", "auction", "seal")):
         return "sparse_event"
-    if any(token in name for token in ("is_", "streak", "lb_", "max_lb", "hotness", "rank")):
+    if any(token in name for token in ("is_", "streak", "lb_", "max_lb", "hotness", "rank", "dwell", "state")):
         return "discrete_state"
-    if any(
-        token in name
-        for token in (
-            "rzrq",
-            "rzye",
-            "billboard",
-            "holder",
-            "pe",
-            "pb",
-            "ps",
-            "market_cap",
-            "float",
-            "share",
-            "fundamental",
+    exact_coverage = {"pe", "pb", "ps", "pe_ttm", "pb_mrq", "ps_ttm", "volume_ratio", "turnover_ratio"}
+    if (
+        name in exact_coverage
+        or name.startswith("fund_")
+        or any(
+            token in name
+            for token in (
+                "rzrq",
+                "rzye",
+                "billboard",
+                "holder",
+                "market_cap",
+                "float_share",
+                "total_share",
+                "fundamental",
+            )
         )
     ):
         return "coverage_sensitive"
     if name.startswith("m1_first"):
         return "firstn_minute_derived"
+    if name in {"pct_chg", "amplitude_pct", "change", "pre_close", "vol"}:
+        return "continuous_minute"
     if any(token in name for token in ("open", "high", "low", "close", "vwap", "amount", "volume", "ret", "range")):
         return "continuous_minute"
     return "coverage_sensitive"
@@ -199,7 +215,7 @@ def validate_expression(
                 if _has_field_inside_primitive(expr, field, primitive)
             }
         )
-        if offending_prims or any(primitive in {"CSResidual", "Corr", "Cov"} for primitive in ordinary_prims):
+        if offending_prims or any(primitive in {"CSResidual", "Corr", "Cov", "Std", "Delta", "Delay"} for primitive in ordinary_prims):
             return TypedGateVerdict(
                 typed_gate_decision="blocked_unsafe_known_structure",
                 typed_gate_reason="ordinary continuous primitive consumed sparse event or discrete state field",
@@ -213,6 +229,17 @@ def validate_expression(
         return TypedGateVerdict(
             typed_gate_decision="require_typed_rewrite",
             typed_gate_reason="sparse event or discrete state field requires typed primitive route",
+            blocked_fields="|".join(blocked_fields),
+            blocked_primitives="|".join(ordinary_prims),
+            required_rewrite="EventCount|EventAge|EventTransition|StateDwell|WindowStateCount",
+            entry_lineage=entry_lineage,
+            materialization_stage=materialization_stage,
+            candidate_role=candidate_role,
+        )
+    if blocked_fields and not typed_prims:
+        return TypedGateVerdict(
+            typed_gate_decision="require_typed_rewrite",
+            typed_gate_reason="sparse event or discrete state field cannot enter raw formula path without typed primitive",
             blocked_fields="|".join(blocked_fields),
             blocked_primitives="|".join(ordinary_prims),
             required_rewrite="EventCount|EventAge|EventTransition|StateDwell|WindowStateCount",
