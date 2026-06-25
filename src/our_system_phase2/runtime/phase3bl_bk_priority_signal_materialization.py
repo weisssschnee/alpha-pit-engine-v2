@@ -36,7 +36,9 @@ DEFAULT_SHARD_ROOT = Path("runtime/phase3au_aq_only_true1min_sharded_20260611")
 DEFAULT_OUTPUT_ROOT = Path("runtime/phase3bl_bk_priority_signal_materialization_20260615")
 DEFAULT_REPORT_ROOT = Path("reports/phase3bl_bk_priority_signal_materialization_20260615")
 FIELD_RE = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)")
-WINDOW_RE = re.compile(r"\b(?:Mean|Std|Delta|Delay|Mom|Wma|Med|Kurt|Skew|Corr|Cov)\s*\([^,]+,\s*(\d+(?:\.\d+)?)", re.I)
+WINDOW_OPS = {"mean", "std", "delta", "delay", "mom", "wma", "med", "kurt", "skew", "corr", "cov"}
+CALL_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(")
+NUMERIC_ARG_RE = re.compile(r"^[+-]?\d+(?:\.\d+)?$")
 
 
 def _resolve(path: Path) -> Path:
@@ -96,8 +98,53 @@ def _fields(expression: str) -> list[str]:
     return sorted(set(FIELD_RE.findall(expression or "")))
 
 
+def _find_matching_paren(text: str, open_idx: int) -> int:
+    depth = 0
+    for idx in range(open_idx, len(text)):
+        char = text[idx]
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return idx
+    return -1
+
+
+def _split_top_level_args(text: str) -> list[str]:
+    args: list[str] = []
+    start = 0
+    depth = 0
+    for idx, char in enumerate(text):
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth = max(0, depth - 1)
+        elif char == "," and depth == 0:
+            args.append(text[start:idx].strip())
+            start = idx + 1
+    tail = text[start:].strip()
+    if tail or text:
+        args.append(tail)
+    return args
+
+
 def _max_expression_window(expression: str) -> int:
-    windows = [int(float(item)) for item in WINDOW_RE.findall(expression or "")]
+    expr = expression or ""
+    windows: list[int] = []
+    for match in CALL_RE.finditer(expr):
+        if match.group(1).lower() not in WINDOW_OPS:
+            continue
+        open_idx = match.end() - 1
+        close_idx = _find_matching_paren(expr, open_idx)
+        if close_idx < 0:
+            continue
+        args = _split_top_level_args(expr[open_idx + 1 : close_idx])
+        if len(args) < 2:
+            continue
+        arg = args[-1]
+        if NUMERIC_ARG_RE.fullmatch(arg):
+            windows.append(int(float(arg)))
     return max(windows, default=0)
 
 

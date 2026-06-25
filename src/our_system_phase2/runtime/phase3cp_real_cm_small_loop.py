@@ -217,6 +217,7 @@ def _filter_cm_feasible_candidates(
     max_shards: int,
     limit: int,
     selection_mode: str,
+    pre_cm_turnover_proxy_max: float,
     output_root: Path,
     report_root: Path,
 ) -> tuple[Path, dict[str, Any]]:
@@ -234,8 +235,19 @@ def _filter_cm_feasible_candidates(
             item["cm_missing_fields"] = "|".join(missing)
             rejected.append(item)
             continue
+        turnover_proxy = safe_float(item.get("mean_one_way_turnover"), float("nan"))
+        turnover_cap = safe_float(pre_cm_turnover_proxy_max, float("nan"))
+        if math.isfinite(turnover_cap) and math.isfinite(turnover_proxy) and turnover_proxy > turnover_cap:
+            item["cm_field_gate_decision"] = "REJECT_TURNOVER_PROXY"
+            item["cm_missing_fields"] = ""
+            item["cm_turnover_proxy"] = turnover_proxy
+            item["cm_turnover_proxy_max"] = turnover_cap
+            rejected.append(item)
+            continue
         item["cm_field_gate_decision"] = "PASS"
         item["cm_missing_fields"] = ""
+        item["cm_turnover_proxy"] = turnover_proxy if math.isfinite(turnover_proxy) else ""
+        item["cm_turnover_proxy_max"] = turnover_cap if math.isfinite(turnover_cap) else ""
         passed.append(item)
 
     if selection_mode == "arm_balanced":
@@ -243,6 +255,8 @@ def _filter_cm_feasible_candidates(
         for row in passed:
             by_arm.setdefault(str(row.get("generator_arm") or "unknown_arm"), []).append(row)
         arm_order = [
+            "turnover_aware_fresh",
+            "low_turnover_repair",
             "rx_ucb_fresh",
             "typed_ast_fresh",
             "challenger_repair",
@@ -273,9 +287,11 @@ def _filter_cm_feasible_candidates(
     summary = {
         "candidate_count": len(kept),
         "rejected_missing_field_count": len(rejected),
+        "rejected_turnover_proxy_count": sum(1 for row in rejected if row.get("cm_field_gate_decision") == "REJECT_TURNOVER_PROXY"),
         "passed_total_count": len(passed),
         "passed_over_limit_count": pass_over_limit,
         "selection_mode": selection_mode,
+        "pre_cm_turnover_proxy_max": pre_cm_turnover_proxy_max,
         "available_field_count": len(available),
         "shard_root": str(shard_root),
         "max_shards_schema_checked": max_shards,
@@ -639,8 +655,10 @@ def _render_md(summary: dict[str, Any]) -> str:
         f"ca_candidate_count: {summary['ca_summary']['candidate_count']}",
         f"cm_field_gate_passed: {summary['field_gate_summary']['candidate_count']}",
         f"cm_field_gate_rejected_missing: {summary['field_gate_summary']['rejected_missing_field_count']}",
+        f"cm_field_gate_rejected_turnover_proxy: {summary['field_gate_summary'].get('rejected_turnover_proxy_count', 0)}",
         f"cm_field_gate_passed_over_limit: {summary['field_gate_summary']['passed_over_limit_count']}",
         f"cm_selection_mode: {summary['field_gate_summary']['selection_mode']}",
+        f"pre_cm_turnover_proxy_max: {summary['field_gate_summary'].get('pre_cm_turnover_proxy_max')}",
         f"cm_lineage_consistent: {summary['lineage_consistency_summary']['lineage_consistent']}",
         f"cm_candidate_count: {cm['candidate_count']}",
         f"cm_followup_count: {cm['followup_count']}",
@@ -690,6 +708,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-min-obs-per-time", type=int, default=20)
     parser.add_argument("--cm-cost-bps", type=float, default=5.0)
     parser.add_argument("--cm-top-quantile", type=float, default=0.2)
+    parser.add_argument("--pre-cm-turnover-proxy-max", type=float, default=float("nan"))
     parser.add_argument("--cm-workers", type=int, default=1)
     parser.add_argument("--numexpr-threads", type=int, default=4)
     parser.add_argument("--min-clean-feedback", type=int, default=2)
@@ -740,6 +759,7 @@ def main(argv: list[str] | None = None) -> int:
         max_shards=args.cm_max_shards,
         limit=args.cm_candidate_limit,
         selection_mode=args.cm_selection_mode,
+        pre_cm_turnover_proxy_max=args.pre_cm_turnover_proxy_max,
         output_root=output_root,
         report_root=report_root,
     )

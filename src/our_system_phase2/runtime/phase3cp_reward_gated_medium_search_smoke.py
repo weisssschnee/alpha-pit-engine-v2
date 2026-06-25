@@ -29,6 +29,7 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     _generate_event_state_candidates,
     _generate_hybrid_candidates,
     _panel_schema_fields,
+    _generate_turnover_aware_candidates,
     _generate_rx_ucb_candidates,
 )
 from our_system_phase2.runtime.phase3ca_build_bz_candidate_audit import build_candidate_table
@@ -166,6 +167,15 @@ def _generate_for_arm(
     elif arm_id == "event_state":
         rows = _generate_event_state_candidates(budget, blocked, policy, include_interactions=True, available_fields=available_fields)
         source = "phase3cp_event_state_from_co"
+    elif arm_id in {"turnover_aware_fresh", "low_turnover_repair"}:
+        rows = _generate_turnover_aware_candidates(
+            budget,
+            blocked,
+            policy,
+            include_residual=arm_id == "low_turnover_repair",
+            available_fields=available_fields,
+        )
+        source = f"phase3cp_{arm_id}_from_co"
     elif arm_id == "random_orthogonal":
         rows = _generate_rx_ucb_candidates(max(budget * 2, budget), blocked, policy, include_residual=False, available_fields=available_fields)
         rows = list(reversed(rows))[:budget]
@@ -188,6 +198,8 @@ def _decisionize(row: dict[str, Any], idx: int) -> dict[str, Any]:
         "event_state": 0.008,
         "random_orthogonal": 0.004,
         "cem_exploit": -0.006,
+        "turnover_aware_fresh": 0.012,
+        "low_turnover_repair": 0.011,
     }.get(arm, 0.0)
     aligned_ic = max(-0.08, min(0.08, 0.018 + arm_bonus + (policy_score * 0.012) + ((seed % 17) - 8) * 0.0007))
     turnover = {
@@ -197,6 +209,8 @@ def _decisionize(row: dict[str, Any], idx: int) -> dict[str, Any]:
         "event_state": 0.62,
         "random_orthogonal": 0.50,
         "cem_exploit": 0.86,
+        "turnover_aware_fresh": 0.28,
+        "low_turnover_repair": 0.34,
     }.get(arm, 0.55)
     out = dict(row)
     out.update(

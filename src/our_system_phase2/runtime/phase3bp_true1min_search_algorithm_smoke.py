@@ -68,6 +68,7 @@ AVAILABLE_ALGORITHM_ARMS = [
     "cem_elite",
     "hybrid_rx_cem",
     "event_state",
+    "turnover_aware",
 ]
 OPERATORS = {
     "Abs",
@@ -475,6 +476,13 @@ def _atom_normalized_expr(atom: dict[str, Any]) -> str:
     return f"ZScore({expr})"
 
 
+def _smooth_expr(expr: str, window: int, delay: int = 0) -> str:
+    out = f"Mean({expr},{int(window)})"
+    if int(delay) > 0:
+        out = f"Delay({out},{int(delay)})"
+    return out
+
+
 def _rank_atoms_for_interaction(atoms: list[dict[str, Any]], policy: dict[str, Any], max_count: int) -> list[dict[str, Any]]:
     ranked = sorted(
         atoms,
@@ -679,6 +687,121 @@ def _generate_event_state_candidates(
         select_from(context_atom_rows, max_candidates, selected=selected, lane_counts=lane_counts, fieldset_counts=fieldset_counts)
     for idx, row in enumerate(selected, 1):
         row["candidate_id"] = f"phase3bp_event_{idx:05d}"
+    return selected
+
+
+def _generate_turnover_aware_candidates(
+    max_candidates: int,
+    blocked: set[str],
+    policy: dict[str, Any],
+    *,
+    include_residual: bool,
+    available_fields: list[str] | set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Generate slower-moving true1min expressions for turnover-aware search.
+
+    This does not relax the real CM turnover gate. It only gives CM candidates
+    whose signal construction has a plausible chance of lower one-way turnover:
+    smoothed ranks, delayed smoothed ranks, and smoothed interactions.
+    """
+
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    atoms = _raw_atoms(available_fields)
+    usable_atoms = [
+        atom
+        for atom in atoms
+        if str(atom.get("role") or "") != "event_state_search"
+        and str(atom.get("field_class") or "") not in {"event_state"}
+    ]
+    usable_atoms = _rank_atoms_for_interaction(usable_atoms, policy, max(96, max_candidates * 3))
+    for atom in usable_atoms:
+        base = _atom_normalized_expr(atom)
+        for kind, expression in {
+            "smooth10": f"CSRank({_smooth_expr(base, 10)})",
+            "smooth20": f"CSRank({_smooth_expr(base, 20)})",
+            "delay3_smooth20": f"CSRank({_smooth_expr(base, 20, delay=3)})",
+            "slow_change": f"CSRank(Sub({_smooth_expr(base, 30)},Delay({_smooth_expr(base, 30)},5)))",
+            "inverted_smooth20": f"Neg(CSRank({_smooth_expr(base, 20)}))",
+        }.items():
+            before = len(rows)
+            _add_candidate(
+                rows,
+                seen,
+                blocked,
+                expression,
+                lane=f"turnover_aware::{atom['lane']}::{kind}",
+                source_generator="phase3bp_true1min_turnover_aware",
+                note=f"turnover-aware smoothed atom {atom['name']} {kind}",
+                policy=policy,
+            )
+            if len(rows) > before:
+                rows[-1]["expected_turnover_bucket"] = "low"
+                rows[-1]["turnover_aware_transform"] = kind
+
+    state_atoms = [atom for atom in usable_atoms if atom["side"] == "state"]
+    event_atoms = [atom for atom in usable_atoms if atom["side"] == "event"]
+    state_atoms = _rank_atoms_for_interaction(state_atoms, policy, max(32, max_candidates))
+    event_atoms = _rank_atoms_for_interaction(event_atoms, policy, max(32, max_candidates))
+    for left in event_atoms:
+        for right in state_atoms:
+            if len(rows) >= max_candidates * 4:
+                break
+            if left["name"].split("_")[0] == right["name"].split("_")[0]:
+                continue
+            left_slow = _smooth_expr(_atom_normalized_expr(left), 15, delay=2)
+            right_slow = _smooth_expr(_atom_normalized_expr(right), 30)
+            variants = {
+                "slow_product": f"CSRank(Mul({left_slow},{right_slow}))",
+                "slow_spread": f"CSRank(Sub({left_slow},{right_slow}))",
+            }
+            if include_residual:
+                variants["slow_residual"] = f"CSRank(SafeCSResidual(CSRank({left_slow}),CSRank({right_slow}),20,5,0.8))"
+            for kind, expression in variants.items():
+                before = len(rows)
+                _add_candidate(
+                    rows,
+                    seen,
+                    blocked,
+                    expression,
+                    lane=f"turnover_aware_interaction::{left['lane']}::{right['lane']}::{kind}",
+                    source_generator="phase3bp_true1min_turnover_aware",
+                    note=f"turnover-aware smoothed interaction {left['name']} x {right['name']} {kind}",
+                    policy=policy,
+                )
+                if len(rows) > before:
+                    rows[-1]["expected_turnover_bucket"] = "low"
+                    rows[-1]["turnover_aware_transform"] = kind
+                if len(rows) >= max_candidates * 4:
+                    break
+
+    rows.sort(
+        key=lambda row: (
+            float(row.get("policy_score") or 0.0),
+            int(row.get("max_window") or 0),
+            row["expression_hash"],
+        ),
+        reverse=True,
+    )
+    selected: list[dict[str, Any]] = []
+    lane_counts: Counter[str] = Counter()
+    fieldset_counts: Counter[str] = Counter()
+    lane_cap = max(5, int(math.ceil(max_candidates * 0.14)))
+    fieldset_cap = 6
+    for row in rows:
+        lane = str(row.get("factor_lane"))
+        fieldset = str(row.get("fields"))
+        if lane_counts[lane] >= lane_cap:
+            continue
+        if fieldset_counts[fieldset] >= fieldset_cap:
+            continue
+        selected.append(row)
+        lane_counts[lane] += 1
+        fieldset_counts[fieldset] += 1
+        if len(selected) >= max_candidates:
+            break
+    for idx, row in enumerate(selected, 1):
+        row["candidate_id"] = f"phase3bp_turnover_{idx:05d}"
     return selected
 
 
@@ -933,6 +1056,14 @@ def _generate_candidates(
             blocked,
             policy,
             include_interactions=True,
+            available_fields=available_fields,
+        )
+    if mode == "turnover_aware":
+        return _generate_turnover_aware_candidates(
+            max_candidates,
+            blocked,
+            policy,
+            include_residual=include_residual,
             available_fields=available_fields,
         )
     raise ValueError(f"unknown algorithm mode: {mode}")
