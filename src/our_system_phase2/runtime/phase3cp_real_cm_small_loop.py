@@ -124,6 +124,7 @@ def _generate_candidates(
     budget_rows: list[dict[str, Any]],
     total_budget: int,
     initial_blocked: set[str],
+    available_fields: set[str],
     output_root: Path,
     report_root: Path,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -133,7 +134,14 @@ def _generate_candidates(
     blocked: set[str] = set(initial_blocked)
     for arm in scaled_plan:
         budget = int(arm.get("cp_smoke_candidate_budget") or 0)
-        rows = _generate_for_arm(arm, budget=budget, blocked=blocked, policy=policy, start_idx=len(generated) + 1)
+        rows = _generate_for_arm(
+            arm,
+            budget=budget,
+            blocked=blocked,
+            policy=policy,
+            start_idx=len(generated) + 1,
+            available_fields=available_fields,
+        )
         for row in rows:
             digest = str(row.get("expression_hash") or "")
             if digest:
@@ -148,7 +156,14 @@ def _generate_candidates(
             "category": "fresh",
         }
         missing = total_budget - len(generated)
-        shortfall_rows = _generate_for_arm(fill_arm, budget=missing, blocked=blocked, policy=policy, start_idx=len(generated) + 1)
+        shortfall_rows = _generate_for_arm(
+            fill_arm,
+            budget=missing,
+            blocked=blocked,
+            policy=policy,
+            start_idx=len(generated) + 1,
+            available_fields=available_fields,
+        )
         generated.extend(shortfall_rows)
 
     decisions = [_decisionize(row, idx) for idx, row in enumerate(generated[:total_budget], 1)]
@@ -448,13 +463,17 @@ def main(argv: list[str] | None = None) -> int:
 
     arm_budget_path = _budget_table_path(co_root, args.arm_budget_table)
     arm_budget_rows = read_csv_rows(arm_budget_path)
+    available_fields, generation_panel_meta = _available_fields(shard_root, max(1, int(args.cm_max_shards)))
     memory_hashes, memory_rows = _load_memory_hashes(args.memory_root, args.memory_glob)
     _write_csv(output_root / "phase3cp_real_cm_memory_roots.csv", memory_rows)
     _write_csv(report_root / "phase3cp_real_cm_memory_roots.csv", memory_rows)
+    _write_csv(output_root / "phase3cp_real_cm_generation_panel_schema.csv", generation_panel_meta)
+    _write_csv(report_root / "phase3cp_real_cm_generation_panel_schema.csv", generation_panel_meta)
     decisions, scaled_plan = _generate_candidates(
         budget_rows=arm_budget_rows,
         total_budget=args.generation_budget,
         initial_blocked=memory_hashes,
+        available_fields=available_fields,
         output_root=output_root,
         report_root=report_root,
     )
