@@ -1,0 +1,52 @@
+{
+  "acceleration_contract": {
+    "batched_shard_read": true,
+    "column_pruned_pyarrow_read": true,
+    "expression_cache_scope": "per_shard",
+    "fast_group_rank": true,
+    "global_worker_limit": 1,
+    "mkl_threads": "1",
+    "numexpr_max_threads": "8",
+    "omp_threads": "1",
+    "parallel_workers": 1
+  },
+  "candidate_count": 56,
+  "checkpoint_every_candidates": 4,
+  "cost_bps": 5.0,
+  "created_at": "2026-06-25T15:57:00.978314+00:00",
+  "decision": "PHASE3CM_TRAIN_REWARD_AUDIT_READY_DIAGNOSTIC_ONLY",
+  "drop_hard_blocked_input": true,
+  "experiment_id": "20260623_phase3cm_train_portfolio_sortino_reward_audit",
+  "fast_mode": true,
+  "followup_count": 0,
+  "holdout_fraction": 0.2,
+  "horizons": [
+    1,
+    5,
+    15,
+    30
+  ],
+  "incremental_checkpoints_enabled": true,
+  "input_candidate_audit": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\reports\\phase3ct_augmented_hybrid_bp_r3b_20260625\\phase3bp_top_decisions.csv",
+  "max_shards": 4,
+  "metric_boundary": "train portfolio Sortino reward audit; not production proof; holdout must not feed search",
+  "numexpr_threads": 8,
+  "package_versions": {
+    "bottleneck": "1.6.0",
+    "joblib": "1.5.3",
+    "numba": "0.65.1",
+    "numexpr": "2.14.1",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "polars": "1.42.0",
+    "pyarrow": "24.0.0",
+    "scikit-learn": "1.9.0"
+  },
+  "portfolio_pnl_rows_written": 0,
+  "python_executable": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+  "sample_trade_times_per_shard": 160,
+  "shard_root": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624",
+  "top_quantile": 0.2,
+  "train_fraction": 0.6,
+  "validation_fraction": 0.2
+}

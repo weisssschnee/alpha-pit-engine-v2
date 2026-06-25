@@ -19,7 +19,7 @@ import re
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
@@ -324,6 +324,7 @@ def _run_materialization(
     sample_trade_times_per_shard: int | None,
     min_obs_per_time: int,
     pairwise_candidate_limit: int = 96,
+    progress_callback: Callable[[dict[str, Any]], None] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     fields = sorted({field for row in candidates for field in row["fields_list"]})
     max_window = max((int(row["max_window"]) for row in candidates), default=0)
@@ -361,7 +362,25 @@ def _run_materialization(
     per_candidate_metric_accum: dict[tuple[str, int], list[dict[str, Any]]] = {}
     per_candidate_signal_chunks: dict[str, list[pd.Series]] = {expr_hash: [] for expr_hash in pairwise_hashes}
 
+    def emit_progress(event: dict[str, Any]) -> None:
+        if progress_callback is None:
+            return
+        try:
+            progress_callback(event)
+        except Exception:
+            # Progress reporting must never change materialization semantics.
+            pass
+
     for shard_index, panel in enumerate(panels):
+        emit_progress(
+            {
+                "stage": "read_panel_start",
+                "shard_index": shard_index,
+                "panel_path": str(panel),
+                "candidate_count": len(candidates),
+                "completed_candidate_count": 0,
+            }
+        )
         schema = set(pq.ParquetFile(panel).schema_arrow.names)
         columns = [column for column in sorted(required) if column in schema]
         missing = sorted({"code", "trade_time", "date", "close"} - set(columns))
@@ -400,8 +419,9 @@ def _run_materialization(
             "code_count": int(eval_frame["code"].nunique()),
         }
         audit_meta["shards"].append(shard_meta)
+        emit_progress({"stage": "read_panel_complete", **shard_meta, "candidate_count": len(candidates), "completed_candidate_count": 0})
 
-        for candidate in candidates:
+        for candidate_index, candidate in enumerate(candidates, 1):
             expr_hash = str(candidate["expression_hash"])
             expression = str(candidate.get("expression") or "")
             signal_all = pd.to_numeric(evaluate_panel_expression(frame, expression, cache={}), errors="coerce")
@@ -436,7 +456,19 @@ def _run_materialization(
                 row.update(_turnover(signal_rank, eval_frame))
                 per_candidate_metric_accum.setdefault((expr_hash, horizon), []).append(row)
                 metric_rows.append(row)
+            if candidate_index == 1 or candidate_index % 10 == 0 or candidate_index == len(candidates):
+                emit_progress(
+                    {
+                        "stage": "candidate_eval_progress",
+                        "shard_index": shard_index,
+                        "panel_path": str(panel),
+                        "candidate_count": len(candidates),
+                        "completed_candidate_count": candidate_index,
+                        "metric_rows": len(metric_rows),
+                    }
+                )
 
+    emit_progress({"stage": "aggregate_start", "candidate_count": len(candidates), "metric_rows": len(metric_rows)})
     aggregate_rows: list[dict[str, Any]] = []
     for candidate in candidates:
         expr_hash = str(candidate["expression_hash"])
@@ -481,7 +513,9 @@ def _run_materialization(
         for expr_hash, chunks in per_candidate_signal_chunks.items()
         if chunks
     }
+    emit_progress({"stage": "pairwise_start", "signal_vector_count": len(signal_vectors), "aggregate_rows": len(aggregate_rows)})
     pairwise_rows = _candidate_pairwise(signal_vectors)
+    emit_progress({"stage": "complete", "metric_rows": len(metric_rows), "aggregate_rows": len(aggregate_rows), "pairwise_rows": len(pairwise_rows)})
     return metric_rows, aggregate_rows, {**audit_meta, "pairwise_rows": pairwise_rows}
 
 

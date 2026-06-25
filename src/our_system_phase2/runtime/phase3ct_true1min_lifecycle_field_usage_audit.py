@@ -235,6 +235,8 @@ def _candidate_usage(candidate_files: list[Path], schema_fields: set[str]) -> tu
         blocked_rows = 0
         effective_rows = 0
         zero_signal_rows = 0
+        future_wrong_lag_rows = 0
+        future_wrong_lag_followup_rows = 0
         for idx, item in enumerate(data, 1):
             expr = str(item.get("expression") or "")
             fields = _fields(expr)
@@ -257,6 +259,12 @@ def _candidate_usage(candidate_files: list[Path], schema_fields: set[str]) -> tu
                 zero_signal_rows += 1
             else:
                 effective_rows += 1
+            item_blockers = item.get("phase3bp_blocker_flags") or item.get("train_reward_blockers") or item.get("blocker_flags") or ""
+            item_decision = item.get("phase3bp_decision") or item.get("train_reward_decision") or ""
+            if "future_signal_wrong_lag_too_strong" in str(item_blockers):
+                future_wrong_lag_rows += 1
+                if "followup" in str(item_decision).lower() or "priority" in str(item_decision).lower():
+                    future_wrong_lag_followup_rows += 1
             for field in fields:
                 used_fields[field] += 1
                 lane = field_lane(field)
@@ -276,8 +284,8 @@ def _candidate_usage(candidate_files: list[Path], schema_fields: set[str]) -> tu
                     "blocked_or_future_fields": "|".join(blocked),
                     "signal_nonnull_sum": signal_nonnull or "",
                     "effective_signal_used": bool(effective),
-                    "decision": item.get("phase3bp_decision") or item.get("train_reward_decision") or "",
-                    "blockers": item.get("phase3bp_blocker_flags") or item.get("train_reward_blockers") or item.get("blocker_flags") or "",
+                    "decision": item_decision,
+                    "blockers": item_blockers,
                 }
             )
         file_summaries.append(
@@ -288,6 +296,8 @@ def _candidate_usage(candidate_files: list[Path], schema_fields: set[str]) -> tu
                 "blocked_or_future_rows": blocked_rows,
                 "effective_signal_rows": effective_rows,
                 "zero_signal_rows": zero_signal_rows,
+                "future_wrong_lag_rows": future_wrong_lag_rows,
+                "future_wrong_lag_followup_rows": future_wrong_lag_followup_rows,
             }
         )
     summary = {
@@ -298,6 +308,8 @@ def _candidate_usage(candidate_files: list[Path], schema_fields: set[str]) -> tu
         "effective_used_lane_counts": dict(sorted(effective_lane_counts.items())),
         "top_used_fields": used_fields.most_common(30),
         "top_effective_fields": effective_fields.most_common(30),
+        "future_wrong_lag_rows": sum(int(row.get("future_wrong_lag_rows") or 0) for row in file_summaries),
+        "future_wrong_lag_followup_rows": sum(int(row.get("future_wrong_lag_followup_rows") or 0) for row in file_summaries),
     }
     return rows, summary, blockers
 
@@ -383,6 +395,10 @@ def main(argv: list[str] | None = None) -> int:
             blockers.append("event_state_candidates_present_but_zero_effective_signal")
         if used_lanes.get("lagged_context", 0) > 0 and effective_lanes.get("lagged_context", 0) <= 0:
             blockers.append("lagged_context_candidates_present_but_zero_effective_signal")
+        if int(candidate_usage_summary.get("future_wrong_lag_followup_rows") or 0) > 0:
+            blockers.append(
+                f"followup_candidates_have_future_wrong_lag:{candidate_usage_summary['future_wrong_lag_followup_rows']}"
+            )
 
     decision = "PASS_TRUE1MIN_LIFECYCLE_FIELD_USAGE_AUDIT" if not blockers else "HOLD_TRUE1MIN_LIFECYCLE_FIELD_USAGE_AUDIT"
     summary = {

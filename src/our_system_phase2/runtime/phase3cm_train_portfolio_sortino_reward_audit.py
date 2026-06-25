@@ -47,6 +47,13 @@ REPO = Path(__file__).resolve().parents[3]
 DEFAULT_CANDIDATE_AUDIT = Path("reports/phase3cl_bz_candidate_audit_20260622/phase3ca_bz_candidate_audit.csv")
 DEFAULT_OUTPUT_ROOT = Path("runtime/phase3cm_train_portfolio_sortino_reward_audit_20260623")
 DEFAULT_REPORT_ROOT = Path("reports/phase3cm_train_portfolio_sortino_reward_audit_20260623")
+HARD_INPUT_BLOCKER_TOKENS = (
+    "future_signal_wrong_lag_too_strong",
+    "candidate_uses_blocked_or_future_fields",
+    "candidate_missing_schema_fields",
+    "missing_schema",
+    "blocked_or_future",
+)
 
 
 def _resolve(path: Path) -> Path:
@@ -136,7 +143,23 @@ def _package_versions() -> dict[str, str]:
     return versions
 
 
-def _load_candidates(path: Path, limit: int) -> list[dict[str, Any]]:
+def _has_hard_input_blocker(row: dict[str, Any]) -> bool:
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in (
+            "phase3bp_blocker_flags",
+            "phase3ca_blocker_flags",
+            "train_reward_blockers",
+            "blocker_flags",
+            "hard_reject_reason",
+            "blocked_or_future_fields",
+            "missing_schema_fields",
+        )
+    ).lower()
+    return any(token in text for token in HARD_INPUT_BLOCKER_TOKENS)
+
+
+def _load_candidates(path: Path, limit: int, *, drop_hard_blocked_input: bool = False) -> list[dict[str, Any]]:
     rows = _read_csv(path)
     rows.sort(
         key=lambda row: (
@@ -148,6 +171,8 @@ def _load_candidates(path: Path, limit: int) -> list[dict[str, Any]]:
     selected: list[dict[str, Any]] = []
     seen: set[str] = set()
     for row in rows:
+        if drop_hard_blocked_input and _has_hard_input_blocker(row):
+            continue
         expression = str(row.get("expression") or "").strip()
         digest = str(row.get("expression_hash") or "").strip()
         if not expression:
@@ -631,6 +656,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--numexpr-threads", type=int, default=4)
     parser.add_argument("--checkpoint-every-candidates", type=int, default=8)
     parser.add_argument("--disable-incremental-checkpoints", action="store_true")
+    parser.add_argument("--drop-hard-blocked-input", action="store_true")
     args = parser.parse_args(argv)
 
     if args.fast_mode:
@@ -646,7 +672,11 @@ def main(argv: list[str] | None = None) -> int:
     output_root.mkdir(parents=True, exist_ok=True)
     report_root.mkdir(parents=True, exist_ok=True)
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
-    candidates = _load_candidates(_resolve(args.candidate_audit), args.candidate_limit)
+    candidates = _load_candidates(
+        _resolve(args.candidate_audit),
+        args.candidate_limit,
+        drop_hard_blocked_input=bool(args.drop_hard_blocked_input),
+    )
     panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
 
     rows_by_hash: dict[str, list[dict[str, Any]]] = {str(candidate["expression_hash"]): [] for candidate in candidates}
@@ -779,6 +809,7 @@ def main(argv: list[str] | None = None) -> int:
         "numexpr_threads": int(args.numexpr_threads),
         "incremental_checkpoints_enabled": not bool(args.disable_incremental_checkpoints),
         "checkpoint_every_candidates": int(args.checkpoint_every_candidates),
+        "drop_hard_blocked_input": bool(args.drop_hard_blocked_input),
         "python_executable": os.sys.executable,
         "package_versions": _package_versions(),
         "acceleration_contract": {

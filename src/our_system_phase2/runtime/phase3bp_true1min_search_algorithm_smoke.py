@@ -775,12 +775,27 @@ def _generate_hybrid_candidates(
     rounds: int,
     available_fields: list[str] | set[str] | None = None,
 ) -> list[dict[str, Any]]:
-    rx_budget = max(1, int(math.ceil(max_candidates * 0.45)))
-    cem_budget = max_candidates - rx_budget
+    atoms = _raw_atoms(available_fields)
+    has_event_state = any(str(atom.get("role") or "") == "event_state_search" for atom in atoms)
+    has_lagged_context = any(str(atom.get("role") or "") == "lagged_context_search" for atom in atoms)
+    sidecar_budget = max(0, int(math.ceil(max_candidates * 0.25))) if has_event_state and has_lagged_context else 0
+    rx_budget = max(1, int(math.ceil((max_candidates - sidecar_budget) * 0.45)))
+    cem_budget = max(1, max_candidates - sidecar_budget - rx_budget)
     rx_rows = _generate_rx_ucb_candidates(rx_budget, blocked, policy, include_residual=False, available_fields=available_fields)
+    sidecar_rows = (
+        _generate_event_state_candidates(
+            sidecar_budget,
+            blocked | {str(row.get("expression_hash")) for row in rx_rows},
+            policy,
+            include_interactions=True,
+            available_fields=available_fields,
+        )
+        if sidecar_budget > 0
+        else []
+    )
     cem_rows = _generate_cem_elite_candidates(
         cem_budget + max(8, cem_budget // 4),
-        blocked | {str(row.get("expression_hash")) for row in rx_rows},
+        blocked | {str(row.get("expression_hash")) for row in [*rx_rows, *sidecar_rows]},
         policy,
         include_residual=include_residual,
         population_size=max(population_size, max_candidates * 3),
@@ -790,7 +805,7 @@ def _generate_hybrid_candidates(
     )
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for row in [*rx_rows, *cem_rows]:
+    for row in [*sidecar_rows, *rx_rows, *cem_rows]:
         digest = str(row.get("expression_hash"))
         if digest in seen:
             continue
@@ -879,10 +894,16 @@ def _aggregate_decisions(
                 best[key] = meta[key]
         stable = sum(1 for row in rows if abs(_f(row.get("aligned_ic_mean"), 0.0)) > 0.02)
         inherited = {item.strip() for item in str(best.get("blocker_flags") or "").split("|") if item.strip()}
+        all_inherited = {
+            flag.strip()
+            for row in rows
+            for flag in str(row.get("blocker_flags") or "").split("|")
+            if flag.strip()
+        }
         blockers: list[str] = []
         if expr_hash in crowded:
             blockers.append("signal_corr_abs_ge_0.75")
-        if "future_signal_wrong_lag_too_strong" in inherited:
+        if "future_signal_wrong_lag_too_strong" in inherited or "future_signal_wrong_lag_too_strong" in all_inherited:
             blockers.append("future_signal_wrong_lag_too_strong")
         if stable < 2:
             blockers.append("too_few_positive_horizons")
@@ -895,6 +916,9 @@ def _aggregate_decisions(
         best["open_direction"] = "long_top" if aligned_ic >= 0 else "short_top"
         best["abs_aligned_ic_mean"] = abs_ic
         best["positive_horizon_count"] = stable
+        best["future_wrong_lag_horizon_count"] = sum(
+            1 for row in rows if "future_signal_wrong_lag_too_strong" in str(row.get("blocker_flags") or "")
+        )
         best["phase3bp_blocker_flags"] = "|".join(blockers)
         best["phase3bp_decision"] = "bp_followup_priority" if not blockers and abs_ic > 0.035 else "bp_watch_or_reject"
         decisions.append(best)
@@ -1027,12 +1051,30 @@ def main(argv: list[str] | None = None) -> int:
         available_fields=available_fields,
     )
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
+    progress_path = output_root / "phase3bp_progress.json"
+
+    def write_progress(event: dict[str, Any]) -> None:
+        _write_json(
+            progress_path,
+            {
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "algorithm_mode": args.algorithm_mode,
+                "candidate_count": len(candidates),
+                "panel_count": len(panels),
+                "sample_trade_times_per_shard": args.sample_trade_times_per_shard,
+                "horizons_min": list(horizons),
+                **event,
+            },
+        )
+
+    write_progress({"stage": "materialization_start"})
     metric_rows, aggregate_rows, meta = _run_materialization(
         candidates=candidates,
         panels=panels,
         horizons=horizons,
         sample_trade_times_per_shard=args.sample_trade_times_per_shard,
         min_obs_per_time=args.min_obs_per_time,
+        progress_callback=write_progress,
     )
     pairwise_rows = meta.pop("pairwise_rows")
     decisions = _aggregate_decisions(aggregate_rows, pairwise_rows, candidates, args.top_decisions)
