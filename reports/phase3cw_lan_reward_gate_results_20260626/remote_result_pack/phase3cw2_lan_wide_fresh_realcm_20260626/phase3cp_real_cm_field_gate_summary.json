@@ -1,0 +1,47 @@
+{
+  "available_field_count": 86,
+  "candidate_count": 384,
+  "max_shards_schema_checked": 4,
+  "missing_field_examples": [],
+  "panel_meta": [
+    {
+      "column_count": 86,
+      "has_amount": true,
+      "has_close": true,
+      "has_trade_time": true,
+      "has_volume": true,
+      "panel": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+    },
+    {
+      "column_count": 86,
+      "has_amount": true,
+      "has_close": true,
+      "has_trade_time": true,
+      "has_volume": true,
+      "panel": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+    },
+    {
+      "column_count": 86,
+      "has_amount": true,
+      "has_close": true,
+      "has_trade_time": true,
+      "has_volume": true,
+      "panel": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+    },
+    {
+      "column_count": 86,
+      "has_amount": true,
+      "has_close": true,
+      "has_trade_time": true,
+      "has_volume": true,
+      "panel": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+    }
+  ],
+  "passed_over_limit_count": 1664,
+  "passed_total_count": 2048,
+  "pre_cm_turnover_proxy_max": 0.72,
+  "rejected_missing_field_count": 0,
+  "rejected_turnover_proxy_count": 0,
+  "selection_mode": "arm_balanced",
+  "shard_root": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624"
+}

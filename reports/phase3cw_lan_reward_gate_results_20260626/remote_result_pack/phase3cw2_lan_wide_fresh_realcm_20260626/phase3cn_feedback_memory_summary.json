@@ -1,0 +1,22 @@
+{
+  "arm_count": 5,
+  "blocked_family_count": 291,
+  "candidate_count": 384,
+  "created_at": "2026-06-25T18:47:06.140196+00:00",
+  "decision": "PHASE3CN_FEEDBACK_MEMORY_READY_DIAGNOSTIC_ONLY",
+  "experiment_id": "20260623_phase3cn_feedback_memory_smoke",
+  "exploit_allowed_family_count": 0,
+  "family_count": 294,
+  "max_family_share": 0.25,
+  "max_turnover": 0.75,
+  "metric_boundary": "feedback memory only; no search generation; holdout is read-only and excluded from arm score",
+  "min_clean_feedback": 2,
+  "sources": [
+    {
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260626_021103_d38bbd034757\\runtime\\phase3cw2_lan_wide_fresh_realcm_20260626\\phase3cm_train_reward\\phase3cm_train_reward.csv",
+      "rows": 384
+    }
+  ],
+  "train_threshold": 0.0,
+  "validation_floor": 0.0
+}

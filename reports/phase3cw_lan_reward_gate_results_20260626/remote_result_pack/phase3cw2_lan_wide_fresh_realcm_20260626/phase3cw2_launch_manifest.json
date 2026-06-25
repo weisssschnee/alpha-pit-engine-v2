@@ -1,0 +1,18 @@
+﻿{
+    "mode":  "wide true1min fresh search with real CM gate",
+    "launched_at":  "2026-06-26T02:19:41",
+    "shard_root":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260624_182909_bea5eacbe591\\runtime\\phase3cs_true1min_sidecar_augmented_shards_zls4_20260624",
+    "guardrails":  [
+                       "true1min shard only",
+                       "sidecar augmented shards preferred",
+                       "pre-CM turnover proxy gate",
+                       "real CM reward gate",
+                       "CEM probe-only"
+                   ],
+    "report_root":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260626_021103_d38bbd034757\\reports\\phase3cw2_lan_wide_fresh_realcm_20260626",
+    "python":  "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+    "repo":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260626_021103_d38bbd034757",
+    "run_id":  "phase3cw2_lan_wide_fresh_realcm_20260626",
+    "arm_budget_table":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260626_021103_d38bbd034757\\runtime\\phase3cw2_lan_wide_fresh_realcm_20260626\\phase3cw2_arm_budget_table.csv",
+    "output_root":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260626_021103_d38bbd034757\\runtime\\phase3cw2_lan_wide_fresh_realcm_20260626"
+}
