@@ -37,11 +37,9 @@ from our_system_phase2.runtime.phase3bn_open_diversified_true1min_canary import 
     _prior_hashes,
 )
 from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
-    PRIOR_DECISION_FILES,
     PRIOR_HASH_FILES,
     _aggregate_decisions,
     _ast_variables,
-    _build_policy,
     _fields,
     _generate_cem_elite_candidates,
     _generate_hybrid_candidates,
@@ -49,6 +47,7 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     _operators,
     _summarize_by,
     _windows,
+    build_checked_seed_policy,
 )
 from our_system_phase2.runtime.phase3bq_compute_allocation_benchmark import (
     _fmt,
@@ -447,7 +446,7 @@ def main(argv: list[str] | None = None) -> int:
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
     blocked = _load_memory_hashes(args.memory_root) | _prior_hashes(PRIOR_HASH_FILES)
 
-    seed_policy = _build_policy(PRIOR_DECISION_FILES, exploration=args.seed_exploration)
+    seed_policy, _, _ = build_checked_seed_policy(exploration=args.seed_exploration)
     external_feedback = load_search_feedback_context(
         feedback_table=_resolve(args.feedback_table) if args.feedback_table else None,
         arm_score_table=_resolve(args.arm_score_table) if args.arm_score_table else None,

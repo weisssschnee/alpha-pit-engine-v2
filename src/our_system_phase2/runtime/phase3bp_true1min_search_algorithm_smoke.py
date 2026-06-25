@@ -63,6 +63,12 @@ PRIOR_HASH_FILES = [
     Path("reports/phase3bn_open_diversified_true1min_canary_20260615/phase3bn_top_decisions.csv"),
     Path("reports/phase3bo_mature_cem_bridge_true1min_pack_20260615/phase3bo_top_decisions.csv"),
 ]
+AVAILABLE_ALGORITHM_ARMS = [
+    "rx_ucb",
+    "cem_elite",
+    "hybrid_rx_cem",
+    "event_state",
+]
 OPERATORS = {
     "Abs",
     "Add",
@@ -106,6 +112,69 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
         return []
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         return [dict(row) for row in csv.DictReader(handle)]
+
+
+def _csv_file_status(paths: list[Path]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for path in paths:
+        resolved = _resolve(path)
+        row_count = 0
+        if resolved.exists():
+            row_count = len(_read_csv(path))
+        rows.append(
+            {
+                "path": str(path),
+                "resolved_path": str(resolved),
+                "exists": resolved.exists(),
+                "row_count": row_count,
+                "size_bytes": resolved.stat().st_size if resolved.exists() else 0,
+            }
+        )
+    return rows
+
+
+def _assert_policy_inputs_ready(
+    *,
+    policy: dict[str, Any],
+    prior_decision_status: list[dict[str, Any]],
+    prior_hash_status: list[dict[str, Any]],
+    allow_empty_policy: bool,
+) -> None:
+    missing_decisions = [row for row in prior_decision_status if not row["exists"]]
+    missing_hashes = [row for row in prior_hash_status if not row["exists"]]
+    total_observations = int(policy.get("total_observation_count") or 0)
+    if allow_empty_policy:
+        return
+    if missing_decisions or missing_hashes or total_observations <= 0:
+        payload = {
+            "error": "phase3bp policy inputs are incomplete",
+            "total_policy_observations": total_observations,
+            "missing_prior_decision_files": [row["path"] for row in missing_decisions],
+            "missing_prior_hash_files": [row["path"] for row in missing_hashes],
+            "how_to_override": "pass --allow-empty-policy only for an explicitly labelled cold-start diagnostic run",
+        }
+        raise RuntimeError(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+def build_checked_seed_policy(
+    *,
+    exploration: float,
+    prior_decision_files: list[Path] | None = None,
+    prior_hash_files: list[Path] | None = None,
+    allow_empty_policy: bool = False,
+) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
+    decision_files = list(prior_decision_files or PRIOR_DECISION_FILES)
+    hash_files = list(prior_hash_files or PRIOR_HASH_FILES)
+    policy = _build_policy(decision_files, exploration=exploration)
+    decision_status = _csv_file_status(decision_files)
+    hash_status = _csv_file_status(hash_files)
+    _assert_policy_inputs_ready(
+        policy=policy,
+        prior_decision_status=decision_status,
+        prior_hash_status=hash_status,
+        allow_empty_policy=allow_empty_policy,
+    )
+    return policy, decision_status, hash_status
 
 
 def _operators(expression: str) -> set[str]:
@@ -970,6 +1039,9 @@ def _render_md(summary: dict[str, Any], generator_rows: list[dict[str, Any]], la
         "## Scope",
         "",
         f"- generator mode: `{summary['generator_mode']}`",
+        f"- available algorithm arms: `{','.join(summary.get('available_algorithm_arms') or [])}`",
+        f"- policy observations: `{(summary.get('policy') or {}).get('total_observation_count', 0)}`",
+        f"- allow empty policy: `{summary.get('allow_empty_policy')}`",
         f"- candidates generated: `{summary['candidate_count']}`",
         f"- true-1min shard panels: `{summary['panel_count']}`",
         f"- sampled signal trade_times per shard: `{summary['sample_trade_times_per_shard']}`",
@@ -1025,10 +1097,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--min-obs-per-time", type=int, default=20)
     parser.add_argument("--policy-exploration", type=float, default=0.45)
     parser.add_argument("--include-residual", action="store_true")
-    parser.add_argument("--algorithm-mode", choices=["rx_ucb", "cem_elite", "hybrid_rx_cem", "event_state"], default="rx_ucb")
+    parser.add_argument("--algorithm-mode", choices=AVAILABLE_ALGORITHM_ARMS, default="rx_ucb")
     parser.add_argument("--cem-population-size", type=int, default=384)
     parser.add_argument("--cem-elite-frac", type=float, default=0.18)
     parser.add_argument("--cem-rounds", type=int, default=2)
+    parser.add_argument("--prior-decision-file", type=Path, action="append", default=None)
+    parser.add_argument("--prior-hash-file", type=Path, action="append", default=None)
+    parser.add_argument(
+        "--allow-empty-policy",
+        action="store_true",
+        help="Allow cold-start generation when mature prior files are absent. Must only be used for labelled diagnostics.",
+    )
     args = parser.parse_args(argv)
 
     output_root = _resolve(args.output_root)
@@ -1037,8 +1116,15 @@ def main(argv: list[str] | None = None) -> int:
     report_root.mkdir(parents=True, exist_ok=True)
     panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
     available_fields = _panel_schema_fields(panels)
-    policy = _build_policy(PRIOR_DECISION_FILES, exploration=args.policy_exploration)
-    blocked = _load_memory_hashes(args.memory_root) | _prior_hashes(PRIOR_HASH_FILES)
+    prior_decision_files = list(args.prior_decision_file or PRIOR_DECISION_FILES)
+    prior_hash_files = list(args.prior_hash_file or PRIOR_HASH_FILES)
+    policy, prior_decision_status, prior_hash_status = build_checked_seed_policy(
+        exploration=args.policy_exploration,
+        prior_decision_files=prior_decision_files,
+        prior_hash_files=prior_hash_files,
+        allow_empty_policy=bool(args.allow_empty_policy),
+    )
+    blocked = _load_memory_hashes(args.memory_root) | _prior_hashes(prior_hash_files)
     candidates = _generate_candidates(
         args.algorithm_mode,
         args.max_candidates,
@@ -1088,6 +1174,7 @@ def main(argv: list[str] | None = None) -> int:
         "decision": "PHASE3BP_TRUE1MIN_SEARCH_ALGORITHM_SMOKE_COMPLETE_DIAGNOSTIC_ONLY",
         "generator_mode": f"true1min_{args.algorithm_mode}_smoke",
         "algorithm_mode": args.algorithm_mode,
+        "available_algorithm_arms": AVAILABLE_ALGORITHM_ARMS,
         "include_residual": bool(args.include_residual),
         "cem_population_size": args.cem_population_size,
         "cem_elite_frac": args.cem_elite_frac,
@@ -1104,6 +1191,9 @@ def main(argv: list[str] | None = None) -> int:
         "followup_priority_count": followup_count,
         "best_followup": best_followup,
         "policy": policy,
+        "prior_decision_files": prior_decision_status,
+        "prior_hash_files": prior_hash_status,
+        "allow_empty_policy": bool(args.allow_empty_policy),
         "output_root": str(output_root),
         "report_root": str(report_root),
         "hard_boundary": [

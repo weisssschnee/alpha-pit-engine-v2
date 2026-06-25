@@ -1,0 +1,4 @@
+factor_lane,count,best_aligned_ic,followup_count
+opening_vs_intraday_return_divergence,15,0.1159485662,1
+opening_directional_return,2,0.02812459417,0
+opening_volume_range_imbalance,15,0.02610984157,0

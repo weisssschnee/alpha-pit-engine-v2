@@ -1,0 +1,2 @@
+left_expression_hash,right_expression_hash,signal_rank_corr,abs_signal_rank_corr,left_phase3bk_rank,right_phase3bk_rank,left_expected_direction,right_expected_direction,direction_adjusted_corr,abs_direction_adjusted_corr,crowding_flag
+b68c515d47ec76c97d51f2db,c32780d6a803e8a4944e7918,-0.745240865,0.745240865,3,4,-1,1,0.745240865,0.745240865,true

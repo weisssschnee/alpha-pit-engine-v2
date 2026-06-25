@@ -38,7 +38,7 @@ from our_system_phase2.runtime.phase3cp_reward_gated_medium_search_smoke import 
     _scale_budgets,
     _write_arm_outputs,
 )
-from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import PRIOR_DECISION_FILES, _build_policy
+from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import build_checked_seed_policy
 from our_system_phase2.services.candidate_schema import normalize_candidate_schema, safe_float
 from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule, read_csv_rows
 
@@ -127,7 +127,7 @@ def _generate_candidates(
     report_root: Path,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     scaled_plan = _scale_budgets(budget_rows, total_budget)
-    policy = _build_policy(PRIOR_DECISION_FILES, exploration=0.94)
+    policy, _, _ = build_checked_seed_policy(exploration=0.94)
     generated: list[dict[str, Any]] = []
     blocked: set[str] = set(initial_blocked)
     for arm in scaled_plan:

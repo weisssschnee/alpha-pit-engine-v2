@@ -1,0 +1,263 @@
+{
+  "bk_audit": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3bk_bj_top64_strict_audit_20260615\\phase3bk_bj_top64_candidate_audit.csv",
+  "bl_aggregate": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3bl_bk_priority_signal_materialization_20260615\\phase3bl_candidate_horizon_aggregate.csv",
+  "candidate_count": 2,
+  "candidate_ranks": [
+    "3",
+    "4"
+  ],
+  "created_at": "2026-06-15T02:09:24.622353+00:00",
+  "decision": "PHASE3BM_BL_PASS_FOCUSED_REPLAY_COMPLETE_DIAGNOSTIC_ONLY",
+  "decisions": [
+    {
+      "aligned_ic_mean": 0.05655263241765793,
+      "aligned_spread_mean": 6.0099742251180544e-05,
+      "blocker_flags": "",
+      "candidate_id": "phase3bj_large_1min_009813",
+      "eval_rows_sum": 1238882,
+      "expected_direction": -1,
+      "expression": "CSRank(Sub(ZScore(Div(Std($close,20),Add(Abs(Mean($close,20)),0.000001))),ZScore(Div(Sub($m1_first30_vwap,$vwap),Add(Abs($vwap),0.000001)))))",
+      "expression_hash": "b68c515d47ec76c97d51f2db",
+      "factor_lane": "pure_fresh_cross",
+      "fields": "close|m1_first30_vwap|vwap",
+      "horizon_min": 30,
+      "ic_abs_mean": 0.10322533411788898,
+      "ic_hit_rate": 0.2885765550239235,
+      "ic_mean": -0.05655263241765793,
+      "mean_one_way_turnover": 0.7369090726913754,
+      "phase3bk_rank": "3",
+      "phase3bl_decision": "bl_signal_materialized_pass",
+      "phase3bm_blocker_flags": "direction_adjusted_signal_crowding_ge_0.70",
+      "phase3bm_decision": "bm_crowded_sibling_or_watch",
+      "primary_horizon_min": 30,
+      "shard_count": 16,
+      "signal_nonnull_sum": 1058182,
+      "signal_unique_min": 9145,
+      "spread_abs_mean": 0.002037757594414042,
+      "spread_hit_rate": 0.45215311004784686,
+      "spread_mean": -6.0099742251180544e-05,
+      "wrong_lag_future_ic_mean": -0.047648360742837084,
+      "wrong_lag_prev_ic_mean": -0.0528766844154656
+    },
+    {
+      "aligned_ic_mean": 0.06043644283854202,
+      "aligned_spread_mean": 0.00010853884693482105,
+      "blocker_flags": "",
+      "candidate_id": "phase3bj_large_1min_001478",
+      "eval_rows_sum": 1238882,
+      "expected_direction": 1,
+      "expression": "CSRank(Div(Sub($m1_first30_vwap,$close),Add(Abs($close),0.000001)))",
+      "expression_hash": "c32780d6a803e8a4944e7918",
+      "factor_lane": "opening_vwap_residual",
+      "fields": "close|m1_first30_vwap",
+      "horizon_min": 5,
+      "ic_abs_mean": 0.10211952780640861,
+      "ic_hit_rate": 0.7083333333333333,
+      "ic_mean": 0.06043644283854202,
+      "mean_one_way_turnover": 0.7633653591989795,
+      "phase3bk_rank": "4",
+      "phase3bl_decision": "bl_signal_materialized_pass",
+      "phase3bm_blocker_flags": "direction_adjusted_signal_crowding_ge_0.70",
+      "phase3bm_decision": "bm_crowded_sibling_or_watch",
+      "primary_horizon_min": 5,
+      "shard_count": 16,
+      "signal_nonnull_sum": 1089153,
+      "signal_unique_min": 2349,
+      "spread_abs_mean": 0.0009523022800390867,
+      "spread_hit_rate": 0.6086309523809523,
+      "spread_mean": 0.00010853884693482105,
+      "wrong_lag_future_ic_mean": 0.0043338647916237195,
+      "wrong_lag_prev_ic_mean": 0.03142698864518656
+    }
+  ],
+  "direction_adjusted_crowding_threshold": 0.7,
+  "full_replay_priority_count": 0,
+  "hard_boundary": [
+    "true trade_time minute panels only",
+    "direction-adjusted signal crowding blocks duplicate economic structures",
+    "X0/R3 read-only; no promotion decision"
+  ],
+  "horizons_min": [
+    1,
+    5,
+    15,
+    30
+  ],
+  "max_expression_window": 20,
+  "max_horizon": 30,
+  "output_root": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3bm_bl_pass_focused_replay_20260615",
+  "panel_count": 16,
+  "panel_paths": [
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+  ],
+  "read_fields": [
+    "close",
+    "m1_first30_vwap",
+    "vwap"
+  ],
+  "report_root": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\reports\\phase3bm_bl_pass_focused_replay_20260615",
+  "sample_trade_times_per_shard": 240,
+  "shard_root": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611",
+  "shards": [
+    {
+      "code_count": 340,
+      "eval_rows": 77571,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3940289,
+      "read_trade_time_count": 12190,
+      "shard_index": 0,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 77887,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3956359,
+      "read_trade_time_count": 12190,
+      "shard_index": 1,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 77138,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3918308,
+      "read_trade_time_count": 12190,
+      "shard_index": 2,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 77095,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3915926,
+      "read_trade_time_count": 12190,
+      "shard_index": 3,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 76861,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3904243,
+      "read_trade_time_count": 12190,
+      "shard_index": 4,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 77755,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3949660,
+      "read_trade_time_count": 12190,
+      "shard_index": 5,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 77462,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3934854,
+      "read_trade_time_count": 12190,
+      "shard_index": 6,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 78053,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3964778,
+      "read_trade_time_count": 12190,
+      "shard_index": 7,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 77633,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3943494,
+      "read_trade_time_count": 12190,
+      "shard_index": 8,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 77412,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3932296,
+      "read_trade_time_count": 12190,
+      "shard_index": 9,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 340,
+      "eval_rows": 77666,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3945234,
+      "read_trade_time_count": 12190,
+      "shard_index": 10,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 339,
+      "eval_rows": 77332,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3928261,
+      "read_trade_time_count": 12190,
+      "shard_index": 11,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 339,
+      "eval_rows": 77840,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3954012,
+      "read_trade_time_count": 12190,
+      "shard_index": 12,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 339,
+      "eval_rows": 76728,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3897385,
+      "read_trade_time_count": 12190,
+      "shard_index": 13,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 339,
+      "eval_rows": 77254,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3924174,
+      "read_trade_time_count": 12190,
+      "shard_index": 14,
+      "signal_trade_time_count": 240
+    },
+    {
+      "code_count": 339,
+      "eval_rows": 77195,
+      "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_data_feature_workspace_20260531\\runtime\\phase3au_aq_only_true1min_sharded_20260611\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "read_rows": 3921235,
+      "read_trade_time_count": 12190,
+      "shard_index": 15,
+      "signal_trade_time_count": 240
+    }
+  ],
+  "total_eval_rows": 1238882
+}

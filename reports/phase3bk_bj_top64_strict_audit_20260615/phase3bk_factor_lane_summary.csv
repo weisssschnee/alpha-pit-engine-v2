@@ -1,0 +1,5 @@
+factor_lane,count,priority_count,best_score,mean_score,memory_hit_count
+pure_fresh_cross,53,3,0.09413735425,0.04903820466,0
+opening_vwap_residual,3,1,0.05560990897,0.05267990206,0
+micro_volatility,7,0,0.05034624126,0.04916185706,0
+price_flow_divergence,1,0,0.04626728824,0.04626728824,0

@@ -24,8 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
-    PRIOR_DECISION_FILES,
-    _build_policy,
+    build_checked_seed_policy,
     _generate_cem_elite_candidates,
     _generate_event_state_candidates,
     _generate_hybrid_candidates,
@@ -362,7 +361,7 @@ def main(argv: list[str] | None = None) -> int:
     arm_budget_rows = read_csv_rows(co_root / "phase3co_arm_budget_table.csv")
     family_action_rows = read_csv_rows(co_root / "phase3co_family_action_table.csv")
     scaled_plan = _scale_budgets(arm_budget_rows, args.smoke_total_candidates)
-    policy = _build_policy(PRIOR_DECISION_FILES, exploration=0.92)
+    policy, _, _ = build_checked_seed_policy(exploration=0.92)
     generated: list[dict[str, Any]] = []
     blocked: set[str] = set()
     for arm in scaled_plan:
