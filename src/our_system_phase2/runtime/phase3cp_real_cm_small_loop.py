@@ -48,6 +48,7 @@ DEFAULT_CO_ROOT = Path("reports/phase3cp_reward_gated_medium_search_smoke_202606
 DEFAULT_OUTPUT_ROOT = Path("runtime/phase3cp_real_cm_small_loop_20260623")
 DEFAULT_REPORT_ROOT = Path("reports/phase3cp_real_cm_small_loop_20260623")
 DEFAULT_MEMORY_GLOBS = [
+    "**/*search_memory_ledger.csv",
     "**/*top_decisions.csv",
     "**/*candidate_audit.csv",
     "**/*generated_candidates.csv",
