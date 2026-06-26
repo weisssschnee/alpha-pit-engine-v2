@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,7 +28,12 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     build_checked_seed_policy,
 )
 from our_system_phase2.runtime.phase3bq_compute_allocation_benchmark import _fmt, _hot_path_scan, _package_versions
-from our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice import _policy_with_entropy_boost, _policy_with_feedback, _policy_with_train_reward_feedback
+from our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice import (
+    _external_feedback_seed_candidates,
+    _policy_with_entropy_boost,
+    _policy_with_feedback,
+    _policy_with_train_reward_feedback,
+)
 from our_system_phase2.runtime.phase3bt_ast_algorithm_bakeoff import _average_policies, _evaluate_bt_round, _mix_bt_unique, _tag_bt_candidates
 from our_system_phase2.services.search_feedback import (
     annotate_policy_with_external_feedback,
@@ -128,6 +134,8 @@ def _build_variant_candidates(
     blocked: set[str],
     used: set[str],
     available_fields: list[str] | set[str],
+    external_feedback_rows: list[dict[str, Any]],
+    external_feedback_context: Any,
 ) -> list[dict[str, Any]]:
     count = int(spec["count"])
     if spec["kind"] == "rx_control":
@@ -145,7 +153,16 @@ def _build_variant_candidates(
             rounds=int(spec["cem_rounds"]),
             available_fields=available_fields,
         )
-        return _tag_bt_candidates(rows, f"phase3bu_{spec['round_id']}")
+        feedback_seeds = _external_feedback_seed_candidates(
+            external_feedback_rows,
+            context=external_feedback_context,
+            policy=adaptive_policy,
+            available_fields=available_fields,
+            blocked=blocked | used,
+            max_count=max(0, min(16, int(math.ceil(count * 0.15)))),
+            source="phase3bu_external_train_feedback_seed",
+        )
+        return _mix_bt_unique(feedback_seeds, rows, max_candidates=count, source=f"phase3bu_{spec['round_id']}")
 
     entropy_policy = _policy_with_entropy_boost(seed_policy, boost=float(spec["entropy_boost"]), floor=float(spec["entropy_floor"]))
     fresh_policy = _average_policies(adaptive_policy, entropy_policy, primary_weight=float(spec["feedback_weight"]))
@@ -167,7 +184,17 @@ def _build_variant_candidates(
         include_residual=False,
         available_fields=available_fields,
     )
-    return _mix_bt_unique(primary, secondary, max_candidates=count, source=f"phase3bu_{spec['round_id']}")
+    feedback_seeds = _external_feedback_seed_candidates(
+        external_feedback_rows,
+        context=external_feedback_context,
+        policy=fresh_policy,
+        available_fields=available_fields,
+        blocked=blocked | used,
+        max_count=max(0, min(16, int(math.ceil(count * 0.15)))),
+        source="phase3bu_external_train_feedback_seed",
+    )
+    generated = _mix_bt_unique(primary, secondary, max_candidates=count, source=f"phase3bu_{spec['round_id']}")
+    return _mix_bt_unique(feedback_seeds, generated, max_candidates=count, source=f"phase3bu_{spec['round_id']}")
 
 
 def _render_md(summary: dict[str, Any]) -> str:
@@ -334,6 +361,8 @@ def main(argv: list[str] | None = None) -> int:
             blocked=blocked,
             used=used,
             available_fields=available_fields,
+            external_feedback_rows=external_feedback_rows,
+            external_feedback_context=external_feedback,
         )
         used |= {str(row.get("expression_hash")) for row in candidates}
         _, metrics, meta = _evaluate_bt_round(
