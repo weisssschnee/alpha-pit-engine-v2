@@ -1269,6 +1269,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
     progress_path = output_root / "phase3bp_progress.json"
+    _write_csv(output_root / "phase3bp_candidate_pack.pre_eval.csv", candidates)
+    sidecar_candidate_count = sum(
+        1
+        for row in candidates
+        if any(str(field).startswith(("ctx_", "evt_")) for field in (row.get("fields_list") or []))
+    )
 
     def write_progress(event: dict[str, Any]) -> None:
         _write_json(
@@ -1277,6 +1283,7 @@ def main(argv: list[str] | None = None) -> int:
                 "updated_at": datetime.now(timezone.utc).isoformat(),
                 "algorithm_mode": args.algorithm_mode,
                 "candidate_count": len(candidates),
+                "sidecar_candidate_count": sidecar_candidate_count,
                 "panel_count": len(panels),
                 "sample_trade_times_per_shard": args.sample_trade_times_per_shard,
                 "horizons_min": list(horizons),
