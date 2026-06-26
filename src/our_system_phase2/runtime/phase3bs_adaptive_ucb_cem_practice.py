@@ -38,6 +38,7 @@ from our_system_phase2.runtime.phase3bn_open_diversified_true1min_canary import 
 )
 from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     PRIOR_HASH_FILES,
+    _add_candidate,
     _aggregate_decisions,
     _ast_variables,
     _fields,
@@ -328,6 +329,60 @@ def _policy_with_train_reward_feedback(
         if isinstance(values, dict)
     }
     return policy
+
+
+def _external_feedback_seed_candidates(
+    feedback_rows: list[dict[str, Any]],
+    *,
+    context: Any,
+    policy: dict[str, Any],
+    available_fields: list[str] | set[str] | None,
+    blocked: set[str],
+    max_count: int,
+    source: str,
+) -> list[dict[str, Any]]:
+    """Force clean train-feedback expressions into the next candidate pack.
+
+    Policy-score updates alone can be dominated by older high-scoring minute
+    families. Clean train-only feedback is allowed to seed exploration directly,
+    while still passing schema and typed-primitive gates.
+    """
+
+    available = set(available_fields or [])
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    clean_rows = clean_optimizer_feedback_rows(
+        feedback_rows,
+        arm_id=getattr(context, "arm_id", ""),
+        train_threshold=0.0,
+        max_turnover=0.75,
+    )
+    clean_rows.sort(key=lambda row: _f(row.get("optimizer_reward") or row.get("train_reward"), 0.0), reverse=True)
+    for raw in clean_rows:
+        expression = str(raw.get("expression") or "").strip()
+        if not expression:
+            continue
+        fields = _fields(expression)
+        if available and any(field not in available for field in fields):
+            continue
+        before = len(rows)
+        _add_candidate(
+            rows,
+            seen,
+            blocked,
+            expression,
+            lane=f"external_train_feedback::{raw.get('generator_arm') or getattr(context, 'arm_id', 'unknown')}",
+            source_generator=source,
+            note=f"forced clean train-feedback seed {raw.get('candidate_id') or ''}".strip(),
+            policy=policy,
+        )
+        if len(rows) > before:
+            rows[-1]["external_feedback_seed"] = True
+            rows[-1]["feedback_candidate_id"] = raw.get("candidate_id", "")
+            rows[-1]["optimizer_reward"] = _f(raw.get("optimizer_reward") or raw.get("train_reward"), 0.0)
+        if len(rows) >= max(0, int(max_count)):
+            break
+    return rows
 
 
 def _round_metrics(round_id: str, candidates: list[dict[str, Any]], decisions: list[dict[str, Any]], meta: dict[str, Any], elapsed: float) -> dict[str, Any]:
@@ -633,18 +688,31 @@ def main(argv: list[str] | None = None) -> int:
         )
         adaptive_policy = annotate_policy_with_external_feedback(adaptive_policy, external_feedback)
     used_hashes = blocked | {str(row.get("expression_hash")) for row in seed_candidates}
-    cem_candidates = _tag_candidates(
-        _generate_cem_elite_candidates(
-            args.adaptive_cem_candidates,
-            used_hashes,
-            adaptive_policy,
-            include_residual=False,
-            population_size=max(1024, args.adaptive_cem_candidates * 8),
-            elite_frac=0.14,
-            rounds=4,
-            available_fields=available_fields,
-        ),
-        "phase3bs_adaptive_cem_feedback",
+    feedback_seed_budget = max(0, min(16, int(math.ceil(args.adaptive_cem_candidates * 0.25))))
+    feedback_seeds = _external_feedback_seed_candidates(
+        external_feedback_rows,
+        context=external_feedback,
+        policy=adaptive_policy,
+        available_fields=available_fields,
+        blocked=used_hashes,
+        max_count=feedback_seed_budget,
+        source="phase3bs_external_train_feedback_seed",
+    )
+    cem_generated = _generate_cem_elite_candidates(
+        args.adaptive_cem_candidates,
+        used_hashes | {str(row.get("expression_hash")) for row in feedback_seeds},
+        adaptive_policy,
+        include_residual=False,
+        population_size=max(1024, args.adaptive_cem_candidates * 8),
+        elite_frac=0.14,
+        rounds=4,
+        available_fields=available_fields,
+    )
+    cem_candidates = _mix_unique(
+        feedback_seeds,
+        cem_generated,
+        max_candidates=args.adaptive_cem_candidates,
+        source="phase3bs_adaptive_cem_feedback",
     )
     cem_decisions, cem_metrics, cem_meta = _evaluate_round(
         round_id="round2_adaptive_cem_feedback",
@@ -659,18 +727,30 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     used_hashes = used_hashes | {str(row.get("expression_hash")) for row in cem_candidates}
-    hybrid_candidates = _tag_candidates(
-        _generate_hybrid_candidates(
-            args.adaptive_hybrid_candidates,
-            used_hashes,
-            adaptive_policy,
-            include_residual=False,
-            population_size=max(1280, args.adaptive_hybrid_candidates * 8),
-            elite_frac=0.16,
-            rounds=4,
-            available_fields=available_fields,
-        ),
-        "phase3bs_adaptive_hybrid_rx_cem",
+    hybrid_feedback_seeds = _external_feedback_seed_candidates(
+        external_feedback_rows,
+        context=external_feedback,
+        policy=adaptive_policy,
+        available_fields=available_fields,
+        blocked=used_hashes,
+        max_count=max(0, min(16, int(math.ceil(args.adaptive_hybrid_candidates * 0.20)))),
+        source="phase3bs_external_train_feedback_seed",
+    )
+    hybrid_generated = _generate_hybrid_candidates(
+        args.adaptive_hybrid_candidates,
+        used_hashes | {str(row.get("expression_hash")) for row in hybrid_feedback_seeds},
+        adaptive_policy,
+        include_residual=False,
+        population_size=max(1280, args.adaptive_hybrid_candidates * 8),
+        elite_frac=0.16,
+        rounds=4,
+        available_fields=available_fields,
+    )
+    hybrid_candidates = _mix_unique(
+        hybrid_feedback_seeds,
+        hybrid_generated,
+        max_candidates=args.adaptive_hybrid_candidates,
+        source="phase3bs_adaptive_hybrid_rx_cem",
     )
     hybrid_decisions, hybrid_metrics, hybrid_meta = _evaluate_round(
         round_id="round3_adaptive_hybrid_rx_cem",

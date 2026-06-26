@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -45,6 +46,7 @@ from our_system_phase2.runtime.phase3bq_compute_allocation_benchmark import (
     _package_versions,
 )
 from our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice import (
+    _external_feedback_seed_candidates,
     _policy_with_entropy_boost,
     _policy_with_feedback,
     _policy_with_train_reward_feedback,
@@ -380,18 +382,31 @@ def main(argv: list[str] | None = None) -> int:
         )
         adaptive_policy = annotate_policy_with_external_feedback(adaptive_policy, external_feedback)
     used = blocked | {str(row.get("expression_hash")) for row in seed_candidates}
-    cem_candidates = _tag_bt_candidates(
-        _generate_cem_elite_candidates(
-            args.cem_candidates,
-            used,
-            adaptive_policy,
-            include_residual=False,
-            population_size=max(1600, args.cem_candidates * 10),
-            elite_frac=0.12,
-            rounds=5,
-            available_fields=available_fields,
-        ),
-        "phase3bt_ast_feedback_cem",
+    feedback_seed_budget = max(0, min(16, int(math.ceil(args.cem_candidates * 0.25))))
+    feedback_seeds = _external_feedback_seed_candidates(
+        external_feedback_rows,
+        context=external_feedback,
+        policy=adaptive_policy,
+        available_fields=available_fields,
+        blocked=used,
+        max_count=feedback_seed_budget,
+        source="phase3bt_external_train_feedback_seed",
+    )
+    cem_generated = _generate_cem_elite_candidates(
+        args.cem_candidates,
+        used | {str(row.get("expression_hash")) for row in feedback_seeds},
+        adaptive_policy,
+        include_residual=False,
+        population_size=max(1600, args.cem_candidates * 10),
+        elite_frac=0.12,
+        rounds=5,
+        available_fields=available_fields,
+    )
+    cem_candidates = _mix_bt_unique(
+        feedback_seeds,
+        cem_generated,
+        max_candidates=args.cem_candidates,
+        source="phase3bt_ast_feedback_cem",
     )
     cem_decisions, cem_metrics, cem_meta = _evaluate_bt_round(
         round_id="round2_ast_feedback_cem",
@@ -406,18 +421,30 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     used |= {str(row.get("expression_hash")) for row in cem_candidates}
-    hybrid_candidates = _tag_bt_candidates(
-        _generate_hybrid_candidates(
-            args.hybrid_candidates,
-            used,
-            adaptive_policy,
-            include_residual=False,
-            population_size=max(1920, args.hybrid_candidates * 10),
-            elite_frac=0.14,
-            rounds=5,
-            available_fields=available_fields,
-        ),
-        "phase3bt_ast_feedback_hybrid",
+    hybrid_feedback_seeds = _external_feedback_seed_candidates(
+        external_feedback_rows,
+        context=external_feedback,
+        policy=adaptive_policy,
+        available_fields=available_fields,
+        blocked=used,
+        max_count=max(0, min(16, int(math.ceil(args.hybrid_candidates * 0.20)))),
+        source="phase3bt_external_train_feedback_seed",
+    )
+    hybrid_generated = _generate_hybrid_candidates(
+        args.hybrid_candidates,
+        used | {str(row.get("expression_hash")) for row in hybrid_feedback_seeds},
+        adaptive_policy,
+        include_residual=False,
+        population_size=max(1920, args.hybrid_candidates * 10),
+        elite_frac=0.14,
+        rounds=5,
+        available_fields=available_fields,
+    )
+    hybrid_candidates = _mix_bt_unique(
+        hybrid_feedback_seeds,
+        hybrid_generated,
+        max_candidates=args.hybrid_candidates,
+        source="phase3bt_ast_feedback_hybrid",
     )
     hybrid_decisions, hybrid_metrics, hybrid_meta = _evaluate_bt_round(
         round_id="round3_ast_feedback_hybrid",

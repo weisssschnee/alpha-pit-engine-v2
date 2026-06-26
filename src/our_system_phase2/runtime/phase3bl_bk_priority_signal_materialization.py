@@ -37,6 +37,15 @@ DEFAULT_OUTPUT_ROOT = Path("runtime/phase3bl_bk_priority_signal_materialization_
 DEFAULT_REPORT_ROOT = Path("reports/phase3bl_bk_priority_signal_materialization_20260615")
 FIELD_RE = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)")
 WINDOW_OPS = {"mean", "std", "delta", "delay", "mom", "wma", "med", "kurt", "skew", "corr", "cov"}
+DEFAULT_RELATION_WINDOW = 20
+TYPED_WINDOW_ARG_INDEX = {
+    "eventcount": 1,
+    "statedwell": 1,
+    "windowstatecount": 1,
+    "validratiogate": 1,
+    "maskedzscore": 1,
+    "maskedcorr": 2,
+}
 CALL_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 NUMERIC_ARG_RE = re.compile(r"^[+-]?\d+(?:\.\d+)?$")
 
@@ -133,16 +142,25 @@ def _max_expression_window(expression: str) -> int:
     expr = expression or ""
     windows: list[int] = []
     for match in CALL_RE.finditer(expr):
-        if match.group(1).lower() not in WINDOW_OPS:
+        op = match.group(1).lower()
+        if op not in WINDOW_OPS and op not in TYPED_WINDOW_ARG_INDEX:
             continue
         open_idx = match.end() - 1
         close_idx = _find_matching_paren(expr, open_idx)
         if close_idx < 0:
             continue
         args = _split_top_level_args(expr[open_idx + 1 : close_idx])
-        if len(args) < 2:
+        if op in {"corr", "cov"} and len(args) == 2:
+            windows.append(DEFAULT_RELATION_WINDOW)
             continue
-        arg = args[-1]
+        arg_index = TYPED_WINDOW_ARG_INDEX.get(op)
+        if arg_index is None:
+            arg_index = len(args) - 1
+        if arg_index < 0:
+            arg_index = len(args) + arg_index
+        if arg_index < 0 or arg_index >= len(args):
+            continue
+        arg = args[arg_index]
         if NUMERIC_ARG_RE.fullmatch(arg):
             windows.append(int(float(arg)))
     return max(windows, default=0)
