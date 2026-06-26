@@ -22,6 +22,7 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     PRIOR_HASH_FILES,
     _generate_cem_elite_candidates,
     _generate_hybrid_candidates,
+    _panel_schema_fields,
     _generate_rx_ucb_candidates,
     build_checked_seed_policy,
 )
@@ -126,11 +127,12 @@ def _build_variant_candidates(
     adaptive_policy: dict[str, Any],
     blocked: set[str],
     used: set[str],
+    available_fields: list[str] | set[str],
 ) -> list[dict[str, Any]]:
     count = int(spec["count"])
     if spec["kind"] == "rx_control":
         entropy_policy = _policy_with_entropy_boost(seed_policy, boost=float(spec["entropy_boost"]), floor=float(spec["entropy_floor"]))
-        rows = _generate_rx_ucb_candidates(count, blocked | used, entropy_policy, include_residual=False)
+        rows = _generate_rx_ucb_candidates(count, blocked | used, entropy_policy, include_residual=False, available_fields=available_fields)
         return _tag_bt_candidates(rows, f"phase3bu_{spec['round_id']}")
     if spec["kind"] == "cem_control":
         rows = _generate_cem_elite_candidates(
@@ -141,6 +143,7 @@ def _build_variant_candidates(
             population_size=max(2048, count * int(spec["population_mult"])),
             elite_frac=float(spec["elite_frac"]),
             rounds=int(spec["cem_rounds"]),
+            available_fields=available_fields,
         )
         return _tag_bt_candidates(rows, f"phase3bu_{spec['round_id']}")
 
@@ -155,12 +158,14 @@ def _build_variant_candidates(
         population_size=max(2048, count * int(spec["population_mult"])),
         elite_frac=float(spec["elite_frac"]),
         rounds=int(spec["cem_rounds"]),
+        available_fields=available_fields,
     )
     secondary = _generate_rx_ucb_candidates(
         max(24, count - len(primary)),
         blocked | used | {str(row.get("expression_hash")) for row in primary},
         entropy_policy,
         include_residual=False,
+        available_fields=available_fields,
     )
     return _mix_bt_unique(primary, secondary, max_candidates=count, source=f"phase3bu_{spec['round_id']}")
 
@@ -266,6 +271,7 @@ def main(argv: list[str] | None = None) -> int:
     output_root.mkdir(parents=True, exist_ok=True)
     report_root.mkdir(parents=True, exist_ok=True)
     panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
+    available_fields = _panel_schema_fields(panels)
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
     blocked = _load_memory_hashes(args.memory_root) | _prior_hashes(PRIOR_HASH_FILES)
 
@@ -281,7 +287,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     external_feedback_rows = load_search_feedback_rows(_resolve(args.feedback_table)) if args.feedback_table else []
     seed_candidates = _tag_bt_candidates(
-        _generate_rx_ucb_candidates(args.seed_candidates, blocked, seed_policy, include_residual=False),
+        _generate_rx_ucb_candidates(args.seed_candidates, blocked, seed_policy, include_residual=False, available_fields=available_fields),
         "phase3bu_seed_for_feedback",
     )
     seed_decisions, seed_metrics, seed_meta = _evaluate_bt_round(
@@ -321,7 +327,14 @@ def main(argv: list[str] | None = None) -> int:
     round_meta: dict[str, Any] = {"seed": seed_meta}
     specs = _variant_specs(args)
     for spec in specs:
-        candidates = _build_variant_candidates(spec, seed_policy=seed_policy, adaptive_policy=adaptive_policy, blocked=blocked, used=used)
+        candidates = _build_variant_candidates(
+            spec,
+            seed_policy=seed_policy,
+            adaptive_policy=adaptive_policy,
+            blocked=blocked,
+            used=used,
+            available_fields=available_fields,
+        )
         used |= {str(row.get("expression_hash")) for row in candidates}
         _, metrics, meta = _evaluate_bt_round(
             round_id=str(spec["round_id"]),
@@ -355,6 +368,9 @@ def main(argv: list[str] | None = None) -> int:
             "entropy_floor": args.entropy_floor,
             "min_feedback_eligible": args.min_feedback_eligible,
             "phase3cn_feedback": external_feedback.to_dict(),
+            "schema_bound_generation": True,
+            "available_field_count": len(available_fields),
+            "available_fields": available_fields,
         },
         "python_executable": sys.executable,
         "package_versions": _package_versions(),

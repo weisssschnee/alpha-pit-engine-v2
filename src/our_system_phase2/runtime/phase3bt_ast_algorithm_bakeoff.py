@@ -34,6 +34,7 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     _aggregate_decisions,
     _generate_cem_elite_candidates,
     _generate_hybrid_candidates,
+    _panel_schema_fields,
     _generate_rx_ucb_candidates,
     _summarize_by,
     build_checked_seed_policy,
@@ -310,6 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     output_root.mkdir(parents=True, exist_ok=True)
     report_root.mkdir(parents=True, exist_ok=True)
     panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
+    available_fields = _panel_schema_fields(panels)
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
     blocked = _load_memory_hashes(args.memory_root) | _prior_hashes(PRIOR_HASH_FILES)
 
@@ -325,7 +327,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     external_feedback_rows = load_search_feedback_rows(_resolve(args.feedback_table)) if args.feedback_table else []
     seed_candidates = _tag_bt_candidates(
-        _generate_rx_ucb_candidates(args.seed_candidates, blocked, seed_policy, include_residual=False),
+        _generate_rx_ucb_candidates(args.seed_candidates, blocked, seed_policy, include_residual=False, available_fields=available_fields),
         "phase3bt_seed_ast_rx_ucb_fresh",
     )
     seed_decisions, seed_metrics, seed_meta = _evaluate_bt_round(
@@ -370,6 +372,7 @@ def main(argv: list[str] | None = None) -> int:
             population_size=max(1600, args.cem_candidates * 10),
             elite_frac=0.12,
             rounds=5,
+            available_fields=available_fields,
         ),
         "phase3bt_ast_feedback_cem",
     )
@@ -395,6 +398,7 @@ def main(argv: list[str] | None = None) -> int:
             population_size=max(1920, args.hybrid_candidates * 10),
             elite_frac=0.14,
             rounds=5,
+            available_fields=available_fields,
         ),
         "phase3bt_ast_feedback_hybrid",
     )
@@ -419,12 +423,14 @@ def main(argv: list[str] | None = None) -> int:
         population_size=max(2304, args.dominant_candidates * 12),
         elite_frac=0.10,
         rounds=6,
+        available_fields=available_fields,
     )
     dominant_secondary = _generate_rx_ucb_candidates(
         max(12, args.dominant_candidates - len(dominant_primary)),
         used | {str(row.get("expression_hash")) for row in dominant_primary},
         adaptive_policy,
         include_residual=False,
+        available_fields=available_fields,
     )
     dominant_candidates = _mix_bt_unique(dominant_primary, dominant_secondary, max_candidates=args.dominant_candidates, source="phase3bt_ast_cem_dominant_ucb")
     dominant_decisions, dominant_metrics, dominant_meta = _evaluate_bt_round(
@@ -450,12 +456,14 @@ def main(argv: list[str] | None = None) -> int:
         population_size=max(2048, args.fresh_hybrid_candidates * 10),
         elite_frac=0.18,
         rounds=4,
+        available_fields=available_fields,
     )
     fresh_secondary = _generate_rx_ucb_candidates(
         max(24, args.fresh_hybrid_candidates - len(fresh_primary)),
         used | {str(row.get("expression_hash")) for row in fresh_primary},
         entropy_policy,
         include_residual=False,
+        available_fields=available_fields,
     )
     fresh_candidates = _mix_bt_unique(fresh_primary, fresh_secondary, max_candidates=args.fresh_hybrid_candidates, source="phase3bt_ast_fresh_preserving_hybrid")
     fresh_decisions, fresh_metrics, fresh_meta = _evaluate_bt_round(
@@ -490,6 +498,9 @@ def main(argv: list[str] | None = None) -> int:
             "entropy_floor": args.entropy_floor,
             "min_feedback_eligible": args.min_feedback_eligible,
             "phase3cn_feedback": external_feedback.to_dict(),
+            "schema_bound_generation": True,
+            "available_field_count": len(available_fields),
+            "available_fields": available_fields,
         },
         "python_executable": sys.executable,
         "package_versions": _package_versions(),
