@@ -408,6 +408,23 @@ def _evaluate_round(
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
     import time
 
+    round_output = output_root / round_id
+    round_report = report_root / round_id
+    round_output.mkdir(parents=True, exist_ok=True)
+    round_report.mkdir(parents=True, exist_ok=True)
+    _write_csv(round_output / "phase3bs_candidate_pack.pre_eval.csv", candidates)
+    _write_json(
+        round_output / "phase3bs_round_progress.json",
+        {
+            "round_id": round_id,
+            "status": "materialization_started",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "candidate_count": len(candidates),
+            "panel_count": len(panels),
+            "sample_trade_times_per_shard": sample_trade_times_per_shard,
+            "horizons": list(horizons),
+        },
+    )
     started = time.perf_counter()
     metric_rows, aggregate_rows, meta = _run_materialization(
         candidates=candidates,
@@ -419,10 +436,6 @@ def _evaluate_round(
     pairwise_rows = meta.pop("pairwise_rows")
     decisions = _aggregate_decisions(aggregate_rows, pairwise_rows, candidates, top_decisions)
     elapsed = time.perf_counter() - started
-    round_output = output_root / round_id
-    round_report = report_root / round_id
-    round_output.mkdir(parents=True, exist_ok=True)
-    round_report.mkdir(parents=True, exist_ok=True)
     generator_rows = _summarize_by(decisions, "source_generator")
     lane_rows = _summarize_by(decisions, "factor_lane")
     metrics = _round_metrics(round_id, candidates, decisions, meta, elapsed)
