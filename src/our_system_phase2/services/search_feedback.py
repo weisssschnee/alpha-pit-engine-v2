@@ -19,6 +19,7 @@ from our_system_phase2.services.candidate_schema import normalize_candidate_sche
 
 
 HOLDOUT_COLUMNS = {"holdout_day_sortino", "holdout_mcmc_prob_gt_0"}
+VALIDATION_COLUMNS = {"validation_day_sortino", "validation_mcmc_prob_gt_0"}
 
 
 @dataclass
@@ -34,7 +35,12 @@ class SearchFeedbackContext:
     arm_row_count: int = 0
     family_row_count: int = 0
     holdout_columns_present: bool = False
+    validation_columns_present: bool = False
+    validation_used_for_score: bool = False
     holdout_used_for_score: bool = False
+    optimizer_reward_source: str = "train_only_phase3cm"
+    optimizer_reward_metric: str = "train_portfolio_sortino_reward"
+    optimizer_reward_split: str = "train"
     guardrail: str = ""
     eligible_source: str = ""
     source_tables: dict[str, str] = field(default_factory=dict)
@@ -52,7 +58,12 @@ class SearchFeedbackContext:
             "arm_row_count": self.arm_row_count,
             "family_row_count": self.family_row_count,
             "holdout_columns_present": self.holdout_columns_present,
+            "validation_columns_present": self.validation_columns_present,
+            "validation_used_for_score": self.validation_used_for_score,
             "holdout_used_for_score": self.holdout_used_for_score,
+            "optimizer_reward_source": self.optimizer_reward_source,
+            "optimizer_reward_metric": self.optimizer_reward_metric,
+            "optimizer_reward_split": self.optimizer_reward_split,
             "guardrail": self.guardrail,
             "eligible_source": self.eligible_source,
             "source_tables": self.source_tables,
@@ -80,6 +91,34 @@ def _has_holdout_columns(rows: list[dict[str, Any]]) -> bool:
     return False
 
 
+def _has_validation_columns(rows: list[dict[str, Any]]) -> bool:
+    for row in rows:
+        for key in VALIDATION_COLUMNS:
+            if key in row and row.get(key) not in (None, ""):
+                return True
+    return False
+
+
+def _optimizer_reward(row: dict[str, Any]) -> float:
+    reward = safe_float(row.get("optimizer_reward"), float("nan"))
+    if not math.isfinite(reward):
+        reward = safe_float(row.get("train_reward"), float("nan"))
+    return reward
+
+
+def _normalize_feedback_row(row: dict[str, Any]) -> dict[str, Any]:
+    out = dict(row)
+    out.update(normalize_candidate_schema(out))
+    reward = _optimizer_reward(out)
+    out["optimizer_reward"] = reward if math.isfinite(reward) else ""
+    out["optimizer_reward_source"] = str(out.get("optimizer_reward_source") or "train_only_phase3cm")
+    out["optimizer_reward_metric"] = str(out.get("optimizer_reward_metric") or "train_portfolio_sortino_reward")
+    out["optimizer_reward_split"] = str(out.get("optimizer_reward_split") or "train")
+    out["validation_usage"] = str(out.get("validation_usage") or "report_only")
+    out["holdout_usage"] = str(out.get("holdout_usage") or "report_only")
+    return out
+
+
 def _has_wrong_lag_or_corr(row: dict[str, Any]) -> bool:
     text = "|".join(
         str(row.get(name) or "")
@@ -95,21 +134,42 @@ def _clean_feedback_row(
     validation_floor: float,
     max_turnover: float,
 ) -> bool:
-    train = safe_float(row.get("train_reward"), float("nan"))
-    validation = safe_float(row.get("validation_day_sortino"), float("nan"))
-    validation_prob = safe_float(row.get("validation_mcmc_prob_gt_0"), float("nan"))
-    turnover = safe_float(row.get("mean_one_way_turnover"), float("nan"))
-    validation_ok = math.isfinite(validation) and validation >= validation_floor
-    if math.isfinite(validation_prob):
-        validation_ok = validation_ok and validation_prob >= 0.50
+    del validation_floor
+    train = _optimizer_reward(row)
+    turnover = safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), float("nan"))
+    blockers = str(row.get("train_reward_blockers") or "")
+    decision = str(row.get("train_reward_decision") or "")
     turnover_ok = (not math.isfinite(turnover)) or turnover <= max_turnover
     return (
         math.isfinite(train)
         and train > train_threshold
-        and validation_ok
         and turnover_ok
+        and not blockers
+        and (not decision or "FOLLOWUP_READY" in decision)
         and not _has_wrong_lag_or_corr(row)
     )
+
+
+def clean_optimizer_feedback_rows(
+    rows: list[dict[str, Any]],
+    *,
+    arm_id: str = "",
+    train_threshold: float = 0.0,
+    max_turnover: float = 0.75,
+) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for raw in rows:
+        row = _normalize_feedback_row(raw)
+        if arm_id and row.get("generator_arm") != arm_id:
+            continue
+        if _clean_feedback_row(
+            row,
+            train_threshold=train_threshold,
+            validation_floor=0.0,
+            max_turnover=max_turnover,
+        ):
+            out.append(row)
+    return out
 
 
 def _count_exploit_allowed(
@@ -148,7 +208,7 @@ def build_search_feedback_context(
     family_rows = family_rows or []
     blocked_rows = blocked_rows or []
     exploit_rows = exploit_rows or []
-    normalized_rows = [normalize_candidate_schema(row) for row in feedback_rows]
+    normalized_rows = [_normalize_feedback_row(row) for row in feedback_rows]
     arm_id = arm_id or "unknown_arm"
     provided = bool(feedback_rows or arm_rows or family_rows or blocked_rows or exploit_rows)
     clean_count = 0
@@ -201,7 +261,12 @@ def build_search_feedback_context(
         arm_row_count=len(arm_rows),
         family_row_count=len(family_rows),
         holdout_columns_present=_has_holdout_columns(feedback_rows),
+        validation_columns_present=_has_validation_columns(feedback_rows),
+        validation_used_for_score=False,
         holdout_used_for_score=False,
+        optimizer_reward_source="train_only_phase3cm",
+        optimizer_reward_metric="train_portfolio_sortino_reward",
+        optimizer_reward_split="train",
         guardrail=guardrail,
         eligible_source=eligible_source,
         source_tables=source_tables or {},
@@ -241,6 +306,10 @@ def load_search_feedback_context(
         max_turnover=max_turnover,
         source_tables={key: value for key, value in tables.items() if value},
     )
+
+
+def load_search_feedback_rows(feedback_table: Path | None = None) -> list[dict[str, Any]]:
+    return [_normalize_feedback_row(row) for row in _read_csv(feedback_table)]
 
 
 def policy_blocked_by_external_feedback(

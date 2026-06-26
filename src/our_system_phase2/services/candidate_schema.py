@@ -45,6 +45,12 @@ CANONICAL_CANDIDATE_FIELDS = [
     "train_reward",
     "train_reward_decision",
     "train_reward_blockers",
+    "optimizer_reward",
+    "optimizer_reward_source",
+    "optimizer_reward_metric",
+    "optimizer_reward_split",
+    "validation_usage",
+    "holdout_usage",
     "validation_day_sortino",
     "validation_mcmc_prob_gt_0",
     "holdout_day_sortino",
@@ -216,6 +222,8 @@ def normalize_candidate_schema(row: dict[str, Any]) -> dict[str, Any]:
     validation_prob = _first_existing(row, ["validation_mcmc_prob_gt_0", "validation_day_mcmc_prob_gt_0"], "")
     holdout_prob = _first_existing(row, ["holdout_mcmc_prob_gt_0", "holdout_day_mcmc_prob_gt_0"], "")
     blocker_flags = _first_existing(row, ["blocker_flags", "phase3bp_blocker_flags", "inherited_blockers"], "")
+    train_reward = _first_existing(row, ["train_reward"], "")
+    optimizer_reward = _first_existing(row, ["optimizer_reward"], train_reward)
     return {
         "candidate_id": _first_existing(row, ["candidate_id"], expression_hash[:12]),
         "expression_hash": expression_hash,
@@ -240,9 +248,15 @@ def normalize_candidate_schema(row: dict[str, Any]) -> dict[str, Any]:
         "mean_one_way_turnover": _first_existing(row, ["mean_one_way_turnover", "train_mean_one_way_turnover"], ""),
         "blocker_flags": blocker_flags,
         "phase3ca_proxy_quality": _first_existing(row, ["phase3ca_proxy_quality"], ""),
-        "train_reward": _first_existing(row, ["train_reward"], ""),
+        "train_reward": train_reward,
         "train_reward_decision": _first_existing(row, ["train_reward_decision"], ""),
         "train_reward_blockers": _first_existing(row, ["train_reward_blockers"], ""),
+        "optimizer_reward": optimizer_reward,
+        "optimizer_reward_source": _first_existing(row, ["optimizer_reward_source"], "train_only_phase3cm" if optimizer_reward else ""),
+        "optimizer_reward_metric": _first_existing(row, ["optimizer_reward_metric"], "train_portfolio_sortino_reward" if optimizer_reward else ""),
+        "optimizer_reward_split": _first_existing(row, ["optimizer_reward_split"], "train" if optimizer_reward else ""),
+        "validation_usage": _first_existing(row, ["validation_usage"], "report_only"),
+        "holdout_usage": _first_existing(row, ["holdout_usage"], "report_only"),
         "validation_day_sortino": _first_existing(row, ["validation_day_sortino"], ""),
         "validation_mcmc_prob_gt_0": validation_prob,
         "holdout_day_sortino": _first_existing(row, ["holdout_day_sortino"], ""),

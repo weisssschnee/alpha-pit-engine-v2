@@ -125,15 +125,20 @@ def _has_wrong_lag_or_corr(row: dict[str, Any]) -> bool:
     return "wrong_lag" in text or "future_signal_wrong_lag" in text or "high_corr" in text or "signal_corr_abs" in text
 
 
+def _optimizer_reward(row: dict[str, Any]) -> float:
+    reward = safe_float(row.get("optimizer_reward"), float("nan"))
+    if not math.isfinite(reward):
+        reward = safe_float(row.get("train_reward"), float("nan"))
+    return reward
+
+
 def _is_clean(row: dict[str, Any], *, train_threshold: float, validation_floor: float, max_turnover: float) -> bool:
-    train_reward = safe_float(row.get("train_reward"))
-    validation = safe_float(row.get("validation_day_sortino"))
+    del validation_floor
+    train_reward = _optimizer_reward(row)
     turnover = safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 0.0)
     decision = str(row.get("train_reward_decision") or "")
     blockers = str(row.get("train_reward_blockers") or "")
     if not math.isfinite(train_reward) or train_reward <= train_threshold:
-        return False
-    if math.isfinite(validation) and validation < validation_floor:
         return False
     if math.isfinite(turnover) and turnover > max_turnover:
         return False
@@ -182,7 +187,7 @@ def _family_tables(
     blocked_rows: list[dict[str, Any]] = []
     exploit_rows: list[dict[str, Any]] = []
     for family_id, items in sorted(_group_rows(rows, "family_id").items()):
-        train_rewards = [safe_float(row.get("train_reward")) for row in items]
+        train_rewards = [_optimizer_reward(row) for row in items]
         train_rewards = [value for value in train_rewards if math.isfinite(value)]
         clean_count = sum(1 for row in items if _is_clean(row, train_threshold=train_threshold, validation_floor=validation_floor, max_turnover=max_turnover))
         validation_survivor_count = sum(1 for row in items if _is_validation_survivor(row, validation_floor=validation_floor))
@@ -204,9 +209,9 @@ def _family_tables(
         if high_turnover_count > 0 and status != "block":
             status = "freeze"
             reasons.append("high_turnover")
-        if clean_count > 0 and validation_survivor_count > 0 and status in {"normal", "downweight"}:
+        if clean_count > 0 and status in {"normal", "downweight"}:
             status = "exploit_allowed"
-            reasons.append("cm_positive_validation_survivor")
+            reasons.append("train_optimizer_reward_positive")
         exemplar = items[0]
         row = {
             "family_id": family_id,
@@ -222,6 +227,8 @@ def _family_tables(
             "positive_train_reward_count": sum(1 for value in train_rewards if value > train_threshold),
             "clean_count": clean_count,
             "validation_survivor_count": validation_survivor_count,
+            "validation_usage": "report_only",
+            "validation_used_for_optimizer": "false",
             "rewardhack_count": rewardhack_count,
             "wrong_lag_or_corr_count": wrong_lag_or_corr_count,
             "high_turnover_count": high_turnover_count,
@@ -249,7 +256,7 @@ def _arm_score_table(
     family_by_id = {str(row.get("family_id")): row for row in family_rows}
     out: list[dict[str, Any]] = []
     for arm, items in sorted(_group_rows(rows, "generator_arm").items()):
-        train_rewards = [safe_float(row.get("train_reward")) for row in items]
+        train_rewards = [_optimizer_reward(row) for row in items]
         train_rewards = [value for value in train_rewards if math.isfinite(value)]
         clean_count = sum(1 for row in items if _is_clean(row, train_threshold=train_threshold, validation_floor=validation_floor, max_turnover=max_turnover))
         validation_count = sum(1 for row in items if _is_validation_survivor(row, validation_floor=validation_floor))
@@ -271,7 +278,6 @@ def _arm_score_table(
         arm_score = (
             positive_rate
             + median_reward
-            + validation_rate
             + new_family_rate
             + low_turnover_rate
             - rewardhack_rate
@@ -289,6 +295,10 @@ def _arm_score_table(
                 "positive_train_reward_rate": _round(positive_rate),
                 "median_train_reward": _round(median_reward),
                 "validation_survival_rate": _round(validation_rate),
+                "validation_usage": "report_only",
+                "validation_used_for_arm_score": "false",
+                "optimizer_reward_source": "train_only_phase3cm",
+                "optimizer_reward_metric": "train_portfolio_sortino_reward",
                 "new_family_rate": _round(new_family_rate),
                 "low_turnover_rate": _round(low_turnover_rate),
                 "rewardhack_family_rate": _round(rewardhack_rate),
@@ -350,7 +360,8 @@ def _render_md(summary: dict[str, Any], arm_rows: list[dict[str, Any]], family_r
             "",
             "## Boundary",
             "",
-            "- Holdout fields are carried through as read-only metadata and are not used in arm_score.",
+            "- `optimizer_reward` is train-only Phase3CM reward.",
+            "- Validation and holdout fields are carried through as read-only metadata and are not used in arm_score.",
             "- `feedback_update_allowed=false` means CEM/UCB must not update from that arm.",
             "- Proxy-high but CM-negative families are frozen or blocked before exploit.",
         ]
@@ -376,7 +387,19 @@ def build_feedback_memory(
     rows, sources = _load_rows(tables)
     if not rows:
         raise RuntimeError("Phase3CM reward tables had no usable rows")
-    feedback_rows = [{field: row.get(field, "") for field in CANONICAL_CANDIDATE_FIELDS} for row in rows]
+    normalized_rows: list[dict[str, Any]] = []
+    for row in rows:
+        item = dict(row)
+        item.update(normalize_candidate_schema(item))
+        reward = safe_float(item.get("train_reward"), float("nan"))
+        item["optimizer_reward"] = reward if math.isfinite(reward) else ""
+        item["optimizer_reward_source"] = "train_only_phase3cm"
+        item["optimizer_reward_metric"] = "train_portfolio_sortino_reward"
+        item["optimizer_reward_split"] = "train"
+        item["validation_usage"] = "report_only"
+        item["holdout_usage"] = "report_only"
+        normalized_rows.append(item)
+    feedback_rows = [{field: row.get(field, "") for field in CANONICAL_CANDIDATE_FIELDS} for row in normalized_rows]
     family_rows, blocked_rows, exploit_rows = _family_tables(
         feedback_rows,
         train_threshold=train_threshold,
@@ -404,10 +427,15 @@ def build_feedback_memory(
         "min_clean_feedback": min_clean_feedback,
         "train_threshold": train_threshold,
         "validation_floor": validation_floor,
+        "validation_usage": "report_only",
+        "validation_used_for_optimizer": False,
+        "optimizer_reward_source": "train_only_phase3cm",
+        "optimizer_reward_metric": "train_portfolio_sortino_reward",
+        "optimizer_reward_split": "train",
         "max_turnover": max_turnover,
         "max_family_share": max_family_share,
         "sources": sources,
-        "metric_boundary": "feedback memory only; no search generation; holdout is read-only and excluded from arm score",
+        "metric_boundary": "feedback memory only; optimizer feedback is train-only; validation/holdout are read-only and excluded from arm score",
     }
     output_root.mkdir(parents=True, exist_ok=True)
     report_root.mkdir(parents=True, exist_ok=True)

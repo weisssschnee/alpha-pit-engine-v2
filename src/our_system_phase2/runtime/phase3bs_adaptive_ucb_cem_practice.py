@@ -56,7 +56,9 @@ from our_system_phase2.runtime.phase3bq_compute_allocation_benchmark import (
 )
 from our_system_phase2.services.search_feedback import (
     annotate_policy_with_external_feedback,
+    clean_optimizer_feedback_rows,
     load_search_feedback_context,
+    load_search_feedback_rows,
     policy_blocked_by_external_feedback,
 )
 
@@ -201,6 +203,128 @@ def _policy_with_feedback(
     policy["top_keys"] = {
         kind: sorted(values.items(), key=lambda item: item[1], reverse=True)[:12]
         for kind, values in scores.items()
+    }
+    return policy
+
+
+def _policy_with_train_reward_feedback(
+    base_policy: dict[str, Any],
+    feedback_rows: list[dict[str, Any]],
+    *,
+    context: Any,
+    learning_rate: float,
+    entropy_floor: float,
+    min_eligible: int = 32,
+) -> dict[str, Any]:
+    policy = copy.deepcopy(base_policy)
+    policy["policy_version"] = "phase3bs_external_cm_train_reward_feedback_v1"
+    policy["scope"] = "external_phase3cm_train_reward_updates_generator_policy_validation_holdout_report_only"
+    scores = policy.setdefault("scores", {})
+    eligible_rows = clean_optimizer_feedback_rows(
+        feedback_rows,
+        arm_id=getattr(context, "arm_id", ""),
+        train_threshold=0.0,
+        max_turnover=0.75,
+    )
+    if len(eligible_rows) < max(1, int(min_eligible)):
+        policy["feedback"] = {
+            "decision_count": len(feedback_rows),
+            "eligible_decision_count": len(eligible_rows),
+            "min_eligible_decision_count": int(min_eligible),
+            "learning_rate": 0.0,
+            "entropy_floor": entropy_floor,
+            "top_feedback": {},
+            "updated": False,
+            "guardrail": "external CM train reward feedback below threshold; CEM/UCB policy scores unchanged",
+            "optimizer_reward_source": "train_only_phase3cm",
+            "validation_used_for_score": False,
+            "holdout_used_for_score": False,
+            "phase3cn_external_feedback": context.to_dict() if hasattr(context, "to_dict") else {},
+        }
+        policy["top_keys"] = {
+            kind: sorted(values.items(), key=lambda item: item[1], reverse=True)[:12]
+            for kind, values in scores.items()
+            if isinstance(values, dict)
+        }
+        return policy
+
+    credits: dict[str, dict[str, list[float]]] = {
+        "field": defaultdict(list),
+        "operator": defaultdict(list),
+        "window": defaultdict(list),
+        "lane": defaultdict(list),
+        "fieldset": defaultdict(list),
+        "ast_skeleton": defaultdict(list),
+        "ast_operator_sequence": defaultdict(list),
+        "ast_operator_multiset": defaultdict(list),
+        "ast_root_operator": defaultdict(list),
+        "ast_depth_bin": defaultdict(list),
+        "ast_operator_count_bin": defaultdict(list),
+        "ast_field_count_bin": defaultdict(list),
+        "ast_window_count_bin": defaultdict(list),
+        "ast_max_window_bin": defaultdict(list),
+        "ast_complexity_bin": defaultdict(list),
+    }
+    for row in eligible_rows:
+        expression = str(row.get("expression") or "")
+        fields = _fields(expression)
+        fieldset = "|".join(fields)
+        lane = str(row.get("factor_lane") or row.get("source_lane") or row.get("generator_arm") or "unknown")
+        ast = _ast_variables(expression)
+        reward = _f(row.get("optimizer_reward") or row.get("train_reward"), 0.0)
+        quality = float(max(-0.35, min(0.35, reward)))
+        credits["lane"][lane].append(quality)
+        credits["fieldset"][fieldset].append(quality)
+        for key in (
+            "ast_skeleton",
+            "ast_operator_sequence",
+            "ast_operator_multiset",
+            "ast_root_operator",
+            "ast_depth_bin",
+            "ast_operator_count_bin",
+            "ast_field_count_bin",
+            "ast_window_count_bin",
+            "ast_max_window_bin",
+            "ast_complexity_bin",
+        ):
+            credits[key][str(ast[key])].append(quality)
+        for field in fields:
+            credits["field"][field].append(quality)
+        for op in _operators(expression):
+            credits["operator"][op].append(quality)
+        for win in _windows(expression):
+            credits["window"][win].append(quality)
+
+    feedback_summary: dict[str, list[tuple[str, float]]] = {}
+    for kind, items in credits.items():
+        table = scores.setdefault(kind, {})
+        ranked: list[tuple[str, float]] = []
+        for key, values in items.items():
+            mean_credit = sum(values) / max(1, len(values))
+            old = float(table.get(key, entropy_floor))
+            new = ((1.0 - learning_rate) * old) + (learning_rate * mean_credit)
+            table[key] = round(max(entropy_floor, min(1.25, new)), 6)
+            ranked.append((key, round(mean_credit, 6)))
+        ranked.sort(key=lambda item: item[1], reverse=True)
+        feedback_summary[kind] = ranked[:16]
+    policy["feedback"] = {
+        "decision_count": len(feedback_rows),
+        "eligible_decision_count": len(eligible_rows),
+        "min_eligible_decision_count": int(min_eligible),
+        "learning_rate": learning_rate,
+        "entropy_floor": entropy_floor,
+        "top_feedback": feedback_summary,
+        "updated": True,
+        "guardrail": "policy updated from external Phase3CM train reward only; validation/holdout report-only",
+        "optimizer_reward_source": "train_only_phase3cm",
+        "validation_used_for_score": False,
+        "holdout_used_for_score": False,
+        "phase3cn_external_feedback": context.to_dict() if hasattr(context, "to_dict") else {},
+    }
+    policy["top_keys"] = {
+        kind: sorted(values.items(), key=lambda item: item[1], reverse=True)[:12]
+        for kind, values in scores.items()
+        if isinstance(values, dict)
     }
     return policy
 
@@ -456,6 +580,7 @@ def main(argv: list[str] | None = None) -> int:
         arm_id=args.arm_id,
         min_clean_feedback=args.min_feedback_eligible,
     )
+    external_feedback_rows = load_search_feedback_rows(_resolve(args.feedback_table)) if args.feedback_table else []
     seed_candidates = _tag_candidates(
         _generate_rx_ucb_candidates(args.seed_candidates, blocked, seed_policy, include_residual=False),
         "phase3bs_seed_rx_ucb_fresh",
@@ -474,6 +599,15 @@ def main(argv: list[str] | None = None) -> int:
 
     if external_feedback.provided and not external_feedback.feedback_update_allowed:
         adaptive_policy = policy_blocked_by_external_feedback(seed_policy, external_feedback)
+    elif external_feedback.provided:
+        adaptive_policy = _policy_with_train_reward_feedback(
+            seed_policy,
+            external_feedback_rows,
+            context=external_feedback,
+            learning_rate=args.learning_rate,
+            entropy_floor=args.entropy_floor,
+            min_eligible=args.min_feedback_eligible,
+        )
     else:
         adaptive_policy = _policy_with_feedback(
             seed_policy,

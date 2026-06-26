@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import _write_csv, _write_json
+from our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice import _policy_with_train_reward_feedback
 from our_system_phase2.services.search_feedback import (
     build_search_feedback_context,
     load_search_feedback_context,
@@ -92,6 +93,52 @@ def _synthetic_low_feedback_context(min_clean_feedback: int, arm_id: str):
     )
 
 
+def _synthetic_allowed_train_feedback(min_clean_feedback: int, arm_id: str):
+    feedback_rows = [
+        {
+            "candidate_id": "synthetic_train_reward_winner",
+            "expression_hash": "synthetic_train_reward_winner_hash",
+            "expression": "Rank(Mean($m1_first_ret,5)) - Rank(Std($range_location,10))",
+            "generator_arm": arm_id,
+            "generator_route": "phase3bs-adaptive-ucb-cem-practice",
+            "family_id": "synthetic_train_reward_family",
+            "optimizer_reward": "0.42",
+            "optimizer_reward_source": "train_only_phase3cm",
+            "optimizer_reward_metric": "train_portfolio_sortino_reward",
+            "optimizer_reward_split": "train",
+            "train_reward": "0.42",
+            "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+            "train_reward_blockers": "",
+            "validation_day_sortino": "-0.33",
+            "validation_mcmc_prob_gt_0": "0.12",
+            "holdout_day_sortino": "-0.77",
+            "holdout_mcmc_prob_gt_0": "0.08",
+            "mean_one_way_turnover": "0.34",
+            "blocker_flags": "",
+            "validation_usage": "report_only",
+            "holdout_usage": "report_only",
+        }
+    ]
+    family_rows = [
+        {
+            "family_id": "synthetic_train_reward_family",
+            "family_status": "exploit_allowed",
+            "family_reasons": "train_optimizer_reward_positive",
+        }
+    ]
+    context = build_search_feedback_context(
+        feedback_rows=feedback_rows,
+        arm_rows=[],
+        family_rows=family_rows,
+        blocked_rows=[],
+        exploit_rows=family_rows,
+        arm_id=arm_id,
+        min_clean_feedback=min_clean_feedback,
+        source_tables={"synthetic": "phase3cn_searcher_feedback_smoke_allowed_train_reward"},
+    )
+    return context, feedback_rows
+
+
 def _arg_checks() -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for route, rel_path in SEARCHER_FILES.items():
@@ -125,6 +172,8 @@ def _render_md(summary: dict[str, Any], checks: list[dict[str, Any]]) -> str:
         f"holdout_columns_present: {summary['feedback_context']['holdout_columns_present']}",
         f"holdout_used_for_score: {summary['feedback_context']['holdout_used_for_score']}",
         f"policy_scores_unchanged: {summary['policy_scores_unchanged']}",
+        f"allowed_train_reward_policy_updated: {summary['allowed_train_reward_policy_updated']}",
+        f"allowed_train_reward_source: {summary['allowed_train_reward_policy']['feedback'].get('optimizer_reward_source')}",
         "```",
         "",
         "## Searcher Args",
@@ -142,6 +191,7 @@ def _render_md(summary: dict[str, Any], checks: list[dict[str, Any]]) -> str:
             "- This smoke does not run search.",
             "- Holdout columns are carried for audit only.",
             "- Sparse or blocked external CN feedback leaves CEM/UCB policy scores unchanged.",
+            "- Clean external train reward feedback can update policy without using validation/holdout.",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -181,12 +231,34 @@ def main(argv: list[str] | None = None) -> int:
         },
     }
     guarded_policy = policy_blocked_by_external_feedback(base_policy, context)
+    allowed_context, allowed_rows = _synthetic_allowed_train_feedback(1, args.arm_id)
+    allowed_policy = _policy_with_train_reward_feedback(
+        base_policy,
+        allowed_rows,
+        context=allowed_context,
+        learning_rate=0.50,
+        entropy_floor=0.01,
+        min_eligible=1,
+    )
     arg_checks = _arg_checks()
     all_args_present = all(row["pass"] == "true" for row in arg_checks)
     policy_scores_unchanged = guarded_policy.get("scores") == base_policy.get("scores")
     guard_blocks_update = context.provided and not context.feedback_update_allowed and guarded_policy.get("feedback", {}).get("updated") is False
     holdout_read_only = context.holdout_columns_present and not context.holdout_used_for_score
-    passed = all_args_present and policy_scores_unchanged and guard_blocks_update and holdout_read_only
+    allowed_train_reward_policy_updated = allowed_policy.get("feedback", {}).get("updated") is True
+    allowed_train_reward_train_only = (
+        allowed_policy.get("feedback", {}).get("optimizer_reward_source") == "train_only_phase3cm"
+        and allowed_policy.get("feedback", {}).get("validation_used_for_score") is False
+        and allowed_policy.get("feedback", {}).get("holdout_used_for_score") is False
+    )
+    passed = (
+        all_args_present
+        and policy_scores_unchanged
+        and guard_blocks_update
+        and holdout_read_only
+        and allowed_train_reward_policy_updated
+        and allowed_train_reward_train_only
+    )
     summary = {
         "created_at": datetime.now(timezone.utc).isoformat(),
         "experiment_id": "20260623_phase3cn_searcher_feedback_smoke",
@@ -197,6 +269,10 @@ def main(argv: list[str] | None = None) -> int:
         "policy_scores_unchanged": policy_scores_unchanged,
         "guard_blocks_update": guard_blocks_update,
         "holdout_read_only": holdout_read_only,
+        "allowed_train_reward_context": allowed_context.to_dict(),
+        "allowed_train_reward_policy": allowed_policy,
+        "allowed_train_reward_policy_updated": allowed_train_reward_policy_updated,
+        "allowed_train_reward_train_only": allowed_train_reward_train_only,
         "required_args": REQUIRED_ARGS,
     }
 

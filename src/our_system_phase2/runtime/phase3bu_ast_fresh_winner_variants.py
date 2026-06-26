@@ -26,11 +26,12 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     build_checked_seed_policy,
 )
 from our_system_phase2.runtime.phase3bq_compute_allocation_benchmark import _fmt, _hot_path_scan, _package_versions
-from our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice import _policy_with_entropy_boost, _policy_with_feedback
+from our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice import _policy_with_entropy_boost, _policy_with_feedback, _policy_with_train_reward_feedback
 from our_system_phase2.runtime.phase3bt_ast_algorithm_bakeoff import _average_policies, _evaluate_bt_round, _mix_bt_unique, _tag_bt_candidates
 from our_system_phase2.services.search_feedback import (
     annotate_policy_with_external_feedback,
     load_search_feedback_context,
+    load_search_feedback_rows,
     policy_blocked_by_external_feedback,
 )
 
@@ -278,6 +279,7 @@ def main(argv: list[str] | None = None) -> int:
         arm_id=args.arm_id,
         min_clean_feedback=args.min_feedback_eligible,
     )
+    external_feedback_rows = load_search_feedback_rows(_resolve(args.feedback_table)) if args.feedback_table else []
     seed_candidates = _tag_bt_candidates(
         _generate_rx_ucb_candidates(args.seed_candidates, blocked, seed_policy, include_residual=False),
         "phase3bu_seed_for_feedback",
@@ -295,6 +297,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     if external_feedback.provided and not external_feedback.feedback_update_allowed:
         adaptive_policy = policy_blocked_by_external_feedback(seed_policy, external_feedback)
+    elif external_feedback.provided:
+        adaptive_policy = _policy_with_train_reward_feedback(
+            seed_policy,
+            external_feedback_rows,
+            context=external_feedback,
+            learning_rate=args.learning_rate,
+            entropy_floor=args.entropy_floor,
+            min_eligible=args.min_feedback_eligible,
+        )
     else:
         adaptive_policy = _policy_with_feedback(
             seed_policy,

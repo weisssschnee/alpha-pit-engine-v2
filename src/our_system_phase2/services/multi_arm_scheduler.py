@@ -61,14 +61,12 @@ def _arm_health(row: dict[str, Any] | None) -> tuple[float, str, str]:
     clean = safe_float(row.get("clean_feedback_count"), 0.0)
     allowed = _truthy(row.get("feedback_update_allowed"))
     median_reward = safe_float(row.get("median_train_reward"), 0.0)
-    validation_rate = safe_float(row.get("validation_survival_rate"), 0.0)
     rewardhack = safe_float(row.get("rewardhack_family_rate"), 0.0)
     wrong_lag = safe_float(row.get("wrong_lag_reject_rate"), 0.0)
     concentration = safe_float(row.get("top_family_concentration"), 0.0)
     exploit_families = safe_float(row.get("exploit_allowed_family_count"), 0.0)
     score = 0.0
     score += min(0.20, max(-0.20, median_reward)) * 0.45
-    score += min(0.40, validation_rate) * 0.20
     score += min(8.0, clean) * 0.01
     score += min(3.0, exploit_families) * 0.025
     score -= rewardhack * 0.24
