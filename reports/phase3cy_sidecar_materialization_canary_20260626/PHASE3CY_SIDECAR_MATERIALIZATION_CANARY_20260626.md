@@ -1,0 +1,48 @@
+# Phase3CY Sidecar Materialization Canary 2026-06-26
+
+```json
+{
+  "aggregate_rows": 32,
+  "candidate_count": 8,
+  "created_at": "2026-06-26T03:43:44.595300+00:00",
+  "decision": "PHASE3CY_SIDECAR_MATERIALIZATION_CANARY_COMPLETE_DIAGNOSTIC_ONLY",
+  "elapsed_seconds": 11.986,
+  "hard_boundary": [
+    "true trade_time 1min only",
+    "forced sidecar canary, not alpha proof",
+    "no X0/R3 modification"
+  ],
+  "meta": {
+    "max_expression_window": 60,
+    "max_horizon": 30,
+    "pairwise_candidate_count": 8,
+    "pairwise_candidate_limit": 96,
+    "panel_count": 1,
+    "panel_paths": [
+      "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cy_true1min_sidecar_augmented_shards_20260626\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+    ],
+    "read_fields": [
+      "ctx_hfq_pb",
+      "ctx_hfq_pe_ttm",
+      "ctx_ths_hot_last_pct",
+      "ctx_ths_hot_last_price",
+      "evt_uplimit_active",
+      "evt_uplimit_amount",
+      "evt_uplimit_up_limit_keep_times"
+    ],
+    "sample_trade_times_per_shard": 8,
+    "shards": [
+      {
+        "code_count": 340,
+        "eval_rows": 2589,
+        "panel_path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cy_true1min_sidecar_augmented_shards_20260626\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "read_rows": 206709,
+        "read_trade_time_count": 638,
+        "shard_index": 0,
+        "signal_trade_time_count": 8
+      }
+    ]
+  },
+  "metric_rows": 32
+}
+```
