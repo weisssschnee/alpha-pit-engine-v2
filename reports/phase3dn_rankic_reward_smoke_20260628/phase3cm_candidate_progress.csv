@@ -1,0 +1,3 @@
+created_at,candidate_id,expression_hash,generator_arm,shard_index,candidate_index,processed_candidate_shards,rows_added,cumulative_rows_for_candidate,expression_cache_size,checkpoint_partial
+2026-06-28T13:58:11.786451+00:00,phase3bt_00309,5e7f3069ea2e592a015ce287,typed_ast_fresh,0,1,1,12,12,1,true
+2026-06-28T13:58:12.357549+00:00,phase3bt_00368,fd52b26ce157634cc6cd1131,typed_ast_fresh,0,2,2,12,12,2,true

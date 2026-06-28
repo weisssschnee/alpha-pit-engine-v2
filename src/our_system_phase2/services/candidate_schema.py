@@ -17,6 +17,8 @@ from typing import Any
 FIELD_RE = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)")
 CALL_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 
+OPTIMIZER_REWARD_METRIC = "train_portfolio_sortino_rankic_composite_reward"
+
 
 CANONICAL_CANDIDATE_FIELDS = [
     "candidate_id",
@@ -49,12 +51,21 @@ CANONICAL_CANDIDATE_FIELDS = [
     "optimizer_reward_source",
     "optimizer_reward_metric",
     "optimizer_reward_split",
+    "train_rank_ic_mean",
+    "train_rank_ic_hit_rate",
+    "train_rank_ic_loss",
+    "train_rank_ic_reward_component",
+    "train_rank_ic_obs",
     "validation_usage",
     "holdout_usage",
     "validation_day_sortino",
     "validation_mcmc_prob_gt_0",
+    "validation_rank_ic_mean",
+    "validation_rank_ic_loss",
     "holdout_day_sortino",
     "holdout_mcmc_prob_gt_0",
+    "holdout_rank_ic_mean",
+    "holdout_rank_ic_loss",
 ]
 
 
@@ -253,12 +264,21 @@ def normalize_candidate_schema(row: dict[str, Any]) -> dict[str, Any]:
         "train_reward_blockers": _first_existing(row, ["train_reward_blockers"], ""),
         "optimizer_reward": optimizer_reward,
         "optimizer_reward_source": _first_existing(row, ["optimizer_reward_source"], "train_only_phase3cm" if optimizer_reward else ""),
-        "optimizer_reward_metric": _first_existing(row, ["optimizer_reward_metric"], "train_portfolio_sortino_reward" if optimizer_reward else ""),
+        "optimizer_reward_metric": _first_existing(row, ["optimizer_reward_metric"], OPTIMIZER_REWARD_METRIC if optimizer_reward else ""),
         "optimizer_reward_split": _first_existing(row, ["optimizer_reward_split"], "train" if optimizer_reward else ""),
+        "train_rank_ic_mean": _first_existing(row, ["train_rank_ic_mean"], ""),
+        "train_rank_ic_hit_rate": _first_existing(row, ["train_rank_ic_hit_rate"], ""),
+        "train_rank_ic_loss": _first_existing(row, ["train_rank_ic_loss"], ""),
+        "train_rank_ic_reward_component": _first_existing(row, ["train_rank_ic_reward_component"], ""),
+        "train_rank_ic_obs": _first_existing(row, ["train_rank_ic_obs"], ""),
         "validation_usage": _first_existing(row, ["validation_usage"], "report_only"),
         "holdout_usage": _first_existing(row, ["holdout_usage"], "report_only"),
         "validation_day_sortino": _first_existing(row, ["validation_day_sortino"], ""),
         "validation_mcmc_prob_gt_0": validation_prob,
+        "validation_rank_ic_mean": _first_existing(row, ["validation_rank_ic_mean"], ""),
+        "validation_rank_ic_loss": _first_existing(row, ["validation_rank_ic_loss"], ""),
         "holdout_day_sortino": _first_existing(row, ["holdout_day_sortino"], ""),
         "holdout_mcmc_prob_gt_0": holdout_prob,
+        "holdout_rank_ic_mean": _first_existing(row, ["holdout_rank_ic_mean"], ""),
+        "holdout_rank_ic_loss": _first_existing(row, ["holdout_rank_ic_loss"], ""),
     }

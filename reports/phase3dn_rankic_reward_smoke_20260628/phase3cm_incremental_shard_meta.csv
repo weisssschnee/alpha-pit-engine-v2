@@ -1,0 +1,2 @@
+panel,read_rows,eval_rows,signal_trade_times,read_trade_times,context_trade_time_counts,read_column_count,candidate_count_in_batch,shard_index,portfolio_pnl_rows,expression_cache_size,shard_complete,processed_candidate_shards
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\runtime\phase3cy_true1min_sidecar_augmented_shards_20260626\shard_00\phase3aq_wide_true1min\canary\phase3aq_true_1min_formula_canary.parquet,25264,2589,8,78,"{""5"": 43}",14,2,0,24,2,true,2

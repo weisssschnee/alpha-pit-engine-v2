@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from our_system_phase2.services.candidate_schema import normalize_candidate_schema, safe_float
+from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema, safe_float
 
 
 HOLDOUT_COLUMNS = {"holdout_day_sortino", "holdout_mcmc_prob_gt_0"}
@@ -39,7 +39,7 @@ class SearchFeedbackContext:
     validation_used_for_score: bool = False
     holdout_used_for_score: bool = False
     optimizer_reward_source: str = "train_only_phase3cm"
-    optimizer_reward_metric: str = "train_portfolio_sortino_reward"
+    optimizer_reward_metric: str = OPTIMIZER_REWARD_METRIC
     optimizer_reward_split: str = "train"
     guardrail: str = ""
     eligible_source: str = ""
@@ -112,7 +112,7 @@ def _normalize_feedback_row(row: dict[str, Any]) -> dict[str, Any]:
     reward = _optimizer_reward(out)
     out["optimizer_reward"] = reward if math.isfinite(reward) else ""
     out["optimizer_reward_source"] = str(out.get("optimizer_reward_source") or "train_only_phase3cm")
-    out["optimizer_reward_metric"] = str(out.get("optimizer_reward_metric") or "train_portfolio_sortino_reward")
+    out["optimizer_reward_metric"] = str(out.get("optimizer_reward_metric") or OPTIMIZER_REWARD_METRIC)
     out["optimizer_reward_split"] = str(out.get("optimizer_reward_split") or "train")
     out["validation_usage"] = str(out.get("validation_usage") or "report_only")
     out["holdout_usage"] = str(out.get("holdout_usage") or "report_only")
@@ -265,7 +265,7 @@ def build_search_feedback_context(
         validation_used_for_score=False,
         holdout_used_for_score=False,
         optimizer_reward_source="train_only_phase3cm",
-        optimizer_reward_metric="train_portfolio_sortino_reward",
+        optimizer_reward_metric=OPTIMIZER_REWARD_METRIC,
         optimizer_reward_split="train",
         guardrail=guardrail,
         eligible_source=eligible_source,

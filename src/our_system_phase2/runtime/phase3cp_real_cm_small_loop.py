@@ -13,9 +13,11 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -42,8 +44,12 @@ from our_system_phase2.runtime.phase3cp_reward_gated_medium_search_smoke import 
     _scale_budgets,
     _write_arm_outputs,
 )
-from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import build_checked_seed_policy
-from our_system_phase2.services.candidate_schema import normalize_candidate_schema, safe_float
+from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
+    begin_generation_accounting,
+    build_checked_seed_policy,
+    end_generation_accounting,
+)
+from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema, safe_float
 from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule, read_csv_rows
 
 
@@ -52,12 +58,17 @@ DEFAULT_CO_ROOT = Path("reports/phase3cp_reward_gated_medium_search_smoke_202606
 DEFAULT_OUTPUT_ROOT = Path("runtime/phase3cp_real_cm_small_loop_20260623")
 DEFAULT_REPORT_ROOT = Path("reports/phase3cp_real_cm_small_loop_20260623")
 DEFAULT_MEMORY_GLOBS = [
+    "**/*.csv",
+    "**/*search_memory*.json",
+    "**/candidate_ledger.json",
     "**/*search_memory_ledger.csv",
     "**/*top_decisions.csv",
     "**/*candidate_audit.csv",
     "**/*generated_candidates.csv",
     "**/*train_reward.csv",
 ]
+FIELD_RE = re.compile(r"\$[A-Za-z_][A-Za-z0-9_]*")
+NUM_RE = re.compile(r"(?<![A-Za-z0-9_])(?:\d+\.\d+|\d+)(?![A-Za-z0-9_])")
 
 
 def _resolve(path: Path) -> Path:
@@ -69,6 +80,101 @@ def _read_csv(path: Path) -> list[dict[str, Any]]:
         return []
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         return [dict(row) for row in csv.DictReader(handle)]
+
+
+def _stable_expression_hash(expression: str) -> str:
+    return hashlib.sha256(expression.encode("utf-8")).hexdigest()[:24]
+
+
+def _canonical_expression_key(expression: str) -> str:
+    canonical = re.sub(r"\s+", "", expression.strip())
+    return f"v2cand-{hashlib.sha1(canonical.encode('utf-8')).hexdigest()[:12]}"
+
+
+def _skeleton_key(expression: str) -> str:
+    canonical = re.sub(r"\s+", "", expression.strip())
+    skeleton = FIELD_RE.sub("FIELD", canonical)
+    skeleton = NUM_RE.sub("WINDOW", skeleton)
+    return f"skeleton-{hashlib.sha1(skeleton.encode('utf-8')).hexdigest()[:16]}"
+
+
+def _add_memory_key(hashes: set[str], value: Any) -> None:
+    text = str(value or "").strip()
+    if 8 <= len(text) <= 160:
+        hashes.add(text)
+
+
+def _add_expression_memory_keys(hashes: set[str], expression: Any) -> None:
+    expr = str(expression or "").strip()
+    if not expr:
+        return
+    digest = _stable_expression_hash(expr)
+    hashes.add(digest)
+    hashes.add(f"phase3bp:{digest}")
+    hashes.add(_canonical_expression_key(expr))
+
+
+def _is_structural_block_record(row: dict[str, Any]) -> bool:
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in (
+            "memory_block_policy",
+            "typed_gate_decision",
+            "typed_gate_reason",
+            "blocker_flags",
+            "phase3bp_blocker_flags",
+            "phase3ca_blocker_flags",
+            "reason",
+            "decision",
+        )
+    ).lower()
+    return any(token in text for token in ("unsafe", "blocked", "block", "quarantine", "typed_gate"))
+
+
+def _add_structural_memory_keys(hashes: set[str], row: dict[str, Any]) -> None:
+    if not _is_structural_block_record(row):
+        return
+    _add_memory_key(hashes, row.get("skeleton_key"))
+    expression = row.get("expression")
+    if expression:
+        hashes.add(_skeleton_key(str(expression)))
+
+
+def _collect_json_memory_keys(payload: Any, hashes: set[str], *, depth: int = 0) -> None:
+    if depth > 8:
+        return
+    if isinstance(payload, list):
+        for item in payload:
+            _collect_json_memory_keys(item, hashes, depth=depth + 1)
+        return
+    if not isinstance(payload, dict):
+        return
+
+    for key in ("expression_hash", "candidate_hash", "search_memory_key", "expression_key"):
+        _add_memory_key(hashes, payload.get(key))
+    _add_expression_memory_keys(hashes, payload.get("expression"))
+    _add_structural_memory_keys(hashes, payload)
+
+    for key in ("expression_keys", "search_memory_keys"):
+        values = payload.get(key)
+        if isinstance(values, dict):
+            values = list(values.keys())
+        if isinstance(values, list):
+            for value in values:
+                _add_memory_key(hashes, value)
+
+    for key in (
+        "memory_entries",
+        "records",
+        "candidates",
+        "candidate_ledger",
+        "rows",
+        "entries",
+        "duplicate_skip_events",
+        "blocked_keys",
+    ):
+        if key in payload:
+            _collect_json_memory_keys(payload.get(key), hashes, depth=depth + 1)
 
 
 def _round(value: Any, ndigits: int = 8) -> float | None:
@@ -109,17 +215,35 @@ def _load_memory_hashes(memory_roots: list[Path], memory_globs: list[str]) -> tu
 
         before = len(hashes)
         file_count = 0
+        parse_error_count = 0
         for file_path in files:
             file_path = file_path.resolve()
-            if file_path in files_seen or file_path.suffix.lower() != ".csv":
+            suffix = file_path.suffix.lower()
+            if file_path in files_seen or suffix not in {".csv", ".json"}:
                 continue
             files_seen.add(file_path)
             file_count += 1
-            for row in _read_csv(file_path):
-                digest = str(row.get("expression_hash") or row.get("candidate_hash") or "").strip()
-                if digest and 8 <= len(digest) <= 128:
-                    hashes.add(digest)
-        rows.append({"memory_root": str(root), "exists": True, "file_count": file_count, "hash_count": len(hashes) - before})
+            try:
+                if suffix == ".csv":
+                    for row in _read_csv(file_path):
+                        for key in ("expression_hash", "candidate_hash", "search_memory_key", "expression_key"):
+                            _add_memory_key(hashes, row.get(key))
+                        _add_expression_memory_keys(hashes, row.get("expression"))
+                        _add_structural_memory_keys(hashes, row)
+                else:
+                    payload = json.loads(file_path.read_text(encoding="utf-8-sig"))
+                    _collect_json_memory_keys(payload, hashes)
+            except Exception:
+                parse_error_count += 1
+        rows.append(
+            {
+                "memory_root": str(root),
+                "exists": True,
+                "file_count": file_count,
+                "hash_count": len(hashes) - before,
+                "parse_error_count": parse_error_count,
+            }
+        )
     return hashes, rows
 
 
@@ -131,44 +255,123 @@ def _generate_candidates(
     available_fields: set[str],
     output_root: Path,
     report_root: Path,
+    shortfall_fill_rounds: int = 4,
+    shortfall_oversample_multiplier: float = 1.5,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     scaled_plan = _scale_budgets(budget_rows, total_budget)
     policy, _, _ = build_checked_seed_policy(exploration=0.94)
     generated: list[dict[str, Any]] = []
     blocked: set[str] = set(initial_blocked)
-    for arm in scaled_plan:
-        budget = int(arm.get("cp_smoke_candidate_budget") or 0)
-        rows = _generate_for_arm(
-            arm,
-            budget=budget,
-            blocked=blocked,
-            policy=policy,
-            start_idx=len(generated) + 1,
-            available_fields=available_fields,
+
+    generation_attempt_rows: list[dict[str, Any]] = []
+
+    def run_arm(arm: dict[str, Any], *, requested_budget: int, phase: str, round_index: int) -> list[dict[str, Any]]:
+        before = len(generated)
+        previous_accounting, _ = begin_generation_accounting()
+        try:
+            rows = _generate_for_arm(
+                arm,
+                budget=max(0, int(requested_budget)),
+                blocked=blocked,
+                policy=policy,
+                start_idx=len(generated) + 1,
+                available_fields=available_fields,
+            )
+        finally:
+            accounting_row = end_generation_accounting(previous_accounting)
+        accounting_row["emitted_produced"] = len(rows)
+        known_drop = sum(
+            int(accounting_row.get(key) or 0)
+            for key in ("dropped_by_emit_cap", "dropped_by_diversity_cap", "dropped_by_global_pool")
+        )
+        accounting_row["accepted_to_emitted_unexplained"] = max(
+            0,
+            int(accounting_row.get("accepted_unique") or 0) - len(rows) - known_drop,
         )
         for row in rows:
             digest = str(row.get("expression_hash") or "")
             if digest:
                 blocked.add(digest)
+                blocked.add(f"phase3bp:{digest}")
+            _add_expression_memory_keys(blocked, row.get("expression"))
         generated.extend(rows)
+        generation_attempt_rows.append(
+            {
+                "phase": phase,
+                "round_index": round_index,
+                "arm_id": arm.get("arm_id", ""),
+                "route_hint": arm.get("route_hint", ""),
+                "requested_budget": int(requested_budget),
+                "produced_count": len(rows),
+                "generated_before": before,
+                "generated_after": len(generated),
+                "remaining_after": max(0, int(total_budget) - len(generated)),
+                "per_arm_attempt_accept": (
+                    f"{arm.get('arm_id', '')}:"
+                    f"{accounting_row.get('raw_attempts', 0)}/"
+                    f"{accounting_row.get('accepted_unique', 0)}"
+                ),
+                **accounting_row,
+            }
+        )
+        return rows
+
+    for arm in scaled_plan:
+        budget = int(arm.get("cp_smoke_candidate_budget") or 0)
+        run_arm(arm, requested_budget=budget, phase="scheduled", round_index=0)
 
     shortfall_rows: list[dict[str, Any]] = []
-    if len(generated) < total_budget:
-        fill_arm = {
+    fill_arms = [
+        {
+            "arm_id": "turnover_aware_fresh",
+            "route_hint": "phase3bp-true1min-turnover-aware",
+            "category": "fresh",
+        },
+        {
+            "arm_id": "typed_ast_fresh",
+            "route_hint": "phase3bt-ast-algorithm-bakeoff",
+            "category": "fresh",
+        },
+        {
             "arm_id": "rx_ucb_fresh",
             "route_hint": "phase3bs-adaptive-ucb-cem-practice",
             "category": "fresh",
-        }
-        missing = total_budget - len(generated)
-        shortfall_rows = _generate_for_arm(
-            fill_arm,
-            budget=missing,
-            blocked=blocked,
-            policy=policy,
-            start_idx=len(generated) + 1,
-            available_fields=available_fields,
+        },
+        {
+            "arm_id": "challenger_repair",
+            "route_hint": "future-phase3cr-repair",
+            "category": "fresh",
+        },
+        {
+            "arm_id": "event_state",
+            "route_hint": "future-event-state-generator",
+            "category": "event",
+        },
+        {
+            "arm_id": "random_orthogonal",
+            "route_hint": "control-random-orthogonal",
+            "category": "control",
+        },
+    ]
+    previous_total = -1
+    for round_index in range(1, max(0, int(shortfall_fill_rounds)) + 1):
+        if len(generated) >= total_budget:
+            break
+        if len(generated) == previous_total:
+            break
+        previous_total = len(generated)
+        missing_at_round_start = total_budget - len(generated)
+        per_arm_budget = max(
+            256,
+            int(math.ceil((missing_at_round_start * max(1.0, float(shortfall_oversample_multiplier))) / len(fill_arms))),
         )
-        generated.extend(shortfall_rows)
+        for fill_arm in fill_arms:
+            if len(generated) >= total_budget:
+                break
+            rows = run_arm(fill_arm, requested_budget=per_arm_budget, phase="shortfall_fill", round_index=round_index)
+            shortfall_rows.extend(rows)
+        if len(generated) == previous_total:
+            break
 
     decisions = [_decisionize(row, idx) for idx, row in enumerate(generated[:total_budget], 1)]
     for row in decisions:
@@ -182,6 +385,8 @@ def _generate_candidates(
     _write_arm_outputs(decisions, report_search_root)
     _write_csv(output_root / "phase3cp_real_cm_arm_execution_plan.csv", scaled_plan)
     _write_csv(report_root / "phase3cp_real_cm_arm_execution_plan.csv", scaled_plan)
+    _write_csv(output_root / "phase3cp_real_cm_generation_attempts.csv", generation_attempt_rows)
+    _write_csv(report_root / "phase3cp_real_cm_generation_attempts.csv", generation_attempt_rows)
     _write_csv(output_root / "phase3cp_real_cm_all_generated_top_decisions.csv", decisions)
     _write_csv(report_root / "phase3cp_real_cm_all_generated_top_decisions.csv", decisions)
     if shortfall_rows:
@@ -370,12 +575,13 @@ def _write_minimal_parallel_cm_md(summary: dict[str, Any], reward_rows: list[dic
         "",
         "## Top Rows",
         "",
-        "| rank | candidate | reward | train day sortino | validation day sortino | turnover | decision | blockers |",
-        "|---:|---|---:|---:|---:|---:|---|---|",
+        "| rank | candidate | reward | train day sortino | train rank IC loss | rank IC component | validation day sortino | turnover | decision | blockers |",
+        "|---:|---|---:|---:|---:|---:|---:|---:|---|---|",
     ]
     for idx, row in enumerate(ranked[:30], 1):
         lines.append(
             f"| {idx} | `{row.get('candidate_id')}` | {row.get('train_reward')} | {row.get('train_day_sortino')} | "
+            f"{row.get('train_rank_ic_loss')} | {row.get('train_rank_ic_reward_component')} | "
             f"{row.get('validation_day_sortino')} | {row.get('train_mean_one_way_turnover')} | "
             f"`{row.get('train_reward_decision')}` | `{row.get('train_reward_blockers')}` |"
         )
@@ -384,7 +590,8 @@ def _write_minimal_parallel_cm_md(summary: dict[str, Any], reward_rows: list[dic
             "",
             "## Boundary",
             "",
-            "- This is the same Phase3CM train reward audit executed by candidate chunks.",
+            "- This is the same Phase3CM train composite reward audit executed by candidate chunks.",
+            "- `rank_ic_loss` is included only through the bounded train-side reward component.",
             "- Holdout remains report-only and must not feed search.",
             "- X0/R3 remain read-only.",
         ]
@@ -433,6 +640,10 @@ def _run_real_cm_chunk_subprocess(
         str(args.cm_cost_bps),
         "--top-quantile",
         str(args.cm_top_quantile),
+        "--rank-ic-loss-weight",
+        str(args.cm_rank_ic_loss_weight),
+        "--rank-ic-component-cap",
+        str(args.cm_rank_ic_component_cap),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
@@ -450,9 +661,79 @@ def _run_real_cm_chunk_subprocess(
     (chunk_output_root / "phase3cm_subprocess_stdout.log").write_text(proc.stdout or "", encoding="utf-8")
     (chunk_output_root / "phase3cm_subprocess_stderr.log").write_text(proc.stderr or "", encoding="utf-8")
     if proc.returncode != 0:
+        partial_path = chunk_output_root / "phase3cm_train_reward_partial.csv"
+        partial_rows = _read_csv(partial_path)
+        if partial_rows:
+            return {
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "experiment_id": "20260623_phase3cm_train_portfolio_sortino_reward_audit",
+                "decision": "PHASE3CM_CHUNK_PARTIAL_RECOVERED_AFTER_FAILURE",
+                "candidate_count": len(partial_rows),
+                "followup_count": sum(
+                    1
+                    for row in partial_rows
+                    if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY"
+                ),
+                "partial": True,
+                "subprocess_returncode": proc.returncode,
+                "chunk_table": str(chunk_table),
+                "error_log": str(chunk_output_root / "phase3cm_subprocess_stderr.log"),
+                "metric_boundary": "partial chunk recovered; rerun missing candidates before promotion decisions",
+            }
         raise RuntimeError(f"Phase3CM chunk failed rc={proc.returncode}: {chunk_table}")
     summary_path = chunk_output_root / "phase3cm_train_reward_audit_summary.json"
     return json.loads(summary_path.read_text(encoding="utf-8"))
+
+
+def _run_real_cm_retry_table(
+    *,
+    args: argparse.Namespace,
+    retry_table: Path,
+    retry_output_root: Path,
+    retry_report_root: Path,
+    retry_limit: int,
+) -> dict[str, Any]:
+    retry_output_root.mkdir(parents=True, exist_ok=True)
+    retry_report_root.mkdir(parents=True, exist_ok=True)
+    argv = [
+        "--candidate-audit",
+        str(retry_table),
+        "--shard-root",
+        str(_resolve(args.shard_root)),
+        "--output-root",
+        str(retry_output_root),
+        "--report-root",
+        str(retry_report_root),
+        "--candidate-limit",
+        str(retry_limit),
+        "--max-shards",
+        str(args.cm_max_shards),
+        "--sample-trade-times-per-shard",
+        str(args.cm_sample_trade_times_per_shard),
+        "--horizons",
+        str(args.cm_horizons),
+        "--train-fraction",
+        str(args.cm_train_fraction),
+        "--validation-fraction",
+        str(args.cm_validation_fraction),
+        "--min-obs-per-time",
+        str(args.cm_min_obs_per_time),
+        "--cost-bps",
+        str(args.cm_cost_bps),
+        "--top-quantile",
+        str(args.cm_top_quantile),
+        "--rank-ic-loss-weight",
+        str(args.cm_rank_ic_loss_weight),
+        "--rank-ic-component-cap",
+        str(args.cm_rank_ic_component_cap),
+        "--numexpr-threads",
+        str(args.numexpr_threads),
+        "--fast-mode",
+    ]
+    result = phase3cm_main(argv)
+    if int(result or 0) != 0:
+        raise RuntimeError(f"Phase3CM retry failed with exit code {result}")
+    return json.loads((retry_output_root / "phase3cm_train_reward_audit_summary.json").read_text(encoding="utf-8"))
 
 
 def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
@@ -510,8 +791,18 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
     split_horizon_rows: list[dict[str, Any]] = []
     shard_meta_rows: list[dict[str, Any]] = []
     progress_rows: list[dict[str, Any]] = []
+    partial_chunk_ids = {
+        int(row.get("parallel_chunk_id"))
+        for row in chunk_summaries
+        if row.get("parallel_chunk_id") and bool(row.get("partial"))
+    }
     for chunk_id, _, chunk_out, _, _ in chunks:
-        for row in _read_csv(chunk_out / "phase3cm_train_reward.csv"):
+        if int(chunk_id) in partial_chunk_ids:
+            continue
+        chunk_reward_path = chunk_out / "phase3cm_train_reward.csv"
+        if not chunk_reward_path.exists():
+            chunk_reward_path = chunk_out / "phase3cm_train_reward_partial.csv"
+        for row in _read_csv(chunk_reward_path):
             row["parallel_chunk_id"] = chunk_id
             reward_rows.append(row)
         for row in _read_csv(chunk_out / "phase3cm_candidate_split_horizon_summary.csv"):
@@ -524,8 +815,52 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
             row["parallel_chunk_id"] = chunk_id
             progress_rows.append(row)
 
+    expected_by_id = {str(row.get("candidate_id") or ""): row for row in candidates if str(row.get("candidate_id") or "")}
+    recovered_ids = {str(row.get("candidate_id") or "") for row in reward_rows if str(row.get("candidate_id") or "")}
+    missing_rows = [row for cid, row in expected_by_id.items() if cid not in recovered_ids]
+    retry_summary: dict[str, Any] = {
+        "missing_candidate_count_before_retry": len(missing_rows),
+        "retry_candidate_count": 0,
+        "retry_success_count": 0,
+        "missing_candidate_count_after_retry": len(missing_rows),
+    }
+    if missing_rows:
+        retry_root = output_root / "phase3cm_train_reward_retry_missing"
+        retry_report_root = report_root / "phase3cm_train_reward_retry_missing"
+        retry_table = retry_root / "candidate_retry_missing.csv"
+        _write_csv(retry_table, missing_rows)
+        retry_summary_raw = _run_real_cm_retry_table(
+            args=args,
+            retry_table=retry_table,
+            retry_output_root=retry_root,
+            retry_report_root=retry_report_root,
+            retry_limit=len(missing_rows),
+        )
+        retry_reward_rows = _read_csv(retry_root / "phase3cm_train_reward.csv")
+        for row in retry_reward_rows:
+            row["parallel_chunk_id"] = "retry_missing"
+            reward_rows.append(row)
+        for row in _read_csv(retry_root / "phase3cm_candidate_split_horizon_summary.csv"):
+            row["parallel_chunk_id"] = "retry_missing"
+            split_horizon_rows.append(row)
+        for row in _read_csv(retry_root / "phase3cm_shard_meta.csv"):
+            row["parallel_chunk_id"] = "retry_missing"
+            shard_meta_rows.append(row)
+        for row in _read_csv(retry_root / "phase3cm_candidate_progress.csv"):
+            row["parallel_chunk_id"] = "retry_missing"
+            progress_rows.append(row)
+        recovered_ids = {str(row.get("candidate_id") or "") for row in reward_rows if str(row.get("candidate_id") or "")}
+        retry_summary = {
+            "missing_candidate_count_before_retry": len(missing_rows),
+            "retry_candidate_count": int(retry_summary_raw.get("candidate_count") or len(retry_reward_rows)),
+            "retry_success_count": len(retry_reward_rows),
+            "missing_candidate_count_after_retry": sum(1 for cid in expected_by_id if cid not in recovered_ids),
+            "retry_summary": retry_summary_raw,
+        }
+
     reward_rows.sort(key=lambda row: safe_float(row.get("train_reward"), -999.0), reverse=True)
     followup_count = sum(1 for row in reward_rows if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY")
+    partial_chunk_count = sum(1 for row in chunk_summaries if bool(row.get("partial")))
     summary = {
         "created_at": datetime.now(timezone.utc).isoformat(),
         "experiment_id": "20260623_phase3cm_train_portfolio_sortino_reward_audit",
@@ -542,8 +877,11 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
         "holdout_fraction": round(1.0 - args.cm_train_fraction - args.cm_validation_fraction, 8),
         "cost_bps": args.cm_cost_bps,
         "top_quantile": args.cm_top_quantile,
+        "rank_ic_loss_weight": args.cm_rank_ic_loss_weight,
+        "rank_ic_component_cap": args.cm_rank_ic_component_cap,
+        "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
         "portfolio_pnl_rows_written": 0,
-        "metric_boundary": "parallel train portfolio Sortino reward audit; not production proof; holdout must not feed search",
+        "metric_boundary": "parallel train portfolio Sortino + rankIC loss reward audit; not production proof; validation/holdout must not feed search",
         "fast_mode": True,
         "numexpr_threads": int(args.numexpr_threads),
         "incremental_checkpoints_enabled": True,
@@ -552,7 +890,9 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
         "python_executable": sys.executable,
         "package_versions": chunk_summaries[0].get("package_versions", {}) if chunk_summaries else {},
         "parallel_chunk_count": len(chunks),
+        "partial_chunk_count": partial_chunk_count,
         "parallel_chunk_summaries": sorted(chunk_summaries, key=lambda row: int(row.get("parallel_chunk_id") or 0)),
+        "missing_retry_summary": retry_summary,
         "acceleration_contract": {
             "batched_shard_read": True,
             "column_pruned_pyarrow_read": True,
@@ -623,6 +963,10 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
         str(args.cm_cost_bps),
         "--top-quantile",
         str(args.cm_top_quantile),
+        "--rank-ic-loss-weight",
+        str(args.cm_rank_ic_loss_weight),
+        "--rank-ic-component-cap",
+        str(args.cm_rank_ic_component_cap),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
@@ -697,6 +1041,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
     parser.add_argument("--generation-budget", type=int, default=32)
+    parser.add_argument("--shortfall-fill-rounds", type=int, default=4)
+    parser.add_argument("--shortfall-oversample-multiplier", type=float, default=1.5)
     parser.add_argument("--ca-top-n", type=int, default=24)
     parser.add_argument("--cm-candidate-limit", type=int, default=8)
     parser.add_argument("--cm-selection-mode", choices=["ca_ranked", "arm_balanced"], default="ca_ranked")
@@ -708,6 +1054,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-min-obs-per-time", type=int, default=20)
     parser.add_argument("--cm-cost-bps", type=float, default=5.0)
     parser.add_argument("--cm-top-quantile", type=float, default=0.2)
+    parser.add_argument("--cm-rank-ic-loss-weight", type=float, default=6.0)
+    parser.add_argument("--cm-rank-ic-component-cap", type=float, default=0.35)
     parser.add_argument("--pre-cm-turnover-proxy-max", type=float, default=float("nan"))
     parser.add_argument("--cm-workers", type=int, default=1)
     parser.add_argument("--numexpr-threads", type=int, default=4)
@@ -745,12 +1093,21 @@ def main(argv: list[str] | None = None) -> int:
         available_fields=available_fields,
         output_root=output_root,
         report_root=report_root,
+        shortfall_fill_rounds=args.shortfall_fill_rounds,
+        shortfall_oversample_multiplier=args.shortfall_oversample_multiplier,
     )
 
     search_root = output_root / "search_outputs"
     ca_root = output_root / "phase3ca_bridge"
     report_ca_root = report_root / "phase3ca_bridge"
-    ca_summary = build_candidate_table([search_root], ca_root, top_n=args.ca_top_n, allow_high_corr=False)
+    ca_selection_mode = "arm_balanced" if args.cm_selection_mode == "arm_balanced" else "ranked"
+    ca_summary = build_candidate_table(
+        [search_root],
+        ca_root,
+        top_n=args.ca_top_n,
+        allow_high_corr=False,
+        selection_mode=ca_selection_mode,
+    )
     _copy_report_files(ca_root, report_ca_root)
     ca_table = ca_root / "phase3ca_bz_candidate_audit.csv"
     cm_candidate_table, field_gate_summary = _filter_cm_feasible_candidates(
@@ -819,7 +1176,7 @@ def main(argv: list[str] | None = None) -> int:
         "cn_memory_matches_cm": int(cn_summary["candidate_count"]) == int(cm_summary["candidate_count"]),
         "reschedule_total_ok": int(reschedule_summary["allocated_budget"]) == int(args.reschedule_total_budget),
         "holdout_not_optimizer_input": True,
-        "memory_blocklist_loaded": len(memory_hashes) >= 0,
+        "memory_blocklist_loaded": len(memory_hashes) > 0,
     }
     passed = all(bool(value) for value in checks.values())
     summary = {
@@ -831,6 +1188,8 @@ def main(argv: list[str] | None = None) -> int:
         "shard_root": str(shard_root),
         "generated_candidates": len(decisions),
         "generation_budget": int(args.generation_budget),
+        "shortfall_fill_rounds": int(args.shortfall_fill_rounds),
+        "shortfall_oversample_multiplier": float(args.shortfall_oversample_multiplier),
         "memory_hash_count": len(memory_hashes),
         "memory_roots": memory_rows,
         "search_generation": True,

@@ -20,6 +20,7 @@ import numpy as np
 
 from our_system_phase2.services.candidate_schema import (
     CANONICAL_CANDIDATE_FIELDS,
+    OPTIMIZER_REWARD_METRIC,
     normalize_candidate_schema,
     safe_float,
 )
@@ -163,7 +164,7 @@ def _is_validation_survivor(row: dict[str, Any], *, validation_floor: float) -> 
 
 def _is_rewardhack(row: dict[str, Any]) -> bool:
     proxy = safe_float(row.get("phase3ca_proxy_quality") or row.get("proxy_quality"), float("nan"))
-    train = safe_float(row.get("train_reward"), float("nan"))
+    train = _optimizer_reward(row)
     return math.isfinite(proxy) and proxy > 0.0 and math.isfinite(train) and train <= 0.0
 
 
@@ -298,7 +299,7 @@ def _arm_score_table(
                 "validation_usage": "report_only",
                 "validation_used_for_arm_score": "false",
                 "optimizer_reward_source": "train_only_phase3cm",
-                "optimizer_reward_metric": "train_portfolio_sortino_reward",
+                "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
                 "new_family_rate": _round(new_family_rate),
                 "low_turnover_rate": _round(low_turnover_rate),
                 "rewardhack_family_rate": _round(rewardhack_rate),
@@ -360,7 +361,7 @@ def _render_md(summary: dict[str, Any], arm_rows: list[dict[str, Any]], family_r
             "",
             "## Boundary",
             "",
-            "- `optimizer_reward` is train-only Phase3CM reward.",
+            "- `optimizer_reward` is train-only Phase3CM composite reward: portfolio Sortino plus bounded rank IC loss component.",
             "- Validation and holdout fields are carried through as read-only metadata and are not used in arm_score.",
             "- `feedback_update_allowed=false` means CEM/UCB must not update from that arm.",
             "- Proxy-high but CM-negative families are frozen or blocked before exploit.",
@@ -391,10 +392,12 @@ def build_feedback_memory(
     for row in rows:
         item = dict(row)
         item.update(normalize_candidate_schema(item))
-        reward = safe_float(item.get("train_reward"), float("nan"))
+        reward = safe_float(item.get("optimizer_reward"), float("nan"))
+        if not math.isfinite(reward):
+            reward = safe_float(item.get("train_reward"), float("nan"))
         item["optimizer_reward"] = reward if math.isfinite(reward) else ""
         item["optimizer_reward_source"] = "train_only_phase3cm"
-        item["optimizer_reward_metric"] = "train_portfolio_sortino_reward"
+        item["optimizer_reward_metric"] = OPTIMIZER_REWARD_METRIC
         item["optimizer_reward_split"] = "train"
         item["validation_usage"] = "report_only"
         item["holdout_usage"] = "report_only"
@@ -430,7 +433,7 @@ def build_feedback_memory(
         "validation_usage": "report_only",
         "validation_used_for_optimizer": False,
         "optimizer_reward_source": "train_only_phase3cm",
-        "optimizer_reward_metric": "train_portfolio_sortino_reward",
+        "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
         "optimizer_reward_split": "train",
         "max_turnover": max_turnover,
         "max_family_share": max_family_share,

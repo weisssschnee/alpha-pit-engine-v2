@@ -1,0 +1,14 @@
+{
+  "candidate_count": 2,
+  "completed_shards": 1,
+  "created_at": "2026-06-28T13:58:13.068533+00:00",
+  "experiment_id": "20260623_phase3cm_incremental_checkpoint",
+  "final": true,
+  "latest_shard_index": 0,
+  "metric_boundary": "incremental partial checkpoint; not final reward unless final=true",
+  "partial": false,
+  "partial_reward_count": 2,
+  "processed_candidate_shards": 2,
+  "progress_row_count": 2,
+  "shard_count": 1
+}
