@@ -28,6 +28,7 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     _generate_cem_elite_candidates,
     _generate_event_state_candidates,
     _generate_hybrid_candidates,
+    _generate_orthogonal_candidates,
     _panel_schema_fields,
     _generate_turnover_aware_candidates,
     _generate_rx_ucb_candidates,
@@ -177,8 +178,12 @@ def _generate_for_arm(
         )
         source = f"phase3cp_{arm_id}_from_co"
     elif arm_id == "random_orthogonal":
-        rows = _generate_rx_ucb_candidates(max(budget * 2, budget), blocked, policy, include_residual=False, available_fields=available_fields)
-        rows = list(reversed(rows))[:budget]
+        rows = _generate_orthogonal_candidates(
+            budget,
+            blocked,
+            policy,
+            available_fields=available_fields,
+        )
         source = "phase3cp_random_orthogonal_control_from_co"
     else:
         rows = _generate_rx_ucb_candidates(budget, blocked, policy, include_residual=False, available_fields=available_fields)

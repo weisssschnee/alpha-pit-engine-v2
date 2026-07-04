@@ -69,6 +69,7 @@ AVAILABLE_ALGORITHM_ARMS = [
     "hybrid_rx_cem",
     "event_state",
     "turnover_aware",
+    "orthogonal",
 ]
 OPERATORS = {
     "Abs",
@@ -105,6 +106,199 @@ def _resolve(path: Path) -> Path:
 
 def _hash(text: str, length: int = 24) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:length]
+
+
+def _canonical_expression_key(expression: str) -> str:
+    canonical = re.sub(r"\s+", "", expression.strip())
+    return f"v2cand-{hashlib.sha1(canonical.encode('utf-8')).hexdigest()[:12]}"
+
+
+def _skeleton_key(expression: str) -> str:
+    canonical = re.sub(r"\s+", "", expression.strip())
+    skeleton = FIELD_RE.sub("FIELD", canonical)
+    skeleton = NUM_RE.sub("WINDOW", skeleton)
+    return f"skeleton-{hashlib.sha1(skeleton.encode('utf-8')).hexdigest()[:16]}"
+
+
+def _expression_family(expression: str) -> str:
+    ops = [match.group(1) for match in OP_RE.finditer(expression or "") if match.group(1) in OPERATORS]
+    fields = _fields(expression)
+
+    def field_bucket(field: str) -> str:
+        field = field.lower().lstrip("$")
+        if field.startswith("evt_") or "limit" in field or "auction" in field or "fengdan" in field:
+            return "event"
+        if field.startswith("ctx_") or field.startswith("fund_") or any(token in field for token in ("rzrq", "rzye", "billboard", "holder", "market_cap", "turnover_ratio", "volume_ratio")):
+            return "context"
+        if field.startswith("m1_first"):
+            return "firstn"
+        if field in {"open", "high", "low", "close", "vwap", "amount", "volume", "vol"}:
+            return "minute_ohlcv"
+        return "other"
+
+    op_sig = ">".join(ops[:5]) or "none"
+    field_sig = "|".join(sorted(set(field_bucket(field) for field in fields))) or "no_field"
+    return f"{op_sig}::{field_sig}"
+
+
+GENERATION_ACCOUNTING: dict[str, Any] | None = None
+
+
+def begin_generation_accounting() -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """Start lightweight construction-time accounting for one generator call."""
+    global GENERATION_ACCOUNTING
+    previous = GENERATION_ACCOUNTING
+    accounting: dict[str, Any] = {
+        "raw_attempts": 0,
+        "accepted_unique": 0,
+        "reject_counts": Counter(),
+        "drop_counts": Counter(),
+        "preavoid_counts": Counter(),
+        "top_memory_hit_expr_prefix": Counter(),
+        "top_memory_hit_family": Counter(),
+        "top_unsafe_skeleton_family": Counter(),
+        "top_preavoid_memory_family": Counter(),
+        "top_preavoid_unsafe_family": Counter(),
+        "hash_len_examples": set(),
+        "canonical_expr_examples": [],
+    }
+    GENERATION_ACCOUNTING = accounting
+    return previous, accounting
+
+
+def end_generation_accounting(previous: dict[str, Any] | None) -> dict[str, Any]:
+    global GENERATION_ACCOUNTING
+    accounting = GENERATION_ACCOUNTING
+    GENERATION_ACCOUNTING = previous
+    if accounting is None:
+        accounting = {}
+    counts = accounting.get("reject_counts") or Counter()
+    drop_counts = accounting.get("drop_counts") or Counter()
+    preavoid_counts = accounting.get("preavoid_counts") or Counter()
+    memory_hits = accounting.get("top_memory_hit_expr_prefix") or Counter()
+    memory_families = accounting.get("top_memory_hit_family") or Counter()
+    unsafe_families = accounting.get("top_unsafe_skeleton_family") or Counter()
+    preavoid_memory_families = accounting.get("top_preavoid_memory_family") or Counter()
+    preavoid_unsafe_families = accounting.get("top_preavoid_unsafe_family") or Counter()
+    memory_prefixes = [
+        f"{prefix}:{count}" for prefix, count in memory_hits.most_common(8)
+    ]
+    memory_family_rows = [f"{family}:{count}" for family, count in memory_families.most_common(8)]
+    unsafe_family_rows = [f"{family}:{count}" for family, count in unsafe_families.most_common(8)]
+    preavoid_memory_rows = [f"{family}:{count}" for family, count in preavoid_memory_families.most_common(8)]
+    preavoid_unsafe_rows = [f"{family}:{count}" for family, count in preavoid_unsafe_families.most_common(8)]
+    return {
+        "raw_attempts": int(accounting.get("raw_attempts") or 0),
+        "accepted_unique": int(accounting.get("accepted_unique") or 0),
+        "emitted_produced": int(accounting.get("emitted_produced") or 0),
+        "dropped_by_emit_cap": int(drop_counts.get("dropped_by_emit_cap") or 0),
+        "dropped_by_diversity_cap": int(drop_counts.get("dropped_by_diversity_cap") or 0),
+        "dropped_by_global_pool": int(drop_counts.get("dropped_by_global_pool") or 0),
+        "reject_memory_expr": int(counts.get("reject_memory_expr") or 0),
+        "reject_batch_duplicate": int(counts.get("reject_batch_duplicate") or 0),
+        "reject_typed_gate": int(counts.get("reject_typed_gate") or 0),
+        "reject_unsafe_skeleton": int(counts.get("reject_unsafe_skeleton") or 0),
+        "reject_parse_error": int(counts.get("reject_parse_error") or 0),
+        "reject_nan_or_invalid": int(counts.get("reject_nan_or_invalid") or 0),
+        "pre_avoided_memory_expr": int(preavoid_counts.get("pre_avoided_memory_expr") or 0),
+        "pre_avoided_unsafe_skeleton": int(preavoid_counts.get("pre_avoided_unsafe_skeleton") or 0),
+        "top_memory_hit_expr_prefix": "|".join(memory_prefixes),
+        "top_memory_hit_family": "|".join(memory_family_rows),
+        "top_unsafe_skeleton_family": "|".join(unsafe_family_rows),
+        "top_preavoid_memory_family": "|".join(preavoid_memory_rows),
+        "top_preavoid_unsafe_family": "|".join(preavoid_unsafe_rows),
+        "hash_len_examples": "|".join(str(v) for v in sorted(accounting.get("hash_len_examples") or [])),
+        "canonical_expr_examples": " || ".join(accounting.get("canonical_expr_examples") or []),
+    }
+
+
+def _record_generation_accounting(
+    reason: str,
+    expression: str,
+    *,
+    digest: str | None = None,
+) -> None:
+    accounting = GENERATION_ACCOUNTING
+    if accounting is None:
+        return
+    accounting["raw_attempts"] = int(accounting.get("raw_attempts") or 0) + 1
+    if reason == "accepted_unique":
+        accounting["accepted_unique"] = int(accounting.get("accepted_unique") or 0) + 1
+    else:
+        accounting["reject_counts"][reason] += 1
+    if digest:
+        accounting["hash_len_examples"].add(len(str(digest)))
+    canonical = re.sub(r"\s+", "", str(expression or "").strip())
+    if reason == "reject_memory_expr" and canonical:
+        accounting["top_memory_hit_expr_prefix"][canonical[:96]] += 1
+        accounting["top_memory_hit_family"][_expression_family(expression)] += 1
+    if reason == "reject_unsafe_skeleton" and canonical:
+        accounting["top_unsafe_skeleton_family"][_expression_family(expression)] += 1
+    examples = accounting["canonical_expr_examples"]
+    if len(examples) < 8 and canonical:
+        examples.append(canonical[:180])
+
+
+def _record_generation_preavoid(reason: str, expression: str, *, digest: str | None = None) -> None:
+    accounting = GENERATION_ACCOUNTING
+    if accounting is None:
+        return
+    accounting["preavoid_counts"][reason] += 1
+    if digest:
+        accounting["hash_len_examples"].add(len(str(digest)))
+    if reason == "pre_avoided_memory_expr":
+        accounting["top_preavoid_memory_family"][_expression_family(expression)] += 1
+    if reason == "pre_avoided_unsafe_skeleton":
+        accounting["top_preavoid_unsafe_family"][_expression_family(expression)] += 1
+    canonical = re.sub(r"\s+", "", str(expression or "").strip())
+    examples = accounting["canonical_expr_examples"]
+    if len(examples) < 8 and canonical:
+        examples.append(canonical[:180])
+
+
+def _record_generation_drop(reason: str, count: int) -> None:
+    accounting = GENERATION_ACCOUNTING
+    if accounting is None:
+        return
+    count = max(0, int(count))
+    if count:
+        accounting["drop_counts"][reason] += count
+
+
+def _record_generation_emitted(count: int) -> None:
+    accounting = GENERATION_ACCOUNTING
+    if accounting is None:
+        return
+    accounting["emitted_produced"] = int(accounting.get("emitted_produced") or 0) + max(0, int(count))
+
+
+def _record_selection_accounting(
+    *,
+    input_count: int,
+    selected_count: int,
+    diversity_skips: int,
+    considered_count: int | None = None,
+) -> None:
+    input_count = max(0, int(input_count))
+    selected_count = max(0, int(selected_count))
+    diversity_skips = max(0, min(max(0, input_count - selected_count), int(diversity_skips)))
+    considered_count = input_count if considered_count is None else max(0, min(input_count, int(considered_count)))
+    emit_drops = max(0, input_count - considered_count)
+    remaining_drop = max(0, input_count - selected_count - diversity_skips - emit_drops)
+    _record_generation_drop("dropped_by_diversity_cap", diversity_skips)
+    _record_generation_drop("dropped_by_emit_cap", emit_drops + remaining_drop)
+    _record_generation_emitted(selected_count)
+
+
+def _generation_pool_limit(max_candidates: int, *, multiplier: float, floor: int = 256) -> int:
+    target = max(0, int(max_candidates))
+    if target <= 0:
+        return 0
+    return max(target, int(math.ceil(target * float(multiplier))), target + int(floor))
+
+
+def _pool_full(rows: list[dict[str, Any]], pool_limit: int) -> bool:
+    return pool_limit > 0 and len(rows) >= pool_limit
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
@@ -397,23 +591,41 @@ def _add_candidate(
     policy: dict[str, Any],
 ) -> None:
     expression = expression.strip()
-    verdict = validate_expression(
-        expression,
-        entry_lineage="phase3bp_generator",
-        materialization_stage="candidate_construction",
-        candidate_role="true1min_search_candidate",
-    )
-    if verdict.typed_gate_decision != "allow":
-        return
     digest = _hash(expression)
-    if digest in seen or digest in blocked:
+    if digest in seen:
+        _record_generation_accounting("reject_batch_duplicate", expression, digest=digest)
         return
     memory_key = f"phase3bp:{digest}"
-    if memory_key in blocked:
+    expr_key = _canonical_expression_key(expression)
+    if digest in blocked or memory_key in blocked or expr_key in blocked:
+        _record_generation_preavoid("pre_avoided_memory_expr", expression, digest=digest)
+        return
+    skel_key = _skeleton_key(expression)
+    if skel_key in blocked:
+        _record_generation_preavoid("pre_avoided_unsafe_skeleton", expression, digest=digest)
+        return
+    try:
+        verdict = validate_expression(
+            expression,
+            entry_lineage="phase3bp_generator",
+            materialization_stage="candidate_construction",
+            candidate_role="true1min_search_candidate",
+        )
+    except Exception:
+        _record_generation_accounting("reject_parse_error", expression)
+        return
+    if verdict.typed_gate_decision != "allow":
+        reason = (
+            "reject_unsafe_skeleton"
+            if verdict.typed_gate_decision == "blocked_unsafe_known_structure"
+            else "reject_typed_gate"
+        )
+        _record_generation_accounting(reason, expression)
         return
     seen.add(digest)
     fields = _fields(expression)
     ast = _ast_variables(expression)
+    _record_generation_accounting("accepted_unique", expression, digest=digest)
     rows.append(
         {
             "candidate_id": f"phase3bp_{len(rows) + 1:05d}",
@@ -506,6 +718,7 @@ def _generate_rx_ucb_candidates(
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
+    pool_limit = _generation_pool_limit(max_candidates, multiplier=6.0, floor=512)
     atoms = _raw_atoms(available_fields)
     for atom in atoms:
         for transform, expression in {
@@ -522,12 +735,18 @@ def _generate_rx_ucb_candidates(
                 note=f"rx atom transform {atom['name']}",
                 policy=policy,
             )
+            if _pool_full(rows, pool_limit):
+                break
+        if _pool_full(rows, pool_limit):
+            break
     event_atoms = [atom for atom in atoms if atom["side"] == "event"]
     state_atoms = [atom for atom in atoms if atom["side"] == "state"]
     event_atoms = _rank_atoms_for_interaction(event_atoms, policy, max(32, max_candidates))
     state_atoms = _rank_atoms_for_interaction(state_atoms, policy, max(32, max_candidates))
     for left in event_atoms:
         for right in state_atoms:
+            if _pool_full(rows, pool_limit):
+                break
             if left["name"].split("_")[0] == right["name"].split("_")[0]:
                 continue
             lane = f"rx_interaction::{left['lane']}::{right['lane']}"
@@ -550,24 +769,39 @@ def _generate_rx_ucb_candidates(
                     note=f"rx interaction {left['name']} x {right['name']} {kind}",
                     policy=policy,
                 )
+                if _pool_full(rows, pool_limit):
+                    break
+        if _pool_full(rows, pool_limit):
+            break
     rows.sort(key=lambda row: (float(row.get("policy_score") or 0.0), -int(row.get("max_window") or 0), row["expression_hash"]), reverse=True)
     selected: list[dict[str, Any]] = []
     lane_counts: Counter[str] = Counter()
     fieldset_counts: Counter[str] = Counter()
-    lane_cap = max(3, int(math.ceil(max_candidates * 0.10)))
-    fieldset_cap = 4
+    lane_cap = max(8, int(math.ceil(max_candidates * 0.16)))
+    fieldset_cap = max(8, int(math.ceil(max_candidates * 0.03)))
+    diversity_skips = 0
+    considered_count = 0
     for row in rows:
+        considered_count += 1
         lane = str(row.get("factor_lane"))
         fieldset = str(row.get("fields"))
         if lane_counts[lane] >= lane_cap:
+            diversity_skips += 1
             continue
         if fieldset_counts[fieldset] >= fieldset_cap:
+            diversity_skips += 1
             continue
         selected.append(row)
         lane_counts[lane] += 1
         fieldset_counts[fieldset] += 1
         if len(selected) >= max_candidates:
             break
+    _record_selection_accounting(
+        input_count=len(rows),
+        selected_count=len(selected),
+        diversity_skips=diversity_skips,
+        considered_count=considered_count,
+    )
     return selected
 
 
@@ -594,6 +828,9 @@ def _generate_event_state_candidates(
     event_atoms = _rank_atoms_for_interaction(event_atoms, policy, max(64, max_candidates * 2))
     context_atoms = _rank_atoms_for_interaction(context_atoms, policy, max(64, max_candidates * 2))
     state_atoms = _rank_atoms_for_interaction(state_atoms, policy, max(32, max_candidates))
+    event_state_pool_limit = _generation_pool_limit(max_candidates, multiplier=1.5, floor=128)
+    event_context_pool_limit = _generation_pool_limit(max_candidates, multiplier=3.0, floor=256)
+    interaction_pool_limit = _generation_pool_limit(max_candidates, multiplier=4.0, floor=512)
 
     for atom in event_atoms:
         for transform, expression in {
@@ -632,7 +869,7 @@ def _generate_event_state_candidates(
     if include_interactions:
         for left in event_atoms:
             for right in state_atoms:
-                if len(interaction_rows) >= max_candidates * 4:
+                if _pool_full(interaction_rows, event_state_pool_limit):
                     break
                 left_norm = _atom_normalized_expr(left)
                 right_norm = _atom_normalized_expr(right)
@@ -650,24 +887,84 @@ def _generate_event_state_candidates(
                         note=f"typed event interaction {left['name']} x {right['name']} {kind}",
                         policy=policy,
                     )
-                    if len(interaction_rows) >= max_candidates * 4:
+                    if _pool_full(interaction_rows, event_state_pool_limit):
                         break
+            if _pool_full(interaction_rows, event_state_pool_limit):
+                break
+        for left in event_atoms:
+            for right in context_atoms:
+                if _pool_full(interaction_rows, event_context_pool_limit):
+                    break
+                left_norm = _atom_normalized_expr(left)
+                right_norm = _atom_normalized_expr(right)
+                for kind, expression in {
+                    "event_signed_context": f"CSRank(Mul(Sign({left_norm}),{right_norm}))",
+                    "context_minus_event": f"CSRank(Sub({right_norm},{left_norm}))",
+                    "event_plus_context": f"CSRank(Add({left_norm},{right_norm}))",
+                    "inverted_event_gate": f"Neg(CSRank(Mul(Sign({left_norm}),{right_norm})))",
+                }.items():
+                    _add_candidate(
+                        interaction_rows,
+                        seen,
+                        blocked,
+                        expression,
+                        lane=f"typed_event_context::{left['lane']}::{right['lane']}::{kind}",
+                        source_generator="phase3bp_true1min_typed_event_state",
+                        note=f"typed event-context interaction {left['name']} x {right['name']} {kind}",
+                        policy=policy,
+                    )
+                    if _pool_full(interaction_rows, event_context_pool_limit):
+                        break
+            if _pool_full(interaction_rows, event_context_pool_limit):
+                break
+        for left_idx, left in enumerate(event_atoms):
+            for right in event_atoms[left_idx + 1 :]:
+                if _pool_full(interaction_rows, interaction_pool_limit):
+                    break
+                if set(_fields(left["expr"])) == set(_fields(right["expr"])):
+                    continue
+                left_norm = _atom_normalized_expr(left)
+                right_norm = _atom_normalized_expr(right)
+                for kind, expression in {
+                    "event_spread": f"CSRank(Sub({left_norm},{right_norm}))",
+                    "event_cross": f"CSRank(Mul(Sign({left_norm}),{right_norm}))",
+                    "event_balance": f"CSRank(Add({left_norm},Neg({right_norm})))",
+                }.items():
+                    _add_candidate(
+                        interaction_rows,
+                        seen,
+                        blocked,
+                        expression,
+                        lane=f"typed_event_event::{left['lane']}::{right['lane']}::{kind}",
+                        source_generator="phase3bp_true1min_typed_event_state",
+                        note=f"typed event-event interaction {left['name']} x {right['name']} {kind}",
+                        policy=policy,
+                    )
+                    if _pool_full(interaction_rows, interaction_pool_limit):
+                        break
+            if _pool_full(interaction_rows, interaction_pool_limit):
+                break
 
     event_atom_rows.sort(key=lambda row: (float(row.get("policy_score") or 0.0), row["expression_hash"]), reverse=True)
     context_atom_rows.sort(key=lambda row: (float(row.get("policy_score") or 0.0), row["expression_hash"]), reverse=True)
     interaction_rows.sort(key=lambda row: (float(row.get("policy_score") or 0.0), row["expression_hash"]), reverse=True)
 
+    diversity_skips = 0
+
     def select_from(rows: list[dict[str, Any]], limit: int, *, selected: list[dict[str, Any]], lane_counts: Counter[str], fieldset_counts: Counter[str]) -> None:
-        lane_cap = max(8, int(math.ceil(max_candidates * 0.35)))
-        fieldset_cap = 4
+        nonlocal diversity_skips
+        lane_cap = max(12, int(math.ceil(max_candidates * 0.45)))
+        fieldset_cap = max(12, int(math.ceil(max_candidates * 0.04)))
         for row in rows:
             if len(selected) >= limit:
                 break
             lane = str(row.get("factor_lane"))
             fieldset = str(row.get("fields"))
             if lane_counts[lane] >= lane_cap:
+                diversity_skips += 1
                 continue
             if fieldset_counts[fieldset] >= fieldset_cap:
+                diversity_skips += 1
                 continue
             selected.append(row)
             lane_counts[lane] += 1
@@ -685,6 +982,17 @@ def _generate_event_state_candidates(
         select_from(event_atom_rows, max_candidates, selected=selected, lane_counts=lane_counts, fieldset_counts=fieldset_counts)
     if len(selected) < max_candidates:
         select_from(context_atom_rows, max_candidates, selected=selected, lane_counts=lane_counts, fieldset_counts=fieldset_counts)
+    input_hashes = {
+        str(row.get("expression_hash") or "")
+        for row in [*event_atom_rows, *context_atom_rows, *interaction_rows]
+        if row.get("expression_hash")
+    }
+    _record_selection_accounting(
+        input_count=len(input_hashes),
+        selected_count=len({str(row.get("expression_hash") or "") for row in selected}),
+        diversity_skips=diversity_skips,
+        considered_count=len(input_hashes),
+    )
     for idx, row in enumerate(selected, 1):
         row["candidate_id"] = f"phase3bp_event_{idx:05d}"
     return selected
@@ -707,6 +1015,7 @@ def _generate_turnover_aware_candidates(
 
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
+    pool_limit = _generation_pool_limit(max_candidates, multiplier=5.0, floor=512)
     atoms = _raw_atoms(available_fields)
     usable_atoms = [
         atom
@@ -738,6 +1047,10 @@ def _generate_turnover_aware_candidates(
             if len(rows) > before:
                 rows[-1]["expected_turnover_bucket"] = "low"
                 rows[-1]["turnover_aware_transform"] = kind
+            if _pool_full(rows, pool_limit):
+                break
+        if _pool_full(rows, pool_limit):
+            break
 
     state_atoms = [atom for atom in usable_atoms if atom["side"] == "state"]
     event_atoms = [atom for atom in usable_atoms if atom["side"] == "event"]
@@ -745,7 +1058,7 @@ def _generate_turnover_aware_candidates(
     event_atoms = _rank_atoms_for_interaction(event_atoms, policy, max(32, max_candidates))
     for left in event_atoms:
         for right in state_atoms:
-            if len(rows) >= max_candidates * 4:
+            if _pool_full(rows, pool_limit):
                 break
             if left["name"].split("_")[0] == right["name"].split("_")[0]:
                 continue
@@ -772,8 +1085,10 @@ def _generate_turnover_aware_candidates(
                 if len(rows) > before:
                     rows[-1]["expected_turnover_bucket"] = "low"
                     rows[-1]["turnover_aware_transform"] = kind
-                if len(rows) >= max_candidates * 4:
+                if _pool_full(rows, pool_limit):
                     break
+        if _pool_full(rows, pool_limit):
+            break
 
     rows.sort(
         key=lambda row: (
@@ -786,22 +1101,202 @@ def _generate_turnover_aware_candidates(
     selected: list[dict[str, Any]] = []
     lane_counts: Counter[str] = Counter()
     fieldset_counts: Counter[str] = Counter()
-    lane_cap = max(5, int(math.ceil(max_candidates * 0.14)))
-    fieldset_cap = 6
+    lane_cap = max(12, int(math.ceil(max_candidates * 0.25)))
+    fieldset_cap = max(24, int(math.ceil(max_candidates * 0.04)))
+    diversity_skips = 0
+    considered_count = 0
     for row in rows:
+        considered_count += 1
         lane = str(row.get("factor_lane"))
         fieldset = str(row.get("fields"))
         if lane_counts[lane] >= lane_cap:
+            diversity_skips += 1
             continue
         if fieldset_counts[fieldset] >= fieldset_cap:
+            diversity_skips += 1
             continue
         selected.append(row)
         lane_counts[lane] += 1
         fieldset_counts[fieldset] += 1
         if len(selected) >= max_candidates:
             break
+    _record_selection_accounting(
+        input_count=len(rows),
+        selected_count=len(selected),
+        diversity_skips=diversity_skips,
+        considered_count=considered_count,
+    )
     for idx, row in enumerate(selected, 1):
         row["candidate_id"] = f"phase3bp_turnover_{idx:05d}"
+    return selected
+
+
+def _generate_orthogonal_candidates(
+    max_candidates: int,
+    blocked: set[str],
+    policy: dict[str, Any],
+    *,
+    available_fields: list[str] | set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Generate deliberately non-RX, schema-bound control candidates.
+
+    This arm is for reachability and novelty pressure. It avoids the old
+    range/location RX seed ordering and uses hashed pairings across event,
+    context, opening, and flow atoms. Reward still comes later from CM.
+    """
+
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    atoms = _raw_atoms(available_fields)
+
+    def hashed(items: list[dict[str, Any]], salt: str) -> list[dict[str, Any]]:
+        return sorted(items, key=lambda atom: _hash(f"{salt}:{atom.get('name')}:{atom.get('expr')}", 16))
+
+    event_atoms = hashed(
+        [atom for atom in atoms if str(atom.get("role") or "") == "event_state_search"],
+        "orthogonal_event",
+    )
+    context_atoms = hashed(
+        [atom for atom in atoms if str(atom.get("role") or "") == "lagged_context_search"],
+        "orthogonal_context",
+    )
+    opening_atoms = hashed(
+        [atom for atom in atoms if "opening" in str(atom.get("lane") or "") or str(atom.get("name") or "").startswith("m1_first")],
+        "orthogonal_opening",
+    )
+    flow_atoms = hashed(
+        [atom for atom in atoms if "flow" in str(atom.get("lane") or "") or "amount" in str(atom.get("lane") or "")],
+        "orthogonal_flow",
+    )
+    direct_atoms = hashed(
+        [
+            atom
+            for atom in atoms
+            if str(atom.get("field_class") or "") == "direct_formula"
+            and "range_location" not in str(atom.get("lane") or "")
+        ],
+        "orthogonal_direct",
+    )
+
+    pair_groups = [
+        ("event_context", event_atoms, context_atoms),
+        ("event_opening", event_atoms, opening_atoms or direct_atoms),
+        ("context_opening", context_atoms, opening_atoms or direct_atoms),
+        ("flow_context", flow_atoms or direct_atoms, context_atoms),
+        ("opening_flow", opening_atoms or direct_atoms, flow_atoms or direct_atoms),
+    ]
+    max_pool = max(32, max_candidates * 6)
+    for group_name, left_pool, right_pool in pair_groups:
+        if len(rows) >= max_pool:
+            break
+        for left_idx, left in enumerate(left_pool[: max(32, max_candidates * 2)]):
+            if len(rows) >= max_pool:
+                break
+            for right_idx, right in enumerate(right_pool[: max(32, max_candidates * 2)]):
+                if len(rows) >= max_pool:
+                    break
+                if left is right:
+                    continue
+                if set(_fields(left["expr"])) == set(_fields(right["expr"])):
+                    continue
+                # Sparse deterministic thinning keeps this arm broad without
+                # spending every attempt on near-identical pair permutations.
+                pair_hash = int(_hash(f"{group_name}:{left['name']}:{right['name']}", 8), 16)
+                if (pair_hash + left_idx + right_idx) % 5 not in {0, 2}:
+                    continue
+                left_norm = _atom_normalized_expr(left)
+                right_norm = _atom_normalized_expr(right)
+                variants = {
+                    "signed_product": f"CSRank(Mul(Sign({left_norm}),{right_norm}))",
+                    "abs_spread": f"CSRank(Sub(Abs({left_norm}),Abs({right_norm})))",
+                    "rank_balance": f"CSRank(Add({left_norm},Neg({right_norm})))",
+                    "double_signed": f"CSRank(Mul(Sign({left_norm}),Sign({right_norm})))",
+                }
+                for kind, expression in variants.items():
+                    before = len(rows)
+                    _add_candidate(
+                        rows,
+                        seen,
+                        blocked,
+                        expression,
+                        lane=f"orthogonal::{group_name}::{left['lane']}::{right['lane']}::{kind}",
+                        source_generator="phase3bp_true1min_random_orthogonal",
+                        note=f"orthogonal hashed pair {group_name} {left['name']} x {right['name']} {kind}",
+                        policy=policy,
+                    )
+                    if len(rows) > before:
+                        rows[-1]["orthogonal_group"] = group_name
+                        rows[-1]["orthogonal_pair_hash"] = _hash(f"{left['name']}:{right['name']}:{kind}", 16)
+                    if len(rows) >= max_pool:
+                        break
+
+    rows.sort(
+        key=lambda row: (
+            str(row.get("orthogonal_group") or ""),
+            str(row.get("orthogonal_pair_hash") or ""),
+            row["expression_hash"],
+        )
+    )
+    selected: list[dict[str, Any]] = []
+    lane_counts: Counter[str] = Counter()
+    fieldset_counts: Counter[str] = Counter()
+    group_counts: Counter[str] = Counter()
+    lane_cap = max(8, int(math.ceil(max_candidates * 0.12)))
+    fieldset_cap = max(10, int(math.ceil(max_candidates * 0.03)))
+    group_cap = max(12, int(math.ceil(max_candidates * 0.35)))
+    diversity_skips = 0
+    considered_count = 0
+    for row in rows:
+        considered_count += 1
+        lane = str(row.get("factor_lane"))
+        fieldset = str(row.get("fields"))
+        group = str(row.get("orthogonal_group") or "")
+        if lane_counts[lane] >= lane_cap:
+            diversity_skips += 1
+            continue
+        if fieldset_counts[fieldset] >= fieldset_cap:
+            diversity_skips += 1
+            continue
+        if group_counts[group] >= group_cap:
+            diversity_skips += 1
+            continue
+        selected.append(row)
+        lane_counts[lane] += 1
+        fieldset_counts[fieldset] += 1
+        group_counts[group] += 1
+        if len(selected) >= max_candidates:
+            break
+    if len(selected) < max_candidates:
+        selected_hashes = {str(row.get("expression_hash") or "") for row in selected}
+        relaxed_fieldset_cap = max(fieldset_cap * 3, int(math.ceil(max_candidates * 0.12)))
+        relaxed_lane_cap = max(lane_cap * 3, int(math.ceil(max_candidates * 0.36)))
+        for row in rows:
+            considered_count += 1
+            digest = str(row.get("expression_hash") or "")
+            if digest in selected_hashes:
+                continue
+            lane = str(row.get("factor_lane"))
+            fieldset = str(row.get("fields"))
+            if lane_counts[lane] >= relaxed_lane_cap:
+                diversity_skips += 1
+                continue
+            if fieldset_counts[fieldset] >= relaxed_fieldset_cap:
+                diversity_skips += 1
+                continue
+            selected.append(row)
+            selected_hashes.add(digest)
+            lane_counts[lane] += 1
+            fieldset_counts[fieldset] += 1
+            if len(selected) >= max_candidates:
+                break
+    _record_selection_accounting(
+        input_count=len(rows),
+        selected_count=len(selected),
+        diversity_skips=diversity_skips,
+        considered_count=min(len(rows), considered_count),
+    )
+    for idx, row in enumerate(selected, 1):
+        row["candidate_id"] = f"phase3bp_orthogonal_{idx:05d}"
     return selected
 
 
@@ -838,6 +1333,7 @@ def _generate_cem_elite_candidates(
     state_atoms = [atom for atom in atoms if atom["side"] == "state"]
     event_atoms = _rank_atoms_for_interaction(event_atoms, policy, max(48, max_candidates))
     state_atoms = _rank_atoms_for_interaction(state_atoms, policy, max(48, max_candidates))
+    pool_limit = _generation_pool_limit(max_candidates, multiplier=6.0, floor=512)
 
     def add_pool(pool: list[dict[str, Any]], seen: set[str], expression: str, lane: str, note: str) -> None:
         before = len(pool)
@@ -862,8 +1358,14 @@ def _generate_cem_elite_candidates(
             "inverted": _atom_inverted_expr(atom),
         }.items():
             add_pool(pool, seen, expression, f"cem_atom::{atom['lane']}::{transform}", f"cem seed atom {atom['name']}")
+            if _pool_full(pool, pool_limit):
+                break
+        if _pool_full(pool, pool_limit):
+            break
     for left in event_atoms:
         for right in state_atoms:
+            if _pool_full(pool, pool_limit):
+                break
             if left["name"].split("_")[0] == right["name"].split("_")[0]:
                 continue
             variants = {
@@ -881,8 +1383,12 @@ def _generate_cem_elite_candidates(
                     f"cem_interaction::{left['lane']}::{right['lane']}::{kind}",
                     f"cem seed interaction {left['name']} x {right['name']} {kind}",
                 )
+                if _pool_full(pool, pool_limit):
+                    break
+        if _pool_full(pool, pool_limit):
+            break
 
-    population_size = max(max_candidates, int(population_size))
+    population_size = min(pool_limit, max(max_candidates, int(population_size)))
     elite_frac = min(0.50, max(0.05, float(elite_frac)))
     for round_idx in range(max(1, int(rounds))):
         pool.sort(key=lambda row: (_proposal_score(row, policy), row["expression_hash"]), reverse=True)
@@ -914,6 +1420,8 @@ def _generate_cem_elite_candidates(
         )
         for left in event_ranked[: max(6, max_candidates // 8)]:
             for right in state_ranked[: max(6, max_candidates // 8)]:
+                if _pool_full(pool, pool_limit):
+                    break
                 if left["name"].split("_")[0] == right["name"].split("_")[0]:
                     continue
                 if (round_idx + int(_hash(left["name"] + right["name"], 8), 16)) % 3 == 0:
@@ -932,25 +1440,40 @@ def _generate_cem_elite_candidates(
                     f"cem_resample::{left['lane']}::{right['lane']}::{kind}",
                     f"cem round {round_idx + 1} elite resample {left['name']} x {right['name']}",
                 )
+            if _pool_full(pool, pool_limit):
+                break
+        if _pool_full(pool, pool_limit):
+            break
 
     pool.sort(key=lambda row: (_proposal_score(row, policy), row["expression_hash"]), reverse=True)
     selected: list[dict[str, Any]] = []
     lane_counts: Counter[str] = Counter()
     fieldset_counts: Counter[str] = Counter()
-    lane_cap = max(4, int(math.ceil(max_candidates * 0.12)))
-    fieldset_cap = 5
+    lane_cap = max(10, int(math.ceil(max_candidates * 0.18)))
+    fieldset_cap = max(20, int(math.ceil(max_candidates * 0.03)))
+    diversity_skips = 0
+    considered_count = 0
     for row in pool:
+        considered_count += 1
         lane = str(row.get("factor_lane"))
         fieldset = str(row.get("fields"))
         if lane_counts[lane] >= lane_cap:
+            diversity_skips += 1
             continue
         if fieldset_counts[fieldset] >= fieldset_cap:
+            diversity_skips += 1
             continue
         selected.append(row)
         lane_counts[lane] += 1
         fieldset_counts[fieldset] += 1
         if len(selected) >= max_candidates:
             break
+    _record_selection_accounting(
+        input_count=len(pool),
+        selected_count=len(selected),
+        diversity_skips=diversity_skips,
+        considered_count=considered_count,
+    )
     for idx, row in enumerate(selected, 1):
         row["candidate_id"] = f"phase3bp_{idx:05d}"
     return selected
@@ -997,9 +1520,14 @@ def _generate_hybrid_candidates(
     )
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for row in [*sidecar_rows, *rx_rows, *cem_rows]:
+    combined_rows = [*sidecar_rows, *rx_rows, *cem_rows]
+    hybrid_global_drops = 0
+    considered_count = 0
+    for row in combined_rows:
+        considered_count += 1
         digest = str(row.get("expression_hash"))
         if digest in seen:
+            hybrid_global_drops += 1
             continue
         seen.add(digest)
         item = dict(row)
@@ -1009,6 +1537,8 @@ def _generate_hybrid_candidates(
         rows.append(item)
         if len(rows) >= max_candidates:
             break
+    hybrid_global_drops += max(0, len(combined_rows) - considered_count)
+    _record_generation_drop("dropped_by_global_pool", hybrid_global_drops)
     for idx, row in enumerate(rows, 1):
         row["candidate_id"] = f"phase3bp_{idx:05d}"
     return rows
@@ -1064,6 +1594,13 @@ def _generate_candidates(
             blocked,
             policy,
             include_residual=include_residual,
+            available_fields=available_fields,
+        )
+    if mode == "orthogonal":
+        return _generate_orthogonal_candidates(
+            max_candidates,
+            blocked,
+            policy,
             available_fields=available_fields,
         )
     raise ValueError(f"unknown algorithm mode: {mode}")

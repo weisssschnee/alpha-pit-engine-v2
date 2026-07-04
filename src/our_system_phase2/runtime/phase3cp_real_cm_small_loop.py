@@ -644,6 +644,14 @@ def _run_real_cm_chunk_subprocess(
         str(args.cm_rank_ic_loss_weight),
         "--rank-ic-component-cap",
         str(args.cm_rank_ic_component_cap),
+        "--regime-stability-weight",
+        str(args.cm_regime_stability_weight),
+        "--regime-component-cap",
+        str(args.cm_regime_component_cap),
+        "--operator-cache-max-entries",
+        str(args.cm_operator_cache_max_entries),
+        "--feature-matrix-cache-max-windows",
+        str(args.cm_feature_matrix_cache_max_windows),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
@@ -726,6 +734,14 @@ def _run_real_cm_retry_table(
         str(args.cm_rank_ic_loss_weight),
         "--rank-ic-component-cap",
         str(args.cm_rank_ic_component_cap),
+        "--regime-stability-weight",
+        str(args.cm_regime_stability_weight),
+        "--regime-component-cap",
+        str(args.cm_regime_component_cap),
+        "--operator-cache-max-entries",
+        str(args.cm_operator_cache_max_entries),
+        "--feature-matrix-cache-max-windows",
+        str(args.cm_feature_matrix_cache_max_windows),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
@@ -879,6 +895,8 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
         "top_quantile": args.cm_top_quantile,
         "rank_ic_loss_weight": args.cm_rank_ic_loss_weight,
         "rank_ic_component_cap": args.cm_rank_ic_component_cap,
+        "regime_stability_weight": args.cm_regime_stability_weight,
+        "regime_component_cap": args.cm_regime_component_cap,
         "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
         "portfolio_pnl_rows_written": 0,
         "metric_boundary": "parallel train portfolio Sortino + rankIC loss reward audit; not production proof; validation/holdout must not feed search",
@@ -897,6 +915,11 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
             "batched_shard_read": True,
             "column_pruned_pyarrow_read": True,
             "expression_cache_scope": "per_worker_per_shard",
+            "factor_expression_cache": True,
+            "feature_matrix_cache": True,
+            "operator_subtree_cache": True,
+            "operator_cache_max_entries": int(args.cm_operator_cache_max_entries),
+            "feature_matrix_cache_max_windows": int(args.cm_feature_matrix_cache_max_windows),
             "fast_group_rank": True,
             "omp_threads": os.environ.get("OMP_NUM_THREADS"),
             "mkl_threads": os.environ.get("MKL_NUM_THREADS"),
@@ -967,6 +990,14 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
         str(args.cm_rank_ic_loss_weight),
         "--rank-ic-component-cap",
         str(args.cm_rank_ic_component_cap),
+        "--regime-stability-weight",
+        str(args.cm_regime_stability_weight),
+        "--regime-component-cap",
+        str(args.cm_regime_component_cap),
+        "--operator-cache-max-entries",
+        str(args.cm_operator_cache_max_entries),
+        "--feature-matrix-cache-max-windows",
+        str(args.cm_feature_matrix_cache_max_windows),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
@@ -1056,6 +1087,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-top-quantile", type=float, default=0.2)
     parser.add_argument("--cm-rank-ic-loss-weight", type=float, default=6.0)
     parser.add_argument("--cm-rank-ic-component-cap", type=float, default=0.35)
+    parser.add_argument("--cm-regime-stability-weight", type=float, default=0.08)
+    parser.add_argument("--cm-regime-component-cap", type=float, default=0.10)
+    parser.add_argument("--cm-operator-cache-max-entries", type=int, default=512)
+    parser.add_argument("--cm-feature-matrix-cache-max-windows", type=int, default=6)
     parser.add_argument("--pre-cm-turnover-proxy-max", type=float, default=float("nan"))
     parser.add_argument("--cm-workers", type=int, default=1)
     parser.add_argument("--numexpr-threads", type=int, default=4)

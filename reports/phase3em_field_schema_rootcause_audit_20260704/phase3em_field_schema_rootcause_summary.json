@@ -1,0 +1,44 @@
+{
+  "candidate_file": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3ei_ban_short_lineage_audit_20260704\\phase3ei_ban_short_recheck_candidate_audit.csv",
+  "candidate_missing_schema_rows": 1,
+  "candidate_rows": 1024,
+  "created_at": "2026-07-04T15:16:59.108595+00:00",
+  "decision": "HOLD_LEGACY_ALIAS_SCHEMA_GATE_NEEDED",
+  "legacy_alias_candidate_rows": 1,
+  "legacy_alias_code_hit_count": 14,
+  "outputs": {
+    "legacy_alias_code_hits": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3em_field_schema_rootcause_audit_20260704\\phase3em_legacy_alias_code_hits.csv",
+    "missing_field_candidate_audit": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3em_field_schema_rootcause_audit_20260704\\phase3em_missing_field_candidate_audit.csv",
+    "report_root": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\reports\\phase3em_field_schema_rootcause_audit_20260704",
+    "runtime_root": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3em_field_schema_rootcause_audit_20260704"
+  },
+  "panel_count": 3,
+  "recommended_policy": {
+    "block_legacy_aliases_in_strict_recheck": [
+      "m1_first_ret",
+      "range_location"
+    ],
+    "do_not_mutate_parquet_with_aliases": true,
+    "m1_first_ret_policy": "ambiguous legacy alias; block unless manually mapped to an explicit firstN return field for diagnostic-only comparison",
+    "range_location_possible_rewrite_if_diagnostic_only": "Div(Sub($close,$low),Add(Abs(Sub($high,$low)),0.000001))"
+  },
+  "rootcause": "Phase3EI historical recheck admitted one Phase3CN/Phase3CX legacy fixture expression using m1_first_ret and range_location. Current true1min sidecar schema uses explicit m1_first5/15/30 fields and explicit range-location formulas, not these aliases. Phase3CM reads all fields for a chunk at once, so one missing-field legacy candidate fails the whole chunk.",
+  "schema_has_ctx_fields": true,
+  "schema_has_current_firstn_fields": true,
+  "schema_has_evt_fields": true,
+  "schema_has_m1_first_ret": false,
+  "schema_has_range_location": false,
+  "schema_intersection_field_count": 121,
+  "schema_union_field_count": 121,
+  "shard_root": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3cy_true1min_sidecar_augmented_shards_20260626",
+  "top_missing_fields": [
+    {
+      "count": 1,
+      "field": "m1_first_ret"
+    },
+    {
+      "count": 1,
+      "field": "range_location"
+    }
+  ]
+}

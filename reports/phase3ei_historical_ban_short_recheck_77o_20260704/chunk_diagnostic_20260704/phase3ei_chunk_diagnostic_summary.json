@@ -1,0 +1,99 @@
+﻿{
+    "checked_at":  "2026-07-04T21:48:41.2559388+08:00",
+    "host":  "DESKTOP-77OPJ6F",
+    "runtime_root":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3ei_historical_ban_short_recheck_20260704",
+    "report_root":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\reports\\phase3ei_historical_ban_short_recheck_20260704",
+    "reward_csv_file_count":  290,
+    "reward_rows_by_layer_stage":  [
+                                       {
+                                           "group":  "runtime, stage0",
+                                           "file_count":  255,
+                                           "row_sum":  3040
+                                       },
+                                       {
+                                           "group":  "runtime, stage1",
+                                           "file_count":  33,
+                                           "row_sum":  376
+                                       },
+                                       {
+                                           "group":  "reports, stage0",
+                                           "file_count":  1,
+                                           "row_sum":  1008
+                                       },
+                                       {
+                                           "group":  "reports, stage1",
+                                           "file_count":  1,
+                                           "row_sum":  120
+                                       }
+                                   ],
+    "zero_or_short_reward_files":  [
+
+                                   ],
+    "status_file_count":  576,
+    "error_status_files":  [
+                               {
+                                   "rel_path":  "runtime\\phase3ei_historical_ban_short_recheck_20260704\\stage0_fast_train_reward\\phase3cm_chunks\\candidate_subchunk_0001_stderr.log",
+                                   "size_bytes":  1186,
+                                   "tail":  "orkspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\src\\our_system_phase2\\runtime\\phase3cm_train_portfolio_sortino_reward_audit.py\", line 357, in _read_train_shard\r\n    raise RuntimeError(f\"{panel_path} missing expression fields {missing_fields}\")\r\nRuntimeError: D:\\ChengboRemote\\data\\phase3dz_true1min_sidecar_augmented_full16_20260702\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet missing expression fields [\u0027m1_first_ret\u0027, \u0027range_location\u0027]\r\n"
+                               },
+                               {
+                                   "rel_path":  "reports\\phase3ei_historical_ban_short_recheck_20260704\\phase3ef_run_status.json",
+                                   "size_bytes":  2004,
+                                   "tail":  "op_n\":  128,\r\n                   \"max_shards\":  16,\r\n                   \"max_parallel\":  16,\r\n                   \"sample_block_count\":  4,\r\n                   \"sample_trade_times_per_shard\":  384\r\n               },\r\n    \"summary\":  \"D:\\\\ChengboRemote\\\\workspace\\\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\\\reports\\\\phase3ei_historical_ban_short_recheck_20260704\\\\phase3ei_historical_ban_short_recheck_summary.json\",\r\n    \"followup_count\":  0,\r\n    \"stage1_reward_rows\":  120\r\n}\r\n"
+                               },
+                               {
+                                   "rel_path":  "reports\\phase3ei_historical_ban_short_recheck_20260704\\phase3ei_historical_ban_short_recheck_summary.json",
+                                   "size_bytes":  1190,
+                                   "tail":  ":\\\\ChengboRemote\\\\workspace\\\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\\\reports\\\\phase3ei_historical_ban_short_recheck_20260704\\\\stage1_deeper_train_reward\\\\phase3cm_train_reward.csv\",\r\n    \"portfolio_mode\":  \"long_only_top\",\r\n    \"short_allowed\":  false,\r\n    \"boundary\":  \"Stage0 train reward is a cheap CN long-only screen over historical spread/proxy candidates; Stage1 train reward is the usable recheck ranking; validation and holdout remain report-only; no short leg\"\r\n}\r\n"
+                               }
+                           ],
+    "top_level_runtime":  [
+                              {
+                                  "Name":  "stage0_fast_train_reward",
+                                  "Mode":  "d-----",
+                                  "Length":  null
+                              },
+                              {
+                                  "Name":  "stage1_deeper_train_reward",
+                                  "Mode":  "d-----",
+                                  "Length":  null
+                              },
+                              {
+                                  "Name":  "phase3ei_stage0_all_unique_candidate_audit.csv",
+                                  "Mode":  "-a----",
+                                  "Length":  1827577
+                              },
+                              {
+                                  "Name":  "phase3ei_stage1_top128_candidate_audit.csv",
+                                  "Mode":  "-a----",
+                                  "Length":  206190
+                              }
+                          ],
+    "top_level_reports":  [
+                              {
+                                  "Name":  "chunk_diagnostic_20260704",
+                                  "Mode":  "d-----",
+                                  "Length":  null
+                              },
+                              {
+                                  "Name":  "stage0_fast_train_reward",
+                                  "Mode":  "d-----",
+                                  "Length":  null
+                              },
+                              {
+                                  "Name":  "stage1_deeper_train_reward",
+                                  "Mode":  "d-----",
+                                  "Length":  null
+                              },
+                              {
+                                  "Name":  "phase3ef_run_status.json",
+                                  "Mode":  "-a----",
+                                  "Length":  2004
+                              },
+                              {
+                                  "Name":  "phase3ei_historical_ban_short_recheck_summary.json",
+                                  "Mode":  "-a----",
+                                  "Length":  1190
+                              }
+                          ]
+}

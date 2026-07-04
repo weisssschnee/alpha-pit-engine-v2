@@ -15,6 +15,8 @@ archive and reference source. This repository is the clean working entry for:
 - BZ fragment replay as diagnostic slice validation
 - Phase3CM train portfolio Sortino reward audit for search feedback
 - Phase3CN feedback memory wiring before multi-arm search restart
+- Phase3DV budget-pool self-deepen search, where imperfect but informative
+  clusters receive bounded compute instead of being discarded too early
 
 ## Hard Boundaries
 
@@ -51,12 +53,31 @@ phase3co-multi-arm-scheduler-smoke
 phase3cp-reward-gated-medium-search-smoke
 phase3cp-real-cm-small-loop
 phase3cp-low-turnover-event-state-probe
+phase3ds-targeted-family-repair-pack
+phase3dt-survivor-expansion-repair-pack
+phase3du-adaptive-regime-free-deepen-pack
+phase3dv-budget-pool-self-deepen-pack
 phase3ce-unsafe-motif-quarantine-audit
 phase3ce1-search-memory-blocked-view
 phase3ce1-g2-input-gate-smoke
 phase3ce2-typed-primitive-candidate-pack-canary
 phase3ce2-typed-primitive-evaluator-smoke
 ```
+
+Current route:
+
+```text
+phase3dv-budget-pool-self-deepen-pack
+```
+
+Retired route:
+
+```text
+phase3du-adaptive-regime-free-deepen-pack
+```
+
+The retired route is blocked by `app.py` unless `--allow-diagnostic` is passed.
+It is retained only for provenance replay.
 
 ## Current Data Assumption
 
@@ -79,4 +100,12 @@ The current external-facing research path is indexed here:
 
 ```text
 reports/PHASE3_TRUE1MIN_ITERATION_TREE_20260623.md
+```
+
+Latest Phase3DV run plan and decision record:
+
+```text
+runtime/run_plans/phase3dv_budget_pool_self_deepen_cm_reward_20260630.json
+reports/PHASE3DV_BUDGET_POOL_SELF_DEEPEN_20260630.md
+reports/PHASE3DV_RETIREMENT_AND_WORKSPACE_HYGIENE_20260630.md
 ```

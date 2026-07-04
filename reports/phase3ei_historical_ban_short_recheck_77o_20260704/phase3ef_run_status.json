@@ -1,0 +1,31 @@
+﻿{
+    "status":  "complete_with_failed_stage1_chunks",
+    "timestamp":  "2026-07-04T21:04:20.7528991+08:00",
+    "phase":  "Phase3EI-historical-ban-short-recheck",
+    "repo":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill",
+    "source_runtime_root":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3ei_historical_ban_short_source_chunks_20260704",
+    "shard_root":  "D:\\ChengboRemote\\data\\phase3dz_true1min_sidecar_augmented_full16_20260702",
+    "runtime_root":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3ei_historical_ban_short_recheck_20260704",
+    "report_root":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\reports\\phase3ei_historical_ban_short_recheck_20260704",
+    "boundary":  "historical Phase3CM/BZ/EG/EH candidates rechecked with CN long-only train reward; validation/holdout remain audit-only; no short leg",
+    "stage0":  {
+                   "horizons":  "1,5,15",
+                   "subchunk_size":  8,
+                   "max_shards":  4,
+                   "max_parallel":  24,
+                   "sample_block_count":  1,
+                   "sample_trade_times_per_shard":  96
+               },
+    "stage1":  {
+                   "horizons":  "1,5,15,30,60",
+                   "subchunk_size":  8,
+                   "top_n":  128,
+                   "max_shards":  16,
+                   "max_parallel":  16,
+                   "sample_block_count":  4,
+                   "sample_trade_times_per_shard":  384
+               },
+    "summary":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\reports\\phase3ei_historical_ban_short_recheck_20260704\\phase3ei_historical_ban_short_recheck_summary.json",
+    "followup_count":  0,
+    "stage1_reward_rows":  120
+}

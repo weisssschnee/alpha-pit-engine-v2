@@ -1,0 +1,15 @@
+file,line,text
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\runtime\phase3bp_true1min_search_algorithm_smoke.py,1176,"and ""range_location"" not in str(atom.get(""lane"") or """")"
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\runtime\phase3cn_integrated_feedback_smoke.py,46,"""expression"": ""Rank(Mean($m1_first_ret,5)) - Rank(Std($range_location,10))"","
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\runtime\phase3cn_integrated_feedback_smoke.py,60,"""expression"": ""Rank($m1_first_volume) * ZScore($range_location)"","
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\runtime\phase3cn_integrated_feedback_smoke.py,231,"base_policy = {""policy_version"": ""phase3cn_integrated_seed"", ""scores"": {""field"": {""m1_first_ret"": 1.0}, ""lane"": {""cem"": 0.4}}}"
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\runtime\phase3cn_searcher_feedback_smoke.py,52,"""expression"": ""Rank($m1_first_ret) * ZScore($range_location)"","
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\runtime\phase3cn_searcher_feedback_smoke.py,101,"""expression"": ""Rank(Mean($m1_first_ret,5)) - Rank(Std($range_location,10))"","
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\runtime\phase3cn_searcher_feedback_smoke.py,229,"""field"": {""m1_first_ret"": 1.0, ""range_location"": 0.8},"
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\runtime\phase3cp_low_turnover_event_state_probe.py,64,def _range_location() -> str:
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\runtime\phase3cp_low_turnover_event_state_probe.py,92,range_loc = _range_location()
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\services\atom_lane_manifest.py,230,"lane=""rx_range_location"","
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\services\atom_lane_manifest.py,244,"lane=""rx_range_location"","
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\services\atom_lane_manifest.py,260,"(""amplitude_pct"", ""rx_range_location""),"
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\services\candidate_schema.py,150,"if ""range_location"" in text or ""range"" in text or ""high"" in text or ""low"" in text:"
+G:\Project_V7_Rotation\alpha_pit_true1min_engine_20260619\src\our_system_phase2\services\candidate_schema.py,151,"families.append(""range_location"")"

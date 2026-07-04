@@ -1,0 +1,2 @@
+row_number,candidate_id,expression_hash,legacy_fields,source_path,expression
+2,cn4_clean_reward_fixture,cn4_clean_reward_hash,m1_first_ret|range_location,runtime\phase3cx_integrated_train_only_feedback_smoke_20260626\phase3cm_reward_fixture\phase3cm_train_reward.csv,"Rank(Mean($m1_first_ret,5)) - Rank(Std($range_location,10))"

@@ -1,0 +1,79 @@
+{
+  "phase": "Phase3DV",
+  "run_type": "budget_pool_self_deepen_cm_reward",
+  "date": "2026-06-30",
+  "status": "active_remote_run",
+  "decision": "CURRENT_SEARCH_ROUTE",
+  "route": "phase3dv-budget-pool-self-deepen-pack",
+  "reward_audit_route": "phase3cm-train-portfolio-sortino-reward-audit",
+  "objective": "Replace hard performance elimination with budget allocation across global survivor, regime specialist, probation, and fresh self-deepen lanes, then audit with Phase3CM train composite reward.",
+  "core_change": {
+    "old_behavior": "Phase3DU adaptive-regime deepen kept too much hard-freeze behavior and under-allocated budget to acceptable but imperfect clusters.",
+    "new_behavior": "Phase3DV treats train evidence as compute allocation, not immediate alpha proof. Non-perfect clusters can receive bounded budget until budget pressure or hard structural blockers remove them."
+  },
+  "hard_blockers": [
+    "wrong_lag_or_future_leakage",
+    "future_or_label_field",
+    "typed_primitive_violation",
+    "unsafe_known_structure",
+    "missing_schema_field",
+    "parse_or_evaluation_invalidity"
+  ],
+  "soft_budget_statuses": [
+    "global_survivor",
+    "regime_specialist",
+    "probation",
+    "fresh_self_deepen",
+    "reject_no_budget"
+  ],
+  "remote_node": {
+    "alias": "chengbo-lan-77opj6f",
+    "machine": "DESKTOP-77OPJ6F",
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill",
+    "python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+    "true1min_shard_root": "D:\\ChengboRemote\\data\\phase3cy_true1min_sidecar_augmented_shards_20260626",
+    "task_id": "lanjob_20260630_150345_ab2922"
+  },
+  "pack_parameters": {
+    "max_seed_rows": 384,
+    "max_candidates": 6144,
+    "shard_schema_filter": true,
+    "available_field_count_observed": 121,
+    "configured_missing_fields_observed": []
+  },
+  "cm_parameters": {
+    "max_parallel": 6,
+    "chunk_size": 128,
+    "max_shards": 6,
+    "sample_trade_times_per_shard": 384,
+    "horizons": [1, 5, 15, 30, 60],
+    "train_fraction": 0.6,
+    "validation_fraction": 0.2,
+    "cost_bps": 5,
+    "rank_ic_loss_weight": 6.0,
+    "rank_ic_component_cap": 0.35,
+    "regime_stability_weight": 0.08,
+    "regime_component_cap": 0.10,
+    "operator_cache_max_entries": 256,
+    "feature_matrix_cache_max_windows": 4,
+    "fast_mode": true,
+    "numexpr_threads": 2
+  },
+  "expected_outputs": {
+    "pack_report_root": "reports\\phase3dv_budget_pool_self_deepen_pack_20260630",
+    "cm_report_root": "reports\\phase3dv_budget_pool_self_deepen_cm_reward_20260630",
+    "cm_runtime_root": "runtime\\phase3dv_budget_pool_self_deepen_cm_reward_20260630",
+    "candidate_audit": "runtime\\phase3dv_budget_pool_self_deepen_pack_20260630\\phase3dv_budget_pool_candidate_audit.csv",
+    "reward_table": "reports\\phase3dv_budget_pool_self_deepen_cm_reward_20260630\\phase3cm_train_reward.csv",
+    "summary": "reports\\phase3dv_budget_pool_self_deepen_cm_reward_20260630\\phase3dv_cm_reward_summary.json"
+  },
+  "retired_routes": {
+    "phase3du-adaptive-regime-free-deepen-pack": "retired_provenance_only; requires --allow-diagnostic in app.py"
+  },
+  "promotion_boundary": {
+    "modifies_x0_or_r3": false,
+    "validation_and_holdout_feed_optimizer": false,
+    "candidate_promotion_allowed": false,
+    "proof_status": "research_reward_audit_only"
+  }
+}

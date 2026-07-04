@@ -17,7 +17,7 @@ from typing import Any
 FIELD_RE = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)")
 CALL_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 
-OPTIMIZER_REWARD_METRIC = "train_portfolio_sortino_rankic_composite_reward"
+OPTIMIZER_REWARD_METRIC = "train_portfolio_sortino_rankic_regime_composite_reward"
 
 
 CANONICAL_CANDIDATE_FIELDS = [
@@ -56,6 +56,14 @@ CANONICAL_CANDIDATE_FIELDS = [
     "train_rank_ic_loss",
     "train_rank_ic_reward_component",
     "train_rank_ic_obs",
+    "train_regime_stability_score",
+    "train_regime_reward_component",
+    "train_regime_worst_day_sortino",
+    "train_regime_median_day_sortino",
+    "train_regime_positive_share",
+    "train_regime_count",
+    "train_regime_method",
+    "train_regime_rows",
     "validation_usage",
     "holdout_usage",
     "validation_day_sortino",
@@ -271,6 +279,14 @@ def normalize_candidate_schema(row: dict[str, Any]) -> dict[str, Any]:
         "train_rank_ic_loss": _first_existing(row, ["train_rank_ic_loss"], ""),
         "train_rank_ic_reward_component": _first_existing(row, ["train_rank_ic_reward_component"], ""),
         "train_rank_ic_obs": _first_existing(row, ["train_rank_ic_obs"], ""),
+        "train_regime_stability_score": _first_existing(row, ["train_regime_stability_score"], ""),
+        "train_regime_reward_component": _first_existing(row, ["train_regime_reward_component"], ""),
+        "train_regime_worst_day_sortino": _first_existing(row, ["train_regime_worst_day_sortino"], ""),
+        "train_regime_median_day_sortino": _first_existing(row, ["train_regime_median_day_sortino"], ""),
+        "train_regime_positive_share": _first_existing(row, ["train_regime_positive_share"], ""),
+        "train_regime_count": _first_existing(row, ["train_regime_count"], ""),
+        "train_regime_method": _first_existing(row, ["train_regime_method"], ""),
+        "train_regime_rows": _first_existing(row, ["train_regime_rows"], ""),
         "validation_usage": _first_existing(row, ["validation_usage"], "report_only"),
         "holdout_usage": _first_existing(row, ["holdout_usage"], "report_only"),
         "validation_day_sortino": _first_existing(row, ["validation_day_sortino"], ""),

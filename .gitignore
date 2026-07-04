@@ -10,10 +10,14 @@ venv/
 runtime/phase3a*/
 runtime/phase3b*/
 runtime/phase3c*/
+runtime/phase3d*/
+runtime/phase3e*/
 runtime/search_memory/
 reports/phase3a*/
 reports/phase3b*/
 reports/phase3c*/
+reports/phase3d*/
+reports/phase3e*/
 
 # Keep curated evidence already committed via explicit git add.
 !reports/phase3cd_ast_primitive_assumption_audit_20260618/

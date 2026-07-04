@@ -378,28 +378,30 @@ def build_search_atoms(available_fields: Iterable[str] | None = None) -> list[di
     event_candidates = set(EVENT_STATE_FIELDS | AUCTION_EVENT_CONTEXT_FIELDS)
     if available is not None:
         event_candidates |= {field for field in available if field_lane(field) == "event_state"}
+    event_windows = (3, 5, 10, 15)
     for field in sorted(event_candidates):
         if not _field_available(field, available):
             continue
         if field in {"high_board_rank", "up_limit_keep_times", "lb_2_num", "lb_3_num", "max_lb_num"} or field.endswith("_num"):
-            primitives = (
-                (f"{field}_state_dwell_5", f"StateDwell(${field},5)", "state_lifecycle"),
-                (f"{field}_window_state_count_10", f"WindowStateCount(${field},10)", "state_lifecycle"),
-            )
+            lane = "state_lifecycle"
         elif field.endswith("_active"):
-            primitives = (
-                (f"{field}_event_count_5", f"EventCount(${field},5)", "event_state"),
-                (f"{field}_event_age", f"EventAge(${field})", "event_state"),
-            )
+            lane = "event_state"
         elif field.endswith("_age_min"):
-            primitives = (
-                (f"{field}_state_dwell_5", f"StateDwell(${field},5)", "state_lifecycle"),
-                (f"{field}_window_state_count_10", f"WindowStateCount(${field},10)", "state_lifecycle"),
-            )
+            lane = "state_lifecycle"
         else:
-            primitives = (
-                (f"{field}_state_dwell_5", f"StateDwell(${field},5)", "event_payload_state"),
-                (f"{field}_window_state_count_10", f"WindowStateCount(${field},10)", "event_payload_state"),
+            lane = "event_payload_state"
+        primitives = [
+            (f"{field}_event_age", f"EventAge(${field})", lane),
+            (f"{field}_since_last_event", f"SinceLastEvent(${field})", lane),
+            (f"{field}_state_age", f"StateAge(${field})", lane),
+        ]
+        for window in event_windows:
+            primitives.extend(
+                [
+                    (f"{field}_event_count_{window}", f"EventCount(${field},{window})", lane),
+                    (f"{field}_state_dwell_{window}", f"StateDwell(${field},{window})", lane),
+                    (f"{field}_window_state_count_{window}", f"WindowStateCount(${field},{window})", lane),
+                ]
             )
         for name, expr, lane in primitives:
             _add(
@@ -439,55 +441,77 @@ def build_search_atoms(available_fields: Iterable[str] | None = None) -> list[di
     }
     if available is not None:
         context_candidates |= {field for field in available if field_lane(field) == "lagged_context"}
+    context_windows = (20, 40, 60, 120)
+    context_min_ratios = (0.6, 0.8)
     for field in sorted(context_candidates):
         if not _field_available(field, available):
             continue
-        _add(
-            rows,
-            AtomSpec(
-                name=f"{field}_masked_zscore",
-                lane="coverage_guarded_context",
-                expr=f"MaskedZScore(${field},60,0.8)",
-                side="state",
-                transform_mode="typed_rank",
-                role="lagged_context_search",
-                required_fields=(field,),
-                field_class="lagged_context",
-                note="coverage-sensitive sidecar requires valid-ratio guard",
-            ),
-            available,
-        )
-        _add(
-            rows,
-            AtomSpec(
-                name=f"{field}_valid_ratio",
-                lane="coverage_guarded_context",
-                expr=f"ValidRatioGate(${field},60,0.8)",
-                side="state",
-                transform_mode="typed_rank",
-                role="lagged_context_search",
-                required_fields=(field,),
-                field_class="lagged_context",
-                note="coverage-sensitive sidecar availability atom",
-            ),
-            available,
-        )
-        if _field_available("amount", available):
-            _add(
-                rows,
-                AtomSpec(
-                    name=f"{field}_safe_residual_amount",
-                    lane="coverage_guarded_context",
-                    expr=f"SafeCSResidual(${field},$amount,20,5,0.8)",
-                    side="state",
-                    transform_mode="typed_rank",
-                    role="lagged_context_search",
-                    required_fields=(field, "amount"),
-                    field_class="lagged_context",
-                    note="coverage-sensitive sidecar residualized only after valid cross-section checks",
-                ),
-                available,
-            )
+        for window in context_windows:
+            for min_ratio in context_min_ratios:
+                suffix = f"{window}_{str(min_ratio).replace('.', 'p')}"
+                _add(
+                    rows,
+                    AtomSpec(
+                        name=f"{field}_masked_zscore_{suffix}",
+                        lane=f"coverage_guarded_context_w{window}",
+                        expr=f"MaskedZScore(${field},{window},{min_ratio})",
+                        side="state",
+                        transform_mode="typed_rank",
+                        role="lagged_context_search",
+                        required_fields=(field,),
+                        field_class="lagged_context",
+                        note="coverage-sensitive sidecar requires valid-ratio guard",
+                    ),
+                    available,
+                )
+                _add(
+                    rows,
+                    AtomSpec(
+                        name=f"{field}_valid_ratio_{suffix}",
+                        lane=f"coverage_guarded_context_w{window}",
+                        expr=f"ValidRatioGate(${field},{window},{min_ratio})",
+                        side="state",
+                        transform_mode="typed_rank",
+                        role="lagged_context_search",
+                        required_fields=(field,),
+                        field_class="lagged_context",
+                        note="coverage-sensitive sidecar availability atom",
+                    ),
+                    available,
+                )
+                for control in ("amount", "volume", "vwap"):
+                    if _field_available(control, available):
+                        _add(
+                            rows,
+                            AtomSpec(
+                                name=f"{field}_masked_corr_{control}_{suffix}",
+                                lane=f"coverage_guarded_relation_w{window}",
+                                expr=f"MaskedCorr(${field},${control},{window},{min_ratio})",
+                                side="state",
+                                transform_mode="typed_rank",
+                                role="lagged_context_search",
+                                required_fields=(field, control),
+                                field_class="lagged_context",
+                                note="coverage-sensitive sidecar relation uses valid-ratio guard",
+                            ),
+                            available,
+                        )
+                if _field_available("amount", available):
+                    _add(
+                        rows,
+                        AtomSpec(
+                            name=f"{field}_safe_residual_amount_{suffix}",
+                            lane=f"coverage_guarded_residual_w{window}",
+                            expr=f"SafeCSResidual(${field},$amount,20,5,{min_ratio})",
+                            side="state",
+                            transform_mode="typed_rank",
+                            role="lagged_context_search",
+                            required_fields=(field, "amount"),
+                            field_class="lagged_context",
+                            note="coverage-sensitive sidecar residualized only after valid cross-section checks",
+                        ),
+                        available,
+                    )
 
     seen: set[str] = set()
     out: list[dict[str, Any]] = []

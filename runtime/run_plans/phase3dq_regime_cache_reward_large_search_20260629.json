@@ -1,0 +1,54 @@
+{
+  "phase": "Phase3DQ",
+  "run_type": "regime_cache_reward_large_search",
+  "created_at": "2026-06-29",
+  "objective": "Continue true1min fresh and repair search from Phase3DO feedback with train Sortino, rankIC loss, low-weight regime stability, and bounded evaluator caches.",
+  "official_stats_allowed": false,
+  "modifies_x0": false,
+  "modifies_r3": false,
+  "uses_true1min_only": true,
+  "input_checkpoint": {
+    "co_root": "reports/phase3do_reward_calibrated_fresh_large_20260628",
+    "arm_budget_table": "reports/phase3do_reward_calibrated_fresh_large_20260628/phase3cp_real_cm_next_arm_budget_table.csv",
+    "shard_root": "D:/ChengboRemote/data/phase3cy_true1min_sidecar_augmented_shards_20260626"
+  },
+  "search_budget": {
+    "generation_budget": 262144,
+    "shortfall_fill_rounds": 8,
+    "shortfall_oversample_multiplier": 3.0,
+    "ca_top_n": 32768,
+    "cm_candidate_limit": 2048,
+    "cm_selection_mode": "arm_balanced",
+    "cm_workers": 12,
+    "cm_max_shards": 6,
+    "cm_sample_trade_times_per_shard": 384,
+    "cm_horizons": "1,5,15,30,60"
+  },
+  "reward": {
+    "optimizer_reward_metric": "train_portfolio_sortino_rankic_regime_composite_reward",
+    "cm_rank_ic_loss_weight": 6.0,
+    "cm_rank_ic_component_cap": 0.35,
+    "cm_regime_stability_weight": 0.08,
+    "cm_regime_component_cap": 0.10,
+    "validation_usage": "report_only",
+    "holdout_usage": "report_only"
+  },
+  "cache": {
+    "factor_expression_cache": true,
+    "feature_matrix_cache": true,
+    "operator_subtree_cache": true,
+    "cm_operator_cache_max_entries": 512,
+    "cm_feature_matrix_cache_max_windows": 6
+  },
+  "memory_policy": {
+    "memory_roots_required": true,
+    "do_not_delete_memory": true,
+    "do_not_reuse_old_1d_data": true,
+    "dedup_scope": "previous true1min memory roots plus Phase3DO checkpoint"
+  },
+  "outputs": {
+    "report_root": "reports/phase3dq_regime_cache_reward_large_20260629",
+    "runtime_root": "runtime/phase3dq_regime_cache_reward_large_20260629"
+  },
+  "decision": "RUN_REMOTE_ONLY_ON_77OPJ6F"
+}

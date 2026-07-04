@@ -1,0 +1,82 @@
+{
+  "true1min_followup_raw_hits": 162,
+  "true1min_followup_unique_expressions": 28,
+  "true1min_join_status_counts": {
+    "not_in_phase3ei_recheck_by_exact_hash": 18,
+    "stage0_exact_rechecked_HOLD_TRAIN_REWARD": 4,
+    "id_reused_hash_mismatch_not_verified": 1,
+    "stage1_exact_rechecked_HOLD_TRAIN_REWARD": 5
+  },
+  "match_basis_counts": {
+    "none": 19,
+    "expression_hash_exact": 9
+  },
+  "phase3ei_stage0": {
+    "rows": 1008,
+    "decision_counts": {
+      "HOLD_TRAIN_REWARD": 1008
+    },
+    "portfolio_mode_counts": {
+      "long_only_top": 256,
+      "unknown": 752
+    },
+    "short_allowed_counts": {
+      "false": 1008
+    }
+  },
+  "phase3ei_stage1": {
+    "rows": 120,
+    "decision_counts": {
+      "HOLD_TRAIN_REWARD": 120
+    },
+    "portfolio_mode_counts": {
+      "long_only_top": 120
+    },
+    "short_allowed_counts": {
+      "false": 120
+    }
+  },
+  "official_x0_daily_shadow": {
+    "object_id": "X0_official_6_R3_liquidity_low_v1",
+    "status": "official_daily_shadow",
+    "evidence_level": "L2.5_daily_regime_gated_shadow_proof",
+    "cluster_count": 6,
+    "book_rule": {
+      "cash_when_gate_off": true,
+      "cluster_weight": 0.16666666666666666,
+      "execution_level": "daily_proxy_no_minute_slippage",
+      "rebalance_clock": "daily_proxy",
+      "weighting": "locked_equal_weight"
+    },
+    "strict_cost_adjusted_sortino_count": 6,
+    "strict_cost_adjusted_sortino_min": 2.484331,
+    "strict_cost_adjusted_sortino_max": 4.458059,
+    "key_metrics_2026": {
+      "active_annualized": 3.918442,
+      "active_days": 38,
+      "active_ratio": 0.487179,
+      "calendar_days": 78,
+      "full_calendar_annualized": 1.175657,
+      "max_drawdown": -0.03442312,
+      "sharpe": 4.547115,
+      "sortino": 6.085253,
+      "total_return": 0.266314
+    },
+    "not_confirmed": [
+      "production_ready",
+      "minute_execution",
+      "real_capacity",
+      "live_trading",
+      "true_slippage",
+      "broker_fill_feasibility",
+      "true_book_marginal"
+    ]
+  },
+  "phase3k_149_daily_registry": {
+    "representative_count": 149,
+    "portfolio_replay_long_only_sortino_nonnull": 68,
+    "portfolio_replay_long_only_sortino_positive": 68,
+    "portfolio_replay_long_only_sortino_min": 0.512765,
+    "portfolio_replay_long_only_sortino_max": 1.630332
+  }
+}

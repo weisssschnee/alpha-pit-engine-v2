@@ -1,0 +1,21 @@
+{
+  "candidate_source_file_count": 96,
+  "created_at": "2026-07-04T11:59:12.875624+00:00",
+  "decision": "PHASE3EI_BAN_SHORT_RECHECK_REQUIRED",
+  "invalid_reward_classes": [
+    "long_short_spread_proxy_only",
+    "short_leg_present_proxy_only",
+    "legacy_assume_long_short_recheck_required"
+  ],
+  "inventory_file_count": 247,
+  "policy_class_counts": {
+    "cn_long_only_verified": 5,
+    "legacy_assume_long_short_recheck_required": 200,
+    "likely_cn_long_only": 22,
+    "long_short_spread_proxy_only": 16,
+    "short_leg_present_proxy_only": 4
+  },
+  "recheck_candidate_count": 1024,
+  "repo": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619",
+  "required_portfolio_mode": "long_only_top"
+}

@@ -127,3 +127,39 @@ next hardening step is to add tests that assert:
 4. BZ replay remains diagnostic-only and cannot be used as the search reward
 5. Phase3CM train portfolio Sortino reward audit is the next reward target before large search restart
 ```
+
+## Post-Migration Active Additions
+
+The following files were added after the clean true1min repository was created.
+They are not bulk legacy imports; they are current research-chain additions.
+
+```text
+src/our_system_phase2/runtime/phase3ds_targeted_family_repair_pack.py
+src/our_system_phase2/runtime/phase3dt_survivor_expansion_repair_pack.py
+src/our_system_phase2/runtime/phase3du_adaptive_regime_free_deepen_pack.py
+src/our_system_phase2/runtime/phase3dv_budget_pool_self_deepen_pack.py
+```
+
+Current status:
+
+```text
+phase3ds:
+  provenance / targeted repair ancestor
+
+phase3dt:
+  provenance / survivor expansion ancestor
+
+phase3du:
+  retired from current route; diagnostic replay only
+
+phase3dv:
+  current budget-pool self-deepen route
+```
+
+Current durable records:
+
+```text
+reports/PHASE3DV_BUDGET_POOL_SELF_DEEPEN_20260630.md
+reports/PHASE3DV_RETIREMENT_AND_WORKSPACE_HYGIENE_20260630.md
+runtime/run_plans/phase3dv_budget_pool_self_deepen_cm_reward_20260630.json
+```

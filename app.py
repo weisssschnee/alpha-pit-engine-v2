@@ -4,7 +4,13 @@ import argparse
 import sys
 from collections.abc import Callable
 from importlib import import_module
+from pathlib import Path
 
+
+REPO = Path(__file__).resolve().parent
+SRC = REPO / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
 ROUTES: dict[str, str] = {
     "phase3bp-true1min-search-algorithm-smoke": "our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke",
@@ -22,6 +28,13 @@ ROUTES: dict[str, str] = {
     "phase3cp-reward-gated-medium-search-smoke": "our_system_phase2.runtime.phase3cp_reward_gated_medium_search_smoke",
     "phase3cp-real-cm-small-loop": "our_system_phase2.runtime.phase3cp_real_cm_small_loop",
     "phase3cp-low-turnover-event-state-probe": "our_system_phase2.runtime.phase3cp_low_turnover_event_state_probe",
+    "phase3db-train-sortino-feedback-controller": "our_system_phase2.runtime.phase3db_train_sortino_feedback_controller",
+    "phase3ds-targeted-family-repair-pack": "our_system_phase2.runtime.phase3ds_targeted_family_repair_pack",
+    "phase3dt-survivor-expansion-repair-pack": "our_system_phase2.runtime.phase3dt_survivor_expansion_repair_pack",
+    "phase3du-adaptive-regime-free-deepen-pack": "our_system_phase2.runtime.phase3du_adaptive_regime_free_deepen_pack",
+    "phase3dv-budget-pool-self-deepen-pack": "our_system_phase2.runtime.phase3dv_budget_pool_self_deepen_pack",
+    "phase3dx-cn-tradable-followup-preflight": "our_system_phase2.runtime.phase3dx_cn_tradable_followup_preflight",
+    "phase3dy-true1min-tplus1-tradable-replay": "our_system_phase2.runtime.phase3dy_true1min_tplus1_tradable_replay",
     "phase3cr-atom-lane-inventory-audit": "our_system_phase2.runtime.phase3cr_atom_lane_inventory_audit",
     "phase3cs-build-true1min-sidecar-pack": "our_system_phase2.runtime.phase3cs_build_true1min_sidecar_pack",
     "phase3cs-augment-true1min-shards-with-sidecars": "our_system_phase2.runtime.phase3cs_augment_true1min_shards_with_sidecars",
@@ -32,6 +45,15 @@ ROUTES: dict[str, str] = {
     "phase3ce2-typed-primitive-candidate-pack-canary": "our_system_phase2.runtime.phase3ce2_typed_primitive_candidate_pack_canary",
     "phase3ce2-typed-primitive-evaluator-smoke": "our_system_phase2.runtime.phase3ce2_typed_primitive_evaluator_smoke",
     "phase3cf-large-search-prelaunch": "our_system_phase2.runtime.phase3cf_large_search_prelaunch",
+}
+
+CURRENT_SEARCH_ROUTE = "phase3dv-budget-pool-self-deepen-pack"
+
+RETIRED_ROUTES: dict[str, str] = {
+    "phase3du-adaptive-regime-free-deepen-pack": (
+        "superseded by Phase3DV budget-pool self-deepen. Phase3DU used a more "
+        "rigid deepen/freeze policy and should be used only for provenance."
+    ),
 }
 
 
@@ -61,6 +83,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("route", choices=sorted(ROUTES))
     parser.add_argument("--allow-diagnostic", action="store_true")
     parsed = parser.parse_args(route_args)
+
+    if parsed.route in RETIRED_ROUTES and not parsed.allow_diagnostic:
+        parser.error(
+            f"route {parsed.route!r} is retired: {RETIRED_ROUTES[parsed.route]} "
+            "Pass --allow-diagnostic only for provenance replay."
+        )
+
+    if parsed.route in RETIRED_ROUTES:
+        print(
+            f"[diagnostic-retired-route] {parsed.route}: {RETIRED_ROUTES[parsed.route]}",
+            file=sys.stderr,
+        )
 
     main_func = _load_main(parsed.route)
     try:

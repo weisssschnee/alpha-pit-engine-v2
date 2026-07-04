@@ -386,22 +386,37 @@ def fast_zscore_by_group(values: pd.Series, group: pd.Series) -> pd.Series:
 
 
 def _cross_sectional_residual(frame: pd.DataFrame, left: pd.Series, right: pd.Series) -> pd.Series:
-    result = pd.Series(np.nan, index=frame.index, dtype=float)
-    for index in frame.groupby(_cross_section_key(frame), sort=False).groups.values():
-        y = pd.to_numeric(left.loc[index], errors="coerce")
-        x = pd.to_numeric(right.loc[index], errors="coerce")
-        valid = y.notna() & x.notna()
+    y_arr = pd.to_numeric(left.reindex(frame.index), errors="coerce").to_numpy(dtype=float, copy=False)
+    x_arr = pd.to_numeric(right.reindex(frame.index), errors="coerce").to_numpy(dtype=float, copy=False)
+    codes, _ = pd.factorize(_cross_section_key(frame), sort=False)
+    result = np.full(len(frame), np.nan, dtype=float)
+    valid_code_mask = codes >= 0
+    if not bool(valid_code_mask.any()):
+        return pd.Series(result, index=frame.index)
+
+    order = np.argsort(codes, kind="stable")
+    sorted_codes = codes[order]
+    boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
+    for start, end in zip(boundaries[:-1], boundaries[1:]):
+        if sorted_codes[start] < 0:
+            continue
+        idx = order[start:end]
+        y = y_arr[idx]
+        x = x_arr[idx]
+        valid = np.isfinite(y) & np.isfinite(x)
         if int(valid.sum()) < 5:
             continue
         x_valid = x[valid]
         y_valid = y[valid]
-        x_var = float(x_valid.var(ddof=0))
+        x_var = float(np.var(x_valid))
         if not math.isfinite(x_var) or x_var <= 0.0:
             continue
-        beta = float(((x_valid - x_valid.mean()) * (y_valid - y_valid.mean())).mean() / x_var)
-        intercept = float(y_valid.mean() - beta * x_valid.mean())
-        result.loc[y_valid.index] = y_valid - intercept - beta * x_valid
-    return result
+        x_mean = float(np.mean(x_valid))
+        y_mean = float(np.mean(y_valid))
+        beta = float(np.mean((x_valid - x_mean) * (y_valid - y_mean)) / x_var)
+        intercept = float(y_mean - beta * x_mean)
+        result[idx[valid]] = y_valid - intercept - beta * x_valid
+    return pd.Series(result, index=frame.index)
 
 
 def _safe_cross_sectional_residual(
@@ -413,29 +428,44 @@ def _safe_cross_sectional_residual(
     min_x_unique: int,
     min_valid_ratio: float,
 ) -> pd.Series:
-    result = pd.Series(np.nan, index=frame.index, dtype=float)
+    y_arr = pd.to_numeric(left.reindex(frame.index), errors="coerce").to_numpy(dtype=float, copy=False)
+    x_arr = pd.to_numeric(right.reindex(frame.index), errors="coerce").to_numpy(dtype=float, copy=False)
+    codes, _ = pd.factorize(_cross_section_key(frame), sort=False)
+    result = np.full(len(frame), np.nan, dtype=float)
     min_n = max(2, int(min_n))
     min_x_unique = max(2, int(min_x_unique))
     min_valid_ratio = max(0.0, min(1.0, float(min_valid_ratio)))
-    for index in frame.groupby(_cross_section_key(frame), sort=False).groups.values():
-        y = pd.to_numeric(left.loc[index], errors="coerce")
-        x = pd.to_numeric(right.loc[index], errors="coerce")
-        valid = y.notna() & x.notna()
+    valid_code_mask = codes >= 0
+    if not bool(valid_code_mask.any()):
+        return pd.Series(result, index=frame.index)
+
+    order = np.argsort(codes, kind="stable")
+    sorted_codes = codes[order]
+    boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
+    for start, end in zip(boundaries[:-1], boundaries[1:]):
+        if sorted_codes[start] < 0:
+            continue
+        idx = order[start:end]
+        y = y_arr[idx]
+        x = x_arr[idx]
+        valid = np.isfinite(y) & np.isfinite(x)
         if int(valid.sum()) < min_n:
             continue
         if float(valid.mean()) < min_valid_ratio:
             continue
         x_valid = x[valid]
         y_valid = y[valid]
-        if int(x_valid.nunique(dropna=True)) < min_x_unique:
+        if int(len(np.unique(x_valid))) < min_x_unique:
             continue
-        x_var = float(x_valid.var(ddof=0))
+        x_var = float(np.var(x_valid))
         if not math.isfinite(x_var) or x_var <= 0.0:
             continue
-        beta = float(((x_valid - x_valid.mean()) * (y_valid - y_valid.mean())).mean() / x_var)
-        intercept = float(y_valid.mean() - beta * x_valid.mean())
-        result.loc[y_valid.index] = y_valid - intercept - beta * x_valid
-    return result
+        x_mean = float(np.mean(x_valid))
+        y_mean = float(np.mean(y_valid))
+        beta = float(np.mean((x_valid - x_mean) * (y_valid - y_mean)) / x_var)
+        intercept = float(y_mean - beta * x_mean)
+        result[idx[valid]] = y_valid - intercept - beta * x_valid
+    return pd.Series(result, index=frame.index)
 
 
 def _rolling_valid_ratio(frame: pd.DataFrame, value: pd.Series, *, window: int) -> pd.Series:

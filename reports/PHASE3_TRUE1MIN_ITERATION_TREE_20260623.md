@@ -22,7 +22,10 @@ Data backbone:
 Search status:
   no accepted alpha proof
   no deployable candidate
-  next medium search allowed only through Phase3CO scheduler budgets
+  Phase3EK restates ban-short verification: 1024 was a broad recheck pool, not historical alpha count
+  true1min followup candidates require expression_hash-exact long-only verification
+  current active route must use CN long-only reward, not long-short spread
+  Phase3DU is retired as current route
 ```
 
 ## Forward Iteration Tree
@@ -74,6 +77,23 @@ Phase3CS  Proof Escalation
   - CS3: regime / event / turnover stress
   - CS4: shadow-forward pack
   - CS5: candidate book decision
+
+Phase3DV  Budget-Pool Self-Deepen
+  - DV0: retire rigid Phase3DU deepen/freeze route
+  - DV1: classify train evidence into global_survivor / regime_specialist / probation
+  - DV2: keep fresh self-deepen lane as novelty reserve
+  - DV3: audit candidates through Phase3CM train composite reward
+  - DV4: allocate next budget by lane/family, not by one-shot perfect-candidate filtering
+  - status: superseded for reward-policy purposes by Phase3EK ban-short verification
+
+Phase3EI / Phase3EK  CN Ban-Short Verification
+  - EI0: scan historical Phase3CM/BZ/EG/EH artifacts for short-leg or missing long-only policy
+  - EI1: build 1024-candidate broad candidate/proxy/followup recheck pack
+  - EI2: recheck on DESKTOP-77OPJ6F with portfolio_mode=long_only_top and short_allowed=false
+  - EK0: separate mature daily official alpha-level assets from true1min research followups
+  - EK1: verify true1min followups by expression_hash exact match, not candidate_id alone
+  - EJ1: patch Phase3CM default portfolio mode to long_only_top
+  - status: mature daily official shadow not invalidated at daily-proxy level; current true1min has no deployable alpha-level product
 ```
 
 Priority:
@@ -169,6 +189,39 @@ Phase3CP low-turnover event-state probe
   -> top_quantile=0.30 creates one small-sample followup, but the family remains frozen
   -> 2-shard confirmation rejects that followup
   -> does not authorize Phase3CQ
+
+Phase3DN
+  -> formalizes progressive reward allocation
+  -> cheap proxy and small probes may allocate compute but must not permanently
+     reject novelty unless structural blockers are present
+  -> validation and holdout remain report-only
+
+Phase3DP
+  -> adds low-weight train regime-stability reward to Phase3CM
+  -> adds bounded factor expression, feature matrix, and operator subtree caches
+  -> keeps regime stability as a small gradient term, not a promotion gate
+
+Phase3DS / Phase3DT / Phase3DU
+  -> DS targeted family repair and DT survivor expansion are retained as
+     provenance and seed ancestors
+  -> DU adaptive-regime-free deepen is retired as current route because it kept
+     too much hard-freeze behavior
+
+Phase3DV
+  -> replaces hard early performance elimination with budget-pool allocation
+  -> keeps global survivor, regime specialist, probation, and fresh self-deepen
+     lanes
+  -> uses true1min shard schema filtering and typed primitive gate before CM
+  -> later audited under Phase3EI/EK for CN ban-short reward compliance
+
+Phase3EI / Phase3EK
+  -> found true1min Phase3CM/BZ/EG/EH historical outputs were not system-level CN tradable proof unless explicit long-only evidence exists
+  -> rechecked 1024 broad candidate/proxy/followup rows under long_only_top on DESKTOP-77OPJ6F
+  -> completed Stage1 evidence found 0 followup / 120 audited under no-short
+  -> exact alpha-level restatement found 28 true1min followup-like expressions, 9 exact-hash rechecked, all HOLD
+  -> rejected candidate_id-only evidence where expression_hash mismatched
+  -> patched Phase3CM default portfolio mode from long_short_spread to long_only_top
+  -> preserved mature daily official X0/R3 as a separate read-only daily-shadow chain with existing long-only replay evidence
 ```
 
 ## Evidence Map
@@ -194,6 +247,14 @@ Phase3CP low-turnover event-state probe
 | CP real CM balanced loop | Does arm-balanced CM sampling expose a better direction than CA-ranked top rows? | `reports/phase3cp_real_cm_balanced_loop_20260623/PHASE3CP_REAL_CM_SMALL_LOOP_20260623.md` |
 | CP low-turnover event probe | Can the best event_state near-pass be repaired by lower-turnover variants? | `reports/phase3cp_low_turnover_event_state_probe_20260623/PHASE3CP_LOW_TURNOVER_EVENT_STATE_PROBE_20260623.md` |
 | CP topq30 confirmation | Does the topq30 event_state followup survive larger true-CM confirmation? | `reports/phase3cp_event_state_topq30_followup_confirm_20260623/phase3cm_train_reward/PHASE3CM_TRAIN_PORTFOLIO_SORTINO_REWARD_AUDIT_20260623.md` |
+| DN | How should reward allocate compute without premature rejection? | `reports/PHASE3DN_PROGRESSIVE_REWARD_ALLOCATION_20260628.md` |
+| DP | How were regime reward and bounded evaluator caches added? | `reports/PHASE3DP_REGIME_CACHE_REWARD_20260629.md` |
+| DV | What is the current budget-pool self-deepen route? | `reports/PHASE3DV_BUDGET_POOL_SELF_DEEPEN_20260630.md` |
+| DV hygiene | Which routes are retired or provenance-only? | `reports/PHASE3DV_RETIREMENT_AND_WORKSPACE_HYGIENE_20260630.md` |
+| EI | Which historical true1min artifacts lack CN long-only evidence? | `reports/phase3ei_ban_short_lineage_audit_20260704/PHASE3EI_BAN_SHORT_LINEAGE_AUDIT_20260704.md` |
+| EI 77O recheck | Does the broad candidate/proxy/followup pool survive no-short recheck? | `reports/phase3ei_historical_ban_short_recheck_77o_20260704/phase3ei_historical_ban_short_recheck_summary.json` |
+| EK | Which actual alpha-level or followup assets are verified under CN long-only? | `reports/PHASE3EK_ALPHA_LEVEL_BAN_SHORT_VERIFICATION_20260704.md` |
+| EL | What is the current true1min best level after the ban-short restatement? | `reports/PHASE3EL_TRUE1MIN_BEST_LEVEL_20260704.md` |
 
 ## Reward Evolution
 
@@ -214,6 +275,8 @@ Phase3CM target:
   horizon-sleeve aggregation
   train / validation / holdout split
   holdout forbidden as search feedback
+  CN default portfolio mode is long_only_top after Phase3EK
+  long_short_spread is diagnostic proxy only
 ```
 
 ## Current Route Contract
@@ -255,6 +318,16 @@ phase3cp-low-turnover-event-state-probe:
 phase3bz-fragment-replay-audit:
   optional diagnostic replay
   not primary reward
+
+phase3du-adaptive-regime-free-deepen-pack:
+  retired route
+  requires --allow-diagnostic in app.py
+  provenance replay only
+
+phase3dv-budget-pool-self-deepen-pack:
+  current candidate-pack route
+  allocates bounded budget to global survivor, regime specialist, probation,
+  and fresh self-deepen lanes before Phase3CM reward audit
 ```
 
 ## What Was Rejected
@@ -287,6 +360,9 @@ Before any large search restart:
 4. Broaden fresh generation beyond this motif and require multi-shard confirmation before CN exploit permission.
 5. Enter Phase3CQ rolling large search only if CP produces CM-positive / validation-surviving new families.
 6. Keep BZ fragment replay diagnostic-only and holdout read-only.
+7. Treat Phase3DV as the active next-gate experiment: judge whether budget-pool
+   allocation produces better search information than Phase3DU hard early
+   elimination.
 ```
 
 Success for the next stage is not a high proxy score. It is a candidate family

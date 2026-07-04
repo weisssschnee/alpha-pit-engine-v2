@@ -147,7 +147,58 @@ def _normalize_row(row: dict[str, str], *, run: str, source_file: Path, source_r
     return out
 
 
-def build_candidate_table(source_roots: list[Path], output_root: Path, top_n: int, *, allow_high_corr: bool) -> dict[str, Any]:
+def _select_rows(rows: list[dict[str, Any]], top_n: int, *, selection_mode: str) -> list[dict[str, Any]]:
+    if selection_mode != "arm_balanced":
+        return rows[:top_n]
+
+    arm_order = [
+        "turnover_aware_fresh",
+        "low_turnover_repair",
+        "rx_ucb_fresh",
+        "typed_ast_fresh",
+        "challenger_repair",
+        "event_state",
+        "cem_exploit",
+        "random_orthogonal",
+        "unknown_arm",
+    ]
+    by_arm: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        arm = str(row.get("generator_arm") or "unknown_arm")
+        by_arm.setdefault(arm, []).append(row)
+    for arm in sorted(by_arm):
+        if arm not in arm_order:
+            arm_order.append(arm)
+
+    selected: list[dict[str, Any]] = []
+    while len(selected) < top_n:
+        changed = False
+        for arm in arm_order:
+            bucket = by_arm.get(arm) or []
+            if bucket and len(selected) < top_n:
+                selected.append(bucket.pop(0))
+                changed = True
+        if not changed:
+            break
+    return selected
+
+
+def _count_by_arm(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        arm = str(row.get("generator_arm") or "unknown_arm")
+        counts[arm] = counts.get(arm, 0) + 1
+    return [{"generator_arm": arm, "count": count} for arm, count in sorted(counts.items())]
+
+
+def build_candidate_table(
+    source_roots: list[Path],
+    output_root: Path,
+    top_n: int,
+    *,
+    allow_high_corr: bool,
+    selection_mode: str = "ranked",
+) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
     sources: list[dict[str, Any]] = []
@@ -181,7 +232,7 @@ def build_candidate_table(source_roots: list[Path], output_root: Path, top_n: in
         ),
         reverse=True,
     )
-    selected = rows[:top_n]
+    selected = _select_rows(rows, top_n, selection_mode=selection_mode)
     output_root.mkdir(parents=True, exist_ok=True)
     _write_csv(output_root / "phase3ca_bz_candidate_audit.csv", selected)
     summary = {
@@ -191,8 +242,11 @@ def build_candidate_table(source_roots: list[Path], output_root: Path, top_n: in
         "candidate_count": len(selected),
         "deduped_source_candidate_count": len(rows),
         "top_n": top_n,
+        "selection_mode": selection_mode,
         "allow_high_corr": allow_high_corr,
         "hard_rejected_counts": rejected,
+        "deduped_by_arm": _count_by_arm(rows),
+        "selected_by_arm": _count_by_arm(selected),
         "sources": sources,
         "metric_boundary": "This is a ranking bridge into BZ, not reward proof.",
     }
@@ -220,10 +274,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--source-root", action="append", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--top-n", type=int, default=128)
+    parser.add_argument("--selection-mode", choices=["ranked", "arm_balanced"], default="ranked")
     parser.add_argument("--allow-high-corr", action="store_true", help="Diagnostic override: allow signal-crowded rows into the BZ bridge.")
     args = parser.parse_args(argv)
 
-    summary = build_candidate_table(args.source_root, _resolve(args.output_root), args.top_n, allow_high_corr=bool(args.allow_high_corr))
+    summary = build_candidate_table(
+        args.source_root,
+        _resolve(args.output_root),
+        args.top_n,
+        allow_high_corr=bool(args.allow_high_corr),
+        selection_mode=args.selection_mode,
+    )
     print(json.dumps({"status": "ok", **summary}, ensure_ascii=False))
     return 0
 

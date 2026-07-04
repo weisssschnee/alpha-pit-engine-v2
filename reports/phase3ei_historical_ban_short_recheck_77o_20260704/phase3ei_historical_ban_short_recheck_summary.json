@@ -1,0 +1,18 @@
+﻿{
+    "status":  "complete_with_failed_stage1_chunks",
+    "phase":  "Phase3EI-historical-ban-short-recheck",
+    "timestamp":  "2026-07-04T21:04:20.7503897+08:00",
+    "raw_candidate_rows":  1024,
+    "unique_candidate_rows":  1024,
+    "stage0_reward_rows":  1008,
+    "stage0_failed_count":  2,
+    "stage1_candidate_rows":  128,
+    "stage1_reward_rows":  120,
+    "stage1_failed_count":  1,
+    "followup_count":  0,
+    "stage0_reward":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\reports\\phase3ei_historical_ban_short_recheck_20260704\\stage0_fast_train_reward\\phase3cm_train_reward.csv",
+    "stage1_reward":  "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\reports\\phase3ei_historical_ban_short_recheck_20260704\\stage1_deeper_train_reward\\phase3cm_train_reward.csv",
+    "portfolio_mode":  "long_only_top",
+    "short_allowed":  false,
+    "boundary":  "Stage0 train reward is a cheap CN long-only screen over historical spread/proxy candidates; Stage1 train reward is the usable recheck ranking; validation and holdout remain report-only; no short leg"
+}
