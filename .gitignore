@@ -5,6 +5,7 @@ __pycache__/
 .ruff_cache/
 .venv/
 venv/
+graphify-out/
 
 # Local/generated search outputs.
 runtime/phase3a*/

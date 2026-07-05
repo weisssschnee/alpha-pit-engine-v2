@@ -127,6 +127,9 @@ def _is_structural_block_record(row: dict[str, Any]) -> bool:
             "blocker_flags",
             "phase3bp_blocker_flags",
             "phase3ca_blocker_flags",
+            "memory_block_reason",
+            "pre_cm_semantic_decision",
+            "pre_cm_semantic_reasons",
             "reason",
             "decision",
         )
@@ -248,6 +251,48 @@ def _load_memory_hashes(memory_roots: list[Path], memory_globs: list[str]) -> tu
             }
         )
     return hashes, rows
+
+
+def _write_semantic_block_memory(memory_root: Path, rejected: list[dict[str, Any]], run_label: str) -> Path | None:
+    if not rejected:
+        return None
+    memory_root = _resolve(memory_root)
+    memory_root.mkdir(parents=True, exist_ok=True)
+    rows: list[dict[str, Any]] = []
+    for row in rejected:
+        expression = str(row.get("expression") or "").strip()
+        if not expression:
+            continue
+        expression_hash = str(row.get("expression_hash") or _stable_expression_hash(expression))
+        expression_key = str(row.get("expression_key") or _canonical_expression_key(expression))
+        skeleton_key = str(row.get("skeleton_key") or _skeleton_key(expression))
+        rows.append(
+            {
+                "run_label": run_label,
+                "candidate_id": row.get("candidate_id"),
+                "generator_arm": row.get("generator_arm"),
+                "expression": expression,
+                "expression_hash": expression_hash,
+                "candidate_hash": row.get("candidate_hash") or expression_hash,
+                "expression_key": expression_key,
+                "search_memory_key": expression_key,
+                "skeleton_key": skeleton_key,
+                "memory_block_policy": "semantic_viability_block",
+                "memory_block_reason": row.get("memory_block_reason") or "blocked_weak_semantic_viability",
+                "pre_cm_semantic_decision": row.get("pre_cm_semantic_decision"),
+                "pre_cm_semantic_reasons": row.get("pre_cm_semantic_reasons"),
+                "semantic_total_rows": row.get("semantic_total_rows"),
+                "semantic_nonzero_shards": row.get("semantic_nonzero_shards"),
+                "semantic_checked_shards": row.get("semantic_checked_shards"),
+                "created_at_utc": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+    if not rows:
+        return None
+    safe_label = re.sub(r"[^A-Za-z0-9_.-]+", "_", run_label).strip("_") or "semantic_block"
+    path = memory_root / f"{safe_label}_semantic_block_memory.csv"
+    _write_csv(path, rows)
+    return path
 
 
 def _generate_candidates(
@@ -668,6 +713,13 @@ def _run_pre_cm_semantic_viability_gate(
     _write_csv(report_root / "phase3cp_real_cm_candidate_audit_semantic.csv", kept)
     _write_csv(report_root / "phase3cp_pre_cm_semantic_viability.csv", viability_rows)
     _write_csv(report_root / "phase3cp_semantic_blocked_candidate_audit.csv", rejected)
+    semantic_block_memory_path = None
+    if bool(getattr(args, "write_semantic_block_memory", True)):
+        semantic_block_memory_path = _write_semantic_block_memory(
+            args.semantic_block_memory_root,
+            rejected,
+            run_label=output_root.name,
+        )
     _copy_report_files(gate_output_root, gate_report_root)
 
     by_arm: dict[str, dict[str, int]] = {}
@@ -706,6 +758,7 @@ def _run_pre_cm_semantic_viability_gate(
             "parallel_axis": gate_summary.get("parallel_axis"),
             "fast_mode": gate_summary.get("fast_mode"),
         },
+        "semantic_block_memory_path": str(semantic_block_memory_path) if semantic_block_memory_path else None,
         "metric_boundary": "pre-CM semantic viability uses real CM evaluator rows only; it must not use reward to optimize or promote candidates",
     }
     _write_json(output_root / "phase3cp_pre_cm_semantic_viability_summary.json", summary)
@@ -1599,6 +1652,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pre-cm-semantic-min-nonzero-shards", type=int, default=1)
     parser.add_argument("--pre-cm-semantic-operator-cache-max-entries", type=int, default=128)
     parser.add_argument("--pre-cm-semantic-feature-matrix-cache-max-windows", type=int, default=2)
+    parser.add_argument("--write-semantic-block-memory", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--semantic-block-memory-root", type=Path, default=Path("runtime/search_memory/phase3cp_semantic_blocks"))
     parser.add_argument("--cm-workers", type=int, default=1)
     parser.add_argument("--cm-parallel-axis", choices=("candidate", "shard"), default="candidate")
     parser.add_argument("--numexpr-threads", type=int, default=4)
