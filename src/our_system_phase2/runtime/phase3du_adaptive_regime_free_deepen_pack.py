@@ -77,6 +77,15 @@ WINDOWS_MEDIUM = [20, 40, 60, 120]
 VALID_RATIOS = [0.5, 0.6, 0.8]
 
 
+def _valid_ratios_for_context(field: str) -> list[float]:
+    name = str(field or "").lower()
+    if any(token in name for token in ("billboard", "holder", "dividend", "share_change", "shareholder", "zls")):
+        return [0.02, 0.05, 0.10]
+    if "rzrq" in name:
+        return [0.40, 0.60]
+    return VALID_RATIOS
+
+
 def _hash(text: str, length: int = 24) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:length]
 
@@ -244,11 +253,17 @@ def _family_key(expression: str) -> str:
 
 def _event_components() -> dict[str, list[str]]:
     components: dict[str, list[str]] = defaultdict(list)
+    unusable_event_fields = {"evt_uplimit_type_code"}
+    dense_event_age_fields = {"evt_uplimit_active"}
     for field in EVENT_FIELDS:
-        for op in ["EventAge", "SinceLastEvent"]:
-            base = f"CSRank({op}(${field}))"
-            components["event_age"].extend([base, f"Neg({base})", f"Sign({base})"])
-        for op in ["EventCount", "StateDwell", "WindowStateCount"]:
+        if field in unusable_event_fields:
+            continue
+        if not field.startswith("evt_") or field in dense_event_age_fields:
+            for op in ["EventAge", "SinceLastEvent"]:
+                base = f"CSRank({op}(${field}))"
+                components["event_age"].extend([base, f"Neg({base})", f"Sign({base})"])
+        state_ops = ["EventCount", "WindowStateCount"] if field.startswith("evt_") else ["EventCount", "StateDwell", "WindowStateCount"]
+        for op in state_ops:
             for window in [5, 10, 20, 40]:
                 base = f"CSRank({op}(${field},{window}))"
                 components["event_state"].extend([base, f"Neg({base})", f"Sign({base})"])
@@ -260,7 +275,7 @@ def _context_components() -> dict[str, list[str]]:
     def add(field: str, family: str, windows: list[int]) -> None:
         for op in ["MaskedZScore", "ValidRatioGate"]:
             for window in windows:
-                for ratio in VALID_RATIOS:
+                for ratio in _valid_ratios_for_context(field):
                     base = f"CSRank({op}(${field},{window},{ratio}))"
                     components[family].extend([base, f"Neg({base})"])
 

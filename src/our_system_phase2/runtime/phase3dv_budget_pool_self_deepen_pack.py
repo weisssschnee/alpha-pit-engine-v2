@@ -146,6 +146,20 @@ HARD_BLOCKER_TOKENS = (
 )
 
 
+def _valid_ratios_for_context(field: str) -> list[float]:
+    name = str(field or "").lower()
+    if any(token in name for token in ("billboard", "holder", "dividend", "share_change", "shareholder", "zls")):
+        return [0.02, 0.05, 0.10]
+    if "rzrq" in name:
+        return [0.40, 0.60]
+    return VALID_RATIOS
+
+
+def _allow_masked_relation(field: str) -> bool:
+    name = str(field or "").lower()
+    return not any(token in name for token in ("billboard", "holder", "dividend", "share_change", "shareholder", "zls"))
+
+
 def _hash(text: str, length: int = 24) -> str:
     return hashlib.sha256(str(text).encode("utf-8")).hexdigest()[:length]
 
@@ -455,17 +469,23 @@ def _allocate_seed_budgets(
 
 def _ranked_event_atoms(available: set[str] | None = None) -> list[tuple[str, str, str]]:
     atoms: list[tuple[str, str, str]] = []
+    unusable_event_fields = {"evt_uplimit_type_code"}
+    dense_event_age_fields = {"evt_uplimit_active"}
     for field in _filter_available(EVENT_FIELDS, available):
-        for op in ("EventAge", "SinceLastEvent"):
-            expr = f"CSRank({op}(${field}))"
-            atoms.extend(
-                [
-                    ("event_age", expr, field),
-                    ("event_age_neg", f"Neg({expr})", field),
-                    ("event_age_sign", f"Sign({expr})", field),
-                ]
-            )
-        for op in ("EventCount", "StateDwell", "WindowStateCount"):
+        if field in unusable_event_fields:
+            continue
+        if not field.startswith("evt_") or field in dense_event_age_fields:
+            for op in ("EventAge", "SinceLastEvent"):
+                expr = f"CSRank({op}(${field}))"
+                atoms.extend(
+                    [
+                        ("event_age", expr, field),
+                        ("event_age_neg", f"Neg({expr})", field),
+                        ("event_age_sign", f"Sign({expr})", field),
+                    ]
+                )
+        state_ops = ("EventCount", "WindowStateCount") if field.startswith("evt_") else ("EventCount", "StateDwell", "WindowStateCount")
+        for op in state_ops:
             for window in EVENT_WINDOWS:
                 expr = f"CSRank({op}(${field},{window}))"
                 atoms.extend(
@@ -483,7 +503,7 @@ def _ranked_context_atoms(available: set[str] | None = None) -> dict[str, list[t
 
     def add_coverage(field: str, group: str, windows: list[int]) -> None:
         for window in windows:
-            for ratio in VALID_RATIOS:
+            for ratio in _valid_ratios_for_context(field):
                 z = f"CSRank(MaskedZScore(${field},{window},{ratio}))"
                 gate = f"CSRank(ValidRatioGate(${field},{window},{ratio}))"
                 groups[group].extend(
@@ -494,6 +514,8 @@ def _ranked_context_atoms(available: set[str] | None = None) -> dict[str, list[t
                     ]
                 )
                 for control in ("amount", "vol", "vwap"):
+                    if not _allow_masked_relation(field):
+                        continue
                     corr = f"CSRank(MaskedCorr(${field},${control},{window},{ratio}))"
                     groups[f"{group}_relation"].extend(
                         [

@@ -482,13 +482,9 @@ def _event_mask(value: pd.Series) -> pd.Series:
 
 def _rolling_event_count(frame: pd.DataFrame, value: pd.Series, *, window: int) -> pd.Series:
     numeric = pd.to_numeric(value, errors="coerce")
-    valid = numeric.notna().astype(float)
     event = (numeric.notna() & (numeric != 0.0)).astype(float)
     grouped_event = event.groupby(frame["code"], sort=False)
-    grouped_valid = valid.groupby(frame["code"], sort=False)
-    counts = grouped_event.transform(lambda item: item.rolling(window, min_periods=window).sum())
-    valid_counts = grouped_valid.transform(lambda item: item.rolling(window, min_periods=window).sum())
-    return counts.where(valid_counts >= window)
+    return grouped_event.transform(lambda item: item.rolling(window, min_periods=window).sum())
 
 
 def _event_age(frame: pd.DataFrame, value: pd.Series) -> pd.Series:

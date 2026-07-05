@@ -121,6 +121,55 @@ def _read_windowed_panel_positions(
     return pa.concat_tables(tables, promote_options="default").to_pandas(), signal_times, len(signal_times), len(read_times)
 
 
+def _candidate_event_fields(candidates: list[dict[str, Any]]) -> list[str]:
+    return sorted(
+        {
+            str(field)
+            for candidate in candidates
+            for field in candidate.get("fields_list", [])
+            if str(field).startswith("evt_")
+        }
+    )
+
+
+def _event_signal_positions(
+    panel_path: Path,
+    *,
+    all_trade_times: pd.Series,
+    event_fields: list[str],
+    max_event_trade_times: int | None,
+    forward_bars: int = 20,
+) -> list[int]:
+    if not event_fields:
+        return []
+    schema = set(pq.ParquetFile(panel_path).schema_arrow.names)
+    fields = [field for field in event_fields if field in schema]
+    if not fields or "trade_time" not in schema:
+        return []
+    table = pq.read_table(panel_path, columns=["trade_time", *fields])
+    frame = table.to_pandas()
+    if frame.empty:
+        return []
+    position_by_time = {pd.Timestamp(value): idx for idx, value in enumerate(pd.to_datetime(all_trade_times))}
+    max_pos = len(position_by_time) - 1
+    cap = int(max_event_trade_times or 0)
+    position_set: set[int] = set()
+    for field in fields:
+        values = pd.to_numeric(frame[field], errors="coerce")
+        mask = values.notna() & (values != 0.0)
+        if not bool(mask.any()):
+            continue
+        event_times = pd.to_datetime(frame.loc[mask, "trade_time"], errors="coerce").dropna().drop_duplicates().sort_values()
+        positions = sorted({position_by_time[pd.Timestamp(value)] for value in event_times if pd.Timestamp(value) in position_by_time})
+        if cap > 0 and len(positions) > cap:
+            pick = np.unique(np.linspace(0, len(positions) - 1, cap).round().astype(int))
+            positions = [positions[int(idx)] for idx in pick]
+        for pos in positions:
+            end = min(max_pos, int(pos) + max(0, int(forward_bars)))
+            position_set.update(range(int(pos), end + 1))
+    return sorted(position_set)
+
+
 def _f(value: Any, default: float = float("nan")) -> float:
     try:
         if value in (None, ""):
@@ -184,6 +233,24 @@ def _safe_stdev(values: list[float]) -> float | None:
     if len(clean) < 2:
         return None
     return float(statistics.stdev(clean))
+
+
+def _parse_shard_indices(value: str | None, panel_count: int) -> list[int] | None:
+    if value is None or not str(value).strip():
+        return None
+    indices: list[int] = []
+    for item in str(value).split(","):
+        text = item.strip()
+        if not text:
+            continue
+        index = int(text)
+        if index < 0 or index >= panel_count:
+            raise ValueError(f"shard index out of range: {index} for panel_count={panel_count}")
+        indices.append(index)
+    deduped = sorted(set(indices))
+    if not deduped:
+        raise ValueError("--shard-indices did not contain any valid shard index")
+    return deduped
 
 
 def _bounded(value: float, cap: float) -> float:
@@ -420,6 +487,8 @@ def _read_train_shard(
     sample_trade_times: int | None,
     sample_block_count: int = 1,
     sample_block_index: int = 0,
+    event_aware_sample_times: bool = True,
+    event_sample_trade_times: int | None = None,
 ) -> tuple[
     pd.DataFrame,
     pd.Series,
@@ -463,7 +532,17 @@ def _read_train_shard(
     if sample_block_index >= sample_block_count:
         raise ValueError("sample_block_index must be < sample_block_count")
 
-    if sample_block_count <= 1:
+    all_trade_times = _panel_trade_times(panel_path)
+    event_positions: list[int] = []
+    if event_aware_sample_times:
+        event_positions = _event_signal_positions(
+            panel_path,
+            all_trade_times=all_trade_times,
+            event_fields=_candidate_event_fields(candidates),
+            max_event_trade_times=event_sample_trade_times if event_sample_trade_times is not None else sample_trade_times,
+        )
+
+    if sample_block_count <= 1 and not event_positions:
         frame, signal_times, signal_time_count, read_time_count = _read_windowed_panel(
             panel_path,
             columns=columns,
@@ -472,12 +551,10 @@ def _read_train_shard(
             max_horizon=max_horizon,
         )
         full_signal_times = set(signal_times)
-        all_trade_times = _panel_trade_times(panel_path)
         position_by_time = {pd.Timestamp(value): idx for idx, value in enumerate(pd.to_datetime(all_trade_times))}
         signal_positions = sorted(position_by_time[pd.Timestamp(value)] for value in signal_times if pd.Timestamp(value) in position_by_time)
     else:
-        all_trade_times = _panel_trade_times(panel_path)
-        all_signal_positions = _sample_positions_for_count(len(all_trade_times), sample_trade_times)
+        all_signal_positions = sorted(set(_sample_positions_for_count(len(all_trade_times), sample_trade_times).tolist()) | set(event_positions))
         signal_blocks = np.array_split(all_signal_positions, sample_block_count)
         signal_positions = [int(value) for value in signal_blocks[sample_block_index].tolist()]
         full_signal_times = set(pd.to_datetime(all_trade_times.iloc[all_signal_positions]).tolist())
@@ -512,6 +589,7 @@ def _read_train_shard(
         "eval_rows": int(len(eval_frame)),
         "signal_trade_times": int(signal_time_count),
         "full_signal_trade_times": int(len(full_signal_times)),
+        "event_signal_trade_times": int(len(event_positions)),
         "read_trade_times": int(read_time_count),
         "sample_block_count": int(sample_block_count),
         "sample_block_index": int(sample_block_index),
@@ -1132,6 +1210,399 @@ def _regime_stability_summary(curve_rows: list[dict[str, Any]], *, min_days_per_
     }
 
 
+def _reward_atoms_for_curve(
+    *,
+    candidate: dict[str, Any],
+    curve_rows: list[dict[str, Any]],
+    split: str,
+    horizon: int | str,
+) -> list[dict[str, Any]]:
+    by_date: dict[str, dict[str, Any]] = {}
+    for row in curve_rows:
+        trade_date = str(row.get("trade_date") or "")
+        if not trade_date:
+            continue
+        item = by_date.setdefault(
+            trade_date,
+            {
+                "candidate_id": candidate.get("candidate_id"),
+                "expression_hash": candidate.get("expression_hash"),
+                "split": split,
+                "horizon_min": str(horizon),
+                "trade_date": trade_date,
+                "curve_count": 0,
+                "net_return_sum": 0.0,
+                "raw_return_sum": 0.0,
+                "net_positive_count": 0,
+                "downside_square_sum": 0.0,
+                "daily_net_return": 0.0,
+                "market_mean_return_sum": 0.0,
+                "market_mean_return_count": 0,
+                "turnover_sum": 0.0,
+                "turnover_count": 0,
+                "rank_ic_sum": 0.0,
+                "rank_ic_count": 0,
+                "rank_ic_positive_count": 0,
+            },
+        )
+        net = _f(row.get("net_return"))
+        if math.isfinite(net):
+            item["curve_count"] += 1
+            item["net_return_sum"] += net
+            item["daily_net_return"] += net
+            item["net_positive_count"] += int(net > 0.0)
+            item["downside_square_sum"] += min(0.0, net) ** 2
+        raw = _f(row.get("raw_return"))
+        if math.isfinite(raw):
+            item["raw_return_sum"] += raw
+        market = _f(row.get("market_mean_return"))
+        if math.isfinite(market):
+            item["market_mean_return_sum"] += market
+            item["market_mean_return_count"] += 1
+        turnover = _f(row.get("one_way_turnover"))
+        if math.isfinite(turnover):
+            item["turnover_sum"] += turnover
+            item["turnover_count"] += 1
+        rank_ic = _f(row.get("rank_ic"))
+        if math.isfinite(rank_ic):
+            item["rank_ic_sum"] += rank_ic
+            item["rank_ic_count"] += 1
+            item["rank_ic_positive_count"] += int(rank_ic > 0.0)
+    return list(by_date.values())
+
+
+def _reward_atoms_for_candidate(
+    candidate: dict[str, Any],
+    rows: list[dict[str, Any]],
+    horizons: tuple[int, ...],
+) -> list[dict[str, Any]]:
+    atoms: list[dict[str, Any]] = []
+    for split in ("train", "validation", "holdout"):
+        atoms.extend(
+            _reward_atoms_for_curve(
+                candidate=candidate,
+                curve_rows=_curve_rows(rows, split=split),
+                split=split,
+                horizon="all",
+            )
+        )
+        for horizon in horizons:
+            atoms.extend(
+                _reward_atoms_for_curve(
+                    candidate=candidate,
+                    curve_rows=_curve_rows(rows, split=split, horizon=horizon),
+                    split=split,
+                    horizon=horizon,
+                )
+            )
+    return atoms
+
+
+def _summarize_reward_atoms(atom_rows: list[dict[str, Any]], *, split: str, horizon: int | str, seed: int) -> dict[str, Any]:
+    by_date: dict[str, dict[str, float]] = {}
+    curve_count = 0
+    net_return_sum = 0.0
+    raw_return_sum = 0.0
+    net_positive_count = 0
+    downside_square_sum = 0.0
+    turnover_sum = 0.0
+    turnover_count = 0
+    rank_ic_sum = 0.0
+    rank_ic_count = 0
+    rank_ic_positive_count = 0
+    for row in atom_rows:
+        trade_date = str(row.get("trade_date") or "")
+        if trade_date:
+            day = by_date.setdefault(
+                trade_date,
+                {
+                    "daily_net_return": 0.0,
+                    "market_mean_return_sum": 0.0,
+                    "market_mean_return_count": 0.0,
+                },
+            )
+            day["daily_net_return"] += _f(row.get("daily_net_return"), 0.0)
+            market_count = _f(row.get("market_mean_return_count"), 0.0)
+            day["market_mean_return_sum"] += _f(row.get("market_mean_return_sum"), 0.0)
+            day["market_mean_return_count"] += market_count
+        count = int(_f(row.get("curve_count"), 0.0))
+        curve_count += count
+        net_return_sum += _f(row.get("net_return_sum"), 0.0)
+        raw_return_sum += _f(row.get("raw_return_sum"), 0.0)
+        net_positive_count += int(_f(row.get("net_positive_count"), 0.0))
+        downside_square_sum += _f(row.get("downside_square_sum"), 0.0)
+        turnover_sum += _f(row.get("turnover_sum"), 0.0)
+        turnover_count += int(_f(row.get("turnover_count"), 0.0))
+        rank_ic_sum += _f(row.get("rank_ic_sum"), 0.0)
+        rank_ic_count += int(_f(row.get("rank_ic_count"), 0.0))
+        rank_ic_positive_count += int(_f(row.get("rank_ic_positive_count"), 0.0))
+
+    day_values = [item["daily_net_return"] for item in by_date.values() if math.isfinite(item["daily_net_return"])]
+    boot = _bootstrap_days(day_values, iterations=600, seed=seed)
+    net_mean = net_return_sum / curve_count if curve_count else None
+    raw_mean = raw_return_sum / curve_count if curve_count else None
+    downside_var = downside_square_sum / curve_count if curve_count else None
+    minute_sortino = None
+    if net_mean is not None and downside_var is not None and downside_var > 1e-18:
+        minute_sortino = net_mean / math.sqrt(downside_var)
+    rank_ic_mean = rank_ic_sum / rank_ic_count if rank_ic_count else None
+    daily_rows = []
+    for trade_date, item in by_date.items():
+        market_count = item["market_mean_return_count"]
+        daily_rows.append(
+            {
+                "trade_date": trade_date,
+                "net_return": item["daily_net_return"],
+                "market_mean_return": item["market_mean_return_sum"] / market_count if market_count else float("nan"),
+            }
+        )
+    return {
+        "split": split,
+        "horizon_min": horizon,
+        "curve_count": curve_count,
+        "day_count": len(day_values),
+        "net_mean_return": _round(net_mean, 10),
+        "raw_mean_return": _round(raw_mean, 10),
+        "net_hit_rate": _round(net_positive_count / curve_count if curve_count else None),
+        "minute_sortino": _round(minute_sortino),
+        "day_sortino": _round(_sortino(day_values)),
+        "day_mcmc_sortino_p25": boot.get("p25"),
+        "day_mcmc_sortino_median": boot.get("median"),
+        "day_mcmc_prob_sortino_gt_0": boot.get("prob_gt_0"),
+        "max_drawdown": _round(_max_drawdown(day_values)),
+        "mean_one_way_turnover": _round(turnover_sum / turnover_count if turnover_count else None),
+        "rank_ic_mean": _round(rank_ic_mean),
+        "rank_ic_hit_rate": _round(rank_ic_positive_count / rank_ic_count if rank_ic_count else None),
+        "rank_ic_loss": _round(-rank_ic_mean if rank_ic_mean is not None else None),
+        "rank_ic_obs": rank_ic_count,
+        "_daily_rows": daily_rows,
+    }
+
+
+def _regime_stability_summary_from_daily_rows(daily_rows: list[dict[str, Any]], *, min_days_per_regime: int = 3) -> dict[str, Any]:
+    if not daily_rows:
+        return {
+            "train_regime_stability_score": None,
+            "train_regime_worst_day_sortino": None,
+            "train_regime_median_day_sortino": None,
+            "train_regime_positive_share": None,
+            "train_regime_count": 0,
+            "train_regime_method": "none_no_train_curve",
+        }
+    frame = pd.DataFrame(daily_rows)
+    frame["net_return"] = pd.to_numeric(frame["net_return"], errors="coerce")
+    frame["market_mean_return"] = pd.to_numeric(frame.get("market_mean_return", np.nan), errors="coerce")
+    daily = frame.dropna(subset=["net_return"]).sort_values("trade_date").reset_index(drop=True)
+    if len(daily) < max(3, int(min_days_per_regime) * 2):
+        return {
+            "train_regime_stability_score": 0.0,
+            "train_regime_worst_day_sortino": None,
+            "train_regime_median_day_sortino": None,
+            "train_regime_positive_share": None,
+            "train_regime_count": 0,
+            "train_regime_method": "insufficient_train_days",
+        }
+
+    method = "market_return_tercile"
+    if daily["market_mean_return"].notna().sum() >= max(6, int(min_days_per_regime) * 3) and daily["market_mean_return"].nunique(dropna=True) >= 3:
+        ranks = daily["market_mean_return"].rank(method="first", pct=True)
+        daily["regime"] = np.where(ranks <= 1 / 3, "market_down", np.where(ranks <= 2 / 3, "market_mid", "market_up"))
+    else:
+        method = "chronological_tercile"
+        positions = np.arange(len(daily), dtype=float) / max(1, len(daily) - 1)
+        daily["regime"] = np.where(positions <= 1 / 3, "early", np.where(positions <= 2 / 3, "middle", "late"))
+
+    regime_sortinos: list[float] = []
+    regime_rows: list[dict[str, Any]] = []
+    for regime, block in daily.groupby("regime", sort=True):
+        values = [float(value) for value in block["net_return"].to_numpy(dtype=float) if math.isfinite(float(value))]
+        if len(values) < int(min_days_per_regime):
+            continue
+        sortino = _sortino(values)
+        if sortino is None or not math.isfinite(sortino):
+            continue
+        regime_sortinos.append(float(sortino))
+        regime_rows.append({"regime": regime, "day_count": len(values), "day_sortino": _round(sortino)})
+    if not regime_sortinos:
+        return {
+            "train_regime_stability_score": 0.0,
+            "train_regime_worst_day_sortino": None,
+            "train_regime_median_day_sortino": None,
+            "train_regime_positive_share": None,
+            "train_regime_count": 0,
+            "train_regime_method": f"{method}_no_valid_regime_sortino",
+        }
+    worst = min(regime_sortinos)
+    median = float(np.median(regime_sortinos))
+    positive_share = sum(1 for value in regime_sortinos if value > 0.0) / len(regime_sortinos)
+    clipped_worst = max(-1.0, min(1.0, worst))
+    balance = max(-1.0, min(1.0, positive_share * 2.0 - 1.0))
+    score = 0.65 * clipped_worst + 0.35 * balance
+    return {
+        "train_regime_stability_score": _round(score),
+        "train_regime_worst_day_sortino": _round(worst),
+        "train_regime_median_day_sortino": _round(median),
+        "train_regime_positive_share": _round(positive_share),
+        "train_regime_count": len(regime_sortinos),
+        "train_regime_method": method,
+        "train_regime_rows": json.dumps(regime_rows, ensure_ascii=False, sort_keys=True),
+    }
+
+
+def _candidate_summary_from_reward_atoms(
+    candidate: dict[str, Any],
+    atom_rows: list[dict[str, Any]],
+    horizons: tuple[int, ...],
+    *,
+    seed: int,
+    rank_ic_loss_weight: float,
+    rank_ic_component_cap: float,
+    regime_stability_weight: float,
+    regime_component_cap: float,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    split_rows: list[dict[str, Any]] = []
+    by_key: dict[tuple[str, str], dict[str, Any]] = {}
+    for split in ("train", "validation", "holdout"):
+        all_atoms = [row for row in atom_rows if str(row.get("split")) == split and str(row.get("horizon_min")) == "all"]
+        summary = _summarize_reward_atoms(all_atoms, split=split, horizon="equal_weight_horizon_sleeves", seed=seed + len(split))
+        split_rows.append({key: value for key, value in summary.items() if key != "_daily_rows"})
+        by_key[(split, "all")] = summary
+        for horizon in horizons:
+            horizon_atoms = [
+                row
+                for row in atom_rows
+                if str(row.get("split")) == split and str(row.get("horizon_min")) == str(horizon)
+            ]
+            horizon_summary = _summarize_reward_atoms(horizon_atoms, split=split, horizon=horizon, seed=seed + horizon)
+            split_rows.append({key: value for key, value in horizon_summary.items() if key != "_daily_rows"})
+            by_key[(split, str(horizon))] = horizon_summary
+
+    train_all = by_key.get(("train", "all"), {})
+    validation_all = by_key.get(("validation", "all"), {})
+    holdout_all = by_key.get(("holdout", "all"), {})
+    train_horizon_sortinos = [
+        _f(by_key.get(("train", str(horizon)), {}).get("day_sortino"))
+        for horizon in horizons
+    ]
+    train_horizon_sortinos = [value for value in train_horizon_sortinos if math.isfinite(value)]
+    train_worst = min(train_horizon_sortinos) if train_horizon_sortinos else float("nan")
+    train_median = float(np.median(train_horizon_sortinos)) if train_horizon_sortinos else float("nan")
+    instability = _safe_stdev(train_horizon_sortinos)
+    train_turnover = _f(train_all.get("mean_one_way_turnover"), 0.0)
+    train_day_sortino = _f(train_all.get("day_sortino"))
+    train_day_mcmc_p25 = _f(train_all.get("day_mcmc_sortino_p25"))
+    train_rank_ic_mean = _f(train_all.get("rank_ic_mean"))
+    train_rank_ic_loss = _f(train_all.get("rank_ic_loss"), 0.05)
+    rank_ic_reward_component = _bounded(-float(rank_ic_loss_weight) * train_rank_ic_loss, float(rank_ic_component_cap))
+    train_regime = _regime_stability_summary_from_daily_rows(train_all.get("_daily_rows") or [])
+    regime_score = _f(train_regime.get("train_regime_stability_score"), 0.0)
+    regime_reward_component = _bounded(float(regime_stability_weight) * regime_score, float(regime_component_cap))
+    turnover_penalty = max(0.0, train_turnover - 0.55) * 0.75
+    instability_penalty = max(0.0, _f(instability, 0.0) - 0.50) * 0.25
+    inherited_blocker_penalty = 0.15 if str(candidate.get("phase3bp_blocker_flags") or candidate.get("blocker_flags") or "") else 0.0
+    reward = (
+        0.55 * _f(train_day_sortino, -2.0)
+        + 0.25 * _f(train_worst, -2.0)
+        + 0.20 * _f(train_day_mcmc_p25, -2.0)
+        + rank_ic_reward_component
+        + regime_reward_component
+        - turnover_penalty
+        - instability_penalty
+        - inherited_blocker_penalty
+    )
+    blockers: list[str] = []
+    if not math.isfinite(reward) or reward <= 0.0:
+        blockers.append("non_positive_train_reward")
+    if not math.isfinite(train_day_sortino) or train_day_sortino <= 0.0:
+        blockers.append("non_positive_train_day_sortino")
+    if not math.isfinite(train_worst) or train_worst <= 0.0:
+        blockers.append("non_positive_worst_horizon_train_sortino")
+    if _f(train_all.get("day_mcmc_prob_sortino_gt_0"), 0.0) < 0.60:
+        blockers.append("weak_train_day_mcmc")
+    if not math.isfinite(train_rank_ic_mean):
+        blockers.append("no_valid_train_rank_ic")
+    if train_turnover > 0.75:
+        blockers.append("extreme_turnover")
+    if str(candidate.get("phase3bp_blocker_flags") or candidate.get("blocker_flags") or ""):
+        blockers.append("inherited_search_blocker")
+    decision = "TRAIN_REWARD_FOLLOWUP_READY" if not blockers else "HOLD_TRAIN_REWARD"
+    portfolio_mode = str(candidate.get("portfolio_mode") or "long_only_top")
+    reward_row = {
+        "candidate_id": candidate.get("candidate_id"),
+        "expression_hash": candidate.get("expression_hash"),
+        "run": candidate.get("run"),
+        "source_round": candidate.get("round_id"),
+        "generator_arm": candidate.get("generator_arm"),
+        "generator_route": candidate.get("generator_route"),
+        "source_generator": candidate.get("source_generator"),
+        "source_lane": candidate.get("source_lane"),
+        "factor_lane": candidate.get("factor_lane"),
+        "field_family": candidate.get("field_family"),
+        "primitive_family": candidate.get("primitive_family"),
+        "event_state_family": candidate.get("event_state_family"),
+        "horizon_bucket": candidate.get("horizon_bucket"),
+        "turnover_bucket": candidate.get("turnover_bucket"),
+        "family_id": candidate.get("family_id"),
+        "motif_id": candidate.get("motif_id"),
+        "subtree_hashes": candidate.get("subtree_hashes"),
+        "phase3ca_proxy_quality": candidate.get("phase3ca_proxy_quality"),
+        "proxy_quality": candidate.get("proxy_quality"),
+        "aligned_ic_mean": candidate.get("aligned_ic_mean"),
+        "spread_hit_rate": candidate.get("spread_hit_rate"),
+        "mean_one_way_turnover": candidate.get("mean_one_way_turnover"),
+        "fields": candidate.get("fields"),
+        "legacy_alias_rewrites": candidate.get("legacy_alias_rewrites"),
+        "legacy_alias_rewrite_policy": candidate.get("legacy_alias_rewrite_policy"),
+        "legacy_alias_original_expression": candidate.get("legacy_alias_original_expression"),
+        "legacy_alias_source_expression_hash": candidate.get("legacy_alias_source_expression_hash"),
+        "expression": candidate.get("expression"),
+        "portfolio_mode": portfolio_mode,
+        "short_allowed": bool(portfolio_mode == "long_short_spread"),
+        "train_reward": _round(reward),
+        "optimizer_reward": _round(reward),
+        "optimizer_reward_source": "train_only_phase3cm",
+        "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
+        "optimizer_reward_split": "train",
+        "validation_usage": "report_only",
+        "holdout_usage": "report_only",
+        "train_day_sortino": train_all.get("day_sortino"),
+        "train_minute_sortino": train_all.get("minute_sortino"),
+        "train_worst_horizon_day_sortino": _round(train_worst),
+        "train_median_horizon_day_sortino": _round(train_median),
+        "train_horizon_sortino_stdev": _round(instability),
+        "train_day_mcmc_p25": train_all.get("day_mcmc_sortino_p25"),
+        "train_day_mcmc_prob_gt_0": train_all.get("day_mcmc_prob_sortino_gt_0"),
+        "train_mean_one_way_turnover": train_all.get("mean_one_way_turnover"),
+        "train_rank_ic_mean": train_all.get("rank_ic_mean"),
+        "train_rank_ic_hit_rate": train_all.get("rank_ic_hit_rate"),
+        "train_rank_ic_loss": train_all.get("rank_ic_loss"),
+        "train_rank_ic_reward_component": _round(rank_ic_reward_component),
+        "train_rank_ic_obs": train_all.get("rank_ic_obs"),
+        "train_regime_stability_score": train_regime.get("train_regime_stability_score"),
+        "train_regime_reward_component": _round(regime_reward_component),
+        "train_regime_worst_day_sortino": train_regime.get("train_regime_worst_day_sortino"),
+        "train_regime_median_day_sortino": train_regime.get("train_regime_median_day_sortino"),
+        "train_regime_positive_share": train_regime.get("train_regime_positive_share"),
+        "train_regime_count": train_regime.get("train_regime_count"),
+        "train_regime_method": train_regime.get("train_regime_method"),
+        "train_regime_rows": train_regime.get("train_regime_rows"),
+        "validation_day_sortino": validation_all.get("day_sortino"),
+        "validation_day_mcmc_prob_gt_0": validation_all.get("day_mcmc_prob_sortino_gt_0"),
+        "validation_rank_ic_mean": validation_all.get("rank_ic_mean"),
+        "validation_rank_ic_loss": validation_all.get("rank_ic_loss"),
+        "holdout_day_sortino": holdout_all.get("day_sortino"),
+        "holdout_day_mcmc_prob_gt_0": holdout_all.get("day_mcmc_prob_sortino_gt_0"),
+        "holdout_rank_ic_mean": holdout_all.get("rank_ic_mean"),
+        "holdout_rank_ic_loss": holdout_all.get("rank_ic_loss"),
+        "inherited_blockers": candidate.get("phase3bp_blocker_flags") or candidate.get("blocker_flags"),
+        "train_reward_blockers": "|".join(blockers),
+        "train_reward_decision": decision,
+        "reward_atom_mode": "daily_aggregate",
+    }
+    reward_row.update(normalize_candidate_schema(reward_row))
+    return split_rows, reward_row
+
+
 def _candidate_summary(
     candidate: dict[str, Any],
     rows: list[dict[str, Any]],
@@ -1384,8 +1855,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
     parser.add_argument("--candidate-limit", type=int, default=64)
     parser.add_argument("--max-shards", type=int, default=8)
+    parser.add_argument("--shard-indices", default="")
     parser.add_argument("--sample-trade-times-per-shard", type=int, default=240)
     parser.add_argument("--sample-block-count", type=int, default=1)
+    parser.add_argument("--event-aware-sample-times", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--event-sample-trade-times-per-shard", type=int, default=0)
     parser.add_argument("--horizons", default="1,5,15,30")
     parser.add_argument("--train-fraction", type=float, default=0.60)
     parser.add_argument("--validation-fraction", type=float, default=0.20)
@@ -1402,6 +1876,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     parser.add_argument("--write-pnl-rows", action="store_true")
+    parser.add_argument("--write-reward-atoms", action="store_true")
     parser.add_argument("--fast-mode", action="store_true")
     parser.add_argument("--numexpr-threads", type=int, default=4)
     parser.add_argument("--checkpoint-every-candidates", type=int, default=8)
@@ -1444,7 +1919,13 @@ def main(argv: list[str] | None = None) -> int:
         enable_legacy_alias_rewrite=not bool(args.disable_legacy_alias_rewrite),
         m1_first_ret_replacement=str(args.m1_first_ret_replacement),
     )
-    panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
+    all_panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
+    selected_shard_indices = _parse_shard_indices(args.shard_indices, len(all_panels))
+    panel_items = list(enumerate(all_panels))
+    if selected_shard_indices is not None:
+        selected = set(selected_shard_indices)
+        panel_items = [(idx, panel) for idx, panel in panel_items if idx in selected]
+    panels = [panel for _, panel in panel_items]
     input_candidate_count = len(candidates)
     schema_held_candidates: list[dict[str, Any]] = []
     schema_field_count: int | None = None
@@ -1460,7 +1941,7 @@ def main(argv: list[str] | None = None) -> int:
     pnl_rows: list[dict[str, Any]] = []
     shard_meta: list[dict[str, Any]] = []
     global_cache_stats: dict[str, int] = {}
-    for shard_index, panel in enumerate(panels):
+    for shard_index, panel in panel_items:
         if not candidates:
             break
         for sample_block_index in range(int(args.sample_block_count)):
@@ -1480,6 +1961,12 @@ def main(argv: list[str] | None = None) -> int:
                 sample_trade_times=args.sample_trade_times_per_shard,
                 sample_block_count=args.sample_block_count,
                 sample_block_index=sample_block_index,
+                event_aware_sample_times=bool(args.event_aware_sample_times),
+                event_sample_trade_times=(
+                    int(args.event_sample_trade_times_per_shard)
+                    if int(args.event_sample_trade_times_per_shard or 0) > 0
+                    else args.sample_trade_times_per_shard
+                ),
             )
             meta["shard_index"] = shard_index
             split_by_time = _split_map(full_signal_times, args.train_fraction, args.validation_fraction)
@@ -1590,6 +2077,7 @@ def main(argv: list[str] | None = None) -> int:
             del frame, eval_mask, eval_frame, labels, eval_time_index, expression_cache, feature_matrix_cache, operator_cache_by_window
 
     split_horizon_rows: list[dict[str, Any]] = []
+    reward_atom_rows: list[dict[str, Any]] = []
     reward_rows: list[dict[str, Any]] = [
         _schema_hold_reward_row(candidate, portfolio_mode=args.portfolio_mode)
         for candidate in schema_held_candidates
@@ -1617,6 +2105,8 @@ def main(argv: list[str] | None = None) -> int:
                     **row,
                 }
             )
+        if args.write_reward_atoms:
+            reward_atom_rows.extend(_reward_atoms_for_candidate(candidate, rows, horizons))
         reward_rows.append(reward_row)
 
     reward_rows.sort(key=lambda row: _f(row.get("train_reward"), -999.0), reverse=True)
@@ -1634,7 +2124,11 @@ def main(argv: list[str] | None = None) -> int:
         "input_candidate_audit": str(_resolve(args.candidate_audit)),
         "shard_root": str(_resolve(args.shard_root)),
         "max_shards": args.max_shards,
+        "selected_shard_indices": [int(idx) for idx, _ in panel_items],
+        "selected_shard_count": len(panel_items),
         "sample_trade_times_per_shard": args.sample_trade_times_per_shard,
+        "event_aware_sample_times": bool(args.event_aware_sample_times),
+        "event_sample_trade_times_per_shard": int(args.event_sample_trade_times_per_shard or 0),
         "sample_block_count": int(args.sample_block_count),
         "horizons": list(horizons),
         "train_fraction": args.train_fraction,
@@ -1650,6 +2144,7 @@ def main(argv: list[str] | None = None) -> int:
         "regime_component_cap": args.regime_component_cap,
         "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
         "portfolio_pnl_rows_written": len(pnl_rows) if args.write_pnl_rows else 0,
+        "reward_atom_rows_written": len(reward_atom_rows) if args.write_reward_atoms else 0,
         "metric_boundary": "train portfolio Sortino + rankIC loss reward audit; not production proof; validation/holdout must not feed search; long_short_spread is not CN tradable",
         "fast_mode": bool(args.fast_mode),
         "numexpr_threads": int(args.numexpr_threads),
@@ -1687,10 +2182,15 @@ def main(argv: list[str] | None = None) -> int:
             "numexpr_max_threads": os.environ.get("NUMEXPR_MAX_THREADS"),
             "parallel_workers": 1,
             "global_worker_limit": 1,
+            "parallel_axis": "none_serial",
+            "event_aware_sample_times": bool(args.event_aware_sample_times),
+            "event_sample_trade_times_per_shard": int(args.event_sample_trade_times_per_shard or 0),
         },
     }
     if args.write_pnl_rows:
         _write_csv(output_root / "phase3cm_portfolio_pnl_rows.csv", pnl_rows)
+    if args.write_reward_atoms:
+        _write_csv(output_root / "phase3cm_reward_atoms.csv", reward_atom_rows)
     if not args.disable_incremental_checkpoints:
         _write_incremental_checkpoint(
             output_root=output_root,
@@ -1712,6 +2212,8 @@ def main(argv: list[str] | None = None) -> int:
     _write_csv(report_root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
     _write_csv(report_root / "phase3cm_train_reward.csv", reward_rows)
     _write_csv(report_root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
+    if args.write_reward_atoms:
+        _write_csv(report_root / "phase3cm_reward_atoms.csv", reward_atom_rows)
     _write_json(report_root / "phase3cm_train_reward_audit_summary.json", summary)
     markdown_path = report_root / "PHASE3CM_TRAIN_PORTFOLIO_SORTINO_REWARD_AUDIT_20260623.md"
     try:

@@ -38,10 +38,20 @@ ACTIVITY_CONTEXT_FIELDS = [
     "ctx_billboard_billboard_net_amt",
 ]
 CONTEXT_OPS = ["MaskedZScore", "ValidRatioGate"]
-EVENT_OPS = ["EventAge", "SinceLastEvent"]
+EVENT_OPS = ["EventAge", "SinceLastEvent", "EventCount", "WindowStateCount"]
 WINDOWS_FAST = [5, 10, 15, 20, 30, 40, 60]
 WINDOWS_SLOW = [20, 40, 60, 120]
 VALID_RATIOS = [0.5, 0.6, 0.8]
+EVENT_STATE_WINDOWS = [10, 20, 40]
+
+
+def _valid_ratios_for_context(field: str) -> list[float]:
+    name = str(field or "").lower()
+    if any(token in name for token in ("billboard", "holder", "dividend", "share_change", "shareholder", "zls")):
+        return [0.02, 0.05, 0.10]
+    if "rzrq" in name:
+        return [0.40, 0.60]
+    return VALID_RATIOS
 
 
 def _hash(text: str, length: int = 24) -> str:
@@ -69,6 +79,19 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def _ctx(op: str, field: str, window: int, valid_ratio: float) -> str:
     return f"{op}(${field},{window},{valid_ratio})"
+
+
+def _event_exprs(field: str) -> list[tuple[str, str]]:
+    if field == "evt_uplimit_type_code":
+        return []
+    expressions: list[tuple[str, str]] = []
+    if not field.startswith("evt_") or field == "evt_uplimit_active":
+        for op in ("EventAge", "SinceLastEvent"):
+            expressions.append((op, f"{op}(${field})"))
+    for op in ("EventCount", "WindowStateCount"):
+        for window in EVENT_STATE_WINDOWS:
+            expressions.append((f"{op}_{window}", f"{op}(${field},{window})"))
+    return expressions
 
 
 def _add_row(
@@ -137,14 +160,13 @@ def _build_rows() -> list[dict[str, Any]]:
     # Lane A: strict survivor pocket.  Phase3DS strict survivors were this
     # family, especially fd_max event age with PB at short windows.
     for event_field in ["evt_uplimit_fd_max", "evt_uplimit_fd_close"]:
-        for event_op in EVENT_OPS:
-            event_raw = f"{event_op}(${event_field})"
+        for event_op, event_raw in _event_exprs(event_field):
             event_rank = f"CSRank({event_raw})"
             event_sign = f"Sign({event_rank})"
             for context_field in VALUE_CONTEXT_FIELDS:
                 for context_op in CONTEXT_OPS:
                     for window in WINDOWS_FAST:
-                        for valid_ratio in VALID_RATIOS:
+                        for valid_ratio in _valid_ratios_for_context(context_field):
                             context_rank = f"CSRank({_ctx(context_op, context_field, window, valid_ratio)})"
                             for mutation_type, expression in _rank_forms(event_rank, event_sign, context_rank):
                                 _add_row(
@@ -165,14 +187,13 @@ def _build_rows() -> list[dict[str, Any]]:
     # Lane B: horizon-fragility repair.  These forms had validation/holdout
     # strength in DS but failed worst-horizon train checks.
     for event_field in ["evt_uplimit_up_limit_keep_times", "evt_uplimit_fd_max"]:
-        for event_op in EVENT_OPS:
-            event_raw = f"{event_op}(${event_field})"
+        for event_op, event_raw in _event_exprs(event_field):
             event_rank = f"CSRank({event_raw})"
             event_sign = f"Sign({event_rank})"
             for context_field in ["ctx_hfq_market_cap_yuan", "ctx_hfq_float_market_cap_yuan", "ctx_hfq_pb"]:
                 for context_op in CONTEXT_OPS:
                     for window in WINDOWS_FAST:
-                        for valid_ratio in VALID_RATIOS:
+                        for valid_ratio in _valid_ratios_for_context(context_field):
                             context_rank = f"CSRank({_ctx(context_op, context_field, window, valid_ratio)})"
                             for mutation_type, expression in _rank_forms(event_rank, event_sign, context_rank):
                                 _add_row(
@@ -193,7 +214,8 @@ def _build_rows() -> list[dict[str, Any]]:
     # Lane C: small typed event-state expansion using supported event count and
     # dwell primitives.  This is deliberately bounded and separate from A/B.
     for event_field in ["evt_uplimit_fd_max", "evt_uplimit_up_limit_keep_times"]:
-        for state_op in ["EventCount", "StateDwell", "WindowStateCount"]:
+        state_ops = ["EventCount", "WindowStateCount"] if event_field.startswith("evt_") else ["EventCount", "StateDwell", "WindowStateCount"]
+        for state_op in state_ops:
             for state_window in [10, 20, 40]:
                 event_raw = f"{state_op}(${event_field},{state_window})"
                 event_rank = f"CSRank({event_raw})"

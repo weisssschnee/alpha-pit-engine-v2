@@ -188,6 +188,20 @@ def field_lane(field: str) -> str:
     return "unknown_review"
 
 
+def context_min_ratios_for_field(field: str) -> tuple[float, ...]:
+    name = str(field or "").strip().lower().lstrip("$")
+    if any(token in name for token in ("billboard", "holder", "dividend", "share_change", "shareholder", "zls")):
+        return (0.02, 0.05, 0.10)
+    if "rzrq" in name:
+        return (0.40, 0.60)
+    return (0.60, 0.80)
+
+
+def context_allows_masked_relation(field: str) -> bool:
+    name = str(field or "").strip().lower().lstrip("$")
+    return not any(token in name for token in ("billboard", "holder", "dividend", "share_change", "shareholder", "zls"))
+
+
 def _field_available(field: str, available_fields: set[str] | None) -> bool:
     return available_fields is None or field in available_fields
 
@@ -375,12 +389,20 @@ def build_search_atoms(available_fields: Iterable[str] | None = None) -> list[di
                 available,
             )
 
+    unusable_event_fields = {"evt_uplimit_type_code"}
+    dense_event_age_fields = {"evt_uplimit_active"}
+
+    def allow_event_age_ops(field: str) -> bool:
+        return not str(field).startswith("evt_") or str(field) in dense_event_age_fields
+
     event_candidates = set(EVENT_STATE_FIELDS | AUCTION_EVENT_CONTEXT_FIELDS)
     if available is not None:
         event_candidates |= {field for field in available if field_lane(field) == "event_state"}
     event_windows = (3, 5, 10, 15)
     for field in sorted(event_candidates):
         if not _field_available(field, available):
+            continue
+        if field in unusable_event_fields:
             continue
         if field in {"high_board_rank", "up_limit_keep_times", "lb_2_num", "lb_3_num", "max_lb_num"} or field.endswith("_num"):
             lane = "state_lifecycle"
@@ -390,19 +412,22 @@ def build_search_atoms(available_fields: Iterable[str] | None = None) -> list[di
             lane = "state_lifecycle"
         else:
             lane = "event_payload_state"
-        primitives = [
-            (f"{field}_event_age", f"EventAge(${field})", lane),
-            (f"{field}_since_last_event", f"SinceLastEvent(${field})", lane),
-            (f"{field}_state_age", f"StateAge(${field})", lane),
-        ]
-        for window in event_windows:
+        sparse_event_payload = str(field).startswith("evt_")
+        primitives = []
+        if allow_event_age_ops(field):
             primitives.extend(
                 [
-                    (f"{field}_event_count_{window}", f"EventCount(${field},{window})", lane),
-                    (f"{field}_state_dwell_{window}", f"StateDwell(${field},{window})", lane),
-                    (f"{field}_window_state_count_{window}", f"WindowStateCount(${field},{window})", lane),
+                    (f"{field}_event_age", f"EventAge(${field})", lane),
+                    (f"{field}_since_last_event", f"SinceLastEvent(${field})", lane),
                 ]
             )
+        if not sparse_event_payload:
+            primitives.append((f"{field}_state_age", f"StateAge(${field})", lane))
+        for window in event_windows:
+            primitives.append((f"{field}_event_count_{window}", f"EventCount(${field},{window})", lane))
+            if not sparse_event_payload:
+                primitives.append((f"{field}_state_dwell_{window}", f"StateDwell(${field},{window})", lane))
+            primitives.append((f"{field}_window_state_count_{window}", f"WindowStateCount(${field},{window})", lane))
         for name, expr, lane in primitives:
             _add(
                 rows,
@@ -442,12 +467,11 @@ def build_search_atoms(available_fields: Iterable[str] | None = None) -> list[di
     if available is not None:
         context_candidates |= {field for field in available if field_lane(field) == "lagged_context"}
     context_windows = (20, 40, 60, 120)
-    context_min_ratios = (0.6, 0.8)
     for field in sorted(context_candidates):
         if not _field_available(field, available):
             continue
         for window in context_windows:
-            for min_ratio in context_min_ratios:
+            for min_ratio in context_min_ratios_for_field(field):
                 suffix = f"{window}_{str(min_ratio).replace('.', 'p')}"
                 _add(
                     rows,
@@ -480,7 +504,7 @@ def build_search_atoms(available_fields: Iterable[str] | None = None) -> list[di
                     available,
                 )
                 for control in ("amount", "volume", "vwap"):
-                    if _field_available(control, available):
+                    if context_allows_masked_relation(field) and _field_available(control, available):
                         _add(
                             rows,
                             AtomSpec(

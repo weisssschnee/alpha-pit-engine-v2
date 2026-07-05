@@ -35,7 +35,10 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
     _write_json,
 )
 from our_system_phase2.runtime.phase3ca_build_bz_candidate_audit import build_candidate_table
-from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import main as phase3cm_main
+from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
+    _candidate_summary_from_reward_atoms,
+    main as phase3cm_main,
+)
 from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import build_feedback_memory
 from our_system_phase2.runtime.phase3cp_reward_gated_medium_search_smoke import (
     _copy_report_files,
@@ -590,7 +593,7 @@ def _write_minimal_parallel_cm_md(summary: dict[str, Any], reward_rows: list[dic
             "",
             "## Boundary",
             "",
-            "- This is the same Phase3CM train composite reward audit executed by candidate chunks.",
+            f"- This is the same Phase3CM train composite reward audit executed by `{summary.get('parallel_axis', 'candidate')}` chunks.",
             "- `rank_ic_loss` is included only through the bounded train-side reward component.",
             "- Holdout remains report-only and must not feed search.",
             "- X0/R3 remain read-only.",
@@ -628,6 +631,9 @@ def _run_real_cm_chunk_subprocess(
         str(args.cm_max_shards),
         "--sample-trade-times-per-shard",
         str(args.cm_sample_trade_times_per_shard),
+        "--event-aware-sample-times" if bool(args.cm_event_aware_sample_times) else "--no-event-aware-sample-times",
+        "--event-sample-trade-times-per-shard",
+        str(args.cm_event_sample_trade_times_per_shard),
         "--horizons",
         str(args.cm_horizons),
         "--train-fraction",
@@ -693,6 +699,88 @@ def _run_real_cm_chunk_subprocess(
     return json.loads(summary_path.read_text(encoding="utf-8"))
 
 
+def _run_real_cm_shard_subprocess(
+    *,
+    args: argparse.Namespace,
+    candidate_table: Path,
+    shard_indices: list[int],
+    shard_output_root: Path,
+    shard_report_root: Path,
+    candidate_limit: int,
+) -> dict[str, Any]:
+    argv = [
+        sys.executable,
+        "-m",
+        "our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit",
+        "--candidate-audit",
+        str(candidate_table),
+        "--shard-root",
+        str(_resolve(args.shard_root)),
+        "--output-root",
+        str(shard_output_root),
+        "--report-root",
+        str(shard_report_root),
+        "--candidate-limit",
+        str(candidate_limit),
+        "--max-shards",
+        str(args.cm_max_shards),
+        "--shard-indices",
+        ",".join(str(item) for item in shard_indices),
+        "--sample-trade-times-per-shard",
+        str(args.cm_sample_trade_times_per_shard),
+        "--event-aware-sample-times" if bool(args.cm_event_aware_sample_times) else "--no-event-aware-sample-times",
+        "--event-sample-trade-times-per-shard",
+        str(args.cm_event_sample_trade_times_per_shard),
+        "--horizons",
+        str(args.cm_horizons),
+        "--train-fraction",
+        str(args.cm_train_fraction),
+        "--validation-fraction",
+        str(args.cm_validation_fraction),
+        "--min-obs-per-time",
+        str(args.cm_min_obs_per_time),
+        "--cost-bps",
+        str(args.cm_cost_bps),
+        "--top-quantile",
+        str(args.cm_top_quantile),
+        "--rank-ic-loss-weight",
+        str(args.cm_rank_ic_loss_weight),
+        "--rank-ic-component-cap",
+        str(args.cm_rank_ic_component_cap),
+        "--regime-stability-weight",
+        str(args.cm_regime_stability_weight),
+        "--regime-component-cap",
+        str(args.cm_regime_component_cap),
+        "--operator-cache-max-entries",
+        str(args.cm_operator_cache_max_entries),
+        "--feature-matrix-cache-max-windows",
+        str(args.cm_feature_matrix_cache_max_windows),
+        "--numexpr-threads",
+        str(args.numexpr_threads),
+        "--fast-mode",
+        "--write-reward-atoms",
+        "--disable-schema-gate",
+    ]
+    env = os.environ.copy()
+    env.setdefault("PYTHONPATH", "src")
+    proc = subprocess.run(
+        argv,
+        cwd=str(REPO),
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    (shard_output_root / "phase3cm_subprocess_stdout.log").write_text(proc.stdout or "", encoding="utf-8")
+    (shard_output_root / "phase3cm_subprocess_stderr.log").write_text(proc.stderr or "", encoding="utf-8")
+    if proc.returncode != 0:
+        raise RuntimeError(f"Phase3CM shard chunk failed rc={proc.returncode}: shard_indices={shard_indices}")
+    summary_path = shard_output_root / "phase3cm_train_reward_audit_summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["parallel_shard_indices"] = ",".join(str(item) for item in shard_indices)
+    return summary
+
+
 def _run_real_cm_retry_table(
     *,
     args: argparse.Namespace,
@@ -718,6 +806,9 @@ def _run_real_cm_retry_table(
         str(args.cm_max_shards),
         "--sample-trade-times-per-shard",
         str(args.cm_sample_trade_times_per_shard),
+        "--event-aware-sample-times" if bool(args.cm_event_aware_sample_times) else "--no-event-aware-sample-times",
+        "--event-sample-trade-times-per-shard",
+        str(args.cm_event_sample_trade_times_per_shard),
         "--horizons",
         str(args.cm_horizons),
         "--train-fraction",
@@ -956,6 +1047,205 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
     return summary
 
 
+def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
+    cm_output_root = output_root / "phase3cm_train_reward"
+    cm_report_root = report_root / "phase3cm_train_reward"
+    cm_output_root.mkdir(parents=True, exist_ok=True)
+    cm_report_root.mkdir(parents=True, exist_ok=True)
+
+    candidates = _read_csv(candidate_table)
+    if int(args.cm_candidate_limit) > 0:
+        candidates = candidates[: int(args.cm_candidate_limit)]
+    panels = _discover_panels(_resolve(args.shard_root), args.cm_max_shards)
+    shard_indices = list(range(len(panels)))
+    workers = max(1, min(int(args.cm_workers), len(shard_indices)))
+    if workers <= 1:
+        return _run_real_cm_serial(args, candidate_table, output_root, report_root)
+
+    chunk_root = output_root / "phase3cm_train_reward_shard_chunks"
+    chunk_report_root = report_root / "phase3cm_train_reward_shard_chunks"
+    chunk_root.mkdir(parents=True, exist_ok=True)
+    chunk_report_root.mkdir(parents=True, exist_ok=True)
+
+    chunks: list[tuple[int, list[int], Path, Path]] = []
+    for worker_idx in range(workers):
+        indices = shard_indices[worker_idx::workers]
+        if not indices:
+            continue
+        chunk_out = chunk_root / f"shard_chunk_{worker_idx + 1:02d}"
+        chunk_rep = chunk_report_root / f"shard_chunk_{worker_idx + 1:02d}"
+        chunk_out.mkdir(parents=True, exist_ok=True)
+        chunk_rep.mkdir(parents=True, exist_ok=True)
+        chunks.append((worker_idx + 1, indices, chunk_out, chunk_rep))
+
+    chunk_summaries: list[dict[str, Any]] = []
+    with ThreadPoolExecutor(max_workers=len(chunks)) as executor:
+        futures = {
+            executor.submit(
+                _run_real_cm_shard_subprocess,
+                args=args,
+                candidate_table=candidate_table,
+                shard_indices=indices,
+                shard_output_root=chunk_out,
+                shard_report_root=chunk_rep,
+                candidate_limit=len(candidates),
+            ): (chunk_id, indices, chunk_out)
+            for chunk_id, indices, chunk_out, chunk_rep in chunks
+        }
+        for future in as_completed(futures):
+            chunk_id, indices, chunk_out = futures[future]
+            summary = future.result()
+            summary["parallel_chunk_id"] = chunk_id
+            summary["parallel_shard_indices"] = ",".join(str(item) for item in indices)
+            summary["parallel_chunk_output_root"] = str(chunk_out)
+            chunk_summaries.append(summary)
+
+    atom_rows: list[dict[str, Any]] = []
+    shard_meta_rows: list[dict[str, Any]] = []
+    progress_rows: list[dict[str, Any]] = []
+    for chunk_id, indices, chunk_out, _ in chunks:
+        for row in _read_csv(chunk_out / "phase3cm_reward_atoms.csv"):
+            row["parallel_chunk_id"] = chunk_id
+            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
+            atom_rows.append(row)
+        for row in _read_csv(chunk_out / "phase3cm_shard_meta.csv"):
+            row["parallel_chunk_id"] = chunk_id
+            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
+            shard_meta_rows.append(row)
+        for row in _read_csv(chunk_out / "phase3cm_candidate_progress.csv"):
+            row["parallel_chunk_id"] = chunk_id
+            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
+            progress_rows.append(row)
+
+    atom_rows_by_hash: dict[str, list[dict[str, Any]]] = {}
+    for row in atom_rows:
+        digest = str(row.get("expression_hash") or "")
+        if digest:
+            atom_rows_by_hash.setdefault(digest, []).append(row)
+
+    horizons = tuple(int(item.strip()) for item in str(args.cm_horizons).split(",") if item.strip())
+    reward_rows: list[dict[str, Any]] = []
+    split_horizon_rows: list[dict[str, Any]] = []
+    for idx, candidate in enumerate(candidates, 1):
+        digest = str(candidate.get("expression_hash") or "")
+        per_split, reward_row = _candidate_summary_from_reward_atoms(
+            candidate,
+            atom_rows_by_hash.get(digest, []),
+            horizons,
+            seed=20260623 + idx,
+            rank_ic_loss_weight=args.cm_rank_ic_loss_weight,
+            rank_ic_component_cap=args.cm_rank_ic_component_cap,
+            regime_stability_weight=args.cm_regime_stability_weight,
+            regime_component_cap=args.cm_regime_component_cap,
+        )
+        for row in per_split:
+            split_horizon_rows.append(
+                {
+                    "candidate_id": candidate.get("candidate_id"),
+                    "expression_hash": candidate.get("expression_hash"),
+                    "generator_arm": candidate.get("generator_arm"),
+                    "factor_lane": candidate.get("factor_lane"),
+                    "expression": candidate.get("expression"),
+                    **row,
+                }
+            )
+        reward_rows.append(reward_row)
+
+    reward_rows.sort(key=lambda row: safe_float(row.get("train_reward"), -999.0), reverse=True)
+    followup_count = sum(1 for row in reward_rows if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY")
+    summary = {
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "experiment_id": "20260623_phase3cm_train_portfolio_sortino_reward_audit",
+        "decision": "PHASE3CM_TRAIN_REWARD_AUDIT_READY_DIAGNOSTIC_ONLY",
+        "candidate_count": len(reward_rows),
+        "followup_count": followup_count,
+        "input_candidate_audit": str(candidate_table),
+        "shard_root": str(_resolve(args.shard_root)),
+        "max_shards": args.cm_max_shards,
+        "selected_shard_count": len(shard_indices),
+        "sample_trade_times_per_shard": args.cm_sample_trade_times_per_shard,
+        "horizons": [int(item) for item in horizons],
+        "train_fraction": args.cm_train_fraction,
+        "validation_fraction": args.cm_validation_fraction,
+        "holdout_fraction": round(1.0 - args.cm_train_fraction - args.cm_validation_fraction, 8),
+        "cost_bps": args.cm_cost_bps,
+        "top_quantile": args.cm_top_quantile,
+        "rank_ic_loss_weight": args.cm_rank_ic_loss_weight,
+        "rank_ic_component_cap": args.cm_rank_ic_component_cap,
+        "regime_stability_weight": args.cm_regime_stability_weight,
+        "regime_component_cap": args.cm_regime_component_cap,
+        "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
+        "portfolio_pnl_rows_written": 0,
+        "reward_atom_rows_merged": len(atom_rows),
+        "metric_boundary": "parallel shard-axis train portfolio Sortino + rankIC loss reward audit; not production proof; validation/holdout must not feed search",
+        "fast_mode": True,
+        "numexpr_threads": int(args.numexpr_threads),
+        "incremental_checkpoints_enabled": True,
+        "checkpoint_every_candidates": 8,
+        "drop_hard_blocked_input": False,
+        "python_executable": sys.executable,
+        "package_versions": chunk_summaries[0].get("package_versions", {}) if chunk_summaries else {},
+        "parallel_axis": "shard",
+        "parallel_chunk_count": len(chunks),
+        "partial_chunk_count": 0,
+        "parallel_chunk_summaries": sorted(chunk_summaries, key=lambda row: int(row.get("parallel_chunk_id") or 0)),
+        "missing_retry_summary": {
+            "missing_candidate_count_before_retry": 0,
+            "retry_candidate_count": 0,
+            "retry_success_count": 0,
+            "missing_candidate_count_after_retry": 0,
+        },
+        "acceleration_contract": {
+            "batched_shard_read": True,
+            "column_pruned_pyarrow_read": True,
+            "expression_cache_scope": "per_worker_distinct_shards",
+            "factor_expression_cache": True,
+            "feature_matrix_cache": True,
+            "operator_subtree_cache": True,
+            "operator_cache_max_entries": int(args.cm_operator_cache_max_entries),
+            "feature_matrix_cache_max_windows": int(args.cm_feature_matrix_cache_max_windows),
+            "fast_group_rank": True,
+            "omp_threads": os.environ.get("OMP_NUM_THREADS"),
+            "mkl_threads": os.environ.get("MKL_NUM_THREADS"),
+            "numexpr_max_threads": os.environ.get("NUMEXPR_MAX_THREADS"),
+            "parallel_workers": len(chunks),
+            "global_worker_limit": len(chunks),
+            "parallel_axis": "shard",
+            "duplicate_shard_reads_per_full_pass": 1,
+            "event_aware_sample_times": bool(args.cm_event_aware_sample_times),
+            "event_sample_trade_times_per_shard": int(args.cm_event_sample_trade_times_per_shard),
+        },
+    }
+    for root in (cm_output_root, cm_report_root):
+        _write_csv(root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
+        _write_csv(root / "phase3cm_train_reward.csv", reward_rows)
+        _write_csv(root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
+        _write_csv(root / "phase3cm_shard_meta.csv", shard_meta_rows)
+        _write_csv(root / "phase3cm_candidate_progress.csv", progress_rows)
+        _write_csv(root / "phase3cm_reward_atoms.csv", atom_rows)
+        _write_csv(root / "phase3cm_train_reward_partial.csv", reward_rows)
+        _write_json(root / "phase3cm_train_reward_audit_summary.json", summary)
+        _write_json(
+            root / "phase3cm_incremental_checkpoint_summary.json",
+            {
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "experiment_id": "20260623_phase3cm_incremental_checkpoint",
+                "partial": False,
+                "final": True,
+                "candidate_count": len(reward_rows),
+                "shard_count": len(shard_indices),
+                "processed_candidate_shards": len(progress_rows),
+                "partial_reward_count": len(reward_rows),
+                "progress_row_count": len(progress_rows),
+                "completed_shards": len(shard_indices),
+                "parallel_workers": len(chunks),
+                "parallel_axis": "shard",
+            },
+        )
+    _write_minimal_parallel_cm_md(summary, reward_rows, cm_report_root)
+    return summary
+
+
 def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
     cm_output_root = output_root / "phase3cm_train_reward"
     cm_report_root = report_root / "phase3cm_train_reward"
@@ -974,6 +1264,9 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
         str(args.cm_max_shards),
         "--sample-trade-times-per-shard",
         str(args.cm_sample_trade_times_per_shard),
+        "--event-aware-sample-times" if bool(args.cm_event_aware_sample_times) else "--no-event-aware-sample-times",
+        "--event-sample-trade-times-per-shard",
+        str(args.cm_event_sample_trade_times_per_shard),
         "--horizons",
         str(args.cm_horizons),
         "--train-fraction",
@@ -1010,6 +1303,8 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
 
 def _run_real_cm(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
     if int(getattr(args, "cm_workers", 1) or 1) > 1:
+        if str(getattr(args, "cm_parallel_axis", "candidate")) == "shard":
+            return _run_real_cm_parallel_by_shard(args, candidate_table, output_root, report_root)
         return _run_real_cm_parallel(args, candidate_table, output_root, report_root)
     return _run_real_cm_serial(args, candidate_table, output_root, report_root)
 
@@ -1079,6 +1374,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-selection-mode", choices=["ca_ranked", "arm_balanced"], default="ca_ranked")
     parser.add_argument("--cm-max-shards", type=int, default=1)
     parser.add_argument("--cm-sample-trade-times-per-shard", type=int, default=32)
+    parser.add_argument("--cm-event-aware-sample-times", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--cm-event-sample-trade-times-per-shard", type=int, default=0)
     parser.add_argument("--cm-horizons", default="1,5,15")
     parser.add_argument("--cm-train-fraction", type=float, default=0.60)
     parser.add_argument("--cm-validation-fraction", type=float, default=0.20)
@@ -1093,6 +1390,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-feature-matrix-cache-max-windows", type=int, default=6)
     parser.add_argument("--pre-cm-turnover-proxy-max", type=float, default=float("nan"))
     parser.add_argument("--cm-workers", type=int, default=1)
+    parser.add_argument("--cm-parallel-axis", choices=("candidate", "shard"), default="candidate")
     parser.add_argument("--numexpr-threads", type=int, default=4)
     parser.add_argument("--min-clean-feedback", type=int, default=2)
     parser.add_argument("--reschedule-total-budget", type=int, default=512)
@@ -1230,6 +1528,9 @@ def main(argv: list[str] | None = None) -> int:
         "search_generation": True,
         "true1min_portfolio_eval": True,
         "cm_reward_source": "phase3cm_train_portfolio_sortino_reward_audit",
+        "cm_parallel_axis": str(args.cm_parallel_axis),
+        "cm_event_aware_sample_times": bool(args.cm_event_aware_sample_times),
+        "cm_event_sample_trade_times_per_shard": int(args.cm_event_sample_trade_times_per_shard),
         "checks": checks,
         "initial_arm_plan": scaled_plan,
         "ca_summary": ca_summary,

@@ -41,10 +41,20 @@ CONTEXT_FIELDS = [
     "ctx_billboard_deal_amount_ratio",
 ]
 
-EVENT_OPS = ["EventAge", "SinceLastEvent"]
+EVENT_OPS = ["EventAge", "SinceLastEvent", "EventCount", "WindowStateCount"]
 CONTEXT_OPS = ["MaskedZScore", "ValidRatioGate"]
 WINDOWS = [20, 40, 60, 120]
 VALID_RATIOS = [0.6, 0.8]
+EVENT_STATE_WINDOWS = [10, 20, 40]
+
+
+def _valid_ratios_for_context(field: str) -> list[float]:
+    name = str(field or "").lower()
+    if any(token in name for token in ("billboard", "holder", "dividend", "share_change", "shareholder", "zls")):
+        return [0.02, 0.05, 0.10]
+    if "rzrq" in name:
+        return [0.40, 0.60]
+    return VALID_RATIOS
 
 
 def _hash(text: str, length: int = 24) -> str:
@@ -77,19 +87,31 @@ def _context_expr(op: str, field: str, window: int, valid_ratio: float) -> str:
     return f"{op}(${field},{window},{valid_ratio})"
 
 
+def _event_exprs(field: str) -> list[tuple[str, str]]:
+    if field == "evt_uplimit_type_code":
+        return []
+    expressions: list[tuple[str, str]] = []
+    if not field.startswith("evt_") or field == "evt_uplimit_active":
+        for op in ("EventAge", "SinceLastEvent"):
+            expressions.append((op, f"{op}(${field})"))
+    for op in ("EventCount", "WindowStateCount"):
+        for window in EVENT_STATE_WINDOWS:
+            expressions.append((f"{op}_{window}", f"{op}(${field},{window})"))
+    return expressions
+
+
 def _variant_expressions() -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
     idx = 0
     for event_field in EVENT_FIELDS:
-        for event_op in EVENT_OPS:
-            event_raw = f"{event_op}(${event_field})"
+        for event_op, event_raw in _event_exprs(event_field):
             event_rank = f"CSRank({event_raw})"
             event_sign = f"Sign({event_rank})"
             for context_field in CONTEXT_FIELDS:
                 for context_op in CONTEXT_OPS:
                     for window in WINDOWS:
-                        for valid_ratio in VALID_RATIOS:
+                        for valid_ratio in _valid_ratios_for_context(context_field):
                             context_raw = _context_expr(context_op, context_field, window, valid_ratio)
                             context_rank = f"CSRank({context_raw})"
                             forms = [
