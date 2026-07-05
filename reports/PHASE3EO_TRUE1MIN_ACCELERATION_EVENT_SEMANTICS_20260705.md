@@ -173,10 +173,10 @@ phase3cp_00242:
 
 ## Remaining Issues
 
-1. `random_orthogonal` still has 2/4 zero-row candidates in the small smoke.
-   This is no longer caused by unsafe event primitives. It is caused by weak event/context combinations that pass schema availability but fail practical cross-sectional sample requirements.
+1. The first postfix smoke still had `random_orthogonal` zero-row candidates.
+   This was not caused by unsafe event primitives. It was caused by weak event/context combinations that pass schema availability but fail practical cross-sectional sample requirements.
 
-2. The next improvement should be a cheap pre-CM semantic viability gate:
+2. Phase3EO added a cheap pre-CM semantic viability gate after this finding:
 
 ```text
 evaluate candidate on 1 shard / small event-aware sample
@@ -186,6 +186,66 @@ feed zero-row family back into memory as blocked_weak_semantic_viability
 ```
 
 3. Followups are train-reward followups only. Validation and holdout remain report-only and must not feed optimizer feedback.
+
+## Pre-CM Semantic Gate Follow-up
+
+The pre-CM semantic gate was integrated into `phase3cp_real_cm_small_loop.py`.
+
+Placement:
+
+```text
+CA bridge
+  -> field availability gate
+  -> pre-CM semantic viability gate
+  -> formal CM train reward audit
+```
+
+The gate uses the real Phase3CM evaluator, not a separate proxy evaluator:
+
+```text
+max_shards: 1
+sample_trade_times_per_shard: 32
+event_sample_trade_times_per_shard: 96
+horizons: 1,5
+decision input: rows_added only
+reward usage: forbidden for this gate
+```
+
+77O validation after adding the gate:
+
+```text
+field_gate_input: 48
+semantic_passed: 46
+semantic_rejected: 2
+final_cm_kept: 24
+formal_cm_zero_candidates: 0
+formal_cm_followup_count: 3
+formal_cm_reward_atoms: 20,276
+```
+
+Rejected examples:
+
+```text
+phase3cp_00236:
+  arm: random_orthogonal
+  reason: semantic_total_rows_below_min|semantic_nonzero_shards_below_min
+  expression: CSRank(Mul(Sign(CSRank(EventCount($evt_uplimit_fd_close,5))),Sign(CSRank(ValidRatioGate($ctx_rzrq_rzye,60,0.6)))))
+
+phase3cp_00248:
+  arm: random_orthogonal
+  reason: semantic_total_rows_below_min|semantic_nonzero_shards_below_min
+  expression: CSRank(Sub(Abs(CSRank(EventCount($evt_uplimit_fd_close,5))),Abs(CSRank(ValidRatioGate($ctx_billboard_deal_amount_ratio,60,0.02)))))
+```
+
+Formal CM after the gate:
+
+```text
+StateDwell($evt_*): 0
+EventAge($evt_uplimit_* payload): 0
+SinceLastEvent($evt_uplimit_* payload): 0
+MaskedCorr($ctx_billboard/holder/dividend/share/zls): 0
+zero-row candidates: 0
+```
 
 ## Next Search Contract
 
@@ -202,7 +262,7 @@ required:
   validation/holdout report-only
 
 recommended:
-  add pre-CM semantic viability gate
-  reduce zero-row random_orthogonal waste
+  keep pre-CM semantic viability gate enabled
+  use semantic-blocked candidate audit as memory input
   scale on 77O first, then local only if user allows
 ```

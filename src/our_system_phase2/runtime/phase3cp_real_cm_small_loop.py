@@ -520,6 +520,201 @@ def _filter_cm_feasible_candidates(
     return table, summary
 
 
+def _run_pre_cm_semantic_viability_gate(
+    *,
+    args: argparse.Namespace,
+    candidate_table: Path,
+    output_root: Path,
+    report_root: Path,
+    final_limit: int,
+) -> tuple[Path, dict[str, Any]]:
+    candidates = _read_csv(candidate_table)
+    gate_output_root = output_root / "phase3cp_pre_cm_semantic_viability_gate"
+    gate_report_root = report_root / "phase3cp_pre_cm_semantic_viability_gate"
+    gate_output_root.mkdir(parents=True, exist_ok=True)
+    gate_report_root.mkdir(parents=True, exist_ok=True)
+
+    if not bool(getattr(args, "pre_cm_semantic_gate", True)):
+        table = output_root / "phase3cp_real_cm_candidate_audit_semantic.csv"
+        _write_csv(table, candidates[:final_limit])
+        _write_csv(report_root / "phase3cp_real_cm_candidate_audit_semantic.csv", candidates[:final_limit])
+        summary = {
+            "enabled": False,
+            "input_candidate_count": len(candidates),
+            "passed_candidate_count": min(len(candidates), final_limit),
+            "rejected_candidate_count": 0,
+            "final_limit": int(final_limit),
+            "decision": "PRE_CM_SEMANTIC_GATE_DISABLED",
+        }
+        _write_json(output_root / "phase3cp_pre_cm_semantic_viability_summary.json", summary)
+        _write_json(report_root / "phase3cp_pre_cm_semantic_viability_summary.json", summary)
+        return table, summary
+
+    if not candidates:
+        raise RuntimeError("pre-CM semantic viability gate received no candidates")
+
+    gate_input = gate_output_root / "phase3cp_pre_cm_semantic_viability_input.csv"
+    _write_csv(gate_input, candidates)
+    max_shards = max(1, min(int(args.cm_max_shards), int(args.pre_cm_semantic_max_shards)))
+    sample_times = max(1, int(args.pre_cm_semantic_sample_trade_times_per_shard))
+    event_sample_times = int(args.pre_cm_semantic_event_sample_trade_times_per_shard)
+    if event_sample_times <= 0:
+        event_sample_times = sample_times
+
+    argv = [
+        "--candidate-audit",
+        str(gate_input),
+        "--shard-root",
+        str(_resolve(args.shard_root)),
+        "--output-root",
+        str(gate_output_root),
+        "--report-root",
+        str(gate_report_root),
+        "--candidate-limit",
+        str(len(candidates)),
+        "--max-shards",
+        str(max_shards),
+        "--sample-trade-times-per-shard",
+        str(sample_times),
+        "--event-aware-sample-times" if bool(args.cm_event_aware_sample_times) else "--no-event-aware-sample-times",
+        "--event-sample-trade-times-per-shard",
+        str(event_sample_times),
+        "--horizons",
+        str(args.pre_cm_semantic_horizons or args.cm_horizons),
+        "--train-fraction",
+        str(args.cm_train_fraction),
+        "--validation-fraction",
+        str(args.cm_validation_fraction),
+        "--min-obs-per-time",
+        str(args.cm_min_obs_per_time),
+        "--cost-bps",
+        str(args.cm_cost_bps),
+        "--top-quantile",
+        str(args.cm_top_quantile),
+        "--rank-ic-loss-weight",
+        str(args.cm_rank_ic_loss_weight),
+        "--rank-ic-component-cap",
+        str(args.cm_rank_ic_component_cap),
+        "--regime-stability-weight",
+        "0.0",
+        "--regime-component-cap",
+        str(args.cm_regime_component_cap),
+        "--operator-cache-max-entries",
+        str(min(int(args.cm_operator_cache_max_entries), int(args.pre_cm_semantic_operator_cache_max_entries))),
+        "--feature-matrix-cache-max-windows",
+        str(min(int(args.cm_feature_matrix_cache_max_windows), int(args.pre_cm_semantic_feature_matrix_cache_max_windows))),
+        "--numexpr-threads",
+        str(args.numexpr_threads),
+        "--fast-mode",
+    ]
+    result = phase3cm_main(argv)
+    if int(result or 0) != 0:
+        raise RuntimeError(f"pre-CM semantic viability gate failed with exit code {result}")
+
+    progress_rows = _read_csv(gate_output_root / "phase3cm_candidate_progress.csv")
+    progress_by_id: dict[str, dict[str, Any]] = {}
+    for row in progress_rows:
+        candidate_id = str(row.get("candidate_id") or "")
+        if not candidate_id:
+            continue
+        item = progress_by_id.setdefault(
+            candidate_id,
+            {
+                "semantic_total_rows": 0,
+                "semantic_nonzero_shards": 0,
+                "semantic_checked_shards": 0,
+            },
+        )
+        rows_added = int(float(row.get("rows_added") or 0))
+        item["semantic_total_rows"] += rows_added
+        item["semantic_checked_shards"] += 1
+        if rows_added > 0:
+            item["semantic_nonzero_shards"] += 1
+
+    min_rows = max(0, int(args.pre_cm_semantic_min_rows_total))
+    min_nonzero_shards = max(0, int(args.pre_cm_semantic_min_nonzero_shards))
+    passed: list[dict[str, Any]] = []
+    rejected: list[dict[str, Any]] = []
+    viability_rows: list[dict[str, Any]] = []
+
+    for row in candidates:
+        candidate_id = str(row.get("candidate_id") or "")
+        stats = progress_by_id.get(
+            candidate_id,
+            {"semantic_total_rows": 0, "semantic_nonzero_shards": 0, "semantic_checked_shards": 0},
+        )
+        item = dict(row)
+        item.update(stats)
+        reasons: list[str] = []
+        if int(stats["semantic_total_rows"]) < min_rows:
+            reasons.append("semantic_total_rows_below_min")
+        if int(stats["semantic_nonzero_shards"]) < min_nonzero_shards:
+            reasons.append("semantic_nonzero_shards_below_min")
+        item["pre_cm_semantic_decision"] = "REJECT_WEAK_SEMANTIC_VIABILITY" if reasons else "PASS"
+        item["pre_cm_semantic_reasons"] = "|".join(reasons)
+        item["pre_cm_semantic_gate"] = "true"
+        viability_rows.append(item)
+        if reasons:
+            item["memory_block_reason"] = "blocked_weak_semantic_viability"
+            rejected.append(item)
+        else:
+            passed.append(item)
+
+    kept = passed[: int(final_limit)]
+    final_table = output_root / "phase3cp_real_cm_candidate_audit_semantic.csv"
+    _write_csv(final_table, kept)
+    _write_csv(output_root / "phase3cp_pre_cm_semantic_viability.csv", viability_rows)
+    _write_csv(output_root / "phase3cp_semantic_blocked_candidate_audit.csv", rejected)
+    _write_csv(report_root / "phase3cp_real_cm_candidate_audit_semantic.csv", kept)
+    _write_csv(report_root / "phase3cp_pre_cm_semantic_viability.csv", viability_rows)
+    _write_csv(report_root / "phase3cp_semantic_blocked_candidate_audit.csv", rejected)
+    _copy_report_files(gate_output_root, gate_report_root)
+
+    by_arm: dict[str, dict[str, int]] = {}
+    for item in viability_rows:
+        arm = str(item.get("generator_arm") or "unknown_arm")
+        arm_row = by_arm.setdefault(arm, {"input": 0, "passed": 0, "rejected": 0})
+        arm_row["input"] += 1
+        if item["pre_cm_semantic_decision"] == "PASS":
+            arm_row["passed"] += 1
+        else:
+            arm_row["rejected"] += 1
+    by_arm_rows = [{"generator_arm": arm, **values} for arm, values in sorted(by_arm.items())]
+    _write_csv(output_root / "phase3cp_pre_cm_semantic_viability_by_arm.csv", by_arm_rows)
+    _write_csv(report_root / "phase3cp_pre_cm_semantic_viability_by_arm.csv", by_arm_rows)
+
+    gate_summary_path = gate_output_root / "phase3cm_train_reward_audit_summary.json"
+    gate_summary = json.loads(gate_summary_path.read_text(encoding="utf-8")) if gate_summary_path.exists() else {}
+    summary = {
+        "enabled": True,
+        "decision": "PRE_CM_SEMANTIC_GATE_READY",
+        "input_candidate_count": len(candidates),
+        "passed_candidate_count": len(passed),
+        "rejected_candidate_count": len(rejected),
+        "kept_candidate_count": len(kept),
+        "final_limit": int(final_limit),
+        "min_rows_total": min_rows,
+        "min_nonzero_shards": min_nonzero_shards,
+        "max_shards": max_shards,
+        "sample_trade_times_per_shard": sample_times,
+        "event_sample_trade_times_per_shard": event_sample_times,
+        "horizons": str(args.pre_cm_semantic_horizons or args.cm_horizons),
+        "by_arm": by_arm_rows,
+        "gate_cm_summary": {
+            "candidate_count": gate_summary.get("candidate_count"),
+            "reward_atom_rows_merged": gate_summary.get("reward_atom_rows_merged"),
+            "parallel_axis": gate_summary.get("parallel_axis"),
+            "fast_mode": gate_summary.get("fast_mode"),
+        },
+        "metric_boundary": "pre-CM semantic viability uses real CM evaluator rows only; it must not use reward to optimize or promote candidates",
+    }
+    _write_json(output_root / "phase3cp_pre_cm_semantic_viability_summary.json", summary)
+    _write_json(report_root / "phase3cp_pre_cm_semantic_viability_summary.json", summary)
+    if not kept:
+        raise RuntimeError("pre-CM semantic viability gate rejected all candidates")
+    return final_table, summary
+
+
 def _audit_cm_lineage_consistency(
     *,
     candidate_table: Path,
@@ -1313,6 +1508,7 @@ def _render_md(summary: dict[str, Any]) -> str:
     checks = summary["checks"]
     cm = summary["cm_summary"]
     cn = summary["cn_summary"]
+    semantic = summary.get("semantic_gate_summary", {})
     lines = [
         "# Phase3CP Real CM Small Loop 2026-06-23",
         "",
@@ -1329,6 +1525,10 @@ def _render_md(summary: dict[str, Any]) -> str:
         f"cm_field_gate_passed_over_limit: {summary['field_gate_summary']['passed_over_limit_count']}",
         f"cm_selection_mode: {summary['field_gate_summary']['selection_mode']}",
         f"pre_cm_turnover_proxy_max: {summary['field_gate_summary'].get('pre_cm_turnover_proxy_max')}",
+        f"pre_cm_semantic_gate_enabled: {semantic.get('enabled')}",
+        f"pre_cm_semantic_passed: {semantic.get('passed_candidate_count')}",
+        f"pre_cm_semantic_rejected: {semantic.get('rejected_candidate_count')}",
+        f"pre_cm_semantic_kept: {semantic.get('kept_candidate_count')}",
         f"cm_lineage_consistent: {summary['lineage_consistency_summary']['lineage_consistent']}",
         f"cm_candidate_count: {cm['candidate_count']}",
         f"cm_followup_count: {cm['followup_count']}",
@@ -1389,6 +1589,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-operator-cache-max-entries", type=int, default=512)
     parser.add_argument("--cm-feature-matrix-cache-max-windows", type=int, default=6)
     parser.add_argument("--pre-cm-turnover-proxy-max", type=float, default=float("nan"))
+    parser.add_argument("--pre-cm-semantic-gate", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--pre-cm-semantic-oversample-multiplier", type=float, default=2.0)
+    parser.add_argument("--pre-cm-semantic-max-shards", type=int, default=1)
+    parser.add_argument("--pre-cm-semantic-sample-trade-times-per-shard", type=int, default=32)
+    parser.add_argument("--pre-cm-semantic-event-sample-trade-times-per-shard", type=int, default=96)
+    parser.add_argument("--pre-cm-semantic-horizons", default="1,5")
+    parser.add_argument("--pre-cm-semantic-min-rows-total", type=int, default=1)
+    parser.add_argument("--pre-cm-semantic-min-nonzero-shards", type=int, default=1)
+    parser.add_argument("--pre-cm-semantic-operator-cache-max-entries", type=int, default=128)
+    parser.add_argument("--pre-cm-semantic-feature-matrix-cache-max-windows", type=int, default=2)
     parser.add_argument("--cm-workers", type=int, default=1)
     parser.add_argument("--cm-parallel-axis", choices=("candidate", "shard"), default="candidate")
     parser.add_argument("--numexpr-threads", type=int, default=4)
@@ -1443,15 +1653,28 @@ def main(argv: list[str] | None = None) -> int:
     )
     _copy_report_files(ca_root, report_ca_root)
     ca_table = ca_root / "phase3ca_bz_candidate_audit.csv"
-    cm_candidate_table, field_gate_summary = _filter_cm_feasible_candidates(
+    field_gate_limit = int(args.cm_candidate_limit)
+    if bool(args.pre_cm_semantic_gate):
+        field_gate_limit = max(
+            int(args.cm_candidate_limit),
+            int(math.ceil(int(args.cm_candidate_limit) * max(1.0, float(args.pre_cm_semantic_oversample_multiplier)))),
+        )
+    cm_candidate_table_raw, field_gate_summary = _filter_cm_feasible_candidates(
         ca_table=ca_table,
         shard_root=shard_root,
         max_shards=args.cm_max_shards,
-        limit=args.cm_candidate_limit,
+        limit=field_gate_limit,
         selection_mode=args.cm_selection_mode,
         pre_cm_turnover_proxy_max=args.pre_cm_turnover_proxy_max,
         output_root=output_root,
         report_root=report_root,
+    )
+    cm_candidate_table, semantic_gate_summary = _run_pre_cm_semantic_viability_gate(
+        args=args,
+        candidate_table=cm_candidate_table_raw,
+        output_root=output_root,
+        report_root=report_root,
+        final_limit=int(args.cm_candidate_limit),
     )
     cm_summary = _run_real_cm(args, cm_candidate_table, output_root, report_root)
 
@@ -1500,11 +1723,15 @@ def main(argv: list[str] | None = None) -> int:
         "generated_budget_ok": len(decisions) == int(args.generation_budget),
         "ca_has_candidates": int(ca_summary["candidate_count"]) > 0,
         "field_gate_has_cm_candidates": int(field_gate_summary["candidate_count"]) > 0,
+        "semantic_gate_has_cm_candidates": int(semantic_gate_summary.get("kept_candidate_count") or semantic_gate_summary.get("passed_candidate_count") or 0) > 0,
         "real_cm_eval_used": str(cm_summary.get("experiment_id")) == "20260623_phase3cm_train_portfolio_sortino_reward_audit",
         "true1min_shard_root_exists": shard_root.exists(),
         "suspicious_1d_path_blocked": "tdxofficial" not in shard_root_text and "\\1d" not in shard_root_text and "/1d" not in shard_root_text,
         "cm_fast_mode": bool(cm_summary.get("fast_mode")),
-        "cm_candidate_count_ok": int(cm_summary["candidate_count"]) == min(int(args.cm_candidate_limit), int(field_gate_summary["candidate_count"])),
+        "cm_candidate_count_ok": int(cm_summary["candidate_count"]) == min(
+            int(args.cm_candidate_limit),
+            int(semantic_gate_summary.get("kept_candidate_count") or semantic_gate_summary.get("passed_candidate_count") or 0),
+        ),
         "cm_lineage_consistent": bool(lineage_consistency_summary["lineage_consistent"]),
         "cn_memory_matches_cm": int(cn_summary["candidate_count"]) == int(cm_summary["candidate_count"]),
         "reschedule_total_ok": int(reschedule_summary["allocated_budget"]) == int(args.reschedule_total_budget),
@@ -1531,10 +1758,12 @@ def main(argv: list[str] | None = None) -> int:
         "cm_parallel_axis": str(args.cm_parallel_axis),
         "cm_event_aware_sample_times": bool(args.cm_event_aware_sample_times),
         "cm_event_sample_trade_times_per_shard": int(args.cm_event_sample_trade_times_per_shard),
+        "pre_cm_semantic_gate": bool(args.pre_cm_semantic_gate),
         "checks": checks,
         "initial_arm_plan": scaled_plan,
         "ca_summary": ca_summary,
         "field_gate_summary": field_gate_summary,
+        "semantic_gate_summary": semantic_gate_summary,
         "cm_summary": cm_summary,
         "lineage_consistency_summary": lineage_consistency_summary,
         "cn_summary": cn_summary,
