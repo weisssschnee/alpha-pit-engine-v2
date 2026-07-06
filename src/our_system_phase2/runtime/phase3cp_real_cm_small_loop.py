@@ -853,6 +853,26 @@ def _write_minimal_parallel_cm_md(summary: dict[str, Any], reward_rows: list[dic
     )
 
 
+def _append_cm_persistent_cache_args(argv: list[str], args: argparse.Namespace) -> None:
+    root = getattr(args, "cm_persistent_cache_root", None)
+    if root is None:
+        return
+    argv.extend(
+        [
+            "--persistent-cache-root",
+            str(root),
+            "--persistent-cache-mode",
+            str(getattr(args, "cm_persistent_cache_mode", "readwrite")),
+        ]
+    )
+    if bool(getattr(args, "cm_disable_persistent_expression_cache", False)):
+        argv.append("--disable-persistent-expression-cache")
+    if bool(getattr(args, "cm_disable_persistent_operator_cache", False)):
+        argv.append("--disable-persistent-operator-cache")
+    if bool(getattr(args, "cm_disable_persistent_feature_matrix_cache", False)):
+        argv.append("--disable-persistent-feature-matrix-cache")
+
+
 def _run_real_cm_chunk_subprocess(
     *,
     args: argparse.Namespace,
@@ -910,6 +930,7 @@ def _run_real_cm_chunk_subprocess(
         str(args.numexpr_threads),
         "--fast-mode",
     ]
+    _append_cm_persistent_cache_args(argv, args)
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", "src")
     proc = subprocess.run(
@@ -1009,6 +1030,7 @@ def _run_real_cm_shard_subprocess(
         "--write-reward-atoms",
         "--disable-schema-gate",
     ]
+    _append_cm_persistent_cache_args(argv, args)
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", "src")
     proc = subprocess.run(
@@ -1085,6 +1107,7 @@ def _run_real_cm_retry_table(
         str(args.numexpr_threads),
         "--fast-mode",
     ]
+    _append_cm_persistent_cache_args(argv, args)
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
         raise RuntimeError(f"Phase3CM retry failed with exit code {result}")
@@ -1543,6 +1566,7 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
         str(args.numexpr_threads),
         "--fast-mode",
     ]
+    _append_cm_persistent_cache_args(argv, args)
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
         raise RuntimeError(f"Phase3CM audit failed with exit code {result}")
@@ -1641,6 +1665,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-regime-component-cap", type=float, default=0.10)
     parser.add_argument("--cm-operator-cache-max-entries", type=int, default=512)
     parser.add_argument("--cm-feature-matrix-cache-max-windows", type=int, default=6)
+    parser.add_argument("--cm-persistent-cache-root", type=Path, default=None)
+    parser.add_argument("--cm-persistent-cache-mode", choices=("off", "read", "write", "readwrite"), default="readwrite")
+    parser.add_argument("--cm-disable-persistent-expression-cache", action="store_true")
+    parser.add_argument("--cm-disable-persistent-operator-cache", action="store_true")
+    parser.add_argument("--cm-disable-persistent-feature-matrix-cache", action="store_true")
     parser.add_argument("--pre-cm-turnover-proxy-max", type=float, default=float("nan"))
     parser.add_argument("--pre-cm-semantic-gate", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--pre-cm-semantic-oversample-multiplier", type=float, default=2.0)
@@ -1813,6 +1842,11 @@ def main(argv: list[str] | None = None) -> int:
         "cm_parallel_axis": str(args.cm_parallel_axis),
         "cm_event_aware_sample_times": bool(args.cm_event_aware_sample_times),
         "cm_event_sample_trade_times_per_shard": int(args.cm_event_sample_trade_times_per_shard),
+        "cm_persistent_cache_root": str(args.cm_persistent_cache_root or ""),
+        "cm_persistent_cache_mode": str(args.cm_persistent_cache_mode),
+        "cm_persistent_expression_cache": not bool(args.cm_disable_persistent_expression_cache),
+        "cm_persistent_operator_cache": not bool(args.cm_disable_persistent_operator_cache),
+        "cm_persistent_feature_matrix_cache": not bool(args.cm_disable_persistent_feature_matrix_cache),
         "pre_cm_semantic_gate": bool(args.pre_cm_semantic_gate),
         "checks": checks,
         "initial_arm_plan": scaled_plan,

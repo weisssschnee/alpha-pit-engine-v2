@@ -1,0 +1,52 @@
+{
+  "phase": "Phase3CM",
+  "run_type": "persistent_cache_validation_then_next_search",
+  "created_at": "2026-07-06T10:30:00+08:00",
+  "machine": "DESKTOP-77OPJ6F",
+  "repo_boundary": "true1min A-share chain only",
+  "data_boundary": {
+    "true1min_shard_root": "D:\\ChengboRemote\\data\\phase3dz_true1min_sidecar_augmented_full16_20260702",
+    "old_1d_kline_allowed": false
+  },
+  "persistent_cache": {
+    "enabled": true,
+    "root": "D:\\ChengboRemote\\cache\\phase3cm_persistent_series_cache",
+    "mode": "readwrite",
+    "cache_version": "phase3cm_persistent_series_cache_v1",
+    "expected_first_pass": "disk_stores > 0",
+    "expected_second_pass": "disk_hits > 0 and reward rows stable"
+  },
+  "safety": {
+    "x0_r3_read_only": true,
+    "holdout_optimizer_input": false,
+    "fragment_replay_is_reward": false,
+    "train_portfolio_sortino_is_reward_gate": true,
+    "ban_old_1d_roots": true,
+    "do_not_touch_crypto_line": true
+  },
+  "next_command_flags": [
+    "--cm-persistent-cache-root D:\\ChengboRemote\\cache\\phase3cm_persistent_series_cache",
+    "--cm-persistent-cache-mode readwrite"
+  ],
+  "validation_steps": [
+    "run tiny Phase3CM pass with candidate_limit <= 8, max_shards <= 1, sample_trade_times_per_shard <= 32",
+    "rerun the same tiny pass against the same shard root and candidate table",
+    "compare phase3cm_train_reward.csv between pass 1 and pass 2",
+    "check phase3cm_train_reward_audit_summary.json cache_stats for persistent disk hits"
+  ],
+  "validation_result": {
+    "status": "PASS",
+    "machine": "DESKTOP-77OPJ6F",
+    "candidate_count": 8,
+    "max_shards": 1,
+    "sample_trade_times_per_shard": 32,
+    "horizons": "1,5",
+    "reward_rows_stable": true,
+    "pass1_persistent_factor_expression_cache_disk_stores": 8,
+    "pass1_operator_cache_disk_stores": 59,
+    "pass1_persistent_feature_matrix_cache_disk_stores": 3,
+    "pass2_persistent_factor_expression_cache_disk_hits": 8,
+    "remote_summary": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3cm_persistent_cache_tiny_validation_20260706\\phase3cm_persistent_cache_tiny_validation_summary.json"
+  },
+  "decision": "PERSISTENT_CACHE_READY_FOR_NEXT_PHASE3CP_PHASE3CM_RUN"
+}

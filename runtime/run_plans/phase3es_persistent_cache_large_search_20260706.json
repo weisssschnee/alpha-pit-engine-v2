@@ -1,0 +1,65 @@
+{
+  "phase": "Phase3ES",
+  "run_type": "persistent_cache_large_true1min_reward_search",
+  "created_at": "2026-07-06T10:45:00+08:00",
+  "machine": "DESKTOP-77OPJ6F",
+  "task_id": "lanjob_20260706_104500_acc03e",
+  "launcher": "runtime/launchers/phase3es_77o_persistent_cache_large_search_20260706.ps1",
+  "remote_launcher": "D:\\ChengboRemote\\runtime\\phase3es_77o_persistent_cache_large_search_20260706.ps1",
+  "remote_run_root": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3es_persistent_cache_large_search_20260706_77o",
+  "remote_report_root": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\reports\\phase3es_persistent_cache_large_search_20260706_77o",
+  "input": {
+    "co_root": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3er2_direct_cm_parallel_20260706_77o",
+    "arm_budget_table": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3er2_direct_cm_parallel_20260706_77o\\phase3cp_real_cm_next_arm_budget_table.csv",
+    "shard_root": "D:\\ChengboRemote\\data\\phase3dz_true1min_sidecar_augmented_full16_20260702",
+    "memory_roots": [
+      "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\search_memory",
+      "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3ep_medium_search_20260705_77o",
+      "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3eq_robust_followup_validation_20260706_77o",
+      "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3eq_afterburner_deep_validation_20260706_77o",
+      "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3er_fresh_large_round1_20260706_77o",
+      "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_engine_20260627_222934_68d1d62eb94e_memfill\\runtime\\phase3er2_direct_cm_parallel_20260706_77o"
+    ]
+  },
+  "budget": {
+    "generation_budget": 12288,
+    "shortfall_fill_rounds": 8,
+    "shortfall_oversample_multiplier": 4.5,
+    "ca_top_n": 1024,
+    "cm_candidate_limit": 256,
+    "cm_selection_mode": "arm_balanced",
+    "cm_max_shards": 8,
+    "cm_workers": 8,
+    "cm_parallel_axis": "shard",
+    "cm_sample_trade_times_per_shard": 192,
+    "cm_event_sample_trade_times_per_shard": 256,
+    "cm_horizons": "1,5,10,15"
+  },
+  "reward": {
+    "optimizer_reward": "train_portfolio_sortino_plus_rankic_loss_plus_low_weight_regime_stability",
+    "rank_ic_loss_weight": 6.0,
+    "regime_stability_weight": 0.06,
+    "validation_usage": "report_only",
+    "holdout_usage": "report_only",
+    "fragment_replay_is_reward": false
+  },
+  "acceleration": {
+    "persistent_cache_root": "D:\\ChengboRemote\\cache\\phase3cm_persistent_series_cache",
+    "persistent_cache_mode": "readwrite",
+    "operator_cache_max_entries": 512,
+    "feature_matrix_cache_max_windows": 6,
+    "numexpr_threads": 2,
+    "omp_threads": 1,
+    "mkl_threads": 1,
+    "numba_required": true
+  },
+  "safety": {
+    "true1min_only": true,
+    "old_1d_kline_allowed": false,
+    "x0_r3_read_only": true,
+    "do_not_touch_crypto_line": true,
+    "pre_cm_semantic_gate": false,
+    "reason_pre_cm_semantic_gate_disabled": "current gate is serial bottleneck; CM train reward remains the filter"
+  },
+  "initial_status": "STARTED_NOT_READY"
+}

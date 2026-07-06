@@ -64,6 +64,7 @@ HARD_INPUT_BLOCKER_TOKENS = (
     "blocked_or_future",
 )
 _NUMBA_RANK_RUNTIME_DISABLED = False
+PERSISTENT_CACHE_VERSION = "phase3cm_persistent_series_cache_v1"
 
 
 def _resolve(path: Path) -> Path:
@@ -260,6 +261,158 @@ def _bounded(value: float, cap: float) -> float:
     return max(-cap, min(cap, value))
 
 
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8", errors="replace")).hexdigest()
+
+
+def _hash_items(items: list[str]) -> str:
+    digest = hashlib.sha256()
+    for item in items:
+        digest.update(str(item).encode("utf-8", errors="replace"))
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def _path_fingerprint(path: Path) -> str:
+    resolved = _resolve(path)
+    try:
+        stat = resolved.stat()
+        payload = f"{resolved}|{stat.st_size}|{stat.st_mtime_ns}"
+    except OSError:
+        payload = str(resolved)
+    return _sha256_text(payload)
+
+
+def _timestamp_fingerprint(values: set[pd.Timestamp] | list[pd.Timestamp] | pd.Series) -> str:
+    if isinstance(values, pd.Series):
+        items = pd.to_datetime(values, errors="coerce").dropna().astype("int64").astype(str).tolist()
+    else:
+        items = [str(pd.Timestamp(value).value) for value in values if pd.notna(value)]
+    items.sort()
+    return _hash_items(items)
+
+
+def _persistent_namespace(
+    *,
+    kind: str,
+    panel_fingerprint: str,
+    columns_fingerprint: str,
+    sample_block_index: int,
+    context_window: int,
+    context_fingerprint: str,
+    eval_fingerprint: str,
+) -> str:
+    payload = {
+        "version": PERSISTENT_CACHE_VERSION,
+        "kind": kind,
+        "panel": panel_fingerprint,
+        "columns": columns_fingerprint,
+        "sample_block_index": int(sample_block_index),
+        "context_window": int(context_window),
+        "context_trade_times": context_fingerprint,
+        "eval_trade_times": eval_fingerprint,
+    }
+    return _sha256_text(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+
+
+def _series_to_float64(series: pd.Series) -> np.ndarray:
+    return pd.to_numeric(series, errors="coerce").to_numpy(dtype=np.float64, copy=False)
+
+
+def _read_cached_series(path: Path, expected_length: int | None, stats: dict[str, int], prefix: str) -> pd.Series | None:
+    try:
+        if not path.exists():
+            _inc(stats, f"{prefix}_disk_misses")
+            return None
+        with path.open("rb") as handle:
+            values = np.load(handle, allow_pickle=False)
+        if expected_length is not None and len(values) != int(expected_length):
+            _inc(stats, f"{prefix}_disk_length_mismatch")
+            return None
+        _inc(stats, f"{prefix}_disk_hits")
+        return pd.Series(values)
+    except Exception:
+        _inc(stats, f"{prefix}_disk_read_errors")
+        return None
+
+
+def _write_cached_series(path: Path, series: pd.Series, stats: dict[str, int], prefix: str) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+        with tmp.open("wb") as handle:
+            np.save(handle, _series_to_float64(series), allow_pickle=False)
+        os.replace(tmp, path)
+        _inc(stats, f"{prefix}_disk_stores")
+    except Exception:
+        _inc(stats, f"{prefix}_disk_write_errors")
+        try:
+            if "tmp" in locals() and tmp.exists():
+                tmp.unlink()
+        except OSError:
+            pass
+
+
+def _persistent_cache_active(root: Path | None, mode: str) -> bool:
+    return root is not None and str(mode).lower() in {"read", "write", "readwrite"}
+
+
+def _feature_matrix_cache_path(root: Path, namespace: str) -> Path:
+    return root / PERSISTENT_CACHE_VERSION / "feature_matrix" / namespace[:2] / f"{namespace}.parquet"
+
+
+def _read_cached_feature_matrix(
+    path: Path,
+    *,
+    expected_columns: list[str],
+    stats: dict[str, int],
+    prefix: str,
+) -> tuple[pd.DataFrame, pd.Series] | None:
+    try:
+        if not path.exists():
+            _inc(stats, f"{prefix}_disk_misses")
+            return None
+        frame = pd.read_parquet(path)
+        marker = "__phase3cm_eval_mask"
+        if marker not in frame.columns:
+            _inc(stats, f"{prefix}_disk_schema_mismatch")
+            return None
+        eval_mask = frame.pop(marker).astype(bool)
+        if list(frame.columns) != list(expected_columns):
+            _inc(stats, f"{prefix}_disk_column_mismatch")
+            return None
+        _inc(stats, f"{prefix}_disk_hits")
+        return frame, eval_mask
+    except Exception:
+        _inc(stats, f"{prefix}_disk_read_errors")
+        return None
+
+
+def _write_cached_feature_matrix(
+    path: Path,
+    *,
+    frame: pd.DataFrame,
+    eval_mask: pd.Series,
+    stats: dict[str, int],
+    prefix: str,
+) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+        payload = frame.copy()
+        payload["__phase3cm_eval_mask"] = eval_mask.to_numpy(dtype=bool)
+        payload.to_parquet(tmp, index=False)
+        os.replace(tmp, path)
+        _inc(stats, f"{prefix}_disk_stores")
+    except Exception:
+        _inc(stats, f"{prefix}_disk_write_errors")
+        try:
+            if "tmp" in locals() and tmp.exists():
+                tmp.unlink()
+        except OSError:
+            pass
+
+
 class _BoundedSeriesCache(dict[str, pd.Series]):
     """Small in-memory cache for expression operator subtrees.
 
@@ -289,6 +442,87 @@ class _BoundedSeriesCache(dict[str, pd.Series]):
         if not exists:
             self.stats[f"{self.prefix}_stores"] = self.stats.get(f"{self.prefix}_stores", 0) + 1
         super().__setitem__(key, value)
+
+
+class _PersistentSeriesCache(_BoundedSeriesCache):
+    """Bounded in-memory series cache with a disk backing store."""
+
+    def __init__(
+        self,
+        *,
+        root: Path,
+        namespace: str,
+        max_entries: int,
+        stats: dict[str, int],
+        prefix: str,
+        mode: str,
+        expected_length: int | None,
+    ) -> None:
+        super().__init__(max_entries=max_entries, stats=stats, prefix=prefix)
+        self.root = root
+        self.namespace = namespace
+        self.mode = mode
+        self.expected_length = expected_length
+        # Keep the namespace in the digest rather than the directory name.
+        # Windows workers otherwise hit MAX_PATH on deep remote cache roots.
+        self.namespace_root = root / PERSISTENT_CACHE_VERSION / "series" / namespace[:2]
+
+    @property
+    def can_read(self) -> bool:
+        return self.mode in {"read", "readwrite"}
+
+    @property
+    def can_write(self) -> bool:
+        return self.mode in {"write", "readwrite"}
+
+    def _path_for_key(self, key: str) -> Path:
+        digest = _sha256_text(f"{self.namespace}\0{key}")
+        return self.namespace_root / digest[:2] / f"{digest}.npy"
+
+    def _put_memory(self, key: str, value: pd.Series) -> None:
+        exists = dict.__contains__(self, key)
+        if not exists and self.max_entries and len(self) >= self.max_entries:
+            try:
+                oldest = next(iter(self.keys()))
+                dict.__delitem__(self, oldest)
+                _inc(self.stats, f"{self.prefix}_memory_evictions")
+            except StopIteration:
+                pass
+        if not exists:
+            _inc(self.stats, f"{self.prefix}_stores")
+        dict.__setitem__(self, key, value)
+
+    def __contains__(self, key: object) -> bool:
+        if not isinstance(key, str):
+            return False
+        if dict.__contains__(self, key):
+            _inc(self.stats, f"{self.prefix}_hits")
+            return True
+        if not self.can_read:
+            _inc(self.stats, f"{self.prefix}_misses")
+            return False
+        series = _read_cached_series(self._path_for_key(key), self.expected_length, self.stats, self.prefix)
+        if series is None:
+            _inc(self.stats, f"{self.prefix}_misses")
+            return False
+        self._put_memory(key, series)
+        _inc(self.stats, f"{self.prefix}_hits")
+        return True
+
+    def __getitem__(self, key: str) -> pd.Series:
+        if dict.__contains__(self, key):
+            return dict.__getitem__(self, key)
+        if self.can_read:
+            series = _read_cached_series(self._path_for_key(key), self.expected_length, self.stats, self.prefix)
+            if series is not None:
+                self._put_memory(key, series)
+                return series
+        raise KeyError(key)
+
+    def __setitem__(self, key: str, value: pd.Series) -> None:
+        self._put_memory(key, value)
+        if self.can_write:
+            _write_cached_series(self._path_for_key(key), value, self.stats, self.prefix)
 
 
 def _inc(stats: dict[str, int] | None, key: str, amount: int = 1) -> None:
@@ -583,8 +817,14 @@ def _read_train_shard(
     eval_mask = frame["trade_time"].isin(signal_times)
     eval_frame = frame.loc[eval_mask].copy().reset_index(drop=True)
     labels = _future_returns(frame, horizons).loc[eval_mask].reset_index(drop=True)
+    context_time_fingerprints = {
+        str(key): _timestamp_fingerprint(value)
+        for key, value in sorted(context_times_by_window.items(), key=lambda item: item[0])
+    }
     meta = {
         "panel": str(panel_path),
+        "panel_file_fingerprint": _path_fingerprint(panel_path),
+        "read_columns_fingerprint": _hash_items(columns),
         "read_rows": int(len(frame)),
         "eval_rows": int(len(eval_frame)),
         "signal_trade_times": int(signal_time_count),
@@ -594,6 +834,10 @@ def _read_train_shard(
         "sample_block_count": int(sample_block_count),
         "sample_block_index": int(sample_block_index),
         "context_trade_time_counts": json.dumps({str(key): len(value) for key, value in context_times_by_window.items()}, sort_keys=True),
+        "context_trade_time_fingerprints": json.dumps(context_time_fingerprints, sort_keys=True),
+        "signal_trade_time_fingerprint": _timestamp_fingerprint(signal_times),
+        "full_signal_trade_time_fingerprint": _timestamp_fingerprint(full_signal_times),
+        "eval_trade_time_fingerprint": _timestamp_fingerprint(eval_frame["trade_time"]),
         "read_column_count": len(columns),
         "candidate_count_in_batch": len(candidates),
     }
@@ -840,14 +1084,52 @@ def _candidate_portfolio_rows_from_frame(
     cache_stats: dict[str, int],
     operator_cache_max_entries: int,
     feature_matrix_cache_max_windows: int,
+    persistent_cache_root: Path | None,
+    persistent_cache_mode: str,
+    persistent_expression_cache: bool,
+    persistent_operator_cache: bool,
+    persistent_feature_matrix_cache: bool,
+    persistent_cache_scope: dict[str, Any],
 ) -> list[dict[str, Any]]:
     expression = str(candidate["expression"])
+    context_window = max(0, int(candidate.get("max_window") or 0))
+    context_fingerprints = persistent_cache_scope.get("context_fingerprints") or {}
+    context_fingerprint = str(context_fingerprints.get(str(context_window)) or "")
+    eval_fingerprint = str(persistent_cache_scope.get("eval_fingerprint") or "")
+    panel_fingerprint = str(persistent_cache_scope.get("panel_fingerprint") or "")
+    columns_fingerprint = str(persistent_cache_scope.get("columns_fingerprint") or "")
+    sample_block_index = int(persistent_cache_scope.get("sample_block_index") or 0)
+    persistent_active = _persistent_cache_active(persistent_cache_root, persistent_cache_mode)
+    expression_disk_cache: _PersistentSeriesCache | None = None
+    expression_cache_key = expression
+    if persistent_active and persistent_expression_cache and context_fingerprint and eval_fingerprint:
+        expression_namespace = _persistent_namespace(
+            kind="factor_expression",
+            panel_fingerprint=panel_fingerprint,
+            columns_fingerprint=columns_fingerprint,
+            sample_block_index=sample_block_index,
+            context_window=context_window,
+            context_fingerprint=context_fingerprint,
+            eval_fingerprint=eval_fingerprint,
+        )
+        expression_disk_cache = _PersistentSeriesCache(
+            root=persistent_cache_root,
+            namespace=expression_namespace,
+            max_entries=max(1, len(expression_cache) + 1),
+            stats=cache_stats,
+            prefix="persistent_factor_expression_cache",
+            mode=persistent_cache_mode,
+            expected_length=len(eval_frame),
+        )
     if expression in expression_cache:
         _inc(cache_stats, "factor_expression_cache_hits")
         signal = expression_cache[expression]
+    elif expression_disk_cache is not None and expression_cache_key in expression_disk_cache:
+        _inc(cache_stats, "factor_expression_cache_hits")
+        signal = expression_disk_cache[expression_cache_key]
+        expression_cache[expression] = signal
     else:
         _inc(cache_stats, "factor_expression_cache_misses")
-        context_window = max(0, int(candidate.get("max_window") or 0))
         context_times = context_times_by_window.get(context_window)
         if context_times:
             cached_context = feature_matrix_cache.get(context_window)
@@ -855,10 +1137,39 @@ def _candidate_portfolio_rows_from_frame(
                 _inc(cache_stats, "feature_matrix_cache_hits")
                 context_frame, context_eval_mask = cached_context
             else:
-                _inc(cache_stats, "feature_matrix_cache_misses")
-                context_mask = frame["trade_time"].isin(context_times)
-                context_frame = frame.loc[context_mask].copy().reset_index(drop=True)
-                context_eval_mask = context_frame["trade_time"].isin(split_by_time.keys())
+                feature_disk_hit = None
+                if persistent_active and persistent_feature_matrix_cache and context_fingerprint and eval_fingerprint:
+                    feature_namespace = _persistent_namespace(
+                        kind="feature_matrix",
+                        panel_fingerprint=panel_fingerprint,
+                        columns_fingerprint=columns_fingerprint,
+                        sample_block_index=sample_block_index,
+                        context_window=context_window,
+                        context_fingerprint=context_fingerprint,
+                        eval_fingerprint=eval_fingerprint,
+                    )
+                    feature_disk_hit = _read_cached_feature_matrix(
+                        _feature_matrix_cache_path(persistent_cache_root, feature_namespace),
+                        expected_columns=list(frame.columns),
+                        stats=cache_stats,
+                        prefix="persistent_feature_matrix_cache",
+                    )
+                if feature_disk_hit is not None:
+                    context_frame, context_eval_mask = feature_disk_hit
+                    _inc(cache_stats, "feature_matrix_cache_hits")
+                else:
+                    _inc(cache_stats, "feature_matrix_cache_misses")
+                    context_mask = frame["trade_time"].isin(context_times)
+                    context_frame = frame.loc[context_mask].copy().reset_index(drop=True)
+                    context_eval_mask = context_frame["trade_time"].isin(split_by_time.keys())
+                    if persistent_active and persistent_feature_matrix_cache and context_fingerprint and eval_fingerprint:
+                        _write_cached_feature_matrix(
+                            _feature_matrix_cache_path(persistent_cache_root, feature_namespace),
+                            frame=context_frame,
+                            eval_mask=context_eval_mask,
+                            stats=cache_stats,
+                            prefix="persistent_feature_matrix_cache",
+                        )
                 if len(feature_matrix_cache) < max(0, int(feature_matrix_cache_max_windows)):
                     feature_matrix_cache[context_window] = (context_frame, context_eval_mask)
                     _inc(cache_stats, "feature_matrix_cache_stores")
@@ -868,11 +1179,31 @@ def _candidate_portfolio_rows_from_frame(
             if operator_cache is None:
                 operator_cache = None
                 if operator_cache_max_entries >= 0:
-                    operator_cache = _BoundedSeriesCache(
-                        max_entries=operator_cache_max_entries,
-                        stats=cache_stats,
-                        prefix="operator_cache",
-                    )
+                    if persistent_active and persistent_operator_cache and context_fingerprint:
+                        operator_namespace = _persistent_namespace(
+                            kind="operator_subtree",
+                            panel_fingerprint=panel_fingerprint,
+                            columns_fingerprint=columns_fingerprint,
+                            sample_block_index=sample_block_index,
+                            context_window=context_window,
+                            context_fingerprint=context_fingerprint,
+                            eval_fingerprint=context_fingerprint,
+                        )
+                        operator_cache = _PersistentSeriesCache(
+                            root=persistent_cache_root,
+                            namespace=operator_namespace,
+                            max_entries=operator_cache_max_entries,
+                            stats=cache_stats,
+                            prefix="operator_cache",
+                            mode=persistent_cache_mode,
+                            expected_length=len(context_frame),
+                        )
+                    else:
+                        operator_cache = _BoundedSeriesCache(
+                            max_entries=operator_cache_max_entries,
+                            stats=cache_stats,
+                            prefix="operator_cache",
+                        )
                     operator_cache_by_window[context_window] = operator_cache
             signal_all = pd.to_numeric(evaluate_panel_expression(context_frame, expression, cache=operator_cache), errors="coerce")
             signal = pd.Series(signal_all.loc[context_eval_mask].to_numpy(dtype=float))
@@ -896,15 +1227,37 @@ def _candidate_portfolio_rows_from_frame(
             if operator_cache is None:
                 operator_cache = None
                 if operator_cache_max_entries >= 0:
-                    operator_cache = _BoundedSeriesCache(
-                        max_entries=operator_cache_max_entries,
-                        stats=cache_stats,
-                        prefix="operator_cache",
-                    )
+                    if persistent_active and persistent_operator_cache and eval_fingerprint:
+                        operator_namespace = _persistent_namespace(
+                            kind="operator_subtree",
+                            panel_fingerprint=panel_fingerprint,
+                            columns_fingerprint=columns_fingerprint,
+                            sample_block_index=sample_block_index,
+                            context_window=-1,
+                            context_fingerprint=eval_fingerprint,
+                            eval_fingerprint=eval_fingerprint,
+                        )
+                        operator_cache = _PersistentSeriesCache(
+                            root=persistent_cache_root,
+                            namespace=operator_namespace,
+                            max_entries=operator_cache_max_entries,
+                            stats=cache_stats,
+                            prefix="operator_cache",
+                            mode=persistent_cache_mode,
+                            expected_length=len(frame),
+                        )
+                    else:
+                        operator_cache = _BoundedSeriesCache(
+                            max_entries=operator_cache_max_entries,
+                            stats=cache_stats,
+                            prefix="operator_cache",
+                        )
                     operator_cache_by_window[-1] = operator_cache
             signal_all = pd.to_numeric(evaluate_panel_expression(frame, expression, cache=operator_cache), errors="coerce")
             signal = pd.Series(signal_all.loc[eval_mask].to_numpy(dtype=float))
         expression_cache[expression] = signal
+        if expression_disk_cache is not None:
+            expression_disk_cache[expression_cache_key] = signal
         _inc(cache_stats, "factor_expression_cache_stores")
     if eval_time_index is not None:
         signal_rank = _rank_by_eval_time_index(signal, eval_time_index, cache_stats=cache_stats)
@@ -1888,6 +2241,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--regime-component-cap", type=float, default=0.10)
     parser.add_argument("--operator-cache-max-entries", type=int, default=512)
     parser.add_argument("--feature-matrix-cache-max-windows", type=int, default=6)
+    parser.add_argument("--persistent-cache-root", type=Path, default=None)
+    parser.add_argument("--persistent-cache-mode", choices=("off", "read", "write", "readwrite"), default="readwrite")
+    parser.add_argument("--disable-persistent-expression-cache", action="store_true")
+    parser.add_argument("--disable-persistent-operator-cache", action="store_true")
+    parser.add_argument("--disable-persistent-feature-matrix-cache", action="store_true")
     parser.add_argument("--disable-factor-expression-cache", action="store_true")
     parser.add_argument("--disable-operator-cache", action="store_true")
     parser.add_argument("--disable-feature-matrix-cache", action="store_true")
@@ -1973,6 +2331,13 @@ def main(argv: list[str] | None = None) -> int:
             eval_time_index = None if args.disable_fast_portfolio_loop else _build_eval_time_index(eval_frame)
             meta["fast_portfolio_loop"] = not bool(args.disable_fast_portfolio_loop)
             meta["eval_time_group_count"] = len(eval_time_index["groups"]) if eval_time_index is not None else None
+            persistent_scope = {
+                "panel_fingerprint": meta.get("panel_file_fingerprint", ""),
+                "columns_fingerprint": meta.get("read_columns_fingerprint", ""),
+                "sample_block_index": int(meta.get("sample_block_index") or 0),
+                "context_fingerprints": json.loads(str(meta.get("context_trade_time_fingerprints") or "{}")),
+                "eval_fingerprint": meta.get("eval_trade_time_fingerprint", ""),
+            }
             expression_cache: dict[str, pd.Series] = {} if not args.disable_factor_expression_cache else {}
             feature_matrix_cache: dict[int, tuple[pd.DataFrame, pd.Series]] = {}
             operator_cache_by_window: dict[int, dict[str, pd.Series]] = {}
@@ -2000,6 +2365,12 @@ def main(argv: list[str] | None = None) -> int:
                     cache_stats=shard_cache_stats,
                     operator_cache_max_entries=-1 if args.disable_operator_cache else args.operator_cache_max_entries,
                     feature_matrix_cache_max_windows=0 if args.disable_feature_matrix_cache else args.feature_matrix_cache_max_windows,
+                    persistent_cache_root=_resolve(args.persistent_cache_root) if args.persistent_cache_root is not None else None,
+                    persistent_cache_mode="off" if args.persistent_cache_mode == "off" else args.persistent_cache_mode,
+                    persistent_expression_cache=not bool(args.disable_persistent_expression_cache),
+                    persistent_operator_cache=not bool(args.disable_persistent_operator_cache),
+                    persistent_feature_matrix_cache=not bool(args.disable_persistent_feature_matrix_cache),
+                    persistent_cache_scope=persistent_scope,
                 )
                 expression_hash = str(candidate["expression_hash"])
                 rows_by_hash[expression_hash].extend(rows)
@@ -2164,9 +2535,17 @@ def main(argv: list[str] | None = None) -> int:
             "factor_expression_cache": not bool(args.disable_factor_expression_cache),
             "feature_matrix_cache": not bool(args.disable_feature_matrix_cache),
             "operator_subtree_cache": not bool(args.disable_operator_cache),
+            "persistent_cache": _persistent_cache_active(_resolve(args.persistent_cache_root) if args.persistent_cache_root is not None else None, args.persistent_cache_mode),
+            "persistent_cache_root": str(_resolve(args.persistent_cache_root)) if args.persistent_cache_root is not None else "",
+            "persistent_cache_mode": str(args.persistent_cache_mode),
+            "persistent_factor_expression_cache": not bool(args.disable_persistent_expression_cache),
+            "persistent_operator_subtree_cache": not bool(args.disable_persistent_operator_cache),
+            "persistent_feature_matrix_cache": not bool(args.disable_persistent_feature_matrix_cache),
+            "persistent_cache_version": PERSISTENT_CACHE_VERSION,
             "expression_cache_scope": "per_shard",
             "feature_matrix_cache_scope": "per_shard_context_window",
             "operator_cache_scope": "per_shard_context_window",
+            "persistent_cache_scope": "panel_file_fingerprint+columns_fingerprint+sample_block+context_trade_time_fingerprint+eval_trade_time_fingerprint",
             "fast_portfolio_loop": not bool(args.disable_fast_portfolio_loop),
             "numba_rank_available": njit is not None,
             "numba_rank_enabled": (
