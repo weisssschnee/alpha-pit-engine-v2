@@ -12,6 +12,11 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+try:
+    from numba import njit
+except Exception:  # pragma: no cover - optional acceleration dependency
+    njit = None
+
 from our_system_phase2.services.feature_algebra import WINDOW_PRIOR, expand_derived_fields
 from our_system_phase2.services.field_encoder import FIELD_ALIASES
 from our_system_phase2.services.event_derived_features import (
@@ -293,6 +298,81 @@ def _rolling_wma(series: pd.Series, window: int) -> pd.Series:
     return series.rolling(window, min_periods=window).apply(weighted, raw=True)
 
 
+if njit is not None:
+
+    @njit(cache=True)
+    def _rolling_valid_ratio_sorted_numba(valid_sorted: np.ndarray, sorted_codes: np.ndarray, window: int) -> np.ndarray:
+        out = np.empty(valid_sorted.shape[0], dtype=np.float64)
+        out[:] = np.nan
+        n = valid_sorted.shape[0]
+        start = 0
+        while start < n:
+            code = sorted_codes[start]
+            end = start + 1
+            while end < n and sorted_codes[end] == code:
+                end += 1
+            if code >= 0:
+                count = 0.0
+                for pos in range(start, end):
+                    if valid_sorted[pos] != 0:
+                        count += 1.0
+                    old_pos = pos - window
+                    if old_pos >= start and valid_sorted[old_pos] != 0:
+                        count -= 1.0
+                    denom = pos - start + 1
+                    if denom > window:
+                        denom = window
+                    out[pos] = count / float(denom)
+            start = end
+        return out
+
+    @njit(cache=True)
+    def _rolling_event_count_sorted_numba(event_sorted: np.ndarray, sorted_codes: np.ndarray, window: int) -> np.ndarray:
+        out = np.empty(event_sorted.shape[0], dtype=np.float64)
+        out[:] = np.nan
+        n = event_sorted.shape[0]
+        start = 0
+        while start < n:
+            code = sorted_codes[start]
+            end = start + 1
+            while end < n and sorted_codes[end] == code:
+                end += 1
+            if code >= 0:
+                count = 0.0
+                for pos in range(start, end):
+                    if event_sorted[pos] != 0:
+                        count += 1.0
+                    old_pos = pos - window
+                    if old_pos >= start and event_sorted[old_pos] != 0:
+                        count -= 1.0
+                    if pos - start + 1 >= window:
+                        out[pos] = count
+            start = end
+        return out
+
+
+def _frame_layout_cache(frame: pd.DataFrame) -> dict[str, tuple[int, np.ndarray, np.ndarray]]:
+    cache = frame.attrs.get("_phase3_eval_group_layout_cache")
+    if not isinstance(cache, dict):
+        cache = {}
+        frame.attrs["_phase3_eval_group_layout_cache"] = cache
+    return cache
+
+
+def _cached_group_layout(frame: pd.DataFrame, name: str, group: pd.Series) -> tuple[np.ndarray, np.ndarray]:
+    cache = _frame_layout_cache(frame)
+    key = f"{name}:{len(frame)}"
+    cached = cache.get(key)
+    if cached is not None and cached[0] == len(frame):
+        return cached[1], cached[2]
+    codes, _ = pd.factorize(group, sort=False)
+    codes = codes.astype(np.int64, copy=False)
+    order = np.argsort(codes, kind="stable")
+    sorted_codes = codes[order]
+    cache[key] = (len(frame), order, sorted_codes)
+    return order, sorted_codes
+
+
 def _rolling_relation(
     frame: pd.DataFrame,
     left: pd.Series,
@@ -319,18 +399,26 @@ def _cross_section_key(frame: pd.DataFrame) -> pd.Series:
     return frame["date"]
 
 
-def fast_rank_pct_by_group(values: pd.Series, group: pd.Series) -> pd.Series:
+def fast_rank_pct_by_group(
+    values: pd.Series,
+    group: pd.Series,
+    *,
+    layout: tuple[np.ndarray, np.ndarray] | None = None,
+) -> pd.Series:
     """Memory-stable equivalent of groupby(...).rank(pct=True)."""
     numeric = pd.to_numeric(values, errors="coerce")
     arr = numeric.to_numpy(dtype=float, copy=False)
-    codes, _ = pd.factorize(group, sort=False)
+    if layout is None:
+        codes, _ = pd.factorize(group, sort=False)
+        codes = codes.astype(np.int64, copy=False)
+        order = np.argsort(codes, kind="stable")
+        sorted_codes = codes[order]
+    else:
+        order, sorted_codes = layout
     out = np.full(len(arr), np.nan, dtype=float)
-    valid_code_mask = codes >= 0
-    if not bool(valid_code_mask.any()):
+    if len(sorted_codes) == 0 or not bool((sorted_codes >= 0).any()):
         return pd.Series(out, index=values.index)
 
-    order = np.argsort(codes, kind="stable")
-    sorted_codes = codes[order]
     boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
     for start, end in zip(boundaries[:-1], boundaries[1:]):
         if sorted_codes[start] < 0:
@@ -355,18 +443,26 @@ def fast_rank_pct_by_group(values: pd.Series, group: pd.Series) -> pd.Series:
     return pd.Series(out, index=values.index)
 
 
-def fast_zscore_by_group(values: pd.Series, group: pd.Series) -> pd.Series:
+def fast_zscore_by_group(
+    values: pd.Series,
+    group: pd.Series,
+    *,
+    layout: tuple[np.ndarray, np.ndarray] | None = None,
+) -> pd.Series:
     """Memory-stable equivalent of groupby(...).transform zscore with ddof=1 std."""
     numeric = pd.to_numeric(values, errors="coerce")
     arr = numeric.to_numpy(dtype=float, copy=False)
-    codes, _ = pd.factorize(group, sort=False)
+    if layout is None:
+        codes, _ = pd.factorize(group, sort=False)
+        codes = codes.astype(np.int64, copy=False)
+        order = np.argsort(codes, kind="stable")
+        sorted_codes = codes[order]
+    else:
+        order, sorted_codes = layout
     out = np.full(len(arr), np.nan, dtype=float)
-    valid_code_mask = codes >= 0
-    if not bool(valid_code_mask.any()):
+    if len(sorted_codes) == 0 or not bool((sorted_codes >= 0).any()):
         return pd.Series(out, index=values.index)
 
-    order = np.argsort(codes, kind="stable")
-    sorted_codes = codes[order]
     boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
     for start, end in zip(boundaries[:-1], boundaries[1:]):
         if sorted_codes[start] < 0:
@@ -385,17 +481,26 @@ def fast_zscore_by_group(values: pd.Series, group: pd.Series) -> pd.Series:
     return pd.Series(out, index=values.index)
 
 
-def _cross_sectional_residual(frame: pd.DataFrame, left: pd.Series, right: pd.Series) -> pd.Series:
+def _cross_sectional_residual(
+    frame: pd.DataFrame,
+    left: pd.Series,
+    right: pd.Series,
+    *,
+    layout: tuple[np.ndarray, np.ndarray] | None = None,
+) -> pd.Series:
     y_arr = pd.to_numeric(left.reindex(frame.index), errors="coerce").to_numpy(dtype=float, copy=False)
     x_arr = pd.to_numeric(right.reindex(frame.index), errors="coerce").to_numpy(dtype=float, copy=False)
-    codes, _ = pd.factorize(_cross_section_key(frame), sort=False)
+    if layout is None:
+        codes, _ = pd.factorize(_cross_section_key(frame), sort=False)
+        codes = codes.astype(np.int64, copy=False)
+        order = np.argsort(codes, kind="stable")
+        sorted_codes = codes[order]
+    else:
+        order, sorted_codes = layout
     result = np.full(len(frame), np.nan, dtype=float)
-    valid_code_mask = codes >= 0
-    if not bool(valid_code_mask.any()):
+    if len(sorted_codes) == 0 or not bool((sorted_codes >= 0).any()):
         return pd.Series(result, index=frame.index)
 
-    order = np.argsort(codes, kind="stable")
-    sorted_codes = codes[order]
     boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
     for start, end in zip(boundaries[:-1], boundaries[1:]):
         if sorted_codes[start] < 0:
@@ -427,20 +532,24 @@ def _safe_cross_sectional_residual(
     min_n: int,
     min_x_unique: int,
     min_valid_ratio: float,
+    layout: tuple[np.ndarray, np.ndarray] | None = None,
 ) -> pd.Series:
     y_arr = pd.to_numeric(left.reindex(frame.index), errors="coerce").to_numpy(dtype=float, copy=False)
     x_arr = pd.to_numeric(right.reindex(frame.index), errors="coerce").to_numpy(dtype=float, copy=False)
-    codes, _ = pd.factorize(_cross_section_key(frame), sort=False)
+    if layout is None:
+        codes, _ = pd.factorize(_cross_section_key(frame), sort=False)
+        codes = codes.astype(np.int64, copy=False)
+        order = np.argsort(codes, kind="stable")
+        sorted_codes = codes[order]
+    else:
+        order, sorted_codes = layout
     result = np.full(len(frame), np.nan, dtype=float)
     min_n = max(2, int(min_n))
     min_x_unique = max(2, int(min_x_unique))
     min_valid_ratio = max(0.0, min(1.0, float(min_valid_ratio)))
-    valid_code_mask = codes >= 0
-    if not bool(valid_code_mask.any()):
+    if len(sorted_codes) == 0 or not bool((sorted_codes >= 0).any()):
         return pd.Series(result, index=frame.index)
 
-    order = np.argsort(codes, kind="stable")
-    sorted_codes = codes[order]
     boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
     for start, end in zip(boundaries[:-1], boundaries[1:]):
         if sorted_codes[start] < 0:
@@ -468,11 +577,41 @@ def _safe_cross_sectional_residual(
     return pd.Series(result, index=frame.index)
 
 
-def _rolling_valid_ratio(frame: pd.DataFrame, value: pd.Series, *, window: int) -> pd.Series:
-    valid = pd.to_numeric(value, errors="coerce").notna().astype(float)
-    return valid.groupby(frame["code"], sort=False).transform(
-        lambda item: item.rolling(window, min_periods=1).mean()
-    )
+def _rolling_valid_ratio(
+    frame: pd.DataFrame,
+    value: pd.Series,
+    *,
+    window: int,
+    layout: tuple[np.ndarray, np.ndarray] | None = None,
+) -> pd.Series:
+    window = max(1, int(window))
+    numeric = pd.to_numeric(value.reindex(frame.index), errors="coerce")
+    valid = numeric.notna().to_numpy(dtype=np.uint8, copy=False)
+    if layout is None:
+        layout = _cached_group_layout(frame, "code", frame["code"])
+    order, sorted_codes = layout
+    if njit is not None:
+        sorted_out = _rolling_valid_ratio_sorted_numba(valid[order], sorted_codes, window)
+        out = np.empty(len(valid), dtype=float)
+        out[order] = sorted_out
+        return pd.Series(out, index=frame.index)
+
+    result = np.full(len(valid), np.nan, dtype=float)
+    sorted_valid = valid[order]
+    boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
+    for start, end in zip(boundaries[:-1], boundaries[1:]):
+        if sorted_codes[start] < 0:
+            continue
+        count = 0.0
+        for pos in range(start, end):
+            if sorted_valid[pos] != 0:
+                count += 1.0
+            old_pos = pos - window
+            if old_pos >= start and sorted_valid[old_pos] != 0:
+                count -= 1.0
+            denom = min(window, pos - start + 1)
+            result[order[pos]] = count / float(denom)
+    return pd.Series(result, index=frame.index)
 
 
 def _event_mask(value: pd.Series) -> pd.Series:
@@ -480,11 +619,41 @@ def _event_mask(value: pd.Series) -> pd.Series:
     return numeric.notna() & (numeric != 0.0)
 
 
-def _rolling_event_count(frame: pd.DataFrame, value: pd.Series, *, window: int) -> pd.Series:
+def _rolling_event_count(
+    frame: pd.DataFrame,
+    value: pd.Series,
+    *,
+    window: int,
+    layout: tuple[np.ndarray, np.ndarray] | None = None,
+) -> pd.Series:
+    window = max(1, int(window))
     numeric = pd.to_numeric(value, errors="coerce")
-    event = (numeric.notna() & (numeric != 0.0)).astype(float)
-    grouped_event = event.groupby(frame["code"], sort=False)
-    return grouped_event.transform(lambda item: item.rolling(window, min_periods=window).sum())
+    event = (numeric.notna() & (numeric != 0.0)).to_numpy(dtype=np.uint8, copy=False)
+    if layout is None:
+        layout = _cached_group_layout(frame, "code", frame["code"])
+    order, sorted_codes = layout
+    if njit is not None:
+        sorted_out = _rolling_event_count_sorted_numba(event[order], sorted_codes, window)
+        out = np.empty(len(event), dtype=float)
+        out[order] = sorted_out
+        return pd.Series(out, index=frame.index)
+
+    result = np.full(len(event), np.nan, dtype=float)
+    sorted_event = event[order]
+    boundaries = np.flatnonzero(np.r_[True, sorted_codes[1:] != sorted_codes[:-1], True])
+    for start, end in zip(boundaries[:-1], boundaries[1:]):
+        if sorted_codes[start] < 0:
+            continue
+        count = 0.0
+        for pos in range(start, end):
+            if sorted_event[pos] != 0:
+                count += 1.0
+            old_pos = pos - window
+            if old_pos >= start and sorted_event[old_pos] != 0:
+                count -= 1.0
+            if pos - start + 1 >= window:
+                result[order[pos]] = count
+    return pd.Series(result, index=frame.index)
 
 
 def _event_age(frame: pd.DataFrame, value: pd.Series) -> pd.Series:
@@ -528,8 +697,12 @@ def _state_dwell(frame: pd.DataFrame, value: pd.Series, *, window: int | None = 
 
 
 def _masked_zscore(frame: pd.DataFrame, value: pd.Series, *, window: int, min_ratio: float) -> pd.Series:
-    gated = pd.to_numeric(value, errors="coerce").where(_rolling_valid_ratio(frame, value, window=window) >= min_ratio)
-    return fast_zscore_by_group(gated, _cross_section_key(frame))
+    code_layout = _cached_group_layout(frame, "code", frame["code"])
+    cross_layout = _cached_group_layout(frame, "cross_section", _cross_section_key(frame))
+    gated = pd.to_numeric(value, errors="coerce").where(
+        _rolling_valid_ratio(frame, value, window=window, layout=code_layout) >= min_ratio
+    )
+    return fast_zscore_by_group(gated, _cross_section_key(frame), layout=cross_layout)
 
 
 def _masked_relation(
@@ -604,7 +777,8 @@ def evaluate_panel_expression(
 
     if name_lower in {"csrank", "rank"} and len(args) == 1:
         value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        return store(fast_rank_pct_by_group(value, _cross_section_key(frame)))
+        cross_layout = _cached_group_layout(frame, "cross_section", _cross_section_key(frame))
+        return store(fast_rank_pct_by_group(value, _cross_section_key(frame), layout=cross_layout))
     if name_lower == "abs" and len(args) == 1:
         return store(evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags).abs())
     if name_lower == "sign" and len(args) == 1:
@@ -615,11 +789,13 @@ def evaluate_panel_expression(
         return store(-evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags))
     if name_lower == "zscore" and len(args) == 1:
         value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        return store(fast_zscore_by_group(value, _cross_section_key(frame)))
+        cross_layout = _cached_group_layout(frame, "cross_section", _cross_section_key(frame))
+        return store(fast_zscore_by_group(value, _cross_section_key(frame), layout=cross_layout))
     if name_lower == "csresidual" and len(args) == 2:
         left = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
         right = evaluate_panel_expression(frame, args[1], cache=cache, field_lags=field_lags)
-        return store(_cross_sectional_residual(frame, left, right))
+        cross_layout = _cached_group_layout(frame, "cross_section", _cross_section_key(frame))
+        return store(_cross_sectional_residual(frame, left, right, layout=cross_layout))
     if name_lower in {"eventage", "sincelastevent"} and len(args) == 1:
         value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
         return store(_event_age(frame, value))
@@ -629,18 +805,25 @@ def evaluate_panel_expression(
     if name_lower == "eventcount" and len(args) == 2:
         value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
         window = int(float(args[1]))
-        return store(_rolling_event_count(frame, value, window=window))
+        code_layout = _cached_group_layout(frame, "code", frame["code"])
+        return store(_rolling_event_count(frame, value, window=window, layout=code_layout))
     if name_lower in {"statedwell", "windowstatecount"} and len(args) == 2:
         value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
         window = int(float(args[1]))
         if name_lower == "statedwell":
             return store(_state_dwell(frame, value, window=window))
-        return store(_rolling_event_count(frame, value, window=window))
+        code_layout = _cached_group_layout(frame, "code", frame["code"])
+        return store(_rolling_event_count(frame, value, window=window, layout=code_layout))
     if name_lower == "validratiogate" and len(args) == 3:
         value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
         window = int(float(args[1]))
         min_ratio = float(args[2])
-        return store(pd.to_numeric(value, errors="coerce").where(_rolling_valid_ratio(frame, value, window=window) >= min_ratio))
+        code_layout = _cached_group_layout(frame, "code", frame["code"])
+        return store(
+            pd.to_numeric(value, errors="coerce").where(
+                _rolling_valid_ratio(frame, value, window=window, layout=code_layout) >= min_ratio
+            )
+        )
     if name_lower == "maskedzscore" and len(args) == 3:
         value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
         window = int(float(args[1]))
@@ -666,6 +849,7 @@ def evaluate_panel_expression(
                 min_n=min_n,
                 min_x_unique=min_x_unique,
                 min_valid_ratio=min_valid_ratio,
+                layout=_cached_group_layout(frame, "cross_section", _cross_section_key(frame)),
             )
         )
 
