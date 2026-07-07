@@ -19,6 +19,7 @@ import json
 import math
 import os
 import random
+import shutil
 import statistics
 from datetime import datetime, timezone
 from pathlib import Path
@@ -336,9 +337,50 @@ def _read_cached_series(path: Path, expected_length: int | None, stats: dict[str
         return None
 
 
-def _write_cached_series(path: Path, series: pd.Series, stats: dict[str, int], prefix: str) -> None:
+def _persistent_cache_write_allowed(
+    path: Path,
+    *,
+    stats: dict[str, int],
+    prefix: str,
+    min_free_gb: float,
+    estimated_bytes: int = 0,
+) -> bool:
+    min_free_bytes = max(0, int(float(min_free_gb or 0.0) * (1024**3)))
+    if min_free_bytes <= 0:
+        return True
+    try:
+        parent = path.parent
+        parent.mkdir(parents=True, exist_ok=True)
+        free_bytes = int(shutil.disk_usage(parent).free)
+        required_free = min_free_bytes + max(0, int(estimated_bytes or 0))
+        if free_bytes <= required_free:
+            _inc(stats, f"{prefix}_disk_write_skipped_low_space")
+            return False
+        return True
+    except Exception:
+        _inc(stats, f"{prefix}_disk_space_check_errors")
+        return False
+
+
+def _write_cached_series(
+    path: Path,
+    series: pd.Series,
+    stats: dict[str, int],
+    prefix: str,
+    *,
+    min_free_gb: float = 0.0,
+) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
+        estimated_bytes = int(getattr(series, "size", len(series)) or 0) * 8
+        if not _persistent_cache_write_allowed(
+            path,
+            stats=stats,
+            prefix=prefix,
+            min_free_gb=min_free_gb,
+            estimated_bytes=estimated_bytes,
+        ):
+            return
         tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
         with tmp.open("wb") as handle:
             np.save(handle, _series_to_float64(series), allow_pickle=False)
@@ -395,9 +437,19 @@ def _write_cached_feature_matrix(
     eval_mask: pd.Series,
     stats: dict[str, int],
     prefix: str,
+    min_free_gb: float = 0.0,
 ) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
+        estimated_bytes = int(frame.memory_usage(index=False, deep=False).sum()) + int(len(eval_mask))
+        if not _persistent_cache_write_allowed(
+            path,
+            stats=stats,
+            prefix=prefix,
+            min_free_gb=min_free_gb,
+            estimated_bytes=estimated_bytes,
+        ):
+            return
         tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
         payload = frame.copy()
         payload["__phase3cm_eval_mask"] = eval_mask.to_numpy(dtype=bool)
@@ -457,12 +509,14 @@ class _PersistentSeriesCache(_BoundedSeriesCache):
         prefix: str,
         mode: str,
         expected_length: int | None,
+        min_free_gb: float = 0.0,
     ) -> None:
         super().__init__(max_entries=max_entries, stats=stats, prefix=prefix)
         self.root = root
         self.namespace = namespace
         self.mode = mode
         self.expected_length = expected_length
+        self.min_free_gb = float(min_free_gb or 0.0)
         # Keep the namespace in the digest rather than the directory name.
         # Windows workers otherwise hit MAX_PATH on deep remote cache roots.
         self.namespace_root = root / PERSISTENT_CACHE_VERSION / "series" / namespace[:2]
@@ -522,7 +576,13 @@ class _PersistentSeriesCache(_BoundedSeriesCache):
     def __setitem__(self, key: str, value: pd.Series) -> None:
         self._put_memory(key, value)
         if self.can_write:
-            _write_cached_series(self._path_for_key(key), value, self.stats, self.prefix)
+            _write_cached_series(
+                self._path_for_key(key),
+                value,
+                self.stats,
+                self.prefix,
+                min_free_gb=self.min_free_gb,
+            )
 
 
 def _inc(stats: dict[str, int] | None, key: str, amount: int = 1) -> None:
@@ -1089,6 +1149,7 @@ def _candidate_portfolio_rows_from_frame(
     persistent_expression_cache: bool,
     persistent_operator_cache: bool,
     persistent_feature_matrix_cache: bool,
+    persistent_cache_min_free_gb: float,
     persistent_cache_scope: dict[str, Any],
 ) -> list[dict[str, Any]]:
     expression = str(candidate["expression"])
@@ -1120,6 +1181,7 @@ def _candidate_portfolio_rows_from_frame(
             prefix="persistent_factor_expression_cache",
             mode=persistent_cache_mode,
             expected_length=len(eval_frame),
+            min_free_gb=persistent_cache_min_free_gb,
         )
     if expression in expression_cache:
         _inc(cache_stats, "factor_expression_cache_hits")
@@ -1169,6 +1231,7 @@ def _candidate_portfolio_rows_from_frame(
                             eval_mask=context_eval_mask,
                             stats=cache_stats,
                             prefix="persistent_feature_matrix_cache",
+                            min_free_gb=persistent_cache_min_free_gb,
                         )
                 if len(feature_matrix_cache) < max(0, int(feature_matrix_cache_max_windows)):
                     feature_matrix_cache[context_window] = (context_frame, context_eval_mask)
@@ -1197,6 +1260,7 @@ def _candidate_portfolio_rows_from_frame(
                             prefix="operator_cache",
                             mode=persistent_cache_mode,
                             expected_length=len(context_frame),
+                            min_free_gb=persistent_cache_min_free_gb,
                         )
                     else:
                         operator_cache = _BoundedSeriesCache(
@@ -1245,6 +1309,7 @@ def _candidate_portfolio_rows_from_frame(
                             prefix="operator_cache",
                             mode=persistent_cache_mode,
                             expected_length=len(frame),
+                            min_free_gb=persistent_cache_min_free_gb,
                         )
                     else:
                         operator_cache = _BoundedSeriesCache(
@@ -2243,6 +2308,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--feature-matrix-cache-max-windows", type=int, default=6)
     parser.add_argument("--persistent-cache-root", type=Path, default=None)
     parser.add_argument("--persistent-cache-mode", choices=("off", "read", "write", "readwrite"), default="readwrite")
+    parser.add_argument(
+        "--persistent-cache-min-free-gb",
+        type=float,
+        default=2.0,
+        help="Skip persistent cache writes when the target volume has less than this much free space.",
+    )
     parser.add_argument("--disable-persistent-expression-cache", action="store_true")
     parser.add_argument("--disable-persistent-operator-cache", action="store_true")
     parser.add_argument("--disable-persistent-feature-matrix-cache", action="store_true")
@@ -2370,6 +2441,7 @@ def main(argv: list[str] | None = None) -> int:
                     persistent_expression_cache=not bool(args.disable_persistent_expression_cache),
                     persistent_operator_cache=not bool(args.disable_persistent_operator_cache),
                     persistent_feature_matrix_cache=not bool(args.disable_persistent_feature_matrix_cache),
+                    persistent_cache_min_free_gb=float(args.persistent_cache_min_free_gb),
                     persistent_cache_scope=persistent_scope,
                 )
                 expression_hash = str(candidate["expression_hash"])
@@ -2538,6 +2610,7 @@ def main(argv: list[str] | None = None) -> int:
             "persistent_cache": _persistent_cache_active(_resolve(args.persistent_cache_root) if args.persistent_cache_root is not None else None, args.persistent_cache_mode),
             "persistent_cache_root": str(_resolve(args.persistent_cache_root)) if args.persistent_cache_root is not None else "",
             "persistent_cache_mode": str(args.persistent_cache_mode),
+            "persistent_cache_min_free_gb": float(args.persistent_cache_min_free_gb),
             "persistent_factor_expression_cache": not bool(args.disable_persistent_expression_cache),
             "persistent_operator_subtree_cache": not bool(args.disable_persistent_operator_cache),
             "persistent_feature_matrix_cache": not bool(args.disable_persistent_feature_matrix_cache),

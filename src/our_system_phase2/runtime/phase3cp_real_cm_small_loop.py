@@ -863,6 +863,8 @@ def _append_cm_persistent_cache_args(argv: list[str], args: argparse.Namespace) 
             str(root),
             "--persistent-cache-mode",
             str(getattr(args, "cm_persistent_cache_mode", "readwrite")),
+            "--persistent-cache-min-free-gb",
+            str(getattr(args, "cm_persistent_cache_min_free_gb", 2.0)),
         ]
     )
     if bool(getattr(args, "cm_disable_persistent_expression_cache", False)):
@@ -1667,6 +1669,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-feature-matrix-cache-max-windows", type=int, default=6)
     parser.add_argument("--cm-persistent-cache-root", type=Path, default=None)
     parser.add_argument("--cm-persistent-cache-mode", choices=("off", "read", "write", "readwrite"), default="readwrite")
+    parser.add_argument("--cm-persistent-cache-min-free-gb", type=float, default=2.0)
     parser.add_argument("--cm-disable-persistent-expression-cache", action="store_true")
     parser.add_argument("--cm-disable-persistent-operator-cache", action="store_true")
     parser.add_argument("--cm-disable-persistent-feature-matrix-cache", action="store_true")
@@ -1844,6 +1847,7 @@ def main(argv: list[str] | None = None) -> int:
         "cm_event_sample_trade_times_per_shard": int(args.cm_event_sample_trade_times_per_shard),
         "cm_persistent_cache_root": str(args.cm_persistent_cache_root or ""),
         "cm_persistent_cache_mode": str(args.cm_persistent_cache_mode),
+        "cm_persistent_cache_min_free_gb": float(args.cm_persistent_cache_min_free_gb),
         "cm_persistent_expression_cache": not bool(args.cm_disable_persistent_expression_cache),
         "cm_persistent_operator_cache": not bool(args.cm_disable_persistent_operator_cache),
         "cm_persistent_feature_matrix_cache": not bool(args.cm_disable_persistent_feature_matrix_cache),
