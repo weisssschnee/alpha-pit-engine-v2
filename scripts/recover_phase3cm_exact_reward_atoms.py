@@ -112,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
         raise RuntimeError(f"exact reward atom coverage failed for {len(incomplete)} candidates")
 
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
-    reward_rows: list[dict[str, Any]] = []
+    valid_reward_rows: list[dict[str, Any]] = []
     semantic_blocked_rows: list[dict[str, Any]] = []
     split_rows: list[dict[str, Any]] = []
     for index, candidate in enumerate(candidates, 1):
@@ -150,14 +150,32 @@ def main(argv: list[str] | None = None) -> int:
             }
             for row in per_split
         )
-        reward_rows.append(reward_row)
+        valid_reward_rows.append(reward_row)
 
-    reward_rows.sort(key=lambda row: safe_float(row.get("train_reward"), -999.0), reverse=True)
+    valid_reward_rows.sort(key=lambda row: safe_float(row.get("train_reward"), -999.0), reverse=True)
+    reward_rows: list[dict[str, Any]] = []
+    semantic_equivalent_rows: list[dict[str, Any]] = []
+    semantic_owner: dict[str, dict[str, Any]] = {}
+    for row in valid_reward_rows:
+        semantic_key = str(row.get("semantic_key") or row.get("expression_hash") or "")
+        owner = semantic_owner.get(semantic_key)
+        if owner is not None:
+            duplicate = dict(row)
+            duplicate["semantic_equivalent_to_candidate_id"] = owner.get("candidate_id")
+            duplicate["semantic_equivalent_to_expression_hash"] = owner.get("expression_hash")
+            semantic_equivalent_rows.append(duplicate)
+            continue
+        semantic_owner[semantic_key] = row
+        reward_rows.append(row)
+    kept_hashes = {str(row.get("expression_hash") or "") for row in reward_rows}
+    split_rows = [row for row in split_rows if str(row.get("expression_hash") or "") in kept_hashes]
     summary = {
         "created_at": datetime.now(timezone.utc).isoformat(),
         "decision": "PHASE3CM_EXACT_ALL_SHARD_REWARD_ATOM_RECOVERY_READY_DIAGNOSTIC_ONLY",
         "candidate_count": len(candidates),
-        "semantically_valid_candidate_count": len(reward_rows),
+        "semantically_valid_candidate_count": len(valid_reward_rows),
+        "semantic_unique_reward_count": len(reward_rows),
+        "semantic_equivalent_candidate_count": len(semantic_equivalent_rows),
         "semantic_blocked_candidate_count": len(semantic_blocked_rows),
         "expected_shard_count": len(expected_shards),
         "coverage_failure_count": 0,
@@ -190,6 +208,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     _write_csv(output_root / "phase3cm_train_reward.csv", reward_rows)
     _write_csv(output_root / "phase3cm_semantic_blocked_reward_audit.csv", semantic_blocked_rows)
+    _write_csv(output_root / "phase3cm_semantic_equivalent_reward_audit.csv", semantic_equivalent_rows)
     _write_csv(output_root / "phase3cm_candidate_split_horizon_summary.csv", split_rows)
     _write_json(output_root / "phase3cm_exact_reward_atom_recovery_summary.json", summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
