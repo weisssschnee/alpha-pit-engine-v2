@@ -18,9 +18,9 @@ import importlib.metadata
 import json
 import math
 import os
-import random
 import shutil
 import statistics
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -51,6 +51,7 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
 from our_system_phase2.services.legacy_field_aliases import rewrite_legacy_field_aliases, rewrite_summary
 from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
+from our_system_phase2.services.signal_vector_semantics import build_signal_semantic_diagnostics
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -66,6 +67,9 @@ HARD_INPUT_BLOCKER_TOKENS = (
 )
 _NUMBA_RANK_RUNTIME_DISABLED = False
 PERSISTENT_CACHE_VERSION = "phase3cm_persistent_series_cache_v1"
+DEFAULT_PERSISTENT_CACHE_MAX_GB = 120.0
+DEFAULT_PERSISTENT_CACHE_TTL_DAYS = 7.0
+_PERSISTENT_CACHE_PRUNE_LAST_RUN: dict[str, float] = {}
 
 
 def _resolve(path: Path) -> Path:
@@ -343,8 +347,11 @@ def _persistent_cache_write_allowed(
     stats: dict[str, int],
     prefix: str,
     min_free_gb: float,
+    max_gb: float,
+    ttl_days: float,
     estimated_bytes: int = 0,
 ) -> bool:
+    _persistent_cache_maybe_prune(path, stats=stats, prefix=prefix, max_gb=max_gb, ttl_days=ttl_days)
     min_free_bytes = max(0, int(float(min_free_gb or 0.0) * (1024**3)))
     if min_free_bytes <= 0:
         return True
@@ -362,6 +369,88 @@ def _persistent_cache_write_allowed(
         return False
 
 
+def _persistent_cache_budget_root(path: Path) -> Path:
+    for parent in path.resolve().parents:
+        if parent.name == PERSISTENT_CACHE_VERSION:
+            return parent
+    return path.parent
+
+
+def _persistent_cache_maybe_prune(
+    path: Path,
+    *,
+    stats: dict[str, int],
+    prefix: str,
+    max_gb: float,
+    ttl_days: float,
+    min_interval_sec: float = 300.0,
+) -> None:
+    if float(max_gb or 0.0) <= 0 and float(ttl_days or 0.0) <= 0:
+        return
+    try:
+        budget_root = _persistent_cache_budget_root(path)
+        key = str(budget_root)
+        now = time.time()
+        last = _PERSISTENT_CACHE_PRUNE_LAST_RUN.get(key, 0.0)
+        if now - last < float(min_interval_sec):
+            return
+        _PERSISTENT_CACHE_PRUNE_LAST_RUN[key] = now
+        _persistent_cache_prune(
+            budget_root,
+            stats=stats,
+            prefix=prefix,
+            max_gb=float(max_gb or 0.0),
+            ttl_days=float(ttl_days or 0.0),
+        )
+    except Exception:
+        _inc(stats, f"{prefix}_disk_prune_errors")
+
+
+def _persistent_cache_prune(
+    budget_root: Path,
+    *,
+    stats: dict[str, int],
+    prefix: str,
+    max_gb: float,
+    ttl_days: float,
+) -> None:
+    if not budget_root.exists():
+        return
+    files: list[Path] = [path for path in budget_root.rglob("*") if path.is_file()]
+    now = time.time()
+    cutoff = now - float(ttl_days) * 86400.0 if ttl_days > 0 else None
+    total_bytes = 0
+    file_rows: list[tuple[float, int, Path]] = []
+    for file_path in files:
+        try:
+            stat = file_path.stat()
+        except OSError:
+            continue
+        total_bytes += int(stat.st_size)
+        file_rows.append((float(stat.st_mtime), int(stat.st_size), file_path))
+        if cutoff is not None and float(stat.st_mtime) < cutoff:
+            try:
+                file_path.unlink()
+                total_bytes -= int(stat.st_size)
+                _inc(stats, f"{prefix}_disk_pruned_ttl")
+            except OSError:
+                _inc(stats, f"{prefix}_disk_prune_unlink_errors")
+    max_bytes = int(max_gb * (1024**3)) if max_gb > 0 else 0
+    if max_bytes <= 0 or total_bytes <= max_bytes:
+        return
+    for _mtime, size, file_path in sorted(file_rows, key=lambda row: row[0]):
+        if total_bytes <= max_bytes:
+            break
+        if not file_path.exists():
+            continue
+        try:
+            file_path.unlink()
+            total_bytes -= int(size)
+            _inc(stats, f"{prefix}_disk_pruned_budget")
+        except OSError:
+            _inc(stats, f"{prefix}_disk_prune_unlink_errors")
+
+
 def _write_cached_series(
     path: Path,
     series: pd.Series,
@@ -369,6 +458,8 @@ def _write_cached_series(
     prefix: str,
     *,
     min_free_gb: float = 0.0,
+    max_gb: float = DEFAULT_PERSISTENT_CACHE_MAX_GB,
+    ttl_days: float = DEFAULT_PERSISTENT_CACHE_TTL_DAYS,
 ) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -378,6 +469,8 @@ def _write_cached_series(
             stats=stats,
             prefix=prefix,
             min_free_gb=min_free_gb,
+            max_gb=max_gb,
+            ttl_days=ttl_days,
             estimated_bytes=estimated_bytes,
         ):
             return
@@ -438,6 +531,8 @@ def _write_cached_feature_matrix(
     stats: dict[str, int],
     prefix: str,
     min_free_gb: float = 0.0,
+    max_gb: float = DEFAULT_PERSISTENT_CACHE_MAX_GB,
+    ttl_days: float = DEFAULT_PERSISTENT_CACHE_TTL_DAYS,
 ) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -447,6 +542,8 @@ def _write_cached_feature_matrix(
             stats=stats,
             prefix=prefix,
             min_free_gb=min_free_gb,
+            max_gb=max_gb,
+            ttl_days=ttl_days,
             estimated_bytes=estimated_bytes,
         ):
             return
@@ -465,6 +562,54 @@ def _write_cached_feature_matrix(
             pass
 
 
+def _feature_matrix_value_bytes(value: tuple[pd.DataFrame, pd.Series]) -> int:
+    frame, eval_mask = value
+    frame_bytes = int(frame.memory_usage(index=True, deep=False).sum())
+    mask_bytes = int(eval_mask.memory_usage(index=True, deep=False))
+    return max(0, frame_bytes + mask_bytes)
+
+
+def _store_bounded_feature_matrix(
+    cache: dict[int, tuple[pd.DataFrame, pd.Series]],
+    key: int,
+    value: tuple[pd.DataFrame, pd.Series],
+    *,
+    stats: dict[str, int],
+    max_windows: int,
+    max_bytes: int,
+) -> bool:
+    max_windows = max(0, int(max_windows))
+    max_bytes = max(0, int(max_bytes))
+    if max_windows == 0:
+        _inc(stats, "feature_matrix_cache_skipped_capacity")
+        return False
+    value_bytes = _feature_matrix_value_bytes(value)
+    if max_bytes and value_bytes > max_bytes:
+        _inc(stats, "feature_matrix_cache_skipped_byte_capacity")
+        return False
+    current_bytes = int(stats.get("feature_matrix_cache_memory_bytes_current", 0))
+    while cache and (
+        len(cache) >= max_windows
+        or (max_bytes and current_bytes + value_bytes > max_bytes)
+    ):
+        oldest = next(iter(cache))
+        evicted = cache.pop(oldest)
+        current_bytes = max(0, current_bytes - _feature_matrix_value_bytes(evicted))
+        _inc(stats, "feature_matrix_cache_memory_evictions")
+    if max_bytes and current_bytes + value_bytes > max_bytes:
+        _inc(stats, "feature_matrix_cache_skipped_byte_capacity")
+        return False
+    cache[key] = value
+    current_bytes += value_bytes
+    stats["feature_matrix_cache_memory_bytes_current"] = current_bytes
+    stats["feature_matrix_cache_memory_bytes_peak"] = max(
+        stats.get("feature_matrix_cache_memory_bytes_peak", 0),
+        current_bytes,
+    )
+    _inc(stats, "feature_matrix_cache_stores")
+    return True
+
+
 class _BoundedSeriesCache(dict[str, pd.Series]):
     """Small in-memory cache for expression operator subtrees.
 
@@ -473,11 +618,69 @@ class _BoundedSeriesCache(dict[str, pd.Series]):
     series and Phase3CM may run many worker processes in parallel.
     """
 
-    def __init__(self, *, max_entries: int, stats: dict[str, int], prefix: str) -> None:
+    def __init__(
+        self,
+        *,
+        max_entries: int,
+        stats: dict[str, int],
+        prefix: str,
+        max_bytes: int = 0,
+    ) -> None:
         super().__init__()
         self.max_entries = max(0, int(max_entries))
+        self.max_bytes = max(0, int(max_bytes))
+        self.current_bytes = 0
         self.stats = stats
         self.prefix = prefix
+
+    @staticmethod
+    def _value_bytes(value: pd.Series) -> int:
+        try:
+            return max(0, int(value.memory_usage(index=False, deep=False)))
+        except Exception:
+            return max(0, int(getattr(value, "nbytes", 0) or 0))
+
+    def _evict_oldest(self) -> bool:
+        try:
+            oldest = next(iter(self.keys()))
+        except StopIteration:
+            return False
+        value = dict.__getitem__(self, oldest)
+        self.current_bytes = max(0, self.current_bytes - self._value_bytes(value))
+        dict.__delitem__(self, oldest)
+        _inc(self.stats, f"{self.prefix}_memory_evictions")
+        return True
+
+    def _store_memory(self, key: str, value: pd.Series) -> bool:
+        value_bytes = self._value_bytes(value)
+        if self.max_bytes and value_bytes > self.max_bytes:
+            _inc(self.stats, f"{self.prefix}_skipped_byte_capacity")
+            return False
+
+        exists = dict.__contains__(self, key)
+        if exists:
+            old_value = dict.__getitem__(self, key)
+            self.current_bytes = max(0, self.current_bytes - self._value_bytes(old_value))
+            dict.__delitem__(self, key)
+        while self and (
+            (self.max_entries and len(self) >= self.max_entries)
+            or (self.max_bytes and self.current_bytes + value_bytes > self.max_bytes)
+        ):
+            if not self._evict_oldest():
+                break
+        if self.max_bytes and self.current_bytes + value_bytes > self.max_bytes:
+            _inc(self.stats, f"{self.prefix}_skipped_byte_capacity")
+            return False
+        if not exists:
+            _inc(self.stats, f"{self.prefix}_stores")
+        dict.__setitem__(self, key, value)
+        self.current_bytes += value_bytes
+        self.stats[f"{self.prefix}_memory_bytes_current"] = self.current_bytes
+        self.stats[f"{self.prefix}_memory_bytes_peak"] = max(
+            self.stats.get(f"{self.prefix}_memory_bytes_peak", 0),
+            self.current_bytes,
+        )
+        return True
 
     def __contains__(self, key: object) -> bool:
         hit = super().__contains__(key)
@@ -487,13 +690,13 @@ class _BoundedSeriesCache(dict[str, pd.Series]):
         return hit
 
     def __setitem__(self, key: str, value: pd.Series) -> None:
-        exists = super().__contains__(key)
-        if not exists and self.max_entries and len(self) >= self.max_entries:
-            self.stats[f"{self.prefix}_skipped_capacity"] = self.stats.get(f"{self.prefix}_skipped_capacity", 0) + 1
-            return
-        if not exists:
-            self.stats[f"{self.prefix}_stores"] = self.stats.get(f"{self.prefix}_stores", 0) + 1
-        super().__setitem__(key, value)
+        self._store_memory(key, value)
+
+    def __getitem__(self, key: str) -> pd.Series:
+        value = dict.__getitem__(self, key)
+        dict.__delitem__(self, key)
+        dict.__setitem__(self, key, value)
+        return value
 
 
 class _PersistentSeriesCache(_BoundedSeriesCache):
@@ -510,13 +713,18 @@ class _PersistentSeriesCache(_BoundedSeriesCache):
         mode: str,
         expected_length: int | None,
         min_free_gb: float = 0.0,
+        max_gb: float = DEFAULT_PERSISTENT_CACHE_MAX_GB,
+        ttl_days: float = DEFAULT_PERSISTENT_CACHE_TTL_DAYS,
+        max_bytes: int = 0,
     ) -> None:
-        super().__init__(max_entries=max_entries, stats=stats, prefix=prefix)
+        super().__init__(max_entries=max_entries, stats=stats, prefix=prefix, max_bytes=max_bytes)
         self.root = root
         self.namespace = namespace
         self.mode = mode
         self.expected_length = expected_length
         self.min_free_gb = float(min_free_gb or 0.0)
+        self.max_gb = float(max_gb or 0.0)
+        self.ttl_days = float(ttl_days or 0.0)
         # Keep the namespace in the digest rather than the directory name.
         # Windows workers otherwise hit MAX_PATH on deep remote cache roots.
         self.namespace_root = root / PERSISTENT_CACHE_VERSION / "series" / namespace[:2]
@@ -534,17 +742,7 @@ class _PersistentSeriesCache(_BoundedSeriesCache):
         return self.namespace_root / digest[:2] / f"{digest}.npy"
 
     def _put_memory(self, key: str, value: pd.Series) -> None:
-        exists = dict.__contains__(self, key)
-        if not exists and self.max_entries and len(self) >= self.max_entries:
-            try:
-                oldest = next(iter(self.keys()))
-                dict.__delitem__(self, oldest)
-                _inc(self.stats, f"{self.prefix}_memory_evictions")
-            except StopIteration:
-                pass
-        if not exists:
-            _inc(self.stats, f"{self.prefix}_stores")
-        dict.__setitem__(self, key, value)
+        self._store_memory(key, value)
 
     def __contains__(self, key: object) -> bool:
         if not isinstance(key, str):
@@ -565,7 +763,7 @@ class _PersistentSeriesCache(_BoundedSeriesCache):
 
     def __getitem__(self, key: str) -> pd.Series:
         if dict.__contains__(self, key):
-            return dict.__getitem__(self, key)
+            return super().__getitem__(key)
         if self.can_read:
             series = _read_cached_series(self._path_for_key(key), self.expected_length, self.stats, self.prefix)
             if series is not None:
@@ -582,6 +780,8 @@ class _PersistentSeriesCache(_BoundedSeriesCache):
                 self.stats,
                 self.prefix,
                 min_free_gb=self.min_free_gb,
+                max_gb=self.max_gb,
+                ttl_days=self.ttl_days,
             )
 
 
@@ -783,6 +983,7 @@ def _read_train_shard(
     sample_block_index: int = 0,
     event_aware_sample_times: bool = True,
     event_sample_trade_times: int | None = None,
+    prepare_labels: bool = True,
 ) -> tuple[
     pd.DataFrame,
     pd.Series,
@@ -794,23 +995,17 @@ def _read_train_shard(
     dict[str, Any],
 ]:
     max_window = max((int(candidate.get("max_window") or 0) for candidate in candidates), default=0)
-    max_horizon = max(horizons)
+    max_horizon = max(horizons) if prepare_labels else 0
     fields = sorted({field for candidate in candidates for field in candidate["fields_list"]})
     required = {
         "code",
         "trade_time",
         "date",
-        "open",
-        "high",
-        "low",
         "close",
-        "volume",
-        "vol",
-        "amount",
-        "amount_yuan",
-        "vwap",
         *fields,
     }
+    if prepare_labels:
+        required.update({"open", "high", "low", "volume", "vol", "amount", "amount_yuan", "vwap"})
 
     schema = set(pq.ParquetFile(panel_path).schema_arrow.names)
     columns = [column for column in sorted(required) if column in schema]
@@ -876,7 +1071,11 @@ def _read_train_shard(
 
     eval_mask = frame["trade_time"].isin(signal_times)
     eval_frame = frame.loc[eval_mask].copy().reset_index(drop=True)
-    labels = _future_returns(frame, horizons).loc[eval_mask].reset_index(drop=True)
+    labels = (
+        _future_returns(frame, horizons).loc[eval_mask].reset_index(drop=True)
+        if prepare_labels
+        else pd.DataFrame(index=eval_frame.index)
+    )
     context_time_fingerprints = {
         str(key): _timestamp_fingerprint(value)
         for key, value in sorted(context_times_by_window.items(), key=lambda item: item[0])
@@ -900,6 +1099,7 @@ def _read_train_shard(
         "eval_trade_time_fingerprint": _timestamp_fingerprint(eval_frame["trade_time"]),
         "read_column_count": len(columns),
         "candidate_count_in_batch": len(candidates),
+        "labels_prepared": bool(prepare_labels),
     }
     return frame, eval_mask, eval_frame, labels, signal_times, full_signal_times, context_times_by_window, meta
 
@@ -1150,7 +1350,14 @@ def _candidate_portfolio_rows_from_frame(
     persistent_operator_cache: bool,
     persistent_feature_matrix_cache: bool,
     persistent_cache_min_free_gb: float,
+    persistent_cache_max_gb: float,
+    persistent_cache_ttl_days: float,
     persistent_cache_scope: dict[str, Any],
+    semantic_only: bool = False,
+    semantic_diagnostics: dict[str, Any] | None = None,
+    semantic_sketch_size: int = 512,
+    operator_cache_max_bytes: int = 0,
+    feature_matrix_cache_max_bytes: int = 0,
 ) -> list[dict[str, Any]]:
     expression = str(candidate["expression"])
     context_window = max(0, int(candidate.get("max_window") or 0))
@@ -1182,6 +1389,8 @@ def _candidate_portfolio_rows_from_frame(
             mode=persistent_cache_mode,
             expected_length=len(eval_frame),
             min_free_gb=persistent_cache_min_free_gb,
+            max_gb=persistent_cache_max_gb,
+            ttl_days=persistent_cache_ttl_days,
         )
     if expression in expression_cache:
         _inc(cache_stats, "factor_expression_cache_hits")
@@ -1232,12 +1441,17 @@ def _candidate_portfolio_rows_from_frame(
                             stats=cache_stats,
                             prefix="persistent_feature_matrix_cache",
                             min_free_gb=persistent_cache_min_free_gb,
+                            max_gb=persistent_cache_max_gb,
+                            ttl_days=persistent_cache_ttl_days,
                         )
-                if len(feature_matrix_cache) < max(0, int(feature_matrix_cache_max_windows)):
-                    feature_matrix_cache[context_window] = (context_frame, context_eval_mask)
-                    _inc(cache_stats, "feature_matrix_cache_stores")
-                else:
-                    _inc(cache_stats, "feature_matrix_cache_skipped_capacity")
+                _store_bounded_feature_matrix(
+                    feature_matrix_cache,
+                    context_window,
+                    (context_frame, context_eval_mask),
+                    stats=cache_stats,
+                    max_windows=feature_matrix_cache_max_windows,
+                    max_bytes=feature_matrix_cache_max_bytes,
+                )
             operator_cache = operator_cache_by_window.get(context_window)
             if operator_cache is None:
                 operator_cache = None
@@ -1261,15 +1475,27 @@ def _candidate_portfolio_rows_from_frame(
                             mode=persistent_cache_mode,
                             expected_length=len(context_frame),
                             min_free_gb=persistent_cache_min_free_gb,
+                            max_gb=persistent_cache_max_gb,
+                            ttl_days=persistent_cache_ttl_days,
+                            max_bytes=operator_cache_max_bytes,
                         )
                     else:
                         operator_cache = _BoundedSeriesCache(
                             max_entries=operator_cache_max_entries,
                             stats=cache_stats,
                             prefix="operator_cache",
+                            max_bytes=operator_cache_max_bytes,
                         )
                     operator_cache_by_window[context_window] = operator_cache
-            signal_all = pd.to_numeric(evaluate_panel_expression(context_frame, expression, cache=operator_cache), errors="coerce")
+            signal_all = pd.to_numeric(
+                evaluate_panel_expression(
+                    context_frame,
+                    expression,
+                    cache=operator_cache,
+                    diagnostics=semantic_diagnostics,
+                ),
+                errors="coerce",
+            )
             signal = pd.Series(signal_all.loc[context_eval_mask].to_numpy(dtype=float))
             if len(signal) != len(eval_frame):
                 # Fallback preserves correctness if a sparse context unexpectedly loses signal rows.
@@ -1282,9 +1508,18 @@ def _candidate_portfolio_rows_from_frame(
                             max_entries=operator_cache_max_entries,
                             stats=cache_stats,
                             prefix="operator_cache",
+                            max_bytes=operator_cache_max_bytes,
                         )
                         operator_cache_by_window[-1] = full_operator_cache
-                signal_all = pd.to_numeric(evaluate_panel_expression(frame, expression, cache=full_operator_cache), errors="coerce")
+                signal_all = pd.to_numeric(
+                    evaluate_panel_expression(
+                        frame,
+                        expression,
+                        cache=full_operator_cache,
+                        diagnostics=semantic_diagnostics,
+                    ),
+                    errors="coerce",
+                )
                 signal = pd.Series(signal_all.loc[eval_mask].to_numpy(dtype=float))
         else:
             operator_cache = operator_cache_by_window.get(-1)
@@ -1310,15 +1545,27 @@ def _candidate_portfolio_rows_from_frame(
                             mode=persistent_cache_mode,
                             expected_length=len(frame),
                             min_free_gb=persistent_cache_min_free_gb,
+                            max_gb=persistent_cache_max_gb,
+                            ttl_days=persistent_cache_ttl_days,
+                            max_bytes=operator_cache_max_bytes,
                         )
                     else:
                         operator_cache = _BoundedSeriesCache(
                             max_entries=operator_cache_max_entries,
                             stats=cache_stats,
                             prefix="operator_cache",
+                            max_bytes=operator_cache_max_bytes,
                         )
                     operator_cache_by_window[-1] = operator_cache
-            signal_all = pd.to_numeric(evaluate_panel_expression(frame, expression, cache=operator_cache), errors="coerce")
+            signal_all = pd.to_numeric(
+                evaluate_panel_expression(
+                    frame,
+                    expression,
+                    cache=operator_cache,
+                    diagnostics=semantic_diagnostics,
+                ),
+                errors="coerce",
+            )
             signal = pd.Series(signal_all.loc[eval_mask].to_numpy(dtype=float))
         expression_cache[expression] = signal
         if expression_disk_cache is not None:
@@ -1326,6 +1573,16 @@ def _candidate_portfolio_rows_from_frame(
         _inc(cache_stats, "factor_expression_cache_stores")
     if eval_time_index is not None:
         signal_rank = _rank_by_eval_time_index(signal, eval_time_index, cache_stats=cache_stats)
+        if semantic_diagnostics is not None:
+            semantic_diagnostics.update(
+                build_signal_semantic_diagnostics(
+                    signal.to_numpy(dtype=float, copy=False),
+                    signal_rank.to_numpy(dtype=float, copy=False),
+                    sketch_size=semantic_sketch_size,
+                )
+            )
+        if semantic_only:
+            return []
         _inc(cache_stats, "fast_portfolio_loop_used")
         return _candidate_portfolio_rows_from_precomputed_time_groups(
             candidate=candidate,
@@ -1344,6 +1601,16 @@ def _candidate_portfolio_rows_from_frame(
         )
 
     signal_rank = _rank_by_group(signal, eval_frame["trade_time"])
+    if semantic_diagnostics is not None:
+        semantic_diagnostics.update(
+            build_signal_semantic_diagnostics(
+                signal.to_numpy(dtype=float, copy=False),
+                signal_rank.to_numpy(dtype=float, copy=False),
+                sketch_size=semantic_sketch_size,
+            )
+        )
+    if semantic_only:
+        return []
     direction = 1.0 if str(candidate.get("open_direction") or "long_top") == "long_top" else -1.0
     one_way_cost = float(cost_bps) / 10000.0
     q_low = float(top_quantile)
@@ -1485,31 +1752,40 @@ def _daily_returns(curve_rows: list[dict[str, Any]]) -> list[float]:
 
 
 def _bootstrap_days(day_values: list[float], *, iterations: int, seed: int) -> dict[str, Any]:
-    clean = [float(value) for value in day_values if math.isfinite(float(value))]
-    if not clean:
-        return {"iterations": 0, "day_count": 0}
-    rng = random.Random(seed)
-    draws: list[float] = []
-    positives = 0
-    for _ in range(iterations):
-        sample = [clean[rng.randrange(len(clean))] for _ in range(len(clean))]
-        value = _sortino(sample)
-        if value is None:
-            continue
-        draws.append(value)
-        positives += int(value > 0)
+    clean = np.asarray([float(value) for value in day_values if math.isfinite(float(value))], dtype=np.float64)
+    engine = "numpy_vectorized_v1"
+    iterations = max(0, int(iterations))
+    if len(clean) == 0 or iterations == 0:
+        return {"iterations": 0, "day_count": int(len(clean)), "engine": engine}
+    rng = np.random.default_rng(int(seed))
+    indices = rng.integers(0, len(clean), size=(iterations, len(clean)), dtype=np.int64)
+    samples = clean[indices]
+    means = np.mean(samples, axis=1)
+    downside = np.minimum(samples, 0.0)
+    downside_scale = np.sqrt(np.mean(downside * downside, axis=1))
+    valid = np.isfinite(means) & np.isfinite(downside_scale) & (downside_scale > 1e-18)
+    draws = means[valid] / downside_scale[valid]
+    positives = int(np.sum(draws > 0.0))
     return {
-        "iterations": len(draws),
-        "day_count": len(clean),
-        "p05": _round(_quantile(draws, 0.05)),
-        "p25": _round(_quantile(draws, 0.25)),
-        "median": _round(_quantile(draws, 0.50)),
-        "p95": _round(_quantile(draws, 0.95)),
-        "prob_gt_0": _round(positives / len(draws) if draws else None),
+        "iterations": int(len(draws)),
+        "day_count": int(len(clean)),
+        "engine": engine,
+        "p05": _round(float(np.quantile(draws, 0.05)) if len(draws) else None),
+        "p25": _round(float(np.quantile(draws, 0.25)) if len(draws) else None),
+        "median": _round(float(np.quantile(draws, 0.50)) if len(draws) else None),
+        "p95": _round(float(np.quantile(draws, 0.95)) if len(draws) else None),
+        "prob_gt_0": _round(positives / len(draws) if len(draws) else None),
     }
 
 
-def _summarize_curve(curve_rows: list[dict[str, Any]], *, split: str, horizon: int | str, seed: int) -> dict[str, Any]:
+def _summarize_curve(
+    curve_rows: list[dict[str, Any]],
+    *,
+    split: str,
+    horizon: int | str,
+    seed: int,
+    bootstrap_iterations: int = 600,
+) -> dict[str, Any]:
     values = [_f(row.get("net_return")) for row in curve_rows]
     values = [value for value in values if math.isfinite(value)]
     raw = [_f(row.get("raw_return")) for row in curve_rows]
@@ -1521,7 +1797,7 @@ def _summarize_curve(curve_rows: list[dict[str, Any]], *, split: str, horizon: i
     rank_ic_mean = statistics.fmean(rank_ic) if rank_ic else None
     days = sorted({str(row.get("trade_date")) for row in curve_rows if row.get("trade_date")})
     day_values = _daily_returns(curve_rows)
-    boot = _bootstrap_days(day_values, iterations=600, seed=seed)
+    boot = _bootstrap_days(day_values, iterations=bootstrap_iterations, seed=seed)
     return {
         "split": split,
         "horizon_min": horizon,
@@ -1535,6 +1811,8 @@ def _summarize_curve(curve_rows: list[dict[str, Any]], *, split: str, horizon: i
         "day_mcmc_sortino_p25": boot.get("p25"),
         "day_mcmc_sortino_median": boot.get("median"),
         "day_mcmc_prob_sortino_gt_0": boot.get("prob_gt_0"),
+        "day_mcmc_engine": boot.get("engine"),
+        "day_mcmc_iterations": boot.get("iterations"),
         "max_drawdown": _round(_max_drawdown(values)),
         "mean_one_way_turnover": _round(statistics.fmean(turnover) if turnover else None),
         "rank_ic_mean": _round(rank_ic_mean),
@@ -1787,6 +2065,8 @@ def _summarize_reward_atoms(atom_rows: list[dict[str, Any]], *, split: str, hori
         "day_mcmc_sortino_p25": boot.get("p25"),
         "day_mcmc_sortino_median": boot.get("median"),
         "day_mcmc_prob_sortino_gt_0": boot.get("prob_gt_0"),
+        "day_mcmc_engine": boot.get("engine"),
+        "day_mcmc_iterations": boot.get("iterations"),
         "max_drawdown": _round(_max_drawdown(day_values)),
         "mean_one_way_turnover": _round(turnover_sum / turnover_count if turnover_count else None),
         "rank_ic_mean": _round(rank_ic_mean),
@@ -2031,6 +2311,7 @@ def _candidate_summary(
     rank_ic_component_cap: float,
     regime_stability_weight: float,
     regime_component_cap: float,
+    bootstrap_iterations: int = 600,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     split_rows: list[dict[str, Any]] = []
     by_key: dict[tuple[str, str], dict[str, Any]] = {}
@@ -2039,12 +2320,24 @@ def _candidate_summary(
         all_curve = _curve_rows(rows, split=split)
         if split == "train":
             train_all_curve = all_curve
-        summary = _summarize_curve(all_curve, split=split, horizon="equal_weight_horizon_sleeves", seed=seed + len(split))
+        summary = _summarize_curve(
+            all_curve,
+            split=split,
+            horizon="equal_weight_horizon_sleeves",
+            seed=seed + len(split),
+            bootstrap_iterations=bootstrap_iterations,
+        )
         split_rows.append(summary)
         by_key[(split, "all")] = summary
         for horizon in horizons:
             curve = _curve_rows(rows, split=split, horizon=horizon)
-            horizon_summary = _summarize_curve(curve, split=split, horizon=horizon, seed=seed + horizon)
+            horizon_summary = _summarize_curve(
+                curve,
+                split=split,
+                horizon=horizon,
+                seed=seed + horizon,
+                bootstrap_iterations=bootstrap_iterations,
+            )
             split_rows.append(horizon_summary)
             by_key[(split, str(horizon))] = horizon_summary
 
@@ -2295,9 +2588,21 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--write-pnl-rows", action="store_true")
     parser.add_argument("--write-reward-atoms", action="store_true")
+    parser.add_argument(
+        "--semantic-only",
+        action="store_true",
+        help="Evaluate signal values/ranks only; skip labels, portfolio PnL, and reward construction.",
+    )
+    parser.add_argument(
+        "--write-semantic-sketches",
+        action="store_true",
+        help="Write bounded rank sketches and numerical signal diagnostics into candidate progress rows.",
+    )
+    parser.add_argument("--semantic-sketch-size", type=int, default=512)
     parser.add_argument("--fast-mode", action="store_true")
     parser.add_argument("--numexpr-threads", type=int, default=4)
     parser.add_argument("--checkpoint-every-candidates", type=int, default=8)
+    parser.add_argument("--checkpoint-bootstrap-iterations", type=int, default=128)
     parser.add_argument("--disable-incremental-checkpoints", action="store_true")
     parser.add_argument("--drop-hard-blocked-input", action="store_true")
     parser.add_argument("--rank-ic-loss-weight", type=float, default=6.0)
@@ -2305,7 +2610,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--regime-stability-weight", type=float, default=0.08)
     parser.add_argument("--regime-component-cap", type=float, default=0.10)
     parser.add_argument("--operator-cache-max-entries", type=int, default=512)
+    parser.add_argument(
+        "--operator-cache-max-mb",
+        type=float,
+        default=2048.0,
+        help="Per-process in-memory byte cap for full-panel operator Series cache.",
+    )
     parser.add_argument("--feature-matrix-cache-max-windows", type=int, default=6)
+    parser.add_argument(
+        "--feature-matrix-cache-max-mb",
+        type=float,
+        default=4096.0,
+        help="Per-process in-memory byte cap for context-window DataFrame cache.",
+    )
     parser.add_argument("--persistent-cache-root", type=Path, default=None)
     parser.add_argument("--persistent-cache-mode", choices=("off", "read", "write", "readwrite"), default="readwrite")
     parser.add_argument(
@@ -2313,6 +2630,18 @@ def main(argv: list[str] | None = None) -> int:
         type=float,
         default=2.0,
         help="Skip persistent cache writes when the target volume has less than this much free space.",
+    )
+    parser.add_argument(
+        "--persistent-cache-max-gb",
+        type=float,
+        default=DEFAULT_PERSISTENT_CACHE_MAX_GB,
+        help="Prune oldest persistent cache files when the cache version directory exceeds this size. Use <=0 to disable.",
+    )
+    parser.add_argument(
+        "--persistent-cache-ttl-days",
+        type=float,
+        default=DEFAULT_PERSISTENT_CACHE_TTL_DAYS,
+        help="Prune persistent cache files older than this many days. Use <=0 to disable.",
     )
     parser.add_argument("--disable-persistent-expression-cache", action="store_true")
     parser.add_argument("--disable-persistent-operator-cache", action="store_true")
@@ -2325,6 +2654,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--disable-legacy-alias-rewrite", action="store_true")
     parser.add_argument("--m1-first-ret-replacement", default="m1_first5_last_return_vs_open")
     args = parser.parse_args(argv)
+    write_semantic_sketches = bool(args.write_semantic_sketches or args.semantic_only)
 
     if args.fast_mode:
         os.environ.setdefault("NUMEXPR_MAX_THREADS", str(args.numexpr_threads))
@@ -2396,6 +2726,7 @@ def main(argv: list[str] | None = None) -> int:
                     if int(args.event_sample_trade_times_per_shard or 0) > 0
                     else args.sample_trade_times_per_shard
                 ),
+                prepare_labels=not bool(args.semantic_only),
             )
             meta["shard_index"] = shard_index
             split_by_time = _split_map(full_signal_times, args.train_fraction, args.validation_fraction)
@@ -2415,6 +2746,7 @@ def main(argv: list[str] | None = None) -> int:
             shard_cache_stats: dict[str, int] = {}
             shard_rows = 0
             for candidate_index, candidate in enumerate(candidates, 1):
+                semantic_diagnostics: dict[str, Any] | None = {} if write_semantic_sketches else None
                 rows = _candidate_portfolio_rows_from_frame(
                     candidate=candidate,
                     frame=frame,
@@ -2442,30 +2774,39 @@ def main(argv: list[str] | None = None) -> int:
                     persistent_operator_cache=not bool(args.disable_persistent_operator_cache),
                     persistent_feature_matrix_cache=not bool(args.disable_persistent_feature_matrix_cache),
                     persistent_cache_min_free_gb=float(args.persistent_cache_min_free_gb),
+                    persistent_cache_max_gb=float(args.persistent_cache_max_gb),
+                    persistent_cache_ttl_days=float(args.persistent_cache_ttl_days),
                     persistent_cache_scope=persistent_scope,
+                    semantic_only=bool(args.semantic_only),
+                    semantic_diagnostics=semantic_diagnostics,
+                    semantic_sketch_size=max(16, int(args.semantic_sketch_size)),
+                    operator_cache_max_bytes=max(0, int(float(args.operator_cache_max_mb) * 1024 * 1024)),
+                    feature_matrix_cache_max_bytes=max(0, int(float(args.feature_matrix_cache_max_mb) * 1024 * 1024)),
                 )
                 expression_hash = str(candidate["expression_hash"])
                 rows_by_hash[expression_hash].extend(rows)
                 shard_rows += len(rows)
                 processed_candidate_shards += 1
-                progress_rows.append(
-                    {
-                        "created_at": datetime.now(timezone.utc).isoformat(),
-                        "candidate_id": candidate.get("candidate_id"),
-                        "expression_hash": expression_hash,
-                        "generator_arm": candidate.get("generator_arm"),
-                        "shard_index": shard_index,
-                        "sample_block_index": sample_block_index,
-                        "sample_block_count": int(args.sample_block_count),
-                        "candidate_index": candidate_index,
-                        "processed_candidate_shards": processed_candidate_shards,
-                        "rows_added": len(rows),
-                        "cumulative_rows_for_candidate": len(rows_by_hash[expression_hash]),
-                        "expression_cache_size": len(expression_cache),
-                        "checkpoint_partial": True,
-                    }
-                )
-                if not args.disable_incremental_checkpoints:
+                progress_row = {
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "candidate_id": candidate.get("candidate_id"),
+                    "expression_hash": expression_hash,
+                    "generator_arm": candidate.get("generator_arm"),
+                    "shard_index": shard_index,
+                    "sample_block_index": sample_block_index,
+                    "sample_block_count": int(args.sample_block_count),
+                    "candidate_index": candidate_index,
+                    "processed_candidate_shards": processed_candidate_shards,
+                    "rows_added": len(rows),
+                    "cumulative_rows_for_candidate": len(rows_by_hash[expression_hash]),
+                    "expression_cache_size": len(expression_cache),
+                    "checkpoint_partial": True,
+                    "semantic_only": bool(args.semantic_only),
+                }
+                if semantic_diagnostics:
+                    progress_row.update(semantic_diagnostics)
+                progress_rows.append(progress_row)
+                if not args.disable_incremental_checkpoints and not args.semantic_only:
                     _, reward_row = _candidate_summary(
                         candidate,
                         rows_by_hash[expression_hash],
@@ -2475,6 +2816,7 @@ def main(argv: list[str] | None = None) -> int:
                         rank_ic_component_cap=args.rank_ic_component_cap,
                         regime_stability_weight=args.regime_stability_weight,
                         regime_component_cap=args.regime_component_cap,
+                        bootstrap_iterations=max(0, int(args.checkpoint_bootstrap_iterations)),
                     )
                     reward_row["checkpoint_partial"] = True
                     reward_row["checkpoint_shards_seen"] = shard_index + 1
@@ -2525,39 +2867,45 @@ def main(argv: list[str] | None = None) -> int:
         _schema_hold_reward_row(candidate, portfolio_mode=args.portfolio_mode)
         for candidate in schema_held_candidates
     ]
-    for idx, candidate in enumerate(candidates, 1):
-        rows = rows_by_hash[str(candidate["expression_hash"])]
-        per_split, reward_row = _candidate_summary(
-            candidate,
-            rows,
-            horizons,
-            seed=20260623 + idx,
-            rank_ic_loss_weight=args.rank_ic_loss_weight,
-            rank_ic_component_cap=args.rank_ic_component_cap,
-            regime_stability_weight=args.regime_stability_weight,
-            regime_component_cap=args.regime_component_cap,
-        )
-        for row in per_split:
-            split_horizon_rows.append(
-                {
-                    "candidate_id": candidate.get("candidate_id"),
-                    "expression_hash": candidate.get("expression_hash"),
-                    "generator_arm": candidate.get("generator_arm"),
-                    "factor_lane": candidate.get("factor_lane"),
-                    "expression": candidate.get("expression"),
-                    **row,
-                }
+    if not args.semantic_only:
+        for idx, candidate in enumerate(candidates, 1):
+            rows = rows_by_hash[str(candidate["expression_hash"])]
+            per_split, reward_row = _candidate_summary(
+                candidate,
+                rows,
+                horizons,
+                seed=20260623 + idx,
+                rank_ic_loss_weight=args.rank_ic_loss_weight,
+                rank_ic_component_cap=args.rank_ic_component_cap,
+                regime_stability_weight=args.regime_stability_weight,
+                regime_component_cap=args.regime_component_cap,
+                bootstrap_iterations=600,
             )
-        if args.write_reward_atoms:
-            reward_atom_rows.extend(_reward_atoms_for_candidate(candidate, rows, horizons))
-        reward_rows.append(reward_row)
+            for row in per_split:
+                split_horizon_rows.append(
+                    {
+                        "candidate_id": candidate.get("candidate_id"),
+                        "expression_hash": candidate.get("expression_hash"),
+                        "generator_arm": candidate.get("generator_arm"),
+                        "factor_lane": candidate.get("factor_lane"),
+                        "expression": candidate.get("expression"),
+                        **row,
+                    }
+                )
+            if args.write_reward_atoms:
+                reward_atom_rows.extend(_reward_atoms_for_candidate(candidate, rows, horizons))
+            reward_rows.append(reward_row)
 
     reward_rows.sort(key=lambda row: _f(row.get("train_reward"), -999.0), reverse=True)
     followup_count = sum(1 for row in reward_rows if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY")
     summary = {
         "created_at": datetime.now(timezone.utc).isoformat(),
         "experiment_id": "20260623_phase3cm_train_portfolio_sortino_reward_audit",
-        "decision": "PHASE3CM_TRAIN_REWARD_AUDIT_READY_DIAGNOSTIC_ONLY",
+        "decision": (
+            "PHASE3CM_SIGNAL_SEMANTIC_AUDIT_READY_DIAGNOSTIC_ONLY"
+            if args.semantic_only
+            else "PHASE3CM_TRAIN_REWARD_AUDIT_READY_DIAGNOSTIC_ONLY"
+        ),
         "candidate_count": input_candidate_count,
         "runnable_candidate_count": len(candidates),
         "schema_gate_enabled": not bool(args.disable_schema_gate),
@@ -2585,14 +2933,24 @@ def main(argv: list[str] | None = None) -> int:
         "rank_ic_component_cap": args.rank_ic_component_cap,
         "regime_stability_weight": args.regime_stability_weight,
         "regime_component_cap": args.regime_component_cap,
-        "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
+        "optimizer_reward_metric": None if args.semantic_only else OPTIMIZER_REWARD_METRIC,
+        "bootstrap_engine": None if args.semantic_only else "numpy_vectorized_v1",
+        "bootstrap_iterations_per_curve": 0 if args.semantic_only else 600,
         "portfolio_pnl_rows_written": len(pnl_rows) if args.write_pnl_rows else 0,
         "reward_atom_rows_written": len(reward_atom_rows) if args.write_reward_atoms else 0,
-        "metric_boundary": "train portfolio Sortino + rankIC loss reward audit; not production proof; validation/holdout must not feed search; long_short_spread is not CN tradable",
+        "metric_boundary": (
+            "signal-value and rank-equivalence diagnostics only; no labels, PnL, reward, validation, or holdout optimization"
+            if args.semantic_only
+            else "train portfolio Sortino + rankIC loss reward audit; not production proof; validation/holdout must not feed search; long_short_spread is not CN tradable"
+        ),
+        "semantic_only": bool(args.semantic_only),
+        "semantic_sketches_written": bool(write_semantic_sketches),
+        "semantic_sketch_size": max(16, int(args.semantic_sketch_size)),
         "fast_mode": bool(args.fast_mode),
         "numexpr_threads": int(args.numexpr_threads),
         "incremental_checkpoints_enabled": not bool(args.disable_incremental_checkpoints),
         "checkpoint_every_candidates": int(args.checkpoint_every_candidates),
+        "checkpoint_bootstrap_iterations": max(0, int(args.checkpoint_bootstrap_iterations)),
         "drop_hard_blocked_input": bool(args.drop_hard_blocked_input),
         "legacy_alias_rewrite_enabled": not bool(args.disable_legacy_alias_rewrite),
         "m1_first_ret_replacement": str(args.m1_first_ret_replacement),
@@ -2611,6 +2969,8 @@ def main(argv: list[str] | None = None) -> int:
             "persistent_cache_root": str(_resolve(args.persistent_cache_root)) if args.persistent_cache_root is not None else "",
             "persistent_cache_mode": str(args.persistent_cache_mode),
             "persistent_cache_min_free_gb": float(args.persistent_cache_min_free_gb),
+            "persistent_cache_max_gb": float(args.persistent_cache_max_gb),
+            "persistent_cache_ttl_days": float(args.persistent_cache_ttl_days),
             "persistent_factor_expression_cache": not bool(args.disable_persistent_expression_cache),
             "persistent_operator_subtree_cache": not bool(args.disable_persistent_operator_cache),
             "persistent_feature_matrix_cache": not bool(args.disable_persistent_feature_matrix_cache),
@@ -2627,7 +2987,9 @@ def main(argv: list[str] | None = None) -> int:
                 and not _NUMBA_RANK_RUNTIME_DISABLED
             ),
             "operator_cache_max_entries": int(args.operator_cache_max_entries),
+            "operator_cache_max_mb": float(args.operator_cache_max_mb),
             "feature_matrix_cache_max_windows": int(args.feature_matrix_cache_max_windows),
+            "feature_matrix_cache_max_mb": float(args.feature_matrix_cache_max_mb),
             "fast_group_rank": True,
             "omp_threads": os.environ.get("OMP_NUM_THREADS"),
             "mkl_threads": os.environ.get("MKL_NUM_THREADS"),
@@ -2637,6 +2999,7 @@ def main(argv: list[str] | None = None) -> int:
             "parallel_axis": "none_serial",
             "event_aware_sample_times": bool(args.event_aware_sample_times),
             "event_sample_trade_times_per_shard": int(args.event_sample_trade_times_per_shard or 0),
+            "semantic_only_no_label_construction": bool(args.semantic_only),
         },
     }
     if args.write_pnl_rows:

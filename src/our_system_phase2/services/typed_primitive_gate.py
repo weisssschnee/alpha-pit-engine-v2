@@ -11,8 +11,9 @@ import re
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from our_system_phase2.services.expression_semantics import analyze_expression
 
-REGISTRY_VERSION = "phase3ce1_typed_primitive_gate_v1_20260618"
+REGISTRY_VERSION = "phase3ce1_typed_primitive_gate_v2_20260710"
 
 FIELD_RE = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)")
 
@@ -49,6 +50,20 @@ TYPED_PRIMITIVES = (
     "SafeCSResidual",
 )
 
+DERIVED_GROUP_CONTEXT_PREFIXES = (
+    "ctx_industry_",
+    "ctx_sector_",
+    "ctx_plate_",
+)
+
+GROUP_KEY_SUFFIXES = (
+    "_code",
+    "_name",
+    "_id",
+    "_key",
+    "_label",
+)
+
 
 @dataclass(frozen=True)
 class TypedGateVerdict:
@@ -61,6 +76,11 @@ class TypedGateVerdict:
     entry_lineage: str = ""
     materialization_stage: str = ""
     candidate_role: str = ""
+    semantic_gate_decision: str = ""
+    semantic_gate_reason: str = ""
+    semantic_canonical_expression: str = ""
+    semantic_issue_codes: str = ""
+    semantic_key: str = ""
 
     def to_row(self) -> dict[str, Any]:
         return asdict(self)
@@ -86,6 +106,8 @@ def field_category(field: str) -> str:
         return "timestamp_or_key"
     if name in {"code", "symbol", "date", "trade_date", "trade_time", "notice_date", "report_date", "update_time"}:
         return "timestamp_or_key"
+    if name.startswith(DERIVED_GROUP_CONTEXT_PREFIXES) and not name.endswith(GROUP_KEY_SUFFIXES):
+        return "coverage_sensitive"
     if any(token in name for token in ("industry", "sector", "plate", "concept", "board_code", "theme")):
         return "membership_or_group_key"
     if name.startswith("ctx_"):
@@ -149,25 +171,53 @@ def validate_expression(
     materialization_stage: str,
     candidate_role: str,
 ) -> TypedGateVerdict:
-    expr = expression or ""
-    fields = expression_fields(expr)
-    if not fields:
-        if any(token in expr.lower() for token in ("future", "label", "next_")):
-            return TypedGateVerdict(
-                typed_gate_decision="reject_label_or_future_field",
-                typed_gate_reason="expression has label/future token without explicit field syntax",
-                blocked_fields="",
-                blocked_primitives="",
-                entry_lineage=entry_lineage,
-                materialization_stage=materialization_stage,
-                candidate_role=candidate_role,
-            )
+    semantic = analyze_expression(expression or "")
+    semantic_reason = " | ".join(issue.detail for issue in semantic.issues)
+
+    def verdict(
+        *,
+        typed_gate_decision: str,
+        typed_gate_reason: str,
+        blocked_fields: str = "",
+        blocked_primitives: str = "",
+        required_rewrite: str = "",
+    ) -> TypedGateVerdict:
         return TypedGateVerdict(
-            typed_gate_decision="allow",
-            typed_gate_reason="no dollar-field formula inputs detected",
+            typed_gate_decision=typed_gate_decision,
+            typed_gate_reason=typed_gate_reason,
+            blocked_fields=blocked_fields,
+            blocked_primitives=blocked_primitives,
+            required_rewrite=required_rewrite,
+            registry_version=REGISTRY_VERSION,
             entry_lineage=entry_lineage,
             materialization_stage=materialization_stage,
             candidate_role=candidate_role,
+            semantic_gate_decision=semantic.decision,
+            semantic_gate_reason=semantic_reason,
+            semantic_canonical_expression=semantic.canonical_expression,
+            semantic_issue_codes="|".join(semantic.issue_codes),
+            semantic_key=semantic.semantic_key,
+        )
+
+    if semantic.hard_blocked:
+        return verdict(
+            typed_gate_decision="blocked_semantic_degeneracy",
+            typed_gate_reason=semantic_reason or "expression failed semantic value-domain validation",
+            blocked_primitives="|".join(sorted({issue.code for issue in semantic.issues if issue.severity == "block"})),
+            required_rewrite="remove degenerate subtree or use an explicitly signed transform",
+        )
+
+    expr = semantic.canonical_expression
+    fields = expression_fields(expr)
+    if not fields:
+        if any(token in expr.lower() for token in ("future", "label", "next_")):
+            return verdict(
+                typed_gate_decision="reject_label_or_future_field",
+                typed_gate_reason="expression has label/future token without explicit field syntax",
+            )
+        return verdict(
+            typed_gate_decision="allow",
+            typed_gate_reason="no dollar-field formula inputs detected",
         )
 
     typed_prims = _typed_primitives(expr)
@@ -178,28 +228,22 @@ def validate_expression(
         field for field, category in field_categories.items() if category in {"timestamp_or_key", "text_or_label"}
     ]
     if label_or_key_fields:
-        return TypedGateVerdict(
+        return verdict(
             typed_gate_decision="reject_label_or_future_field",
             typed_gate_reason="timestamp/key/label fields cannot be formula inputs",
             blocked_fields="|".join(label_or_key_fields),
             blocked_primitives="|".join(ordinary_prims),
-            entry_lineage=entry_lineage,
-            materialization_stage=materialization_stage,
-            candidate_role=candidate_role,
         )
 
     membership_fields = [
         field for field, category in field_categories.items() if category == "membership_or_group_key"
     ]
     if membership_fields:
-        return TypedGateVerdict(
+        return verdict(
             typed_gate_decision="reject_membership_key_formula_input",
             typed_gate_reason="membership/group fields are context keys until group geometry audit",
             blocked_fields="|".join(membership_fields),
             blocked_primitives="|".join(ordinary_prims),
-            entry_lineage=entry_lineage,
-            materialization_stage=materialization_stage,
-            candidate_role=candidate_role,
         )
 
     blocked_categories = {"sparse_event", "discrete_state"}
@@ -216,36 +260,27 @@ def validate_expression(
             }
         )
         if offending_prims or any(primitive in {"CSResidual", "Corr", "Cov", "Std", "Delta", "Delay"} for primitive in ordinary_prims):
-            return TypedGateVerdict(
+            return verdict(
                 typed_gate_decision="blocked_unsafe_known_structure",
                 typed_gate_reason="ordinary continuous primitive consumed sparse event or discrete state field",
                 blocked_fields="|".join(blocked_fields),
                 blocked_primitives="|".join(offending_prims or ordinary_prims),
                 required_rewrite="EventCount|EventAge|EventTransition|StateDwell|WindowStateCount",
-                entry_lineage=entry_lineage,
-                materialization_stage=materialization_stage,
-                candidate_role=candidate_role,
             )
-        return TypedGateVerdict(
+        return verdict(
             typed_gate_decision="require_typed_rewrite",
             typed_gate_reason="sparse event or discrete state field requires typed primitive route",
             blocked_fields="|".join(blocked_fields),
             blocked_primitives="|".join(ordinary_prims),
             required_rewrite="EventCount|EventAge|EventTransition|StateDwell|WindowStateCount",
-            entry_lineage=entry_lineage,
-            materialization_stage=materialization_stage,
-            candidate_role=candidate_role,
         )
     if blocked_fields and not typed_prims:
-        return TypedGateVerdict(
+        return verdict(
             typed_gate_decision="require_typed_rewrite",
             typed_gate_reason="sparse event or discrete state field cannot enter raw formula path without typed primitive",
             blocked_fields="|".join(blocked_fields),
             blocked_primitives="|".join(ordinary_prims),
             required_rewrite="EventCount|EventAge|EventTransition|StateDwell|WindowStateCount",
-            entry_lineage=entry_lineage,
-            materialization_stage=materialization_stage,
-            candidate_role=candidate_role,
         )
 
     coverage_fields = [
@@ -253,24 +288,17 @@ def validate_expression(
     ]
     coverage_prims = [primitive for primitive in ordinary_prims if primitive in {"Corr", "Cov", "ZScore", "CSResidual"}]
     if coverage_fields and coverage_prims and not typed_prims:
-        return TypedGateVerdict(
+        return verdict(
             typed_gate_decision="require_typed_rewrite",
             typed_gate_reason="coverage-sensitive field requires coverage-aware primitive guard",
             blocked_fields="|".join(coverage_fields),
             blocked_primitives="|".join(coverage_prims),
             required_rewrite="ValidRatioGate|MaskedCorr|MaskedZScore|SafeCSResidual",
-            entry_lineage=entry_lineage,
-            materialization_stage=materialization_stage,
-            candidate_role=candidate_role,
         )
 
-    return TypedGateVerdict(
+    return verdict(
         typed_gate_decision="allow",
         typed_gate_reason="no blocked field/primitive combination detected",
-        registry_version=REGISTRY_VERSION,
-        entry_lineage=entry_lineage,
-        materialization_stage=materialization_stage,
-        candidate_role=candidate_role,
     )
 
 

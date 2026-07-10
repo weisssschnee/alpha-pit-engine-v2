@@ -351,25 +351,51 @@ if njit is not None:
         return out
 
 
-def _frame_layout_cache(frame: pd.DataFrame) -> dict[str, tuple[int, np.ndarray, np.ndarray]]:
-    cache = frame.attrs.get("_phase3_eval_group_layout_cache")
-    if not isinstance(cache, dict):
-        cache = {}
-        frame.attrs["_phase3_eval_group_layout_cache"] = cache
-    return cache
+@dataclass(slots=True)
+class _ExpressionEvaluationContext:
+    frame_id: int
+    frame_length: int
+    group_layouts: dict[str, tuple[np.ndarray, np.ndarray]]
+    cross_section_key: pd.Series | None = None
+    diagnostics: dict[str, Any] | None = None
+
+    @classmethod
+    def for_frame(
+        cls,
+        frame: pd.DataFrame,
+        *,
+        diagnostics: dict[str, Any] | None = None,
+    ) -> "_ExpressionEvaluationContext":
+        return cls(
+            frame_id=id(frame),
+            frame_length=len(frame),
+            group_layouts={},
+            diagnostics=diagnostics,
+        )
+
+    def validate_frame(self, frame: pd.DataFrame) -> None:
+        if self.frame_id != id(frame) or self.frame_length != len(frame):
+            raise ValueError("expression evaluation context cannot be reused across dataframes")
 
 
-def _cached_group_layout(frame: pd.DataFrame, name: str, group: pd.Series) -> tuple[np.ndarray, np.ndarray]:
-    cache = _frame_layout_cache(frame)
-    key = f"{name}:{len(frame)}"
-    cached = cache.get(key)
-    if cached is not None and cached[0] == len(frame):
-        return cached[1], cached[2]
+def _cached_group_layout(
+    frame: pd.DataFrame,
+    name: str,
+    group: pd.Series,
+    *,
+    context: _ExpressionEvaluationContext | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    if context is not None:
+        context.validate_frame(frame)
+        cached = context.group_layouts.get(name)
+        if cached is not None:
+            return cached
     codes, _ = pd.factorize(group, sort=False)
     codes = codes.astype(np.int64, copy=False)
     order = np.argsort(codes, kind="stable")
     sorted_codes = codes[order]
-    cache[key] = (len(frame), order, sorted_codes)
+    if context is not None:
+        context.group_layouts[name] = (order, sorted_codes)
     return order, sorted_codes
 
 
@@ -393,9 +419,19 @@ def _rolling_relation(
     return result
 
 
-def _cross_section_key(frame: pd.DataFrame) -> pd.Series:
+def _cross_section_key(
+    frame: pd.DataFrame,
+    context: _ExpressionEvaluationContext | None = None,
+) -> pd.Series:
     if "trade_time" in frame.columns:
-        return pd.to_datetime(frame["trade_time"], errors="coerce")
+        if context is not None:
+            context.validate_frame(frame)
+            if context.cross_section_key is not None:
+                return context.cross_section_key
+        key = pd.to_datetime(frame["trade_time"], errors="coerce")
+        if context is not None:
+            context.cross_section_key = key
+        return key
     return frame["date"]
 
 
@@ -696,13 +732,21 @@ def _state_dwell(frame: pd.DataFrame, value: pd.Series, *, window: int | None = 
     return result
 
 
-def _masked_zscore(frame: pd.DataFrame, value: pd.Series, *, window: int, min_ratio: float) -> pd.Series:
-    code_layout = _cached_group_layout(frame, "code", frame["code"])
-    cross_layout = _cached_group_layout(frame, "cross_section", _cross_section_key(frame))
+def _masked_zscore(
+    frame: pd.DataFrame,
+    value: pd.Series,
+    *,
+    window: int,
+    min_ratio: float,
+    context: _ExpressionEvaluationContext | None = None,
+) -> pd.Series:
+    code_layout = _cached_group_layout(frame, "code", frame["code"], context=context)
+    cross_key = _cross_section_key(frame, context)
+    cross_layout = _cached_group_layout(frame, "cross_section", cross_key, context=context)
     gated = pd.to_numeric(value, errors="coerce").where(
         _rolling_valid_ratio(frame, value, window=window, layout=code_layout) >= min_ratio
     )
-    return fast_zscore_by_group(gated, _cross_section_key(frame), layout=cross_layout)
+    return fast_zscore_by_group(gated, cross_key, layout=cross_layout)
 
 
 def _masked_relation(
@@ -737,13 +781,64 @@ def _expression_cache_key(expression: str, field_lags: dict[str, int] | None) ->
     return f"{expression}||field_lags={active_lags!r}"
 
 
+def _record_division_diagnostics(
+    diagnostics: dict[str, Any] | None,
+    denominator: pd.Series,
+    *,
+    denominator_expression: str,
+) -> None:
+    if diagnostics is None:
+        return
+    values = np.abs(pd.to_numeric(denominator, errors="coerce").to_numpy(dtype=float, copy=False))
+    finite = values[np.isfinite(values)]
+    diagnostics["division_node_count"] = int(diagnostics.get("division_node_count") or 0) + 1
+    if len(finite) == 0:
+        return
+
+    min_abs = float(np.min(finite))
+    p01_abs = float(np.quantile(finite, 0.01))
+    p05_abs = float(np.quantile(finite, 0.05))
+    floor_threshold = max(1e-12, min_abs * (1.0 + 1e-6))
+    floor_hit_ratio = float(np.mean(finite <= floor_threshold))
+
+    previous_min = diagnostics.get("division_min_abs")
+    diagnostics["division_min_abs"] = min_abs if previous_min is None else min(float(previous_min), min_abs)
+    previous_p01 = diagnostics.get("division_p01_abs_min")
+    diagnostics["division_p01_abs_min"] = p01_abs if previous_p01 is None else min(float(previous_p01), p01_abs)
+    previous_p05 = diagnostics.get("division_p05_abs_min")
+    diagnostics["division_p05_abs_min"] = p05_abs if previous_p05 is None else min(float(previous_p05), p05_abs)
+    diagnostics["division_floor_hit_ratio_max"] = max(
+        float(diagnostics.get("division_floor_hit_ratio_max") or 0.0),
+        floor_hit_ratio,
+    )
+    examples = diagnostics.setdefault("division_denominator_examples", [])
+    if isinstance(examples, list) and len(examples) < 8:
+        examples.append(
+            {
+                "expression": denominator_expression,
+                "finite_count": int(len(finite)),
+                "min_abs": min_abs,
+                "p01_abs": p01_abs,
+                "p05_abs": p05_abs,
+                "floor_hit_ratio": floor_hit_ratio,
+            }
+        )
+
+
 def evaluate_panel_expression(
     frame: pd.DataFrame,
     expression: str,
     *,
     cache: dict[str, pd.Series] | None = None,
     field_lags: dict[str, int] | None = None,
+    diagnostics: dict[str, Any] | None = None,
+    _evaluation_context: _ExpressionEvaluationContext | None = None,
 ) -> pd.Series:
+    evaluation_context = _evaluation_context or _ExpressionEvaluationContext.for_frame(
+        frame,
+        diagnostics=diagnostics,
+    )
+    evaluation_context.validate_frame(frame)
     expression = expand_derived_fields(expression.strip())
     cache_key = _expression_cache_key(expression, field_lags)
     if cache is not None and cache_key in cache:
@@ -753,6 +848,15 @@ def evaluate_panel_expression(
         if cache is not None:
             cache[cache_key] = series
         return series
+
+    def evaluate_child(child_expression: str) -> pd.Series:
+        return evaluate_panel_expression(
+            frame,
+            child_expression,
+            cache=cache,
+            field_lags=field_lags,
+            _evaluation_context=evaluation_context,
+        )
 
     if expression.startswith("$"):
         column = expression[1:]
@@ -776,68 +880,79 @@ def evaluate_panel_expression(
     name_lower = name.lower()
 
     if name_lower in {"csrank", "rank"} and len(args) == 1:
-        value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        cross_layout = _cached_group_layout(frame, "cross_section", _cross_section_key(frame))
-        return store(fast_rank_pct_by_group(value, _cross_section_key(frame), layout=cross_layout))
+        value = evaluate_child(args[0])
+        cross_key = _cross_section_key(frame, evaluation_context)
+        cross_layout = _cached_group_layout(frame, "cross_section", cross_key, context=evaluation_context)
+        return store(fast_rank_pct_by_group(value, cross_key, layout=cross_layout))
     if name_lower == "abs" and len(args) == 1:
-        return store(evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags).abs())
+        return store(evaluate_child(args[0]).abs())
     if name_lower == "sign" and len(args) == 1:
-        return store(np.sign(evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)))
+        return store(np.sign(evaluate_child(args[0])))
     if name_lower == "log" and len(args) == 1:
-        return store(_safe_log(evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)))
+        return store(_safe_log(evaluate_child(args[0])))
     if name_lower == "neg" and len(args) == 1:
-        return store(-evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags))
+        return store(-evaluate_child(args[0]))
     if name_lower == "zscore" and len(args) == 1:
-        value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        cross_layout = _cached_group_layout(frame, "cross_section", _cross_section_key(frame))
-        return store(fast_zscore_by_group(value, _cross_section_key(frame), layout=cross_layout))
+        value = evaluate_child(args[0])
+        cross_key = _cross_section_key(frame, evaluation_context)
+        cross_layout = _cached_group_layout(frame, "cross_section", cross_key, context=evaluation_context)
+        return store(fast_zscore_by_group(value, cross_key, layout=cross_layout))
     if name_lower == "csresidual" and len(args) == 2:
-        left = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        right = evaluate_panel_expression(frame, args[1], cache=cache, field_lags=field_lags)
-        cross_layout = _cached_group_layout(frame, "cross_section", _cross_section_key(frame))
+        left = evaluate_child(args[0])
+        right = evaluate_child(args[1])
+        cross_key = _cross_section_key(frame, evaluation_context)
+        cross_layout = _cached_group_layout(frame, "cross_section", cross_key, context=evaluation_context)
         return store(_cross_sectional_residual(frame, left, right, layout=cross_layout))
     if name_lower in {"eventage", "sincelastevent"} and len(args) == 1:
-        value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
+        value = evaluate_child(args[0])
         return store(_event_age(frame, value))
     if name_lower in {"stateage"} and len(args) == 1:
-        value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
+        value = evaluate_child(args[0])
         return store(_state_dwell(frame, value))
     if name_lower == "eventcount" and len(args) == 2:
-        value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
+        value = evaluate_child(args[0])
         window = int(float(args[1]))
-        code_layout = _cached_group_layout(frame, "code", frame["code"])
+        code_layout = _cached_group_layout(frame, "code", frame["code"], context=evaluation_context)
         return store(_rolling_event_count(frame, value, window=window, layout=code_layout))
     if name_lower in {"statedwell", "windowstatecount"} and len(args) == 2:
-        value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
+        value = evaluate_child(args[0])
         window = int(float(args[1]))
         if name_lower == "statedwell":
             return store(_state_dwell(frame, value, window=window))
-        code_layout = _cached_group_layout(frame, "code", frame["code"])
+        code_layout = _cached_group_layout(frame, "code", frame["code"], context=evaluation_context)
         return store(_rolling_event_count(frame, value, window=window, layout=code_layout))
     if name_lower == "validratiogate" and len(args) == 3:
-        value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
+        value = evaluate_child(args[0])
         window = int(float(args[1]))
         min_ratio = float(args[2])
-        code_layout = _cached_group_layout(frame, "code", frame["code"])
+        code_layout = _cached_group_layout(frame, "code", frame["code"], context=evaluation_context)
         return store(
             pd.to_numeric(value, errors="coerce").where(
                 _rolling_valid_ratio(frame, value, window=window, layout=code_layout) >= min_ratio
             )
         )
     if name_lower == "maskedzscore" and len(args) == 3:
-        value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
+        value = evaluate_child(args[0])
         window = int(float(args[1]))
         min_ratio = float(args[2])
-        return store(_masked_zscore(frame, value, window=window, min_ratio=min_ratio))
+        return store(
+            _masked_zscore(
+                frame,
+                value,
+                window=window,
+                min_ratio=min_ratio,
+                context=evaluation_context,
+            )
+        )
     if name_lower == "maskedcorr" and len(args) == 4:
-        left = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        right = evaluate_panel_expression(frame, args[1], cache=cache, field_lags=field_lags)
+        left = evaluate_child(args[0])
+        right = evaluate_child(args[1])
         window = int(float(args[2]))
         min_ratio = float(args[3])
         return store(_masked_relation(frame, left, right, window=window, min_ratio=min_ratio, operator="corr"))
     if name_lower == "safecsresidual" and len(args) == 5:
-        left = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        right = evaluate_panel_expression(frame, args[1], cache=cache, field_lags=field_lags)
+        left = evaluate_child(args[0])
+        right = evaluate_child(args[1])
         min_n = int(float(args[2]))
         min_x_unique = int(float(args[3]))
         min_valid_ratio = float(args[4])
@@ -849,7 +964,12 @@ def evaluate_panel_expression(
                 min_n=min_n,
                 min_x_unique=min_x_unique,
                 min_valid_ratio=min_valid_ratio,
-                layout=_cached_group_layout(frame, "cross_section", _cross_section_key(frame)),
+                layout=_cached_group_layout(
+                    frame,
+                    "cross_section",
+                    _cross_section_key(frame, evaluation_context),
+                    context=evaluation_context,
+                ),
             )
         )
 
@@ -861,7 +981,7 @@ def evaluate_panel_expression(
                 raise UnsupportedExpressionError(f"missing_field:{column}")
             lag = max(window, int((field_lags or {}).get(column, 0)))
             return store(pd.to_numeric(frame[column], errors="coerce").groupby(frame["code"], sort=False).shift(lag))
-        value = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
+        value = evaluate_child(args[0])
         grouped = value.groupby(frame["code"], sort=False)
         if name_lower == "mean":
             return store(grouped.transform(lambda item: item.rolling(window, min_periods=window).mean()))
@@ -883,20 +1003,25 @@ def evaluate_panel_expression(
             return store(grouped.transform(lambda item: item.rolling(window, min_periods=window).skew()))
 
     if name_lower in {"add", "sub", "mul", "div"} and len(args) == 2:
-        left = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        right = evaluate_panel_expression(frame, args[1], cache=cache, field_lags=field_lags)
+        left = evaluate_child(args[0])
+        right = evaluate_child(args[1])
         if name_lower == "add":
             return store(left + right)
         if name_lower == "sub":
             return store(left - right)
         if name_lower == "mul":
             return store(left * right)
+        _record_division_diagnostics(
+            evaluation_context.diagnostics,
+            right,
+            denominator_expression=args[1],
+        )
         denominator = right.replace(0, np.nan)
         return store(left / denominator)
 
     if name_lower in {"corr", "cov"} and len(args) in {2, 3}:
-        left = evaluate_panel_expression(frame, args[0], cache=cache, field_lags=field_lags)
-        right = evaluate_panel_expression(frame, args[1], cache=cache, field_lags=field_lags)
+        left = evaluate_child(args[0])
+        right = evaluate_child(args[1])
         window = int(float(args[2])) if len(args) == 3 else DEFAULT_RELATION_WINDOW_DAYS
         return store(_rolling_relation(frame, left, right, window=window, operator=name_lower))
 

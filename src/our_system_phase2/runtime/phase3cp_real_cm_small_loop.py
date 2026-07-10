@@ -53,7 +53,9 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     end_generation_accounting,
 )
 from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema, safe_float
+from our_system_phase2.services.expression_semantics import analyze_expression
 from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule, read_csv_rows
+from our_system_phase2.services.signal_vector_semantics import classify_candidate_signal_semantics
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -90,7 +92,7 @@ def _stable_expression_hash(expression: str) -> str:
 
 
 def _canonical_expression_key(expression: str) -> str:
-    canonical = re.sub(r"\s+", "", expression.strip())
+    canonical = analyze_expression(expression).canonical_expression
     return f"v2cand-{hashlib.sha1(canonical.encode('utf-8')).hexdigest()[:12]}"
 
 
@@ -118,6 +120,14 @@ def _add_expression_memory_keys(hashes: set[str], expression: Any) -> None:
 
 
 def _is_structural_block_record(row: dict[str, Any]) -> bool:
+    policy = str(row.get("memory_block_policy") or "").strip().lower()
+    if policy in {
+        "blocked_unsafe_known_structure",
+        "structural_quarantine",
+        "typed_primitive_block",
+        "semantic_degeneracy_block",
+    }:
+        return True
     text = " ".join(
         str(row.get(key) or "")
         for key in (
@@ -128,13 +138,11 @@ def _is_structural_block_record(row: dict[str, Any]) -> bool:
             "phase3bp_blocker_flags",
             "phase3ca_blocker_flags",
             "memory_block_reason",
-            "pre_cm_semantic_decision",
-            "pre_cm_semantic_reasons",
             "reason",
             "decision",
         )
     ).lower()
-    return any(token in text for token in ("unsafe", "blocked", "block", "quarantine", "typed_gate"))
+    return any(token in text for token in ("unsafe", "quarantine", "typed_gate", "semantic_degeneracy"))
 
 
 def _add_structural_memory_keys(hashes: set[str], row: dict[str, Any]) -> None:
@@ -277,13 +285,16 @@ def _write_semantic_block_memory(memory_root: Path, rejected: list[dict[str, Any
                 "expression_key": expression_key,
                 "search_memory_key": expression_key,
                 "skeleton_key": skeleton_key,
-                "memory_block_policy": "semantic_viability_block",
-                "memory_block_reason": row.get("memory_block_reason") or "blocked_weak_semantic_viability",
+                "memory_block_policy": row.get("memory_block_policy") or "sampled_signal_observation",
+                "memory_block_reason": row.get("memory_block_reason") or "sampled_signal_not_selected",
                 "pre_cm_semantic_decision": row.get("pre_cm_semantic_decision"),
                 "pre_cm_semantic_reasons": row.get("pre_cm_semantic_reasons"),
                 "semantic_total_rows": row.get("semantic_total_rows"),
                 "semantic_nonzero_shards": row.get("semantic_nonzero_shards"),
                 "semantic_checked_shards": row.get("semantic_checked_shards"),
+                "signal_semantic_decision": row.get("signal_semantic_decision"),
+                "signal_semantic_reasons": row.get("signal_semantic_reasons"),
+                "signal_equivalent_to": row.get("signal_equivalent_to"),
                 "created_at_utc": datetime.now(timezone.utc).isoformat(),
             }
         )
@@ -510,6 +521,9 @@ def _filter_cm_feasible_candidates(
         arm_order = [
             "turnover_aware_fresh",
             "low_turnover_repair",
+            "eq_mechanism_deepen",
+            "x0_true1min_reexpression",
+            "industry_context_canary",
             "rx_ucb_fresh",
             "typed_ast_fresh",
             "challenger_repair",
@@ -646,35 +660,33 @@ def _run_pre_cm_semantic_viability_gate(
         str(args.cm_regime_component_cap),
         "--operator-cache-max-entries",
         str(min(int(args.cm_operator_cache_max_entries), int(args.pre_cm_semantic_operator_cache_max_entries))),
+        "--operator-cache-max-mb",
+        str(min(float(args.cm_operator_cache_max_mb), float(args.pre_cm_semantic_operator_cache_max_mb))),
         "--feature-matrix-cache-max-windows",
         str(min(int(args.cm_feature_matrix_cache_max_windows), int(args.pre_cm_semantic_feature_matrix_cache_max_windows))),
+        "--feature-matrix-cache-max-mb",
+        str(min(float(args.cm_feature_matrix_cache_max_mb), float(args.pre_cm_semantic_feature_matrix_cache_max_mb))),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
+        "--semantic-only",
+        "--write-semantic-sketches",
+        "--semantic-sketch-size",
+        str(max(16, int(args.pre_cm_semantic_sketch_size))),
     ]
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
         raise RuntimeError(f"pre-CM semantic viability gate failed with exit code {result}")
 
     progress_rows = _read_csv(gate_output_root / "phase3cm_candidate_progress.csv")
-    progress_by_id: dict[str, dict[str, Any]] = {}
-    for row in progress_rows:
-        candidate_id = str(row.get("candidate_id") or "")
-        if not candidate_id:
-            continue
-        item = progress_by_id.setdefault(
-            candidate_id,
-            {
-                "semantic_total_rows": 0,
-                "semantic_nonzero_shards": 0,
-                "semantic_checked_shards": 0,
-            },
-        )
-        rows_added = int(float(row.get("rows_added") or 0))
-        item["semantic_total_rows"] += rows_added
-        item["semantic_checked_shards"] += 1
-        if rows_added > 0:
-            item["semantic_nonzero_shards"] += 1
+    signal_decisions = classify_candidate_signal_semantics(
+        candidates,
+        progress_rows,
+        correlation_threshold=float(args.pre_cm_semantic_correlation_threshold),
+        min_mask_jaccard=float(args.pre_cm_semantic_min_mask_jaccard),
+        position_overlap_threshold=float(args.pre_cm_semantic_position_overlap_threshold),
+        position_quantile=float(args.cm_top_quantile),
+    )
 
     min_rows = max(0, int(args.pre_cm_semantic_min_rows_total))
     min_nonzero_shards = max(0, int(args.pre_cm_semantic_min_nonzero_shards))
@@ -684,23 +696,39 @@ def _run_pre_cm_semantic_viability_gate(
 
     for row in candidates:
         candidate_id = str(row.get("candidate_id") or "")
-        stats = progress_by_id.get(
+        stats = signal_decisions.get(
             candidate_id,
-            {"semantic_total_rows": 0, "semantic_nonzero_shards": 0, "semantic_checked_shards": 0},
+            {
+                "signal_semantic_decision": "REJECT_MISSING_SIGNAL_DIAGNOSTICS",
+                "signal_semantic_reasons": "missing_rank_sketch",
+                "signal_finite_count": 0,
+                "signal_nonzero_shards": 0,
+                "signal_checked_shards": 0,
+            },
         )
         item = dict(row)
         item.update(stats)
+        item["semantic_total_rows"] = int(stats.get("signal_finite_count") or 0)
+        item["semantic_nonzero_shards"] = int(stats.get("signal_nonzero_shards") or 0)
+        item["semantic_checked_shards"] = int(stats.get("signal_checked_shards") or 0)
         reasons: list[str] = []
-        if int(stats["semantic_total_rows"]) < min_rows:
+        signal_decision = str(stats.get("signal_semantic_decision") or "REJECT_MISSING_SIGNAL_DIAGNOSTICS")
+        signal_reason = str(stats.get("signal_semantic_reasons") or "")
+        if signal_decision != "PASS":
+            reasons.append(signal_reason or signal_decision.lower())
+        if int(item["semantic_total_rows"]) < min_rows:
             reasons.append("semantic_total_rows_below_min")
-        if int(stats["semantic_nonzero_shards"]) < min_nonzero_shards:
+        if int(item["semantic_nonzero_shards"]) < min_nonzero_shards:
             reasons.append("semantic_nonzero_shards_below_min")
-        item["pre_cm_semantic_decision"] = "REJECT_WEAK_SEMANTIC_VIABILITY" if reasons else "PASS"
+        item["pre_cm_semantic_decision"] = signal_decision if signal_decision != "PASS" else (
+            "REJECT_WEAK_SEMANTIC_VIABILITY" if reasons else "PASS"
+        )
         item["pre_cm_semantic_reasons"] = "|".join(reasons)
         item["pre_cm_semantic_gate"] = "true"
         viability_rows.append(item)
         if reasons:
-            item["memory_block_reason"] = "blocked_weak_semantic_viability"
+            item["memory_block_policy"] = "sampled_signal_observation"
+            item["memory_block_reason"] = "|".join(reasons)
             rejected.append(item)
         else:
             passed.append(item)
@@ -751,6 +779,12 @@ def _run_pre_cm_semantic_viability_gate(
         "sample_trade_times_per_shard": sample_times,
         "event_sample_trade_times_per_shard": event_sample_times,
         "horizons": str(args.pre_cm_semantic_horizons or args.cm_horizons),
+        "semantic_only": True,
+        "semantic_sketch_size": max(16, int(args.pre_cm_semantic_sketch_size)),
+        "signal_equivalence_correlation_threshold": float(args.pre_cm_semantic_correlation_threshold),
+        "signal_equivalence_min_mask_jaccard": float(args.pre_cm_semantic_min_mask_jaccard),
+        "signal_equivalence_position_overlap_threshold": float(args.pre_cm_semantic_position_overlap_threshold),
+        "signal_equivalence_position_quantile": float(args.cm_top_quantile),
         "by_arm": by_arm_rows,
         "gate_cm_summary": {
             "candidate_count": gate_summary.get("candidate_count"),
@@ -759,7 +793,7 @@ def _run_pre_cm_semantic_viability_gate(
             "fast_mode": gate_summary.get("fast_mode"),
         },
         "semantic_block_memory_path": str(semantic_block_memory_path) if semantic_block_memory_path else None,
-        "metric_boundary": "pre-CM semantic viability uses real CM evaluator rows only; it must not use reward to optimize or promote candidates",
+        "metric_boundary": "pre-CM uses signal values/rank sketches only; it builds no labels, PnL, reward, validation, or holdout evidence",
     }
     _write_json(output_root / "phase3cp_pre_cm_semantic_viability_summary.json", summary)
     _write_json(report_root / "phase3cp_pre_cm_semantic_viability_summary.json", summary)
@@ -865,6 +899,10 @@ def _append_cm_persistent_cache_args(argv: list[str], args: argparse.Namespace) 
             str(getattr(args, "cm_persistent_cache_mode", "readwrite")),
             "--persistent-cache-min-free-gb",
             str(getattr(args, "cm_persistent_cache_min_free_gb", 2.0)),
+            "--persistent-cache-max-gb",
+            str(getattr(args, "cm_persistent_cache_max_gb", 120.0)),
+            "--persistent-cache-ttl-days",
+            str(getattr(args, "cm_persistent_cache_ttl_days", 7.0)),
         ]
     )
     if bool(getattr(args, "cm_disable_persistent_expression_cache", False)):
@@ -873,6 +911,19 @@ def _append_cm_persistent_cache_args(argv: list[str], args: argparse.Namespace) 
         argv.append("--disable-persistent-operator-cache")
     if bool(getattr(args, "cm_disable_persistent_feature_matrix_cache", False)):
         argv.append("--disable-persistent-feature-matrix-cache")
+
+
+def _append_cm_checkpoint_args(argv: list[str], args: argparse.Namespace) -> None:
+    argv.extend(
+        [
+            "--checkpoint-every-candidates",
+            str(args.cm_checkpoint_every_candidates),
+            "--checkpoint-bootstrap-iterations",
+            str(args.cm_checkpoint_bootstrap_iterations),
+        ]
+    )
+    if bool(args.cm_disable_incremental_checkpoints):
+        argv.append("--disable-incremental-checkpoints")
 
 
 def _run_real_cm_chunk_subprocess(
@@ -926,12 +977,17 @@ def _run_real_cm_chunk_subprocess(
         str(args.cm_regime_component_cap),
         "--operator-cache-max-entries",
         str(args.cm_operator_cache_max_entries),
+        "--operator-cache-max-mb",
+        str(args.cm_operator_cache_max_mb),
         "--feature-matrix-cache-max-windows",
         str(args.cm_feature_matrix_cache_max_windows),
+        "--feature-matrix-cache-max-mb",
+        str(args.cm_feature_matrix_cache_max_mb),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
     ]
+    _append_cm_checkpoint_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", "src")
@@ -1024,14 +1080,20 @@ def _run_real_cm_shard_subprocess(
         str(args.cm_regime_component_cap),
         "--operator-cache-max-entries",
         str(args.cm_operator_cache_max_entries),
+        "--operator-cache-max-mb",
+        str(args.cm_operator_cache_max_mb),
         "--feature-matrix-cache-max-windows",
         str(args.cm_feature_matrix_cache_max_windows),
+        "--feature-matrix-cache-max-mb",
+        str(args.cm_feature_matrix_cache_max_mb),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
-        "--write-reward-atoms",
         "--disable-schema-gate",
     ]
+    if bool(args.cm_shard_write_reward_atoms):
+        argv.append("--write-reward-atoms")
+    _append_cm_checkpoint_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", "src")
@@ -1103,17 +1165,182 @@ def _run_real_cm_retry_table(
         str(args.cm_regime_component_cap),
         "--operator-cache-max-entries",
         str(args.cm_operator_cache_max_entries),
+        "--operator-cache-max-mb",
+        str(args.cm_operator_cache_max_mb),
         "--feature-matrix-cache-max-windows",
         str(args.cm_feature_matrix_cache_max_windows),
+        "--feature-matrix-cache-max-mb",
+        str(args.cm_feature_matrix_cache_max_mb),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
     ]
+    _append_cm_checkpoint_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
         raise RuntimeError(f"Phase3CM retry failed with exit code {result}")
     return json.loads((retry_output_root / "phase3cm_train_reward_audit_summary.json").read_text(encoding="utf-8"))
+
+
+def _finite_metric(row: dict[str, Any], key: str) -> float | None:
+    value = safe_float(row.get(key), float("nan"))
+    return value if math.isfinite(value) else None
+
+
+def _format_metric(value: float | None, ndigits: int = 8) -> str:
+    if value is None or not math.isfinite(float(value)):
+        return ""
+    return str(round(float(value), ndigits))
+
+
+def _median_metric(values: list[float]) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[mid]
+    return (ordered[mid - 1] + ordered[mid]) / 2.0
+
+
+def _aggregate_shard_chunk_reward_rows(
+    *,
+    candidates: list[dict[str, Any]],
+    chunk_reward_rows: list[dict[str, Any]],
+    horizons: tuple[int, ...],
+    args: argparse.Namespace,
+) -> list[dict[str, Any]]:
+    """Recover shard-parallel CM rows when reward atoms were intentionally skipped.
+
+    This is a diagnostic fallback, not an exact replacement for atom-based
+    all-shard portfolio curve aggregation. Exact shard-axis aggregation still
+    requires `--cm-shard-write-reward-atoms`.
+    """
+
+    rows_by_key: dict[str, list[dict[str, Any]]] = {}
+    for row in chunk_reward_rows:
+        key = str(row.get("expression_hash") or row.get("candidate_id") or "")
+        if key:
+            rows_by_key.setdefault(key, []).append(row)
+
+    reward_metric_fields = [
+        "train_reward",
+        "optimizer_reward",
+        "train_day_sortino",
+        "train_minute_sortino",
+        "train_median_horizon_day_sortino",
+        "train_day_mcmc_p25",
+        "train_day_mcmc_prob_gt_0",
+        "train_mean_one_way_turnover",
+        "train_rank_ic_mean",
+        "train_rank_ic_hit_rate",
+        "train_rank_ic_loss",
+        "train_rank_ic_reward_component",
+        "train_regime_stability_score",
+        "train_regime_reward_component",
+        "train_regime_median_day_sortino",
+        "train_regime_positive_share",
+        "validation_day_sortino",
+        "validation_day_mcmc_prob_gt_0",
+        "validation_rank_ic_mean",
+        "validation_rank_ic_loss",
+        "holdout_day_sortino",
+        "holdout_day_mcmc_prob_gt_0",
+        "holdout_rank_ic_mean",
+        "holdout_rank_ic_loss",
+    ]
+    min_metric_fields = [
+        "train_worst_horizon_day_sortino",
+        "train_regime_worst_day_sortino",
+    ]
+    sum_metric_fields = [
+        "train_rank_ic_obs",
+        "train_regime_count",
+    ]
+
+    recovered: list[dict[str, Any]] = []
+    for idx, candidate in enumerate(candidates, 1):
+        key = str(candidate.get("expression_hash") or candidate.get("candidate_id") or "")
+        rows = rows_by_key.get(key, [])
+        if not rows:
+            _, empty_row = _candidate_summary_from_reward_atoms(
+                candidate,
+                [],
+                horizons,
+                seed=20260623 + idx,
+                rank_ic_loss_weight=args.cm_rank_ic_loss_weight,
+                rank_ic_component_cap=args.cm_rank_ic_component_cap,
+                regime_stability_weight=args.cm_regime_stability_weight,
+                regime_component_cap=args.cm_regime_component_cap,
+            )
+            empty_row["reward_atom_mode"] = "missing_shard_chunk_reward_fallback"
+            empty_row["shard_chunk_reward_fallback"] = "true"
+            empty_row["shard_chunk_count"] = 0
+            recovered.append(empty_row)
+            continue
+
+        best = max(rows, key=lambda row: safe_float(row.get("optimizer_reward") or row.get("train_reward"), -999.0))
+        out = dict(best)
+        reward_values = [
+            value
+            for row in rows
+            for value in [_finite_metric(row, "optimizer_reward") or _finite_metric(row, "train_reward")]
+            if value is not None
+        ]
+        followup_count = sum(1 for row in rows if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY")
+        chunk_count = len(rows)
+        reward_mean = (sum(reward_values) / len(reward_values)) if reward_values else None
+        reward_min = min(reward_values) if reward_values else None
+        reward_max = max(reward_values) if reward_values else None
+        followup_share = followup_count / chunk_count if chunk_count else 0.0
+
+        for field in reward_metric_fields:
+            values = [value for row in rows for value in [_finite_metric(row, field)] if value is not None]
+            if values:
+                out[field] = _format_metric(sum(values) / len(values))
+        for field in min_metric_fields:
+            values = [value for row in rows for value in [_finite_metric(row, field)] if value is not None]
+            if values:
+                out[field] = _format_metric(min(values))
+        for field in sum_metric_fields:
+            values = [value for row in rows for value in [_finite_metric(row, field)] if value is not None]
+            if values:
+                out[field] = _format_metric(sum(values), 0)
+
+        out["train_reward"] = _format_metric(reward_mean)
+        out["optimizer_reward"] = _format_metric(reward_mean)
+        out["train_worst_shard_chunk_reward"] = _format_metric(reward_min)
+        out["train_best_shard_chunk_reward"] = _format_metric(reward_max)
+        out["train_median_shard_chunk_reward"] = _format_metric(_median_metric(reward_values))
+        out["shard_chunk_reward_fallback"] = "true"
+        out["shard_chunk_reward_fallback_note"] = "mean_of_shard_chunk_reward_rows_not_exact_all_shard_curve"
+        out["shard_chunk_count"] = chunk_count
+        out["shard_chunk_followup_count"] = followup_count
+        out["shard_chunk_followup_share"] = _format_metric(followup_share)
+        out["reward_atom_mode"] = "shard_chunk_reward_fallback"
+
+        blockers = {
+            blocker
+            for row in rows
+            for blocker in str(row.get("train_reward_blockers") or "").split("|")
+            if blocker
+        }
+        if reward_mean is None or reward_mean <= 0.0:
+            blockers.add("non_positive_shard_chunk_mean_reward")
+        if followup_count <= 0:
+            blockers.add("no_followup_ready_shard_chunk")
+        out["train_reward_blockers"] = "|".join(sorted(blockers))
+        out["train_reward_decision"] = (
+            "TRAIN_REWARD_FOLLOWUP_READY"
+            if reward_mean is not None and reward_mean > 0.0 and followup_count > 0
+            else "HOLD_TRAIN_REWARD"
+        )
+        out.update(normalize_candidate_schema(out))
+        recovered.append(out)
+
+    recovered.sort(key=lambda row: safe_float(row.get("optimizer_reward") or row.get("train_reward"), -999.0), reverse=True)
+    return recovered
 
 
 def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
@@ -1283,7 +1510,9 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
             "feature_matrix_cache": True,
             "operator_subtree_cache": True,
             "operator_cache_max_entries": int(args.cm_operator_cache_max_entries),
+            "operator_cache_max_mb": float(args.cm_operator_cache_max_mb),
             "feature_matrix_cache_max_windows": int(args.cm_feature_matrix_cache_max_windows),
+            "feature_matrix_cache_max_mb": float(args.cm_feature_matrix_cache_max_mb),
             "fast_group_rank": True,
             "omp_threads": os.environ.get("OMP_NUM_THREADS"),
             "mkl_threads": os.environ.get("MKL_NUM_THREADS"),
@@ -1374,6 +1603,8 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
             chunk_summaries.append(summary)
 
     atom_rows: list[dict[str, Any]] = []
+    chunk_reward_rows: list[dict[str, Any]] = []
+    chunk_split_horizon_rows: list[dict[str, Any]] = []
     shard_meta_rows: list[dict[str, Any]] = []
     progress_rows: list[dict[str, Any]] = []
     for chunk_id, indices, chunk_out, _ in chunks:
@@ -1381,6 +1612,14 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
             row["parallel_chunk_id"] = chunk_id
             row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
             atom_rows.append(row)
+        for row in _read_csv(chunk_out / "phase3cm_train_reward.csv"):
+            row["parallel_chunk_id"] = chunk_id
+            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
+            chunk_reward_rows.append(row)
+        for row in _read_csv(chunk_out / "phase3cm_candidate_split_horizon_summary.csv"):
+            row["parallel_chunk_id"] = chunk_id
+            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
+            chunk_split_horizon_rows.append(row)
         for row in _read_csv(chunk_out / "phase3cm_shard_meta.csv"):
             row["parallel_chunk_id"] = chunk_id
             row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
@@ -1399,30 +1638,41 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
     horizons = tuple(int(item.strip()) for item in str(args.cm_horizons).split(",") if item.strip())
     reward_rows: list[dict[str, Any]] = []
     split_horizon_rows: list[dict[str, Any]] = []
-    for idx, candidate in enumerate(candidates, 1):
-        digest = str(candidate.get("expression_hash") or "")
-        per_split, reward_row = _candidate_summary_from_reward_atoms(
-            candidate,
-            atom_rows_by_hash.get(digest, []),
-            horizons,
-            seed=20260623 + idx,
-            rank_ic_loss_weight=args.cm_rank_ic_loss_weight,
-            rank_ic_component_cap=args.cm_rank_ic_component_cap,
-            regime_stability_weight=args.cm_regime_stability_weight,
-            regime_component_cap=args.cm_regime_component_cap,
-        )
-        for row in per_split:
-            split_horizon_rows.append(
-                {
-                    "candidate_id": candidate.get("candidate_id"),
-                    "expression_hash": candidate.get("expression_hash"),
-                    "generator_arm": candidate.get("generator_arm"),
-                    "factor_lane": candidate.get("factor_lane"),
-                    "expression": candidate.get("expression"),
-                    **row,
-                }
+    reward_aggregation_mode = "reward_atoms_exact_all_shard_curve"
+    if atom_rows:
+        for idx, candidate in enumerate(candidates, 1):
+            digest = str(candidate.get("expression_hash") or "")
+            per_split, reward_row = _candidate_summary_from_reward_atoms(
+                candidate,
+                atom_rows_by_hash.get(digest, []),
+                horizons,
+                seed=20260623 + idx,
+                rank_ic_loss_weight=args.cm_rank_ic_loss_weight,
+                rank_ic_component_cap=args.cm_rank_ic_component_cap,
+                regime_stability_weight=args.cm_regime_stability_weight,
+                regime_component_cap=args.cm_regime_component_cap,
             )
-        reward_rows.append(reward_row)
+            for row in per_split:
+                split_horizon_rows.append(
+                    {
+                        "candidate_id": candidate.get("candidate_id"),
+                        "expression_hash": candidate.get("expression_hash"),
+                        "generator_arm": candidate.get("generator_arm"),
+                        "factor_lane": candidate.get("factor_lane"),
+                        "expression": candidate.get("expression"),
+                        **row,
+                    }
+                )
+            reward_rows.append(reward_row)
+    else:
+        reward_aggregation_mode = "shard_chunk_reward_fallback_not_exact_all_shard_curve"
+        reward_rows = _aggregate_shard_chunk_reward_rows(
+            candidates=candidates,
+            chunk_reward_rows=chunk_reward_rows,
+            horizons=horizons,
+            args=args,
+        )
+        split_horizon_rows = chunk_split_horizon_rows
 
     reward_rows.sort(key=lambda row: safe_float(row.get("train_reward"), -999.0), reverse=True)
     followup_count = sum(1 for row in reward_rows if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY")
@@ -1450,6 +1700,13 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
         "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
         "portfolio_pnl_rows_written": 0,
         "reward_atom_rows_merged": len(atom_rows),
+        "shard_chunk_reward_rows_merged": len(chunk_reward_rows),
+        "reward_aggregation_mode": reward_aggregation_mode,
+        "reward_aggregation_warning": (
+            ""
+            if atom_rows
+            else "reward atoms absent; recovered from shard chunk reward summaries, so all-shard Sortino is approximate diagnostic only"
+        ),
         "metric_boundary": "parallel shard-axis train portfolio Sortino + rankIC loss reward audit; not production proof; validation/holdout must not feed search",
         "fast_mode": True,
         "numexpr_threads": int(args.numexpr_threads),
@@ -1476,7 +1733,9 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
             "feature_matrix_cache": True,
             "operator_subtree_cache": True,
             "operator_cache_max_entries": int(args.cm_operator_cache_max_entries),
+            "operator_cache_max_mb": float(args.cm_operator_cache_max_mb),
             "feature_matrix_cache_max_windows": int(args.cm_feature_matrix_cache_max_windows),
+            "feature_matrix_cache_max_mb": float(args.cm_feature_matrix_cache_max_mb),
             "fast_group_rank": True,
             "omp_threads": os.environ.get("OMP_NUM_THREADS"),
             "mkl_threads": os.environ.get("MKL_NUM_THREADS"),
@@ -1562,12 +1821,17 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
         str(args.cm_regime_component_cap),
         "--operator-cache-max-entries",
         str(args.cm_operator_cache_max_entries),
+        "--operator-cache-max-mb",
+        str(args.cm_operator_cache_max_mb),
         "--feature-matrix-cache-max-windows",
         str(args.cm_feature_matrix_cache_max_windows),
+        "--feature-matrix-cache-max-mb",
+        str(args.cm_feature_matrix_cache_max_mb),
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
     ]
+    _append_cm_checkpoint_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
@@ -1666,13 +1930,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-regime-stability-weight", type=float, default=0.08)
     parser.add_argument("--cm-regime-component-cap", type=float, default=0.10)
     parser.add_argument("--cm-operator-cache-max-entries", type=int, default=512)
+    parser.add_argument("--cm-operator-cache-max-mb", type=float, default=2048.0)
     parser.add_argument("--cm-feature-matrix-cache-max-windows", type=int, default=6)
+    parser.add_argument("--cm-feature-matrix-cache-max-mb", type=float, default=4096.0)
     parser.add_argument("--cm-persistent-cache-root", type=Path, default=None)
     parser.add_argument("--cm-persistent-cache-mode", choices=("off", "read", "write", "readwrite"), default="readwrite")
     parser.add_argument("--cm-persistent-cache-min-free-gb", type=float, default=2.0)
+    parser.add_argument("--cm-persistent-cache-max-gb", type=float, default=120.0)
+    parser.add_argument("--cm-persistent-cache-ttl-days", type=float, default=7.0)
     parser.add_argument("--cm-disable-persistent-expression-cache", action="store_true")
     parser.add_argument("--cm-disable-persistent-operator-cache", action="store_true")
     parser.add_argument("--cm-disable-persistent-feature-matrix-cache", action="store_true")
+    parser.add_argument("--cm-checkpoint-every-candidates", type=int, default=8)
+    parser.add_argument("--cm-checkpoint-bootstrap-iterations", type=int, default=128)
+    parser.add_argument("--cm-disable-incremental-checkpoints", action="store_true")
+    parser.add_argument(
+        "--cm-shard-write-reward-atoms",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Write per-trade reward atoms for shard-parallel CM. Disable for high-throughput search and replay top candidates later.",
+    )
     parser.add_argument("--pre-cm-turnover-proxy-max", type=float, default=float("nan"))
     parser.add_argument("--pre-cm-semantic-gate", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--pre-cm-semantic-oversample-multiplier", type=float, default=2.0)
@@ -1683,7 +1960,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pre-cm-semantic-min-rows-total", type=int, default=1)
     parser.add_argument("--pre-cm-semantic-min-nonzero-shards", type=int, default=1)
     parser.add_argument("--pre-cm-semantic-operator-cache-max-entries", type=int, default=128)
+    parser.add_argument("--pre-cm-semantic-operator-cache-max-mb", type=float, default=1024.0)
     parser.add_argument("--pre-cm-semantic-feature-matrix-cache-max-windows", type=int, default=2)
+    parser.add_argument("--pre-cm-semantic-feature-matrix-cache-max-mb", type=float, default=2048.0)
+    parser.add_argument("--pre-cm-semantic-sketch-size", type=int, default=512)
+    parser.add_argument("--pre-cm-semantic-correlation-threshold", type=float, default=0.9995)
+    parser.add_argument("--pre-cm-semantic-min-mask-jaccard", type=float, default=0.98)
+    parser.add_argument("--pre-cm-semantic-position-overlap-threshold", type=float, default=0.995)
     parser.add_argument("--write-semantic-block-memory", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--semantic-block-memory-root", type=Path, default=Path("runtime/search_memory/phase3cp_semantic_blocks"))
     parser.add_argument("--cm-workers", type=int, default=1)
@@ -1848,9 +2131,14 @@ def main(argv: list[str] | None = None) -> int:
         "cm_persistent_cache_root": str(args.cm_persistent_cache_root or ""),
         "cm_persistent_cache_mode": str(args.cm_persistent_cache_mode),
         "cm_persistent_cache_min_free_gb": float(args.cm_persistent_cache_min_free_gb),
+        "cm_persistent_cache_max_gb": float(args.cm_persistent_cache_max_gb),
+        "cm_persistent_cache_ttl_days": float(args.cm_persistent_cache_ttl_days),
         "cm_persistent_expression_cache": not bool(args.cm_disable_persistent_expression_cache),
         "cm_persistent_operator_cache": not bool(args.cm_disable_persistent_operator_cache),
         "cm_persistent_feature_matrix_cache": not bool(args.cm_disable_persistent_feature_matrix_cache),
+        "cm_checkpoint_every_candidates": int(args.cm_checkpoint_every_candidates),
+        "cm_incremental_checkpoints": not bool(args.cm_disable_incremental_checkpoints),
+        "cm_shard_write_reward_atoms": bool(args.cm_shard_write_reward_atoms),
         "pre_cm_semantic_gate": bool(args.pre_cm_semantic_gate),
         "checks": checks,
         "initial_arm_plan": scaled_plan,

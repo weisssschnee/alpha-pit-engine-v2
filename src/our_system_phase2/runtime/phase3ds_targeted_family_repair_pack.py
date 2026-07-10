@@ -107,7 +107,7 @@ def _variant_expressions() -> list[dict[str, Any]]:
     for event_field in EVENT_FIELDS:
         for event_op, event_raw in _event_exprs(event_field):
             event_rank = f"CSRank({event_raw})"
-            event_sign = f"Sign({event_rank})"
+            event_sign = f"Sign(Sub({event_rank},0.5))"
             for context_field in CONTEXT_FIELDS:
                 for context_op in CONTEXT_OPS:
                     for window in WINDOWS:

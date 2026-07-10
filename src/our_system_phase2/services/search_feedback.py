@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema, safe_float
+from our_system_phase2.services.expression_semantics import analyze_expression
 
 
 HOLDOUT_COLUMNS = {"holdout_day_sortino", "holdout_mcmc_prob_gt_0"}
@@ -109,6 +110,10 @@ def _optimizer_reward(row: dict[str, Any]) -> float:
 def _normalize_feedback_row(row: dict[str, Any]) -> dict[str, Any]:
     out = dict(row)
     out.update(normalize_candidate_schema(out))
+    semantic = analyze_expression(str(out.get("expression") or ""))
+    out.update(semantic.to_row())
+    if not semantic.hard_blocked:
+        out["expression"] = semantic.canonical_expression
     reward = _optimizer_reward(out)
     out["optimizer_reward"] = reward if math.isfinite(reward) else ""
     out["optimizer_reward_source"] = str(out.get("optimizer_reward_source") or "train_only_phase3cm")
@@ -135,6 +140,9 @@ def _clean_feedback_row(
     max_turnover: float,
 ) -> bool:
     del validation_floor
+    semantic = analyze_expression(str(row.get("expression") or ""))
+    if semantic.hard_blocked:
+        return False
     train = _optimizer_reward(row)
     turnover = safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), float("nan"))
     blockers = str(row.get("train_reward_blockers") or "")

@@ -163,3 +163,38 @@ reports/PHASE3DV_BUDGET_POOL_SELF_DEEPEN_20260630.md
 reports/PHASE3DV_RETIREMENT_AND_WORKSPACE_HYGIENE_20260630.md
 runtime/run_plans/phase3dv_budget_pool_self_deepen_cm_reward_20260630.json
 ```
+
+## 2026-07-10 Semantic And Throughput Hardening
+
+The active CNline2 route now adds construction-time value-domain semantics,
+sampled signal equivalence control, and byte-bounded runtime caches:
+
+```text
+src/our_system_phase2/services/expression_semantics.py
+src/our_system_phase2/services/signal_vector_semantics.py
+tests/test_expression_semantics.py
+tests/test_signal_vector_semantics.py
+tests/test_phase3cm_cache_bounds.py
+tests/test_phase3cm_semantic_only_integration.py
+reports/PHASE3GA_SEMANTIC_SEARCH_EFFICIENCY_REPAIR_20260710.md
+```
+
+Current data boundary:
+
+```text
+train/search: repaired true1min 2024-2025, 16 shards, 121 columns
+2026: separate forward/OOS asset; forbidden in train/search until separately augmented and accepted
+old 1D kline: forbidden
+```
+
+Current search/reward order:
+
+```text
+construction semantic gate
+-> typed primitive gate
+-> exact/skeleton memory
+-> CA ranking
+-> semantic-only signal vector gate
+-> full Phase3CM train reward
+-> guarded Phase3CN feedback
+```

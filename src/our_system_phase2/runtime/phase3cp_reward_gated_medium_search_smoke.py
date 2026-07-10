@@ -38,6 +38,7 @@ from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import build_feedb
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import DEFAULT_SHARD_ROOT, _discover_panels, _write_csv, _write_json
 from our_system_phase2.services.candidate_schema import normalize_candidate_schema, safe_float
 from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule, read_csv_rows
+from our_system_phase2.services.true1min_curated_lanes import generate_curated_lane_candidates
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -177,6 +178,14 @@ def _generate_for_arm(
             available_fields=available_fields,
         )
         source = f"phase3cp_{arm_id}_from_co"
+    elif arm_id in {"eq_mechanism_deepen", "x0_true1min_reexpression", "industry_context_canary"}:
+        rows = generate_curated_lane_candidates(
+            arm_id,
+            budget=budget,
+            blocked=blocked,
+            available_fields=available_fields,
+        )
+        source = f"phase3cp_{arm_id}_curated_lane"
     elif arm_id == "random_orthogonal":
         rows = _generate_orthogonal_candidates(
             budget,
@@ -205,6 +214,9 @@ def _decisionize(row: dict[str, Any], idx: int) -> dict[str, Any]:
         "cem_exploit": -0.006,
         "turnover_aware_fresh": 0.012,
         "low_turnover_repair": 0.011,
+        "eq_mechanism_deepen": 0.012,
+        "x0_true1min_reexpression": 0.010,
+        "industry_context_canary": 0.006,
     }.get(arm, 0.0)
     aligned_ic = max(-0.08, min(0.08, 0.018 + arm_bonus + (policy_score * 0.012) + ((seed % 17) - 8) * 0.0007))
     turnover = {
@@ -216,6 +228,9 @@ def _decisionize(row: dict[str, Any], idx: int) -> dict[str, Any]:
         "cem_exploit": 0.86,
         "turnover_aware_fresh": 0.28,
         "low_turnover_repair": 0.34,
+        "eq_mechanism_deepen": 0.44,
+        "x0_true1min_reexpression": 0.38,
+        "industry_context_canary": 0.36,
     }.get(arm, 0.55)
     out = dict(row)
     out.update(

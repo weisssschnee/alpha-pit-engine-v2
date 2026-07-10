@@ -63,6 +63,7 @@ from our_system_phase2.services.search_feedback import (
     load_search_feedback_rows,
     policy_blocked_by_external_feedback,
 )
+from our_system_phase2.services.expression_semantics import analyze_expression
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -96,6 +97,8 @@ def _quality(row: dict[str, Any]) -> float:
 
 
 def _feedback_eligible(row: dict[str, Any]) -> bool:
+    if analyze_expression(str(row.get("expression") or "")).hard_blocked:
+        return False
     blockers = str(row.get("phase3bp_blocker_flags") or row.get("blocker_flags") or "")
     if "future_signal_wrong_lag_too_strong" in blockers:
         return False
@@ -116,7 +119,7 @@ def _policy_with_feedback(
     min_eligible: int = 32,
 ) -> dict[str, Any]:
     policy = copy.deepcopy(base_policy)
-    policy["policy_version"] = "phase3bs_adaptive_ucb_cem_feedback_v1"
+    policy["policy_version"] = "phase3bs_adaptive_ucb_cem_feedback_v2_semantic_guarded"
     policy["scope"] = "true1min_feedback_updated_generator_policy_not_production_reward"
     scores = policy.setdefault("scores", {})
     credits: dict[str, dict[str, list[float]]] = {
@@ -153,8 +156,14 @@ def _policy_with_feedback(
         }
         return policy
     for row in eligible_decisions:
-        expression = str(row.get("expression") or "")
+        semantic = analyze_expression(str(row.get("expression") or ""))
+        if semantic.hard_blocked:
+            continue
+        expression = semantic.canonical_expression
         fields = _fields(expression)
+        operators = _operators(expression)
+        windows = _windows(expression)
+        token_scale = 1.0 / math.sqrt(max(1, len(set(fields)) + len(set(operators)) + len(set(windows))))
         fieldset = "|".join(fields)
         lane = str(row.get("factor_lane") or row.get("source_lane") or "unknown")
         ast = _ast_variables(expression)
@@ -175,11 +184,11 @@ def _policy_with_feedback(
         ):
             credits[key][str(ast[key])].append(quality)
         for field in fields:
-            credits["field"][field].append(quality)
-        for op in _operators(expression):
-            credits["operator"][op].append(quality)
-        for win in _windows(expression):
-            credits["window"][win].append(quality)
+            credits["field"][field].append(quality * token_scale)
+        for op in operators:
+            credits["operator"][op].append(quality * token_scale)
+        for win in windows:
+            credits["window"][win].append(quality * token_scale)
 
     feedback_summary: dict[str, list[tuple[str, float]]] = {}
     for kind, items in credits.items():
@@ -200,7 +209,8 @@ def _policy_with_feedback(
         "learning_rate": learning_rate,
         "entropy_floor": entropy_floor,
         "top_feedback": feedback_summary,
-        "guardrail": "future wrong-lag and signal-crowded rows excluded from policy feedback",
+        "guardrail": "semantic-degenerate, future wrong-lag, and signal-crowded rows excluded; atomic token credit normalized by formula token count",
+        "token_credit_normalization": "inverse_sqrt_unique_field_operator_window_count",
     }
     policy["top_keys"] = {
         kind: sorted(values.items(), key=lambda item: item[1], reverse=True)[:12]
@@ -219,7 +229,7 @@ def _policy_with_train_reward_feedback(
     min_eligible: int = 32,
 ) -> dict[str, Any]:
     policy = copy.deepcopy(base_policy)
-    policy["policy_version"] = "phase3bs_external_cm_train_reward_feedback_v1"
+    policy["policy_version"] = "phase3bs_external_cm_train_reward_feedback_v2_semantic_guarded"
     policy["scope"] = "external_phase3cm_train_reward_updates_generator_policy_validation_holdout_report_only"
     scores = policy.setdefault("scores", {})
     eligible_rows = clean_optimizer_feedback_rows(
@@ -268,8 +278,14 @@ def _policy_with_train_reward_feedback(
         "ast_complexity_bin": defaultdict(list),
     }
     for row in eligible_rows:
-        expression = str(row.get("expression") or "")
+        semantic = analyze_expression(str(row.get("expression") or ""))
+        if semantic.hard_blocked:
+            continue
+        expression = semantic.canonical_expression
         fields = _fields(expression)
+        operators = _operators(expression)
+        windows = _windows(expression)
+        token_scale = 1.0 / math.sqrt(max(1, len(set(fields)) + len(set(operators)) + len(set(windows))))
         fieldset = "|".join(fields)
         lane = str(row.get("factor_lane") or row.get("source_lane") or row.get("generator_arm") or "unknown")
         ast = _ast_variables(expression)
@@ -291,11 +307,11 @@ def _policy_with_train_reward_feedback(
         ):
             credits[key][str(ast[key])].append(quality)
         for field in fields:
-            credits["field"][field].append(quality)
-        for op in _operators(expression):
-            credits["operator"][op].append(quality)
-        for win in _windows(expression):
-            credits["window"][win].append(quality)
+            credits["field"][field].append(quality * token_scale)
+        for op in operators:
+            credits["operator"][op].append(quality * token_scale)
+        for win in windows:
+            credits["window"][win].append(quality * token_scale)
 
     feedback_summary: dict[str, list[tuple[str, float]]] = {}
     for kind, items in credits.items():
@@ -317,7 +333,8 @@ def _policy_with_train_reward_feedback(
         "entropy_floor": entropy_floor,
         "top_feedback": feedback_summary,
         "updated": True,
-        "guardrail": "policy updated from external Phase3CM train reward only; validation/holdout report-only",
+        "guardrail": "policy updated from semantically clean external Phase3CM train reward only; validation/holdout report-only; atomic token credit normalized",
+        "token_credit_normalization": "inverse_sqrt_unique_field_operator_window_count",
         "optimizer_reward_source": "train_only_phase3cm",
         "validation_used_for_score": False,
         "holdout_used_for_score": False,
@@ -620,8 +637,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--horizons", default="1,5,15,30")
     parser.add_argument("--min-obs-per-time", type=int, default=20)
     parser.add_argument("--seed-exploration", type=float, default=0.85)
-    parser.add_argument("--learning-rate", type=float, default=0.55)
-    parser.add_argument("--entropy-floor", type=float, default=0.015)
+    parser.add_argument("--learning-rate", type=float, default=0.30)
+    parser.add_argument("--entropy-floor", type=float, default=0.03)
     parser.add_argument("--min-feedback-eligible", type=int, default=32)
     parser.add_argument("--feedback-table", type=Path, default=None)
     parser.add_argument("--arm-score-table", type=Path, default=None)

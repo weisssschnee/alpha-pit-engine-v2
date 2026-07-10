@@ -24,6 +24,7 @@ from our_system_phase2.services.candidate_schema import (
     normalize_candidate_schema,
     safe_float,
 )
+from our_system_phase2.services.expression_semantics import analyze_expression
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -133,8 +134,14 @@ def _optimizer_reward(row: dict[str, Any]) -> float:
     return reward
 
 
+def _has_semantic_degeneracy(row: dict[str, Any]) -> bool:
+    return analyze_expression(str(row.get("expression") or "")).hard_blocked
+
+
 def _is_clean(row: dict[str, Any], *, train_threshold: float, validation_floor: float, max_turnover: float) -> bool:
     del validation_floor
+    if _has_semantic_degeneracy(row):
+        return False
     train_reward = _optimizer_reward(row)
     turnover = safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 0.0)
     decision = str(row.get("train_reward_decision") or "")
@@ -188,11 +195,14 @@ def _family_tables(
     blocked_rows: list[dict[str, Any]] = []
     exploit_rows: list[dict[str, Any]] = []
     for family_id, items in sorted(_group_rows(rows, "family_id").items()):
-        train_rewards = [_optimizer_reward(row) for row in items]
+        semantic_degeneracy_count = sum(1 for row in items if _has_semantic_degeneracy(row))
+        semantic_clean_items = [row for row in items if not _has_semantic_degeneracy(row)]
+        semantic_degeneracy_rate = semantic_degeneracy_count / max(1, len(items))
+        train_rewards = [_optimizer_reward(row) for row in semantic_clean_items]
         train_rewards = [value for value in train_rewards if math.isfinite(value)]
-        clean_count = sum(1 for row in items if _is_clean(row, train_threshold=train_threshold, validation_floor=validation_floor, max_turnover=max_turnover))
-        validation_survivor_count = sum(1 for row in items if _is_validation_survivor(row, validation_floor=validation_floor))
-        rewardhack_count = sum(1 for row in items if _is_rewardhack(row))
+        clean_count = sum(1 for row in semantic_clean_items if _is_clean(row, train_threshold=train_threshold, validation_floor=validation_floor, max_turnover=max_turnover))
+        validation_survivor_count = sum(1 for row in semantic_clean_items if _is_validation_survivor(row, validation_floor=validation_floor))
+        rewardhack_count = sum(1 for row in semantic_clean_items if _is_rewardhack(row))
         wrong_lag_or_corr_count = sum(1 for row in items if _has_wrong_lag_or_corr(row))
         high_turnover_count = sum(1 for row in items if safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 0.0) > max_turnover)
         family_share = len(items) / total
@@ -207,6 +217,14 @@ def _family_tables(
         if wrong_lag_or_corr_count > 0:
             status = "block"
             reasons.append("wrong_lag_or_high_corr")
+        if semantic_degeneracy_count == len(items):
+            status = "block"
+            reasons.append("all_rows_semantic_degeneracy")
+        elif semantic_degeneracy_rate >= 0.5 and status != "block":
+            status = "freeze"
+            reasons.append("semantic_degeneracy_rate_ge_50pct")
+        elif semantic_degeneracy_count > 0:
+            reasons.append("semantic_degenerate_rows_excluded_from_feedback")
         if high_turnover_count > 0 and status != "block":
             status = "freeze"
             reasons.append("high_turnover")
@@ -231,6 +249,9 @@ def _family_tables(
             "validation_usage": "report_only",
             "validation_used_for_optimizer": "false",
             "rewardhack_count": rewardhack_count,
+            "semantic_degeneracy_count": semantic_degeneracy_count,
+            "semantic_degeneracy_rate": _round(semantic_degeneracy_rate),
+            "semantic_clean_candidate_count": len(semantic_clean_items),
             "wrong_lag_or_corr_count": wrong_lag_or_corr_count,
             "high_turnover_count": high_turnover_count,
             "family_status": status,
@@ -257,24 +278,28 @@ def _arm_score_table(
     family_by_id = {str(row.get("family_id")): row for row in family_rows}
     out: list[dict[str, Any]] = []
     for arm, items in sorted(_group_rows(rows, "generator_arm").items()):
-        train_rewards = [_optimizer_reward(row) for row in items]
+        semantic_degeneracy_count = sum(1 for row in items if _has_semantic_degeneracy(row))
+        semantic_clean_items = [row for row in items if not _has_semantic_degeneracy(row)]
+        train_rewards = [_optimizer_reward(row) for row in semantic_clean_items]
         train_rewards = [value for value in train_rewards if math.isfinite(value)]
-        clean_count = sum(1 for row in items if _is_clean(row, train_threshold=train_threshold, validation_floor=validation_floor, max_turnover=max_turnover))
-        validation_count = sum(1 for row in items if _is_validation_survivor(row, validation_floor=validation_floor))
-        rewardhack_count = sum(1 for row in items if _is_rewardhack(row))
+        clean_count = sum(1 for row in semantic_clean_items if _is_clean(row, train_threshold=train_threshold, validation_floor=validation_floor, max_turnover=max_turnover))
+        validation_count = sum(1 for row in semantic_clean_items if _is_validation_survivor(row, validation_floor=validation_floor))
+        rewardhack_count = sum(1 for row in semantic_clean_items if _is_rewardhack(row))
         wrong_lag_count = sum(1 for row in items if _has_wrong_lag_or_corr(row))
-        low_turnover_count = sum(1 for row in items if safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 1.0) <= max_turnover)
-        families = {str(row.get("family_id") or "") for row in items}
+        low_turnover_count = sum(1 for row in semantic_clean_items if safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 1.0) <= max_turnover)
+        families = {str(row.get("family_id") or "") for row in semantic_clean_items}
         allowed_families = sum(1 for family in families if family_by_id.get(family, {}).get("family_status") == "exploit_allowed")
-        top_family_count = max((sum(1 for row in items if row.get("family_id") == family) for family in families), default=0)
-        count = max(1, len(items))
-        positive_rate = sum(1 for value in train_rewards if value > train_threshold) / count
-        validation_rate = validation_count / count
-        new_family_rate = len(families) / count
-        low_turnover_rate = low_turnover_count / count
-        rewardhack_rate = rewardhack_count / count
-        wrong_lag_rate = wrong_lag_count / count
-        top_family_share = top_family_count / count
+        top_family_count = max((sum(1 for row in semantic_clean_items if row.get("family_id") == family) for family in families), default=0)
+        score_count = max(1, len(semantic_clean_items))
+        total_count = max(1, len(items))
+        positive_rate = sum(1 for value in train_rewards if value > train_threshold) / score_count
+        validation_rate = validation_count / score_count
+        new_family_rate = len(families) / score_count
+        low_turnover_rate = low_turnover_count / score_count
+        rewardhack_rate = rewardhack_count / score_count
+        wrong_lag_rate = wrong_lag_count / total_count
+        semantic_degeneracy_rate = semantic_degeneracy_count / total_count
+        top_family_share = top_family_count / score_count
         median_reward = _median(train_rewards) or 0.0
         arm_score = (
             positive_rate
@@ -283,6 +308,7 @@ def _arm_score_table(
             + low_turnover_rate
             - rewardhack_rate
             - wrong_lag_rate
+            - semantic_degeneracy_rate
             - top_family_share
         )
         update_allowed = clean_count >= min_clean_feedback
@@ -290,6 +316,9 @@ def _arm_score_table(
             {
                 "generator_arm": arm,
                 "candidate_count": len(items),
+                "semantic_clean_candidate_count": len(semantic_clean_items),
+                "semantic_degeneracy_count": semantic_degeneracy_count,
+                "semantic_degeneracy_rate": _round(semantic_degeneracy_rate),
                 "clean_feedback_count": clean_count,
                 "min_clean_feedback": min_clean_feedback,
                 "feedback_update_allowed": str(update_allowed).lower(),

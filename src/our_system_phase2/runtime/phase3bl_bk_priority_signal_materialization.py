@@ -15,6 +15,7 @@ import csv
 import hashlib
 import json
 import math
+import os
 import re
 from collections import Counter
 from datetime import datetime, timezone
@@ -32,9 +33,10 @@ from our_system_phase2.services.real_market_validation import evaluate_panel_exp
 
 REPO = Path(__file__).resolve().parents[3]
 DEFAULT_BK_AUDIT = Path("reports/phase3bk_bj_top64_strict_audit_20260615/phase3bk_bj_top64_candidate_audit.csv")
-DEFAULT_SHARD_ROOT = Path("runtime/phase3au_aq_only_true1min_sharded_20260611")
+DEFAULT_SHARD_ROOT = Path("runtime/phase3fix_true1min_2024_2025_sidecar_augmented_shards_20260709")
 DEFAULT_OUTPUT_ROOT = Path("runtime/phase3bl_bk_priority_signal_materialization_20260615")
 DEFAULT_REPORT_ROOT = Path("reports/phase3bl_bk_priority_signal_materialization_20260615")
+DEPRECATED_TRUE1MIN_ROOT_NAMES = {"phase3au_aq_only_true1min_sharded_20260611"}
 FIELD_RE = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)")
 WINDOW_OPS = {"mean", "std", "delta", "delay", "mom", "wma", "med", "kurt", "skew", "corr", "cov"}
 DEFAULT_RELATION_WINDOW = 20
@@ -167,6 +169,11 @@ def _max_expression_window(expression: str) -> int:
 
 
 def _discover_panels(shard_root: Path, max_shards: int | None) -> list[Path]:
+    if shard_root.name in DEPRECATED_TRUE1MIN_ROOT_NAMES and os.environ.get("PHASE3_ALLOW_DEPRECATED_TRUE1MIN_ROOT") != "1":
+        raise RuntimeError(
+            f"deprecated one-year true1min root rejected: {shard_root}. "
+            "Use the repaired 2024-2025 root or set PHASE3_ALLOW_DEPRECATED_TRUE1MIN_ROOT=1 for a deliberate legacy audit."
+        )
     panels = sorted(shard_root.glob("shard_*/phase3aq_wide_true1min/canary/phase3aq_true_1min_formula_canary.parquet"))
     if max_shards is not None and max_shards > 0:
         panels = panels[:max_shards]

@@ -261,12 +261,12 @@ def _event_components() -> dict[str, list[str]]:
         if not field.startswith("evt_") or field in dense_event_age_fields:
             for op in ["EventAge", "SinceLastEvent"]:
                 base = f"CSRank({op}(${field}))"
-                components["event_age"].extend([base, f"Neg({base})", f"Sign({base})"])
+                components["event_age"].extend([base, f"Neg({base})", f"Sign(Sub({base},0.5))"])
         state_ops = ["EventCount", "WindowStateCount"] if field.startswith("evt_") else ["EventCount", "StateDwell", "WindowStateCount"]
         for op in state_ops:
             for window in [5, 10, 20, 40]:
                 base = f"CSRank({op}(${field},{window}))"
-                components["event_state"].extend([base, f"Neg({base})", f"Sign({base})"])
+                components["event_state"].extend([base, f"Neg({base})", f"Sign(Sub({base},0.5))"])
     return components
 
 
@@ -297,14 +297,14 @@ def _compose_forms(event: str, context_a: str, context_b: str | None, context_c:
     forms = [
         ("du_add_event_context", f"CSRank(Add({event},{context_a}))"),
         ("du_sub_context_event", f"CSRank(Sub({context_a},{event}))"),
-        ("du_mul_sign_event_context", f"CSRank(Mul(Sign({event}),{context_a}))"),
-        ("du_neg_mul_sign_event_context", f"Neg(CSRank(Mul(Sign({event}),{context_a})))"),
+        ("du_mul_event_context", f"CSRank(Mul({event},{context_a}))"),
+        ("du_neg_mul_event_context", f"Neg(CSRank(Mul({event},{context_a})))"),
     ]
     if context_b is not None:
         forms.extend(
             [
                 ("du_add_event_two_context", f"CSRank(Add(Add({event},{context_a}),{context_b}))"),
-                ("du_mul_event_two_context", f"CSRank(Mul(Sign({event}),CSRank(Add({context_a},{context_b}))))"),
+                ("du_mul_event_two_context", f"CSRank(Mul({event},CSRank(Add({context_a},{context_b}))))"),
                 ("du_context_spread_event", f"CSRank(Add(Sub({context_a},{context_b}),{event}))"),
             ]
         )
@@ -313,11 +313,11 @@ def _compose_forms(event: str, context_a: str, context_b: str | None, context_c:
             [
                 (
                     "du_three_context_interaction",
-                    f"CSRank(Add(Mul(Sign({event}),CSRank(Add({context_a},{context_b}))),{context_c}))",
+                    f"CSRank(Add(Mul({event},CSRank(Add({context_a},{context_b}))),{context_c}))",
                 ),
                 (
                     "du_three_context_contrarian",
-                    f"Neg(CSRank(Add(Mul(Sign({event}),CSRank(Sub({context_a},{context_b}))),{context_c})))",
+                    f"Neg(CSRank(Add(Mul({event},CSRank(Sub({context_a},{context_b}))),{context_c})))",
                 ),
             ]
         )

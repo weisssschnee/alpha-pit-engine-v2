@@ -162,7 +162,7 @@ def _build_rows() -> list[dict[str, Any]]:
     for event_field in ["evt_uplimit_fd_max", "evt_uplimit_fd_close"]:
         for event_op, event_raw in _event_exprs(event_field):
             event_rank = f"CSRank({event_raw})"
-            event_sign = f"Sign({event_rank})"
+            event_sign = f"Sign(Sub({event_rank},0.5))"
             for context_field in VALUE_CONTEXT_FIELDS:
                 for context_op in CONTEXT_OPS:
                     for window in WINDOWS_FAST:
@@ -189,7 +189,7 @@ def _build_rows() -> list[dict[str, Any]]:
     for event_field in ["evt_uplimit_up_limit_keep_times", "evt_uplimit_fd_max"]:
         for event_op, event_raw in _event_exprs(event_field):
             event_rank = f"CSRank({event_raw})"
-            event_sign = f"Sign({event_rank})"
+            event_sign = f"Sign(Sub({event_rank},0.5))"
             for context_field in ["ctx_hfq_market_cap_yuan", "ctx_hfq_float_market_cap_yuan", "ctx_hfq_pb"]:
                 for context_op in CONTEXT_OPS:
                     for window in WINDOWS_FAST:
@@ -219,7 +219,7 @@ def _build_rows() -> list[dict[str, Any]]:
             for state_window in [10, 20, 40]:
                 event_raw = f"{state_op}(${event_field},{state_window})"
                 event_rank = f"CSRank({event_raw})"
-                event_sign = f"Sign({event_rank})"
+                event_sign = f"Sign(Sub({event_rank},0.5))"
                 for context_field in ["ctx_hfq_pb", "ctx_hfq_market_cap_yuan", *ACTIVITY_CONTEXT_FIELDS]:
                     for context_op in CONTEXT_OPS:
                         for window in [20, 40, 60]:

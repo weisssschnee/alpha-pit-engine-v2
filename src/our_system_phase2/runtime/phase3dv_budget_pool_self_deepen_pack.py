@@ -481,7 +481,7 @@ def _ranked_event_atoms(available: set[str] | None = None) -> list[tuple[str, st
                     [
                         ("event_age", expr, field),
                         ("event_age_neg", f"Neg({expr})", field),
-                        ("event_age_sign", f"Sign({expr})", field),
+                        ("event_age_sign", f"Sign(Sub({expr},0.5))", field),
                     ]
                 )
         state_ops = ("EventCount", "WindowStateCount") if field.startswith("evt_") else ("EventCount", "StateDwell", "WindowStateCount")
@@ -492,7 +492,7 @@ def _ranked_event_atoms(available: set[str] | None = None) -> list[tuple[str, st
                     [
                         ("event_state", expr, field),
                         ("event_state_neg", f"Neg({expr})", field),
-                        ("event_state_sign", f"Sign({expr})", field),
+                        ("event_state_sign", f"Sign(Sub({expr},0.5))", field),
                     ]
                 )
     return atoms
@@ -542,7 +542,7 @@ def _ranked_context_atoms(available: set[str] | None = None) -> dict[str, list[t
             [
                 ("intraday_raw_rank", expr, field),
                 ("intraday_raw_rank_neg", f"Neg({expr})", field),
-                ("intraday_raw_rank_sign", f"Sign({expr})", field),
+                ("intraday_raw_rank_sign", f"Sign(Sub({expr},0.5))", field),
             ]
         )
     return groups
@@ -553,25 +553,23 @@ def _forms(event: str, a: str, b: str | None, c: str | None) -> list[tuple[str, 
         ("add_event_context", f"CSRank(Add({event},{a}))"),
         ("sub_context_event", f"CSRank(Sub({a},{event}))"),
         ("sub_event_context", f"CSRank(Sub({event},{a}))"),
-        ("mul_signed_event_context", f"CSRank(Mul(Sign({event}),{a}))"),
-        ("neg_mul_signed_event_context", f"Neg(CSRank(Mul(Sign({event}),{a})))"),
-        ("event_context_gate", f"CSRank(Mul({event},Sign({a})))"),
+        ("mul_event_context", f"CSRank(Mul({event},{a}))"),
+        ("neg_mul_event_context", f"Neg(CSRank(Mul({event},{a})))"),
     ]
     if b is not None:
         out.extend(
             [
                 ("add_event_two_context", f"CSRank(Add(Add({event},{a}),{b}))"),
                 ("spread_context_event", f"CSRank(Add(Sub({a},{b}),{event}))"),
-                ("mul_event_context_spread", f"CSRank(Mul(Sign({event}),CSRank(Sub({a},{b}))))"),
-                ("two_context_gate_event", f"CSRank(Mul(Sign(Add({a},{b})),{event}))"),
+                ("mul_event_context_spread", f"CSRank(Mul({event},CSRank(Sub({a},{b}))))"),
             ]
         )
     if b is not None and c is not None:
         out.extend(
             [
-                ("three_context_interaction", f"CSRank(Add(Mul(Sign({event}),CSRank(Add({a},{b}))),{c}))"),
-                ("three_context_spread", f"CSRank(Add(Mul(Sign({event}),CSRank(Sub({a},{b}))),{c}))"),
-                ("three_context_contrarian", f"Neg(CSRank(Add(Mul(Sign({event}),CSRank(Sub({a},{b}))),{c})))"),
+                ("three_context_interaction", f"CSRank(Add(Mul({event},CSRank(Add({a},{b}))),{c}))"),
+                ("three_context_spread", f"CSRank(Add(Mul({event},CSRank(Sub({a},{b}))),{c}))"),
+                ("three_context_contrarian", f"Neg(CSRank(Add(Mul({event},CSRank(Sub({a},{b}))),{c})))"),
             ]
         )
     return out

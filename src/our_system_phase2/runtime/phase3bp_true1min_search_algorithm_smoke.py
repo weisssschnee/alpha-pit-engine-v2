@@ -39,6 +39,7 @@ from our_system_phase2.runtime.phase3bn_open_diversified_true1min_canary import 
     _prior_hashes,
 )
 from our_system_phase2.services.atom_lane_manifest import EPS, build_search_atoms
+from our_system_phase2.services.expression_semantics import analyze_expression
 from our_system_phase2.services.typed_primitive_gate import validate_expression
 
 
@@ -109,7 +110,7 @@ def _hash(text: str, length: int = 24) -> str:
 
 
 def _canonical_expression_key(expression: str) -> str:
-    canonical = re.sub(r"\s+", "", expression.strip())
+    canonical = analyze_expression(expression).canonical_expression
     return f"v2cand-{hashlib.sha1(canonical.encode('utf-8')).hexdigest()[:12]}"
 
 
@@ -197,6 +198,7 @@ def end_generation_accounting(previous: dict[str, Any] | None) -> dict[str, Any]
         "reject_memory_expr": int(counts.get("reject_memory_expr") or 0),
         "reject_batch_duplicate": int(counts.get("reject_batch_duplicate") or 0),
         "reject_typed_gate": int(counts.get("reject_typed_gate") or 0),
+        "reject_semantic_degenerate": int(counts.get("reject_semantic_degenerate") or 0),
         "reject_unsafe_skeleton": int(counts.get("reject_unsafe_skeleton") or 0),
         "reject_parse_error": int(counts.get("reject_parse_error") or 0),
         "reject_nan_or_invalid": int(counts.get("reject_nan_or_invalid") or 0),
@@ -590,7 +592,30 @@ def _add_candidate(
     note: str,
     policy: dict[str, Any],
 ) -> None:
-    expression = expression.strip()
+    source_expression = expression.strip()
+    try:
+        verdict = validate_expression(
+            source_expression,
+            entry_lineage="phase3bp_generator",
+            materialization_stage="candidate_construction",
+            candidate_role="true1min_search_candidate",
+        )
+    except Exception:
+        _record_generation_accounting("reject_parse_error", source_expression)
+        return
+    if verdict.typed_gate_decision != "allow":
+        if "SEMANTIC_PARSE_ERROR" in verdict.semantic_issue_codes:
+            reason = "reject_parse_error"
+        elif verdict.typed_gate_decision == "blocked_semantic_degeneracy":
+            reason = "reject_semantic_degenerate"
+        elif verdict.typed_gate_decision == "blocked_unsafe_known_structure":
+            reason = "reject_unsafe_skeleton"
+        else:
+            reason = "reject_typed_gate"
+        _record_generation_accounting(reason, source_expression)
+        return
+
+    expression = verdict.semantic_canonical_expression or source_expression
     digest = _hash(expression)
     if digest in seen:
         _record_generation_accounting("reject_batch_duplicate", expression, digest=digest)
@@ -603,24 +628,6 @@ def _add_candidate(
     skel_key = _skeleton_key(expression)
     if skel_key in blocked:
         _record_generation_preavoid("pre_avoided_unsafe_skeleton", expression, digest=digest)
-        return
-    try:
-        verdict = validate_expression(
-            expression,
-            entry_lineage="phase3bp_generator",
-            materialization_stage="candidate_construction",
-            candidate_role="true1min_search_candidate",
-        )
-    except Exception:
-        _record_generation_accounting("reject_parse_error", expression)
-        return
-    if verdict.typed_gate_decision != "allow":
-        reason = (
-            "reject_unsafe_skeleton"
-            if verdict.typed_gate_decision == "blocked_unsafe_known_structure"
-            else "reject_typed_gate"
-        )
-        _record_generation_accounting(reason, expression)
         return
     seen.add(digest)
     fields = _fields(expression)
@@ -646,6 +653,12 @@ def _add_candidate(
             "typed_gate_decision": verdict.typed_gate_decision,
             "typed_gate_reason": verdict.typed_gate_reason,
             "registry_version": verdict.registry_version,
+            "semantic_gate_decision": verdict.semantic_gate_decision,
+            "semantic_gate_reason": verdict.semantic_gate_reason,
+            "semantic_issue_codes": verdict.semantic_issue_codes,
+            "semantic_key": verdict.semantic_key,
+            "semantic_source_expression": source_expression if source_expression != expression else "",
+            "semantic_rewritten": str(source_expression != expression).lower(),
         }
     )
 
@@ -686,6 +699,20 @@ def _atom_normalized_expr(atom: dict[str, Any]) -> str:
     if str(atom.get("transform_mode") or "") == "typed_rank":
         return f"CSRank({expr})"
     return f"ZScore({expr})"
+
+
+def _atom_direction_expr(atom: dict[str, Any]) -> str:
+    normalized = _atom_normalized_expr(atom)
+    if str(atom.get("transform_mode") or "") == "typed_rank":
+        return f"Sign(Sub({normalized},0.5))"
+    return f"Sign({normalized})"
+
+
+def _atom_magnitude_expr(atom: dict[str, Any]) -> str:
+    normalized = _atom_normalized_expr(atom)
+    if str(atom.get("transform_mode") or "") == "typed_rank":
+        return f"Abs(Sub({normalized},0.5))"
+    return f"Abs({normalized})"
 
 
 def _smooth_expr(expr: str, window: int, delay: int = 0) -> str:
@@ -897,11 +924,12 @@ def _generate_event_state_candidates(
                     break
                 left_norm = _atom_normalized_expr(left)
                 right_norm = _atom_normalized_expr(right)
+                left_direction = _atom_direction_expr(left)
                 for kind, expression in {
-                    "event_signed_context": f"CSRank(Mul(Sign({left_norm}),{right_norm}))",
+                    "event_signed_context": f"CSRank(Mul({left_direction},{right_norm}))",
                     "context_minus_event": f"CSRank(Sub({right_norm},{left_norm}))",
                     "event_plus_context": f"CSRank(Add({left_norm},{right_norm}))",
-                    "inverted_event_gate": f"Neg(CSRank(Mul(Sign({left_norm}),{right_norm})))",
+                    "inverted_event_gate": f"Neg(CSRank(Mul({left_direction},{right_norm})))",
                 }.items():
                     _add_candidate(
                         interaction_rows,
@@ -925,9 +953,10 @@ def _generate_event_state_candidates(
                     continue
                 left_norm = _atom_normalized_expr(left)
                 right_norm = _atom_normalized_expr(right)
+                left_direction = _atom_direction_expr(left)
                 for kind, expression in {
                     "event_spread": f"CSRank(Sub({left_norm},{right_norm}))",
-                    "event_cross": f"CSRank(Mul(Sign({left_norm}),{right_norm}))",
+                    "event_cross": f"CSRank(Mul({left_direction},{right_norm}))",
                     "event_balance": f"CSRank(Add({left_norm},Neg({right_norm})))",
                 }.items():
                     _add_candidate(
@@ -1206,11 +1235,13 @@ def _generate_orthogonal_candidates(
                     continue
                 left_norm = _atom_normalized_expr(left)
                 right_norm = _atom_normalized_expr(right)
+                left_direction = _atom_direction_expr(left)
+                right_direction = _atom_direction_expr(right)
                 variants = {
-                    "signed_product": f"CSRank(Mul(Sign({left_norm}),{right_norm}))",
-                    "abs_spread": f"CSRank(Sub(Abs({left_norm}),Abs({right_norm})))",
+                    "signed_product": f"CSRank(Mul({left_direction},{right_norm}))",
+                    "abs_spread": f"CSRank(Sub({_atom_magnitude_expr(left)},{_atom_magnitude_expr(right)}))",
                     "rank_balance": f"CSRank(Add({left_norm},Neg({right_norm})))",
-                    "double_signed": f"CSRank(Mul(Sign({left_norm}),Sign({right_norm})))",
+                    "double_signed": f"CSRank(Mul({left_direction},{right_direction}))",
                 }
                 for kind, expression in variants.items():
                     before = len(rows)
@@ -1371,7 +1402,7 @@ def _generate_cem_elite_candidates(
             variants = {
                 "product": f"CSRank(Mul({_atom_normalized_expr(left)},{_atom_normalized_expr(right)}))",
                 "spread": f"CSRank(Sub({_atom_normalized_expr(left)},{_atom_normalized_expr(right)}))",
-                "signed_state": f"CSRank(Mul(Sign({_atom_normalized_expr(left)}),{_atom_normalized_expr(right)}))",
+                "signed_state": f"CSRank(Mul({_atom_direction_expr(left)},{_atom_normalized_expr(right)}))",
             }
             if include_residual:
                 variants["residual"] = f"CSRank(CSResidual(CSRank({left['expr']}),CSRank({right['expr']})))"
