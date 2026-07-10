@@ -98,6 +98,15 @@ def test_exact_atom_recovery_requires_and_accepts_complete_shard_coverage(tmp_pa
         )
         chunks.append(chunk)
     output = tmp_path / "output"
+    split_manifest = tmp_path / "split_manifest.csv"
+    _write_csv(
+        split_manifest,
+        [
+            {"trade_date": "2026-01-05", "split": "train"},
+            {"trade_date": "2026-01-06", "split": "validation"},
+            {"trade_date": "2026-01-07", "split": "holdout"},
+        ],
+    )
 
     result = main(
         [
@@ -113,6 +122,12 @@ def test_exact_atom_recovery_requires_and_accepts_complete_shard_coverage(tmp_pa
             "2",
             "--horizons",
             "1",
+            "--train-fraction",
+            "0.34",
+            "--validation-fraction",
+            "0.33",
+            "--split-manifest",
+            str(split_manifest),
         ]
     )
 
@@ -127,3 +142,7 @@ def test_exact_atom_recovery_requires_and_accepts_complete_shard_coverage(tmp_pa
     assert summary["semantic_equivalent_candidate_count"] == 1
     assert summary["semantic_blocked_candidate_count"] == 1
     assert summary["reward_aggregation_mode"] == "reward_atoms_exact_all_shard_curve"
+    assert summary["split_policy"] == "fixed_trade_date_manifest"
+    assert summary["split_audit"]["post_normalization_cross_split_date_count"] == 0
+    assert (output / "phase3cm_split_manifest.csv").exists()
+    assert (output / "phase3cm_split_reassignment_audit.json").exists()

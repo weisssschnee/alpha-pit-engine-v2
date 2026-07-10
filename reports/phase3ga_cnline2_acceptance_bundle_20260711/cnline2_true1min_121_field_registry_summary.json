@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-07-10T16:40:32.413344+00:00",
+  "decision": "CNLINE2_TRUE1MIN_121_FIELD_REGISTRY_ACCEPTED",
+  "field_count": 121,
+  "field_group_counts": {
+    "metadata_or_key": 7,
+    "raw_minute": 12,
+    "firstn_opening_state": 30,
+    "lagged_context": 59,
+    "event_state": 13
+  },
+  "schema_sha256": "93b7260be820333600273c140ad6e60464c88eb8a0d472e5fc70cd2b2322e94c",
+  "old_1d_allowed": false,
+  "plate_membership_field_count": 0,
+  "event_fields_require_typed_route": true,
+  "firstn_maturity_sample_verified": true
+}

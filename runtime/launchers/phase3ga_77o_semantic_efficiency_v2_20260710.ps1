@@ -6,6 +6,7 @@ param(
   [string]$RunRoot = "D:\ChengboRemote\runtime\phase3ga_semantic_efficiency_v2_20260710_77o",
   [string]$ReportRoot = "D:\ChengboRemote\runtime\reports\phase3ga_semantic_efficiency_v2_20260710_77o",
   [string]$PersistentCacheRoot = "D:\ChengboRemote\cache\phase3ga_2024_2025_cm_bounded_v2",
+  [string]$SplitManifest = "D:\ChengboRemote\workspace\alpha_pit_true1min_engine_20260710_phase3ga_semantic_efficiency_v2\runtime\run_plans\phase3ga_true1min_2024_2025_global_split_manifest.csv",
   [int]$GenerationBudget = 24576,
   [int]$RescheduleBudget = 24576,
   [int]$CaTopN = 1536,
@@ -23,7 +24,7 @@ $env:MKL_NUM_THREADS = "1"
 $ArmBudget = Join-Path $CoRoot "phase3cp_real_cm_next_arm_budget_table.csv"
 $MemoryRoot = Join-Path $Repo "runtime\search_memory"
 $ExpectedPanelRel = "phase3aq_wide_true1min\canary\phase3aq_true_1min_formula_canary.parquet"
-foreach ($path in @($Python, $Repo, $ShardRoot, $ArmBudget)) {
+foreach ($path in @($Python, $Repo, $ShardRoot, $ArmBudget, $SplitManifest)) {
   if (-not (Test-Path -LiteralPath $path)) { throw "required path missing: $path" }
 }
 $PanelCount = @(Get-ChildItem -LiteralPath $ShardRoot -Directory -Filter "shard_*" | Where-Object {
@@ -60,6 +61,8 @@ $manifest = [ordered]@{
   bootstrap_engine = "numpy_vectorized_v1"
   validation_usage = "report_only"
   holdout_usage = "report_only"
+  split_manifest = $SplitManifest
+  split_policy = "fixed_trade_date_manifest"
   year_2026_usage = "forbidden_during_search"
   plate_membership_claim = "none"
   started_at = (Get-Date).ToString("o")
@@ -86,6 +89,7 @@ $argsList = @(
   "--cm-horizons", "1,5,10,15",
   "--cm-train-fraction", "0.75",
   "--cm-validation-fraction", "0.15",
+  "--cm-split-manifest", $SplitManifest,
   "--cm-min-obs-per-time", "20",
   "--cm-cost-bps", "5",
   "--cm-top-quantile", "0.2",

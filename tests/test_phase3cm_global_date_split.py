@@ -1,0 +1,64 @@
+from __future__ import annotations
+
+from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
+    _normalize_global_date_splits,
+)
+
+
+def test_global_date_split_removes_cross_shard_date_overlap() -> None:
+    rows = []
+    for day in range(1, 11):
+        trade_date = f"2026-01-{day:02d}"
+        rows.extend(
+            [
+                {"trade_date": trade_date, "split": "train", "shard_index": 0},
+                {"trade_date": trade_date, "split": "validation", "shard_index": 1},
+            ]
+        )
+
+    manifest, audit = _normalize_global_date_splits(
+        rows,
+        train_fraction=0.60,
+        validation_fraction=0.20,
+    )
+
+    split_by_date = {row["trade_date"]: row["split"] for row in manifest}
+    assert list(split_by_date.values()).count("train") == 6
+    assert list(split_by_date.values()).count("validation") == 2
+    assert list(split_by_date.values()).count("holdout") == 2
+    assert {row["split"] for row in rows if row["trade_date"] == "2026-01-01"} == {"train"}
+    assert {row["split"] for row in rows if row["trade_date"] == "2026-01-07"} == {"validation"}
+    assert {row["split"] for row in rows if row["trade_date"] == "2026-01-09"} == {"holdout"}
+    assert audit["preexisting_cross_split_date_count"] == 10
+    assert audit["post_normalization_cross_split_date_count"] == 0
+    assert audit["reassigned_row_count"] > 0
+    assert audit["boundaries"]["train_end"] == "2026-01-06"
+    assert audit["boundaries"]["validation_end"] == "2026-01-08"
+
+
+def test_fixed_trade_date_manifest_is_authoritative() -> None:
+    rows = [
+        {"trade_date": "2026-01-02", "split": "holdout"},
+        {"trade_date": "2026-01-04", "split": "train"},
+    ]
+    fixed_manifest = [
+        {"trade_date": "2026-01-01", "split": "train"},
+        {"trade_date": "2026-01-02", "split": "train"},
+        {"trade_date": "2026-01-03", "split": "validation"},
+        {"trade_date": "2026-01-04", "split": "holdout"},
+    ]
+
+    manifest, audit = _normalize_global_date_splits(
+        rows,
+        train_fraction=0.50,
+        validation_fraction=0.25,
+        split_manifest=fixed_manifest,
+    )
+
+    assert [row["split"] for row in rows] == ["train", "holdout"]
+    assert len(manifest) == 4
+    assert audit["split_policy"] == "fixed_trade_date_manifest"
+    assert audit["trade_date_count"] == 2
+    assert audit["manifest_trade_date_count"] == 4
+    assert audit["manifest_unused_date_count"] == 2
+    assert audit["post_normalization_cross_split_date_count"] == 0

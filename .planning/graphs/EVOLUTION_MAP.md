@@ -12,6 +12,7 @@ Updated: 2026-07-10
 | Phase3FIX | Active data repair | Canonical 2024-2025 true1min root |
 | Phase3FZ | Industry/plate canary | Not equivalent to accepted full PIT membership |
 | Phase3GA | Remote-accepted semantic/efficiency hardening | Value-domain gate, vector dedup, byte caches, vectorized bootstrap; exact 12-shard recovery passed with zero coverage failures |
+| Phase3GA fixed-calendar repair | Active split contract | Supersedes shard-local and atom-union split labels with the versioned 485-date manifest from ADR 0001 |
 
 The raw graph still contains superseded reports and launchers for navigation.
 Use `CURRENT_ARCHITECTURE.md` for runtime decisions and this file for lineage.

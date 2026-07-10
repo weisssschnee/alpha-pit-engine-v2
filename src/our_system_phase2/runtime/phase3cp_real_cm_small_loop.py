@@ -37,6 +37,7 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
 from our_system_phase2.runtime.phase3ca_build_bz_candidate_audit import build_candidate_table
 from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
     _candidate_summary_from_reward_atoms,
+    _normalize_global_date_splits,
     main as phase3cm_main,
 )
 from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import build_feedback_memory
@@ -926,6 +927,11 @@ def _append_cm_checkpoint_args(argv: list[str], args: argparse.Namespace) -> Non
         argv.append("--disable-incremental-checkpoints")
 
 
+def _append_cm_split_manifest_args(argv: list[str], args: argparse.Namespace) -> None:
+    if args.cm_split_manifest is not None:
+        argv.extend(["--split-manifest", str(_resolve(args.cm_split_manifest))])
+
+
 def _run_real_cm_chunk_subprocess(
     *,
     args: argparse.Namespace,
@@ -988,6 +994,7 @@ def _run_real_cm_chunk_subprocess(
         "--fast-mode",
     ]
     _append_cm_checkpoint_args(argv, args)
+    _append_cm_split_manifest_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", "src")
@@ -1094,6 +1101,7 @@ def _run_real_cm_shard_subprocess(
     if bool(args.cm_shard_write_reward_atoms):
         argv.append("--write-reward-atoms")
     _append_cm_checkpoint_args(argv, args)
+    _append_cm_split_manifest_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", "src")
@@ -1176,6 +1184,7 @@ def _run_real_cm_retry_table(
         "--fast-mode",
     ]
     _append_cm_checkpoint_args(argv, args)
+    _append_cm_split_manifest_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
@@ -1629,6 +1638,17 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
             row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
             progress_rows.append(row)
 
+    split_manifest_rows, split_reassignment_audit = _normalize_global_date_splits(
+        atom_rows,
+        train_fraction=args.cm_train_fraction,
+        validation_fraction=args.cm_validation_fraction,
+        split_manifest=(
+            _read_csv(_resolve(args.cm_split_manifest))
+            if args.cm_split_manifest is not None
+            else None
+        ),
+    )
+
     atom_rows_by_hash: dict[str, list[dict[str, Any]]] = {}
     for row in atom_rows:
         digest = str(row.get("expression_hash") or "")
@@ -1691,6 +1711,9 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
         "train_fraction": args.cm_train_fraction,
         "validation_fraction": args.cm_validation_fraction,
         "holdout_fraction": round(1.0 - args.cm_train_fraction - args.cm_validation_fraction, 8),
+        "split_policy": split_reassignment_audit.get("split_policy"),
+        "split_manifest_input": str(_resolve(args.cm_split_manifest)) if args.cm_split_manifest is not None else "",
+        "split_audit": split_reassignment_audit,
         "cost_bps": args.cm_cost_bps,
         "top_quantile": args.cm_top_quantile,
         "rank_ic_loss_weight": args.cm_rank_ic_loss_weight,
@@ -1754,6 +1777,8 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
         _write_csv(root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
         _write_csv(root / "phase3cm_shard_meta.csv", shard_meta_rows)
         _write_csv(root / "phase3cm_candidate_progress.csv", progress_rows)
+        _write_csv(root / "phase3cm_split_manifest.csv", split_manifest_rows)
+        _write_json(root / "phase3cm_split_reassignment_audit.json", split_reassignment_audit)
         _write_csv(root / "phase3cm_reward_atoms.csv", atom_rows)
         _write_csv(root / "phase3cm_train_reward_partial.csv", reward_rows)
         _write_json(root / "phase3cm_train_reward_audit_summary.json", summary)
@@ -1832,6 +1857,7 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
         "--fast-mode",
     ]
     _append_cm_checkpoint_args(argv, args)
+    _append_cm_split_manifest_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
@@ -1922,6 +1948,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-horizons", default="1,5,15")
     parser.add_argument("--cm-train-fraction", type=float, default=0.60)
     parser.add_argument("--cm-validation-fraction", type=float, default=0.20)
+    parser.add_argument("--cm-split-manifest", type=Path, default=None)
     parser.add_argument("--cm-min-obs-per-time", type=int, default=20)
     parser.add_argument("--cm-cost-bps", type=float, default=5.0)
     parser.add_argument("--cm-top-quantile", type=float, default=0.2)
@@ -1987,6 +2014,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if not shard_root.exists():
         raise FileNotFoundError(f"true1min shard root does not exist: {shard_root}")
+    if args.cm_split_manifest is not None and not _resolve(args.cm_split_manifest).exists():
+        raise FileNotFoundError(f"CM split manifest does not exist: {_resolve(args.cm_split_manifest)}")
+    if (
+        int(args.cm_workers) > 1
+        and str(args.cm_parallel_axis) == "shard"
+        and args.cm_split_manifest is None
+    ):
+        raise RuntimeError("shard-parallel CM requires --cm-split-manifest")
     shard_root_text = str(shard_root).lower()
     if "tdxofficial" in shard_root_text or "\\1d" in shard_root_text or "/1d" in shard_root_text:
         raise RuntimeError(f"refusing suspicious non-true1min shard root: {shard_root}")

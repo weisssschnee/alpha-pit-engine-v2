@@ -973,6 +973,145 @@ def _split_map(signal_times: set[pd.Timestamp], train_fraction: float, validatio
     return out
 
 
+def _row_trade_date(row: dict[str, Any]) -> str:
+    value = row.get("trade_date") or row.get("trade_time")
+    parsed = pd.to_datetime(value, errors="coerce")
+    if pd.isna(parsed):
+        return ""
+    return pd.Timestamp(parsed).date().isoformat()
+
+
+def _normalize_global_date_splits(
+    rows: list[dict[str, Any]],
+    *,
+    train_fraction: float,
+    validation_fraction: float,
+    split_manifest: list[dict[str, Any]] | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Apply one chronological trade-date split to rows from every shard."""
+    if train_fraction <= 0 or validation_fraction < 0 or train_fraction + validation_fraction >= 1:
+        raise ValueError("invalid global date split fractions")
+
+    old_splits_by_date: dict[str, set[str]] = {}
+    dates: set[str] = set()
+    for row in rows:
+        trade_date = _row_trade_date(row)
+        if not trade_date:
+            continue
+        dates.add(trade_date)
+        old_split = str(row.get("split") or "")
+        if old_split:
+            old_splits_by_date.setdefault(trade_date, set()).add(old_split)
+
+    split_by_date: dict[str, str] = {}
+    split_policy = "fixed_trade_date_manifest" if split_manifest else "global_trade_date_union"
+    if split_manifest:
+        split_order = {"train": 0, "validation": 1, "holdout": 2}
+        previous_rank = -1
+        for raw in sorted(split_manifest, key=lambda item: str(item.get("trade_date") or "")):
+            trade_date = _row_trade_date(raw)
+            split = str(raw.get("split") or "")
+            if not trade_date or split not in split_order:
+                raise ValueError(f"invalid fixed split manifest row: {raw}")
+            if trade_date in split_by_date and split_by_date[trade_date] != split:
+                raise ValueError(f"conflicting fixed split manifest date: {trade_date}")
+            rank = split_order[split]
+            if rank < previous_rank:
+                raise ValueError("fixed split manifest is not chronologically contiguous")
+            previous_rank = rank
+            split_by_date[trade_date] = split
+        ordered_dates = sorted(split_by_date)
+        date_count = len(ordered_dates)
+        expected_counts = {
+            "train": max(1, min(date_count, int(round(date_count * train_fraction)))) if date_count else 0,
+            "validation": int(round(date_count * validation_fraction)) if date_count else 0,
+        }
+        expected_counts["holdout"] = date_count - expected_counts["train"] - expected_counts["validation"]
+        observed_counts = {
+            split: sum(value == split for value in split_by_date.values())
+            for split in ("train", "validation", "holdout")
+        }
+        if observed_counts != expected_counts:
+            raise ValueError(
+                f"fixed split manifest counts {observed_counts} do not match fractions {expected_counts}"
+            )
+    else:
+        ordered_dates = sorted(dates)
+        date_count = len(ordered_dates)
+        train_end = max(1, min(date_count, int(round(date_count * train_fraction)))) if date_count else 0
+        validation_end = (
+            max(train_end, min(date_count, train_end + int(round(date_count * validation_fraction))))
+            if date_count
+            else 0
+        )
+        for index, trade_date in enumerate(ordered_dates):
+            if index < train_end:
+                split = "train"
+            elif index < validation_end:
+                split = "validation"
+            else:
+                split = "holdout"
+            split_by_date[trade_date] = split
+
+    date_count = len(ordered_dates)
+    manifest: list[dict[str, Any]] = []
+    for index, trade_date in enumerate(ordered_dates):
+        split = split_by_date[trade_date]
+        manifest.append(
+            {
+                "trade_date": trade_date,
+                "split": split,
+                "date_ordinal": index + 1,
+                "date_count": date_count,
+                "train_fraction": train_fraction,
+                "validation_fraction": validation_fraction,
+                "holdout_fraction": round(1.0 - train_fraction - validation_fraction, 8),
+                "optimizer_usage": "allowed" if split == "train" else "report_only",
+            }
+        )
+
+    reassigned = 0
+    post_splits_by_date: dict[str, set[str]] = {}
+    unassigned = 0
+    for row in rows:
+        trade_date = _row_trade_date(row)
+        split = split_by_date.get(trade_date)
+        if split is None:
+            unassigned += 1
+            row["split"] = "unassigned"
+            continue
+        if str(row.get("split") or "") != split:
+            reassigned += 1
+        row["split"] = split
+        post_splits_by_date.setdefault(trade_date, set()).add(split)
+    if split_manifest and unassigned:
+        raise ValueError(f"fixed split manifest does not cover {unassigned} reward rows")
+
+    boundaries: dict[str, str | None] = {}
+    for split in ("train", "validation", "holdout"):
+        split_dates = [row["trade_date"] for row in manifest if row["split"] == split]
+        boundaries[f"{split}_start"] = split_dates[0] if split_dates else None
+        boundaries[f"{split}_end"] = split_dates[-1] if split_dates else None
+
+    audit = {
+        "split_policy": split_policy,
+        "row_count": len(rows),
+        "trade_date_count": len(dates),
+        "manifest_trade_date_count": date_count,
+        "manifest_unused_date_count": len(set(ordered_dates) - dates),
+        "manifest_split_counts": {
+            split: sum(row["split"] == split for row in manifest)
+            for split in ("train", "validation", "holdout")
+        },
+        "reassigned_row_count": reassigned,
+        "unassigned_row_count": unassigned,
+        "preexisting_cross_split_date_count": sum(len(values) > 1 for values in old_splits_by_date.values()),
+        "post_normalization_cross_split_date_count": sum(len(values) > 1 for values in post_splits_by_date.values()),
+        "boundaries": boundaries,
+    }
+    return manifest, audit
+
+
 def _read_train_shard(
     *,
     candidates: list[dict[str, Any]],
@@ -2574,6 +2713,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--horizons", default="1,5,15,30")
     parser.add_argument("--train-fraction", type=float, default=0.60)
     parser.add_argument("--validation-fraction", type=float, default=0.20)
+    parser.add_argument(
+        "--split-manifest",
+        type=Path,
+        default=None,
+        help="Optional fixed trade_date/split CSV shared by every shard worker.",
+    )
     parser.add_argument("--min-obs-per-time", type=int, default=20)
     parser.add_argument("--cost-bps", type=float, default=5.0)
     parser.add_argument("--top-quantile", type=float, default=0.2)
@@ -2670,6 +2815,11 @@ def main(argv: list[str] | None = None) -> int:
     report_root = _resolve(args.report_root)
     output_root.mkdir(parents=True, exist_ok=True)
     report_root.mkdir(parents=True, exist_ok=True)
+    fixed_split_manifest_rows = (
+        _read_csv(_resolve(args.split_manifest)) if args.split_manifest is not None else None
+    )
+    if args.split_manifest is not None and not fixed_split_manifest_rows:
+        raise ValueError(f"split manifest is empty: {_resolve(args.split_manifest)}")
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
     candidates = _load_candidates(
         _resolve(args.candidate_audit),
@@ -2867,7 +3017,25 @@ def main(argv: list[str] | None = None) -> int:
         _schema_hold_reward_row(candidate, portfolio_mode=args.portfolio_mode)
         for candidate in schema_held_candidates
     ]
+    split_manifest_rows: list[dict[str, Any]] = []
+    split_reassignment_audit: dict[str, Any] = {
+        "split_policy": "semantic_only_no_reward_split",
+        "row_count": 0,
+        "trade_date_count": 0,
+        "reassigned_row_count": 0,
+        "unassigned_row_count": 0,
+        "preexisting_cross_split_date_count": 0,
+        "post_normalization_cross_split_date_count": 0,
+        "boundaries": {},
+    }
     if not args.semantic_only:
+        all_portfolio_rows = [row for candidate_rows in rows_by_hash.values() for row in candidate_rows]
+        split_manifest_rows, split_reassignment_audit = _normalize_global_date_splits(
+            all_portfolio_rows,
+            train_fraction=args.train_fraction,
+            validation_fraction=args.validation_fraction,
+            split_manifest=fixed_split_manifest_rows,
+        )
         for idx, candidate in enumerate(candidates, 1):
             rows = rows_by_hash[str(candidate["expression_hash"])]
             per_split, reward_row = _candidate_summary(
@@ -2925,6 +3093,9 @@ def main(argv: list[str] | None = None) -> int:
         "train_fraction": args.train_fraction,
         "validation_fraction": args.validation_fraction,
         "holdout_fraction": round(1.0 - args.train_fraction - args.validation_fraction, 8),
+        "split_policy": split_reassignment_audit.get("split_policy"),
+        "split_manifest_input": str(_resolve(args.split_manifest)) if args.split_manifest is not None else "",
+        "split_audit": split_reassignment_audit,
         "cost_bps": args.cost_bps,
         "top_quantile": args.top_quantile,
         "portfolio_mode": args.portfolio_mode,
@@ -3022,11 +3193,15 @@ def main(argv: list[str] | None = None) -> int:
     _write_csv(output_root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
     _write_csv(output_root / "phase3cm_train_reward.csv", reward_rows)
     _write_csv(output_root / "phase3cm_shard_meta.csv", shard_meta)
+    _write_csv(output_root / "phase3cm_split_manifest.csv", split_manifest_rows)
+    _write_json(output_root / "phase3cm_split_reassignment_audit.json", split_reassignment_audit)
     _write_json(output_root / "phase3cm_train_reward_audit_summary.json", summary)
     report_root.mkdir(parents=True, exist_ok=True)
     _write_csv(report_root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
     _write_csv(report_root / "phase3cm_train_reward.csv", reward_rows)
     _write_csv(report_root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
+    _write_csv(report_root / "phase3cm_split_manifest.csv", split_manifest_rows)
+    _write_json(report_root / "phase3cm_split_reassignment_audit.json", split_reassignment_audit)
     if args.write_reward_atoms:
         _write_csv(report_root / "phase3cm_reward_atoms.csv", reward_atom_rows)
     _write_json(report_root / "phase3cm_train_reward_audit_summary.json", summary)

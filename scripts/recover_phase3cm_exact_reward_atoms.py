@@ -12,6 +12,7 @@ from typing import Any
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import _write_csv, _write_json
 from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
     _candidate_summary_from_reward_atoms,
+    _normalize_global_date_splits,
 )
 from our_system_phase2.services.candidate_schema import safe_float
 from our_system_phase2.services.expression_semantics import analyze_expression
@@ -48,6 +49,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rank-ic-component-cap", type=float, default=0.35)
     parser.add_argument("--regime-stability-weight", type=float, default=0.06)
     parser.add_argument("--regime-component-cap", type=float, default=0.08)
+    parser.add_argument("--train-fraction", type=float, default=0.75)
+    parser.add_argument("--validation-fraction", type=float, default=0.15)
+    parser.add_argument("--split-manifest", type=Path, required=True)
     args = parser.parse_args(argv)
 
     candidates = _read_csv(args.candidate_table.resolve())
@@ -110,6 +114,19 @@ def main(argv: list[str] | None = None) -> int:
     _write_csv(output_root / "phase3cm_exact_atom_coverage.csv", incomplete)
     if incomplete:
         raise RuntimeError(f"exact reward atom coverage failed for {len(incomplete)} candidates")
+
+    all_atom_rows = [row for rows in atom_rows_by_hash.values() for row in rows]
+    fixed_split_manifest = (
+        _read_csv(args.split_manifest.resolve()) if args.split_manifest is not None else None
+    )
+    if args.split_manifest is not None and not fixed_split_manifest:
+        raise RuntimeError(f"split manifest is empty: {args.split_manifest.resolve()}")
+    split_manifest_rows, split_reassignment_audit = _normalize_global_date_splits(
+        all_atom_rows,
+        train_fraction=args.train_fraction,
+        validation_fraction=args.validation_fraction,
+        split_manifest=fixed_split_manifest,
+    )
 
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
     valid_reward_rows: list[dict[str, Any]] = []
@@ -187,6 +204,12 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "bootstrap_engine": "numpy_vectorized_v1",
         "reward_aggregation_mode": "reward_atoms_exact_all_shard_curve",
+        "split_policy": split_reassignment_audit.get("split_policy"),
+        "split_manifest_input": str(args.split_manifest.resolve()) if args.split_manifest is not None else "",
+        "split_audit": split_reassignment_audit,
+        "train_fraction": args.train_fraction,
+        "validation_fraction": args.validation_fraction,
+        "holdout_fraction": round(1.0 - args.train_fraction - args.validation_fraction, 8),
         "validation_usage": "report_only",
         "holdout_usage": "report_only",
         "chunks": chunk_rows,
@@ -210,6 +233,8 @@ def main(argv: list[str] | None = None) -> int:
     _write_csv(output_root / "phase3cm_semantic_blocked_reward_audit.csv", semantic_blocked_rows)
     _write_csv(output_root / "phase3cm_semantic_equivalent_reward_audit.csv", semantic_equivalent_rows)
     _write_csv(output_root / "phase3cm_candidate_split_horizon_summary.csv", split_rows)
+    _write_csv(output_root / "phase3cm_split_manifest.csv", split_manifest_rows)
+    _write_json(output_root / "phase3cm_split_reassignment_audit.json", split_reassignment_audit)
     _write_json(output_root / "phase3cm_exact_reward_atom_recovery_summary.json", summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0

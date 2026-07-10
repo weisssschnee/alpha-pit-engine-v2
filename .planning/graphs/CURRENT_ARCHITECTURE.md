@@ -8,12 +8,14 @@ historical diagnostic branches that still appear in the raw knowledge graph.
 ```mermaid
 flowchart LR
     D["Repaired true1min 2024-2025\n16 shards / 121 columns"] --> G["Multi-arm generator\nRX / UCB / CEM / hybrid / fresh"]
+    D --> C["Fixed trade-date manifest\n485 days: 364 / 73 / 48"]
     G --> S["Expression semantics\nvalue domains + exact rewrites"]
     S --> T["Typed primitive gate"]
     T --> M["Search memory\nexact expressions + unsafe skeletons"]
     M --> CA["CA ranking and balanced quota"]
     CA --> V["Pre-CM semantic-only evaluator\nconstant + rank + bucket equivalence"]
     V --> CM["Phase3CM full train reward\nlong-only + costs + RankIC + regime"]
+    C --> CM
     CM --> CN["Phase3CN guarded feedback"]
     CN --> G
     OOS["Validation / holdout / 2026 forward"] -. "report only" .-> CM
@@ -27,6 +29,8 @@ flowchart LR
 - Sampled signal equivalence removes duplicate work for the current run but does not create unsafe skeleton blocks.
 - Phase3CM optimizer reward is train-only and long-only for CN tradability.
 - Validation and holdout are report-only.
+- Every shard worker and exact recovery uses the same versioned trade-date manifest; split overlap is a hard failure.
+- The accepted 2024-2025 calendar has 364 train, 73 validation, and 48 internal holdout dates.
 - Operator cache default cap is 2 GiB per process; feature-matrix cache default cap is 4 GiB per process.
 - Persistent disk cache remains size, free-space, and TTL bounded.
 
@@ -35,3 +39,4 @@ flowchart LR
 - The repaired root has no accepted full PIT plate-membership lane.
 - Sampled vector equivalence is not final OOS evidence.
 - SafeDiv tails are diagnosed; automatic clipping is not part of the current contract.
+- The separate 2026 asset is forward OOS and is not included in the 2024-2025 split manifest.

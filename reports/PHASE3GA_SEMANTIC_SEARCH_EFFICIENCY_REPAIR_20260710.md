@@ -2,7 +2,7 @@
 
 Date: 2026-07-10
 
-Decision: `PHASE3GA_CNLINE2_SEMANTIC_AND_THROUGHPUT_CHAIN_REMOTE_ACCEPTED_WITH_EXACT_12_SHARD_AUDIT`
+Decision: `PHASE3GA_CNLINE2_REMOTE_ACCEPTED_WITH_FIXED_CALENDAR_EXACT_12_SHARD_AUDIT`
 
 ## Scope
 
@@ -37,8 +37,9 @@ Decision: `PHASE3GA_CNLINE2_SEMANTIC_AND_THROUGHPUT_CHAIN_REMOTE_ACCEPTED_WITH_E
 ## Evidence
 
 ```text
-full local suite: 25 passed
+full local suite: 27 passed
 full 77O suite before exact-recovery addition: 24 passed
+fixed-calendar split regression on 77O: 3 passed
 semantic-only end-to-end: future-return builder replaced with a fail-fast stub; route still passed
 real 121-column generation smoke:
   rx_ucb       768/768, semantic hard blocks in output: 0
@@ -66,27 +67,43 @@ coverage_failure_count:               0
 semantic_blocked_candidates:         60  (15.625%)
 semantically_valid_candidates:      324
 semantic_equivalent_candidates:       0  after canonical quarantine
-train_followup_candidates:           11
+train_followup_candidates:           12
 ```
+
+Artifact publication exposed a second correctness issue: each shard had
+derived its own split from locally sampled timestamps. In the historical atom
+ledger, 73 trade dates appeared in multiple splits. The fixed-calendar repair
+reassigned 138,465 atom rows and reduced split overlap and unassigned rows to
+zero. ADR 0001 now freezes the complete 485-date calendar before evaluation:
+
+```text
+train:       364 dates, 2024-01-02 through 2025-07-07
+validation:   73 dates, 2025-07-08 through 2025-10-24
+holdout:      48 dates, 2025-10-27 through 2025-12-31
+2026:        separate forward OOS; not consumed by this run
+```
+
+All OOS figures below come from the fixed-calendar exact recovery. The earlier
+shard-local exact table is superseded and remains diagnostic only.
 
 The two highest optimizer rewards were not stable alpha promotions:
 
 ```text
-phase3cp_00007: train 0.5534, validation 0.2158, holdout -0.1196
-phase3cp_00006: train 0.5090, validation 0.1530, holdout -0.1670
+phase3cp_00007: train 0.5864, validation 0.2234, holdout -0.1528
+phase3cp_00006: train 0.5422, validation 0.1517, holdout -0.2053
 ```
 
-Sixteen of the 324 semantically valid candidates had positive train,
-validation, and holdout Sortino. Only one of the 11 train-followup candidates
+Ten of the 324 semantically valid candidates had positive train, validation,
+and holdout Sortino. Only one of the 12 train-followup candidates
 also had all three signs positive:
 
 ```text
-phase3cp_23755: train 0.1510, validation 0.4061, holdout 0.0692
+phase3cp_23755: train 0.1518, validation 0.6762, holdout 0.0280
 ```
 
 This is a follow-up canary, not an official alpha. The strongest minimum
-three-split Sortino belonged to `phase3cp_24219` (train 0.1314, validation
-0.9317, holdout 0.2588), but it remained `HOLD_TRAIN_REWARD`. The exact audit
+three-split Sortino belonged to `phase3cp_19498` (train 0.1387, validation
+0.1911, holdout 0.1701), but it remained `HOLD_TRAIN_REWARD`. The exact audit
 therefore confirms that optimizer reward is a search-budget signal and cannot
 replace promotion gates.
 
@@ -99,7 +116,7 @@ D:\ChengboRemote\workspace\alpha_pit_true1min_engine_20260710_phase3ga_semantic_
 Exact recovered output:
 
 ```text
-D:\ChengboRemote\runtime\phase3fix_repaired_2y_train75_large_search_20260710_77o_scheduled_w4s12\phase3cm_train_reward_exact_recovered_phase3ga
+D:\ChengboRemote\runtime\phase3fix_repaired_2y_train75_large_search_20260710_77o_scheduled_w4s12\phase3cm_train_reward_exact_fixed_calendar_20260711
 ```
 
 ## Why The Old Workers Died
@@ -121,6 +138,7 @@ feature caches.
 - Signal-vector equivalence is a sampled pre-CM control, not alpha promotion proof.
 - Safe-division tail diagnostics do not silently clip or rewrite a financial signal.
 - Validation and holdout stay report-only; neither may update search policy.
+- Every worker and recovery run must consume the versioned fixed trade-date manifest from ADR 0001.
 - Plate/industry membership is still a separate canary boundary, not claimed as full PIT membership in the repaired 121-column root.
 - State-like AST subtrees are now checked for known degeneracy, but they are not yet promoted to independently versioned and evaluated State objects.
 - Formula-token credit is now less aggressive, but true subtree marginal-credit or ablation attribution remains future work.

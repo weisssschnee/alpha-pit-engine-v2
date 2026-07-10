@@ -100,12 +100,16 @@ if ($failed.Count) {
 }
 
 $ExactOutput = Join-Path $SourceRunRoot "phase3cm_train_reward_exact_recovered_phase3ga"
+$SplitManifest = Join-Path $Repo "runtime\run_plans\phase3ga_true1min_2024_2025_global_split_manifest.csv"
 $mergeArgs = @(
   (Join-Path $Repo "scripts\recover_phase3cm_exact_reward_atoms.py"),
   "--candidate-table", $CandidateTable,
   "--output-root", $ExactOutput,
   "--expected-shard-count", "12",
   "--horizons", "1,5,10,15",
+  "--train-fraction", "0.75",
+  "--validation-fraction", "0.15",
+  "--split-manifest", $SplitManifest,
   "--chunk-dir", (Join-Path $SourceRunRoot "phase3cm_train_reward_shard_chunks\shard_chunk_01"),
   "--chunk-dir", (Join-Path $SourceRunRoot "phase3cm_train_reward_shard_chunks\shard_chunk_02"),
   "--chunk-dir", (Join-Path $SourceRunRoot "phase3cm_train_reward_shard_chunks\shard_chunk_03")

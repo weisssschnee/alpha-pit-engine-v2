@@ -177,6 +177,9 @@ tests/test_signal_vector_semantics.py
 tests/test_phase3cm_cache_bounds.py
 tests/test_phase3cm_semantic_only_integration.py
 reports/PHASE3GA_SEMANTIC_SEARCH_EFFICIENCY_REPAIR_20260710.md
+reports/phase3ga_cnline2_acceptance_bundle_20260711/
+docs/adr/0001-fixed-global-trade-date-splits.md
+runtime/run_plans/phase3ga_true1min_2024_2025_global_split_manifest.csv
 ```
 
 Current data boundary:
@@ -195,6 +198,20 @@ construction semantic gate
 -> exact/skeleton memory
 -> CA ranking
 -> semantic-only signal vector gate
+-> fixed global trade-date manifest (364 train / 73 validation / 48 holdout)
 -> full Phase3CM train reward
 -> guarded Phase3CN feedback
+```
+
+Field and split publication contract:
+
+```text
+accepted parquet schema: 121 columns
+metadata/key: 7
+raw true1min: 12
+firstN opening state: 30
+lagged context: 59
+typed event/state: 13
+split overlap after normalization: 0
+2026 forward OOS: separate and not consumed by 2024-2025 search
 ```

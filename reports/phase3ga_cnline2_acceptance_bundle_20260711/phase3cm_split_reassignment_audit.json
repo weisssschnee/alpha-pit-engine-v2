@@ -1,0 +1,19 @@
+{
+  "boundaries": {
+    "holdout_end": "2025-12-31",
+    "holdout_start": "2025-10-27",
+    "train_end": "2025-07-07",
+    "train_start": "2024-01-02",
+    "validation_end": "2025-10-24",
+    "validation_start": "2025-07-08"
+  },
+  "manifest_trade_date_count": 485,
+  "manifest_unused_date_count": 11,
+  "post_normalization_cross_split_date_count": 0,
+  "preexisting_cross_split_date_count": 73,
+  "reassigned_row_count": 138465,
+  "row_count": 1532890,
+  "split_policy": "fixed_trade_date_manifest",
+  "trade_date_count": 474,
+  "unassigned_row_count": 0
+}

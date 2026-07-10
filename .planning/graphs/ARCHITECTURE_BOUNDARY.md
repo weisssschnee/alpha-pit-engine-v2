@@ -19,3 +19,9 @@ installed.
 Raw graph presence does not make a component active. Current user instruction,
 `AGENTS.md`, `MIGRATION_MANIFEST.md`, accepted run manifests, and the curated
 architecture take precedence over historical graph nodes.
+
+## Evaluation Split Authority
+
+`docs/adr/0001-fixed-global-trade-date-splits.md` and the versioned CSV under
+`runtime/run_plans/` define the active train/validation/holdout calendar. A
+worker-local split or an atom-union-derived split is diagnostic only.
