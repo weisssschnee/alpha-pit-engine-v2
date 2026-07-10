@@ -2,7 +2,7 @@
 
 Date: 2026-07-10
 
-Decision: `PHASE3GA_CNLINE2_SEMANTIC_AND_THROUGHPUT_CHAIN_READY_FOR_VERSIONED_REMOTE_SMOKE`
+Decision: `PHASE3GA_CNLINE2_SEMANTIC_AND_THROUGHPUT_CHAIN_REMOTE_ACCEPTED_WITH_EXACT_12_SHARD_AUDIT`
 
 ## Scope
 
@@ -51,13 +51,70 @@ legacy DS/DT plus DU/DV audit: 43,052 generated candidates/atoms inspected, 0 se
 bootstrap benchmark: 4.3056s -> 0.1580s for eight workloads, 27.26x
 ```
 
-## Remote Observation
+## Exact 12-Shard Recovery Audit
 
-The existing 77O run was not idle or dead. Three shard chunks had completed;
-the final chunk reached `1152/1152` candidate-shard evaluations. Its remaining
-single-core phase was the old serial bootstrap/final reduction code. That
-active workspace remains unchanged; this repair must be deployed to a new
-versioned workspace.
+The old run completed three shard chunks. Its fourth chunk stopped after an
+incremental checkpoint and emitted no exact reward atoms. Phase3GA recovered
+only the missing candidate/shard cells and then rebuilt the reward table from
+the exact atom ledger; it did not replay the three completed chunks.
+
+```text
+candidate_count:                    384
+expected_shard_count:                12
+exact_reward_atom_count:      1,532,890
+coverage_failure_count:               0
+semantic_blocked_candidates:         60  (15.625%)
+semantically_valid_candidates:      324
+semantic_equivalent_candidates:       0  after canonical quarantine
+train_followup_candidates:           11
+```
+
+The two highest optimizer rewards were not stable alpha promotions:
+
+```text
+phase3cp_00007: train 0.5534, validation 0.2158, holdout -0.1196
+phase3cp_00006: train 0.5090, validation 0.1530, holdout -0.1670
+```
+
+Sixteen of the 324 semantically valid candidates had positive train,
+validation, and holdout Sortino. Only one of the 11 train-followup candidates
+also had all three signs positive:
+
+```text
+phase3cp_23755: train 0.1510, validation 0.4061, holdout 0.0692
+```
+
+This is a follow-up canary, not an official alpha. The strongest minimum
+three-split Sortino belonged to `phase3cp_24219` (train 0.1314, validation
+0.9317, holdout 0.2588), but it remained `HOLD_TRAIN_REWARD`. The exact audit
+therefore confirms that optimizer reward is a search-budget signal and cannot
+replace promotion gates.
+
+Remote accepted workspace:
+
+```text
+D:\ChengboRemote\workspace\alpha_pit_true1min_engine_20260710_phase3ga_semantic_efficiency_v2
+```
+
+Exact recovered output:
+
+```text
+D:\ChengboRemote\runtime\phase3fix_repaired_2y_train75_large_search_20260710_77o_scheduled_w4s12\phase3cm_train_reward_exact_recovered_phase3ga
+```
+
+## Why The Old Workers Died
+
+The failure was real allocation exhaustion, not a mysterious normal exit. The
+old worker logs contain NumPy `_ArrayMemoryError` failures while requesting
+only 31.6 MiB, 56.8 MiB, and 120 MiB arrays. On inspection the machine had
+about 95.6 GiB physical RAM and manually configured page files totalling about
+300 GiB; the D: page file had reached a recorded peak near 238 GiB.
+
+This was aggregate commit pressure created by concurrent full-panel arrays,
+pandas deep copies through `DataFrame.attrs`, and entry-count-only caches. A
+larger page file can delay the crash but is not the primary repair. Phase3GA
+removes full-panel arrays from attrs and enforces byte-bounded operator and
+feature caches.
 
 ## Remaining Boundaries
 
@@ -65,4 +122,6 @@ versioned workspace.
 - Safe-division tail diagnostics do not silently clip or rewrite a financial signal.
 - Validation and holdout stay report-only; neither may update search policy.
 - Plate/industry membership is still a separate canary boundary, not claimed as full PIT membership in the repaired 121-column root.
+- State-like AST subtrees are now checked for known degeneracy, but they are not yet promoted to independently versioned and evaluated State objects.
+- Formula-token credit is now less aggressive, but true subtree marginal-credit or ablation attribution remains future work.
 - Raw graphify artifacts remain at the 2026-07-05 build because `graphifyy` is not installed locally; curated architecture files are current.
