@@ -44,6 +44,7 @@ def _atom_rows(digest: str, date: str, value: float):
 
 def test_exact_atom_recovery_requires_and_accepts_complete_shard_coverage(tmp_path) -> None:
     digest = "digest-a"
+    blocked_digest = "digest-blocked"
     candidate_table = tmp_path / "candidates.csv"
     _write_csv(
         candidate_table,
@@ -54,7 +55,14 @@ def test_exact_atom_recovery_requires_and_accepts_complete_shard_coverage(tmp_pa
                 "expression": "CSRank($x)",
                 "generator_arm": "typed_ast_fresh",
                 "open_direction": "long_top",
-            }
+            },
+            {
+                "candidate_id": "candidate-blocked",
+                "expression_hash": blocked_digest,
+                "expression": "Sign(CSRank($x))",
+                "generator_arm": "cem_exploit",
+                "open_direction": "long_top",
+            },
         ],
     )
     chunks = []
@@ -64,10 +72,16 @@ def test_exact_atom_recovery_requires_and_accepts_complete_shard_coverage(tmp_pa
         (chunk / "phase3cm_train_reward_audit_summary.json").write_text(
             json.dumps({"selected_shard_indices": [shard]}), encoding="utf-8"
         )
-        _write_csv(chunk / "phase3cm_train_reward.csv", [{"expression_hash": digest}])
+        _write_csv(
+            chunk / "phase3cm_train_reward.csv",
+            [{"expression_hash": digest}, {"expression_hash": blocked_digest}],
+        )
         _write_csv(
             chunk / "phase3cm_reward_atoms.csv",
-            _atom_rows(digest, f"2026-01-0{shard + 5}", value),
+            [
+                *_atom_rows(digest, f"2026-01-0{shard + 5}", value),
+                *_atom_rows(blocked_digest, f"2026-01-0{shard + 5}", value),
+            ],
         )
         chunks.append(chunk)
     output = tmp_path / "output"
@@ -94,5 +108,7 @@ def test_exact_atom_recovery_requires_and_accepts_complete_shard_coverage(tmp_pa
     )
     assert result == 0
     assert summary["coverage_failure_count"] == 0
-    assert summary["candidate_count"] == 1
+    assert summary["candidate_count"] == 2
+    assert summary["semantically_valid_candidate_count"] == 1
+    assert summary["semantic_blocked_candidate_count"] == 1
     assert summary["reward_aggregation_mode"] == "reward_atoms_exact_all_shard_curve"

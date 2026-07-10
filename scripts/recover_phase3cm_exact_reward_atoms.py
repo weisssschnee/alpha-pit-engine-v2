@@ -14,6 +14,7 @@ from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit imp
     _candidate_summary_from_reward_atoms,
 )
 from our_system_phase2.services.candidate_schema import safe_float
+from our_system_phase2.services.expression_semantics import analyze_expression
 
 
 def _read_csv(path: Path) -> list[dict[str, Any]]:
@@ -112,6 +113,7 @@ def main(argv: list[str] | None = None) -> int:
 
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
     reward_rows: list[dict[str, Any]] = []
+    semantic_blocked_rows: list[dict[str, Any]] = []
     split_rows: list[dict[str, Any]] = []
     for index, candidate in enumerate(candidates, 1):
         digest = str(candidate.get("expression_hash") or "")
@@ -125,6 +127,18 @@ def main(argv: list[str] | None = None) -> int:
             regime_stability_weight=args.regime_stability_weight,
             regime_component_cap=args.regime_component_cap,
         )
+        semantic = analyze_expression(str(candidate.get("expression") or ""))
+        reward_row.update(semantic.to_row())
+        if semantic.hard_blocked:
+            blocked_row = dict(reward_row)
+            blocked_row["raw_train_reward_before_semantic_gate"] = reward_row.get("train_reward")
+            blocked_row["raw_optimizer_reward_before_semantic_gate"] = reward_row.get("optimizer_reward")
+            blocked_row["train_reward"] = -2.5
+            blocked_row["optimizer_reward"] = -2.5
+            blocked_row["train_reward_decision"] = "REJECT_SEMANTIC_DEGENERACY"
+            blocked_row["train_reward_blockers"] = "semantic_degeneracy:" + "|".join(semantic.issue_codes)
+            semantic_blocked_rows.append(blocked_row)
+            continue
         split_rows.extend(
             {
                 "candidate_id": candidate.get("candidate_id"),
@@ -143,6 +157,8 @@ def main(argv: list[str] | None = None) -> int:
         "created_at": datetime.now(timezone.utc).isoformat(),
         "decision": "PHASE3CM_EXACT_ALL_SHARD_REWARD_ATOM_RECOVERY_READY_DIAGNOSTIC_ONLY",
         "candidate_count": len(candidates),
+        "semantically_valid_candidate_count": len(reward_rows),
+        "semantic_blocked_candidate_count": len(semantic_blocked_rows),
         "expected_shard_count": len(expected_shards),
         "coverage_failure_count": 0,
         "chunk_count": len(chunk_rows),
@@ -173,6 +189,7 @@ def main(argv: list[str] | None = None) -> int:
         ],
     }
     _write_csv(output_root / "phase3cm_train_reward.csv", reward_rows)
+    _write_csv(output_root / "phase3cm_semantic_blocked_reward_audit.csv", semantic_blocked_rows)
     _write_csv(output_root / "phase3cm_candidate_split_horizon_summary.csv", split_rows)
     _write_json(output_root / "phase3cm_exact_reward_atom_recovery_summary.json", summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
