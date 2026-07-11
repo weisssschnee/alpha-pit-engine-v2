@@ -11,6 +11,7 @@ import argparse
 import base64
 import csv
 import hashlib
+import io
 import json
 import math
 import os
@@ -41,6 +42,12 @@ from our_system_phase2.services.deterministic_signal_sketch import (
     projection_matrix,
     sketch_similarity,
 )
+from our_system_phase2.services.atomic_checkpoint import (
+    AtomicRecordStore,
+    atomic_write_bytes,
+    atomic_write_json,
+    durable_flush,
+)
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 
 
@@ -65,15 +72,15 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
             if key not in seen:
                 fields.append(key)
                 seen.add(key)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields)
-        writer.writeheader()
-        writer.writerows(rows)
+    handle = io.StringIO(newline="")
+    writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+    atomic_write_bytes(path, handle.getvalue().encode("utf-8"))
 
 
 def _write_json(path: Path, payload: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    atomic_write_json(path, payload)
 
 
 def _sha256(path: Path) -> str:
@@ -398,6 +405,26 @@ def worker(args: argparse.Namespace) -> int:
                 for row in _read_csv(resume_path)
                 if row.get("candidate_id") and row.get("coordinate_set")
             )
+    checkpoint_store = AtomicRecordStore(
+        args.checkpoint_root or args.output_csv.with_suffix(".records")
+    )
+    checkpoint_rows: list[dict[str, Any]] = []
+    for _key, payload in checkpoint_store.records():
+        rows = list(payload.get("rows", []))
+        checkpoint_rows.extend(rows)
+        completed.update(
+            (str(row.get("candidate_id") or ""), str(row.get("coordinate_set") or ""))
+            for row in rows
+            if row.get("candidate_id") and row.get("coordinate_set")
+        )
+    if checkpoint_rows:
+        existing_rows = _read_csv(args.output_csv) if args.output_csv.exists() else []
+        merged = {
+            (str(row.get("candidate_id") or ""), str(row.get("coordinate_set") or "")): row
+            for row in [*existing_rows, *checkpoint_rows]
+            if row.get("candidate_id") and row.get("coordinate_set")
+        }
+        _write_csv(args.output_csv, [merged[key] for key in sorted(merged)])
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
     cache_stats: dict[str, int] = {}
     current_window = -1
@@ -409,6 +436,7 @@ def worker(args: argparse.Namespace) -> int:
     writer: csv.DictWriter[str] | None = None
     processed = 0
     failures = 0
+    fsync_supported = True
     started = time.time()
     try:
         for candidate in candidates:
@@ -443,6 +471,7 @@ def worker(args: argparse.Namespace) -> int:
                     coordinate_times.reset_index(drop=True),
                 )
                 rank_by_position = dict(zip(materialized_positions, coordinate_ranks.to_numpy(dtype=float), strict=True))
+                candidate_outputs: list[dict[str, Any]] = []
                 for name in needed_sets:
                     rows = by_set[name]
                     positions = [coordinate_lookup.get((str(row["code"]), pd.Timestamp(row["trade_time"])), -1) for row in rows]
@@ -460,6 +489,9 @@ def worker(args: argparse.Namespace) -> int:
                         "exact_value_vector": _encode_f4(values) if candidate_id in exact_ids else "",
                         "worker_partition": args.partition_index,
                     }
+                    candidate_outputs.append(output)
+                checkpoint_store.put(candidate_id, {"rows": candidate_outputs})
+                for output in candidate_outputs:
                     if writer is None:
                         writer = csv.DictWriter(handle, fieldnames=list(output))
                         if mode == "w":
@@ -467,15 +499,29 @@ def worker(args: argparse.Namespace) -> int:
                     writer.writerow(output)
                 processed += 1
                 if processed % args.flush_every == 0:
-                    handle.flush()
-                    os.fsync(handle.fileno())
+                    fsync_supported = durable_flush(handle) and fsync_supported
                     print(json.dumps({"partition": args.partition_index, "processed": processed, "failures": failures, "elapsed_sec": round(time.time() - started, 1)}), flush=True)
             except Exception as exc:
                 failures += 1
                 with args.output_csv.with_suffix(".errors.jsonl").open("a", encoding="utf-8") as error_handle:
                     error_handle.write(json.dumps({"candidate_id": candidate_id, "error": repr(exc)}) + "\n")
     finally:
-        handle.close()
+        try:
+            fsync_supported = durable_flush(handle) and fsync_supported
+        finally:
+            handle.close()
+    existing_rows = _read_csv(args.output_csv) if args.output_csv.exists() else []
+    checkpoint_rows = [
+        row
+        for _key, payload in checkpoint_store.records()
+        for row in payload.get("rows", [])
+    ]
+    merged = {
+        (str(row.get("candidate_id") or ""), str(row.get("coordinate_set") or "")): row
+        for row in [*existing_rows, *checkpoint_rows]
+        if row.get("candidate_id") and row.get("coordinate_set")
+    }
+    _write_csv(args.output_csv, [merged[key] for key in sorted(merged)])
     summary = {
         "run_type": "evalreset_signal_sketch_worker",
         "partition_index": args.partition_index,
@@ -489,6 +535,10 @@ def worker(args: argparse.Namespace) -> int:
         "labels_or_returns_read": False,
         "validation_holdout_forward_read": False,
         "cache_stats": cache_stats,
+        "atomic_checkpoint_root": str(checkpoint_store.root),
+        "atomic_checkpoint_count": sum(1 for _ in checkpoint_store.records()),
+        "fsync_supported": fsync_supported,
+        "idempotent_resume": True,
         "output_csv": {"path": str(args.output_csv), "sha256": _sha256(args.output_csv)},
     }
     _write_json(args.output_csv.with_suffix(".summary.json"), summary)
@@ -787,6 +837,7 @@ def parser() -> argparse.ArgumentParser:
     work.add_argument("--partition-index", type=int, required=True)
     work.add_argument("--partition-count", type=int, required=True)
     work.add_argument("--output-csv", type=Path, required=True)
+    work.add_argument("--checkpoint-root", type=Path)
     work.add_argument("--resume-csv", type=Path, action="append", default=[])
     work.add_argument("--cache-entries", type=int, default=1024)
     work.add_argument("--cache-max-mb", type=float, default=1024.0)
