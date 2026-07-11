@@ -230,7 +230,7 @@ def _policy_with_train_reward_feedback(
 ) -> dict[str, Any]:
     policy = copy.deepcopy(base_policy)
     policy["policy_version"] = "phase3bs_external_cm_train_reward_feedback_v2_semantic_guarded"
-    policy["scope"] = "external_phase3cm_train_reward_updates_generator_policy_validation_holdout_report_only"
+    policy["scope"] = "external_phase3cm_train_reward_only_nondevelopment_fields_forbidden"
     scores = policy.setdefault("scores", {})
     eligible_rows = clean_optimizer_feedback_rows(
         feedback_rows,
@@ -333,7 +333,7 @@ def _policy_with_train_reward_feedback(
         "entropy_floor": entropy_floor,
         "top_feedback": feedback_summary,
         "updated": True,
-        "guardrail": "policy updated from semantically clean external Phase3CM train reward only; validation/holdout report-only; atomic token credit normalized",
+        "guardrail": "policy updated from semantically clean external Phase3CM train reward only; candidate-level non-development fields forbidden; atomic token credit normalized",
         "token_credit_normalization": "inverse_sqrt_unique_field_operator_window_count",
         "optimizer_reward_source": "train_only_phase3cm",
         "validation_used_for_score": False,

@@ -203,6 +203,10 @@ construction semantic gate
 -> guarded Phase3CN feedback
 ```
 
+Historical-run correction: the Phase3FIX large run set
+`PRE_CM_SEMANTIC_GATE_DISABLED`. Its 60 semantic-degenerate candidates were
+quarantined during exact recovery, not before the historical CM admission.
+
 Field and split publication contract:
 
 ```text
@@ -215,3 +219,30 @@ typed event/state: 13
 split overlap after normalization: 0
 2026 forward OOS: separate and not consumed by 2024-2025 search
 ```
+
+## 2026-07-11 EVALRESET Boundary
+
+ADR 0002 adds explicit development, challenge, sealed, spent, and forward data
+roles. The 2025 validation and holdout dates are spent because candidate-level
+results were manually exposed. Phase3CN/search/scheduler feedback is now a
+physical train-only projection; candidate-level validation, holdout, challenge,
+sealed, forward, and OOS columns fail closed at the machine boundary.
+
+Historical Phase3FIX is classified `PROVENANCE_UNVERIFIED`,
+`NON_REPRODUCIBLE_AS_EXECUTED`, and `NOT_VALID_FOR_PROOF`. Its key-file hash
+agreement is not a reproducible run manifest.
+
+The active Phase A diagnostic route is:
+
+```text
+fixed development-only coordinate registry
+-> activation/rank/value/SimHash/missingness sketches
+-> 384-candidate exact fidelity and A/B stability gate
+-> full-generation consensus cluster registry
+-> unchanged cluster IDs mapped through proxy/admission/strict/coverage stages
+```
+
+This route is label-free and cannot write search memory. Architecture state is
+registered in `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json`
+and generated into `.planning/graphs/graph.json`; the graph contract includes
+the six forbidden evaluation-feedback edges.

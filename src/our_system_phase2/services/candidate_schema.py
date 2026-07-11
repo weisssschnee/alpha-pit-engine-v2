@@ -76,6 +76,12 @@ CANONICAL_CANDIDATE_FIELDS = [
     "holdout_rank_ic_loss",
 ]
 
+TRAIN_ONLY_FEEDBACK_FIELDS = [
+    field
+    for field in CANONICAL_CANDIDATE_FIELDS
+    if not field.startswith(("validation_", "holdout_", "challenge_", "sealed_", "forward_", "oos_"))
+] + ["feedback_data_role", "evaluation_access_guard"]
+
 
 def stable_hash(text: str, length: int = 24) -> str:
     return hashlib.sha256(str(text).encode("utf-8")).hexdigest()[:length]

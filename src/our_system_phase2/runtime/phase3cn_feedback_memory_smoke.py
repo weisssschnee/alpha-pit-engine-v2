@@ -19,10 +19,16 @@ from typing import Any
 import numpy as np
 
 from our_system_phase2.services.candidate_schema import (
-    CANONICAL_CANDIDATE_FIELDS,
     OPTIMIZER_REWARD_METRIC,
+    TRAIN_ONLY_FEEDBACK_FIELDS,
     normalize_candidate_schema,
     safe_float,
+)
+from our_system_phase2.services.evaluation_access_guard import (
+    DEVELOPMENT_ROLE,
+    GUARD_VERSION,
+    assert_train_only_feedback_rows,
+    project_train_only_feedback_row,
 )
 from our_system_phase2.services.expression_semantics import analyze_expression
 
@@ -101,6 +107,36 @@ def _discover_cm_tables(paths: list[Path], roots: list[Path]) -> list[Path]:
     return deduped
 
 
+def _assert_raw_phase3cm_provenance(raw: dict[str, Any], *, source: Path) -> None:
+    """Reject missing or contradictory provenance before schema normalization."""
+
+    candidate = str(raw.get("candidate_id") or raw.get("expression_hash") or "<unknown>")
+    split = str(raw.get("optimizer_reward_split") or "").strip().lower()
+    reward_source = str(raw.get("optimizer_reward_source") or "").strip()
+    metric = str(raw.get("optimizer_reward_metric") or "").strip()
+    role = str(raw.get("feedback_data_role") or "").strip().lower()
+    if split != "train":
+        raise RuntimeError(
+            f"raw Phase3CM source must declare optimizer_reward_split=train before normalization; "
+            f"table={source} candidate={candidate} split={split or '<missing>'}"
+        )
+    if reward_source != "train_only_phase3cm":
+        raise RuntimeError(
+            f"raw Phase3CM source must declare optimizer_reward_source=train_only_phase3cm before normalization; "
+            f"table={source} candidate={candidate} source={reward_source or '<missing>'}"
+        )
+    if metric != OPTIMIZER_REWARD_METRIC:
+        raise RuntimeError(
+            f"raw Phase3CM source metric mismatch before normalization; "
+            f"table={source} candidate={candidate} metric={metric or '<missing>'}"
+        )
+    if role and role != DEVELOPMENT_ROLE:
+        raise RuntimeError(
+            f"raw Phase3CM source cannot relabel feedback_data_role={role} as development; "
+            f"table={source} candidate={candidate}"
+        )
+
+
 def _load_rows(tables: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rows: list[dict[str, Any]] = []
     sources: list[dict[str, Any]] = []
@@ -109,6 +145,7 @@ def _load_rows(tables: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str,
         raw_rows = _read_csv(table)
         sources.append({"path": str(table), "rows": len(raw_rows)})
         for raw in raw_rows:
+            _assert_raw_phase3cm_provenance(raw, source=table)
             normalized = dict(raw)
             normalized.update(normalize_candidate_schema(normalized))
             digest = str(normalized.get("expression_hash") or "")
@@ -159,16 +196,6 @@ def _is_clean(row: dict[str, Any], *, train_threshold: float, validation_floor: 
     return True
 
 
-def _is_validation_survivor(row: dict[str, Any], *, validation_floor: float) -> bool:
-    validation = safe_float(row.get("validation_day_sortino"))
-    prob = safe_float(row.get("validation_mcmc_prob_gt_0"), float("nan"))
-    if math.isfinite(validation) and validation >= validation_floor:
-        return True
-    if math.isfinite(prob) and prob >= 0.55:
-        return True
-    return False
-
-
 def _is_rewardhack(row: dict[str, Any]) -> bool:
     proxy = safe_float(row.get("phase3ca_proxy_quality") or row.get("proxy_quality"), float("nan"))
     train = _optimizer_reward(row)
@@ -190,6 +217,7 @@ def _family_tables(
     max_turnover: float,
     max_family_share: float,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    del validation_floor
     total = max(1, len(rows))
     family_rows: list[dict[str, Any]] = []
     blocked_rows: list[dict[str, Any]] = []
@@ -200,8 +228,7 @@ def _family_tables(
         semantic_degeneracy_rate = semantic_degeneracy_count / max(1, len(items))
         train_rewards = [_optimizer_reward(row) for row in semantic_clean_items]
         train_rewards = [value for value in train_rewards if math.isfinite(value)]
-        clean_count = sum(1 for row in semantic_clean_items if _is_clean(row, train_threshold=train_threshold, validation_floor=validation_floor, max_turnover=max_turnover))
-        validation_survivor_count = sum(1 for row in semantic_clean_items if _is_validation_survivor(row, validation_floor=validation_floor))
+        clean_count = sum(1 for row in semantic_clean_items if _is_clean(row, train_threshold=train_threshold, validation_floor=0.0, max_turnover=max_turnover))
         rewardhack_count = sum(1 for row in semantic_clean_items if _is_rewardhack(row))
         wrong_lag_or_corr_count = sum(1 for row in items if _has_wrong_lag_or_corr(row))
         high_turnover_count = sum(1 for row in items if safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 0.0) > max_turnover)
@@ -245,9 +272,6 @@ def _family_tables(
             "median_train_reward": _round(_median(train_rewards)),
             "positive_train_reward_count": sum(1 for value in train_rewards if value > train_threshold),
             "clean_count": clean_count,
-            "validation_survivor_count": validation_survivor_count,
-            "validation_usage": "report_only",
-            "validation_used_for_optimizer": "false",
             "rewardhack_count": rewardhack_count,
             "semantic_degeneracy_count": semantic_degeneracy_count,
             "semantic_degeneracy_rate": _round(semantic_degeneracy_rate),
@@ -256,6 +280,8 @@ def _family_tables(
             "high_turnover_count": high_turnover_count,
             "family_status": status,
             "family_reasons": "|".join(reasons),
+            "feedback_data_role": "development",
+            "evaluation_access_guard": GUARD_VERSION,
         }
         family_rows.append(row)
         if status in {"block", "freeze"}:
@@ -275,6 +301,7 @@ def _arm_score_table(
     max_turnover: float,
     min_clean_feedback: int,
 ) -> list[dict[str, Any]]:
+    del validation_floor
     family_by_id = {str(row.get("family_id")): row for row in family_rows}
     out: list[dict[str, Any]] = []
     for arm, items in sorted(_group_rows(rows, "generator_arm").items()):
@@ -282,8 +309,7 @@ def _arm_score_table(
         semantic_clean_items = [row for row in items if not _has_semantic_degeneracy(row)]
         train_rewards = [_optimizer_reward(row) for row in semantic_clean_items]
         train_rewards = [value for value in train_rewards if math.isfinite(value)]
-        clean_count = sum(1 for row in semantic_clean_items if _is_clean(row, train_threshold=train_threshold, validation_floor=validation_floor, max_turnover=max_turnover))
-        validation_count = sum(1 for row in semantic_clean_items if _is_validation_survivor(row, validation_floor=validation_floor))
+        clean_count = sum(1 for row in semantic_clean_items if _is_clean(row, train_threshold=train_threshold, validation_floor=0.0, max_turnover=max_turnover))
         rewardhack_count = sum(1 for row in semantic_clean_items if _is_rewardhack(row))
         wrong_lag_count = sum(1 for row in items if _has_wrong_lag_or_corr(row))
         low_turnover_count = sum(1 for row in semantic_clean_items if safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 1.0) <= max_turnover)
@@ -293,7 +319,6 @@ def _arm_score_table(
         score_count = max(1, len(semantic_clean_items))
         total_count = max(1, len(items))
         positive_rate = sum(1 for value in train_rewards if value > train_threshold) / score_count
-        validation_rate = validation_count / score_count
         new_family_rate = len(families) / score_count
         low_turnover_rate = low_turnover_count / score_count
         rewardhack_rate = rewardhack_count / score_count
@@ -324,9 +349,6 @@ def _arm_score_table(
                 "feedback_update_allowed": str(update_allowed).lower(),
                 "positive_train_reward_rate": _round(positive_rate),
                 "median_train_reward": _round(median_reward),
-                "validation_survival_rate": _round(validation_rate),
-                "validation_usage": "report_only",
-                "validation_used_for_arm_score": "false",
                 "optimizer_reward_source": "train_only_phase3cm",
                 "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
                 "new_family_rate": _round(new_family_rate),
@@ -336,6 +358,8 @@ def _arm_score_table(
                 "top_family_concentration": _round(top_family_share),
                 "exploit_allowed_family_count": allowed_families,
                 "arm_score": _round(arm_score),
+                "feedback_data_role": "development",
+                "evaluation_access_guard": GUARD_VERSION,
             }
         )
     out.sort(key=lambda row: safe_float(row.get("arm_score"), -999.0), reverse=True)
@@ -362,13 +386,13 @@ def _render_md(summary: dict[str, Any], arm_rows: list[dict[str, Any]], family_r
         "",
         "## Arm Scores",
         "",
-        "| arm | rows | clean | update | median reward | validation rate | wrong-lag/corr | rewardhack | top family | score |",
-        "|---|---:|---:|---|---:|---:|---:|---:|---:|---:|",
+        "| arm | rows | clean | update | median reward | wrong-lag/corr | rewardhack | top family | score |",
+        "|---|---:|---:|---|---:|---:|---:|---:|---:|",
     ]
     for row in arm_rows:
         lines.append(
             f"| `{row.get('generator_arm')}` | {row.get('candidate_count')} | {row.get('clean_feedback_count')} | "
-            f"`{row.get('feedback_update_allowed')}` | {row.get('median_train_reward')} | {row.get('validation_survival_rate')} | "
+            f"`{row.get('feedback_update_allowed')}` | {row.get('median_train_reward')} | "
             f"{row.get('wrong_lag_reject_rate')} | {row.get('rewardhack_family_rate')} | {row.get('top_family_concentration')} | {row.get('arm_score')} |"
         )
     lines.extend(
@@ -376,14 +400,14 @@ def _render_md(summary: dict[str, Any], arm_rows: list[dict[str, Any]], family_r
             "",
             "## Top Families",
             "",
-            "| family | status | rows | median reward | clean | validation | reasons |",
-            "|---|---|---:|---:|---:|---:|---|",
+            "| family | status | rows | median reward | clean | reasons |",
+            "|---|---|---:|---:|---:|---|",
         ]
     )
     for row in family_rows[:30]:
         lines.append(
             f"| `{row.get('family_id')}` | `{row.get('family_status')}` | {row.get('candidate_count')} | "
-            f"{row.get('median_train_reward')} | {row.get('clean_count')} | {row.get('validation_survivor_count')} | `{row.get('family_reasons')}` |"
+            f"{row.get('median_train_reward')} | {row.get('clean_count')} | `{row.get('family_reasons')}` |"
         )
     lines.extend(
         [
@@ -391,7 +415,7 @@ def _render_md(summary: dict[str, Any], arm_rows: list[dict[str, Any]], family_r
             "## Boundary",
             "",
             "- `optimizer_reward` is train-only Phase3CM composite reward: portfolio Sortino plus bounded rank IC loss component.",
-            "- Validation and holdout fields are carried through as read-only metadata and are not used in arm_score.",
+            "- Candidate-level validation, holdout, sealed, and forward fields are physically absent from feedback artifacts.",
             "- `feedback_update_allowed=false` means CEM/UCB must not update from that arm.",
             "- Proxy-high but CM-negative families are frozen or blocked before exploit.",
         ]
@@ -420,18 +444,36 @@ def build_feedback_memory(
     normalized_rows: list[dict[str, Any]] = []
     for row in rows:
         item = dict(row)
+        source_split = str(item.get("optimizer_reward_split") or "").strip().lower()
+        if source_split != "train":
+            raise RuntimeError(
+                "Phase3CM feedback source must explicitly declare optimizer_reward_split=train; "
+                f"candidate={item.get('candidate_id')} split={source_split or '<missing>'}"
+            )
+        source_name = str(item.get("optimizer_reward_source") or "").strip()
+        if source_name != "train_only_phase3cm":
+            raise RuntimeError(
+                "Phase3CM feedback source must explicitly declare optimizer_reward_source=train_only_phase3cm; "
+                f"candidate={item.get('candidate_id')} source={source_name or '<missing>'}"
+            )
+        source_metric = str(item.get("optimizer_reward_metric") or "").strip()
+        if source_metric != OPTIMIZER_REWARD_METRIC:
+            raise RuntimeError(
+                "Phase3CM feedback source metric mismatch; "
+                f"candidate={item.get('candidate_id')} metric={source_metric or '<missing>'}"
+            )
         item.update(normalize_candidate_schema(item))
         reward = safe_float(item.get("optimizer_reward"), float("nan"))
         if not math.isfinite(reward):
             reward = safe_float(item.get("train_reward"), float("nan"))
         item["optimizer_reward"] = reward if math.isfinite(reward) else ""
-        item["optimizer_reward_source"] = "train_only_phase3cm"
-        item["optimizer_reward_metric"] = OPTIMIZER_REWARD_METRIC
-        item["optimizer_reward_split"] = "train"
-        item["validation_usage"] = "report_only"
-        item["holdout_usage"] = "report_only"
-        normalized_rows.append(item)
-    feedback_rows = [{field: row.get(field, "") for field in CANONICAL_CANDIDATE_FIELDS} for row in normalized_rows]
+        item["feedback_data_role"] = "development"
+        normalized_rows.append(project_train_only_feedback_row(item))
+    feedback_rows = [
+        {field: row.get(field, "") for field in TRAIN_ONLY_FEEDBACK_FIELDS}
+        for row in normalized_rows
+    ]
+    assert_train_only_feedback_rows(feedback_rows, source="Phase3CN feedback memory")
     family_rows, blocked_rows, exploit_rows = _family_tables(
         feedback_rows,
         train_threshold=train_threshold,
@@ -458,26 +500,26 @@ def build_feedback_memory(
         "exploit_allowed_family_count": len(exploit_rows),
         "min_clean_feedback": min_clean_feedback,
         "train_threshold": train_threshold,
-        "validation_floor": validation_floor,
-        "validation_usage": "report_only",
-        "validation_used_for_optimizer": False,
+        "legacy_validation_floor_ignored": validation_floor,
+        "candidate_level_oos_fields_stripped": True,
+        "evaluation_access_guard": GUARD_VERSION,
         "optimizer_reward_source": "train_only_phase3cm",
         "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
         "optimizer_reward_split": "train",
         "max_turnover": max_turnover,
         "max_family_share": max_family_share,
         "sources": sources,
-        "metric_boundary": "feedback memory only; optimizer feedback is train-only; validation/holdout are read-only and excluded from arm score",
+        "metric_boundary": "feedback memory only; payload is physically train/development-only; candidate-level non-development fields are forbidden",
     }
     output_root.mkdir(parents=True, exist_ok=True)
     report_root.mkdir(parents=True, exist_ok=True)
-    _write_csv(output_root / "phase3cn_search_feedback_memory.csv", feedback_rows, CANONICAL_CANDIDATE_FIELDS)
+    _write_csv(output_root / "phase3cn_search_feedback_memory.csv", feedback_rows, TRAIN_ONLY_FEEDBACK_FIELDS)
     _write_csv(output_root / "phase3cn_arm_score_table.csv", arm_rows)
     _write_csv(output_root / "phase3cn_family_score_table.csv", family_rows)
     _write_csv(output_root / "phase3cn_blocked_family_table.csv", blocked_rows)
     _write_csv(output_root / "phase3cn_exploit_allowed_family_table.csv", exploit_rows)
     _write_json(output_root / "phase3cn_feedback_memory_summary.json", summary)
-    _write_csv(report_root / "phase3cn_search_feedback_memory.csv", feedback_rows, CANONICAL_CANDIDATE_FIELDS)
+    _write_csv(report_root / "phase3cn_search_feedback_memory.csv", feedback_rows, TRAIN_ONLY_FEEDBACK_FIELDS)
     _write_csv(report_root / "phase3cn_arm_score_table.csv", arm_rows)
     _write_csv(report_root / "phase3cn_family_score_table.csv", family_rows)
     _write_csv(report_root / "phase3cn_blocked_family_table.csv", blocked_rows)

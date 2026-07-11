@@ -12,6 +12,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from our_system_phase2.services.evaluation_access_guard import GUARD_VERSION, assert_train_only_feedback_rows
+
 from our_system_phase2.services.candidate_schema import safe_float
 
 
@@ -135,6 +137,9 @@ def build_family_actions(
     total_budget: int,
     max_family_share: float,
 ) -> list[dict[str, Any]]:
+    assert_train_only_feedback_rows(family_rows, source="scheduler family feedback")
+    assert_train_only_feedback_rows(blocked_rows, source="scheduler blocked-family feedback")
+    assert_train_only_feedback_rows(exploit_rows, source="scheduler exploit-family feedback")
     blocked_ids = {str(row.get("family_id") or "") for row in blocked_rows}
     exploit_ids = {str(row.get("family_id") or "") for row in exploit_rows}
     all_rows: dict[str, dict[str, Any]] = {}
@@ -175,6 +180,8 @@ def build_family_actions(
                 "scheduler_action": action,
                 "candidate_budget_cap": budget_cap,
                 "scheduler_reason": scheduler_reason,
+                "feedback_data_role": "development",
+                "evaluation_access_guard": GUARD_VERSION,
             }
         )
     return out
@@ -191,6 +198,10 @@ def build_arm_schedule(
     cem_probe_cap_share: float = 0.06,
     max_family_share: float = 0.25,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    assert_train_only_feedback_rows(arm_rows, source="scheduler arm feedback")
+    assert_train_only_feedback_rows(family_rows, source="scheduler family feedback")
+    assert_train_only_feedback_rows(blocked_rows, source="scheduler blocked-family feedback")
+    assert_train_only_feedback_rows(exploit_rows, source="scheduler exploit-family feedback")
     arm_by_id = {str(row.get("generator_arm") or row.get("arm_id") or ""): row for row in arm_rows}
     exploit_allowed_count = len(exploit_rows) or sum(1 for row in family_rows if str(row.get("family_status") or "").lower() == "exploit_allowed")
     budget_rows: list[dict[str, Any]] = []
@@ -231,6 +242,8 @@ def build_arm_schedule(
                 "clean_feedback_count": int(safe_float((arm_row or {}).get("clean_feedback_count"), 0.0)),
                 "feedback_update_allowed": str(_truthy((arm_row or {}).get("feedback_update_allowed"))).lower() if arm_row else "false",
                 "target_share": min(max_share, max(min_share, target)),
+                "feedback_data_role": "development",
+                "evaluation_access_guard": GUARD_VERSION,
             }
         )
     budget_rows = _fit_shares(budget_rows)
@@ -272,6 +285,6 @@ def build_arm_schedule(
         "exploit_allowed_family_count": exploit_allowed_count,
         "blocked_or_frozen_family_count": sum(1 for row in family_actions if row["scheduler_action"] in {"block", "freeze"}),
         "max_family_share": _round(max_family_share),
-        "metric_boundary": "budget scheduler only; no search generation and no holdout optimization",
+        "metric_boundary": "budget scheduler only; candidate-level non-development evaluation fields are forbidden",
     }
     return budget_rows, family_actions, summary

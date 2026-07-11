@@ -43,7 +43,7 @@ def _synthetic_search_rows() -> list[dict[str, Any]]:
         {
             "candidate_id": "cn4_clean_reward_fixture",
             "expression_hash": "cn4_clean_reward_hash",
-            "expression": "Rank(Mean($m1_first_ret,5)) - Rank(Std($range_location,10))",
+            "expression": "CSRank(Sub($close,$open))",
             "generator_arm": "cem_exploit",
             "round_id": "round1_synthetic_fresh",
             "factor_lane": "true1min_opening_range",
@@ -159,7 +159,7 @@ def _render_md(summary: dict[str, Any]) -> str:
         f"strict_update_allowed: {checks['strict_update_allowed']}",
         f"loose_update_allowed: {checks['loose_update_allowed']}",
         f"strict_policy_scores_unchanged: {checks['strict_policy_scores_unchanged']}",
-        f"holdout_used_for_score: {checks['holdout_used_for_score']}",
+        f"candidate_level_oos_absent: {checks['candidate_level_oos_absent']}",
         "```",
         "",
         "## Boundary",
@@ -237,7 +237,12 @@ def main(argv: list[str] | None = None) -> int:
         "strict_update_allowed": strict_context.feedback_update_allowed,
         "loose_update_allowed": loose_context.feedback_update_allowed,
         "strict_policy_scores_unchanged": guarded_policy.get("scores") == base_policy.get("scores"),
-        "holdout_used_for_score": strict_context.holdout_used_for_score or loose_context.holdout_used_for_score,
+        "candidate_level_oos_absent": not (
+            strict_context.holdout_columns_present
+            or strict_context.validation_columns_present
+            or loose_context.holdout_columns_present
+            or loose_context.validation_columns_present
+        ),
     }
     passed = (
         checks["ca_candidate_count"] == 2
@@ -246,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
         and checks["strict_update_allowed"] is False
         and checks["loose_update_allowed"] is True
         and checks["strict_policy_scores_unchanged"] is True
-        and checks["holdout_used_for_score"] is False
+        and checks["candidate_level_oos_absent"] is True
     )
     summary = {
         "created_at": datetime.now(timezone.utc).isoformat(),

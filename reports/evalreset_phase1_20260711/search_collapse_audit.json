@@ -1,0 +1,3593 @@
+{
+  "created_at": "2026-07-11T06:34:38.639164+00:00",
+  "decision": "EVALRESET_COLLAPSE_AUDIT_DIAGNOSTIC_ONLY",
+  "stage_order": [
+    "generation",
+    "proxy",
+    "admission",
+    "strict_reward",
+    "memory_predecessor",
+    "scheduler_predecessor"
+  ],
+  "earliest_observed_structural_redundancy": {
+    "stage": "generation",
+    "basis": "AST-skeleton N_eff / candidate rows < 0.25 or top skeleton share > 0.25; this identifies redundancy only and is not evidence of signal-level collapse"
+  },
+  "first_signal_level_collapse": {
+    "stage": "not_observed",
+    "basis": "the completed two-coordinate signal-sketch audit passed every fidelity gate and found no downstream concentration amplification"
+  },
+  "signal_sketch_audit": "reports/evalreset_phase1_20260711/signal_sketch/signal_sketch_audit_summary.json",
+  "behaviour_data_role": "development/train_only",
+  "validation_holdout_forward_used_for_clustering": false,
+  "stages": [
+    {
+      "stage": "generation",
+      "source": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\phase3fix_run\\phase3cp_real_cm_all_generated_top_decisions.csv",
+      "row_count": 24576,
+      "exact_identity_key": "expression_hash",
+      "exact_identity_count": 24576,
+      "lineage": {
+        "cluster_count": 6624,
+        "n_eff": 1839.95447483,
+        "top_cluster_share": 0.00423177,
+        "entropy_nats": 8.22886031,
+        "normalized_entropy": 0.935262,
+        "trial_multiplicity": 3.71014493,
+        "effective_trial_multiplicity": 13.35685221,
+        "largest_clusters": [
+          {
+            "key": "rx_ucb_fresh|371948cbdc39c373f4|d0d93ccd75919936c7",
+            "count": 104
+          },
+          {
+            "key": "rx_ucb_fresh|913765cb964144cc3c|cb0110f0a0701d1785",
+            "count": 104
+          },
+          {
+            "key": "rx_ucb_fresh|2f483bbbe51fd792a8|5ed1bcc4ee65a3ae75",
+            "count": 84
+          },
+          {
+            "key": "rx_ucb_fresh|bd99ef89c247fac8eb|85990829beca3e0897",
+            "count": 84
+          },
+          {
+            "key": "rx_ucb_fresh|172db570f50b90a1a8|a7dacb4f100a851418",
+            "count": 84
+          },
+          {
+            "key": "rx_ucb_fresh|183954f1349680474a|96a52abaaf83a481c2",
+            "count": 82
+          },
+          {
+            "key": "rx_ucb_fresh|9fb82505e80b1126c0|d558b5f02ea01558b4",
+            "count": 68
+          },
+          {
+            "key": "rx_ucb_fresh|b8944f0bf213f0e35c|09c01ab37a5579d80d",
+            "count": 67
+          },
+          {
+            "key": "rx_ucb_fresh|d30d2be74bccaf7f7d|80bcda797d9ac0246b",
+            "count": 67
+          },
+          {
+            "key": "rx_ucb_fresh|0eefd6eb7e19cb2f4e|204630a6fe8a74ffb4",
+            "count": 55
+          }
+        ]
+      },
+      "cluster_views": {
+        "ast_skeleton": {
+          "cluster_count": 131,
+          "n_eff": 33.54784544,
+          "top_cluster_share": 0.09313965,
+          "entropy_nats": 4.05650253,
+          "normalized_entropy": 0.8320694,
+          "trial_multiplicity": 187.60305344,
+          "effective_trial_multiplicity": 732.56567383,
+          "largest_clusters": [
+            {
+              "key": "CSRank(Mul(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 2289
+            },
+            {
+              "key": "CSRank(Sub(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 2115
+            },
+            {
+              "key": "CSRank(Sub(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(ValidRatioGate($F,N,N))))",
+              "count": 815
+            },
+            {
+              "key": "CSRank(Sub(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(MaskedZScore($F,N,N))))",
+              "count": 813
+            },
+            {
+              "key": "CSRank(Mul(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(MaskedZScore($F,N,N))))",
+              "count": 772
+            },
+            {
+              "key": "CSRank(Mul(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(ValidRatioGate($F,N,N))))",
+              "count": 772
+            },
+            {
+              "key": "CSRank(Sub(ZScore(Div(Sub($F,$F),Add(Abs($F),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 744
+            },
+            {
+              "key": "CSRank(Mul(ZScore(Div(Sub($F,$F),Add(Abs($F),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 708
+            },
+            {
+              "key": "CSRank(Mul(Sign(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N)))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 708
+            },
+            {
+              "key": "CSRank(Mul(Sign(CSRank(WindowStateCount($F,N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 680
+            }
+          ]
+        },
+        "family_id": {
+          "cluster_count": 4969,
+          "n_eff": 1432.94307894,
+          "top_cluster_share": 0.00423177,
+          "entropy_nats": 7.87226073,
+          "normalized_entropy": 0.92495416,
+          "trial_multiplicity": 4.94586436,
+          "effective_trial_multiplicity": 17.15071615,
+          "largest_clusters": [
+            {
+              "key": "371948cbdc39c373f4",
+              "count": 104
+            },
+            {
+              "key": "913765cb964144cc3c",
+              "count": 104
+            },
+            {
+              "key": "2f483bbbe51fd792a8",
+              "count": 85
+            },
+            {
+              "key": "bd99ef89c247fac8eb",
+              "count": 85
+            },
+            {
+              "key": "172db570f50b90a1a8",
+              "count": 85
+            },
+            {
+              "key": "183954f1349680474a",
+              "count": 83
+            },
+            {
+              "key": "9fb82505e80b1126c0",
+              "count": 70
+            },
+            {
+              "key": "b8944f0bf213f0e35c",
+              "count": 70
+            },
+            {
+              "key": "d30d2be74bccaf7f7d",
+              "count": 70
+            },
+            {
+              "key": "72b3c56fc28f96b6ef",
+              "count": 61
+            }
+          ]
+        },
+        "motif_id": {
+          "cluster_count": 4784,
+          "n_eff": 1423.66132697,
+          "top_cluster_share": 0.00423177,
+          "entropy_nats": 7.846998,
+          "normalized_entropy": 0.92611449,
+          "trial_multiplicity": 5.13712375,
+          "effective_trial_multiplicity": 17.26253255,
+          "largest_clusters": [
+            {
+              "key": "d0d93ccd75919936c7",
+              "count": 104
+            },
+            {
+              "key": "cb0110f0a0701d1785",
+              "count": 104
+            },
+            {
+              "key": "5ed1bcc4ee65a3ae75",
+              "count": 85
+            },
+            {
+              "key": "85990829beca3e0897",
+              "count": 85
+            },
+            {
+              "key": "a7dacb4f100a851418",
+              "count": 85
+            },
+            {
+              "key": "96a52abaaf83a481c2",
+              "count": 83
+            },
+            {
+              "key": "d558b5f02ea01558b4",
+              "count": 70
+            },
+            {
+              "key": "09c01ab37a5579d80d",
+              "count": 70
+            },
+            {
+              "key": "80bcda797d9ac0246b",
+              "count": 70
+            },
+            {
+              "key": "b6c46978a20c09760c",
+              "count": 61
+            }
+          ]
+        },
+        "generator_arm": {
+          "cluster_count": 6,
+          "n_eff": 4.47957317,
+          "top_cluster_share": 0.31005859,
+          "entropy_nats": 1.60683145,
+          "normalized_entropy": 0.89678971,
+          "trial_multiplicity": 4096.0,
+          "effective_trial_multiplicity": 5486.23697917,
+          "largest_clusters": [
+            {
+              "key": "rx_ucb_fresh",
+              "count": 7620
+            },
+            {
+              "key": "typed_ast_fresh",
+              "count": 6636
+            },
+            {
+              "key": "challenger_repair",
+              "count": 3932
+            },
+            {
+              "key": "event_state",
+              "count": 3440
+            },
+            {
+              "key": "random_orthogonal",
+              "count": 2212
+            },
+            {
+              "key": "cem_exploit",
+              "count": 736
+            }
+          ]
+        },
+        "generator_route": {
+          "cluster_count": 5,
+          "n_eff": 4.13553347,
+          "top_cluster_share": 0.34000651,
+          "entropy_nats": 1.50548436,
+          "normalized_entropy": 0.93541003,
+          "trial_multiplicity": 4915.2,
+          "effective_trial_multiplicity": 5942.64322917,
+          "largest_clusters": [
+            {
+              "key": "phase3bs-adaptive-ucb-cem-practice",
+              "count": 8356
+            },
+            {
+              "key": "phase3bt-ast-algorithm-bakeoff",
+              "count": 6636
+            },
+            {
+              "key": "future-phase3cr-repair",
+              "count": 3932
+            },
+            {
+              "key": "future-event-state-generator",
+              "count": 3440
+            },
+            {
+              "key": "control-random-orthogonal",
+              "count": 2212
+            }
+          ]
+        },
+        "field_family": {
+          "cluster_count": 27,
+          "n_eff": 12.59748677,
+          "top_cluster_share": 0.17696126,
+          "entropy_nats": 2.8287347,
+          "normalized_entropy": 0.85827509,
+          "trial_multiplicity": 910.22222222,
+          "effective_trial_multiplicity": 1950.86531576,
+          "largest_clusters": [
+            {
+              "key": "range_location",
+              "count": 4349
+            },
+            {
+              "key": "limit_event_state",
+              "count": 2471
+            },
+            {
+              "key": "opening_state",
+              "count": 2467
+            },
+            {
+              "key": "flow_amount_volume+range_location",
+              "count": 2101
+            },
+            {
+              "key": "limit_event_state+opening_state",
+              "count": 1957
+            },
+            {
+              "key": "limit_event_state+range_location",
+              "count": 1207
+            },
+            {
+              "key": "flow_amount_volume+limit_event_state",
+              "count": 1171
+            },
+            {
+              "key": "lagged_context+range_location",
+              "count": 1127
+            },
+            {
+              "key": "lagged_context+limit_event_state",
+              "count": 895
+            },
+            {
+              "key": "lagged_context+limit_event_state+range_location",
+              "count": 860
+            }
+          ]
+        },
+        "primitive_family": {
+          "cluster_count": 7,
+          "n_eff": 2.67733013,
+          "top_cluster_share": 0.45621745,
+          "entropy_nats": 1.16446018,
+          "normalized_entropy": 0.59841416,
+          "trial_multiplicity": 3510.85714286,
+          "effective_trial_multiplicity": 9179.29386393,
+          "largest_clusters": [
+            {
+              "key": "cross_sectional+time_series+arithmetic+state_transform",
+              "count": 11212
+            },
+            {
+              "key": "cross_sectional+arithmetic+state_transform",
+              "count": 9739
+            },
+            {
+              "key": "cross_sectional+arithmetic",
+              "count": 1892
+            },
+            {
+              "key": "cross_sectional+state_transform",
+              "count": 907
+            },
+            {
+              "key": "cross_sectional",
+              "count": 794
+            },
+            {
+              "key": "cross_sectional+time_series",
+              "count": 16
+            },
+            {
+              "key": "cross_sectional+time_series+state_transform",
+              "count": 16
+            }
+          ]
+        },
+        "event_state_family": {
+          "cluster_count": 10,
+          "n_eff": 3.84108903,
+          "top_cluster_share": 0.41125488,
+          "entropy_nats": 1.64811771,
+          "normalized_entropy": 0.71576843,
+          "trial_multiplicity": 2457.6,
+          "effective_trial_multiplicity": 6398.18546549,
+          "largest_clusters": [
+            {
+              "key": "none",
+              "count": 10107
+            },
+            {
+              "key": "opening_state",
+              "count": 6216
+            },
+            {
+              "key": "limit_up",
+              "count": 3427
+            },
+            {
+              "key": "board_transition",
+              "count": 1475
+            },
+            {
+              "key": "high_board",
+              "count": 1095
+            },
+            {
+              "key": "board_transition+opening_state",
+              "count": 851
+            },
+            {
+              "key": "high_board+opening_state",
+              "count": 614
+            },
+            {
+              "key": "high_board+limit_up",
+              "count": 380
+            },
+            {
+              "key": "limit_up+opening_state",
+              "count": 242
+            },
+            {
+              "key": "board_transition+limit_up",
+              "count": 169
+            }
+          ]
+        }
+      },
+      "signal": {
+        "status": "not_measured",
+        "reason": "no semantic-only progress artifact supplied"
+      },
+      "behaviour": {
+        "status": "not_applicable"
+      },
+      "significant_structural_collapse": true
+    },
+    {
+      "stage": "proxy",
+      "source": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\phase3fix_run\\phase3ca_bz_candidate_audit.csv",
+      "row_count": 1536,
+      "exact_identity_key": "expression_hash",
+      "exact_identity_count": 1536,
+      "lineage": {
+        "cluster_count": 1212,
+        "n_eff": 984.68113523,
+        "top_cluster_share": 0.00455729,
+        "entropy_nats": 7.0123261,
+        "normalized_entropy": 0.98764778,
+        "trial_multiplicity": 1.26732673,
+        "effective_trial_multiplicity": 1.55989583,
+        "largest_clusters": [
+          {
+            "key": "rx_ucb_fresh|913765cb964144cc3c|cb0110f0a0701d1785",
+            "count": 7
+          },
+          {
+            "key": "rx_ucb_fresh|183954f1349680474a|96a52abaaf83a481c2",
+            "count": 5
+          },
+          {
+            "key": "rx_ucb_fresh|72b3c56fc28f96b6ef|b6c46978a20c09760c",
+            "count": 5
+          },
+          {
+            "key": "challenger_repair|90408041d6c26038f1|7dcfb507b220647741",
+            "count": 4
+          },
+          {
+            "key": "challenger_repair|14fca4542a3e11e0ca|6cda42e37ee630d8e0",
+            "count": 4
+          },
+          {
+            "key": "event_state|393a368c96da270b11|1c426a139cc8c2c290",
+            "count": 4
+          },
+          {
+            "key": "rx_ucb_fresh|371948cbdc39c373f4|d0d93ccd75919936c7",
+            "count": 4
+          },
+          {
+            "key": "cem_exploit|8519cc1dd6355ae5ad|5b27651960bfe5d5a4",
+            "count": 4
+          },
+          {
+            "key": "event_state|58bf10f3c7d51b4fdd|25b7831c288a410817",
+            "count": 4
+          },
+          {
+            "key": "typed_ast_fresh|cf42c061b67b42ceb3|012eaf2bc5ea24d74b",
+            "count": 4
+          }
+        ]
+      },
+      "cluster_views": {
+        "ast_skeleton": {
+          "cluster_count": 106,
+          "n_eff": 41.10558227,
+          "top_cluster_share": 0.06119792,
+          "entropy_nats": 4.08927888,
+          "normalized_entropy": 0.87688052,
+          "trial_multiplicity": 14.49056604,
+          "effective_trial_multiplicity": 37.3671875,
+          "largest_clusters": [
+            {
+              "key": "CSRank(Mul(Sign(ZScore(Div(Sub($F,$F),Add(Abs($F),N)))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 94
+            },
+            {
+              "key": "CSRank(Mul(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 91
+            },
+            {
+              "key": "CSRank(Mul(ZScore(Div(Sub($F,$F),Add(Abs($F),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 90
+            },
+            {
+              "key": "CSRank(Sub(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 62
+            },
+            {
+              "key": "CSRank(Sub(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(ValidRatioGate($F,N,N))))",
+              "count": 51
+            },
+            {
+              "key": "CSRank(CSResidual(CSRank(Div(Sub($F,$F),Add(Abs($F),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 42
+            },
+            {
+              "key": "CSRank(Sub(ZScore(Div(Sub($F,$F),Add(Abs($F),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 41
+            },
+            {
+              "key": "CSRank(Mul(CSRank(EventCount($F,N)),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 39
+            },
+            {
+              "key": "CSRank(Mul(Sign(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N)))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 38
+            },
+            {
+              "key": "CSRank(Sub(CSRank(EventCount($F,N)),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 37
+            }
+          ]
+        },
+        "family_id": {
+          "cluster_count": 1160,
+          "n_eff": 915.16524438,
+          "top_cluster_share": 0.00455729,
+          "entropy_nats": 6.95356929,
+          "normalized_entropy": 0.9854587,
+          "trial_multiplicity": 1.32413793,
+          "effective_trial_multiplicity": 1.67838542,
+          "largest_clusters": [
+            {
+              "key": "913765cb964144cc3c",
+              "count": 7
+            },
+            {
+              "key": "72b3c56fc28f96b6ef",
+              "count": 6
+            },
+            {
+              "key": "183954f1349680474a",
+              "count": 5
+            },
+            {
+              "key": "90408041d6c26038f1",
+              "count": 4
+            },
+            {
+              "key": "14fca4542a3e11e0ca",
+              "count": 4
+            },
+            {
+              "key": "393a368c96da270b11",
+              "count": 4
+            },
+            {
+              "key": "371948cbdc39c373f4",
+              "count": 4
+            },
+            {
+              "key": "8519cc1dd6355ae5ad",
+              "count": 4
+            },
+            {
+              "key": "58bf10f3c7d51b4fdd",
+              "count": 4
+            },
+            {
+              "key": "cf42c061b67b42ceb3",
+              "count": 4
+            }
+          ]
+        },
+        "motif_id": {
+          "cluster_count": 1150,
+          "n_eff": 901.18258212,
+          "top_cluster_share": 0.00455729,
+          "entropy_nats": 6.94167183,
+          "normalized_entropy": 0.98498118,
+          "trial_multiplicity": 1.33565217,
+          "effective_trial_multiplicity": 1.70442708,
+          "largest_clusters": [
+            {
+              "key": "cb0110f0a0701d1785",
+              "count": 7
+            },
+            {
+              "key": "b6c46978a20c09760c",
+              "count": 6
+            },
+            {
+              "key": "5b27651960bfe5d5a4",
+              "count": 5
+            },
+            {
+              "key": "96a52abaaf83a481c2",
+              "count": 5
+            },
+            {
+              "key": "7dcfb507b220647741",
+              "count": 4
+            },
+            {
+              "key": "6cda42e37ee630d8e0",
+              "count": 4
+            },
+            {
+              "key": "1c426a139cc8c2c290",
+              "count": 4
+            },
+            {
+              "key": "d0d93ccd75919936c7",
+              "count": 4
+            },
+            {
+              "key": "eb644783e7dd19dbda",
+              "count": 4
+            },
+            {
+              "key": "25b7831c288a410817",
+              "count": 4
+            }
+          ]
+        },
+        "generator_arm": {
+          "cluster_count": 6,
+          "n_eff": 6.0,
+          "top_cluster_share": 0.16666667,
+          "entropy_nats": 1.79175947,
+          "normalized_entropy": 1.0,
+          "trial_multiplicity": 256.0,
+          "effective_trial_multiplicity": 256.0,
+          "largest_clusters": [
+            {
+              "key": "rx_ucb_fresh",
+              "count": 256
+            },
+            {
+              "key": "typed_ast_fresh",
+              "count": 256
+            },
+            {
+              "key": "challenger_repair",
+              "count": 256
+            },
+            {
+              "key": "event_state",
+              "count": 256
+            },
+            {
+              "key": "cem_exploit",
+              "count": 256
+            },
+            {
+              "key": "random_orthogonal",
+              "count": 256
+            }
+          ]
+        },
+        "generator_route": {
+          "cluster_count": 5,
+          "n_eff": 4.5,
+          "top_cluster_share": 0.33333333,
+          "entropy_nats": 1.56071041,
+          "normalized_entropy": 0.9697239,
+          "trial_multiplicity": 307.2,
+          "effective_trial_multiplicity": 341.33333333,
+          "largest_clusters": [
+            {
+              "key": "phase3bs-adaptive-ucb-cem-practice",
+              "count": 512
+            },
+            {
+              "key": "phase3bt-ast-algorithm-bakeoff",
+              "count": 256
+            },
+            {
+              "key": "future-phase3cr-repair",
+              "count": 256
+            },
+            {
+              "key": "future-event-state-generator",
+              "count": 256
+            },
+            {
+              "key": "control-random-orthogonal",
+              "count": 256
+            }
+          ]
+        },
+        "field_family": {
+          "cluster_count": 26,
+          "n_eff": 12.92594946,
+          "top_cluster_share": 0.16080729,
+          "entropy_nats": 2.82696927,
+          "normalized_entropy": 0.86767511,
+          "trial_multiplicity": 59.07692308,
+          "effective_trial_multiplicity": 118.83072917,
+          "largest_clusters": [
+            {
+              "key": "opening_state",
+              "count": 247
+            },
+            {
+              "key": "range_location",
+              "count": 180
+            },
+            {
+              "key": "limit_event_state+opening_state",
+              "count": 175
+            },
+            {
+              "key": "limit_event_state",
+              "count": 112
+            },
+            {
+              "key": "lagged_context+limit_event_state+opening_state",
+              "count": 86
+            },
+            {
+              "key": "flow_amount_volume+limit_event_state",
+              "count": 77
+            },
+            {
+              "key": "lagged_context+opening_state",
+              "count": 72
+            },
+            {
+              "key": "flow_amount_volume+range_location",
+              "count": 70
+            },
+            {
+              "key": "limit_event_state+range_location",
+              "count": 62
+            },
+            {
+              "key": "lagged_context+limit_event_state",
+              "count": 60
+            }
+          ]
+        },
+        "primitive_family": {
+          "cluster_count": 7,
+          "n_eff": 2.26284886,
+          "top_cluster_share": 0.57161458,
+          "entropy_nats": 0.98597073,
+          "normalized_entropy": 0.50668873,
+          "trial_multiplicity": 219.42857143,
+          "effective_trial_multiplicity": 678.79036458,
+          "largest_clusters": [
+            {
+              "key": "cross_sectional+arithmetic+state_transform",
+              "count": 878
+            },
+            {
+              "key": "cross_sectional+time_series+arithmetic+state_transform",
+              "count": 508
+            },
+            {
+              "key": "cross_sectional+arithmetic",
+              "count": 114
+            },
+            {
+              "key": "cross_sectional+state_transform",
+              "count": 24
+            },
+            {
+              "key": "cross_sectional",
+              "count": 10
+            },
+            {
+              "key": "cross_sectional+time_series+state_transform",
+              "count": 1
+            },
+            {
+              "key": "cross_sectional+time_series",
+              "count": 1
+            }
+          ]
+        },
+        "event_state_family": {
+          "cluster_count": 10,
+          "n_eff": 3.88154466,
+          "top_cluster_share": 0.39192708,
+          "entropy_nats": 1.65686408,
+          "normalized_entropy": 0.71956693,
+          "trial_multiplicity": 153.6,
+          "effective_trial_multiplicity": 395.71875,
+          "largest_clusters": [
+            {
+              "key": "opening_state",
+              "count": 602
+            },
+            {
+              "key": "none",
+              "count": 444
+            },
+            {
+              "key": "limit_up",
+              "count": 162
+            },
+            {
+              "key": "board_transition+opening_state",
+              "count": 98
+            },
+            {
+              "key": "board_transition",
+              "count": 78
+            },
+            {
+              "key": "high_board",
+              "count": 51
+            },
+            {
+              "key": "high_board+opening_state",
+              "count": 51
+            },
+            {
+              "key": "limit_up+opening_state",
+              "count": 30
+            },
+            {
+              "key": "high_board+limit_up",
+              "count": 15
+            },
+            {
+              "key": "board_transition+limit_up",
+              "count": 5
+            }
+          ]
+        }
+      },
+      "signal": {
+        "status": "not_measured",
+        "reason": "no semantic-only progress artifact supplied"
+      },
+      "behaviour": {
+        "status": "not_applicable"
+      },
+      "significant_structural_collapse": true
+    },
+    {
+      "stage": "admission",
+      "source": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\phase3fix_run\\phase3cp_real_cm_candidate_audit.csv",
+      "row_count": 384,
+      "exact_identity_key": "expression_hash",
+      "exact_identity_count": 384,
+      "lineage": {
+        "cluster_count": 336,
+        "n_eff": 285.76744186,
+        "top_cluster_share": 0.015625,
+        "entropy_nats": 5.75650922,
+        "normalized_entropy": 0.98958212,
+        "trial_multiplicity": 1.14285714,
+        "effective_trial_multiplicity": 1.34375,
+        "largest_clusters": [
+          {
+            "key": "rx_ucb_fresh|913765cb964144cc3c|cb0110f0a0701d1785",
+            "count": 6
+          },
+          {
+            "key": "rx_ucb_fresh|9c8cf1cfcb57186b19|d2eb9a12a7d32788b5",
+            "count": 3
+          },
+          {
+            "key": "typed_ast_fresh|3ec813882736be3920|e39fb1200f24b9072c",
+            "count": 3
+          },
+          {
+            "key": "challenger_repair|90408041d6c26038f1|7dcfb507b220647741",
+            "count": 3
+          },
+          {
+            "key": "challenger_repair|14fca4542a3e11e0ca|6cda42e37ee630d8e0",
+            "count": 3
+          },
+          {
+            "key": "event_state|393a368c96da270b11|1c426a139cc8c2c290",
+            "count": 3
+          },
+          {
+            "key": "rx_ucb_fresh|371948cbdc39c373f4|d0d93ccd75919936c7",
+            "count": 3
+          },
+          {
+            "key": "cem_exploit|8519cc1dd6355ae5ad|5b27651960bfe5d5a4",
+            "count": 3
+          },
+          {
+            "key": "challenger_repair|20f36f09c9fd2a5db1|05e7142da8fd04a928",
+            "count": 3
+          },
+          {
+            "key": "typed_ast_fresh|b178c690760be3bd6a|04811a4a1518aae748",
+            "count": 2
+          }
+        ]
+      },
+      "cluster_views": {
+        "ast_skeleton": {
+          "cluster_count": 71,
+          "n_eff": 33.34599729,
+          "top_cluster_share": 0.07291667,
+          "entropy_nats": 3.82009517,
+          "normalized_entropy": 0.89617219,
+          "trial_multiplicity": 5.4084507,
+          "effective_trial_multiplicity": 11.515625,
+          "largest_clusters": [
+            {
+              "key": "CSRank(Mul(ZScore(Div(Sub($F,$F),Add(Abs($F),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 28
+            },
+            {
+              "key": "CSRank(Mul(Sign(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N)))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 26
+            },
+            {
+              "key": "CSRank(Mul(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 18
+            },
+            {
+              "key": "CSRank(Sub(CSRank(EventCount($F,N)),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 17
+            },
+            {
+              "key": "CSRank(Mul(Sign(ZScore(Div(Sub($F,$F),Add(Abs($F),N)))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 17
+            },
+            {
+              "key": "CSRank(CSResidual(CSRank(Div(Sub($F,$F),Add(Abs($F),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 15
+            },
+            {
+              "key": "CSRank(Mul(Sign(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N)))),CSRank(MaskedZScore($F,N,N))))",
+              "count": 15
+            },
+            {
+              "key": "CSRank(Mul(CSRank(EventCount($F,N)),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 13
+            },
+            {
+              "key": "CSRank(Sub(ZScore(Sub(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),Mean(Div(Sub($F,$F),Add(Abs(Sub($F,$F)),N)),N))),CSRank(MaskedCorr($F,$F,N,N))))",
+              "count": 13
+            },
+            {
+              "key": "CSRank(CSResidual(CSRank(Div(Sub($F,$F),Add(Abs($F),N))),CSRank(ValidRatioGate($F,N,N))))",
+              "count": 12
+            }
+          ]
+        },
+        "family_id": {
+          "cluster_count": 336,
+          "n_eff": 285.76744186,
+          "top_cluster_share": 0.015625,
+          "entropy_nats": 5.75650922,
+          "normalized_entropy": 0.98958212,
+          "trial_multiplicity": 1.14285714,
+          "effective_trial_multiplicity": 1.34375,
+          "largest_clusters": [
+            {
+              "key": "913765cb964144cc3c",
+              "count": 6
+            },
+            {
+              "key": "9c8cf1cfcb57186b19",
+              "count": 3
+            },
+            {
+              "key": "3ec813882736be3920",
+              "count": 3
+            },
+            {
+              "key": "90408041d6c26038f1",
+              "count": 3
+            },
+            {
+              "key": "14fca4542a3e11e0ca",
+              "count": 3
+            },
+            {
+              "key": "393a368c96da270b11",
+              "count": 3
+            },
+            {
+              "key": "371948cbdc39c373f4",
+              "count": 3
+            },
+            {
+              "key": "8519cc1dd6355ae5ad",
+              "count": 3
+            },
+            {
+              "key": "20f36f09c9fd2a5db1",
+              "count": 3
+            },
+            {
+              "key": "b178c690760be3bd6a",
+              "count": 2
+            }
+          ]
+        },
+        "motif_id": {
+          "cluster_count": 336,
+          "n_eff": 285.76744186,
+          "top_cluster_share": 0.015625,
+          "entropy_nats": 5.75650922,
+          "normalized_entropy": 0.98958212,
+          "trial_multiplicity": 1.14285714,
+          "effective_trial_multiplicity": 1.34375,
+          "largest_clusters": [
+            {
+              "key": "cb0110f0a0701d1785",
+              "count": 6
+            },
+            {
+              "key": "d2eb9a12a7d32788b5",
+              "count": 3
+            },
+            {
+              "key": "e39fb1200f24b9072c",
+              "count": 3
+            },
+            {
+              "key": "7dcfb507b220647741",
+              "count": 3
+            },
+            {
+              "key": "6cda42e37ee630d8e0",
+              "count": 3
+            },
+            {
+              "key": "1c426a139cc8c2c290",
+              "count": 3
+            },
+            {
+              "key": "d0d93ccd75919936c7",
+              "count": 3
+            },
+            {
+              "key": "5b27651960bfe5d5a4",
+              "count": 3
+            },
+            {
+              "key": "05e7142da8fd04a928",
+              "count": 3
+            },
+            {
+              "key": "04811a4a1518aae748",
+              "count": 2
+            }
+          ]
+        },
+        "generator_arm": {
+          "cluster_count": 6,
+          "n_eff": 6.0,
+          "top_cluster_share": 0.16666667,
+          "entropy_nats": 1.79175947,
+          "normalized_entropy": 1.0,
+          "trial_multiplicity": 64.0,
+          "effective_trial_multiplicity": 64.0,
+          "largest_clusters": [
+            {
+              "key": "rx_ucb_fresh",
+              "count": 64
+            },
+            {
+              "key": "typed_ast_fresh",
+              "count": 64
+            },
+            {
+              "key": "challenger_repair",
+              "count": 64
+            },
+            {
+              "key": "event_state",
+              "count": 64
+            },
+            {
+              "key": "cem_exploit",
+              "count": 64
+            },
+            {
+              "key": "random_orthogonal",
+              "count": 64
+            }
+          ]
+        },
+        "generator_route": {
+          "cluster_count": 5,
+          "n_eff": 4.5,
+          "top_cluster_share": 0.33333333,
+          "entropy_nats": 1.56071041,
+          "normalized_entropy": 0.9697239,
+          "trial_multiplicity": 76.8,
+          "effective_trial_multiplicity": 85.33333333,
+          "largest_clusters": [
+            {
+              "key": "phase3bs-adaptive-ucb-cem-practice",
+              "count": 128
+            },
+            {
+              "key": "phase3bt-ast-algorithm-bakeoff",
+              "count": 64
+            },
+            {
+              "key": "future-phase3cr-repair",
+              "count": 64
+            },
+            {
+              "key": "future-event-state-generator",
+              "count": 64
+            },
+            {
+              "key": "control-random-orthogonal",
+              "count": 64
+            }
+          ]
+        },
+        "field_family": {
+          "cluster_count": 22,
+          "n_eff": 10.73812992,
+          "top_cluster_share": 0.15364583,
+          "entropy_nats": 2.63134355,
+          "normalized_entropy": 0.8512803,
+          "trial_multiplicity": 17.45454545,
+          "effective_trial_multiplicity": 35.76041667,
+          "largest_clusters": [
+            {
+              "key": "range_location",
+              "count": 59
+            },
+            {
+              "key": "opening_state",
+              "count": 59
+            },
+            {
+              "key": "limit_event_state+opening_state",
+              "count": 52
+            },
+            {
+              "key": "limit_event_state",
+              "count": 39
+            },
+            {
+              "key": "lagged_context+range_location",
+              "count": 21
+            },
+            {
+              "key": "lagged_context+opening_state",
+              "count": 20
+            },
+            {
+              "key": "lagged_context+limit_event_state+opening_state",
+              "count": 19
+            },
+            {
+              "key": "lagged_context+limit_event_state",
+              "count": 18
+            },
+            {
+              "key": "limit_event_state+range_location",
+              "count": 16
+            },
+            {
+              "key": "flow_amount_volume+range_location",
+              "count": 16
+            }
+          ]
+        },
+        "primitive_family": {
+          "cluster_count": 5,
+          "n_eff": 2.39097159,
+          "top_cluster_share": 0.5078125,
+          "entropy_nats": 0.97134258,
+          "normalized_entropy": 0.60352908,
+          "trial_multiplicity": 76.8,
+          "effective_trial_multiplicity": 160.60416667,
+          "largest_clusters": [
+            {
+              "key": "cross_sectional+arithmetic+state_transform",
+              "count": 195
+            },
+            {
+              "key": "cross_sectional+time_series+arithmetic+state_transform",
+              "count": 149
+            },
+            {
+              "key": "cross_sectional+arithmetic",
+              "count": 38
+            },
+            {
+              "key": "cross_sectional+time_series+state_transform",
+              "count": 1
+            },
+            {
+              "key": "cross_sectional+time_series",
+              "count": 1
+            }
+          ]
+        },
+        "event_state_family": {
+          "cluster_count": 10,
+          "n_eff": 3.65823162,
+          "top_cluster_share": 0.3828125,
+          "entropy_nats": 1.59910119,
+          "normalized_entropy": 0.69448082,
+          "trial_multiplicity": 38.4,
+          "effective_trial_multiplicity": 104.96875,
+          "largest_clusters": [
+            {
+              "key": "opening_state",
+              "count": 147
+            },
+            {
+              "key": "none",
+              "count": 127
+            },
+            {
+              "key": "limit_up",
+              "count": 40
+            },
+            {
+              "key": "board_transition+opening_state",
+              "count": 22
+            },
+            {
+              "key": "board_transition",
+              "count": 14
+            },
+            {
+              "key": "high_board",
+              "count": 12
+            },
+            {
+              "key": "high_board+opening_state",
+              "count": 8
+            },
+            {
+              "key": "limit_up+opening_state",
+              "count": 8
+            },
+            {
+              "key": "high_board+limit_up",
+              "count": 3
+            },
+            {
+              "key": "board_transition+limit_up",
+              "count": 3
+            }
+          ]
+        }
+      },
+      "signal": {
+        "status": "not_measured",
+        "reason": "no semantic-only progress artifact supplied"
+      },
+      "behaviour": {
+        "status": "not_applicable"
+      },
+      "significant_structural_collapse": true
+    },
+    {
+      "stage": "strict_reward",
+      "source": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\strict_reward\\phase3cm_train_reward.csv",
+      "row_count": 324,
+      "exact_identity_key": "expression_hash",
+      "exact_identity_count": 324,
+      "lineage": {
+        "cluster_count": 276,
+        "n_eff": 230.21052632,
+        "top_cluster_share": 0.01851852,
+        "entropy_nats": 5.55065957,
+        "normalized_entropy": 0.9875914,
+        "trial_multiplicity": 1.17391304,
+        "effective_trial_multiplicity": 1.40740741,
+        "largest_clusters": [
+          {
+            "key": "rx_ucb_fresh|913765cb964144cc3c|cb0110f0a0701d1785",
+            "count": 6
+          },
+          {
+            "key": "rx_ucb_fresh|9c8cf1cfcb57186b19|d2eb9a12a7d32788b5",
+            "count": 3
+          },
+          {
+            "key": "challenger_repair|90408041d6c26038f1|7dcfb507b220647741",
+            "count": 3
+          },
+          {
+            "key": "event_state|393a368c96da270b11|1c426a139cc8c2c290",
+            "count": 3
+          },
+          {
+            "key": "challenger_repair|14fca4542a3e11e0ca|6cda42e37ee630d8e0",
+            "count": 3
+          },
+          {
+            "key": "cem_exploit|8519cc1dd6355ae5ad|5b27651960bfe5d5a4",
+            "count": 3
+          },
+          {
+            "key": "typed_ast_fresh|3ec813882736be3920|e39fb1200f24b9072c",
+            "count": 3
+          },
+          {
+            "key": "rx_ucb_fresh|371948cbdc39c373f4|d0d93ccd75919936c7",
+            "count": 3
+          },
+          {
+            "key": "challenger_repair|20f36f09c9fd2a5db1|05e7142da8fd04a928",
+            "count": 3
+          },
+          {
+            "key": "event_state|55978e4c15d4a58cdc|d60069d0c963f3f1dc",
+            "count": 2
+          }
+        ]
+      },
+      "cluster_views": {
+        "family_id": {
+          "cluster_count": 276,
+          "n_eff": 230.21052632,
+          "top_cluster_share": 0.01851852,
+          "entropy_nats": 5.55065957,
+          "normalized_entropy": 0.9875914,
+          "trial_multiplicity": 1.17391304,
+          "effective_trial_multiplicity": 1.40740741,
+          "largest_clusters": [
+            {
+              "key": "913765cb964144cc3c",
+              "count": 6
+            },
+            {
+              "key": "9c8cf1cfcb57186b19",
+              "count": 3
+            },
+            {
+              "key": "90408041d6c26038f1",
+              "count": 3
+            },
+            {
+              "key": "393a368c96da270b11",
+              "count": 3
+            },
+            {
+              "key": "14fca4542a3e11e0ca",
+              "count": 3
+            },
+            {
+              "key": "8519cc1dd6355ae5ad",
+              "count": 3
+            },
+            {
+              "key": "3ec813882736be3920",
+              "count": 3
+            },
+            {
+              "key": "371948cbdc39c373f4",
+              "count": 3
+            },
+            {
+              "key": "20f36f09c9fd2a5db1",
+              "count": 3
+            },
+            {
+              "key": "55978e4c15d4a58cdc",
+              "count": 2
+            }
+          ]
+        },
+        "motif_id": {
+          "cluster_count": 276,
+          "n_eff": 230.21052632,
+          "top_cluster_share": 0.01851852,
+          "entropy_nats": 5.55065957,
+          "normalized_entropy": 0.9875914,
+          "trial_multiplicity": 1.17391304,
+          "effective_trial_multiplicity": 1.40740741,
+          "largest_clusters": [
+            {
+              "key": "cb0110f0a0701d1785",
+              "count": 6
+            },
+            {
+              "key": "d2eb9a12a7d32788b5",
+              "count": 3
+            },
+            {
+              "key": "7dcfb507b220647741",
+              "count": 3
+            },
+            {
+              "key": "1c426a139cc8c2c290",
+              "count": 3
+            },
+            {
+              "key": "6cda42e37ee630d8e0",
+              "count": 3
+            },
+            {
+              "key": "5b27651960bfe5d5a4",
+              "count": 3
+            },
+            {
+              "key": "e39fb1200f24b9072c",
+              "count": 3
+            },
+            {
+              "key": "d0d93ccd75919936c7",
+              "count": 3
+            },
+            {
+              "key": "05e7142da8fd04a928",
+              "count": 3
+            },
+            {
+              "key": "d60069d0c963f3f1dc",
+              "count": 2
+            }
+          ]
+        },
+        "generator_arm": {
+          "cluster_count": 6,
+          "n_eff": 5.60529688,
+          "top_cluster_share": 0.19753086,
+          "entropy_nats": 1.75315628,
+          "normalized_entropy": 0.97845515,
+          "trial_multiplicity": 54.0,
+          "effective_trial_multiplicity": 57.80246914,
+          "largest_clusters": [
+            {
+              "key": "rx_ucb_fresh",
+              "count": 64
+            },
+            {
+              "key": "challenger_repair",
+              "count": 64
+            },
+            {
+              "key": "cem_exploit",
+              "count": 64
+            },
+            {
+              "key": "typed_ast_fresh",
+              "count": 64
+            },
+            {
+              "key": "event_state",
+              "count": 38
+            },
+            {
+              "key": "random_orthogonal",
+              "count": 30
+            }
+          ]
+        },
+        "generator_route": {
+          "cluster_count": 5,
+          "n_eff": 3.89955423,
+          "top_cluster_share": 0.39506173,
+          "entropy_nats": 1.47932036,
+          "normalized_entropy": 0.91915342,
+          "trial_multiplicity": 64.8,
+          "effective_trial_multiplicity": 83.08641975,
+          "largest_clusters": [
+            {
+              "key": "phase3bs-adaptive-ucb-cem-practice",
+              "count": 128
+            },
+            {
+              "key": "future-phase3cr-repair",
+              "count": 64
+            },
+            {
+              "key": "phase3bt-ast-algorithm-bakeoff",
+              "count": 64
+            },
+            {
+              "key": "future-event-state-generator",
+              "count": 38
+            },
+            {
+              "key": "control-random-orthogonal",
+              "count": 30
+            }
+          ]
+        },
+        "field_family": {
+          "cluster_count": 22,
+          "n_eff": 9.76702642,
+          "top_cluster_share": 0.18209877,
+          "entropy_nats": 2.56059038,
+          "normalized_entropy": 0.82839056,
+          "trial_multiplicity": 14.72727273,
+          "effective_trial_multiplicity": 33.17283951,
+          "largest_clusters": [
+            {
+              "key": "range_location",
+              "count": 59
+            },
+            {
+              "key": "opening_state",
+              "count": 59
+            },
+            {
+              "key": "limit_event_state",
+              "count": 31
+            },
+            {
+              "key": "limit_event_state+opening_state",
+              "count": 28
+            },
+            {
+              "key": "lagged_context+range_location",
+              "count": 21
+            },
+            {
+              "key": "lagged_context+opening_state",
+              "count": 20
+            },
+            {
+              "key": "flow_amount_volume+range_location",
+              "count": 16
+            },
+            {
+              "key": "limit_event_state+range_location",
+              "count": 16
+            },
+            {
+              "key": "lagged_context+limit_event_state+opening_state",
+              "count": 15
+            },
+            {
+              "key": "lagged_context+limit_event_state",
+              "count": 12
+            }
+          ]
+        },
+        "primitive_family": {
+          "cluster_count": 5,
+          "n_eff": 2.50706916,
+          "top_cluster_share": 0.45987654,
+          "entropy_nats": 1.00905102,
+          "normalized_entropy": 0.62695865,
+          "trial_multiplicity": 64.8,
+          "effective_trial_multiplicity": 129.2345679,
+          "largest_clusters": [
+            {
+              "key": "cross_sectional+time_series+arithmetic+state_transform",
+              "count": 149
+            },
+            {
+              "key": "cross_sectional+arithmetic+state_transform",
+              "count": 135
+            },
+            {
+              "key": "cross_sectional+arithmetic",
+              "count": 38
+            },
+            {
+              "key": "cross_sectional+time_series+state_transform",
+              "count": 1
+            },
+            {
+              "key": "cross_sectional+time_series",
+              "count": 1
+            }
+          ]
+        },
+        "event_state_family": {
+          "cluster_count": 9,
+          "n_eff": 3.71228517,
+          "top_cluster_share": 0.36111111,
+          "entropy_nats": 1.58846884,
+          "normalized_entropy": 0.72294332,
+          "trial_multiplicity": 36.0,
+          "effective_trial_multiplicity": 87.27777778,
+          "largest_clusters": [
+            {
+              "key": "opening_state",
+              "count": 117
+            },
+            {
+              "key": "none",
+              "count": 112
+            },
+            {
+              "key": "limit_up",
+              "count": 36
+            },
+            {
+              "key": "board_transition+opening_state",
+              "count": 19
+            },
+            {
+              "key": "board_transition",
+              "count": 13
+            },
+            {
+              "key": "high_board",
+              "count": 11
+            },
+            {
+              "key": "high_board+opening_state",
+              "count": 8
+            },
+            {
+              "key": "limit_up+opening_state",
+              "count": 5
+            },
+            {
+              "key": "high_board+limit_up",
+              "count": 3
+            }
+          ]
+        }
+      },
+      "signal": {
+        "status": "not_measured",
+        "reason": "no semantic-only progress artifact supplied"
+      },
+      "behaviour": {
+        "status": "measured_train_only",
+        "definition": "deterministic greedy all-pairs Pearson correlation clique >= 0.95 on pairwise >= 250 fixed-calendar train/development dates",
+        "candidate_count": 324,
+        "eligible_candidate_count": 202,
+        "ineligible_candidate_count": 122,
+        "coverage_min_days": 252,
+        "coverage_max_days": 355,
+        "exact_behaviour_identity_count": 200,
+        "behaviour_cluster_metrics": {
+          "cluster_count": 84,
+          "n_eff": 29.39769452,
+          "top_cluster_share": 0.08415842,
+          "entropy_nats": 3.88754097,
+          "normalized_entropy": 0.87738698,
+          "trial_multiplicity": 2.4047619,
+          "effective_trial_multiplicity": 6.87128713,
+          "largest_clusters": [
+            {
+              "key": "2",
+              "count": 17
+            },
+            {
+              "key": "4",
+              "count": 15
+            },
+            {
+              "key": "20",
+              "count": 14
+            },
+            {
+              "key": "23",
+              "count": 13
+            },
+            {
+              "key": "52",
+              "count": 10
+            },
+            {
+              "key": "25",
+              "count": 9
+            },
+            {
+              "key": "5",
+              "count": 7
+            },
+            {
+              "key": "40",
+              "count": 7
+            },
+            {
+              "key": "1",
+              "count": 6
+            },
+            {
+              "key": "3",
+              "count": 5
+            }
+          ]
+        },
+        "candidate_assignments": [
+          {
+            "candidate_id": "phase3cp_00006",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "f256ffb52058b179c79401a71f543f59318f4e875297c6b3d9a63479e0969edc",
+            "behaviour_cluster_id": 1
+          },
+          {
+            "candidate_id": "phase3cp_00007",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "cb17d2d68284dd1abe68a0490765b40b6f851e77cf1801335c0e7d0630d1678a",
+            "behaviour_cluster_id": 1
+          },
+          {
+            "candidate_id": "phase3cp_00017",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "2f5ae20982b8e019305f5e900f48297054547419d36d4cc9bbcdd1d541850a8e",
+            "behaviour_cluster_id": 1
+          },
+          {
+            "candidate_id": "phase3cp_00019",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "78e1c83dfb3aaeefb60f18bffc8e9d32f0566f32100976036df76356a67da292",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_00021",
+            "coverage_days": 310,
+            "exact_behaviour_hash": "18a9e713d4b0608546b531f7cbb1fe0dc7436fae626f224f9ae632a4ae289589",
+            "behaviour_cluster_id": 3
+          },
+          {
+            "candidate_id": "phase3cp_00023",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "3311d77a704305190c05d5927c87ef142b6fd1b42818b9495be17c3bb658b0e4",
+            "behaviour_cluster_id": 1
+          },
+          {
+            "candidate_id": "phase3cp_00027",
+            "coverage_days": 334,
+            "exact_behaviour_hash": "4e99b8ed09fa055822f2f8665387fe519aa0a914bd3b5fedc546ee7b2c2091b1",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_00029",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "d6291ecc88a21d047725ba55304f7951e0143998a0812a38c871f3f6b093ed3f",
+            "behaviour_cluster_id": 1
+          },
+          {
+            "candidate_id": "phase3cp_00030",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "b9cb99ee94cb3814f52fe5b64f75519d710f78b8057ab7ea8848f6aa6ea8538e",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_00040",
+            "coverage_days": 334,
+            "exact_behaviour_hash": "3332a693be5820f59ec050353bb428373e5834aeb93a7852e8867b89fc1c5758",
+            "behaviour_cluster_id": 3
+          },
+          {
+            "candidate_id": "phase3cp_00049",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "e3cfd3ae33cc3efb409608cf927495e2bd0d8a0823cce40346c3bd6ee9821c9a",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_00070",
+            "coverage_days": 310,
+            "exact_behaviour_hash": "bb59bb9d4e67701d262127182f4fec9a51d6878d47963c6948963d27dca67244",
+            "behaviour_cluster_id": 3
+          },
+          {
+            "candidate_id": "phase3cp_00095",
+            "coverage_days": 310,
+            "exact_behaviour_hash": "67674ff4d0ab43a143b8abffdc095fd52bd6fca4569c46902f9e55fb2fc58999",
+            "behaviour_cluster_id": 3
+          },
+          {
+            "candidate_id": "phase3cp_00119",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "073bb5327690c4c8225c839d5f03cfa0537b7a5ec473ede1906018140edddaf3",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_00157",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "cef2e6ff5503c24e2fc82513230b8ccb44894d941bfdc62bd86497c336451ea0",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_00159",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "b93b11873a1089ef47ce2f9ad1d398bc001d902a9c1aebbdde9636f009775ab4",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_00175",
+            "coverage_days": 334,
+            "exact_behaviour_hash": "c4231715c582534182211dec179a60218bdcf2192818ff1bd83dbb88358f6319",
+            "behaviour_cluster_id": 3
+          },
+          {
+            "candidate_id": "phase3cp_00191",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "cde5afc040b66212537920da84db0b2ba3158f3162a5d931d80dcc76a5995878",
+            "behaviour_cluster_id": 5
+          },
+          {
+            "candidate_id": "phase3cp_00207",
+            "coverage_days": 334,
+            "exact_behaviour_hash": "b7f5b6f8c01fc91a209a0748eca82ab6c08c2803b08f454eb5f6be4bb2705ee5",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_00236",
+            "coverage_days": 273,
+            "exact_behaviour_hash": "1bb5f78baec8d12b4fed8d7d2d0709646815b2f1748bbf54302d65052fdd43b9",
+            "behaviour_cluster_id": 6
+          },
+          {
+            "candidate_id": "phase3cp_00275",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "1430deee086223c4810db196f60f35b275a17963556e699d8bef111bfa625ebb",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_00291",
+            "coverage_days": 305,
+            "exact_behaviour_hash": "3a92eb4094efa884e0b5b3ce407889dc439b4d48ffe60e2736f0b8442ce6cea2",
+            "behaviour_cluster_id": 7
+          },
+          {
+            "candidate_id": "phase3cp_00295",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "ffe314bf6a4a59720f5a6d3faeb09fc59b5c71e614fbc5d46b5df4234db78fda",
+            "behaviour_cluster_id": 8
+          },
+          {
+            "candidate_id": "phase3cp_00316",
+            "coverage_days": 319,
+            "exact_behaviour_hash": "632d33c79ec79432dca33e53887ea98e1cef99fc0de79affd8debf5fbee1044c",
+            "behaviour_cluster_id": 9
+          },
+          {
+            "candidate_id": "phase3cp_00336",
+            "coverage_days": 302,
+            "exact_behaviour_hash": "d1dd3134db4bb5e2c47e9c982138952a7a9e9bee2856e1071da5dd8ed5771461",
+            "behaviour_cluster_id": 10
+          },
+          {
+            "candidate_id": "phase3cp_00360",
+            "coverage_days": 265,
+            "exact_behaviour_hash": "2230246ba07ac6c2e924c689077ac517969634e543770e9ff5742397350896df",
+            "behaviour_cluster_id": 11
+          },
+          {
+            "candidate_id": "phase3cp_00375",
+            "coverage_days": 252,
+            "exact_behaviour_hash": "207ade1a6f869f50f32272ab41391bb95f7ca9acb4b044dc7efa167c959f4099",
+            "behaviour_cluster_id": 12
+          },
+          {
+            "candidate_id": "phase3cp_00401",
+            "coverage_days": 317,
+            "exact_behaviour_hash": "5717f6f90a46105ffaa7edc465135fb75a0eea44d7a606f17db3c8577b4189ea",
+            "behaviour_cluster_id": 13
+          },
+          {
+            "candidate_id": "phase3cp_00424",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "51e28523db0f8acdd6deb4fb6657e17424a94629d6a8835124eee85c077313af",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_00448",
+            "coverage_days": 252,
+            "exact_behaviour_hash": "d88b3c04324e460134688b3e17d0f9a83452e1e9396a279d9c3a942e8731af1b",
+            "behaviour_cluster_id": 12
+          },
+          {
+            "candidate_id": "phase3cp_00450",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "0b223475c6554ffbbe1d465df5c07480ac009716b54852c550a90ae4fb805ace",
+            "behaviour_cluster_id": 8
+          },
+          {
+            "candidate_id": "phase3cp_00505",
+            "coverage_days": 297,
+            "exact_behaviour_hash": "327f43a6e39518b557afdba63a020de7d062a59d34b19353798b222e3e35f928",
+            "behaviour_cluster_id": 14
+          },
+          {
+            "candidate_id": "phase3cp_00521",
+            "coverage_days": 300,
+            "exact_behaviour_hash": "7c04c07c2758fae465b791127e1ac192be65dbed78d4e39c315fb848ebb7be20",
+            "behaviour_cluster_id": 15
+          },
+          {
+            "candidate_id": "phase3cp_00523",
+            "coverage_days": 320,
+            "exact_behaviour_hash": "d17cac91d2874154b5e72c467c65a4e2a6e692fbef8304c72b61822f03f7dea0",
+            "behaviour_cluster_id": 16
+          },
+          {
+            "candidate_id": "phase3cp_00546",
+            "coverage_days": 265,
+            "exact_behaviour_hash": "ad1b93c41cdedf70996353237f08683fc32925b37d0b86877e05134684581022",
+            "behaviour_cluster_id": 11
+          },
+          {
+            "candidate_id": "phase3cp_00554",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "95b37f2fe331947497829e9cdbe794fe6d4e5f177c22d0ae0141859d6d0253da",
+            "behaviour_cluster_id": 8
+          },
+          {
+            "candidate_id": "phase3cp_00562",
+            "coverage_days": 297,
+            "exact_behaviour_hash": "e80486c17a2e2231d527c255bb5c806c05c7b31f2fa28037d9d7961e1081939b",
+            "behaviour_cluster_id": 14
+          },
+          {
+            "candidate_id": "phase3cp_00641",
+            "coverage_days": 294,
+            "exact_behaviour_hash": "1d65e624d39206a41e2ee8905f0c79383154f663407e4ad07fef160b7112ebd6",
+            "behaviour_cluster_id": 17
+          },
+          {
+            "candidate_id": "phase3cp_00677",
+            "coverage_days": 280,
+            "exact_behaviour_hash": "8a146d8a5b8c628ebad7a2910af33ea05b99196dab5e72acf5db105c54fbf091",
+            "behaviour_cluster_id": 18
+          },
+          {
+            "candidate_id": "phase3cp_00694",
+            "coverage_days": 303,
+            "exact_behaviour_hash": "7d7efe0dcffd5d15584d524dcb8a38ff0ef8efcc67d302583a8b9c4599e52244",
+            "behaviour_cluster_id": 19
+          },
+          {
+            "candidate_id": "phase3cp_00763",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "b066aebbc5f1dc6863fc57ecd0131cf70f34280b455a73283fedd309c3866c8e",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_00796",
+            "coverage_days": 334,
+            "exact_behaviour_hash": "1bf306ee315bbbf293da81242d783616fb320e12a76f27fd332fd6a105906378",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_00806",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "855cac29cb30631865a3f235aba72e06cd24170b086d094ce3e0e7be51cafa86",
+            "behaviour_cluster_id": 5
+          },
+          {
+            "candidate_id": "phase3cp_00815",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "4b38da433a7f6234a1ae0d3fdc0828f4c4a4b875c75bfee561a8539af3ca2688",
+            "behaviour_cluster_id": 5
+          },
+          {
+            "candidate_id": "phase3cp_00899",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "c13f3f4b9e6f2a3e333900eb7cb2d83503129bbc16aefbdbac1427d9aaa3c6ba",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_00917",
+            "coverage_days": 276,
+            "exact_behaviour_hash": "476783665c68c5a449f3a3f0d21f840d49cd9bc0df902058ed418ecd71fdfb4b",
+            "behaviour_cluster_id": 21
+          },
+          {
+            "candidate_id": "phase3cp_00948",
+            "coverage_days": 317,
+            "exact_behaviour_hash": "ae6c796c71ecc93a5f802a763e2f43742644f3fda4fee5b7219a00d807e5f3ba",
+            "behaviour_cluster_id": 13
+          },
+          {
+            "candidate_id": "phase3cp_00993",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "9b64ecdcc7941652c07ffc4d13f936b1402552e7a0b93ac57ec3d3d8ccb82061",
+            "behaviour_cluster_id": 5
+          },
+          {
+            "candidate_id": "phase3cp_00995",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "83a4c902f85cc359547daedf7d10aec22a0ae21bda46bdb1280f8f711f9043e1",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_01005",
+            "coverage_days": 265,
+            "exact_behaviour_hash": "da9e19d18c85a883bbc9087a543621326349f2c6e73f24bac93ed9cdc07d7b54",
+            "behaviour_cluster_id": 22
+          },
+          {
+            "candidate_id": "phase3cp_01028",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "5e14d687f4d8e8758d7939dc8d2e85515594c6392ab421ac6d01788c45d4ec40",
+            "behaviour_cluster_id": 8
+          },
+          {
+            "candidate_id": "phase3cp_01057",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "e2e20e9897a2fd8b1d8e5f54a94aeb30664e319b30c1be63c397dc6a1d9f96a7",
+            "behaviour_cluster_id": 5
+          },
+          {
+            "candidate_id": "phase3cp_01079",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "48fc52787fff28aa655754e5da991eae7308a99069e4ec8253bf4afb13efa306",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_09301",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "547d1bd51e2f9109c032a20742f49050476d55894dc7900156f489089288fef0",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_09310",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "e93c2e26793e0a12e7ad5fedcbd3ef51fb6cd800e7baf4d96c7bc543f6337e61",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_11526",
+            "coverage_days": 324,
+            "exact_behaviour_hash": "f58c7ee505223453d5e6611d30b0e164d1e8daebc93f28a5a591d5e08dad68f1",
+            "behaviour_cluster_id": 24
+          },
+          {
+            "candidate_id": "phase3cp_11530",
+            "coverage_days": 354,
+            "exact_behaviour_hash": "85b0a2de93535b47a8c3f42bd707e04fc9c238eecf12205acd20d986ca4e4193",
+            "behaviour_cluster_id": 25
+          },
+          {
+            "candidate_id": "phase3cp_11539",
+            "coverage_days": 353,
+            "exact_behaviour_hash": "9704f807e7d6d8f290a5987187b9aa21465c5103116a1fad2146deecd13be0e8",
+            "behaviour_cluster_id": 24
+          },
+          {
+            "candidate_id": "phase3cp_11544",
+            "coverage_days": 355,
+            "exact_behaviour_hash": "28a3bef58ae4fb65fd16c1121a31bde6c859bc37d95819cc3ab6551ba951af25",
+            "behaviour_cluster_id": 25
+          },
+          {
+            "candidate_id": "phase3cp_11614",
+            "coverage_days": 297,
+            "exact_behaviour_hash": "1496ff103faa0f6866e87104867cd7799cdb4d8ba4d8d40c42328477f39afc3d",
+            "behaviour_cluster_id": 26
+          },
+          {
+            "candidate_id": "phase3cp_11657",
+            "coverage_days": 354,
+            "exact_behaviour_hash": "18f2ac8e8b97fafd012469d4fdceb01bffc5a91eb46296a04e621d08d66fa1e6",
+            "behaviour_cluster_id": 25
+          },
+          {
+            "candidate_id": "phase3cp_11658",
+            "coverage_days": 326,
+            "exact_behaviour_hash": "d18151ac040c3c7229c373d872997ace321e77d1e959cdbe920e6487a544ed5c",
+            "behaviour_cluster_id": 27
+          },
+          {
+            "candidate_id": "phase3cp_11700",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "b9ad4d2c531602df343e641811fdc5e5b6a5b6150fbcdda24dd2b1363a3548ac",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_11712",
+            "coverage_days": 325,
+            "exact_behaviour_hash": "bdffe6532a91ff1148419cb98be6cf4ed3f1c90d99351665da2b92a4814e0b51",
+            "behaviour_cluster_id": 28
+          },
+          {
+            "candidate_id": "phase3cp_11753",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "b0107f4fda3eba2d72c48be409139da8440a80dfd9fd270376c89e6e01796e29",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_11825",
+            "coverage_days": 323,
+            "exact_behaviour_hash": "66f135d380540d8b1a38ac364aa02c7281fb8aa740873e0a48dcf421efd401b0",
+            "behaviour_cluster_id": 29
+          },
+          {
+            "candidate_id": "phase3cp_11830",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "30b7d7d97bbaf25b8a811f7eab2e0b47237e3b90f37e82853bfcf459afb03e71",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_11836",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "a5004a82d39a26d7c86b0f19b048f07bc5ff6a8291c0da044507773619c20705",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_11853",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "c68c107350b09d9edb6a1d7fc7ab0ad60299393036cb2f261890a81f302d9e85",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_12001",
+            "coverage_days": 354,
+            "exact_behaviour_hash": "ece04a7f15c310ddcfb14ea37d83e4ef0e00df51ffed30e2a97dedcfab24aa96",
+            "behaviour_cluster_id": 30
+          },
+          {
+            "candidate_id": "phase3cp_12014",
+            "coverage_days": 354,
+            "exact_behaviour_hash": "1b9a48206256c9c3735147d5b4654f22ed1d7768bcb8ef22a178ff38b71047d2",
+            "behaviour_cluster_id": 31
+          },
+          {
+            "candidate_id": "phase3cp_12031",
+            "coverage_days": 354,
+            "exact_behaviour_hash": "697bfbe98a63412f8727e368bbd1b4451d9f6dd274213b9eb3de4cd40b8df994",
+            "behaviour_cluster_id": 24
+          },
+          {
+            "candidate_id": "phase3cp_12036",
+            "coverage_days": 355,
+            "exact_behaviour_hash": "e2bb06f7aeb921865e7fc3f54065360ee4f4c77c2226b4556c90544041684cd2",
+            "behaviour_cluster_id": 25
+          },
+          {
+            "candidate_id": "phase3cp_12041",
+            "coverage_days": 355,
+            "exact_behaviour_hash": "760e3f7683f1c005b072b8d227c40978c0218f3146064d00316c93d18808cae5",
+            "behaviour_cluster_id": 25
+          },
+          {
+            "candidate_id": "phase3cp_12049",
+            "coverage_days": 355,
+            "exact_behaviour_hash": "ba1e7854c938fed3a70cd8a79b63a7a2e8e29073becb6e52d4d5301d4b3eeab1",
+            "behaviour_cluster_id": 30
+          },
+          {
+            "candidate_id": "phase3cp_12052",
+            "coverage_days": 343,
+            "exact_behaviour_hash": "1654cac3a954890fd44096f83736cebf3623632ffe735513dc310679e9c73680",
+            "behaviour_cluster_id": 24
+          },
+          {
+            "candidate_id": "phase3cp_12093",
+            "coverage_days": 354,
+            "exact_behaviour_hash": "b8713ff9c50038ad32224f1afc634ea8bcb438eee8ab2ce520c707df2be49696",
+            "behaviour_cluster_id": 31
+          },
+          {
+            "candidate_id": "phase3cp_12284",
+            "coverage_days": 322,
+            "exact_behaviour_hash": "d177827b78fb004b2814908926655d2f945026d0eec0c45c9ba196d9b1ec709a",
+            "behaviour_cluster_id": 32
+          },
+          {
+            "candidate_id": "phase3cp_12367",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "18159065fd6d0e8f1ea08dd2238411a19e49d9273f60a2c541e5ed53b8e4aec2",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_12379",
+            "coverage_days": 272,
+            "exact_behaviour_hash": "9141a278c6dcd3a38c399a3ed269b4a20c1b29a27b5e28b830dc76872278437d",
+            "behaviour_cluster_id": 27
+          },
+          {
+            "candidate_id": "phase3cp_12547",
+            "coverage_days": 354,
+            "exact_behaviour_hash": "73545e0d720981b7102367561b6a174990795940ae382ea54cfd048901294c35",
+            "behaviour_cluster_id": 25
+          },
+          {
+            "candidate_id": "phase3cp_12865",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "3c22ba08cc9360b259fedd091c6f07e2220f9e23f52f1c796e6de85fde222dca",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_12874",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "073f07f4db7e44ae7ccdc0438ec127bdbb7c99a3d7dddb8cb991b42a76cb6c40",
+            "behaviour_cluster_id": 33
+          },
+          {
+            "candidate_id": "phase3cp_12898",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "59e820455491d073e7411e8c6f31097cafdd50afc26148ebc33e18c660def8c4",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_12921",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "6105af06375ed38b7195e0be1aa1b31d2cf30b80b82efb5d24a1bc12ed396a10",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_12939",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "219f60d124dbdbc5abf6276d6db5be78f040bd061adc781f099dacae2b6c481e",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_12947",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "b64624d2ad15df2ca86d9c398ae981549d9885009f967368fc327ae1b8f2fda7",
+            "behaviour_cluster_id": 23
+          },
+          {
+            "candidate_id": "phase3cp_12952",
+            "coverage_days": 316,
+            "exact_behaviour_hash": "0d551e9f5ebaafb599381ddf8db8e3f94b978c29f0a572f541d8930db984e432",
+            "behaviour_cluster_id": 34
+          },
+          {
+            "candidate_id": "phase3cp_12989",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "458f6ae5b6a67f24bd07c829557f166869ec9a28c3f37982f8f5e784f91d7a8d",
+            "behaviour_cluster_id": 35
+          },
+          {
+            "candidate_id": "phase3cp_15240",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "6bc1800bd5150ef6926611ec3faa43a050d3f4951dae901f898d413dbd83b271",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_15245",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "dceb69626960c176b29a2e77b41880337eaee82a3ef7b38e8663ea3d10063627",
+            "behaviour_cluster_id": 36
+          },
+          {
+            "candidate_id": "phase3cp_15338",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "1d12cf5de48734302311757f6d7bf29effac634134844489a420ab7209f19321",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_15345",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "eb07a265ec688316dfa893b4886a8a08e3bb6d621573084a8c4c72170ad47f7c",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_15352",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "fe35a26a52f81212cdcad9683848c4ded7b1b28e36c5cb50976d061f362683de",
+            "behaviour_cluster_id": 8
+          },
+          {
+            "candidate_id": "phase3cp_15369",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "dceb69626960c176b29a2e77b41880337eaee82a3ef7b38e8663ea3d10063627",
+            "behaviour_cluster_id": 36
+          },
+          {
+            "candidate_id": "phase3cp_15384",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "44894295eaee2fabb145736e87ef8d2178ae731ff8dfb1e1e5a824306b304456",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_15395",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "42ed74f37da0ef7e08d6371e78ab9bb39e7cc6548d27f2109168395a545acaaf",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_15475",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "f8093fe0cdab9b5f306ab6706ca5dda16f26a877877ff2bfd32ac8f2ae6f7241",
+            "behaviour_cluster_id": 2
+          },
+          {
+            "candidate_id": "phase3cp_16569",
+            "coverage_days": 334,
+            "exact_behaviour_hash": "7a68c38eb830835dc4311cfa8df364b340b3af95895bd185a7e5988f774e6644",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_16570",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "abcec64f1749a6826982b79f08bdf0da1df050cd554011c323bfa1ce217a61df",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_16574",
+            "coverage_days": 334,
+            "exact_behaviour_hash": "69d8915e7719de92caa4a13e61db4bc5445d164c97c9c79ff0229f058280d02d",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_16578",
+            "coverage_days": 310,
+            "exact_behaviour_hash": "69e0da5bff1f27e393e68971602944218ebc9860609ffb26bfcca1b35c7b04e5",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_16585",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "b904be95bf90a4b51431463e4d5c229d93dea22a60a2dcbac434e6ec40ebde5b",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_16588",
+            "coverage_days": 334,
+            "exact_behaviour_hash": "99adf0060f497ec8bc29166bf8c17c5e2aaed11574753e75b66d21478380f0b8",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_16592",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "a2905174a608d734f11bf2afa4cd2cf560c668a7b84eab8ddd336cf6b3cde2ae",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_16609",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "4e115307bd0de9e437b947a30198c944aa7ee64c1a82cb41e25e63193ac4637a",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_16632",
+            "coverage_days": 292,
+            "exact_behaviour_hash": "459e0f4565b5e5a321ed7690646d92acc4079625b1a5becfbec9983fdd6fb83f",
+            "behaviour_cluster_id": 37
+          },
+          {
+            "candidate_id": "phase3cp_16643",
+            "coverage_days": 258,
+            "exact_behaviour_hash": "f5e30ed1d81e75bbb1ec453d5b08b6d52218ef70fdb9a248cb2b4a21ab2927c4",
+            "behaviour_cluster_id": 38
+          },
+          {
+            "candidate_id": "phase3cp_16666",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "f476f9495799090316b6d7df796a962133b6529e0aec74b764fd099ad4e5054d",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_16735",
+            "coverage_days": 282,
+            "exact_behaviour_hash": "87d4dff94ae6a97d0bcf2b1f1dc7b8e844ec003c4fec32ce13f23da74ef3717a",
+            "behaviour_cluster_id": 39
+          },
+          {
+            "candidate_id": "phase3cp_16745",
+            "coverage_days": 333,
+            "exact_behaviour_hash": "1ee3e783a16122511051338ac7e6fcfb376ce38e1bad48b3265ecec7503850d1",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_16811",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "799a03a4f1c266000f8e789962dd40ac2182384051a9736732cb34ed07abd3da",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_17010",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "ef42745e41234e10d7df486660920d7b52a27a270236f03154349551b06788b8",
+            "behaviour_cluster_id": 40
+          },
+          {
+            "candidate_id": "phase3cp_17038",
+            "coverage_days": 281,
+            "exact_behaviour_hash": "8333a64233c06a41e28fc847fbfa1d2ca3e119e20c94196382ab64c3faa052ab",
+            "behaviour_cluster_id": 18
+          },
+          {
+            "candidate_id": "phase3cp_17101",
+            "coverage_days": 293,
+            "exact_behaviour_hash": "54076bcb9d53cf52c6b38b2aee4a28ea3f95cf92f451425485e8b4c0027d15cd",
+            "behaviour_cluster_id": 41
+          },
+          {
+            "candidate_id": "phase3cp_17105",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "ec8401719bcae2c3894e646f79dcdd6ddb343641d27e7f0a8256f17a1287d795",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_17205",
+            "coverage_days": 341,
+            "exact_behaviour_hash": "ab317bc041d3d2863f45a2156c70402a9bd2bf3b9ed51dddb5cf5e83bcecaed1",
+            "behaviour_cluster_id": 42
+          },
+          {
+            "candidate_id": "phase3cp_17231",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "a579cadca012facb6e57574348db56590369e3fd96e3e03168710019a0a7d197",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_19080",
+            "coverage_days": 339,
+            "exact_behaviour_hash": "f9264dbdf49e99217814b9b76aeaf4361c4c73233ac67c2be47dc9f7a961ac23",
+            "behaviour_cluster_id": 43
+          },
+          {
+            "candidate_id": "phase3cp_19083",
+            "coverage_days": 297,
+            "exact_behaviour_hash": "2f476ecec54e3c13c325de98971bede5821b081b56b4521011803a5a910e10b6",
+            "behaviour_cluster_id": 44
+          },
+          {
+            "candidate_id": "phase3cp_19185",
+            "coverage_days": 348,
+            "exact_behaviour_hash": "ab087fd91e548dd4c62b53a91c72bc65f0a080f041d1f68e0d1d1fea34563225",
+            "behaviour_cluster_id": 45
+          },
+          {
+            "candidate_id": "phase3cp_19240",
+            "coverage_days": 327,
+            "exact_behaviour_hash": "4b36d38e6f6568dde322921842f36d7ca48776078f0e7b649f0c3c2825be504c",
+            "behaviour_cluster_id": 46
+          },
+          {
+            "candidate_id": "phase3cp_19284",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "87658f0b1e50ee8ebea91c54985af054872867078773f1e01ce9befd4339bef0",
+            "behaviour_cluster_id": 47
+          },
+          {
+            "candidate_id": "phase3cp_19302",
+            "coverage_days": 335,
+            "exact_behaviour_hash": "66fd749d8b8586dcc6d326f1a04c87859e8ab185a471a78560852712c514a10c",
+            "behaviour_cluster_id": 48
+          },
+          {
+            "candidate_id": "phase3cp_19340",
+            "coverage_days": 290,
+            "exact_behaviour_hash": "1c0070e39f43c860c3139607c51c8c706ff01655956779078d6fc1a68ce6a85f",
+            "behaviour_cluster_id": 49
+          },
+          {
+            "candidate_id": "phase3cp_19366",
+            "coverage_days": 302,
+            "exact_behaviour_hash": "5722775c1d7d2c5b8aff367191ca8916631698991617da2ef3628938af022205",
+            "behaviour_cluster_id": 50
+          },
+          {
+            "candidate_id": "phase3cp_19367",
+            "coverage_days": 349,
+            "exact_behaviour_hash": "1453a6b9a24eb43ea1238f4fec9ca6341749df58b48e6414af48b1fc9eb486f9",
+            "behaviour_cluster_id": 51
+          },
+          {
+            "candidate_id": "phase3cp_19394",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "5114ce20755dd73b33851adf7170f866323c9717d719bf195bc2b3c56503a910",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_19437",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "908d68b8ea69203f0c70ed1a5ef9560488e704f4729ff55be0a5d1410ef061c0",
+            "behaviour_cluster_id": 25
+          },
+          {
+            "candidate_id": "phase3cp_19444",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "3621568fd26b8869618c4acbc621f8c2778a266fae8a79782ebdc3ac17df7423",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_19449",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "8d5597298f16c7df7d95d04a634e21ea947a81410644b40a9fc1614643d1c55b",
+            "behaviour_cluster_id": 30
+          },
+          {
+            "candidate_id": "phase3cp_19469",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "b3a99b5c23859e37abd0800ee097251034c891d61688386dcbc0685844c3cb02",
+            "behaviour_cluster_id": 25
+          },
+          {
+            "candidate_id": "phase3cp_19495",
+            "coverage_days": 349,
+            "exact_behaviour_hash": "48ebbc9945045464089fff7a3771e9e136ef6cc81f7d6f1e29b5baafba79e343",
+            "behaviour_cluster_id": 53
+          },
+          {
+            "candidate_id": "phase3cp_19497",
+            "coverage_days": 307,
+            "exact_behaviour_hash": "6f88933b797dc95945a87ee93562fc1bac8abc5641a1338a0b5cbd8b5ccb1246",
+            "behaviour_cluster_id": 54
+          },
+          {
+            "candidate_id": "phase3cp_19923",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "59118cb937dcbb3bf7ee610ed4f5e68ab4d7e97ed7645d5360f494be771283a2",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_19961",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "4ab83fe770600a93b71e485c42e4c308c864702210d36dd5996a05adf32b7916",
+            "behaviour_cluster_id": 55
+          },
+          {
+            "candidate_id": "phase3cp_20000",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "a48dd6ab11ef24267abdad3deab12ab9c3a134eb80fec1ebacb390d1b9784baa",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_20003",
+            "coverage_days": 351,
+            "exact_behaviour_hash": "bf2fc93bbd8b3d510228e0e6fa889792212a21cf84dc3f0e1be1b519779ca50e",
+            "behaviour_cluster_id": 56
+          },
+          {
+            "candidate_id": "phase3cp_20058",
+            "coverage_days": 351,
+            "exact_behaviour_hash": "8d9855f449d627897eb0376d22aba668ff2ac1f8eb6e641076d2983ed6748903",
+            "behaviour_cluster_id": 57
+          },
+          {
+            "candidate_id": "phase3cp_20063",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "d370235060bca6e74641bf16684ef9d05e80858a06d4464961bc031f0e0813a7",
+            "behaviour_cluster_id": 58
+          },
+          {
+            "candidate_id": "phase3cp_20105",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "a9f4f30f6a1442c4d34c80ca679ebb0467e11b7f13b45641cb304ef776204b1a",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_20133",
+            "coverage_days": 350,
+            "exact_behaviour_hash": "726861022df045453c3be5496cc03d7a64eb0a5d9c00ce786d667a6b0b35b1b2",
+            "behaviour_cluster_id": 51
+          },
+          {
+            "candidate_id": "phase3cp_20185",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "cf66c93e93098258f46d65136dbbf91b7fd80fb54be08ef62f20f8cd7cdddfa7",
+            "behaviour_cluster_id": 59
+          },
+          {
+            "candidate_id": "phase3cp_20189",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "498a64c0ab0e68e03f08d4fd8547477db02f8674a8ae4004f5377ec99e57ebcb",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_20241",
+            "coverage_days": 343,
+            "exact_behaviour_hash": "0a7796e066e7c0ca6369cd59b623de7515d4a3eced8715344d918952ea21c338",
+            "behaviour_cluster_id": 60
+          },
+          {
+            "candidate_id": "phase3cp_21676",
+            "coverage_days": 327,
+            "exact_behaviour_hash": "795ac55d3369badf908210d001144e91cf6aea331efde36bf6bb79b273747022",
+            "behaviour_cluster_id": 61
+          },
+          {
+            "candidate_id": "phase3cp_21682",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "a20bc799308f8b5387671d4b2d78837f4c47d8e2b45be16986a51778ce19049e",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_21704",
+            "coverage_days": 339,
+            "exact_behaviour_hash": "5f181c94d7498436ec754981ceb53a2141113583142bdbccd88a972f7eebaf05",
+            "behaviour_cluster_id": 62
+          },
+          {
+            "candidate_id": "phase3cp_21711",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "cf965be58e86e84bdd4c8cae91b7bec9af2e65682b940d7668fe48f12d1e1e4d",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_21742",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "3c582f7c05bbaf11bdbd992b08ec0b88134197cd49c20f90fc8673af4befc0a7",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_21798",
+            "coverage_days": 339,
+            "exact_behaviour_hash": "8e225aeeb55701df0a545cd45051c226c7425958075bd037579f6580f83c9d33",
+            "behaviour_cluster_id": 40
+          },
+          {
+            "candidate_id": "phase3cp_21818",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "160f2c9d48b1046fd482cec5a7349e6329f3cddacbf1b84ec1af300f2691dd3e",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_21830",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "6901d8d43da9d53de556695c390e4b278abfa2d06120efad6c5ca090b59ff829",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_21832",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "4fb3a43d63441fb470f8b333741b3eab7ea6922fa6d7f3e66628cfe250c9200d",
+            "behaviour_cluster_id": 40
+          },
+          {
+            "candidate_id": "phase3cp_21833",
+            "coverage_days": 312,
+            "exact_behaviour_hash": "8023e41fa83a00feabc43a373bad51b48905dadea1517d83fb7290073e11c8e2",
+            "behaviour_cluster_id": 63
+          },
+          {
+            "candidate_id": "phase3cp_21855",
+            "coverage_days": 340,
+            "exact_behaviour_hash": "07c6a576c8598280e878ac6191aef1ba08de5b8c3dc851b817e7e9b6d718d0ac",
+            "behaviour_cluster_id": 40
+          },
+          {
+            "candidate_id": "phase3cp_21867",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "7ec7bbae465207c17441638595c4169a342f6f75c8b6aaa82177b3d36b85d414",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_21872",
+            "coverage_days": 339,
+            "exact_behaviour_hash": "0bce81a3d97fed18a0ffa65f7cdef7caae8b4ce3480639bea98d90d1c4047248",
+            "behaviour_cluster_id": 40
+          },
+          {
+            "candidate_id": "phase3cp_21878",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "f14dc777da4b9e0e7ee6f591a5841174910547966db5dab417340fc0a5db45cc",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_21899",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "42fb0767164258990035066de6df8786ab8d385d7f28777340eab0dabad66288",
+            "behaviour_cluster_id": 40
+          },
+          {
+            "candidate_id": "phase3cp_21904",
+            "coverage_days": 329,
+            "exact_behaviour_hash": "544f1ce61821ffda1a218355b90ec48ca0a53b3d21f8a611a8dc29d04925a6ee",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_21915",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "ab0ac05f15ed6b329ab2ab0103d41ad641782a881f58cf8b377eadfcfaa64d65",
+            "behaviour_cluster_id": 20
+          },
+          {
+            "candidate_id": "phase3cp_21919",
+            "coverage_days": 329,
+            "exact_behaviour_hash": "deacf5476cf0841a7471fc0ee98bd0c80c873e895b9f1f12824a313525f6e0e7",
+            "behaviour_cluster_id": 64
+          },
+          {
+            "candidate_id": "phase3cp_21923",
+            "coverage_days": 315,
+            "exact_behaviour_hash": "ec6708562a9f0186804cec6d86d7ffd3d642ec41410a1c1a8a1d3700a82d049a",
+            "behaviour_cluster_id": 65
+          },
+          {
+            "candidate_id": "phase3cp_21924",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "2363bf0203675e62315bfc273717773c68f98a5e05e9bdde7ef909a4bda3d268",
+            "behaviour_cluster_id": 40
+          },
+          {
+            "candidate_id": "phase3cp_21927",
+            "coverage_days": 289,
+            "exact_behaviour_hash": "2ce70b081c5ea81cd7ebf439915cd7060885bfc77c14b37c9e18ccb7ab118f6d",
+            "behaviour_cluster_id": 66
+          },
+          {
+            "candidate_id": "phase3cp_21979",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "6d7be1a7ac9f2cbca750cea31dd64dad4b1b6920171c98d6a345e5f9ca1ac548",
+            "behaviour_cluster_id": 1
+          },
+          {
+            "candidate_id": "phase3cp_21989",
+            "coverage_days": 344,
+            "exact_behaviour_hash": "bdae57fd5d79673f5aae175941af0a2a2198b10c03cbc1484cdf52f055409da1",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_22004",
+            "coverage_days": 344,
+            "exact_behaviour_hash": "80f258b4fb6ad564367fe0478e57bad9da3285889cd3ff63ed2b82d392adbb9b",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_22042",
+            "coverage_days": 327,
+            "exact_behaviour_hash": "e0ef9675ffa50386dfe8db54ea1a0c68ee44aa9d4f4fc19a90059ef1797e3f92",
+            "behaviour_cluster_id": 67
+          },
+          {
+            "candidate_id": "phase3cp_22127",
+            "coverage_days": 264,
+            "exact_behaviour_hash": "81aceca425d20654aa150a800bafd5ea2e27e7871c4d91760e692d4d8f689759",
+            "behaviour_cluster_id": 68
+          },
+          {
+            "candidate_id": "phase3cp_22136",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "a0ebe7f9a09d74ef9e79c7def66906c0d1ee53c138b6a76ad726cc573a7c6275",
+            "behaviour_cluster_id": 69
+          },
+          {
+            "candidate_id": "phase3cp_22147",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "f21385393c931f81475823a8080430008c559e09435e0d2af4981aa1f452e669",
+            "behaviour_cluster_id": 70
+          },
+          {
+            "candidate_id": "phase3cp_22155",
+            "coverage_days": 269,
+            "exact_behaviour_hash": "fe748088e8492ef4fd9b3838fd60419da43a2caf8d9dc7599eae4d626a4e76d9",
+            "behaviour_cluster_id": 71
+          },
+          {
+            "candidate_id": "phase3cp_22164",
+            "coverage_days": 280,
+            "exact_behaviour_hash": "2f2a2cff61bbf371dc4f1c3f073817387ac325137b7e7e0ea23793fa0d3a7582",
+            "behaviour_cluster_id": 72
+          },
+          {
+            "candidate_id": "phase3cp_22193",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "d2c866a3bd6b1a3d4e099a11fca542ffe0ef2b206dbe0e580ee83fefbb409ea4",
+            "behaviour_cluster_id": 5
+          },
+          {
+            "candidate_id": "phase3cp_22196",
+            "coverage_days": 268,
+            "exact_behaviour_hash": "8b04c3d9507f00a25f1b606244c273d41e05ba10c8e007a6de85abb10a9a8676",
+            "behaviour_cluster_id": 73
+          },
+          {
+            "candidate_id": "phase3cp_22198",
+            "coverage_days": 337,
+            "exact_behaviour_hash": "34da1b31ed6df38f8d6ed01aded75f5952b21d8b8cd658d0c8df09255cbdc8e3",
+            "behaviour_cluster_id": 74
+          },
+          {
+            "candidate_id": "phase3cp_22219",
+            "coverage_days": 342,
+            "exact_behaviour_hash": "40ca96443caa68d42b0752551308add2ace19e4a5b4021feb21a90c4d748cd14",
+            "behaviour_cluster_id": 5
+          },
+          {
+            "candidate_id": "phase3cp_22226",
+            "coverage_days": 331,
+            "exact_behaviour_hash": "4745962fb5f50fd2ca6372f69a72c1d8147da3a6aa99776677b3ecb06c774f67",
+            "behaviour_cluster_id": 64
+          },
+          {
+            "candidate_id": "phase3cp_22257",
+            "coverage_days": 338,
+            "exact_behaviour_hash": "12c5290ce08d2b1de32a87205633c45b04ea9733112d5cee0409e7487d895a87",
+            "behaviour_cluster_id": 74
+          },
+          {
+            "candidate_id": "phase3cp_22350",
+            "coverage_days": 344,
+            "exact_behaviour_hash": "76c874469f8e4281108c2adbb053c26b29614043081ed19243ba9dfcca2f4f0e",
+            "behaviour_cluster_id": 4
+          },
+          {
+            "candidate_id": "phase3cp_22481",
+            "coverage_days": 323,
+            "exact_behaviour_hash": "c6af966639ac21c55d0cb2c0f4e2b0fd7e07b6a37a91ac4ecce271dffe66db09",
+            "behaviour_cluster_id": 75
+          },
+          {
+            "candidate_id": "phase3cp_22489",
+            "coverage_days": 326,
+            "exact_behaviour_hash": "2e86960ac3c8d04524de057fe711706d3d99faed9d548670f9e5ff45e4790cc5",
+            "behaviour_cluster_id": 76
+          },
+          {
+            "candidate_id": "phase3cp_22663",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "a511ab2f7c97331940c92877e49bc19002699819b4cbb14928d50d50a93647c1",
+            "behaviour_cluster_id": 59
+          },
+          {
+            "candidate_id": "phase3cp_22857",
+            "coverage_days": 285,
+            "exact_behaviour_hash": "051874a776ca9d576d9b538c8d326914371fce10f2b0b8ab8a4f4534d811413b",
+            "behaviour_cluster_id": 77
+          },
+          {
+            "candidate_id": "phase3cp_23066",
+            "coverage_days": 327,
+            "exact_behaviour_hash": "3ad76c8d6d6f5128fb80642db0c8f7f17b2b6b8595ae407d5ba6d53cb866da32",
+            "behaviour_cluster_id": 46
+          },
+          {
+            "candidate_id": "phase3cp_23099",
+            "coverage_days": 317,
+            "exact_behaviour_hash": "7b855f095a07dc9e770b05672bda97b54f6be3e5bdb67762562605df05bc8bf0",
+            "behaviour_cluster_id": 78
+          },
+          {
+            "candidate_id": "phase3cp_23221",
+            "coverage_days": 345,
+            "exact_behaviour_hash": "ef31fa1d57d62ff2bed50cb2b24ed40887917449400cf6dc97108f6ebc368590",
+            "behaviour_cluster_id": 79
+          },
+          {
+            "candidate_id": "phase3cp_23241",
+            "coverage_days": 354,
+            "exact_behaviour_hash": "f6d1aff04a138c2dbb2ae8a8d454fc8b219a90cfc32b7a6ae5b907b102440965",
+            "behaviour_cluster_id": 80
+          },
+          {
+            "candidate_id": "phase3cp_23522",
+            "coverage_days": 351,
+            "exact_behaviour_hash": "2b640f9d5d116d323ca6a45b3439b6a38d8b881fda9e4ecb85d05fd24e002de1",
+            "behaviour_cluster_id": 81
+          },
+          {
+            "candidate_id": "phase3cp_23614",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "162d01a08d17177b3d20feee280d1854dc24bea538235db74b508a8ce863fb3b",
+            "behaviour_cluster_id": 25
+          },
+          {
+            "candidate_id": "phase3cp_23683",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "19337c16c692bfaa4418c60ad466689d2c4b57f3721ade1f80b25ba72d9599e1",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_23691",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "56ba568fdf4f18f10ea1e9e2eae225aed739a4ffb74ee3919239e82fa537a334",
+            "behaviour_cluster_id": 55
+          },
+          {
+            "candidate_id": "phase3cp_23701",
+            "coverage_days": 323,
+            "exact_behaviour_hash": "c6af966639ac21c55d0cb2c0f4e2b0fd7e07b6a37a91ac4ecce271dffe66db09",
+            "behaviour_cluster_id": 75
+          },
+          {
+            "candidate_id": "phase3cp_23782",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "8bd3c0e77cc44e1fe52df9add7a6c1e4771609e3c01ee8a822c5d4fbb536f3bd",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_24107",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "c5dad89d7bdfb36f6b46d6414716eb60380ac10edca817b7d9f07ac8692a8ce2",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_24140",
+            "coverage_days": 321,
+            "exact_behaviour_hash": "94feaba7e3ab189d6a1800b35410f02870d6c5592a525ea231f9f1fab81b1a97",
+            "behaviour_cluster_id": 82
+          },
+          {
+            "candidate_id": "phase3cp_24175",
+            "coverage_days": 347,
+            "exact_behaviour_hash": "2d2947fc6f5933a495ceea6386f3e72aa6ebda30f71fa3aa6b1dc4f9b8b5582b",
+            "behaviour_cluster_id": 83
+          },
+          {
+            "candidate_id": "phase3cp_24189",
+            "coverage_days": 352,
+            "exact_behaviour_hash": "068bb7c630f385b15c5b51ab07f28ee1cbd3d0a3adad5fca40aef672f230cff4",
+            "behaviour_cluster_id": 52
+          },
+          {
+            "candidate_id": "phase3cp_24219",
+            "coverage_days": 266,
+            "exact_behaviour_hash": "41e0a197796246fd7572494cf91f4f49bbbfeeed643a127107d82190b17caa59",
+            "behaviour_cluster_id": 84
+          },
+          {
+            "candidate_id": "phase3cp_24525",
+            "coverage_days": 351,
+            "exact_behaviour_hash": "1688c9ed1c11268bc174194e7a386897026ff8b79956e5eda33aed2e50bc21bf",
+            "behaviour_cluster_id": 57
+          }
+        ],
+        "pairwise_eligible_count": 19778,
+        "reward_atom_rows": 1532890,
+        "used_reward_atom_rows": 203519,
+        "split_assignment_source": "fixed_manifest_overrides_raw_atom_split_label",
+        "raw_split_label_conflict_count": 3866,
+        "manifest_non_development_rows_skipped": 90924,
+        "non_development_dates_used": 0
+      },
+      "significant_structural_collapse": false
+    },
+    {
+      "stage": "memory_predecessor",
+      "source": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\co_input\\phase3cn_feedback_memory\\phase3cn_search_feedback_memory.csv",
+      "row_count": 192,
+      "exact_identity_key": "expression_hash",
+      "exact_identity_count": 192,
+      "lineage": {
+        "cluster_count": 170,
+        "n_eff": 140.70229008,
+        "top_cluster_share": 0.02604167,
+        "entropy_nats": 5.06749654,
+        "normalized_entropy": 0.98670082,
+        "trial_multiplicity": 1.12941176,
+        "effective_trial_multiplicity": 1.36458333,
+        "largest_clusters": [
+          {
+            "key": "rx_ucb_fresh|295b94ceb2e066945f|ee5b2cd10077e1f924",
+            "count": 5
+          },
+          {
+            "key": "rx_ucb_fresh|d062891680682ddc3e|fb05ec7ecf548997b1",
+            "count": 4
+          },
+          {
+            "key": "rx_ucb_fresh|26955c80642ce0459b|a54361b03811ed2737",
+            "count": 3
+          },
+          {
+            "key": "typed_ast_fresh|5316e0cd2dc8c2803c|3a6786273d99c22a20",
+            "count": 3
+          },
+          {
+            "key": "cem_exploit|3b16bbfac5d5c35686|3a6786273d99c22a20",
+            "count": 3
+          },
+          {
+            "key": "cem_exploit|8057dfc4013049b6f3|69a2b7d0d2efcca5f1",
+            "count": 3
+          },
+          {
+            "key": "challenger_repair|1baa6a6e39098c2c36|f431f3b8c33856b85f",
+            "count": 2
+          },
+          {
+            "key": "challenger_repair|664fb5fcc855861b43|5156191c6ba64cda10",
+            "count": 2
+          },
+          {
+            "key": "rx_ucb_fresh|0ac166591bd2160102|adc6cfd8fd4117d879",
+            "count": 2
+          },
+          {
+            "key": "typed_ast_fresh|0ac166591bd2160102|adc6cfd8fd4117d879",
+            "count": 2
+          }
+        ]
+      },
+      "cluster_views": {
+        "family_id": {
+          "cluster_count": 154,
+          "n_eff": 121.26315789,
+          "top_cluster_share": 0.02604167,
+          "entropy_nats": 4.9402567,
+          "normalized_entropy": 0.9808027,
+          "trial_multiplicity": 1.24675325,
+          "effective_trial_multiplicity": 1.58333333,
+          "largest_clusters": [
+            {
+              "key": "295b94ceb2e066945f",
+              "count": 5
+            },
+            {
+              "key": "d062891680682ddc3e",
+              "count": 4
+            },
+            {
+              "key": "5316e0cd2dc8c2803c",
+              "count": 4
+            },
+            {
+              "key": "0ac166591bd2160102",
+              "count": 4
+            },
+            {
+              "key": "26955c80642ce0459b",
+              "count": 3
+            },
+            {
+              "key": "3b16bbfac5d5c35686",
+              "count": 3
+            },
+            {
+              "key": "8057dfc4013049b6f3",
+              "count": 3
+            },
+            {
+              "key": "ae072f597d30884a3d",
+              "count": 2
+            },
+            {
+              "key": "c378a9fa4749c57ab5",
+              "count": 2
+            },
+            {
+              "key": "745d59c8b0c0eb6719",
+              "count": 2
+            }
+          ]
+        },
+        "motif_id": {
+          "cluster_count": 139,
+          "n_eff": 95.50259067,
+          "top_cluster_share": 0.03645833,
+          "entropy_nats": 4.775761,
+          "normalized_entropy": 0.9678359,
+          "trial_multiplicity": 1.38129496,
+          "effective_trial_multiplicity": 2.01041667,
+          "largest_clusters": [
+            {
+              "key": "3a6786273d99c22a20",
+              "count": 7
+            },
+            {
+              "key": "fb05ec7ecf548997b1",
+              "count": 5
+            },
+            {
+              "key": "ee5b2cd10077e1f924",
+              "count": 5
+            },
+            {
+              "key": "adc6cfd8fd4117d879",
+              "count": 4
+            },
+            {
+              "key": "5156191c6ba64cda10",
+              "count": 3
+            },
+            {
+              "key": "90deaab9dae1ee767b",
+              "count": 3
+            },
+            {
+              "key": "a54361b03811ed2737",
+              "count": 3
+            },
+            {
+              "key": "62c60d85177a0ad9ca",
+              "count": 3
+            },
+            {
+              "key": "1a5364f72591da80d9",
+              "count": 3
+            },
+            {
+              "key": "12b9b7af733842b5b9",
+              "count": 3
+            }
+          ]
+        },
+        "generator_arm": {
+          "cluster_count": 6,
+          "n_eff": 6.0,
+          "top_cluster_share": 0.16666667,
+          "entropy_nats": 1.79175947,
+          "normalized_entropy": 1.0,
+          "trial_multiplicity": 32.0,
+          "effective_trial_multiplicity": 32.0,
+          "largest_clusters": [
+            {
+              "key": "random_orthogonal",
+              "count": 32
+            },
+            {
+              "key": "event_state",
+              "count": 32
+            },
+            {
+              "key": "rx_ucb_fresh",
+              "count": 32
+            },
+            {
+              "key": "typed_ast_fresh",
+              "count": 32
+            },
+            {
+              "key": "cem_exploit",
+              "count": 32
+            },
+            {
+              "key": "challenger_repair",
+              "count": 32
+            }
+          ]
+        },
+        "generator_route": {
+          "cluster_count": 5,
+          "n_eff": 4.5,
+          "top_cluster_share": 0.33333333,
+          "entropy_nats": 1.56071041,
+          "normalized_entropy": 0.9697239,
+          "trial_multiplicity": 38.4,
+          "effective_trial_multiplicity": 42.66666667,
+          "largest_clusters": [
+            {
+              "key": "phase3bs-adaptive-ucb-cem-practice",
+              "count": 64
+            },
+            {
+              "key": "control-random-orthogonal",
+              "count": 32
+            },
+            {
+              "key": "future-event-state-generator",
+              "count": 32
+            },
+            {
+              "key": "phase3bt-ast-algorithm-bakeoff",
+              "count": 32
+            },
+            {
+              "key": "future-phase3cr-repair",
+              "count": 32
+            }
+          ]
+        },
+        "field_family": {
+          "cluster_count": 13,
+          "n_eff": 4.56916212,
+          "top_cluster_share": 0.41145833,
+          "entropy_nats": 1.92513122,
+          "normalized_entropy": 0.7505533,
+          "trial_multiplicity": 14.76923077,
+          "effective_trial_multiplicity": 42.02083333,
+          "largest_clusters": [
+            {
+              "key": "intraday_return",
+              "count": 79
+            },
+            {
+              "key": "intraday_return+limit_event_state",
+              "count": 24
+            },
+            {
+              "key": "limit_event_state",
+              "count": 23
+            },
+            {
+              "key": "flow_amount_volume+limit_event_state",
+              "count": 17
+            },
+            {
+              "key": "flow_amount_volume+lagged_context+limit_event_state",
+              "count": 13
+            },
+            {
+              "key": "flow_amount_volume+intraday_return+range_location",
+              "count": 12
+            },
+            {
+              "key": "intraday_return+lagged_context",
+              "count": 8
+            },
+            {
+              "key": "flow_amount_volume+lagged_context+limit_event_state+opening_state",
+              "count": 5
+            },
+            {
+              "key": "lagged_context+limit_event_state",
+              "count": 4
+            },
+            {
+              "key": "flow_amount_volume+intraday_return+opening_state",
+              "count": 3
+            }
+          ]
+        },
+        "primitive_family": {
+          "cluster_count": 5,
+          "n_eff": 3.72213247,
+          "top_cluster_share": 0.38020833,
+          "entropy_nats": 1.41015041,
+          "normalized_entropy": 0.87617572,
+          "trial_multiplicity": 38.4,
+          "effective_trial_multiplicity": 51.58333333,
+          "largest_clusters": [
+            {
+              "key": "cross_sectional+time_series+arithmetic+state_transform",
+              "count": 73
+            },
+            {
+              "key": "cross_sectional+time_series+arithmetic",
+              "count": 50
+            },
+            {
+              "key": "cross_sectional+arithmetic+state_transform",
+              "count": 33
+            },
+            {
+              "key": "cross_sectional+arithmetic",
+              "count": 31
+            },
+            {
+              "key": "cross_sectional+time_series",
+              "count": 5
+            }
+          ]
+        },
+        "event_state_family": {
+          "cluster_count": 7,
+          "n_eff": 1.92461105,
+          "top_cluster_share": 0.69791667,
+          "entropy_nats": 1.00582077,
+          "normalized_entropy": 0.51688963,
+          "trial_multiplicity": 27.42857143,
+          "effective_trial_multiplicity": 99.76041667,
+          "largest_clusters": [
+            {
+              "key": "none",
+              "count": 134
+            },
+            {
+              "key": "limit_up",
+              "count": 31
+            },
+            {
+              "key": "high_board",
+              "count": 13
+            },
+            {
+              "key": "opening_state",
+              "count": 7
+            },
+            {
+              "key": "board_transition",
+              "count": 3
+            },
+            {
+              "key": "board_transition+opening_state",
+              "count": 3
+            },
+            {
+              "key": "board_transition+limit_up",
+              "count": 1
+            }
+          ]
+        }
+      },
+      "signal": {
+        "status": "not_measured",
+        "reason": "no semantic-only progress artifact supplied"
+      },
+      "behaviour": {
+        "status": "not_applicable"
+      },
+      "significant_structural_collapse": false
+    },
+    {
+      "stage": "scheduler_predecessor",
+      "source": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\co_input\\phase3cp_real_cm_next_family_action_table.csv",
+      "row_count": 154,
+      "exact_identity_key": "family_id",
+      "exact_identity_count": 154,
+      "lineage": {
+        "cluster_count": 154,
+        "n_eff": 154.0,
+        "top_cluster_share": 0.00649351,
+        "entropy_nats": 5.0369526,
+        "normalized_entropy": 1.0,
+        "trial_multiplicity": 1.0,
+        "effective_trial_multiplicity": 1.0,
+        "largest_clusters": [
+          {
+            "key": "unknown_arm|05f87d5f098a26fdd2|8013adfa23697b6399",
+            "count": 1
+          },
+          {
+            "key": "unknown_arm|0ac166591bd2160102|adc6cfd8fd4117d879",
+            "count": 1
+          },
+          {
+            "key": "unknown_arm|0ba6e9750e04f5004f|f11cdc96fb5490c92f",
+            "count": 1
+          },
+          {
+            "key": "unknown_arm|0e396d018c3f52edbd|12b9b7af733842b5b9",
+            "count": 1
+          },
+          {
+            "key": "unknown_arm|0f2fca79edaabb2896|afbe980e3b7fddcb7b",
+            "count": 1
+          },
+          {
+            "key": "unknown_arm|109c2868a05a41333c|bd2be17f26903e5123",
+            "count": 1
+          },
+          {
+            "key": "unknown_arm|110787dc33c6f34671|3d66315971d28d8f4d",
+            "count": 1
+          },
+          {
+            "key": "unknown_arm|115b1e55ae22b1c49d|4ee168e87456890dce",
+            "count": 1
+          },
+          {
+            "key": "unknown_arm|144aff8afb60d56150|b7dc3bfb46bd738658",
+            "count": 1
+          },
+          {
+            "key": "unknown_arm|15c1f5573f0c4ae5c0|0fffa264cd938ff6bf",
+            "count": 1
+          }
+        ]
+      },
+      "cluster_views": {
+        "family_id": {
+          "cluster_count": 154,
+          "n_eff": 154.0,
+          "top_cluster_share": 0.00649351,
+          "entropy_nats": 5.0369526,
+          "normalized_entropy": 1.0,
+          "trial_multiplicity": 1.0,
+          "effective_trial_multiplicity": 1.0,
+          "largest_clusters": [
+            {
+              "key": "05f87d5f098a26fdd2",
+              "count": 1
+            },
+            {
+              "key": "0ac166591bd2160102",
+              "count": 1
+            },
+            {
+              "key": "0ba6e9750e04f5004f",
+              "count": 1
+            },
+            {
+              "key": "0e396d018c3f52edbd",
+              "count": 1
+            },
+            {
+              "key": "0f2fca79edaabb2896",
+              "count": 1
+            },
+            {
+              "key": "109c2868a05a41333c",
+              "count": 1
+            },
+            {
+              "key": "110787dc33c6f34671",
+              "count": 1
+            },
+            {
+              "key": "115b1e55ae22b1c49d",
+              "count": 1
+            },
+            {
+              "key": "144aff8afb60d56150",
+              "count": 1
+            },
+            {
+              "key": "15c1f5573f0c4ae5c0",
+              "count": 1
+            }
+          ]
+        },
+        "motif_id": {
+          "cluster_count": 139,
+          "n_eff": 128.89130435,
+          "top_cluster_share": 0.01298701,
+          "entropy_nats": 4.90192393,
+          "normalized_entropy": 0.99340355,
+          "trial_multiplicity": 1.10791367,
+          "effective_trial_multiplicity": 1.19480519,
+          "largest_clusters": [
+            {
+              "key": "f11cdc96fb5490c92f",
+              "count": 2
+            },
+            {
+              "key": "12b9b7af733842b5b9",
+              "count": 2
+            },
+            {
+              "key": "0fffa264cd938ff6bf",
+              "count": 2
+            },
+            {
+              "key": "5156191c6ba64cda10",
+              "count": 2
+            },
+            {
+              "key": "62c60d85177a0ad9ca",
+              "count": 2
+            },
+            {
+              "key": "aa481f983185c1dcd5",
+              "count": 2
+            },
+            {
+              "key": "1a5364f72591da80d9",
+              "count": 2
+            },
+            {
+              "key": "558ffbebfb996a0355",
+              "count": 2
+            },
+            {
+              "key": "3a6786273d99c22a20",
+              "count": 2
+            },
+            {
+              "key": "e3332ff8af824d785e",
+              "count": 2
+            }
+          ]
+        },
+        "field_family": {
+          "cluster_count": 13,
+          "n_eff": 5.51791531,
+          "top_cluster_share": 0.34415584,
+          "entropy_nats": 2.03278654,
+          "normalized_entropy": 0.79252502,
+          "trial_multiplicity": 11.84615385,
+          "effective_trial_multiplicity": 27.90909091,
+          "largest_clusters": [
+            {
+              "key": "intraday_return",
+              "count": 53
+            },
+            {
+              "key": "limit_event_state",
+              "count": 23
+            },
+            {
+              "key": "intraday_return+limit_event_state",
+              "count": 19
+            },
+            {
+              "key": "flow_amount_volume+limit_event_state",
+              "count": 17
+            },
+            {
+              "key": "flow_amount_volume+lagged_context+limit_event_state",
+              "count": 13
+            },
+            {
+              "key": "flow_amount_volume+intraday_return+range_location",
+              "count": 7
+            },
+            {
+              "key": "intraday_return+lagged_context",
+              "count": 6
+            },
+            {
+              "key": "flow_amount_volume+lagged_context+limit_event_state+opening_state",
+              "count": 5
+            },
+            {
+              "key": "lagged_context+limit_event_state",
+              "count": 4
+            },
+            {
+              "key": "flow_amount_volume+intraday_return+opening_state",
+              "count": 3
+            }
+          ]
+        },
+        "primitive_family": {
+          "cluster_count": 5,
+          "n_eff": 4.04158146,
+          "top_cluster_share": 0.33766234,
+          "entropy_nats": 1.46075153,
+          "normalized_entropy": 0.90761596,
+          "trial_multiplicity": 30.8,
+          "effective_trial_multiplicity": 38.1038961,
+          "largest_clusters": [
+            {
+              "key": "cross_sectional+time_series+arithmetic+state_transform",
+              "count": 52
+            },
+            {
+              "key": "cross_sectional+time_series+arithmetic",
+              "count": 33
+            },
+            {
+              "key": "cross_sectional+arithmetic+state_transform",
+              "count": 33
+            },
+            {
+              "key": "cross_sectional+arithmetic",
+              "count": 31
+            },
+            {
+              "key": "cross_sectional+time_series",
+              "count": 5
+            }
+          ]
+        },
+        "event_state_family": {
+          "cluster_count": 7,
+          "n_eff": 2.18500092,
+          "top_cluster_share": 0.64285714,
+          "entropy_nats": 1.12396319,
+          "normalized_entropy": 0.57760282,
+          "trial_multiplicity": 22.0,
+          "effective_trial_multiplicity": 70.48051948,
+          "largest_clusters": [
+            {
+              "key": "none",
+              "count": 99
+            },
+            {
+              "key": "limit_up",
+              "count": 29
+            },
+            {
+              "key": "high_board",
+              "count": 12
+            },
+            {
+              "key": "opening_state",
+              "count": 7
+            },
+            {
+              "key": "board_transition+opening_state",
+              "count": 3
+            },
+            {
+              "key": "board_transition",
+              "count": 3
+            },
+            {
+              "key": "board_transition+limit_up",
+              "count": 1
+            }
+          ]
+        }
+      },
+      "signal": {
+        "status": "not_measured",
+        "reason": "no semantic-only progress artifact supplied"
+      },
+      "behaviour": {
+        "status": "not_applicable"
+      },
+      "significant_structural_collapse": false
+    }
+  ]
+}

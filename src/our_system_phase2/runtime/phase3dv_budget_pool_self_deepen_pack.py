@@ -662,7 +662,7 @@ def _add_candidate(
         "typed_gate_decision": verdict.typed_gate_decision,
         "typed_gate_reason": verdict.typed_gate_reason,
         "typed_gate_registry_version": REGISTRY_VERSION,
-        "metric_boundary": "budget-pool pack only; Phase3CM train reward is optimizer feedback; validation/holdout report-only",
+        "metric_boundary": "budget-pool pack only; Phase3CM train reward is optimizer feedback; candidate-level non-development fields forbidden",
     }
     row.update(normalize_candidate_schema(row))
     rows.append(row)

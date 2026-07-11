@@ -1,0 +1,120 @@
+{
+  "artifacts": [
+    {
+      "exists": true,
+      "id": "baseline_and_plan",
+      "last_verified_sha": "449d81342f4c930deac1dc531651a9d452c99664cccd78db25d665759ac12ed7",
+      "path": "reports/evalreset_phase1_20260711/PHASE1_BASELINE_AND_PLAN.md",
+      "size_bytes": 8326,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "collapse_audit",
+      "last_verified_sha": "39e5be109bcd18c96aed13bb78c2bfbc58cdf92bd973e5525f765dd9b378b11c",
+      "path": "reports/evalreset_phase1_20260711/search_collapse_audit.json",
+      "size_bytes": 123471,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "feedback_map",
+      "last_verified_sha": "327d55d77f3ec84868719232ac5034da51ddd7a0bfee3e22ff0d74e0618d4bc8",
+      "path": "docs/evalreset/feedback-loop-map.md",
+      "size_bytes": 3376,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "data_roles",
+      "last_verified_sha": "ee4d526bde75a59b2a0898be05a596011abbf6b804903b65587e8434334aa7f0",
+      "path": "runtime/run_plans/evaluation_data_roles_v1.json",
+      "size_bytes": 2073,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "access_ledger",
+      "last_verified_sha": "feabf745f15a0706e4c9ff287337783c88cb3406f7acf542f3d2c4a47da352cd",
+      "path": "runtime/run_plans/evaluation_access_ledger_v1.csv",
+      "size_bytes": 2577,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "burn_ledger",
+      "last_verified_sha": "cc7490cc6af5e2a204bf9b17a17b879ac2a2da3397231e43fc4e00450c38f665",
+      "path": "runtime/run_plans/oos_burn_ledger_v1.csv",
+      "size_bytes": 1088,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "phase1_run_manifest",
+      "last_verified_sha": "9bb3192b70cca11648cf67b847b375b29206d491445c27b69317d57d870c764e",
+      "path": "runtime/run_plans/evalreset_phase1_run_manifest_v1.json",
+      "size_bytes": 5589,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "decision_change_log",
+      "last_verified_sha": "2f15757bda2c04fd750bceba92d8e5824b2ab1a9ce5045a4a7ef110633e5112f",
+      "path": "docs/evalreset/PHASE1_DECISION_CHANGE_LOG.md",
+      "size_bytes": 6434,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "signal_sketch_prepare",
+      "last_verified_sha": "d256d38b1f9fb8c465a4172cf0690cc8cf514dbfce6d0c131c69a88b699e0bae",
+      "path": "G:/Project_V7_Rotation/cn_evalreset_evidence_20260711/signal_sketch_v1/signal_sketch_prepare_manifest.json",
+      "size_bytes": 2109,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "signal_cluster_registry",
+      "last_verified_sha": "340a1e4f4afce9af460ec42f995230d73b0f802366a28d185e7df1f7467a3f20",
+      "path": "reports/evalreset_phase1_20260711/signal_sketch/candidate_signal_cluster_registry.csv",
+      "size_bytes": 1743528,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "signal_fidelity",
+      "last_verified_sha": "d568194c9bb13203f5828a24eeab23617985fbcc25e1d43b6ec0f46a551e26c2",
+      "path": "reports/evalreset_phase1_20260711/signal_sketch/signal_sketch_audit_summary.json",
+      "size_bytes": 229543,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "architecture_registry",
+      "last_verified_sha": "088f871fa5cddd3add73f83e4416480102dd1aa3fbcc2a8f4ec434ddcb50402c",
+      "path": "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json",
+      "size_bytes": 18730,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "architecture_graph",
+      "last_verified_sha": "cb410b120a3785a8c452efd9db55c43242fd97e5454320d8a8aa28166507ab9c",
+      "path": ".planning/graphs/graph.json",
+      "size_bytes": 36905,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
+      "id": "phase_state",
+      "last_verified_sha": "0d2379cc7c819c62b53bd5f8c2147e0ec51d6459c35a407d1f81a1bdd7c699c9",
+      "path": ".planning/STATE.md",
+      "size_bytes": 1646,
+      "state": "IMPLEMENTED"
+    }
+  ],
+  "index_version": "evalreset_phase1_artifact_index_v1",
+  "phase": "A_EVALRESET",
+  "refreshed_at": "2026-07-11T10:48:43.769564+00:00",
+  "status": "COMPLETE"
+}

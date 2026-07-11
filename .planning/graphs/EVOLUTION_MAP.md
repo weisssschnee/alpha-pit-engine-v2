@@ -1,21 +1,26 @@
 # Evolution Map
 
-Updated: 2026-07-10
+Updated: 2026-07-11
 
-| Stage | Role now | Supersession / boundary |
+| Change | Previous state | Current state / consequence |
 |---|---|---|
-| Legacy 1D and one-year roots | Retired | Forbidden for CNline2 search |
-| Phase3CD/CE/CE1 | Provenance and gate design | Shared typed validator is the active enforcement point |
-| Phase3DS/DT | Historical repair ancestors | Templates retained, degenerate rank-sign forms repaired |
-| Phase3DU | Diagnostic replay only | Replaced by the active budget-pool route |
-| Phase3DV | Active self-deepen ancestry | Feeds current multi-arm construction |
-| Phase3FIX | Active data repair | Canonical 2024-2025 true1min root |
-| Phase3FZ | Industry/plate canary | Not equivalent to accepted full PIT membership |
-| Phase3GA | Remote-accepted semantic/efficiency hardening | Value-domain gate, vector dedup, byte caches, vectorized bootstrap; exact 12-shard recovery passed with zero coverage failures |
-| Phase3GA fixed-calendar repair | Active split contract | Supersedes shard-local and atom-union split labels with the versioned 485-date manifest from ADR 0001 |
+| Shard-local split leakage discovered | Each worker/shard could derive its own temporal boundaries; atom labels conflicted with the global calendar | Fixed 485-date manifest is authoritative for every shard and recovery path; raw atom labels are diagnostic and conflicts are counted |
+| Pre-fix OOS downgraded | Validation/holdout were described as report-only OOS despite candidate-level reports and human canary selection | Both are formally `spent`; they are not reusable OOS and cannot affect future candidate distributions |
+| High-frequency CM/validation feedback withdrawn | Reward-integrated search could repeatedly expose validation/holdout candidate metrics to human and automated decisions | Candidate-level non-development fields fail at memory, search-feedback, and scheduler boundaries; report-only outputs cannot create positive memory |
+| Reward-integrated search → sealed-epoch governance | Continuous reward/memory/scheduler loop with weak evaluation access accounting | Development-only discovery is separated from future sealed/challenge epochs; access and burn ledgers record exposure before use |
+| Historical Phase3FIX downgraded | Key-file hash agreement was at risk of being treated as run reproduction | `PROVENANCE_UNVERIFIED`, `NON_REPRODUCIBLE_AS_EXECUTED`, `NOT_VALID_FOR_PROOF`; no infinite historical replay |
+| Generation AST redundancy observed | 24,576 nominal expressions could be misread as independent hypotheses | 131 skeletons and skeleton N_eff 33.55 prove structural redundancy only; the later signal audit did not locate a significant signal-level collapse |
+| Full-panel replay replaced by two-pass sketches | 384 semantic-only canary exceeded 120 seconds and retained full candidate Series | Two independent deterministic development-coordinate sketches completed for 24,576 candidates; all fidelity gates passed and the five-stage cluster mapping found no downstream concentration amplification |
+| Phase B hypothesis redesign frozen | Feature/event/state/industry lanes existed as canaries and historical routes | No new feature/state/event/benchmark lane may enter reward until Phase A architecture acceptance |
 
-The raw graph still contains superseded reports and launchers for navigation.
-Use `CURRENT_ARCHITECTURE.md` for runtime decisions and this file for lineage.
+## Active lineage
 
-The next research boundary is explicit State-object evaluation plus marginal
-subtree credit. It is not part of the accepted Phase3GA claim.
+```text
+shard-local split repair
+  -> evaluation role reset and OOS burn ledger
+  -> fail-closed feedback boundaries
+  -> deterministic signal-sketch fidelity audit
+  -> unified cluster funnel
+  -> Phase A architecture acceptance
+  -> only then Phase B hypothesis-space reconstruction
+```

@@ -2,8 +2,8 @@
 
 This module is intentionally small: it lets BS/BT/BU read Phase3CN feedback
 tables, but it only allows generator-policy updates when the feedback is clean
-enough. Holdout columns are carried for reporting only and are never used in the
-optimizer-side clean-feedback decision.
+enough. Candidate-level non-development columns are rejected at the boundary;
+they are not carried through the optimizer payload.
 """
 
 from __future__ import annotations
@@ -16,6 +16,10 @@ from pathlib import Path
 from typing import Any
 
 from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema, safe_float
+from our_system_phase2.services.evaluation_access_guard import (
+    assert_train_only_feedback_rows,
+    project_train_only_feedback_row,
+)
 from our_system_phase2.services.expression_semantics import analyze_expression
 
 
@@ -119,9 +123,7 @@ def _normalize_feedback_row(row: dict[str, Any]) -> dict[str, Any]:
     out["optimizer_reward_source"] = str(out.get("optimizer_reward_source") or "train_only_phase3cm")
     out["optimizer_reward_metric"] = str(out.get("optimizer_reward_metric") or OPTIMIZER_REWARD_METRIC)
     out["optimizer_reward_split"] = str(out.get("optimizer_reward_split") or "train")
-    out["validation_usage"] = str(out.get("validation_usage") or "report_only")
-    out["holdout_usage"] = str(out.get("holdout_usage") or "report_only")
-    return out
+    return project_train_only_feedback_row(out)
 
 
 def _has_wrong_lag_or_corr(row: dict[str, Any]) -> bool:
@@ -165,6 +167,7 @@ def clean_optimizer_feedback_rows(
     train_threshold: float = 0.0,
     max_turnover: float = 0.75,
 ) -> list[dict[str, Any]]:
+    assert_train_only_feedback_rows(rows, source="clean optimizer feedback input")
     out: list[dict[str, Any]] = []
     for raw in rows:
         row = _normalize_feedback_row(raw)
@@ -216,6 +219,11 @@ def build_search_feedback_context(
     family_rows = family_rows or []
     blocked_rows = blocked_rows or []
     exploit_rows = exploit_rows or []
+    assert_train_only_feedback_rows(feedback_rows, source="search feedback table")
+    assert_train_only_feedback_rows(arm_rows, source="search arm table")
+    assert_train_only_feedback_rows(family_rows, source="search family table")
+    assert_train_only_feedback_rows(blocked_rows, source="search blocked-family table")
+    assert_train_only_feedback_rows(exploit_rows, source="search exploit-family table")
     normalized_rows = [_normalize_feedback_row(row) for row in feedback_rows]
     arm_id = arm_id or "unknown_arm"
     provided = bool(feedback_rows or arm_rows or family_rows or blocked_rows or exploit_rows)
@@ -268,8 +276,8 @@ def build_search_feedback_context(
         feedback_row_count=len(normalized_rows),
         arm_row_count=len(arm_rows),
         family_row_count=len(family_rows),
-        holdout_columns_present=_has_holdout_columns(feedback_rows),
-        validation_columns_present=_has_validation_columns(feedback_rows),
+        holdout_columns_present=False,
+        validation_columns_present=False,
         validation_used_for_score=False,
         holdout_used_for_score=False,
         optimizer_reward_source="train_only_phase3cm",
@@ -317,7 +325,9 @@ def load_search_feedback_context(
 
 
 def load_search_feedback_rows(feedback_table: Path | None = None) -> list[dict[str, Any]]:
-    return [_normalize_feedback_row(row) for row in _read_csv(feedback_table)]
+    rows = _read_csv(feedback_table)
+    assert_train_only_feedback_rows(rows, source="loaded search feedback table")
+    return [_normalize_feedback_row(row) for row in rows]
 
 
 def policy_blocked_by_external_feedback(

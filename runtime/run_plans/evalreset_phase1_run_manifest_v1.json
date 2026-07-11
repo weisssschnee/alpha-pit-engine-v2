@@ -1,0 +1,119 @@
+{
+  "run_id": "cn_true1min_evalreset_phase1_20260711",
+  "phase": "A_EVALRESET",
+  "status": "COMPLETE",
+  "baseline_commit": "6b3ef3840083fe73fc0a4f4903ca2ad0060c1f88",
+  "baseline_tag": "cn-true1min-evalreset-baseline-20260711",
+  "branch": "codex/evalreset-collapse-audit-20260711",
+  "data_roles": "runtime/run_plans/evaluation_data_roles_v1.json",
+  "evaluation_access_ledger": "runtime/run_plans/evaluation_access_ledger_v1.csv",
+  "oos_burn_ledger": "runtime/run_plans/oos_burn_ledger_v1.csv",
+  "fixed_split_manifest": {
+    "path": "runtime/run_plans/phase3ga_true1min_2024_2025_global_split_manifest.csv",
+    "sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+  },
+  "candidate_pack": {
+    "generation_rows": 24576,
+    "generation_sha256": "0046b98fcf0cf2fb737f0244d782e59414bcc01c900282c3336d3d3214f9860e",
+    "proxy_rows": 1536,
+    "proxy_sha256": "81b52f4aeb4a4ed67f95d141b61a395fb33802febba10f81aa052e623e738fd5",
+    "admission_rows": 384,
+    "admission_sha256": "a340ea6364620465c1754aa305e5e39048011b9c73fcb973975102e8b5b043f3",
+    "strict_reward_rows": 324,
+    "strict_reward_sha256": "bf141d4983e52f3895f9ff116dbff1bc909ab3a33dda50ff108f23c14a50d4b8",
+    "coverage_qualified_rows": 202
+  },
+  "historical_phase3fix": {
+    "provenance": "PROVENANCE_UNVERIFIED",
+    "reproducibility": "NON_REPRODUCIBLE_AS_EXECUTED",
+    "proof_status": "NOT_VALID_FOR_PROOF"
+  },
+  "authorized_heavy_task": {
+    "name": "two_pass_deterministic_signal_sketch",
+    "data_role": "development",
+    "labels_or_returns_allowed": false,
+    "validation_holdout_forward_allowed": false,
+    "positive_memory_update_allowed": false,
+    "search_allowed": false,
+    "state": "COMPLETE"
+  },
+  "signal_sketch": {
+    "coordinate_version": "evalreset_development_coordinates_v1",
+    "sketch_version": "evalreset_signal_sketch_v1",
+    "external_artifact_root": "G:/Project_V7_Rotation/cn_evalreset_evidence_20260711/signal_sketch_v1",
+    "coordinate_sets": ["A", "B"],
+    "worker_partitions": 6,
+    "prepared_coordinates": {
+      "coordinate_count_total": 7296,
+      "coordinate_count_a": 3648,
+      "coordinate_count_b": 3648,
+      "materialized_coordinate_count_a": 1804,
+      "materialized_coordinate_count_b": 1802,
+      "selected_stock_count": 16,
+      "compact_panel_rows": 290331,
+      "compact_panel_sha256": "aa99730e7f3a4ed2eefdb875955784e9f01a3dc30dad080fdf107e816a53123e",
+      "coordinate_manifest_sha256": "88a23e3e2879767d57cf78bd2563b296aa276c7c9ac5d60d0d27f1a7b23826ee",
+      "stock_selection_sha256": "e02f00fe29fab6ee442b1367694c818f999066a0dfb17f70e09ba747aea5fd0c"
+    },
+    "fidelity_gates_preregistered_before_results": {
+      "sketch_vs_exact_correlation_min": 0.90,
+      "cluster_pair_purity_min": 0.90,
+      "coordinate_cluster_ari_min": 0.80,
+      "coordinate_cluster_nmi_min": 0.80,
+      "top1_share_absolute_difference_max": 0.03,
+      "boundary_misclassification_rate_max": 0.10
+    },
+    "admission_384_fidelity_result": {
+      "state": "PASS",
+      "joint_finite_min": 183,
+      "joint_coverage_qualified_count": 186,
+      "joint_coverage_limited_count": 198,
+      "adjusted_rand_index": 0.98142159,
+      "normalized_mutual_information": 0.9955356,
+      "top1_share_absolute_difference": 0.0,
+      "sketch_vs_exact_correlation": 0.9999415,
+      "cluster_pair_purity": 1.0,
+      "boundary_misclassification_rate": 0.0,
+      "artifact": "G:/Project_V7_Rotation/cn_evalreset_evidence_20260711/signal_sketch_v1/pilot_admission384_cluster_accepted/signal_sketch_audit_summary.json"
+    },
+    "full_generation_result": {
+      "state": "PASS",
+      "generation_candidate_count": 24576,
+      "joint_finite_min": 183,
+      "joint_coverage_qualified_count": 10529,
+      "joint_coverage_limited_count": 14047,
+      "consensus_cluster_count": 4508,
+      "consensus_n_eff": 97.35760661,
+      "consensus_top1_share": 0.09431095,
+      "adjusted_rand_index": 0.98031151,
+      "normalized_mutual_information": 0.97131561,
+      "top1_share_absolute_difference": 0.00056986,
+      "sketch_vs_exact_correlation": 0.9999415,
+      "cluster_pair_purity": 1.0,
+      "boundary_misclassification_rate": 0.0,
+      "all_preregistered_fidelity_gates_pass": true,
+      "first_signal_level_collapse": "NOT_OBSERVED_IN_STAGEWISE_SIGNAL_SKETCH_AUDIT",
+      "artifact": "reports/evalreset_phase1_20260711/signal_sketch/signal_sketch_audit_summary.json"
+    },
+    "worker_recovery": {
+      "partition": 4,
+      "candidate_id": "phase3cp_14562",
+      "original_exception": "OSError(22, 'Invalid argument')",
+      "classification": "POST_WRITE_CHECKPOINT_EXCEPTION",
+      "evidence": "both A/B rows existed before recovery; global resume processed 0 candidates and rewrote failure_count=0",
+      "historical_error_log_retained": "G:/Project_V7_Rotation/cn_evalreset_evidence_20260711/signal_sketch_v1/signal_sketch_worker_4.errors.jsonl"
+    },
+    "prepare_manifest": "G:/Project_V7_Rotation/cn_evalreset_evidence_20260711/signal_sketch_v1/signal_sketch_prepare_manifest.json",
+    "cluster_registry": "reports/evalreset_phase1_20260711/signal_sketch/candidate_signal_cluster_registry.csv",
+    "fidelity_summary": "reports/evalreset_phase1_20260711/signal_sketch/signal_sketch_audit_summary.json"
+  },
+  "prohibited": [
+    "phase_b_feature_or_event_design",
+    "validation_or_holdout_candidate_feedback",
+    "spent_to_development_relabel",
+    "positive_memory_update",
+    "large_search",
+    "2026_forward_performance_access"
+  ],
+  "acceptance_state": "PHASE_A_COMMITTED_AWAITING_USER_ACCEPTANCE"
+}

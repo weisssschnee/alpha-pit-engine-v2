@@ -1,0 +1,7 @@
+stage,row_count,exact_identity_count,signal_status,signal_cluster_count,signal_n_eff,behaviour_status,behaviour_cluster_count,behaviour_n_eff,behaviour_top_cluster_share,ast_skeleton_count,ast_skeleton_n_eff,ast_skeleton_top_cluster_share,family_count,lineage_entropy_nats,lineage_n_eff,trial_multiplicity,effective_trial_multiplicity,significant_structural_collapse
+generation,24576,24576,not_measured,,,not_applicable,,,,131,33.54784544,0.09313965,4969,8.22886031,1839.95447483,187.60305344,732.56567383,True
+proxy,1536,1536,not_measured,,,not_applicable,,,,106,41.10558227,0.06119792,1160,7.0123261,984.68113523,14.49056604,37.3671875,True
+admission,384,384,not_measured,,,not_applicable,,,,71,33.34599729,0.07291667,336,5.75650922,285.76744186,5.4084507,11.515625,True
+strict_reward,324,324,not_measured,,,measured_train_only,84,29.39769452,0.08415842,,,,276,5.55065957,230.21052632,2.4047619,6.87128713,False
+memory_predecessor,192,192,not_measured,,,not_applicable,,,,,,,154,5.06749654,140.70229008,1.12941176,1.36458333,False
+scheduler_predecessor,154,154,not_measured,,,not_applicable,,,,,,,154,5.0369526,154.0,1.0,1.0,False

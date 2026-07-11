@@ -20,6 +20,7 @@ from our_system_phase2.services.search_feedback import (
     load_search_feedback_context,
     policy_blocked_by_external_feedback,
 )
+from our_system_phase2.services.evaluation_access_guard import GUARD_VERSION
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -54,13 +55,15 @@ def _synthetic_low_feedback_context(min_clean_feedback: int, arm_id: str):
             "generator_route": "phase3bs-adaptive-ucb-cem-practice",
             "family_id": "synthetic_rewardhack_family",
             "phase3ca_proxy_quality": "0.93",
+            "optimizer_reward": "-0.75",
+            "optimizer_reward_source": "train_only_phase3cm",
+            "optimizer_reward_metric": "train_portfolio_sortino_rankic_regime_composite_reward",
+            "optimizer_reward_split": "train",
             "train_reward": "-0.75",
-            "validation_day_sortino": "-0.20",
-            "validation_mcmc_prob_gt_0": "0.20",
-            "holdout_day_sortino": "1.25",
-            "holdout_mcmc_prob_gt_0": "0.90",
             "mean_one_way_turnover": "0.92",
             "blocker_flags": "",
+            "feedback_data_role": "development",
+            "evaluation_access_guard": GUARD_VERSION,
         }
     ]
     arm_rows = [
@@ -71,6 +74,8 @@ def _synthetic_low_feedback_context(min_clean_feedback: int, arm_id: str):
             "min_clean_feedback": str(min_clean_feedback),
             "feedback_update_allowed": "false",
             "arm_score": "-1.0",
+            "feedback_data_role": "development",
+            "evaluation_access_guard": GUARD_VERSION,
         }
     ]
     family_rows = [
@@ -78,6 +83,8 @@ def _synthetic_low_feedback_context(min_clean_feedback: int, arm_id: str):
             "family_id": "synthetic_rewardhack_family",
             "family_status": "freeze",
             "family_reasons": "proxy_high_cm_negative|high_turnover",
+            "feedback_data_role": "development",
+            "evaluation_access_guard": GUARD_VERSION,
         }
     ]
     blocked_rows = list(family_rows)
@@ -98,25 +105,21 @@ def _synthetic_allowed_train_feedback(min_clean_feedback: int, arm_id: str):
         {
             "candidate_id": "synthetic_train_reward_winner",
             "expression_hash": "synthetic_train_reward_winner_hash",
-            "expression": "Rank(Mean($m1_first_ret,5)) - Rank(Std($range_location,10))",
+            "expression": "CSRank(Sub($close,$open))",
             "generator_arm": arm_id,
             "generator_route": "phase3bs-adaptive-ucb-cem-practice",
             "family_id": "synthetic_train_reward_family",
             "optimizer_reward": "0.42",
             "optimizer_reward_source": "train_only_phase3cm",
-            "optimizer_reward_metric": "train_portfolio_sortino_reward",
+            "optimizer_reward_metric": "train_portfolio_sortino_rankic_regime_composite_reward",
             "optimizer_reward_split": "train",
             "train_reward": "0.42",
             "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
             "train_reward_blockers": "",
-            "validation_day_sortino": "-0.33",
-            "validation_mcmc_prob_gt_0": "0.12",
-            "holdout_day_sortino": "-0.77",
-            "holdout_mcmc_prob_gt_0": "0.08",
             "mean_one_way_turnover": "0.34",
             "blocker_flags": "",
-            "validation_usage": "report_only",
-            "holdout_usage": "report_only",
+            "feedback_data_role": "development",
+            "evaluation_access_guard": GUARD_VERSION,
         }
     ]
     family_rows = [
@@ -124,6 +127,8 @@ def _synthetic_allowed_train_feedback(min_clean_feedback: int, arm_id: str):
             "family_id": "synthetic_train_reward_family",
             "family_status": "exploit_allowed",
             "family_reasons": "train_optimizer_reward_positive",
+            "feedback_data_role": "development",
+            "evaluation_access_guard": GUARD_VERSION,
         }
     ]
     context = build_search_feedback_context(
@@ -169,8 +174,7 @@ def _render_md(summary: dict[str, Any], checks: list[dict[str, Any]]) -> str:
         f"feedback_update_allowed: {summary['feedback_context']['feedback_update_allowed']}",
         f"clean_feedback_count: {summary['feedback_context']['clean_feedback_count']}",
         f"min_clean_feedback: {summary['feedback_context']['min_clean_feedback']}",
-        f"holdout_columns_present: {summary['feedback_context']['holdout_columns_present']}",
-        f"holdout_used_for_score: {summary['feedback_context']['holdout_used_for_score']}",
+        f"candidate_level_oos_absent: {summary['candidate_level_oos_absent']}",
         f"policy_scores_unchanged: {summary['policy_scores_unchanged']}",
         f"allowed_train_reward_policy_updated: {summary['allowed_train_reward_policy_updated']}",
         f"allowed_train_reward_source: {summary['allowed_train_reward_policy']['feedback'].get('optimizer_reward_source')}",
@@ -189,7 +193,7 @@ def _render_md(summary: dict[str, Any], checks: list[dict[str, Any]]) -> str:
             "## Boundary",
             "",
             "- This smoke does not run search.",
-            "- Holdout columns are carried for audit only.",
+            "- Candidate-level non-development columns are absent; raw inputs containing them fail closed.",
             "- Sparse or blocked external CN feedback leaves CEM/UCB policy scores unchanged.",
             "- Clean external train reward feedback can update policy without using validation/holdout.",
         ]
@@ -244,7 +248,7 @@ def main(argv: list[str] | None = None) -> int:
     all_args_present = all(row["pass"] == "true" for row in arg_checks)
     policy_scores_unchanged = guarded_policy.get("scores") == base_policy.get("scores")
     guard_blocks_update = context.provided and not context.feedback_update_allowed and guarded_policy.get("feedback", {}).get("updated") is False
-    holdout_read_only = context.holdout_columns_present and not context.holdout_used_for_score
+    candidate_level_oos_absent = not context.holdout_columns_present and not context.validation_columns_present
     allowed_train_reward_policy_updated = allowed_policy.get("feedback", {}).get("updated") is True
     allowed_train_reward_train_only = (
         allowed_policy.get("feedback", {}).get("optimizer_reward_source") == "train_only_phase3cm"
@@ -255,7 +259,7 @@ def main(argv: list[str] | None = None) -> int:
         all_args_present
         and policy_scores_unchanged
         and guard_blocks_update
-        and holdout_read_only
+        and candidate_level_oos_absent
         and allowed_train_reward_policy_updated
         and allowed_train_reward_train_only
     )
@@ -268,7 +272,7 @@ def main(argv: list[str] | None = None) -> int:
         "all_searchers_have_feedback_args": all_args_present,
         "policy_scores_unchanged": policy_scores_unchanged,
         "guard_blocks_update": guard_blocks_update,
-        "holdout_read_only": holdout_read_only,
+        "candidate_level_oos_absent": candidate_level_oos_absent,
         "allowed_train_reward_context": allowed_context.to_dict(),
         "allowed_train_reward_policy": allowed_policy,
         "allowed_train_reward_policy_updated": allowed_train_reward_policy_updated,

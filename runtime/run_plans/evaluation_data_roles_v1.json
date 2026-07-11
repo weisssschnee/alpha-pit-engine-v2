@@ -1,0 +1,62 @@
+{
+  "registry_version": "evaluation_data_roles_v1_20260711",
+  "effective_date": "2026-07-11",
+  "default_deny": true,
+  "roles": {
+    "development": {
+      "assigned_assets": [
+        "phase3ga_true1min_2024_2025_global_split_manifest.csv:train"
+      ],
+      "date_count": 364,
+      "automated_optimizer_access": "allowed",
+      "candidate_level_human_access": "allowed_and_logged",
+      "may_update_search_memory_or_scheduler": true
+    },
+    "challenge": {
+      "assigned_assets": [],
+      "status": "reserved_unassigned",
+      "automated_optimizer_access": "forbidden",
+      "candidate_level_access": "batch_gate_only_after_hypothesis_freeze",
+      "may_update_search_memory_or_scheduler": false
+    },
+    "sealed": {
+      "assigned_assets": [],
+      "status": "reserved_unassigned",
+      "access": "release_authorization_required",
+      "may_update_search_memory_or_scheduler": false
+    },
+    "spent": {
+      "assigned_assets": [
+        "phase3ga_true1min_2024_2025_global_split_manifest.csv:validation",
+        "phase3ga_true1min_2024_2025_global_split_manifest.csv:holdout"
+      ],
+      "date_count": 121,
+      "reason": "candidate-level results were reported and manually inspected; validation also influenced canary selection",
+      "allowed_access": "forensic_or_aggregate_reporting_only",
+      "candidate_selection_or_feature_design": "forbidden",
+      "may_update_search_memory_or_scheduler": false
+    },
+    "forward": {
+      "assigned_assets": [
+        "separate_2026_true1min_asset"
+      ],
+      "status": "performance_unexposed_and_reserved",
+      "performance_accessed_during_evalreset": false,
+      "search_or_reward_access": "forbidden",
+      "may_update_search_memory_or_scheduler": false
+    }
+  },
+  "feedback_boundary": {
+    "allowed_role": "development",
+    "allowed_optimizer_split": "train",
+    "machine_guard": "evalreset_feedback_guard_v1",
+    "forbidden_candidate_level_prefixes": [
+      "validation_",
+      "holdout_",
+      "challenge_",
+      "sealed_",
+      "forward_",
+      "oos_"
+    ]
+  }
+}
