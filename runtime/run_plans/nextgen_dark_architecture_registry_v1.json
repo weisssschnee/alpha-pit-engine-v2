@@ -1,0 +1,196 @@
+{
+  "registry_version": "nextgen_dark_architecture_registry_v1",
+  "phase": "NEXTGEN_DARK_CLOSURE",
+  "base_registry": "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json",
+  "node_overrides": {
+    "scheduler_memory_feedback": {
+      "status": "FROZEN",
+      "feedback_permission": "FORMAL_SEARCH_AND_ADAPTIVE_REWARD_FROZEN",
+      "blocker": "requires independent post-NEXTGEN authorization"
+    },
+    "forward_2026": {
+      "status": "FROZEN",
+      "feedback_permission": "FORBIDDEN",
+      "blocker": "FORWARD_2026_SEALED"
+    },
+    "sealed_epoch_governance": {
+      "status": "PARTIAL",
+      "blocker": "fixed-budget CANARY is prepared but not independently authorized"
+    }
+  },
+  "nodes": [
+    {
+      "id": "nextgen_field_registry_121",
+      "label": "Versioned 121-field registry",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["runtime/field_registry/nextgen_dark_field_registry_v1.json", "scripts/build_nextgen_field_registry.py"],
+      "input_artifacts": ["2024-2025 augmented shard Parquet schema footer"],
+      "output_artifacts": ["runtime/field_registry/nextgen_dark_field_registry_v1.json"],
+      "data_role": "development_schema_only",
+      "feedback_permission": "NONE",
+      "test_evidence": ["tests/test_feature_state_fabric.py"],
+      "verification_paths": ["runtime/field_registry/nextgen_dark_field_registry_v1.json", "tests/test_feature_state_fabric.py"],
+      "blocker": ""
+    },
+    {
+      "id": "feature_state_fabric",
+      "label": "Feature/State Fabric materializer and deterministic cache",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/feature_state_fabric.py"],
+      "input_artifacts": ["nextgen_field_registry_121", "raw/firstN/lagged/event inputs"],
+      "output_artifacts": ["deterministic materialization plus lineage manifest"],
+      "data_role": "development",
+      "feedback_permission": "NO_PERFORMANCE_SEARCH",
+      "test_evidence": ["tests/test_feature_state_fabric.py"],
+      "verification_paths": ["src/our_system_phase2/services/feature_state_fabric.py", "tests/test_feature_state_fabric.py"],
+      "blocker": "full 598M-row release materialization intentionally not run"
+    },
+    {
+      "id": "typed_temporal_program",
+      "label": "15-primitive typed temporal program",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/typed_temporal_program.py", "src/our_system_phase2/services/real_market_validation.py", "runtime/run_plans/nextgen_dark_temporal_registry_v1.json"],
+      "input_artifacts": ["typed numeric/event/state series"],
+      "output_artifacts": ["runtime/run_plans/nextgen_dark_temporal_registry_v1.json", "PIT-safe typed temporal series and equivalence keys"],
+      "data_role": "development",
+      "feedback_permission": "NO_PERFORMANCE_SEARCH",
+      "test_evidence": ["tests/test_typed_temporal_program.py"],
+      "verification_paths": ["src/our_system_phase2/services/typed_temporal_program.py", "tests/test_typed_temporal_program.py"],
+      "blocker": ""
+    },
+    {
+      "id": "nextgen_event_state_system",
+      "label": "Limit-event and state-transition system",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/event_state_system.py", "runtime/run_plans/nextgen_dark_event_registry_v1.json"],
+      "input_artifacts": ["PIT bars, firstN, lagged context, optional PIT group confirmation"],
+      "output_artifacts": ["runtime/run_plans/nextgen_dark_event_registry_v1.json", "seal/break/reseal, age/count/intensity/path/state features"],
+      "data_role": "development",
+      "feedback_permission": "NO_WINNER_DIRECTED_DESIGN",
+      "test_evidence": ["tests/test_event_state_system.py"],
+      "verification_paths": ["src/our_system_phase2/services/event_state_system.py", "tests/test_event_state_system.py"],
+      "blocker": ""
+    },
+    {
+      "id": "pit_group_sidecar",
+      "label": "Historical PIT plate/industry membership sidecar",
+      "status": "PARTIAL",
+      "implementation_paths": ["src/our_system_phase2/services/pit_group_sidecar.py"],
+      "input_artifacts": ["required historical membership/effective/entry-exit release"],
+      "output_artifacts": ["versioned membership normal form and cross-sectional confirmations"],
+      "data_role": "development_context",
+      "feedback_permission": "BLOCKED_UNTIL_HISTORICAL_SOURCE_VERIFIED",
+      "test_evidence": ["tests/test_pit_group_sidecar.py"],
+      "verification_paths": ["src/our_system_phase2/services/pit_group_sidecar.py", "tests/test_pit_group_sidecar.py"],
+      "blocker": "no verified 2024-2025 historical membership/effective-time/entry-exit source; current snapshots cannot be promoted"
+    },
+    {
+      "id": "hypothesis_lane_registry",
+      "label": "Seven isolated hypothesis lanes",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/hypothesis_lanes.py", "runtime/run_plans/nextgen_dark_hypothesis_lane_registry_v1.json"],
+      "input_artifacts": ["versioned candidate submission contract"],
+      "output_artifacts": ["runtime/run_plans/nextgen_dark_hypothesis_lane_registry_v1.json", "isolated roots, quotas, archives, lineage, seeds"],
+      "data_role": "development",
+      "feedback_permission": "POLICY_FROZEN",
+      "test_evidence": ["tests/test_nextgen_hypothesis_infrastructure.py"],
+      "verification_paths": ["src/our_system_phase2/services/hypothesis_lanes.py", "tests/test_nextgen_hypothesis_infrastructure.py"],
+      "blocker": ""
+    },
+    {
+      "id": "admission_diversity",
+      "label": "Stratified admission and diversity controls",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/admission_diversity.py"],
+      "input_artifacts": ["isolated lane submissions"],
+      "output_artifacts": ["deterministic stratified admission plus global top-K baseline"],
+      "data_role": "development",
+      "feedback_permission": "NO_PERFORMANCE_SCORE",
+      "test_evidence": ["tests/test_nextgen_hypothesis_infrastructure.py"],
+      "verification_paths": ["src/our_system_phase2/services/admission_diversity.py", "tests/test_nextgen_hypothesis_infrastructure.py"],
+      "blocker": ""
+    },
+    {
+      "id": "benchmark_competitor_harness",
+      "label": "Strategy and algorithm benchmark/competitor harness",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/benchmark_competitor_harness.py", "runtime/run_plans/nextgen_dark_benchmark_registry_v1.json"],
+      "input_artifacts": ["unified candidate submissions and fixed budgets"],
+      "output_artifacts": ["runtime/run_plans/nextgen_dark_benchmark_registry_v1.json", "frozen planned_not_run benchmark plan"],
+      "data_role": "development",
+      "feedback_permission": "NO_PERFORMANCE_COMPARISON_EXECUTED",
+      "test_evidence": ["tests/test_nextgen_hypothesis_infrastructure.py"],
+      "verification_paths": ["src/our_system_phase2/services/benchmark_competitor_harness.py", "tests/test_nextgen_hypothesis_infrastructure.py"],
+      "blocker": "plate/industry benchmark disabled until historical PIT source exists"
+    },
+    {
+      "id": "coverage_metrics",
+      "label": "No-performance coverage metrics",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/coverage_metrics.py"],
+      "input_artifacts": ["candidate contract metadata only"],
+      "output_artifacts": ["coverage, entropy, semantic volume, signal potential"],
+      "data_role": "development_metadata",
+      "feedback_permission": "REPORT_ONLY",
+      "test_evidence": ["tests/test_nextgen_hypothesis_infrastructure.py"],
+      "verification_paths": ["src/our_system_phase2/services/coverage_metrics.py", "tests/test_nextgen_hypothesis_infrastructure.py"],
+      "blocker": ""
+    },
+    {
+      "id": "atomic_checkpoint_resume",
+      "label": "Atomic checkpoint and idempotent resume",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/atomic_checkpoint.py", "scripts/run_signal_sketch_audit.py"],
+      "input_artifacts": ["per-candidate deterministic records"],
+      "output_artifacts": ["atomic record store and repaired CSV projection"],
+      "data_role": "development_diagnostic",
+      "feedback_permission": "NONE",
+      "test_evidence": ["tests/test_atomic_checkpoint.py"],
+      "verification_paths": ["src/our_system_phase2/services/atomic_checkpoint.py", "scripts/run_signal_sketch_audit.py", "tests/test_atomic_checkpoint.py"],
+      "blocker": ""
+    },
+    {
+      "id": "nextgen_canary_plan",
+      "label": "Fixed-budget development-only CANARY plan",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["runtime/run_plans/nextgen_dark_canary_plan_v1.json"],
+      "input_artifacts": ["lane/admission/benchmark contracts"],
+      "output_artifacts": ["prepared-not-started CANARY plan"],
+      "data_role": "development_only",
+      "feedback_permission": "EXECUTION_REQUIRES_INDEPENDENT_AUTHORIZATION",
+      "test_evidence": ["tests/test_nextgen_dark_delivery.py"],
+      "verification_paths": ["runtime/run_plans/nextgen_dark_canary_plan_v1.json", "tests/test_nextgen_dark_delivery.py"],
+      "blocker": "historical PIT plate/industry lane disabled"
+    },
+    {
+      "id": "formal_search_frozen",
+      "label": "Formal search and adaptive reward remain frozen",
+      "status": "FROZEN",
+      "implementation_paths": ["runtime/run_plans/nextgen_dark_run_manifest_v1.json"],
+      "input_artifacts": ["NEXTGEN-DARK closure"],
+      "output_artifacts": ["no search/reward/forward execution"],
+      "data_role": "none",
+      "feedback_permission": "FORBIDDEN",
+      "test_evidence": ["tests/test_nextgen_dark_delivery.py"],
+      "verification_paths": ["runtime/run_plans/nextgen_dark_run_manifest_v1.json", "tests/test_nextgen_dark_delivery.py"],
+      "blocker": "independent authorization required"
+    }
+  ],
+  "edges": [
+    {"source": "true1min_16_shards", "target": "nextgen_field_registry_121", "relation": "schema_footer_verifies", "permission": "ALLOWED", "evidence": "field registry builder"},
+    {"source": "nextgen_field_registry_121", "target": "feature_state_fabric", "relation": "governs_materialization", "permission": "ALLOWED", "evidence": "fabric tests"},
+    {"source": "feature_state_fabric", "target": "typed_temporal_program", "relation": "supplies_typed_inputs", "permission": "ALLOWED", "evidence": "temporal tests"},
+    {"source": "feature_state_fabric", "target": "nextgen_event_state_system", "relation": "supplies_pit_inputs", "permission": "ALLOWED", "evidence": "event tests"},
+    {"source": "pit_group_sidecar", "target": "nextgen_event_state_system", "relation": "supplies_group_confirmation_when_verified", "permission": "ALLOWED", "evidence": "PIT fixture tests"},
+    {"source": "typed_temporal_program", "target": "hypothesis_lane_registry", "relation": "types_temporal_lane", "permission": "ALLOWED", "evidence": "lane contract"},
+    {"source": "nextgen_event_state_system", "target": "hypothesis_lane_registry", "relation": "types_event_state_lanes", "permission": "ALLOWED", "evidence": "lane contract"},
+    {"source": "hypothesis_lane_registry", "target": "admission_diversity", "relation": "submits_isolated_candidates", "permission": "ALLOWED", "evidence": "admission tests"},
+    {"source": "admission_diversity", "target": "benchmark_competitor_harness", "relation": "supplies_frozen_candidate_contract", "permission": "ALLOWED", "evidence": "benchmark tests"},
+    {"source": "hypothesis_lane_registry", "target": "coverage_metrics", "relation": "reports_no_performance_coverage", "permission": "ALLOWED", "evidence": "coverage tests"},
+    {"source": "benchmark_competitor_harness", "target": "nextgen_canary_plan", "relation": "prepares_fixed_budget_plan", "permission": "ALLOWED", "evidence": "canary plan"},
+    {"source": "nextgen_canary_plan", "target": "formal_search_frozen", "relation": "canary_execution_without_authorization", "permission": "FORBIDDEN", "evidence": "run manifest"},
+    {"source": "forward_2026", "target": "feature_state_fabric", "relation": "forward_to_nextgen_fabric", "permission": "FORBIDDEN", "evidence": "run manifest"},
+    {"source": "forward_2026", "target": "nextgen_canary_plan", "relation": "forward_to_nextgen_canary", "permission": "FORBIDDEN", "evidence": "canary plan"},
+    {"source": "scheduler_memory_feedback", "target": "hypothesis_lane_registry", "relation": "adaptive_reward_to_nextgen_policy", "permission": "FORBIDDEN", "evidence": "run manifest"}
+  ]
+}

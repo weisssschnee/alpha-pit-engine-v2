@@ -1,0 +1,235 @@
+{
+  "primitive_count": 15,
+  "primitives": [
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "numeric",
+        "window:int"
+      ],
+      "maturity": "window bars",
+      "missing_semantics": "full finite slope window required",
+      "name": "Acceleration",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "numeric",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "numeric",
+        "lag:int"
+      ],
+      "maturity": "lag bars",
+      "missing_semantics": "nan until both endpoints are valid",
+      "name": "Delta",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "numeric",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "numeric",
+        "window:int"
+      ],
+      "maturity": "window-1 bars",
+      "missing_semantics": "full finite window and nonzero peak required",
+      "name": "DrawdownPath",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "ratio",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "state"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing state yields missing duration",
+      "name": "Duration",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "count",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "numeric",
+        "event",
+        "pre:int",
+        "post:int"
+      ],
+      "maturity": "post bars after event",
+      "missing_semantics": "full event window required; output delayed to event+post",
+      "name": "EventWindow",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "numeric",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "boolean",
+        "window:int"
+      ],
+      "maturity": "window-1 bars",
+      "missing_semantics": "missing when no hit or incomplete window",
+      "name": "FirstHit",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "position",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "boolean",
+        "window:int"
+      ],
+      "maturity": "window-1 bars",
+      "missing_semantics": "missing when no hit or incomplete window",
+      "name": "LastHit",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "age",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "symmetric_inputs_then_short_long",
+      "input_types": [
+        "numeric",
+        "numeric",
+        "short:int",
+        "long:int"
+      ],
+      "maturity": "long-1 bars",
+      "missing_semantics": "jointly finite long window required",
+      "name": "MultiScaleRelation",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "numeric",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "numeric",
+        "window:int"
+      ],
+      "maturity": "window-1 bars",
+      "missing_semantics": "full finite window required",
+      "name": "PathShape",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "ratio",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "boolean",
+        "window:int"
+      ],
+      "maturity": "window-1 bars",
+      "missing_semantics": "missing input makes window missing",
+      "name": "Persistence",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "ratio",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "numeric",
+        "window:int"
+      ],
+      "maturity": "window-1 bars",
+      "missing_semantics": "full finite window and nonzero range required",
+      "name": "RecoveryPath",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "ratio",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "numeric",
+        "window:int"
+      ],
+      "maturity": "window-1 bars",
+      "missing_semantics": "full finite window required",
+      "name": "Slope",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "numeric",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "state"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing state yields missing age",
+      "name": "StateAge",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "count",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "event"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing before first observed event",
+      "name": "TimeSince",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "count",
+      "pit_source_lag": "max_input_source_lag"
+    },
+    {
+      "cache_policy": "registry_version_plus_canonical_call_plus_input_hash",
+      "canonicalization": "lower_name_integer_windows_normalized_numeric_literals",
+      "equivalence": "canonical_name_args_params",
+      "input_types": [
+        "state",
+        "from",
+        "to"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing previous/current state yields false",
+      "name": "Transition",
+      "observable_time": "input_observable_time_plus_maturity",
+      "output_type": "event",
+      "pit_source_lag": "max_input_source_lag"
+    }
+  ],
+  "registry_hash": "e55494c19587dc0f2bc65ced3afcd9411c8f83e3de6f1e6e8816c7b65dbbd4db",
+  "registry_version": "nextgen_dark_typed_temporal_v1",
+  "reward_or_performance_used": false
+}

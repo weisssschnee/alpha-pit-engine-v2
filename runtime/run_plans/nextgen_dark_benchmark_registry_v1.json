@@ -1,0 +1,173 @@
+{
+  "benchmarks": [
+    {
+      "archive_namespace": "benchmark/algorithm/cem",
+      "benchmark_id": "cem",
+      "benchmark_kind": "algorithm",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 64,
+      "strict_eval_budget": 8
+    },
+    {
+      "archive_namespace": "benchmark/strategy/event_state",
+      "benchmark_id": "event_state",
+      "benchmark_kind": "strategy",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 32,
+      "strict_eval_budget": 4
+    },
+    {
+      "archive_namespace": "benchmark/algorithm/evolutionary_search",
+      "benchmark_id": "evolutionary_search",
+      "benchmark_kind": "algorithm",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 64,
+      "strict_eval_budget": 8
+    },
+    {
+      "archive_namespace": "benchmark/algorithm/external_competitor_reproduction",
+      "benchmark_id": "external_competitor_reproduction",
+      "benchmark_kind": "algorithm",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 64,
+      "strict_eval_budget": 8
+    },
+    {
+      "archive_namespace": "benchmark/strategy/firstN",
+      "benchmark_id": "firstN",
+      "benchmark_kind": "strategy",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 32,
+      "strict_eval_budget": 4
+    },
+    {
+      "archive_namespace": "benchmark/strategy/liquidity",
+      "benchmark_id": "liquidity",
+      "benchmark_kind": "strategy",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 32,
+      "strict_eval_budget": 4
+    },
+    {
+      "archive_namespace": "benchmark/algorithm/llm_proposal",
+      "benchmark_id": "llm_proposal",
+      "benchmark_kind": "algorithm",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 64,
+      "strict_eval_budget": 8
+    },
+    {
+      "archive_namespace": "benchmark/strategy/plate_industry_linkage",
+      "benchmark_id": "plate_industry_linkage",
+      "benchmark_kind": "strategy",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 32,
+      "strict_eval_budget": 4
+    },
+    {
+      "archive_namespace": "benchmark/algorithm/rx_ucb",
+      "benchmark_id": "rx_ucb",
+      "benchmark_kind": "algorithm",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 64,
+      "strict_eval_budget": 8
+    },
+    {
+      "archive_namespace": "benchmark/strategy/simple_momentum",
+      "benchmark_id": "simple_momentum",
+      "benchmark_kind": "strategy",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 32,
+      "strict_eval_budget": 4
+    },
+    {
+      "archive_namespace": "benchmark/strategy/simple_reversal",
+      "benchmark_id": "simple_reversal",
+      "benchmark_kind": "strategy",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 32,
+      "strict_eval_budget": 4
+    },
+    {
+      "archive_namespace": "benchmark/algorithm/surrogate",
+      "benchmark_id": "surrogate",
+      "benchmark_kind": "algorithm",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 64,
+      "strict_eval_budget": 8
+    },
+    {
+      "archive_namespace": "benchmark/algorithm/typed_ast",
+      "benchmark_id": "typed_ast",
+      "benchmark_kind": "algorithm",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 64,
+      "strict_eval_budget": 8
+    },
+    {
+      "archive_namespace": "benchmark/algorithm/uct_mcts",
+      "benchmark_id": "uct_mcts",
+      "benchmark_kind": "algorithm",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 64,
+      "strict_eval_budget": 8
+    },
+    {
+      "archive_namespace": "benchmark/strategy/volatility",
+      "benchmark_id": "volatility",
+      "benchmark_kind": "strategy",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 32,
+      "strict_eval_budget": 4
+    },
+    {
+      "archive_namespace": "benchmark/strategy/x0_r3",
+      "benchmark_id": "x0_r3",
+      "benchmark_kind": "strategy",
+      "data_access_contract": "development_only_no_forward",
+      "execution_state": "planned_not_run",
+      "policy_frozen": true,
+      "proposal_budget": 32,
+      "strict_eval_budget": 4
+    }
+  ],
+  "candidate_submission_contract": "nextgen_dark_candidate_submission_v1",
+  "data_access_contract": "development_only_no_forward",
+  "harness_version": "nextgen_dark_benchmark_competitor_harness_v1",
+  "independent_archives": true,
+  "performance_comparison_executed": false,
+  "plan_hash": "c74540e2ef39901c310902a8138f814c40d851c5474c46fc75e25ede76ec6636",
+  "policy_freeze": true,
+  "proposal_budget": 768,
+  "strict_eval_budget": 96
+}

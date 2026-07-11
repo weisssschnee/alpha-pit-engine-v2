@@ -1,0 +1,232 @@
+{
+  "contract_hash": "40e83adfa3148a854647c89e325a4572571a981749f9a2ee55b2bbcf41b65e40",
+  "feature_count": 16,
+  "features": [
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "seal_state",
+        "close"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing state blocks transition",
+      "name": "break_board",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "event",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "event_direction",
+        "path_return"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing anchor yields missing",
+      "name": "continuation_reversal",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "state",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "event_direction",
+        "pit_peer_value"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "requires versioned PIT group sidecar",
+      "name": "cross_asset_plate_confirmation",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "numeric",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "context",
+        "context_observed_at"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "context unavailable before observed_at",
+      "name": "daily_context_lag",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "numeric",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "event"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing before first event",
+      "name": "event_age",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "count",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "event",
+        "window"
+      ],
+      "maturity": "window-1 bars",
+      "missing_semantics": "full window required",
+      "name": "event_count",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "count",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "high",
+        "low",
+        "close",
+        "limit_price"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing range yields missing",
+      "name": "event_intensity",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "ratio",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "firstN_return"
+      ],
+      "maturity": "firstN maturity",
+      "missing_semantics": "missing firstN stays missing",
+      "name": "firstN_path",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "numeric",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "low",
+        "down_limit_price"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing limit price blocks detection",
+      "name": "limit_down_touch",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "event",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "high",
+        "up_limit_price"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing limit price blocks detection",
+      "name": "limit_up_touch",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "event",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "close",
+        "event",
+        "window"
+      ],
+      "maturity": "window bars after event",
+      "missing_semantics": "output delayed until post window matures",
+      "name": "post_event_path",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "numeric",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "close",
+        "event",
+        "window"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "full pre-event window required",
+      "name": "pre_event_path",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "ratio",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "break_board",
+        "seal_state"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing state blocks transition",
+      "name": "reseal",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "event",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "close",
+        "up_limit_price"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing close/limit blocks detection",
+      "name": "seal",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "event",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "state"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing state yields missing",
+      "name": "state_duration",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "count",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    },
+    {
+      "canonicalization": "event_name_plus_versioned_parameters",
+      "inputs": [
+        "state"
+      ],
+      "maturity": "0 bars",
+      "missing_semantics": "missing previous state yields no transition",
+      "name": "state_transition",
+      "observable_time": "max_input_observable_time_plus_maturity",
+      "output_type": "event",
+      "overlap_policy": "configured",
+      "source_lag": "max_input_source_lag"
+    }
+  ],
+  "version": "nextgen_dark_event_state_v1",
+  "winner_or_performance_directed": false
+}

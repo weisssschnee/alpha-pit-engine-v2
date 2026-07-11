@@ -1,0 +1,38 @@
+{
+  "plan_version": "nextgen_dark_canary_plan_v1",
+  "execution_state": "PREPARED_NOT_STARTED_REQUIRES_INDEPENDENT_AUTHORIZATION",
+  "allowed_data_roles": ["development"],
+  "forbidden_data_roles": ["spent", "sealed", "forward"],
+  "forward_2026_allowed": false,
+  "online_policy_update_allowed": false,
+  "adaptive_reward_allowed": false,
+  "policy_freeze": true,
+  "candidate_submission_contract": "nextgen_dark_candidate_submission_v1",
+  "proposal_budget_total": 1344,
+  "admission_budget_total": 168,
+  "strict_eval_budget_total": 64,
+  "strict_eval_allocation": {
+    "static_cross_sectional": 12,
+    "temporal_program": 12,
+    "event_conditioned": 8,
+    "state_transition": 8,
+    "orthogonal_exile": 8,
+    "competitor_reproduction": 8,
+    "mcts_evolutionary_challenger": 8
+  },
+  "global_topk_baseline_quota": 16,
+  "selection": {
+    "family_bucket_stratified": true,
+    "one_exact_identity_one_vote": true,
+    "parent_descendant_cap": 2,
+    "fresh_budget_floor": 24,
+    "no_memory_lane": true,
+    "exile_quota": 8,
+    "deterministic_seed": 20260711
+  },
+  "plate_industry_linkage": {
+    "enabled": false,
+    "blocker": "no verified 2024-2025 historical membership/effective-time/entry-exit release"
+  },
+  "performance_comparison_executed": false
+}

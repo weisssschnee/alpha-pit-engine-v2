@@ -2,27 +2,33 @@
 
 Updated: 2026-07-11
 
-- Current phase: `A_EVALRESET` — committed after all implementation and
-  verification gates passed; awaiting explicit user acceptance.
-- Passed guards: explicit development/train provenance; raw provenance checked
-  before normalization; candidate-level validation/holdout/challenge/sealed/
-  forward/OOS fields fail at feedback and scheduler boundaries; spent roles
-  cannot be relabeled development.
-- Passed audit gates: 24,576-candidate A/B sketches complete; all preregistered
-  fidelity gates pass; unified generation/proxy/admission/strict/coverage
-  mapping complete; no significant signal-level collapse observed.
-- Passed final verification: graph and artifact index validate, evaluation
-  ledgers have zero forward violations, and the full suite passes (`49 passed`).
-- Commit gate: satisfied by the single Phase A commit containing this state;
-  post-commit worktree cleanliness is verified separately by Git.
-- 2026 status: `forward`, sealed; performance access is forbidden and has not
-  occurred in EVALRESET.
-- Phase B: `FROZEN`; no feature/state/event/benchmark hypothesis redesign may
-  enter the reward loop.
-- Heavy-task state: the only allowed two-pass deterministic signal-sketch audit
-  is complete; no further heavy task is authorized in Phase A.
-- Next formal decision point: explicit user acceptance of the committed Phase A
-  architecture. Phase B remains frozen until that acceptance is explicit.
-- Historical Phase3FIX: `PROVENANCE_UNVERIFIED`,
-  `NON_REPRODUCIBLE_AS_EXECUTED`, `NOT_VALID_FOR_PROOF`.
-- Working branch: `codex/evalreset-collapse-audit-20260711`; no push.
+- `PHASE_A_EVALRESET_ACCEPTED`
+- `GENERATION_STRUCTURAL_REDUNDANCY_CONFIRMED`
+- `SIGNAL_LEVEL_COLLAPSE_NOT_OBSERVED`
+- `DOWNSTREAM_CONCENTRATION_AMPLIFICATION_NOT_OBSERVED`
+- `NEXTGEN_DARK_AUTHORIZED`
+- `NEXTGEN_DARK_INFRASTRUCTURE_PARTIALLY_READY`
+- `FORMAL_SEARCH_FROZEN`
+- `FORWARD_2026_SEALED`
+
+The accepted Phase A `signal-sketch` evidence remains immutable and is not a
+NEXTGEN proposal/reward input.
+
+NEXTGEN-DARK code contracts are implemented for the versioned 121-field
+Feature/State Fabric, 15 typed temporal primitives, event/state materialization,
+isolated hypothesis lanes, deterministic admission, benchmark/competitor plans,
+coverage metrics, and atomic/idempotent checkpoints.
+
+The sole closure blocker is external data: no verified 2024–2025 historical
+plate/industry membership release with effective time, source-observed time,
+and entry/exit history exists locally. Current/probe constituent snapshots are
+blocked from masquerading as PIT linkage.
+
+The fixed-budget development-only CANARY plan is prepared but not started. It
+disables the plate/industry linkage lane, online policy updates, adaptive reward,
+spent/sealed/forward roles, and all 2026 access. Execution requires independent
+authorization after the PIT-source blocker is resolved or explicitly scoped
+out.
+
+Next formal decision point: resolve or explicitly scope out the historical PIT
+membership blocker, then independently authorize the prepared CANARY plan.

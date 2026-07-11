@@ -1,0 +1,47 @@
+{
+  "run_id": "cn_true1min_nextgen_dark_20260711",
+  "phase_a_accepted_sha": "af5c87b72677c5d87d80c62cfbed16bd3ece758d",
+  "phase_a_remote_sha_verified": true,
+  "status": "NEXTGEN_DARK_INFRASTRUCTURE_PARTIALLY_READY",
+  "fixed_findings": [
+    "GENERATION_STRUCTURAL_REDUNDANCY_CONFIRMED",
+    "SIGNAL_LEVEL_COLLAPSE_NOT_OBSERVED",
+    "DOWNSTREAM_CONCENTRATION_AMPLIFICATION_NOT_OBSERVED"
+  ],
+  "implemented": {
+    "feature_state_fabric": "src/our_system_phase2/services/feature_state_fabric.py",
+    "field_registry_121": "runtime/field_registry/nextgen_dark_field_registry_v1.json",
+    "typed_temporal_program": "src/our_system_phase2/services/typed_temporal_program.py",
+    "event_state_system": "src/our_system_phase2/services/event_state_system.py",
+    "pit_group_contract": "src/our_system_phase2/services/pit_group_sidecar.py",
+    "hypothesis_lanes": "src/our_system_phase2/services/hypothesis_lanes.py",
+    "admission_diversity": "src/our_system_phase2/services/admission_diversity.py",
+    "benchmark_competitor_harness": "src/our_system_phase2/services/benchmark_competitor_harness.py",
+    "coverage_metrics": "src/our_system_phase2/services/coverage_metrics.py",
+    "atomic_checkpoint_resume": "src/our_system_phase2/services/atomic_checkpoint.py"
+  },
+  "implementation_commits": ["08fc25a", "f1a2a56", "6f13964"],
+  "verification": {
+    "full_test_suite": "90 passed in 19.19s",
+    "architecture_graph_nodes": 34,
+    "architecture_graph_edges": 33,
+    "field_registry_count": 121,
+    "temporal_primitive_count": 15,
+    "event_feature_count": 16,
+    "hypothesis_lane_count": 7,
+    "benchmark_count": 16
+  },
+  "blockers": [
+    {
+      "id": "pit_historical_membership_release",
+      "status": "BLOCKED_EXTERNAL_DATA",
+      "detail": "local assets expose current/probe board constituents but no verified 2024-2025 membership effective-time and entry/exit history"
+    }
+  ],
+  "canary_plan": "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
+  "formal_search_executed": false,
+  "performance_comparison_executed": false,
+  "forward_2026_accessed": false,
+  "adaptive_reward_restored": false,
+  "closure_commit": "containing_commit"
+}

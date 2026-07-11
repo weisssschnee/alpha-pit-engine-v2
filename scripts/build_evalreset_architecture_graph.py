@@ -127,7 +127,7 @@ def build_graph(registry: dict[str, Any], *, repo: Path) -> dict[str, Any]:
         "directed": True,
         "multigraph": True,
         "graph": {
-            "graph_type": "EVALRESET_PHASE_A_ARCHITECTURE_CONTRACT",
+            "graph_type": registry.get("graph_type", "EVALRESET_PHASE_A_ARCHITECTURE_CONTRACT"),
             "registry_version": registry["registry_version"],
             "phase": registry["phase"],
             "generated_at": datetime.now(timezone.utc).isoformat(),

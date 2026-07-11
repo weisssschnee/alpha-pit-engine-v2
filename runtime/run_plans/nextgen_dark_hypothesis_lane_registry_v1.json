@@ -1,0 +1,137 @@
+{
+  "adaptive_policy_update_allowed": false,
+  "formal_performance_search_allowed": false,
+  "lane_count": 7,
+  "lanes": [
+    {
+      "admission_quota": 16,
+      "archive_namespace": "nextgen/competitor_reproduction",
+      "candidate_contract": "nextgen_dark_candidate_submission_v1",
+      "data_access_role": "development",
+      "exile": false,
+      "lane_id": "competitor_reproduction",
+      "lineage_namespace": "ngd_competitor_reproduction",
+      "no_memory": true,
+      "performance_search_allowed": false,
+      "policy_frozen": true,
+      "proposal_quota": 128,
+      "root_distribution": {
+        "external": 0.5,
+        "strategy": 0.5
+      },
+      "seed": 9105
+    },
+    {
+      "admission_quota": 24,
+      "archive_namespace": "nextgen/event_conditioned",
+      "candidate_contract": "nextgen_dark_candidate_submission_v1",
+      "data_access_role": "development",
+      "exile": false,
+      "lane_id": "event_conditioned",
+      "lineage_namespace": "ngd_event_conditioned",
+      "no_memory": false,
+      "performance_search_allowed": false,
+      "policy_frozen": true,
+      "proposal_quota": 192,
+      "root_distribution": {
+        "context": 0.25,
+        "firstN": 0.25,
+        "limit": 0.5
+      },
+      "seed": 9102
+    },
+    {
+      "admission_quota": 24,
+      "archive_namespace": "nextgen/mcts_evolutionary_challenger",
+      "candidate_contract": "nextgen_dark_candidate_submission_v1",
+      "data_access_role": "development",
+      "exile": false,
+      "lane_id": "mcts_evolutionary_challenger",
+      "lineage_namespace": "ngd_mcts_evolutionary_challenger",
+      "no_memory": true,
+      "performance_search_allowed": false,
+      "policy_frozen": true,
+      "proposal_quota": 192,
+      "root_distribution": {
+        "evolutionary": 0.5,
+        "mcts": 0.5
+      },
+      "seed": 9106
+    },
+    {
+      "admission_quota": 16,
+      "archive_namespace": "nextgen/orthogonal_exile",
+      "candidate_contract": "nextgen_dark_candidate_submission_v1",
+      "data_access_role": "development",
+      "exile": true,
+      "lane_id": "orthogonal_exile",
+      "lineage_namespace": "ngd_orthogonal_exile",
+      "no_memory": true,
+      "performance_search_allowed": false,
+      "policy_frozen": true,
+      "proposal_quota": 128,
+      "root_distribution": {
+        "exile": 0.5,
+        "orthogonal": 0.5
+      },
+      "seed": 9104
+    },
+    {
+      "admission_quota": 24,
+      "archive_namespace": "nextgen/state_transition",
+      "candidate_contract": "nextgen_dark_candidate_submission_v1",
+      "data_access_role": "development",
+      "exile": false,
+      "lane_id": "state_transition",
+      "lineage_namespace": "ngd_state_transition",
+      "no_memory": false,
+      "performance_search_allowed": false,
+      "policy_frozen": true,
+      "proposal_quota": 192,
+      "root_distribution": {
+        "confirmation": 0.2,
+        "duration": 0.4,
+        "transition": 0.4
+      },
+      "seed": 9103
+    },
+    {
+      "admission_quota": 32,
+      "archive_namespace": "nextgen/static_cross_sectional",
+      "candidate_contract": "nextgen_dark_candidate_submission_v1",
+      "data_access_role": "development",
+      "exile": false,
+      "lane_id": "static_cross_sectional",
+      "lineage_namespace": "ngd_static_cross_sectional",
+      "no_memory": false,
+      "performance_search_allowed": false,
+      "policy_frozen": true,
+      "proposal_quota": 256,
+      "root_distribution": {
+        "context": 0.4,
+        "raw": 0.6
+      },
+      "seed": 9100
+    },
+    {
+      "admission_quota": 32,
+      "archive_namespace": "nextgen/temporal_program",
+      "candidate_contract": "nextgen_dark_candidate_submission_v1",
+      "data_access_role": "development",
+      "exile": false,
+      "lane_id": "temporal_program",
+      "lineage_namespace": "ngd_temporal_program",
+      "no_memory": false,
+      "performance_search_allowed": false,
+      "policy_frozen": true,
+      "proposal_quota": 256,
+      "root_distribution": {
+        "multi_scale": 0.5,
+        "single_scale": 0.5
+      },
+      "seed": 9101
+    }
+  ],
+  "registry_hash": "c159e5ced019cdaf40ab0e469f4f1d9c7e318fbbec3390550360f536423725be",
+  "registry_version": "nextgen_dark_hypothesis_lanes_v1"
+}
