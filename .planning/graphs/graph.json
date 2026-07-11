@@ -9,10 +9,10 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-11T11:55:51.254716+00:00",
+    "generated_at": "2026-07-11T18:15:51.432692+00:00",
     "graph_type": "NEXTGEN_DARK_CURRENT_ARCHITECTURE_CONTRACT",
     "phase": "NEXTGEN_DARK_CLOSURE",
-    "registry_sha256": "7ac5a66e995a56931a7a35d363f9e1efe73f59822f7cfa376b7458bd712431f9",
+    "registry_sha256": "aeb8f870737cea2b2191186ea8f3b6d26065b1448aa62aa4fcb739fa10f36fec",
     "registry_version": "nextgen_dark_architecture_registry_v1",
     "status_values": [
       "DEPRECATED",
@@ -178,9 +178,16 @@
       "target": "nextgen_event_state_system"
     },
     {
-      "evidence": "PIT fixture tests",
+      "evidence": "chip sidecar tests",
       "permission": "ALLOWED",
-      "relation": "supplies_group_confirmation_when_verified",
+      "relation": "supplies_role_limited_pit_context",
+      "source": "chip_pit_sidecar",
+      "target": "feature_state_fabric"
+    },
+    {
+      "evidence": "user-authorized NEXTGEN scope exclusion",
+      "permission": "FORBIDDEN",
+      "relation": "deferred_group_confirmation",
       "source": "pit_group_sidecar",
       "target": "nextgen_event_state_system"
     },
@@ -457,9 +464,9 @@
       ]
     },
     {
-      "blocker": "PIT membership/churn contract belongs to frozen Phase B",
+      "blocker": "plate/industry scope excluded from NEXTGEN-DARK closure by user authorization",
       "data_role": "unaccepted_research_canary",
-      "feedback_permission": "FORBIDDEN",
+      "feedback_permission": "FORBIDDEN_USER_DEFERRED",
       "id": "plate_industry_sidecar",
       "implementation_path": [
         "src/our_system_phase2/services/true1min_curated_lanes.py"
@@ -1171,7 +1178,7 @@
         "2024-2025 augmented shard Parquet schema footer"
       ],
       "label": "Versioned 121-field registry",
-      "last_verified_sha": "d594a61a11617364ccc3f6a5269151c8e4f4ea25759c84169a2d61c67beba8fa",
+      "last_verified_sha": "38ac615bf0f7bcfd8b584d37d50f741c257d631eb57e493e86c30fe8220ba2a4",
       "last_verified_sha_scope": [
         "runtime/field_registry/nextgen_dark_field_registry_v1.json",
         "tests/test_feature_state_fabric.py"
@@ -1214,7 +1221,7 @@
         "raw/firstN/lagged/event inputs"
       ],
       "label": "Feature/State Fabric materializer and deterministic cache",
-      "last_verified_sha": "6b4cd357d9aecc5518fc6ea2eb038c183c1a67457c2be295b5b4e0db6c1d9651",
+      "last_verified_sha": "ce9387c2cd17dfa09eb262ca96a27112956be15ac66a49420416cd4b182b64bc",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/feature_state_fabric.py",
         "tests/test_feature_state_fabric.py"
@@ -1259,7 +1266,7 @@
         "typed numeric/event/state series"
       ],
       "label": "15-primitive typed temporal program",
-      "last_verified_sha": "7dbf9ef3070a8733e8983567d6a7cb59c2937fd80b52b40cc91326a5021fb126",
+      "last_verified_sha": "61b79ab5016461c7371cb4bfc699ee83ae4d5619f48bac1cbe41576b199eb4a3",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/typed_temporal_program.py",
         "tests/test_typed_temporal_program.py"
@@ -1304,7 +1311,7 @@
         "PIT bars, firstN, lagged context, optional PIT group confirmation"
       ],
       "label": "Limit-event and state-transition system",
-      "last_verified_sha": "46c870836adb445ea7280f06ed000d261cac5f456e95f259b674b40c9fb23d0c",
+      "last_verified_sha": "09f4dda33eefbc10c7dfd63c4012b7e2f01992d1a3858dbb30ff8fcdb6107f19",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/event_state_system.py",
         "tests/test_event_state_system.py"
@@ -1330,44 +1337,111 @@
       ]
     },
     {
-      "blocker": "no verified 2024-2025 historical membership/effective-time/entry-exit source; current snapshots cannot be promoted",
+      "blocker": "daily source-observed time is a conservative next-session assumption; fields remain interaction/condition/benchmark only",
       "data_role": "development_context",
-      "feedback_permission": "BLOCKED_UNTIL_HISTORICAL_SOURCE_VERIFIED",
-      "id": "pit_group_sidecar",
+      "feedback_permission": "ROLE_LIMITED_NO_PRIMARY_OR_REWARD",
+      "id": "chip_pit_sidecar",
       "implementation_path": [
-        "src/our_system_phase2/services/pit_group_sidecar.py"
+        "src/our_system_phase2/services/chip_sidecar.py",
+        "scripts/build_chip_sidecar.py"
       ],
       "implementation_paths": [
-        "src/our_system_phase2/services/pit_group_sidecar.py"
+        "src/our_system_phase2/services/chip_sidecar.py",
+        "scripts/build_chip_sidecar.py"
       ],
       "input_artifact": [
-        "required historical membership/effective/entry-exit release"
+        "user-supplied daily chip/cost archive through 2025-12-30"
       ],
       "input_artifacts": [
-        "required historical membership/effective/entry-exit release"
+        "user-supplied daily chip/cost archive through 2025-12-30"
       ],
-      "label": "Historical PIT plate/industry membership sidecar",
-      "last_verified_sha": "51321ea28b5f3de00cedb52a4c9bf21ddcede739b3d12a8858beba7da8356fb0",
+      "label": "Daily PIT chip distribution sidecar",
+      "last_verified_sha": "0c602527d52fa2d0b025887ef1d0427779d8a9368c1df0b4ae50d8fe750752d8",
       "last_verified_sha_scope": [
-        "src/our_system_phase2/services/pit_group_sidecar.py",
-        "tests/test_pit_group_sidecar.py"
+        "src/our_system_phase2/services/chip_sidecar.py",
+        "tests/test_chip_sidecar.py"
       ],
       "output_artifact": [
-        "versioned membership normal form and cross-sectional confirmations"
+        "versioned resumable shards, field registry and source manifest"
       ],
       "output_artifacts": [
-        "versioned membership normal form and cross-sectional confirmations"
+        "versioned resumable shards, field registry and source manifest"
       ],
-      "status": "PARTIAL",
+      "status": "IMPLEMENTED",
       "test/evidence": [
-        "tests/test_pit_group_sidecar.py"
+        "tests/test_chip_sidecar.py"
       ],
       "test_evidence": [
-        "tests/test_pit_group_sidecar.py"
+        "tests/test_chip_sidecar.py"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/services/chip_sidecar.py",
+        "tests/test_chip_sidecar.py"
+      ]
+    },
+    {
+      "blocker": "USER_DEFERRED_EXCLUDED_FROM_CLOSURE; no plate field, event confirmation, lane, benchmark, reward or scheduler feedback allowed",
+      "data_role": "development_context",
+      "feedback_permission": "FORBIDDEN_USER_DEFERRED",
+      "id": "pit_group_sidecar",
+      "implementation_path": [
+        "src/our_system_phase2/services/pit_group_sidecar.py",
+        "src/our_system_phase2/services/pit_group_release.py",
+        "src/our_system_phase2/services/tdx_plate_snapshot_release.py",
+        "src/our_system_phase2/services/tdx_plate_market_sidecar.py",
+        "src/our_system_phase2/services/true1min_plate_aggregation.py"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/services/pit_group_sidecar.py",
+        "src/our_system_phase2/services/pit_group_release.py",
+        "src/our_system_phase2/services/tdx_plate_snapshot_release.py",
+        "src/our_system_phase2/services/tdx_plate_market_sidecar.py",
+        "src/our_system_phase2/services/true1min_plate_aggregation.py"
+      ],
+      "input_artifact": [
+        "user-supplied TDX/Eastmoney membership and daily market files"
+      ],
+      "input_artifacts": [
+        "user-supplied TDX/Eastmoney membership and daily market files"
+      ],
+      "label": "Deferred PIT plate/industry sidecars and true1min aggregation",
+      "last_verified_sha": "87ff05afa8b8d3ad5ce2c7a4c20678ec0e7923673f28ba4104d19a7763c52354",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/services/pit_group_sidecar.py",
+        "src/our_system_phase2/services/pit_group_release.py",
+        "src/our_system_phase2/services/true1min_plate_aggregation.py",
+        "tests/test_pit_group_sidecar.py",
+        "tests/test_pit_group_release.py",
+        "tests/test_true1min_plate_aggregation.py",
+        "tests/test_true1min_plate_materialization_smoke.py"
+      ],
+      "output_artifact": [
+        "isolated PIT releases and diagnostic-only true1min plate smoke"
+      ],
+      "output_artifacts": [
+        "isolated PIT releases and diagnostic-only true1min plate smoke"
+      ],
+      "status": "FROZEN",
+      "test/evidence": [
+        "tests/test_pit_group_sidecar.py",
+        "tests/test_pit_group_release.py",
+        "tests/test_true1min_plate_aggregation.py",
+        "tests/test_true1min_plate_materialization_smoke.py"
+      ],
+      "test_evidence": [
+        "tests/test_pit_group_sidecar.py",
+        "tests/test_pit_group_release.py",
+        "tests/test_true1min_plate_aggregation.py",
+        "tests/test_true1min_plate_materialization_smoke.py"
       ],
       "verification_paths": [
         "src/our_system_phase2/services/pit_group_sidecar.py",
-        "tests/test_pit_group_sidecar.py"
+        "src/our_system_phase2/services/pit_group_release.py",
+        "src/our_system_phase2/services/true1min_plate_aggregation.py",
+        "tests/test_pit_group_sidecar.py",
+        "tests/test_pit_group_release.py",
+        "tests/test_true1min_plate_aggregation.py",
+        "tests/test_true1min_plate_materialization_smoke.py"
       ]
     },
     {
@@ -1390,7 +1464,7 @@
         "versioned candidate submission contract"
       ],
       "label": "Seven isolated hypothesis lanes",
-      "last_verified_sha": "4a0beea317f4fd38f3793fe7cd653354048c0a4af050797139dc5ab8ce6ca89f",
+      "last_verified_sha": "3701a4606dbe3224e5f45e3d3920d9568fe1030198cb4788179e1d49f6b47435",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/hypothesis_lanes.py",
         "tests/test_nextgen_hypothesis_infrastructure.py"
@@ -1433,7 +1507,7 @@
         "isolated lane submissions"
       ],
       "label": "Stratified admission and diversity controls",
-      "last_verified_sha": "d669de70cc1e095318d8db57a1168455bd75381f6844c2b03d0de77464f46c0c",
+      "last_verified_sha": "5a3a0c191471ee6dc4ff2fbaa736e55f2837bdeb4d7146ee3b0e4e147039d3b3",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/admission_diversity.py",
         "tests/test_nextgen_hypothesis_infrastructure.py"
@@ -1457,7 +1531,7 @@
       ]
     },
     {
-      "blocker": "plate/industry benchmark disabled until historical PIT source exists",
+      "blocker": "plate/industry benchmark is user-deferred and remains disabled",
       "data_role": "development",
       "feedback_permission": "NO_PERFORMANCE_COMPARISON_EXECUTED",
       "id": "benchmark_competitor_harness",
@@ -1476,7 +1550,7 @@
         "unified candidate submissions and fixed budgets"
       ],
       "label": "Strategy and algorithm benchmark/competitor harness",
-      "last_verified_sha": "6e4641367ae067718ce7d4443f8cdf09ba4839a6621594598347a6b81d701932",
+      "last_verified_sha": "9d1992dccbaeb9e4d08d621b2e93f97be0705bac871de1bb16f6d91c525419d7",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/benchmark_competitor_harness.py",
         "tests/test_nextgen_hypothesis_infrastructure.py"
@@ -1519,7 +1593,7 @@
         "candidate contract metadata only"
       ],
       "label": "No-performance coverage metrics",
-      "last_verified_sha": "b21f8eb3e453355f8db139f40d92c60d4c6c445efaa62f75d472d36b803f7cc7",
+      "last_verified_sha": "d4dde876d13d140307498536db204f1c76029cd052baa6ad4457e699206103e3",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/coverage_metrics.py",
         "tests/test_nextgen_hypothesis_infrastructure.py"
@@ -1588,7 +1662,7 @@
       ]
     },
     {
-      "blocker": "historical PIT plate/industry lane disabled",
+      "blocker": "execution still requires independent authorization; deferred plate/industry lane remains disabled",
       "data_role": "development_only",
       "feedback_permission": "EXECUTION_REQUIRES_INDEPENDENT_AUTHORIZATION",
       "id": "nextgen_canary_plan",
@@ -1605,7 +1679,7 @@
         "lane/admission/benchmark contracts"
       ],
       "label": "Fixed-budget development-only CANARY plan",
-      "last_verified_sha": "9f0154e0a9af12e9350062afb26e0c61fb2daf4f031de5e58eddf78100d7bc08",
+      "last_verified_sha": "3c597c57cedd0dc68b468aef93435ed2eebafbd5a110a3aa0af31c5573b4a52f",
       "last_verified_sha_scope": [
         "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
         "tests/test_nextgen_dark_delivery.py"
@@ -1646,7 +1720,7 @@
         "NEXTGEN-DARK closure"
       ],
       "label": "Formal search and adaptive reward remain frozen",
-      "last_verified_sha": "be8ccd4f41a8152f0983d5c94b7abc0fd04edc3783e68223cf35957e50f055b6",
+      "last_verified_sha": "619c84f0e804f8f4ba3edbaf73b37d9bd04fd37e42c385f9f04aac59f492dfde",
       "last_verified_sha_scope": [
         "runtime/run_plans/nextgen_dark_run_manifest_v1.json",
         "tests/test_nextgen_dark_delivery.py"

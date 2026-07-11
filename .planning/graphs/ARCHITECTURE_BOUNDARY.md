@@ -1,6 +1,6 @@
 # Architecture Boundary
 
-Updated: 2026-07-11
+Updated: 2026-07-12
 
 ## Graph authority
 
@@ -9,21 +9,19 @@ Updated: 2026-07-11
 registry plus `runtime/run_plans/nextgen_dark_architecture_registry_v1.json`.
 
 The builder validates required nodes, implementation/evidence paths, allowed
-status values, and all six mandatory forbidden feedback edges. It calculates a
-last-verified SHA from each node's declared verification files. This prevents a
-handwritten diagram from silently claiming implementation state.
+status values, and mandatory forbidden feedback edges. It calculates a
+last-verified SHA from every node's declared verification files. A handwritten
+diagram cannot independently claim implementation state.
 
 `graph.html`, `GRAPH_REPORT.md`, and `.last-build-snapshot.json` are older raw
-navigation artifacts. They are not Phase A state authority and are not accepted
-as evidence for an active route.
+navigation artifacts. They are not current architecture authority.
 
 ## Precedence
 
 1. Current user instruction and repository `AGENTS.md`.
 2. Accepted ADRs and fixed run manifests.
-3. Accepted Phase A and NEXTGEN-DARK architecture registries plus generated
-   `graph.json`.
-4. Curated `CURRENT_ARCHITECTURE.md`, `EVOLUTION_MAP.md`, and `.planning/STATE.md`.
+3. Accepted Phase A and NEXTGEN-DARK registries plus generated `graph.json`.
+4. `CURRENT_ARCHITECTURE.md`, `EVOLUTION_MAP.md`, and `.planning/STATE.md`.
 5. Historical reports and raw navigation artifacts.
 
 ## Evaluation boundaries
@@ -31,15 +29,18 @@ as evidence for an active route.
 - ADR 0001 and the fixed 485-date manifest own split assignment.
 - ADR 0002, the role registry, access ledger, and burn ledger own evaluation
   access classification.
-- `evaluation_access_guard.py` owns candidate-level feedback enforcement.
-- Missing or contradictory provenance fails before schema normalization.
+- Candidate-level feedback enforcement fails closed.
 - Spent evaluation cannot be relabeled development.
 - 2026 forward performance cannot enter search, reward, scheduler, memory, or
   family decisions.
+- Deferred plate/industry data cannot enter fields, event confirmation, lanes,
+  benchmarks, reward, scheduler, or memory.
 
 ## Acceptance boundary
 
 Phase A is accepted at `af5c87b72677c5d87d80c62cfbed16bd3ece758d`.
-NEXTGEN-DARK cannot be fully ready while the historical plate/industry PIT
-membership release is absent. The prepared CANARY plan is not an execution
-authorization; formal search, adaptive reward, and 2026 forward remain frozen.
+NEXTGEN-DARK is ready only within the closure scope authorized on 2026-07-12.
+Plate/industry capability is explicitly excluded and frozen; `READY` does not
+promote its partial membership or diagnostic aggregation artifacts. The
+prepared CANARY plan is not an execution authorization; formal search,
+adaptive reward, deferred plate inputs, and 2026 forward remain frozen.

@@ -163,6 +163,10 @@
   ],
   "candidate_submission_contract": "nextgen_dark_candidate_submission_v1",
   "data_access_contract": "development_only_no_forward",
+  "disabled_benchmark_ids": [
+    "plate_industry_linkage"
+  ],
+  "disabled_reason": "USER_DEFERRED_EXCLUDED_FROM_CLOSURE",
   "harness_version": "nextgen_dark_benchmark_competitor_harness_v1",
   "independent_archives": true,
   "performance_comparison_executed": false,

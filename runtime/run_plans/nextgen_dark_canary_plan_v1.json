@@ -32,7 +32,7 @@
   },
   "plate_industry_linkage": {
     "enabled": false,
-    "blocker": "no verified 2024-2025 historical membership/effective-time/entry-exit release"
+    "blocker": "USER_DEFERRED_EXCLUDED_FROM_CLOSURE; re-enable requires new explicit authorization"
   },
   "performance_comparison_executed": false
 }

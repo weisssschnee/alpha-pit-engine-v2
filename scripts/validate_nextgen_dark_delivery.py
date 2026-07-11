@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -11,9 +12,18 @@ from typing import Any
 REQUIRED_NODES = {
     "nextgen_field_registry_121", "feature_state_fabric", "typed_temporal_program",
     "nextgen_event_state_system", "pit_group_sidecar", "hypothesis_lane_registry",
+    "chip_pit_sidecar",
     "admission_diversity", "benchmark_competitor_harness", "coverage_metrics",
     "atomic_checkpoint_resume", "nextgen_canary_plan", "formal_search_frozen",
 }
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
@@ -36,7 +46,7 @@ def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
         raise RuntimeError("NEXTGEN typed/event/lane registry count mismatch")
     if len(benchmarks["benchmarks"]) != 16 or benchmarks["performance_comparison_executed"]:
         raise RuntimeError("NEXTGEN benchmark registry mismatch or execution leak")
-    if manifest["status"] != "NEXTGEN_DARK_INFRASTRUCTURE_PARTIALLY_READY":
+    if manifest["status"] != "NEXTGEN_DARK_INFRASTRUCTURE_READY":
         raise RuntimeError("unexpected NEXTGEN closure status")
     if manifest["formal_search_executed"] or manifest["forward_2026_accessed"] or manifest["adaptive_reward_restored"]:
         raise RuntimeError("NEXTGEN closure crossed a frozen execution boundary")
@@ -46,11 +56,39 @@ def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
         raise RuntimeError("CANARY plan must be development-only")
     if canary["online_policy_update_allowed"] or canary["forward_2026_allowed"]:
         raise RuntimeError("CANARY plan cannot enable online tuning or forward data")
+    if canary["plate_industry_linkage"] != {
+        "enabled": False,
+        "blocker": (
+            "USER_DEFERRED_EXCLUDED_FROM_CLOSURE; "
+            "re-enable requires new explicit authorization"
+        ),
+    }:
+        raise RuntimeError("CANARY plan must keep user-deferred plate linkage disabled")
+    if benchmarks.get("disabled_benchmark_ids") != ["plate_industry_linkage"]:
+        raise RuntimeError("plate/industry benchmark must be explicitly disabled")
+    if benchmarks.get("disabled_reason") != "USER_DEFERRED_EXCLUDED_FROM_CLOSURE":
+        raise RuntimeError("plate/industry benchmark needs the authorized defer reason")
     partial = [row["id"] for row in artifact_index["artifacts"] if row["state"] == "PARTIAL"]
-    if partial != ["pit_historical_membership_release"]:
+    if partial:
         raise RuntimeError(f"unexpected NEXTGEN partial artifacts: {partial}")
-    if nodes["pit_group_sidecar"]["status"] != "PARTIAL":
-        raise RuntimeError("PIT group node must expose the missing historical source blocker")
+    deferred = [
+        row["id"] for row in artifact_index["artifacts"] if row["state"] == "DEFERRED"
+    ]
+    if deferred != ["pit_historical_membership_release"]:
+        raise RuntimeError(f"unexpected NEXTGEN deferred artifacts: {deferred}")
+    plate_scope = manifest.get("scope_exclusions", {}).get("plate_industry")
+    if plate_scope != "USER_DEFERRED_EXCLUDED_FROM_CLOSURE":
+        raise RuntimeError("plate/industry scope must be explicitly excluded from closure")
+    if nodes["pit_group_sidecar"]["status"] != "FROZEN":
+        raise RuntimeError("deferred PIT group node must remain frozen")
+    if nodes["pit_group_sidecar"]["feedback_permission"] != "FORBIDDEN_USER_DEFERRED":
+        raise RuntimeError("deferred PIT group node cannot feed NEXTGEN candidates")
+    for row in artifact_index["artifacts"]:
+        path = repo / row["path"]
+        if row["exists"] != path.is_file():
+            raise RuntimeError(f"artifact existence drift: {row['id']}")
+        if path.is_file() and row["last_verified_sha"] != _sha256(path):
+            raise RuntimeError(f"artifact hash drift: {row['id']}")
     return {
         "status": manifest["status"],
         "graph_node_count": len(nodes),
@@ -62,6 +100,8 @@ def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
         "benchmark_count": len(benchmarks["benchmarks"]),
         "canary_execution_state": canary["execution_state"],
         "partial_artifacts": partial,
+        "deferred_artifacts": deferred,
+        "plate_scope": plate_scope,
     }
 
 

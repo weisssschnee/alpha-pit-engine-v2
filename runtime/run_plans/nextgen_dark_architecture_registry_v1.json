@@ -16,6 +16,11 @@
     "sealed_epoch_governance": {
       "status": "PARTIAL",
       "blocker": "fixed-budget CANARY is prepared but not independently authorized"
+    },
+    "plate_industry_sidecar": {
+      "status": "FROZEN",
+      "feedback_permission": "FORBIDDEN_USER_DEFERRED",
+      "blocker": "plate/industry scope excluded from NEXTGEN-DARK closure by user authorization"
     }
   },
   "nodes": [
@@ -72,17 +77,30 @@
       "blocker": ""
     },
     {
-      "id": "pit_group_sidecar",
-      "label": "Historical PIT plate/industry membership sidecar",
-      "status": "PARTIAL",
-      "implementation_paths": ["src/our_system_phase2/services/pit_group_sidecar.py"],
-      "input_artifacts": ["required historical membership/effective/entry-exit release"],
-      "output_artifacts": ["versioned membership normal form and cross-sectional confirmations"],
+      "id": "chip_pit_sidecar",
+      "label": "Daily PIT chip distribution sidecar",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/chip_sidecar.py", "scripts/build_chip_sidecar.py"],
+      "input_artifacts": ["user-supplied daily chip/cost archive through 2025-12-30"],
+      "output_artifacts": ["versioned resumable shards, field registry and source manifest"],
       "data_role": "development_context",
-      "feedback_permission": "BLOCKED_UNTIL_HISTORICAL_SOURCE_VERIFIED",
-      "test_evidence": ["tests/test_pit_group_sidecar.py"],
-      "verification_paths": ["src/our_system_phase2/services/pit_group_sidecar.py", "tests/test_pit_group_sidecar.py"],
-      "blocker": "no verified 2024-2025 historical membership/effective-time/entry-exit source; current snapshots cannot be promoted"
+      "feedback_permission": "ROLE_LIMITED_NO_PRIMARY_OR_REWARD",
+      "test_evidence": ["tests/test_chip_sidecar.py"],
+      "verification_paths": ["src/our_system_phase2/services/chip_sidecar.py", "tests/test_chip_sidecar.py"],
+      "blocker": "daily source-observed time is a conservative next-session assumption; fields remain interaction/condition/benchmark only"
+    },
+    {
+      "id": "pit_group_sidecar",
+      "label": "Deferred PIT plate/industry sidecars and true1min aggregation",
+      "status": "FROZEN",
+      "implementation_paths": ["src/our_system_phase2/services/pit_group_sidecar.py", "src/our_system_phase2/services/pit_group_release.py", "src/our_system_phase2/services/tdx_plate_snapshot_release.py", "src/our_system_phase2/services/tdx_plate_market_sidecar.py", "src/our_system_phase2/services/true1min_plate_aggregation.py"],
+      "input_artifacts": ["user-supplied TDX/Eastmoney membership and daily market files"],
+      "output_artifacts": ["isolated PIT releases and diagnostic-only true1min plate smoke"],
+      "data_role": "development_context",
+      "feedback_permission": "FORBIDDEN_USER_DEFERRED",
+      "test_evidence": ["tests/test_pit_group_sidecar.py", "tests/test_pit_group_release.py", "tests/test_true1min_plate_aggregation.py", "tests/test_true1min_plate_materialization_smoke.py"],
+      "verification_paths": ["src/our_system_phase2/services/pit_group_sidecar.py", "src/our_system_phase2/services/pit_group_release.py", "src/our_system_phase2/services/true1min_plate_aggregation.py", "tests/test_pit_group_sidecar.py", "tests/test_pit_group_release.py", "tests/test_true1min_plate_aggregation.py", "tests/test_true1min_plate_materialization_smoke.py"],
+      "blocker": "USER_DEFERRED_EXCLUDED_FROM_CLOSURE; no plate field, event confirmation, lane, benchmark, reward or scheduler feedback allowed"
     },
     {
       "id": "hypothesis_lane_registry",
@@ -121,7 +139,7 @@
       "feedback_permission": "NO_PERFORMANCE_COMPARISON_EXECUTED",
       "test_evidence": ["tests/test_nextgen_hypothesis_infrastructure.py"],
       "verification_paths": ["src/our_system_phase2/services/benchmark_competitor_harness.py", "tests/test_nextgen_hypothesis_infrastructure.py"],
-      "blocker": "plate/industry benchmark disabled until historical PIT source exists"
+      "blocker": "plate/industry benchmark is user-deferred and remains disabled"
     },
     {
       "id": "coverage_metrics",
@@ -160,7 +178,7 @@
       "feedback_permission": "EXECUTION_REQUIRES_INDEPENDENT_AUTHORIZATION",
       "test_evidence": ["tests/test_nextgen_dark_delivery.py"],
       "verification_paths": ["runtime/run_plans/nextgen_dark_canary_plan_v1.json", "tests/test_nextgen_dark_delivery.py"],
-      "blocker": "historical PIT plate/industry lane disabled"
+      "blocker": "execution still requires independent authorization; deferred plate/industry lane remains disabled"
     },
     {
       "id": "formal_search_frozen",
@@ -181,7 +199,8 @@
     {"source": "nextgen_field_registry_121", "target": "feature_state_fabric", "relation": "governs_materialization", "permission": "ALLOWED", "evidence": "fabric tests"},
     {"source": "feature_state_fabric", "target": "typed_temporal_program", "relation": "supplies_typed_inputs", "permission": "ALLOWED", "evidence": "temporal tests"},
     {"source": "feature_state_fabric", "target": "nextgen_event_state_system", "relation": "supplies_pit_inputs", "permission": "ALLOWED", "evidence": "event tests"},
-    {"source": "pit_group_sidecar", "target": "nextgen_event_state_system", "relation": "supplies_group_confirmation_when_verified", "permission": "ALLOWED", "evidence": "PIT fixture tests"},
+    {"source": "chip_pit_sidecar", "target": "feature_state_fabric", "relation": "supplies_role_limited_pit_context", "permission": "ALLOWED", "evidence": "chip sidecar tests"},
+    {"source": "pit_group_sidecar", "target": "nextgen_event_state_system", "relation": "deferred_group_confirmation", "permission": "FORBIDDEN", "evidence": "user-authorized NEXTGEN scope exclusion"},
     {"source": "typed_temporal_program", "target": "hypothesis_lane_registry", "relation": "types_temporal_lane", "permission": "ALLOWED", "evidence": "lane contract"},
     {"source": "nextgen_event_state_system", "target": "hypothesis_lane_registry", "relation": "types_event_state_lanes", "permission": "ALLOWED", "evidence": "lane contract"},
     {"source": "hypothesis_lane_registry", "target": "admission_diversity", "relation": "submits_isolated_candidates", "permission": "ALLOWED", "evidence": "admission tests"},

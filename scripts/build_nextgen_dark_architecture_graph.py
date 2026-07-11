@@ -14,6 +14,7 @@ REQUIRED_NEXTGEN_NODES = {
     "feature_state_fabric",
     "typed_temporal_program",
     "nextgen_event_state_system",
+    "chip_pit_sidecar",
     "pit_group_sidecar",
     "hypothesis_lane_registry",
     "admission_diversity",

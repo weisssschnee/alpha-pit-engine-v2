@@ -1,17 +1,19 @@
 # Evolution Map
 
-Updated: 2026-07-11
+Updated: 2026-07-12
 
 | Change | Previous state | Current state / consequence |
 |---|---|---|
-| Shard-local split leakage discovered | Each worker/shard could derive its own temporal boundaries; atom labels conflicted with the global calendar | Fixed 485-date manifest is authoritative for every shard and recovery path; raw atom labels are diagnostic and conflicts are counted |
-| Pre-fix OOS downgraded | Validation/holdout were described as report-only OOS despite candidate-level reports and human canary selection | Both are formally `spent`; they are not reusable OOS and cannot affect future candidate distributions |
-| High-frequency CM/validation feedback withdrawn | Reward-integrated search could repeatedly expose validation/holdout candidate metrics to human and automated decisions | Candidate-level non-development fields fail at memory, search-feedback, and scheduler boundaries; report-only outputs cannot create positive memory |
-| Reward-integrated search → sealed-epoch governance | Continuous reward/memory/scheduler loop with weak evaluation access accounting | Development-only discovery is separated from future sealed/challenge epochs; access and burn ledgers record exposure before use |
-| Historical Phase3FIX downgraded | Key-file hash agreement was at risk of being treated as run reproduction | `PROVENANCE_UNVERIFIED`, `NON_REPRODUCIBLE_AS_EXECUTED`, `NOT_VALID_FOR_PROOF`; no infinite historical replay |
-| Generation AST redundancy observed | 24,576 nominal expressions could be misread as independent hypotheses | 131 skeletons and skeleton N_eff 33.55 prove structural redundancy only; the later signal audit did not locate a significant signal-level collapse |
-| Full-panel replay replaced by two-pass sketches | 384 semantic-only canary exceeded 120 seconds and retained full candidate Series | Two independent deterministic development-coordinate sketches completed for 24,576 candidates; all fidelity gates passed and the five-stage cluster mapping found no downstream concentration amplification |
-| Phase B hypothesis redesign frozen | Feature/event/state/industry lanes existed as canaries and historical routes | No new feature/state/event/benchmark lane may enter reward until Phase A architecture acceptance |
+| Shard-local split leakage discovered | Workers could derive their own temporal boundaries | The fixed 485-date manifest is authoritative; atom-label conflicts are diagnostic |
+| Pre-fix OOS downgraded | Validation/holdout were treated as reusable report-only OOS | Both are `spent` and cannot affect future candidate distributions |
+| High-frequency CM/validation feedback withdrawn | Candidate metrics could repeatedly influence automated and human decisions | Non-development candidate fields fail at memory, search-feedback, and scheduler boundaries |
+| Reward-integrated search replaced | Continuous reward/memory/scheduler feedback had weak access accounting | Sealed-epoch governance separates development discovery from challenge/sealed epochs |
+| Historical Phase3FIX downgraded | Key-file hashes risked being treated as reproduction | `PROVENANCE_UNVERIFIED`, `NON_REPRODUCIBLE_AS_EXECUTED`, `NOT_VALID_FOR_PROOF` |
+| Generation AST redundancy observed | 24,576 expressions could be read as independent hypotheses | Structural redundancy is confirmed; significant signal-level collapse was not observed |
+| Full-panel collapse replay replaced | Exact replay was too costly for the collapse question | Two independent deterministic sketches passed fidelity and found no downstream concentration amplification |
+| NEXTGEN hypothesis infrastructure built | Feature, temporal, event, lane, admission and benchmark contracts were incomplete | Versioned, typed, isolated, deterministic, and no-performance infrastructure is implemented |
+| Daily chip context admitted with restricted roles | Raw daily data contained invalid price sentinels and small rounded ratio overflow | Sentinels are masked, ratios audited, previous-session maturity enforced, and roles restricted |
+| Plate/industry scope deferred | Partial 2025 membership, daily context and diagnostic aggregation existed without full 2024 history or production materialization | User excluded the capability from current closure on 2026-07-12; all plate inputs and feedback edges are frozen without claiming completion |
 
 ## Active lineage
 
@@ -22,5 +24,8 @@ shard-local split repair
   -> deterministic signal-sketch fidelity audit
   -> unified cluster funnel
   -> Phase A architecture acceptance
-  -> only then Phase B hypothesis-space reconstruction
+  -> NEXTGEN hypothesis-space infrastructure
+  -> daily chip context with restricted roles
+  -> plate scope explicitly deferred and frozen
+  -> NEXTGEN-DARK infrastructure closure
 ```
