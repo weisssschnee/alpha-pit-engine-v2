@@ -65,6 +65,7 @@ class FieldSpec:
     observable_time_field: str = ""
     cacheable: bool = True
     blocked_reason: str = ""
+    source_session_field: str = ""
 
     def validate(self) -> None:
         if not self.name or not self.family or not self.transform:
@@ -75,6 +76,12 @@ class FieldSpec:
             raise ValueError(f"blocked field needs a reason: {self.name}")
         if self.missing_policy is MissingPolicy.BLOCK and self.role is not FieldRole.BLOCKED:
             raise ValueError(f"missing_policy=block requires blocked role: {self.name}")
+        if self.observable_clock is ObservableClock.FIRST_N_END:
+            if self.maturity <= 0 or self.maturity_unit != "minutes":
+                raise ValueError(f"firstN field needs positive minute maturity: {self.name}")
+        if self.observable_clock is ObservableClock.PREVIOUS_SESSION:
+            if self.source_lag < 1 or self.source_lag_unit != "sessions":
+                raise ValueError(f"previous-session field needs a session source lag: {self.name}")
 
     def canonical(self) -> dict[str, Any]:
         payload = asdict(self)
@@ -82,6 +89,8 @@ class FieldSpec:
         payload["observable_clock"] = self.observable_clock.value
         payload["missing_policy"] = self.missing_policy.value
         payload["source_fields"] = list(self.source_fields)
+        if not self.source_session_field:
+            payload.pop("source_session_field")
         return payload
 
 
@@ -223,13 +232,20 @@ def _frame_fingerprint(frame: pd.DataFrame, columns: Sequence[str], keys: Sequen
 class DeterministicFeatureCache:
     def __init__(self) -> None:
         self._values: dict[str, pd.Series] = {}
+        self._diagnostics: dict[str, dict[str, Any]] = {}
 
     def get(self, key: str) -> pd.Series | None:
         value = self._values.get(key)
         return value.copy() if value is not None else None
 
-    def put(self, key: str, value: pd.Series) -> None:
+    def get_diagnostics(self, key: str) -> dict[str, Any] | None:
+        value = self._diagnostics.get(key)
+        return dict(value) if value is not None else None
+
+    def put(self, key: str, value: pd.Series, diagnostics: Mapping[str, Any] | None = None) -> None:
         self._values[key] = value.copy()
+        if diagnostics is not None:
+            self._diagnostics[key] = dict(diagnostics)
 
     def __len__(self) -> int:
         return len(self._values)
@@ -261,14 +277,60 @@ class FeatureStateFabric:
             return value.groupby(frame["code"], sort=False).ffill()
         return value
 
-    def _enforce_observable_time(self, frame: pd.DataFrame, spec: FieldSpec, value: pd.Series) -> pd.Series:
+    def _apply_temporal_guards(
+        self,
+        frame: pd.DataFrame,
+        spec: FieldSpec,
+        value: pd.Series,
+    ) -> tuple[pd.Series, dict[str, Any]]:
+        diagnostics: dict[str, Any] = {
+            "observable_time_violation_count": 0,
+            "pre_maturity_value_count": 0,
+            "source_lag_violation_count": 0,
+            "source_lag_evidence": "NOT_APPLICABLE",
+        }
+        row_time = pd.to_datetime(frame["trade_time"], errors="coerce", format="mixed")
         if not spec.observable_time_field:
-            return value
-        if spec.observable_time_field not in frame.columns:
-            raise ValueError(f"{spec.name} needs observable-time field {spec.observable_time_field}")
-        observed = pd.to_datetime(frame[spec.observable_time_field], errors="coerce")
-        row_time = pd.to_datetime(frame["trade_time"], errors="coerce")
-        return value.where(observed.notna() & row_time.notna() & (observed <= row_time))
+            guarded = value
+        else:
+            if spec.observable_time_field not in frame.columns:
+                raise ValueError(f"{spec.name} needs observable-time field {spec.observable_time_field}")
+            observed = pd.to_datetime(
+                frame[spec.observable_time_field], errors="coerce", format="mixed"
+            )
+            allowed = observed.notna() & row_time.notna() & (observed <= row_time)
+            diagnostics["observable_time_violation_count"] = int((value.notna() & ~allowed).sum())
+            guarded = value.where(allowed)
+
+        if spec.observable_clock is ObservableClock.FIRST_N_END:
+            session = row_time.dt.normalize()
+            market_open = session + pd.Timedelta(hours=9, minutes=30)
+            maturity_time = market_open + pd.to_timedelta(spec.maturity - 1, unit="min")
+            mature = row_time.notna() & row_time.ge(maturity_time)
+            diagnostics["pre_maturity_value_count"] = int((guarded.notna() & ~mature).sum())
+            guarded = guarded.where(mature)
+
+        if spec.observable_clock is ObservableClock.PREVIOUS_SESSION:
+            session = row_time.dt.normalize()
+            variation = guarded.groupby([frame["code"], session], sort=False).nunique(dropna=True)
+            if variation.gt(1).any():
+                raise ValueError(f"lagged context {spec.name} changes within a session")
+            if spec.source_session_field:
+                if spec.source_session_field not in frame.columns:
+                    raise ValueError(f"{spec.name} needs source-session field {spec.source_session_field}")
+                source_session = pd.to_datetime(
+                    frame[spec.source_session_field], errors="coerce", format="mixed"
+                ).dt.normalize()
+                lagged = source_session.notna() & session.notna() & source_session.lt(session)
+                diagnostics["source_lag_violation_count"] = int((guarded.notna() & ~lagged).sum())
+                diagnostics["source_lag_evidence"] = "SOURCE_SESSION_FIELD"
+                guarded = guarded.where(lagged)
+            else:
+                raise ValueError(
+                    f"lagged context {spec.name} requires source-session evidence; "
+                    "prelagged values without their source clock are blocked"
+                )
+        return guarded, diagnostics
 
     def materialize(
         self,
@@ -290,12 +352,15 @@ class FeatureStateFabric:
             fingerprint_columns.extend(spec.source_fields)
             if spec.observable_time_field:
                 fingerprint_columns.append(spec.observable_time_field)
+            if spec.source_session_field:
+                fingerprint_columns.append(spec.source_session_field)
         input_fingerprint = _frame_fingerprint(
             canonical,
             sorted(set(fingerprint_columns)),
             self.row_keys,
         )
         cache_hits = 0
+        temporal_guards: dict[str, dict[str, Any]] = {}
         for name in fields:
             spec = self.registry.get(name)
             if spec.role is FieldRole.BLOCKED and not allow_blocked:
@@ -306,6 +371,7 @@ class FeatureStateFabric:
             value = self.cache.get(cache_key) if spec.cacheable else None
             if value is not None:
                 cache_hits += 1
+                diagnostics = self.cache.get_diagnostics(cache_key) or {}
             else:
                 if spec.transform == "identity":
                     if name not in canonical.columns:
@@ -316,10 +382,11 @@ class FeatureStateFabric:
                     if transform is None:
                         raise KeyError(f"unregistered transform: {spec.transform}")
                     value = transform(canonical)
-                value = self._enforce_observable_time(canonical, spec, value)
                 value = self._apply_missing_policy(canonical, spec, value)
+                value, diagnostics = self._apply_temporal_guards(canonical, spec, value)
                 if spec.cacheable:
-                    self.cache.put(cache_key, value)
+                    self.cache.put(cache_key, value, diagnostics)
+            temporal_guards[name] = diagnostics
             output[name] = value.to_numpy(copy=False)
         manifest = {
             "fabric_version": FABRIC_VERSION,
@@ -332,6 +399,7 @@ class FeatureStateFabric:
             "input_fingerprint": input_fingerprint,
             "output_fingerprint": _frame_fingerprint(output, list(fields), self.row_keys),
             "cache_hits": cache_hits,
+            "temporal_guards": temporal_guards,
             "reward_or_performance_used": False,
         }
         return output, manifest

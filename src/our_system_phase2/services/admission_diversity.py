@@ -70,6 +70,18 @@ def admit_candidates(
 ) -> dict[str, Any]:
     config.validate()
     validated = [lanes.validate_submission(row) for row in candidates]
+    candidate_id_counts = Counter(str(row["candidate_id"]) for row in validated)
+    duplicate_candidate_ids = sorted(key for key, count in candidate_id_counts.items() if count > 1)
+    if duplicate_candidate_ids:
+        raise ValueError(f"duplicate candidate_id values: {duplicate_candidate_ids}")
+    proposal_count = Counter(str(row["lane_id"]) for row in validated)
+    proposal_overflow = {
+        lane_id: {"observed": count, "quota": lanes.get(lane_id).proposal_quota}
+        for lane_id, count in proposal_count.items()
+        if count > lanes.get(lane_id).proposal_quota
+    }
+    if proposal_overflow:
+        raise ValueError(f"lane proposal quota exceeded: {proposal_overflow}")
     deduped = _dedupe_exact(validated, config.seed)
     global_topk_baseline = deduped[: config.total_quota]
 
@@ -130,6 +142,15 @@ def admit_candidates(
         if queue:
             active.append(key)
 
+    fresh_selected_count = sum(
+        bool(row.get("fresh")) or not str(row.get("parent_id") or "") for row in selected
+    )
+    exile_selected_count = sum(lanes.get(str(row["lane_id"])).exile for row in selected)
+    if fresh_selected_count < config.fresh_budget_floor:
+        raise ValueError(
+            "fresh budget floor was not met: "
+            f"selected={fresh_selected_count}, floor={config.fresh_budget_floor}"
+        )
     return {
         "selected": selected,
         "global_topk_baseline": global_topk_baseline,
@@ -137,9 +158,16 @@ def admit_candidates(
         "exact_identity_count": len(deduped),
         "duplicate_vote_count": len(validated) - len(deduped),
         "selected_count": len(selected),
-        "fresh_selected_count": sum(bool(row.get("fresh")) or not str(row.get("parent_id") or "") for row in selected),
-        "exile_selected_count": sum(lanes.get(str(row["lane_id"])).exile for row in selected),
-        "per_lane_proposal_distribution": dict(sorted(Counter(str(row["lane_id"]) for row in validated).items())),
+        "fresh_selected_count": fresh_selected_count,
+        "fresh_floor_satisfied": fresh_selected_count >= config.fresh_budget_floor,
+        "fresh_floor_shortfall": max(0, config.fresh_budget_floor - fresh_selected_count),
+        "exile_selected_count": exile_selected_count,
+        "exile_quota_satisfied": exile_selected_count >= config.exile_quota,
+        "exile_quota_shortfall": max(0, config.exile_quota - exile_selected_count),
+        "per_lane_proposal_distribution": dict(sorted(proposal_count.items())),
+        "per_lane_proposal_quota": {
+            spec.lane_id: spec.proposal_quota for spec in lanes.specs
+        },
         "per_lane_admission_distribution": dict(sorted(lane_count.items())),
         "semantic_volume": _semantic_volume(deduped),
         "performance_used": False,

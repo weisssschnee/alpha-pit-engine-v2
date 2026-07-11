@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Mapping
 
@@ -48,6 +49,8 @@ class CompetitorReproductionAdapter:
     def submit(self, row: Mapping[str, Any], lanes: HypothesisLaneRegistry) -> dict[str, Any]:
         if not all((self.adapter_id, self.source_system, self.source_version, self.source_hash, self.license_note)):
             raise ValueError("competitor reproduction requires complete source provenance")
+        if not re.fullmatch(r"[0-9a-fA-F]{64}", self.source_hash):
+            raise ValueError("competitor reproduction source_hash must be a SHA-256 hex digest")
         if not self.policy_frozen or str(row.get("lane_id")) != self.lane_id:
             raise ValueError("competitor adapter is frozen to the competitor_reproduction lane")
         output = lanes.validate_submission(row)

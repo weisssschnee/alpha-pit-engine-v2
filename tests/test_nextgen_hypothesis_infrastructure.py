@@ -8,7 +8,11 @@ from our_system_phase2.services.benchmark_competitor_harness import (
     default_benchmark_harness,
 )
 from our_system_phase2.services.coverage_metrics import compute_coverage_metrics
-from our_system_phase2.services.hypothesis_lanes import default_nextgen_lane_registry
+from our_system_phase2.services.hypothesis_lanes import (
+    HypothesisLaneRegistry,
+    HypothesisLaneSpec,
+    default_nextgen_lane_registry,
+)
 
 
 def _candidate(index: int, lane_id: str, *, exact: str | None = None, parent: str = "", fresh: bool = False) -> dict[str, object]:
@@ -17,6 +21,7 @@ def _candidate(index: int, lane_id: str, *, exact: str | None = None, parent: st
     return {
         "candidate_id": f"c{index:02d}",
         "lane_id": lane_id,
+        "root_cell": lane.root_distribution[0][0],
         "exact_identity": exact or f"exact-{index}",
         "semantic_key": f"semantic-{index % 4}",
         "lineage_key": f"{lane.lineage_namespace}:line-{index}",
@@ -59,6 +64,38 @@ def test_candidate_submission_rejects_performance_and_non_development_data() -> 
         lanes.validate_submission(row)
 
 
+@pytest.mark.parametrize("field", ["metadata_validation_score", "future_return", "audit_holdout_rank"])
+def test_candidate_submission_rejects_embedded_performance_field_names(field: str) -> None:
+    lanes = default_nextgen_lane_registry()
+    row = _candidate(1, "temporal_program")
+    row[field] = 1.0
+
+    with pytest.raises(ValueError, match="forbidden"):
+        lanes.validate_submission(row)
+
+
+def test_candidate_submission_must_use_its_lane_root_distribution() -> None:
+    lanes = default_nextgen_lane_registry()
+    row = _candidate(1, "temporal_program")
+    row["root_cell"] = "limit"
+
+    with pytest.raises(ValueError, match="root cell"):
+        lanes.validate_submission(row)
+
+
+@pytest.mark.parametrize(
+    "expression",
+    ["CSRank($forward_return)", "Mean($validation_score,5)", "Delta($feature_2026,1)"],
+)
+def test_candidate_expression_cannot_reference_evaluation_or_2026_fields(expression: str) -> None:
+    lanes = default_nextgen_lane_registry()
+    row = _candidate(1, "temporal_program")
+    row["expression"] = expression
+
+    with pytest.raises(ValueError, match="expression references forbidden"):
+        lanes.validate_submission(row)
+
+
 def test_stratified_admission_is_deterministic_and_one_identity_one_vote() -> None:
     lanes = default_nextgen_lane_registry()
     rows = [
@@ -82,6 +119,54 @@ def test_stratified_admission_is_deterministic_and_one_identity_one_vote() -> No
     assert first["performance_used"] is False
 
 
+def test_admission_enforces_lane_proposal_quota_and_unique_candidate_ids() -> None:
+    lanes = HypothesisLaneRegistry(
+        [
+            HypothesisLaneSpec(
+                lane_id="tiny",
+                root_distribution=(("root", 1.0),),
+                proposal_quota=2,
+                admission_quota=2,
+                archive_namespace="nextgen/tiny",
+                lineage_namespace="ngd_tiny",
+                seed=1,
+                candidate_contract="nextgen_dark_candidate_submission_v1",
+            )
+        ]
+    )
+    rows = []
+    for index in range(3):
+        row = _candidate(index, "static_cross_sectional")
+        row.update(
+            {
+                "lane_id": "tiny",
+                "root_cell": "root",
+                "lineage_key": f"ngd_tiny:line-{index}",
+            }
+        )
+        rows.append(row)
+    config = AdmissionConfig(2, 2, 2, 2, 0, 0)
+
+    with pytest.raises(ValueError, match="proposal quota"):
+        admit_candidates(rows, lanes, config)
+
+    rows[1]["candidate_id"] = rows[0]["candidate_id"]
+    with pytest.raises(ValueError, match="duplicate candidate_id"):
+        admit_candidates(rows[:2], lanes, config)
+
+
+def test_admission_fails_when_fresh_budget_floor_cannot_be_met() -> None:
+    lanes = default_nextgen_lane_registry()
+    rows = [
+        _candidate(0, "static_cross_sectional", fresh=True),
+        _candidate(1, "temporal_program", parent="p1"),
+    ]
+    config = AdmissionConfig(2, 2, 2, 2, fresh_budget_floor=2, exile_quota=0)
+
+    with pytest.raises(ValueError, match="fresh budget floor"):
+        admit_candidates(rows, lanes, config)
+
+
 def test_benchmark_harness_is_budgeted_frozen_and_not_run() -> None:
     lanes = default_nextgen_lane_registry()
     harness = default_benchmark_harness(lanes)
@@ -96,13 +181,17 @@ def test_benchmark_harness_is_budgeted_frozen_and_not_run() -> None:
 
 def test_external_competitor_adapter_requires_provenance_and_isolated_lane() -> None:
     lanes = default_nextgen_lane_registry()
-    adapter = CompetitorReproductionAdapter("ext-1", "vendor", "v2", "abc123", "internal-test-only")
+    adapter = CompetitorReproductionAdapter("ext-1", "vendor", "v2", "a" * 64, "internal-test-only")
     submission = adapter.submit(_candidate(9, "competitor_reproduction"), lanes)
 
     assert submission["external_performance_imported"] is False
     assert submission["archive_namespace"] == "nextgen/competitor_reproduction"
     with pytest.raises(ValueError, match="competitor_reproduction lane"):
         adapter.submit(_candidate(9, "temporal_program"), lanes)
+    with pytest.raises(ValueError, match="SHA-256"):
+        CompetitorReproductionAdapter("ext-2", "vendor", "v2", "abc123", "internal-test-only").submit(
+            _candidate(10, "competitor_reproduction"), lanes
+        )
 
 
 def test_coverage_metrics_are_non_performance_and_complete() -> None:
@@ -116,5 +205,9 @@ def test_coverage_metrics_are_non_performance_and_complete() -> None:
     assert metrics["signal_cluster_potential"]["status"] == "structural_potential_only_no_signal_materialization"
     assert metrics["performance_used"] is False
     rows[0]["validation_score"] = 1.0
+    with pytest.raises(ValueError, match="performance fields"):
+        compute_coverage_metrics(rows)
+    rows[0].pop("validation_score")
+    rows[0]["metadata_future_return"] = 1.0
     with pytest.raises(ValueError, match="performance fields"):
         compute_coverage_metrics(rows)

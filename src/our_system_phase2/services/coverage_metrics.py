@@ -7,9 +7,9 @@ from collections import Counter
 from typing import Any, Iterable, Mapping
 
 
-FORBIDDEN_COVERAGE_PREFIXES = (
+FORBIDDEN_COVERAGE_TOKENS = (
     "reward", "validation", "holdout", "forward", "oos", "label", "winner",
-    "sortino", "sharpe", "return_metric", "performance",
+    "sortino", "sharpe", "return", "performance",
 )
 
 
@@ -36,7 +36,12 @@ def _coverage(rows: list[Mapping[str, Any]], key: str) -> dict[str, Any]:
 def compute_coverage_metrics(candidates: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
     rows = [dict(row) for row in candidates]
     forbidden = sorted(
-        {key for row in rows for key in row if str(key).lower().startswith(FORBIDDEN_COVERAGE_PREFIXES)}
+        {
+            key
+            for row in rows
+            for key in row
+            if any(token in str(key).lower() for token in FORBIDDEN_COVERAGE_TOKENS)
+        }
     )
     if forbidden:
         raise ValueError(f"performance fields are forbidden in coverage metrics: {forbidden}")

@@ -9,7 +9,11 @@ from typing import Any, Iterable, Mapping
 
 
 LANE_REGISTRY_VERSION = "nextgen_dark_hypothesis_lanes_v1"
-FORBIDDEN_SUBMISSION_PREFIXES = (
+FORBIDDEN_SUBMISSION_TOKENS = (
+    "reward", "validation", "holdout", "forward", "oos", "label", "winner",
+    "sortino", "sharpe", "performance", "return",
+)
+FORBIDDEN_EXPRESSION_TOKENS = (
     "reward", "validation", "holdout", "forward", "oos", "label", "winner",
     "sortino", "sharpe", "performance",
 )
@@ -93,19 +97,39 @@ class HypothesisLaneRegistry:
     def validate_submission(self, row: Mapping[str, Any]) -> dict[str, Any]:
         required = {
             "candidate_id", "lane_id", "exact_identity", "semantic_key",
-            "lineage_key", "expression", "data_role",
+            "lineage_key", "expression", "data_role", "root_cell",
         }
         missing = sorted(required - set(row))
         if missing:
             raise ValueError(f"candidate submission missing fields: {missing}")
         lane = self.get(str(row["lane_id"]))
+        blank = sorted(key for key in required if not str(row[key]).strip())
+        if blank:
+            raise ValueError(f"candidate submission has blank required fields: {blank}")
         if str(row["data_role"]) != "development":
             raise ValueError("candidate submission must be development-only")
         forbidden = sorted(
-            key for key in row if str(key).lower().startswith(FORBIDDEN_SUBMISSION_PREFIXES)
+            key
+            for key in row
+            if any(token in str(key).lower() for token in FORBIDDEN_SUBMISSION_TOKENS)
         )
         if forbidden:
             raise ValueError(f"performance/evaluation fields forbidden in submission: {forbidden}")
+        expression = str(row["expression"]).lower()
+        expression_forbidden = sorted(
+            token for token in FORBIDDEN_EXPRESSION_TOKENS if token in expression
+        )
+        if expression_forbidden or "2026" in expression:
+            raise ValueError(
+                "candidate expression references forbidden evaluation/forward fields: "
+                f"{expression_forbidden or ['2026']}"
+            )
+        root_cell = str(row["root_cell"])
+        allowed_root_cells = {cell for cell, _ in lane.root_distribution}
+        if root_cell not in allowed_root_cells:
+            raise ValueError(
+                f"candidate root cell {root_cell!r} is outside lane distribution {sorted(allowed_root_cells)}"
+            )
         lineage = str(row["lineage_key"])
         if not lineage.startswith(f"{lane.lineage_namespace}:"):
             raise ValueError(f"lineage key must use lane namespace {lane.lineage_namespace}")
@@ -113,6 +137,8 @@ class HypothesisLaneRegistry:
         output["archive_namespace"] = lane.archive_namespace
         output["candidate_contract"] = lane.candidate_contract
         output["lane_seed"] = lane.seed
+        output["lane_proposal_quota"] = lane.proposal_quota
+        output["lane_admission_quota"] = lane.admission_quota
         output["policy_frozen"] = lane.policy_frozen
         output["no_memory"] = lane.no_memory
         output["exile"] = lane.exile
