@@ -9,7 +9,7 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-11T19:35:42.610571+00:00",
+    "generated_at": "2026-07-11T20:10:16.800107+00:00",
     "graph_type": "NEXTGEN_DARK_CURRENT_ARCHITECTURE_CONTRACT",
     "phase": "NEXTGEN_DARK_CLOSURE",
     "registry_sha256": "536a3f73655c597a9a6cee861be1728562f8a1df3d413aeec4ea437d5545df75",
@@ -1681,7 +1681,7 @@
         "lane/admission/benchmark contracts"
       ],
       "label": "Fixed-budget development-only CANARY plan",
-      "last_verified_sha": "1a24357e3d638f6272a927a7b376a6682892700ff991c7e402867c0283db85bf",
+      "last_verified_sha": "184dde1f5417a540fead48227eb49dc284ad57be062e08ed244fd88ed8d55dcd",
       "last_verified_sha_scope": [
         "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
         "src/our_system_phase2/runtime/nextgen_dark_development_canary.py",
@@ -1728,7 +1728,7 @@
         "NEXTGEN-DARK closure"
       ],
       "label": "Formal search and adaptive reward remain frozen",
-      "last_verified_sha": "5f77dbac9c3dd3c75d8cb6282dc5957fb8c3479a621ddb0f0268adbb253962b8",
+      "last_verified_sha": "f8427fa7a35764cf1ce2b62b0c384551c404e7a863dbeda891e1d23d1e8edb63",
       "last_verified_sha_scope": [
         "runtime/run_plans/nextgen_dark_run_manifest_v1.json",
         "tests/test_nextgen_dark_delivery.py"

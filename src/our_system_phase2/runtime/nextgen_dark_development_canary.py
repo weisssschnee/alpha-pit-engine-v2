@@ -442,7 +442,7 @@ def read_sampled_development_panel(
         times = pd.to_datetime(
             table["trade_time"].combine_chunks().to_pandas(), errors="coerce", format="mixed"
         )
-        mask = times.normalize().eq(trade_date).to_numpy()
+        mask = times.dt.normalize().eq(trade_date).to_numpy()
         selected = table.filter(pa.array(mask)).to_pandas()
         selected["trade_time"] = pd.to_datetime(
             selected["trade_time"], errors="coerce", format="mixed"

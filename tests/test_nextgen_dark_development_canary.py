@@ -12,6 +12,7 @@ from our_system_phase2.runtime.nextgen_dark_development_canary import (
     evaluate_strict_pack,
     generate_proposals,
     main,
+    read_sampled_development_panel,
     select_canary_candidates,
 )
 from our_system_phase2.services.feature_state_fabric import FieldRegistry
@@ -114,6 +115,39 @@ def test_one_candidate_per_lane_materializes_on_pit_guarded_frame() -> None:
     assert diagnostics["data_role"] == "development"
     assert diagnostics["forward_2026_accessed"] is False
     assert diagnostics["adaptive_reward_updated"] is False
+
+
+def test_sampled_panel_reader_normalizes_series_trade_times(tmp_path: Path) -> None:
+    for shard in range(16):
+        path = (
+            tmp_path
+            / f"shard_{shard:02d}"
+            / "phase3aq_wide_true1min"
+            / "canary"
+            / "phase3aq_true_1min_formula_canary.parquet"
+        )
+        path.parent.mkdir(parents=True)
+        pd.DataFrame(
+            {
+                "code": [f"{shard:06d}"],
+                "trade_time": [pd.Timestamp("2025-04-01 09:30")],
+                "date": [pd.Timestamp("2025-04-01")],
+                "signal_time": [pd.Timestamp("2025-04-01 09:30")],
+                "close": [10.0 + shard],
+            }
+        ).to_parquet(path, index=False)
+
+    frame, inputs = read_sampled_development_panel(
+        tmp_path,
+        trade_date=pd.Timestamp("2025-04-01"),
+        row_group_index=0,
+        columns={"close"},
+    )
+
+    assert len(frame) == 16
+    assert len(inputs) == 16
+    assert all(row["selected_rows"] == 1 for row in inputs)
+    assert frame["trade_time"].dt.normalize().eq(pd.Timestamp("2025-04-01")).all()
 
 
 def test_canary_rejects_missing_independent_authorization(tmp_path: Path) -> None:

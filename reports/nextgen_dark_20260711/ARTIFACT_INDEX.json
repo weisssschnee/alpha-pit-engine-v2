@@ -141,17 +141,17 @@
     {
       "exists": true,
       "id": "development_canary_runner",
-      "last_verified_sha": "1e5d3e2dcb891e4ff0798ac296937be34e947cb3c1c06d1c6c03750d60fa18b0",
+      "last_verified_sha": "bbe74d8084728d8a323980bd7a34ada954777fe522fe7e6f31b67467fffd36de",
       "path": "src/our_system_phase2/runtime/nextgen_dark_development_canary.py",
-      "size_bytes": 39320,
+      "size_bytes": 39323,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "run_manifest",
-      "last_verified_sha": "7a979ccc29ca2b75e915e93524806f5609e188841548a1d80172fd6a0a9494b7",
+      "last_verified_sha": "e70aa471afec374faba37ff727ce17dc1f5dc8fa754d6a784cf5a24d3b691189",
       "path": "runtime/run_plans/nextgen_dark_run_manifest_v1.json",
-      "size_bytes": 2624,
+      "size_bytes": 2625,
       "state": "IMPLEMENTED"
     },
     {
@@ -165,7 +165,7 @@
     {
       "exists": true,
       "id": "architecture_graph",
-      "last_verified_sha": "d600bc611a789f09af5daf5137f6212c6aea7b39e06a0e455228f09aea74704e",
+      "last_verified_sha": "64c329fa06032b6806f4a826c5890f2f56c280a104a34e138d03888d456897e9",
       "path": ".planning/graphs/graph.json",
       "size_bytes": 63405,
       "state": "IMPLEMENTED"
@@ -204,6 +204,6 @@
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-11T19:35:49.017557+00:00",
+  "refreshed_at": "2026-07-11T20:10:37.974897+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
 }
