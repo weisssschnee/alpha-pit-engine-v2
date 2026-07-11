@@ -58,3 +58,30 @@ def test_placeholder_plate_or_industry_ids_are_rejected() -> None:
     bad.loc[0, "group_id"] = "0"
     with pytest.raises(ValueError, match="placeholder"):
         membership_manifest(bad, PITGroupContract("vendor", "v1", "industry", "single"))
+
+
+def test_snapshot_exit_is_not_applied_before_it_is_observed() -> None:
+    membership = pd.DataFrame(
+        {
+            "code": ["A", "A"],
+            "group_id": ["I1", "I2"],
+            "effective_from": pd.to_datetime(["2024-01-01", "2024-01-03"]),
+            "effective_to": pd.to_datetime(["2024-01-03", None]),
+            "source_observed_at": pd.to_datetime(["2024-01-01", "2024-01-03 12:00"], format="mixed"),
+            "source_observed_to": pd.to_datetime(["2024-01-03 12:00", None], format="mixed"),
+        }
+    )
+    bars = pd.DataFrame(
+        {
+            "code": ["A", "A"],
+            "trade_time": pd.to_datetime(["2024-01-03 10:00", "2024-01-03 13:00"]),
+        }
+    )
+
+    joined = point_in_time_membership(
+        bars,
+        membership,
+        PITGroupContract("vendor", "v1", "industry", "single"),
+    )
+
+    assert joined["group_id"].tolist() == ["I1", "I2"]

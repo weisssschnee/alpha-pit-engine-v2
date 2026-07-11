@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 
-PIT_GROUP_VERSION = "nextgen_dark_pit_group_sidecar_v1"
+PIT_GROUP_VERSION = "nextgen_dark_pit_group_sidecar_v2"
 PLACEHOLDER_GROUPS = {"", "0", "00", "000000", "none", "null", "unknown", "placeholder"}
 
 
@@ -45,8 +45,10 @@ def _canonical_membership(membership: pd.DataFrame, contract: PITGroupContract) 
     bad = out["group_id"].str.lower().isin(PLACEHOLDER_GROUPS)
     if bad.any():
         raise ValueError(f"placeholder group IDs are forbidden: {sorted(out.loc[bad, 'group_id'].unique())}")
-    for column in ("effective_from", "effective_to", "source_observed_at"):
-        out[column] = pd.to_datetime(out[column], errors="coerce")
+    if "source_observed_to" not in out.columns:
+        out["source_observed_to"] = pd.NaT
+    for column in ("effective_from", "effective_to", "source_observed_at", "source_observed_to"):
+        out[column] = pd.to_datetime(out[column], errors="coerce", format="mixed")
     if out[["effective_from", "source_observed_at"]].isna().any().any():
         raise ValueError("effective_from/source_observed_at must be valid timestamps")
     if (out["source_observed_at"] > out["effective_from"]).any():
@@ -56,6 +58,9 @@ def _canonical_membership(membership: pd.DataFrame, contract: PITGroupContract) 
     invalid_end = out["effective_to"].notna() & (out["effective_to"] <= out["effective_from"])
     if invalid_end.any():
         raise ValueError("effective_to must be after effective_from")
+    invalid_exit_observation = out["source_observed_to"].notna() & out["effective_to"].isna()
+    if invalid_exit_observation.any():
+        raise ValueError("source_observed_to requires effective_to")
     out["group_type"] = contract.group_type
     out["source_name"] = contract.source_name
     out["source_version"] = contract.source_version
@@ -67,13 +72,29 @@ def _canonical_membership(membership: pd.DataFrame, contract: PITGroupContract) 
                 start = max(row.effective_from, row.source_observed_at)
                 if start < previous_end:
                     raise ValueError(f"overlapping single-valued membership for {row.code}")
-                previous_end = row.effective_to if pd.notna(row.effective_to) else pd.Timestamp.max
+                if pd.isna(row.effective_to):
+                    previous_end = pd.Timestamp.max
+                elif pd.notna(row.source_observed_to):
+                    previous_end = max(row.effective_to, row.source_observed_to)
+                else:
+                    previous_end = row.effective_to
     return out
+
+
+def canonical_membership(membership: pd.DataFrame, contract: PITGroupContract) -> pd.DataFrame:
+    """Return the stable normal form used by joins, releases, and content hashes."""
+
+    return _canonical_membership(membership, contract)
+
+
+def membership_content_sha256(membership: pd.DataFrame, contract: PITGroupContract) -> str:
+    canonical = _canonical_membership(membership, contract)
+    payload = canonical.to_json(orient="records", date_format="iso", date_unit="ns")
+    return hashlib.sha256(payload.encode()).hexdigest()
 
 
 def membership_manifest(membership: pd.DataFrame, contract: PITGroupContract) -> dict[str, Any]:
     canonical = _canonical_membership(membership, contract)
-    payload = canonical.to_json(orient="records", date_format="iso", date_unit="ns")
     return {
         "sidecar_version": PIT_GROUP_VERSION,
         "source_name": contract.source_name,
@@ -81,7 +102,7 @@ def membership_manifest(membership: pd.DataFrame, contract: PITGroupContract) ->
         "group_type": contract.group_type,
         "membership_policy": contract.membership_policy,
         "row_count": len(canonical),
-        "membership_sha256": hashlib.sha256(payload.encode()).hexdigest(),
+        "membership_sha256": membership_content_sha256(canonical, contract),
         "survivorship_guard": True,
         "reward_or_performance_used": False,
     }
@@ -98,14 +119,19 @@ def point_in_time_membership(
         raise ValueError(f"bars need columns: {sorted(required)}")
     base = bars.copy()
     base["code"] = base["code"].astype(str)
-    base["trade_time"] = pd.to_datetime(base["trade_time"], errors="coerce")
+    base["trade_time"] = pd.to_datetime(base["trade_time"], errors="coerce", format="mixed")
     base["_bar_row_id"] = np.arange(len(base))
     joined = base.merge(canonical, on="code", how="left", validate="many_to_many")
     observable_from = joined[["effective_from", "source_observed_at"]].max(axis=1)
+    observable_to = joined["effective_to"].copy()
+    has_exit_observation = joined["source_observed_to"].notna()
+    observable_to.loc[has_exit_observation] = joined.loc[
+        has_exit_observation, ["effective_to", "source_observed_to"]
+    ].max(axis=1)
     active = (
         joined["group_id"].notna()
         & joined["trade_time"].ge(observable_from)
-        & (joined["effective_to"].isna() | joined["trade_time"].lt(joined["effective_to"]))
+        & (observable_to.isna() | joined["trade_time"].lt(observable_to))
     )
     out = joined.loc[active].copy()
     if contract.membership_policy == "single" and out.duplicated("_bar_row_id").any():
