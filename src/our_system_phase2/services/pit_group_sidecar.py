@@ -123,7 +123,7 @@ def point_in_time_membership(
     base["_bar_row_id"] = np.arange(len(base))
     joined = base.merge(canonical, on="code", how="left", validate="many_to_many")
     observable_from = joined[["effective_from", "source_observed_at"]].max(axis=1)
-    observable_to = joined["effective_to"].copy()
+    observable_to = pd.Series(pd.NaT, index=joined.index, dtype="datetime64[ns]")
     has_exit_observation = joined["source_observed_to"].notna()
     observable_to.loc[has_exit_observation] = joined.loc[
         has_exit_observation, ["effective_to", "source_observed_to"]

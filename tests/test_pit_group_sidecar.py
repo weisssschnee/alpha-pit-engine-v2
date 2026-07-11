@@ -40,7 +40,14 @@ def test_pit_membership_uses_observed_and_effective_time() -> None:
     joined = point_in_time_membership(_bars(), _membership(), contract)
 
     assert set(joined.loc[joined["trade_time"] < pd.Timestamp("2024-01-03"), "group_id"]) == {"I1"}
-    assert not ((joined["code"] == "A") & (joined["trade_time"] == pd.Timestamp("2024-01-03 10:00"))).any()
+    assert (
+        joined.loc[
+            (joined["code"] == "A")
+            & (joined["trade_time"] == pd.Timestamp("2024-01-03 10:00")),
+            "group_id",
+        ].tolist()
+        == ["I1"]
+    )
     assert membership_manifest(_membership(), contract)["survivorship_guard"] is True
 
 

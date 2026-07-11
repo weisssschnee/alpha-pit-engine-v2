@@ -28,7 +28,7 @@ from our_system_phase2.services.feature_state_fabric import (
 from our_system_phase2.services.pit_group_release import FORWARD_SEALED_FROM
 
 
-CHIP_SIDECAR_VERSION = "nextgen_dark_chip_sidecar_v2"
+CHIP_SIDECAR_VERSION = "nextgen_dark_chip_sidecar_v3"
 CHIP_FIELDS = {
     "历史最低价": "chip_historical_low",
     "历史最高价": "chip_historical_high",
@@ -101,11 +101,12 @@ def _parse_members(
     *,
     minimum: pd.Timestamp,
     cutoff: pd.Timestamp,
-) -> tuple[pd.DataFrame, int, int, int, float | None]:
+) -> tuple[pd.DataFrame, int, int, int, int, float | None]:
     rows: list[dict[str, Any]] = []
     excluded_2026 = 0
     excluded_unobservable = 0
     clipped_profit_ratio_count = 0
+    sanitized_nonpositive_historical_low_count = 0
     maximum_raw_profit_ratio: float | None = None
     for info in infos:
         if info.is_dir() or not info.filename.lower().endswith(".csv"):
@@ -143,6 +144,9 @@ def _parse_members(
                 }
                 for index, canonical in enumerate(CHIP_FIELDS.values(), start=2):
                     row[canonical] = float(raw[index]) if raw[index].strip() else np.nan
+                if np.isfinite(row["chip_historical_low"]) and row["chip_historical_low"] <= 0.0:
+                    row["chip_historical_low"] = np.nan
+                    sanitized_nonpositive_historical_low_count += 1
                 raw_profit_ratio = row["chip_profit_ratio"]
                 if np.isfinite(raw_profit_ratio):
                     maximum_raw_profit_ratio = (
@@ -166,6 +170,7 @@ def _parse_members(
         excluded_2026,
         excluded_unobservable,
         clipped_profit_ratio_count,
+        sanitized_nonpositive_historical_low_count,
         maximum_raw_profit_ratio,
     )
 
@@ -193,6 +198,18 @@ def _build_chip_shard_job(
     if shard_path.exists() and meta_path.exists():
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
         if meta.get("input_identity") == identity and meta.get("output_sha256") == _file_sha256(shard_path):
+            if "sanitized_nonpositive_historical_low_count" not in meta:
+                frame = pd.read_parquet(shard_path)
+                invalid_low = frame["chip_historical_low"].le(0.0)
+                sanitized_count = int(invalid_low.sum())
+                if sanitized_count:
+                    frame.loc[invalid_low, "chip_historical_low"] = np.nan
+                    _validate_chip_frame(frame)
+                    _atomic_parquet(frame, shard_path)
+                meta["sanitized_nonpositive_historical_low_count"] = sanitized_count
+                meta["sidecar_version"] = CHIP_SIDECAR_VERSION
+                meta["output_sha256"] = _file_sha256(shard_path)
+                atomic_write_json(meta_path, meta)
             return shard_path, meta
     with ZipFile(source) as archive:
         infos = [archive.getinfo(name) for name in member_names]
@@ -201,6 +218,7 @@ def _build_chip_shard_job(
             excluded_2026,
             excluded_unobservable,
             clipped_profit_ratio_count,
+            sanitized_nonpositive_historical_low_count,
             maximum_raw_profit_ratio,
         ) = _parse_members(
             archive,
@@ -217,6 +235,9 @@ def _build_chip_shard_job(
         "excluded_2026_row_count": excluded_2026,
         "excluded_unobservable_row_count": excluded_unobservable,
         "clipped_profit_ratio_count": clipped_profit_ratio_count,
+        "sanitized_nonpositive_historical_low_count": (
+            sanitized_nonpositive_historical_low_count
+        ),
         "maximum_raw_profit_ratio": maximum_raw_profit_ratio,
         "minimum_source_session": frame["source_session"].min().isoformat() if len(frame) else None,
         "maximum_source_session": frame["source_session"].max().isoformat() if len(frame) else None,
@@ -358,6 +379,9 @@ def build_chip_sidecar(
         "clipped_profit_ratio_count": sum(
             item["clipped_profit_ratio_count"] for item in shard_manifests
         ),
+        "sanitized_nonpositive_historical_low_count": sum(
+            item["sanitized_nonpositive_historical_low_count"] for item in shard_manifests
+        ),
         "maximum_raw_profit_ratio": max(
             (
                 item["maximum_raw_profit_ratio"]
@@ -370,6 +394,10 @@ def build_chip_sidecar(
             "allowed_raw_range": [0.0, 100.0 + PROFIT_RATIO_ROUNDING_TOLERANCE],
             "clipped_output_range": [0.0, 100.0],
             "tolerance": PROFIT_RATIO_ROUNDING_TOLERANCE,
+        },
+        "historical_low_missing_policy": {
+            "nonpositive_source_values": "MASK_TO_MISSING",
+            "reason": "zero/nonpositive historical low is an invalid price sentinel",
         },
         "minimum_source_session": min(
             (item["minimum_source_session"] for item in shard_manifests if item["minimum_source_session"]),

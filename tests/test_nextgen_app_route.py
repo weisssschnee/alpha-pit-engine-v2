@@ -10,3 +10,10 @@ def test_external_sidecar_builder_is_registered_as_an_app_route() -> None:
     )
     main = app._load_main("nextgen-build-external-sidecars")
     assert main.__module__ == "scripts.build_nextgen_external_sidecars"
+
+
+def test_true1min_plate_materialization_smoke_is_registered_as_an_app_route() -> None:
+    assert (
+        app.ROUTES["nextgen-true1min-plate-materialization-smoke"]
+        == "our_system_phase2.runtime.nextgen_true1min_plate_materialization_smoke"
+    )

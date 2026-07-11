@@ -46,6 +46,7 @@ ROUTES: dict[str, str] = {
     "phase3ce2-typed-primitive-evaluator-smoke": "our_system_phase2.runtime.phase3ce2_typed_primitive_evaluator_smoke",
     "phase3cf-large-search-prelaunch": "our_system_phase2.runtime.phase3cf_large_search_prelaunch",
     "nextgen-build-external-sidecars": "scripts.build_nextgen_external_sidecars",
+    "nextgen-true1min-plate-materialization-smoke": "our_system_phase2.runtime.nextgen_true1min_plate_materialization_smoke",
 }
 
 CURRENT_SEARCH_ROUTE = "phase3dv-budget-pool-self-deepen-pack"

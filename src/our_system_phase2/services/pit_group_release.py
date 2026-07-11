@@ -105,7 +105,7 @@ def _release_manifest(
 ) -> dict[str, Any]:
     start, end, maximum = spec.timestamps()
     observable_from = canonical[["effective_from", "source_observed_at"]].max(axis=1)
-    observable_to = canonical["effective_to"].copy()
+    observable_to = pd.Series(pd.NaT, index=canonical.index, dtype="datetime64[ns]")
     observed_exit = canonical["source_observed_to"].notna()
     observable_to.loc[observed_exit] = canonical.loc[
         observed_exit, ["effective_to", "source_observed_to"]
