@@ -879,6 +879,12 @@ def evaluate_panel_expression(
     name, args = call
     name_lower = name.lower()
 
+    from our_system_phase2.services.typed_temporal_program import evaluate_expression_temporal_call
+
+    typed_temporal = evaluate_expression_temporal_call(frame, name, args, evaluate_child)
+    if typed_temporal is not None:
+        return store(typed_temporal)
+
     if name_lower in {"csrank", "rank"} and len(args) == 1:
         value = evaluate_child(args[0])
         cross_key = _cross_section_key(frame, evaluation_context)

@@ -97,6 +97,7 @@ _CANONICAL_OPERATORS = {
     name.lower(): name
     for name in (
         "Abs",
+        "Acceleration",
         "Add",
         "Corr",
         "Cov",
@@ -105,28 +106,40 @@ _CANONICAL_OPERATORS = {
         "Delay",
         "Delta",
         "Div",
+        "DrawdownPath",
+        "Duration",
         "EventAge",
         "EventCount",
         "EventTransition",
+        "EventWindow",
+        "FirstHit",
         "Kurt",
         "Log",
+        "LastHit",
         "MaskedCorr",
         "MaskedZScore",
         "Mean",
         "Med",
         "Mom",
         "Mul",
+        "MultiScaleRelation",
         "Neg",
         "Rank",
+        "RecoveryPath",
         "SafeCSResidual",
         "Sign",
         "SinceLastEvent",
         "Skew",
+        "Slope",
         "StateAge",
         "StateDwell",
         "StateTransition",
         "Std",
         "Sub",
+        "PathShape",
+        "Persistence",
+        "TimeSince",
+        "Transition",
         "ValidRatioGate",
         "WindowStateCount",
         "Wma",
@@ -259,6 +272,12 @@ def infer_value_domain(node: ExpressionNode) -> ValueDomain:
         "stateage",
         "statedwell",
         "windowstatecount",
+        "duration",
+        "stateage",
+        "timesince",
+        "firsthit",
+        "lasthit",
+        "persistence",
         "std",
     }:
         return ValueDomain.NON_NEGATIVE
@@ -282,7 +301,11 @@ def infer_value_domain(node: ExpressionNode) -> ValueDomain:
     ):
         negative_count = sum(domain == ValueDomain.STRICT_NEGATIVE for domain in child_domains)
         return ValueDomain.STRICT_NEGATIVE if negative_count % 2 else ValueDomain.STRICT_POSITIVE
-    if operator in {"sub", "delta", "mom", "log", "skew", "kurt"}:
+    if operator in {
+        "sub", "delta", "mom", "log", "skew", "kurt", "slope",
+        "acceleration", "pathshape", "drawdownpath", "recoverypath",
+        "eventwindow", "multiscalerelation", "transition",
+    }:
         return ValueDomain.SIGNED_REAL
     return ValueDomain.UNKNOWN
 

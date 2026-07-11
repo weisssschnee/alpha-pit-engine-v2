@@ -20,7 +20,6 @@ FIELD_RE = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)")
 ORDINARY_PRIMITIVES = (
     "Mean",
     "Std",
-    "Delta",
     "Delay",
     "Wma",
     "Med",
@@ -36,6 +35,11 @@ ORDINARY_PRIMITIVES = (
 )
 
 TYPED_PRIMITIVES = (
+    "Delta",
+    "Slope",
+    "Acceleration",
+    "Persistence",
+    "Duration",
     "EventAge",
     "SinceLastEvent",
     "EventCount",
@@ -44,6 +48,15 @@ TYPED_PRIMITIVES = (
     "StateDwell",
     "StateTransition",
     "WindowStateCount",
+    "TimeSince",
+    "Transition",
+    "FirstHit",
+    "LastHit",
+    "PathShape",
+    "DrawdownPath",
+    "RecoveryPath",
+    "EventWindow",
+    "MultiScaleRelation",
     "ValidRatioGate",
     "MaskedCorr",
     "MaskedZScore",
