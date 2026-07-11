@@ -10,8 +10,15 @@ from pathlib import Path
 import time
 import traceback
 
+import pandas as pd
+
 from our_system_phase2.services.atomic_checkpoint import atomic_write_json
 from our_system_phase2.services.chip_sidecar import build_chip_sidecar
+from our_system_phase2.services.tdx_plate_market_sidecar import (
+    build_tdx_plate_market_sidecar,
+    discover_tdx_plate_market_archives,
+    plate_market_linkage_report,
+)
 from our_system_phase2.services.tdx_plate_snapshot_release import build_tdx_plate_release
 
 
@@ -44,6 +51,7 @@ def _persist_attempt(attempt_path: Path, latest_path: Path, record: dict[str, ob
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plate-root", type=Path, required=True)
+    parser.add_argument("--plate-market-root", type=Path)
     parser.add_argument("--chip-archive", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--members-per-shard", type=int, default=128)
@@ -57,20 +65,28 @@ def main(argv: list[str] | None = None) -> int:
     manifest_path = run_root / "attempts" / f"{EXPERIMENT_ID}_{attempt_id}.json"
     latest_path = run_root / f"{EXPERIMENT_ID}.latest.json"
     command = (
-        "python scripts/build_nextgen_external_sidecars.py "
+        "python app.py nextgen-build-external-sidecars -- "
         f'--plate-root "{args.plate_root}" --chip-archive "{args.chip_archive}" '
         f'--output-root "{args.output_root}" --members-per-shard {args.members_per_shard} '
         f"--plate-workers {args.plate_workers} --chip-workers {args.chip_workers}"
     )
+    if args.plate_market_root is not None:
+        command += f' --plate-market-root "{args.plate_market_root}"'
     record = {
         "experiment_id": EXPERIMENT_ID,
         "attempt_id": attempt_id,
-        "objective": "build non-performance PIT plate membership and lagged chip sidecars for NEXTGEN-DARK",
+        "objective": (
+            "build non-performance PIT plate membership, plate market context, "
+            "and lagged chip sidecars for NEXTGEN-DARK"
+        ),
         "status": "RUNNING",
         "mode": "research",
         "started_at": started_at.isoformat(),
         "inputs": {
             "plate_root": str(args.plate_root),
+            "plate_market_root": (
+                str(args.plate_market_root) if args.plate_market_root is not None else None
+            ),
             "chip_archive": str(args.chip_archive),
             "chip_archive_size": args.chip_archive.stat().st_size,
         },
@@ -86,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
             "data_role": "development_context_only",
         },
         "commands": [command],
-        "estimated_runtime": "plate 3-6 minutes; chip 2-5 minutes",
+        "estimated_runtime": "plate membership 3-6 minutes; plate market 1-3 minutes; chip 2-5 minutes",
         "outputs": [],
         "reproducibility": "PENDING",
         "decision": "N/A_NO_PERFORMANCE_EVALUATION",
@@ -112,6 +128,54 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         _persist_attempt(manifest_path, latest_path, record)
+        if args.plate_market_root is not None:
+            plate_market = build_tdx_plate_market_sidecar(
+                discover_tdx_plate_market_archives(args.plate_market_root),
+                args.output_root / "tdx_plate_market_pit_v1",
+                workers=args.plate_workers,
+            )
+            plate_market_manifest = Path(plate_market.manifest_path)
+            record["outputs"].append(
+                {
+                    "path": str(plate_market_manifest),
+                    "producer": "build_tdx_plate_market_sidecar",
+                    "purpose": "lagged daily region/concept/industry/style market context",
+                    "stage": "final",
+                    "size": plate_market_manifest.stat().st_size,
+                    "sha256": _sha256(plate_market_manifest),
+                }
+            )
+            membership_groups = pd.read_parquet(plate.membership_path, columns=["group_id"])
+            market_groups = pd.concat(
+                [pd.read_parquet(path, columns=["group_id"]) for path in plate_market.shard_paths],
+                ignore_index=True,
+            )
+            linkage = plate_market_linkage_report(membership_groups, market_groups)
+            linkage.update(
+                {
+                    "membership_manifest": str(plate.manifest_path),
+                    "membership_manifest_sha256": _sha256(Path(plate.manifest_path)),
+                    "market_manifest": str(plate_market.manifest_path),
+                    "market_manifest_sha256": _sha256(Path(plate_market.manifest_path)),
+                }
+            )
+            linkage_path = (
+                args.output_root
+                / "tdx_plate_market_pit_v1"
+                / "plate_market_linkage_validation_v1.json"
+            )
+            atomic_write_json(linkage_path, linkage)
+            record["outputs"].append(
+                {
+                    "path": str(linkage_path),
+                    "producer": "plate_market_linkage_report",
+                    "purpose": "structural membership-to-market group coverage validation",
+                    "stage": "diagnostic",
+                    "size": linkage_path.stat().st_size,
+                    "sha256": _sha256(linkage_path),
+                }
+            )
+            _persist_attempt(manifest_path, latest_path, record)
         chip = build_chip_sidecar(
             args.chip_archive,
             args.output_root / "chip_pit_v1",
