@@ -1,0 +1,2307 @@
+{
+  "fabric_version": "nextgen_dark_feature_state_fabric_v1",
+  "registry_version": "nextgen_dark_field_registry_v1_20260711",
+  "field_count": 121,
+  "fields": [
+    {
+      "name": "amount",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "amount"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "amount_yuan",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "amount_yuan"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "close",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "close"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "code",
+      "dtype": "string",
+      "family": "metadata",
+      "role": "blocked",
+      "observable_clock": "metadata_only",
+      "maturity": 0,
+      "maturity_unit": "rows",
+      "missing_policy": "block",
+      "source_fields": [
+        "code"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": "identifier/label/clock metadata is not a searchable feature"
+    },
+    {
+      "name": "ctx_billboard_accum_amount",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_accum_amount"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_billboard_buy_amt",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_billboard_buy_amt"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_billboard_deal_amt",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_billboard_deal_amt"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_billboard_net_amt",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_billboard_net_amt"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_billboard_sell_amt",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_billboard_sell_amt"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_buy_ratio",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_buy_ratio"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_deal_amount_ratio",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_deal_amount_ratio"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_deal_net_ratio",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_deal_net_ratio"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_net_bs_amt",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_net_bs_amt"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_sell_ratio",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_sell_ratio"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_sum_buy_amt",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_sum_buy_amt"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_sum_sell_amt",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_sum_sell_amt"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_billboard_turnoverrate",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_billboard_turnoverrate"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_hfq_float_market_cap_yuan",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_hfq_float_market_cap_yuan"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_hfq_is_st",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "condition-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_hfq_is_st"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_hfq_market_cap_yuan",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_hfq_market_cap_yuan"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_hfq_pb",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_hfq_pb"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_hfq_pe_ttm",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_hfq_pe_ttm"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_hfq_prev_is_limit_up",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_hfq_prev_is_limit_up"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_hfq_ps_ttm",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_hfq_ps_ttm"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_hfq_turnover_ratio",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_hfq_turnover_ratio"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_hfq_volume_ratio",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_hfq_volume_ratio"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_holder_avg_hold_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_holder_avg_hold_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_holder_avg_market_cap",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_holder_avg_market_cap"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_holder_holder_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_holder_holder_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_holder_holder_num_change",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_holder_holder_num_change"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_holder_holder_num_ratio",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_holder_holder_num_ratio"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_rzrq_rqye",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_rzrq_rqye"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_rzrq_rqyl",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_rzrq_rqyl"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_rzrq_rzche",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_rzrq_rzche"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_rzrq_rzjme",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_rzrq_rzjme"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_rzrq_rzmre",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_rzrq_rzmre"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_rzrq_rzrqye",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_rzrq_rzrqye"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_rzrq_rzye",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_rzrq_rzye"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_rzrq_rzyezb",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_rzrq_rzyezb"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_damian_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_damian_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_ditian_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_ditian_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_down_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_down_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_downlimit_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_downlimit_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_gt5_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_gt5_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_lb_2_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_lb_2_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_lb_3_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_lb_3_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_lb_h_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_lb_h_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_lt5_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_lt5_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_max_lb_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_max_lb_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_mian_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_mian_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_tiandi_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_tiandi_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_up_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_up_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_uplimit_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_uplimit_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_sent_zb_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_sent_zb_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_ths_hot_circulation_value",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_ths_hot_circulation_value"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_ths_hot_last_pct",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_ths_hot_last_pct"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_ths_hot_last_price",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_ths_hot_last_price"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_ths_hot_rank",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_ths_hot_rank"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_ths_hot_rank_diff",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "interaction-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_ths_hot_rank_diff"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_zls_df_num",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_zls_df_num"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_zls_lbgd",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_zls_lbgd"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_zls_strong",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_zls_strong"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ctx_zls_ztjs",
+      "dtype": "float64",
+      "family": "lagged_daily_context",
+      "role": "state-only",
+      "observable_clock": "previous_session",
+      "maturity": 1,
+      "maturity_unit": "sessions",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ctx_zls_ztjs"
+      ],
+      "transform": "identity",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "dataset_route_id",
+      "dtype": "string",
+      "family": "metadata",
+      "role": "blocked",
+      "observable_clock": "metadata_only",
+      "maturity": 0,
+      "maturity_unit": "rows",
+      "missing_policy": "block",
+      "source_fields": [
+        "dataset_route_id"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": "identifier/label/clock metadata is not a searchable feature"
+    },
+    {
+      "name": "date",
+      "dtype": "metadata",
+      "family": "metadata",
+      "role": "blocked",
+      "observable_clock": "metadata_only",
+      "maturity": 0,
+      "maturity_unit": "rows",
+      "missing_policy": "block",
+      "source_fields": [
+        "date"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": "identifier/label/clock metadata is not a searchable feature"
+    },
+    {
+      "name": "evt_uplimit_active",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_active"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_age_min",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_age_min"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_amount",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_amount"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_auction_buy",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_auction_buy"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_auction_money",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_auction_money"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_auction_offer",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_auction_offer"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_auction_pre1max_ratio",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_auction_pre1max_ratio"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_auction_turnover",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_auction_turnover"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_cutoff_minute",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_cutoff_minute"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_fd_close",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_fd_close"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_fd_max",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_fd_max"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_type_code",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_type_code"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "evt_uplimit_up_limit_keep_times",
+      "dtype": "float64",
+      "family": "event_state",
+      "role": "state-only",
+      "observable_clock": "event_time",
+      "maturity": 0,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "evt_uplimit_up_limit_keep_times"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "signal_time",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "exec_date",
+      "dtype": "metadata",
+      "family": "metadata",
+      "role": "blocked",
+      "observable_clock": "metadata_only",
+      "maturity": 0,
+      "maturity_unit": "rows",
+      "missing_policy": "block",
+      "source_fields": [
+        "exec_date"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": "identifier/label/clock metadata is not a searchable feature"
+    },
+    {
+      "name": "high",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "high"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "intraday_ret_from_open",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "intraday_ret_from_open"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "label_horizon",
+      "dtype": "metadata",
+      "family": "metadata",
+      "role": "blocked",
+      "observable_clock": "metadata_only",
+      "maturity": 0,
+      "maturity_unit": "rows",
+      "missing_policy": "block",
+      "source_fields": [
+        "label_horizon"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": "identifier/label/clock metadata is not a searchable feature"
+    },
+    {
+      "name": "low",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "low"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_amount",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_amount"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_bars",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_bars"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_high",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_high"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_last_close",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_last_close"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_last_return_vs_open",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_last_return_vs_open"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_low",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_low"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_range",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_range"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_vol",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_vol"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_vwap",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_vwap"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first15_vwap_return_vs_open",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 15,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first15_vwap_return_vs_open"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_amount",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_amount"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_bars",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_bars"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_high",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_high"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_last_close",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_last_close"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_last_return_vs_open",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_last_return_vs_open"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_low",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_low"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_range",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_range"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_vol",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_vol"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_vwap",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_vwap"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first30_vwap_return_vs_open",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 30,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first30_vwap_return_vs_open"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_amount",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_amount"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_bars",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_bars"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_high",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_high"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_last_close",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_last_close"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_last_return_vs_open",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_last_return_vs_open"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_low",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_low"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_range",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_range"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_vol",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_vol"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_vwap",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_vwap"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "m1_first5_vwap_return_vs_open",
+      "dtype": "float64",
+      "family": "firstN",
+      "role": "primary",
+      "observable_clock": "first_n_end",
+      "maturity": 5,
+      "maturity_unit": "minutes",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "m1_first5_vwap_return_vs_open"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "open",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "open"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "pct_chg",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "pct_chg"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "ret_1m",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "ret_1m"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "signal_time",
+      "dtype": "metadata",
+      "family": "metadata",
+      "role": "blocked",
+      "observable_clock": "metadata_only",
+      "maturity": 0,
+      "maturity_unit": "rows",
+      "missing_policy": "block",
+      "source_fields": [
+        "signal_time"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": "identifier/label/clock metadata is not a searchable feature"
+    },
+    {
+      "name": "trade_time",
+      "dtype": "metadata",
+      "family": "metadata",
+      "role": "blocked",
+      "observable_clock": "metadata_only",
+      "maturity": 0,
+      "maturity_unit": "rows",
+      "missing_policy": "block",
+      "source_fields": [
+        "trade_time"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": "identifier/label/clock metadata is not a searchable feature"
+    },
+    {
+      "name": "vol",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "vol"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "volume",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "volume"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    },
+    {
+      "name": "vwap",
+      "dtype": "float64",
+      "family": "raw_1min",
+      "role": "primary",
+      "observable_clock": "bar_close",
+      "maturity": 0,
+      "maturity_unit": "bars",
+      "missing_policy": "propagate",
+      "source_fields": [
+        "vwap"
+      ],
+      "transform": "identity",
+      "source_lag": 0,
+      "source_lag_unit": "bars",
+      "observable_time_field": "",
+      "cacheable": true,
+      "blocked_reason": ""
+    }
+  ],
+  "registry_hash": "1f12863ae9673d490f4160e8a103e82e3819dab2850ad408aeb7d1f66a732700"
+}
