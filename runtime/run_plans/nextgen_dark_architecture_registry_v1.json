@@ -28,13 +28,13 @@
       "id": "nextgen_field_registry_121",
       "label": "Versioned 121-field registry",
       "status": "IMPLEMENTED",
-      "implementation_paths": ["runtime/field_registry/nextgen_dark_field_registry_v1.json", "scripts/build_nextgen_field_registry.py"],
+      "implementation_paths": ["runtime/field_registry/nextgen_dark_field_registry_v2.json", "scripts/build_nextgen_field_registry.py"],
       "input_artifacts": ["2024-2025 augmented shard Parquet schema footer"],
-      "output_artifacts": ["runtime/field_registry/nextgen_dark_field_registry_v1.json"],
+      "output_artifacts": ["runtime/field_registry/nextgen_dark_field_registry_v2.json"],
       "data_role": "development_schema_only",
       "feedback_permission": "NONE",
       "test_evidence": ["tests/test_feature_state_fabric.py"],
-      "verification_paths": ["runtime/field_registry/nextgen_dark_field_registry_v1.json", "tests/test_feature_state_fabric.py"],
+      "verification_paths": ["runtime/field_registry/nextgen_dark_field_registry_v2.json", "tests/test_feature_state_fabric.py"],
       "blocker": ""
     },
     {
@@ -171,13 +171,13 @@
       "id": "nextgen_canary_plan",
       "label": "Fixed-budget development-only CANARY plan",
       "status": "IMPLEMENTED",
-      "implementation_paths": ["runtime/run_plans/nextgen_dark_canary_plan_v1.json"],
+      "implementation_paths": ["runtime/run_plans/nextgen_dark_canary_plan_v1.json", "src/our_system_phase2/runtime/nextgen_dark_development_canary.py"],
       "input_artifacts": ["lane/admission/benchmark contracts"],
       "output_artifacts": ["prepared-not-started CANARY plan"],
       "data_role": "development_only",
       "feedback_permission": "EXECUTION_REQUIRES_INDEPENDENT_AUTHORIZATION",
-      "test_evidence": ["tests/test_nextgen_dark_delivery.py"],
-      "verification_paths": ["runtime/run_plans/nextgen_dark_canary_plan_v1.json", "tests/test_nextgen_dark_delivery.py"],
+      "test_evidence": ["tests/test_nextgen_dark_delivery.py", "tests/test_nextgen_dark_development_canary.py"],
+      "verification_paths": ["runtime/run_plans/nextgen_dark_canary_plan_v1.json", "src/our_system_phase2/runtime/nextgen_dark_development_canary.py", "tests/test_nextgen_dark_delivery.py", "tests/test_nextgen_dark_development_canary.py"],
       "blocker": "execution still requires independent authorization; deferred plate/industry lane remains disabled"
     },
     {

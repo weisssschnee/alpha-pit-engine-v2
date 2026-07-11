@@ -1,6 +1,6 @@
 {
   "fabric_version": "nextgen_dark_feature_state_fabric_v1",
-  "registry_version": "nextgen_dark_field_registry_v1_20260711",
+  "registry_version": "nextgen_dark_field_registry_v2_source_session_evidence",
   "field_count": 121,
   "fields": [
     {
@@ -96,7 +96,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_billboard_buy_amt",
@@ -115,7 +116,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_billboard_deal_amt",
@@ -134,7 +136,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_billboard_net_amt",
@@ -153,7 +156,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_billboard_sell_amt",
@@ -172,7 +176,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_buy_ratio",
@@ -191,7 +196,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_deal_amount_ratio",
@@ -210,7 +216,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_deal_net_ratio",
@@ -229,7 +236,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_net_bs_amt",
@@ -248,7 +256,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_sell_ratio",
@@ -267,7 +276,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_sum_buy_amt",
@@ -286,7 +296,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_sum_sell_amt",
@@ -305,7 +316,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_billboard_turnoverrate",
@@ -324,7 +336,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_hfq_float_market_cap_yuan",
@@ -343,7 +356,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_hfq_is_st",
@@ -362,7 +376,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_hfq_market_cap_yuan",
@@ -381,7 +396,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_hfq_pb",
@@ -400,7 +416,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_hfq_pe_ttm",
@@ -419,7 +436,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_hfq_prev_is_limit_up",
@@ -438,7 +456,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_hfq_ps_ttm",
@@ -457,7 +476,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_hfq_turnover_ratio",
@@ -476,7 +496,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_hfq_volume_ratio",
@@ -495,7 +516,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_holder_avg_hold_num",
@@ -514,7 +536,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_holder_avg_market_cap",
@@ -533,7 +556,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_holder_holder_num",
@@ -552,7 +576,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_holder_holder_num_change",
@@ -571,7 +596,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_holder_holder_num_ratio",
@@ -590,7 +616,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_rzrq_rqye",
@@ -609,7 +636,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_rzrq_rqyl",
@@ -628,7 +656,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_rzrq_rzche",
@@ -647,7 +676,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_rzrq_rzjme",
@@ -666,7 +696,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_rzrq_rzmre",
@@ -685,7 +716,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_rzrq_rzrqye",
@@ -704,7 +736,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_rzrq_rzye",
@@ -723,7 +756,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_rzrq_rzyezb",
@@ -742,7 +776,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_damian_num",
@@ -761,7 +796,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_ditian_num",
@@ -780,7 +816,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_down_num",
@@ -799,7 +836,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_downlimit_num",
@@ -818,7 +856,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_gt5_num",
@@ -837,7 +876,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_lb_2_num",
@@ -856,7 +896,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_lb_3_num",
@@ -875,7 +916,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_lb_h_num",
@@ -894,7 +936,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_lt5_num",
@@ -913,7 +956,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_max_lb_num",
@@ -932,7 +976,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_mian_num",
@@ -951,7 +996,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_tiandi_num",
@@ -970,7 +1016,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_up_num",
@@ -989,7 +1036,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_uplimit_num",
@@ -1008,7 +1056,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_sent_zb_num",
@@ -1027,7 +1076,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_ths_hot_circulation_value",
@@ -1046,7 +1096,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_ths_hot_last_pct",
@@ -1065,7 +1116,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_ths_hot_last_price",
@@ -1084,7 +1136,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_ths_hot_rank",
@@ -1103,7 +1156,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_ths_hot_rank_diff",
@@ -1122,7 +1176,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_zls_df_num",
@@ -1141,7 +1196,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_zls_lbgd",
@@ -1160,7 +1216,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_zls_strong",
@@ -1179,7 +1236,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "ctx_zls_ztjs",
@@ -1198,7 +1256,8 @@
       "source_lag_unit": "sessions",
       "observable_time_field": "signal_time",
       "cacheable": true,
-      "blocked_reason": ""
+      "blocked_reason": "",
+      "source_session_field": "ctx_source_session_upper_bound"
     },
     {
       "name": "dataset_route_id",
@@ -2303,5 +2362,5 @@
       "blocked_reason": ""
     }
   ],
-  "registry_hash": "1f12863ae9673d490f4160e8a103e82e3819dab2850ad408aeb7d1f66a732700"
+  "registry_hash": "4462ccc53eba20d243379e50e47ab7888ad88adb7dc994da3d3edaa89b423088"
 }

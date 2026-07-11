@@ -17,16 +17,21 @@ from our_system_phase2.services.feature_state_fabric import (
 )
 
 
-REGISTRY_PATH = Path(__file__).resolve().parents[1] / "runtime/field_registry/nextgen_dark_field_registry_v1.json"
+REGISTRY_PATH = Path(__file__).resolve().parents[1] / "runtime/field_registry/nextgen_dark_field_registry_v2.json"
 
 
 def test_committed_registry_covers_real_121_field_schema() -> None:
     registry = FieldRegistry.read(REGISTRY_PATH)
 
+    assert registry.version == "nextgen_dark_field_registry_v2_source_session_evidence"
     assert len(registry.fields) == 121
     assert registry.get("open").role is FieldRole.PRIMARY
     assert registry.get("m1_first30_vwap").observable_clock is ObservableClock.FIRST_N_END
     assert registry.get("ctx_rzrq_rzye").source_lag == 1
+    assert (
+        registry.get("ctx_rzrq_rzye").source_session_field
+        == "ctx_source_session_upper_bound"
+    )
     assert registry.get("evt_uplimit_active").role is FieldRole.STATE_ONLY
     assert registry.get("label_horizon").role is FieldRole.BLOCKED
 

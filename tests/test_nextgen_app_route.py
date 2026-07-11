@@ -17,3 +17,10 @@ def test_true1min_plate_materialization_smoke_is_registered_as_an_app_route() ->
         app.ROUTES["nextgen-true1min-plate-materialization-smoke"]
         == "our_system_phase2.runtime.nextgen_true1min_plate_materialization_smoke"
     )
+
+
+def test_nextgen_dark_development_canary_is_registered_as_an_app_route() -> None:
+    assert (
+        app.ROUTES["nextgen-dark-development-canary"]
+        == "our_system_phase2.runtime.nextgen_dark_development_canary"
+    )

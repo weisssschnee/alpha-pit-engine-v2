@@ -207,6 +207,7 @@ def infer_field_spec(name: str) -> FieldSpec:
             name, "float64", "lagged_daily_context", role, ObservableClock.PREVIOUS_SESSION,
             1, "sessions", MissingPolicy.PROPAGATE, (name,), "identity",
             source_lag=1, source_lag_unit="sessions", observable_time_field="signal_time",
+            source_session_field="ctx_source_session_upper_bound",
         )
     return FieldSpec(
         name, "float64", "unclassified", FieldRole.BLOCKED, ObservableClock.METADATA_ONLY,

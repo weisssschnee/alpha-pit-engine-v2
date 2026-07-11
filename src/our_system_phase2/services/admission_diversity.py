@@ -19,6 +19,7 @@ class AdmissionConfig:
     fresh_budget_floor: int
     exile_quota: int
     seed: int = 20260711
+    global_topk_baseline_quota: int | None = None
 
     def validate(self) -> None:
         values = (
@@ -29,6 +30,10 @@ class AdmissionConfig:
             raise ValueError("invalid admission limits")
         if self.fresh_budget_floor + self.exile_quota > self.total_quota:
             raise ValueError("fresh plus exile quota exceeds total")
+        if self.global_topk_baseline_quota is not None and not (
+            0 <= self.global_topk_baseline_quota <= self.total_quota
+        ):
+            raise ValueError("global top-k baseline quota must be within total quota")
 
 
 def _stable_priority(row: Mapping[str, Any], seed: int) -> str:
@@ -83,7 +88,12 @@ def admit_candidates(
     if proposal_overflow:
         raise ValueError(f"lane proposal quota exceeded: {proposal_overflow}")
     deduped = _dedupe_exact(validated, config.seed)
-    global_topk_baseline = deduped[: config.total_quota]
+    baseline_quota = (
+        config.total_quota
+        if config.global_topk_baseline_quota is None
+        else config.global_topk_baseline_quota
+    )
+    global_topk_baseline = deduped[:baseline_quota]
 
     fresh = [row for row in deduped if bool(row.get("fresh")) or not str(row.get("parent_id") or "")]
     exile = [row for row in deduped if lanes.get(str(row["lane_id"])).exile]
@@ -158,6 +168,10 @@ def admit_candidates(
         "exact_identity_count": len(deduped),
         "duplicate_vote_count": len(validated) - len(deduped),
         "selected_count": len(selected),
+        "admission_budget_cap": config.total_quota,
+        "admission_budget_unused": max(0, config.total_quota - len(selected)),
+        "global_topk_baseline_count": len(global_topk_baseline),
+        "global_topk_baseline_quota": baseline_quota,
         "fresh_selected_count": fresh_selected_count,
         "fresh_floor_satisfied": fresh_selected_count >= config.fresh_budget_floor,
         "fresh_floor_shortfall": max(0, config.fresh_budget_floor - fresh_selected_count),

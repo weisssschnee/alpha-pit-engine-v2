@@ -9,10 +9,10 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-11T18:15:51.432692+00:00",
+    "generated_at": "2026-07-11T19:35:42.610571+00:00",
     "graph_type": "NEXTGEN_DARK_CURRENT_ARCHITECTURE_CONTRACT",
     "phase": "NEXTGEN_DARK_CLOSURE",
-    "registry_sha256": "aeb8f870737cea2b2191186ea8f3b6d26065b1448aa62aa4fcb739fa10f36fec",
+    "registry_sha256": "536a3f73655c597a9a6cee861be1728562f8a1df3d413aeec4ea437d5545df75",
     "registry_version": "nextgen_dark_architecture_registry_v1",
     "status_values": [
       "DEPRECATED",
@@ -1164,11 +1164,11 @@
       "feedback_permission": "NONE",
       "id": "nextgen_field_registry_121",
       "implementation_path": [
-        "runtime/field_registry/nextgen_dark_field_registry_v1.json",
+        "runtime/field_registry/nextgen_dark_field_registry_v2.json",
         "scripts/build_nextgen_field_registry.py"
       ],
       "implementation_paths": [
-        "runtime/field_registry/nextgen_dark_field_registry_v1.json",
+        "runtime/field_registry/nextgen_dark_field_registry_v2.json",
         "scripts/build_nextgen_field_registry.py"
       ],
       "input_artifact": [
@@ -1178,16 +1178,16 @@
         "2024-2025 augmented shard Parquet schema footer"
       ],
       "label": "Versioned 121-field registry",
-      "last_verified_sha": "38ac615bf0f7bcfd8b584d37d50f741c257d631eb57e493e86c30fe8220ba2a4",
+      "last_verified_sha": "649b130d2f27e80025e858badb98b1e33712619e67cf44ccfa5a639c42fabcb3",
       "last_verified_sha_scope": [
-        "runtime/field_registry/nextgen_dark_field_registry_v1.json",
+        "runtime/field_registry/nextgen_dark_field_registry_v2.json",
         "tests/test_feature_state_fabric.py"
       ],
       "output_artifact": [
-        "runtime/field_registry/nextgen_dark_field_registry_v1.json"
+        "runtime/field_registry/nextgen_dark_field_registry_v2.json"
       ],
       "output_artifacts": [
-        "runtime/field_registry/nextgen_dark_field_registry_v1.json"
+        "runtime/field_registry/nextgen_dark_field_registry_v2.json"
       ],
       "status": "IMPLEMENTED",
       "test/evidence": [
@@ -1197,7 +1197,7 @@
         "tests/test_feature_state_fabric.py"
       ],
       "verification_paths": [
-        "runtime/field_registry/nextgen_dark_field_registry_v1.json",
+        "runtime/field_registry/nextgen_dark_field_registry_v2.json",
         "tests/test_feature_state_fabric.py"
       ]
     },
@@ -1221,7 +1221,7 @@
         "raw/firstN/lagged/event inputs"
       ],
       "label": "Feature/State Fabric materializer and deterministic cache",
-      "last_verified_sha": "ce9387c2cd17dfa09eb262ca96a27112956be15ac66a49420416cd4b182b64bc",
+      "last_verified_sha": "0403f75d60f4ace21f0ceb63a0882e27912c1ca4487b1ef9bb81af7fe2908437",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/feature_state_fabric.py",
         "tests/test_feature_state_fabric.py"
@@ -1507,7 +1507,7 @@
         "isolated lane submissions"
       ],
       "label": "Stratified admission and diversity controls",
-      "last_verified_sha": "5a3a0c191471ee6dc4ff2fbaa736e55f2837bdeb4d7146ee3b0e4e147039d3b3",
+      "last_verified_sha": "25a1b5c1d0acd7284b5cb6738efd370beceab7e6d63b8d189da0c1e03e7ddc48",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/admission_diversity.py",
         "tests/test_nextgen_hypothesis_infrastructure.py"
@@ -1667,10 +1667,12 @@
       "feedback_permission": "EXECUTION_REQUIRES_INDEPENDENT_AUTHORIZATION",
       "id": "nextgen_canary_plan",
       "implementation_path": [
-        "runtime/run_plans/nextgen_dark_canary_plan_v1.json"
+        "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
+        "src/our_system_phase2/runtime/nextgen_dark_development_canary.py"
       ],
       "implementation_paths": [
-        "runtime/run_plans/nextgen_dark_canary_plan_v1.json"
+        "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
+        "src/our_system_phase2/runtime/nextgen_dark_development_canary.py"
       ],
       "input_artifact": [
         "lane/admission/benchmark contracts"
@@ -1679,10 +1681,12 @@
         "lane/admission/benchmark contracts"
       ],
       "label": "Fixed-budget development-only CANARY plan",
-      "last_verified_sha": "3c597c57cedd0dc68b468aef93435ed2eebafbd5a110a3aa0af31c5573b4a52f",
+      "last_verified_sha": "1a24357e3d638f6272a927a7b376a6682892700ff991c7e402867c0283db85bf",
       "last_verified_sha_scope": [
         "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
-        "tests/test_nextgen_dark_delivery.py"
+        "src/our_system_phase2/runtime/nextgen_dark_development_canary.py",
+        "tests/test_nextgen_dark_delivery.py",
+        "tests/test_nextgen_dark_development_canary.py"
       ],
       "output_artifact": [
         "prepared-not-started CANARY plan"
@@ -1692,14 +1696,18 @@
       ],
       "status": "IMPLEMENTED",
       "test/evidence": [
-        "tests/test_nextgen_dark_delivery.py"
+        "tests/test_nextgen_dark_delivery.py",
+        "tests/test_nextgen_dark_development_canary.py"
       ],
       "test_evidence": [
-        "tests/test_nextgen_dark_delivery.py"
+        "tests/test_nextgen_dark_delivery.py",
+        "tests/test_nextgen_dark_development_canary.py"
       ],
       "verification_paths": [
         "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
-        "tests/test_nextgen_dark_delivery.py"
+        "src/our_system_phase2/runtime/nextgen_dark_development_canary.py",
+        "tests/test_nextgen_dark_delivery.py",
+        "tests/test_nextgen_dark_development_canary.py"
       ]
     },
     {
@@ -1720,7 +1728,7 @@
         "NEXTGEN-DARK closure"
       ],
       "label": "Formal search and adaptive reward remain frozen",
-      "last_verified_sha": "619c84f0e804f8f4ba3edbaf73b37d9bd04fd37e42c385f9f04aac59f492dfde",
+      "last_verified_sha": "5f77dbac9c3dd3c75d8cb6282dc5957fb8c3479a621ddb0f0268adbb253962b8",
       "last_verified_sha_scope": [
         "runtime/run_plans/nextgen_dark_run_manifest_v1.json",
         "tests/test_nextgen_dark_delivery.py"

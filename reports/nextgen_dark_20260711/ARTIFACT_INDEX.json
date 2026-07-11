@@ -3,9 +3,9 @@
     {
       "exists": true,
       "id": "field_registry_121",
-      "last_verified_sha": "62e6b791958f3d52a83804ab58a525a7ea32028c1331b745d436fd453769bb2e",
-      "path": "runtime/field_registry/nextgen_dark_field_registry_v1.json",
-      "size_bytes": 65691,
+      "last_verified_sha": "4ba9b0199033ea3d0cd4e5920309cb0866c13f1124c5f382cb14187ed4dc80ae",
+      "path": "runtime/field_registry/nextgen_dark_field_registry_v2.json",
+      "size_bytes": 69540,
       "state": "IMPLEMENTED"
     },
     {
@@ -43,9 +43,9 @@
     {
       "exists": true,
       "id": "feature_state_fabric",
-      "last_verified_sha": "494234dd3fd2f64329b876bd36eac1b2092efaef1083770f2c48ab2437993b10",
+      "last_verified_sha": "798374148898a39b696c01b8dd87c56dde6266b3850d1e4e2053a24e54bda4f8",
       "path": "src/our_system_phase2/services/feature_state_fabric.py",
-      "size_bytes": 17662,
+      "size_bytes": 17729,
       "state": "IMPLEMENTED"
     },
     {
@@ -101,9 +101,9 @@
     {
       "exists": true,
       "id": "admission_diversity",
-      "last_verified_sha": "8a138357059148ad6b000108de513d74d05bf026a770b51fd58142bed46882f3",
+      "last_verified_sha": "47313ee058c996bac2274879c78541e1bec1b2414f99d3c38d7c3ff9d71ebe8d",
       "path": "src/our_system_phase2/services/admission_diversity.py",
-      "size_bytes": 7267,
+      "size_bytes": 7950,
       "state": "IMPLEMENTED"
     },
     {
@@ -140,26 +140,34 @@
     },
     {
       "exists": true,
+      "id": "development_canary_runner",
+      "last_verified_sha": "1e5d3e2dcb891e4ff0798ac296937be34e947cb3c1c06d1c6c03750d60fa18b0",
+      "path": "src/our_system_phase2/runtime/nextgen_dark_development_canary.py",
+      "size_bytes": 39320,
+      "state": "IMPLEMENTED"
+    },
+    {
+      "exists": true,
       "id": "run_manifest",
-      "last_verified_sha": "0f5689a2d286df9a6489d940b03629f39b08fe80bf9f21f9b2a01f1735b950fd",
+      "last_verified_sha": "7a979ccc29ca2b75e915e93524806f5609e188841548a1d80172fd6a0a9494b7",
       "path": "runtime/run_plans/nextgen_dark_run_manifest_v1.json",
-      "size_bytes": 2523,
+      "size_bytes": 2624,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "architecture_registry",
-      "last_verified_sha": "3b3d5dc0674cf5819a9606408842f1d82ea74757f1cd5017ee54b91c907447b0",
+      "last_verified_sha": "3532fff8e5a694f329db2e3842883512077a7d3ba9bacdc5a5298a5b5f96b865",
       "path": "runtime/run_plans/nextgen_dark_architecture_registry_v1.json",
-      "size_bytes": 14575,
+      "size_bytes": 14809,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "architecture_graph",
-      "last_verified_sha": "77ed5727397b2be76774cdb6b9181b20ad914d79c8955293ac1a0188cd726946",
+      "last_verified_sha": "d600bc611a789f09af5daf5137f6212c6aea7b39e06a0e455228f09aea74704e",
       "path": ".planning/graphs/graph.json",
-      "size_bytes": 62865,
+      "size_bytes": 63405,
       "state": "IMPLEMENTED"
     },
     {
@@ -181,7 +189,7 @@
     {
       "exists": true,
       "id": "delivery_validator",
-      "last_verified_sha": "8422669686fc63494a4ace9945e5598eccad8fc255b5ab7fa6b8808f66cd3e1d",
+      "last_verified_sha": "bfa475489d94af1b3c354785c785d32681eb608520367e9d3c9d6cac30dafe53",
       "path": "scripts/validate_nextgen_dark_delivery.py",
       "size_bytes": 6316,
       "state": "IMPLEMENTED"
@@ -196,6 +204,6 @@
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-11T18:16:01.508949+00:00",
+  "refreshed_at": "2026-07-11T19:35:49.017557+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
 }
