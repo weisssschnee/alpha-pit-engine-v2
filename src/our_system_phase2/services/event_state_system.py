@@ -208,21 +208,31 @@ def build_event_state_features(
     )
     out["event_active"] = active.astype(float)
     out["event_direction"] = direction
-    out["event_age"] = evaluate_temporal_primitive(out, "TimeSince", [out["event_active"]])
+    out["event_age"] = evaluate_temporal_primitive(
+        out, "TimeSince", [out["event_active"]], data_role="development"
+    )
     out["event_count"] = _rolling_sum(out, out["event_active"], cfg.event_count_window)
     price_range = (up - down).replace(0, np.nan)
     out["event_intensity"] = np.where(direction >= 0, (close - down) / price_range, (up - close) / price_range)
     out["event_intensity"] = pd.to_numeric(out["event_intensity"], errors="coerce").clip(0.0, 1.0)
     state = pd.Series(np.select([at_up, at_down], [1.0, -1.0], default=0.0), index=out.index)
     out["state_limit"] = state
-    out["state_duration"] = evaluate_temporal_primitive(out, "StateAge", [state])
+    out["state_duration"] = evaluate_temporal_primitive(
+        out, "StateAge", [state], data_role="development"
+    )
     previous_state = state.groupby(out["code"], sort=False).shift(1)
     out["state_transition"] = (state - previous_state).where(previous_state.notna(), 0.0)
 
-    pre_shape = evaluate_temporal_primitive(out, "PathShape", [close], [cfg.pre_path_window])
+    pre_shape = evaluate_temporal_primitive(
+        out, "PathShape", [close], [cfg.pre_path_window], data_role="development"
+    )
     out["event_pre_path_shape"] = pre_shape.where(active)
     out["event_post_window_mean"] = evaluate_temporal_primitive(
-        out, "EventWindow", [close, out["event_active"]], [0, cfg.post_path_window]
+        out,
+        "EventWindow",
+        [close, out["event_active"]],
+        [0, cfg.post_path_window],
+        data_role="development",
     )
     anchor = close.where(active).groupby(out["code"], sort=False).ffill()
     anchor_direction = direction.where(active).groupby(out["code"], sort=False).ffill()

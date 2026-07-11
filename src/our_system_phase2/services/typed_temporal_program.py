@@ -39,6 +39,51 @@ class TemporalPrimitiveSpec:
         return payload
 
 
+@dataclass(frozen=True, slots=True)
+class TemporalInput:
+    values: pd.Series
+    value_type: str
+    observable_at: pd.Series
+    source_lag: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class TemporalEvaluationResult:
+    values: pd.Series
+    observable_at: pd.Series
+    output_type: str
+    source_lag: int
+    maturity: str
+    cache_key: str
+    cache_hit: bool
+
+
+class TemporalProgramCache:
+    def __init__(self) -> None:
+        self._values: dict[str, tuple[pd.Series, pd.Series, str, int, str]] = {}
+
+    def get(self, key: str) -> TemporalEvaluationResult | None:
+        item = self._values.get(key)
+        if item is None:
+            return None
+        values, observable_at, output_type, source_lag, maturity = item
+        return TemporalEvaluationResult(
+            values.copy(), observable_at.copy(), output_type, source_lag, maturity, key, True
+        )
+
+    def put(self, key: str, result: TemporalEvaluationResult) -> None:
+        self._values[key] = (
+            result.values.copy(),
+            result.observable_at.copy(),
+            result.output_type,
+            result.source_lag,
+            result.maturity,
+        )
+
+    def __len__(self) -> int:
+        return len(self._values)
+
+
 def _spec(
     name: str,
     inputs: tuple[str, ...],
@@ -79,6 +124,106 @@ TEMPORAL_PRIMITIVES: dict[str, TemporalPrimitiveSpec] = {
     )
 }
 
+_INPUT_COUNTS = {
+    "delta": 1,
+    "slope": 1,
+    "acceleration": 1,
+    "persistence": 1,
+    "duration": 1,
+    "stateage": 1,
+    "timesince": 1,
+    "transition": 1,
+    "firsthit": 1,
+    "lasthit": 1,
+    "pathshape": 1,
+    "drawdownpath": 1,
+    "recoverypath": 1,
+    "eventwindow": 2,
+    "multiscalerelation": 2,
+}
+_PARAM_COUNTS = {
+    "delta": 1,
+    "slope": 1,
+    "acceleration": 1,
+    "persistence": 1,
+    "duration": 0,
+    "stateage": 0,
+    "timesince": 0,
+    "transition": 2,
+    "firsthit": 1,
+    "lasthit": 1,
+    "pathshape": 1,
+    "drawdownpath": 1,
+    "recoverypath": 1,
+    "eventwindow": 2,
+    "multiscalerelation": 2,
+}
+_VALUE_INPUT_TYPES = {
+    "delta": ("numeric",),
+    "slope": ("numeric",),
+    "acceleration": ("numeric",),
+    "persistence": ("boolean",),
+    "duration": ("state",),
+    "stateage": ("state",),
+    "timesince": ("event",),
+    "transition": ("state",),
+    "firsthit": ("boolean",),
+    "lasthit": ("boolean",),
+    "pathshape": ("numeric",),
+    "drawdownpath": ("numeric",),
+    "recoverypath": ("numeric",),
+    "eventwindow": ("numeric", "event"),
+    "multiscalerelation": ("numeric", "numeric"),
+}
+_TYPE_COMPATIBILITY = {
+    "numeric": {"numeric", "ratio", "count", "position", "age"},
+    "boolean": {"boolean", "event"},
+    "event": {"event", "boolean"},
+    "state": {"state", "count"},
+}
+
+
+def _integer_parameter(value: Any) -> int:
+    try:
+        number = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"invalid temporal parameters: {value!r} is not numeric") from exc
+    if not math.isfinite(number) or not number.is_integer():
+        raise ValueError(f"invalid temporal parameters: {value!r} is not an integer")
+    return int(number)
+
+
+def _validate_temporal_signature(
+    spec: TemporalPrimitiveSpec,
+    input_count: int,
+    params: Sequence[Any],
+) -> None:
+    lower = spec.name.lower()
+    if input_count != _INPUT_COUNTS[lower] or len(params) != _PARAM_COUNTS[lower]:
+        raise ValueError(
+            "invalid temporal parameters/signature: "
+            f"{spec.name} needs {_INPUT_COUNTS[lower]} inputs and {_PARAM_COUNTS[lower]} params"
+        )
+    if lower == "transition":
+        try:
+            values = [float(value) for value in params]
+        except (TypeError, ValueError) as exc:
+            raise ValueError("invalid temporal parameters: Transition states must be numeric") from exc
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError("invalid temporal parameters: Transition states must be finite")
+        return
+    integers = [_integer_parameter(value) for value in params]
+    if lower == "delta" and integers[0] < 1:
+        raise ValueError("invalid temporal parameters: Delta lag must be >= 1")
+    if lower in {"slope", "acceleration", "pathshape", "drawdownpath", "recoverypath"} and integers[0] < 2:
+        raise ValueError(f"invalid temporal parameters: {spec.name} window must be >= 2")
+    if lower in {"persistence", "firsthit", "lasthit"} and integers[0] < 1:
+        raise ValueError(f"invalid temporal parameters: {spec.name} window must be >= 1")
+    if lower == "eventwindow" and any(value < 0 for value in integers):
+        raise ValueError("invalid temporal parameters: EventWindow pre/post must be non-negative")
+    if lower == "multiscalerelation" and not (1 < integers[0] < integers[1]):
+        raise ValueError("invalid temporal parameters: MultiScaleRelation requires 1 < short < long")
+
 
 def primitive_contract(name: str) -> TemporalPrimitiveSpec:
     try:
@@ -115,6 +260,7 @@ def _normalize_param(value: Any) -> str:
 
 def canonical_temporal_call(name: str, args: Sequence[str], params: Sequence[Any]) -> str:
     spec = primitive_contract(name)
+    _validate_temporal_signature(spec, len(args), params)
     canonical_args = [str(arg).strip() for arg in args]
     canonical_params = [_normalize_param(value) for value in params]
     if spec.name == "MultiScaleRelation" and len(canonical_args) == 2:
@@ -215,7 +361,7 @@ def _recovery(values: np.ndarray) -> float:
     return float((values[-1] - low) / (high - low)) if high > low else 0.0
 
 
-def evaluate_temporal_primitive(
+def _evaluate_temporal_primitive_canonical(
     frame: pd.DataFrame,
     name: str,
     inputs: Sequence[pd.Series],
@@ -296,24 +442,217 @@ def evaluate_temporal_primitive(
     raise AssertionError(f"unhandled primitive: {spec.name}")
 
 
+def _validate_binary_input(value: pd.Series) -> None:
+    numeric = pd.to_numeric(value, errors="coerce")
+    observed = set(numeric.dropna().unique().tolist())
+    if not observed <= {0.0, 1.0}:
+        raise ValueError(f"binary event/boolean input required, observed {sorted(observed)}")
+
+
+def _series_hash(series: pd.Series) -> bytes:
+    normalized = series.reset_index(drop=True)
+    return pd.util.hash_pandas_object(normalized, index=False).to_numpy(dtype=np.uint64).tobytes()
+
+
+def _typed_cache_key(
+    spec: TemporalPrimitiveSpec,
+    frame: pd.DataFrame,
+    inputs: Sequence[TemporalInput],
+    params: Sequence[Any],
+) -> str:
+    digest = hashlib.sha256()
+    digest.update(TEMPORAL_REGISTRY_VERSION.encode())
+    digest.update(canonical_temporal_call(spec.name, [f"input{index}" for index in range(len(inputs))], params).encode())
+    digest.update(_series_hash(frame["code"].astype(str)))
+    digest.update(_series_hash(pd.to_datetime(frame["trade_time"], errors="coerce", format="mixed")))
+    for item in inputs:
+        digest.update(item.value_type.encode())
+        digest.update(str(item.source_lag).encode())
+        digest.update(_series_hash(item.values))
+        digest.update(_series_hash(pd.to_datetime(item.observable_at, errors="coerce", format="mixed")))
+    return digest.hexdigest()
+
+
+def _validate_output_type(values: pd.Series, output_type: str) -> None:
+    numeric = pd.to_numeric(values, errors="coerce")
+    finite = numeric.dropna().to_numpy(dtype=float)
+    if not np.isfinite(finite).all():
+        raise ValueError(f"temporal output type {output_type} produced non-finite values")
+    if output_type == "event" and not set(finite.tolist()) <= {0.0, 1.0}:
+        raise ValueError("temporal event output must be binary")
+    if output_type in {"count", "position", "age"}:
+        if (finite < 0).any() or not np.equal(finite, np.floor(finite)).all():
+            raise ValueError(f"temporal {output_type} output must be non-negative integers")
+
+
+def evaluate_typed_temporal_primitive(
+    frame: pd.DataFrame,
+    name: str,
+    inputs: Sequence[TemporalInput],
+    params: Sequence[Any] = (),
+    *,
+    data_role: str,
+    cache: TemporalProgramCache | None = None,
+) -> TemporalEvaluationResult:
+    if data_role != "development":
+        raise PermissionError("typed temporal evaluation is development-only")
+    spec = primitive_contract(name)
+    _validate_temporal_signature(spec, len(inputs), params)
+    if not {"code", "trade_time"} <= set(frame.columns):
+        raise ValueError("temporal evaluation requires code and trade_time")
+    if frame["code"].isna().any() or frame["code"].astype(str).str.strip().isin({"", "nan", "None"}).any():
+        raise ValueError("temporal coordinates require non-empty code")
+    if any(len(item.values) != len(frame) or len(item.observable_at) != len(frame) for item in inputs):
+        raise ValueError("temporal input length must equal frame length")
+    expected_types = _VALUE_INPUT_TYPES[spec.name.lower()]
+    for index, (item, expected) in enumerate(zip(inputs, expected_types)):
+        if item.value_type not in _TYPE_COMPATIBILITY[expected]:
+            raise TypeError(
+                f"temporal input {index} for {spec.name} requires {expected}, observed {item.value_type}"
+            )
+        if item.source_lag < 0:
+            raise ValueError("temporal input source_lag must be non-negative")
+
+    coordinates = pd.DataFrame(
+        {
+            "code": frame["code"].astype(str).to_numpy(),
+            "trade_time": pd.to_datetime(
+                frame["trade_time"], errors="coerce", format="mixed"
+            ).to_numpy(),
+            "_position": np.arange(len(frame)),
+        }
+    )
+    if coordinates["trade_time"].isna().any():
+        raise ValueError("temporal coordinates must be valid")
+    if coordinates.duplicated(["code", "trade_time"]).any():
+        raise ValueError("duplicate temporal coordinates are forbidden")
+    order = coordinates.sort_values(["code", "trade_time"], kind="mergesort")["_position"].to_numpy()
+    canonical_frame = frame.iloc[order].copy().reset_index(drop=True)
+    canonical_frame["code"] = coordinates.iloc[order]["code"].to_numpy()
+    canonical_frame["trade_time"] = coordinates.iloc[order]["trade_time"].to_numpy()
+    canonical_inputs: list[TemporalInput] = []
+    safe_values: list[pd.Series] = []
+    row_time = pd.to_datetime(canonical_frame["trade_time"], errors="coerce", format="mixed")
+    for item in inputs:
+        values = pd.Series(item.values.to_numpy(copy=False)[order], index=canonical_frame.index)
+        observable_at = pd.Series(
+            pd.to_datetime(item.observable_at, errors="coerce", format="mixed").to_numpy()[order],
+            index=canonical_frame.index,
+        )
+        safe = values.where(observable_at.notna() & observable_at.le(row_time))
+        canonical = TemporalInput(safe, item.value_type, observable_at, item.source_lag)
+        canonical_inputs.append(canonical)
+        safe_values.append(safe)
+
+    binary_inputs = {
+        "persistence": (0,),
+        "timesince": (0,),
+        "firsthit": (0,),
+        "lasthit": (0,),
+        "eventwindow": (1,),
+    }.get(spec.name.lower(), ())
+    for index in binary_inputs:
+        _validate_binary_input(canonical_inputs[index].values)
+
+    key = _typed_cache_key(spec, canonical_frame, canonical_inputs, params)
+    cached = cache.get(key) if cache is not None else None
+    if cached is None:
+        values = _evaluate_temporal_primitive_canonical(
+            canonical_frame, spec.name, safe_values, params
+        )
+        _validate_output_type(values, spec.output_type)
+        observable_at = row_time.where(values.notna())
+        canonical_result = TemporalEvaluationResult(
+            values.reset_index(drop=True),
+            observable_at.reset_index(drop=True),
+            spec.output_type,
+            max((item.source_lag for item in inputs), default=0),
+            spec.maturity,
+            key,
+            False,
+        )
+        if cache is not None:
+            cache.put(key, canonical_result)
+    else:
+        canonical_result = cached
+
+    restored_values = np.full(len(frame), np.nan, dtype=float)
+    restored_values[order] = pd.to_numeric(canonical_result.values, errors="coerce").to_numpy()
+    restored_observable = np.full(len(frame), np.datetime64("NaT"), dtype="datetime64[ns]")
+    restored_observable[order] = pd.to_datetime(canonical_result.observable_at).to_numpy()
+    return TemporalEvaluationResult(
+        pd.Series(restored_values, index=frame.index, dtype=float),
+        pd.Series(restored_observable, index=frame.index),
+        canonical_result.output_type,
+        canonical_result.source_lag,
+        canonical_result.maturity,
+        canonical_result.cache_key,
+        canonical_result.cache_hit,
+    )
+
+
+def evaluate_temporal_primitive(
+    frame: pd.DataFrame,
+    name: str,
+    inputs: Sequence[pd.Series],
+    params: Sequence[Any] = (),
+    *,
+    data_role: str,
+    cache: TemporalProgramCache | None = None,
+) -> pd.Series:
+    spec = primitive_contract(name)
+    observable_at = pd.to_datetime(frame["trade_time"], errors="coerce", format="mixed")
+    typed_inputs = [
+        TemporalInput(value, value_type, observable_at, 0)
+        for value, value_type in zip(inputs, _VALUE_INPUT_TYPES[spec.name.lower()])
+    ]
+    return evaluate_typed_temporal_primitive(
+        frame,
+        spec.name,
+        typed_inputs,
+        params,
+        data_role=data_role,
+        cache=cache,
+    ).values
+
+
 def evaluate_expression_temporal_call(
     frame: pd.DataFrame,
     name: str,
     args: Sequence[str],
     evaluate_child: Callable[[str], pd.Series],
+    *,
+    data_role: str | None,
 ) -> pd.Series | None:
     if name.lower() not in TEMPORAL_PRIMITIVES:
         return None
+    if data_role is None:
+        raise PermissionError("typed temporal expression requires explicit development data role")
     lower = name.lower()
     if lower in {"duration", "stateage", "timesince"} and len(args) == 1:
-        return evaluate_temporal_primitive(frame, name, [evaluate_child(args[0])])
+        return evaluate_temporal_primitive(
+            frame, name, [evaluate_child(args[0])], data_role=data_role
+        )
     if lower in {"delta", "slope", "acceleration", "persistence", "firsthit", "lasthit", "pathshape", "drawdownpath", "recoverypath"} and len(args) == 2:
-        return evaluate_temporal_primitive(frame, name, [evaluate_child(args[0])], [int(float(args[1]))])
+        return evaluate_temporal_primitive(
+            frame,
+            name,
+            [evaluate_child(args[0])],
+            [int(float(args[1]))],
+            data_role=data_role,
+        )
     if lower == "transition" and len(args) == 3:
-        return evaluate_temporal_primitive(frame, name, [evaluate_child(args[0])], [float(args[1]), float(args[2])])
+        return evaluate_temporal_primitive(
+            frame,
+            name,
+            [evaluate_child(args[0])],
+            [float(args[1]), float(args[2])],
+            data_role=data_role,
+        )
     if lower in {"eventwindow", "multiscalerelation"} and len(args) == 4:
         return evaluate_temporal_primitive(
             frame, name, [evaluate_child(args[0]), evaluate_child(args[1])],
             [int(float(args[2])), int(float(args[3]))],
+            data_role=data_role,
         )
     raise ValueError(f"invalid typed temporal call: {name}({','.join(args)})")

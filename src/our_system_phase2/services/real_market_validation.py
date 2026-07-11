@@ -832,6 +832,7 @@ def evaluate_panel_expression(
     cache: dict[str, pd.Series] | None = None,
     field_lags: dict[str, int] | None = None,
     diagnostics: dict[str, Any] | None = None,
+    data_role: str | None = None,
     _evaluation_context: _ExpressionEvaluationContext | None = None,
 ) -> pd.Series:
     evaluation_context = _evaluation_context or _ExpressionEvaluationContext.for_frame(
@@ -855,6 +856,7 @@ def evaluate_panel_expression(
             child_expression,
             cache=cache,
             field_lags=field_lags,
+            data_role=data_role,
             _evaluation_context=evaluation_context,
         )
 
@@ -881,7 +883,9 @@ def evaluate_panel_expression(
 
     from our_system_phase2.services.typed_temporal_program import evaluate_expression_temporal_call
 
-    typed_temporal = evaluate_expression_temporal_call(frame, name, args, evaluate_child)
+    typed_temporal = evaluate_expression_temporal_call(
+        frame, name, args, evaluate_child, data_role=data_role
+    )
     if typed_temporal is not None:
         return store(typed_temporal)
 
