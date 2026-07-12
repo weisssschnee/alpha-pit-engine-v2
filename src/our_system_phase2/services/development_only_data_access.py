@@ -22,6 +22,7 @@ PANEL_RELATIVE_PATH = Path(
     "phase3aq_wide_true1min/canary/phase3aq_true_1min_formula_canary.parquet"
 )
 DEVELOPMENT_ROLES = frozenset({"train", "development"})
+DERIVED_PIT_COLUMNS = frozenset({"ctx_source_session_upper_bound"})
 FORBIDDEN_ROLES = frozenset({"validation", "holdout", "spent", "sealed", "forward"})
 
 
@@ -242,7 +243,29 @@ def read_development_panel(
     role = roles.get(trade_date)
     if role not in DEVELOPMENT_ROLES:
         raise PermissionError(f"requested date is not development: {trade_date.date()} role={role}")
-    required = sorted(set(columns) | {"code", "trade_time", "date", "close", "signal_time"})
+    requested = set(columns)
+    required = sorted((requested - DERIVED_PIT_COLUMNS) | {"code", "trade_time", "date", "close", "signal_time"})
+    derived_columns: dict[str, dict[str, str]] = {}
+    if "ctx_source_session_upper_bound" in requested:
+        ordered_dates = sorted(roles)
+        try:
+            date_index = ordered_dates.index(trade_date)
+        except ValueError as exc:
+            raise PermissionError(f"requested date is absent from split manifest: {trade_date.date()}") from exc
+        if date_index == 0:
+            raise PermissionError("context source-session upper bound has no preceding split session")
+        previous_session = ordered_dates[date_index - 1]
+        previous_role = roles[previous_session]
+        if previous_role not in DEVELOPMENT_ROLES:
+            raise PermissionError(
+                "context source-session upper bound crosses a forbidden split role: "
+                f"{previous_session.date()} role={previous_role}"
+            )
+        derived_columns["ctx_source_session_upper_bound"] = {
+            "value": str(previous_session.date()),
+            "method": "immediately_preceding_approved_split_session",
+            "evidence": "source release hard rule requires ctx source_date < exec_date",
+        }
     frames: list[pd.DataFrame] = []
     entries: list[dict[str, Any]] = []
     for item in sorted(release.files, key=lambda value: value.relative_path):
@@ -278,6 +301,8 @@ def read_development_panel(
         mask = times.dt.normalize().eq(trade_date).to_numpy()
         selected = table.filter(pa.array(mask)).to_pandas()
         selected["trade_time"] = pd.to_datetime(selected["trade_time"], errors="coerce", format="mixed")
+        for name, derivation in derived_columns.items():
+            selected[name] = pd.Timestamp(derivation["value"])
         if not selected.empty:
             frames.append(selected)
         entries.append(
@@ -294,6 +319,7 @@ def read_development_panel(
                 "read_timestamp": datetime.now(timezone.utc).isoformat(),
                 "release_hash": release.release_hash,
                 "loader_sha": loader_sha,
+                "derived_pit_columns": derived_columns,
             }
         )
     if not frames:
@@ -330,6 +356,7 @@ def read_development_panel(
         "forward_rows_read": int(rows_by_role["forward"]),
         "total_rows_read": sum(int(row["rows_read"]) for row in entries),
         "selected_rows": len(output),
+        "derived_pit_columns": derived_columns,
     }
     atomic_write_json(read_ledger_path, ledger)
     return output, entries

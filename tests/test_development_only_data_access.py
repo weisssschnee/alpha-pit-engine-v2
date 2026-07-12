@@ -161,6 +161,32 @@ def test_fail_closed_read_writes_zero_forbidden_access_ledger(built_release, tmp
     assert payload["forward_rows_read"] == 0
 
 
+def test_context_source_upper_bound_uses_previous_approved_split_session(
+    built_release, tmp_path: Path
+) -> None:
+    output, manifest_path, split, _ = built_release
+    validated = validate_development_release(output, manifest_path, split)
+    ledger = tmp_path / "ctx-ledger.json"
+    frame, entries = read_development_panel(
+        validated,
+        trade_date=pd.Timestamp("2025-04-02"),
+        row_group_index=1,
+        columns=["feature", "ctx_source_session_upper_bound"],
+        read_ledger_path=ledger,
+        loader_sha="loader-test-sha",
+    )
+    payload = json.loads(ledger.read_text(encoding="utf-8"))
+
+    assert frame["ctx_source_session_upper_bound"].nunique() == 1
+    assert frame["ctx_source_session_upper_bound"].iloc[0] == pd.Timestamp("2025-04-01")
+    assert entries[0]["derived_pit_columns"]["ctx_source_session_upper_bound"]["method"] == (
+        "immediately_preceding_approved_split_session"
+    )
+    assert payload["validation_rows_read"] == 0
+    assert payload["holdout_rows_read"] == 0
+    assert payload["forward_rows_read"] == 0
+
+
 def test_actual_read_role_mapping_rejects_post_preflight_contamination(
     built_release, tmp_path: Path, monkeypatch
 ) -> None:

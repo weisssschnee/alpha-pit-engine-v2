@@ -54,7 +54,7 @@ def test_repaired_contract_changes_only_data_access_identity() -> None:
         "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255"
     )
     assert data_access["cache_provenance"]["cache_namespace"] == (
-        "c0c99d6d71b98393dec8c388d82e3dde51893233b1ff8c1fe4d307c1726a01e9"
+        "dcac211e3180c5a31f9427aaf476bfb4e3dd4a4294dda9883cbb78a42a317222"
     )
     assert data_access["read_ledger_contract"] == {
         "ledger_version": "cn_development_only_read_ledger_v1",
