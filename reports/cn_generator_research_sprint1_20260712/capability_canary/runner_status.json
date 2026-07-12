@@ -1,0 +1,10 @@
+﻿{
+    "exit_code":  0,
+    "forward_2026_sealed":  true,
+    "repo_sha":  "7c7e08b0855136a3b6aa61cd216c10790c8ad04b",
+    "ended_at":  "2026-07-12T13:36:28.4130125Z",
+    "stdout":  "D:\\ChengboRemote\\runtime\\cn_generator_research_sprint1\\capability_canary\\7c7e08b_r5\\canary.stdout.log",
+    "status":  "COMPLETED",
+    "output_root":  "D:\\ChengboRemote\\runtime\\cn_generator_research_sprint1\\capability_canary\\7c7e08b_r5\\output",
+    "stderr":  "D:\\ChengboRemote\\runtime\\cn_generator_research_sprint1\\capability_canary\\7c7e08b_r5\\canary.stderr.log"
+}
