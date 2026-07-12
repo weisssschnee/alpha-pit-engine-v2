@@ -9,11 +9,11 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-12T12:23:37.164373+00:00",
+    "generated_at": "2026-07-12T17:22:34.839251+00:00",
     "graph_type": "CN_GENERATOR_RESEARCH_SPRINT1_CURRENT_ARCHITECTURE_CONTRACT",
-    "phase": "CN_GENERATOR_RESEARCH_SPRINT1_ACTIVE",
-    "registry_sha256": "4c5223be861b4d6285333a4f5521ae591d47b3e11d37b045662d7c852675542f",
-    "registry_version": "cn_generator_research_sprint1_architecture_registry_v1",
+    "phase": "CN_GENERATOR_RESEARCH_SPRINT1_PARTIALLY_COMPLETED",
+    "registry_sha256": "a967ba74761e44991f412151a58ccd4b3f4869d828ae43272797f7b1087ae77f",
+    "registry_version": "cn_generator_research_sprint1_closure_architecture_registry_v2",
     "status_values": [
       "DEPRECATED",
       "FROZEN",
@@ -1815,7 +1815,7 @@
         "fresh provenance-bound cache"
       ],
       "label": "Completed fixed-budget B1S development CANARY",
-      "last_verified_sha": "1d7a9f765e655f45c65ba402e7371e059c215dea3856a057545e834ed1c56a9c",
+      "last_verified_sha": "472adae63287f9307064bdd84a6cfe5053a574b4c10a763a86a61ad2827bee06",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
         "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json",
@@ -1847,48 +1847,70 @@
       ]
     },
     {
-      "blocker": "generator capability and Pareto development objective are not yet implemented or evaluated",
+      "blocker": "new clusters per strict did not improve at Epoch-A scale; event remained empty; adaptive evolutionary failed strict matched-control comparison",
       "data_role": "development_only",
-      "feedback_permission": "WITHIN_SPRINT_EPHEMERAL_ONLY",
+      "feedback_permission": "SPRINT_CLOSED_NO_PERSISTENT_MEMORY_NO_PROMOTION",
       "id": "generator_research_sprint1",
       "implementation_path": [
         "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
-        "src/our_system_phase2/runtime/cn_b1s_development_canary.py"
+        "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "src/our_system_phase2/services/development_pareto.py",
+        "reports/cn_generator_research_sprint1_20260712/epoch_a_result_v1.json"
       ],
       "implementation_paths": [
         "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
-        "src/our_system_phase2/runtime/cn_b1s_development_canary.py"
+        "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "src/our_system_phase2/services/development_pareto.py",
+        "reports/cn_generator_research_sprint1_20260712/epoch_a_result_v1.json"
       ],
       "input_artifact": [
-        "formal B1S funnel and matched-control diagnostics"
+        "formal B1S funnel; repaired Capability CANARY; frozen two-seed development Epoch-A"
       ],
       "input_artifacts": [
-        "formal B1S funnel and matched-control diagnostics"
+        "formal B1S funnel; repaired Capability CANARY; frozen two-seed development Epoch-A"
       ],
-      "label": "CN Generator Research Sprint-1",
-      "last_verified_sha": "8b503003e5b91990e993324c6e8bc3d44a9431d277801e30b6e7166e57c782b7",
+      "label": "CN Generator Research Sprint-1 partially completed",
+      "last_verified_sha": "8de93bb4d751c68a1fbfe15fe5ba6ce82a479729a8890d2678e50ab61c51b6b9",
       "last_verified_sha_scope": [
         "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json",
         "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
-        "tests/test_cn_b1s_development_canary.py"
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "src/our_system_phase2/services/development_pareto.py",
+        "reports/cn_generator_research_sprint1_20260712/epoch_a_result_v1.json",
+        "tests/test_cn_generator_research_sprint1_closure.py"
       ],
       "output_artifact": [
-        "generator capability CANARY; conditional Epoch-A and Epoch-B; optional frozen candidate pack"
+        "16384 Epoch-A proposals; 512 strict evaluations; RX/UCB retained; evolutionary downgraded; two research-only packs; no forward authorization"
       ],
       "output_artifacts": [
-        "generator capability CANARY; conditional Epoch-A and Epoch-B; optional frozen candidate pack"
+        "16384 Epoch-A proposals; 512 strict evaluations; RX/UCB retained; evolutionary downgraded; two research-only packs; no forward authorization"
       ],
       "status": "PARTIAL",
       "test/evidence": [
-        "tests/test_cn_b1s_development_canary.py"
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_sprint1_generators.py",
+        "tests/test_development_pareto.py",
+        "tests/test_cn_generator_research_sprint1_closure.py"
       ],
       "test_evidence": [
-        "tests/test_cn_b1s_development_canary.py"
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_sprint1_generators.py",
+        "tests/test_development_pareto.py",
+        "tests/test_cn_generator_research_sprint1_closure.py"
       ],
       "verification_paths": [
         "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json",
         "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
-        "tests/test_cn_b1s_development_canary.py"
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "src/our_system_phase2/services/development_pareto.py",
+        "reports/cn_generator_research_sprint1_20260712/epoch_a_result_v1.json",
+        "tests/test_cn_generator_research_sprint1_closure.py"
       ]
     },
     {
@@ -1909,7 +1931,7 @@
         "Sprint-1 development-only authorization"
       ],
       "label": "Sealed search, promotion and cross-sprint memory remain frozen",
-      "last_verified_sha": "e12b1021649ab85401c88678cb52f881b3a6a3e548ba033da44a64377c4bfc9d",
+      "last_verified_sha": "e821d057393136775fa4a86c19dc6510b16d4f4843342f6afd849740f5f340a4",
       "last_verified_sha_scope": [
         "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
         "tests/test_cn_b1s_development_canary.py",
