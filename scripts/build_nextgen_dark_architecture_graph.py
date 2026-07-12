@@ -22,6 +22,9 @@ REQUIRED_NEXTGEN_NODES = {
     "coverage_metrics",
     "atomic_checkpoint_resume",
     "nextgen_canary_plan",
+    "development_only_release",
+    "formal_b1s_canary",
+    "generator_research_sprint1",
     "formal_search_frozen",
 }
 
@@ -46,7 +49,7 @@ def merge_registries(base: dict, overlay: dict) -> dict:
     return {
         "registry_version": overlay["registry_version"],
         "phase": overlay["phase"],
-        "graph_type": "NEXTGEN_DARK_CURRENT_ARCHITECTURE_CONTRACT",
+        "graph_type": "CN_GENERATOR_RESEARCH_SPRINT1_CURRENT_ARCHITECTURE_CONTRACT",
         "nodes": nodes,
         "edges": edges,
     }

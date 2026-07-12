@@ -1,12 +1,12 @@
 {
-  "registry_version": "nextgen_dark_architecture_registry_v1",
-  "phase": "NEXTGEN_DARK_CLOSURE",
+  "registry_version": "cn_generator_research_sprint1_architecture_registry_v1",
+  "phase": "CN_GENERATOR_RESEARCH_SPRINT1_ACTIVE",
   "base_registry": "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json",
   "node_overrides": {
     "scheduler_memory_feedback": {
       "status": "FROZEN",
-      "feedback_permission": "FORMAL_SEARCH_AND_ADAPTIVE_REWARD_FROZEN",
-      "blocker": "requires independent post-NEXTGEN authorization"
+      "feedback_permission": "NO_CROSS_SPRINT_ADAPTIVE_MEMORY",
+      "blocker": "development-only sprint statistics are ephemeral and cannot update permanent memory"
     },
     "forward_2026": {
       "status": "FROZEN",
@@ -14,8 +14,8 @@
       "blocker": "FORWARD_2026_SEALED"
     },
     "sealed_epoch_governance": {
-      "status": "PARTIAL",
-      "blocker": "fixed-budget CANARY is prepared but not independently authorized"
+      "status": "IMPLEMENTED",
+      "blocker": "formal development-only CANARY completed; validation, holdout and forward remain sealed"
     },
     "plate_industry_sidecar": {
       "status": "FROZEN",
@@ -169,29 +169,68 @@
     },
     {
       "id": "nextgen_canary_plan",
-      "label": "Fixed-budget development-only CANARY plan",
-      "status": "IMPLEMENTED",
+      "label": "Historical prepared development-only CANARY plan",
+      "status": "DEPRECATED",
       "implementation_paths": ["runtime/run_plans/nextgen_dark_canary_plan_v1.json", "src/our_system_phase2/runtime/nextgen_dark_development_canary.py"],
       "input_artifacts": ["lane/admission/benchmark contracts"],
-      "output_artifacts": ["prepared-not-started CANARY plan"],
+      "output_artifacts": ["superseded prepared-not-started CANARY plan"],
       "data_role": "development_only",
-      "feedback_permission": "EXECUTION_REQUIRES_INDEPENDENT_AUTHORIZATION",
+      "feedback_permission": "HISTORICAL_NO_FEEDBACK",
       "test_evidence": ["tests/test_nextgen_dark_delivery.py", "tests/test_nextgen_dark_development_canary.py"],
       "verification_paths": ["runtime/run_plans/nextgen_dark_canary_plan_v1.json", "src/our_system_phase2/runtime/nextgen_dark_development_canary.py", "tests/test_nextgen_dark_delivery.py", "tests/test_nextgen_dark_development_canary.py"],
-      "blocker": "execution still requires independent authorization; deferred plate/industry lane remains disabled"
+      "blocker": "superseded by the completed B1S development-only CANARY at repo SHA 80684b8"
+    },
+    {
+      "id": "development_only_release",
+      "label": "Physical development-only true1min release",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/runtime/build_development_only_true1min_release.py", "src/our_system_phase2/services/development_only_data_access.py", "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"],
+      "input_artifacts": ["approved 2024-2025 augmented 16-shard release", "fixed split manifest"],
+      "output_artifacts": ["16 shards; 446443583 rows; 576 development-only row groups; release hash cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827"],
+      "data_role": "development_only",
+      "feedback_permission": "READ_ONLY_BY_FROZEN_EXPERIMENTS",
+      "test_evidence": ["tests/test_development_only_data_access.py"],
+      "verification_paths": ["src/our_system_phase2/runtime/build_development_only_true1min_release.py", "src/our_system_phase2/services/development_only_data_access.py", "tests/test_development_only_data_access.py", "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"],
+      "blocker": "validation, holdout and forward files are physically excluded"
+    },
+    {
+      "id": "formal_b1s_canary",
+      "label": "Completed fixed-budget B1S development CANARY",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/runtime/cn_b1s_development_canary.py", "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json", "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"],
+      "input_artifacts": ["development-only release", "frozen 15-lane contract", "fresh provenance-bound cache"],
+      "output_artifacts": ["1344 proposals; 1187 legal; 1094 exact; 279 clusters; 863 survivors; 64 strict candidate pack; candidate pack SHA 7b941185ebf3447ad34a8ad110333a6009fdaa4c6126a6526695b7681b6e837c"],
+      "data_role": "development_only",
+      "feedback_permission": "DIAGNOSTIC_INPUT_TO_SPRINT_ONLY_NO_PROMOTION",
+      "test_evidence": ["tests/test_cn_b1s_development_canary.py", "tests/test_development_only_data_access.py"],
+      "verification_paths": ["src/our_system_phase2/runtime/cn_b1s_development_canary.py", "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json", "tests/test_cn_b1s_development_canary.py", "tests/test_development_only_data_access.py", "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"],
+      "blocker": "natural underfill and generator bottleneck require research; pack cannot be promoted"
+    },
+    {
+      "id": "generator_research_sprint1",
+      "label": "CN Generator Research Sprint-1",
+      "status": "PARTIAL",
+      "implementation_paths": ["runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json", "src/our_system_phase2/runtime/cn_b1s_development_canary.py"],
+      "input_artifacts": ["formal B1S funnel and matched-control diagnostics"],
+      "output_artifacts": ["generator capability CANARY; conditional Epoch-A and Epoch-B; optional frozen candidate pack"],
+      "data_role": "development_only",
+      "feedback_permission": "WITHIN_SPRINT_EPHEMERAL_ONLY",
+      "test_evidence": ["tests/test_cn_b1s_development_canary.py"],
+      "verification_paths": ["runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json", "src/our_system_phase2/runtime/cn_b1s_development_canary.py", "tests/test_cn_b1s_development_canary.py"],
+      "blocker": "generator capability and Pareto development objective are not yet implemented or evaluated"
     },
     {
       "id": "formal_search_frozen",
-      "label": "Formal search and adaptive reward remain frozen",
+      "label": "Sealed search, promotion and cross-sprint memory remain frozen",
       "status": "FROZEN",
-      "implementation_paths": ["runtime/run_plans/nextgen_dark_run_manifest_v1.json"],
-      "input_artifacts": ["NEXTGEN-DARK closure"],
-      "output_artifacts": ["no search/reward/forward execution"],
-      "data_role": "none",
-      "feedback_permission": "FORBIDDEN",
-      "test_evidence": ["tests/test_nextgen_dark_delivery.py"],
-      "verification_paths": ["runtime/run_plans/nextgen_dark_run_manifest_v1.json", "tests/test_nextgen_dark_delivery.py"],
-      "blocker": "independent authorization required"
+      "implementation_paths": ["runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"],
+      "input_artifacts": ["Sprint-1 development-only authorization"],
+      "output_artifacts": ["FORWARD_2026_SEALED; NO_CANDIDATE_PROMOTION; NO_CROSS_SPRINT_ADAPTIVE_MEMORY"],
+      "data_role": "sealed_forward_none",
+      "feedback_permission": "FORBIDDEN_OUTSIDE_DEVELOPMENT_SPRINT",
+      "test_evidence": ["tests/test_cn_b1s_development_canary.py", "tests/test_development_only_data_access.py"],
+      "verification_paths": ["runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json", "tests/test_cn_b1s_development_canary.py", "tests/test_development_only_data_access.py"],
+      "blocker": "opening validation, holdout or 2026 requires separate authorization"
     }
   ],
   "edges": [
@@ -206,10 +245,14 @@
     {"source": "hypothesis_lane_registry", "target": "admission_diversity", "relation": "submits_isolated_candidates", "permission": "ALLOWED", "evidence": "admission tests"},
     {"source": "admission_diversity", "target": "benchmark_competitor_harness", "relation": "supplies_frozen_candidate_contract", "permission": "ALLOWED", "evidence": "benchmark tests"},
     {"source": "hypothesis_lane_registry", "target": "coverage_metrics", "relation": "reports_no_performance_coverage", "permission": "ALLOWED", "evidence": "coverage tests"},
-    {"source": "benchmark_competitor_harness", "target": "nextgen_canary_plan", "relation": "prepares_fixed_budget_plan", "permission": "ALLOWED", "evidence": "canary plan"},
-    {"source": "nextgen_canary_plan", "target": "formal_search_frozen", "relation": "canary_execution_without_authorization", "permission": "FORBIDDEN", "evidence": "run manifest"},
+    {"source": "benchmark_competitor_harness", "target": "nextgen_canary_plan", "relation": "prepared_historical_fixed_budget_plan", "permission": "ALLOWED", "evidence": "historical canary plan"},
+    {"source": "development_only_release", "target": "formal_b1s_canary", "relation": "supplies_physically_isolated_development_rows", "permission": "ALLOWED", "evidence": "release manifest and zero read ledger"},
+    {"source": "formal_b1s_canary", "target": "generator_research_sprint1", "relation": "supplies_development_diagnostics", "permission": "ALLOWED", "evidence": "formal CANARY summary"},
+    {"source": "generator_research_sprint1", "target": "formal_search_frozen", "relation": "promotion_or_sealed_access", "permission": "FORBIDDEN", "evidence": "Sprint-1 manifest"},
     {"source": "forward_2026", "target": "feature_state_fabric", "relation": "forward_to_nextgen_fabric", "permission": "FORBIDDEN", "evidence": "run manifest"},
     {"source": "forward_2026", "target": "nextgen_canary_plan", "relation": "forward_to_nextgen_canary", "permission": "FORBIDDEN", "evidence": "canary plan"},
-    {"source": "scheduler_memory_feedback", "target": "hypothesis_lane_registry", "relation": "adaptive_reward_to_nextgen_policy", "permission": "FORBIDDEN", "evidence": "run manifest"}
+    {"source": "forward_2026", "target": "generator_research_sprint1", "relation": "forward_to_sprint_search_policy", "permission": "FORBIDDEN", "evidence": "Sprint-1 manifest"},
+    {"source": "scheduler_memory_feedback", "target": "hypothesis_lane_registry", "relation": "adaptive_reward_to_nextgen_policy", "permission": "FORBIDDEN", "evidence": "run manifest"},
+    {"source": "scheduler_memory_feedback", "target": "generator_research_sprint1", "relation": "cross_sprint_memory_update", "permission": "FORBIDDEN", "evidence": "Sprint-1 manifest"}
   ]
 }

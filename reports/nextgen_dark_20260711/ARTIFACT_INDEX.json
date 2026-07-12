@@ -3,9 +3,9 @@
     {
       "exists": true,
       "id": "field_registry_121",
-      "last_verified_sha": "4ba9b0199033ea3d0cd4e5920309cb0866c13f1124c5f382cb14187ed4dc80ae",
+      "last_verified_sha": "960f9d59e6f45274bd370c68a68cbad938b9e00265c3262a71cd31ae717b6b94",
       "path": "runtime/field_registry/nextgen_dark_field_registry_v2.json",
-      "size_bytes": 69540,
+      "size_bytes": 69541,
       "state": "IMPLEMENTED"
     },
     {
@@ -35,49 +35,49 @@
     {
       "exists": true,
       "id": "benchmark_registry",
-      "last_verified_sha": "3a2ab5a492d4e69292f6a41b71e56029eacbd545940759c17aee5ddc0bca8ba8",
+      "last_verified_sha": "aa309dc5863bc0362ffa7a00ca5a4f976a28a19b558c50efd5020c41352c52f6",
       "path": "runtime/run_plans/nextgen_dark_benchmark_registry_v1.json",
-      "size_bytes": 6246,
+      "size_bytes": 6251,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "feature_state_fabric",
-      "last_verified_sha": "65b039db80a229136ddeffb7fb681d074381313f468aa77a4e62324c2aa487e8",
+      "last_verified_sha": "202633fbc26c8d02a60f036f7b43aca92e0dd5f6f768a401e8d56f825b0ee1cc",
       "path": "src/our_system_phase2/services/feature_state_fabric.py",
-      "size_bytes": 17892,
+      "size_bytes": 18314,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "typed_temporal_program",
-      "last_verified_sha": "cd56494ff965eb5421cbc48af0dac2989cb26ab442d8942db771baf50cdd2b0d",
+      "last_verified_sha": "6ff3d5a6c198c9cd9c41335068f8e570d20b029814731062c2e5e4e2f798e51a",
       "path": "src/our_system_phase2/services/typed_temporal_program.py",
-      "size_bytes": 26363,
+      "size_bytes": 27021,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "event_state_system",
-      "last_verified_sha": "a53b71ecd202a1ff60d33a13b557b72a85cb0283a231c5f238eb137afa403de1",
+      "last_verified_sha": "64f7b1349173f9242980b975a8d8a25f32c4c7a4b5d5c0fada2da08eb2bd0bb3",
       "path": "src/our_system_phase2/services/event_state_system.py",
-      "size_bytes": 13383,
+      "size_bytes": 13665,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "pit_group_contract",
-      "last_verified_sha": "02074594b5a126d91449cbd72b1e1d80cacc773689d35be6b91bb69188039c6a",
+      "last_verified_sha": "6bd88e8d735179ed176f8425c3626613733ac68a2b343b4687b6fcb3c30a9e21",
       "path": "src/our_system_phase2/services/pit_group_sidecar.py",
-      "size_bytes": 7687,
+      "size_bytes": 7855,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "chip_sidecar_contract",
-      "last_verified_sha": "9f7f570baa075c747bf2c8a4be2250fbc601f675f384dce9f1c7e1c1da2edc38",
+      "last_verified_sha": "4a95a4402442c80d3690bb283ec80b756ec69e7169aceab77a8b20dbf050d193",
       "path": "src/our_system_phase2/services/chip_sidecar.py",
-      "size_bytes": 19929,
+      "size_bytes": 20404,
       "state": "IMPLEMENTED"
     },
     {
@@ -93,117 +93,117 @@
     {
       "exists": true,
       "id": "hypothesis_lanes",
-      "last_verified_sha": "7c685993926f6098f654f4afd70726b79f7a1d50e1cdffe9d46875d7ecb15448",
+      "last_verified_sha": "b70067eb7904ac5b5cf90fe6ef027707ac03057af04d8c84f9511dd8501c1d78",
       "path": "src/our_system_phase2/services/hypothesis_lanes.py",
-      "size_bytes": 7748,
+      "size_bytes": 7921,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "admission_diversity",
-      "last_verified_sha": "47313ee058c996bac2274879c78541e1bec1b2414f99d3c38d7c3ff9d71ebe8d",
+      "last_verified_sha": "cdc074dbe6a6a8a3f8a5117c2ddf4c6cbd1cbec282eef1a39c5d065f5c3a45f0",
       "path": "src/our_system_phase2/services/admission_diversity.py",
-      "size_bytes": 7950,
+      "size_bytes": 8139,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "benchmark_harness",
-      "last_verified_sha": "bdbcc269534eb192b8c72e556b13c3846eb958ca127ca4642de37a783f4a09c1",
+      "last_verified_sha": "ca4af89c56f0a7e54309a3957422727e1fdb9a81c359cd8075b9285e6f553ce0",
       "path": "src/our_system_phase2/services/benchmark_competitor_harness.py",
-      "size_bytes": 5373,
+      "size_bytes": 5497,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "coverage_metrics",
-      "last_verified_sha": "bf69b086967d721c79a36dabd0998c22b8503939957ad7a92b0c603b6171c50a",
+      "last_verified_sha": "617a1a47296b5d7631476e46ff7d45ecd30f48f70bac337c589c6d43b04ad108",
       "path": "src/our_system_phase2/services/coverage_metrics.py",
-      "size_bytes": 3077,
+      "size_bytes": 3150,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "atomic_checkpoint",
-      "last_verified_sha": "664436155f4246ee12a3d0c7fcf48e2a0db0b81cfe6103323c137ca14701b7f0",
+      "last_verified_sha": "b034a628c05297a8b7df328cfbc79f0e1849a19a753d04cc28227ad78aff8dfa",
       "path": "src/our_system_phase2/services/atomic_checkpoint.py",
-      "size_bytes": 2617,
+      "size_bytes": 2702,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "canary_plan",
-      "last_verified_sha": "8d0a462d653e0d370459f4b7f2a0c11b5335c3c258f47a1a1982abe032e5f6ad",
+      "last_verified_sha": "3ce0c7f46d9535cf582b08102bd80ac8cc6c391fdbc50e38bff79b338d92a657",
       "path": "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
-      "size_bytes": 1277,
+      "size_bytes": 1315,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "development_canary_runner",
-      "last_verified_sha": "bbe74d8084728d8a323980bd7a34ada954777fe522fe7e6f31b67467fffd36de",
+      "last_verified_sha": "d8fe6526047c16e85b9828d3ffaf8d7429b55465eaf93965a54cd3db2dbfed61",
       "path": "src/our_system_phase2/runtime/nextgen_dark_development_canary.py",
-      "size_bytes": 39323,
+      "size_bytes": 40225,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "run_manifest",
-      "last_verified_sha": "e70aa471afec374faba37ff727ce17dc1f5dc8fa754d6a784cf5a24d3b691189",
+      "last_verified_sha": "64cf860a35099a9ad4673c56b1dfe5e9bc765a2d1670197970cec6c23a17ce34",
       "path": "runtime/run_plans/nextgen_dark_run_manifest_v1.json",
-      "size_bytes": 2625,
+      "size_bytes": 2690,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "architecture_registry",
-      "last_verified_sha": "3532fff8e5a694f329db2e3842883512077a7d3ba9bacdc5a5298a5b5f96b865",
+      "last_verified_sha": "279080c9a371c028529595393d0464d6b8623d1050c13cf214093ec6edb3ce06",
       "path": "runtime/run_plans/nextgen_dark_architecture_registry_v1.json",
-      "size_bytes": 14809,
+      "size_bytes": 19734,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "architecture_graph",
-      "last_verified_sha": "64c329fa06032b6806f4a826c5890f2f56c280a104a34e138d03888d456897e9",
+      "last_verified_sha": "47c0f89e4de52204d2aa8f30881b345ffc02a4f74e12576cdd718b9f82aaaec9",
       "path": ".planning/graphs/graph.json",
-      "size_bytes": 63405,
+      "size_bytes": 72217,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "current_architecture",
-      "last_verified_sha": "e641fe88fd37d2e8ef49c7f4cb7d87c79eb9b2d2b327ac4ab546873bc037993e",
+      "last_verified_sha": "20ab16ead2cd4335b267e17c58b508cf36ad420f515ca1b7a4d68141b362547b",
       "path": ".planning/graphs/CURRENT_ARCHITECTURE.md",
-      "size_bytes": 2646,
+      "size_bytes": 2535,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "state",
-      "last_verified_sha": "fd2b1674583fa8276545b39ee77173bc80974235eee77d83927a3a1b0d2d6217",
+      "last_verified_sha": "3c1c30e4b4fc95f559f9f22af59b9f390d6bcd2ca0c94cb99b646efca3033f8c",
       "path": ".planning/STATE.md",
-      "size_bytes": 1675,
+      "size_bytes": 2485,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "delivery_validator",
-      "last_verified_sha": "bfa475489d94af1b3c354785c785d32681eb608520367e9d3c9d6cac30dafe53",
+      "last_verified_sha": "66ed1c381e22bcfb8044de8e223f861f73575194b85d24b7f985b36cfcbdda8b",
       "path": "scripts/validate_nextgen_dark_delivery.py",
-      "size_bytes": 6316,
+      "size_bytes": 6433,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "artifact_index_refresher",
-      "last_verified_sha": "fb2ee5f1ea69648f6fd6e5821ee221cb7228955c0e6454065e49e25b3c8ec4e5",
+      "last_verified_sha": "93772838b4db9d7890b17cc32e9b32536bfaf6689b3dd814048697622c450c61",
       "path": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "size_bytes": 2166,
+      "size_bytes": 2238,
       "state": "IMPLEMENTED"
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-11T20:10:37.974897+00:00",
+  "refreshed_at": "2026-07-12T12:23:37.241088+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
 }

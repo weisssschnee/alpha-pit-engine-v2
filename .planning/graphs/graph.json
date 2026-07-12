@@ -9,11 +9,11 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-11T20:10:16.800107+00:00",
-    "graph_type": "NEXTGEN_DARK_CURRENT_ARCHITECTURE_CONTRACT",
-    "phase": "NEXTGEN_DARK_CLOSURE",
-    "registry_sha256": "536a3f73655c597a9a6cee861be1728562f8a1df3d413aeec4ea437d5545df75",
-    "registry_version": "nextgen_dark_architecture_registry_v1",
+    "generated_at": "2026-07-12T12:23:37.164373+00:00",
+    "graph_type": "CN_GENERATOR_RESEARCH_SPRINT1_CURRENT_ARCHITECTURE_CONTRACT",
+    "phase": "CN_GENERATOR_RESEARCH_SPRINT1_ACTIVE",
+    "registry_sha256": "4c5223be861b4d6285333a4f5521ae591d47b3e11d37b045662d7c852675542f",
+    "registry_version": "cn_generator_research_sprint1_architecture_registry_v1",
     "status_values": [
       "DEPRECATED",
       "FROZEN",
@@ -227,17 +227,31 @@
       "target": "coverage_metrics"
     },
     {
-      "evidence": "canary plan",
+      "evidence": "historical canary plan",
       "permission": "ALLOWED",
-      "relation": "prepares_fixed_budget_plan",
+      "relation": "prepared_historical_fixed_budget_plan",
       "source": "benchmark_competitor_harness",
       "target": "nextgen_canary_plan"
     },
     {
-      "evidence": "run manifest",
+      "evidence": "release manifest and zero read ledger",
+      "permission": "ALLOWED",
+      "relation": "supplies_physically_isolated_development_rows",
+      "source": "development_only_release",
+      "target": "formal_b1s_canary"
+    },
+    {
+      "evidence": "formal CANARY summary",
+      "permission": "ALLOWED",
+      "relation": "supplies_development_diagnostics",
+      "source": "formal_b1s_canary",
+      "target": "generator_research_sprint1"
+    },
+    {
+      "evidence": "Sprint-1 manifest",
       "permission": "FORBIDDEN",
-      "relation": "canary_execution_without_authorization",
-      "source": "nextgen_canary_plan",
+      "relation": "promotion_or_sealed_access",
+      "source": "generator_research_sprint1",
       "target": "formal_search_frozen"
     },
     {
@@ -255,11 +269,25 @@
       "target": "nextgen_canary_plan"
     },
     {
+      "evidence": "Sprint-1 manifest",
+      "permission": "FORBIDDEN",
+      "relation": "forward_to_sprint_search_policy",
+      "source": "forward_2026",
+      "target": "generator_research_sprint1"
+    },
+    {
       "evidence": "run manifest",
       "permission": "FORBIDDEN",
       "relation": "adaptive_reward_to_nextgen_policy",
       "source": "scheduler_memory_feedback",
       "target": "hypothesis_lane_registry"
+    },
+    {
+      "evidence": "Sprint-1 manifest",
+      "permission": "FORBIDDEN",
+      "relation": "cross_sprint_memory_update",
+      "source": "scheduler_memory_feedback",
+      "target": "generator_research_sprint1"
     }
   ],
   "multigraph": true,
@@ -282,7 +310,7 @@
         "G:/Project_V7_Rotation/alpha_pit_data_feature_workspace_20260531/runtime/phase3fix_true1min_2024_2025_aq_sharded_20260709"
       ],
       "label": "2024-2025 true1min data (16 shards, 121 columns)",
-      "last_verified_sha": "512448348efb1cd05ea8435f90bd3c37015f765d6920e3a5dee010e3b910f2ce",
+      "last_verified_sha": "d7bb0fdbad65baeabaaa38c0c4922c1d2fdb00a30655a53c944cd7ab378b86b2",
       "last_verified_sha_scope": [
         "reports/evalreset_phase1_20260711/PHASE1_BASELINE_AND_PLAN.md"
       ],
@@ -682,7 +710,7 @@
         "development reward atoms"
       ],
       "label": "Coverage-qualified strict candidates (202)",
-      "last_verified_sha": "270049ec2d31143052c72c5cae2f5a306517f6c69912b8eb954067f3e56e09cb",
+      "last_verified_sha": "03195aed59ba45bf3f1867865a653707957e3761195795e2ef008f19c2662bba",
       "last_verified_sha_scope": [
         "scripts/audit_search_collapse.py"
       ],
@@ -727,7 +755,7 @@
         "true1min_16_shards"
       ],
       "label": "Two-pass deterministic signal-sketch audit",
-      "last_verified_sha": "aa816d32bc8b8939aec1c6d2e537dbac78a4f350683bee77d47e6db42153835b",
+      "last_verified_sha": "02ceb450fb53ac27fee71caf554c6abf6bb7de3e9f39dc363a2e2b834d00af09",
       "last_verified_sha_scope": [
         "scripts/run_signal_sketch_audit.py",
         "src/our_system_phase2/services/deterministic_signal_sketch.py",
@@ -770,7 +798,7 @@
         "candidate expression and lineage fields"
       ],
       "label": "Candidate identity registry",
-      "last_verified_sha": "6186badb3fe8406d6d1a66d595d25b1d502562824db258ff07752944a68ff469",
+      "last_verified_sha": "137785be816160f5e5f49c78164dbd5a809199995f0772e36d3b441a44b8f194",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/candidate_schema.py"
       ],
@@ -809,7 +837,7 @@
         "signal_sketch_audit"
       ],
       "label": "Signal cluster registry",
-      "last_verified_sha": "2ba3bc16078021009be169fc3687b13f676f55da8a13f03d45fd2cfc1d1da6d8",
+      "last_verified_sha": "ca5d585369e8cc100613da8526282031f6281f4aea2072007e2fdf7230477111",
       "last_verified_sha_scope": [
         "scripts/run_signal_sketch_audit.py",
         "reports/evalreset_phase1_20260711/signal_sketch/candidate_signal_cluster_registry.csv"
@@ -852,7 +880,7 @@
         "runtime/run_plans/evaluation_data_roles_v1.json"
       ],
       "label": "Evaluation access and OOS burn ledgers",
-      "last_verified_sha": "78eafd638bdb08117172fb945ad6bfdd9a36b4708bc83e22778d7243d9fa3708",
+      "last_verified_sha": "96981974290a81c22638e72b819be695711a8c21b5f04af7016695e208fe870a",
       "last_verified_sha_scope": [
         "runtime/run_plans/evaluation_access_ledger_v1.csv",
         "runtime/run_plans/oos_burn_ledger_v1.csv"
@@ -895,7 +923,7 @@
         "strict_reward_324"
       ],
       "label": "Development/train-only feedback guard",
-      "last_verified_sha": "38162f5dfbb0a30677949ca3843d6bb12e67d724c733bb6e34fe5ea7d85773d9",
+      "last_verified_sha": "b477661ca9f89359aa4e969d9040ca89cd42ba003b68ad77993ebe00ee113e18",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/evaluation_access_guard.py"
       ],
@@ -917,9 +945,9 @@
       ]
     },
     {
-      "blocker": "requires independent post-NEXTGEN authorization",
+      "blocker": "development-only sprint statistics are ephemeral and cannot update permanent memory",
       "data_role": "development",
-      "feedback_permission": "FORMAL_SEARCH_AND_ADAPTIVE_REWARD_FROZEN",
+      "feedback_permission": "NO_CROSS_SPRINT_ADAPTIVE_MEMORY",
       "id": "scheduler_memory_feedback",
       "implementation_path": [
         "src/our_system_phase2/services/search_feedback.py",
@@ -936,7 +964,7 @@
         "feedback_guard"
       ],
       "label": "Scheduler and memory feedback",
-      "last_verified_sha": "d5cc48a2c21de702e5c419218a91491dbdf7cda1e493933c5c70d25038e5f28b",
+      "last_verified_sha": "67425ac98935755ac8653c68cae6a064bd7df6175b3b5b154e8dba481fd1db7d",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/search_feedback.py",
         "src/our_system_phase2/services/multi_arm_scheduler.py"
@@ -977,7 +1005,7 @@
         "364 fixed train dates"
       ],
       "label": "Development data role",
-      "last_verified_sha": "4545bf5de05edac1ea582e97eadaaa8a870ae94140a9acab524e3e263b52f4d6",
+      "last_verified_sha": "c0d94f25621a18c23933070be11a25b8475506a428e141d3062cb2675f643470",
       "last_verified_sha_scope": [
         "runtime/run_plans/evaluation_data_roles_v1.json"
       ],
@@ -1016,7 +1044,7 @@
         "73 validation and 48 holdout dates"
       ],
       "label": "Spent validation and holdout role",
-      "last_verified_sha": "a62547dc8a04c0334593b6bd1e2a1748283ba58a971761003eecd82235007e8f",
+      "last_verified_sha": "8950ee840f09ecfcad51c4730933c5476c1e29b910104377e87e6fc10c7471f0",
       "last_verified_sha_scope": [
         "runtime/run_plans/oos_burn_ledger_v1.csv"
       ],
@@ -1055,7 +1083,7 @@
         "unassigned future sealed epoch"
       ],
       "label": "Sealed/challenge epoch role",
-      "last_verified_sha": "4545bf5de05edac1ea582e97eadaaa8a870ae94140a9acab524e3e263b52f4d6",
+      "last_verified_sha": "c0d94f25621a18c23933070be11a25b8475506a428e141d3062cb2675f643470",
       "last_verified_sha_scope": [
         "runtime/run_plans/evaluation_data_roles_v1.json"
       ],
@@ -1094,7 +1122,7 @@
         "separate 2026 true1min asset"
       ],
       "label": "2026 forward OOS",
-      "last_verified_sha": "ace8e51bf77ea1ce0f54a1bd05f65769218bff7c4f3345d2d1156396e9b0963c",
+      "last_verified_sha": "458d34314572c93ba8cb35b6b36822955e03418da83fa44e671f03145f40b8e7",
       "last_verified_sha_scope": [
         "runtime/run_plans/evaluation_access_ledger_v1.csv"
       ],
@@ -1116,7 +1144,7 @@
       ]
     },
     {
-      "blocker": "fixed-budget CANARY is prepared but not independently authorized",
+      "blocker": "formal development-only CANARY completed; validation, holdout and forward remain sealed",
       "data_role": "sealed_epoch",
       "feedback_permission": "EPOCH_REPORT_ONLY",
       "id": "sealed_epoch_governance",
@@ -1135,7 +1163,7 @@
         "feedback_guard"
       ],
       "label": "Sealed-epoch evaluation governance",
-      "last_verified_sha": "6c2fedf14181b434a594b2527020df5be8b4552d4b7467923dc59848741f91ed",
+      "last_verified_sha": "644f33825ff4db42a178671b601fd84086f787893e56e7ba58b227b82a32c3c6",
       "last_verified_sha_scope": [
         "docs/adr/0002-evaluation-access-and-oos-burn-boundaries.md"
       ],
@@ -1145,7 +1173,7 @@
       "output_artifacts": [
         "future epoch-level evaluation contract"
       ],
-      "status": "PARTIAL",
+      "status": "IMPLEMENTED",
       "test/evidence": [
         "tests/test_evaluation_ledgers.py",
         "tests/test_evaluation_access_guard.py"
@@ -1178,7 +1206,7 @@
         "2024-2025 augmented shard Parquet schema footer"
       ],
       "label": "Versioned 121-field registry",
-      "last_verified_sha": "649b130d2f27e80025e858badb98b1e33712619e67cf44ccfa5a639c42fabcb3",
+      "last_verified_sha": "459195a8543374d649957bf1577462fe6fde498b71f7412265eee26fa9061935",
       "last_verified_sha_scope": [
         "runtime/field_registry/nextgen_dark_field_registry_v2.json",
         "tests/test_feature_state_fabric.py"
@@ -1221,7 +1249,7 @@
         "raw/firstN/lagged/event inputs"
       ],
       "label": "Feature/State Fabric materializer and deterministic cache",
-      "last_verified_sha": "0403f75d60f4ace21f0ceb63a0882e27912c1ca4487b1ef9bb81af7fe2908437",
+      "last_verified_sha": "04289e09cd70ed1a6b7572cbf1bf17373cb532e893acd5876c3918dda7f7b810",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/feature_state_fabric.py",
         "tests/test_feature_state_fabric.py"
@@ -1266,7 +1294,7 @@
         "typed numeric/event/state series"
       ],
       "label": "15-primitive typed temporal program",
-      "last_verified_sha": "61b79ab5016461c7371cb4bfc699ee83ae4d5619f48bac1cbe41576b199eb4a3",
+      "last_verified_sha": "8e77a6ce7211f67bada79b8ea5cd27ba72fa3392c55e47d53cd6c1c56aa225ef",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/typed_temporal_program.py",
         "tests/test_typed_temporal_program.py"
@@ -1311,7 +1339,7 @@
         "PIT bars, firstN, lagged context, optional PIT group confirmation"
       ],
       "label": "Limit-event and state-transition system",
-      "last_verified_sha": "09f4dda33eefbc10c7dfd63c4012b7e2f01992d1a3858dbb30ff8fcdb6107f19",
+      "last_verified_sha": "3e27e22cf1093de9cc3a2075d4f559b98ebb7f68b040248a798fd75c6d90170a",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/event_state_system.py",
         "tests/test_event_state_system.py"
@@ -1356,7 +1384,7 @@
         "user-supplied daily chip/cost archive through 2025-12-30"
       ],
       "label": "Daily PIT chip distribution sidecar",
-      "last_verified_sha": "0c602527d52fa2d0b025887ef1d0427779d8a9368c1df0b4ae50d8fe750752d8",
+      "last_verified_sha": "5b3a5ca6e8e7c66af96a945cd6762906c2b2135063d02a30681ac19e24e3892b",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/chip_sidecar.py",
         "tests/test_chip_sidecar.py"
@@ -1405,7 +1433,7 @@
         "user-supplied TDX/Eastmoney membership and daily market files"
       ],
       "label": "Deferred PIT plate/industry sidecars and true1min aggregation",
-      "last_verified_sha": "87ff05afa8b8d3ad5ce2c7a4c20678ec0e7923673f28ba4104d19a7763c52354",
+      "last_verified_sha": "171e1b7a9980802ae22e5e6e27346fd10b4c40c2a06da951181680e94354ac30",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/pit_group_sidecar.py",
         "src/our_system_phase2/services/pit_group_release.py",
@@ -1464,7 +1492,7 @@
         "versioned candidate submission contract"
       ],
       "label": "Seven isolated hypothesis lanes",
-      "last_verified_sha": "3701a4606dbe3224e5f45e3d3920d9568fe1030198cb4788179e1d49f6b47435",
+      "last_verified_sha": "3d50fc557611e7cd4bcaa1b39f8801f6ee60bbd241a54c93a76d2ad9dd1ace76",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/hypothesis_lanes.py",
         "tests/test_nextgen_hypothesis_infrastructure.py"
@@ -1507,7 +1535,7 @@
         "isolated lane submissions"
       ],
       "label": "Stratified admission and diversity controls",
-      "last_verified_sha": "25a1b5c1d0acd7284b5cb6738efd370beceab7e6d63b8d189da0c1e03e7ddc48",
+      "last_verified_sha": "8d8830a524f132c60bd69c66e415edba9f584054c2a95a065abd0d57081921c1",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/admission_diversity.py",
         "tests/test_nextgen_hypothesis_infrastructure.py"
@@ -1550,7 +1578,7 @@
         "unified candidate submissions and fixed budgets"
       ],
       "label": "Strategy and algorithm benchmark/competitor harness",
-      "last_verified_sha": "9d1992dccbaeb9e4d08d621b2e93f97be0705bac871de1bb16f6d91c525419d7",
+      "last_verified_sha": "74e690a36b5960bf177c921d98e11b888c24735d56b32337c82243b6a32882aa",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/benchmark_competitor_harness.py",
         "tests/test_nextgen_hypothesis_infrastructure.py"
@@ -1593,7 +1621,7 @@
         "candidate contract metadata only"
       ],
       "label": "No-performance coverage metrics",
-      "last_verified_sha": "d4dde876d13d140307498536db204f1c76029cd052baa6ad4457e699206103e3",
+      "last_verified_sha": "e11347ed7127296336c8d7b87e5c89701f5feee2e964f6269c0bcc1d9135226d",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/coverage_metrics.py",
         "tests/test_nextgen_hypothesis_infrastructure.py"
@@ -1636,7 +1664,7 @@
         "per-candidate deterministic records"
       ],
       "label": "Atomic checkpoint and idempotent resume",
-      "last_verified_sha": "a681e7d9835f02ae37eab2e61ba104662694a1cd72cecd5570d3c060fff63a38",
+      "last_verified_sha": "dbc2ebf70ef4f2cce374f212710a24ed552fe912776f978c0c194898c4ca9e5a",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/atomic_checkpoint.py",
         "scripts/run_signal_sketch_audit.py",
@@ -1662,9 +1690,9 @@
       ]
     },
     {
-      "blocker": "execution still requires independent authorization; deferred plate/industry lane remains disabled",
+      "blocker": "superseded by the completed B1S development-only CANARY at repo SHA 80684b8",
       "data_role": "development_only",
-      "feedback_permission": "EXECUTION_REQUIRES_INDEPENDENT_AUTHORIZATION",
+      "feedback_permission": "HISTORICAL_NO_FEEDBACK",
       "id": "nextgen_canary_plan",
       "implementation_path": [
         "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
@@ -1680,8 +1708,8 @@
       "input_artifacts": [
         "lane/admission/benchmark contracts"
       ],
-      "label": "Fixed-budget development-only CANARY plan",
-      "last_verified_sha": "184dde1f5417a540fead48227eb49dc284ad57be062e08ed244fd88ed8d55dcd",
+      "label": "Historical prepared development-only CANARY plan",
+      "last_verified_sha": "f7281e75f10ccee531666920f01176cd29b88ff5f86c9dd754d4e8e4baf9d9c1",
       "last_verified_sha_scope": [
         "runtime/run_plans/nextgen_dark_canary_plan_v1.json",
         "src/our_system_phase2/runtime/nextgen_dark_development_canary.py",
@@ -1689,12 +1717,12 @@
         "tests/test_nextgen_dark_development_canary.py"
       ],
       "output_artifact": [
-        "prepared-not-started CANARY plan"
+        "superseded prepared-not-started CANARY plan"
       ],
       "output_artifacts": [
-        "prepared-not-started CANARY plan"
+        "superseded prepared-not-started CANARY plan"
       ],
-      "status": "IMPLEMENTED",
+      "status": "DEPRECATED",
       "test/evidence": [
         "tests/test_nextgen_dark_delivery.py",
         "tests/test_nextgen_dark_development_canary.py"
@@ -1711,44 +1739,201 @@
       ]
     },
     {
-      "blocker": "independent authorization required",
-      "data_role": "none",
-      "feedback_permission": "FORBIDDEN",
-      "id": "formal_search_frozen",
+      "blocker": "validation, holdout and forward files are physically excluded",
+      "data_role": "development_only",
+      "feedback_permission": "READ_ONLY_BY_FROZEN_EXPERIMENTS",
+      "id": "development_only_release",
       "implementation_path": [
-        "runtime/run_plans/nextgen_dark_run_manifest_v1.json"
+        "src/our_system_phase2/runtime/build_development_only_true1min_release.py",
+        "src/our_system_phase2/services/development_only_data_access.py",
+        "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"
       ],
       "implementation_paths": [
-        "runtime/run_plans/nextgen_dark_run_manifest_v1.json"
+        "src/our_system_phase2/runtime/build_development_only_true1min_release.py",
+        "src/our_system_phase2/services/development_only_data_access.py",
+        "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"
       ],
       "input_artifact": [
-        "NEXTGEN-DARK closure"
+        "approved 2024-2025 augmented 16-shard release",
+        "fixed split manifest"
       ],
       "input_artifacts": [
-        "NEXTGEN-DARK closure"
+        "approved 2024-2025 augmented 16-shard release",
+        "fixed split manifest"
       ],
-      "label": "Formal search and adaptive reward remain frozen",
-      "last_verified_sha": "f8427fa7a35764cf1ce2b62b0c384551c404e7a863dbeda891e1d23d1e8edb63",
+      "label": "Physical development-only true1min release",
+      "last_verified_sha": "ae0c98fdfc81dbfec4db6203d3944d0fd106264e7e34eacf50b2dccf194dc01d",
       "last_verified_sha_scope": [
-        "runtime/run_plans/nextgen_dark_run_manifest_v1.json",
-        "tests/test_nextgen_dark_delivery.py"
+        "src/our_system_phase2/runtime/build_development_only_true1min_release.py",
+        "src/our_system_phase2/services/development_only_data_access.py",
+        "tests/test_development_only_data_access.py",
+        "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"
       ],
       "output_artifact": [
-        "no search/reward/forward execution"
+        "16 shards; 446443583 rows; 576 development-only row groups; release hash cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827"
       ],
       "output_artifacts": [
-        "no search/reward/forward execution"
+        "16 shards; 446443583 rows; 576 development-only row groups; release hash cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827"
+      ],
+      "status": "IMPLEMENTED",
+      "test/evidence": [
+        "tests/test_development_only_data_access.py"
+      ],
+      "test_evidence": [
+        "tests/test_development_only_data_access.py"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/runtime/build_development_only_true1min_release.py",
+        "src/our_system_phase2/services/development_only_data_access.py",
+        "tests/test_development_only_data_access.py",
+        "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"
+      ]
+    },
+    {
+      "blocker": "natural underfill and generator bottleneck require research; pack cannot be promoted",
+      "data_role": "development_only",
+      "feedback_permission": "DIAGNOSTIC_INPUT_TO_SPRINT_ONLY_NO_PROMOTION",
+      "id": "formal_b1s_canary",
+      "implementation_path": [
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json",
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json",
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"
+      ],
+      "input_artifact": [
+        "development-only release",
+        "frozen 15-lane contract",
+        "fresh provenance-bound cache"
+      ],
+      "input_artifacts": [
+        "development-only release",
+        "frozen 15-lane contract",
+        "fresh provenance-bound cache"
+      ],
+      "label": "Completed fixed-budget B1S development CANARY",
+      "last_verified_sha": "1d7a9f765e655f45c65ba402e7371e059c215dea3856a057545e834ed1c56a9c",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json",
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_development_only_data_access.py",
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"
+      ],
+      "output_artifact": [
+        "1344 proposals; 1187 legal; 1094 exact; 279 clusters; 863 survivors; 64 strict candidate pack; candidate pack SHA 7b941185ebf3447ad34a8ad110333a6009fdaa4c6126a6526695b7681b6e837c"
+      ],
+      "output_artifacts": [
+        "1344 proposals; 1187 legal; 1094 exact; 279 clusters; 863 survivors; 64 strict candidate pack; candidate pack SHA 7b941185ebf3447ad34a8ad110333a6009fdaa4c6126a6526695b7681b6e837c"
+      ],
+      "status": "IMPLEMENTED",
+      "test/evidence": [
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_development_only_data_access.py"
+      ],
+      "test_evidence": [
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_development_only_data_access.py"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json",
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_development_only_data_access.py",
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"
+      ]
+    },
+    {
+      "blocker": "generator capability and Pareto development objective are not yet implemented or evaluated",
+      "data_role": "development_only",
+      "feedback_permission": "WITHIN_SPRINT_EPHEMERAL_ONLY",
+      "id": "generator_research_sprint1",
+      "implementation_path": [
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py"
+      ],
+      "implementation_paths": [
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py"
+      ],
+      "input_artifact": [
+        "formal B1S funnel and matched-control diagnostics"
+      ],
+      "input_artifacts": [
+        "formal B1S funnel and matched-control diagnostics"
+      ],
+      "label": "CN Generator Research Sprint-1",
+      "last_verified_sha": "8b503003e5b91990e993324c6e8bc3d44a9431d277801e30b6e7166e57c782b7",
+      "last_verified_sha_scope": [
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "tests/test_cn_b1s_development_canary.py"
+      ],
+      "output_artifact": [
+        "generator capability CANARY; conditional Epoch-A and Epoch-B; optional frozen candidate pack"
+      ],
+      "output_artifacts": [
+        "generator capability CANARY; conditional Epoch-A and Epoch-B; optional frozen candidate pack"
+      ],
+      "status": "PARTIAL",
+      "test/evidence": [
+        "tests/test_cn_b1s_development_canary.py"
+      ],
+      "test_evidence": [
+        "tests/test_cn_b1s_development_canary.py"
+      ],
+      "verification_paths": [
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "tests/test_cn_b1s_development_canary.py"
+      ]
+    },
+    {
+      "blocker": "opening validation, holdout or 2026 requires separate authorization",
+      "data_role": "sealed_forward_none",
+      "feedback_permission": "FORBIDDEN_OUTSIDE_DEVELOPMENT_SPRINT",
+      "id": "formal_search_frozen",
+      "implementation_path": [
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"
+      ],
+      "implementation_paths": [
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"
+      ],
+      "input_artifact": [
+        "Sprint-1 development-only authorization"
+      ],
+      "input_artifacts": [
+        "Sprint-1 development-only authorization"
+      ],
+      "label": "Sealed search, promotion and cross-sprint memory remain frozen",
+      "last_verified_sha": "e12b1021649ab85401c88678cb52f881b3a6a3e548ba033da44a64377c4bfc9d",
+      "last_verified_sha_scope": [
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_development_only_data_access.py"
+      ],
+      "output_artifact": [
+        "FORWARD_2026_SEALED; NO_CANDIDATE_PROMOTION; NO_CROSS_SPRINT_ADAPTIVE_MEMORY"
+      ],
+      "output_artifacts": [
+        "FORWARD_2026_SEALED; NO_CANDIDATE_PROMOTION; NO_CROSS_SPRINT_ADAPTIVE_MEMORY"
       ],
       "status": "FROZEN",
       "test/evidence": [
-        "tests/test_nextgen_dark_delivery.py"
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_development_only_data_access.py"
       ],
       "test_evidence": [
-        "tests/test_nextgen_dark_delivery.py"
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_development_only_data_access.py"
       ],
       "verification_paths": [
-        "runtime/run_plans/nextgen_dark_run_manifest_v1.json",
-        "tests/test_nextgen_dark_delivery.py"
+        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_development_only_data_access.py"
       ]
     }
   ]

@@ -1,0 +1,97 @@
+{
+  "manifest_version": "cn_generator_research_sprint1_manifest_v1",
+  "status": "CN_GENERATOR_RESEARCH_SPRINT1_ACTIVE",
+  "started_at": "2026-07-12",
+  "baseline": {
+    "repo_sha": "80684b8afa8c64a82853888db51abcf4cdfb721c",
+    "tag": "cn-b1s-canary-data-access-repaired-20260712",
+    "remote_branch_verified": true,
+    "development_only_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "release_manifest_sha256": "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "field_registry_sha256": "960f9d59e6f45274bd370c68a68cbad938b9e00265c3262a71cd31ae717b6b94"
+  },
+  "formal_canary_closure": {
+    "status": "CN_B1S_CANARY_COMPLETED_WITH_NATURAL_UNDERFILL",
+    "tests_passed": 213,
+    "proposal_count": 1344,
+    "legal_count": 1187,
+    "exact_identity_count": 1094,
+    "canonical_identity_count": 1094,
+    "signal_cluster_count": 279,
+    "development_survivor_count": 863,
+    "strict_candidate_count": 64,
+    "candidate_pack_sha256": "7b941185ebf3447ad34a8ad110333a6009fdaa4c6126a6526695b7681b6e837c",
+    "temporal_event_state_new_cluster_count": 80,
+    "adaptive_matched_control": {
+      "outperformed": ["rx_ucb", "evolutionary"],
+      "not_outperformed": ["cem", "uct_mcts", "surrogate"]
+    },
+    "read_ledger": {
+      "forbidden_file_open_count": 0,
+      "forbidden_row_group_read_count": 0,
+      "validation_rows_read": 0,
+      "holdout_rows_read": 0,
+      "forward_rows_read": 0
+    },
+    "primary_bottleneck": "generator",
+    "recommendation": "REVISE_SEARCH_ENGINE_AND_REPEAT_CANARY"
+  },
+  "authorization": {
+    "maximum_experiment_rounds": 3,
+    "rounds": [
+      {
+        "id": "generator_capability_canary",
+        "proposal_budget_min": 4096,
+        "proposal_budget_max": 8192,
+        "strict_budget_min": 128,
+        "strict_budget_max": 256,
+        "state": "PLANNED"
+      },
+      {
+        "id": "frozen_development_epoch_a",
+        "proposal_budget_min": 16384,
+        "proposal_budget_max": 32768,
+        "strict_budget_min": 512,
+        "strict_budget_max": 1024,
+        "minimum_seeds": 2,
+        "state": "CONDITIONAL"
+      },
+      {
+        "id": "frozen_development_epoch_b",
+        "maximum_scale_relative_to_epoch_a": 2.0,
+        "state": "CONDITIONAL"
+      }
+    ],
+    "automatic_continuation_requires": [
+      "zero data-access violations",
+      "zero contract drift",
+      "previous round fully closed",
+      "next changes address preregistered generator/search defects only"
+    ]
+  },
+  "data_boundary": {
+    "allowed_roles": ["development", "train"],
+    "forbidden_roles": ["validation", "holdout", "spent", "sealed", "forward"],
+    "forward_2026_allowed": false,
+    "candidate_promotion_allowed": false,
+    "cross_sprint_adaptive_memory_allowed": false,
+    "plate_industry_enabled": false
+  },
+  "success_metrics": [
+    "new_clusters_per_strict",
+    "positive_benchmark_increment",
+    "matched_control_efficiency",
+    "positive_lower_confidence_development_evidence",
+    "cost_and_turnover_non_degradation",
+    "candidate_pack_behaviour_concentration",
+    "cross_seed_mechanism_repeatability",
+    "family_and_primitive_balance"
+  ],
+  "next_action": "diagnose the complete formal CANARY funnel and connect findings directly to generator/objective implementation",
+  "graph_build": {
+    "preferred_tool": "graphify",
+    "preferred_tool_available": false,
+    "fallback": "project-native architecture registry builder and validator"
+  }
+}
