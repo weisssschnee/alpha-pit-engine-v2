@@ -103,6 +103,7 @@ def built_release(tmp_path: Path) -> tuple[Path, Path, Path, dict]:
         source_manifest,
         release_id="test_development_release",
         expected_source_release_manifest_sha256=sha256_file(source_manifest),
+        expected_source_file_manifest_sha256=sha256_file(source_file_manifest),
         expected_shards=2,
     )
     return output, output / "development_only_release_manifest.json", split, manifest
@@ -146,6 +147,44 @@ def test_fail_closed_read_writes_zero_forbidden_access_ledger(built_release, tmp
     assert payload["validation_rows_read"] == 0
     assert payload["holdout_rows_read"] == 0
     assert payload["forward_rows_read"] == 0
+
+
+def test_actual_read_role_mapping_rejects_post_preflight_contamination(
+    built_release, tmp_path: Path, monkeypatch
+) -> None:
+    output, manifest_path, split, _ = built_release
+    validated = validate_development_release(output, manifest_path, split)
+    original = pq.ParquetFile
+
+    class ContaminatedParquet:
+        def __init__(self, path):
+            self.inner = original(path)
+            self.metadata = self.inner.metadata
+            self.schema_arrow = self.inner.schema_arrow
+
+        def read_row_group(self, row_group_id, columns=None):
+            table = self.inner.read_row_group(row_group_id, columns=columns)
+            frame = table.to_pandas()
+            offsets = pd.to_datetime(frame["trade_time"]).dt.time
+            frame["trade_time"] = [
+                pd.Timestamp.combine(pd.Timestamp("2025-07-08").date(), value) for value in offsets
+            ]
+            frame["date"] = frame["trade_time"]
+            frame["signal_time"] = frame["trade_time"]
+            return pa.Table.from_pandas(frame, schema=table.schema, preserve_index=False)
+
+    monkeypatch.setattr(pq, "ParquetFile", ContaminatedParquet)
+    ledger = tmp_path / "contaminated_ledger.json"
+    with pytest.raises(PermissionError, match="forbidden roles"):
+        read_development_panel(
+            validated,
+            trade_date=pd.Timestamp("2025-04-01"),
+            row_group_index=0,
+            columns=["feature"],
+            read_ledger_path=ledger,
+            loader_sha="loader-test-sha",
+        )
+    assert not ledger.exists()
 
 
 def _manual_manifest(root: Path, split: Path, file_path: Path, *, row_groups: list[dict]) -> Path:
@@ -348,6 +387,7 @@ def test_builder_rejects_source_manifest_bound_to_another_root(tmp_path: Path) -
             summary,
             release_id="bad",
             expected_source_release_manifest_sha256=sha256_file(summary),
+            expected_source_file_manifest_sha256=sha256_file(files),
             expected_shards=1,
         )
 
@@ -366,6 +406,7 @@ def test_checkpoint_is_invalidated_when_split_changes(built_release) -> None:
         source_summary,
         release_id="test_development_release_changed_split",
         expected_source_release_manifest_sha256=sha256_file(source_summary),
+        expected_source_file_manifest_sha256=sha256_file(Path(first["source_file_manifest"])),
         expected_shards=2,
     )
     assert second["totals"]["rows"] == 12
@@ -406,6 +447,7 @@ def test_builder_refuses_2026_split_before_release_output(tmp_path: Path) -> Non
             summary,
             release_id="no_2026",
             expected_source_release_manifest_sha256=sha256_file(summary),
+            expected_source_file_manifest_sha256=sha256_file(files),
             expected_shards=1,
         )
     assert not (output / "development_only_release_manifest.json").exists()

@@ -187,6 +187,7 @@ def _build_shard(
         "source_path": str(source.resolve()),
         "source_size": source.stat().st_size,
         "source_mtime_ns": source.stat().st_mtime_ns,
+        "source_sha256": build_provenance["source_panel_sha256"][str(source.resolve())],
         "sha256": sha256_file(destination),
         "size": stat.st_size,
         "mtime_ns": stat.st_mtime_ns,
@@ -215,6 +216,7 @@ def build_release(
     *,
     release_id: str,
     expected_source_release_manifest_sha256: str,
+    expected_source_file_manifest_sha256: str,
     expected_shards: int = 16,
 ) -> dict[str, Any]:
     source_root = source_root.resolve()
@@ -245,6 +247,9 @@ def build_release(
     source_file_manifest = Path(source_release.get("manifest", "")).resolve()
     if not source_file_manifest.is_file():
         raise FileNotFoundError("source release file manifest is missing")
+    source_file_manifest_hash = sha256_file(source_file_manifest)
+    if source_file_manifest_hash != expected_source_file_manifest_sha256:
+        raise ValueError("source file manifest hash is not the approved frozen hash")
     source_files = pd.read_csv(source_file_manifest)
     if "output_panel" not in source_files.columns:
         raise ValueError("source release file manifest lacks output_panel")
@@ -259,7 +264,7 @@ def build_release(
     if not allowed_dates:
         raise ValueError("split manifest contains no development dates")
     source_schema = _source_preflight(paths, roles)
-    source_file_manifest_hash = sha256_file(source_file_manifest)
+    source_panel_hashes = {str(path.resolve()): sha256_file(path) for path in paths}
     split_manifest_hash = sha256_file(split_manifest)
     allowed_dates_hash = canonical_json_hash(sorted(str(date.date()) for date in allowed_dates))
     build_provenance = {
@@ -268,6 +273,7 @@ def build_release(
         "split_manifest_sha256": split_manifest_hash,
         "allowed_dates_sha256": allowed_dates_hash,
         "schema_sha256": schema_hash(source_schema),
+        "source_panel_sha256": source_panel_hashes,
     }
     output_root.mkdir(parents=True, exist_ok=True)
     records = []
@@ -298,6 +304,7 @@ def build_release(
         "source_release_manifest_sha256": source_release_manifest_hash,
         "source_file_manifest": str(source_file_manifest),
         "source_file_manifest_sha256": source_file_manifest_hash,
+        "source_panel_sha256": source_panel_hashes,
         "split_manifest_path": str(split_manifest),
         "split_manifest_sha256": split_manifest_hash,
         "schema_sha256": schema_hash(source_schema),
@@ -347,6 +354,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--source-release-manifest", type=Path, required=True)
     parser.add_argument("--release-id", required=True)
     parser.add_argument("--expected-source-release-manifest-sha256", required=True)
+    parser.add_argument("--expected-source-file-manifest-sha256", required=True)
     parser.add_argument("--expected-shards", type=int, default=16)
     args = parser.parse_args(argv)
     started = datetime.now(timezone.utc)
@@ -371,6 +379,7 @@ def main(argv: list[str] | None = None) -> int:
             f'--split-manifest "{args.split_manifest}" '
             f'--source-release-manifest "{args.source_release_manifest}" '
             f'--expected-source-release-manifest-sha256 {args.expected_source_release_manifest_sha256} '
+            f'--expected-source-file-manifest-sha256 {args.expected_source_file_manifest_sha256} '
             f'--release-id {args.release_id} --expected-shards {args.expected_shards}'
         ],
         "estimated_runtime": "60-180 minutes on one local worker",
@@ -390,6 +399,7 @@ def main(argv: list[str] | None = None) -> int:
             args.source_release_manifest,
             release_id=args.release_id,
             expected_source_release_manifest_sha256=args.expected_source_release_manifest_sha256,
+            expected_source_file_manifest_sha256=args.expected_source_file_manifest_sha256,
             expected_shards=args.expected_shards,
         )
         release_manifest_path = args.output_root.resolve() / "development_only_release_manifest.json"

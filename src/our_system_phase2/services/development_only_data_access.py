@@ -262,6 +262,19 @@ def read_development_panel(
         times = pd.to_datetime(
             table["trade_time"].combine_chunks().to_pandas(), errors="coerce", format="mixed"
         )
+        observed_roles = times.dt.normalize().map(roles)
+        if observed_roles.isna().any():
+            raise PermissionError(f"read row group contains dates absent from split manifest: {item.relative_path}#{row_group_index}")
+        observed_role_counts = {
+            str(name): int(count) for name, count in observed_roles.value_counts().items()
+        }
+        observed_forbidden = sorted(
+            role_name for role_name in observed_role_counts if role_name not in DEVELOPMENT_ROLES
+        )
+        if observed_forbidden:
+            raise PermissionError(
+                f"read row group contains forbidden roles {observed_forbidden}: {item.relative_path}#{row_group_index}"
+            )
         mask = times.dt.normalize().eq(trade_date).to_numpy()
         selected = table.filter(pa.array(mask)).to_pandas()
         selected["trade_time"] = pd.to_datetime(selected["trade_time"], errors="coerce", format="mixed")
@@ -275,6 +288,7 @@ def read_development_panel(
                 "min_trade_date": group_manifest["min_trade_date"],
                 "max_trade_date": group_manifest["max_trade_date"],
                 "assigned_data_role": "development",
+                "observed_rows_by_role": observed_role_counts,
                 "rows_read": len(table),
                 "rows_selected": len(selected),
                 "read_timestamp": datetime.now(timezone.utc).isoformat(),
@@ -288,9 +302,11 @@ def read_development_panel(
         ["code", "trade_time"], kind="mergesort"
     ).reset_index(drop=True)
     opened_file_roles = Counter(str(row["assigned_data_role"]) for row in entries)
-    rows_by_role = Counter()
+    rows_by_role: Counter[str] = Counter()
     for row in entries:
-        rows_by_role[str(row["assigned_data_role"])] += int(row["rows_read"])
+        rows_by_role.update(
+            {str(role_name): int(count) for role_name, count in row["observed_rows_by_role"].items()}
+        )
     forbidden_file_opens = sum(
         count for role_name, count in opened_file_roles.items() if role_name not in DEVELOPMENT_ROLES
     )
