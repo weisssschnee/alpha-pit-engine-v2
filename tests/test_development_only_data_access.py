@@ -1,0 +1,268 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+import pytest
+
+from our_system_phase2.runtime.build_development_only_true1min_release import build_release
+from our_system_phase2.services.development_only_data_access import (
+    PANEL_RELATIVE_PATH,
+    RELEASE_MANIFEST_VERSION,
+    cache_provenance,
+    canonical_json_hash,
+    initialize_cache_root,
+    read_development_panel,
+    release_hash,
+    schema_hash,
+    sha256_file,
+    validate_development_release,
+)
+
+
+def _frame(dates: list[str], *, code_offset: int = 0) -> pd.DataFrame:
+    rows = []
+    for day in dates:
+        for code in range(code_offset, code_offset + 2):
+            for minute in range(3):
+                timestamp = pd.Timestamp(day) + pd.Timedelta(hours=9, minutes=30 + minute)
+                rows.append(
+                    {
+                        "code": f"{code:06d}",
+                        "trade_time": timestamp,
+                        "date": timestamp,
+                        "signal_time": timestamp,
+                        "close": float(code + minute + 1),
+                        "feature": float(minute),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
+def _write_groups(path: Path, groups: list[pd.DataFrame], *, write_statistics: bool = True) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    schema = pa.Table.from_pandas(groups[0], preserve_index=False).schema
+    with pq.ParquetWriter(path, schema, compression="zstd", write_statistics=write_statistics) as writer:
+        for group in groups:
+            writer.write_table(pa.Table.from_pandas(group, schema=schema, preserve_index=False), row_group_size=len(group))
+
+
+def _split(path: Path) -> None:
+    pd.DataFrame(
+        {
+            "trade_date": ["2025-04-01", "2025-04-02", "2025-07-08", "2025-10-27"],
+            "split": ["train", "train", "validation", "holdout"],
+        }
+    ).to_csv(path, index=False)
+
+
+@pytest.fixture()
+def built_release(tmp_path: Path) -> tuple[Path, Path, Path, dict]:
+    source = tmp_path / "source"
+    output = tmp_path / "development"
+    split = tmp_path / "split.csv"
+    source_manifest = tmp_path / "source_summary.json"
+    _split(split)
+    source_manifest.write_text(json.dumps({"release": "approved_2024_2025"}), encoding="utf-8")
+    for shard in range(2):
+        path = source / f"shard_{shard:02d}" / PANEL_RELATIVE_PATH
+        _write_groups(
+            path,
+            [
+                _frame(["2025-04-01", "2025-07-08"], code_offset=shard * 10),
+                _frame(["2025-04-02", "2025-10-27"], code_offset=shard * 10),
+            ],
+        )
+    manifest = build_release(
+        source,
+        output,
+        split,
+        source_manifest,
+        release_id="test_development_release",
+        expected_shards=2,
+    )
+    return output, output / "development_only_release_manifest.json", split, manifest
+
+
+def test_development_only_release_passes_and_matches_source_train_subset(built_release) -> None:
+    output, manifest_path, split, manifest = built_release
+    validated = validate_development_release(
+        output, manifest_path, split, expected_release_hash=manifest["release_hash"]
+    )
+
+    assert len(validated.files) == 2
+    assert manifest["totals"]["rows"] == 24
+    assert manifest["totals"]["excluded_non_development_rows"] == 24
+    assert manifest["consistency_audit"]["source_train_subset_equals_output"] is True
+    assert all(
+        group["source_train_subset_content_sha256"] == group["output_content_sha256"]
+        for file_row in manifest["files"]
+        for group in file_row["row_groups"]
+    )
+
+
+def test_fail_closed_read_writes_zero_forbidden_access_ledger(built_release, tmp_path: Path) -> None:
+    output, manifest_path, split, manifest = built_release
+    validated = validate_development_release(output, manifest_path, split)
+    ledger = tmp_path / "ledger.json"
+    frame, entries = read_development_panel(
+        validated,
+        trade_date=pd.Timestamp("2025-04-01"),
+        row_group_index=0,
+        columns=["feature"],
+        read_ledger_path=ledger,
+        loader_sha="loader-test-sha",
+    )
+    payload = json.loads(ledger.read_text(encoding="utf-8"))
+
+    assert len(frame) == 12
+    assert len(entries) == 2
+    assert payload["forbidden_file_open_count"] == 0
+    assert payload["forbidden_row_group_read_count"] == 0
+    assert payload["validation_rows_read"] == 0
+    assert payload["holdout_rows_read"] == 0
+    assert payload["forward_rows_read"] == 0
+
+
+def _manual_manifest(root: Path, split: Path, file_path: Path, *, row_groups: list[dict]) -> Path:
+    parquet = pq.ParquetFile(file_path)
+    payload = {
+        "manifest_version": RELEASE_MANIFEST_VERSION,
+        "release_id": "manual",
+        "release_root": str(root.resolve()),
+        "data_role": "development",
+        "created_at": "2026-07-12T00:00:00+00:00",
+        "split_manifest_path": str(split.resolve()),
+        "split_manifest_sha256": sha256_file(split),
+        "schema_sha256": schema_hash(parquet.schema_arrow),
+        "file_count": 1,
+        "files": [
+            {
+                "relative_path": file_path.relative_to(root).as_posix(),
+                "data_role": "development",
+                "rows": parquet.metadata.num_rows,
+                "size": file_path.stat().st_size,
+                "sha256": sha256_file(file_path),
+                "row_groups": row_groups,
+            }
+        ],
+    }
+    payload["release_hash"] = release_hash(payload)
+    path = root / "development_only_release_manifest.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def test_mixed_validation_row_group_is_rejected_before_predicate_read(tmp_path: Path) -> None:
+    root = tmp_path / "mixed"
+    split = tmp_path / "split.csv"
+    _split(split)
+    file_path = root / "shard_00" / PANEL_RELATIVE_PATH
+    mixed = _frame(["2025-04-01", "2025-07-08"])
+    _write_groups(file_path, [mixed])
+    manifest_path = _manual_manifest(
+        root,
+        split,
+        file_path,
+        row_groups=[
+            {
+                "row_group_id": 0,
+                "rows": len(mixed),
+                "min_trade_date": "2025-04-01",
+                "max_trade_date": "2025-07-08",
+                "data_role": "development",
+            }
+        ],
+    )
+
+    with pytest.raises(PermissionError, match="forbidden data roles"):
+        validate_development_release(root, manifest_path, split)
+
+
+def test_missing_row_group_date_metadata_is_rejected(tmp_path: Path) -> None:
+    root = tmp_path / "no_stats"
+    split = tmp_path / "split.csv"
+    _split(split)
+    file_path = root / "shard_00" / PANEL_RELATIVE_PATH
+    frame = _frame(["2025-04-01"])
+    _write_groups(file_path, [frame], write_statistics=False)
+    manifest_path = _manual_manifest(
+        root,
+        split,
+        file_path,
+        row_groups=[
+            {
+                "row_group_id": 0,
+                "rows": len(frame),
+                "min_trade_date": "2025-04-01",
+                "max_trade_date": "2025-04-01",
+                "data_role": "development",
+            }
+        ],
+    )
+
+    with pytest.raises(ValueError, match="lacks trade_time min/max metadata"):
+        validate_development_release(root, manifest_path, split)
+
+
+def test_mixed_root_is_rejected_before_any_parquet_open(built_release, monkeypatch) -> None:
+    output, manifest_path, split, _ = built_release
+    extra = output / "validation" / "leak.parquet"
+    _write_groups(extra, [_frame(["2025-07-08"])])
+    opened = 0
+    original = pq.ParquetFile
+
+    def counting_open(*args, **kwargs):
+        nonlocal opened
+        opened += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(pq, "ParquetFile", counting_open)
+    with pytest.raises(PermissionError, match="mixed or incomplete release root"):
+        validate_development_release(output, manifest_path, split)
+    assert opened == 0
+
+
+def test_cache_provenance_mismatch_and_legacy_cache_are_rejected(tmp_path: Path) -> None:
+    expected = cache_provenance(
+        release_hash_value="release-a",
+        split_manifest_sha256="split-a",
+        loader_code_hash="loader-a",
+        field_registry_hash="fields-a",
+        data_role="development",
+        materializer_hash="materializer-a",
+    )
+    cache = tmp_path / "cache"
+    cache.mkdir()
+    (cache / "legacy.bin").write_bytes(b"invalidated")
+    with pytest.raises(PermissionError, match="fresh cache root"):
+        initialize_cache_root(cache, expected, require_fresh=True)
+
+    clean = tmp_path / "clean"
+    initialize_cache_root(clean, expected, require_fresh=False)
+    changed = dict(expected)
+    changed["release_hash"] = "release-b"
+    with pytest.raises(PermissionError, match="provenance mismatch"):
+        initialize_cache_root(clean, changed, require_fresh=False)
+
+
+def test_release_read_is_shard_order_invariant(built_release, tmp_path: Path) -> None:
+    output, manifest_path, split, _ = built_release
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload["files"] = list(reversed(payload["files"]))
+    payload["release_hash"] = release_hash(payload)
+    manifest_path.write_text(json.dumps(payload), encoding="utf-8")
+    validated = validate_development_release(output, manifest_path, split)
+    first, _ = read_development_panel(
+        validated,
+        trade_date=pd.Timestamp("2025-04-01"),
+        row_group_index=0,
+        columns=["feature"],
+        read_ledger_path=tmp_path / "ledger.json",
+        loader_sha="loader-test-sha",
+    )
+    assert first.equals(first.sort_values(["code", "trade_time"], kind="mergesort").reset_index(drop=True))
+

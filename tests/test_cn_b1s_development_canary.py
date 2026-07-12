@@ -134,6 +134,8 @@ def test_b1s_rejects_wrong_authorization_before_inputs(tmp_path: Path) -> None:
         main(
             [
                 "--panel-root", str(tmp_path),
+                "--release-manifest", str(tmp_path / "release.json"),
+                "--cache-root", str(tmp_path / "cache"),
                 "--split-manifest", str(tmp_path / "split.csv"),
                 "--field-registry", str(tmp_path / "fields.json"),
                 "--contract", str(CONTRACT_PATH),

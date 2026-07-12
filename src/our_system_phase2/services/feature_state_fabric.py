@@ -263,11 +263,13 @@ class FeatureStateFabric:
         transforms: Mapping[str, Transform] | None = None,
         cache: DeterministicFeatureCache | None = None,
         row_keys: Sequence[str] = ("code", "trade_time"),
+        cache_namespace: str = "",
     ) -> None:
         self.registry = registry
         self.transforms = dict(transforms or {})
         self.cache = cache or DeterministicFeatureCache()
         self.row_keys = tuple(row_keys)
+        self.cache_namespace = str(cache_namespace)
 
     def _apply_missing_policy(self, frame: pd.DataFrame, spec: FieldSpec, value: pd.Series) -> pd.Series:
         if spec.missing_policy is MissingPolicy.ZERO:
@@ -367,7 +369,7 @@ class FeatureStateFabric:
             if spec.role is FieldRole.BLOCKED and not allow_blocked:
                 raise PermissionError(f"blocked field cannot materialize: {name}: {spec.blocked_reason}")
             cache_key = hashlib.sha256(
-                f"{self.registry.registry_hash}|{name}|{input_fingerprint}".encode()
+                f"{self.cache_namespace}|{self.registry.registry_hash}|{name}|{input_fingerprint}".encode()
             ).hexdigest()
             value = self.cache.get(cache_key) if spec.cacheable else None
             if value is not None:
@@ -400,6 +402,7 @@ class FeatureStateFabric:
             "input_fingerprint": input_fingerprint,
             "output_fingerprint": _frame_fingerprint(output, list(fields), self.row_keys),
             "cache_hits": cache_hits,
+            "cache_namespace": self.cache_namespace,
             "temporal_guards": temporal_guards,
             "reward_or_performance_used": False,
         }

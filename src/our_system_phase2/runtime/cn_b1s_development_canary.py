@@ -33,14 +33,14 @@ from our_system_phase2.runtime.nextgen_dark_development_canary import (
     _frame_hash,
     _git,
     _orthogonal_expression,
-    _panel_inventory,
     _runtime_environment,
     _sha256,
     _state_expression,
     _static_expression,
     _temporal_expression,
-    read_sampled_development_panel,
 )
+from our_system_phase2.services import development_only_data_access
+from our_system_phase2.services import feature_state_fabric as feature_state_fabric_module
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import (
     _fields,
     _future_returns,
@@ -54,6 +54,12 @@ from our_system_phase2.services.deterministic_signal_sketch import (
 )
 from our_system_phase2.services.expression_semantics import analyze_expression
 from our_system_phase2.services.feature_state_fabric import FeatureStateFabric, FieldRegistry
+from our_system_phase2.services.development_only_data_access import (
+    cache_provenance,
+    initialize_cache_root,
+    read_development_panel,
+    validate_development_release,
+)
 from our_system_phase2.services.real_market_validation import (
     UnsupportedExpressionError,
     _ExpressionEvaluationContext,
@@ -1214,6 +1220,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[3])
     parser.add_argument("--panel-root", type=Path, required=True)
+    parser.add_argument("--release-manifest", type=Path, required=True)
+    parser.add_argument("--cache-root", type=Path, required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
     parser.add_argument("--field-registry", type=Path, required=True)
     parser.add_argument("--contract", type=Path, required=True)
@@ -1255,6 +1263,43 @@ def main(argv: list[str] | None = None) -> int:
     roles = {str(date.date()): _development_role(args.split_manifest, date) for date in dates}
     if any(role not in {"train", "development"} for role in roles.values()):
         raise PermissionError("B1S split role escaped train/development")
+    if len(dates) != 1:
+        raise ValueError("B1S read-ledger contract currently freezes exactly one development date")
+
+    data_access_contract = contract.get("data_access_contract")
+    if not isinstance(data_access_contract, Mapping):
+        raise ValueError("B1S contract lacks the fail-closed data-access contract")
+    loader_path = Path(development_only_data_access.__file__).resolve()
+    materializer_path = Path(feature_state_fabric_module.__file__).resolve()
+    loader_sha = _sha256(loader_path)
+    materializer_sha = _sha256(materializer_path)
+    if loader_sha != data_access_contract.get("loader_code_hash"):
+        raise ValueError("loader code hash does not match the frozen CANARY contract")
+    if materializer_sha != data_access_contract.get("materializer_hash"):
+        raise ValueError("materializer hash does not match the frozen CANARY contract")
+    if _sha256(args.release_manifest) != data_access_contract.get("release_manifest_sha256"):
+        raise ValueError("release manifest file hash does not match the frozen CANARY contract")
+    release = validate_development_release(
+        args.panel_root,
+        args.release_manifest,
+        args.split_manifest,
+        expected_release_hash=str(data_access_contract["development_only_release_hash"]),
+    )
+    expected_cache_provenance = cache_provenance(
+        release_hash_value=release.release_hash,
+        split_manifest_sha256=release.split_manifest_sha256,
+        loader_code_hash=loader_sha,
+        field_registry_hash=_sha256(args.field_registry),
+        data_role="development",
+        materializer_hash=materializer_sha,
+    )
+    if expected_cache_provenance != data_access_contract.get("cache_provenance"):
+        raise ValueError("cache provenance contract mismatch")
+    initialize_cache_root(
+        args.cache_root,
+        expected_cache_provenance,
+        require_fresh=bool(data_access_contract.get("fresh_cache_required", True)),
+    )
 
     started_at = datetime.now(timezone.utc)
     attempt_id = started_at.strftime("%Y%m%dT%H%M%S%fZ")
@@ -1278,6 +1323,7 @@ def main(argv: list[str] | None = None) -> int:
         "bottleneck": artifact_root / "bottleneck_diagnosis.json",
         "candidate_pack": artifact_root / "frozen_candidate_pack.csv",
         "summary": artifact_root / "summary.json",
+        "read_ledger": artifact_root / "development_only_read_ledger.json",
     }
     input_paths = {
         "contract": args.contract,
@@ -1285,6 +1331,7 @@ def main(argv: list[str] | None = None) -> int:
         "field_registry": args.field_registry,
         "benchmark_registry": args.benchmark_registry,
         "augmentation_summary": args.augmentation_summary,
+        "release_manifest": args.release_manifest,
     }
     record: dict[str, Any] = {
         "experiment_id": EXPERIMENT_ID,
@@ -1299,6 +1346,7 @@ def main(argv: list[str] | None = None) -> int:
         "commands": [
             "$env:PYTHONPATH='src'; python app.py cn-b1s-development-canary -- "
             f'--panel-root "{args.panel_root}" --split-manifest "{args.split_manifest}" '
+            f'--release-manifest "{args.release_manifest}" --cache-root "{args.cache_root}" '
             f'--field-registry "{args.field_registry}" --contract "{args.contract}" '
             f'--benchmark-registry "{args.benchmark_registry}" '
             f'--augmentation-summary "{args.augmentation_summary}" '
@@ -1316,6 +1364,8 @@ def main(argv: list[str] | None = None) -> int:
             "plate_industry_enabled": False,
             "cross_epoch_memory_allowed": False,
             "candidate_promotion_allowed": False,
+            "development_only_release_hash": release.release_hash,
+            "cache_namespace": expected_cache_provenance["cache_namespace"],
         },
         "inputs": {
             name: {"path": str(path), "size": path.stat().st_size, "sha256": _sha256(path)}
@@ -1331,21 +1381,17 @@ def main(argv: list[str] | None = None) -> int:
     started = time.perf_counter()
 
     try:
-        inventory = _panel_inventory(args.panel_root, int(contract["data_boundary"]["row_group_index"]))
         frozen_contract = {
             "repo_sha": head,
             "baseline_tag": contract["baseline_tag"],
             "data_release": {
                 "panel_root": str(args.panel_root),
+                "release_manifest": str(args.release_manifest),
+                "release_manifest_sha256": _sha256(args.release_manifest),
+                "development_only_release_hash": release.release_hash,
+                "schema_sha256": release.manifest["schema_sha256"],
+                "file_count": len(release.files),
                 "augmentation_summary_sha256": _sha256(args.augmentation_summary),
-                "panel_inventory": inventory,
-                "panel_inventory_hash": _json_hash(inventory),
-                "data_release_hash": _json_hash(
-                    {
-                        "augmentation_summary_sha256": _sha256(args.augmentation_summary),
-                        "panel_inventory_hash": _json_hash(inventory),
-                    }
-                ),
             },
             "split_manifest_sha256": _sha256(args.split_manifest),
             "field_registry_sha256": _sha256(args.field_registry),
@@ -1364,13 +1410,35 @@ def main(argv: list[str] | None = None) -> int:
             "budgets": contract["budgets"],
             "forward_2026_sealed": True,
             "plate_industry_disabled": True,
+            "loader_code_hash": loader_sha,
+            "materializer_hash": materializer_sha,
+            "cache_provenance": expected_cache_provenance,
+            "read_ledger_contract": data_access_contract["read_ledger_contract"],
         }
         atomic_write_json(paths["frozen_contract"], frozen_contract)
         _record_output(record, paths["frozen_contract"], "frozen_contract", "pre_evaluation_final")
         record["frozen_contract_sha256"] = _sha256(paths["frozen_contract"])
-        record["status"] = "CONTRACT_FROZEN_GENERATION_RUNNING"
+        record["status"] = "CONTRACT_FROZEN_DATA_READ_RUNNING"
         _persist_attempt(attempt_path, latest_path, record)
 
+        fields = sorted(set(RAW_FIELDS + CONTEXT_FIELDS + FIRSTN_FIELDS + EVENT_FIELDS + STATE_FIELDS + ("close",)))
+        raw_frame, panel_inputs = read_development_panel(
+            release,
+            trade_date=dates[0],
+            row_group_index=int(contract["data_boundary"]["row_group_index"]),
+            columns=fields,
+            read_ledger_path=paths["read_ledger"],
+            loader_sha=loader_sha,
+        )
+        _record_output(record, paths["read_ledger"], "development_only_read_ledger", "pre_generation_final")
+        if raw_frame["trade_time"].ge(pd.Timestamp("2026-01-01")).any():
+            raise ValueError("B1S accessed 2026 rows")
+        registry = FieldRegistry.read(args.field_registry)
+        materialized, fabric_manifest = FeatureStateFabric(
+            registry, cache_namespace=expected_cache_provenance["cache_namespace"]
+        ).materialize(raw_frame, fields)
+        record["status"] = "CONTRACT_FROZEN_GENERATION_RUNNING"
+        _persist_attempt(attempt_path, latest_path, record)
         initial = generate_initial_proposals(contract)
         expected_initial = int(contract["budgets"]["proposal_total"]) - sum(
             int(contract["lane_specs"][lane]["adaptive"]) for lane in ADAPTIVE_LANES
@@ -1378,24 +1446,6 @@ def main(argv: list[str] | None = None) -> int:
         if len(initial) != expected_initial:
             raise AssertionError(f"initial proposal count mismatch: {len(initial)} != {expected_initial}")
         apply_typed_gate(initial)
-
-        fields = sorted(set(RAW_FIELDS + CONTEXT_FIELDS + FIRSTN_FIELDS + EVENT_FIELDS + STATE_FIELDS + ("close",)))
-        raw_frames = []
-        panel_inputs: list[dict[str, Any]] = []
-        for date in dates:
-            frame, date_inputs = read_sampled_development_panel(
-                args.panel_root,
-                trade_date=date,
-                row_group_index=int(contract["data_boundary"]["row_group_index"]),
-                columns=fields,
-            )
-            raw_frames.append(frame)
-            panel_inputs.extend(date_inputs)
-        raw_frame = pd.concat(raw_frames, ignore_index=True)
-        if raw_frame["trade_time"].ge(pd.Timestamp("2026-01-01")).any():
-            raise ValueError("B1S accessed 2026 rows")
-        registry = FieldRegistry.read(args.field_registry)
-        materialized, fabric_manifest = FeatureStateFabric(registry).materialize(raw_frame, fields)
         materialized["date"] = materialized["trade_time"]
         cross_key = materialized["trade_time"]
         evaluation_context = _ExpressionEvaluationContext.for_frame(materialized)
@@ -1554,6 +1604,9 @@ def main(argv: list[str] | None = None) -> int:
             "persistent_positive_memory_updated": False,
             "persistent_negative_memory_updated": False,
             "ephemeral_adaptation_persisted": False,
+            "development_only_release_hash": release.release_hash,
+            "cache_provenance": expected_cache_provenance,
+            "read_ledger": json.loads(paths["read_ledger"].read_text(encoding="utf-8")),
         }
         atomic_write_json(paths["summary"], summary)
         for name in ("strict_metrics", "adaptive", "admission_comparison", "new_clusters", "benchmark_increment", "bottleneck", "candidate_pack", "summary"):

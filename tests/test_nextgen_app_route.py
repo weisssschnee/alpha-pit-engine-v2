@@ -31,3 +31,10 @@ def test_cn_b1s_development_canary_is_registered_as_an_app_route() -> None:
         app.ROUTES["cn-b1s-development-canary"]
         == "our_system_phase2.runtime.cn_b1s_development_canary"
     )
+
+
+def test_development_only_release_builder_is_registered_as_an_app_route() -> None:
+    assert (
+        app.ROUTES["build-development-only-true1min-release"]
+        == "our_system_phase2.runtime.build_development_only_true1min_release"
+    )
