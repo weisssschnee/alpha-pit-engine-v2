@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from datetime import datetime, timezone
 import hashlib
 import json
 import os
 from pathlib import Path
+from pathlib import PureWindowsPath
 import tempfile
 import time
 import traceback
@@ -212,7 +214,7 @@ def _build_shard(
         "source_path": str(source.resolve()),
         "source_size": source.stat().st_size,
         "source_mtime_ns": source.stat().st_mtime_ns,
-        "source_sha256": build_provenance["source_panel_sha256"][str(source.resolve())],
+        "source_sha256": build_provenance["source_panel_sha256"][relative],
         "sha256": sha256_file(destination),
         "size": stat.st_size,
         "mtime_ns": stat.st_mtime_ns,
@@ -243,6 +245,7 @@ def build_release(
     expected_source_release_manifest_sha256: str,
     expected_source_file_manifest_sha256: str,
     expected_shards: int = 16,
+    workers: int = 1,
 ) -> dict[str, Any]:
     source_root = source_root.resolve()
     output_root = output_root.resolve()
@@ -255,8 +258,9 @@ def build_release(
     if source_release_manifest_hash != expected_source_release_manifest_sha256:
         raise ValueError("source release manifest hash is not the approved frozen hash")
     source_release = json.loads(source_release_manifest.read_text(encoding="utf-8"))
-    if Path(source_release.get("output_root", "")).resolve() != source_root:
-        raise PermissionError("source release manifest is not bound to the requested approved source root")
+    declared_root = PureWindowsPath(str(source_release.get("output_root", "")))
+    if not declared_root.is_absolute():
+        raise PermissionError("source release manifest has no absolute approved source root")
     if int(source_release.get("shard_count", -1)) != expected_shards:
         raise ValueError("source release manifest shard count mismatch")
     declared_panel_rel = str(source_release.get("panel_rel", "")).replace("\\", "/")
@@ -269,7 +273,10 @@ def build_release(
     }
     if not required_hard_rules.issubset(set(source_release.get("hard_rules", []))):
         raise ValueError("source release manifest lacks required PIT/source-lag hard rules")
-    source_file_manifest = Path(source_release.get("manifest", "")).resolve()
+    declared_source_file_manifest = PureWindowsPath(str(source_release.get("manifest", "")))
+    source_file_manifest = Path(str(declared_source_file_manifest)).resolve()
+    if not source_file_manifest.is_file():
+        source_file_manifest = (source_release_manifest.parent / declared_source_file_manifest.name).resolve()
     if not source_file_manifest.is_file():
         raise FileNotFoundError("source release file manifest is missing")
     source_file_manifest_hash = sha256_file(source_file_manifest)
@@ -278,18 +285,27 @@ def build_release(
     source_files = pd.read_csv(source_file_manifest)
     if "output_panel" not in source_files.columns:
         raise ValueError("source release file manifest lacks output_panel")
-    declared_source_paths = {
-        str(Path(value).resolve()) for value in source_files["output_panel"].astype(str)
-    }
-    observed_source_paths = {str(path.resolve()) for path in paths}
-    if declared_source_paths != observed_source_paths:
+    try:
+        declared_relative_paths = {
+            PureWindowsPath(value).relative_to(declared_root).as_posix()
+            for value in source_files["output_panel"].astype(str)
+        }
+    except ValueError as exc:
+        raise PermissionError("source file manifest escapes its approved source root") from exc
+    observed_relative_paths = {path.relative_to(source_root).as_posix() for path in paths}
+    if declared_relative_paths != observed_relative_paths:
         raise PermissionError("source release file manifest does not match the requested source panels")
     roles = split_roles(split_manifest)
     allowed_dates = {date for date, role in roles.items() if role in DEVELOPMENT_ROLES}
     if not allowed_dates:
         raise ValueError("split manifest contains no development dates")
     source_schema = _source_preflight(paths, roles)
-    source_panel_hashes = {str(path.resolve()): sha256_file(path) for path in paths}
+    with ThreadPoolExecutor(max_workers=max(1, min(int(workers), 4))) as executor:
+        source_panel_hash_values = list(executor.map(sha256_file, paths))
+    source_panel_hashes = {
+        path.relative_to(source_root).as_posix(): digest
+        for path, digest in zip(paths, source_panel_hash_values, strict=True)
+    }
     split_manifest_hash = sha256_file(split_manifest)
     allowed_dates_hash = canonical_json_hash(sorted(str(date.date()) for date in allowed_dates))
     build_provenance = {
@@ -303,10 +319,14 @@ def build_release(
     output_root.mkdir(parents=True, exist_ok=True)
     records = []
     started_at = datetime.now(timezone.utc)
+    if workers < 1 or workers > expected_shards:
+        raise ValueError(f"workers must be between 1 and {expected_shards}")
+    build_arguments = []
     for source in paths:
         shard = source.parents[2].name
-        destination = output_root / shard / PANEL_RELATIVE_PATH
-        records.append(
+        build_arguments.append((source, output_root / shard / PANEL_RELATIVE_PATH))
+    if workers == 1:
+        records = [
             _build_shard(
                 source,
                 destination,
@@ -314,7 +334,23 @@ def build_release(
                 output_root=output_root,
                 build_provenance=build_provenance,
             )
-        )
+            for source, destination in build_arguments
+        ]
+    else:
+        with ProcessPoolExecutor(max_workers=workers) as executor:
+            futures = [
+                executor.submit(
+                    _build_shard,
+                    source,
+                    destination,
+                    allowed_dates=allowed_dates,
+                    output_root=output_root,
+                    build_provenance=build_provenance,
+                )
+                for source, destination in build_arguments
+            ]
+            records = [future.result() for future in futures]
+    records.sort(key=lambda row: str(row["relative_path"]))
 
     all_dates = sorted(str(date.date()) for date in allowed_dates)
     manifest: dict[str, Any] = {
@@ -325,9 +361,12 @@ def build_release(
         "created_at": started_at.isoformat(),
         "completed_at": datetime.now(timezone.utc).isoformat(),
         "source_root": str(source_root),
+        "source_manifest_declared_root": str(declared_root),
+        "source_root_relocated": PureWindowsPath(str(source_root)) != declared_root,
         "source_release_manifest": str(source_release_manifest),
         "source_release_manifest_sha256": source_release_manifest_hash,
         "source_file_manifest": str(source_file_manifest),
+        "source_manifest_declared_file_manifest": str(declared_source_file_manifest),
         "source_file_manifest_sha256": source_file_manifest_hash,
         "source_panel_sha256": source_panel_hashes,
         "split_manifest_path": str(split_manifest),
@@ -381,6 +420,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--expected-source-release-manifest-sha256", required=True)
     parser.add_argument("--expected-source-file-manifest-sha256", required=True)
     parser.add_argument("--expected-shards", type=int, default=16)
+    parser.add_argument("--workers", type=int, default=1)
     args = parser.parse_args(argv)
     started = datetime.now(timezone.utc)
     attempt_id = started.strftime("%Y%m%dT%H%M%S%fZ")
@@ -405,7 +445,11 @@ def main(argv: list[str] | None = None) -> int:
             "split_manifest": str(args.split_manifest.resolve()),
             "split_manifest_sha256": sha256_file(args.split_manifest),
         },
-        "parameters": {"expected_shards": args.expected_shards, "data_role": "development"},
+        "parameters": {
+            "expected_shards": args.expected_shards,
+            "workers": args.workers,
+            "data_role": "development",
+        },
         "commands": [
             "python app.py build-development-only-true1min-release -- "
             f'--source-root "{args.source_root}" --output-root "{args.output_root}" '
@@ -414,6 +458,7 @@ def main(argv: list[str] | None = None) -> int:
             f'--expected-source-release-manifest-sha256 {args.expected_source_release_manifest_sha256} '
             f'--expected-source-file-manifest-sha256 {args.expected_source_file_manifest_sha256} '
             f'--release-id {args.release_id} --expected-shards {args.expected_shards}'
+            f" --workers {args.workers}"
         ],
         "estimated_runtime": "60-180 minutes on one local worker",
         "outputs": [],
@@ -438,6 +483,7 @@ def main(argv: list[str] | None = None) -> int:
             expected_source_release_manifest_sha256=args.expected_source_release_manifest_sha256,
             expected_source_file_manifest_sha256=args.expected_source_file_manifest_sha256,
             expected_shards=args.expected_shards,
+            workers=args.workers,
         )
         release_manifest_path = args.output_root.resolve() / "development_only_release_manifest.json"
         record.update(

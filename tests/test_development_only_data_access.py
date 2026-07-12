@@ -391,7 +391,7 @@ def test_builder_rejects_source_manifest_bound_to_another_root(tmp_path: Path) -
         ),
         encoding="utf-8",
     )
-    with pytest.raises(PermissionError, match="approved source root"):
+    with pytest.raises(PermissionError, match="escapes its approved source root"):
         build_release(
             source,
             tmp_path / "out",
@@ -423,6 +423,26 @@ def test_checkpoint_is_invalidated_when_split_changes(built_release) -> None:
     )
     assert second["totals"]["rows"] == 12
     assert second["files"][0]["build_provenance"]["split_manifest_sha256"] == sha256_file(split)
+
+
+def test_parallel_shard_builder_matches_single_worker_output(built_release, tmp_path: Path) -> None:
+    _, _, split, single = built_release
+    source = Path(single["source_root"])
+    source_summary = Path(single["source_release_manifest"])
+    source_files = Path(single["source_file_manifest"])
+    parallel = build_release(
+        source,
+        tmp_path / "parallel",
+        split,
+        source_summary,
+        release_id="parallel_test",
+        expected_source_release_manifest_sha256=sha256_file(source_summary),
+        expected_source_file_manifest_sha256=sha256_file(source_files),
+        expected_shards=2,
+        workers=2,
+    )
+    assert parallel["totals"] == single["totals"]
+    assert [row["sha256"] for row in parallel["files"]] == [row["sha256"] for row in single["files"]]
 
 
 def test_builder_refuses_2026_split_before_release_output(tmp_path: Path) -> None:
