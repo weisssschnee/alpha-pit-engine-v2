@@ -1,0 +1,63 @@
+{
+  "audit_version": "cn_b1s_backtest_acceleration_audit_v1",
+  "python_executable": "G:\\PythonProject\\.venv\\Scripts\\python.exe",
+  "python_version": "3.11.9",
+  "platform": "Windows-10-10.0.22631-SP0",
+  "package_matrix": {
+    "numpy": "2.1.3",
+    "pandas": "2.2.3",
+    "pyarrow": "19.0.1",
+    "numba": "0.64.0",
+    "bottleneck": "1.6.0",
+    "numexpr": "2.14.1",
+    "polars": "1.41.0",
+    "joblib": "1.4.2",
+    "scikit-learn": "1.6.1"
+  },
+  "hot_path": {
+    "previous_runner": "Repeated pandas group iteration in IC, spread and turnover metrics plus per-candidate group-layout construction.",
+    "b1s_runner": "Expression materialization remains the main CPU path; strict IC and spread use numpy bincount vectorization and turnover uses one pivot per strict signal.",
+    "limiting_resource": "CPU with low free-memory headroom",
+    "free_physical_memory_gb_at_audit": 2.91,
+    "total_visible_memory_gb": 23.42
+  },
+  "active_acceleration": [
+    "pyarrow row-group reads and pre-date filtering",
+    "shared deterministic expression group layout",
+    "Numba-backed rolling validity and event-count operators when selected",
+    "numpy bincount vectorized cross-sectional IC and spread",
+    "one expression-local cache per proposal to bound memory",
+    "float32 in-memory signal arrays reused for strict evaluation",
+    "single-thread deterministic RandomForest surrogate"
+  ],
+  "installed_but_not_active": [
+    "polars",
+    "joblib parallel execution",
+    "generic parallel_workers validation harness",
+    "successive_halving"
+  ],
+  "semantics_parity": {
+    "test": "tests/test_cn_b1s_development_canary.py::test_vectorized_metrics_match_legacy_reference",
+    "result": "PASS",
+    "tolerance": "1e-12 for IC, spread and turnover"
+  },
+  "changes_applied": [
+    "Reuse one expression-evaluation group layout across candidates.",
+    "Replace repeated pandas per-time IC and spread loops with equivalent vectorized reductions.",
+    "Reuse proxy materialized signal arrays for strict metrics."
+  ],
+  "changes_deliberately_not_applied": [
+    "No approximate evaluator replaces the strict evaluator.",
+    "No date, lag, PIT, reward, budget or admission semantics changed.",
+    "No multi-worker execution because free-memory headroom is low and deterministic adaptation is required."
+  ],
+  "recommended_worker_limit": 1,
+  "launch_contract": {
+    "use_fast_context": "B1S uses an equivalent shared expression evaluation context directly.",
+    "global_worker_limit": 1,
+    "successive_halving": false,
+    "expression_cache": "per-candidate bounded cache",
+    "validation_cache_key": "repo SHA + contract hash + data inventory hash + split hash + field registry hash + expression canonical identity",
+    "semantic_parity_required": true
+  }
+}

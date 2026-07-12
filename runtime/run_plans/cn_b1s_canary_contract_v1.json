@@ -1,0 +1,152 @@
+{
+  "contract_version": "cn_b1s_canary_contract_v1",
+  "execution_state": "FROZEN_REQUIRES_EXACT_SHA_AND_USER_AUTHORIZATION",
+  "authorization_token": "USER_AUTHORIZED_CN_B1S_DEVELOPMENT_ONLY_CANARY_20260712",
+  "baseline_tag": "cn-b1s-canary-baseline-20260712",
+  "data_boundary": {
+    "allowed_roles": ["development", "train"],
+    "forbidden_roles": ["validation", "holdout", "spent", "sealed", "forward"],
+    "allowed_years": [2024, 2025],
+    "forward_2026_allowed": false,
+    "trade_dates": ["2025-04-01"],
+    "row_group_index": 0,
+    "panel_shard_count": 16
+  },
+  "capability_matrix": {
+    "static_cross_sectional": "ENABLED",
+    "firstn_intraday_path": "ENABLED",
+    "temporal_program": "ENABLED",
+    "event_conditioned": "ENABLED",
+    "state_transition": "ENABLED",
+    "orthogonal_exile": "ENABLED",
+    "typed_random": "ENABLED",
+    "typed_ast": "ENABLED",
+    "cem": "ENABLED_EPHEMERAL_ADAPTATION",
+    "rx_ucb": "ENABLED_EPHEMERAL_ADAPTATION",
+    "uct_mcts": "ENABLED_EPHEMERAL_ADAPTATION",
+    "evolutionary": "ENABLED_EPHEMERAL_ADAPTATION",
+    "surrogate": "ENABLED_EPHEMERAL_ADAPTATION",
+    "llm_proposal_repair": "ENABLED_FROZEN_PRE_REWARD_CODEX_PACK",
+    "benchmark_competitor": "ENABLED",
+    "plate_industry_membership": "DISABLED_MISSING_HISTORICAL_PIT_RELEASE",
+    "plate_industry_index": "DISABLED_MISSING_HISTORICAL_PIT_RELEASE",
+    "plate_zero_placeholder": "FORBIDDEN",
+    "current_snapshot_membership": "FORBIDDEN"
+  },
+  "seeds": {
+    "global": 20260711,
+    "static_cross_sectional": 9200,
+    "firstn_intraday_path": 9201,
+    "temporal_program": 9202,
+    "event_conditioned": 9203,
+    "state_transition": 9204,
+    "orthogonal_exile": 9205,
+    "typed_random": 9206,
+    "typed_ast": 9207,
+    "cem": 9208,
+    "rx_ucb": 9209,
+    "uct_mcts": 9210,
+    "evolutionary": 9211,
+    "surrogate": 9212,
+    "llm_proposal_repair": 9213,
+    "benchmark_competitor": 9214,
+    "signal_sketch": 9215
+  },
+  "budgets": {
+    "proposal_total": 1344,
+    "admission_total": 168,
+    "strict_eval_total": 64,
+    "global_topk_total": 168,
+    "hybrid_stratified_fraction": 0.5
+  },
+  "lane_specs": {
+    "static_cross_sectional": {"proposal": 128, "admission": 16, "strict": 8, "adaptation": "NONE"},
+    "firstn_intraday_path": {"proposal": 96, "admission": 12, "strict": 5, "adaptation": "NONE"},
+    "temporal_program": {"proposal": 128, "admission": 16, "strict": 8, "adaptation": "NONE"},
+    "event_conditioned": {"proposal": 96, "admission": 12, "strict": 5, "adaptation": "NONE"},
+    "state_transition": {"proposal": 96, "admission": 12, "strict": 5, "adaptation": "NONE"},
+    "orthogonal_exile": {"proposal": 64, "admission": 8, "strict": 4, "adaptation": "NONE"},
+    "typed_random": {"proposal": 96, "admission": 12, "strict": 4, "adaptation": "NONE"},
+    "typed_ast": {"proposal": 96, "admission": 12, "strict": 4, "adaptation": "NONE"},
+    "cem": {"proposal": 96, "control": 48, "adaptive": 48, "admission": 12, "strict": 4, "adaptation": "CEM_ELITE_DISTRIBUTION"},
+    "rx_ucb": {"proposal": 96, "control": 48, "adaptive": 48, "admission": 12, "strict": 4, "adaptation": "UCB_ARM_ALLOCATION"},
+    "uct_mcts": {"proposal": 96, "control": 48, "adaptive": 48, "admission": 12, "strict": 4, "adaptation": "UCT_TREE_SELECTION"},
+    "evolutionary": {"proposal": 96, "control": 48, "adaptive": 48, "admission": 12, "strict": 4, "adaptation": "ELITE_MUTATION"},
+    "surrogate": {"proposal": 64, "control": 32, "adaptive": 32, "admission": 8, "strict": 2, "adaptation": "RANDOM_FOREST_STRUCTURAL_SURROGATE"},
+    "llm_proposal_repair": {"proposal": 48, "proposal_pack": 24, "repair_pack": 24, "admission": 6, "strict": 1, "adaptation": "NONE"},
+    "benchmark_competitor": {"proposal": 48, "admission": 6, "strict": 2, "adaptation": "NONE"}
+  },
+  "development_objective": {
+    "name": "proxy_abs_5m_ic_coverage_uniqueness_v1",
+    "label_horizon_bars": 5,
+    "coordinate_minute_stride": 4,
+    "formula": "abs(mean_cross_sectional_ic) * sqrt(ic_count/eligible_time_count) * coverage_ratio * uniqueness_factor",
+    "uses_validation": false,
+    "uses_holdout": false,
+    "uses_forward": false
+  },
+  "survivor_contract": {
+    "typed_gate_decision": "allow",
+    "minimum_finite_ratio": 0.25,
+    "minimum_signal_unique": 8,
+    "minimum_eligible_cross_sections": 40,
+    "minimum_proxy_reward": 0.0,
+    "one_canonical_identity_one_vote": true,
+    "one_exact_identity_one_vote": true
+  },
+  "admission_contract": {
+    "strategies": ["stratified", "global_top_k", "hybrid"],
+    "cluster_one_vote": true,
+    "parent_descendant_cap": 2,
+    "family_cap": 24,
+    "semantic_bucket_cap": 8,
+    "no_runtime_threshold_change": true,
+    "natural_underfill_allowed": true
+  },
+  "signal_cluster_contract": {
+    "coordinate_count": 256,
+    "rank_threshold": 0.95,
+    "value_threshold": 0.9,
+    "mask_threshold": 0.9,
+    "activation_threshold": 0.85,
+    "uses_labels": false
+  },
+  "strict_contract": {
+    "horizons_bars": [1, 5, 15, 30],
+    "minimum_observations_per_cross_section": 20,
+    "selection_source": "hybrid_admission",
+    "freeze_pack_before_strict_metrics": true,
+    "candidate_promotion_allowed": false
+  },
+  "benchmark_contract": {
+    "enabled": ["x0_r3", "simple_momentum", "simple_reversal", "volatility", "liquidity", "firstN", "event_state", "external_competitor_reproduction"],
+    "disabled": ["plate_industry_linkage"],
+    "external_performance_imported": false,
+    "comparison_role": "development_diagnostic_only"
+  },
+  "candidate_contract": {
+    "version": "cn_b1s_candidate_submission_v1",
+    "required_fields": ["candidate_id", "lane_id", "expression", "exact_identity", "canonical_identity", "lineage_key", "proposal_stage", "proposal_origin"],
+    "forbidden_expression_tokens": ["validation", "holdout", "forward", "2026", "plate", "industry", "label", "winner"],
+    "persistent_memory_write_allowed": false,
+    "promotion_allowed": false
+  },
+  "adaptation_contract": {
+    "scope": "SINGLE_RUN_EPHEMERAL_ONLY",
+    "persistent_elite_allowed": false,
+    "persistent_value_statistics_allowed": false,
+    "cross_epoch_memory_allowed": false,
+    "matched_nonadaptive_control_required": true,
+    "budget_change_allowed": false,
+    "seed_change_allowed": false,
+    "reward_change_allowed": false,
+    "grammar_change_allowed": false,
+    "field_role_change_allowed": false
+  },
+  "output_contract": {
+    "fixed_candidate_pack_required": true,
+    "automatic_forward_open_allowed": false,
+    "automatic_candidate_promotion_allowed": false,
+    "automatic_memory_update_allowed": false
+  }
+}

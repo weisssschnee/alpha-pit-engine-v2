@@ -48,6 +48,7 @@ ROUTES: dict[str, str] = {
     "nextgen-build-external-sidecars": "scripts.build_nextgen_external_sidecars",
     "nextgen-true1min-plate-materialization-smoke": "our_system_phase2.runtime.nextgen_true1min_plate_materialization_smoke",
     "nextgen-dark-development-canary": "our_system_phase2.runtime.nextgen_dark_development_canary",
+    "cn-b1s-development-canary": "our_system_phase2.runtime.cn_b1s_development_canary",
 }
 
 CURRENT_SEARCH_ROUTE = "phase3dv-budget-pool-self-deepen-pack"
