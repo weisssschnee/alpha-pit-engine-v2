@@ -9,6 +9,7 @@ import pytest
 
 from our_system_phase2.runtime.cn_b1s_development_canary import (
     ADAPTIVE_LANES,
+    _select_seed_set,
     _validate_contract,
     _materialization_input_columns,
     _bottleneck,
@@ -34,10 +35,39 @@ REPO = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v1.json"
 REPAIRED_CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"
 CAPABILITY_CONTRACT_PATH = REPO / "runtime/run_plans/cn_generator_capability_canary_sprint1_v1.json"
+EPOCH_A_CONTRACT_PATH = REPO / "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json"
 
 
 def _contract() -> dict:
     return json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
+
+
+def test_epoch_a_contract_freezes_two_disjoint_seed_sets_and_combined_budget() -> None:
+    contract = json.loads(EPOCH_A_CONTRACT_PATH.read_text(encoding="utf-8"))
+    assert contract["epoch_budget"] == {
+        "seed_count": 2,
+        "proposal_total": 16384,
+        "admission_total": 2048,
+        "strict_eval_total": 512,
+    }
+    assert sum(int(spec["proposal"]) for spec in contract["lane_specs"].values()) == 8192
+    assert sum(int(spec["admission"]) for spec in contract["lane_specs"].values()) == 1024
+    assert sum(int(spec["strict"]) for spec in contract["lane_specs"].values()) == 256
+    assert set(contract["seed_sets"]) == {"seed_a", "seed_b"}
+    assert set(contract["seed_sets"]["seed_a"].values()).isdisjoint(
+        set(contract["seed_sets"]["seed_b"].values())
+    )
+
+
+def test_seed_set_selection_is_frozen_and_does_not_mutate_contract() -> None:
+    contract = json.loads(EPOCH_A_CONTRACT_PATH.read_text(encoding="utf-8"))
+    original = dict(contract["seeds"])
+    selected = _select_seed_set(contract, "seed_b")
+    assert selected["seeds"] == contract["seed_sets"]["seed_b"]
+    assert selected["selected_seed_set"] == "seed_b"
+    assert contract["seeds"] == original
+    with pytest.raises(ValueError, match="requires --seed-set"):
+        _select_seed_set(contract, None)
 
 
 def test_repaired_contract_changes_only_data_access_identity() -> None:

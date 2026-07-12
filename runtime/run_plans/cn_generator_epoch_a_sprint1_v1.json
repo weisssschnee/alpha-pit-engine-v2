@@ -1,0 +1,234 @@
+{
+  "contract_version": "cn_generator_frozen_development_epoch_a_sprint1_v1",
+  "execution_state": "FROZEN_REQUIRES_EXACT_SHA_AND_USER_AUTHORIZATION",
+  "authorization_token": "USER_AUTHORIZED_CN_B1S_DEVELOPMENT_ONLY_CANARY_20260712",
+  "baseline_tag": "cn-generator-epoch-a-sprint1-20260713",
+  "data_boundary": {
+    "allowed_roles": ["development", "train"],
+    "forbidden_roles": ["validation", "holdout", "spent", "sealed", "forward"],
+    "allowed_years": [2024, 2025],
+    "forward_2026_allowed": false,
+    "trade_dates": ["2025-04-01"],
+    "row_group_index": 0,
+    "panel_shard_count": 16
+  },
+  "capability_matrix": {
+    "static_cross_sectional": "ENABLED",
+    "firstn_intraday_path": "ENABLED",
+    "temporal_program": "ENABLED",
+    "event_conditioned": "ENABLED_DATA_LIMITED_CONTROL_ONLY",
+    "state_transition": "ENABLED_DATA_LIMITED_CONTROL_ONLY",
+    "orthogonal_exile": "ENABLED",
+    "typed_random": "ENABLED",
+    "typed_ast": "ENABLED",
+    "cem": "ENABLED_LOW_BUDGET_EPHEMERAL_CONTROL",
+    "rx_ucb": "ENABLED_EPHEMERAL_ADAPTATION",
+    "uct_mcts": "ENABLED_LOW_BUDGET_EPHEMERAL_CONTROL",
+    "evolutionary": "ENABLED_EPHEMERAL_ADAPTATION",
+    "surrogate": "ENABLED_LOW_BUDGET_EPHEMERAL_CONTROL",
+    "llm_proposal_repair": "ENABLED_FROZEN_PRE_REWARD_CODEX_PACK",
+    "benchmark_competitor": "ENABLED",
+    "plate_industry_membership": "DISABLED_MISSING_HISTORICAL_PIT_RELEASE",
+    "plate_industry_index": "DISABLED_MISSING_HISTORICAL_PIT_RELEASE",
+    "plate_zero_placeholder": "FORBIDDEN",
+    "current_snapshot_membership": "FORBIDDEN",
+    "down_limit_event_history": "DISABLED_MISSING_PIT_FIELD"
+  },
+  "seeds": {
+    "global": 2026071301,
+    "static_cross_sectional": 10200,
+    "firstn_intraday_path": 10201,
+    "temporal_program": 10202,
+    "event_conditioned": 10203,
+    "state_transition": 10204,
+    "orthogonal_exile": 10205,
+    "typed_random": 10206,
+    "typed_ast": 10207,
+    "cem": 10208,
+    "rx_ucb": 10209,
+    "uct_mcts": 10210,
+    "evolutionary": 10211,
+    "surrogate": 10212,
+    "llm_proposal_repair": 10213,
+    "benchmark_competitor": 10214,
+    "signal_sketch": 10215
+  },
+  "seed_sets": {
+    "seed_a": {
+      "global": 2026071301,
+      "static_cross_sectional": 10200,
+      "firstn_intraday_path": 10201,
+      "temporal_program": 10202,
+      "event_conditioned": 10203,
+      "state_transition": 10204,
+      "orthogonal_exile": 10205,
+      "typed_random": 10206,
+      "typed_ast": 10207,
+      "cem": 10208,
+      "rx_ucb": 10209,
+      "uct_mcts": 10210,
+      "evolutionary": 10211,
+      "surrogate": 10212,
+      "llm_proposal_repair": 10213,
+      "benchmark_competitor": 10214,
+      "signal_sketch": 10215
+    },
+    "seed_b": {
+      "global": 2026071302,
+      "static_cross_sectional": 11200,
+      "firstn_intraday_path": 11201,
+      "temporal_program": 11202,
+      "event_conditioned": 11203,
+      "state_transition": 11204,
+      "orthogonal_exile": 11205,
+      "typed_random": 11206,
+      "typed_ast": 11207,
+      "cem": 11208,
+      "rx_ucb": 11209,
+      "uct_mcts": 11210,
+      "evolutionary": 11211,
+      "surrogate": 11212,
+      "llm_proposal_repair": 11213,
+      "benchmark_competitor": 11214,
+      "signal_sketch": 11215
+    }
+  },
+  "epoch_budget": {
+    "seed_count": 2,
+    "proposal_total": 16384,
+    "admission_total": 2048,
+    "strict_eval_total": 512
+  },
+  "budgets": {
+    "proposal_total": 8192,
+    "admission_total": 1024,
+    "strict_eval_total": 256,
+    "global_topk_total": 1024,
+    "hybrid_stratified_fraction": 0.5
+  },
+  "lane_specs": {
+    "static_cross_sectional": {"proposal": 736, "admission": 80, "strict": 20, "adaptation": "NONE"},
+    "firstn_intraday_path": {"proposal": 640, "admission": 96, "strict": 32, "adaptation": "NONE"},
+    "temporal_program": {"proposal": 1792, "admission": 224, "strict": 56, "adaptation": "NONE"},
+    "event_conditioned": {"proposal": 64, "admission": 0, "strict": 0, "adaptation": "DATA_LIMITED_CONTROL_ONLY"},
+    "state_transition": {"proposal": 64, "admission": 0, "strict": 0, "adaptation": "DATA_LIMITED_CONTROL_ONLY"},
+    "orthogonal_exile": {"proposal": 1024, "admission": 160, "strict": 40, "adaptation": "NONE"},
+    "typed_random": {"proposal": 384, "admission": 64, "strict": 16, "adaptation": "NONE"},
+    "typed_ast": {"proposal": 256, "admission": 48, "strict": 12, "adaptation": "NONE"},
+    "cem": {"proposal": 256, "control": 128, "adaptive": 128, "admission": 32, "strict": 4, "adaptation": "CEM_ELITE_DISTRIBUTION_CONTROL"},
+    "rx_ucb": {"proposal": 1024, "control": 512, "adaptive": 512, "admission": 112, "strict": 28, "adaptation": "HYPOTHESIS_ARM_INFORMATION_GAIN_UCB"},
+    "uct_mcts": {"proposal": 256, "control": 128, "adaptive": 128, "admission": 32, "strict": 4, "adaptation": "UCT_TREE_SELECTION_CONTROL"},
+    "evolutionary": {"proposal": 1024, "control": 512, "adaptive": 512, "admission": 112, "strict": 28, "adaptation": "TYPED_LINEAGE_MUTATION"},
+    "surrogate": {"proposal": 192, "control": 96, "adaptive": 96, "admission": 16, "strict": 4, "adaptation": "RANDOM_FOREST_CONTROL"},
+    "llm_proposal_repair": {"proposal": 384, "proposal_pack": 192, "repair_pack": 192, "admission": 32, "strict": 8, "adaptation": "NONE"},
+    "benchmark_competitor": {"proposal": 96, "admission": 16, "strict": 4, "adaptation": "NONE"}
+  },
+  "development_objective": {
+    "name": "hard_gate_pareto_limited_scalar_development_v1",
+    "label_horizon_bars": 5,
+    "coordinate_minute_stride": 4,
+    "formula": "hard gates then Pareto rank; bounded scalar is tie-break only",
+    "cost_rate": 0.0025,
+    "pareto": {
+      "require_nonnegative_benchmark_increment": true,
+      "minimum_worst_block_quality": 0.0,
+      "maximum_turnover": 0.75,
+      "lane_floor": 4,
+      "lane_cap": 128,
+      "primitive_cap": 40,
+      "priority": ["economic_quality", "stability", "benchmark_increment", "diversity", "complexity"]
+    },
+    "uses_validation": false,
+    "uses_holdout": false,
+    "uses_forward": false
+  },
+  "survivor_contract": {
+    "typed_gate_decision": "allow",
+    "minimum_finite_ratio": 0.25,
+    "minimum_signal_unique": 8,
+    "minimum_eligible_cross_sections": 40,
+    "minimum_proxy_reward": 0.0,
+    "one_canonical_identity_one_vote": true,
+    "one_exact_identity_one_vote": true
+  },
+  "admission_contract": {
+    "strategies": ["stratified", "global_top_k", "hybrid", "pareto_hybrid"],
+    "cluster_one_vote": true,
+    "parent_descendant_cap": 2,
+    "family_cap": 96,
+    "semantic_bucket_cap": 32,
+    "no_runtime_threshold_change": true,
+    "natural_underfill_allowed": true
+  },
+  "signal_cluster_contract": {
+    "coordinate_count": 256,
+    "rank_threshold": 0.95,
+    "value_threshold": 0.9,
+    "mask_threshold": 0.9,
+    "activation_threshold": 0.85,
+    "uses_labels": false
+  },
+  "strict_contract": {
+    "horizons_bars": [1, 5, 15, 30],
+    "minimum_observations_per_cross_section": 20,
+    "selection_source": "pareto_hybrid",
+    "freeze_pack_before_strict_metrics": true,
+    "candidate_promotion_allowed": false
+  },
+  "benchmark_contract": {
+    "enabled": ["x0_r3", "simple_momentum", "simple_reversal", "volatility", "liquidity", "firstN", "event_state", "external_competitor_reproduction"],
+    "disabled": ["plate_industry_linkage"],
+    "external_performance_imported": false,
+    "comparison_role": "development_diagnostic_only"
+  },
+  "candidate_contract": {
+    "version": "cn_generator_research_sprint1_candidate_v1",
+    "required_fields": ["candidate_id", "lane_id", "expression", "exact_identity", "canonical_identity", "lineage_key", "proposal_stage", "proposal_origin"],
+    "forbidden_expression_tokens": ["validation", "holdout", "forward", "2026", "plate", "industry", "label", "winner"],
+    "persistent_memory_write_allowed": false,
+    "promotion_allowed": false
+  },
+  "adaptation_contract": {
+    "scope": "SINGLE_RUN_EPHEMERAL_ONLY",
+    "persistent_elite_allowed": false,
+    "persistent_value_statistics_allowed": false,
+    "cross_epoch_memory_allowed": false,
+    "matched_nonadaptive_control_required": true,
+    "budget_change_allowed": false,
+    "seed_change_allowed": false,
+    "reward_change_allowed": false,
+    "grammar_change_allowed": false,
+    "field_role_change_allowed": false
+  },
+  "data_access_contract": {
+    "development_only_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "release_manifest_sha256": "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255",
+    "loader_code_hash": "9d70c551b8ea0da5a89f8b977298755343f7fe976568a800a5a344f94a63ac62",
+    "materializer_hash": "202633fbc26c8d02a60f036f7b43aca92e0dd5f6f768a401e8d56f825b0ee1cc",
+    "fresh_cache_required": true,
+    "cache_provenance": {
+      "release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+      "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+      "loader_code_hash": "9d70c551b8ea0da5a89f8b977298755343f7fe976568a800a5a344f94a63ac62",
+      "field_registry_hash": "960f9d59e6f45274bd370c68a68cbad938b9e00265c3262a71cd31ae717b6b94",
+      "data_role": "development",
+      "materializer_hash": "202633fbc26c8d02a60f036f7b43aca92e0dd5f6f768a401e8d56f825b0ee1cc",
+      "cache_namespace": "655be0b04e8ebd0b5260cdde1e6365a08e0270a5feb5e7829b863ef60e80e654"
+    },
+    "read_ledger_contract": {
+      "ledger_version": "cn_development_only_read_ledger_v1",
+      "requested_data_role": "development",
+      "forbidden_file_open_count": 0,
+      "forbidden_row_group_read_count": 0,
+      "validation_rows_read": 0,
+      "holdout_rows_read": 0,
+      "forward_rows_read": 0
+    }
+  },
+  "output_contract": {
+    "fixed_candidate_pack_required": true,
+    "automatic_forward_open_allowed": false,
+    "automatic_candidate_promotion_allowed": false,
+    "automatic_memory_update_allowed": false
+  }
+}

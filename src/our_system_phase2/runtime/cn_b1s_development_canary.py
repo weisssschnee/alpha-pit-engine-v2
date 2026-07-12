@@ -1685,6 +1685,24 @@ def _validate_contract(contract: Mapping[str, Any]) -> None:
         raise ValueError("B1S cannot enable cross-epoch memory")
 
 
+def _select_seed_set(contract: Mapping[str, Any], seed_set: str | None) -> dict[str, Any]:
+    """Select one pre-frozen seed set without mutating the contract payload."""
+    selected = dict(contract)
+    seed_sets = contract.get("seed_sets")
+    if seed_sets is None:
+        if seed_set:
+            raise ValueError("seed-set was supplied but the frozen contract has no seed_sets")
+        selected["selected_seed_set"] = "default"
+        return selected
+    if not seed_set:
+        raise ValueError("multi-seed frozen contract requires --seed-set")
+    if seed_set not in seed_sets:
+        raise ValueError(f"unknown frozen seed set: {seed_set}")
+    selected["seeds"] = dict(seed_sets[seed_set])
+    selected["selected_seed_set"] = str(seed_set)
+    return selected
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[3])
@@ -1699,6 +1717,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--authorization", required=True)
     parser.add_argument("--frozen-sha", required=True)
+    parser.add_argument("--seed-set", default=None)
     args = parser.parse_args(argv)
 
     repo = args.repo.resolve()
@@ -1710,7 +1729,9 @@ def main(argv: list[str] | None = None) -> int:
     if _git(repo, "status", "--porcelain=v1"):
         raise RuntimeError("CN B1S CANARY requires a clean frozen worktree")
 
-    contract = json.loads(args.contract.read_text(encoding="utf-8"))
+    contract = _select_seed_set(
+        json.loads(args.contract.read_text(encoding="utf-8")), args.seed_set
+    )
     benchmark = json.loads(args.benchmark_registry.read_text(encoding="utf-8"))
     augmentation = json.loads(args.augmentation_summary.read_text(encoding="utf-8"))
     _validate_contract(contract)
@@ -1823,8 +1844,10 @@ def main(argv: list[str] | None = None) -> int:
             f'--augmentation-summary "{args.augmentation_summary}" '
             f'--output-root "{args.output_root}" --authorization {args.authorization} '
             f"--frozen-sha {args.frozen_sha}"
+            + (f" --seed-set {args.seed_set}" if args.seed_set else "")
         ],
         "parameters": {
+            "seed_set": contract["selected_seed_set"],
             "trade_dates": [str(date.date()) for date in dates],
             "split_roles": roles,
             "row_group_index": int(contract["data_boundary"]["row_group_index"]),
@@ -1871,6 +1894,7 @@ def main(argv: list[str] | None = None) -> int:
             "capability_matrix_hash": _json_hash(contract["capability_matrix"]),
             "lane_specs_hash": _json_hash(contract["lane_specs"]),
             "seeds_hash": _json_hash(contract["seeds"]),
+            "selected_seed_set": contract["selected_seed_set"],
             "budgets_hash": _json_hash(contract["budgets"]),
             "development_objective_hash": _json_hash(contract["development_objective"]),
             "survivor_contract_hash": _json_hash(contract["survivor_contract"]),
@@ -2067,6 +2091,7 @@ def main(argv: list[str] | None = None) -> int:
             "experiment_id": EXPERIMENT_ID,
             "attempt_id": attempt_id,
             "authorized_sha": head,
+            "seed_set": contract["selected_seed_set"],
             "proposal_count": len(proposals),
             "legal_count": sum(bool(row.get("legal")) for row in proposals),
             "canonical_count": len({str(row["canonical_identity"]) for row in proposals if bool(row.get("legal"))}),
