@@ -10,6 +10,7 @@ import pytest
 from our_system_phase2.runtime.cn_b1s_development_canary import (
     ADAPTIVE_LANES,
     _validate_contract,
+    _materialization_input_columns,
     build_admissions,
     fast_group_ic,
     fast_group_spread,
@@ -24,6 +25,7 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
     _spread,
     _turnover,
 )
+from our_system_phase2.services.feature_state_fabric import FieldRegistry
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -62,6 +64,22 @@ def test_repaired_contract_changes_only_data_access_identity() -> None:
         "validation_rows_read": 0,
         "holdout_rows_read": 0,
         "forward_rows_read": 0,
+    }
+
+
+def test_canary_reads_registry_declared_pit_clock_dependencies() -> None:
+    registry = FieldRegistry.read(REPO / "runtime/field_registry/nextgen_dark_field_registry_v2.json")
+    columns = _materialization_input_columns(
+        registry,
+        ["ctx_billboard_deal_net_ratio", "evt_uplimit_active", "close"],
+    )
+
+    assert set(columns) == {
+        "ctx_billboard_deal_net_ratio",
+        "evt_uplimit_active",
+        "close",
+        "ctx_source_session_upper_bound",
+        "signal_time",
     }
 
 

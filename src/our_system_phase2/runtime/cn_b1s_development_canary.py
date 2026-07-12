@@ -115,6 +115,20 @@ def _json_hash(value: Any) -> str:
     ).hexdigest()
 
 
+def _materialization_input_columns(registry: FieldRegistry, fields: Iterable[str]) -> list[str]:
+    """Include registry-declared PIT clock evidence without exposing it to candidate generation."""
+
+    requested = set(fields)
+    for field in tuple(requested):
+        spec = registry.get(field)
+        requested.update(spec.source_fields)
+        if spec.observable_time_field:
+            requested.add(spec.observable_time_field)
+        if spec.source_session_field:
+            requested.add(spec.source_session_field)
+    return sorted(requested)
+
+
 def _candidate(
     lane_id: str,
     index: int,
@@ -1422,18 +1436,19 @@ def main(argv: list[str] | None = None) -> int:
         _persist_attempt(attempt_path, latest_path, record)
 
         fields = sorted(set(RAW_FIELDS + CONTEXT_FIELDS + FIRSTN_FIELDS + EVENT_FIELDS + STATE_FIELDS + ("close",)))
+        registry = FieldRegistry.read(args.field_registry)
+        read_columns = _materialization_input_columns(registry, fields)
         raw_frame, panel_inputs = read_development_panel(
             release,
             trade_date=dates[0],
             row_group_index=int(contract["data_boundary"]["row_group_index"]),
-            columns=fields,
+            columns=read_columns,
             read_ledger_path=paths["read_ledger"],
             loader_sha=loader_sha,
         )
         _record_output(record, paths["read_ledger"], "development_only_read_ledger", "pre_generation_final")
         if raw_frame["trade_time"].ge(pd.Timestamp("2026-01-01")).any():
             raise ValueError("B1S accessed 2026 rows")
-        registry = FieldRegistry.read(args.field_registry)
         materialized, fabric_manifest = FeatureStateFabric(
             registry, cache_namespace=expected_cache_provenance["cache_namespace"]
         ).materialize(raw_frame, fields)
