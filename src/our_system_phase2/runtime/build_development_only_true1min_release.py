@@ -32,13 +32,38 @@ from our_system_phase2.services.development_only_data_access import (
 )
 
 
+def _zero_scalar(data_type: pa.DataType) -> pa.Scalar:
+    if pa.types.is_timestamp(data_type):
+        return pa.scalar(pd.Timestamp("1970-01-01"), type=data_type)
+    if pa.types.is_string(data_type) or pa.types.is_large_string(data_type):
+        return pa.scalar("", type=data_type)
+    if pa.types.is_boolean(data_type):
+        return pa.scalar(False, type=data_type)
+    return pa.scalar(0, type=data_type)
+
+
 def _table_hash(table: pa.Table) -> str:
+    """Hash logical Arrow values, normalizing Parquet-unstable null/NaN payload bits."""
+
     digest = hashlib.sha256()
     digest.update(schema_hash(table.schema).encode("ascii"))
     digest.update(str(len(table)).encode("ascii"))
     for field in table.schema:
         values = table[field.name].combine_chunks()
-        one_column = pa.Table.from_arrays([values], schema=pa.schema([field]))
+        valid = pc.is_valid(values)
+        zero = _zero_scalar(values.type)
+        filled = pc.fill_null(values, zero)
+        arrays: list[pa.Array] = [valid]
+        fields = [pa.field("valid", pa.bool_())]
+        if pa.types.is_floating(values.type):
+            nan = pc.is_nan(filled)
+            normalized = pc.if_else(nan, zero, filled)
+            arrays.extend([nan, normalized])
+            fields.extend([pa.field("nan", pa.bool_()), field])
+        else:
+            arrays.append(filled)
+            fields.append(field)
+        one_column = pa.Table.from_arrays(arrays, schema=pa.schema(fields))
         sink = pa.BufferOutputStream()
         with pa.ipc.new_stream(sink, one_column.schema) as writer:
             writer.write_table(one_column, max_chunksize=max(1, len(one_column)))
@@ -358,9 +383,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--expected-shards", type=int, default=16)
     args = parser.parse_args(argv)
     started = datetime.now(timezone.utc)
-    record_path = args.output_root.resolve() / "release_build_run_manifest.json"
+    attempt_id = started.strftime("%Y%m%dT%H%M%S%fZ")
+    record_path = (
+        args.output_root.resolve()
+        / "run_records"
+        / "attempts"
+        / f"development_only_release_build_{attempt_id}.json"
+    )
+    latest_path = args.output_root.resolve() / "run_records" / "development_only_release_build.latest.json"
     record: dict[str, Any] = {
         "experiment_id": args.release_id,
+        "attempt_id": attempt_id,
         "objective": "build and verify a physically isolated development-only true1min release",
         "status": "RUNNING",
         "mode": "heavy_release_build",
@@ -390,6 +423,10 @@ def main(argv: list[str] | None = None) -> int:
     }
     args.output_root.mkdir(parents=True, exist_ok=True)
     atomic_write_json(record_path, record)
+    atomic_write_json(
+        latest_path,
+        {"experiment_id": args.release_id, "latest_attempt": str(record_path), "status": record["status"]},
+    )
     timer = time.perf_counter()
     try:
         manifest = build_release(
@@ -423,6 +460,10 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         atomic_write_json(record_path, record)
+        atomic_write_json(
+            latest_path,
+            {"experiment_id": args.release_id, "latest_attempt": str(record_path), "status": record["status"]},
+        )
         print(json.dumps({"release_hash": manifest["release_hash"], "totals": manifest["totals"]}, indent=2))
         return 0
     except Exception as exc:
@@ -441,6 +482,10 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         atomic_write_json(record_path, record)
+        atomic_write_json(
+            latest_path,
+            {"experiment_id": args.release_id, "latest_attempt": str(record_path), "status": record["status"]},
+        )
         raise
 
 

@@ -8,7 +8,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-from our_system_phase2.runtime.build_development_only_true1min_release import build_release
+from our_system_phase2.runtime.build_development_only_true1min_release import _table_hash, build_release
 from our_system_phase2.services.development_only_data_access import (
     PANEL_RELATIVE_PATH,
     RELEASE_MANIFEST_VERSION,
@@ -114,7 +114,6 @@ def test_development_only_release_passes_and_matches_source_train_subset(built_r
     validated = validate_development_release(
         output, manifest_path, split, expected_release_hash=manifest["release_hash"]
     )
-
     assert len(validated.files) == 2
     assert manifest["totals"]["rows"] == 24
     assert manifest["totals"]["excluded_non_development_rows"] == 24
@@ -125,6 +124,19 @@ def test_development_only_release_passes_and_matches_source_train_subset(built_r
         for group in file_row["row_groups"]
     )
 
+
+def test_logical_table_hash_is_stable_across_null_and_nan_parquet_roundtrip(tmp_path: Path) -> None:
+    table = pa.table(
+        {
+            "float_values": pa.array([1.0, float("nan"), None, -0.0], type=pa.float32()),
+            "double_values": pa.array([None, float("nan"), 2.0, 0.0], type=pa.float64()),
+            "text": pa.array(["a", None, "", "b"], type=pa.large_string()),
+        }
+    )
+    path = tmp_path / "roundtrip.parquet"
+    pq.write_table(table, path, compression="zstd")
+    observed = pq.read_table(path)
+    assert _table_hash(table) == _table_hash(observed)
 
 def test_fail_closed_read_writes_zero_forbidden_access_ledger(built_release, tmp_path: Path) -> None:
     output, manifest_path, split, manifest = built_release
