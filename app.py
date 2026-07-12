@@ -49,6 +49,7 @@ ROUTES: dict[str, str] = {
     "nextgen-true1min-plate-materialization-smoke": "our_system_phase2.runtime.nextgen_true1min_plate_materialization_smoke",
     "nextgen-dark-development-canary": "our_system_phase2.runtime.nextgen_dark_development_canary",
     "cn-b1s-development-canary": "our_system_phase2.runtime.cn_b1s_development_canary",
+    "cn-generator-funnel-diagnosis": "our_system_phase2.runtime.cn_generator_funnel_diagnosis",
     "build-development-only-true1min-release": "our_system_phase2.runtime.build_development_only_true1min_release",
 }
 

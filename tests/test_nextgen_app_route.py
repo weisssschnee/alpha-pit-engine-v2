@@ -38,3 +38,10 @@ def test_development_only_release_builder_is_registered_as_an_app_route() -> Non
         app.ROUTES["build-development-only-true1min-release"]
         == "our_system_phase2.runtime.build_development_only_true1min_release"
     )
+
+
+def test_cn_generator_funnel_diagnosis_is_registered_as_an_app_route() -> None:
+    assert (
+        app.ROUTES["cn-generator-funnel-diagnosis"]
+        == "our_system_phase2.runtime.cn_generator_funnel_diagnosis"
+    )
