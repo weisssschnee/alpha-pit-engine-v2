@@ -134,7 +134,7 @@ def _build_shard(
     temporary.unlink(missing_ok=True)
     parquet = pq.ParquetFile(source)
     allowed_array = pa.array(
-        [date.to_datetime64() for date in sorted(allowed_dates)], type=pa.timestamp("ns")
+        [date.to_pydatetime() for date in sorted(allowed_dates)], type=pa.timestamp("ns")
     )
     writer: pq.ParquetWriter | None = None
     row_groups: list[dict[str, Any]] = []
