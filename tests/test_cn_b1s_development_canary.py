@@ -11,6 +11,7 @@ from our_system_phase2.runtime.cn_b1s_development_canary import (
     ADAPTIVE_LANES,
     _validate_contract,
     _materialization_input_columns,
+    _bottleneck,
     build_admissions,
     apply_typed_gate,
     fast_group_ic,
@@ -101,12 +102,13 @@ def test_b1s_contract_freezes_all_requested_lanes_and_budgets() -> None:
 def test_generator_capability_contract_is_inside_authorized_budget_and_uses_pareto() -> None:
     contract = json.loads(CAPABILITY_CONTRACT_PATH.read_text(encoding="utf-8"))
     _validate_contract(contract)
-    assert sum(row["proposal"] for row in contract["lane_specs"].values()) == 4400
+    assert sum(row["proposal"] for row in contract["lane_specs"].values()) == 4144
     assert 4096 <= contract["budgets"]["proposal_total"] <= 8192
     assert 128 <= contract["budgets"]["strict_eval_total"] <= 256
     assert contract["strict_contract"]["selection_source"] == "pareto_hybrid"
     assert contract["development_objective"]["formula"].startswith("hard gates then Pareto")
     assert contract["capability_matrix"]["down_limit_event_history"].startswith("DISABLED")
+    assert contract["capability_matrix"]["event_conditioned"].endswith("CONTROL_ONLY")
 
 
 def test_initial_and_adaptive_generation_obey_frozen_1344_budget() -> None:
@@ -137,11 +139,43 @@ def test_capability_generation_fills_budget_with_high_exact_identity_rate() -> N
     combined = initial + adaptive
     apply_typed_gate(combined)
 
-    assert len(combined) == 4400
-    assert len({row["candidate_id"] for row in combined}) == 4400
+    assert len(combined) == 4144
+    assert len({row["candidate_id"] for row in combined}) == 4144
     assert len({row["exact_identity"] for row in combined}) / len(combined) >= 0.80
     assert sum(bool(row["legal"]) for row in combined) / len(combined) >= 0.90
     assert len({row["exact_identity"] for row in combined if row["lane_id"] == "llm_proposal_repair"}) >= 220
+    rx_control_arms = {
+        (row["hypothesis_arm"], row["primitive_family"])
+        for row in initial if row["lane_id"] == "rx_ucb"
+    }
+    rx_adaptive = [row for row in adaptive if row["lane_id"] == "rx_ucb"]
+    rx_adaptive_arms = {(row["hypothesis_arm"], row["primitive_family"]) for row in rx_adaptive}
+    assert len(rx_adaptive_arms) < len(rx_control_arms)
+    assert all(row["focused_arm_count"] == len(rx_adaptive_arms) for row in rx_adaptive)
+
+
+def test_bottleneck_reports_cost_and_four_time_blocks_when_strict_metrics_supply_them() -> None:
+    funnel = [{"proposal_count": 10, "legal_count": 9, "survivor_count": 5}]
+    admissions = {
+        "hybrid": [{"signal_cluster_id": 1}],
+        "global_top_k": [{"signal_cluster_id": 1}],
+    }
+    strict = pd.DataFrame(
+        [
+            {
+                "horizon_bars": 5,
+                "ic_mean": 0.1,
+                "proxy_reward": 0.1,
+                "cost_adjusted_abs_ic": 0.09,
+                "mean_one_way_turnover": 0.2,
+                "proxy_time_block_count": 4,
+            }
+            for _ in range(5)
+        ]
+    )
+    result = _bottleneck(funnel, admissions, strict)
+    assert result["cost_model_available"] is True
+    assert result["stability_window_count"] == 4
 
 
 def test_vectorized_metrics_match_legacy_reference() -> None:

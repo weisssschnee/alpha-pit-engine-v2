@@ -160,7 +160,9 @@ def select_pareto(
     *,
     cap: int,
     lane_floor: int,
+    lane_cap: int,
     family_cap: int,
+    primitive_cap: int,
     parent_cap: int,
 ) -> list[dict[str, Any]]:
     prepared = [dict(row) for row in rows if bool(row.get("objective_gate_allowed"))]
@@ -176,21 +178,29 @@ def select_pareto(
     identities: set[str] = set()
     clusters: set[int] = set()
     families: Counter[str] = Counter()
+    lanes: Counter[str] = Counter()
+    primitives: Counter[str] = Counter()
     parents: Counter[str] = Counter()
 
     def take(row: dict[str, Any]) -> bool:
         identity = str(row["exact_identity"])
         cluster = int(row["signal_cluster_id"])
         family = str(row["family_id"])
+        lane = str(row["lane_id"])
+        primitive = str(row.get("primitive_family") or row.get("motif") or "unknown")
         parent = str(row.get("parent_id") or "")
         if identity in identities or cluster in clusters:
             return False
-        if families[family] >= family_cap or (parent and parents[parent] >= parent_cap):
+        if lanes[lane] >= lane_cap or families[family] >= family_cap:
+            return False
+        if primitives[primitive] >= primitive_cap or (parent and parents[parent] >= parent_cap):
             return False
         selected.append(row)
         identities.add(identity)
         clusters.add(cluster)
         families[family] += 1
+        lanes[lane] += 1
+        primitives[primitive] += 1
         if parent:
             parents[parent] += 1
         return True

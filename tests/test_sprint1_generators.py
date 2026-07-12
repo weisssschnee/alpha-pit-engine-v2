@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from our_system_phase2.services.sprint1_generators import (
     MECHANISM_LANES,
+    RAW_FIELDS,
     generate_mechanism_pool,
     generate_program,
     mutate_program,
@@ -41,3 +42,9 @@ def test_mechanism_pool_and_mutation_preserve_hypothesis_arm_and_lineage_operato
     assert child.mutation_operator == "condition_insert"
     assert child.expression != parent.expression
 
+
+def test_raw_generator_fields_match_materialized_true1min_contract() -> None:
+    assert set(RAW_FIELDS) == {
+        "close", "vwap", "ret_1m", "intraday_ret_from_open",
+        "amount_yuan", "volume", "high", "low",
+    }

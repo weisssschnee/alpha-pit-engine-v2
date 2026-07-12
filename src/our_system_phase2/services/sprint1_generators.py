@@ -10,8 +10,8 @@ GENERATOR_VERSION = "cn_generator_research_sprint1_v1"
 EPS = "0.000001"
 WINDOWS = (2, 3, 5, 8, 15, 30)
 RAW_FIELDS = (
-    "open", "high", "low", "close", "vwap", "volume", "amount_yuan",
-    "ret_1m", "price_spread", "trade_count", "buy_volume", "sell_volume",
+    "close", "vwap", "ret_1m", "intraday_ret_from_open",
+    "amount_yuan", "volume", "high", "low",
 )
 CONTEXT_FIELDS = (
     "ctx_hfq_turnover_ratio", "ctx_hfq_volume_ratio", "ctx_hfq_market_cap_yuan",
@@ -29,10 +29,11 @@ EVENT_INTENSITY_FIELDS = (
     "evt_uplimit_auction_money", "evt_uplimit_auction_turnover",
     "evt_uplimit_fd_close", "evt_uplimit_fd_max", "evt_uplimit_up_limit_keep_times",
 )
-STATE_FIELDS = (
-    "evt_uplimit_active", "evt_uplimit_type_code", "ctx_hfq_prev_is_limit_up",
-    "ctx_sent_zb_num", "ctx_sent_lb_2_num", "ctx_zls_strong",
+INTRADAY_STATE_FIELDS = ("evt_uplimit_active", "evt_uplimit_type_code")
+CONTEXT_STATE_FIELDS = (
+    "ctx_hfq_prev_is_limit_up", "ctx_sent_zb_num", "ctx_sent_lb_2_num", "ctx_zls_strong",
 )
+STATE_FIELDS = INTRADAY_STATE_FIELDS + CONTEXT_STATE_FIELDS
 MECHANISM_LANES = (
     "static_cross_sectional", "firstn_intraday_path", "temporal_program",
     "event_conditioned", "state_transition", "orthogonal_exile",
@@ -112,7 +113,7 @@ def _temporal(index: int) -> ProgramSpec:
     field = RAW_FIELDS[occurrence % len(RAW_FIELDS)]
     other = RAW_FIELDS[(occurrence * 5 + 3) % len(RAW_FIELDS)]
     window = WINDOWS[(occurrence // len(RAW_FIELDS)) % len(WINDOWS)]
-    state = STATE_FIELDS[(occurrence * 5 + 1) % len(STATE_FIELDS)]
+    state = INTRADAY_STATE_FIELDS[(occurrence * 5 + 1) % len(INTRADAY_STATE_FIELDS)]
     if primitive in {"Delta", "Slope", "Acceleration", "PathShape"}:
         expression = f"CSRank({primitive}(${field},{window}))"
     elif primitive == "Persistence":
@@ -163,12 +164,21 @@ def _event(index: int) -> ProgramSpec:
 
 
 def _state(index: int) -> ProgramSpec:
-    primitive = _pick(("enter", "leave", "duration", "switch", "conditioned_transition", "multi_state"), index)
-    state = _pick(STATE_FIELDS, index, 6)
-    other_state = _pick(STATE_FIELDS, index, 6 * len(STATE_FIELDS))
-    raw = _pick(RAW_FIELDS, index, 6 * len(STATE_FIELDS) * len(STATE_FIELDS))
-    context = _pick(CONTEXT_FIELDS, index, 11)
-    window = _pick(WINDOWS, index, 23)
+    primitives = ("enter", "leave", "duration", "switch", "conditioned_transition", "multi_state")
+    primitive = primitives[index % len(primitives)]
+    occurrence = index // len(primitives)
+    # Decode each primitive's occurrence as a mixed-radix coordinate.  Every
+    # state expression below consumes the raw/window coordinate as well as its
+    # state coordinate; otherwise switch/conditioned templates collapse to a
+    # handful of identities even though their proposal indices are distinct.
+    state = INTRADAY_STATE_FIELDS[occurrence % len(INTRADAY_STATE_FIELDS)]
+    raw = RAW_FIELDS[(occurrence // len(INTRADAY_STATE_FIELDS)) % len(RAW_FIELDS)]
+    window = WINDOWS[
+        (occurrence // (len(INTRADAY_STATE_FIELDS) * len(RAW_FIELDS))) % len(WINDOWS)
+    ]
+    other_state = INTRADAY_STATE_FIELDS[(occurrence // 2 + 1) % len(INTRADAY_STATE_FIELDS)]
+    context_state = CONTEXT_STATE_FIELDS[(occurrence // 4) % len(CONTEXT_STATE_FIELDS)]
+    context = CONTEXT_FIELDS[(occurrence // 8) % len(CONTEXT_FIELDS)]
     if primitive == "enter":
         expression = f"CSRank(Mul(Transition(${state},0,1),Sign(Delta(${raw},{window}))))"
     elif primitive == "leave":
@@ -176,23 +186,37 @@ def _state(index: int) -> ProgramSpec:
     elif primitive == "duration":
         expression = f"CSRank(Mul(StateAge(${state}),Sign(Delta(${raw},{window}))))"
     elif primitive == "switch":
-        expression = f"CSRank(Sub(Transition(${state},0,1),Transition(${state},1,0)))"
+        expression = (
+            f"CSRank(Mul(Sub(Transition(${state},0,1),Transition(${state},1,0)),"
+            f"Sign(Delta(${raw},{window}))))"
+        )
     elif primitive == "conditioned_transition":
-        expression = f"CSRank(Mul(Transition(${state},0,1),Sign(${context})))"
+        expression = (
+            f"CSRank(Mul(Transition(${state},0,1),"
+            f"Mul(Sign(${context_state}),Sign(Delta(${raw},{window})))))"
+        )
     else:
-        expression = f"CSRank(Mul(StateAge(${state}),Sign(Transition(${other_state},0,1))))"
+        expression = (
+            f"CSRank(Mul(StateAge(${state}),Mul(Sign(${context_state}),"
+            f"Mul(Sign(${other_state}),Sign(Delta(${raw},{window}))))))"
+        )
     return ProgramSpec(expression, f"state_{primitive}", "state_transition", primitive,
                        2 + expression.count("("), index,
-                       {"state": state, "other_state": other_state, "raw": raw,
+                       {"state": state, "other_state": other_state, "context_state": context_state, "raw": raw,
                         "context": context, "window": window})
 
 
 def _orthogonal(index: int) -> ProgramSpec:
-    primitive = _pick(("level_residual", "change_residual", "path_residual", "exile_divergence"), index)
-    raw = _pick(RAW_FIELDS, index, 4)
-    other = _pick(RAW_FIELDS, index, 4 * len(RAW_FIELDS))
-    context = _pick(CONTEXT_FIELDS, index, 4 * len(RAW_FIELDS) * len(RAW_FIELDS))
-    window = _pick(WINDOWS, index, 17)
+    primitives = ("level_residual", "change_residual", "path_residual", "exile_divergence")
+    primitive = primitives[index % len(primitives)]
+    occurrence = index // len(primitives)
+    # Mixed-radix coordinates keep each residual family broad on its own.
+    # The previous unrelated strides aliased after canonicalization and left
+    # 105 of 256 proposals as duplicate expressions.
+    raw = RAW_FIELDS[occurrence % len(RAW_FIELDS)]
+    other = RAW_FIELDS[(occurrence // len(RAW_FIELDS)) % len(RAW_FIELDS)]
+    context = CONTEXT_FIELDS[(occurrence // len(RAW_FIELDS)) % len(CONTEXT_FIELDS)]
+    window = WINDOWS[(occurrence // (len(RAW_FIELDS) * 2)) % len(WINDOWS)]
     if primitive == "level_residual":
         expression = f"CSRank(SafeCSResidual(${raw},${context},20,5,0.6))"
     elif primitive == "change_residual":

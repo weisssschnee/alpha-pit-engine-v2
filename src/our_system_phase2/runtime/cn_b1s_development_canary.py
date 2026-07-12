@@ -474,13 +474,18 @@ def _rx_ucb_programs(
     quota: int,
     seed: int,
     start_index: int,
+    benchmark_median: float,
 ) -> list[dict[str, Any]]:
     by_arm: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     for row in controls:
         key = (str(row["hypothesis_arm"]), str(row["primitive_family"]))
         by_arm[key].append(row)
     total = max(1, len(controls))
-    arm_scores: dict[tuple[str, str], tuple[float, float]] = {}
+    hypothesis_means = {
+        arm: float(np.mean([float(row.get("proxy_reward") or 0.0) for row in controls if row["hypothesis_arm"] == arm]))
+        for arm in {str(row["hypothesis_arm"]) for row in controls}
+    }
+    arm_scores: dict[tuple[str, str], tuple[float, float, float]] = {}
     for key, rows in by_arm.items():
         rewards = [float(row.get("proxy_reward") or 0.0) for row in rows]
         clusters = {
@@ -488,13 +493,19 @@ def _rx_ucb_programs(
             for row in rows if int(row.get("signal_cluster_id") or 0) > 0
         }
         information_gain = len(clusters) / max(1, len(rows))
-        score = (
-            float(np.mean(rewards))
-            + math.sqrt(2.0 * math.log(total + 1) / len(rows))
-            + 0.35 * information_gain
-        )
-        arm_scores[key] = (score, information_gain)
-    ranked_arms = sorted(arm_scores, key=lambda key: (-arm_scores[key][0], key))
+        posterior_reward = (
+            float(np.sum(rewards)) + 4.0 * hypothesis_means[key[0]]
+        ) / (len(rows) + 4.0)
+        increment = posterior_reward - float(benchmark_median)
+        exploration = math.sqrt(math.log(total + 1) / len(rows))
+        score = increment + 0.10 * information_gain + 0.02 * exploration
+        arm_scores[key] = (score, information_gain, increment)
+    positive_arms = [key for key, values in arm_scores.items() if values[2] >= 0.0]
+    ranked_arms = sorted(
+        positive_arms or list(arm_scores), key=lambda key: (-arm_scores[key][0], key)
+    )
+    focus_count = min(len(ranked_arms), max(6, int(math.ceil(math.sqrt(len(ranked_arms))))))
+    ranked_arms = ranked_arms[:focus_count]
     best_parent = {
         key: max(by_arm[key], key=lambda row: (float(row.get("proxy_reward") or 0.0), str(row["candidate_id"])))
         for key in ranked_arms
@@ -525,6 +536,8 @@ def _rx_ucb_programs(
                 "matched_control_id": str(parent["candidate_id"]),
                 "selection_statistic": arm_scores[key][0],
                 "information_gain": arm_scores[key][1],
+                "control_increment_vs_benchmark": arm_scores[key][2],
+                "focused_arm_count": focus_count,
                 "complexity": program.complexity + 3,
             },
         )
@@ -588,6 +601,12 @@ def generate_adaptive_proposals(
     specs = contract["lane_specs"]
     seeds = contract["seeds"]
     output: list[dict[str, Any]] = []
+    benchmark_rewards = [
+        float(row.get("proxy_reward") or 0.0)
+        for row in initial_rows
+        if row["lane_id"] == "benchmark_competitor" and bool(row.get("materialized", True))
+    ]
+    benchmark_median = float(np.median(benchmark_rewards)) if benchmark_rewards else 0.0
     for lane in ADAPTIVE_LANES:
         seed = int(seeds[lane])
         adaptive_quota = int(specs[lane]["adaptive"])
@@ -597,6 +616,7 @@ def generate_adaptive_proposals(
                 _rx_ucb_programs(
                     controls, quota=adaptive_quota, seed=seed,
                     start_index=int(specs[lane]["control"]),
+                    benchmark_median=benchmark_median,
                 )
             )
             continue
@@ -1271,7 +1291,9 @@ def build_admissions(rows: list[dict[str, Any]], contract: Mapping[str, Any]) ->
         prepared,
         cap=total,
         lane_floor=int(pareto_contract.get("lane_floor", 2)),
+        lane_cap=int(pareto_contract.get("lane_cap", total)),
         family_cap=int(admission["family_cap"]),
+        primitive_cap=int(pareto_contract.get("primitive_cap", total)),
         parent_cap=int(admission["parent_descendant_cap"]),
     )
     return {
@@ -1586,8 +1608,14 @@ def _bottleneck(
         "survivor_rate_of_legal": survivor_rate,
         "signal_cluster_to_survivor_ratio": cluster_retention,
         "proxy_to_strict_abs_ic_correlation": reward_corr,
-        "cost_model_available": False,
-        "stability_window_count": 1,
+        "cost_model_available": bool(
+            {"cost_adjusted_abs_ic", "mean_one_way_turnover"}.issubset(strict.columns)
+        ),
+        "stability_window_count": (
+            int(pd.to_numeric(strict["proxy_time_block_count"], errors="coerce").max())
+            if "proxy_time_block_count" in strict.columns and len(strict)
+            else 0
+        ),
     }
 
 

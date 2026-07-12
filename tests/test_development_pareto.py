@@ -47,7 +47,10 @@ def test_pareto_selection_uses_one_identity_one_cluster_and_lane_floors() -> Non
         _row("b1", "temporal_program", 3, 0.14, 0.12),
     ]
     prepared = prepare_objectives(rows, benchmark_median=0.08)
-    selected = select_pareto(prepared, cap=3, lane_floor=1, family_cap=3, parent_cap=2)
+    selected = select_pareto(
+        prepared, cap=3, lane_floor=1, lane_cap=2,
+        family_cap=3, primitive_cap=3, parent_cap=2,
+    )
     assert {row["lane_id"] for row in selected} == {"static_cross_sectional", "temporal_program"}
     assert len({row["signal_cluster_id"] for row in selected}) == len(selected)
     assert len({row["exact_identity"] for row in selected}) == len(selected)
