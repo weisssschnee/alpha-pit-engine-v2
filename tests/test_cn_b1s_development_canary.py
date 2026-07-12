@@ -28,10 +28,41 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
 
 REPO = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v1.json"
+REPAIRED_CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"
 
 
 def _contract() -> dict:
     return json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
+
+
+def test_repaired_contract_changes_only_data_access_identity() -> None:
+    invalidated = _contract()
+    repaired = json.loads(REPAIRED_CONTRACT_PATH.read_text(encoding="utf-8"))
+    _validate_contract(repaired)
+
+    for key in ("contract_version", "baseline_tag"):
+        invalidated.pop(key)
+        repaired.pop(key)
+    data_access = repaired.pop("data_access_contract")
+    assert repaired == invalidated
+    assert data_access["development_only_release_hash"] == (
+        "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827"
+    )
+    assert data_access["release_manifest_sha256"] == (
+        "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255"
+    )
+    assert data_access["cache_provenance"]["cache_namespace"] == (
+        "e623cf26788029ef4598314dbd5ef6f204ec3b134e086194079131b61ef0645b"
+    )
+    assert data_access["read_ledger_contract"] == {
+        "ledger_version": "cn_development_only_read_ledger_v1",
+        "requested_data_role": "development",
+        "forbidden_file_open_count": 0,
+        "forbidden_row_group_read_count": 0,
+        "validation_rows_read": 0,
+        "holdout_rows_read": 0,
+        "forward_rows_read": 0,
+    }
 
 
 def test_b1s_contract_freezes_all_requested_lanes_and_budgets() -> None:
