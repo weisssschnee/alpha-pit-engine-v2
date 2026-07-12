@@ -1,6 +1,6 @@
 {
   "manifest_version": "cn_generator_research_sprint1_manifest_v1",
-  "status": "CN_GENERATOR_RESEARCH_SPRINT1_ACTIVE",
+  "status": "CN_GENERATOR_RESEARCH_SPRINT1_PARTIALLY_COMPLETED",
   "started_at": "2026-07-12",
   "baseline": {
     "repo_sha": "80684b8afa8c64a82853888db51abcf4cdfb721c",
@@ -39,6 +39,7 @@
   },
   "authorization": {
     "maximum_experiment_rounds": 3,
+    "experiment_rounds_used": 3,
     "rounds": [
       {
         "id": "generator_capability_canary",
@@ -46,7 +47,15 @@
         "proposal_budget_max": 8192,
         "strict_budget_min": 128,
         "strict_budget_max": 256,
-        "state": "PLANNED"
+        "state": "COMPLETED",
+        "repo_sha": "7c7e08b0855136a3b6aa61cd216c10790c8ad04b"
+      },
+      {
+        "id": "generator_capability_repair_repeat",
+        "proposal_budget": 4144,
+        "strict_budget": 166,
+        "state": "COMPLETED",
+        "repo_sha": "1a7a0b85f934d20b998772a24c6faee2c1bafffe"
       },
       {
         "id": "frozen_development_epoch_a",
@@ -55,14 +64,14 @@
         "strict_budget_min": 512,
         "strict_budget_max": 1024,
         "minimum_seeds": 2,
-        "state": "CONDITIONAL"
-      },
-      {
-        "id": "frozen_development_epoch_b",
-        "maximum_scale_relative_to_epoch_a": 2.0,
-        "state": "CONDITIONAL"
+        "state": "COMPLETED",
+        "repo_sha": "09a4d80df9bfaafef054b43595269ac70f40174f"
       }
     ],
+    "epoch_b": {
+      "state": "NOT_RUN_ROUND_BUDGET_EXHAUSTED",
+      "automatic_run_allowed": false
+    },
     "automatic_continuation_requires": [
       "zero data-access violations",
       "zero contract drift",
@@ -88,7 +97,43 @@
     "cross_seed_mechanism_repeatability",
     "family_and_primitive_balance"
   ],
-  "next_action": "diagnose the complete formal CANARY funnel and connect findings directly to generator/objective implementation",
+  "sprint_closure": {
+    "status": "CN_GENERATOR_RESEARCH_SPRINT1_PARTIALLY_COMPLETED",
+    "recommendation": "CONTINUE_GENERATOR_RESEARCH_SPRINT",
+    "epoch_a_result": "reports/cn_generator_research_sprint1_20260712/epoch_a_result_v1.json",
+    "epoch_a": {
+      "repo_sha": "09a4d80df9bfaafef054b43595269ac70f40174f",
+      "seed_count": 2,
+      "proposal_count": 16384,
+      "strict_count": 512,
+      "seed_a_exact_count": 5704,
+      "seed_b_exact_count": 5692,
+      "seed_a_new_clusters_vs_static": 224,
+      "seed_b_new_clusters_vs_static": 219,
+      "pack_exact_overlap": 69,
+      "pack_exact_jaccard": 0.1558
+    },
+    "adaptive_decisions": {
+      "primary": ["rx_ucb"],
+      "downgraded_to_matched_control": ["evolutionary", "cem", "uct_mcts", "surrogate"]
+    },
+    "gates": {
+      "new_clusters_per_strict_improved": false,
+      "adaptive_lane_beats_control_across_seeds": true,
+      "temporal_adds_static_external_clusters": true,
+      "event_material_contribution": false,
+      "pack_balance_passed": true,
+      "forward_pack_authorized": false
+    },
+    "read_ledger": {
+      "forbidden_file_open_count": 0,
+      "forbidden_row_group_read_count": 0,
+      "validation_rows_read": 0,
+      "holdout_rows_read": 0,
+      "forward_rows_read": 0
+    }
+  },
+  "next_action": "continue generator research with RX/UCB primary, evolutionary downgraded, broader development coordinates and no sealed-data access",
   "graph_build": {
     "preferred_tool": "graphify",
     "preferred_tool_available": false,

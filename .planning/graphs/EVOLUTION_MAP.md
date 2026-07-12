@@ -1,6 +1,6 @@
 # Evolution Map
 
-Updated: 2026-07-12
+Updated: 2026-07-13
 
 | Change | Previous state | Current state / consequence |
 |---|---|---|
@@ -19,6 +19,10 @@ Updated: 2026-07-12
 | Formal B1S CANARY completed | STATE and architecture still described a prepared-not-started plan | Formal funnel is 1,344 proposals, 1,187 legal, 1,094 exact, 279 clusters, 863 survivors and 64 strict candidates |
 | Generator bottleneck accepted | One generic grammar with lane labels produced uneven mechanism efficiency | Sprint-1 is authorized to build distinct static, temporal, event, state and orthogonal generators plus Pareto development evaluation |
 | Continuous research sprint opened | Search stopped after a single fixed CANARY | At most three frozen development-only rounds may continue automatically under preregistered access and drift gates |
+| Distinct Sprint-1 generators implemented | One generic grammar and weak adaptive controls limited hypothesis discovery | Static, firstN, temporal, event, state and orthogonal generators now have mechanism-specific programs; RX/UCB learns hypothesis-arm information gain |
+| Repaired Capability CANARY completed | RX/UCB failed matched control and Pareto concentrated at the prior generator SHA | Generator identity collisions and RX/UCB arm scoring were repaired; RX/UCB and evolutionary proxy deltas turned positive without forbidden reads |
+| Frozen Development Epoch-A completed | Capability evidence was single-seed and too small for a scale decision | Two frozen seeds produced 16,384 proposals and 512 strict evaluations; RX/UCB survived strict matched-control comparison but evolutionary did not |
+| Sprint-1 closed partial | Larger search budget could have been mistaken for discovery progress | New clusters per strict fell at Epoch-A scale, event remained empty and pack overlap was seed-sensitive; no forward pack or Epoch-B is authorized |
 
 ## Active lineage
 
@@ -36,5 +40,8 @@ shard-local split repair
   -> invalid mixed-role CANARY retained as diagnostic only
   -> physical development-only release and fail-closed loader
   -> formal B1S CANARY closure at 80684b8
-  -> CN Generator Research Sprint-1
+  -> distinct generators and Pareto objective at 7c7e08b
+  -> repaired Capability CANARY at 1a7a0b8
+  -> two-seed Frozen Development Epoch-A at 09a4d80
+  -> Sprint-1 partial closure / RX-UCB retained / no forward pack
 ```

@@ -1,0 +1,36 @@
+{
+  "index_version": "cn_generator_research_sprint1_artifact_index_v1",
+  "status": "CN_GENERATOR_RESEARCH_SPRINT1_PARTIALLY_COMPLETED",
+  "repo_sha": "09a4d80df9bfaafef054b43595269ac70f40174f",
+  "canonical_manifest": "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+  "epoch_contract": "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json",
+  "closure_report": "reports/cn_generator_research_sprint1_20260712/SPRINT1_CLOSURE.md",
+  "compact_result": "reports/cn_generator_research_sprint1_20260712/epoch_a_result_v1.json",
+  "remote_artifact_roots": {
+    "seed_a": "D:/ChengboRemote/runtime/cn_generator_research_sprint1/epoch_a/09a4d80_r1/seed_a/artifacts/20260712T164750037761Z",
+    "seed_b": "D:/ChengboRemote/runtime/cn_generator_research_sprint1/epoch_a/09a4d80_r1/seed_b/artifacts/20260712T164750037761Z"
+  },
+  "artifact_sets": {
+    "seed_a": {
+      "file_count": 19,
+      "manifest_line_sha256": "237d273908b3349ec10ea19c757e4eb5b213dcb7fe30a8e953ef21c6a0a61cd5",
+      "candidate_pack_sha256": "f22e4a3c65baf319a573a36b723dc8b9f1a92b2804f427cc2311bbd8892ca0ef",
+      "summary_sha256": "ebb717485ccac60dbce815d7c2a6ee67e3edc833b2db957c747d371b5dff9539",
+      "strict_metrics_sha256": "376e97ea9af161693579117e7172e8e3a1b740ec66f14e9a1aae72d0af3a5f60",
+      "read_ledger_sha256": "6589552492477e9b09907e3ad3518f9388884b85c7619fea696aa7f23ff3cffe"
+    },
+    "seed_b": {
+      "file_count": 19,
+      "manifest_line_sha256": "7a1c29dcc02de436a4c879ae7628f254945e073b6136e52531a5266671bdca67",
+      "candidate_pack_sha256": "d374bd06516b8b7745bf8327cd51ec5bdbe662bd361fa44651bd06caeb9db731",
+      "summary_sha256": "1d165bf08ce8a85e62c06a1e6cb0c2668618bc089424d14b37c6db3282581f78",
+      "strict_metrics_sha256": "28b6c4ce41bdd0180adbbbbfe890a59e5659e732efb611b79cf488b0c7b410dc",
+      "read_ledger_sha256": "5984358a946aa13f4c5a418e14a6fb68fbe0f74a64084d613eee9a9eb511a56e"
+    }
+  },
+  "boundaries": {
+    "forward_2026_sealed": true,
+    "candidate_promotion_made": false,
+    "cross_sprint_adaptive_memory_written": false
+  }
+}

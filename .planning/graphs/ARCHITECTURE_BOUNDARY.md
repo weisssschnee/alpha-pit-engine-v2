@@ -1,6 +1,6 @@
 # Architecture Boundary
 
-Updated: 2026-07-12
+Updated: 2026-07-13
 
 ## Graph authority
 
@@ -40,13 +40,19 @@ navigation artifacts. They are not current architecture authority.
   It cannot consume the invalidated mixed-role run as a research decision.
 - Within-sprint adaptive statistics are ephemeral; no cross-sprint positive or
   negative memory is permitted.
+- Sprint-1 Epoch-A packs are research-only artifacts. Exact overlap or positive
+  development LCB cannot be interpreted as forward authorization.
+- The project-native graph builder is the registered fallback while the global
+  `graphify` package is unavailable; it validates registry nodes, evidence paths,
+  statuses, forbidden edges and per-node verification SHAs.
 
 ## Acceptance boundary
 
 Phase A is accepted at `af5c87b72677c5d87d80c62cfbed16bd3ece758d`.
 NEXTGEN-DARK is ready only within the closure scope authorized on 2026-07-12.
 The formal B1S CANARY completed at `80684b8` using the physical development-only
-release and zero-forbidden-read ledger. Sprint-1 authorizes generator research
-only inside development roles. Plate/industry capability is explicitly
-excluded and frozen; no Sprint result is a candidate promotion or permission to
-open validation, holdout or 2026 forward.
+release and zero-forbidden-read ledger. Sprint-1 closed partially after the
+repaired Capability run at `1a7a0b8` and two-seed Epoch-A at `09a4d80`.
+All three experiment rounds are consumed. Plate/industry capability is
+explicitly excluded and frozen; no Sprint result is a candidate promotion or
+permission to open validation, holdout or 2026 forward.
