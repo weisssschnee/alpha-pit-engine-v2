@@ -68,6 +68,13 @@ from our_system_phase2.services.real_market_validation import (
     evaluate_panel_expression,
 )
 from our_system_phase2.services.typed_primitive_gate import validate_expression
+from our_system_phase2.services.sprint1_generators import (
+    ProgramSpec,
+    generate_mechanism_pool,
+    generate_program,
+    mutate_program,
+)
+from our_system_phase2.services.development_pareto import prepare_objectives, select_pareto
 
 
 EXPERIMENT_ID = "cn_b1s_development_canary"
@@ -141,6 +148,8 @@ def _candidate(
     parent_id: str = "",
     benchmark_id: str = "",
     llm_action: str = "",
+    program: ProgramSpec | None = None,
+    extra_metadata: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     canonical_expression, canonical_identity = _canonical(expression)
     fields = sorted(_fields(expression))
@@ -158,7 +167,7 @@ def _candidate(
         family = "lagged_context"
     elif fields and all(not field.startswith(("ctx_", "evt_", "m1_first")) for field in fields):
         family = "raw_1min"
-    return {
+    output = {
         "candidate_id": f"b1s_{lane_id}_{index + 1:04d}",
         "lane_id": lane_id,
         "expression": expression,
@@ -179,6 +188,25 @@ def _candidate(
         "llm_action": llm_action,
         "data_role": "development",
     }
+    if program is not None:
+        output.update(program.metadata())
+        output["family_id"] = f"{lane_id}:{program.hypothesis_arm}:{program.primitive_family}"
+        output["semantic_bucket"] = (
+            f"{lane_id}:{program.hypothesis_arm}:{program.primitive_family}:{family}"
+        )
+    else:
+        output.update(
+            {
+                "hypothesis_arm": lane_id,
+                "primitive_family": motif,
+                "complexity": 2 + expression.count("("),
+                "generator_index": index,
+                "program_parameters": {},
+                "mutation_operator": "root_sample",
+            }
+        )
+    output.update(dict(extra_metadata or {}))
+    return output
 
 
 def _firstn_expression(index: int) -> tuple[str, str]:
@@ -239,6 +267,14 @@ def _structural_expression(spec: Mapping[str, Any]) -> str:
     if motif == "acceleration":
         return f"CSRank(Sub(Acceleration(${a},{window}),Mul(Slope(${b},{window}),{mix})))"
     return f"CSRank(Add(Mul(Sign(${context}),Delta(${a},{window})),Mul(${b},{mix})))"
+
+
+def _role_distinct_expression(expression: str, role: str, index: int) -> str:
+    """Keep matched mechanism geometry while avoiding cross-lane exact reuse."""
+    role_code = sum((position + 1) * ord(character) for position, character in enumerate(role))
+    field = RAW_FIELDS[(role_code + int(index) * 5) % len(RAW_FIELDS)]
+    coefficient = (11 + role_code % 29) / 1000.0
+    return f"CSRank(Add({expression},Mul(Sign(${field}),{coefficient:.3f})))"
 
 
 def _typed_random_expression(index: int, seed: int) -> tuple[str, str]:
@@ -327,24 +363,49 @@ def generate_initial_proposals(contract: Mapping[str, Any]) -> list[dict[str, An
         for index in range(quota):
             benchmark_id = ""
             llm_action = ""
-            if lane == "static_cross_sectional":
-                expression, motif, _ = _static_expression("raw" if index % 2 == 0 else "context", index)
-            elif lane == "firstn_intraday_path":
-                expression, motif = _firstn_expression(index)
-            elif lane == "temporal_program":
-                expression, motif, _ = _temporal_expression("single_scale" if index % 2 == 0 else "multi_scale", index)
-            elif lane == "event_conditioned":
-                expression, motif, _ = _event_expression(("limit", "firstN", "context")[index % 3], index)
-            elif lane == "state_transition":
-                expression, motif, _ = _state_expression(("duration", "transition", "confirmation")[index % 3], index)
-            elif lane == "orthogonal_exile":
-                expression, motif, _ = _orthogonal_expression("orthogonal" if index % 2 == 0 else "exile", index)
+            program = None
+            if lane in {
+                "static_cross_sectional", "firstn_intraday_path", "temporal_program",
+                "event_conditioned", "state_transition", "orthogonal_exile",
+            }:
+                program = generate_program(lane, index, seed)
+                expression, motif = program.expression, program.motif
             elif lane == "typed_random":
-                expression, motif = _typed_random_expression(index, seed)
+                program = generate_mechanism_pool(index * 37 + 11, seed + 211)
+                expression = _role_distinct_expression(program.expression, lane, index)
+                motif = f"typed_random_{program.motif}"
             elif lane == "typed_ast":
-                expression, motif = _typed_ast_expression(index, seed)
+                left = generate_mechanism_pool(index * 2 + 17, seed + 307)
+                right = generate_mechanism_pool(index * 2 + 18, seed + 401)
+                operator = "Sub" if index % 2 == 0 else "Add"
+                expression = f"CSRank({operator}({left.expression},{right.expression}))"
+                motif = f"typed_ast_{left.primitive_family}_{right.primitive_family}"
+                program = ProgramSpec(
+                    expression=expression,
+                    motif=motif,
+                    hypothesis_arm=f"{left.hypothesis_arm}__{right.hypothesis_arm}",
+                    primitive_family=f"{left.primitive_family}__{right.primitive_family}",
+                    complexity=left.complexity + right.complexity + 2,
+                    generator_index=index,
+                    parameters={
+                        "left_expression": left.expression,
+                        "right_expression": right.expression,
+                        "operator": operator,
+                    },
+                )
             elif lane == "llm_proposal_repair":
-                expression, motif, llm_action = _llm_expression(index % 24, repair=index >= 24)
+                proposal_pack = int(specs[lane].get("proposal_pack", quota // 2))
+                repair = index >= proposal_pack
+                local_index = index - proposal_pack if repair else index
+                parent_program = generate_mechanism_pool(local_index, seed + 73)
+                program = (
+                    mutate_program(parent_program.metadata(), local_index + 3, seed + 101)
+                    if repair else parent_program
+                )
+                expression = program.expression
+                expression = _role_distinct_expression(expression, lane, index)
+                motif = f"llm_{'repair' if repair else 'hypothesis'}_{program.motif}"
+                llm_action = "repair" if repair else "proposal"
             else:
                 expression, motif, benchmark_id = _benchmark_expression(index)
             rows.append(
@@ -358,22 +419,32 @@ def generate_initial_proposals(contract: Mapping[str, Any]) -> list[dict[str, An
                     seed=seed,
                     benchmark_id=benchmark_id,
                     llm_action=llm_action,
+                    program=program,
                 )
             )
     for lane in ADAPTIVE_LANES:
         seed = int(seeds[lane])
         control = int(specs[lane]["control"])
         for index in range(control):
+            program = (
+                generate_mechanism_pool(index, seed)
+                if lane in {"rx_ucb", "evolutionary"}
+                else None
+            )
             spec = _structural_spec(index, seed)
+            expression = program.expression if program is not None else _structural_expression(spec)
+            expression = _role_distinct_expression(expression, lane, index)
+            motif = program.motif if program is not None else str(spec["motif"])
             rows.append(
                 _candidate(
                     lane,
                     index,
-                    _structural_expression(spec),
+                    expression,
                     origin="matched_nonadaptive_control",
                     stage="control",
-                    motif=str(spec["motif"]),
+                    motif=motif,
                     seed=seed,
+                    program=program,
                 )
             )
     return rows
@@ -397,6 +468,119 @@ def _control_spec(row: Mapping[str, Any], seed: int, index: int) -> dict[str, An
     return spec
 
 
+def _rx_ucb_programs(
+    controls: list[dict[str, Any]],
+    *,
+    quota: int,
+    seed: int,
+    start_index: int,
+) -> list[dict[str, Any]]:
+    by_arm: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for row in controls:
+        key = (str(row["hypothesis_arm"]), str(row["primitive_family"]))
+        by_arm[key].append(row)
+    total = max(1, len(controls))
+    arm_scores: dict[tuple[str, str], tuple[float, float]] = {}
+    for key, rows in by_arm.items():
+        rewards = [float(row.get("proxy_reward") or 0.0) for row in rows]
+        clusters = {
+            int(row.get("signal_cluster_id") or 0)
+            for row in rows if int(row.get("signal_cluster_id") or 0) > 0
+        }
+        information_gain = len(clusters) / max(1, len(rows))
+        score = (
+            float(np.mean(rewards))
+            + math.sqrt(2.0 * math.log(total + 1) / len(rows))
+            + 0.35 * information_gain
+        )
+        arm_scores[key] = (score, information_gain)
+    ranked_arms = sorted(arm_scores, key=lambda key: (-arm_scores[key][0], key))
+    best_parent = {
+        key: max(by_arm[key], key=lambda row: (float(row.get("proxy_reward") or 0.0), str(row["candidate_id"])))
+        for key in ranked_arms
+    }
+    selected: list[dict[str, Any]] = []
+    seen: set[str] = {str(row["canonical_identity"]) for row in controls}
+    attempt = 0
+    while len(selected) < quota and attempt < quota * 100:
+        key = ranked_arms[attempt % len(ranked_arms)]
+        arm, primitive = key
+        program = generate_program(arm, 10_000 + attempt, seed)
+        attempt += 1
+        if program.primitive_family != primitive:
+            continue
+        expression = _role_distinct_expression(
+            program.expression, "rx_ucb", start_index + len(selected)
+        )
+        _, identity = _canonical(expression)
+        if identity in seen:
+            continue
+        parent = best_parent[key]
+        row = _candidate(
+            "rx_ucb", start_index + len(selected), expression,
+            origin="ephemeral_rx_ucb_information_gain",
+            stage="adaptive", motif=program.motif, seed=seed,
+            parent_id=str(parent["candidate_id"]), program=program,
+            extra_metadata={
+                "matched_control_id": str(parent["candidate_id"]),
+                "selection_statistic": arm_scores[key][0],
+                "information_gain": arm_scores[key][1],
+                "complexity": program.complexity + 3,
+            },
+        )
+        selected.append(row)
+        seen.add(identity)
+    if len(selected) != quota:
+        raise RuntimeError(f"RX/UCB hypothesis-arm underfill: {len(selected)} != {quota}")
+    return selected
+
+
+def _evolutionary_programs(
+    controls: list[dict[str, Any]],
+    *,
+    quota: int,
+    seed: int,
+    start_index: int,
+) -> list[dict[str, Any]]:
+    elites = sorted(
+        controls,
+        key=lambda row: (
+            -float(row.get("proxy_reward") or 0.0),
+            -float(row.get("proxy_worst_time_block_abs_ic") or 0.0),
+            float(row.get("proxy_turnover") or 1.0),
+            str(row["candidate_id"]),
+        ),
+    )[: max(8, int(math.ceil(len(controls) * 0.25)))]
+    selected: list[dict[str, Any]] = []
+    seen: set[str] = {str(row["canonical_identity"]) for row in controls}
+    attempt = 0
+    while len(selected) < quota and attempt < quota * 40:
+        parent = elites[attempt % len(elites)]
+        program = mutate_program(parent, attempt, seed)
+        attempt += 1
+        expression = _role_distinct_expression(
+            program.expression, "evolutionary", start_index + len(selected)
+        )
+        _, identity = _canonical(expression)
+        if identity in seen:
+            continue
+        row = _candidate(
+            "evolutionary", start_index + len(selected), expression,
+            origin="ephemeral_evolutionary_typed_mutation",
+            stage="adaptive", motif=program.motif, seed=seed,
+            parent_id=str(parent["candidate_id"]), program=program,
+            extra_metadata={
+                "matched_control_id": str(parent["candidate_id"]),
+                "complexity": program.complexity + 3,
+            },
+        )
+        selected.append(row)
+        seen.add(identity)
+    if len(selected) != quota:
+        raise RuntimeError(f"evolutionary typed mutation underfill: {len(selected)} != {quota}")
+    return selected
+
+
 def generate_adaptive_proposals(
     contract: Mapping[str, Any],
     initial_rows: list[dict[str, Any]],
@@ -408,6 +592,22 @@ def generate_adaptive_proposals(
         seed = int(seeds[lane])
         adaptive_quota = int(specs[lane]["adaptive"])
         controls = [row for row in initial_rows if row["lane_id"] == lane]
+        if lane == "rx_ucb":
+            output.extend(
+                _rx_ucb_programs(
+                    controls, quota=adaptive_quota, seed=seed,
+                    start_index=int(specs[lane]["control"]),
+                )
+            )
+            continue
+        if lane == "evolutionary":
+            output.extend(
+                _evolutionary_programs(
+                    controls, quota=adaptive_quota, seed=seed,
+                    start_index=int(specs[lane]["control"]),
+                )
+            )
+            continue
         control_specs = [_control_spec(row, seed, index) for index, row in enumerate(controls)]
         pool = [_structural_spec(1000 + index, seed + 31) for index in range(max(256, adaptive_quota * 6))]
         rewards = np.asarray([float(spec["reward"]) for spec in control_specs], dtype=float)
@@ -479,6 +679,9 @@ def generate_adaptive_proposals(
         selected: list[dict[str, Any]] = []
         for spec in ranked:
             expression = _structural_expression(spec)
+            expression = _role_distinct_expression(
+                expression, lane, int(specs[lane]["control"]) + len(selected)
+            )
             _, identity = _canonical(expression)
             if identity in seen:
                 continue
@@ -528,7 +731,10 @@ def fast_group_ic(
     g = np.asarray(group_codes, dtype=np.int64)
     valid = np.isfinite(x) & np.isfinite(y) & (g >= 0)
     if not bool(valid.any()):
-        return {"ic_mean": None, "ic_abs_mean": None, "ic_count": 0, "ic_hit_rate": None}
+        return {
+            "ic_mean": None, "ic_abs_mean": None, "ic_count": 0, "ic_hit_rate": None,
+            "ic_std": None, "ic_standard_error": None, "ic_abs_lcb95": None,
+        }
     xv, yv, gv = x[valid], y[valid], g[valid]
     size = int(gv.max()) + 1
     n = np.bincount(gv, minlength=size).astype(float)
@@ -544,13 +750,103 @@ def fast_group_ic(
     corr = cov[eligible] / np.sqrt(vx[eligible] * vy[eligible])
     corr = corr[np.isfinite(corr)]
     if not len(corr):
-        return {"ic_mean": None, "ic_abs_mean": None, "ic_count": 0, "ic_hit_rate": None}
+        return {
+            "ic_mean": None, "ic_abs_mean": None, "ic_count": 0, "ic_hit_rate": None,
+            "ic_std": None, "ic_standard_error": None, "ic_abs_lcb95": None,
+        }
+    standard_deviation = float(np.std(corr, ddof=1)) if len(corr) > 1 else 0.0
+    standard_error = standard_deviation / math.sqrt(len(corr))
+    mean = float(corr.mean())
     return {
-        "ic_mean": float(corr.mean()),
+        "ic_mean": mean,
         "ic_abs_mean": float(np.abs(corr).mean()),
         "ic_count": int(len(corr)),
         "ic_hit_rate": float(np.mean(corr > 0.0)),
+        "ic_std": standard_deviation,
+        "ic_standard_error": standard_error,
+        "ic_abs_lcb95": float(max(0.0, abs(mean) - 1.96 * standard_error)),
     }
+
+
+def fast_group_ic_time_blocks(
+    signal_rank: np.ndarray,
+    label_rank: np.ndarray,
+    group_codes: np.ndarray,
+    *,
+    min_obs: int,
+    block_count: int = 4,
+) -> dict[str, Any]:
+    x = np.asarray(signal_rank, dtype=float)
+    y = np.asarray(label_rank, dtype=float)
+    g = np.asarray(group_codes, dtype=np.int64)
+    valid = np.isfinite(x) & np.isfinite(y) & (g >= 0)
+    if not bool(valid.any()):
+        return {
+            "proxy_worst_time_block_abs_ic": 0.0,
+            "proxy_time_block_stability": 0.0,
+            "proxy_time_block_count": 0,
+        }
+    xv, yv, gv = x[valid], y[valid], g[valid]
+    size = int(gv.max()) + 1
+    n = np.bincount(gv, minlength=size).astype(float)
+    sx = np.bincount(gv, weights=xv, minlength=size)
+    sy = np.bincount(gv, weights=yv, minlength=size)
+    sxx = np.bincount(gv, weights=xv * xv, minlength=size)
+    syy = np.bincount(gv, weights=yv * yv, minlength=size)
+    sxy = np.bincount(gv, weights=xv * yv, minlength=size)
+    cov = sxy - sx * sy / np.maximum(n, 1.0)
+    vx = sxx - sx * sx / np.maximum(n, 1.0)
+    vy = syy - sy * sy / np.maximum(n, 1.0)
+    eligible = (n >= min_obs) & (vx > 1e-15) & (vy > 1e-15)
+    group_ids = np.flatnonzero(eligible)
+    if not len(group_ids):
+        return {
+            "proxy_worst_time_block_abs_ic": 0.0,
+            "proxy_time_block_stability": 0.0,
+            "proxy_time_block_count": 0,
+        }
+    correlations = cov[group_ids] / np.sqrt(vx[group_ids] * vy[group_ids])
+    blocks = [block for block in np.array_split(correlations, min(block_count, len(correlations))) if len(block)]
+    block_means = np.asarray([float(np.mean(block)) for block in blocks], dtype=float)
+    absolute = np.abs(block_means)
+    same_sign = float(np.mean(np.sign(block_means) == np.sign(float(np.mean(block_means)))))
+    dispersion = float(np.std(absolute) / max(float(np.mean(absolute)), 1e-12))
+    return {
+        "proxy_worst_time_block_abs_ic": float(np.min(absolute)),
+        "proxy_time_block_stability": float(max(0.0, same_sign * (1.0 - min(1.0, dispersion)))),
+        "proxy_time_block_count": int(len(blocks)),
+    }
+
+
+def _previous_code_row_indices(frame: pd.DataFrame) -> np.ndarray:
+    ordered = frame.reset_index().sort_values(["code", "trade_time", "index"], kind="stable")
+    previous = np.full(len(frame), -1, dtype=np.int64)
+    for _, group in ordered.groupby("code", sort=False):
+        positions = group["index"].to_numpy(dtype=np.int64)
+        if len(positions) > 1:
+            previous[positions[1:]] = positions[:-1]
+    return previous
+
+
+def fast_proxy_turnover(signal_rank: np.ndarray, previous_indices: np.ndarray) -> float:
+    rank = np.asarray(signal_rank, dtype=float)
+    previous = np.asarray(previous_indices, dtype=np.int64)
+    valid = (previous >= 0) & np.isfinite(rank)
+    positions = np.flatnonzero(valid)
+    valid[positions] = np.isfinite(rank[previous[positions]])
+    if not bool(valid.any()):
+        return 1.0
+    return float(np.mean(np.abs(rank[valid] - rank[previous[valid]])))
+
+
+def signal_concentration(signal: np.ndarray) -> float:
+    absolute = np.abs(np.asarray(signal, dtype=float))
+    absolute = absolute[np.isfinite(absolute)]
+    total = float(absolute.sum())
+    if not len(absolute) or total <= 0.0:
+        return 1.0
+    cutoff = float(np.quantile(absolute, 0.99))
+    return float(absolute[absolute >= cutoff].sum() / total)
 
 
 def fast_group_spread(
@@ -670,6 +966,7 @@ def evaluate_proxy_rows(
     sketch_store: dict[str, dict[str, Any]],
     evaluation_context: _ExpressionEvaluationContext,
     cross_layout: Any,
+    previous_indices: np.ndarray,
 ) -> None:
     cross_key = frame["trade_time"]
     proxy_groups, proxy_uniques = pd.factorize(cross_key[proxy_mask], sort=False)
@@ -711,6 +1008,10 @@ def evaluate_proxy_rows(
                 proxy_groups,
                 min_obs=min_obs,
             )
+            block_metrics = fast_group_ic_time_blocks(
+                rank_values[proxy_mask], label_rank[proxy_mask], proxy_groups, min_obs=min_obs
+            )
+            proxy_turnover = fast_proxy_turnover(rank_values, previous_indices)
             finite = np.isfinite(signal_values)
             finite_ratio = float(finite.mean())
             signal_unique = int(np.unique(signal_values[finite]).size) if bool(finite.any()) else 0
@@ -748,10 +1049,16 @@ def evaluate_proxy_rows(
                 "proxy_ic_abs_mean": proxy_ic["ic_abs_mean"],
                 "proxy_ic_count": ic_count,
                 "proxy_ic_hit_rate": proxy_ic["ic_hit_rate"],
+                "proxy_ic_std": proxy_ic["ic_std"],
+                "proxy_ic_standard_error": proxy_ic["ic_standard_error"],
+                "proxy_ic_abs_lcb95": proxy_ic["ic_abs_lcb95"],
                 "proxy_finite_ratio": finite_ratio,
                 "proxy_signal_unique": signal_unique,
+                "proxy_turnover": proxy_turnover,
+                "proxy_signal_concentration": signal_concentration(signal_values),
                 "proxy_reward": float(proxy_reward),
                 "survivor": bool(survivor),
+                **block_metrics,
             }
             row.update(metrics)
             signal_store[identity] = signal_values
@@ -766,8 +1073,16 @@ def evaluate_proxy_rows(
                 "proxy_ic_abs_mean": None,
                 "proxy_ic_count": 0,
                 "proxy_ic_hit_rate": None,
+                "proxy_ic_std": None,
+                "proxy_ic_standard_error": None,
+                "proxy_ic_abs_lcb95": None,
                 "proxy_finite_ratio": 0.0,
                 "proxy_signal_unique": 0,
+                "proxy_turnover": 1.0,
+                "proxy_signal_concentration": 1.0,
+                "proxy_worst_time_block_abs_ic": 0.0,
+                "proxy_time_block_stability": 0.0,
+                "proxy_time_block_count": 0,
                 "proxy_reward": 0.0,
                 "survivor": False,
             }
@@ -923,7 +1238,48 @@ def build_admissions(rows: list[dict[str, Any]], contract: Mapping[str, Any]) ->
                 lane_rows, cap=target, existing=hybrid_seed, **kwargs
             )
     hybrid = _select_with_constraints(ordered, cap=total, existing=hybrid_seed, **kwargs)
-    return {"stratified": stratified, "global_top_k": global_top_k, "hybrid": hybrid}
+    benchmark_rewards = [
+        float(row.get("proxy_reward") or 0.0)
+        for row in candidates if str(row["lane_id"]) == "benchmark_competitor"
+    ]
+    benchmark_median = float(np.median(benchmark_rewards)) if benchmark_rewards else 0.0
+    pareto_contract = contract.get("development_objective", {}).get("pareto", {})
+    prepared = prepare_objectives(
+        candidates,
+        benchmark_median=benchmark_median,
+        require_nonnegative_benchmark_increment=bool(
+            pareto_contract.get("require_nonnegative_benchmark_increment", True)
+        ),
+        minimum_worst_block_quality=float(pareto_contract.get("minimum_worst_block_quality", 0.0)),
+        maximum_turnover=float(pareto_contract.get("maximum_turnover", 1.0)),
+    )
+    by_candidate = {str(row["candidate_id"]): row for row in rows}
+    for row in prepared:
+        vector = dict(row["objective_vector"])
+        row.update({f"objective_{key}": value for key, value in vector.items()})
+        owner = by_candidate[str(row["candidate_id"])]
+        owner.update(
+            {
+                "objective_gate_allowed": row["objective_gate_allowed"],
+                "objective_gate_reasons": row["objective_gate_reasons"],
+                "pareto_rank": row.get("pareto_rank"),
+                "limited_scalar_tiebreak": row["limited_scalar_tiebreak"],
+                **{f"objective_{key}": value for key, value in vector.items()},
+            }
+        )
+    pareto_hybrid = select_pareto(
+        prepared,
+        cap=total,
+        lane_floor=int(pareto_contract.get("lane_floor", 2)),
+        family_cap=int(admission["family_cap"]),
+        parent_cap=int(admission["parent_descendant_cap"]),
+    )
+    return {
+        "stratified": stratified,
+        "global_top_k": global_top_k,
+        "hybrid": hybrid,
+        "pareto_hybrid": pareto_hybrid,
+    }
 
 
 def build_strict_pack(admitted: list[dict[str, Any]], contract: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -1051,6 +1407,63 @@ def adaptive_comparison(rows: list[dict[str, Any]], admissions: Mapping[str, lis
     return output
 
 
+def adaptive_research_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    by_id = {str(row["candidate_id"]): row for row in rows}
+    rx_arms = []
+    rx_rows = [row for row in rows if row["lane_id"] == "rx_ucb"]
+    arm_keys = sorted({(str(row["hypothesis_arm"]), str(row["primitive_family"])) for row in rx_rows})
+    for arm, primitive in arm_keys:
+        source = [
+            row for row in rx_rows
+            if str(row["hypothesis_arm"]) == arm and str(row["primitive_family"]) == primitive
+        ]
+        control = [row for row in source if row["proposal_stage"] == "control"]
+        adaptive = [row for row in source if row["proposal_stage"] == "adaptive"]
+        rx_arms.append(
+            {
+                "hypothesis_arm": arm,
+                "primitive_family": primitive,
+                "control_trials": len(control),
+                "control_cluster_count": len({int(row.get("signal_cluster_id") or 0) for row in control}),
+                "control_information_gain": (
+                    len({int(row.get("signal_cluster_id") or 0) for row in control}) / max(1, len(control))
+                ),
+                "adaptive_trials": len(adaptive),
+                "adaptive_cluster_count": len({int(row.get("signal_cluster_id") or 0) for row in adaptive}),
+                "adaptive_median_reward": (
+                    float(np.median([float(row.get("proxy_reward") or 0.0) for row in adaptive]))
+                    if adaptive else None
+                ),
+            }
+        )
+    lineage = []
+    for child in rows:
+        if child["lane_id"] != "evolutionary" or child["proposal_stage"] != "adaptive":
+            continue
+        parent = by_id.get(str(child.get("parent_id") or ""))
+        if parent is None:
+            raise ValueError(f"evolutionary child lacks in-run parent: {child['candidate_id']}")
+        lineage.append(
+            {
+                "parent_id": parent["candidate_id"],
+                "mutation_operator": child.get("mutation_operator"),
+                "child_id": child["candidate_id"],
+                "exact_distance": float(parent["exact_identity"] != child["exact_identity"]),
+                "behaviour_distance": float(parent.get("signal_cluster_id") != child.get("signal_cluster_id")),
+                "objective_change": float(child.get("proxy_reward") or 0.0) - float(parent.get("proxy_reward") or 0.0),
+                "benchmark_change": float(child.get("objective_benchmark_increment") or 0.0)
+                - float(parent.get("objective_benchmark_increment") or 0.0),
+                "parent_hypothesis_arm": parent.get("hypothesis_arm"),
+                "child_hypothesis_arm": child.get("hypothesis_arm"),
+            }
+        )
+    return {
+        "rx_ucb_arm_statistics": rx_arms,
+        "evolutionary_lineage": lineage,
+        "persistent_memory_written": False,
+    }
+
+
 def strict_metrics(
     strict: list[dict[str, Any]],
     frame: pd.DataFrame,
@@ -1059,6 +1472,7 @@ def strict_metrics(
     *,
     min_obs: int,
     cross_layout: Any,
+    cost_rate: float = 0.0025,
 ) -> pd.DataFrame:
     cross_key = frame["trade_time"]
     group_codes, _ = pd.factorize(cross_key, sort=False)
@@ -1086,7 +1500,13 @@ def strict_metrics(
                 "signal_nonnull": int(np.isfinite(signal).sum()),
                 "signal_unique": int(np.unique(signal[np.isfinite(signal)]).size) if bool(np.isfinite(signal).any()) else 0,
             }
-            row.update(fast_group_ic(rank, label_ranks[int(horizon)], group_codes, min_obs=min_obs))
+            ic_metrics = fast_group_ic(rank, label_ranks[int(horizon)], group_codes, min_obs=min_obs)
+            row.update(ic_metrics)
+            row.update(
+                fast_group_ic_time_blocks(
+                    rank, label_ranks[int(horizon)], group_codes, min_obs=min_obs
+                )
+            )
             row.update(
                 fast_group_spread(
                     rank,
@@ -1096,6 +1516,13 @@ def strict_metrics(
                 )
             )
             row.update(turnover)
+            row["cost_adjusted_abs_ic"] = float(
+                max(
+                    0.0,
+                    abs(float(ic_metrics.get("ic_mean") or 0.0))
+                    - float(cost_rate) * float(turnover.get("mean_one_way_turnover") or 1.0),
+                )
+            )
             rows.append(row)
     return pd.DataFrame(rows)
 
@@ -1149,7 +1576,7 @@ def _bottleneck(
         primary = "generator"
     elif reward_corr is None or reward_corr < 0.40:
         primary = "reward"
-    elif len(admissions["hybrid"]) < 0.75 * 168:
+    elif len(admissions["hybrid"]) < 0.75 * max(1, len(admissions["global_top_k"])):
         primary = "admission"
     else:
         primary = "cost_stability"
@@ -1328,9 +1755,11 @@ def main(argv: list[str] | None = None) -> int:
         "stratified": artifact_root / "admission_stratified.csv",
         "global_top_k": artifact_root / "admission_global_top_k.csv",
         "hybrid": artifact_root / "admission_hybrid.csv",
+        "pareto_hybrid": artifact_root / "admission_pareto_hybrid.csv",
         "strict_pack": artifact_root / "strict_candidate_pack.pre_metrics.csv",
         "strict_metrics": artifact_root / "strict_metrics.csv",
         "adaptive": artifact_root / "adaptive_vs_control.json",
+        "adaptive_research": artifact_root / "adaptive_research_diagnostics.json",
         "admission_comparison": artifact_root / "admission_comparison.json",
         "new_clusters": artifact_root / "temporal_event_state_new_clusters.json",
         "benchmark_increment": artifact_root / "benchmark_increment.json",
@@ -1465,6 +1894,7 @@ def main(argv: list[str] | None = None) -> int:
         cross_key = materialized["trade_time"]
         evaluation_context = _ExpressionEvaluationContext.for_frame(materialized)
         cross_layout = _cached_group_layout(materialized, "cross_section", cross_key, context=evaluation_context)
+        previous_indices = _previous_code_row_indices(materialized)
         labels = _future_returns(materialized, (5,))
         label_rank = fast_rank_pct_by_group(labels["fwd_ret_5m"], cross_key, layout=cross_layout).to_numpy(dtype=float)
         proxy_mask = _proxy_mask(materialized, int(contract["development_objective"]["coordinate_minute_stride"]))
@@ -1489,8 +1919,10 @@ def main(argv: list[str] | None = None) -> int:
             sketch_store=sketches,
             evaluation_context=evaluation_context,
             cross_layout=cross_layout,
+            previous_indices=previous_indices,
         )
 
+        assign_signal_clusters(initial, sketches, contract)
         adaptive = generate_adaptive_proposals(contract, initial)
         apply_typed_gate(adaptive)
         evaluate_proxy_rows(
@@ -1508,13 +1940,18 @@ def main(argv: list[str] | None = None) -> int:
             sketch_store=sketches,
             evaluation_context=evaluation_context,
             cross_layout=cross_layout,
+            previous_indices=previous_indices,
         )
         proposals = initial + adaptive
         if len(proposals) != int(contract["budgets"]["proposal_total"]):
             raise AssertionError("final proposal budget mismatch")
         assign_signal_clusters(proposals, sketches, contract)
         admissions = build_admissions(proposals, contract)
-        strict = build_strict_pack(admissions["hybrid"], contract)
+        strict_source = str(contract["strict_contract"].get("selection_source", "hybrid"))
+        strict_source = "hybrid" if strict_source == "hybrid_admission" else strict_source
+        if strict_source not in admissions:
+            raise ValueError(f"unknown strict selection source: {strict_source}")
+        strict = build_strict_pack(admissions[strict_source], contract)
         funnel = lane_funnel(proposals, contract)
 
         _atomic_csv(pd.DataFrame(proposals), paths["proposals"])
@@ -1534,10 +1971,13 @@ def main(argv: list[str] | None = None) -> int:
             ),
             paths["cluster_registry"],
         )
-        for name in ("stratified", "global_top_k", "hybrid"):
+        for name in ("stratified", "global_top_k", "hybrid", "pareto_hybrid"):
             _atomic_csv(pd.DataFrame(admissions[name]), paths[name])
         _atomic_csv(pd.DataFrame(strict), paths["strict_pack"])
-        for name in ("proposals", "lane_funnel", "cluster_registry", "stratified", "global_top_k", "hybrid", "strict_pack"):
+        for name in (
+            "proposals", "lane_funnel", "cluster_registry", "stratified",
+            "global_top_k", "hybrid", "pareto_hybrid", "strict_pack",
+        ):
             _record_output(record, paths[name], name, "pre_strict_metrics_final")
         record.update(
             {
@@ -1556,8 +1996,10 @@ def main(argv: list[str] | None = None) -> int:
             contract["strict_contract"]["horizons_bars"],
             min_obs=int(contract["strict_contract"]["minimum_observations_per_cross_section"]),
             cross_layout=cross_layout,
+            cost_rate=float(contract["development_objective"].get("cost_rate", 0.0025)),
         )
         adaptive_result = adaptive_comparison(proposals, admissions)
+        adaptive_research_result = adaptive_research_diagnostics(proposals)
         admission_result = _admission_comparison(admissions)
         new_cluster_result = temporal_cluster_increment(proposals)
         benchmark_result = _benchmark_increment(proposals)
@@ -1569,6 +2011,7 @@ def main(argv: list[str] | None = None) -> int:
 
         _atomic_csv(metrics, paths["strict_metrics"])
         atomic_write_json(paths["adaptive"], adaptive_result)
+        atomic_write_json(paths["adaptive_research"], adaptive_research_result)
         atomic_write_json(paths["admission_comparison"], admission_result)
         atomic_write_json(paths["new_clusters"], new_cluster_result)
         atomic_write_json(paths["benchmark_increment"], benchmark_result)
@@ -1579,6 +2022,7 @@ def main(argv: list[str] | None = None) -> int:
             len(admissions["stratified"]) < int(contract["budgets"]["admission_total"])
             or len(admissions["global_top_k"]) < int(contract["budgets"]["global_topk_total"])
             or len(admissions["hybrid"]) < int(contract["budgets"]["admission_total"])
+            or len(admissions["pareto_hybrid"]) < int(contract["budgets"]["admission_total"])
             or len(strict) < int(contract["budgets"]["strict_eval_total"])
         )
         final_status = "CN_B1S_CANARY_COMPLETED_WITH_NATURAL_UNDERFILL" if natural_underfill else "CN_B1S_CANARY_COMPLETED"
@@ -1624,7 +2068,10 @@ def main(argv: list[str] | None = None) -> int:
             "read_ledger": json.loads(paths["read_ledger"].read_text(encoding="utf-8")),
         }
         atomic_write_json(paths["summary"], summary)
-        for name in ("strict_metrics", "adaptive", "admission_comparison", "new_clusters", "benchmark_increment", "bottleneck", "candidate_pack", "summary"):
+        for name in (
+            "strict_metrics", "adaptive", "adaptive_research", "admission_comparison",
+            "new_clusters", "benchmark_increment", "bottleneck", "candidate_pack", "summary",
+        ):
             _record_output(record, paths[name], name, "final")
         record.update(
             {

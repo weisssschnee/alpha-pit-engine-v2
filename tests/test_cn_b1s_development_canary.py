@@ -12,6 +12,7 @@ from our_system_phase2.runtime.cn_b1s_development_canary import (
     _validate_contract,
     _materialization_input_columns,
     build_admissions,
+    apply_typed_gate,
     fast_group_ic,
     fast_group_spread,
     fast_turnover,
@@ -31,6 +32,7 @@ from our_system_phase2.services.feature_state_fabric import FieldRegistry
 REPO = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v1.json"
 REPAIRED_CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"
+CAPABILITY_CONTRACT_PATH = REPO / "runtime/run_plans/cn_generator_capability_canary_sprint1_v1.json"
 
 
 def _contract() -> dict:
@@ -96,6 +98,17 @@ def test_b1s_contract_freezes_all_requested_lanes_and_budgets() -> None:
     assert contract["adaptation_contract"]["cross_epoch_memory_allowed"] is False
 
 
+def test_generator_capability_contract_is_inside_authorized_budget_and_uses_pareto() -> None:
+    contract = json.loads(CAPABILITY_CONTRACT_PATH.read_text(encoding="utf-8"))
+    _validate_contract(contract)
+    assert sum(row["proposal"] for row in contract["lane_specs"].values()) == 4400
+    assert 4096 <= contract["budgets"]["proposal_total"] <= 8192
+    assert 128 <= contract["budgets"]["strict_eval_total"] <= 256
+    assert contract["strict_contract"]["selection_source"] == "pareto_hybrid"
+    assert contract["development_objective"]["formula"].startswith("hard gates then Pareto")
+    assert contract["capability_matrix"]["down_limit_event_history"].startswith("DISABLED")
+
+
 def test_initial_and_adaptive_generation_obey_frozen_1344_budget() -> None:
     contract = _contract()
     initial = generate_initial_proposals(contract)
@@ -112,6 +125,23 @@ def test_initial_and_adaptive_generation_obey_frozen_1344_budget() -> None:
         lane_rows = [row for row in combined if row["lane_id"] == lane]
         assert sum(row["proposal_stage"] == "control" for row in lane_rows) == contract["lane_specs"][lane]["control"]
         assert sum(row["proposal_stage"] == "adaptive" for row in lane_rows) == contract["lane_specs"][lane]["adaptive"]
+
+
+def test_capability_generation_fills_budget_with_high_exact_identity_rate() -> None:
+    contract = json.loads(CAPABILITY_CONTRACT_PATH.read_text(encoding="utf-8"))
+    initial = generate_initial_proposals(contract)
+    for index, row in enumerate(initial):
+        row["proxy_reward"] = (index % 211) / 211.0
+        row["signal_cluster_id"] = index + 1
+    adaptive = generate_adaptive_proposals(contract, initial)
+    combined = initial + adaptive
+    apply_typed_gate(combined)
+
+    assert len(combined) == 4400
+    assert len({row["candidate_id"] for row in combined}) == 4400
+    assert len({row["exact_identity"] for row in combined}) / len(combined) >= 0.80
+    assert sum(bool(row["legal"]) for row in combined) / len(combined) >= 0.90
+    assert len({row["exact_identity"] for row in combined if row["lane_id"] == "llm_proposal_repair"}) >= 220
 
 
 def test_vectorized_metrics_match_legacy_reference() -> None:
@@ -140,6 +170,8 @@ def test_vectorized_metrics_match_legacy_reference() -> None:
     assert fast_ic["ic_count"] == legacy_ic["ic_count"]
     assert fast_ic["ic_mean"] == pytest.approx(legacy_ic["ic_mean"], abs=1e-12)
     assert fast_ic["ic_abs_mean"] == pytest.approx(legacy_ic["ic_abs_mean"], abs=1e-12)
+    assert fast_ic["ic_standard_error"] is not None
+    assert 0.0 <= fast_ic["ic_abs_lcb95"] <= abs(fast_ic["ic_mean"])
     assert fast_spread["spread_count"] == legacy_spread["spread_count"]
     assert fast_spread["spread_mean"] == pytest.approx(legacy_spread["spread_mean"], abs=1e-12)
     assert fast_turn["turnover_count"] == legacy_turnover["turnover_count"]
@@ -160,9 +192,18 @@ def test_three_admission_strategies_respect_fixed_cap() -> None:
                     "candidate_id": f"{lane}_{index}",
                     "lane_id": lane,
                     "canonical_identity": f"canonical_{lane}_{index}",
+                    "exact_identity": f"exact_{lane}_{index}",
                     "signal_cluster_id": cluster,
                     "survivor": True,
+                    "legal": True,
                     "proxy_reward": 1.0 - cluster / 10000.0,
+                    "proxy_ic_mean": 0.2 - cluster / 100000.0,
+                    "proxy_ic_abs_lcb95": 0.15 - cluster / 200000.0,
+                    "proxy_turnover": 0.2,
+                    "proxy_worst_time_block_abs_ic": 0.08,
+                    "proxy_time_block_stability": 0.8,
+                    "proxy_signal_concentration": 0.1,
+                    "complexity": 6,
                     "family_id": f"{lane}:family:{index // 8}",
                     "semantic_bucket": f"{lane}:bucket:{index // 4}",
                     "parent_id": "",
@@ -175,6 +216,7 @@ def test_three_admission_strategies_respect_fixed_cap() -> None:
     assert len(admissions["stratified"]) == 168
     assert len(admissions["global_top_k"]) == 168
     assert len(admissions["hybrid"]) == 168
+    assert len(admissions["pareto_hybrid"]) == 168
     assert all(len({row["signal_cluster_id"] for row in selected}) == len(selected) for selected in admissions.values())
 
 
