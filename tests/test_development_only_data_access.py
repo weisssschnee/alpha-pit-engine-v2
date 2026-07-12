@@ -66,7 +66,7 @@ def built_release(tmp_path: Path) -> tuple[Path, Path, Path, dict]:
     split = tmp_path / "split.csv"
     source_manifest = tmp_path / "source_summary.json"
     _split(split)
-    source_manifest.write_text(json.dumps({"release": "approved_2024_2025"}), encoding="utf-8")
+    source_files = []
     for shard in range(2):
         path = source / f"shard_{shard:02d}" / PANEL_RELATIVE_PATH
         _write_groups(
@@ -76,12 +76,33 @@ def built_release(tmp_path: Path) -> tuple[Path, Path, Path, dict]:
                 _frame(["2025-04-02", "2025-10-27"], code_offset=shard * 10),
             ],
         )
+        source_files.append({"output_panel": str(path.resolve())})
+    source_file_manifest = tmp_path / "source_files.csv"
+    pd.DataFrame(source_files).to_csv(source_file_manifest, index=False)
+    source_manifest.write_text(
+        json.dumps(
+            {
+                "release": "approved_2024_2025",
+                "output_root": str(source.resolve()),
+                "shard_count": 2,
+                "panel_rel": str(PANEL_RELATIVE_PATH),
+                "manifest": str(source_file_manifest.resolve()),
+                "hard_rules": [
+                    "ctx_* sidecars are previous-available only via source_date < exec_date",
+                    "evt_uplimit_* sidecars are same-day but hidden until trade_time >= cutoff minute",
+                    "original shard root is not modified",
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
     manifest = build_release(
         source,
         output,
         split,
         source_manifest,
         release_id="test_development_release",
+        expected_source_release_manifest_sha256=sha256_file(source_manifest),
         expected_shards=2,
     )
     return output, output / "development_only_release_manifest.json", split, manifest
@@ -208,6 +229,33 @@ def test_missing_row_group_date_metadata_is_rejected(tmp_path: Path) -> None:
         validate_development_release(root, manifest_path, split)
 
 
+def test_unknown_row_group_date_endpoint_is_rejected_without_partial_outputs(tmp_path: Path) -> None:
+    root = tmp_path / "unknown_endpoint"
+    split = tmp_path / "split.csv"
+    _split(split)
+    file_path = root / "shard_00" / PANEL_RELATIVE_PATH
+    frame = _frame(["2025-04-03"])
+    _write_groups(file_path, [frame])
+    manifest_path = _manual_manifest(
+        root,
+        split,
+        file_path,
+        row_groups=[
+            {
+                "row_group_id": 0,
+                "rows": len(frame),
+                "min_trade_date": "2025-04-03",
+                "max_trade_date": "2025-04-03",
+                "data_role": "development",
+            }
+        ],
+    )
+    candidate_output = tmp_path / "candidate_proposals.csv"
+    with pytest.raises(ValueError, match="endpoints are absent"):
+        validate_development_release(root, manifest_path, split)
+    assert not candidate_output.exists()
+
+
 def test_mixed_root_is_rejected_before_any_parquet_open(built_release, monkeypatch) -> None:
     output, manifest_path, split, _ = built_release
     extra = output / "validation" / "leak.parquet"
@@ -266,3 +314,98 @@ def test_release_read_is_shard_order_invariant(built_release, tmp_path: Path) ->
     )
     assert first.equals(first.sort_values(["code", "trade_time"], kind="mergesort").reset_index(drop=True))
 
+
+def test_builder_rejects_source_manifest_bound_to_another_root(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    split = tmp_path / "split.csv"
+    _split(split)
+    panel = source / "shard_00" / PANEL_RELATIVE_PATH
+    _write_groups(panel, [_frame(["2025-04-01"])])
+    files = tmp_path / "files.csv"
+    pd.DataFrame({"output_panel": [str(panel.resolve())]}).to_csv(files, index=False)
+    summary = tmp_path / "summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "output_root": str((tmp_path / "different").resolve()),
+                "shard_count": 1,
+                "panel_rel": str(PANEL_RELATIVE_PATH),
+                "manifest": str(files.resolve()),
+                "hard_rules": [
+                    "ctx_* sidecars are previous-available only via source_date < exec_date",
+                    "evt_uplimit_* sidecars are same-day but hidden until trade_time >= cutoff minute",
+                    "original shard root is not modified",
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(PermissionError, match="approved source root"):
+        build_release(
+            source,
+            tmp_path / "out",
+            split,
+            summary,
+            release_id="bad",
+            expected_source_release_manifest_sha256=sha256_file(summary),
+            expected_shards=1,
+        )
+
+
+def test_checkpoint_is_invalidated_when_split_changes(built_release) -> None:
+    output, _, split, first = built_release
+    source = Path(first["source_root"])
+    source_summary = Path(first["source_release_manifest"])
+    changed = pd.read_csv(split)
+    changed.loc[changed["trade_date"].eq("2025-04-02"), "split"] = "validation"
+    changed.to_csv(split, index=False)
+    second = build_release(
+        source,
+        output,
+        split,
+        source_summary,
+        release_id="test_development_release_changed_split",
+        expected_source_release_manifest_sha256=sha256_file(source_summary),
+        expected_shards=2,
+    )
+    assert second["totals"]["rows"] == 12
+    assert second["files"][0]["build_provenance"]["split_manifest_sha256"] == sha256_file(split)
+
+
+def test_builder_refuses_2026_split_before_release_output(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    panel = source / "shard_00" / PANEL_RELATIVE_PATH
+    _write_groups(panel, [_frame(["2025-04-01"])])
+    split = tmp_path / "split.csv"
+    pd.DataFrame({"trade_date": ["2025-04-01", "2026-01-02"], "split": ["train", "train"]}).to_csv(split, index=False)
+    files = tmp_path / "files.csv"
+    pd.DataFrame({"output_panel": [str(panel.resolve())]}).to_csv(files, index=False)
+    summary = tmp_path / "summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "output_root": str(source.resolve()),
+                "shard_count": 1,
+                "panel_rel": str(PANEL_RELATIVE_PATH),
+                "manifest": str(files.resolve()),
+                "hard_rules": [
+                    "ctx_* sidecars are previous-available only via source_date < exec_date",
+                    "evt_uplimit_* sidecars are same-day but hidden until trade_time >= cutoff minute",
+                    "original shard root is not modified",
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    output = tmp_path / "out"
+    with pytest.raises(PermissionError, match="outside 2024-2025"):
+        build_release(
+            source,
+            output,
+            split,
+            summary,
+            release_id="no_2026",
+            expected_source_release_manifest_sha256=sha256_file(summary),
+            expected_shards=1,
+        )
+    assert not (output / "development_only_release_manifest.json").exists()

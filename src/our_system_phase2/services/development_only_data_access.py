@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import Counter
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -80,6 +81,12 @@ def _assert_development_range(
     maximum: pd.Timestamp,
     roles: Mapping[pd.Timestamp, str],
 ) -> None:
+    if minimum > maximum:
+        raise ValueError(f"invalid row-group date range: {minimum.date()}..{maximum.date()}")
+    if minimum not in roles or maximum not in roles:
+        raise ValueError(
+            f"row-group date endpoints are absent from split manifest: {minimum.date()}..{maximum.date()}"
+        )
     covered = [role for date, role in roles.items() if minimum <= date <= maximum]
     if not covered:
         raise ValueError(f"row-group date range is absent from split manifest: {minimum.date()}..{maximum.date()}")
@@ -280,6 +287,16 @@ def read_development_panel(
     output = pd.concat(frames, ignore_index=True).sort_values(
         ["code", "trade_time"], kind="mergesort"
     ).reset_index(drop=True)
+    opened_file_roles = Counter(str(row["assigned_data_role"]) for row in entries)
+    rows_by_role = Counter()
+    for row in entries:
+        rows_by_role[str(row["assigned_data_role"])] += int(row["rows_read"])
+    forbidden_file_opens = sum(
+        count for role_name, count in opened_file_roles.items() if role_name not in DEVELOPMENT_ROLES
+    )
+    forbidden_row_group_reads = sum(
+        1 for row in entries if str(row["assigned_data_role"]) not in DEVELOPMENT_ROLES
+    )
     ledger = {
         "ledger_version": "cn_development_only_read_ledger_v1",
         "release_hash": release.release_hash,
@@ -288,11 +305,13 @@ def read_development_panel(
         "requested_trade_date": str(trade_date.date()),
         "requested_data_role": "development",
         "entries": entries,
-        "forbidden_file_open_count": 0,
-        "forbidden_row_group_read_count": 0,
-        "validation_rows_read": 0,
-        "holdout_rows_read": 0,
-        "forward_rows_read": 0,
+        "opened_file_count_by_role": dict(sorted(opened_file_roles.items())),
+        "rows_read_by_role": dict(sorted(rows_by_role.items())),
+        "forbidden_file_open_count": forbidden_file_opens,
+        "forbidden_row_group_read_count": forbidden_row_group_reads,
+        "validation_rows_read": int(rows_by_role["validation"]),
+        "holdout_rows_read": int(rows_by_role["holdout"]),
+        "forward_rows_read": int(rows_by_role["forward"]),
         "total_rows_read": sum(int(row["rows_read"]) for row in entries),
         "selected_rows": len(output),
     }
@@ -335,4 +354,3 @@ def initialize_cache_root(cache_root: Path, expected: Mapping[str, str], *, requ
             return
     cache_root.mkdir(parents=True, exist_ok=True)
     atomic_write_json(provenance_path, dict(expected))
-
