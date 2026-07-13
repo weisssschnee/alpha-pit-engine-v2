@@ -15,14 +15,14 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-13T21:08:23.911949+00:00",
+    "generated_at": "2026-07-13T21:19:18.894337+00:00",
     "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
     "generator_sha256": "c48c489054c41951195e6b6e3a7a1ea6f1f33913a3652af88a250e37268fa177",
     "graph_type": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT",
     "phase": "CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED",
     "registry_sha256": "657925562cfa497d4d82b1b55ed50f140b6bd677480f3ec783b01628298f361e",
     "registry_version": "cn_pit_fundamental_fabric_architecture_registry_v6",
-    "source_repo_sha": "dd74671f51fac8300069fc52c56a66217cf8d0da",
+    "source_repo_sha": "ba5d5a6657b7884caf5eb0cdaf21feb9578ee465",
     "status_authority_path": ".planning/architecture/architecture_registry.json",
     "status_authority_sha256": "9551da8593aa6ff49aa046dd61bbeba3a4d37a7b8b7d6cf8511f436a37f74737",
     "status_values": [
