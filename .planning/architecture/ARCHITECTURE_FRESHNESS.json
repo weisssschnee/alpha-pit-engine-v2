@@ -12,41 +12,41 @@
   "derived_artifacts": [
     {
       "path": ".planning/architecture/architecture_graph.json",
-      "sha256": "59eaa3ed541465f9d988a93ff46ec58bdcfedbc10faabaf5cc728be68f6f571d",
-      "size": 98699
+      "sha256": "f8aac2e46418e281bc1196a4623b32f35656687ec2aafd9f8aa041782900a7ec",
+      "size": 104101
     },
     {
       "path": ".planning/architecture/architecture_graph.html",
-      "sha256": "42d4955558c7109932e181472b55be0fdb1ac8f68947ccffd161624ce27b5af0",
-      "size": 18493
+      "sha256": "b12d524764db60bb49a11dc992cca3117d4a8ebd33a94f929a6b7c1783b60aae",
+      "size": 19865
     },
     {
       "path": ".planning/architecture/CURRENT_ARCHITECTURE.md",
-      "sha256": "3c8d46943c8e8f28db65190e3abbaacbf3a88c41518a0259c56c89cc98ef5e1a",
-      "size": 4549
+      "sha256": "fd2c4405b67edb4b882a4544f3038d4cb7ce1bce3107733f13f8efb335c1fe70",
+      "size": 5766
     },
     {
       "path": ".planning/architecture/ARCHITECTURE_BOUNDARY.md",
-      "sha256": "db6a568a42774f74bebb487fa5fde3e999101d5f08b65cfd51d578e7afda994b",
-      "size": 4278
+      "sha256": "b65d44ed57199805b1eeadf8a485950f31696a564c4381ebe2eb42421c7d14da",
+      "size": 5504
     },
     {
       "path": ".planning/architecture/EVOLUTION_MAP.md",
-      "sha256": "49f0d5f591dd9b9d7573e1cd372d7e96626a61add63f9e256045779c120b0f1f",
-      "size": 8433
+      "sha256": "ccd276ac4ec76dacd6001b5818cc7763f3ed50b6dfeeafe7fa9d6d08b559df86",
+      "size": 9408
     },
     {
       "path": ".planning/STATE.md",
-      "sha256": "ab0850bc36b950331fb2d5095d5aaf2da95b7da8b0f42020ac490d0eaaffd0b4",
-      "size": 5930
+      "sha256": "f75141076aa6812ac1c7d6e6d01932c95fd4857abd5ad797c3759c62f5036ea9",
+      "size": 7063
     }
   ],
-  "generated_at": "2026-07-13T16:17:08.511052+00:00",
+  "generated_at": "2026-07-13T21:08:24.077817+00:00",
   "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
   "generator_sha256": "c48c489054c41951195e6b6e3a7a1ea6f1f33913a3652af88a250e37268fa177",
-  "source_repo_sha": "12448e07e4d96f330310178985b299059290405e",
+  "source_repo_sha": "dd74671f51fac8300069fc52c56a66217cf8d0da",
   "stale": false,
   "status_authority_path": ".planning/architecture/architecture_registry.json",
-  "status_authority_sha256": "fc8c860e7159ca55afc751e176aba58ad059cd309d4ac8959a87960459de1812",
+  "status_authority_sha256": "9551da8593aa6ff49aa046dd61bbeba3a4d37a7b8b7d6cf8511f436a37f74737",
   "version": "cn_architecture_freshness_v1"
 }

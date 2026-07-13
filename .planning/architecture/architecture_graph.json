@@ -15,16 +15,16 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-13T16:17:08.483026+00:00",
+    "generated_at": "2026-07-13T21:08:23.911949+00:00",
     "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
     "generator_sha256": "c48c489054c41951195e6b6e3a7a1ea6f1f33913a3652af88a250e37268fa177",
     "graph_type": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT",
-    "phase": "CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE",
-    "registry_sha256": "b51bc7293b881d7af39718f48c869b8937c15d90e7b28c3b34ab8c6d0ad71efd",
-    "registry_version": "cn_broad_event_recovery_architecture_registry_v5",
-    "source_repo_sha": "12448e07e4d96f330310178985b299059290405e",
+    "phase": "CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED",
+    "registry_sha256": "657925562cfa497d4d82b1b55ed50f140b6bd677480f3ec783b01628298f361e",
+    "registry_version": "cn_pit_fundamental_fabric_architecture_registry_v6",
+    "source_repo_sha": "dd74671f51fac8300069fc52c56a66217cf8d0da",
     "status_authority_path": ".planning/architecture/architecture_registry.json",
-    "status_authority_sha256": "fc8c860e7159ca55afc751e176aba58ad059cd309d4ac8959a87960459de1812",
+    "status_authority_sha256": "9551da8593aa6ff49aa046dd61bbeba3a4d37a7b8b7d6cf8511f436a37f74737",
     "status_values": [
       "DEPRECATED",
       "FROZEN",
@@ -418,6 +418,48 @@
       "relation": "report_only_to_positive_memory",
       "source": "broad_event_recovery",
       "target": "scheduler_memory_feedback"
+    },
+    {
+      "evidence": "1,225 absent and 2 semantic-equivalent source fields in gap report",
+      "permission": "ALLOWED",
+      "relation": "supplies_gap_baseline_and_keeps_new_fields_unexposed",
+      "source": "nextgen_field_registry_121",
+      "target": "pit_fundamental_fabric_v1"
+    },
+    {
+      "evidence": "maximum observable time 2025-07-07T15:00:00 and development-only ledger",
+      "permission": "ALLOWED",
+      "relation": "supplies_fixed_train_calendar_and_cutoff",
+      "source": "development_only_release",
+      "target": "pit_fundamental_fabric_v1"
+    },
+    {
+      "evidence": "adapter and as-of resolver tests",
+      "permission": "ALLOWED",
+      "relation": "supplies_lazy_typed_level_change_event_condition_routes",
+      "source": "pit_fundamental_fabric_v1",
+      "target": "feature_state_fabric"
+    },
+    {
+      "evidence": "all 1,227 fields have generator exposure false",
+      "permission": "FORBIDDEN",
+      "relation": "new_fundamental_fields_to_formal_search",
+      "source": "pit_fundamental_fabric_v1",
+      "target": "formal_search_frozen"
+    },
+    {
+      "evidence": "run manifest and access ledger",
+      "permission": "FORBIDDEN",
+      "relation": "fabric_or_report_output_to_memory",
+      "source": "pit_fundamental_fabric_v1",
+      "target": "scheduler_memory_feedback"
+    },
+    {
+      "evidence": "run manifest reports sealed and zero emitted/used rows",
+      "permission": "FORBIDDEN",
+      "relation": "forward_to_fundamental_materialization_or_policy",
+      "source": "forward_2026",
+      "target": "pit_fundamental_fabric_v1"
     },
     {
       "evidence": "Sprint-2 data contract",
@@ -2461,6 +2503,83 @@
         "src/our_system_phase2/runtime/cn_sprint2_epoch_c_analysis.py",
         "tests/test_cn_sprint2_epoch_c_analysis.py",
         "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_analysis_run_manifest_v1.json"
+      ]
+    },
+    {
+      "blocker": "zygc_em has no credible disclosure clock and remains PIT_CONTRACT_UNRESOLVED; statement files are current snapshots without superseded historical revision values",
+      "data_role": "development_train_only_no_performance",
+      "feedback_permission": "FABRIC_INFRASTRUCTURE_ONLY_NO_GENERATOR_EXPOSURE_NO_REWARD_NO_PROMOTION",
+      "id": "pit_fundamental_fabric_v1",
+      "implementation_path": [
+        "src/our_system_phase2/services/pit_fundamental_fabric.py",
+        "scripts/build_pit_fundamental_fabric.py",
+        "runtime/cn_pit_fundamental_fabric_v1",
+        "reports/cn_pit_fundamental_fabric_v1"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/services/pit_fundamental_fabric.py",
+        "scripts/build_pit_fundamental_fabric.py",
+        "runtime/cn_pit_fundamental_fabric_v1",
+        "reports/cn_pit_fundamental_fabric_v1"
+      ],
+      "input_artifact": [
+        "26,188 symbol-partitioned parquet files",
+        "1,227-field union schema",
+        "2024-2025 fixed split manifest",
+        "121-field registry",
+        "frozen Broad Event discovery pack hash"
+      ],
+      "input_artifacts": [
+        "26,188 symbol-partitioned parquet files",
+        "1,227-field union schema",
+        "2024-2025 fixed split manifest",
+        "121-field registry",
+        "frozen Broad Event discovery pack hash"
+      ],
+      "label": "CN PIT fundamental feature fabric v1",
+      "last_verified_sha": "10e2b6ea5f2aa08ba9f5326cd7bea2b9b77f4e38b7ecdd7545448ed3ef400495",
+      "last_verified_sha_scope": [
+        "runtime/cn_pit_fundamental_fabric_v1/pit_sidecar_manifest.json",
+        "runtime/cn_pit_fundamental_fabric_v1/fundamental_semantic_registry.json",
+        "runtime/cn_pit_fundamental_fabric_v1/fundamental_observable_time_contract.json",
+        "runtime/cn_pit_fundamental_fabric_v1/fundamental_121_gap_report.json",
+        "reports/cn_pit_fundamental_fabric_v1/artifact_index.json"
+      ],
+      "output_artifact": [
+        "versioned PIT sidecar manifest",
+        "stock-session as-of resolver",
+        "lazy Feature Fabric adapter",
+        "semantic and observable-time registries",
+        "coverage/missingness and 121-field gap reports",
+        "development-only access ledger"
+      ],
+      "output_artifacts": [
+        "versioned PIT sidecar manifest",
+        "stock-session as-of resolver",
+        "lazy Feature Fabric adapter",
+        "semantic and observable-time registries",
+        "coverage/missingness and 121-field gap reports",
+        "development-only access ledger"
+      ],
+      "status": "PARTIAL",
+      "test/evidence": [
+        "tests/test_pit_fundamental_fabric.py",
+        "reports/cn_pit_fundamental_fabric_v1/run_manifest.json",
+        "reports/cn_pit_fundamental_fabric_v1/development_only_access_ledger.jsonl",
+        "reports/cn_pit_fundamental_fabric_v1/resource_performance_report.json"
+      ],
+      "test_evidence": [
+        "tests/test_pit_fundamental_fabric.py",
+        "reports/cn_pit_fundamental_fabric_v1/run_manifest.json",
+        "reports/cn_pit_fundamental_fabric_v1/development_only_access_ledger.jsonl",
+        "reports/cn_pit_fundamental_fabric_v1/resource_performance_report.json"
+      ],
+      "verification_paths": [
+        "runtime/cn_pit_fundamental_fabric_v1/pit_sidecar_manifest.json",
+        "runtime/cn_pit_fundamental_fabric_v1/fundamental_semantic_registry.json",
+        "runtime/cn_pit_fundamental_fabric_v1/fundamental_observable_time_contract.json",
+        "runtime/cn_pit_fundamental_fabric_v1/fundamental_121_gap_report.json",
+        "reports/cn_pit_fundamental_fabric_v1/artifact_index.json"
       ]
     },
     {
