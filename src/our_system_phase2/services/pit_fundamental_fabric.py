@@ -234,6 +234,8 @@ class FundamentalFieldRequest:
             "zygc_em": "zygc",
         }.get(self.source_table, self.source_table)
         field = re.sub(r"[^0-9A-Za-z_]+", "_", self.source_field).strip("_").lower()
+        if not field:
+            field = "field_" + hashlib.sha256(self.source_field.encode("utf-8")).hexdigest()[:12]
         return f"fund_{table_tag}_{field}_{self.transform}"
 
 

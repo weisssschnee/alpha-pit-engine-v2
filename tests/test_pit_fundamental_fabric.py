@@ -205,6 +205,14 @@ def test_symbol_partition_prefix_and_unresolved_family_guard(tmp_path: Path) -> 
         )
 
 
+def test_non_ascii_source_fields_get_distinct_stable_output_names() -> None:
+    holder_count = FundamentalFieldRequest("main_stock_holder_sina", "股东总数")
+    average_holding = FundamentalFieldRequest("main_stock_holder_sina", "平均持股数")
+
+    assert holder_count.output_name.startswith("fund_holder_field_")
+    assert holder_count.output_name != average_holding.output_name
+
+
 def test_atomic_session_cache_is_deterministic(tmp_path: Path) -> None:
     cache = DeterministicSessionCache(tmp_path)
     coordinates = pd.DataFrame(
