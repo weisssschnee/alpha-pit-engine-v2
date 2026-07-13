@@ -1,0 +1,343 @@
+{
+  "behavior_cluster_count": 10,
+  "boundaries": {
+    "automatic_main_search_entry": false,
+    "candidate_promotion": false,
+    "cross_sprint_memory": false,
+    "development_only": true,
+    "forward_2026_access": false
+  },
+  "contract_hash": "613dd6c81d0c77691ed6c5dc0e913df4431a2ee5782d4c7240182aa45670cb97",
+  "mechanism_count": 11,
+  "mechanisms": [
+    {
+      "behavior_cluster_id": "a53f40d0b7af17531956",
+      "candidate_promotion": false,
+      "horizon_bars": 15,
+      "mechanism_id": "01166fdd6c3a2aab",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "ac876a949d908d2ba04551f3",
+          "matched_increment": 0.0056719723143424,
+          "seed": 1729,
+          "support": 590,
+          "top_date_share": 0.0067681895093062,
+          "top_symbol_share": 0.0744500846023688
+        },
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "ac876a949d908d2ba04551f3",
+          "matched_increment": 0.0056719723143424,
+          "seed": 2718,
+          "support": 590,
+          "top_date_share": 0.0067681895093062,
+          "top_symbol_share": 0.0744500846023688
+        }
+      ],
+      "source": "HOTNESS_CHANGE",
+      "transform": "intensity",
+      "variant": "raw"
+    },
+    {
+      "behavior_cluster_id": "a0f2d2302452f499a513",
+      "candidate_promotion": false,
+      "horizon_bars": 30,
+      "mechanism_id": "16c53855e757c585",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "b08d17fc630581d6e93e53da",
+          "matched_increment": 0.0001673799473269,
+          "seed": 1729,
+          "support": 171178,
+          "top_date_share": 0.0061456495577702,
+          "top_symbol_share": 0.0011800581850471
+        },
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "b08d17fc630581d6e93e53da",
+          "matched_increment": 0.0001700355057003,
+          "seed": 2718,
+          "support": 171178,
+          "top_date_share": 0.0061456495577702,
+          "top_symbol_share": 0.0011800581850471
+        }
+      ],
+      "source": "CHIP_STRUCTURE_CHANGE",
+      "transform": "intensity",
+      "variant": "compressed"
+    },
+    {
+      "behavior_cluster_id": "78652840655efa47ed9b",
+      "candidate_promotion": false,
+      "horizon_bars": 5,
+      "mechanism_id": "4fbf6cc691461c6c",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "9a9786f2db228d2f0e69457a",
+          "matched_increment": 0.0070284262493116,
+          "seed": 1729,
+          "support": 362,
+          "top_date_share": 0.0027624309392265,
+          "top_symbol_share": 0.0
+        },
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "9a9786f2db228d2f0e69457a",
+          "matched_increment": 0.0076101371971267,
+          "seed": 2718,
+          "support": 362,
+          "top_date_share": 0.0027624309392265,
+          "top_symbol_share": 0.0
+        }
+      ],
+      "source": "MARKET_ECOLOGY_TRANSITION",
+      "transform": "pre15_interaction",
+      "variant": "raw"
+    },
+    {
+      "behavior_cluster_id": "5a87418ca70448a5f9b6",
+      "candidate_promotion": false,
+      "horizon_bars": 15,
+      "mechanism_id": "7b391e59670c491e",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "04717d51c89dd3863b173a6d",
+          "matched_increment": 0.0003395115161754,
+          "seed": 1729,
+          "support": 362,
+          "top_date_share": 0.0027624309392265,
+          "top_symbol_share": 0.0
+        },
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "04717d51c89dd3863b173a6d",
+          "matched_increment": 0.0003874357580155,
+          "seed": 2718,
+          "support": 362,
+          "top_date_share": 0.0027624309392265,
+          "top_symbol_share": 0.0
+        }
+      ],
+      "source": "MARKET_ECOLOGY_TRANSITION",
+      "transform": "pre5_interaction",
+      "variant": "compressed"
+    },
+    {
+      "behavior_cluster_id": "d1970c9d08af4a33a6cb",
+      "candidate_promotion": false,
+      "horizon_bars": 5,
+      "mechanism_id": "8a64cdfefa6bcc35",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 4,
+          "exact_behavior_id": "1594fed957c9c14c3148addd",
+          "matched_increment": 1.4021146102738457e-06,
+          "seed": 1729,
+          "support": 171178,
+          "top_date_share": 0.0061456495577702,
+          "top_symbol_share": 0.0011800581850471
+        },
+        {
+          "consistent_positive_blocks": 4,
+          "exact_behavior_id": "1594fed957c9c14c3148addd",
+          "matched_increment": 1.4021146102738457e-06,
+          "seed": 2718,
+          "support": 171178,
+          "top_date_share": 0.0061456495577702,
+          "top_symbol_share": 0.0011800581850471
+        }
+      ],
+      "source": "CHIP_STRUCTURE_CHANGE",
+      "transform": "pre15_interaction",
+      "variant": "compressed"
+    },
+    {
+      "behavior_cluster_id": "e3770b7bdb20393fb88d",
+      "candidate_promotion": false,
+      "horizon_bars": 15,
+      "mechanism_id": "9041949344c58bcf",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 4,
+          "exact_behavior_id": "c53fe152876a7c91a9f234ef",
+          "matched_increment": 0.0004574208721623,
+          "seed": 1729,
+          "support": 1837,
+          "top_date_share": 0.0070767555797495,
+          "top_symbol_share": 0.0244964616222101
+        },
+        {
+          "consistent_positive_blocks": 4,
+          "exact_behavior_id": "c53fe152876a7c91a9f234ef",
+          "matched_increment": 0.0011591913723292,
+          "seed": 2718,
+          "support": 1837,
+          "top_date_share": 0.0070767555797495,
+          "top_symbol_share": 0.0244964616222101
+        }
+      ],
+      "source": "BILLBOARD_CHANGE",
+      "transform": "direction",
+      "variant": "raw"
+    },
+    {
+      "behavior_cluster_id": "8fe239d00731115ef8e9",
+      "candidate_promotion": false,
+      "horizon_bars": 30,
+      "mechanism_id": "9618ee1100155073",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "2ba64bde681f4b342fe743b1",
+          "matched_increment": 5.781420493814475e-06,
+          "seed": 1729,
+          "support": 171178,
+          "top_date_share": 0.0061456495577702,
+          "top_symbol_share": 0.0011800581850471
+        },
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "2ba64bde681f4b342fe743b1",
+          "matched_increment": 5.781420493814475e-06,
+          "seed": 2718,
+          "support": 171178,
+          "top_date_share": 0.0061456495577702,
+          "top_symbol_share": 0.0011800581850471
+        }
+      ],
+      "source": "CHIP_STRUCTURE_CHANGE",
+      "transform": "pre15_interaction",
+      "variant": "raw"
+    },
+    {
+      "behavior_cluster_id": "c196640664d93bc1fee2",
+      "candidate_promotion": false,
+      "horizon_bars": 30,
+      "mechanism_id": "ac96e6d4db507a1a",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "3fbfdd5f705ad4350bd8647a",
+          "matched_increment": 8.799136184574753e-05,
+          "seed": 1729,
+          "support": 362,
+          "top_date_share": 0.0027624309392265,
+          "top_symbol_share": 0.0
+        },
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "3fbfdd5f705ad4350bd8647a",
+          "matched_increment": 8.799136184574753e-05,
+          "seed": 2718,
+          "support": 362,
+          "top_date_share": 0.0027624309392265,
+          "top_symbol_share": 0.0
+        }
+      ],
+      "source": "MARKET_ECOLOGY_TRANSITION",
+      "transform": "direction",
+      "variant": "compressed"
+    },
+    {
+      "behavior_cluster_id": "349c48478d22e518eb17",
+      "candidate_promotion": false,
+      "horizon_bars": 30,
+      "mechanism_id": "b22d9565d0b39241",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "7d73598bfac13ca7c6323c78",
+          "matched_increment": 0.0010278372486246,
+          "seed": 1729,
+          "support": 590,
+          "top_date_share": 0.0067681895093062,
+          "top_symbol_share": 0.0744500846023688
+        },
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "7d73598bfac13ca7c6323c78",
+          "matched_increment": 0.0015122481436246,
+          "seed": 2718,
+          "support": 590,
+          "top_date_share": 0.0067681895093062,
+          "top_symbol_share": 0.0744500846023688
+        }
+      ],
+      "source": "HOTNESS_CHANGE",
+      "transform": "intensity",
+      "variant": "compressed"
+    },
+    {
+      "behavior_cluster_id": "53a421c0bda795907500",
+      "candidate_promotion": false,
+      "horizon_bars": 5,
+      "mechanism_id": "cf70889cec0c77df",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "fd276165ce69bd96d46487f6",
+          "matched_increment": 0.0005072080242497,
+          "seed": 1729,
+          "support": 1837,
+          "top_date_share": 0.0070767555797495,
+          "top_symbol_share": 0.0244964616222101
+        },
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "fd276165ce69bd96d46487f6",
+          "matched_increment": 0.0007501960954532,
+          "seed": 2718,
+          "support": 1837,
+          "top_date_share": 0.0070767555797495,
+          "top_symbol_share": 0.0244964616222101
+        }
+      ],
+      "source": "BILLBOARD_CHANGE",
+      "transform": "intensity",
+      "variant": "compressed"
+    },
+    {
+      "behavior_cluster_id": "78652840655efa47ed9b",
+      "candidate_promotion": false,
+      "horizon_bars": 30,
+      "mechanism_id": "d42c0973350238e0",
+      "seed_evidence": [
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "9a9786f2db228d2f0e69457a",
+          "matched_increment": 0.0075498535843514,
+          "seed": 1729,
+          "support": 362,
+          "top_date_share": 0.0027624309392265,
+          "top_symbol_share": 0.0
+        },
+        {
+          "consistent_positive_blocks": 3,
+          "exact_behavior_id": "9a9786f2db228d2f0e69457a",
+          "matched_increment": 0.0096434490213426,
+          "seed": 2718,
+          "support": 362,
+          "top_date_share": 0.0027624309392265,
+          "top_symbol_share": 0.0
+        }
+      ],
+      "source": "MARKET_ECOLOGY_TRANSITION",
+      "transform": "pre15_interaction",
+      "variant": "raw"
+    }
+  ],
+  "semantic_registry_hash": "100b27f0645b93399ddec79de108f0906cd38a9b84a771cdfd3e4e516bdf5d34",
+  "source_run_repo_sha": "f0326962a90e86fa1de3c249760b45a7e4d99542",
+  "sources": [
+    "BILLBOARD_CHANGE",
+    "CHIP_STRUCTURE_CHANGE",
+    "HOTNESS_CHANGE",
+    "MARKET_ECOLOGY_TRANSITION"
+  ],
+  "status": "BROAD_EVENT_DISCOVERY_ENTRY_AUTHORIZED",
+  "version": "cn_broad_event_discovery_entry_pack_v1"
+}

@@ -25,6 +25,8 @@ Updated: 2026-07-13
 | Sprint-1 closed partial | Larger search budget could have been mistaken for discovery progress | New clusters per strict fell at Epoch-A scale, the legacy single-trigger Event path underfilled and pack overlap was seed-sensitive; no broad Event conclusion or forward pack follows |
 | Development survivor reclassified | A 98.4% pass layer could be mistaken for quality selection | The layer is now `DEVELOPMENT_ELIGIBLE`; frozen `STRICT_PRIORITY_ELIGIBLE` reduces it to 10% and has OOF plus realized strict lift |
 | Broad Event denial withdrawn | A cutoff-latched occurrence field was treated as a live sealed-board lifecycle state, its missing 1-to-0 transition was treated as failed exit/reseal support, and Epoch-C zero clusters were read as execution evidence | The audit contract is invalid, Epoch-C Event budgets were all zero, broad Event capability remains unevaluated, and the underlying Event data are not invalidated |
+| Broad Event recovery completed | Event capability was unevaluated after the atomic interpretation supersession | A semantic registry, conservative lifecycle, episode inference, matched controls and two-seed r5 CANARY produced 11 reproduced mechanisms in 10 new behavior clusters; only a frozen discovery entry pack is authorized |
+| Full fundamental source gap surfaced | The 121-field registry could be mistaken for the complete user-provided field universe | PIT balance-sheet, profit, cash-flow, major-holder and business-composition assets exist locally, but only valuation/market-cap/holder subsets are materialized; full statements remain outside search pending a versioned lag contract |
 | State support repaired | State evidence was sparse and could be degenerate | Raw-derived states pass support checks and add 465 clusters per seed, but do not beat matched static economically |
 | RX/UCB isolated as primary adaptive | Several named adaptive algorithms competed without strict matched controls | RX/UCB alone receives adaptive expansion and wins strict matched-control comparison in all three seeds; all statistics remain ephemeral |
 | Shared-backbone seed design executed | Seed sensitivity was judged mainly from exact pack overlap | An 8,192-identity shared backbone has rank correlation 1.0 and near-perfect cluster stability; the strict pack three-way Jaccard is 0.8488 |
@@ -57,5 +59,9 @@ shard-local split repair
   -> 32,739 / 32,768 exact union defect and seed-namespace guard
   -> Sprint-2 partial closure / research pack frozen / forward still sealed
   -> active Event interpretation corrected / historical tables unchanged
-  -> Broad Event recovery authorized but not started
+  -> Broad Event semantic registry and conservative lifecycle
+  -> r2/r3 fail-closed preflight corrections
+  -> r5 two-seed CANARY / 477,497 episodes / zero forbidden reads
+  -> 11 reproduced mechanisms in 10 new behavior clusters
+  -> frozen Broad Event discovery entry pack / no promotion / forward sealed
 ```

@@ -2,7 +2,7 @@
 
 Updated: 2026-07-13
 
-Current state: `CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED`
+Current state: `CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE`
 
 ## Accepted foundations
 
@@ -18,6 +18,8 @@ Current state: `CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED`
 - `EVENT_AUDIT_CONTRACT_INVALID`
 - `EVENT_LANE_ZERO_BUDGET_NOT_EXECUTED`
 - `EVENT_DATA_NOT_INVALIDATED`
+- `BROAD_EVENT_INCREMENT_OBSERVED_REPRODUCIBLE`
+- `BROAD_EVENT_DISCOVERY_ENTRY_AUTHORIZED`
 
 Phase A conclusions remain unchanged: generation structural redundancy exists,
 but catastrophic signal-level collapse and downstream concentration
@@ -53,6 +55,30 @@ State novelty is operational, but average state strict evidence is weaker than
 the matched static group. It is not described as independent economic
 increment.
 
+## Broad Event recovery result
+
+The r5 development-only CANARY completed on 77o at
+`f0326962a90e86fa1de3c249760b45a7e4d99542`. All validation, holdout, 2026,
+forbidden-file and forbidden-row-group counters are zero. It materialized
+477,497 eligible episodes across eight operational sources.
+
+The conservative limit lifecycle accepted 243 of 263 vendor occurrences;
+241 accepted episodes aligned within two minutes. Precision is 99.18% and
+vendor coverage is 92.40%. Rejected uncertain sessions remain unknown rather
+than negative observations.
+
+Two fixed seeds produced 18 and 19 matched-control survivors. Eleven mechanisms
+reproduced across both seeds and occupy ten behavior clusters separated from
+structural, static and temporal controls. The reproduced sources are
+billboard change, chip-structure change, hotness change and market-ecology
+transition. Limit lifecycle and vendor occurrence passed support but did not
+produce a shared survivor in this CANARY.
+
+The mean matched increment across all Event proposals is negative. The accepted
+interpretation is localized reproducible Event mechanisms, not uniform Broad
+Event superiority. The 11-mechanism discovery entry pack is research-only and
+cannot promote candidates or write memory.
+
 ## Event interpretation correction
 
 The previous broad Event denial is withdrawn. The historical generator used
@@ -82,9 +108,9 @@ No forward-authorization candidate pack was created.
 - Validation, holdout, spent, sealed and 2026 data remain unavailable to
   reward, admission, scheduler, family decisions and memory.
 - Plate/industry remains user-deferred and disabled.
-- Broad Event search remains stopped until field semantics, multi-source event
-  contracts, matched controls and the corrected audit preflight pass. The
-  subsequent development-only CANARY is authorized but has not started.
+- Broad Event semantics, multi-source episodes, matched controls and CANARY are
+  complete. Only the frozen discovery entry pack may enter the next candidate
+  discovery; formal search and automatic promotion remain stopped.
 - Sprint-2 selector, RX values and strict results are archived evidence, not
   persistent positive or negative memory.
 - Epoch-D remains unrun. State did not establish independent matched-control
@@ -92,11 +118,12 @@ No forward-authorization candidate pack was created.
 
 ## Next formal decision point
 
-Recommendation: `IMPLEMENT_CN_BROAD_EVENT_SYSTEM_RECOVERY`.
+Recommendation: `INTEGRATE_FROZEN_BROAD_EVENT_DISCOVERY_ENTRY_PACK`.
 
-Any next sprint must freeze a fresh development-only contract. Its first
-engineering gate is the now-tested global cross-seed exact-identity guard. It
-must first inventory all event-adjacent fields by semantic kind and observable
-time, then implement lifecycle, disclosure and market-ecology Event sources.
-It must not reopen 2026 or repeat Epoch-C solely to replace the missing 29
-unique identities.
+The next discovery contract may consume the 11 frozen Event mechanisms with
+fresh quotas, but may not refit from r5 ranks, promote candidates, persist
+memory or open 2026. A separate Feature Fabric gap is now explicit: the local
+PIT asset/profit/cash-flow/holder/business-composition source exists, while the
+current 121-field materialization includes only valuation, market-cap and
+holder-context subsets. Full statement fundamentals require a versioned,
+source-lagged registry expansion before any search use.

@@ -1,0 +1,37 @@
+{
+  "candidate_promotion": false,
+  "cross_sprint_memory_persisted": false,
+  "data_release_manifest_sha256": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+  "discovery_entry_pack_sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8",
+  "forbidden_access_counters_zero": true,
+  "forward_2026_accessed": false,
+  "generated_at": "2026-07-13T16:06:53.383017+00:00",
+  "r5_contract_hash": "613dd6c81d0c77691ed6c5dc0e913df4431a2ee5782d4c7240182aa45670cb97",
+  "r5_run_manifest_sha256": "e61a60fdeb7e2fd9e780d63c81c6e31be1c9afc409021a9cb19eac49ea5571fb",
+  "runs": [
+    {
+      "canary_executed": false,
+      "id": "r2",
+      "status": "INSUFFICIENT_SUPPORT"
+    },
+    {
+      "canary_executed": false,
+      "id": "r3",
+      "status": "SEMANTIC_CONTRACT_INVALID"
+    },
+    {
+      "canary_executed": true,
+      "id": "r4",
+      "status": "CANARY_NO_INCREMENT_OBSERVED_REPORTING_CONTRACT_SUPERSEDED"
+    },
+    {
+      "canary_executed": true,
+      "id": "r5",
+      "repo_sha": "f0326962a90e86fa1de3c249760b45a7e4d99542",
+      "status": "BROAD_EVENT_INCREMENT_OBSERVED_REPRODUCIBLE"
+    }
+  ],
+  "split_manifest_sha256": "fab9fb8c3dc26099bb4fc1b8baf11ae5f1430ce94a89e1b816d270cc12e082e7",
+  "status": "CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE",
+  "version": "cn_broad_event_recovery_closure_manifest_v1"
+}

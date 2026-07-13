@@ -2,9 +2,9 @@
 
 Updated: 2026-07-13
 
-State: `CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED` on the physically
-isolated 2024-2025 development-only release. Sealed evaluation, promotion and
-cross-sprint memory remain frozen.
+State: `CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE` on the
+physically isolated 2024-2025 development-only release. Sealed evaluation,
+promotion and cross-sprint memory remain frozen.
 
 This projection is generated and checked from
 `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json` plus
@@ -25,7 +25,7 @@ flowchart LR
     TEMPORAL["IMPLEMENTED<br/>typed temporal generator<br/>250 new clusters/seed"] --> EPOCHC
     STATE["PARTIAL<br/>state generator<br/>465 new clusters/seed<br/>no matched-static increment"] --> EPOCHC
     LEGACY_EVENT["DEPRECATED<br/>single cutoff-latched trigger<br/>zero Epoch-C budget"] -. "NOT EXECUTED" .-> EPOCHC
-    FIELDS["IMPLEMENTED<br/>121-field registry + sidecars"] --> BROAD_EVENT["PLANNED<br/>Broad Event recovery<br/>semantics and audit first"]
+    FIELDS["IMPLEMENTED<br/>121-field registry + sidecars"] --> BROAD_EVENT["IMPLEMENTED<br/>Broad Event recovery<br/>8 operational sources"]
     LEGACY_EVENT -->|"superseded interpretation"| BROAD_EVENT
     DEV --> BROAD_EVENT
     RX["IMPLEMENTED<br/>RX/UCB only primary adaptive<br/>3/3 strict wins"] --> EPOCHC
@@ -33,8 +33,9 @@ flowchart LR
     EPOCHC --> PACK["FROZEN<br/>377 exact research identities<br/>three-way Jaccard 0.8488"]
     PACK -. "NO PROMOTION" .-> SEALED["FROZEN<br/>validation / holdout / 2026"]
     PACK -. "NO POSITIVE MEMORY" .-> MEMORY["FROZEN<br/>scheduler / permanent memory"]
-    BROAD_EVENT -. "NO CANARY BEFORE PREFLIGHT" .-> EVENT_CANARY["PLANNED<br/>development-only Event CANARY"]
-    EVENT_CANARY -. "NO PROMOTION / NO 2026" .-> SEALED
+    BROAD_EVENT --> EVENT_CANARY["IMPLEMENTED<br/>two-seed development CANARY<br/>477,497 episodes"]
+    EVENT_CANARY --> EVENT_PACK["FROZEN<br/>11 mechanisms / 10 new behavior clusters"]
+    EVENT_PACK -. "NO PROMOTION / NO 2026" .-> SEALED
     PLATE["FROZEN<br/>plate/industry user-deferred"] -. "FORBIDDEN" .-> EPOCHC
 ```
 
@@ -46,9 +47,14 @@ flowchart LR
   seed pairs; behaviour-cluster ARI is at least 0.9999857.
 - RX/UCB beats its matched control at strict evaluation in all three seeds and
   remains the only primary adaptive challenger.
-- Temporal and state lanes add behaviour coverage outside static. Broad Event
-  capability remains unevaluated because Epoch-C assigned the lane zero
-  proposal, admission and strict budget.
+- Broad Event r5 passed all semantic, PIT, support, matched-control and access
+  gates. Eleven mechanisms reproduced across two seeds in ten behavior clusters
+  outside structural, static and temporal controls.
+- Reproduced Event sources are billboard change, chip-structure change,
+  hotness change and market-ecology transition. Limit lifecycle and vendor
+  occurrence are operational but had no shared survivor in this CANARY.
+- The all-proposal mean matched increment is negative; the result establishes
+  localized reproducible mechanisms, not uniform Event superiority.
 - The strict union has positive benchmark increment and is not dominated by a
   lane, primitive, family, parent or signal cluster.
 - State does not beat matched static economically; novelty alone is not called
@@ -61,11 +67,11 @@ flowchart LR
   32,739 / 32,768 globally unique.
 - The 377-identity union is research-only. It is not a forward-authorization
   pack and cannot enter promotion or positive memory.
-- Epoch-D remains unrun. State lacked matched-static increment; Event cannot be
-  judged because the historical single-trigger audit had a semantic mismatch
-  and the Epoch-C Event lane was not executed.
-- Broad Event implementation and its fixed-budget development-only CANARY are
-  authorized only after semantic, PIT, support, matched-control and access
-  preflight gates pass.
+- Epoch-D remains unrun. The Broad Event discovery entry pack is frozen for the
+  next candidate-discovery contract and does not authorize formal search.
+- Full PIT financial-statement assets exist locally, but only valuation,
+  market-cap and holder subsets are in the current 121-field materialization.
+  Statement fundamentals remain outside search until a versioned source-lagged
+  Fabric expansion is completed.
 - Validation, holdout, spent, sealed, plate/industry and 2026 remain outside
   the allowed development feedback graph.

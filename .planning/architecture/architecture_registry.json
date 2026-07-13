@@ -1,6 +1,6 @@
 {
-  "registry_version": "cn_broad_event_recovery_architecture_registry_v4",
-  "phase": "CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED",
+  "registry_version": "cn_broad_event_recovery_architecture_registry_v5",
+  "phase": "CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE",
   "base_registry": "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json",
   "authority_contract": {
     "status_authority": ".planning/architecture/architecture_registry.json",
@@ -259,15 +259,15 @@
     {
       "id": "broad_event_recovery",
       "label": "CN Broad Event system recovery",
-      "status": "PLANNED",
-      "implementation_paths": ["runtime/run_plans/cn_broad_event_recovery_status_v1.json"],
-      "input_artifacts": ["121-field registry", "all PIT-aware sidecars", "true1min development-only release", "corrected Event interpretation"],
-      "output_artifacts": ["five corrected active Event statuses", "semantic inventory and Broad Event implementation not yet executed"],
-      "data_role": "development_only_authorized_not_started",
-      "feedback_permission": "NO_SEARCH_UNTIL_SEMANTIC_AND_AUDIT_PREFLIGHT_PASS",
-      "test_evidence": ["tests/test_broad_event_status_correction.py", "reports/cn_search_selection_event_state_sprint2_20260713/DECISION_CHANGE_LOG.md"],
-      "verification_paths": ["runtime/run_plans/cn_broad_event_recovery_status_v1.json", "tests/test_broad_event_status_correction.py", "reports/cn_search_selection_event_state_sprint2_20260713/DECISION_CHANGE_LOG.md"],
-      "blocker": "field semantics, multi-source Event system, generator and corrected audit remain to be implemented before the authorized CANARY"
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/broad_event_semantics.py", "src/our_system_phase2/services/conservative_limit_lifecycle.py", "src/our_system_phase2/services/broad_event_episodes.py", "src/our_system_phase2/services/broad_event_preflight.py", "src/our_system_phase2/runtime/cn_broad_event_canary.py", "runtime/run_plans/cn_broad_event_recovery_status_v2.json"],
+      "input_artifacts": ["121-field semantic registry", "2024-2025 physical development-only release", "daily PIT chip sidecar", "two-seed frozen Broad Event contract"],
+      "output_artifacts": ["477497 episode observations", "8 operational Event sources", "11 reproduced mechanisms in 10 new behavior clusters", "reports/cn_broad_event_recovery_20260713/DISCOVERY_ENTRY_PACK.json"],
+      "data_role": "development_only_completed",
+      "feedback_permission": "DISCOVERY_ENTRY_ONLY_NO_PROMOTION_NO_MEMORY",
+      "test_evidence": ["tests/test_broad_event_semantics.py", "tests/test_conservative_limit_lifecycle.py", "tests/test_broad_event_episodes.py", "tests/test_broad_event_preflight.py", "reports/cn_broad_event_recovery_20260713/r5_completed/run_manifest.json"],
+      "verification_paths": ["runtime/run_plans/cn_broad_event_recovery_status_v2.json", "runtime/run_plans/cn_broad_event_canary_v1.json", "src/our_system_phase2/runtime/cn_broad_event_canary.py", "tests/test_broad_event_semantics.py", "tests/test_conservative_limit_lifecycle.py", "tests/test_broad_event_episodes.py", "tests/test_broad_event_preflight.py", "reports/cn_broad_event_recovery_20260713/r5_completed/run_manifest.json", "reports/cn_broad_event_recovery_20260713/DISCOVERY_ENTRY_PACK.json"],
+      "blocker": "discovery entry pack is research-only; formal search, candidate promotion, permanent memory and 2026 access remain frozen"
     },
     {
       "id": "sprint2_state_generator",
@@ -369,7 +369,10 @@
     {"source": "forward_2026", "target": "nextgen_canary_plan", "relation": "forward_to_nextgen_canary", "permission": "FORBIDDEN", "evidence": "canary plan"},
     {"source": "forward_2026", "target": "generator_research_sprint1", "relation": "forward_to_sprint_search_policy", "permission": "FORBIDDEN", "evidence": "Sprint-1 manifest"},
     {"source": "forward_2026", "target": "sprint2_epoch_c", "relation": "forward_to_sprint2_search_policy", "permission": "FORBIDDEN", "evidence": "Sprint-2 manifest"},
-    {"source": "forward_2026", "target": "broad_event_recovery", "relation": "forward_to_broad_event_policy", "permission": "FORBIDDEN", "evidence": "Broad Event status contract"},
+    {"source": "forward_2026", "target": "broad_event_recovery", "relation": "forward_to_broad_event_policy", "permission": "FORBIDDEN", "evidence": "Broad Event r5 access ledger"},
+    {"source": "broad_event_recovery", "target": "hypothesis_lane_registry", "relation": "supplies_frozen_discovery_entry_pack", "permission": "ALLOWED", "evidence": "11 reproduced mechanisms in 10 new behavior clusters"},
+    {"source": "broad_event_recovery", "target": "formal_search_frozen", "relation": "promotion_or_sealed_access", "permission": "FORBIDDEN", "evidence": "Broad Event recovery status v2"},
+    {"source": "broad_event_recovery", "target": "scheduler_memory_feedback", "relation": "report_only_to_positive_memory", "permission": "FORBIDDEN", "evidence": "Broad Event recovery status v2"},
     {"source": "spent_role", "target": "sprint2_epoch_c", "relation": "validation_holdout_to_sprint2_reward", "permission": "FORBIDDEN", "evidence": "Sprint-2 data contract"},
     {"source": "sprint2_research_pack", "target": "scheduler_memory_feedback", "relation": "report_only_to_positive_memory", "permission": "FORBIDDEN", "evidence": "Sprint-2 closure"},
     {"source": "scheduler_memory_feedback", "target": "hypothesis_lane_registry", "relation": "adaptive_reward_to_nextgen_policy", "permission": "FORBIDDEN", "evidence": "run manifest"},

@@ -1,0 +1,153 @@
+{
+  "artifact_count": 29,
+  "artifacts": [
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/DECISION_CHANGE_LOG.md",
+      "sha256": "641e454e6dc1ba45825b29e0458ba13557d5382785c072c20b3dbe117a429241",
+      "size_bytes": 3030
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/DISCOVERY_ENTRY_PACK.json",
+      "sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8",
+      "size_bytes": 11452
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r2_preflight/access_ledger.json",
+      "sha256": "851d108942d993009360808e98736ccbe8ab964e192deb67803369bfd2897856",
+      "size_bytes": 893
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r2_preflight/episode_support.json",
+      "sha256": "1cc644bfc9703800ee93b6041ff9da2a86da1b0a404d440961dfc04b1cc45e37",
+      "size_bytes": 4443
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r2_preflight/limit_validation.json",
+      "sha256": "6002cfc9b21cfda8837eae505b79c971ce13bdfa5341bd875b17cae65e9807c2",
+      "size_bytes": 151
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r2_preflight/preflight.json",
+      "sha256": "76d781682b5ac4f8760dec6d7e5f879faa54f44c9ca6f11f415a79557c3ef796",
+      "size_bytes": 1049
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r2_preflight/summary.json",
+      "sha256": "e5b7f28f49c9ee98df7a59f2843a3c5e2f8d47481614e0e71ff6118c6e4f5316",
+      "size_bytes": 1210
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r3_preflight/access_ledger.json",
+      "sha256": "851d108942d993009360808e98736ccbe8ab964e192deb67803369bfd2897856",
+      "size_bytes": 893
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r3_preflight/episode_support.json",
+      "sha256": "a4d0b2ad9adabd27620299d09f4eddb20f25721a4f16560df7ec8c359a0a0ff3",
+      "size_bytes": 5011
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r3_preflight/limit_validation.json",
+      "sha256": "3da691e2e57bf36267a3459bb3dc2e69ad5ab26c131f47cf25e97b5278056a23",
+      "size_bytes": 173
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r3_preflight/preflight.json",
+      "sha256": "3211e8291462084d819fd077cfc78c2a0ea47d6000155bdd85ec033272f2a957",
+      "size_bytes": 1017
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r3_preflight/summary.json",
+      "sha256": "8b4ad058c7fe548d2971e49f11cfec8610312be892e2e4e25154614dbd2e85ad",
+      "size_bytes": 1183
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r4_completed_raw/access_ledger.json",
+      "sha256": "851d108942d993009360808e98736ccbe8ab964e192deb67803369bfd2897856",
+      "size_bytes": 893
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r4_completed_raw/candidate_results.csv",
+      "sha256": "0c281706ed2f2e56059043d99c28f9121e8204f2e32831e72c86045e1fd0ba5b",
+      "size_bytes": 288309
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r4_completed_raw/episode_support.json",
+      "sha256": "a4d0b2ad9adabd27620299d09f4eddb20f25721a4f16560df7ec8c359a0a0ff3",
+      "size_bytes": 5011
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r4_completed_raw/limit_validation.json",
+      "sha256": "1277770f741e021941214cbbfea3e01c0ba63533b15330156795aafe176c8666",
+      "size_bytes": 262
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r4_completed_raw/preflight.json",
+      "sha256": "fdf306f4ef7d036141b054ce2e2138a68880067868df19e025ce85462b46a04d",
+      "size_bytes": 947
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r4_completed_raw/run_manifest.json",
+      "sha256": "a57377f708f80005f9038caa1fb6b99cae83e5d5a232b6a2608a939f0731eef8",
+      "size_bytes": 11169
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r4_completed_raw/summary.json",
+      "sha256": "5506bd2a04fd57b6bfcd32378fed1ed4a58897d7df98255580f7da9fd4cf1f23",
+      "size_bytes": 7302
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r5_completed/access_ledger.json",
+      "sha256": "851d108942d993009360808e98736ccbe8ab964e192deb67803369bfd2897856",
+      "size_bytes": 893
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r5_completed/behavior_registry.json",
+      "sha256": "766366a3475e70f32140fb0b88c57faf2cf67e64acb4e94c73ef5affcd871fc8",
+      "size_bytes": 47925
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r5_completed/candidate_results.csv",
+      "sha256": "f3b377255c8fa5707f073fc2011d5651e931c72188aa7baa3ab47a4f4c49e0f8",
+      "size_bytes": 347510
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r5_completed/episode_support.json",
+      "sha256": "a4d0b2ad9adabd27620299d09f4eddb20f25721a4f16560df7ec8c359a0a0ff3",
+      "size_bytes": 5011
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r5_completed/limit_validation.json",
+      "sha256": "1277770f741e021941214cbbfea3e01c0ba63533b15330156795aafe176c8666",
+      "size_bytes": 262
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r5_completed/preflight.json",
+      "sha256": "fdf306f4ef7d036141b054ce2e2138a68880067868df19e025ce85462b46a04d",
+      "size_bytes": 947
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r5_completed/run_manifest.json",
+      "sha256": "e61a60fdeb7e2fd9e780d63c81c6e31be1c9afc409021a9cb19eac49ea5571fb",
+      "size_bytes": 11332
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/r5_completed/summary.json",
+      "sha256": "0fc102366c5adf4ab01c9073866738f5278cf4c57cb5df2b867663b468b802d6",
+      "size_bytes": 10696
+    },
+    {
+      "path": "reports/cn_broad_event_recovery_20260713/RUN_MANIFEST.json",
+      "sha256": "c2a0fb8679526bf1894795fe485f945f6a13ea7673efcbb4a924d3d5f5886801",
+      "size_bytes": 1413
+    },
+    {
+      "path": "runtime/run_plans/cn_broad_event_recovery_status_v2.json",
+      "sha256": "fa497e663ccf4b2c42abf419768a0b9b8ce02cc931402561c8e1418f6460902f",
+      "size_bytes": 2070
+    }
+  ],
+  "refreshed_at": "2026-07-13T16:06:53.487202+00:00",
+  "status": "CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE",
+  "version": "cn_broad_event_recovery_artifact_index_v1"
+}

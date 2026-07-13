@@ -1,0 +1,49 @@
+{
+  "episode_count": 477497,
+  "evidence": {
+    "behavior_registry": "reports/cn_broad_event_recovery_20260713/r5_completed/behavior_registry.json",
+    "candidate_results": "reports/cn_broad_event_recovery_20260713/r5_completed/candidate_results.csv",
+    "discovery_entry_pack": "reports/cn_broad_event_recovery_20260713/DISCOVERY_ENTRY_PACK.json",
+    "run_manifest": "reports/cn_broad_event_recovery_20260713/r5_completed/run_manifest.json",
+    "summary": "reports/cn_broad_event_recovery_20260713/r5_completed/summary.json"
+  },
+  "fixed_conclusions": [
+    "BROAD_EVENT_INCREMENT_OBSERVED_REPRODUCIBLE",
+    "BROAD_EVENT_DISCOVERY_ENTRY_AUTHORIZED",
+    "FORWARD_2026_SEALED",
+    "NO_CANDIDATE_PROMOTION",
+    "NO_CROSS_SPRINT_ADAPTIVE_MEMORY"
+  ],
+  "interpretation": "localized reproducible Event mechanisms exist; Broad Event is not uniformly superior",
+  "limit_lifecycle": {
+    "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS",
+    "eligible_derived_episode_count": 243,
+    "match_rate": 0.9917695473251029,
+    "matched_within_two_minutes": 241,
+    "vendor_coverage_rate": 0.9239543726235742,
+    "vendor_episode_count": 263
+  },
+  "mean_all_candidate_matched_increment": -0.0009658953099742382,
+  "operational_event_sources": [
+    "BILLBOARD_CHANGE",
+    "CHIP_STRUCTURE_CHANGE",
+    "HOLDER_STRUCTURE_CHANGE",
+    "HOTNESS_CHANGE",
+    "LIMIT_UP_LIFECYCLE",
+    "MARGIN_FINANCING_CHANGE",
+    "MARKET_ECOLOGY_TRANSITION",
+    "VENDOR_LIMIT_OCCURRENCE"
+  ],
+  "reproduced_mechanism_count": 11,
+  "reproduced_new_behavior_cluster_count": 10,
+  "reproduced_sources": [
+    "BILLBOARD_CHANGE",
+    "CHIP_STRUCTURE_CHANGE",
+    "HOTNESS_CHANGE",
+    "MARKET_ECOLOGY_TRANSITION"
+  ],
+  "status": "CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE",
+  "supersedes": "runtime/run_plans/cn_broad_event_recovery_status_v1.json",
+  "supersession_scope": "active Broad Event recovery status only; historical Sprint-2 tables remain unchanged",
+  "version": "cn_broad_event_recovery_status_v2"
+}

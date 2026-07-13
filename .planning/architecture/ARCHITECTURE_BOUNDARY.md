@@ -29,7 +29,7 @@ repo SHA, generator hash and every declared derived display hash.
 1. Current user instruction and repository `AGENTS.md`.
 2. Accepted ADRs and fixed run manifests.
 3. Phase A plus `.planning/architecture/architecture_registry.json` and the
-   Broad Event status correction.
+   Broad Event recovery status v2.
 4. Generated architecture graph, `CURRENT_ARCHITECTURE.md`,
    `EVOLUTION_MAP.md`, and `.planning/STATE.md`.
 5. Historical reports and raw navigation artifacts.
@@ -45,10 +45,13 @@ repo SHA, generator hash and every declared derived display hash.
   online.
 - RX/UCB statistics are isolated to one seed execution and are discarded after
   the run. They cannot update later sprint policy.
-- Broad Event capability is not evaluated. The historical single-trigger path
-  used a cutoff-latched field, its exit/reseal audit contract was invalid, and
-  Epoch-C assigned event-conditioned proposal, admission and strict budgets of
-  zero. Zero event clusters mean `NOT_EXECUTED`.
+- Historical Epoch-C Broad Event remains `NOT_EXECUTED` because its budget was
+  zero and its single-trigger audit was invalid. Separately, the corrected r5
+  Broad Event CANARY is completed development-only evidence: 11 mechanisms
+  reproduced in 10 new behavior clusters with zero forbidden reads.
+- The r5 discovery entry pack may feed only a newly frozen development
+  candidate-discovery contract. It cannot promote, update scheduler/memory or
+  access validation, holdout or 2026.
 - State behaviour novelty cannot be interpreted as independent economic
   increment.
 - Union reranking is development research evidence. Report-only outputs cannot
@@ -71,7 +74,12 @@ forward-authorization pack exists, Epoch-D was not run, and the next sprint
 requires separate development-only authorization.
 
 The Sprint-2 proposal, strict and performance artifacts remain immutable.
-`runtime/run_plans/cn_broad_event_recovery_status_v1.json` supersedes only the
-active Event interpretation. Broad Event recovery is authorized, while its
-implementation and CANARY remain not started until the preflight contract is
-satisfied.
+`runtime/run_plans/cn_broad_event_recovery_status_v1.json` records the atomic
+historical interpretation supersession; status v2 closes the corrected
+recovery without rewriting those tables. The r5 discovery pack is research
+entry evidence, not a forward or promotion pack.
+
+The complete PIT financial-statement source exists outside the 121-field
+materialized registry. Its presence is not permission to use it: income,
+balance-sheet and cash-flow fields require explicit observable-time/source-lag
+contracts and a versioned Fabric expansion before search.
