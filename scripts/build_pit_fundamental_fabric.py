@@ -262,6 +262,7 @@ def _scan_dataset(
     nonnulls: Counter[str] = Counter()
     safe_rows = 0
     duplicate_keys = 0
+    unique_episodes = 0
     revised_snapshot_rows = 0
     initial_unchanged_rows = 0
     unresolved_rows = 0
@@ -313,7 +314,7 @@ def _scan_dataset(
                 )
                 eligible = prepared.loc[prepared["pit_status"].eq("ELIGIBLE_DISCLOSURE_EPISODE")]
                 unresolved_rows += int(prepared["pit_status"].eq("PIT_CONTRACT_UNRESOLVED").sum())
-                duplicate_keys += int(eligible.duplicated(["episode_id"], keep=False).sum())
+                unique_episodes += int(eligible["episode_id"].nunique())
             safe_rows += int(len(eligible))
             safe_arrow = pa.Table.from_pandas(eligible[schema.names], preserve_index=False)
             content_hash = _table_hash(safe_arrow)
@@ -342,7 +343,8 @@ def _scan_dataset(
         "schema_field_count": len(union_fields),
         "schema_variants": dict(schema_hashes),
         "development_safe_rows": safe_rows if scan_values and table != "zygc_em" else None,
-        "duplicate_version_or_episode_rows": duplicate_keys if scan_values and table != "zygc_em" else None,
+        "duplicate_financial_version_key_rows": duplicate_keys if table in FINANCIAL_TABLES and scan_values else None,
+        "development_unique_disclosure_episodes": unique_episodes if table == "main_stock_holder_sina" and scan_values else None,
         "initial_unchanged_current_version_rows": initial_unchanged_rows if table in FINANCIAL_TABLES and scan_values else None,
         "latest_revised_snapshot_only_rows": revised_snapshot_rows if table in FINANCIAL_TABLES and scan_values else None,
         "pit_unresolved_rows_seen_in_filtered_scan": unresolved_rows if scan_values and table != "zygc_em" else None,
