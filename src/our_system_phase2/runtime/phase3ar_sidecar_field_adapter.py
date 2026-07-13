@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
+from our_system_phase2.services.pit_fundamental_fabric import source_partition_path
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 
 
@@ -534,9 +535,8 @@ def _load_fulla_sidecar(
         if not wanted.get(tag):
             continue
         per_code_parts: list[pd.DataFrame] = []
-        dataset_root = fulla_root / dataset
         for compact in codes:
-            path = dataset_root / f"{compact}.parquet"
+            path = source_partition_path(fulla_root, dataset, compact)
             if not path.exists():
                 continue
             schema = _schema_names(path)
@@ -549,16 +549,19 @@ def _load_fulla_sidecar(
             if not raw_cols_by_field:
                 continue
             cols = [col for col in ["source_code6", "SECURITY_CODE", "NOTICE_DATE", "UPDATE_DATE", "REPORT_DATE", *raw_cols_needed] if col in schema]
-            if "NOTICE_DATE" not in cols and "UPDATE_DATE" not in cols and "REPORT_DATE" not in cols:
+            if "NOTICE_DATE" not in cols or "UPDATE_DATE" not in cols or "REPORT_DATE" not in cols:
                 continue
             df = pd.read_parquet(path, columns=list(dict.fromkeys(cols)))
             code_source = df["source_code6"] if "source_code6" in df.columns else df.get("SECURITY_CODE", compact)
             df["code"] = pd.Series(code_source).map(_normalize_cn_code)
-            available = pd.to_datetime(df.get("NOTICE_DATE"), errors="coerce")
-            if available.isna().all() and "UPDATE_DATE" in df.columns:
-                available = pd.to_datetime(df["UPDATE_DATE"], errors="coerce")
-            if available.isna().all() and "REPORT_DATE" in df.columns:
-                available = pd.to_datetime(df["REPORT_DATE"], errors="coerce") + pd.Timedelta(days=90)
+            notice = pd.to_datetime(df["NOTICE_DATE"], errors="coerce")
+            update = pd.to_datetime(df["UPDATE_DATE"], errors="coerce")
+            # The archive is a current snapshot rather than a historical
+            # revision tape.  Never expose the final value before its last
+            # recorded update and never guess from REPORT_DATE.
+            available = pd.concat([notice.rename("notice"), update.rename("update")], axis=1).max(
+                axis=1, skipna=False
+            )
             df["available_date"] = available
             value_cols: dict[str, pd.Series] = {}
             for field, raw_cols in raw_cols_by_field.items():
@@ -620,7 +623,7 @@ def _load_fulla_sidecar(
         "loaded_fields": sorted(loaded_fields),
         "source_paths": sorted(set(source_paths)),
         "missing_fields": sorted(missing_fields),
-        "pit_rule": "NOTICE_DATE previous available day; exact same exec_date is not used",
+        "pit_rule": "max(NOTICE_DATE, UPDATE_DATE) previous available day; missing clocks fail closed; REPORT_DATE fallback forbidden",
         "grain": "code_exec_date_daily_sidecar",
     }
 
