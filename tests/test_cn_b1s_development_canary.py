@@ -38,6 +38,7 @@ CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v1.json"
 REPAIRED_CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"
 CAPABILITY_CONTRACT_PATH = REPO / "runtime/run_plans/cn_generator_capability_canary_sprint1_v1.json"
 SPRINT2_CONTRACT_PATH = REPO / "runtime/run_plans/cn_sprint2_repair_capability_canary_v1.json"
+EPOCH_C_CONTRACT_PATH = REPO / "runtime/run_plans/cn_sprint2_epoch_c_v1.json"
 EPOCH_A_CONTRACT_PATH = REPO / "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json"
 
 
@@ -219,6 +220,34 @@ def test_strict_priority_layer_renames_evaluability_and_contracts_to_top_decile(
     assert all(row["development_eligible"] for row in rows)
     assert sum(row["strict_priority_eligible"] for row in rows) == 2
     assert all("legacy_survivor" in row for row in rows)
+
+
+def test_epoch_c_contract_disables_event_and_freezes_exact_unique_seed_budget() -> None:
+    source = json.loads(EPOCH_C_CONTRACT_PATH.read_text(encoding="utf-8"))
+    assert source["epoch_budget"] == {
+        "seed_count": 3,
+        "unique_proposal_total": 32768,
+        "shared_deterministic_backbone": 8192,
+        "seed_specific_expansion_per_seed": 8192,
+        "strict_eval_total": 1024,
+    }
+    assert source["lane_specs"]["event_conditioned"]["proposal"] == 0
+    assert source["candidate_contract"]["require_unique_proposals"] is True
+    selected = _select_seed_set(source, "seed_a")
+    _validate_contract(selected)
+    initial = generate_initial_proposals(selected)
+    assert len(initial) == 8192
+    assert len({row["exact_identity"] for row in initial}) == 8192
+    for index, row in enumerate(initial):
+        row.update(
+            proxy_reward=(index % 211) / 211.0,
+            signal_cluster_id=index + 1,
+            strict_priority_score=(index % 101) / 101.0,
+        )
+    adaptive = generate_adaptive_proposals(selected, initial)
+    assert len(adaptive) == 8192
+    combined = initial + adaptive
+    assert len({row["exact_identity"] for row in combined}) == 16384
 
 
 def test_initial_and_adaptive_generation_obey_frozen_1344_budget() -> None:

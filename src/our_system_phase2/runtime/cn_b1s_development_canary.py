@@ -210,6 +210,7 @@ def _candidate(
                 "mutation_operator": "root_sample",
             }
         )
+    output["complexity"] = max(int(output.get("complexity") or 0), 2 + expression.count("("))
     output.update(dict(extra_metadata or {}))
     return output
 
@@ -278,8 +279,8 @@ def _role_distinct_expression(expression: str, role: str, index: int) -> str:
     """Keep matched mechanism geometry while avoiding cross-lane exact reuse."""
     role_code = sum((position + 1) * ord(character) for position, character in enumerate(role))
     field = RAW_FIELDS[(role_code + int(index) * 5) % len(RAW_FIELDS)]
-    coefficient = (11 + role_code % 29) / 1000.0
-    return f"CSRank(Add({expression},Mul(Sign(${field}),{coefficient:.3f})))"
+    coefficient = (11 + (role_code + int(index) * 37) % 997) / 10000.0
+    return f"CSRank(Add({expression},Mul(Sign(${field}),{coefficient:.4f})))"
 
 
 def _typed_random_expression(index: int, seed: int) -> tuple[str, str]:
@@ -350,6 +351,7 @@ def generate_initial_proposals(contract: Mapping[str, Any]) -> list[dict[str, An
     specs = contract["lane_specs"]
     seeds = contract["seeds"]
     rows: list[dict[str, Any]] = []
+    require_unique = bool(contract.get("candidate_contract", {}).get("require_unique_proposals", False))
     fixed_lanes = (
         "static_cross_sectional",
         "firstn_intraday_path",
@@ -413,6 +415,8 @@ def generate_initial_proposals(contract: Mapping[str, Any]) -> list[dict[str, An
                 llm_action = "repair" if repair else "proposal"
             else:
                 expression, motif, benchmark_id = _benchmark_expression(index)
+            if require_unique and lane not in {"typed_random", "llm_proposal_repair"}:
+                expression = _role_distinct_expression(expression, lane, index)
             rows.append(
                 _candidate(
                     lane,
@@ -452,6 +456,8 @@ def generate_initial_proposals(contract: Mapping[str, Any]) -> list[dict[str, An
                     program=program,
                 )
             )
+    if require_unique and len({str(row["exact_identity"]) for row in rows}) != len(rows):
+        raise RuntimeError("shared backbone contains duplicate exact identities")
     return rows
 
 
@@ -480,6 +486,7 @@ def _rx_ucb_programs(
     seed: int,
     start_index: int,
     benchmark_median: float,
+    blocked_identities: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     def hierarchy(row: Mapping[str, Any]) -> tuple[str, str, str, str]:
         parameters = row.get("program_parameters")
@@ -561,7 +568,9 @@ def _rx_ucb_programs(
         for key in all_ranked_arms
     }
     selected: list[dict[str, Any]] = []
-    seen: set[str] = {str(row["canonical_identity"]) for row in controls}
+    seen: set[str] = set(blocked_identities or ()) | {
+        str(row["canonical_identity"]) for row in controls
+    }
     attempt = 0
     while len(selected) < quota and attempt < quota * 100:
         if attempt == quota * 40:
@@ -680,12 +689,15 @@ def generate_adaptive_proposals(
         seed = int(contract.get("adaptive_seeds", seeds)[lane])
         adaptive_quota = int(specs[lane]["adaptive"])
         controls = [row for row in initial_rows if row["lane_id"] == lane]
+        if adaptive_quota == 0:
+            continue
         if lane == "rx_ucb":
             output.extend(
                 _rx_ucb_programs(
                     controls, quota=adaptive_quota, seed=seed,
                     start_index=int(specs[lane]["control"]),
                     benchmark_median=benchmark_median,
+                    blocked_identities={str(row["canonical_identity"]) for row in initial_rows},
                 )
             )
             continue
@@ -1854,6 +1866,20 @@ def _select_seed_set(contract: Mapping[str, Any], seed_set: str | None) -> dict[
     if isinstance(payload, Mapping) and "seeds" in payload:
         selected["seeds"] = dict(payload["seeds"])
         selected["adaptive_seeds"] = dict(payload.get("adaptive_seeds", payload["seeds"]))
+        for key in ("lane_specs", "budgets"):
+            if key in payload:
+                selected[key] = dict(payload[key])
+        if "strict_eval_total" in payload:
+            selected["budgets"] = {
+                **dict(selected["budgets"]),
+                "strict_eval_total": int(payload["strict_eval_total"]),
+            }
+        if "strict_lane_overrides" in payload:
+            selected["lane_specs"] = {
+                lane: dict(spec) for lane, spec in selected["lane_specs"].items()
+            }
+            for lane, quota in payload["strict_lane_overrides"].items():
+                selected["lane_specs"][lane]["strict"] = int(quota)
     else:
         selected["seeds"] = dict(payload)
         selected["adaptive_seeds"] = dict(payload)
