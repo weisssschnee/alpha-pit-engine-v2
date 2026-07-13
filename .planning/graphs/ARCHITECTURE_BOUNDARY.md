@@ -16,8 +16,8 @@ The Markdown diagrams are projections, not independent implementation claims.
 Raw code-navigation output is maintained separately under
 `.planning/graphs/raw/`. It may contain historical and superseded files and is
 not the machine-readable architecture contract. Raw and curated graph artifacts
-must record the same source repo SHA and build timestamp before Graph
-maintenance is called complete.
+must record the same source repo SHA, with their individual build timestamps
+preserved, before Graph maintenance is called complete.
 
 ## Precedence
 

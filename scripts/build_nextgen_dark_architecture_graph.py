@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from pathlib import Path
 
 from scripts.build_evalreset_architecture_graph import build_graph
@@ -67,11 +68,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base-registry", type=Path, required=True)
     parser.add_argument("--overlay-registry", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--source-repo-sha")
     args = parser.parse_args(argv)
     repo = Path(__file__).resolve().parents[1]
     base = json.loads(args.base_registry.read_text(encoding="utf-8"))
     overlay = json.loads(args.overlay_registry.read_text(encoding="utf-8"))
     graph = build_graph(merge_registries(base, overlay), repo=repo)
+    source_repo_sha = args.source_repo_sha or subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True
+    ).strip()
+    if len(source_repo_sha) != 40:
+        raise RuntimeError("source repo SHA must be a full 40-character commit")
+    graph["graph"]["source_repo_sha"] = source_repo_sha
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(graph, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({"nodes": len(graph["nodes"]), "edges": len(graph["links"]), "output": str(args.output)}, indent=2))

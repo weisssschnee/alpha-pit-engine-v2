@@ -12,6 +12,7 @@ Current state: `CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED`
 - `FORWARD_2026_SEALED`
 - `NO_CANDIDATE_PROMOTION`
 - `NO_CROSS_SPRINT_ADAPTIVE_MEMORY`
+- `FORMAL_SEARCH_FROZEN`
 - `BROAD_EVENT_CAPABILITY_NOT_EVALUATED`
 - `CURRENT_EVENT_TRIGGER_SEMANTICS_MISMATCH`
 - `EVENT_AUDIT_CONTRACT_INVALID`
@@ -20,7 +21,8 @@ Current state: `CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED`
 
 Phase A conclusions remain unchanged: generation structural redundancy exists,
 but catastrophic signal-level collapse and downstream concentration
-amplification were not observed.
+amplification were not observed. The deterministic signal-sketch fidelity and
+stage-wise concentration audit remain accepted evidence.
 
 ## Sprint-2 result
 

@@ -9,11 +9,12 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-13T10:31:27.505642+00:00",
+    "generated_at": "2026-07-13T10:45:11.023440+00:00",
     "graph_type": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT",
     "phase": "CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED",
     "registry_sha256": "fd9dc6466397cfd28899b60ad629eac24153bdde3792d0c10eb9272d332181b5",
     "registry_version": "cn_broad_event_recovery_architecture_registry_v4",
+    "source_repo_sha": "18f8e34021b871b10ebb794a0e10ec0e5e2b4587",
     "status_values": [
       "DEPRECATED",
       "FROZEN",

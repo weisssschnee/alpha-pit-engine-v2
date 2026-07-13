@@ -1,0 +1,28 @@
+﻿{
+    "version":  "cn_raw_codegraph_build_v1",
+    "source_repo_sha":  "18f8e34",
+    "source_archive_sha256":  "763a6d1c29c4e0ab4a8f5b4f4c268e34dafbdb68193491da7016d5a79588e299",
+    "generated_at":  "2026-07-13T10:38:30.0991449Z",
+    "host":  "DESKTOP-77OPJ6F",
+    "graphify_version":  "0.9.6",
+    "node_count":  2619,
+    "edge_count":  6602,
+    "artifacts":  [
+                      {
+                          "path":  "graph.json",
+                          "size":  4042276,
+                          "sha256":  "b480a26e480c27dc6e129c325103ef881e957b782dd3ec087d0a3a3aece157c0"
+                      },
+                      {
+                          "path":  "graph.html",
+                          "size":  3363279,
+                          "sha256":  "eb78095cda4a15ae8a68d3fbf909205b3ca549be0aa1c56ac974ef0d6864ac63"
+                      },
+                      {
+                          "path":  "GRAPH_REPORT.md",
+                          "size":  36926,
+                          "sha256":  "94c55e7a86ab072d5f646bdf420c41061cb874603bf66b689897127accb7201c"
+                      }
+                  ],
+    "source_repo_full_sha":  "18f8e34021b871b10ebb794a0e10ec0e5e2b4587"
+}

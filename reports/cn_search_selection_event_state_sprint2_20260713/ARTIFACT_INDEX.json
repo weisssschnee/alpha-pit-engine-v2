@@ -36,13 +36,13 @@
     },
     {
       "path": ".planning/graphs/graph.json",
-      "size": 95368,
-      "sha256": "de74b20672486ee50333072228970ed36f117238b1f25c1f38164d356bd5624e"
+      "size": 95436,
+      "sha256": "b1f643fa9e7ff9304b57b9bf7e6cfc6228daa071cdf2da3356894ab820153a83"
     },
     {
       "path": ".planning/STATE.md",
-      "size": 4340,
-      "sha256": "ef01af16100fff3186842883c7af745a11ae8f6f273c72d1cdf56d0ba3e8e38d"
+      "size": 4467,
+      "sha256": "b6f40609494d7dd5beb90e5547f67ba035eab2827fc90a12ca3678e135ed37ab"
     },
     {
       "path": ".planning/graphs/CURRENT_ARCHITECTURE.md",
@@ -51,13 +51,18 @@
     },
     {
       "path": ".planning/graphs/ARCHITECTURE_BOUNDARY.md",
-      "size": 3385,
-      "sha256": "2f422ee84032e8107650885f2ae6439bac40f012a468781787271ec3b1c922f7"
+      "size": 3416,
+      "sha256": "4e1c4f116c3051a2cc37288eb7f2f936a8a4335b0cefb361ed3d2046c008914e"
     },
     {
       "path": ".planning/graphs/EVOLUTION_MAP.md",
       "size": 7481,
       "sha256": "ceef9678bcf41d776817d50d12e40e8174da96f443cf5d5a6d49c7aa32ae734a"
+    },
+    {
+      "path": ".planning/graphs/raw/BUILD_MANIFEST.json",
+      "size": 1235,
+      "sha256": "61772ec76a58a8ca9f72f09c1dc159fec54bdce6d459abaedb465b8b0a75d3b3"
     }
   ],
   "remote_experiment_roots": [
