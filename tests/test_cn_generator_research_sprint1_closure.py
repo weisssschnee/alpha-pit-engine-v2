@@ -62,7 +62,7 @@ def test_sprint1_epoch_a_closure_records_partial_result_without_forward_pack() -
 
 
 def test_current_graph_preserves_sprint1_and_projects_sprint2_nodes() -> None:
-    graph = json.loads((REPO / ".planning/graphs/graph.json").read_text(encoding="utf-8"))
+    graph = json.loads((REPO / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8"))
     nodes = {row["id"]: row for row in graph["nodes"]}
 
     assert graph["graph"]["phase"] == "CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED"

@@ -1,0 +1,122 @@
+{
+  "admission_contract": "one exact identity one vote; one episode one vote; fixed top development evidence within each lane",
+  "authorization": [
+    "BROAD_EVENT_RECOVERY_AUTHORIZED",
+    "AUTOMATIC_PREFLIGHT_THEN_CANARY",
+    "NO_MANUAL_REAPPROVAL_REQUIRED"
+  ],
+  "boundaries": {
+    "allowed_data_role": "development_only",
+    "allowed_years": [
+      2024,
+      2025
+    ],
+    "candidate_promotion_allowed": false,
+    "cross_sprint_memory_allowed": false,
+    "forward_2026_allowed": false,
+    "holdout_allowed": false,
+    "plate_industry_allowed": false,
+    "validation_allowed": false
+  },
+  "budgets": {
+    "episode_placebo": {
+      "admission": 48,
+      "proposal": 96,
+      "strict": 24
+    },
+    "event_conditioned": {
+      "admission": 48,
+      "proposal": 96,
+      "strict": 24
+    },
+    "static_control": {
+      "admission": 48,
+      "proposal": 96,
+      "strict": 24
+    },
+    "structural_control": {
+      "admission": 48,
+      "proposal": 96,
+      "strict": 24
+    },
+    "temporal_control": {
+      "admission": 48,
+      "proposal": 96,
+      "strict": 24
+    }
+  },
+  "contract_hash": "c5fbb3943242d90790316fd0d995754c41b449c71bdaa18eca74f9835c433098",
+  "data_release": {
+    "id": "cn_true1min_development_only_release_v1_20260712_77o",
+    "manifest_sha256": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "selected_shards": [
+      0,
+      4,
+      8,
+      12
+    ],
+    "selection_basis": "fixed shard indices independent of labels, returns and event support"
+  },
+  "horizons_bars": [
+    5,
+    15,
+    30
+  ],
+  "objective": "episode_clustered_development_increment_over_matched_controls",
+  "outcome_ladder": [
+    "NOT_EXECUTED",
+    "INSUFFICIENT_SUPPORT",
+    "SEMANTIC_CONTRACT_INVALID",
+    "CANARY_NO_INCREMENT_OBSERVED",
+    "REPEATED_NO_INCREMENT_WITH_ADEQUATE_SUPPORT"
+  ],
+  "repo_sha_policy": "exact committed implementation archive",
+  "reproduction_contract": {
+    "both_seeds_similar_mechanism": true,
+    "matched_control_increment_positive": true,
+    "multiple_development_blocks_directionally_consistent": true,
+    "not_single_day_symbol_or_event_class_driven": true
+  },
+  "required_event_sources": [
+    "LIMIT_UP_LIFECYCLE",
+    "VENDOR_LIMIT_OCCURRENCE",
+    "BILLBOARD_CHANGE",
+    "MARGIN_FINANCING_CHANGE",
+    "HOLDER_STRUCTURE_CHANGE",
+    "HOTNESS_CHANGE",
+    "MARKET_ECOLOGY_TRANSITION",
+    "CHIP_STRUCTURE_CHANGE"
+  ],
+  "seeds": [
+    1729,
+    2718
+  ],
+  "semantic_registry": "runtime/event_registry/cn_broad_event_semantic_registry_v1.json",
+  "split_manifest_sha256": "fab9fb8c3dc26099bb4fc1b8baf11ae5f1430ce94a89e1b816d270cc12e082e7",
+  "survivor_contract": {
+    "matched_control_increment_positive": true,
+    "maximum_single_date_share": 0.25,
+    "maximum_single_symbol_share": 0.2,
+    "minimum_consistent_time_blocks": 3,
+    "minimum_episode_support": 30
+  },
+  "time_blocks": [
+    [
+      "2024-01-01",
+      "2024-06-30"
+    ],
+    [
+      "2024-07-01",
+      "2024-12-31"
+    ],
+    [
+      "2025-01-01",
+      "2025-06-30"
+    ],
+    [
+      "2025-07-01",
+      "2025-12-31"
+    ]
+  ],
+  "version": "cn_broad_event_development_canary_v1"
+}

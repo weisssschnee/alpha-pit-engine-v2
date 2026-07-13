@@ -9,17 +9,17 @@
     "edge_count":  6602,
     "artifacts":  [
                       {
-                          "path":  "graph.json",
+                          "path":  "codegraph_18f8e34021b871b10ebb794a0e10ec0e5e2b4587.json",
                           "size":  4042276,
                           "sha256":  "b480a26e480c27dc6e129c325103ef881e957b782dd3ec087d0a3a3aece157c0"
                       },
                       {
-                          "path":  "graph.html",
+                          "path":  "codegraph_18f8e34021b871b10ebb794a0e10ec0e5e2b4587.html",
                           "size":  3363279,
                           "sha256":  "eb78095cda4a15ae8a68d3fbf909205b3ca549be0aa1c56ac974ef0d6864ac63"
                       },
                       {
-                          "path":  "GRAPH_REPORT.md",
+                          "path":  "CODEGRAPH_REPORT_18f8e34021b871b10ebb794a0e10ec0e5e2b4587.md",
                           "size":  36926,
                           "sha256":  "94c55e7a86ab072d5f646bdf420c41061cb874603bf66b689897127accb7201c"
                       }

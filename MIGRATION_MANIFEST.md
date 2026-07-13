@@ -244,5 +244,5 @@ fixed development-only coordinate registry
 
 This route is label-free and cannot write search memory. Architecture state is
 registered in `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json`
-and generated into `.planning/graphs/graph.json`; the graph contract includes
+and generated into `.planning/architecture/architecture_graph.json`; the graph contract includes
 the six forbidden evaluation-feedback edges.

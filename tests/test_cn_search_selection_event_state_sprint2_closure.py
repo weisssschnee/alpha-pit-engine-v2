@@ -55,7 +55,7 @@ def test_sprint2_joint_analysis_is_research_positive_but_contract_partial() -> N
 
 
 def test_sprint2_graph_contains_selector_generators_epoch_and_frozen_pack() -> None:
-    graph = json.loads((REPO / ".planning/graphs/graph.json").read_text(encoding="utf-8"))
+    graph = json.loads((REPO / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8"))
     nodes = {row["id"]: row for row in graph["nodes"]}
     links = {(row["source"], row["target"], row["relation"]): row for row in graph["links"]}
 

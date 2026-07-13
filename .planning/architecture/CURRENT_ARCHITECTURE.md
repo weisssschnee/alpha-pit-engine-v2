@@ -8,8 +8,10 @@ cross-sprint memory remain frozen.
 
 This projection is generated and checked from
 `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json` plus
-`runtime/run_plans/nextgen_dark_architecture_registry_v1.json`. The current
-machine-readable authority is `.planning/graphs/graph.json`.
+`.planning/architecture/architecture_registry.json`. The registry is the sole
+machine-readable status authority. `architecture_graph.json`, its HTML view and
+this document are checked projections; SHA-bound raw source navigation is kept
+separately under `.planning/codegraph/`.
 
 ```mermaid
 flowchart LR

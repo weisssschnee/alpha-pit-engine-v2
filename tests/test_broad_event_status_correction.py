@@ -37,11 +37,11 @@ def test_active_architecture_does_not_repeat_retracted_event_denial() -> None:
     retracted = "EVENT_" + "GENERATOR_NOT_OPERATIONAL"
     active_assets = [
         ".planning/STATE.md",
-        ".planning/graphs/CURRENT_ARCHITECTURE.md",
-        ".planning/graphs/ARCHITECTURE_BOUNDARY.md",
-        ".planning/graphs/EVOLUTION_MAP.md",
-        ".planning/graphs/graph.json",
-        "runtime/run_plans/nextgen_dark_architecture_registry_v1.json",
+        ".planning/architecture/CURRENT_ARCHITECTURE.md",
+        ".planning/architecture/ARCHITECTURE_BOUNDARY.md",
+        ".planning/architecture/EVOLUTION_MAP.md",
+        ".planning/architecture/architecture_graph.json",
+        ".planning/architecture/architecture_registry.json",
         "reports/cn_search_selection_event_state_sprint2_20260713/DECISION_CHANGE_LOG.md",
     ]
     for relative in active_assets:
@@ -49,7 +49,7 @@ def test_active_architecture_does_not_repeat_retracted_event_denial() -> None:
 
 
 def test_graph_records_legacy_path_and_planned_broad_recovery_separately() -> None:
-    graph = json.loads((REPO / ".planning/graphs/graph.json").read_text(encoding="utf-8"))
+    graph = json.loads((REPO / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8"))
     nodes = {row["id"]: row for row in graph["nodes"]}
     links = {(row["source"], row["target"], row["relation"]): row for row in graph["links"]}
 

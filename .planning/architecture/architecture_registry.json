@@ -2,6 +2,17 @@
   "registry_version": "cn_broad_event_recovery_architecture_registry_v4",
   "phase": "CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED",
   "base_registry": "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json",
+  "authority_contract": {
+    "status_authority": ".planning/architecture/architecture_registry.json",
+    "raw_codegraph_role": "OBSERVED_SOURCE_STRUCTURE_ONLY",
+    "raw_codegraph_may_assert_research_status": false,
+    "rules": [
+      "SINGLE_STATUS_AUTHORITY",
+      "SEPARATE_GRAPH_NAMESPACES"
+    ],
+    "generic_graph_entry": ".planning/graphs/graph.json",
+    "generic_graph_entry_role": "DEPRECATED_COMPATIBILITY_POINTER"
+  },
   "node_overrides": {
     "scheduler_memory_feedback": {
       "status": "FROZEN",

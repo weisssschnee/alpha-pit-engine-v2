@@ -157,25 +157,25 @@
     {
       "exists": true,
       "id": "architecture_registry",
-      "last_verified_sha": "de4e201eee8ff2b241fca38f07d500213775ccc9e78f0208dc558f31341a7b28",
-      "path": "runtime/run_plans/nextgen_dark_architecture_registry_v1.json",
-      "size_bytes": 32331,
+      "last_verified_sha": "d9ebea9bf48114c3ea0597ae4c9820dc82ad85fd8b798477fac7bc375a9683a1",
+      "path": ".planning/architecture/architecture_registry.json",
+      "size_bytes": 32768,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "architecture_graph",
-      "last_verified_sha": "b1f643fa9e7ff9304b57b9bf7e6cfc6228daa071cdf2da3356894ab820153a83",
-      "path": ".planning/graphs/graph.json",
-      "size_bytes": 95436,
+      "last_verified_sha": "4d34baa5bf00012fa6b036233cfc6f5677d777ee7e6e5dca2af311dde8893dc0",
+      "path": ".planning/architecture/architecture_graph.json",
+      "size_bytes": 96094,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "current_architecture",
-      "last_verified_sha": "fbfb1bf065838ebfd248d3dd19974df1186e10d657c8d801104eae2e1392ff4a",
-      "path": ".planning/graphs/CURRENT_ARCHITECTURE.md",
-      "size_bytes": 3905,
+      "last_verified_sha": "39b07944b05f94f040a54a57bd8ea7b743e4041d420b0622f442f1e2ebc59265",
+      "path": ".planning/architecture/CURRENT_ARCHITECTURE.md",
+      "size_bytes": 4046,
       "state": "IMPLEMENTED"
     },
     {
@@ -189,9 +189,9 @@
     {
       "exists": true,
       "id": "delivery_validator",
-      "last_verified_sha": "bfa475489d94af1b3c354785c785d32681eb608520367e9d3c9d6cac30dafe53",
+      "last_verified_sha": "c338b623f84368eb694e495711010e428449438ba1eb0fc89fcd3b6f06e6d4ca",
       "path": "scripts/validate_nextgen_dark_delivery.py",
-      "size_bytes": 6316,
+      "size_bytes": 6335,
       "state": "IMPLEMENTED"
     },
     {
@@ -204,6 +204,6 @@
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-13T10:51:44.774149+00:00",
+  "refreshed_at": "2026-07-13T13:35:53.766824+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
 }

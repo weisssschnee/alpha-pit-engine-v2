@@ -76,7 +76,7 @@
       "output_artifacts": ["no accepted full PIT membership artifact"],
       "data_role": "unaccepted_research_canary",
       "feedback_permission": "FORBIDDEN",
-      "test_evidence": [".planning/graphs/CURRENT_ARCHITECTURE.md"],
+      "test_evidence": [".planning/architecture/CURRENT_ARCHITECTURE.md"],
       "verification_paths": ["src/our_system_phase2/services/true1min_curated_lanes.py"],
       "blocker": "PIT membership/churn contract belongs to frozen Phase B"
     },

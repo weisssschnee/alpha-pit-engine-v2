@@ -30,7 +30,7 @@ def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
     manifest = json.loads((repo / "runtime/run_plans/nextgen_dark_run_manifest_v1.json").read_text(encoding="utf-8"))
     canary = json.loads((repo / "runtime/run_plans/nextgen_dark_canary_plan_v1.json").read_text(encoding="utf-8"))
     registry = json.loads((repo / "runtime/field_registry/nextgen_dark_field_registry_v2.json").read_text(encoding="utf-8"))
-    graph = json.loads((repo / ".planning/graphs/graph.json").read_text(encoding="utf-8"))
+    graph = json.loads((repo / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8"))
     artifact_index = json.loads((repo / "reports/nextgen_dark_20260711/ARTIFACT_INDEX.json").read_text(encoding="utf-8"))
     temporal = json.loads((repo / "runtime/run_plans/nextgen_dark_temporal_registry_v1.json").read_text(encoding="utf-8"))
     events = json.loads((repo / "runtime/run_plans/nextgen_dark_event_registry_v1.json").read_text(encoding="utf-8"))
