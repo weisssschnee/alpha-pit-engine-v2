@@ -1,0 +1,127 @@
+{
+  "manifest_version": "cn_search_selection_event_state_sprint2_manifest_v1",
+  "status": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_ACTIVE",
+  "started_at": "2026-07-13",
+  "baseline": {
+    "repo_sha": "8f6cf18837b200201520933e289e3102ad5bd48b",
+    "tag": "cn-generator-research-sprint1-closure-20260713",
+    "remote_branch_verified": true,
+    "remote_tag_verified": true,
+    "development_only_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "field_registry_sha256": "960f9d59e6f45274bd370c68a68cbad938b9e00265c3262a71cd31ae717b6b94"
+  },
+  "offline_evidence": {
+    "policy": "EXPLICIT_VERSIONED_AUDITABLE_NOT_CROSS_SPRINT_MEMORY",
+    "target_horizon_bars": 5,
+    "sources": [
+      {
+        "id": "formal_b1s",
+        "run_role": "formal_canary",
+        "seed_set": "formal",
+        "root": "D:/ChengboRemote/runtime/cn_b1s_canary_data_access_repaired_v5_20260712/artifacts/20260712T105523619094Z",
+        "candidate_proposals_sha256": "02f1753a4cc9ae261675a7d46c55924decb63813a38f1291fc1b0a31b744d780",
+        "candidate_proposals_size": 925369,
+        "strict_metrics_sha256": "f273611049e572e168ee0874c05f350277fa047201da2f8d647bf7293bafd8c9",
+        "strict_metrics_size": 112101
+      },
+      {
+        "id": "capability_repaired",
+        "run_role": "capability_canary",
+        "seed_set": "capability",
+        "root": "D:/ChengboRemote/runtime/cn_generator_research_sprint1/capability_repeat/1a7a0b8_r2/output/artifacts/20260712T141424456815Z",
+        "candidate_proposals_sha256": "8e83943c3dde074e005efaec2e01c13717694f3e097289de27a7025783b5f64f",
+        "candidate_proposals_size": 4578885,
+        "strict_metrics_sha256": "79138d865df908ad38512d14e176e57fb084ecf78e6031a3912661cbbdcd6fc6",
+        "strict_metrics_size": 372542
+      },
+      {
+        "id": "epoch_a_seed_a",
+        "run_role": "epoch_a",
+        "seed_set": "seed_a",
+        "root": "D:/ChengboRemote/runtime/cn_generator_research_sprint1/epoch_a/09a4d80_r1/seed_a/artifacts/20260712T164750037761Z",
+        "candidate_proposals_sha256": "a79a3241bed2567d65421db292941ccfee7d621737d85d31fefb8cd153d227d7",
+        "candidate_proposals_size": 8987858,
+        "strict_metrics_sha256": "376e97ea9af161693579117e7172e8e3a1b740ec66f14e9a1aae72d0af3a5f60",
+        "strict_metrics_size": 580226
+      },
+      {
+        "id": "epoch_a_seed_b",
+        "run_role": "epoch_a",
+        "seed_set": "seed_b",
+        "root": "D:/ChengboRemote/runtime/cn_generator_research_sprint1/epoch_a/09a4d80_r1/seed_b/artifacts/20260712T164750037761Z",
+        "candidate_proposals_sha256": "6e6e0b9b0550455ba8c9dbb05c6de38c7834f516747420eba493c7c270d29498",
+        "candidate_proposals_size": 9008131,
+        "strict_metrics_sha256": "28b6c4ce41bdd0180adbbbbfe890a59e5659e732efb611b79cf488b0c7b410dc",
+        "strict_metrics_size": 579763
+      }
+    ],
+    "selector_comparison": [
+      "current_development_scalar",
+      "interpretable_hard_gate_rank_rule",
+      "cross_fitted_strict_priority_model",
+      "deterministic_random_control"
+    ],
+    "cross_fit_protocols": [
+      "leave_one_seed_set_out",
+      "exact_family_behaviour_component_group_kfold"
+    ],
+    "promotion_gate": "MODEL_REQUIRES_OOF_TOP_DECILE_LIFT_OVER_SCALAR_RULE_AND_RANDOM"
+  },
+  "repair_capability_canary": {
+    "state": "PLANNED",
+    "proposal_total": 8192,
+    "strict_total": 256,
+    "minimum_seeds": 2,
+    "shared_backbone": true,
+    "maximum_event_state_repair_attempts": 2,
+    "event_failure_state": "EVENT_GENERATOR_NOT_OPERATIONAL",
+    "state_failure_state": "STATE_GENERATOR_NOT_OPERATIONAL"
+  },
+  "epoch_c": {
+    "state": "CONDITIONAL",
+    "unique_proposal_total": 32768,
+    "strict_total": 1024,
+    "seed_count": 3,
+    "shared_deterministic_backbone": 8192,
+    "seed_specific_expansion_per_seed": 8192,
+    "only_primary_adaptive": "rx_ucb",
+    "entry_requires": [
+      "selector OOF lift",
+      "event or state operational decision completed",
+      "RX/UCB beats matched control in at least two seeds",
+      "zero data access violations",
+      "zero contract drift"
+    ]
+  },
+  "epoch_d": {
+    "state": "CONDITIONAL_SINGLE_REPAIR_ONLY",
+    "maximum_scale_relative_to_epoch_c": 1.5,
+    "requires": [
+      "Epoch-C selector lift is stable",
+      "RX/UCB beats matched control",
+      "event or state has independent economic increment",
+      "one identified defect blocks a reliable pack"
+    ]
+  },
+  "immutable_boundaries": {
+    "new_data_fields_allowed": false,
+    "plate_industry_enabled": false,
+    "validation_allowed": false,
+    "holdout_allowed": false,
+    "forward_2026_allowed": false,
+    "candidate_promotion_allowed": false,
+    "permanent_memory_allowed": false,
+    "cross_sprint_elite_value_allowed": false,
+    "mid_run_budget_change_allowed": false,
+    "post_performance_seed_change_allowed": false
+  },
+  "final_outputs": [
+    "selector OOF evidence and calibration",
+    "development eligible audit",
+    "event/state support and planted-test evidence",
+    "shared backbone and seed-expansion stability",
+    "union reranking",
+    "Sprint-2 closure state and recommendation"
+  ]
+}
