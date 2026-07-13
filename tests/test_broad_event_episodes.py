@@ -8,7 +8,11 @@ from our_system_phase2.services.broad_event_episodes import (
     matched_control_contract,
     materialize_broad_event_episodes,
 )
-from our_system_phase2.runtime.cn_broad_event_canary import _attach_episode_outcomes, _candidate_rows
+from our_system_phase2.runtime.cn_broad_event_canary import (
+    _attach_episode_outcomes,
+    _build_behavior_registry,
+    _candidate_rows,
+)
 
 
 def _frame() -> pd.DataFrame:
@@ -87,10 +91,17 @@ def test_fixed_seeds_are_stratified_by_source_but_choose_distinct_mechanisms() -
     # Use a divisible per-source budget for this compact fixture.
     proposal = len(contract["required_event_sources"]) * 12
     contract["budgets"]["event_conditioned"]["proposal"] = proposal
-    first = pd.DataFrame(_candidate_rows(observations, contract, 1729))
-    second = pd.DataFrame(_candidate_rows(observations, contract, 2718))
+    contract["behavior_cluster_contract"] = {
+        "absolute_correlation_threshold": 0.95,
+        "minimum_common_episode_count": 3,
+    }
+    behavior_mapping, report = _build_behavior_registry(observations, contract)
+    first = pd.DataFrame(_candidate_rows(observations, contract, 1729, behavior_mapping))
+    second = pd.DataFrame(_candidate_rows(observations, contract, 2718, behavior_mapping))
     first_event = first.loc[first["lane"].eq("event_conditioned")]
     second_event = second.loc[second["lane"].eq("event_conditioned")]
     assert first_event.groupby("source").size().eq(12).all()
     assert second_event.groupby("source").size().eq(12).all()
     assert set(first_event["canonical"]) != set(second_event["canonical"])
+    assert first_event["exact_behavior_id"].nunique() < first_event["canonical"].nunique()
+    assert report["canonical_mechanism_ids_used_as_behavior_clusters"] is False

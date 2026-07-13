@@ -1,0 +1,8 @@
+{
+  "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS",
+  "eligible_derived_episode_count": 243,
+  "match_rate": 0.9917695473251029,
+  "matched_within_two_minutes": 241,
+  "vendor_coverage_rate": 0.9239543726235742,
+  "vendor_episode_count": 263
+}

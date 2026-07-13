@@ -34,6 +34,15 @@ def validate_canary_contract(contract: dict[str, Any]) -> None:
         raise ValueError("Broad Event data boundary contract mismatch")
     if len(contract["seeds"]) < 2 or len(set(contract["seeds"])) != len(contract["seeds"]):
         raise ValueError("Broad Event CANARY requires at least two distinct fixed seeds")
+    if contract.get("behavior_cluster_contract") != {
+        "absolute_correlation_threshold": 0.95,
+        "cluster_scope": "within_event_source_on_episode_coordinates",
+        "minimum_common_episode_count": 30,
+        "new_cluster_requires_separation_from": [
+            "structural_control", "static_control", "temporal_control"
+        ],
+    }:
+        raise ValueError("Broad Event behavior cluster contract mismatch")
     for lane, budgets in contract["budgets"].items():
         if not all(int(value) > 0 for value in budgets.values()):
             raise ValueError(f"Broad Event lane has zero frozen budget: {lane}")

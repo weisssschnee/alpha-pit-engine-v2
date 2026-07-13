@@ -1,0 +1,237 @@
+{
+  "access_ledger": {
+    "data_role": "development_only",
+    "forbidden_file_reads": 0,
+    "forbidden_row_group_reads": 0,
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "opened_files": [
+      "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+    ],
+    "validation_reads": 0
+  },
+  "canary_executed": true,
+  "candidate_promotion": false,
+  "contract_hash": "c5fbb3943242d90790316fd0d995754c41b449c71bdaa18eca74f9835c433098",
+  "cross_sprint_memory_persisted": false,
+  "data_release_manifest_sha256": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+  "disposition": "EXPLORATORY_EVENT_ARCHIVE",
+  "elapsed_seconds": 791.1538844108582,
+  "episode_count": 477497,
+  "forward_2026_accessed": false,
+  "limit_validation": {
+    "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS",
+    "eligible_derived_episode_count": 243,
+    "match_rate": 0.9917695473251029,
+    "matched_within_two_minutes": 241,
+    "vendor_coverage_rate": 0.9239543726235742,
+    "vendor_episode_count": 263
+  },
+  "mean_matched_increment": -0.0009658953099742382,
+  "observation_count": 477497,
+  "operational_event_sources": [
+    "BILLBOARD_CHANGE",
+    "CHIP_STRUCTURE_CHANGE",
+    "HOLDER_STRUCTURE_CHANGE",
+    "HOTNESS_CHANGE",
+    "LIMIT_UP_LIFECYCLE",
+    "MARGIN_FINANCING_CHANGE",
+    "MARKET_ECOLOGY_TRANSITION",
+    "VENDOR_LIMIT_OCCURRENCE"
+  ],
+  "plate_industry_used": false,
+  "repo_sha": "11ce36d1a6890a1fb1a18b68435cbab2af8ceab4",
+  "seed_reports": {
+    "1729": {
+      "lanes": {
+        "episode_placebo": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 0
+        },
+        "event_conditioned": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 18
+        },
+        "static_control": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 0
+        },
+        "structural_control": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 0
+        },
+        "temporal_control": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 0
+        }
+      },
+      "survivor_mechanisms": [
+        "01166fdd6c3a2aab",
+        "03362fbc175cc3b9",
+        "16c53855e757c585",
+        "265cf915b8163343",
+        "47ac79a6e2395f42",
+        "4fbf6cc691461c6c",
+        "7b391e59670c491e",
+        "8a64cdfefa6bcc35",
+        "9041949344c58bcf",
+        "9618ee1100155073",
+        "9696d0c558e24242",
+        "9bffdc8906b272e3",
+        "ac48ccce1bed104e",
+        "ac96e6d4db507a1a",
+        "b22d9565d0b39241",
+        "cf70889cec0c77df",
+        "d42c0973350238e0",
+        "e509aff6e5d7ae13"
+      ],
+      "survivor_sources": [
+        "BILLBOARD_CHANGE",
+        "CHIP_STRUCTURE_CHANGE",
+        "HOLDER_STRUCTURE_CHANGE",
+        "HOTNESS_CHANGE",
+        "MARKET_ECOLOGY_TRANSITION"
+      ]
+    },
+    "2718": {
+      "lanes": {
+        "episode_placebo": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 0
+        },
+        "event_conditioned": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 19
+        },
+        "static_control": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 0
+        },
+        "structural_control": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 0
+        },
+        "temporal_control": {
+          "admission": 48,
+          "canonical": 96,
+          "exact": 96,
+          "legal": 96,
+          "n_eff": 95.99999999999997,
+          "proposal": 96,
+          "signal_cluster": 96,
+          "strict": 24,
+          "survivor": 0
+        }
+      },
+      "survivor_mechanisms": [
+        "01166fdd6c3a2aab",
+        "16c53855e757c585",
+        "4fbf6cc691461c6c",
+        "5c03fa6c9b0489b8",
+        "7b391e59670c491e",
+        "7fb210c4f3958ad7",
+        "8a64cdfefa6bcc35",
+        "8fe0ba0a97c3da06",
+        "9041949344c58bcf",
+        "9618ee1100155073",
+        "9983eee569e870ad",
+        "a2dd3fdc4c83e628",
+        "abc689dfa18dbe15",
+        "ac96e6d4db507a1a",
+        "b22d9565d0b39241",
+        "ce201f305c630ef0",
+        "cf70889cec0c77df",
+        "d42c0973350238e0",
+        "dacbf3c537bd9b9f"
+      ],
+      "survivor_sources": [
+        "BILLBOARD_CHANGE",
+        "CHIP_STRUCTURE_CHANGE",
+        "HOTNESS_CHANGE",
+        "MARKET_ECOLOGY_TRANSITION"
+      ]
+    }
+  },
+  "semantic_registry_hash": "100b27f0645b93399ddec79de108f0906cd38a9b84a771cdfd3e4e516bdf5d34",
+  "shared_survivor_mechanisms": [
+    "01166fdd6c3a2aab",
+    "16c53855e757c585",
+    "4fbf6cc691461c6c",
+    "7b391e59670c491e",
+    "8a64cdfefa6bcc35",
+    "9041949344c58bcf",
+    "9618ee1100155073",
+    "ac96e6d4db507a1a",
+    "b22d9565d0b39241",
+    "cf70889cec0c77df",
+    "d42c0973350238e0"
+  ],
+  "split_manifest_sha256": "fab9fb8c3dc26099bb4fc1b8baf11ae5f1430ce94a89e1b816d270cc12e082e7",
+  "status": "CANARY_NO_INCREMENT_OBSERVED"
+}

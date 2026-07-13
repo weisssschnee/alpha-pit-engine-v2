@@ -176,6 +176,130 @@ def _reward(signal: pd.Series, target: pd.Series) -> tuple[float, int]:
     return float(value.mean()), len(value)
 
 
+def _behavior_key(source: str, lane: str, transform: str, variant: str) -> str:
+    return f"{source}|{lane}|{transform}|{variant}"
+
+
+def _exact_behavior_identity(group: pd.DataFrame, signal: pd.Series) -> tuple[str, int, int]:
+    episode_ids = group["episode_id"].astype(str).to_numpy()
+    order = np.argsort(episode_ids, kind="stable")
+    values = pd.to_numeric(signal, errors="coerce").to_numpy(dtype=float)[order]
+    finite = np.isfinite(values)
+    quantized = np.where(finite, np.round(values, 8), 0.0).astype("<f8", copy=False)
+    digest = hashlib.sha256()
+    digest.update("\n".join(episode_ids[order]).encode())
+    digest.update(finite.tobytes())
+    digest.update(quantized.tobytes())
+    return digest.hexdigest()[:24], int(finite.sum()), int((finite & (np.abs(values) > 1e-12)).sum())
+
+
+def _build_behavior_registry(
+    observations: pd.DataFrame, contract: dict[str, Any]
+) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+    threshold = float(contract["behavior_cluster_contract"]["absolute_correlation_threshold"])
+    minimum_overlap = int(contract["behavior_cluster_contract"]["minimum_common_episode_count"])
+    mapping: dict[str, dict[str, Any]] = {}
+    source_reports: dict[str, Any] = {}
+    transforms = ["direction", "intensity", "pre5_interaction", "pre15_interaction"]
+    variants = ["raw", "compressed"]
+    for source in contract["required_event_sources"]:
+        group = observations.loc[observations["event_source"].eq(source)]
+        signals: dict[str, pd.Series] = {}
+        for transform in transforms:
+            for variant in variants:
+                signals[_behavior_key(source, "event_conditioned", transform, variant)] = _variant(
+                    _signal(group, transform, event=True), variant
+                )
+                signals[_behavior_key(source, "structural_control", transform, variant)] = _variant(
+                    _signal(group, transform, event=False), variant
+                )
+        signals[_behavior_key(source, "static_control", "fixed", "raw")] = pd.to_numeric(
+            group["pre_return_5"], errors="coerce"
+        )
+        signals[_behavior_key(source, "temporal_control", "fixed", "raw")] = (
+            pd.to_numeric(group["pre_return_5"], errors="coerce")
+            - pd.to_numeric(group["pre_return_15"], errors="coerce")
+        )
+        keys = list(signals)
+        arrays = {key: pd.to_numeric(signals[key], errors="coerce").to_numpy(dtype=float) for key in keys}
+        identities = {key: _exact_behavior_identity(group, signals[key]) for key in keys}
+        parent = list(range(len(keys)))
+
+        def find(index: int) -> int:
+            while parent[index] != index:
+                parent[index] = parent[parent[index]]
+                index = parent[index]
+            return index
+
+        def union(left: int, right: int) -> None:
+            root_left, root_right = find(left), find(right)
+            if root_left != root_right:
+                parent[root_right] = root_left
+
+        for left in range(len(keys)):
+            for right in range(left + 1, len(keys)):
+                if identities[keys[left]][0] == identities[keys[right]][0]:
+                    union(left, right)
+                    continue
+                left_values, right_values = arrays[keys[left]], arrays[keys[right]]
+                common = np.isfinite(left_values) & np.isfinite(right_values)
+                if int(common.sum()) < minimum_overlap:
+                    continue
+                left_common, right_common = left_values[common], right_values[common]
+                if np.std(left_common) <= 1e-12 or np.std(right_common) <= 1e-12:
+                    continue
+                correlation = float(np.corrcoef(left_common, right_common)[0, 1])
+                if np.isfinite(correlation) and abs(correlation) >= threshold:
+                    union(left, right)
+        components: dict[int, list[str]] = {}
+        for index, key in enumerate(keys):
+            components.setdefault(find(index), []).append(key)
+        cluster_by_key: dict[str, str] = {}
+        for members in components.values():
+            exact_members = sorted(identities[key][0] for key in members)
+            cluster_id = hashlib.sha256("|".join(exact_members).encode()).hexdigest()[:20]
+            for key in members:
+                cluster_by_key[key] = cluster_id
+        control_clusters = {
+            cluster_by_key[key]
+            for key in keys
+            if "|event_conditioned|" not in key
+        }
+        for key in keys:
+            exact_id, support, activation = identities[key]
+            lane = key.split("|")[1]
+            mapping[key] = {
+                "exact_behavior_id": exact_id,
+                "behavior_cluster_id": cluster_by_key[key],
+                "behavior_support": support,
+                "activation_count": activation,
+                "new_vs_matched_controls": lane == "event_conditioned" and cluster_by_key[key] not in control_clusters,
+            }
+        event_keys = [key for key in keys if "|event_conditioned|" in key]
+        source_reports[source] = {
+            "episode_count": len(group),
+            "behavior_spec_count": len(keys),
+            "exact_behavior_count": len({identities[key][0] for key in keys}),
+            "behavior_cluster_count": len(set(cluster_by_key.values())),
+            "event_behavior_cluster_count": len({cluster_by_key[key] for key in event_keys}),
+            "event_new_vs_control_cluster_count": len({
+                cluster_by_key[key] for key in event_keys if mapping[key]["new_vs_matched_controls"]
+            }),
+        }
+    report = {
+        "version": "cn_broad_event_behavior_registry_v1",
+        "absolute_correlation_threshold": threshold,
+        "minimum_common_episode_count": minimum_overlap,
+        "cluster_scope": "within_event_source_on_episode_coordinates",
+        "canonical_mechanism_ids_used_as_behavior_clusters": False,
+        "source_reports": source_reports,
+        "behaviors": [
+            {"behavior_key": key, **mapping[key]} for key in sorted(mapping)
+        ],
+    }
+    return mapping, report
+
+
 def _placebo_target(group: pd.DataFrame, seed: int, horizon: int) -> pd.Series:
     """Choose a precomputed same-symbol, same-session shifted action time per episode."""
     episode_ids = group["episode_id"].astype(str)
@@ -198,7 +322,12 @@ def _placebo_target(group: pd.DataFrame, seed: int, horizon: int) -> pd.Series:
     return pd.Series(values, index=group.index, dtype=float)
 
 
-def _candidate_rows(observations: pd.DataFrame, contract: dict[str, Any], seed: int) -> list[dict[str, Any]]:
+def _candidate_rows(
+    observations: pd.DataFrame,
+    contract: dict[str, Any],
+    seed: int,
+    behavior_mapping: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
     sources = list(contract["required_event_sources"])
     transforms = ["direction", "intensity", "pre5_interaction", "pre15_interaction"]
     variants = ["raw", "compressed"]
@@ -269,9 +398,25 @@ def _candidate_rows(observations: pd.DataFrame, contract: dict[str, Any], seed: 
             "block_increment": block_increment, "top_date_share": float(date_share),
             "top_symbol_share": float(symbol_share), "survivor": bool(survivor),
         }
-        rows.append({**base, "lane": "event_conditioned", "reward": event_reward})
+        event_behavior = behavior_mapping[_behavior_key(source, "event_conditioned", transform, variant)]
+        rows.append({**base, **event_behavior, "lane": "event_conditioned", "reward": event_reward})
         for lane, reward in controls.items():
-            rows.append({**base, "lane": lane, "reward": reward, "survivor": False})
+            if lane == "episode_placebo":
+                placebo_id = hashlib.sha256(
+                    f"{event_behavior['exact_behavior_id']}|placebo|{seed}|{horizon}".encode()
+                ).hexdigest()[:24]
+                behavior = {
+                    "exact_behavior_id": placebo_id,
+                    "behavior_cluster_id": placebo_id[:20],
+                    "behavior_support": int(pd.to_numeric(placebo, errors="coerce").notna().sum()),
+                    "activation_count": event_behavior["activation_count"],
+                    "new_vs_matched_controls": False,
+                }
+            elif lane in {"static_control", "temporal_control"}:
+                behavior = behavior_mapping[_behavior_key(source, lane, "fixed", "raw")]
+            else:
+                behavior = behavior_mapping[_behavior_key(source, lane, transform, variant)]
+            rows.append({**base, **behavior, "lane": lane, "reward": reward, "survivor": False})
     return rows
 
 
@@ -282,12 +427,13 @@ def _lane_summary(frame: pd.DataFrame, contract: dict[str, Any]) -> dict[str, An
         ranked = group.sort_values(["reward", "exact_id"], ascending=[False, True], na_position="last")
         admission = ranked.head(int(budget["admission"]))
         strict = admission.head(int(budget["strict"]))
-        counts = group["mechanism_id"].value_counts()
+        counts = group["behavior_cluster_id"].value_counts()
         probabilities = counts / counts.sum()
         summaries[str(lane)] = {
             "proposal": len(group), "legal": int(group["reward"].notna().sum()),
             "canonical": int(group["canonical"].nunique()), "exact": int(group["exact_id"].nunique()),
-            "signal_cluster": int(group["mechanism_id"].nunique()),
+            "exact_behavior": int(group["exact_behavior_id"].nunique()),
+            "signal_cluster": int(group["behavior_cluster_id"].nunique()),
             "n_eff": float(1.0 / np.square(probabilities).sum()),
             "admission": len(admission), "strict": len(strict),
             "survivor": int(group["survivor"].sum()) if lane == "event_conditioned" else 0,
@@ -407,25 +553,39 @@ def run_canary(*, contract_path: Path, semantic_registry_path: Path, data_root: 
         summary = {"status": preflight["decision"], "canary_executed": False, "preflight": preflight}
         _write_json(output_root / "summary.json", summary)
         return summary
+    behavior_mapping, behavior_report = _build_behavior_registry(observations, contract)
+    _write_json(output_root / "behavior_registry.json", behavior_report)
     candidate_parts = []
     seed_reports = {}
     for seed in contract["seeds"]:
-        rows = pd.DataFrame(_candidate_rows(observations, contract, int(seed)))
+        rows = pd.DataFrame(_candidate_rows(observations, contract, int(seed), behavior_mapping))
         candidate_parts.append(rows)
+        event_seed_rows = rows.loc[rows["lane"].eq("event_conditioned")]
         seed_reports[str(seed)] = {
             "lanes": _lane_summary(rows, contract),
-            "survivor_mechanisms": sorted(rows.loc[rows["lane"].eq("event_conditioned") & rows["survivor"], "mechanism_id"].unique().tolist()),
-            "survivor_sources": sorted(rows.loc[rows["lane"].eq("event_conditioned") & rows["survivor"], "source"].unique().tolist()),
+            "survivor_mechanisms": sorted(event_seed_rows.loc[event_seed_rows["survivor"], "mechanism_id"].unique().tolist()),
+            "survivor_sources": sorted(event_seed_rows.loc[event_seed_rows["survivor"], "source"].unique().tolist()),
+            "new_behavior_clusters": sorted(event_seed_rows.loc[event_seed_rows["new_vs_matched_controls"], "behavior_cluster_id"].unique().tolist()),
         }
     candidates = pd.concat(candidate_parts, ignore_index=True)
     candidates.drop(columns="block_increment").to_csv(output_root / "candidate_results.csv", index=False)
     seed_sets = [set(report["survivor_mechanisms"]) for report in seed_reports.values()]
     shared = set.intersection(*seed_sets) if seed_sets else set()
     event_rows = candidates.loc[candidates["lane"].eq("event_conditioned")]
-    positive_increment = event_rows["matched_increment"].dropna().mean() > 0
-    if shared and positive_increment:
+    shared_rows = event_rows.loc[event_rows["mechanism_id"].isin(shared)]
+    shared_new_mechanisms = sorted(
+        mechanism for mechanism, group in shared_rows.groupby("mechanism_id", sort=True)
+        if group["survivor"].all() and group["new_vs_matched_controls"].all()
+    )
+    shared_new_clusters = sorted(
+        shared_rows.loc[shared_rows["mechanism_id"].isin(shared_new_mechanisms), "behavior_cluster_id"].unique().tolist()
+    )
+    if shared_new_mechanisms:
         decision = "BROAD_EVENT_INCREMENT_OBSERVED_REPRODUCIBLE"
         disposition = "NEXT_DISCOVERY_ELIGIBLE_NO_AUTOMATIC_MAIN_SEARCH_ENTRY"
+    elif shared:
+        decision = "BROAD_EVENT_INCREMENT_REPRODUCIBLE_NO_NEW_BEHAVIOR_CLUSTER"
+        disposition = "EXPLORATORY_EVENT_ARCHIVE"
     elif all(not values for values in seed_sets):
         decision = "REPEATED_NO_INCREMENT_WITH_ADEQUATE_SUPPORT"
         disposition = "EXPLORATORY_EVENT_ARCHIVE"
@@ -439,6 +599,8 @@ def run_canary(*, contract_path: Path, semantic_registry_path: Path, data_root: 
         "data_release_manifest_sha256": contract["data_release"]["manifest_sha256"],
         "split_manifest_sha256": contract["split_manifest_sha256"],
         "seed_reports": seed_reports, "shared_survivor_mechanisms": sorted(shared),
+        "shared_new_behavior_mechanisms": shared_new_mechanisms,
+        "shared_new_behavior_clusters": shared_new_clusters,
         "mean_matched_increment": float(event_rows["matched_increment"].dropna().mean()),
         "episode_count": len(episodes), "observation_count": len(observations),
         "operational_event_sources": support["operational_sources"],

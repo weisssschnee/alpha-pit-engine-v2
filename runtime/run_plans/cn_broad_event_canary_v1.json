@@ -18,6 +18,16 @@
     "plate_industry_allowed": false,
     "validation_allowed": false
   },
+  "behavior_cluster_contract": {
+    "absolute_correlation_threshold": 0.95,
+    "cluster_scope": "within_event_source_on_episode_coordinates",
+    "minimum_common_episode_count": 30,
+    "new_cluster_requires_separation_from": [
+      "structural_control",
+      "static_control",
+      "temporal_control"
+    ]
+  },
   "budgets": {
     "episode_placebo": {
       "admission": 48,
@@ -45,7 +55,7 @@
       "strict": 24
     }
   },
-  "contract_hash": "c5fbb3943242d90790316fd0d995754c41b449c71bdaa18eca74f9835c433098",
+  "contract_hash": "613dd6c81d0c77691ed6c5dc0e913df4431a2ee5782d4c7240182aa45670cb97",
   "data_release": {
     "id": "cn_true1min_development_only_release_v1_20260712_77o",
     "manifest_sha256": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
