@@ -1,6 +1,6 @@
 # Architecture Boundary
 
-Updated: 2026-07-13
+Updated: 2026-07-14
 
 ## Graph authority
 
@@ -28,8 +28,8 @@ repo SHA, generator hash and every declared derived display hash.
 
 1. Current user instruction and repository `AGENTS.md`.
 2. Accepted ADRs and fixed run manifests.
-3. Phase A plus `.planning/architecture/architecture_registry.json` and the
-   Broad Event recovery status v2.
+3. Phase A plus `.planning/architecture/architecture_registry.json`, the Broad
+   Event recovery status v2 and the PIT Fundamental Fabric run manifest.
 4. Generated architecture graph, `CURRENT_ARCHITECTURE.md`,
    `EVOLUTION_MAP.md`, and `.planning/STATE.md`.
 5. Historical reports and raw navigation artifacts.
@@ -60,6 +60,18 @@ repo SHA, generator hash and every declared derived display hash.
   2026 cannot enter reward, selection, scheduler, memory or human family
   decisions.
 - Plate/industry remains excluded without historical PIT membership.
+- Fundamental schema inventory may inspect parquet footers, but value reads are
+  limited to rows whose conservative observable time is no later than
+  `2025-07-07T15:00:00`. Predicate filtering occurs before pandas
+  materialization; no post-cutoff row is emitted, hashed, cached or used.
+- Fundamental levels, changes, disclosure pulses and conditions are separate
+  typed routes. None of the 1,227 source fields may enter a generator, reward,
+  admission, scheduler, memory or promotion under this result domain.
+- Date-only disclosures mature at the next CN session open. Report periods are
+  never observable times. Later `UPDATE_DATE` values cannot be backfilled, and
+  current snapshot rows cannot claim unavailable historical revision values.
+- `zygc_em` values remain unread and blocked because report date is not an
+  independent disclosure clock. No conservative-lag guess may unblock them.
 
 ## Acceptance boundary
 
@@ -79,7 +91,11 @@ historical interpretation supersession; status v2 closes the corrected
 recovery without rewriting those tables. The r5 discovery pack is research
 entry evidence, not a forward or promotion pack.
 
-The complete PIT financial-statement source exists outside the 121-field
-materialized registry. Its presence is not permission to use it: income,
-balance-sheet and cash-flow fields require explicit observable-time/source-lag
-contracts and a versioned Fabric expansion before search.
+The PIT Fundamental Fabric execution is bound to
+`886bc83c84527d234b628311eb01d490e603fce6`. It inventories 1,227 source fields,
+keeps 1,225 absent fields plus two semantic equivalents outside generator
+exposure, and records all five source families in a versioned sidecar manifest.
+Balance-sheet, profit, cash-flow and announcement-bearing major-holder routes
+are infrastructure-ready. Business composition and true historical revision
+replay remain blocked by source evidence, so the fabric is partially rather
+than fully completed. No performance search was run.

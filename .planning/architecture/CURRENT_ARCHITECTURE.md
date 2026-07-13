@@ -1,8 +1,8 @@
 # Current Architecture
 
-Updated: 2026-07-13
+Updated: 2026-07-14
 
-State: `CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE` on the
+State: `CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED` on the
 physically isolated 2024-2025 development-only release. Sealed evaluation,
 promotion and cross-sprint memory remain frozen.
 
@@ -36,6 +36,12 @@ flowchart LR
     BROAD_EVENT --> EVENT_CANARY["IMPLEMENTED<br/>two-seed development CANARY<br/>477,497 episodes"]
     EVENT_CANARY --> EVENT_PACK["FROZEN<br/>11 mechanisms / 10 new behavior clusters"]
     EVENT_PACK -. "NO PROMOTION / NO 2026" .-> SEALED
+    FUND_SOURCE["IMPLEMENTED<br/>5 fundamental source families<br/>1,227 union fields"] --> FUND_FABRIC["PARTIAL<br/>PIT Fundamental Fabric v1<br/>lazy session as-of routes"]
+    SPLIT --> FUND_FABRIC
+    FIELDS -->|"1,225 absent / 2 equivalents"| FUND_FABRIC
+    FUND_FABRIC --> FEATURE_FABRIC["IMPLEMENTED<br/>typed level / change / event / condition adapter"]
+    FUND_FABRIC -. "NO GENERATOR / REWARD / PROMOTION" .-> SEALED
+    ZYGC["FROZEN<br/>business composition<br/>no disclosure clock"] -. "PIT_CONTRACT_UNRESOLVED" .-> FUND_FABRIC
     PLATE["FROZEN<br/>plate/industry user-deferred"] -. "FORBIDDEN" .-> EPOCHC
 ```
 
@@ -59,6 +65,13 @@ flowchart LR
   lane, primitive, family, parent or signal cluster.
 - State does not beat matched static economically; novelty alone is not called
   alpha increment.
+- The PIT Fundamental Fabric inventories 1,227 fields across 26,188 files. It
+  provides conservative observable-time resolution, revision-aware snapshot
+  handling, stock-session as-of joins, deterministic cache and lazy typed
+  level/change/disclosure/condition routes without minute-panel expansion.
+- Development-safe coverage is 274,761 balance-sheet, 269,643 profit, 259,237
+  cash-flow and 2,615,891 holder rows. Holder rows form 262,629 disclosure
+  episodes. All 1,227 fields remain unexposed to formal generators.
 
 ## Active blockers and boundaries
 
@@ -69,9 +82,11 @@ flowchart LR
   pack and cannot enter promotion or positive memory.
 - Epoch-D remains unrun. The Broad Event discovery entry pack is frozen for the
   next candidate-discovery contract and does not authorize formal search.
-- Full PIT financial-statement assets exist locally, but only valuation,
-  market-cap and holder subsets are in the current 121-field materialization.
-  Statement fundamentals remain outside search until a versioned source-lagged
-  Fabric expansion is completed.
+- The versioned source-lagged statement/holder Fabric is implemented but remains
+  infrastructure-only. The current 121-field registry has two semantic
+  equivalents and omits the other 1,225 source fields.
+- `zygc_em` has 17 fields and 945,812 rows but no credible independent
+  disclosure clock, so its values were not read. Historical superseded
+  statement revision values are also absent from the current snapshot release.
 - Validation, holdout, spent, sealed, plate/industry and 2026 remain outside
   the allowed development feedback graph.

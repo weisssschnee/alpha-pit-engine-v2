@@ -1,0 +1,77 @@
+{
+  "artifact_count": 14,
+  "artifacts": [
+    {
+      "bytes": 101293,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\reports\\cn_pit_fundamental_fabric_v1\\coverage_missingness_report.csv",
+      "sha256": "ab46f3ed112a07ace1c9fd4c874a79bd79c1b820ec0849679d1a5bfe9104c46f"
+    },
+    {
+      "bytes": 361225,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\reports\\cn_pit_fundamental_fabric_v1\\coverage_missingness_report.json",
+      "sha256": "3d997c9e11809c4bd4edeb764c4dd88b0fb074580a1011ae8777f7903604e9a1"
+    },
+    {
+      "bytes": 928,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\reports\\cn_pit_fundamental_fabric_v1\\development_only_access_ledger.jsonl",
+      "sha256": "b30ee40c067327fa95112635de25eeeabe36dda90f7acf61c4b6245f56fb28b9"
+    },
+    {
+      "bytes": 1810,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\reports\\cn_pit_fundamental_fabric_v1\\fundamental_revision_policy.md",
+      "sha256": "9f633aa23dbd64f3bd674d34182839f24e9994ebb6bec5ca7a80f52188116559"
+    },
+    {
+      "bytes": 246,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\reports\\cn_pit_fundamental_fabric_v1\\resource_performance_report.json",
+      "sha256": "544c9fc4216b87b7c224f25fde9d0aac8d638a988ebb54aedf845743c35c799f"
+    },
+    {
+      "bytes": 2781,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\reports\\cn_pit_fundamental_fabric_v1\\run_manifest.json",
+      "sha256": "5f931f60beed7ab2396ec8c28bb6e6cc5413a524b8be36fdea44c7843a81293d"
+    },
+    {
+      "bytes": 282487,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\runtime\\cn_pit_fundamental_fabric_v1\\fundamental_121_gap_report.csv",
+      "sha256": "3471163d54e80d2506cc5f55bc90f5c2aab638e967add8eca980285a68822685"
+    },
+    {
+      "bytes": 621063,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\runtime\\cn_pit_fundamental_fabric_v1\\fundamental_121_gap_report.json",
+      "sha256": "87c155605325f3cfef0e46d97b05e946e55c2090a99498a897f2fc9123a56097"
+    },
+    {
+      "bytes": 2522,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\runtime\\cn_pit_fundamental_fabric_v1\\fundamental_observable_time_contract.json",
+      "sha256": "9724dfafa56254c7028d6623f216bd8922b65e43bd22442c184173f1f8a44bc8"
+    },
+    {
+      "bytes": 2083134,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\runtime\\cn_pit_fundamental_fabric_v1\\fundamental_semantic_registry.json",
+      "sha256": "8ad391ffdcbb3fcb9bbec3a3e5494069131a4d1195ef45225134431e58fe520e"
+    },
+    {
+      "bytes": 646455,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\runtime\\cn_pit_fundamental_fabric_v1\\fundamental_source_universe.csv",
+      "sha256": "fda02b750540b14a97a9b8365770c85b9d4f198fdccda8bfa23b2fce2c594698"
+    },
+    {
+      "bytes": 1449859,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\runtime\\cn_pit_fundamental_fabric_v1\\fundamental_source_universe.json",
+      "sha256": "18312e584eb118bc3d96a608a3874f070069f2d6003b98b617559c6136e59d54"
+    },
+    {
+      "bytes": 3940,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\runtime\\cn_pit_fundamental_fabric_v1\\pit_sidecar_manifest.json",
+      "sha256": "aacadab2b29e6f3147070cd6f50f119c1706a2dced4f69254dd066f29423ad58"
+    },
+    {
+      "bytes": 5088943,
+      "path": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\runtime\\cn_pit_fundamental_fabric_v1\\source_file_index.csv",
+      "sha256": "4742d660635406c97caaed591f50f0df08a6231a4a0406e917316091e74a585e"
+    }
+  ],
+  "fabric_version": "CN_PIT_FUNDAMENTAL_FABRIC_V1",
+  "run_id": "cn_pit_fundamental_fabric_v1_20260714_77o"
+}

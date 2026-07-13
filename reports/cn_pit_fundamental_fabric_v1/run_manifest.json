@@ -1,0 +1,54 @@
+{
+  "boundaries": {
+    "broad_event_pack": "FROZEN_UNMODIFIED",
+    "candidate_promotion": "NONE",
+    "forward_2026_performance_dataset": "SEALED_NOT_READ",
+    "fundamental_rows_after_development_cutoff": "NOT_EMITTED_NOT_HASHED_NOT_USED",
+    "holdout_evaluation_dataset": "NOT_READ",
+    "performance_search": "NOT_EXECUTED",
+    "validation_evaluation_dataset": "NOT_READ"
+  },
+  "completed_at_utc": "2026-07-13T20:02:56.427288+00:00",
+  "continuation": {
+    "failed_families_are_isolated": [
+      "zygc_em"
+    ],
+    "limitations": [
+      "zygc_em has no credible disclosure clock and remains PIT_CONTRACT_UNRESOLVED",
+      "financial statement source is a current snapshot; superseded historical values are absent",
+      "new fields remain outside formal generator exposure"
+    ],
+    "resume_key": "ed1bda1de30ca81655bb622283a9a23d820d1cb9b7987659fc02bf6e70e87805"
+  },
+  "execution_host": "DESKTOP-77OPJ6F",
+  "fabric_version": "CN_PIT_FUNDAMENTAL_FABRIC_V1",
+  "inputs": {
+    "current_121_registry": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\inputs\\nextgen_dark_field_registry_v2.json",
+    "current_121_registry_sha256": "4ba9b0199033ea3d0cd4e5920309cb0866c13f1124c5f382cb14187ed4dc80ae",
+    "frozen_broad_event_pack_sha256": "2F5174427525635BB917F613E1215C4FB3DC7793DAF07B3DC5A2BB34106333F8",
+    "source_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned",
+    "split_manifest": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\inputs\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+  },
+  "objective": "Build PIT fundamental data fabric without performance research",
+  "outputs": {
+    "report_root": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\reports\\cn_pit_fundamental_fabric_v1",
+    "runtime_root": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\output\\runtime\\cn_pit_fundamental_fabric_v1",
+    "semantic_registry_hash": "556aa78125891ddbdf0a5eda2fdc562c616718fc6599015215905313057ef1d9",
+    "sidecar_manifest_hash": "a06362fd4a88cac18c542759a294c8f1598dac6fec8d73b5a3ae284dce8361f3"
+  },
+  "parameters": {
+    "date_only_maturity": "NEXT_SESSION_OPEN",
+    "maximum_observable_time": "2025-07-07T15:00:00",
+    "scan_coverage": true,
+    "split_counts": {
+      "holdout": 48,
+      "train": 364,
+      "validation": 73
+    }
+  },
+  "repo_sha": "886bc83c84527d234b628311eb01d490e603fce6",
+  "run_id": "cn_pit_fundamental_fabric_v1_20260714_77o",
+  "started_at_utc": "2026-07-13T19:50:42.622742+00:00",
+  "status": "CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED"
+}

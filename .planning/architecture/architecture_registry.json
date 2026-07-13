@@ -1,6 +1,6 @@
 {
-  "registry_version": "cn_broad_event_recovery_architecture_registry_v5",
-  "phase": "CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE",
+  "registry_version": "cn_pit_fundamental_fabric_architecture_registry_v6",
+  "phase": "CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED",
   "base_registry": "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json",
   "authority_contract": {
     "status_authority": ".planning/architecture/architecture_registry.json",
@@ -322,6 +322,19 @@
       "blocker": "global unique-proposal contract missed by 29 identities; forward authorization pack is not prepared"
     },
     {
+      "id": "pit_fundamental_fabric_v1",
+      "label": "CN PIT fundamental feature fabric v1",
+      "status": "PARTIAL",
+      "implementation_paths": ["src/our_system_phase2/services/pit_fundamental_fabric.py", "scripts/build_pit_fundamental_fabric.py", "runtime/cn_pit_fundamental_fabric_v1", "reports/cn_pit_fundamental_fabric_v1"],
+      "input_artifacts": ["26,188 symbol-partitioned parquet files", "1,227-field union schema", "2024-2025 fixed split manifest", "121-field registry", "frozen Broad Event discovery pack hash"],
+      "output_artifacts": ["versioned PIT sidecar manifest", "stock-session as-of resolver", "lazy Feature Fabric adapter", "semantic and observable-time registries", "coverage/missingness and 121-field gap reports", "development-only access ledger"],
+      "data_role": "development_train_only_no_performance",
+      "feedback_permission": "FABRIC_INFRASTRUCTURE_ONLY_NO_GENERATOR_EXPOSURE_NO_REWARD_NO_PROMOTION",
+      "test_evidence": ["tests/test_pit_fundamental_fabric.py", "reports/cn_pit_fundamental_fabric_v1/run_manifest.json", "reports/cn_pit_fundamental_fabric_v1/development_only_access_ledger.jsonl", "reports/cn_pit_fundamental_fabric_v1/resource_performance_report.json"],
+      "verification_paths": ["runtime/cn_pit_fundamental_fabric_v1/pit_sidecar_manifest.json", "runtime/cn_pit_fundamental_fabric_v1/fundamental_semantic_registry.json", "runtime/cn_pit_fundamental_fabric_v1/fundamental_observable_time_contract.json", "runtime/cn_pit_fundamental_fabric_v1/fundamental_121_gap_report.json", "reports/cn_pit_fundamental_fabric_v1/artifact_index.json"],
+      "blocker": "zygc_em has no credible disclosure clock and remains PIT_CONTRACT_UNRESOLVED; statement files are current snapshots without superseded historical revision values"
+    },
+    {
       "id": "formal_search_frozen",
       "label": "Sealed search, promotion and cross-sprint memory remain frozen",
       "status": "FROZEN",
@@ -373,6 +386,12 @@
     {"source": "broad_event_recovery", "target": "hypothesis_lane_registry", "relation": "supplies_frozen_discovery_entry_pack", "permission": "ALLOWED", "evidence": "11 reproduced mechanisms in 10 new behavior clusters"},
     {"source": "broad_event_recovery", "target": "formal_search_frozen", "relation": "promotion_or_sealed_access", "permission": "FORBIDDEN", "evidence": "Broad Event recovery status v2"},
     {"source": "broad_event_recovery", "target": "scheduler_memory_feedback", "relation": "report_only_to_positive_memory", "permission": "FORBIDDEN", "evidence": "Broad Event recovery status v2"},
+    {"source": "nextgen_field_registry_121", "target": "pit_fundamental_fabric_v1", "relation": "supplies_gap_baseline_and_keeps_new_fields_unexposed", "permission": "ALLOWED", "evidence": "1,225 absent and 2 semantic-equivalent source fields in gap report"},
+    {"source": "development_only_release", "target": "pit_fundamental_fabric_v1", "relation": "supplies_fixed_train_calendar_and_cutoff", "permission": "ALLOWED", "evidence": "maximum observable time 2025-07-07T15:00:00 and development-only ledger"},
+    {"source": "pit_fundamental_fabric_v1", "target": "feature_state_fabric", "relation": "supplies_lazy_typed_level_change_event_condition_routes", "permission": "ALLOWED", "evidence": "adapter and as-of resolver tests"},
+    {"source": "pit_fundamental_fabric_v1", "target": "formal_search_frozen", "relation": "new_fundamental_fields_to_formal_search", "permission": "FORBIDDEN", "evidence": "all 1,227 fields have generator exposure false"},
+    {"source": "pit_fundamental_fabric_v1", "target": "scheduler_memory_feedback", "relation": "fabric_or_report_output_to_memory", "permission": "FORBIDDEN", "evidence": "run manifest and access ledger"},
+    {"source": "forward_2026", "target": "pit_fundamental_fabric_v1", "relation": "forward_to_fundamental_materialization_or_policy", "permission": "FORBIDDEN", "evidence": "run manifest reports sealed and zero emitted/used rows"},
     {"source": "spent_role", "target": "sprint2_epoch_c", "relation": "validation_holdout_to_sprint2_reward", "permission": "FORBIDDEN", "evidence": "Sprint-2 data contract"},
     {"source": "sprint2_research_pack", "target": "scheduler_memory_feedback", "relation": "report_only_to_positive_memory", "permission": "FORBIDDEN", "evidence": "Sprint-2 closure"},
     {"source": "scheduler_memory_feedback", "target": "hypothesis_lane_registry", "relation": "adaptive_reward_to_nextgen_policy", "permission": "FORBIDDEN", "evidence": "run manifest"},

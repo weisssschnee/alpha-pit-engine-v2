@@ -1,6 +1,6 @@
 # Evolution Map
 
-Updated: 2026-07-13
+Updated: 2026-07-14
 
 | Change | Previous state | Current state / consequence |
 |---|---|---|
@@ -27,6 +27,8 @@ Updated: 2026-07-13
 | Broad Event denial withdrawn | A cutoff-latched occurrence field was treated as a live sealed-board lifecycle state, its missing 1-to-0 transition was treated as failed exit/reseal support, and Epoch-C zero clusters were read as execution evidence | The audit contract is invalid, Epoch-C Event budgets were all zero, broad Event capability remains unevaluated, and the underlying Event data are not invalidated |
 | Broad Event recovery completed | Event capability was unevaluated after the atomic interpretation supersession | A semantic registry, conservative lifecycle, episode inference, matched controls and two-seed r5 CANARY produced 11 reproduced mechanisms in 10 new behavior clusters; only a frozen discovery entry pack is authorized |
 | Full fundamental source gap surfaced | The 121-field registry could be mistaken for the complete user-provided field universe | PIT balance-sheet, profit, cash-flow, major-holder and business-composition assets exist locally, but only valuation/market-cap/holder subsets are materialized; full statements remain outside search pending a versioned lag contract |
+| PIT Fundamental Fabric v1 built | Source names and current snapshots could be mistaken for PIT-searchable historical features | A 1,227-field semantic/observable-time registry, conservative session as-of resolver, lazy adapter, deterministic cache and development-only audit are implemented; 1,225 fields remain absent and two are semantic equivalents in the 121-field registry, while all generator exposure stays false |
+| Fundamental source limits isolated | Report period or final update values could leak future information into earlier sessions | `zygc_em` values remain unread without a disclosure clock; later statement updates mature only after their observable time, and unavailable superseded revision values are never synthesized |
 | State support repaired | State evidence was sparse and could be degenerate | Raw-derived states pass support checks and add 465 clusters per seed, but do not beat matched static economically |
 | RX/UCB isolated as primary adaptive | Several named adaptive algorithms competed without strict matched controls | RX/UCB alone receives adaptive expansion and wins strict matched-control comparison in all three seeds; all statistics remain ephemeral |
 | Shared-backbone seed design executed | Seed sensitivity was judged mainly from exact pack overlap | An 8,192-identity shared backbone has rank correlation 1.0 and near-perfect cluster stability; the strict pack three-way Jaccard is 0.8488 |
@@ -64,4 +66,7 @@ shard-local split repair
   -> r5 two-seed CANARY / 477,497 episodes / zero forbidden reads
   -> 11 reproduced mechanisms in 10 new behavior clusters
   -> frozen Broad Event discovery entry pack / no promotion / forward sealed
+  -> 1,227-field PIT fundamental universe and versioned sidecar manifest
+  -> development-only session as-of resolver / lazy typed adapter / no search
+  -> business composition clock and historical revision tape remain unresolved
 ```

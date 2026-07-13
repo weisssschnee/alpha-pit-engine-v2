@@ -1,8 +1,8 @@
 # CN true1min State
 
-Updated: 2026-07-13
+Updated: 2026-07-14
 
-Current state: `CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE`
+Current state: `CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED`
 
 ## Accepted foundations
 
@@ -20,6 +20,8 @@ Current state: `CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE`
 - `EVENT_DATA_NOT_INVALIDATED`
 - `BROAD_EVENT_INCREMENT_OBSERVED_REPRODUCIBLE`
 - `BROAD_EVENT_DISCOVERY_ENTRY_AUTHORIZED`
+- `CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE`
+- `CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED`
 
 Phase A conclusions remain unchanged: generation structural redundancy exists,
 but catastrophic signal-level collapse and downstream concentration
@@ -93,6 +95,26 @@ zero. Its zero event clusters therefore mean `NOT_EXECUTED`, not failed
 execution. Historical proposal, strict and performance artifacts remain
 unchanged; only their active interpretation is superseded.
 
+## PIT Fundamental Fabric result
+
+`CN_PIT_FUNDAMENTAL_FABRIC_V1` inventories 1,227 union-schema fields from
+26,188 symbol-partitioned parquet files. Balance-sheet, profit, cash-flow and
+major-holder families now have versioned semantic/observable-time contracts,
+a conservative stock-session as-of resolver, deterministic session cache and
+lazy typed Feature Fabric routes. No new field is exposed to a generator.
+
+The development-only audit stopped at `2025-07-07T15:00:00`. It covered
+274,761 balance-sheet rows, 269,643 profit rows, 259,237 cash-flow rows and
+2,615,891 holder rows representing 262,629 disclosure episodes. Validation,
+holdout, 2026 performance, reward and promotion were not read or executed.
+
+The status is partial for two evidence-backed reasons. `zygc_em` has 17 fields
+and 945,812 rows but no independent disclosure/observable clock, so its values
+were not read and the family remains `PIT_CONTRACT_UNRESOLVED`. The three
+statement tables are current snapshots: the resolver prevents later updates
+from appearing early, but superseded historical revision values do not exist
+in this release and therefore cannot be replayed.
+
 ## Partial-close reason
 
 RX seed expansions overlapped by 29 exact identities. The historical Epoch-C
@@ -109,21 +131,20 @@ No forward-authorization candidate pack was created.
   reward, admission, scheduler, family decisions and memory.
 - Plate/industry remains user-deferred and disabled.
 - Broad Event semantics, multi-source episodes, matched controls and CANARY are
-  complete. Only the frozen discovery entry pack may enter the next candidate
-  discovery; formal search and automatic promotion remain stopped.
+  complete. Its discovery entry pack remains byte-for-byte frozen; this task
+  did not consume it or authorize candidate discovery.
+- All 1,227 fundamental source fields remain outside formal generator exposure,
+  reward, admission, scheduler and memory.
 - Sprint-2 selector, RX values and strict results are archived evidence, not
   persistent positive or negative memory.
-- Epoch-D remains unrun. State did not establish independent matched-control
-  economic increment, while broad Event capability was not evaluated.
+- Epoch-D remains unrun. No fundamental performance experiment has been run.
 
 ## Next formal decision point
 
-Recommendation: `INTEGRATE_FROZEN_BROAD_EVENT_DISCOVERY_ENTRY_PACK`.
+Recommendation: `RESOLVE_FUNDAMENTAL_SOURCE_CLOCK_AND_REVISION_GAPS`.
 
-The next discovery contract may consume the 11 frozen Event mechanisms with
-fresh quotas, but may not refit from r5 ranks, promote candidates, persist
-memory or open 2026. A separate Feature Fabric gap is now explicit: the local
-PIT asset/profit/cash-flow/holder/business-composition source exists, while the
-current 121-field materialization includes only valuation, market-cap and
-holder-context subsets. Full statement fundamentals require a versioned,
-source-lagged registry expansion before any search use.
+The next decision is whether to acquire a trustworthy business-composition
+disclosure clock and a true historical statement revision tape. Until then,
+the safe statement/holder routes remain infrastructure-only, the 17 unresolved
+business-composition fields stay blocked, formal search stays frozen and the
+Broad Event discovery pack remains unchanged.

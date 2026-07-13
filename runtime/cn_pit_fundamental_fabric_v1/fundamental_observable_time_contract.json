@@ -1,0 +1,64 @@
+{
+  "contract_hash": "7c4334b4450569cc5eb0a36ad397d39ca0e0b4cbb88bf35218a78f4fdfa29537",
+  "contract_version": "cn_pit_fundamental_observable_time_contract_v1",
+  "datasets": {
+    "balance_sheet_report_em": {
+      "event_policy": "initial disclosure pulse only when UPDATE_DATE equals NOTICE_DATE; later snapshot is level-eligible at UPDATE_DATE but not asserted as a market event",
+      "historical_revision_replay": "UNAVAILABLE_SOURCE_HAS_ONE_CURRENT_SNAPSHOT_ROW_PER_REPORT_PERIOD",
+      "initial_disclosure_date": "NOTICE_DATE",
+      "report_period": "REPORT_DATE",
+      "required_non_null": [
+        "REPORT_DATE",
+        "NOTICE_DATE",
+        "UPDATE_DATE"
+      ],
+      "revision_or_last_update_date": "UPDATE_DATE",
+      "safe_current_version_source_date": "max(NOTICE_DATE, UPDATE_DATE)"
+    },
+    "cash_flow_sheet_report_em": {
+      "inherits": "balance_sheet_report_em"
+    },
+    "main_stock_holder_sina": {
+      "episode_key": [
+        "source_code6",
+        "截至日期",
+        "公告日期"
+      ],
+      "initial_disclosure_date": "公告日期",
+      "missing_announcement_policy": "PIT_CONTRACT_UNRESOLVED_ROW_EXCLUDED",
+      "report_period": "截至日期",
+      "required_non_null": [
+        "截至日期",
+        "公告日期"
+      ],
+      "safe_current_version_source_date": "公告日期"
+    },
+    "profit_sheet_report_em": {
+      "inherits": "balance_sheet_report_em"
+    },
+    "zygc_em": {
+      "reason": "source schema has report period but no independent disclosure/announcement/observed time",
+      "report_date_fallback_allowed": false,
+      "report_period": "报告日期",
+      "status": "PIT_CONTRACT_UNRESOLVED"
+    }
+  },
+  "date_only_maturity": "NEXT_DECLARED_CN_TRADING_SESSION_OPEN_09_30_STRICTLY_AFTER_SOURCE_DATE",
+  "fabric_version": "CN_PIT_FUNDAMENTAL_FABRIC_V1",
+  "prohibitions": [
+    "REPORT_PERIOD_IS_NOT_OBSERVABLE_TIME",
+    "NO_REPORT_DATE_PLUS_GUESSED_LAG",
+    "NO_FINAL_REVISION_BACKFILL",
+    "NO_CURRENT_SNAPSHOT_BEFORE_LAST_UPDATE",
+    "NO_FUTURE_ANNUAL_TTM_BACKSOLVE",
+    "NO_VALIDATION_HOLDOUT_OR_2026_VALUE_ACCESS"
+  ],
+  "timezone": "Asia/Shanghai",
+  "ttm": {
+    "annual": "annual disclosed value",
+    "irregular_period": "UNKNOWN",
+    "missing_component": "UNKNOWN",
+    "regular_interim": "prior disclosed annual + current disclosed YTD - prior-year comparable disclosed YTD",
+    "required": "every component version observable at as-of time"
+  }
+}

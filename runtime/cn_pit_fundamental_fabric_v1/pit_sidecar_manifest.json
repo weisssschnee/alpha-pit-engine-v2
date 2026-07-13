@@ -1,0 +1,70 @@
+{
+  "development_maximum_observable_time": "2025-07-07T15:00:00",
+  "fabric_version": "CN_PIT_FUNDAMENTAL_FABRIC_V1",
+  "manifest_hash": "a06362fd4a88cac18c542759a294c8f1598dac6fec8d73b5a3ae284dce8361f3",
+  "manifest_version": "cn_pit_fundamental_sidecar_manifest_v1",
+  "minute_panel_expansion": "FORBIDDEN_NOT_MATERIALIZED",
+  "observable_contract_hash": "7c4334b4450569cc5eb0a36ad397d39ca0e0b4cbb88bf35218a78f4fdfa29537",
+  "physical_design": "IMMUTABLE_SYMBOL_PARTITIONED_WIDE_PARQUET_PLUS_LAZY_COLUMN_LOAD",
+  "semantic_registry_hash": "556aa78125891ddbdf0a5eda2fdc562c616718fc6599015215905313057ef1d9",
+  "source_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned",
+  "split_manifest": "D:\\ChengboRemote\\runtime\\cn_pit_fundamental_fabric_v1\\inputs\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+  "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "tables": [
+    {
+      "bytes": 1209673378,
+      "development_safe_content_sha256": "3d90ae9c038a601e9e9179ee229f305171bd383985dc880b582b137803eb68bb",
+      "family": "fundamental_balance_sheet",
+      "file_count": 5172,
+      "partition_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned\\balance_sheet_report_em",
+      "rows_footer": 301898,
+      "schema_sha256": "1765f55cb4012cce80cf0fb7666e5aafaa27768c03645742be2982eda79e23da",
+      "source_table": "balance_sheet_report_em",
+      "status": "PIT_SAFE_CURRENT_SNAPSHOT_ONLY"
+    },
+    {
+      "bytes": 801895723,
+      "development_safe_content_sha256": "b534ea30892e434e65af67bc0a75cccd1ea115d7a5c07532e590c68559c0b982",
+      "family": "fundamental_profit_sheet",
+      "file_count": 5175,
+      "partition_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned\\profit_sheet_report_em",
+      "rows_footer": 312244,
+      "schema_sha256": "3f7c6f2a356eda56f91ec2c5cf2ff7d7ad098b3caedf8197103c04df4627472a",
+      "source_table": "profit_sheet_report_em",
+      "status": "PIT_SAFE_CURRENT_SNAPSHOT_ONLY"
+    },
+    {
+      "bytes": 1020527229,
+      "development_safe_content_sha256": "74b346e15189f3b6bcb550feec2ea826060a81a3f65c6dd3082d0bcf4f12a0de",
+      "family": "fundamental_cashflow_sheet",
+      "file_count": 5171,
+      "partition_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned\\cash_flow_sheet_report_em",
+      "rows_footer": 301142,
+      "schema_sha256": "f2c10f663d498a36a4f1a602cf03ec831009aa964496dc1211f180cc84157823",
+      "source_table": "cash_flow_sheet_report_em",
+      "status": "PIT_SAFE_CURRENT_SNAPSHOT_ONLY"
+    },
+    {
+      "bytes": 107553860,
+      "development_safe_content_sha256": "NOT_SCANNED_PIT_UNRESOLVED",
+      "family": "business_composition",
+      "file_count": 5178,
+      "partition_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned\\zygc_em",
+      "rows_footer": 945812,
+      "schema_sha256": "e0a6b70a6690b3ffadba5d5e1ae1e5ecf0c4274163a009ebcc7048920b8e1e6a",
+      "source_table": "zygc_em",
+      "status": "PIT_CONTRACT_UNRESOLVED"
+    },
+    {
+      "bytes": 103074492,
+      "development_safe_content_sha256": "5581be87feea54140a3677efdeeb2b8cdb756b7b354202c10dfacac8a5c01256",
+      "family": "major_shareholder_structure",
+      "file_count": 5492,
+      "partition_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned\\main_stock_holder_sina",
+      "rows_footer": 2968931,
+      "schema_sha256": "979afe21b41f551310fe63d888567a633b336cfe3445fadd603f52f990a233ce",
+      "source_table": "main_stock_holder_sina",
+      "status": "PIT_SAFE_WHEN_ANNOUNCEMENT_PRESENT"
+    }
+  ]
+}
