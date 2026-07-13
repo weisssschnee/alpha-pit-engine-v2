@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Mapping, Sequence
 
 
-GENERATOR_VERSION = "cn_generator_research_sprint1_v1"
+GENERATOR_VERSION = "cn_search_selection_event_state_sprint2_v1"
 EPS = "0.000001"
 WINDOWS = (2, 3, 5, 8, 15, 30)
 RAW_FIELDS = (
@@ -134,43 +134,81 @@ def _temporal(index: int) -> ProgramSpec:
 
 
 def _event(index: int) -> ProgramSpec:
-    primitives = ("seal", "break_board", "reseal", "event_age", "continuation", "reversal",
-                  "intensity", "firstn_confirmation")
+    primitives = (
+        "seal_entry", "entry_intensity", "entry_count", "event_age", "first_hit", "last_hit",
+        "pre_event_path", "post_continuation", "post_reversal", "firstn_confirmation",
+    )
     primitive = primitives[index % len(primitives)]
     occurrence = index // len(primitives)
     raw = RAW_FIELDS[occurrence % len(RAW_FIELDS)]
     intensity = EVENT_INTENSITY_FIELDS[(occurrence * 5 + 1) % len(EVENT_INTENSITY_FIELDS)]
     window = WINDOWS[(occurrence * 7 + 2) % len(WINDOWS)]
     firstn = FIRSTN_FIELDS[(occurrence * 11 + 3) % len(FIRSTN_FIELDS)]
-    if primitive == "seal":
-        expression = f"CSRank(Mul(Transition($evt_uplimit_active,0,1),Mul(Sign(${intensity}),Sign(Delta(${raw},{window})))))"
-    elif primitive == "break_board":
-        expression = f"CSRank(Mul(Transition($evt_uplimit_active,1,0),Neg(Delta(${raw},{window}))))"
-    elif primitive == "reseal":
-        expression = f"CSRank(Mul(Transition($evt_uplimit_active,0,1),Mul(EventCount($evt_uplimit_active,{window}),Sign(${intensity}))))"
+    trigger_enter = "Transition($evt_uplimit_active,0,1)"
+    path = f"PathShape(${raw},{window})"
+    if primitive == "seal_entry":
+        control = f"CSRank({path})"
+        expression = f"CSRank(Mul({trigger_enter},{path}))"
+    elif primitive == "entry_intensity":
+        control = f"CSRank(Add({path},Sign(Delta(${raw},{window}))))"
+        expression = f"CSRank(Mul({trigger_enter},Add({path},Sign(${intensity}))))"
+    elif primitive == "entry_count":
+        control = f"CSRank(Add({path},Sign(Delta(${raw},{window}))))"
+        expression = f"CSRank(Mul({trigger_enter},Mul(EventCount({trigger_enter},{window}),{path})))"
     elif primitive == "event_age":
-        expression = f"CSRank(Mul(EventAge($evt_uplimit_active),Mul(Sign(${intensity}),Sign(Delta(${raw},{window})))))"
-    elif primitive == "continuation":
-        expression = f"CSRank(Mul(EventWindow(${raw},$evt_uplimit_active,0,{min(window, 8)}),Sign(${intensity})))"
-    elif primitive == "reversal":
-        expression = f"CSRank(Mul(Neg(EventWindow(${raw},$evt_uplimit_active,0,{min(window, 8)})),Sign(${intensity})))"
-    elif primitive == "intensity":
-        expression = f"CSRank(Mul(EventWindow(${intensity},$evt_uplimit_active,0,{min(window, 8)}),Sign(${raw})))"
+        control = f"CSRank(Sign(Delta(${raw},{window})))"
+        expression = f"CSRank(Mul(TimeSince({trigger_enter}),Sign(Delta(${raw},{window}))))"
+    elif primitive == "first_hit":
+        control = f"CSRank({path})"
+        expression = f"CSRank(Mul({trigger_enter},Mul(FirstHit({trigger_enter},{window}),{path})))"
+    elif primitive == "last_hit":
+        control = f"CSRank(Neg({path}))"
+        expression = f"CSRank(Mul({trigger_enter},Mul(LastHit({trigger_enter},{window}),Neg({path}))))"
+    elif primitive == "pre_event_path":
+        control = f"CSRank({path})"
+        expression = f"CSRank(Mul({trigger_enter},{path}))"
+    elif primitive == "post_continuation":
+        post = min(window, 5)
+        control = f"CSRank(Delta(${raw},{post}))"
+        expression = f"CSRank(Mul(EventWindow(${raw},{trigger_enter},2,{post}),Sign(${intensity})))"
+    elif primitive == "post_reversal":
+        post = min(window, 5)
+        control = f"CSRank(Neg(Delta(${raw},{post})))"
+        expression = f"CSRank(Mul(Neg(EventWindow(${raw},{trigger_enter},2,{post})),Sign(${intensity})))"
     else:
-        expression = f"CSRank(Mul(${firstn},Mul(Add(EventCount($evt_uplimit_active,{window}),1),Sign(${intensity}))))"
+        control = f"CSRank(Mul(${firstn},Sign(Delta(${raw},{window}))))"
+        expression = f"CSRank(Mul({trigger_enter},Mul(${firstn},Sign(${intensity}))))"
     return ProgramSpec(expression, f"event_{primitive}", "event_conditioned", primitive,
                        2 + expression.count("("), index,
-                       {"raw": raw, "intensity": intensity, "window": window, "firstn": firstn})
+                       {
+                           "raw": raw, "intensity": intensity, "window": window, "firstn": firstn,
+                           "event_trigger": trigger_enter,
+                           "pre_event_path": path,
+                           "event_age_window": window,
+                           "post_event_action": primitive,
+                           "direction": "reversal" if primitive == "post_reversal" else "continuation",
+                           "matched_control_expression": control,
+                           "unsupported_event_capabilities": ["break_board", "reseal"],
+                       })
 
 
 def _state(index: int) -> ProgramSpec:
-    primitives = ("enter", "leave", "duration", "switch", "conditioned_transition", "multi_state")
+    primitives = (
+        "level", "enter", "exit", "duration", "transition",
+        "conditioned_temporal_path", "conditioned_residual",
+    )
     primitive = primitives[index % len(primitives)]
     occurrence = index // len(primitives)
     # Decode each primitive's occurrence as a mixed-radix coordinate.  Every
     # state expression below consumes the raw/window coordinate as well as its
     # state coordinate; otherwise switch/conditioned templates collapse to a
     # handful of identities even though their proposal indices are distinct.
+    state_sources = (
+        "Sign($intraday_ret_from_open)",
+        "Sign($ret_1m)",
+        "Sign(Sub(Mul($close,2),Add($high,$low)))",
+    )
+    state_source = state_sources[occurrence % len(state_sources)]
     state = INTRADAY_STATE_FIELDS[occurrence % len(INTRADAY_STATE_FIELDS)]
     raw = RAW_FIELDS[(occurrence // len(INTRADAY_STATE_FIELDS)) % len(RAW_FIELDS)]
     window = WINDOWS[
@@ -179,31 +217,36 @@ def _state(index: int) -> ProgramSpec:
     other_state = INTRADAY_STATE_FIELDS[(occurrence // 2 + 1) % len(INTRADAY_STATE_FIELDS)]
     context_state = CONTEXT_STATE_FIELDS[(occurrence // 4) % len(CONTEXT_STATE_FIELDS)]
     context = CONTEXT_FIELDS[(occurrence // 8) % len(CONTEXT_FIELDS)]
-    if primitive == "enter":
-        expression = f"CSRank(Mul(Transition(${state},0,1),Sign(Delta(${raw},{window}))))"
-    elif primitive == "leave":
-        expression = f"CSRank(Mul(Transition(${state},1,0),Neg(Delta(${raw},{window}))))"
+    path = f"PathShape(${raw},{window})"
+    if primitive == "level":
+        control = f"CSRank(Sign(Delta(${raw},{window})))"
+        expression = f"CSRank(Mul({state_source},Sign(Delta(${raw},{window}))))"
+    elif primitive == "enter":
+        control = f"CSRank(Sign(Delta(${raw},{window})))"
+        expression = f"CSRank(Mul(Transition({state_source},-1,1),Sign(Delta(${raw},{window}))))"
+    elif primitive == "exit":
+        control = f"CSRank(Neg(Delta(${raw},{window})))"
+        expression = f"CSRank(Mul(Transition({state_source},1,-1),Neg(Delta(${raw},{window}))))"
     elif primitive == "duration":
-        expression = f"CSRank(Mul(StateAge(${state}),Sign(Delta(${raw},{window}))))"
-    elif primitive == "switch":
+        control = f"CSRank(Sign(Delta(${raw},{window})))"
+        expression = f"CSRank(Mul(StateAge({state_source}),Sign(Delta(${raw},{window}))))"
+    elif primitive == "transition":
+        control = f"CSRank(Sign(Delta(${raw},{window})))"
         expression = (
-            f"CSRank(Mul(Sub(Transition(${state},0,1),Transition(${state},1,0)),"
+            f"CSRank(Mul(Sub(Transition({state_source},-1,1),Transition({state_source},1,-1)),"
             f"Sign(Delta(${raw},{window}))))"
         )
-    elif primitive == "conditioned_transition":
-        expression = (
-            f"CSRank(Mul(Transition(${state},0,1),"
-            f"Mul(Sign(${context_state}),Sign(Delta(${raw},{window})))))"
-        )
+    elif primitive == "conditioned_temporal_path":
+        control = f"CSRank({path})"
+        expression = f"CSRank(Mul({state_source},{path}))"
     else:
-        expression = (
-            f"CSRank(Mul(StateAge(${state}),Mul(Sign(${context_state}),"
-            f"Mul(Sign(${other_state}),Sign(Delta(${raw},{window}))))))"
-        )
+        control = f"CSRank(SafeCSResidual(${raw},${context},20,5,0.6))"
+        expression = f"CSRank(Mul({state_source},SafeCSResidual(${raw},${context},20,5,0.6)))"
     return ProgramSpec(expression, f"state_{primitive}", "state_transition", primitive,
                        2 + expression.count("("), index,
                        {"state": state, "other_state": other_state, "context_state": context_state, "raw": raw,
-                        "context": context, "window": window})
+                        "context": context, "window": window, "state_source_expression": state_source,
+                        "matched_control_expression": control})
 
 
 def _orthogonal(index: int) -> ProgramSpec:

@@ -545,6 +545,14 @@ def _rx_ucb_programs(
         seen.add(identity)
     if len(selected) != quota:
         raise RuntimeError(f"RX/UCB hypothesis-arm underfill: {len(selected)} != {quota}")
+    realized_arm_count = len(
+        {
+            (str(row["hypothesis_arm"]), str(row["primitive_family"]))
+            for row in selected
+        }
+    )
+    for row in selected:
+        row["focused_arm_count"] = realized_arm_count
     return selected
 
 

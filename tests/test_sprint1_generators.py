@@ -31,8 +31,15 @@ def test_mechanism_generators_are_distinct_legal_and_not_lane_labels_on_one_gram
         primitives_by_lane[lane] = {program.primitive_family for program in programs}
 
     assert len({frozenset(values) for values in expressions_by_lane.values()}) == len(MECHANISM_LANES)
-    assert primitives_by_lane["event_conditioned"] >= {"seal", "break_board", "reseal"}
-    assert primitives_by_lane["state_transition"] >= {"enter", "leave", "switch"}
+    assert primitives_by_lane["event_conditioned"] >= {
+        "seal_entry", "entry_intensity", "entry_count", "event_age",
+        "first_hit", "last_hit", "pre_event_path", "post_continuation",
+        "post_reversal", "firstn_confirmation",
+    }
+    assert primitives_by_lane["state_transition"] >= {
+        "level", "enter", "exit", "duration", "transition",
+        "conditioned_temporal_path", "conditioned_residual",
+    }
 
 
 def test_mechanism_pool_and_mutation_preserve_hypothesis_arm_and_lineage_operator() -> None:
