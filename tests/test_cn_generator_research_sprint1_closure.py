@@ -65,7 +65,7 @@ def test_current_graph_preserves_sprint1_and_projects_sprint2_nodes() -> None:
     graph = json.loads((REPO / ".planning/graphs/graph.json").read_text(encoding="utf-8"))
     nodes = {row["id"]: row for row in graph["nodes"]}
 
-    assert graph["graph"]["phase"] == "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_PARTIALLY_COMPLETED"
+    assert graph["graph"]["phase"] == "CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED"
     assert graph["graph"]["graph_type"] == (
         "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT"
     )

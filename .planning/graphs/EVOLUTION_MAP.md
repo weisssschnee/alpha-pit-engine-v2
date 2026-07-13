@@ -22,14 +22,14 @@ Updated: 2026-07-13
 | Distinct Sprint-1 generators implemented | One generic grammar and weak adaptive controls limited hypothesis discovery | Static, firstN, temporal, event, state and orthogonal generators now have mechanism-specific programs; RX/UCB learns hypothesis-arm information gain |
 | Repaired Capability CANARY completed | RX/UCB failed matched control and Pareto concentrated at the prior generator SHA | Generator identity collisions and RX/UCB arm scoring were repaired; RX/UCB and evolutionary proxy deltas turned positive without forbidden reads |
 | Frozen Development Epoch-A completed | Capability evidence was single-seed and too small for a scale decision | Two frozen seeds produced 16,384 proposals and 512 strict evaluations; RX/UCB survived strict matched-control comparison but evolutionary did not |
-| Sprint-1 closed partial | Larger search budget could have been mistaken for discovery progress | New clusters per strict fell at Epoch-A scale, event remained empty and pack overlap was seed-sensitive; no forward pack or Epoch-B is authorized |
+| Sprint-1 closed partial | Larger search budget could have been mistaken for discovery progress | New clusters per strict fell at Epoch-A scale, the legacy single-trigger Event path underfilled and pack overlap was seed-sensitive; no broad Event conclusion or forward pack follows |
 | Development survivor reclassified | A 98.4% pass layer could be mistaken for quality selection | The layer is now `DEVELOPMENT_ELIGIBLE`; frozen `STRICT_PRIORITY_ELIGIBLE` reduces it to 10% and has OOF plus realized strict lift |
-| Event support audited and stopped | More event primitives could be added despite absent real exits and transitions | Entry-only support was measured, planted tests passed, two real repairs produced zero clusters, and `EVENT_GENERATOR_NOT_OPERATIONAL` receives zero Epoch-C budget |
+| Broad Event denial withdrawn | A cutoff-latched occurrence field was treated as a live sealed-board lifecycle state, its missing 1-to-0 transition was treated as failed exit/reseal support, and Epoch-C zero clusters were read as execution evidence | The audit contract is invalid, Epoch-C Event budgets were all zero, broad Event capability remains unevaluated, and the underlying Event data are not invalidated |
 | State support repaired | State evidence was sparse and could be degenerate | Raw-derived states pass support checks and add 465 clusters per seed, but do not beat matched static economically |
 | RX/UCB isolated as primary adaptive | Several named adaptive algorithms competed without strict matched controls | RX/UCB alone receives adaptive expansion and wins strict matched-control comparison in all three seeds; all statistics remain ephemeral |
 | Shared-backbone seed design executed | Seed sensitivity was judged mainly from exact pack overlap | An 8,192-identity shared backbone has rank correlation 1.0 and near-perfect cluster stability; the strict pack three-way Jaccard is 0.8488 |
 | Epoch-C global uniqueness defect recorded | Per-seed exact uniqueness was assumed to imply 32,768 global unique proposals | Cross-seed union found 29 RX overlaps; the run remains 32,739 / 32,768 and a seed-namespace guard now fails future regressions |
-| Sprint-2 closed partial | Strong development results could trigger an automatic forward pack or Epoch-D | Ten research gates pass, but exact-budget fidelity fails and event/state independent increment is absent; no forward pack, promotion, memory update or Epoch-D |
+| Sprint-2 closed partial | Strong development results could trigger an automatic forward pack or Epoch-D | Exact-budget fidelity fails and state matched-static increment is absent; Event was not executed, so no Event value conclusion is allowed; no forward pack, promotion, memory update or Epoch-D |
 
 ## Active lineage
 
@@ -56,4 +56,6 @@ shard-local split repair
   -> three-seed Frozen Development Epoch-C at 4d2fccf
   -> 32,739 / 32,768 exact union defect and seed-namespace guard
   -> Sprint-2 partial closure / research pack frozen / forward still sealed
+  -> active Event interpretation corrected / historical tables unchanged
+  -> Broad Event recovery authorized but not started
 ```

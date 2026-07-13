@@ -13,11 +13,18 @@ The builder validates required nodes, implementation/evidence paths, allowed
 statuses, mandatory forbidden feedback edges and per-node verification hashes.
 The Markdown diagrams are projections, not independent implementation claims.
 
+Raw code-navigation output is maintained separately under
+`.planning/graphs/raw/`. It may contain historical and superseded files and is
+not the machine-readable architecture contract. Raw and curated graph artifacts
+must record the same source repo SHA and build timestamp before Graph
+maintenance is called complete.
+
 ## Precedence
 
 1. Current user instruction and repository `AGENTS.md`.
 2. Accepted ADRs and fixed run manifests.
-3. Phase A plus current architecture registries and generated `graph.json`.
+3. Phase A plus current architecture registries, the Broad Event status
+   correction and generated `graph.json`.
 4. `CURRENT_ARCHITECTURE.md`, `EVOLUTION_MAP.md`, and `.planning/STATE.md`.
 5. Historical reports and raw navigation artifacts.
 
@@ -32,8 +39,12 @@ The Markdown diagrams are projections, not independent implementation claims.
   online.
 - RX/UCB statistics are isolated to one seed execution and are discarded after
   the run. They cannot update later sprint policy.
-- Event is not operational and has no Epoch-C budget. State behaviour novelty
-  cannot be interpreted as independent economic increment.
+- Broad Event capability is not evaluated. The historical single-trigger path
+  used a cutoff-latched field, its exit/reseal audit contract was invalid, and
+  Epoch-C assigned event-conditioned proposal, admission and strict budgets of
+  zero. Zero event clusters mean `NOT_EXECUTED`.
+- State behaviour novelty cannot be interpreted as independent economic
+  increment.
 - Union reranking is development research evidence. Report-only outputs cannot
   feed candidate reward, scheduler, family kill/freeze or positive memory.
 - Spent evaluation cannot be relabeled development. Validation, holdout and
@@ -52,3 +63,9 @@ research success criteria passed, but the global exact-identity contract
 underfilled by 29. Sprint-2 is therefore partially completed. No
 forward-authorization pack exists, Epoch-D was not run, and the next sprint
 requires separate development-only authorization.
+
+The Sprint-2 proposal, strict and performance artifacts remain immutable.
+`runtime/run_plans/cn_broad_event_recovery_status_v1.json` supersedes only the
+active Event interpretation. Broad Event recovery is authorized, while its
+implementation and CANARY remain not started until the preflight contract is
+satisfied.

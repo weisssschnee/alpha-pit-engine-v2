@@ -2,6 +2,8 @@
   "mode": "interactive",
   "granularity": "standard",
   "graphify": {
-    "enabled": true
+    "enabled": true,
+    "raw_output_dir": ".planning/graphs/raw",
+    "architecture_graph": ".planning/graphs/graph.json"
   }
 }

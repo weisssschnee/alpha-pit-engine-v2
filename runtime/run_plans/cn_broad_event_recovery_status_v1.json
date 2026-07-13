@@ -1,0 +1,54 @@
+{
+  "version": "cn_broad_event_recovery_status_v1",
+  "effective_date": "2026-07-13",
+  "effective_repo_base_sha": "0b5b04a6b419d3718aaf2b43b07a107a88fa21a6",
+  "execution_state": "GOVERNANCE_MAINTENANCE_ONLY_NOT_STARTED",
+  "active_status": [
+    "BROAD_EVENT_CAPABILITY_NOT_EVALUATED",
+    "CURRENT_EVENT_TRIGGER_SEMANTICS_MISMATCH",
+    "EVENT_AUDIT_CONTRACT_INVALID",
+    "EVENT_LANE_ZERO_BUDGET_NOT_EXECUTED",
+    "EVENT_DATA_NOT_INVALIDATED"
+  ],
+  "root_cause": [
+    "the legacy event generator used only Transition($evt_uplimit_active,0,1)",
+    "evt_uplimit_active is a cutoff-latched post-occurrence observation, not a real-time sealed-board lifecycle state",
+    "the legacy audit incorrectly required a latched field to exhibit 1-to-0 exits and reseals",
+    "Epoch-C assigned zero proposal, admission and strict budget to event_conditioned"
+  ],
+  "semantic_classes_required": [
+    "EVENT_PULSE",
+    "LIFECYCLE_STATE",
+    "LATCHED_OBSERVATION",
+    "REGIME_STATE",
+    "LAGGED_CONTEXT"
+  ],
+  "historical_evidence_contract": {
+    "proposal_tables_immutable": true,
+    "strict_tables_immutable": true,
+    "performance_tables_immutable": true,
+    "epoch_c_event_proposal_budget": 0,
+    "epoch_c_event_admission_budget": 0,
+    "epoch_c_event_strict_budget": 0,
+    "interpretation": "zero event clusters means NOT_EXECUTED, not failed execution"
+  },
+  "lane_denial_gate": {
+    "semantic_contract_correct": true,
+    "real_data_support_passed": true,
+    "proposal_budget_positive": true,
+    "admission_budget_positive": true,
+    "strict_budget_positive": true,
+    "execution_completed": true,
+    "matched_controls_complete": true,
+    "zero_budget_status": "NOT_EXECUTED"
+  },
+  "boundaries": {
+    "development_only": true,
+    "validation_allowed": false,
+    "holdout_allowed": false,
+    "forward_2026_allowed": false,
+    "candidate_promotion_allowed": false,
+    "cross_sprint_memory_allowed": false,
+    "plate_industry_allowed": false
+  }
+}

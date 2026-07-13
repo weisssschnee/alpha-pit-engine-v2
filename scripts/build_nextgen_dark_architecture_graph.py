@@ -27,6 +27,7 @@ REQUIRED_NEXTGEN_NODES = {
     "generator_research_sprint1",
     "sprint2_strict_priority_selector",
     "sprint2_event_generator",
+    "broad_event_recovery",
     "sprint2_state_generator",
     "sprint2_rx_ucb",
     "sprint2_epoch_c",
