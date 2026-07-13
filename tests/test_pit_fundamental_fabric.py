@@ -151,6 +151,24 @@ def test_holder_rows_without_announcement_remain_unobservable() -> None:
     assert output.iloc[1].pit_status == "PIT_CONTRACT_UNRESOLVED"
 
 
+def test_pre_calendar_disclosure_can_seed_level_but_not_fake_event() -> None:
+    finance = pd.DataFrame(
+        {
+            "source_code6": ["000001"],
+            "REPORT_DATE": ["2022-12-31"],
+            "NOTICE_DATE": ["2023-03-01"],
+            "UPDATE_DATE": ["2023-03-01"],
+            "TOTAL_ASSETS": [90.0],
+        }
+    )
+    output = conservative_financial_versions(
+        finance, table="balance_sheet_report_em", sessions=_sessions()
+    )
+
+    assert output.iloc[0].pit_status == "ELIGIBLE_CURRENT_SNAPSHOT_VERSION"
+    assert not output.iloc[0].disclosure_event_eligible
+
+
 def test_ttm_uses_only_components_observable_at_query_time() -> None:
     frame = pd.DataFrame(
         {

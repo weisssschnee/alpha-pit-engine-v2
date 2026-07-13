@@ -154,9 +154,11 @@ def conservative_financial_versions(
         "INITIAL_UNCHANGED_CURRENT_VERSION",
         "LATEST_REVISED_SNAPSHOT_ONLY",
     )
+    calendar_start = pd.DatetimeIndex(pd.to_datetime(list(sessions), errors="raise")).min().normalize()
     out["disclosure_event_eligible"] = (
         out["pit_status"].eq("ELIGIBLE_CURRENT_SNAPSHOT_VERSION")
         & out["version_kind"].eq("INITIAL_UNCHANGED_CURRENT_VERSION")
+        & out["safe_source_date"].ge(calendar_start)
     )
     out["version_id"] = [
         stable_hash(
@@ -202,6 +204,11 @@ def conservative_holder_episodes(
     if maximum_observable_time is not None:
         maximum = pd.Timestamp(maximum_observable_time)
         out.loc[out["observable_time"].gt(maximum), "pit_status"] = "OUTSIDE_DEVELOPMENT_ACCESS_BOUNDARY"
+    calendar_start = pd.DatetimeIndex(pd.to_datetime(list(sessions), errors="raise")).min().normalize()
+    out["disclosure_event_eligible"] = (
+        out["pit_status"].eq("ELIGIBLE_DISCLOSURE_EPISODE")
+        & out["notice_date"].ge(calendar_start)
+    )
     out["episode_id"] = [
         stable_hash(
             {
@@ -539,7 +546,10 @@ class PITFundamentalFabricAdapter:
             versions = self._load_holder(request, codes)
             if versions.empty:
                 return pd.DataFrame()
-            eligible = versions.loc[versions["pit_status"].eq("ELIGIBLE_DISCLOSURE_EPISODE")].copy()
+            eligible = versions.loc[
+                versions["pit_status"].eq("ELIGIBLE_DISCLOSURE_EPISODE")
+                & versions["disclosure_event_eligible"]
+            ].copy()
             eligible["event_kind"] = "MAJOR_HOLDER_DISCLOSURE"
             eligible["maturity_time"] = eligible["observable_time"]
             return eligible[
