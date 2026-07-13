@@ -2,7 +2,8 @@
   "allowed_post_source_paths": [
     ".planning/architecture/architecture_graph.json",
     ".planning/architecture/architecture_graph.html",
-    ".planning/architecture/ARCHITECTURE_FRESHNESS.json"
+    ".planning/architecture/ARCHITECTURE_FRESHNESS.json",
+    "reports/nextgen_dark_20260711/ARTIFACT_INDEX.json"
   ],
   "authority_rules": [
     "SINGLE_STATUS_AUTHORITY",
@@ -11,12 +12,12 @@
   "derived_artifacts": [
     {
       "path": ".planning/architecture/architecture_graph.json",
-      "sha256": "b30cefcf65ff7b614f1f87e86325a7ac3c3421eccc593245b87424608a9b0101",
+      "sha256": "59eaa3ed541465f9d988a93ff46ec58bdcfedbc10faabaf5cc728be68f6f571d",
       "size": 98699
     },
     {
       "path": ".planning/architecture/architecture_graph.html",
-      "sha256": "1db2b0ebfcfdfb3bd2e146de31dc14ada29d2e31c69126cb60f8a2b50f7e10a5",
+      "sha256": "42d4955558c7109932e181472b55be0fdb1ac8f68947ccffd161624ce27b5af0",
       "size": 18493
     },
     {
@@ -40,10 +41,10 @@
       "size": 5930
     }
   ],
-  "generated_at": "2026-07-13T16:14:37.103409+00:00",
+  "generated_at": "2026-07-13T16:17:08.511052+00:00",
   "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
-  "generator_sha256": "f6d026faf2023e4c2915fd13f3b6808f08bfd567ed657abfde287359247c3e80",
-  "source_repo_sha": "b960dd3060be8fe7f6c92b64146f87a269dcd667",
+  "generator_sha256": "c48c489054c41951195e6b6e3a7a1ea6f1f33913a3652af88a250e37268fa177",
+  "source_repo_sha": "12448e07e4d96f330310178985b299059290405e",
   "stale": false,
   "status_authority_path": ".planning/architecture/architecture_registry.json",
   "status_authority_sha256": "fc8c860e7159ca55afc751e176aba58ad059cd309d4ac8959a87960459de1812",

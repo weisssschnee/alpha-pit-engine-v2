@@ -15,14 +15,14 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-13T16:14:37.080401+00:00",
+    "generated_at": "2026-07-13T16:17:08.483026+00:00",
     "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
-    "generator_sha256": "f6d026faf2023e4c2915fd13f3b6808f08bfd567ed657abfde287359247c3e80",
+    "generator_sha256": "c48c489054c41951195e6b6e3a7a1ea6f1f33913a3652af88a250e37268fa177",
     "graph_type": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT",
     "phase": "CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE",
     "registry_sha256": "b51bc7293b881d7af39718f48c869b8937c15d90e7b28c3b34ab8c6d0ad71efd",
     "registry_version": "cn_broad_event_recovery_architecture_registry_v5",
-    "source_repo_sha": "b960dd3060be8fe7f6c92b64146f87a269dcd667",
+    "source_repo_sha": "12448e07e4d96f330310178985b299059290405e",
     "status_authority_path": ".planning/architecture/architecture_registry.json",
     "status_authority_sha256": "fc8c860e7159ca55afc751e176aba58ad059cd309d4ac8959a87960459de1812",
     "status_values": [

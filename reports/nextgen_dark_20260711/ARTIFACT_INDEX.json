@@ -157,33 +157,33 @@
     {
       "exists": true,
       "id": "architecture_registry",
-      "last_verified_sha": "d9ebea9bf48114c3ea0597ae4c9820dc82ad85fd8b798477fac7bc375a9683a1",
+      "last_verified_sha": "fc8c860e7159ca55afc751e176aba58ad059cd309d4ac8959a87960459de1812",
       "path": ".planning/architecture/architecture_registry.json",
-      "size_bytes": 32768,
+      "size_bytes": 34160,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "architecture_graph",
-      "last_verified_sha": "4d34baa5bf00012fa6b036233cfc6f5677d777ee7e6e5dca2af311dde8893dc0",
+      "last_verified_sha": "59eaa3ed541465f9d988a93ff46ec58bdcfedbc10faabaf5cc728be68f6f571d",
       "path": ".planning/architecture/architecture_graph.json",
-      "size_bytes": 96094,
+      "size_bytes": 98699,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "current_architecture",
-      "last_verified_sha": "39b07944b05f94f040a54a57bd8ea7b743e4041d420b0622f442f1e2ebc59265",
+      "last_verified_sha": "3c8d46943c8e8f28db65190e3abbaacbf3a88c41518a0259c56c89cc98ef5e1a",
       "path": ".planning/architecture/CURRENT_ARCHITECTURE.md",
-      "size_bytes": 4046,
+      "size_bytes": 4549,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "state",
-      "last_verified_sha": "b6f40609494d7dd5beb90e5547f67ba035eab2827fc90a12ca3678e135ed37ab",
+      "last_verified_sha": "ab0850bc36b950331fb2d5095d5aaf2da95b7da8b0f42020ac490d0eaaffd0b4",
       "path": ".planning/STATE.md",
-      "size_bytes": 4467,
+      "size_bytes": 5930,
       "state": "IMPLEMENTED"
     },
     {
@@ -204,6 +204,6 @@
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-13T13:35:53.766824+00:00",
+  "refreshed_at": "2026-07-13T16:17:10.942455+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
 }
