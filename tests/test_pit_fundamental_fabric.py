@@ -283,7 +283,7 @@ def test_builder_emits_required_contracts_without_search(tmp_path: Path) -> None
     assert (report / "development_only_access_ledger.jsonl").exists()
     manifest = json.loads((report / "run_manifest.json").read_text(encoding="utf-8"))
     assert manifest["boundaries"]["performance_search"] == "NOT_EXECUTED"
-    assert manifest["boundaries"]["forward_2026"] == "SEALED_NOT_READ"
+    assert manifest["boundaries"]["forward_2026_performance_dataset"] == "SEALED_NOT_READ"
 
 
 def test_broad_event_discovery_pack_remains_exactly_frozen() -> None:
