@@ -185,6 +185,7 @@ def main(argv: list[str] | None = None) -> int:
             ".planning/architecture/architecture_graph.json",
             ".planning/architecture/architecture_graph.html",
             ".planning/architecture/ARCHITECTURE_FRESHNESS.json",
+            "reports/nextgen_dark_20260711/ARTIFACT_INDEX.json",
         ],
         "authority_rules": ["SINGLE_STATUS_AUTHORITY", "SEPARATE_GRAPH_NAMESPACES"],
     }
