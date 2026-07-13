@@ -1,0 +1,6 @@
+{
+  "decision": "DERIVED_LIMIT_VENDOR_CONSISTENCY_FAIL",
+  "match_rate": 0.0,
+  "matched_within_two_minutes": 0,
+  "vendor_episode_count": 263
+}

@@ -8,7 +8,7 @@ from our_system_phase2.services.broad_event_episodes import (
     matched_control_contract,
     materialize_broad_event_episodes,
 )
-from our_system_phase2.runtime.cn_broad_event_canary import _attach_episode_outcomes
+from our_system_phase2.runtime.cn_broad_event_canary import _attach_episode_outcomes, _candidate_rows
 
 
 def _frame() -> pd.DataFrame:
@@ -72,3 +72,25 @@ def test_episode_outcome_join_handles_nonconsecutive_symbol_episode_indices() ->
     result = _attach_episode_outcomes(frame, episodes, [5])
     assert len(result) == len(episodes)
     assert "target_h5" in result
+    assert "placebo_target_h5_o30" in result
+
+
+def test_fixed_seeds_are_stratified_by_source_but_choose_distinct_mechanisms() -> None:
+    frame = _frame()
+    episodes, _ = materialize_broad_event_episodes(frame)
+    observations = _attach_episode_outcomes(frame, episodes, [5, 15, 30])
+    contract = {
+        "required_event_sources": sorted(episodes["event_source"].unique().tolist()),
+        "horizons_bars": [5, 15, 30],
+        "budgets": {"event_conditioned": {"proposal": 96}},
+    }
+    # Use a divisible per-source budget for this compact fixture.
+    proposal = len(contract["required_event_sources"]) * 12
+    contract["budgets"]["event_conditioned"]["proposal"] = proposal
+    first = pd.DataFrame(_candidate_rows(observations, contract, 1729))
+    second = pd.DataFrame(_candidate_rows(observations, contract, 2718))
+    first_event = first.loc[first["lane"].eq("event_conditioned")]
+    second_event = second.loc[second["lane"].eq("event_conditioned")]
+    assert first_event.groupby("source").size().eq(12).all()
+    assert second_event.groupby("source").size().eq(12).all()
+    assert set(first_event["canonical"]) != set(second_event["canonical"])

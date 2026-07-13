@@ -9,7 +9,7 @@ from typing import Any
 from our_system_phase2.services.broad_event_semantics import validate_semantic_registry
 
 
-PREFLIGHT_VERSION = "cn_broad_event_preflight_v1"
+PREFLIGHT_VERSION = "cn_broad_event_preflight_v2"
 
 
 def contract_hash(contract: dict[str, Any]) -> str:
@@ -81,8 +81,13 @@ def run_preflight(
         errors.append("insufficient event episode support: " + ",".join(sorted(required_sources - operational)))
     exact = int(lifecycle_manifest.get("exact_limit_session_count", 0))
     derived = int(lifecycle_manifest.get("derived_limit_session_count", 0))
+    vendor_confirmed = int(lifecycle_manifest.get("vendor_confirmed_limit_session_count", 0))
     checks["pit_limit_prices"] = exact > 0 or (
-        derived > 0 and limit_validation.get("decision") == "DERIVED_LIMIT_VENDOR_CONSISTENCY_PASS"
+        (derived > 0 or vendor_confirmed > 0)
+        and limit_validation.get("decision") in {
+            "DERIVED_LIMIT_VENDOR_CONSISTENCY_PASS",
+            "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS",
+        }
     )
     if not checks["pit_limit_prices"]:
         errors.append("PIT limit price source or derived-limit validation failed")
@@ -119,4 +124,3 @@ def run_preflight(
         "operational_event_sources": sorted(operational),
         "canary_authorized": decision == "BROAD_EVENT_PREFLIGHT_PASS",
     }
-

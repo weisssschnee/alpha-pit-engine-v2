@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 
-LIFECYCLE_VERSION = "cn_conservative_limit_lifecycle_v1"
+LIFECYCLE_VERSION = "cn_conservative_limit_lifecycle_v2"
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,6 +19,7 @@ class LimitLifecycleConfig:
     comparison_tolerance: float = 1e-6
     conservative_listing_exclusion_sessions: int = 5
     require_pit_st_context_for_derived_limits: bool = True
+    allow_vendor_confirmed_up_limit_when_st_missing: bool = True
 
     def validate(self) -> None:
         if self.price_tick <= 0:
@@ -48,10 +49,14 @@ def _resolve_session_limits(frame: pd.DataFrame, cfg: LimitLifecycleConfig) -> p
     keys = ["code", "session"]
     aggregations: dict[str, tuple[str, str]] = {
         "session_close": ("close", "last"),
+        "session_high": ("high", "max"),
+        "session_low": ("low", "min"),
     }
     for column in ("up_limit_price", "down_limit_price", "ctx_hfq_is_st"):
         if column in frame.columns:
             aggregations[column] = (column, "first")
+    if "evt_uplimit_active" in frame.columns:
+        aggregations["vendor_uplimit_observed"] = ("evt_uplimit_active", "max")
     sessions = frame.groupby(keys, as_index=False, sort=False).agg(**aggregations)
     sessions = sessions.sort_values(keys, kind="mergesort").reset_index(drop=True)
     sessions["previous_session_close"] = sessions.groupby("code", sort=False)["session_close"].shift(1)
@@ -66,27 +71,65 @@ def _resolve_session_limits(frame: pd.DataFrame, cfg: LimitLifecycleConfig) -> p
         exact_up = pd.Series(np.nan, index=sessions.index, dtype=float)
     if not isinstance(exact_down, pd.Series):
         exact_down = pd.Series(np.nan, index=sessions.index, dtype=float)
-    exact = exact_up.gt(0) & exact_down.gt(0)
+    exact_up_available = exact_up.gt(0)
+    exact_down_available = exact_down.gt(0)
     listing_ok = sessions["observed_session_number"].gt(cfg.conservative_listing_exclusion_sessions)
     board_ok = sessions["base_limit_pct"].notna()
     previous_ok = pd.to_numeric(sessions["previous_session_close"], errors="coerce").gt(0)
     st_ok = st.notna() if cfg.require_pit_st_context_for_derived_limits else pd.Series(True, index=sessions.index)
-    derived = ~exact & listing_ok & board_ok & previous_ok & st_ok
+    derived_up_eligible = ~exact_up_available & listing_ok & board_ok & previous_ok & st_ok
+    derived_down_eligible = ~exact_down_available & listing_ok & board_ok & previous_ok & st_ok
     pct = sessions["base_limit_pct"].where(~st.eq(1.0), 0.05)
     derived_up = _round_tick(sessions["previous_session_close"] * (1.0 + pct), cfg.price_tick)
     derived_down = _round_tick(sessions["previous_session_close"] * (1.0 - pct), cfg.price_tick)
-    sessions["resolved_up_limit_price"] = exact_up.where(exact, derived_up.where(derived))
-    sessions["resolved_down_limit_price"] = exact_down.where(exact, derived_down.where(derived))
-    sessions["limit_price_source"] = np.select(
-        [exact, derived], ["PIT_EXACT_LIMIT_FIELDS", "CONSERVATIVE_RULE_DERIVATION"], default="EXCLUDED"
+    standard_up = _round_tick(
+        sessions["previous_session_close"] * (1.0 + sessions["base_limit_pct"]), cfg.price_tick
     )
+    tolerance = cfg.price_tick / 2.0 + cfg.comparison_tolerance
+    vendor_observed_raw = sessions.get("vendor_uplimit_observed")
+    vendor_observed = (
+        pd.to_numeric(vendor_observed_raw, errors="coerce").eq(1.0)
+        if isinstance(vendor_observed_raw, pd.Series)
+        else pd.Series(False, index=sessions.index)
+    )
+    vendor_price_consistent = pd.to_numeric(sessions["session_high"], errors="coerce").sub(standard_up).abs().le(tolerance)
+    vendor_confirmed_up = (
+        cfg.allow_vendor_confirmed_up_limit_when_st_missing
+        & ~exact_up_available
+        & ~st.notna()
+        & listing_ok
+        & board_ok
+        & previous_ok
+        & vendor_observed
+        & vendor_price_consistent
+    )
+    sessions["resolved_up_limit_price"] = exact_up.where(
+        exact_up_available, derived_up.where(derived_up_eligible, standard_up.where(vendor_confirmed_up))
+    )
+    sessions["resolved_down_limit_price"] = exact_down.where(
+        exact_down_available, derived_down.where(derived_down_eligible)
+    )
+    sessions["up_limit_price_source"] = np.select(
+        [exact_up_available, derived_up_eligible, vendor_confirmed_up],
+        ["PIT_EXACT_LIMIT_FIELD", "CONSERVATIVE_RULE_DERIVATION", "VENDOR_CONFIRMED_RULE_DERIVATION"],
+        default="EXCLUDED",
+    )
+    sessions["down_limit_price_source"] = np.select(
+        [exact_down_available, derived_down_eligible],
+        ["PIT_EXACT_LIMIT_FIELD", "CONSERVATIVE_RULE_DERIVATION"],
+        default="EXCLUDED",
+    )
+    # Compatibility view: the historical column described the up-limit path.
+    sessions["limit_price_source"] = sessions["up_limit_price_source"]
     reason = np.select(
-        [exact, ~listing_ok, ~board_ok, ~previous_ok, ~st_ok],
+        [exact_up_available, ~listing_ok, ~board_ok, ~previous_ok, ~st_ok & ~vendor_confirmed_up],
         ["", "IPO_OR_INSUFFICIENT_LISTING_HISTORY", "UNSUPPORTED_SECURITY_RULE", "MISSING_PREVIOUS_SESSION_CLOSE", "MISSING_PIT_ST_CONTEXT"],
         default="RULE_UNCERTAIN",
     )
     sessions["limit_rule_exclusion_reason"] = reason
-    sessions["limit_rule_eligible"] = exact | derived
+    sessions["up_limit_rule_eligible"] = exact_up_available | derived_up_eligible | vendor_confirmed_up
+    sessions["down_limit_rule_eligible"] = exact_down_available | derived_down_eligible
+    sessions["limit_rule_eligible"] = sessions["up_limit_rule_eligible"] | sessions["down_limit_rule_eligible"]
     return sessions
 
 
@@ -100,7 +143,16 @@ def _direction_features(out: pd.DataFrame, direction: str, cfg: LimitLifecycleCo
     low = pd.to_numeric(out["low"], errors="coerce")
     close = pd.to_numeric(out["close"], errors="coerce")
     tolerance = cfg.price_tick / 2.0 + cfg.comparison_tolerance
-    eligible = out["limit_rule_eligible"].fillna(False) & limit.notna()
+    eligible = out[f"{direction.lower()}_limit_rule_eligible"].fillna(False) & limit.notna()
+    if is_up:
+        vendor_confirmed = out["up_limit_price_source"].eq("VENDOR_CONFIRMED_RULE_DERIVATION")
+        vendor_raw = out.get("evt_uplimit_active")
+        vendor_visible = (
+            pd.to_numeric(vendor_raw, errors="coerce").eq(1.0)
+            if isinstance(vendor_raw, pd.Series)
+            else pd.Series(False, index=out.index)
+        )
+        eligible = eligible & (~vendor_confirmed | vendor_visible)
     touched = (high.ge(limit - tolerance) if is_up else low.le(limit + tolerance)) & eligible
     opened = open_price.sub(limit).abs().le(tolerance) & eligible
     closed = close.sub(limit).abs().le(tolerance) & eligible
@@ -113,14 +165,18 @@ def _direction_features(out: pd.DataFrame, direction: str, cfg: LimitLifecycleCo
     first_touch = touched & ~touched.groupby(session_key, sort=False).transform(lambda x: x.cummax().shift(1, fill_value=False))
     other_side = low.lt(limit - tolerance) if is_up else high.gt(limit + tolerance)
     intrabar_ambiguous = touched & other_side
-    out[f"{direction}_TOUCHED_LIMIT"] = touched.astype("boolean")
-    out[f"{direction}_OPENED_AT_LIMIT"] = opened.astype("boolean")
-    out[f"{direction}_CLOSED_AT_LIMIT"] = closed.astype("boolean")
-    out[f"{direction}_FIRST_TOUCH"] = first_touch.astype("boolean")
-    out[f"{direction}_CLOSED_AT_LIMIT_ENTRY"] = closed_entry.astype("boolean")
-    out[f"{direction}_LEFT_LIMIT_BETWEEN_BARS"] = left.astype("boolean")
-    out[f"{direction}_RESEALED_BETWEEN_BARS"] = resealed.astype("boolean")
-    out[f"{direction}_INTRABAR_ORDER_AMBIGUOUS"] = intrabar_ambiguous.astype("boolean")
+    values = {
+        "TOUCHED_LIMIT": touched,
+        "OPENED_AT_LIMIT": opened,
+        "CLOSED_AT_LIMIT": closed,
+        "FIRST_TOUCH": first_touch,
+        "CLOSED_AT_LIMIT_ENTRY": closed_entry,
+        "LEFT_LIMIT_BETWEEN_BARS": left,
+        "RESEALED_BETWEEN_BARS": resealed,
+        "INTRABAR_ORDER_AMBIGUOUS": intrabar_ambiguous,
+    }
+    for name, value in values.items():
+        out[f"{direction}_{name}"] = value.where(eligible, pd.NA).astype("boolean")
 
 
 def _episode_rows(out: pd.DataFrame, direction: str) -> list[dict[str, Any]]:
@@ -201,8 +257,13 @@ def materialize_conservative_limit_lifecycle(
         "row_count": len(out),
         "session_count": int(sessions.shape[0]),
         "eligible_session_count": int(sessions["limit_rule_eligible"].sum()),
-        "exact_limit_session_count": int(sessions["limit_price_source"].eq("PIT_EXACT_LIMIT_FIELDS").sum()),
+        "exact_limit_session_count": int(
+            (sessions["up_limit_price_source"].eq("PIT_EXACT_LIMIT_FIELD") | sessions["down_limit_price_source"].eq("PIT_EXACT_LIMIT_FIELD")).sum()
+        ),
         "derived_limit_session_count": int(sessions["limit_price_source"].eq("CONSERVATIVE_RULE_DERIVATION").sum()),
+        "vendor_confirmed_limit_session_count": int(
+            sessions["up_limit_price_source"].eq("VENDOR_CONFIRMED_RULE_DERIVATION").sum()
+        ),
         "excluded_session_count": int(sessions["limit_price_source"].eq("EXCLUDED").sum()),
         "episode_count": len(episodes),
         "episode_inference_unit": "lifecycle_episode",
@@ -220,7 +281,9 @@ def validate_derived_limits_against_vendor_occurrence(features: pd.DataFrame) ->
     key = [features["code"], features["session"]]
     entry = active & ~active.groupby(key, sort=False).shift(1, fill_value=False)
     entries = features.loc[entry, ["code", "session", "trade_time"]].rename(columns={"trade_time": "vendor_time"})
-    derived = features.loc[features["limit_price_source"].eq("CONSERVATIVE_RULE_DERIVATION")]
+    derived = features.loc[features["up_limit_price_source"].isin(
+        ["CONSERVATIVE_RULE_DERIVATION", "VENDOR_CONFIRMED_RULE_DERIVATION"]
+    )]
     first_touch = derived.loc[derived["UP_FIRST_TOUCH"].fillna(False), ["code", "session", "trade_time"]].rename(columns={"trade_time": "derived_touch_time"})
     compared = entries.merge(first_touch, on=["code", "session"], how="left", validate="one_to_one")
     if compared.empty:
@@ -229,7 +292,7 @@ def validate_derived_limits_against_vendor_occurrence(features: pd.DataFrame) ->
     matched = compared["derived_touch_time"].notna() & delta.le(2.0)
     match_rate = float(matched.mean())
     return {
-        "decision": "DERIVED_LIMIT_VENDOR_CONSISTENCY_PASS" if len(compared) >= 30 and match_rate >= 0.95 else "DERIVED_LIMIT_VENDOR_CONSISTENCY_FAIL",
+        "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS" if len(compared) >= 30 and match_rate >= 0.95 else "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_FAIL",
         "vendor_episode_count": len(compared),
         "matched_within_two_minutes": int(matched.sum()),
         "match_rate": match_rate,

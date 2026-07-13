@@ -28,7 +28,8 @@ from our_system_phase2.services.conservative_limit_lifecycle import (
 )
 
 
-RUNNER_VERSION = "cn_broad_event_development_canary_runner_v1"
+RUNNER_VERSION = "cn_broad_event_development_canary_runner_v2"
+PLACEBO_OFFSETS = (30, 60, 90, -30, -60, -90)
 
 
 def _sha256(path: Path) -> str:
@@ -84,12 +85,17 @@ def _attach_episode_outcomes(frame: pd.DataFrame, episodes: pd.DataFrame, horizo
     ordered["trade_time"] = pd.to_datetime(ordered["trade_time"], errors="raise")
     ordered["session"] = ordered["trade_time"].dt.normalize()
     ordered = ordered.sort_values(["code", "trade_time"], kind="mergesort").reset_index(drop=True)
-    grouped = ordered.groupby("code", sort=False)["close"]
-    ordered["pre_return_5"] = ordered["close"] / grouped.shift(5) - 1.0
-    ordered["pre_return_15"] = ordered["close"] / grouped.shift(15) - 1.0
+    prior_path = ordered.groupby("code", sort=False)["close"]
+    grouped = ordered.groupby(["code", "session"], sort=False)["close"]
+    ordered["pre_return_5"] = ordered["close"] / prior_path.shift(5) - 1.0
+    ordered["pre_return_15"] = ordered["close"] / prior_path.shift(15) - 1.0
     for horizon in horizons:
         ordered[f"target_h{horizon}"] = grouped.shift(-horizon) / ordered["close"] - 1.0
-    first = ordered.groupby(["code", "session"], as_index=False, sort=False).first()
+        for offset in PLACEBO_OFFSETS:
+            anchor = grouped.shift(-offset)
+            future = grouped.shift(-(offset + horizon))
+            ordered[f"placebo_target_h{horizon}_o{offset}"] = future / anchor - 1.0
+    first = ordered.drop_duplicates(["code", "session"], keep="first")
     symbol = episodes.loc[episodes["entity_scope"].eq("SYMBOL")].copy().reset_index(drop=True)
     symbol["code"] = symbol["entity_id"].astype(str)
     symbol["eligible_action_time"] = pd.to_datetime(symbol["eligible_action_time"], errors="coerce")
@@ -102,15 +108,19 @@ def _attach_episode_outcomes(frame: pd.DataFrame, episodes: pd.DataFrame, horizo
     if missing.any():
         fallback = symbol.loc[missing].drop(columns=[column for column in ("trade_time", "close") if column in symbol])
         fallback = fallback.merge(first, on=["code", "session"], how="left", validate="many_to_one")
-        for column in ["trade_time", "close", "pre_return_5", "pre_return_15", *[f"target_h{h}" for h in horizons]]:
+        outcome_columns = [f"target_h{h}" for h in horizons]
+        outcome_columns += [f"placebo_target_h{h}_o{o}" for h in horizons for o in PLACEBO_OFFSETS]
+        for column in ["trade_time", "close", "pre_return_5", "pre_return_15", *outcome_columns]:
             exact.loc[missing, column] = fallback[column].to_numpy()
     market = episodes.loc[episodes["entity_scope"].eq("MARKET")].copy()
     if not market.empty:
+        target_columns = [f"target_h{h}" for h in horizons]
+        target_columns += [f"placebo_target_h{h}_o{o}" for h in horizons for o in PLACEBO_OFFSETS]
         market_targets = first.groupby("session", as_index=False).agg(
             close=("close", "mean"),
             pre_return_5=("pre_return_5", "mean"),
             pre_return_15=("pre_return_15", "mean"),
-            **{f"target_h{h}": (f"target_h{h}", "mean") for h in horizons},
+            **{column: (column, "mean") for column in target_columns},
         )
         market = market.merge(market_targets, on="session", how="left", validate="one_to_one")
         market["code"] = "CN_MARKET"
@@ -149,6 +159,15 @@ def _signal(group: pd.DataFrame, transform: str, *, event: bool) -> pd.Series:
     }[transform]
 
 
+def _variant(signal: pd.Series, variant: str) -> pd.Series:
+    numeric = pd.to_numeric(signal, errors="coerce")
+    if variant == "raw":
+        return numeric
+    if variant == "compressed":
+        return np.sign(numeric) * np.sqrt(numeric.abs())
+    raise ValueError(f"unknown signal variant: {variant}")
+
+
 def _reward(signal: pd.Series, target: pd.Series) -> tuple[float, int]:
     value = pd.to_numeric(signal, errors="coerce") * pd.to_numeric(target, errors="coerce")
     value = value.replace([np.inf, -np.inf], np.nan).dropna()
@@ -157,27 +176,58 @@ def _reward(signal: pd.Series, target: pd.Series) -> tuple[float, int]:
     return float(value.mean()), len(value)
 
 
-def _placebo_target(group: pd.DataFrame, target: pd.Series, seed: int, horizon: int) -> pd.Series:
-    # Episode-preserving deterministic circular displacement inside each source.
-    if len(group) < 2:
-        return pd.Series(np.nan, index=group.index)
-    offset = 1 + int(hashlib.sha256(f"{seed}|{horizon}".encode()).hexdigest()[:8], 16) % (len(group) - 1)
-    return pd.Series(np.roll(target.to_numpy(), offset), index=group.index)
+def _placebo_target(group: pd.DataFrame, seed: int, horizon: int) -> pd.Series:
+    """Choose a precomputed same-symbol, same-session shifted action time per episode."""
+    episode_ids = group["episode_id"].astype(str)
+    selectors = np.fromiter(
+        ((int(value[:8], 16) ^ int(seed) ^ int(horizon)) % len(PLACEBO_OFFSETS) for value in episode_ids),
+        dtype=np.int8,
+        count=len(group),
+    )
+    alternatives = np.column_stack([
+        pd.to_numeric(group[f"placebo_target_h{horizon}_o{offset}"], errors="coerce").to_numpy()
+        for offset in PLACEBO_OFFSETS
+    ])
+    values = np.full(len(group), np.nan, dtype=float)
+    row_indices = np.arange(len(group))
+    for displacement in range(len(PLACEBO_OFFSETS)):
+        candidate_columns = (selectors + displacement) % len(PLACEBO_OFFSETS)
+        candidate_values = alternatives[row_indices, candidate_columns]
+        fill = np.isnan(values) & np.isfinite(candidate_values)
+        values[fill] = candidate_values[fill]
+    return pd.Series(values, index=group.index, dtype=float)
 
 
 def _candidate_rows(observations: pd.DataFrame, contract: dict[str, Any], seed: int) -> list[dict[str, Any]]:
     sources = list(contract["required_event_sources"])
     transforms = ["direction", "intensity", "pre5_interaction", "pre15_interaction"]
-    specifications = [(source, horizon, transform) for source in sources for horizon in contract["horizons_bars"] for transform in transforms]
+    variants = ["raw", "compressed"]
     rng = np.random.default_rng(seed)
-    chosen = [specifications[index] for index in sorted(rng.choice(len(specifications), size=96, replace=False))]
+    chosen: list[tuple[str, int, str, str]] = []
+    per_source_budget = int(contract["budgets"]["event_conditioned"]["proposal"]) // len(sources)
+    if per_source_budget * len(sources) != int(contract["budgets"]["event_conditioned"]["proposal"]):
+        raise ValueError("event proposal budget must divide evenly across required event sources")
+    for source in sources:
+        source_specs = [
+            (source, horizon, transform, variant)
+            for horizon in contract["horizons_bars"] for transform in transforms for variant in variants
+        ]
+        indices = sorted(rng.choice(len(source_specs), size=per_source_budget, replace=False))
+        chosen.extend(source_specs[index] for index in indices)
+    source_groups = {
+        source: observations.loc[observations["event_source"].eq(source)] for source in sources
+    }
+    placebo_cache: dict[tuple[str, int], pd.Series] = {}
     rows: list[dict[str, Any]] = []
-    for source, horizon, transform in chosen:
-        group = observations.loc[observations["event_source"].eq(source)].copy()
+    for source, horizon, transform, variant in chosen:
+        group = source_groups[source]
         target = pd.to_numeric(group[f"target_h{horizon}"], errors="coerce")
-        event_signal = _signal(group, transform, event=True)
-        control_signal = _signal(group, transform, event=False)
-        placebo = _placebo_target(group, target, seed, horizon)
+        event_signal = _variant(_signal(group, transform, event=True), variant)
+        control_signal = _variant(_signal(group, transform, event=False), variant)
+        placebo_key = (source, horizon)
+        if placebo_key not in placebo_cache:
+            placebo_cache[placebo_key] = _placebo_target(group, seed, horizon)
+        placebo = placebo_cache[placebo_key]
         event_reward, support = _reward(event_signal, target)
         structural_reward, _ = _reward(control_signal, target)
         placebo_reward, _ = _reward(event_signal, placebo)
@@ -204,7 +254,7 @@ def _candidate_rows(observations: pd.DataFrame, contract: dict[str, Any], seed: 
         date_share = group["session"].value_counts(normalize=True).max() if not group.empty else 1.0
         symbols = group.loc[group["entity_scope"].eq("SYMBOL"), "entity_id"]
         symbol_share = symbols.value_counts(normalize=True).max() if not symbols.empty else 0.0
-        canonical = f"{source}|h{horizon}|{transform}"
+        canonical = f"{source}|h{horizon}|{transform}|{variant}"
         exact_id = hashlib.sha256(f"{seed}|{canonical}".encode()).hexdigest()[:24]
         mechanism_id = hashlib.sha256(canonical.encode()).hexdigest()[:16]
         survivor = (
@@ -212,7 +262,7 @@ def _candidate_rows(observations: pd.DataFrame, contract: dict[str, Any], seed: 
             and date_share <= 0.25 and symbol_share <= 0.20
         )
         base = {
-            "seed": seed, "source": source, "horizon": horizon, "transform": transform,
+            "seed": seed, "source": source, "horizon": horizon, "transform": transform, "variant": variant,
             "canonical": canonical, "exact_id": exact_id, "mechanism_id": mechanism_id,
             "support": support, "event_reward": event_reward, "matched_control_ceiling": control_ceiling,
             "matched_increment": increment, "consistent_positive_blocks": consistent,
@@ -291,18 +341,47 @@ def run_canary(*, contract_path: Path, semantic_registry_path: Path, data_root: 
         del frame, life_frame, life_episodes, episodes, observations
         gc.collect()
     episodes = pd.concat(all_episodes, ignore_index=True).drop_duplicates("episode_id", keep="first")
-    observations = pd.concat(all_observations, ignore_index=True).drop_duplicates("episode_id", keep="first")
+    observation_parts = pd.concat(all_observations, ignore_index=True)
+    symbol_observations = observation_parts.loc[observation_parts["entity_scope"].eq("SYMBOL")].drop_duplicates(
+        "episode_id", keep="first"
+    )
+    market_parts = observation_parts.loc[observation_parts["entity_scope"].eq("MARKET")]
+    if market_parts.empty:
+        market_observations = market_parts
+    else:
+        market_observations = market_parts.drop_duplicates("episode_id", keep="first").copy()
+        numeric_outcomes = [
+            column for column in market_parts.columns
+            if column in {"close", "pre_return_5", "pre_return_15"}
+            or column.startswith("target_h")
+            or column.startswith("placebo_target_h")
+        ]
+        means = market_parts.groupby("episode_id", sort=False)[numeric_outcomes].mean()
+        market_observations = market_observations.drop(columns=numeric_outcomes).merge(
+            means, left_on="episode_id", right_index=True, how="left", validate="one_to_one"
+        )
+    observations = pd.concat([symbol_observations, market_observations], ignore_index=True)
+    allowed_years = set(int(year) for year in contract["boundaries"]["allowed_years"])
+    observations = observations.loc[
+        observations["close"].notna()
+        & pd.to_datetime(observations["session"], errors="coerce").dt.year.isin(allowed_years)
+    ].copy()
+    valid_episode_ids = set(observations["episode_id"].astype(str))
+    episodes = episodes.loc[episodes["episode_id"].astype(str).isin(valid_episode_ids)].copy()
     support = audit_episode_support(episodes)
     combined_lifecycle = {
         "one_episode_one_admission_vote": all(row["one_episode_one_admission_vote"] for row in lifecycle_manifests),
         "exact_limit_session_count": sum(row["exact_limit_session_count"] for row in lifecycle_manifests),
         "derived_limit_session_count": sum(row["derived_limit_session_count"] for row in lifecycle_manifests),
+        "vendor_confirmed_limit_session_count": sum(
+            row.get("vendor_confirmed_limit_session_count", 0) for row in lifecycle_manifests
+        ),
         "episode_count": sum(row["episode_count"] for row in lifecycle_manifests),
     }
     vendor_total = sum(row.get("vendor_episode_count", 0) for row in validations)
     matched_total = sum(row.get("matched_within_two_minutes", 0) for row in validations)
     limit_validation = {
-        "decision": "DERIVED_LIMIT_VENDOR_CONSISTENCY_PASS" if vendor_total >= 30 and matched_total / max(vendor_total, 1) >= 0.95 else "DERIVED_LIMIT_VENDOR_CONSISTENCY_FAIL",
+        "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS" if vendor_total >= 30 and matched_total / max(vendor_total, 1) >= 0.95 else "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_FAIL",
         "vendor_episode_count": vendor_total,
         "matched_within_two_minutes": matched_total,
         "match_rate": matched_total / max(vendor_total, 1),
