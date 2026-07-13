@@ -493,6 +493,8 @@ class PITFundamentalFabricAdapter:
             raise ValueError("materialize_change requires FUNDAMENTAL_CHANGE route")
         if request.source_table not in FINANCIAL_TABLES:
             raise NotImplementedError("holder temporal changes require an aggregated level request first")
+        if request.transform == "ttm" and request.source_table == "balance_sheet_report_em":
+            raise ValueError("TTM is defined for cumulative flow statements, not balance-sheet stock levels")
         versions = self._load_financial(request, coordinates["code"])
         if versions.empty:
             output = coordinates.copy()

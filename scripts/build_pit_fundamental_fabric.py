@@ -142,6 +142,20 @@ def _roles(table: str, field: pa.Field) -> tuple[list[str], str, str, bool]:
     return ["METADATA_BLOCKED"], "non-numeric statement metadata; no direct search route", "metadata.blocked", False
 
 
+def _allowed_change_transforms(table: str, field_name: str, roles: list[str]) -> list[str]:
+    if "FUNDAMENTAL_CHANGE" not in roles:
+        return []
+    if field_name.upper().endswith("_YOY"):
+        return ["source_reported_yoy"]
+    if table == "balance_sheet_report_em":
+        return ["delta", "yoy", "slope", "persistence", "acceleration"]
+    if table in {"profit_sheet_report_em", "cash_flow_sheet_report_em"}:
+        return ["delta", "yoy", "ttm", "slope", "persistence", "acceleration"]
+    if table == "main_stock_holder_sina":
+        return ["delta_after_episode_aggregation", "yoy_after_episode_aggregation"]
+    return []
+
+
 def _observable_contract() -> dict[str, Any]:
     return {
         "contract_version": "cn_pit_fundamental_observable_time_contract_v1",
@@ -430,6 +444,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             field = field_entry["field"]
             source_dtypes = dict(field_entry["types"])
             roles, semantic, typed_route, future_usable = _roles(table, field)
+            allowed_changes = _allowed_change_transforms(table, field.name, roles)
             current_equivalent = CURRENT_EQUIVALENTS.get((table, field.name), "")
             exact_presence = field.name in current_names
             pit_status = config["status"]
@@ -454,6 +469,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 "semantic_description": semantic,
                 "semantic_evidence": "SOURCE_SCHEMA_AND_NATIVE_IDENTIFIER",
                 "typed_route": typed_route,
+                "allowed_change_transforms": "|".join(allowed_changes),
                 "observable_time_policy": (
                     "NEXT_SESSION_AFTER_MAX_NOTICE_UPDATE"
                     if table in FINANCIAL_TABLES
@@ -477,6 +493,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                     "field_id": f"{table}.{field.name}",
                     **row,
                     "typed_routes": roles,
+                    "allowed_change_transforms": allowed_changes,
                     "level_route": "pit_fundamental.level" if "FUNDAMENTAL_LEVEL" in roles else None,
                     "change_route": "pit_fundamental.change" if "FUNDAMENTAL_CHANGE" in roles else None,
                     "event_route": "pit_fundamental.disclosure_event" if "DISCLOSURE_EVENT" in roles else None,

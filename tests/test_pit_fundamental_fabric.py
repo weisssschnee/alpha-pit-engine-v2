@@ -231,6 +231,21 @@ def test_non_ascii_source_fields_get_distinct_stable_output_names() -> None:
     assert holder_count.output_name != average_holding.output_name
 
 
+def test_balance_sheet_ttm_route_is_rejected_before_source_access(tmp_path: Path) -> None:
+    adapter = PITFundamentalFabricAdapter(
+        source_root=tmp_path,
+        sessions=_sessions(),
+        maximum_observable_time="2025-04-22 15:00",
+    )
+    with pytest.raises(ValueError, match="balance-sheet stock levels"):
+        adapter.materialize_change(
+            FundamentalFieldRequest(
+                "balance_sheet_report_em", "TOTAL_ASSETS", route="FUNDAMENTAL_CHANGE", transform="ttm"
+            ),
+            pd.DataFrame({"code": ["000001"], "session_time": pd.to_datetime(["2024-04-22 09:30"])}),
+        )
+
+
 def test_atomic_session_cache_is_deterministic(tmp_path: Path) -> None:
     cache = DeterministicSessionCache(tmp_path)
     coordinates = pd.DataFrame(
