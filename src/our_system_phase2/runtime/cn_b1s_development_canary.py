@@ -1895,11 +1895,10 @@ def main(argv: list[str] | None = None) -> int:
     augmentation = json.loads(args.augmentation_summary.read_text(encoding="utf-8"))
     _validate_contract(contract)
     selector_contract = contract.get("strict_priority_contract", {})
-    if _sha256(args.strict_priority_model) != selector_contract.get("model_sha256"):
+    strict_priority_payload = json.loads(args.strict_priority_model.read_text(encoding="utf-8"))
+    if _json_hash(strict_priority_payload) != selector_contract.get("model_canonical_sha256"):
         raise ValueError("strict-priority model hash does not match the frozen CANARY contract")
-    strict_priority_model = StrictPriorityModel.from_artifact(
-        json.loads(args.strict_priority_model.read_text(encoding="utf-8"))
-    )
+    strict_priority_model = StrictPriorityModel.from_artifact(strict_priority_payload)
     if args.authorization != contract["authorization_token"]:
         raise PermissionError("authorization does not match frozen B1S contract")
     if benchmark.get("disabled_benchmark_ids") != ["plate_industry_linkage"]:
@@ -2062,7 +2061,7 @@ def main(argv: list[str] | None = None) -> int:
             "field_registry_sha256": _sha256(args.field_registry),
             "benchmark_registry_sha256": _sha256(args.benchmark_registry),
             "contract_sha256": _sha256(args.contract),
-            "strict_priority_model_sha256": _sha256(args.strict_priority_model),
+            "strict_priority_model_canonical_sha256": _json_hash(strict_priority_payload),
             "capability_matrix_hash": _json_hash(contract["capability_matrix"]),
             "lane_specs_hash": _json_hash(contract["lane_specs"]),
             "seeds_hash": _json_hash(contract["seeds"]),

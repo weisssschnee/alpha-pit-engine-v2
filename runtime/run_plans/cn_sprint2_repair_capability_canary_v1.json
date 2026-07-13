@@ -2,7 +2,7 @@
   "contract_version": "cn_sprint2_repair_capability_canary_v1",
   "execution_state": "FROZEN_REQUIRES_EXACT_SHA_AND_USER_AUTHORIZATION",
   "authorization_token": "USER_AUTHORIZED_CN_B1S_DEVELOPMENT_ONLY_CANARY_20260712",
-  "baseline_tag": "cn-search-selection-event-state-sprint2-repair-canary-20260713",
+  "baseline_tag": "cn-search-selection-event-state-sprint2-repair-canary-r2-20260713",
   "data_boundary": {
     "allowed_roles": ["development", "train"],
     "forbidden_roles": ["validation", "holdout", "spent", "sealed", "forward"],
@@ -137,7 +137,7 @@
   "strict_priority_contract": {
     "role": "STRICT_PRIORITY_ELIGIBLE",
     "model_path": "runtime/run_plans/cn_sprint2_strict_priority_model_v1.json",
-    "model_sha256": "fc74d7df7e192fb2f6ce6fe4444cdaf5406a45fd331737b095699be20951dd58",
+    "model_canonical_sha256": "53db49dd4257b692edacd36378e5353a9dd009021404caa313e49cd369bd4b9b",
     "offline_evidence_gate_passed": true,
     "eligible_fraction": 0.10,
     "one_exact_identity_one_vote": true,
