@@ -1,0 +1,229 @@
+{
+  "contract_version": "cn_sprint2_repair_capability_canary_v1",
+  "execution_state": "FROZEN_REQUIRES_EXACT_SHA_AND_USER_AUTHORIZATION",
+  "authorization_token": "USER_AUTHORIZED_CN_B1S_DEVELOPMENT_ONLY_CANARY_20260712",
+  "baseline_tag": "cn-search-selection-event-state-sprint2-repair-canary-20260713",
+  "data_boundary": {
+    "allowed_roles": ["development", "train"],
+    "forbidden_roles": ["validation", "holdout", "spent", "sealed", "forward"],
+    "allowed_years": [2024, 2025],
+    "forward_2026_allowed": false,
+    "trade_dates": ["2025-04-01"],
+    "row_group_index": 0,
+    "panel_shard_count": 16
+  },
+  "capability_matrix": {
+    "static_cross_sectional": "ENABLED_SHARED_BACKBONE",
+    "firstn_intraday_path": "ENABLED_SHARED_BACKBONE",
+    "temporal_program": "ENABLED_SHARED_BACKBONE",
+    "event_conditioned": "ENABLED_ENTRY_PATH_ONLY_EXIT_RESEAL_DISABLED",
+    "state_transition": "ENABLED_OPERATIONAL_RAW_DERIVED_STATES",
+    "orthogonal_exile": "ENABLED_SHARED_BACKBONE",
+    "typed_random": "ENABLED_SHARED_BACKBONE",
+    "typed_ast": "ENABLED_SHARED_BACKBONE",
+    "cem": "ENABLED_LOW_BUDGET_CONTROL",
+    "rx_ucb": "ENABLED_ONLY_PRIMARY_EPHEMERAL_ADAPTIVE",
+    "uct_mcts": "ENABLED_LOW_BUDGET_CONTROL",
+    "evolutionary": "ENABLED_LOW_BUDGET_CONTROL",
+    "surrogate": "ENABLED_LOW_BUDGET_CONTROL",
+    "llm_proposal_repair": "ENABLED_FROZEN_PRE_REWARD_CODEX_PACK",
+    "benchmark_competitor": "ENABLED",
+    "plate_industry_membership": "DISABLED_MISSING_HISTORICAL_PIT_RELEASE",
+    "plate_industry_index": "DISABLED_MISSING_HISTORICAL_PIT_RELEASE",
+    "plate_zero_placeholder": "FORBIDDEN",
+    "current_snapshot_membership": "FORBIDDEN",
+    "down_limit_event_history": "DISABLED_MISSING_PIT_FIELD"
+  },
+  "seeds": {
+    "global": 20260713,
+    "static_cross_sectional": 12200,
+    "firstn_intraday_path": 12201,
+    "temporal_program": 12202,
+    "event_conditioned": 12203,
+    "state_transition": 12204,
+    "orthogonal_exile": 12205,
+    "typed_random": 12206,
+    "typed_ast": 12207,
+    "cem": 12208,
+    "rx_ucb": 12209,
+    "uct_mcts": 12210,
+    "evolutionary": 12211,
+    "surrogate": 12212,
+    "llm_proposal_repair": 12213,
+    "benchmark_competitor": 12214,
+    "signal_sketch": 12215
+  },
+  "seed_sets": {
+    "seed_a": {
+      "seeds": {
+        "global": 20260713, "static_cross_sectional": 12200, "firstn_intraday_path": 12201,
+        "temporal_program": 12202, "event_conditioned": 12203, "state_transition": 12204,
+        "orthogonal_exile": 12205, "typed_random": 12206, "typed_ast": 12207,
+        "cem": 12208, "rx_ucb": 12209, "uct_mcts": 12210, "evolutionary": 12211,
+        "surrogate": 12212, "llm_proposal_repair": 12213, "benchmark_competitor": 12214,
+        "signal_sketch": 12215
+      },
+      "adaptive_seeds": {"cem": 13208, "rx_ucb": 13209, "uct_mcts": 13210, "evolutionary": 13211, "surrogate": 13212}
+    },
+    "seed_b": {
+      "seeds": {
+        "global": 20260713, "static_cross_sectional": 12200, "firstn_intraday_path": 12201,
+        "temporal_program": 12202, "event_conditioned": 12203, "state_transition": 12204,
+        "orthogonal_exile": 12205, "typed_random": 12206, "typed_ast": 12207,
+        "cem": 12208, "rx_ucb": 12209, "uct_mcts": 12210, "evolutionary": 12211,
+        "surrogate": 12212, "llm_proposal_repair": 12213, "benchmark_competitor": 12214,
+        "signal_sketch": 12215
+      },
+      "adaptive_seeds": {"cem": 14208, "rx_ucb": 14209, "uct_mcts": 14210, "evolutionary": 14211, "surrogate": 14212}
+    }
+  },
+  "budgets": {
+    "proposal_total": 4096,
+    "admission_total": 512,
+    "strict_eval_total": 128,
+    "global_topk_total": 512,
+    "hybrid_stratified_fraction": 0.5
+  },
+  "lane_specs": {
+    "static_cross_sectional": {"proposal": 320, "admission": 44, "strict": 12, "adaptation": "NONE"},
+    "firstn_intraday_path": {"proposal": 256, "admission": 32, "strict": 10, "adaptation": "NONE"},
+    "temporal_program": {"proposal": 640, "admission": 84, "strict": 20, "adaptation": "NONE"},
+    "event_conditioned": {"proposal": 384, "admission": 50, "strict": 16, "adaptation": "ENTRY_PATH_REPAIR"},
+    "state_transition": {"proposal": 384, "admission": 50, "strict": 16, "adaptation": "RAW_DERIVED_STATE_REPAIR"},
+    "orthogonal_exile": {"proposal": 320, "admission": 40, "strict": 12, "adaptation": "NONE"},
+    "typed_random": {"proposal": 160, "admission": 20, "strict": 4, "adaptation": "NONE"},
+    "typed_ast": {"proposal": 160, "admission": 24, "strict": 6, "adaptation": "NONE"},
+    "cem": {"proposal": 128, "control": 64, "adaptive": 64, "admission": 12, "strict": 2, "adaptation": "LOW_BUDGET_CONTROL"},
+    "rx_ucb": {"proposal": 768, "control": 384, "adaptive": 384, "admission": 88, "strict": 18, "adaptation": "STRICT_PRIORITY_HIERARCHICAL_UCB"},
+    "uct_mcts": {"proposal": 128, "control": 64, "adaptive": 64, "admission": 12, "strict": 2, "adaptation": "LOW_BUDGET_CONTROL"},
+    "evolutionary": {"proposal": 128, "control": 64, "adaptive": 64, "admission": 12, "strict": 2, "adaptation": "LOW_BUDGET_CONTROL"},
+    "surrogate": {"proposal": 96, "control": 48, "adaptive": 48, "admission": 10, "strict": 2, "adaptation": "LOW_BUDGET_CONTROL"},
+    "llm_proposal_repair": {"proposal": 128, "proposal_pack": 64, "repair_pack": 64, "admission": 24, "strict": 4, "adaptation": "NONE"},
+    "benchmark_competitor": {"proposal": 96, "admission": 10, "strict": 2, "adaptation": "NONE"}
+  },
+  "development_objective": {
+    "name": "sprint2_strict_priority_development_v1",
+    "label_horizon_bars": 5,
+    "coordinate_minute_stride": 4,
+    "formula": "development eligibility then frozen strict-priority score with diversity constraints",
+    "cost_rate": 0.0025,
+    "pareto": {
+      "require_nonnegative_benchmark_increment": true,
+      "minimum_worst_block_quality": 0.0,
+      "maximum_turnover": 0.75,
+      "lane_floor": 4,
+      "lane_cap": 96,
+      "primitive_cap": 32,
+      "priority": ["strict_priority", "economic_quality", "stability", "benchmark_increment", "diversity", "complexity"]
+    },
+    "uses_validation": false,
+    "uses_holdout": false,
+    "uses_forward": false
+  },
+  "survivor_contract": {
+    "renamed_role": "DEVELOPMENT_ELIGIBLE",
+    "typed_gate_decision": "allow",
+    "minimum_finite_ratio": 0.25,
+    "minimum_signal_unique": 8,
+    "minimum_eligible_cross_sections": 40,
+    "minimum_proxy_reward": 0.0,
+    "lane_overrides": {
+      "event_conditioned": {"minimum_signal_unique": 2},
+      "state_transition": {"minimum_signal_unique": 3}
+    },
+    "one_canonical_identity_one_vote": true,
+    "one_exact_identity_one_vote": true
+  },
+  "strict_priority_contract": {
+    "role": "STRICT_PRIORITY_ELIGIBLE",
+    "model_path": "runtime/run_plans/cn_sprint2_strict_priority_model_v1.json",
+    "model_sha256": "fc74d7df7e192fb2f6ce6fe4444cdaf5406a45fd331737b095699be20951dd58",
+    "offline_evidence_gate_passed": true,
+    "eligible_fraction": 0.10,
+    "one_exact_identity_one_vote": true,
+    "online_refit_allowed": false
+  },
+  "admission_contract": {
+    "strategies": ["current_scalar", "strict_priority", "stratified_diversity", "quality_diversity_hybrid"],
+    "cluster_one_vote": true,
+    "parent_descendant_cap": 2,
+    "family_cap": 48,
+    "semantic_bucket_cap": 16,
+    "no_runtime_threshold_change": true,
+    "natural_underfill_allowed": true
+  },
+  "signal_cluster_contract": {
+    "coordinate_count": 256,
+    "rank_threshold": 0.95,
+    "value_threshold": 0.9,
+    "mask_threshold": 0.9,
+    "activation_threshold": 0.85,
+    "uses_labels": false
+  },
+  "strict_contract": {
+    "horizons_bars": [1, 5, 15, 30],
+    "minimum_observations_per_cross_section": 20,
+    "selection_source": "quality_diversity_hybrid",
+    "freeze_pack_before_strict_metrics": true,
+    "candidate_promotion_allowed": false
+  },
+  "benchmark_contract": {
+    "enabled": ["x0_r3", "simple_momentum", "simple_reversal", "volatility", "liquidity", "firstN", "event_state", "external_competitor_reproduction"],
+    "disabled": ["plate_industry_linkage"],
+    "external_performance_imported": false,
+    "comparison_role": "development_diagnostic_only"
+  },
+  "candidate_contract": {
+    "version": "cn_sprint2_candidate_v1",
+    "required_fields": ["candidate_id", "lane_id", "expression", "exact_identity", "canonical_identity", "lineage_key", "proposal_stage", "proposal_origin", "development_eligible", "strict_priority_score"],
+    "forbidden_expression_tokens": ["validation", "holdout", "forward", "2026", "plate", "industry", "label", "winner"],
+    "persistent_memory_write_allowed": false,
+    "promotion_allowed": false
+  },
+  "adaptation_contract": {
+    "scope": "SINGLE_RUN_EPHEMERAL_ONLY",
+    "only_primary_adaptive": "rx_ucb",
+    "persistent_elite_allowed": false,
+    "persistent_value_statistics_allowed": false,
+    "cross_epoch_memory_allowed": false,
+    "matched_nonadaptive_control_required": true,
+    "delayed_feedback_source": "frozen_cross_fitted_strict_priority_model",
+    "fresh_exploration_floor": 0.20,
+    "budget_change_allowed": false,
+    "seed_change_allowed": false,
+    "reward_change_allowed": false,
+    "grammar_change_allowed": false,
+    "field_role_change_allowed": false
+  },
+  "data_access_contract": {
+    "development_only_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "release_manifest_sha256": "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255",
+    "loader_code_hash": "9d70c551b8ea0da5a89f8b977298755343f7fe976568a800a5a344f94a63ac62",
+    "materializer_hash": "202633fbc26c8d02a60f036f7b43aca92e0dd5f6f768a401e8d56f825b0ee1cc",
+    "fresh_cache_required": true,
+    "cache_provenance": {
+      "release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+      "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+      "loader_code_hash": "9d70c551b8ea0da5a89f8b977298755343f7fe976568a800a5a344f94a63ac62",
+      "field_registry_hash": "960f9d59e6f45274bd370c68a68cbad938b9e00265c3262a71cd31ae717b6b94",
+      "data_role": "development",
+      "materializer_hash": "202633fbc26c8d02a60f036f7b43aca92e0dd5f6f768a401e8d56f825b0ee1cc",
+      "cache_namespace": "655be0b04e8ebd0b5260cdde1e6365a08e0270a5feb5e7829b863ef60e80e654"
+    },
+    "read_ledger_contract": {
+      "ledger_version": "cn_development_only_read_ledger_v1",
+      "requested_data_role": "development",
+      "forbidden_file_open_count": 0,
+      "forbidden_row_group_read_count": 0,
+      "validation_rows_read": 0,
+      "holdout_rows_read": 0,
+      "forward_rows_read": 0
+    }
+  },
+  "output_contract": {
+    "fixed_candidate_pack_required": true,
+    "automatic_forward_open_allowed": false,
+    "automatic_candidate_promotion_allowed": false,
+    "automatic_memory_update_allowed": false
+  }
+}

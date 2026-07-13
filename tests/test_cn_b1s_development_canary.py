@@ -9,6 +9,7 @@ import pytest
 
 from our_system_phase2.runtime.cn_b1s_development_canary import (
     ADAPTIVE_LANES,
+    apply_strict_priority_layer,
     _select_seed_set,
     _validate_contract,
     _materialization_input_columns,
@@ -29,12 +30,14 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
     _turnover,
 )
 from our_system_phase2.services.feature_state_fabric import FieldRegistry
+from our_system_phase2.services.strict_priority_selector import StrictPriorityModel
 
 
 REPO = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v1.json"
 REPAIRED_CONTRACT_PATH = REPO / "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json"
 CAPABILITY_CONTRACT_PATH = REPO / "runtime/run_plans/cn_generator_capability_canary_sprint1_v1.json"
+SPRINT2_CONTRACT_PATH = REPO / "runtime/run_plans/cn_sprint2_repair_capability_canary_v1.json"
 EPOCH_A_CONTRACT_PATH = REPO / "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json"
 
 
@@ -141,6 +144,83 @@ def test_generator_capability_contract_is_inside_authorized_budget_and_uses_pare
     assert contract["capability_matrix"]["event_conditioned"].endswith("CONTROL_ONLY")
 
 
+def test_sprint2_repair_contract_freezes_shared_backbone_two_seeds_and_total_budget() -> None:
+    contract = json.loads(SPRINT2_CONTRACT_PATH.read_text(encoding="utf-8"))
+
+    assert contract["budgets"]["proposal_total"] == 4096
+    assert contract["budgets"]["strict_eval_total"] == 128
+    assert sum(spec["proposal"] for spec in contract["lane_specs"].values()) == 4096
+    assert sum(spec["strict"] for spec in contract["lane_specs"].values()) == 128
+    assert set(contract["seed_sets"]) == {"seed_a", "seed_b"}
+    assert contract["seed_sets"]["seed_a"]["seeds"] == contract["seed_sets"]["seed_b"]["seeds"]
+    assert contract["seed_sets"]["seed_a"]["adaptive_seeds"]["rx_ucb"] != contract["seed_sets"]["seed_b"]["adaptive_seeds"]["rx_ucb"]
+    assert contract["adaptation_contract"]["only_primary_adaptive"] == "rx_ucb"
+    assert contract["strict_contract"]["selection_source"] == "quality_diversity_hybrid"
+    assert contract["capability_matrix"]["event_conditioned"] == "ENABLED_ENTRY_PATH_ONLY_EXIT_RESEAL_DISABLED"
+
+
+def test_sprint2_shared_backbone_is_identical_and_adaptive_expansion_is_seed_isolated() -> None:
+    source = json.loads(SPRINT2_CONTRACT_PATH.read_text(encoding="utf-8"))
+    seed_a = _select_seed_set(source, "seed_a")
+    seed_b = _select_seed_set(source, "seed_b")
+    initial_a = generate_initial_proposals(seed_a)
+    initial_b = generate_initial_proposals(seed_b)
+
+    assert [row["exact_identity"] for row in initial_a] == [row["exact_identity"] for row in initial_b]
+    for index, row in enumerate(initial_a):
+        row.update(proxy_reward=(index % 211) / 211.0, signal_cluster_id=index + 1, strict_priority_score=(index % 101) / 101.0)
+    for index, row in enumerate(initial_b):
+        row.update(proxy_reward=(index % 211) / 211.0, signal_cluster_id=index + 1, strict_priority_score=(index % 101) / 101.0)
+    adaptive_a = generate_adaptive_proposals(seed_a, initial_a)
+    adaptive_b = generate_adaptive_proposals(seed_b, initial_b)
+
+    assert len(initial_a) + len(adaptive_a) == 4096
+    assert len(initial_b) + len(adaptive_b) == 4096
+    rx_a = {row["exact_identity"] for row in adaptive_a if row["lane_id"] == "rx_ucb"}
+    rx_b = {row["exact_identity"] for row in adaptive_b if row["lane_id"] == "rx_ucb"}
+    assert rx_a != rx_b
+    assert all(str(row["seed_statistics_scope"]).startswith("current_run_only:") for row in adaptive_a if row["lane_id"] == "rx_ucb")
+
+
+def test_strict_priority_layer_renames_evaluability_and_contracts_to_top_decile() -> None:
+    contract = json.loads(SPRINT2_CONTRACT_PATH.read_text(encoding="utf-8"))
+    model = StrictPriorityModel.from_artifact(
+        json.loads((REPO / contract["strict_priority_contract"]["model_path"]).read_text(encoding="utf-8"))
+    )
+    rows = []
+    for index in range(20):
+        rows.append(
+            {
+                "candidate_id": f"candidate_{index}",
+                "lane_id": "event_conditioned" if index == 0 else "static_cross_sectional",
+                "exact_identity": f"exact_{index}",
+                "legal": True,
+                "materialized": True,
+                "survivor": True,
+                "proxy_finite_ratio": 1.0,
+                "proxy_signal_unique": 2 if index == 0 else 20 + index,
+                "proxy_ic_count": 60,
+                "proxy_reward": index / 100.0,
+                "proxy_ic_abs_lcb95": index / 100.0,
+                "proxy_worst_time_block_abs_ic": index / 200.0,
+                "proxy_time_block_stability": 0.8,
+                "proxy_turnover": 0.2,
+                "proxy_signal_concentration": 0.1,
+                "complexity": 4,
+                "primitive_family": "test",
+                "hypothesis_arm": "test",
+                "proposal_stage": "fixed",
+                "field_family": "raw_1min",
+            }
+        )
+
+    apply_strict_priority_layer(rows, contract, model)
+
+    assert all(row["development_eligible"] for row in rows)
+    assert sum(row["strict_priority_eligible"] for row in rows) == 2
+    assert all("legacy_survivor" in row for row in rows)
+
+
 def test_initial_and_adaptive_generation_obey_frozen_1344_budget() -> None:
     contract = _contract()
     initial = generate_initial_proposals(contract)
@@ -180,8 +260,11 @@ def test_capability_generation_fills_budget_with_high_exact_identity_rate() -> N
     }
     rx_adaptive = [row for row in adaptive if row["lane_id"] == "rx_ucb"]
     rx_adaptive_arms = {(row["hypothesis_arm"], row["primitive_family"]) for row in rx_adaptive}
-    assert len(rx_adaptive_arms) < len(rx_control_arms)
+    assert len(rx_adaptive_arms) <= len(rx_control_arms)
     assert all(row["focused_arm_count"] == len(rx_adaptive_arms) for row in rx_adaptive)
+    assert all(row["arm_hierarchy"].count("|") == 4 for row in rx_adaptive)
+    assert all(row["fresh_exploration_floor"] == pytest.approx(0.20) for row in rx_adaptive)
+    assert all(row["delayed_feedback_source"] == "frozen_cross_fitted_strict_priority_model" for row in rx_adaptive)
 
 
 def test_bottleneck_reports_cost_and_four_time_blocks_when_strict_metrics_supply_them() -> None:
@@ -296,6 +379,7 @@ def test_b1s_rejects_wrong_authorization_before_inputs(tmp_path: Path) -> None:
                 "--contract", str(CONTRACT_PATH),
                 "--benchmark-registry", str(tmp_path / "bench.json"),
                 "--augmentation-summary", str(tmp_path / "aug.json"),
+                "--strict-priority-model", str(tmp_path / "selector.json"),
                 "--output-root", str(tmp_path / "out"),
                 "--authorization", "wrong",
                 "--frozen-sha", "0" * 40,

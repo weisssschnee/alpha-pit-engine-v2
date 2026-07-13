@@ -75,6 +75,11 @@ from our_system_phase2.services.sprint1_generators import (
     mutate_program,
 )
 from our_system_phase2.services.development_pareto import prepare_objectives, select_pareto
+from our_system_phase2.services.strict_priority_selector import (
+    StrictPriorityModel,
+    development_eligibility,
+    percentile_rank_score,
+)
 
 
 EXPERIMENT_ID = "cn_b1s_development_canary"
@@ -476,46 +481,93 @@ def _rx_ucb_programs(
     start_index: int,
     benchmark_median: float,
 ) -> list[dict[str, Any]]:
-    by_arm: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    def hierarchy(row: Mapping[str, Any]) -> tuple[str, str, str, str]:
+        parameters = row.get("program_parameters")
+        window = parameters.get("window") if isinstance(parameters, Mapping) else None
+        window_family = "no_window" if window in {None, ""} else f"window_{int(window)}"
+        return (
+            str(row["hypothesis_arm"]),
+            str(row["primitive_family"]),
+            str(row.get("motif") or row["primitive_family"]),
+            window_family,
+        )
+
+    by_arm: dict[tuple[str, str, str, str], list[dict[str, Any]]] = defaultdict(list)
     for row in controls:
-        key = (str(row["hypothesis_arm"]), str(row["primitive_family"]))
+        key = hierarchy(row)
         by_arm[key].append(row)
     total = max(1, len(controls))
-    hypothesis_means = {
-        arm: float(np.mean([float(row.get("proxy_reward") or 0.0) for row in controls if row["hypothesis_arm"] == arm]))
-        for arm in {str(row["hypothesis_arm"]) for row in controls}
-    }
-    arm_scores: dict[tuple[str, str], tuple[float, float, float]] = {}
+    overall_priority = float(np.mean([float(row.get("strict_priority_score") or 0.0) for row in controls]))
+    arm_scores: dict[tuple[str, str, str, str], dict[str, float]] = {}
     for key, rows in by_arm.items():
         rewards = [float(row.get("proxy_reward") or 0.0) for row in rows]
         clusters = {
             int(row.get("signal_cluster_id") or 0)
             for row in rows if int(row.get("signal_cluster_id") or 0) > 0
         }
-        information_gain = len(clusters) / max(1, len(rows))
-        posterior_reward = (
-            float(np.sum(rewards)) + 4.0 * hypothesis_means[key[0]]
-        ) / (len(rows) + 4.0)
-        increment = posterior_reward - float(benchmark_median)
-        exploration = math.sqrt(math.log(total + 1) / len(rows))
-        score = increment + 0.10 * information_gain + 0.02 * exploration
-        arm_scores[key] = (score, information_gain, increment)
-    positive_arms = [key for key, values in arm_scores.items() if values[2] >= 0.0]
+        semantic_volume = len({str(row["canonical_identity"]) for row in rows})
+        information_gain = len(clusters) / max(1, semantic_volume)
+        priority_mean = float(np.mean([float(row.get("strict_priority_score") or 0.0) for row in rows]))
+        priority_enrichment = priority_mean - overall_priority
+        increment = float(np.mean(rewards)) - float(benchmark_median)
+        cost_stability = float(
+            np.mean(
+                [
+                    float(row.get("proxy_worst_time_block_abs_ic") or 0.0)
+                    + 0.5 * float(row.get("proxy_time_block_stability") or 0.0)
+                    - 0.25 * float(row.get("proxy_turnover") or 1.0)
+                    - 0.25 * float(row.get("proxy_signal_concentration") or 1.0)
+                    for row in rows
+                ]
+            )
+        )
+        uncertainty = math.sqrt(math.log(total + 1) / max(1, len(rows)))
+        exposure_normalizer = math.sqrt(max(1, semantic_volume) / max(1, len(rows)))
+        score = exposure_normalizer * (
+            0.45 * priority_enrichment
+            + 0.25 * increment
+            + 0.15 * information_gain
+            + 0.10 * cost_stability
+            + 0.05 * uncertainty
+        )
+        arm_scores[key] = {
+            "score": score,
+            "information_gain": information_gain,
+            "increment": increment,
+            "priority_enrichment": priority_enrichment,
+            "cost_stability": cost_stability,
+            "uncertainty": uncertainty,
+            "exposure": float(len(rows)),
+            "semantic_volume": float(semantic_volume),
+        }
+    positive_arms = [key for key, values in arm_scores.items() if values["increment"] >= 0.0]
     ranked_arms = sorted(
-        positive_arms or list(arm_scores), key=lambda key: (-arm_scores[key][0], key)
+        positive_arms or list(arm_scores), key=lambda key: (-arm_scores[key]["score"], key)
     )
+    all_ranked_arms = sorted(arm_scores, key=lambda key: (-arm_scores[key]["score"], key))
     focus_count = min(len(ranked_arms), max(6, int(math.ceil(math.sqrt(len(ranked_arms))))))
-    ranked_arms = ranked_arms[:focus_count]
+    fresh_fraction = 0.20
+    fresh_count = min(max(1, int(math.ceil(focus_count * fresh_fraction))), max(0, len(ranked_arms) - 1))
+    exploit_count = max(1, focus_count - fresh_count)
+    exploit = ranked_arms[:exploit_count]
+    remainder = ranked_arms[exploit_count:]
+    fresh = sorted(
+        remainder,
+        key=lambda key: _hash_text(f"{seed}|fresh|{key}"),
+    )[:fresh_count]
+    ranked_arms = exploit + fresh
     best_parent = {
         key: max(by_arm[key], key=lambda row: (float(row.get("proxy_reward") or 0.0), str(row["candidate_id"])))
-        for key in ranked_arms
+        for key in all_ranked_arms
     }
     selected: list[dict[str, Any]] = []
     seen: set[str] = {str(row["canonical_identity"]) for row in controls}
     attempt = 0
     while len(selected) < quota and attempt < quota * 100:
+        if attempt == quota * 40:
+            ranked_arms = ranked_arms + [key for key in all_ranked_arms if key not in ranked_arms]
         key = ranked_arms[attempt % len(ranked_arms)]
-        arm, primitive = key
+        arm, primitive, typed_template, window_family = key
         program = generate_program(arm, 10_000 + attempt, seed)
         attempt += 1
         if program.primitive_family != primitive:
@@ -534,9 +586,18 @@ def _rx_ucb_programs(
             parent_id=str(parent["candidate_id"]), program=program,
             extra_metadata={
                 "matched_control_id": str(parent["candidate_id"]),
-                "selection_statistic": arm_scores[key][0],
-                "information_gain": arm_scores[key][1],
-                "control_increment_vs_benchmark": arm_scores[key][2],
+                "selection_statistic": arm_scores[key]["score"],
+                "information_gain": arm_scores[key]["information_gain"],
+                "control_increment_vs_benchmark": arm_scores[key]["increment"],
+                "strict_priority_enrichment": arm_scores[key]["priority_enrichment"],
+                "cost_stability_credit": arm_scores[key]["cost_stability"],
+                "credit_uncertainty": arm_scores[key]["uncertainty"],
+                "arm_exposure": int(arm_scores[key]["exposure"]),
+                "arm_semantic_volume": int(arm_scores[key]["semantic_volume"]),
+                "arm_hierarchy": f"{arm}|rx_ucb|{primitive}|{typed_template}|{window_family}",
+                "fresh_exploration_floor": fresh_fraction,
+                "delayed_feedback_source": "frozen_cross_fitted_strict_priority_model",
+                "seed_statistics_scope": f"current_run_only:{seed}",
                 "focused_arm_count": focus_count,
                 "complexity": program.complexity + 3,
             },
@@ -616,7 +677,7 @@ def generate_adaptive_proposals(
     ]
     benchmark_median = float(np.median(benchmark_rewards)) if benchmark_rewards else 0.0
     for lane in ADAPTIVE_LANES:
-        seed = int(seeds[lane])
+        seed = int(contract.get("adaptive_seeds", seeds)[lane])
         adaptive_quota = int(specs[lane]["adaptive"])
         controls = [row for row in initial_rows if row["lane_id"] == lane]
         if lane == "rx_ucb":
@@ -1160,13 +1221,63 @@ def assign_signal_clusters(
 def _eligible_representatives(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     owners: dict[str, dict[str, Any]] = {}
     for row in rows:
-        if not bool(row.get("survivor")) or int(row.get("signal_cluster_id") or 0) <= 0:
+        if not _is_development_eligible(row) or int(row.get("signal_cluster_id") or 0) <= 0:
             continue
         identity = str(row["canonical_identity"])
         current = owners.get(identity)
         if current is None or float(row.get("proxy_reward") or 0.0) > float(current.get("proxy_reward") or 0.0):
             owners[identity] = row
     return list(owners.values())
+
+
+def _is_development_eligible(row: Mapping[str, Any]) -> bool:
+    if "development_eligible" in row:
+        return bool(row.get("development_eligible"))
+    return bool(row.get("survivor"))
+
+
+def apply_strict_priority_layer(
+    rows: list[dict[str, Any]],
+    contract: Mapping[str, Any],
+    model: StrictPriorityModel,
+) -> None:
+    """Separate evaluability from the frozen, model-based pre-strict quality layer."""
+
+    default_eligibility = dict(contract["survivor_contract"])
+    lane_overrides = default_eligibility.pop("lane_overrides", {})
+    for row in rows:
+        row_contract = {**default_eligibility, **dict(lane_overrides.get(str(row["lane_id"]), {}))}
+        allowed, reasons = development_eligibility(row, row_contract)
+        row["legacy_survivor"] = bool(row.get("survivor"))
+        row["development_eligible"] = bool(allowed)
+        row["development_eligibility_reasons"] = "|".join(reasons)
+
+    scores = model.score(rows)
+    rank_scores = percentile_rank_score(rows)
+    for row, score, rank_score in zip(rows, scores, rank_scores, strict=True):
+        row["strict_priority_score"] = float(score)
+        row["hard_gate_rank_score"] = float(rank_score)
+        row["strict_priority_eligible"] = False
+
+    owners: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        if not _is_development_eligible(row):
+            continue
+        identity = str(row["exact_identity"])
+        current = owners.get(identity)
+        if current is None or float(row["strict_priority_score"]) > float(current["strict_priority_score"]):
+            owners[identity] = row
+    ordered = sorted(
+        owners.values(),
+        key=lambda row: (-float(row["strict_priority_score"]), str(row["candidate_id"])),
+    )
+    fraction = float(contract["strict_priority_contract"]["eligible_fraction"])
+    keep = max(1, int(math.ceil(len(ordered) * fraction))) if ordered else 0
+    selected = {str(row["exact_identity"]) for row in ordered[:keep]}
+    for row in rows:
+        row["strict_priority_eligible"] = (
+            _is_development_eligible(row) and str(row["exact_identity"]) in selected
+        )
 
 
 def _select_with_constraints(
@@ -1211,6 +1322,10 @@ def _select_with_constraints(
 def build_admissions(rows: list[dict[str, Any]], contract: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:
     candidates = _eligible_representatives(rows)
     ordered = sorted(candidates, key=lambda row: (-float(row["proxy_reward"]), str(row["candidate_id"])))
+    priority_ordered = sorted(
+        candidates,
+        key=lambda row: (-float(row.get("strict_priority_score") or 0.0), str(row["candidate_id"])),
+    )
     admission = contract["admission_contract"]
     total = int(contract["budgets"]["admission_total"])
     kwargs = {
@@ -1243,6 +1358,7 @@ def build_admissions(rows: list[dict[str, Any]], contract: Mapping[str, Any]) ->
             )
 
     global_top_k = _select_with_constraints(ordered, cap=total, **kwargs)
+    strict_priority = _select_with_constraints(priority_ordered, cap=total, **kwargs)
 
     hybrid_seed: list[dict[str, Any]] = []
     for lane, spec in contract["lane_specs"].items():
@@ -1266,6 +1382,20 @@ def build_admissions(rows: list[dict[str, Any]], contract: Mapping[str, Any]) ->
                 lane_rows, cap=target, existing=hybrid_seed, **kwargs
             )
     hybrid = _select_with_constraints(ordered, cap=total, existing=hybrid_seed, **kwargs)
+
+    quality_seed: list[dict[str, Any]] = []
+    for lane, spec in contract["lane_specs"].items():
+        lane_rows = [row for row in priority_ordered if row["lane_id"] == lane]
+        quota = max(1, int(spec["admission"]) // 2) if int(spec["admission"]) else 0
+        quality_seed = _select_with_constraints(
+            lane_rows,
+            cap=len(quality_seed) + quota,
+            existing=quality_seed,
+            **kwargs,
+        )
+    quality_diversity_hybrid = _select_with_constraints(
+        priority_ordered, cap=total, existing=quality_seed, **kwargs
+    )
     benchmark_rewards = [
         float(row.get("proxy_reward") or 0.0)
         for row in candidates if str(row["lane_id"]) == "benchmark_competitor"
@@ -1309,6 +1439,10 @@ def build_admissions(rows: list[dict[str, Any]], contract: Mapping[str, Any]) ->
         "global_top_k": global_top_k,
         "hybrid": hybrid,
         "pareto_hybrid": pareto_hybrid,
+        "current_scalar": global_top_k,
+        "strict_priority": strict_priority,
+        "stratified_diversity": stratified,
+        "quality_diversity_hybrid": quality_diversity_hybrid,
     }
 
 
@@ -1318,7 +1452,11 @@ def build_strict_pack(admitted: list[dict[str, Any]], contract: Mapping[str, Any
         quota = int(spec["strict"])
         lane_rows = sorted(
             [row for row in admitted if row["lane_id"] == lane],
-            key=lambda row: (-float(row["proxy_reward"]), str(row["candidate_id"])),
+            key=lambda row: (
+                -float(row.get("strict_priority_score") or 0.0),
+                -float(row["proxy_reward"]),
+                str(row["candidate_id"]),
+            ),
         )
         selected: list[dict[str, Any]] = []
         if lane in ADAPTIVE_LANES:
@@ -1352,8 +1490,9 @@ def lane_funnel(rows: list[dict[str, Any]], contract: Mapping[str, Any]) -> list
     for lane in contract["lane_specs"]:
         lane_rows = [row for row in rows if row["lane_id"] == lane]
         legal = [row for row in lane_rows if bool(row.get("legal"))]
-        survivors = [row for row in lane_rows if bool(row.get("survivor"))]
-        cluster_metrics = _stage_distribution(survivors)
+        eligible = [row for row in lane_rows if _is_development_eligible(row)]
+        priority = [row for row in eligible if bool(row.get("strict_priority_eligible"))]
+        cluster_metrics = _stage_distribution(eligible)
         output.append(
             {
                 "lane_id": lane,
@@ -1362,9 +1501,13 @@ def lane_funnel(rows: list[dict[str, Any]], contract: Mapping[str, Any]) -> list
                 "canonical_count": len({str(row["canonical_identity"]) for row in legal}),
                 "exact_count": len({str(row["exact_identity"]) for row in legal}),
                 "materialized_count": sum(bool(row.get("materialized")) for row in legal),
-                "survivor_count": len(survivors),
+                "development_eligible_count": len(eligible),
+                "strict_priority_eligible_count": len(priority),
+                "survivor_count": len(eligible),
                 "legal_conversion": len(legal) / max(1, len(lane_rows)),
-                "survivor_conversion": len(survivors) / max(1, len(lane_rows)),
+                "development_eligible_conversion": len(eligible) / max(1, len(lane_rows)),
+                "strict_priority_conversion": len(priority) / max(1, len(lane_rows)),
+                "survivor_conversion": len(eligible) / max(1, len(lane_rows)),
                 "signal_cluster_count": cluster_metrics["cluster_count"],
                 "n_eff": cluster_metrics["n_eff"],
                 "top1_cluster_share": cluster_metrics["top1_share"],
@@ -1378,7 +1521,7 @@ def temporal_cluster_increment(rows: list[dict[str, Any]]) -> dict[str, Any]:
     static = {
         int(row["signal_cluster_id"])
         for row in rows
-        if row["lane_id"] == "static_cross_sectional" and bool(row.get("survivor")) and int(row.get("signal_cluster_id") or 0) > 0
+        if row["lane_id"] == "static_cross_sectional" and _is_development_eligible(row) and int(row.get("signal_cluster_id") or 0) > 0
     }
     output: dict[str, Any] = {"static_cluster_count": len(static)}
     union: set[int] = set()
@@ -1386,7 +1529,7 @@ def temporal_cluster_increment(rows: list[dict[str, Any]]) -> dict[str, Any]:
         clusters = {
             int(row["signal_cluster_id"])
             for row in rows
-            if row["lane_id"] == lane and bool(row.get("survivor")) and int(row.get("signal_cluster_id") or 0) > 0
+            if row["lane_id"] == lane and _is_development_eligible(row) and int(row.get("signal_cluster_id") or 0) > 0
         }
         new = clusters - static
         output[lane] = {
@@ -1412,8 +1555,9 @@ def adaptive_comparison(rows: list[dict[str, Any]], admissions: Mapping[str, lis
             return {
                 "proposal_count": len(source),
                 "legal_count": sum(bool(row.get("legal")) for row in source),
-                "survivor_count": sum(bool(row.get("survivor")) for row in source),
-                "cluster_count": len({int(row.get("signal_cluster_id") or 0) for row in source if bool(row.get("survivor"))}),
+                "development_eligible_count": sum(_is_development_eligible(row) for row in source),
+                "survivor_count": sum(_is_development_eligible(row) for row in source),
+                "cluster_count": len({int(row.get("signal_cluster_id") or 0) for row in source if _is_development_eligible(row)}),
                 "hybrid_admission_count": sum(str(row["candidate_id"]) in hybrid_ids for row in source),
                 "mean_reward": float(np.mean(rewards)) if rewards else None,
                 "median_reward": float(np.median(rewards)) if rewards else None,
@@ -1562,12 +1706,12 @@ def _admission_comparison(admissions: Mapping[str, list[dict[str, Any]]]) -> dic
 
 
 def _benchmark_increment(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    benchmark = [row for row in rows if row["lane_id"] == "benchmark_competitor" and bool(row.get("survivor"))]
+    benchmark = [row for row in rows if row["lane_id"] == "benchmark_competitor" and _is_development_eligible(row)]
     benchmark_rewards = [float(row["proxy_reward"]) for row in benchmark]
     baseline = float(np.median(benchmark_rewards)) if benchmark_rewards else None
     lanes = {}
     for lane in ("typed_ast", "cem", "rx_ucb", "uct_mcts", "evolutionary", "surrogate", "llm_proposal_repair"):
-        source = [float(row["proxy_reward"]) for row in rows if row["lane_id"] == lane and bool(row.get("survivor"))]
+        source = [float(row["proxy_reward"]) for row in rows if row["lane_id"] == lane and _is_development_eligible(row)]
         median = float(np.median(source)) if source else None
         lanes[lane] = {
             "median_reward": median,
@@ -1706,7 +1850,13 @@ def _select_seed_set(contract: Mapping[str, Any], seed_set: str | None) -> dict[
         raise ValueError("multi-seed frozen contract requires --seed-set")
     if seed_set not in seed_sets:
         raise ValueError(f"unknown frozen seed set: {seed_set}")
-    selected["seeds"] = dict(seed_sets[seed_set])
+    payload = seed_sets[seed_set]
+    if isinstance(payload, Mapping) and "seeds" in payload:
+        selected["seeds"] = dict(payload["seeds"])
+        selected["adaptive_seeds"] = dict(payload.get("adaptive_seeds", payload["seeds"]))
+    else:
+        selected["seeds"] = dict(payload)
+        selected["adaptive_seeds"] = dict(payload)
     selected["selected_seed_set"] = str(seed_set)
     return selected
 
@@ -1722,6 +1872,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--contract", type=Path, required=True)
     parser.add_argument("--benchmark-registry", type=Path, required=True)
     parser.add_argument("--augmentation-summary", type=Path, required=True)
+    parser.add_argument("--strict-priority-model", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--authorization", required=True)
     parser.add_argument("--frozen-sha", required=True)
@@ -1743,6 +1894,12 @@ def main(argv: list[str] | None = None) -> int:
     benchmark = json.loads(args.benchmark_registry.read_text(encoding="utf-8"))
     augmentation = json.loads(args.augmentation_summary.read_text(encoding="utf-8"))
     _validate_contract(contract)
+    selector_contract = contract.get("strict_priority_contract", {})
+    if _sha256(args.strict_priority_model) != selector_contract.get("model_sha256"):
+        raise ValueError("strict-priority model hash does not match the frozen CANARY contract")
+    strict_priority_model = StrictPriorityModel.from_artifact(
+        json.loads(args.strict_priority_model.read_text(encoding="utf-8"))
+    )
     if args.authorization != contract["authorization_token"]:
         raise PermissionError("authorization does not match frozen B1S contract")
     if benchmark.get("disabled_benchmark_ids") != ["plate_industry_linkage"]:
@@ -1813,6 +1970,10 @@ def main(argv: list[str] | None = None) -> int:
         "global_top_k": artifact_root / "admission_global_top_k.csv",
         "hybrid": artifact_root / "admission_hybrid.csv",
         "pareto_hybrid": artifact_root / "admission_pareto_hybrid.csv",
+        "current_scalar": artifact_root / "admission_current_scalar.csv",
+        "strict_priority": artifact_root / "admission_strict_priority.csv",
+        "stratified_diversity": artifact_root / "admission_stratified_diversity.csv",
+        "quality_diversity_hybrid": artifact_root / "admission_quality_diversity_hybrid.csv",
         "strict_pack": artifact_root / "strict_candidate_pack.pre_metrics.csv",
         "strict_metrics": artifact_root / "strict_metrics.csv",
         "adaptive": artifact_root / "adaptive_vs_control.json",
@@ -1831,6 +1992,7 @@ def main(argv: list[str] | None = None) -> int:
         "field_registry": args.field_registry,
         "benchmark_registry": args.benchmark_registry,
         "augmentation_summary": args.augmentation_summary,
+        "strict_priority_model": args.strict_priority_model,
         "release_manifest": args.release_manifest,
     }
     record: dict[str, Any] = {
@@ -1850,6 +2012,7 @@ def main(argv: list[str] | None = None) -> int:
             f'--field-registry "{args.field_registry}" --contract "{args.contract}" '
             f'--benchmark-registry "{args.benchmark_registry}" '
             f'--augmentation-summary "{args.augmentation_summary}" '
+            f'--strict-priority-model "{args.strict_priority_model}" '
             f'--output-root "{args.output_root}" --authorization {args.authorization} '
             f"--frozen-sha {args.frozen_sha}"
             + (f" --seed-set {args.seed_set}" if args.seed_set else "")
@@ -1899,13 +2062,16 @@ def main(argv: list[str] | None = None) -> int:
             "field_registry_sha256": _sha256(args.field_registry),
             "benchmark_registry_sha256": _sha256(args.benchmark_registry),
             "contract_sha256": _sha256(args.contract),
+            "strict_priority_model_sha256": _sha256(args.strict_priority_model),
             "capability_matrix_hash": _json_hash(contract["capability_matrix"]),
             "lane_specs_hash": _json_hash(contract["lane_specs"]),
             "seeds_hash": _json_hash(contract["seeds"]),
+            "adaptive_seeds_hash": _json_hash(contract.get("adaptive_seeds", contract["seeds"])),
             "selected_seed_set": contract["selected_seed_set"],
             "budgets_hash": _json_hash(contract["budgets"]),
             "development_objective_hash": _json_hash(contract["development_objective"]),
             "survivor_contract_hash": _json_hash(contract["survivor_contract"]),
+            "strict_priority_contract_hash": _json_hash(contract["strict_priority_contract"]),
             "admission_contract_hash": _json_hash(contract["admission_contract"]),
             "benchmark_contract_hash": _json_hash(contract["benchmark_contract"]),
             "candidate_contract_hash": _json_hash(contract["candidate_contract"]),
@@ -1983,6 +2149,7 @@ def main(argv: list[str] | None = None) -> int:
         )
 
         assign_signal_clusters(initial, sketches, contract)
+        apply_strict_priority_layer(initial, contract, strict_priority_model)
         adaptive = generate_adaptive_proposals(contract, initial)
         apply_typed_gate(adaptive)
         evaluate_proxy_rows(
@@ -2006,6 +2173,7 @@ def main(argv: list[str] | None = None) -> int:
         if len(proposals) != int(contract["budgets"]["proposal_total"]):
             raise AssertionError("final proposal budget mismatch")
         assign_signal_clusters(proposals, sketches, contract)
+        apply_strict_priority_layer(proposals, contract, strict_priority_model)
         admissions = build_admissions(proposals, contract)
         strict_source = str(contract["strict_contract"].get("selection_source", "hybrid"))
         strict_source = "hybrid" if strict_source == "hybrid_admission" else strict_source
@@ -2024,6 +2192,9 @@ def main(argv: list[str] | None = None) -> int:
                         "lane_id": row["lane_id"],
                         "canonical_identity": row["canonical_identity"],
                         "signal_cluster_id": row["signal_cluster_id"],
+                        "development_eligible": row.get("development_eligible", False),
+                        "strict_priority_score": row.get("strict_priority_score"),
+                        "strict_priority_eligible": row.get("strict_priority_eligible", False),
                         "survivor": row.get("survivor", False),
                     }
                     for row in proposals
@@ -2031,12 +2202,18 @@ def main(argv: list[str] | None = None) -> int:
             ),
             paths["cluster_registry"],
         )
-        for name in ("stratified", "global_top_k", "hybrid", "pareto_hybrid"):
+        for name in (
+            "stratified", "global_top_k", "hybrid", "pareto_hybrid",
+            "current_scalar", "strict_priority", "stratified_diversity",
+            "quality_diversity_hybrid",
+        ):
             _atomic_csv(pd.DataFrame(admissions[name]), paths[name])
         _atomic_csv(pd.DataFrame(strict), paths["strict_pack"])
         for name in (
             "proposals", "lane_funnel", "cluster_registry", "stratified",
-            "global_top_k", "hybrid", "pareto_hybrid", "strict_pack",
+            "global_top_k", "hybrid", "pareto_hybrid", "current_scalar",
+            "strict_priority", "stratified_diversity", "quality_diversity_hybrid",
+            "strict_pack",
         ):
             _record_output(record, paths[name], name, "pre_strict_metrics_final")
         record.update(
@@ -2083,6 +2260,8 @@ def main(argv: list[str] | None = None) -> int:
             or len(admissions["global_top_k"]) < int(contract["budgets"]["global_topk_total"])
             or len(admissions["hybrid"]) < int(contract["budgets"]["admission_total"])
             or len(admissions["pareto_hybrid"]) < int(contract["budgets"]["admission_total"])
+            or len(admissions["strict_priority"]) < int(contract["budgets"]["admission_total"])
+            or len(admissions["quality_diversity_hybrid"]) < int(contract["budgets"]["admission_total"])
             or len(strict) < int(contract["budgets"]["strict_eval_total"])
         )
         final_status = "CN_B1S_CANARY_COMPLETED_WITH_NATURAL_UNDERFILL" if natural_underfill else "CN_B1S_CANARY_COMPLETED"
@@ -2104,7 +2283,9 @@ def main(argv: list[str] | None = None) -> int:
             "legal_count": sum(bool(row.get("legal")) for row in proposals),
             "canonical_count": len({str(row["canonical_identity"]) for row in proposals if bool(row.get("legal"))}),
             "exact_count": len({str(row["exact_identity"]) for row in proposals if bool(row.get("legal"))}),
-            "survivor_count": sum(bool(row.get("survivor")) for row in proposals),
+            "development_eligible_count": sum(_is_development_eligible(row) for row in proposals),
+            "strict_priority_eligible_count": sum(bool(row.get("strict_priority_eligible")) for row in proposals),
+            "survivor_count": sum(_is_development_eligible(row) for row in proposals),
             "admission_counts": {name: len(rows) for name, rows in admissions.items()},
             "strict_count": len(strict),
             "strict_metric_rows": len(metrics),
