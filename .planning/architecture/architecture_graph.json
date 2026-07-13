@@ -15,16 +15,16 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-13T13:25:47.211858+00:00",
+    "generated_at": "2026-07-13T16:14:37.080401+00:00",
     "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
     "generator_sha256": "f6d026faf2023e4c2915fd13f3b6808f08bfd567ed657abfde287359247c3e80",
     "graph_type": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT",
-    "phase": "CN_BROAD_EVENT_SYSTEM_RECOVERY_AUTHORIZED_NOT_STARTED",
-    "registry_sha256": "02d529099064322701aa22c2c2d31a7011c91eff78682ec20eebc9ad42d4c82e",
-    "registry_version": "cn_broad_event_recovery_architecture_registry_v4",
-    "source_repo_sha": "9da542b9448c20f73f810b5defbafc7728f921b1",
+    "phase": "CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE",
+    "registry_sha256": "b51bc7293b881d7af39718f48c869b8937c15d90e7b28c3b34ab8c6d0ad71efd",
+    "registry_version": "cn_broad_event_recovery_architecture_registry_v5",
+    "source_repo_sha": "b960dd3060be8fe7f6c92b64146f87a269dcd667",
     "status_authority_path": ".planning/architecture/architecture_registry.json",
-    "status_authority_sha256": "d9ebea9bf48114c3ea0597ae4c9820dc82ad85fd8b798477fac7bc375a9683a1",
+    "status_authority_sha256": "fc8c860e7159ca55afc751e176aba58ad059cd309d4ac8959a87960459de1812",
     "status_values": [
       "DEPRECATED",
       "FROZEN",
@@ -392,11 +392,32 @@
       "target": "sprint2_epoch_c"
     },
     {
-      "evidence": "Broad Event status contract",
+      "evidence": "Broad Event r5 access ledger",
       "permission": "FORBIDDEN",
       "relation": "forward_to_broad_event_policy",
       "source": "forward_2026",
       "target": "broad_event_recovery"
+    },
+    {
+      "evidence": "11 reproduced mechanisms in 10 new behavior clusters",
+      "permission": "ALLOWED",
+      "relation": "supplies_frozen_discovery_entry_pack",
+      "source": "broad_event_recovery",
+      "target": "hypothesis_lane_registry"
+    },
+    {
+      "evidence": "Broad Event recovery status v2",
+      "permission": "FORBIDDEN",
+      "relation": "promotion_or_sealed_access",
+      "source": "broad_event_recovery",
+      "target": "formal_search_frozen"
+    },
+    {
+      "evidence": "Broad Event recovery status v2",
+      "permission": "FORBIDDEN",
+      "relation": "report_only_to_positive_memory",
+      "source": "broad_event_recovery",
+      "target": "scheduler_memory_feedback"
     },
     {
       "evidence": "Sprint-2 data contract",
@@ -2160,56 +2181,88 @@
       ]
     },
     {
-      "blocker": "field semantics, multi-source Event system, generator and corrected audit remain to be implemented before the authorized CANARY",
-      "data_role": "development_only_authorized_not_started",
-      "feedback_permission": "NO_SEARCH_UNTIL_SEMANTIC_AND_AUDIT_PREFLIGHT_PASS",
+      "blocker": "discovery entry pack is research-only; formal search, candidate promotion, permanent memory and 2026 access remain frozen",
+      "data_role": "development_only_completed",
+      "feedback_permission": "DISCOVERY_ENTRY_ONLY_NO_PROMOTION_NO_MEMORY",
       "id": "broad_event_recovery",
       "implementation_path": [
-        "runtime/run_plans/cn_broad_event_recovery_status_v1.json"
+        "src/our_system_phase2/services/broad_event_semantics.py",
+        "src/our_system_phase2/services/conservative_limit_lifecycle.py",
+        "src/our_system_phase2/services/broad_event_episodes.py",
+        "src/our_system_phase2/services/broad_event_preflight.py",
+        "src/our_system_phase2/runtime/cn_broad_event_canary.py",
+        "runtime/run_plans/cn_broad_event_recovery_status_v2.json"
       ],
       "implementation_paths": [
-        "runtime/run_plans/cn_broad_event_recovery_status_v1.json"
+        "src/our_system_phase2/services/broad_event_semantics.py",
+        "src/our_system_phase2/services/conservative_limit_lifecycle.py",
+        "src/our_system_phase2/services/broad_event_episodes.py",
+        "src/our_system_phase2/services/broad_event_preflight.py",
+        "src/our_system_phase2/runtime/cn_broad_event_canary.py",
+        "runtime/run_plans/cn_broad_event_recovery_status_v2.json"
       ],
       "input_artifact": [
-        "121-field registry",
-        "all PIT-aware sidecars",
-        "true1min development-only release",
-        "corrected Event interpretation"
+        "121-field semantic registry",
+        "2024-2025 physical development-only release",
+        "daily PIT chip sidecar",
+        "two-seed frozen Broad Event contract"
       ],
       "input_artifacts": [
-        "121-field registry",
-        "all PIT-aware sidecars",
-        "true1min development-only release",
-        "corrected Event interpretation"
+        "121-field semantic registry",
+        "2024-2025 physical development-only release",
+        "daily PIT chip sidecar",
+        "two-seed frozen Broad Event contract"
       ],
       "label": "CN Broad Event system recovery",
-      "last_verified_sha": "c4311fbd0277a36e75a84f9bde79052b4368e33d0151e7315a3a568486bfb499",
+      "last_verified_sha": "30dd757da595ea97069dbad5b1ab94bce66acf570ddcda27b005dcbbc1ffae68",
       "last_verified_sha_scope": [
-        "runtime/run_plans/cn_broad_event_recovery_status_v1.json",
-        "tests/test_broad_event_status_correction.py",
-        "reports/cn_search_selection_event_state_sprint2_20260713/DECISION_CHANGE_LOG.md"
+        "runtime/run_plans/cn_broad_event_recovery_status_v2.json",
+        "runtime/run_plans/cn_broad_event_canary_v1.json",
+        "src/our_system_phase2/runtime/cn_broad_event_canary.py",
+        "tests/test_broad_event_semantics.py",
+        "tests/test_conservative_limit_lifecycle.py",
+        "tests/test_broad_event_episodes.py",
+        "tests/test_broad_event_preflight.py",
+        "reports/cn_broad_event_recovery_20260713/r5_completed/run_manifest.json",
+        "reports/cn_broad_event_recovery_20260713/DISCOVERY_ENTRY_PACK.json"
       ],
       "output_artifact": [
-        "five corrected active Event statuses",
-        "semantic inventory and Broad Event implementation not yet executed"
+        "477497 episode observations",
+        "8 operational Event sources",
+        "11 reproduced mechanisms in 10 new behavior clusters",
+        "reports/cn_broad_event_recovery_20260713/DISCOVERY_ENTRY_PACK.json"
       ],
       "output_artifacts": [
-        "five corrected active Event statuses",
-        "semantic inventory and Broad Event implementation not yet executed"
+        "477497 episode observations",
+        "8 operational Event sources",
+        "11 reproduced mechanisms in 10 new behavior clusters",
+        "reports/cn_broad_event_recovery_20260713/DISCOVERY_ENTRY_PACK.json"
       ],
-      "status": "PLANNED",
+      "status": "IMPLEMENTED",
       "test/evidence": [
-        "tests/test_broad_event_status_correction.py",
-        "reports/cn_search_selection_event_state_sprint2_20260713/DECISION_CHANGE_LOG.md"
+        "tests/test_broad_event_semantics.py",
+        "tests/test_conservative_limit_lifecycle.py",
+        "tests/test_broad_event_episodes.py",
+        "tests/test_broad_event_preflight.py",
+        "reports/cn_broad_event_recovery_20260713/r5_completed/run_manifest.json"
       ],
       "test_evidence": [
-        "tests/test_broad_event_status_correction.py",
-        "reports/cn_search_selection_event_state_sprint2_20260713/DECISION_CHANGE_LOG.md"
+        "tests/test_broad_event_semantics.py",
+        "tests/test_conservative_limit_lifecycle.py",
+        "tests/test_broad_event_episodes.py",
+        "tests/test_broad_event_preflight.py",
+        "reports/cn_broad_event_recovery_20260713/r5_completed/run_manifest.json"
       ],
       "verification_paths": [
-        "runtime/run_plans/cn_broad_event_recovery_status_v1.json",
-        "tests/test_broad_event_status_correction.py",
-        "reports/cn_search_selection_event_state_sprint2_20260713/DECISION_CHANGE_LOG.md"
+        "runtime/run_plans/cn_broad_event_recovery_status_v2.json",
+        "runtime/run_plans/cn_broad_event_canary_v1.json",
+        "src/our_system_phase2/runtime/cn_broad_event_canary.py",
+        "tests/test_broad_event_semantics.py",
+        "tests/test_conservative_limit_lifecycle.py",
+        "tests/test_broad_event_episodes.py",
+        "tests/test_broad_event_preflight.py",
+        "reports/cn_broad_event_recovery_20260713/r5_completed/run_manifest.json",
+        "reports/cn_broad_event_recovery_20260713/DISCOVERY_ENTRY_PACK.json"
       ]
     },
     {
