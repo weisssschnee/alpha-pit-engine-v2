@@ -8,6 +8,7 @@ from our_system_phase2.services.broad_event_episodes import (
     matched_control_contract,
     materialize_broad_event_episodes,
 )
+from our_system_phase2.runtime.cn_broad_event_canary import _attach_episode_outcomes
 
 
 def _frame() -> pd.DataFrame:
@@ -62,3 +63,12 @@ def test_matched_controls_include_structural_and_episode_placebo() -> None:
     assert contract["episode_placebo_control"]["same_episode_count"] is True
     assert contract["episode_placebo_control"]["ambiguous_rows_allowed_as_negative"] is False
     assert contract["one_episode_one_admission_vote"] is True
+
+
+def test_episode_outcome_join_handles_nonconsecutive_symbol_episode_indices() -> None:
+    frame = _frame()
+    episodes, _ = materialize_broad_event_episodes(frame)
+    episodes = episodes.sort_values("entity_scope", ascending=False).reset_index(drop=True)
+    result = _attach_episode_outcomes(frame, episodes, [5])
+    assert len(result) == len(episodes)
+    assert "target_h5" in result

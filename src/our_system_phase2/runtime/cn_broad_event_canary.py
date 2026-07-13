@@ -90,7 +90,7 @@ def _attach_episode_outcomes(frame: pd.DataFrame, episodes: pd.DataFrame, horizo
     for horizon in horizons:
         ordered[f"target_h{horizon}"] = grouped.shift(-horizon) / ordered["close"] - 1.0
     first = ordered.groupby(["code", "session"], as_index=False, sort=False).first()
-    symbol = episodes.loc[episodes["entity_scope"].eq("SYMBOL")].copy()
+    symbol = episodes.loc[episodes["entity_scope"].eq("SYMBOL")].copy().reset_index(drop=True)
     symbol["code"] = symbol["entity_id"].astype(str)
     symbol["eligible_action_time"] = pd.to_datetime(symbol["eligible_action_time"], errors="coerce")
     exact = symbol.merge(
