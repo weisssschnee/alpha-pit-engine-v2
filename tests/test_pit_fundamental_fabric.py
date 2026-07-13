@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 import pytest
 
 from our_system_phase2.services.pit_fundamental_fabric import (
@@ -21,7 +22,7 @@ from our_system_phase2.services.pit_fundamental_fabric import (
     next_session_open,
     source_partition_path,
 )
-from scripts.build_pit_fundamental_fabric import DATASETS, build
+from scripts.build_pit_fundamental_fabric import DATASETS, _parquet_cutoff_value, build
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -31,6 +32,16 @@ FROZEN_PACK_SHA256 = "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb3410
 
 def _sessions() -> pd.DatetimeIndex:
     return pd.DatetimeIndex(pd.to_datetime(["2024-04-19", "2024-04-22", "2024-04-23", "2025-04-21", "2025-04-22"]))
+
+
+def test_parquet_cutoff_value_matches_file_local_disclosure_type() -> None:
+    maximum = pd.Timestamp("2025-07-07 15:00:00")
+    assert _parquet_cutoff_value(pa.field("NOTICE_DATE", pa.string()), maximum) == "2025-07-07 15:00:00"
+    assert _parquet_cutoff_value(pa.field("NOTICE_DATE", pa.date32()), maximum) == maximum.date()
+    assert _parquet_cutoff_value(pa.field("NOTICE_DATE", pa.timestamp("ns")), maximum) == maximum.to_pydatetime()
+
+    with pytest.raises(TypeError, match="unsupported observable-time physical type"):
+        _parquet_cutoff_value(pa.field("NOTICE_DATE", pa.int64()), maximum)
 
 
 def _finance_frame() -> pd.DataFrame:

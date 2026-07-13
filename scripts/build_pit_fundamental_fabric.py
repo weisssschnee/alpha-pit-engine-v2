@@ -257,6 +257,25 @@ def _read_split(split_manifest: Path) -> tuple[pd.DatetimeIndex, pd.Timestamp, d
     return calendar, maximum, {str(key): int(value) for key, value in counts.items()}
 
 
+def _parquet_cutoff_value(field: pa.Field, maximum: pd.Timestamp) -> Any:
+    """Return a predicate value compatible with the physical disclosure column.
+
+    The source release contains schema variants where disclosure dates are stored as
+    Arrow strings in some symbol files and date32/timestamp values in others.  A
+    date32 scalar against a string column fails before the conservative PIT resolver
+    can run, so bind the predicate to the file-local physical type.
+    """
+
+    physical = field.type
+    if pa.types.is_string(physical) or pa.types.is_large_string(physical):
+        return maximum.strftime("%Y-%m-%d %H:%M:%S")
+    if pa.types.is_date32(physical) or pa.types.is_date64(physical):
+        return maximum.date()
+    if pa.types.is_timestamp(physical):
+        return maximum.to_pydatetime()
+    raise TypeError(f"unsupported observable-time physical type for {field.name}: {physical}")
+
+
 def _scan_dataset(
     root: Path,
     table: str,
@@ -283,7 +302,6 @@ def _scan_dataset(
     development_digest = hashlib.sha256()
     values_read = 0
     started = time.perf_counter()
-    cutoff_date = maximum.date()
     for path in files:
         parquet = pq.ParquetFile(path)
         schema = parquet.schema_arrow
@@ -305,9 +323,26 @@ def _scan_dataset(
         }
         if scan_values and table != "zygc_em":
             if table in FINANCIAL_TABLES:
-                filters = [("NOTICE_DATE", "<=", cutoff_date), ("UPDATE_DATE", "<=", cutoff_date)]
+                filters = [
+                    (
+                        "NOTICE_DATE",
+                        "<=",
+                        _parquet_cutoff_value(schema.field("NOTICE_DATE"), maximum),
+                    ),
+                    (
+                        "UPDATE_DATE",
+                        "<=",
+                        _parquet_cutoff_value(schema.field("UPDATE_DATE"), maximum),
+                    ),
+                ]
             else:
-                filters = [("公告日期", "<=", cutoff_date)]
+                filters = [
+                    (
+                        "公告日期",
+                        "<=",
+                        _parquet_cutoff_value(schema.field("公告日期"), maximum),
+                    )
+                ]
             arrow = pq.read_table(path, columns=schema.names, filters=filters, use_threads=False)
             values_read += int(arrow.nbytes)
             frame = arrow.to_pandas()
