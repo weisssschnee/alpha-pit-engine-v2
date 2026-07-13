@@ -284,17 +284,24 @@ def validate_derived_limits_against_vendor_occurrence(features: pd.DataFrame) ->
     derived = features.loc[features["up_limit_price_source"].isin(
         ["CONSERVATIVE_RULE_DERIVATION", "VENDOR_CONFIRMED_RULE_DERIVATION"]
     )]
+    eligible_sessions = derived[["code", "session"]].drop_duplicates()
     first_touch = derived.loc[derived["UP_FIRST_TOUCH"].fillna(False), ["code", "session", "trade_time"]].rename(columns={"trade_time": "derived_touch_time"})
-    compared = entries.merge(first_touch, on=["code", "session"], how="left", validate="one_to_one")
-    if compared.empty:
+    compared = entries.merge(eligible_sessions, on=["code", "session"], how="inner", validate="one_to_one")
+    compared = compared.merge(first_touch, on=["code", "session"], how="left", validate="one_to_one")
+    if entries.empty or compared.empty:
         return {"decision": "INSUFFICIENT_SUPPORT", "vendor_episode_count": 0}
     delta = (compared["derived_touch_time"] - compared["vendor_time"]).dt.total_seconds().abs() / 60.0
     matched = compared["derived_touch_time"].notna() & delta.le(2.0)
     match_rate = float(matched.mean())
+    coverage_rate = float(len(compared) / len(entries))
     return {
-        "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS" if len(compared) >= 30 and match_rate >= 0.95 else "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_FAIL",
-        "vendor_episode_count": len(compared),
+        "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS"
+        if len(compared) >= 30 and match_rate >= 0.95 and coverage_rate >= 0.50
+        else "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_FAIL",
+        "vendor_episode_count": len(entries),
+        "eligible_derived_episode_count": len(compared),
         "matched_within_two_minutes": int(matched.sum()),
         "match_rate": match_rate,
+        "vendor_coverage_rate": coverage_rate,
         "median_absolute_minute_delta": float(delta.dropna().median()) if delta.notna().any() else None,
     }

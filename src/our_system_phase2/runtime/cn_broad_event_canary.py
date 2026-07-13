@@ -379,12 +379,19 @@ def run_canary(*, contract_path: Path, semantic_registry_path: Path, data_root: 
         "episode_count": sum(row["episode_count"] for row in lifecycle_manifests),
     }
     vendor_total = sum(row.get("vendor_episode_count", 0) for row in validations)
+    eligible_total = sum(row.get("eligible_derived_episode_count", 0) for row in validations)
     matched_total = sum(row.get("matched_within_two_minutes", 0) for row in validations)
+    match_rate = matched_total / max(eligible_total, 1)
+    coverage_rate = eligible_total / max(vendor_total, 1)
     limit_validation = {
-        "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS" if vendor_total >= 30 and matched_total / max(vendor_total, 1) >= 0.95 else "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_FAIL",
+        "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS"
+        if eligible_total >= 30 and match_rate >= 0.95 and coverage_rate >= 0.50
+        else "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_FAIL",
         "vendor_episode_count": vendor_total,
+        "eligible_derived_episode_count": eligible_total,
         "matched_within_two_minutes": matched_total,
-        "match_rate": matched_total / max(vendor_total, 1),
+        "match_rate": match_rate,
+        "vendor_coverage_rate": coverage_rate,
     }
     controls = matched_control_contract()
     preflight = run_preflight(

@@ -5,6 +5,7 @@ import pandas as pd
 from our_system_phase2.services.conservative_limit_lifecycle import (
     LimitLifecycleConfig,
     materialize_conservative_limit_lifecycle,
+    validate_derived_limits_against_vendor_occurrence,
 )
 
 
@@ -113,3 +114,23 @@ def test_missing_st_without_vendor_confirmation_remains_unknown() -> None:
     assert features["UP_TOUCHED_LIMIT"].isna().all()
     assert episodes.empty
     assert manifest["vendor_confirmed_limit_session_count"] == 0
+
+
+def test_vendor_validation_measures_precision_on_accepted_conservative_subset() -> None:
+    sessions = pd.date_range("2025-01-02", periods=40, freq="B")
+    features = pd.DataFrame(
+        {
+            "code": [f"{600100 + index:06d}" for index in range(40)],
+            "session": sessions,
+            "trade_time": sessions + pd.Timedelta(hours=10),
+            "evt_uplimit_active": 1.0,
+            "up_limit_price_source": ["VENDOR_CONFIRMED_RULE_DERIVATION"] * 35 + ["EXCLUDED"] * 5,
+            "UP_FIRST_TOUCH": pd.array([True] * 35 + [pd.NA] * 5, dtype="boolean"),
+        }
+    )
+    report = validate_derived_limits_against_vendor_occurrence(features)
+    assert report["decision"] == "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_PASS"
+    assert report["vendor_episode_count"] == 40
+    assert report["eligible_derived_episode_count"] == 35
+    assert report["match_rate"] == 1.0
+    assert report["vendor_coverage_rate"] == 0.875

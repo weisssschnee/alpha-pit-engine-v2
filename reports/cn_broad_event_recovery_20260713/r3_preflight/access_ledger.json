@@ -1,0 +1,14 @@
+{
+  "data_role": "development_only",
+  "forbidden_file_reads": 0,
+  "forbidden_row_group_reads": 0,
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "opened_files": [
+    "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+    "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet"
+  ],
+  "validation_reads": 0
+}

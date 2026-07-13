@@ -1,0 +1,38 @@
+{
+  "canary_authorized": false,
+  "checks": {
+    "data_access": true,
+    "episode_inference": true,
+    "event_support": true,
+    "frozen_contract": true,
+    "matched_controls": true,
+    "nonzero_budgets": true,
+    "pit_limit_prices": false,
+    "semantic_registry": true
+  },
+  "decision": "SEMANTIC_CONTRACT_INVALID",
+  "errors": [
+    "PIT limit price source or derived-limit validation failed"
+  ],
+  "operational_event_sources": [
+    "BILLBOARD_CHANGE",
+    "CHIP_STRUCTURE_CHANGE",
+    "HOLDER_STRUCTURE_CHANGE",
+    "HOTNESS_CHANGE",
+    "LIMIT_UP_LIFECYCLE",
+    "MARGIN_FINANCING_CHANGE",
+    "MARKET_ECOLOGY_TRANSITION",
+    "VENDOR_LIMIT_OCCURRENCE"
+  ],
+  "required_event_sources": [
+    "BILLBOARD_CHANGE",
+    "CHIP_STRUCTURE_CHANGE",
+    "HOLDER_STRUCTURE_CHANGE",
+    "HOTNESS_CHANGE",
+    "LIMIT_UP_LIFECYCLE",
+    "MARGIN_FINANCING_CHANGE",
+    "MARKET_ECOLOGY_TRANSITION",
+    "VENDOR_LIMIT_OCCURRENCE"
+  ],
+  "version": "cn_broad_event_preflight_v2"
+}

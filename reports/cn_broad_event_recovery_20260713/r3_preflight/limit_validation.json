@@ -1,0 +1,6 @@
+{
+  "decision": "CONSERVATIVE_LIMIT_VENDOR_CONSISTENCY_FAIL",
+  "match_rate": 0.9163498098859315,
+  "matched_within_two_minutes": 241,
+  "vendor_episode_count": 263
+}
