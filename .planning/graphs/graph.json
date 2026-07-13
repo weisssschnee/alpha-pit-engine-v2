@@ -9,11 +9,11 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-12T17:22:34.839251+00:00",
-    "graph_type": "CN_GENERATOR_RESEARCH_SPRINT1_CURRENT_ARCHITECTURE_CONTRACT",
-    "phase": "CN_GENERATOR_RESEARCH_SPRINT1_PARTIALLY_COMPLETED",
-    "registry_sha256": "a967ba74761e44991f412151a58ccd4b3f4869d828ae43272797f7b1087ae77f",
-    "registry_version": "cn_generator_research_sprint1_closure_architecture_registry_v2",
+    "generated_at": "2026-07-13T07:24:12.356967+00:00",
+    "graph_type": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT",
+    "phase": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_PARTIALLY_COMPLETED",
+    "registry_sha256": "8abeb57ab76df77d728a7f65962e77f5aa4ba208d7e1cae09feacbc26777d848",
+    "registry_version": "cn_search_selection_event_state_sprint2_closure_architecture_registry_v3",
     "status_values": [
       "DEPRECATED",
       "FROZEN",
@@ -248,6 +248,76 @@
       "target": "generator_research_sprint1"
     },
     {
+      "evidence": "Sprint-2 selector manifest",
+      "permission": "ALLOWED",
+      "relation": "supplies_explicit_frozen_offline_evidence",
+      "source": "generator_research_sprint1",
+      "target": "sprint2_strict_priority_selector"
+    },
+    {
+      "evidence": "event/state repair tests",
+      "permission": "ALLOWED",
+      "relation": "supplies_planted_and_real_support_audit",
+      "source": "nextgen_event_state_system",
+      "target": "sprint2_event_generator"
+    },
+    {
+      "evidence": "event/state support audit",
+      "permission": "ALLOWED",
+      "relation": "supplies_supported_raw_derived_states",
+      "source": "nextgen_event_state_system",
+      "target": "sprint2_state_generator"
+    },
+    {
+      "evidence": "three zero-forbidden-read ledgers",
+      "permission": "ALLOWED",
+      "relation": "supplies_physically_isolated_development_rows",
+      "source": "development_only_release",
+      "target": "sprint2_epoch_c"
+    },
+    {
+      "evidence": "frozen selector model hash",
+      "permission": "ALLOWED",
+      "relation": "supplies_frozen_pre_strict_priority",
+      "source": "sprint2_strict_priority_selector",
+      "target": "sprint2_epoch_c"
+    },
+    {
+      "evidence": "zero Epoch-C event quota",
+      "permission": "FORBIDDEN",
+      "relation": "event_budget_after_not_operational_decision",
+      "source": "sprint2_event_generator",
+      "target": "sprint2_epoch_c"
+    },
+    {
+      "evidence": "465 new state clusters per seed",
+      "permission": "ALLOWED",
+      "relation": "supplies_non_degenerate_state_candidates",
+      "source": "sprint2_state_generator",
+      "target": "sprint2_epoch_c"
+    },
+    {
+      "evidence": "Epoch-C contract",
+      "permission": "ALLOWED",
+      "relation": "supplies_only_primary_ephemeral_adaptive_expansion",
+      "source": "sprint2_rx_ucb",
+      "target": "sprint2_epoch_c"
+    },
+    {
+      "evidence": "Epoch-C joint analysis",
+      "permission": "ALLOWED",
+      "relation": "freezes_exact_deduplicated_research_union",
+      "source": "sprint2_epoch_c",
+      "target": "sprint2_research_pack"
+    },
+    {
+      "evidence": "Sprint-2 partial closure",
+      "permission": "FORBIDDEN",
+      "relation": "promotion_or_sealed_access",
+      "source": "sprint2_research_pack",
+      "target": "formal_search_frozen"
+    },
+    {
       "evidence": "Sprint-1 manifest",
       "permission": "FORBIDDEN",
       "relation": "promotion_or_sealed_access",
@@ -276,6 +346,27 @@
       "target": "generator_research_sprint1"
     },
     {
+      "evidence": "Sprint-2 manifest",
+      "permission": "FORBIDDEN",
+      "relation": "forward_to_sprint2_search_policy",
+      "source": "forward_2026",
+      "target": "sprint2_epoch_c"
+    },
+    {
+      "evidence": "Sprint-2 data contract",
+      "permission": "FORBIDDEN",
+      "relation": "validation_holdout_to_sprint2_reward",
+      "source": "spent_role",
+      "target": "sprint2_epoch_c"
+    },
+    {
+      "evidence": "Sprint-2 closure",
+      "permission": "FORBIDDEN",
+      "relation": "report_only_to_positive_memory",
+      "source": "sprint2_research_pack",
+      "target": "scheduler_memory_feedback"
+    },
+    {
       "evidence": "run manifest",
       "permission": "FORBIDDEN",
       "relation": "adaptive_reward_to_nextgen_policy",
@@ -288,6 +379,13 @@
       "relation": "cross_sprint_memory_update",
       "source": "scheduler_memory_feedback",
       "target": "generator_research_sprint1"
+    },
+    {
+      "evidence": "Sprint-2 manifest",
+      "permission": "FORBIDDEN",
+      "relation": "cross_sprint_memory_update",
+      "source": "scheduler_memory_feedback",
+      "target": "sprint2_epoch_c"
     }
   ],
   "multigraph": true,
@@ -945,7 +1043,7 @@
       ]
     },
     {
-      "blocker": "development-only sprint statistics are ephemeral and cannot update permanent memory",
+      "blocker": "Sprint-2 statistics are archived as evidence and cannot update cross-sprint memory",
       "data_role": "development",
       "feedback_permission": "NO_CROSS_SPRINT_ADAPTIVE_MEMORY",
       "id": "scheduler_memory_feedback",
@@ -1144,7 +1242,7 @@
       ]
     },
     {
-      "blocker": "formal development-only CANARY completed; validation, holdout and forward remain sealed",
+      "blocker": "Sprint-2 development Epoch-C completed; validation, holdout and forward remain sealed",
       "data_role": "sealed_epoch",
       "feedback_permission": "EPOCH_REPORT_ONLY",
       "id": "sealed_epoch_governance",
@@ -1815,7 +1913,7 @@
         "fresh provenance-bound cache"
       ],
       "label": "Completed fixed-budget B1S development CANARY",
-      "last_verified_sha": "472adae63287f9307064bdd84a6cfe5053a574b4c10a763a86a61ad2827bee06",
+      "last_verified_sha": "e50f321d59fb00690daa712bf677d349bb2833e4074304744299ccb16d1c770a",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
         "runtime/run_plans/cn_b1s_canary_contract_v2_data_access_repaired.json",
@@ -1874,7 +1972,7 @@
         "formal B1S funnel; repaired Capability CANARY; frozen two-seed development Epoch-A"
       ],
       "label": "CN Generator Research Sprint-1 partially completed",
-      "last_verified_sha": "8de93bb4d751c68a1fbfe15fe5ba6ce82a479729a8890d2678e50ab61c51b6b9",
+      "last_verified_sha": "1fc00ca933615f75cc186470fb8a8bd241ac70a67d523ce9432834caef44170a",
       "last_verified_sha_scope": [
         "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
         "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json",
@@ -1914,26 +2012,324 @@
       ]
     },
     {
+      "blocker": "",
+      "data_role": "development_only_offline_evidence",
+      "feedback_permission": "FROZEN_MODEL_NO_ONLINE_REFIT_NO_CROSS_SPRINT_MEMORY",
+      "id": "sprint2_strict_priority_selector",
+      "implementation_path": [
+        "src/our_system_phase2/services/strict_priority_selector.py",
+        "src/our_system_phase2/runtime/cn_sprint2_offline_selector.py",
+        "runtime/run_plans/cn_sprint2_strict_priority_model_v1.json"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/services/strict_priority_selector.py",
+        "src/our_system_phase2/runtime/cn_sprint2_offline_selector.py",
+        "runtime/run_plans/cn_sprint2_strict_priority_model_v1.json"
+      ],
+      "input_artifact": [
+        "explicit frozen formal CANARY, Capability CANARY and Epoch-A development evidence"
+      ],
+      "input_artifacts": [
+        "explicit frozen formal CANARY, Capability CANARY and Epoch-A development evidence"
+      ],
+      "label": "Cross-fitted Sprint-2 strict-priority selector",
+      "last_verified_sha": "2951faef5199362886560f6b760957c4eb2436dcad6c5d8298d877392e196cc5",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/services/strict_priority_selector.py",
+        "src/our_system_phase2/runtime/cn_sprint2_offline_selector.py",
+        "runtime/run_plans/cn_sprint2_strict_priority_model_v1.json",
+        "tests/test_strict_priority_selector.py"
+      ],
+      "output_artifact": [
+        "DEVELOPMENT_ELIGIBLE role; STRICT_PRIORITY_ELIGIBLE top 10%; OOF model top-decile precision 0.8514 and lift 3.5545"
+      ],
+      "output_artifacts": [
+        "DEVELOPMENT_ELIGIBLE role; STRICT_PRIORITY_ELIGIBLE top 10%; OOF model top-decile precision 0.8514 and lift 3.5545"
+      ],
+      "status": "IMPLEMENTED",
+      "test/evidence": [
+        "tests/test_strict_priority_selector.py",
+        "tests/test_cn_b1s_development_canary.py"
+      ],
+      "test_evidence": [
+        "tests/test_strict_priority_selector.py",
+        "tests/test_cn_b1s_development_canary.py"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/services/strict_priority_selector.py",
+        "src/our_system_phase2/runtime/cn_sprint2_offline_selector.py",
+        "runtime/run_plans/cn_sprint2_strict_priority_model_v1.json",
+        "tests/test_strict_priority_selector.py"
+      ]
+    },
+    {
+      "blocker": "real support contains entry pulses but no exit, break or reseal history; event produced zero new clusters after two repairs",
+      "data_role": "development_only_support_audit",
+      "feedback_permission": "ZERO_SEARCH_BUDGET_NO_WINNER_DIRECTED_REPAIR",
+      "id": "sprint2_event_generator",
+      "implementation_path": [
+        "src/our_system_phase2/runtime/cn_sprint2_event_state_support_audit.py",
+        "src/our_system_phase2/services/sprint1_generators.py"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/runtime/cn_sprint2_event_state_support_audit.py",
+        "src/our_system_phase2/services/sprint1_generators.py"
+      ],
+      "input_artifact": [
+        "entry-only limit-up support audit and planted event tests"
+      ],
+      "input_artifacts": [
+        "entry-only limit-up support audit and planted event tests"
+      ],
+      "label": "Sprint-2 event generator decision",
+      "last_verified_sha": "95fbf68dbc64f913b589c1fecd4bc6aebad3aa68846712b4549e3d8a148020f9",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/runtime/cn_sprint2_event_state_support_audit.py",
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "tests/test_sprint2_event_state_repair.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "output_artifact": [
+        "EVENT_GENERATOR_NOT_OPERATIONAL; zero Epoch-C proposals and strict budget"
+      ],
+      "output_artifacts": [
+        "EVENT_GENERATOR_NOT_OPERATIONAL; zero Epoch-C proposals and strict budget"
+      ],
+      "status": "DEPRECATED",
+      "test/evidence": [
+        "tests/test_sprint2_event_state_repair.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "test_evidence": [
+        "tests/test_sprint2_event_state_repair.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/runtime/cn_sprint2_event_state_support_audit.py",
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "tests/test_sprint2_event_state_repair.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ]
+    },
+    {
+      "blocker": "behaviour novelty is established but independent economic increment over matched static is not",
+      "data_role": "development_only",
+      "feedback_permission": "DEVELOPMENT_DIAGNOSTIC_ONLY_NO_PROMOTION",
+      "id": "sprint2_state_generator",
+      "implementation_path": [
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "src/our_system_phase2/runtime/cn_sprint2_event_state_support_audit.py"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "src/our_system_phase2/runtime/cn_sprint2_event_state_support_audit.py"
+      ],
+      "input_artifact": [
+        "raw-derived sign states with occupancy, duration and transition support"
+      ],
+      "input_artifacts": [
+        "raw-derived sign states with occupancy, duration and transition support"
+      ],
+      "label": "Sprint-2 non-degenerate state generator",
+      "last_verified_sha": "925a399cfb01705be24de94ebbf65a3a366abaf5134d9ceba9faf8106c4e31b6",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "tests/test_sprint2_event_state_repair.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "output_artifact": [
+        "465 new clusters outside static per Epoch-C seed; no matched-static economic increment"
+      ],
+      "output_artifacts": [
+        "465 new clusters outside static per Epoch-C seed; no matched-static economic increment"
+      ],
+      "status": "PARTIAL",
+      "test/evidence": [
+        "tests/test_sprint2_event_state_repair.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "test_evidence": [
+        "tests/test_sprint2_event_state_repair.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/services/sprint1_generators.py",
+        "tests/test_sprint2_event_state_repair.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ]
+    },
+    {
+      "blocker": "",
+      "data_role": "development_only_single_run_ephemeral",
+      "feedback_permission": "WITHIN_RUN_ONLY_NO_CROSS_SPRINT_MEMORY",
+      "id": "sprint2_rx_ucb",
+      "implementation_path": [
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "runtime/run_plans/cn_sprint2_epoch_c_v1.json"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "runtime/run_plans/cn_sprint2_epoch_c_v1.json"
+      ],
+      "input_artifact": [
+        "frozen strict-priority credit, matched control and seed-isolated ephemeral statistics"
+      ],
+      "input_artifacts": [
+        "frozen strict-priority credit, matched control and seed-isolated ephemeral statistics"
+      ],
+      "label": "Sprint-2 hierarchical RX/UCB adaptive challenger",
+      "last_verified_sha": "1464e6dcb907786c6671d203428f5e5573782d0eb6c04d27268d71bcf9fbf43c",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "runtime/run_plans/cn_sprint2_epoch_c_v1.json",
+        "tests/test_cn_b1s_development_canary.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "output_artifact": [
+        "strict matched-control outperformance in all three Epoch-C seeds; no persisted value statistics"
+      ],
+      "output_artifacts": [
+        "strict matched-control outperformance in all three Epoch-C seeds; no persisted value statistics"
+      ],
+      "status": "IMPLEMENTED",
+      "test/evidence": [
+        "tests/test_cn_b1s_development_canary.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "test_evidence": [
+        "tests/test_cn_b1s_development_canary.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "runtime/run_plans/cn_sprint2_epoch_c_v1.json",
+        "tests/test_cn_b1s_development_canary.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ]
+    },
+    {
+      "blocker": "29 adaptive exact identities overlapped across seed expansions, so the 32,768 global unique-proposal contract was not exactly met",
+      "data_role": "development_only",
+      "feedback_permission": "SPRINT_CLOSED_RESEARCH_EVIDENCE_ONLY",
+      "id": "sprint2_epoch_c",
+      "implementation_path": [
+        "runtime/run_plans/cn_sprint2_epoch_c_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "src/our_system_phase2/runtime/cn_sprint2_epoch_c_analysis.py"
+      ],
+      "implementation_paths": [
+        "runtime/run_plans/cn_sprint2_epoch_c_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "src/our_system_phase2/runtime/cn_sprint2_epoch_c_analysis.py"
+      ],
+      "input_artifact": [
+        "8,192 shared exact backbone; three 8,192 RX seed expansions; physical development-only release"
+      ],
+      "input_artifacts": [
+        "8,192 shared exact backbone; three 8,192 RX seed expansions; physical development-only release"
+      ],
+      "label": "Frozen three-seed Sprint-2 development Epoch-C",
+      "last_verified_sha": "25d212e0bf2997184949d36f331b458eef0bf8957823edfe6d26c36b4f050fbb",
+      "last_verified_sha_scope": [
+        "runtime/run_plans/cn_sprint2_epoch_c_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "src/our_system_phase2/runtime/cn_sprint2_epoch_c_analysis.py",
+        "tests/test_cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "output_artifact": [
+        "49,152 execution rows; 32,739 global unique exact identities; 1,024 strict evaluations; zero forbidden reads"
+      ],
+      "output_artifacts": [
+        "49,152 execution rows; 32,739 global unique exact identities; 1,024 strict evaluations; zero forbidden reads"
+      ],
+      "status": "PARTIAL",
+      "test/evidence": [
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "test_evidence": [
+        "tests/test_cn_b1s_development_canary.py",
+        "tests/test_cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "verification_paths": [
+        "runtime/run_plans/cn_sprint2_epoch_c_v1.json",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py",
+        "src/our_system_phase2/runtime/cn_sprint2_epoch_c_analysis.py",
+        "tests/test_cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ]
+    },
+    {
+      "blocker": "global unique-proposal contract missed by 29 identities; forward authorization pack is not prepared",
+      "data_role": "development_only_report",
+      "feedback_permission": "NO_PROMOTION_NO_FORWARD_NO_POSITIVE_MEMORY",
+      "id": "sprint2_research_pack",
+      "implementation_path": [
+        "src/our_system_phase2/runtime/cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_analysis_run_manifest_v1.json"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/runtime/cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_analysis_run_manifest_v1.json"
+      ],
+      "input_artifact": [
+        "three frozen Epoch-C strict packs and union reranking"
+      ],
+      "input_artifacts": [
+        "three frozen Epoch-C strict packs and union reranking"
+      ],
+      "label": "Sprint-2 exact-deduplicated research pack",
+      "last_verified_sha": "53210b1771d0a54d85b9ce61c78c39365440abed6522bf0b585b9ecb4036c7b4",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/runtime/cn_sprint2_epoch_c_analysis.py",
+        "tests/test_cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_analysis_run_manifest_v1.json"
+      ],
+      "output_artifact": [
+        "377 exact candidates; three-way Jaccard 0.8488; research-only, not a forward-authorization pack"
+      ],
+      "output_artifacts": [
+        "377 exact candidates; three-way Jaccard 0.8488; research-only, not a forward-authorization pack"
+      ],
+      "status": "FROZEN",
+      "test/evidence": [
+        "tests/test_cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "test_evidence": [
+        "tests/test_cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/runtime/cn_sprint2_epoch_c_analysis.py",
+        "tests/test_cn_sprint2_epoch_c_analysis.py",
+        "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_analysis_run_manifest_v1.json"
+      ]
+    },
+    {
       "blocker": "opening validation, holdout or 2026 requires separate authorization",
       "data_role": "sealed_forward_none",
       "feedback_permission": "FORBIDDEN_OUTSIDE_DEVELOPMENT_SPRINT",
       "id": "formal_search_frozen",
       "implementation_path": [
-        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"
+        "runtime/run_plans/cn_search_selection_event_state_sprint2_manifest_v1.json"
       ],
       "implementation_paths": [
-        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json"
+        "runtime/run_plans/cn_search_selection_event_state_sprint2_manifest_v1.json"
       ],
       "input_artifact": [
-        "Sprint-1 development-only authorization"
+        "Sprint-2 development-only closure"
       ],
       "input_artifacts": [
-        "Sprint-1 development-only authorization"
+        "Sprint-2 development-only closure"
       ],
       "label": "Sealed search, promotion and cross-sprint memory remain frozen",
-      "last_verified_sha": "e821d057393136775fa4a86c19dc6510b16d4f4843342f6afd849740f5f340a4",
+      "last_verified_sha": "66419d16c90bce252aadcc3dfbd66d4b1cc0df73f7a9bba4224aa79d3bf63c1d",
       "last_verified_sha_scope": [
-        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "runtime/run_plans/cn_search_selection_event_state_sprint2_manifest_v1.json",
         "tests/test_cn_b1s_development_canary.py",
         "tests/test_development_only_data_access.py"
       ],
@@ -1953,7 +2349,7 @@
         "tests/test_development_only_data_access.py"
       ],
       "verification_paths": [
-        "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
+        "runtime/run_plans/cn_search_selection_event_state_sprint2_manifest_v1.json",
         "tests/test_cn_b1s_development_canary.py",
         "tests/test_development_only_data_access.py"
       ]

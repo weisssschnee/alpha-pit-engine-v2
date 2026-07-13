@@ -1,111 +1,147 @@
 {
   "manifest_version": "cn_search_selection_event_state_sprint2_manifest_v1",
-  "status": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_ACTIVE",
+  "status": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_PARTIALLY_COMPLETED",
   "started_at": "2026-07-13",
+  "completed_at": "2026-07-13",
   "baseline": {
-    "repo_sha": "8f6cf18837b200201520933e289e3102ad5bd48b",
-    "tag": "cn-generator-research-sprint1-closure-20260713",
-    "remote_branch_verified": true,
-    "remote_tag_verified": true,
+    "sprint1_repo_sha": "8f6cf18837b200201520933e289e3102ad5bd48b",
+    "sprint1_tag": "cn-generator-research-sprint1-closure-20260713",
+    "epoch_c_evaluated_repo_sha": "4d2fccf653c2083d6331be2a5822a9711b3bc6d2",
+    "epoch_c_tag": "cn-search-selection-event-state-sprint2-epoch-c-20260713",
     "development_only_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
     "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
     "field_registry_sha256": "960f9d59e6f45274bd370c68a68cbad938b9e00265c3262a71cd31ae717b6b94"
   },
-  "offline_evidence": {
-    "policy": "EXPLICIT_VERSIONED_AUDITABLE_NOT_CROSS_SPRINT_MEMORY",
-    "target_horizon_bars": 5,
-    "sources": [
-      {
-        "id": "formal_b1s",
-        "run_role": "formal_canary",
-        "seed_set": "formal",
-        "root": "D:/ChengboRemote/runtime/cn_b1s_canary_data_access_repaired_v5_20260712/artifacts/20260712T105523619094Z",
-        "candidate_proposals_sha256": "02f1753a4cc9ae261675a7d46c55924decb63813a38f1291fc1b0a31b744d780",
-        "candidate_proposals_size": 925369,
-        "strict_metrics_sha256": "f273611049e572e168ee0874c05f350277fa047201da2f8d647bf7293bafd8c9",
-        "strict_metrics_size": 112101
-      },
-      {
-        "id": "capability_repaired",
-        "run_role": "capability_canary",
-        "seed_set": "capability",
-        "root": "D:/ChengboRemote/runtime/cn_generator_research_sprint1/capability_repeat/1a7a0b8_r2/output/artifacts/20260712T141424456815Z",
-        "candidate_proposals_sha256": "8e83943c3dde074e005efaec2e01c13717694f3e097289de27a7025783b5f64f",
-        "candidate_proposals_size": 4578885,
-        "strict_metrics_sha256": "79138d865df908ad38512d14e176e57fb084ecf78e6031a3912661cbbdcd6fc6",
-        "strict_metrics_size": 372542
-      },
-      {
-        "id": "epoch_a_seed_a",
-        "run_role": "epoch_a",
-        "seed_set": "seed_a",
-        "root": "D:/ChengboRemote/runtime/cn_generator_research_sprint1/epoch_a/09a4d80_r1/seed_a/artifacts/20260712T164750037761Z",
-        "candidate_proposals_sha256": "a79a3241bed2567d65421db292941ccfee7d621737d85d31fefb8cd153d227d7",
-        "candidate_proposals_size": 8987858,
-        "strict_metrics_sha256": "376e97ea9af161693579117e7172e8e3a1b740ec66f14e9a1aae72d0af3a5f60",
-        "strict_metrics_size": 580226
-      },
-      {
-        "id": "epoch_a_seed_b",
-        "run_role": "epoch_a",
-        "seed_set": "seed_b",
-        "root": "D:/ChengboRemote/runtime/cn_generator_research_sprint1/epoch_a/09a4d80_r1/seed_b/artifacts/20260712T164750037761Z",
-        "candidate_proposals_sha256": "6e6e0b9b0550455ba8c9dbb05c6de38c7834f516747420eba493c7c270d29498",
-        "candidate_proposals_size": 9008131,
-        "strict_metrics_sha256": "28b6c4ce41bdd0180adbbbbfe890a59e5659e732efb611b79cf488b0c7b410dc",
-        "strict_metrics_size": 579763
-      }
-    ],
-    "selector_comparison": [
-      "current_development_scalar",
-      "interpretable_hard_gate_rank_rule",
-      "cross_fitted_strict_priority_model",
-      "deterministic_random_control"
-    ],
-    "cross_fit_protocols": [
-      "leave_one_seed_set_out",
-      "exact_family_behaviour_component_group_kfold"
-    ],
-    "promotion_gate": "MODEL_REQUIRES_OOF_TOP_DECILE_LIFT_OVER_SCALAR_RULE_AND_RANDOM"
+  "offline_selector": {
+    "state": "STRICT_PRIORITY_SELECTOR_READY",
+    "development_role": "DEVELOPMENT_ELIGIBLE",
+    "priority_role": "STRICT_PRIORITY_ELIGIBLE",
+    "evidence_rows": 739,
+    "strict_hit_base_rate": 0.2395,
+    "group_aware_component_folds": 5,
+    "seed_folds": 4,
+    "component_oof_top_decile_precision": 0.85135,
+    "component_oof_top_decile_lift": 3.5545,
+    "seed_oof_top_decile_precision": 0.87838,
+    "seed_oof_top_decile_lift": 3.6674,
+    "hard_rank_top_decile_precision": 0.58108,
+    "current_scalar_top_decile_precision": 0.55405,
+    "random_top_decile_precision": 0.21622,
+    "model_canonical_sha256": "53db49dd4257b692edacd36378e5353a9dd009021404caa313e49cd369bd4b9b",
+    "online_refit_allowed": false,
+    "cross_sprint_memory": false
+  },
+  "event_state_support": {
+    "rows_audited": 12601981,
+    "trading_dates": 364,
+    "symbols": 147,
+    "event_active_rows": 8808,
+    "event_active_rate": 0.00069894,
+    "event_dates": 42,
+    "event_symbols": 40,
+    "event_entries": 46,
+    "event_exits": 0,
+    "event_decision": "EVENT_GENERATOR_NOT_OPERATIONAL",
+    "event_epoch_c_proposal_budget": 0,
+    "state_support": "OPERATIONAL_RAW_DERIVED_STATES",
+    "state_decision": "NOVEL_BEHAVIOUR_WITHOUT_MATCHED_STATIC_ECONOMIC_INCREMENT"
   },
   "repair_capability_canary": {
-    "state": "PLANNED",
-    "proposal_total": 8192,
-    "strict_total": 256,
-    "minimum_seeds": 2,
-    "shared_backbone": true,
-    "maximum_event_state_repair_attempts": 2,
-    "event_failure_state": "EVENT_GENERATOR_NOT_OPERATIONAL",
-    "state_failure_state": "STATE_GENERATOR_NOT_OPERATIONAL"
+    "state": "COMPLETED_WITH_NATURAL_UNDERFILL",
+    "evaluated_repo_sha": "f4fc41d7142c39ae1f861c3a1352152a88522d8e",
+    "seed_count": 2,
+    "proposal_rows": 8192,
+    "authorized_strict_total": 256,
+    "actual_strict_total": 224,
+    "underfill_reason": "EVENT_GENERATOR_NOT_OPERATIONAL_ZERO_EVENT_CLUSTERS",
+    "state_new_clusters_per_seed": 254,
+    "temporal_new_clusters": [226, 226],
+    "rx_proxy_median_delta": [0.0113675, 0.0117263],
+    "rx_strict_outperformance_seed_count": 2,
+    "zero_forbidden_access": true,
+    "epoch_c_entry_gate": true
   },
   "epoch_c": {
-    "state": "CONDITIONAL",
-    "unique_proposal_total": 32768,
-    "strict_total": 1024,
+    "state": "COMPLETED_WITH_GLOBAL_UNIQUE_IDENTITY_UNDERFILL",
+    "contract": "runtime/run_plans/cn_sprint2_epoch_c_v1.json",
+    "contract_canonical_sha256": "befc626171d78c4b60347efa1d57d10679d7faee919fa3ffd5cbd58e8335084a",
     "seed_count": 3,
-    "shared_deterministic_backbone": 8192,
-    "seed_specific_expansion_per_seed": 8192,
-    "only_primary_adaptive": "rx_ucb",
-    "entry_requires": [
-      "selector OOF lift",
-      "event or state operational decision completed",
-      "RX/UCB beats matched control in at least two seeds",
-      "zero data access violations",
-      "zero contract drift"
-    ]
+    "execution_proposal_rows": 49152,
+    "shared_exact_backbone_actual": 8192,
+    "shared_exact_backbone_expected": 8192,
+    "seed_expansion_exact_union_actual": 24547,
+    "seed_expansion_exact_union_expected": 24576,
+    "global_unique_exact_actual": 32739,
+    "global_unique_exact_expected": 32768,
+    "unique_underfill": 29,
+    "legal_exact_union": 32659,
+    "typed_gate_rejections": 240,
+    "strict_actual": 1024,
+    "strict_expected": 1024,
+    "development_eligible_counts": [12630, 13810, 12873],
+    "strict_priority_eligible_counts": [1263, 1381, 1288],
+    "selector_realized_wins_vs_scalar": 3,
+    "rx_ucb_strict_wins_vs_control": 3,
+    "temporal_new_clusters_per_seed": 250,
+    "state_new_clusters_per_seed": 465,
+    "event_new_clusters_per_seed": 0,
+    "shared_proxy_rank_correlation_min": 1.0,
+    "shared_strict_priority_rank_correlation_min": 1.0,
+    "shared_behaviour_cluster_ari_min": 0.9999857,
+    "strict_pack_union_count": 377,
+    "strict_pack_three_way_intersection": 320,
+    "strict_pack_three_way_jaccard": 0.8488064,
+    "strict_union_hit_rate": 0.5119363,
+    "strict_union_mean_benchmark_increment": 0.0396668,
+    "strict_union_positive_benchmark_increment_share": 0.6816976,
+    "strict_union_top_lane_share": 0.3899204,
+    "strict_union_top_primitive_share": 0.0981432,
+    "strict_union_top_family_share": 0.0557029,
+    "strict_union_top_parent_share": 0.0318302,
+    "union_admission_counts": {
+      "current_scalar": 1512,
+      "strict_priority": 1521,
+      "stratified_diversity": 1248,
+      "quality_diversity_hybrid": 1534
+    },
+    "zero_forbidden_access_all_seeds": true,
+    "cross_sprint_memory_written": false,
+    "candidate_promotion_made": false
+  },
+  "defect_repair": {
+    "defect": "29 exact identities overlapped across RX seed expansions",
+    "historical_epoch_c_relabelled": false,
+    "repair": "seed marker isolates adaptive exact-identity namespaces without changing cross-sectional rank",
+    "guard": "three-seed exact-union regression test",
+    "future_contract_expected_unique": 32768
   },
   "epoch_d": {
-    "state": "CONDITIONAL_SINGLE_REPAIR_ONLY",
-    "maximum_scale_relative_to_epoch_c": 1.5,
-    "requires": [
-      "Epoch-C selector lift is stable",
-      "RX/UCB beats matched control",
-      "event or state has independent economic increment",
-      "one identified defect blocks a reliable pack"
-    ]
+    "state": "NOT_RUN_CONDITIONS_NOT_MET",
+    "reason": "NO_EVENT_OR_STATE_INDEPENDENT_ECONOMIC_INCREMENT",
+    "selector_lift_stable": true,
+    "rx_ucb_outperformance": true,
+    "event_or_state_independent_economic_increment": false,
+    "automatic_run_allowed": false
+  },
+  "closure": {
+    "success_gates_passed": 10,
+    "success_gates_total": 10,
+    "access_safety_passed": true,
+    "contract_fidelity_passed": false,
+    "candidate_pack_ready_for_separate_forward_authorization": false,
+    "final_status": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_PARTIALLY_COMPLETED",
+    "recommendation": "CONTINUE_SEARCH_SELECTION_AND_GENERATOR_RESEARCH"
+  },
+  "artifacts": {
+    "report_root": "reports/cn_search_selection_event_state_sprint2_20260713",
+    "joint_analysis": "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_joint_analysis_v1.json",
+    "joint_analysis_sha256": "171561d08237a579b842276f93a8187674aa3a5f03fcb04571d4308675254708",
+    "analysis_manifest": "reports/cn_search_selection_event_state_sprint2_20260713/epoch_c_analysis_run_manifest_v1.json",
+    "artifact_index": "reports/cn_search_selection_event_state_sprint2_20260713/ARTIFACT_INDEX.json",
+    "decision_log": "reports/cn_search_selection_event_state_sprint2_20260713/DECISION_CHANGE_LOG.md"
   },
   "immutable_boundaries": {
-    "new_data_fields_allowed": false,
+    "new_data_fields_added": false,
     "plate_industry_enabled": false,
     "validation_allowed": false,
     "holdout_allowed": false,
@@ -115,13 +151,5 @@
     "cross_sprint_elite_value_allowed": false,
     "mid_run_budget_change_allowed": false,
     "post_performance_seed_change_allowed": false
-  },
-  "final_outputs": [
-    "selector OOF evidence and calibration",
-    "development eligible audit",
-    "event/state support and planted-test evidence",
-    "shared backbone and seed-expansion stability",
-    "union reranking",
-    "Sprint-2 closure state and recommendation"
-  ]
+  }
 }

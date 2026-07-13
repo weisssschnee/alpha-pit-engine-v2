@@ -61,15 +61,17 @@ def test_sprint1_epoch_a_closure_records_partial_result_without_forward_pack() -
     assert result["boundaries"]["forward_2026_sealed"] is True
 
 
-def test_sprint1_current_graph_contains_release_canary_and_research_nodes() -> None:
+def test_current_graph_preserves_sprint1_and_projects_sprint2_nodes() -> None:
     graph = json.loads((REPO / ".planning/graphs/graph.json").read_text(encoding="utf-8"))
     nodes = {row["id"]: row for row in graph["nodes"]}
 
-    assert graph["graph"]["phase"] == "CN_GENERATOR_RESEARCH_SPRINT1_PARTIALLY_COMPLETED"
+    assert graph["graph"]["phase"] == "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_PARTIALLY_COMPLETED"
     assert graph["graph"]["graph_type"] == (
-        "CN_GENERATOR_RESEARCH_SPRINT1_CURRENT_ARCHITECTURE_CONTRACT"
+        "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT"
     )
     assert nodes["development_only_release"]["status"] == "IMPLEMENTED"
     assert nodes["formal_b1s_canary"]["status"] == "IMPLEMENTED"
     assert nodes["generator_research_sprint1"]["status"] == "PARTIAL"
+    assert nodes["sprint2_epoch_c"]["status"] == "PARTIAL"
+    assert nodes["sprint2_research_pack"]["status"] == "FROZEN"
     assert nodes["formal_search_frozen"]["status"] == "FROZEN"

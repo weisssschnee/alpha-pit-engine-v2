@@ -233,21 +233,38 @@ def test_epoch_c_contract_disables_event_and_freezes_exact_unique_seed_budget() 
     }
     assert source["lane_specs"]["event_conditioned"]["proposal"] == 0
     assert source["candidate_contract"]["require_unique_proposals"] is True
-    selected = _select_seed_set(source, "seed_a")
-    _validate_contract(selected)
-    initial = generate_initial_proposals(selected)
-    assert len(initial) == 8192
-    assert len({row["exact_identity"] for row in initial}) == 8192
-    for index, row in enumerate(initial):
-        row.update(
-            proxy_reward=(index % 211) / 211.0,
-            signal_cluster_id=index + 1,
-            strict_priority_score=(index % 101) / 101.0,
-        )
-    adaptive = generate_adaptive_proposals(selected, initial)
-    assert len(adaptive) == 8192
-    combined = initial + adaptive
-    assert len({row["exact_identity"] for row in combined}) == 16384
+    backbone_identities = None
+    expansion_identities = {}
+    all_identities = set()
+    for seed_set in ("seed_a", "seed_b", "seed_c"):
+        selected = _select_seed_set(source, seed_set)
+        _validate_contract(selected)
+        initial = generate_initial_proposals(selected)
+        assert len(initial) == 8192
+        current_backbone = {row["exact_identity"] for row in initial}
+        assert len(current_backbone) == 8192
+        if backbone_identities is None:
+            backbone_identities = current_backbone
+        else:
+            assert current_backbone == backbone_identities
+        for index, row in enumerate(initial):
+            row.update(
+                proxy_reward=(index % 211) / 211.0,
+                signal_cluster_id=index + 1,
+                strict_priority_score=(index % 101) / 101.0,
+            )
+        adaptive = generate_adaptive_proposals(selected, initial)
+        assert len(adaptive) == 8192
+        expansion_identities[seed_set] = {row["exact_identity"] for row in adaptive}
+        assert len(expansion_identities[seed_set]) == 8192
+        combined = initial + adaptive
+        assert len({row["exact_identity"] for row in combined}) == 16384
+        all_identities.update(row["exact_identity"] for row in combined)
+
+    assert expansion_identities["seed_a"].isdisjoint(expansion_identities["seed_b"])
+    assert expansion_identities["seed_a"].isdisjoint(expansion_identities["seed_c"])
+    assert expansion_identities["seed_b"].isdisjoint(expansion_identities["seed_c"])
+    assert len(all_identities) == source["epoch_budget"]["unique_proposal_total"]
 
 
 def test_initial_and_adaptive_generation_obey_frozen_1344_budget() -> None:

@@ -25,6 +25,12 @@ REQUIRED_NEXTGEN_NODES = {
     "development_only_release",
     "formal_b1s_canary",
     "generator_research_sprint1",
+    "sprint2_strict_priority_selector",
+    "sprint2_event_generator",
+    "sprint2_state_generator",
+    "sprint2_rx_ucb",
+    "sprint2_epoch_c",
+    "sprint2_research_pack",
     "formal_search_frozen",
 }
 
@@ -49,7 +55,7 @@ def merge_registries(base: dict, overlay: dict) -> dict:
     return {
         "registry_version": overlay["registry_version"],
         "phase": overlay["phase"],
-        "graph_type": "CN_GENERATOR_RESEARCH_SPRINT1_CURRENT_ARCHITECTURE_CONTRACT",
+        "graph_type": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT",
         "nodes": nodes,
         "edges": edges,
     }

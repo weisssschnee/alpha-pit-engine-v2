@@ -581,9 +581,14 @@ def _rx_ucb_programs(
         attempt += 1
         if program.primitive_family != primitive:
             continue
+        # Adaptive seeds are independent expansion namespaces.  Include the
+        # seed in the exact-identity perturbation so two seed expansions cannot
+        # silently spend budget on the same exact hypothesis.
         expression = _role_distinct_expression(
             program.expression, "rx_ucb", start_index + len(selected)
         )
+        seed_marker = (abs(int(seed)) % 1_000_000 + 1) / 1_000_000_000.0
+        expression = f"CSRank(Add({expression},{seed_marker:.9f}))"
         _, identity = _canonical(expression)
         if identity in seen:
             continue

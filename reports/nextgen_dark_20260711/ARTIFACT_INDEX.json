@@ -157,17 +157,17 @@
     {
       "exists": true,
       "id": "architecture_registry",
-      "last_verified_sha": "41570f5c5e53b9eefd5afe49f09eb6c4a54427a3a22075f7b74ad9970af50cab",
+      "last_verified_sha": "4bf05b97e3b51032769104b9b116eacac516533d260e574343dbf2de6a8204c9",
       "path": "runtime/run_plans/nextgen_dark_architecture_registry_v1.json",
-      "size_bytes": 20552,
+      "size_bytes": 30219,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "architecture_graph",
-      "last_verified_sha": "13f3822db3093e198356f48bd638eefa84135ea7c6908fcc9dfc2041feaafb63",
+      "last_verified_sha": "69651070d14896aae673950030941da5633a37acc152de333e1bdb82e140a198",
       "path": ".planning/graphs/graph.json",
-      "size_bytes": 73939,
+      "size_bytes": 91896,
       "state": "IMPLEMENTED"
     },
     {
@@ -204,6 +204,6 @@
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-12T17:22:35.644938+00:00",
+  "refreshed_at": "2026-07-13T07:30:24.096689+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
 }
