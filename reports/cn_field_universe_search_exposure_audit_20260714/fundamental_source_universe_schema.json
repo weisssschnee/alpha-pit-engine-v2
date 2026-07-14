@@ -1,0 +1,101 @@
+{
+  "columns": [
+    {
+      "name": "source_field_id",
+      "type": "string"
+    },
+    {
+      "name": "source_table",
+      "type": "string"
+    },
+    {
+      "name": "source_field",
+      "type": "string"
+    },
+    {
+      "name": "semantic_role",
+      "type": "pipe_delimited_enum"
+    },
+    {
+      "name": "entity_scope",
+      "type": "enum"
+    },
+    {
+      "name": "report_period_field",
+      "type": "string"
+    },
+    {
+      "name": "observable_time_field",
+      "type": "string"
+    },
+    {
+      "name": "revision_time_field",
+      "type": "string"
+    },
+    {
+      "name": "pit_status",
+      "type": "enum"
+    },
+    {
+      "name": "fabric_field_id",
+      "type": "string"
+    },
+    {
+      "name": "materialization_status",
+      "type": "enum"
+    },
+    {
+      "name": "recommended_search_routes",
+      "type": "pipe_delimited_enum"
+    },
+    {
+      "name": "blocked_reason",
+      "type": "string"
+    },
+    {
+      "name": "source_family",
+      "type": "string"
+    },
+    {
+      "name": "source_dtype",
+      "type": "string"
+    },
+    {
+      "name": "observable_time_policy",
+      "type": "enum"
+    },
+    {
+      "name": "fabric_typed_routes",
+      "type": "pipe_delimited_route"
+    },
+    {
+      "name": "current_121_presence",
+      "type": "enum"
+    },
+    {
+      "name": "current_121_field",
+      "type": "string"
+    },
+    {
+      "name": "current_generator_exposure",
+      "type": "boolean"
+    },
+    {
+      "name": "development_safe_non_null",
+      "type": "nullable_integer"
+    },
+    {
+      "name": "development_safe_missing",
+      "type": "nullable_integer"
+    }
+  ],
+  "generator_exposed_rows": 0,
+  "output": "reports\\cn_field_universe_search_exposure_audit_20260714\\fundamental_source_universe.csv",
+  "output_sha256": "b98d964fd0ba2c3a295193db4155bc15dc1e8a0ff74085d68891b2077d0cb3c8",
+  "pit_unresolved_rows": 17,
+  "row_count": 1227,
+  "schema_sha256": "75abcb7c97093d8b6c8d79c754c4368a5066b0ea69a66c7470b917999b33f750",
+  "schema_version": "cn_pit_fundamental_source_universe_merge_v1",
+  "source_registry": "runtime\\cn_pit_fundamental_fabric_v1\\fundamental_semantic_registry.json",
+  "source_registry_sha256": "8ad391ffdcbb3fcb9bbec3a3e5494069131a4d1195ef45225134431e58fe520e"
+}
