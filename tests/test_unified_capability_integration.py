@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import warnings
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -15,6 +16,7 @@ from our_system_phase2.runtime.cn_unified_capability_discovery import (
     _apply_metrics,
     _evaluate_fundamental_candidates,
     _raw_expression,
+    _route_summary,
 )
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 from our_system_phase2.services.typed_primitive_gate import expression_fields
@@ -286,6 +288,29 @@ def test_fundamental_evaluation_normalizes_exchange_suffixed_panel_codes(
     )
     assert metrics["fundamental"]["support"] == 30
     assert metrics["fundamental"]["rank_ic_mean"] == pytest.approx(1.0)
+
+
+def test_route_summary_handles_all_nan_increments_without_runtime_warning() -> None:
+    rows = [
+        {
+            "route_id": "DISCLOSURE_EVENT",
+            "is_matched_control": False,
+            "matched_control_id": "control",
+            "matched_increment": float("nan"),
+            "legal": True,
+            "canonical_identity": "canonical",
+            "exact_identity": "exact",
+            "behavior_identity": "",
+            "admission": True,
+            "strict": True,
+            "survivor": False,
+        }
+    ]
+    with warnings.catch_warnings(record=True) as captured:
+        warnings.simplefilter("always")
+        summary = _route_summary(rows)
+    assert not captured
+    assert summary["DISCLOSURE_EVENT"]["mean_matched_increment"] is None
 
 
 def test_generated_intraday_expressions_execute_on_a_synthetic_panel(

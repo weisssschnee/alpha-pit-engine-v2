@@ -643,6 +643,12 @@ def _route_summary(candidates: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         rows = [row for row in candidates if row["route_id"] == route_id]
         mechanisms = [row for row in rows if not row["is_matched_control"]]
         behaviors = [str(row.get("behavior_identity") or "") for row in rows if row.get("behavior_identity")]
+        finite_increments = [
+            float(row["matched_increment"])
+            for row in mechanisms
+            if row.get("matched_increment") is not None
+            and np.isfinite(float(row["matched_increment"]))
+        ]
         output[route_id] = {
             "proposal": len(rows),
             "legal": sum(bool(row.get("legal")) for row in rows),
@@ -654,7 +660,9 @@ def _route_summary(candidates: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             "strict": sum(bool(row.get("strict")) for row in rows),
             "survivor": sum(bool(row.get("survivor")) for row in rows),
             "matched_control_completion_rate": sum(bool(row.get("matched_control_id")) for row in mechanisms) / max(len(mechanisms), 1),
-            "mean_matched_increment": float(np.nanmean([float(row.get("matched_increment")) for row in mechanisms if row.get("matched_increment") is not None])) if any(row.get("matched_increment") is not None for row in mechanisms) else None,
+            "mean_matched_increment": (
+                float(np.mean(finite_increments)) if finite_increments else None
+            ),
         }
     return output
 
