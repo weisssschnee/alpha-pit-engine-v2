@@ -5,12 +5,16 @@ param(
   [string]$SourceRunRoot = "D:\ChengboRemote\runtime\phase3fix_repaired_2y_train75_large_search_20260710_77o_scheduled_w4s12",
   [string]$RecoveryRoot = "D:\ChengboRemote\runtime\phase3ga_recover_missing_chunk04_20260710_77o",
   [string]$CacheRoot = "D:\ChengboRemote\cache\phase3ga_chunk04_recovery_bounded",
+  [string]$SplitManifest = "D:\ChengboRemote\workspace\alpha_pit_true1min_engine_20260710_phase3ga_semantic_efficiency_v2\runtime\run_plans\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+  [string]$UnifiedRegistry = "D:\ChengboRemote\workspace\alpha_pit_true1min_engine_20260710_phase3ga_semantic_efficiency_v2\reports\cn_unified_capability_discovery_20260714\completed_f8169e1\registry\unified_capability_registry.json",
+  [string]$CandidateReceiptTable = "D:\ChengboRemote\runtime\phase3fix_repaired_2y_train75_large_search_20260710_77o_scheduled_w4s12\candidate_submission_receipts.jsonl",
+  [string]$DataReleaseHash = "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
   [int]$Workers = 4
 )
 
 $ErrorActionPreference = "Stop"
 $CandidateTable = Join-Path $SourceRunRoot "phase3cp_real_cm_candidate_audit_semantic.csv"
-foreach ($path in @($Repo, $Python, $ShardRoot, $CandidateTable)) {
+foreach ($path in @($Repo, $Python, $ShardRoot, $CandidateTable, $SplitManifest, $UnifiedRegistry, $CandidateReceiptTable)) {
   if (-not (Test-Path -LiteralPath $path)) { throw "required path missing: $path" }
 }
 if ($Workers -lt 1 -or $Workers -gt 6) { throw "Workers must be between 1 and 6" }
@@ -51,6 +55,10 @@ for ($worker = 0; $worker -lt $Workers; $worker++) {
     "--horizons", "1,5,10,15",
     "--train-fraction", "0.75",
     "--validation-fraction", "0.15",
+    "--split-manifest", $SplitManifest,
+    "--candidate-receipt-table", $CandidateReceiptTable,
+    "--unified-registry", $UnifiedRegistry,
+    "--data-release-hash", $DataReleaseHash,
     "--min-obs-per-time", "20",
     "--cost-bps", "5",
     "--top-quantile", "0.2",
@@ -100,7 +108,6 @@ if ($failed.Count) {
 }
 
 $ExactOutput = Join-Path $SourceRunRoot "phase3cm_train_reward_exact_recovered_phase3ga"
-$SplitManifest = Join-Path $Repo "runtime\run_plans\phase3ga_true1min_2024_2025_global_split_manifest.csv"
 $mergeArgs = @(
   (Join-Path $Repo "scripts\recover_phase3cm_exact_reward_atoms.py"),
   "--candidate-table", $CandidateTable,
@@ -110,6 +117,9 @@ $mergeArgs = @(
   "--train-fraction", "0.75",
   "--validation-fraction", "0.15",
   "--split-manifest", $SplitManifest,
+  "--candidate-receipt-table", $CandidateReceiptTable,
+  "--unified-registry", $UnifiedRegistry,
+  "--data-release-hash", $DataReleaseHash,
   "--chunk-dir", (Join-Path $SourceRunRoot "phase3cm_train_reward_shard_chunks\shard_chunk_01"),
   "--chunk-dir", (Join-Path $SourceRunRoot "phase3cm_train_reward_shard_chunks\shard_chunk_02"),
   "--chunk-dir", (Join-Path $SourceRunRoot "phase3cm_train_reward_shard_chunks\shard_chunk_03")

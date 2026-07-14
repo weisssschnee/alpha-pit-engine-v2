@@ -15,7 +15,14 @@ from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit imp
     _normalize_global_date_splits,
 )
 from our_system_phase2.services.candidate_schema import safe_float
+from our_system_phase2.services.candidate_submission_receipt import (
+    CandidateSubmissionAuthority,
+    ReceiptContext,
+    read_receipt_table,
+)
 from our_system_phase2.services.expression_semantics import analyze_expression
+from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
+from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
 
 
 def _read_csv(path: Path) -> list[dict[str, Any]]:
@@ -52,11 +59,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--train-fraction", type=float, default=0.75)
     parser.add_argument("--validation-fraction", type=float, default=0.15)
     parser.add_argument("--split-manifest", type=Path, required=True)
+    parser.add_argument("--candidate-receipt-table", type=Path, required=True)
+    parser.add_argument("--unified-registry", type=Path, required=True)
+    parser.add_argument("--data-release-hash", required=True)
     args = parser.parse_args(argv)
 
     candidates = _read_csv(args.candidate_table.resolve())
     if not candidates:
         raise RuntimeError("candidate table is empty")
+    split_authority = FixedSplitAuthority.read(args.split_manifest.resolve(), require_official=True)
+    registry = UnifiedCapabilityRegistry.read(args.unified_registry.resolve())
+    phase3cm_path = Path(__file__).resolve().parents[1] / "src" / "our_system_phase2" / "runtime" / "phase3cm_train_portfolio_sortino_reward_audit.py"
+    receipt_context = ReceiptContext.build(
+        registry=registry,
+        split_authority=split_authority,
+        data_release_hash=str(args.data_release_hash),
+        evaluator_paths=[phase3cm_path],
+    )
+    CandidateSubmissionAuthority(registry, receipt_context).validate_table(
+        candidates,
+        read_receipt_table(args.candidate_receipt_table.resolve()),
+    )
     expected_shards = set(range(max(1, int(args.expected_shard_count))))
     atom_rows_by_hash: dict[str, list[dict[str, Any]]] = {}
     coverage_by_hash: dict[str, set[int]] = {}
@@ -116,11 +139,7 @@ def main(argv: list[str] | None = None) -> int:
         raise RuntimeError(f"exact reward atom coverage failed for {len(incomplete)} candidates")
 
     all_atom_rows = [row for rows in atom_rows_by_hash.values() for row in rows]
-    fixed_split_manifest = (
-        _read_csv(args.split_manifest.resolve()) if args.split_manifest is not None else None
-    )
-    if args.split_manifest is not None and not fixed_split_manifest:
-        raise RuntimeError(f"split manifest is empty: {args.split_manifest.resolve()}")
+    fixed_split_manifest = [dict(row) for row in split_authority.rows]
     split_manifest_rows, split_reassignment_audit = _normalize_global_date_splits(
         all_atom_rows,
         train_fraction=args.train_fraction,

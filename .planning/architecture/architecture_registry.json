@@ -1,6 +1,6 @@
 {
-  "registry_version": "cn_feature_runtime_wiring_architecture_registry_v7",
-  "phase": "CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED",
+  "registry_version": "cn_runtime_authority_split_convergence_architecture_registry_v8",
+  "phase": "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED",
   "base_registry": "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json",
   "authority_contract": {
     "status_authority": ".planning/architecture/architecture_registry.json",
@@ -15,8 +15,13 @@
   },
   "node_overrides": {
     "fixed_calendar_split": {
-      "status": "PARTIAL",
-      "blocker": "The 485-date manifest and final exact normalization are correct, but Phase3CM worker-local split mapping and the chunk-04 recovery worker path remain runtime-reachable"
+      "status": "IMPLEMENTED",
+      "feedback_permission": "TRAIN_ONLY_VALIDATION_HOLDOUT_REPORT_ONLY_FORWARD_2026_FORBIDDEN",
+      "test_evidence": [
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
+      ],
+      "blocker": ""
     },
     "scheduler_memory_feedback": {
       "status": "FROZEN",
@@ -341,15 +346,15 @@
     {
       "id": "unified_capability_registry_282",
       "label": "Unified 282-representation semantic, PIT and route authority",
-      "status": "PARTIAL",
+      "status": "IMPLEMENTED",
       "implementation_paths": ["src/our_system_phase2/services/unified_capability_registry.py", "src/our_system_phase2/services/typed_route_compiler.py", "src/our_system_phase2/services/unified_discovery_generators.py", "reports/cn_unified_capability_discovery_20260714/completed_f8169e1/registry/unified_capability_registry.json"],
       "input_artifacts": ["121-field Fabric", "147 canonical fundamental representations", "11 frozen Broad Event mechanisms", "3 derived intraday states"],
-      "output_artifacts": ["282 candidate-visible representations", "eight typed routes", "source/representation lineage and fail-closed compiler receipts"],
+      "output_artifacts": ["282 candidate-visible representations", "eight typed routes", "source/representation lineage and immutable fail-closed candidate submission receipts"],
       "data_role": "development_only_capability_authority",
       "feedback_permission": "NO_VALIDATION_NO_HOLDOUT_NO_2026_NO_PROMOTION",
-      "test_evidence": ["tests/test_unified_capability_integration.py", "reports/cn_feature_runtime_wiring_audit_20260714/CN_FEATURE_WIRING_CAPABILITY_TEST.json"],
+      "test_evidence": ["tests/test_unified_capability_integration.py", "tests/test_runtime_authority_convergence.py", "reports/cn_runtime_authority_and_split_repair_20260715/CN_RUNTIME_AUTHORITY_CONVERGENCE_MATRIX.csv", "reports/cn_feature_runtime_wiring_audit_20260714/CN_FEATURE_WIRING_CAPABILITY_TEST.json"],
       "verification_paths": ["src/our_system_phase2/services/unified_capability_registry.py", "src/our_system_phase2/services/typed_route_compiler.py", "src/our_system_phase2/services/unified_discovery_generators.py", "reports/cn_unified_capability_discovery_20260714/completed_f8169e1/registry/unified_capability_registry.json", "tests/test_unified_capability_integration.py"],
-      "blocker": "authoritative inside unified preflight/discovery, but not consulted by the active legacy Phase3GA/CM/CN candidate path"
+      "blocker": ""
     },
     {
       "id": "unified_development_discovery",
@@ -366,16 +371,16 @@
     },
     {
       "id": "legacy_phase3ga_runtime_bypass",
-      "label": "Active legacy Phase3GA/CM/CN hardcoded field path",
-      "status": "PARTIAL",
+      "label": "Legacy Phase3GA generators as proposal sources only",
+      "status": "IMPLEMENTED",
       "implementation_paths": ["app.py", "src/our_system_phase2/runtime/phase3dv_budget_pool_self_deepen_pack.py", "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py"],
       "input_artifacts": ["hardcoded field-family pools", "physical parquet schema availability", "legacy atom manifests"],
-      "output_artifacts": ["legacy generation, proxy, admission, strict reward and Phase3CN feedback funnel"],
+      "output_artifacts": ["proposal rows; only receipt-authorized rows can enter proxy admission, semantic evaluation, reward or feedback"],
       "data_role": "historical_development_search_path",
       "feedback_permission": "FORMAL_SEARCH_FROZEN",
-      "test_evidence": ["reports/cn_feature_runtime_wiring_audit_20260714/CN_HARDCODED_FIELD_PATHS.md", "reports/cn_feature_runtime_wiring_audit_20260714/CN_FIELD_SEARCH_EXPOSURE_FUNNEL.csv"],
+      "test_evidence": ["reports/cn_feature_runtime_wiring_audit_20260714/CN_HARDCODED_FIELD_PATHS.md", "reports/cn_feature_runtime_wiring_audit_20260714/CN_FIELD_SEARCH_EXPOSURE_FUNNEL.csv", "tests/test_runtime_authority_convergence.py", "reports/cn_runtime_authority_and_split_repair_20260715/CN_LEGACY_RECEIPT_GATED_PARITY.json"],
       "verification_paths": ["app.py", "src/our_system_phase2/runtime/phase3dv_budget_pool_self_deepen_pack.py", "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py", "reports/cn_feature_runtime_wiring_audit_20260714/CN_HARDCODED_FIELD_PATHS.md"],
-      "blocker": "field search eligibility is not governed by UnifiedCapabilityRegistry or TypedRouteCompiler"
+      "blocker": "formal search remains frozen; proposal authority does not imply run authorization"
     },
     {
       "id": "feature_runtime_wiring_audit",
@@ -388,7 +393,46 @@
       "feedback_permission": "NO_PERFORMANCE_NO_REWARD_NO_PROMOTION",
       "test_evidence": ["tests/test_cn_feature_runtime_wiring_audit.py", "reports/cn_feature_runtime_wiring_audit_20260714/run_manifest.json"],
       "verification_paths": ["scripts/build_cn_feature_runtime_wiring_audit.py", "tests/test_cn_feature_runtime_wiring_audit.py", "reports/cn_feature_runtime_wiring_audit_20260714/artifact_index.json", "reports/cn_feature_runtime_wiring_audit_20260714/CN_FEATURE_RUNTIME_WIRING_INDEPENDENT_AUDIT.md"],
-      "blocker": "audit confirms runtime convergence and worker-boundary split enforcement are still required"
+      "blocker": "superseded by the accepted runtime authority and split convergence repair"
+    },
+    {
+      "id": "candidate_submission_receipt_gate",
+      "label": "Immutable unified candidate submission receipt gate",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/candidate_submission_receipt.py", "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py", "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"],
+      "input_artifacts": ["legacy or unified proposal", "UnifiedCapabilityRegistry", "TypedRouteCompiler", "fixed 485-date manifest", "development data release hash", "evaluator code hash"],
+      "output_artifacts": ["CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json", "candidate_submission_receipts.jsonl", "pre-admission rejection audit"],
+      "data_role": "development_only_candidate_authorization",
+      "feedback_permission": "TRAIN_ONLY_AFTER_EXACT_RECEIPT_VALIDATION",
+      "test_evidence": ["tests/test_runtime_authority_convergence.py", "reports/cn_runtime_authority_and_split_repair_20260715/CN_LEGACY_RECEIPT_GATED_PARITY.json"],
+      "verification_paths": ["src/our_system_phase2/services/candidate_submission_receipt.py", "tests/test_runtime_authority_convergence.py", "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json"],
+      "blocker": ""
+    },
+    {
+      "id": "runtime_authority_split_convergence_repair",
+      "label": "Runtime authority and global split convergence repair",
+      "status": "IMPLEMENTED",
+      "implementation_paths": ["src/our_system_phase2/services/fixed_split_authority.py", "scripts/build_cn_runtime_authority_split_repair.py"],
+      "input_artifacts": ["fixed 485-date manifest", "formal runtime source reachability", "frozen historical legal candidate"],
+      "output_artifacts": ["runtime authority matrix", "global split enforcement matrix", "1/2/4 worker parity", "historical evidence reclassification"],
+      "data_role": "source_and_synthetic_no_selection",
+      "feedback_permission": "NONE",
+      "test_evidence": ["tests/test_runtime_authority_convergence.py", "reports/cn_runtime_authority_and_split_repair_20260715/run_manifest.json"],
+      "verification_paths": ["reports/cn_runtime_authority_and_split_repair_20260715/artifact_index.json", "reports/cn_runtime_authority_and_split_repair_20260715/CN_RUNTIME_AUTHORITY_AND_SPLIT_REPAIR_REPORT.md"],
+      "blocker": ""
+    },
+    {
+      "id": "worker_local_split",
+      "label": "Worker-local sample-derived split",
+      "status": "DEPRECATED",
+      "implementation_paths": [],
+      "input_artifacts": ["historical shard-local sampled timestamps"],
+      "output_artifacts": ["none in current formal runtime"],
+      "data_role": "historical_reproduction_only",
+      "feedback_permission": "FORBIDDEN",
+      "test_evidence": ["tests/test_runtime_authority_convergence.py", "reports/cn_runtime_authority_and_split_repair_20260715/CN_GLOBAL_SPLIT_ENFORCEMENT_MATRIX.csv"],
+      "verification_paths": ["src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"],
+      "blocker": "removed from the formal Phase3CM worker path"
     },
     {
       "id": "formal_search_frozen",
@@ -452,8 +496,14 @@
     {"source": "pit_fundamental_fabric_v1", "target": "unified_capability_registry_282", "relation": "supplies_147_canonical_representations_only", "permission": "ALLOWED", "evidence": "raw 1,227 fields remain fail-closed"},
     {"source": "broad_event_recovery", "target": "unified_capability_registry_282", "relation": "supplies_11_frozen_event_mechanisms", "permission": "ALLOWED", "evidence": "frozen entry pack hash"},
     {"source": "unified_capability_registry_282", "target": "unified_development_discovery", "relation": "governs_candidate_identity_route_and_pit_receipts", "permission": "ALLOWED", "evidence": "two-seed exposure ledgers"},
-    {"source": "unified_capability_registry_282", "target": "legacy_phase3ga_runtime_bypass", "relation": "registry_receipt_required_but_not_wired", "permission": "FORBIDDEN", "evidence": "runtime authority audit"},
-    {"source": "legacy_phase3ga_runtime_bypass", "target": "formal_search_frozen", "relation": "formal_search_execution", "permission": "FORBIDDEN", "evidence": "runtime mismatch audit"},
+    {"source": "unified_capability_registry_282", "target": "candidate_submission_receipt_gate", "relation": "authorizes_field_route_primitive_pit_and_source_lag", "permission": "ALLOWED", "evidence": "immutable receipt schema and negative tests"},
+    {"source": "fixed_calendar_split", "target": "candidate_submission_receipt_gate", "relation": "binds_single_485_date_split_authority", "permission": "ALLOWED", "evidence": "receipt split manifest hash"},
+    {"source": "legacy_phase3ga_runtime_bypass", "target": "candidate_submission_receipt_gate", "relation": "submits_proposals_for_authorization_before_admission", "permission": "ALLOWED", "evidence": "legacy proposal adapter and receipt rejection audit"},
+    {"source": "candidate_submission_receipt_gate", "target": "admission_diversity", "relation": "supplies_authorized_candidates_only", "permission": "ALLOWED", "evidence": "Phase3CP pre-admission receipt gate"},
+    {"source": "candidate_submission_receipt_gate", "target": "scheduler_memory_feedback", "relation": "train_feedback_requires_exact_evaluator_receipt", "permission": "ALLOWED", "evidence": "Phase3CN receipt hash guard"},
+    {"source": "worker_local_split", "target": "candidate_submission_receipt_gate", "relation": "sample_derived_worker_split", "permission": "FORBIDDEN", "evidence": "formal _split_map removed"},
+    {"source": "runtime_authority_split_convergence_repair", "target": "formal_search_frozen", "relation": "engineering_qualification_does_not_authorize_search", "permission": "FORBIDDEN", "evidence": "repair report"},
+    {"source": "legacy_phase3ga_runtime_bypass", "target": "formal_search_frozen", "relation": "formal_search_execution", "permission": "FORBIDDEN", "evidence": "formal search remains frozen after repair"},
     {"source": "unified_development_discovery", "target": "formal_search_frozen", "relation": "challenge_or_candidate_promotion", "permission": "FORBIDDEN", "evidence": "old frozen replays do not qualify as new capability"},
     {"source": "unified_development_discovery", "target": "scheduler_memory_feedback", "relation": "report_only_to_positive_memory", "permission": "FORBIDDEN", "evidence": "completed run persisted no cross-sprint memory"},
     {"source": "forward_2026", "target": "unified_development_discovery", "relation": "forward_to_unified_search_policy", "permission": "FORBIDDEN", "evidence": "development-only access contract"},

@@ -50,8 +50,15 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
 )
 from our_system_phase2.services.legacy_field_aliases import rewrite_legacy_field_aliases, rewrite_summary
 from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema
+from our_system_phase2.services.candidate_submission_receipt import (
+    CandidateSubmissionAuthority,
+    ReceiptContext,
+    read_receipt_table,
+)
+from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 from our_system_phase2.services.signal_vector_semantics import build_signal_semantic_diagnostics
+from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -910,6 +917,9 @@ def _schema_hold_reward_row(candidate: dict[str, Any], *, portfolio_mode: str) -
         blockers = f"{blockers}:{missing}"
     row = {
         "candidate_id": candidate.get("candidate_id"),
+        "candidate_submission_receipt_id": candidate.get("candidate_submission_receipt_id"),
+        "candidate_submission_receipt_hash": candidate.get("candidate_submission_receipt_hash"),
+        "candidate_submission_authorization": candidate.get("candidate_submission_authorization"),
         "expression_hash": candidate.get("expression_hash"),
         "run": candidate.get("run"),
         "source_round": candidate.get("round_id"),
@@ -952,25 +962,6 @@ def _schema_hold_reward_row(candidate: dict[str, Any], *, portfolio_mode: str) -
     }
     row.update(normalize_candidate_schema(row))
     return row
-
-
-def _split_map(signal_times: set[pd.Timestamp], train_fraction: float, validation_fraction: float) -> dict[pd.Timestamp, str]:
-    times = sorted(pd.to_datetime(list(signal_times)))
-    if not times:
-        return {}
-    n = len(times)
-    train_end = max(1, min(n, int(round(n * train_fraction))))
-    validation_end = max(train_end, min(n, train_end + int(round(n * validation_fraction))))
-    out: dict[pd.Timestamp, str] = {}
-    for idx, trade_time in enumerate(times):
-        if idx < train_end:
-            split = "train"
-        elif idx < validation_end:
-            split = "validation"
-        else:
-            split = "holdout"
-        out[pd.Timestamp(trade_time)] = split
-    return out
 
 
 def _row_trade_date(row: dict[str, Any]) -> str:
@@ -2366,6 +2357,9 @@ def _candidate_summary_from_reward_atoms(
     portfolio_mode = str(candidate.get("portfolio_mode") or "long_only_top")
     reward_row = {
         "candidate_id": candidate.get("candidate_id"),
+        "candidate_submission_receipt_id": candidate.get("candidate_submission_receipt_id"),
+        "candidate_submission_receipt_hash": candidate.get("candidate_submission_receipt_hash"),
+        "candidate_submission_authorization": candidate.get("candidate_submission_authorization"),
         "expression_hash": candidate.get("expression_hash"),
         "run": candidate.get("run"),
         "source_round": candidate.get("round_id"),
@@ -2532,6 +2526,9 @@ def _candidate_summary(
     portfolio_mode = str(rows[0].get("portfolio_mode") or "unknown") if rows else "unknown"
     reward_row = {
         "candidate_id": candidate.get("candidate_id"),
+        "candidate_submission_receipt_id": candidate.get("candidate_submission_receipt_id"),
+        "candidate_submission_receipt_hash": candidate.get("candidate_submission_receipt_hash"),
+        "candidate_submission_authorization": candidate.get("candidate_submission_authorization"),
         "expression_hash": candidate.get("expression_hash"),
         "run": candidate.get("run"),
         "source_round": candidate.get("round_id"),
@@ -2711,14 +2708,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--event-aware-sample-times", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--event-sample-trade-times-per-shard", type=int, default=0)
     parser.add_argument("--horizons", default="1,5,15,30")
-    parser.add_argument("--train-fraction", type=float, default=0.60)
-    parser.add_argument("--validation-fraction", type=float, default=0.20)
+    parser.add_argument("--train-fraction", type=float, default=0.75)
+    parser.add_argument("--validation-fraction", type=float, default=0.15)
     parser.add_argument(
         "--split-manifest",
         type=Path,
-        default=None,
-        help="Optional fixed trade_date/split CSV shared by every shard worker.",
+        required=True,
+        help="Required fixed 485-session trade_date/split authority shared by every formal worker.",
     )
+    parser.add_argument("--candidate-receipt-table", type=Path, required=True)
+    parser.add_argument("--unified-registry", type=Path, required=True)
+    parser.add_argument("--data-release-hash", required=True)
     parser.add_argument("--min-obs-per-time", type=int, default=20)
     parser.add_argument("--cost-bps", type=float, default=5.0)
     parser.add_argument("--top-quantile", type=float, default=0.2)
@@ -2815,11 +2815,16 @@ def main(argv: list[str] | None = None) -> int:
     report_root = _resolve(args.report_root)
     output_root.mkdir(parents=True, exist_ok=True)
     report_root.mkdir(parents=True, exist_ok=True)
-    fixed_split_manifest_rows = (
-        _read_csv(_resolve(args.split_manifest)) if args.split_manifest is not None else None
+    split_authority = FixedSplitAuthority.read(_resolve(args.split_manifest), require_official=True)
+    fixed_split_manifest_rows = [dict(row) for row in split_authority.rows]
+    unified_registry = UnifiedCapabilityRegistry.read(_resolve(args.unified_registry))
+    receipt_context = ReceiptContext.build(
+        registry=unified_registry,
+        split_authority=split_authority,
+        data_release_hash=str(args.data_release_hash),
+        evaluator_paths=[Path(__file__)],
     )
-    if args.split_manifest is not None and not fixed_split_manifest_rows:
-        raise ValueError(f"split manifest is empty: {_resolve(args.split_manifest)}")
+    submission_authority = CandidateSubmissionAuthority(unified_registry, receipt_context)
     horizons = tuple(int(item.strip()) for item in str(args.horizons).split(",") if item.strip())
     candidates = _load_candidates(
         _resolve(args.candidate_audit),
@@ -2828,6 +2833,14 @@ def main(argv: list[str] | None = None) -> int:
         enable_legacy_alias_rewrite=not bool(args.disable_legacy_alias_rewrite),
         m1_first_ret_replacement=str(args.m1_first_ret_replacement),
     )
+    candidate_receipts = read_receipt_table(_resolve(args.candidate_receipt_table))
+    validated_receipts = submission_authority.validate_table(candidates, candidate_receipts)
+    receipt_by_candidate = {str(row["candidate_id"]): row for row in validated_receipts}
+    for candidate in candidates:
+        receipt = receipt_by_candidate[str(candidate.get("candidate_id") or "")]
+        candidate["candidate_submission_receipt_id"] = receipt["receipt_id"]
+        candidate["candidate_submission_receipt_hash"] = receipt["receipt_hash"]
+        candidate["candidate_submission_authorization"] = receipt["authorization_status"]
     all_panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
     selected_shard_indices = _parse_shard_indices(args.shard_indices, len(all_panels))
     panel_items = list(enumerate(all_panels))
@@ -2879,7 +2892,9 @@ def main(argv: list[str] | None = None) -> int:
                 prepare_labels=not bool(args.semantic_only),
             )
             meta["shard_index"] = shard_index
-            split_by_time = _split_map(full_signal_times, args.train_fraction, args.validation_fraction)
+            # The formal path has no shard-local fallback.  Unknown, report-only
+            # and sealed dates are resolved exclusively by the frozen authority.
+            split_by_time = split_authority.map_times(full_signal_times)
             eval_time_index = None if args.disable_fast_portfolio_loop else _build_eval_time_index(eval_frame)
             meta["fast_portfolio_loop"] = not bool(args.disable_fast_portfolio_loop)
             meta["eval_time_group_count"] = len(eval_time_index["groups"]) if eval_time_index is not None else None

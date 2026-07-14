@@ -14,7 +14,7 @@ import math
 import statistics
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import numpy as np
 
@@ -24,6 +24,7 @@ from our_system_phase2.services.candidate_schema import (
     normalize_candidate_schema,
     safe_float,
 )
+from our_system_phase2.services.candidate_submission_receipt import read_receipt_table
 from our_system_phase2.services.evaluation_access_guard import (
     DEVELOPMENT_ROLE,
     GUARD_VERSION,
@@ -434,7 +435,10 @@ def build_feedback_memory(
     max_turnover: float,
     max_family_share: float,
     min_clean_feedback: int,
+    authorized_receipt_hashes: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
+    if authorized_receipt_hashes is None:
+        raise RuntimeError("Phase3CN formal feedback requires candidate submission receipts")
     tables = _discover_cm_tables(cm_tables, cm_roots)
     if not tables:
         raise RuntimeError("no Phase3CM reward tables found")
@@ -444,6 +448,15 @@ def build_feedback_memory(
     normalized_rows: list[dict[str, Any]] = []
     for row in rows:
         item = dict(row)
+        if authorized_receipt_hashes is not None:
+            candidate_id = str(item.get("candidate_id") or "")
+            expected_receipt_hash = str(authorized_receipt_hashes.get(candidate_id) or "")
+            observed_receipt_hash = str(item.get("candidate_submission_receipt_hash") or "")
+            if not expected_receipt_hash or observed_receipt_hash != expected_receipt_hash:
+                raise RuntimeError(
+                    "Phase3CN feedback rejected candidate without the exact evaluator authorization receipt; "
+                    f"candidate={candidate_id or '<missing>'}"
+                )
         source_split = str(item.get("optimizer_reward_split") or "").strip().lower()
         if source_split != "train":
             raise RuntimeError(
@@ -543,7 +556,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-turnover", type=float, default=0.75)
     parser.add_argument("--max-family-share", type=float, default=0.25)
     parser.add_argument("--min-clean-feedback", type=int, default=8)
+    parser.add_argument("--candidate-receipt-table", type=Path, required=True)
     args = parser.parse_args(argv)
+
+    receipt_rows = read_receipt_table(_resolve(args.candidate_receipt_table))
+    authorized_receipt_hashes = {
+        str(row.get("candidate_id") or ""): str(row.get("receipt_hash") or "")
+        for row in receipt_rows
+    }
 
     summary = build_feedback_memory(
         cm_tables=args.cm_table,
@@ -555,6 +575,7 @@ def main(argv: list[str] | None = None) -> int:
         max_turnover=args.max_turnover,
         max_family_share=args.max_family_share,
         min_clean_feedback=args.min_clean_feedback,
+        authorized_receipt_hashes=authorized_receipt_hashes,
     )
     print(json.dumps({"status": "ok", **summary}, ensure_ascii=False))
     return 0

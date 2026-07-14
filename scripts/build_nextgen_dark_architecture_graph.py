@@ -60,7 +60,7 @@ def merge_registries(base: dict, overlay: dict) -> dict:
     return {
         "registry_version": overlay["registry_version"],
         "phase": overlay["phase"],
-        "graph_type": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT",
+        "graph_type": "CN_RUNTIME_AUTHORITY_AND_SPLIT_CURRENT_ARCHITECTURE_CONTRACT",
         "authority_contract": overlay["authority_contract"],
         "nodes": nodes,
         "edges": edges,

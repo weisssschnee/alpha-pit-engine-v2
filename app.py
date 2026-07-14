@@ -56,12 +56,18 @@ ROUTES: dict[str, str] = {
     "build-development-only-true1min-release": "our_system_phase2.runtime.build_development_only_true1min_release",
 }
 
-CURRENT_SEARCH_ROUTE = "phase3dv-budget-pool-self-deepen-pack"
+CURRENT_SEARCH_ROUTE = "phase3cp-real-cm-small-loop"
+CURRENT_SEARCH_ROUTE_CONTRACT = "LEGACY_PROPOSAL_TO_UNIFIED_RECEIPT_GATE_TO_EVALUATOR"
+CURRENT_SEARCH_STATUS = "FORMAL_SEARCH_FROZEN_PENDING_SEPARATE_CAPABILITY_RUN_AUTHORIZATION"
 
 RETIRED_ROUTES: dict[str, str] = {
     "phase3du-adaptive-regime-free-deepen-pack": (
         "superseded by Phase3DV budget-pool self-deepen. Phase3DU used a more "
         "rigid deepen/freeze policy and should be used only for provenance."
+    ),
+    "phase3dv-budget-pool-self-deepen-pack": (
+        "legacy proposal source only. Formal semantic/reward evaluation must "
+        "flow through phase3cp-real-cm-small-loop and its unified candidate receipt gate."
     ),
 }
 

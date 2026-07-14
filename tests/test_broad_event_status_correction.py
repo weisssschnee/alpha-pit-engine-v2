@@ -54,7 +54,7 @@ def test_graph_records_legacy_path_and_completed_broad_recovery_separately() -> 
     nodes = {row["id"]: row for row in graph["nodes"]}
     links = {(row["source"], row["target"], row["relation"]): row for row in graph["links"]}
 
-    assert graph["graph"]["phase"] == "CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED"
+    assert graph["graph"]["phase"] == "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED"
     assert nodes["sprint2_event_generator"]["status"] == "DEPRECATED"
     assert nodes["broad_event_recovery"]["status"] == "IMPLEMENTED"
     assert links[

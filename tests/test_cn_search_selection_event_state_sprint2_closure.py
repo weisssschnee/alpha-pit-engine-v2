@@ -59,7 +59,7 @@ def test_sprint2_graph_contains_selector_generators_epoch_and_frozen_pack() -> N
     nodes = {row["id"]: row for row in graph["nodes"]}
     links = {(row["source"], row["target"], row["relation"]): row for row in graph["links"]}
 
-    assert graph["graph"]["phase"] == "CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE"
+    assert graph["graph"]["phase"] == "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED"
     assert nodes["sprint2_strict_priority_selector"]["status"] == "IMPLEMENTED"
     assert nodes["sprint2_event_generator"]["status"] == "DEPRECATED"
     assert nodes["broad_event_recovery"]["status"] == "IMPLEMENTED"

@@ -1,8 +1,8 @@
 # CN true1min State
 
-Updated: 2026-07-14
+Updated: 2026-07-15
 
-Current state: `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`
+Current state: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED`
 
 ## Accepted foundations
 
@@ -24,35 +24,42 @@ Current state: `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`
 - `CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED`
 - `CN_UNIFIED_CAPABILITY_DISCOVERY_COMPLETED_DEVELOPMENT_ONLY`
 - `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`
+- `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED`
 - `UNIFIED_DISCOVERY_CHALLENGE_ELIGIBILITY_SUPERSEDED`
 
-## Runtime wiring audit result
+## Runtime authority and split convergence result
 
-The independent non-performance audit inventories 1,348 physical/source
-fields (121 versioned true1min fields plus 1,227 fundamental source fields),
-282 candidate-visible representations and eight typed routes. All nine planted
-capability cases pass their positive, matched-control, future-revision and
-metadata-misuse checks.
+The accepted non-performance repair makes the 485-session manifest the sole
+formal split authority: 364 train, 73 validation and 48 report-only holdout
+dates. Direct, serial, candidate-parallel, shard-parallel, retry, chunk
+recovery and exact-merge paths require the manifest. Phase3CM no longer has a
+worker-local `_split_map`; unknown dates hard-fail and 2026 is explicitly
+sealed rather than mapped to holdout.
 
-The unified path is operational but is not the authority for the active legacy
-search chain. `RegistryDrivenGenerator` and `TypedRouteCompiler` govern unified
-preflight/discovery, while the current `Phase3GA -> Phase3CM -> Phase3CN` path
-still uses Phase3DV hardcoded pools and physical-schema filtering. Formal
-search remains frozen until candidate submission requires a unified registry
-and typed-compiler receipt.
+`UnifiedCapabilityRegistry + TypedRouteCompiler` now authorize every formal
+evaluator input through an immutable candidate submission receipt before proxy
+admission. The receipt binds the real expression and lineage to registry,
+compiler, split manifest, data release and evaluator-code hashes. Phase3CN
+requires the same receipt hash plus train-only reward metadata before feedback
+can reach scheduler or memory.
 
-The completed two-seed unified run produced 232 candidate rows and 7 survivors
-per seed. Its four shared exact survivors are all old frozen Broad Event
-replays. They prove replay reproducibility, not new capability discovery. The
-historical `qualified_to_apply_for_independent_challenge=true` boolean is
-superseded; current code requires a non-frozen cross-seed reproduction. No
-challenge was opened and no frozen Event pack was rewritten.
+Legacy Phase3DV/RX/UCB/CEM/hybrid/fresh components remain proposal sources
+only. A conservative adapter maps legal raw-minute, FirstN and PIT-qualified
+slow proposals; it does not infer Event/State/Regime semantics. Physical
+parquet presence cannot authorize a field. Blocked metadata, direct raw
+fundamentals, wrong lag, latched Event/State bypass and plate placeholders fail
+closed.
 
-The 485-date global manifest remains correct (364 train, 73 validation, 48
-holdout), and final exact normalization uses it. Runtime enforcement is still
-partial because Phase3CM worker-local splitting and the chunk-04 recovery
-worker path remain reachable before or without final fixed-manifest
-normalization.
+Synthetic 1/2/4-worker plus deterministic recovery/exact-merge parity passed
+with maximum numeric error 0 at tolerance 1e-12. A lexicographically selected,
+current-contract-legal frozen historical candidate preserved expression,
+signal, weights, turnover, cost, synthetic train-like metric and behavior
+identity through the receipt gate with zero error. This is engineering evidence,
+not Alpha or promotion evidence.
+
+The completed two-seed unified run remains development-only diagnostic evidence.
+Its four shared exact survivors are old frozen Broad Event replays; no challenge
+was opened and no historical output was rewritten.
 
 Phase A conclusions remain unchanged: generation structural redundancy exists,
 but catastrophic signal-level collapse and downstream concentration
@@ -165,20 +172,18 @@ No forward-authorization candidate pack was created.
   complete. Its byte-for-byte frozen entry pack was replayed by the unified
   development-only run; it was not modified, promoted or written to memory.
 - All 1,227 raw fundamental source fields remain outside direct generator
-  exposure. The 147 canonical representations are available only through the
-  unified development runner; they do not enter legacy Phase3GA/CM/CN.
+  exposure. The 147 canonical representations can be authorized only by the
+  unified typed receipt route; no formal fundamental search was run.
 - Sprint-2 selector, RX values and strict results are archived evidence, not
   persistent positive or negative memory.
 - Epoch-D remains unrun. No fundamental performance experiment has been run.
 
 ## Next formal decision point
 
-Recommendation: `CONVERGE_RUNTIME_AUTHORITY_BEFORE_ANY_NEW_SEARCH`.
+Recommendation: `ELIGIBLE_TO_APPLY_FOR_SMALL_PREREGISTERED_DEVELOPMENT_ONLY_CAPABILITY_RUN`.
 
-The next engineering decision is to require every candidate entering the
-legacy evaluator to carry a frozen UnifiedCapabilityRegistry and
-TypedRouteCompiler receipt, then eliminate worker-local/manifest-optional split
-paths. After a non-performance wiring preflight passes, a separately authorized
-development-only run may be considered. Business composition remains
-`PIT_CONTRACT_UNRESOLVED`, plate/industry remains disabled, formal search stays
-frozen and 2026 stays sealed.
+The engineering qualification is complete, but it is not run authorization.
+Any next run still requires a separate frozen contract and explicit approval.
+Business composition remains `PIT_CONTRACT_UNRESOLVED`, plate/industry remains
+disabled, formal search stays frozen, validation/holdout remain report-only,
+and 2026 stays sealed.

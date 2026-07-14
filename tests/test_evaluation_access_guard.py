@@ -28,6 +28,7 @@ def _reward_row(**overrides: str) -> dict[str, str]:
         "optimizer_reward_metric": "train_portfolio_sortino_rankic_regime_composite_reward",
         "optimizer_reward_split": "train",
         "feedback_data_role": "development",
+        "candidate_submission_receipt_hash": "receipt-hash-c1",
         "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
         "train_reward_blockers": "",
         "validation_day_sortino": "9.9",
@@ -113,6 +114,7 @@ def test_feedback_memory_writes_train_only_schema(tmp_path: Path) -> None:
         max_turnover=0.75,
         max_family_share=1.0,
         min_clean_feedback=1,
+        authorized_receipt_hashes={"c1": "receipt-hash-c1"},
     )
 
     with (output_root / "phase3cn_search_feedback_memory.csv").open(
@@ -124,6 +126,23 @@ def test_feedback_memory_writes_train_only_schema(tmp_path: Path) -> None:
     assert not any(name.startswith(("validation_", "holdout_")) for name in fields)
     assert rows[0]["feedback_data_role"] == "development"
     assert_train_only_feedback_rows(rows)
+
+
+def test_feedback_memory_rejects_missing_candidate_receipt_authority(tmp_path: Path) -> None:
+    cm_table = tmp_path / "cm.csv"
+    _write_csv(cm_table, [_reward_row()])
+    with pytest.raises(RuntimeError, match="requires candidate submission receipts"):
+        build_feedback_memory(
+            cm_tables=[cm_table],
+            cm_roots=[],
+            output_root=tmp_path / "runtime",
+            report_root=tmp_path / "reports",
+            train_threshold=0.0,
+            validation_floor=0.0,
+            max_turnover=0.75,
+            max_family_share=1.0,
+            min_clean_feedback=1,
+        )
 
 
 @pytest.mark.parametrize(
@@ -154,4 +173,5 @@ def test_feedback_memory_rejects_raw_provenance_laundering(
             max_turnover=0.75,
             max_family_share=1.0,
             min_clean_feedback=1,
+            authorized_receipt_hashes={"c1": "receipt-hash-c1"},
         )

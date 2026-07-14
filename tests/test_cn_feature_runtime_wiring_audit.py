@@ -40,13 +40,14 @@ def test_all_nine_synthetic_capability_routes_fail_closed() -> None:
         }
 
 
-def test_split_reachability_reports_worker_mismatches() -> None:
+def test_split_reachability_reports_worker_convergence() -> None:
     rows = _split_audit(REPO)
     by_component = {row["component"]: row for row in rows}
     assert by_component["FIXED_GLOBAL_MANIFEST"]["status"] == "PASS"
-    assert by_component["PHASE3CM_WORKER_LOCAL_SPLIT"]["status"] == "FAIL_REACHABLE"
-    assert by_component["CHUNK04_RECOVERY_WORKERS"]["status"] == "FAIL_REACHABLE"
-    assert by_component["FINAL_EXACT_NORMALIZATION"]["status"] == "PASS_WITH_UPSTREAM_CAVEAT"
+    assert by_component["PHASE3CP_PARALLEL_GUARD"]["status"] == "PASS"
+    assert by_component["PHASE3CM_WORKER_LOCAL_SPLIT"]["status"] == "PASS"
+    assert by_component["CHUNK04_RECOVERY_WORKERS"]["status"] == "PASS"
+    assert by_component["FINAL_EXACT_NORMALIZATION"]["status"] == "PASS"
 
 
 def test_required_deliverable_names_are_stable() -> None:

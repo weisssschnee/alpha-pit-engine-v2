@@ -7,6 +7,8 @@ param(
   [string]$ReportRoot = "D:\ChengboRemote\runtime\reports\phase3ga_semantic_efficiency_v2_20260710_77o",
   [string]$PersistentCacheRoot = "D:\ChengboRemote\cache\phase3ga_2024_2025_cm_bounded_v2",
   [string]$SplitManifest = "D:\ChengboRemote\workspace\alpha_pit_true1min_engine_20260710_phase3ga_semantic_efficiency_v2\runtime\run_plans\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+  [string]$UnifiedRegistry = "D:\ChengboRemote\workspace\alpha_pit_true1min_engine_20260710_phase3ga_semantic_efficiency_v2\reports\cn_unified_capability_discovery_20260714\completed_f8169e1\registry\unified_capability_registry.json",
+  [string]$DataReleaseHash = "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
   [int]$GenerationBudget = 24576,
   [int]$RescheduleBudget = 24576,
   [int]$CaTopN = 1536,
@@ -24,7 +26,7 @@ $env:MKL_NUM_THREADS = "1"
 $ArmBudget = Join-Path $CoRoot "phase3cp_real_cm_next_arm_budget_table.csv"
 $MemoryRoot = Join-Path $Repo "runtime\search_memory"
 $ExpectedPanelRel = "phase3aq_wide_true1min\canary\phase3aq_true_1min_formula_canary.parquet"
-foreach ($path in @($Python, $Repo, $ShardRoot, $ArmBudget, $SplitManifest)) {
+foreach ($path in @($Python, $Repo, $ShardRoot, $ArmBudget, $SplitManifest, $UnifiedRegistry)) {
   if (-not (Test-Path -LiteralPath $path)) { throw "required path missing: $path" }
 }
 $PanelCount = @(Get-ChildItem -LiteralPath $ShardRoot -Directory -Filter "shard_*" | Where-Object {
@@ -62,6 +64,9 @@ $manifest = [ordered]@{
   validation_usage = "report_only"
   holdout_usage = "report_only"
   split_manifest = $SplitManifest
+  unified_registry = $UnifiedRegistry
+  data_release_hash = $DataReleaseHash
+  candidate_submission_receipt = "required before semantic/reward evaluation"
   split_policy = "fixed_trade_date_manifest"
   year_2026_usage = "forbidden_during_search"
   plate_membership_claim = "none"
@@ -90,6 +95,8 @@ $argsList = @(
   "--cm-train-fraction", "0.75",
   "--cm-validation-fraction", "0.15",
   "--cm-split-manifest", $SplitManifest,
+  "--unified-registry", $UnifiedRegistry,
+  "--data-release-hash", $DataReleaseHash,
   "--cm-min-obs-per-time", "20",
   "--cm-cost-bps", "5",
   "--cm-top-quantile", "0.2",

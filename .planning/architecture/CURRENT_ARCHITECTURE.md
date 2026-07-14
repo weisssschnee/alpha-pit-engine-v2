@@ -1,11 +1,12 @@
 # Current Architecture
 
-Updated: 2026-07-14
+Updated: 2026-07-15
 
-State: `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED` on the physically
-isolated 2024-2025 development-only release. The new unified capability path
-works, but it is not yet the sole authority for legacy Phase3GA/CM/CN. Sealed
-evaluation, formal search, promotion and cross-sprint memory remain frozen.
+State: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED` on the physically
+isolated 2024-2025 development-only release. The unified registry/compiler is
+now the sole candidate admission authority and the fixed 485-date manifest is
+the sole formal split authority. Sealed evaluation, formal search, promotion
+and cross-sprint memory remain frozen.
 
 This projection is generated and checked from
 `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json` plus
@@ -17,7 +18,7 @@ separately under `.planning/codegraph/`.
 ```mermaid
 flowchart LR
     DATA["IMPLEMENTED<br/>16-shard true1min source"] --> DEV["IMPLEMENTED<br/>physical development-only release"]
-    SPLIT["PARTIAL<br/>fixed 485-date manifest<br/>worker-local path reachable"] --> DEV
+    SPLIT["IMPLEMENTED<br/>sole fixed 485-date authority<br/>364 / 73 / 48"] --> DEV
     DEV --> LEDGER["IMPLEMENTED<br/>fail-closed access ledger<br/>forbidden counters = 0"]
     DEV --> EPOCHC["PARTIAL<br/>three-seed Epoch-C<br/>32,739 / 32,768 unique<br/>1,024 strict"]
 
@@ -41,13 +42,18 @@ flowchart LR
     SPLIT --> FUND_FABRIC
     FIELDS -->|"1,225 absent / 2 equivalents"| FUND_FABRIC
     FUND_FABRIC --> FEATURE_FABRIC["IMPLEMENTED<br/>typed level / change / event / condition adapter"]
-    FIELDS --> UNIFIED["PARTIAL<br/>282-representation unified authority<br/>8 typed routes"]
+    FIELDS --> UNIFIED["IMPLEMENTED<br/>282-representation unified authority<br/>8 typed routes"]
     FUND_FABRIC -->|"147 canonical representations"| UNIFIED
     EVENT_PACK -->|"11 frozen replay mechanisms"| UNIFIED
     UNIFIED --> UDISC["PARTIAL<br/>two-seed development discovery<br/>232 candidates / 7 survivors each"]
-    UDISC --> AUDIT["IMPLEMENTED<br/>runtime-wiring audit<br/>9/9 planted cases pass"]
-    LEGACY["PARTIAL<br/>active Phase3DV/Phase3CP<br/>hardcoded + schema fields"] --> AUDIT
-    UNIFIED -. "NOT WIRED" .-> LEGACY
+    UDISC --> AUDIT["IMPLEMENTED<br/>historical runtime-wiring audit<br/>9/9 planted cases pass"]
+    LEGACY["IMPLEMENTED<br/>legacy generators<br/>proposal sources only"] --> RECEIPT["IMPLEMENTED<br/>immutable candidate receipt gate"]
+    UNIFIED -->|"authorizes field / route / primitive / PIT"| RECEIPT
+    SPLIT -->|"binds manifest hash"| RECEIPT
+    RECEIPT --> ADMISSION["IMPLEMENTED<br/>receipt-gated proxy/admission/evaluator"]
+    ADMISSION --> REPAIR["IMPLEMENTED<br/>1/2/4 worker + recovery parity<br/>max error 0"]
+    WORKER_SPLIT["DEPRECATED<br/>worker-local split"] -. "FORBIDDEN" .-> RECEIPT
+    REPAIR -. "ENGINEERING QUALIFICATION ONLY" .-> SEALED
     UDISC -. "4 shared = old frozen replay<br/>NO CHALLENGE / NO PROMOTION" .-> SEALED
     FUND_FABRIC -. "NO RAW 1,227 EXPOSURE" .-> SEALED
     ZYGC["FROZEN<br/>business composition<br/>no disclosure clock"] -. "PIT_CONTRACT_UNRESOLVED" .-> FUND_FABRIC
@@ -56,6 +62,16 @@ flowchart LR
 
 ## Current outcomes
 
+- The fixed 485-session manifest is mandatory at every formal worker, serial,
+  parallel, retry, recovery and exact-merge boundary. Validation and holdout
+  are report-only; 2026 is sealed.
+- Every evaluator input carries an immutable receipt bound to canonical
+  expression, field/source/representation lineage, typed route, primitives,
+  PIT/source lag, matched control, registry/compiler/split/data/evaluator
+  hashes. Phase3CN accepts only train feedback bearing the exact receipt hash.
+- Synthetic 1/2/4-worker and recovery/exact-merge parity passed with zero
+  numeric error at 1e-12 tolerance. Frozen historical legal-candidate direct
+  versus gated parity also passed with zero error and is not Alpha evidence.
 - The strict-priority selector has both offline OOF lift and realized
   development strict lift. It is a frozen model, not online memory.
 - Shared-backbone proxy and strict-priority rank correlations are 1.0 for all
@@ -109,11 +125,14 @@ flowchart LR
   statement revision values are also absent from the current snapshot release.
 - Validation, holdout, spent, sealed, plate/industry and 2026 remain outside
   the allowed development feedback graph.
-- `app.py` still selects the legacy Phase3DV route, whose hardcoded field pools
-  and Phase3CP schema filtering bypass UnifiedCapabilityRegistry and
-  TypedRouteCompiler. Runtime authority must converge before any new search.
-- Phase3CM still calls a worker-local split map, and the chunk-04 recovery
-  workers omit the fixed manifest before final exact normalization. The global
-  manifest is correct, but worker-boundary enforcement is partial.
+- `app.py` identifies receipt-gated Phase3CP as the current formal route and
+  marks Phase3DV as a legacy proposal-only diagnostic route. Hardcoded pools
+  and parquet schema presence cannot authorize admission or evaluation.
+- Phase3CM, serial/parallel Phase3CP, chunk recovery and exact merge all require
+  the same fixed manifest. The worker-local splitter is removed from the formal
+  evaluator; unknown dates and 2026 fail closed.
+- Engineering qualification for a small pre-registered development-only
+  capability run is complete. Formal search remains frozen pending separate
+  authorization; this repair did not run performance search or promotion.
 - The old run's challenge-eligibility boolean is superseded. Frozen replay
   alone cannot qualify a challenge; no challenge is open.

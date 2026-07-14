@@ -18,6 +18,7 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -54,9 +55,18 @@ from our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke import (
     end_generation_accounting,
 )
 from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema, safe_float
+from our_system_phase2.services.candidate_submission_receipt import (
+    CandidateSubmissionAuthority,
+    LegacyCandidateSubmissionAdapter,
+    ReceiptContext,
+    read_receipt_table,
+    write_receipt_table,
+)
 from our_system_phase2.services.expression_semantics import analyze_expression
+from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
 from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule, read_csv_rows
 from our_system_phase2.services.signal_vector_semantics import classify_candidate_signal_semantics
+from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -675,6 +685,8 @@ def _run_pre_cm_semantic_viability_gate(
         "--semantic-sketch-size",
         str(max(16, int(args.pre_cm_semantic_sketch_size))),
     ]
+    _append_cm_split_manifest_args(argv, args)
+    _append_cm_submission_authority_args(argv, args)
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
         raise RuntimeError(f"pre-CM semantic viability gate failed with exit code {result}")
@@ -928,8 +940,115 @@ def _append_cm_checkpoint_args(argv: list[str], args: argparse.Namespace) -> Non
 
 
 def _append_cm_split_manifest_args(argv: list[str], args: argparse.Namespace) -> None:
-    if args.cm_split_manifest is not None:
-        argv.extend(["--split-manifest", str(_resolve(args.cm_split_manifest))])
+    if args.cm_split_manifest is None:
+        raise RuntimeError("formal Phase3CM invocation requires --cm-split-manifest")
+    argv.extend(["--split-manifest", str(_resolve(args.cm_split_manifest))])
+
+
+def _append_cm_submission_authority_args(argv: list[str], args: argparse.Namespace) -> None:
+    receipt_table = getattr(args, "cm_candidate_receipt_table", None)
+    if receipt_table is None:
+        raise RuntimeError("formal Phase3CM invocation requires a frozen candidate receipt table")
+    argv.extend(
+        [
+            "--candidate-receipt-table",
+            str(_resolve(receipt_table)),
+            "--unified-registry",
+            str(_resolve(args.unified_registry)),
+            "--data-release-hash",
+            str(args.data_release_hash),
+        ]
+    )
+
+
+def _freeze_candidate_receipts(args: argparse.Namespace, candidate_table: Path, output_path: Path) -> Path:
+    candidates = _read_csv(candidate_table)
+    if not candidates:
+        raise RuntimeError("cannot authorize an empty candidate table")
+    split_authority = FixedSplitAuthority.read(_resolve(args.cm_split_manifest), require_official=True)
+    registry = UnifiedCapabilityRegistry.read(_resolve(args.unified_registry))
+    evaluator_path = REPO / "src" / "our_system_phase2" / "runtime" / "phase3cm_train_portfolio_sortino_reward_audit.py"
+    context = ReceiptContext.build(
+        registry=registry,
+        split_authority=split_authority,
+        data_release_hash=str(args.data_release_hash),
+        evaluator_paths=[evaluator_path],
+    )
+    adapter = LegacyCandidateSubmissionAdapter(registry)
+    evaluator_candidates: list[dict[str, Any]] = []
+    authorization_candidates: list[dict[str, Any]] = []
+    for candidate in candidates:
+        if str(candidate.get("route_id") or ""):
+            normalized = dict(candidate)
+            evaluator_candidates.append(normalized)
+            authorization_candidates.append(normalized)
+        else:
+            adapted, control = adapter.adapt_pair(candidate)
+            evaluator_candidates.append(adapted)
+            authorization_candidates.extend([adapted, control])
+    _write_csv(candidate_table, evaluator_candidates)
+    receipts = CandidateSubmissionAuthority(registry, context).authorize_table(authorization_candidates)
+    write_receipt_table(output_path, receipts)
+    return output_path
+
+
+def _authorize_proposal_decisions(
+    args: argparse.Namespace,
+    decisions: list[dict[str, Any]],
+    *,
+    output_root: Path,
+    report_root: Path,
+) -> tuple[list[dict[str, Any]], Path]:
+    """Authorize proposals before proxy admission or semantic evaluation."""
+    split_authority = FixedSplitAuthority.read(_resolve(args.cm_split_manifest), require_official=True)
+    registry = UnifiedCapabilityRegistry.read(_resolve(args.unified_registry))
+    evaluator_path = REPO / "src" / "our_system_phase2" / "runtime" / "phase3cm_train_portfolio_sortino_reward_audit.py"
+    context = ReceiptContext.build(
+        registry=registry,
+        split_authority=split_authority,
+        data_release_hash=str(args.data_release_hash),
+        evaluator_paths=[evaluator_path],
+    )
+    authority = CandidateSubmissionAuthority(registry, context)
+    adapter = LegacyCandidateSubmissionAdapter(registry)
+    accepted: list[dict[str, Any]] = []
+    receipts: list[dict[str, Any]] = []
+    rejected: list[dict[str, Any]] = []
+    for proposal in decisions:
+        try:
+            if str(proposal.get("route_id") or ""):
+                raise RuntimeError(
+                    "typed proposals must be submitted as an explicit candidate/control table; "
+                    "the legacy Phase3CP decision stream accepts proposal-only rows"
+                )
+            adapted, control = adapter.adapt_pair(proposal)
+            pair_receipts = authority.authorize_table([adapted, control])
+            receipt = next(row for row in pair_receipts if row["candidate_id"] == adapted["candidate_id"])
+            adapted["candidate_submission_receipt_id"] = receipt["receipt_id"]
+            adapted["candidate_submission_receipt_hash"] = receipt["receipt_hash"]
+            adapted["candidate_submission_authorization"] = receipt["authorization_status"]
+            accepted.append(adapted)
+            receipts.extend(pair_receipts)
+        except Exception as exc:
+            rejected.append(
+                {
+                    "candidate_id": proposal.get("candidate_id"),
+                    "expression_hash": proposal.get("expression_hash"),
+                    "generator_arm": proposal.get("generator_arm"),
+                    "expression": proposal.get("expression"),
+                    "receipt_gate_status": "REJECTED_BEFORE_ADMISSION",
+                    "receipt_gate_reason": str(exc),
+                }
+            )
+    if not accepted:
+        raise RuntimeError("unified candidate receipt gate rejected every legacy proposal before admission")
+    receipt_path = output_root / "candidate_submission_receipts.jsonl"
+    write_receipt_table(receipt_path, receipts)
+    _write_csv(output_root / "candidate_submission_receipt_rejections.csv", rejected)
+    _write_csv(report_root / "candidate_submission_receipt_rejections.csv", rejected)
+    _write_csv(output_root / "candidate_submission_authorized_proposals.csv", accepted)
+    _write_csv(report_root / "candidate_submission_authorized_proposals.csv", accepted)
+    return accepted, receipt_path
 
 
 def _run_real_cm_chunk_subprocess(
@@ -995,6 +1114,7 @@ def _run_real_cm_chunk_subprocess(
     ]
     _append_cm_checkpoint_args(argv, args)
     _append_cm_split_manifest_args(argv, args)
+    _append_cm_submission_authority_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", "src")
@@ -1102,6 +1222,7 @@ def _run_real_cm_shard_subprocess(
         argv.append("--write-reward-atoms")
     _append_cm_checkpoint_args(argv, args)
     _append_cm_split_manifest_args(argv, args)
+    _append_cm_submission_authority_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", "src")
@@ -1185,6 +1306,7 @@ def _run_real_cm_retry_table(
     ]
     _append_cm_checkpoint_args(argv, args)
     _append_cm_split_manifest_args(argv, args)
+    _append_cm_submission_authority_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
@@ -1638,15 +1760,12 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
             row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
             progress_rows.append(row)
 
+    exact_split_authority = FixedSplitAuthority.read(_resolve(args.cm_split_manifest), require_official=True)
     split_manifest_rows, split_reassignment_audit = _normalize_global_date_splits(
         atom_rows,
         train_fraction=args.cm_train_fraction,
         validation_fraction=args.cm_validation_fraction,
-        split_manifest=(
-            _read_csv(_resolve(args.cm_split_manifest))
-            if args.cm_split_manifest is not None
-            else None
-        ),
+        split_manifest=[dict(row) for row in exact_split_authority.rows],
     )
 
     atom_rows_by_hash: dict[str, list[dict[str, Any]]] = {}
@@ -1712,7 +1831,7 @@ def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Pa
         "validation_fraction": args.cm_validation_fraction,
         "holdout_fraction": round(1.0 - args.cm_train_fraction - args.cm_validation_fraction, 8),
         "split_policy": split_reassignment_audit.get("split_policy"),
-        "split_manifest_input": str(_resolve(args.cm_split_manifest)) if args.cm_split_manifest is not None else "",
+        "split_manifest_input": str(_resolve(args.cm_split_manifest)),
         "split_audit": split_reassignment_audit,
         "cost_bps": args.cm_cost_bps,
         "top_quantile": args.cm_top_quantile,
@@ -1858,6 +1977,7 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
     ]
     _append_cm_checkpoint_args(argv, args)
     _append_cm_split_manifest_args(argv, args)
+    _append_cm_submission_authority_args(argv, args)
     _append_cm_persistent_cache_args(argv, args)
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
@@ -1946,9 +2066,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-event-aware-sample-times", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--cm-event-sample-trade-times-per-shard", type=int, default=0)
     parser.add_argument("--cm-horizons", default="1,5,15")
-    parser.add_argument("--cm-train-fraction", type=float, default=0.60)
-    parser.add_argument("--cm-validation-fraction", type=float, default=0.20)
-    parser.add_argument("--cm-split-manifest", type=Path, default=None)
+    parser.add_argument("--cm-train-fraction", type=float, default=0.75)
+    parser.add_argument("--cm-validation-fraction", type=float, default=0.15)
+    parser.add_argument("--cm-split-manifest", type=Path, required=True)
+    parser.add_argument("--unified-registry", type=Path, required=True)
+    parser.add_argument("--data-release-hash", required=True)
     parser.add_argument("--cm-min-obs-per-time", type=int, default=20)
     parser.add_argument("--cm-cost-bps", type=float, default=5.0)
     parser.add_argument("--cm-top-quantile", type=float, default=0.2)
@@ -2014,14 +2136,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if not shard_root.exists():
         raise FileNotFoundError(f"true1min shard root does not exist: {shard_root}")
-    if args.cm_split_manifest is not None and not _resolve(args.cm_split_manifest).exists():
+    if not _resolve(args.cm_split_manifest).exists():
         raise FileNotFoundError(f"CM split manifest does not exist: {_resolve(args.cm_split_manifest)}")
-    if (
-        int(args.cm_workers) > 1
-        and str(args.cm_parallel_axis) == "shard"
-        and args.cm_split_manifest is None
-    ):
-        raise RuntimeError("shard-parallel CM requires --cm-split-manifest")
+    FixedSplitAuthority.read(_resolve(args.cm_split_manifest), require_official=True)
+    if not _resolve(args.unified_registry).exists():
+        raise FileNotFoundError(f"unified registry does not exist: {_resolve(args.unified_registry)}")
     shard_root_text = str(shard_root).lower()
     if "tdxofficial" in shard_root_text or "\\1d" in shard_root_text or "/1d" in shard_root_text:
         raise RuntimeError(f"refusing suspicious non-true1min shard root: {shard_root}")
@@ -2044,8 +2163,22 @@ def main(argv: list[str] | None = None) -> int:
         shortfall_fill_rounds=args.shortfall_fill_rounds,
         shortfall_oversample_multiplier=args.shortfall_oversample_multiplier,
     )
+    decisions, args.cm_candidate_receipt_table = _authorize_proposal_decisions(
+        args,
+        decisions,
+        output_root=output_root,
+        report_root=report_root,
+    )
 
     search_root = output_root / "search_outputs"
+    report_search_root = report_root / "search_outputs"
+    # Remove the proposal-only projection written by generation, then expose
+    # only receipt-authorized rows to Phase3CA admission.
+    for root in (search_root, report_search_root):
+        if root.exists():
+            shutil.rmtree(root)
+    _write_arm_outputs(decisions, search_root)
+    _write_arm_outputs(decisions, report_search_root)
     ca_root = output_root / "phase3ca_bridge"
     report_ca_root = report_root / "phase3ca_bridge"
     ca_selection_mode = "arm_balanced" if args.cm_selection_mode == "arm_balanced" else "ranked"
@@ -2092,6 +2225,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     cn_output_root = output_root / "phase3cn_feedback_memory"
     cn_report_root = report_root / "phase3cn_feedback_memory"
+    receipt_rows = read_receipt_table(args.cm_candidate_receipt_table)
+    authorized_receipt_hashes = {
+        str(row.get("candidate_id") or ""): str(row.get("receipt_hash") or "")
+        for row in receipt_rows
+    }
     cn_summary = build_feedback_memory(
         cm_tables=[cm_table],
         cm_roots=[],
@@ -2102,6 +2240,7 @@ def main(argv: list[str] | None = None) -> int:
         max_turnover=0.75,
         max_family_share=0.25,
         min_clean_feedback=args.min_clean_feedback,
+        authorized_receipt_hashes=authorized_receipt_hashes,
     )
 
     next_arm_rows = read_csv_rows(cn_output_root / "phase3cn_arm_score_table.csv")
