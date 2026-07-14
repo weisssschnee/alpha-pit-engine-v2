@@ -132,10 +132,15 @@ def run_preflight(
     registry = UnifiedCapabilityRegistry.read(registry_path)
     compiler = TypedRouteCompiler(registry)
     generator = RegistryDrivenGenerator(registry)
-    contract_hash = stable_hash(contract)
+    frozen_contract_hash = str(contract.get("contract_hash") or "")
+    unsigned_contract = dict(contract)
+    unsigned_contract.pop("contract_hash", None)
+    observed_contract_hash = stable_hash(unsigned_contract)
     gates: dict[str, dict[str, Any]] = {}
 
     g0_errors: list[str] = []
+    if not frozen_contract_hash or observed_contract_hash != frozen_contract_hash:
+        g0_errors.append("frozen contract self-hash mismatch")
     if registry.registry_hash != contract["registry_hash"]:
         g0_errors.append("registry hash does not match frozen contract")
     unresolved_join = _join_unresolved(external_join_path)
@@ -184,7 +189,7 @@ def run_preflight(
             registry=registry,
             run_id=f"{contract['experiment_id']}_dry_{seed_name}",
             repo_sha=repo_sha,
-            contract_hash=contract_hash,
+            contract_hash=frozen_contract_hash,
             data_release_hash=contract["data_release"]["release_hash"],
             route_budgets=contract["capability_canary"]["route_budgets"],
         )
@@ -257,7 +262,7 @@ def run_preflight(
         "status": "READY_FOR_FULL_DEVELOPMENT_CAPABILITY_CANARY" if passed else "CN_UNIFIED_CAPABILITY_PREFLIGHT_FAILED",
         "completed_at_utc": datetime.now(timezone.utc).isoformat(),
         "repo_sha": repo_sha,
-        "contract_hash": contract_hash,
+        "contract_hash": frozen_contract_hash,
         "registry_hash": registry.registry_hash,
         "gates": gates,
         "all_gates_passed": passed,
