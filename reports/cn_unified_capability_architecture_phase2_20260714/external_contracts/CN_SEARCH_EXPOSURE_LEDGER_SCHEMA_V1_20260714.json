@@ -1,0 +1,101 @@
+{
+  "schema_version": "cn_search_exposure_ledger_v1",
+  "purpose": "prove which information families were actually wired and evaluated",
+  "tables": {
+    "candidate_field_lineage": {
+      "primary_key": [
+        "run_id",
+        "candidate_id",
+        "field_id",
+        "representation_id",
+        "operator_path"
+      ],
+      "columns": [
+        "run_id",
+        "repo_sha",
+        "contract_hash",
+        "data_release_hash",
+        "candidate_id",
+        "exact_identity",
+        "behavior_identity",
+        "route_id",
+        "field_id",
+        "source_field_id",
+        "representation_id",
+        "entity_scope",
+        "temporal_semantics",
+        "operator_family",
+        "operator_path",
+        "maturity_rule",
+        "support_unit",
+        "matched_control_id",
+        "proposal_origin",
+        "seed",
+        "access_role"
+      ]
+    },
+    "field_route_stage_summary": {
+      "primary_key": [
+        "run_id",
+        "field_id",
+        "route_id",
+        "operator_family"
+      ],
+      "columns": [
+        "run_id",
+        "field_id",
+        "source_field_id",
+        "source_family",
+        "route_id",
+        "operator_family",
+        "proposal_count",
+        "legal_count",
+        "canonical_count",
+        "exact_count",
+        "admission_count",
+        "strict_count",
+        "survivor_count",
+        "behavior_cluster_count",
+        "matched_control_count",
+        "development_increment_positive_count",
+        "challenge_count",
+        "forward_count",
+        "zero_budget",
+        "not_executed_reason"
+      ]
+    },
+    "lane_capability_summary": {
+      "primary_key": [
+        "run_id",
+        "route_id"
+      ],
+      "columns": [
+        "run_id",
+        "route_id",
+        "qualified_field_count",
+        "wired_field_count",
+        "proposal_exposed_field_count",
+        "strict_exposed_field_count",
+        "survivor_field_count",
+        "untested_field_count",
+        "matched_control_completion_rate",
+        "forbidden_read_count",
+        "claim_ceiling"
+      ]
+    }
+  },
+  "validation_rules": [
+    "strict_count must be zero when proposal_count is zero",
+    "survivor_count cannot exceed strict_count",
+    "development increment requires matched_control_count > 0",
+    "zero-budget routes must use NOT_EXECUTED rather than NO_VALUE",
+    "challenge and forward rows must reference frozen packs",
+    "all field IDs must resolve to the registry version bound in the run contract"
+  ],
+  "required_outputs": [
+    "FIELD_FAMILY_EXPOSURE_MATRIX.csv",
+    "LANE_CAPABILITY_COVERAGE.csv",
+    "UNTESTED_INFORMATION_FAMILIES.csv",
+    "CANDIDATE_FIELD_LINEAGE.parquet_or_csv"
+  ]
+}

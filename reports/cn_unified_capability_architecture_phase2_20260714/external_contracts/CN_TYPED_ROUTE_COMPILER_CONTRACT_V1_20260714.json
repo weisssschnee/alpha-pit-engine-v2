@@ -1,0 +1,264 @@
+{
+  "contract_version": "cn_typed_route_compiler_contract_v1",
+  "evidence_baseline_repo_sha": "afd0666404fed935072f7f6d73e13db17b7f6f9f",
+  "compiler_inputs": [
+    "unified capability registry",
+    "candidate typed AST",
+    "data release manifest",
+    "field observable-time evidence",
+    "frozen run contract"
+  ],
+  "compile_pipeline": [
+    "resolve stable field IDs and representation IDs",
+    "validate entity scope and support unit",
+    "validate temporal semantics, observable time, maturity and revision policy",
+    "validate operator family against route allowlist",
+    "enforce route-specific negative rules",
+    "attach matched-control constructor",
+    "emit candidate-field lineage and exposure-ledger records",
+    "fail closed on unresolved or contradictory semantics"
+  ],
+  "rejection_codes": {
+    "UNKNOWN_FIELD_ID": "field cannot be resolved to the capability registry",
+    "SOURCE_FIELD_ID_PENDING": "provisional field lacks final source-universe identity",
+    "PIT_UNQUALIFIED": "observable/revision contract is unresolved",
+    "ENTITY_SCOPE_MISMATCH": "operator assumes a different entity scope",
+    "MARKET_FIELD_DIRECT_CSRANK": "market-level state would be constant across stocks",
+    "ROUTE_OPERATOR_FORBIDDEN": "operator family is not legal for the route",
+    "LATCHED_AS_LIFECYCLE": "latched observation used as enter/exit lifecycle state",
+    "INTRABAR_ORDER_FABRICATED": "1-minute OHLC used to invent within-bar event order",
+    "POST_WINDOW_NOT_MATURE": "post-event feature used before its window matures",
+    "EPISODE_REPEAT_VOTE": "one episode contributes repeated minute-level votes",
+    "CONTROL_CONTRACT_MISSING": "matched control cannot be constructed",
+    "EXPOSURE_LEDGER_MISSING": "candidate cannot emit lineage and stage exposure records",
+    "SEALED_DATA_ACCESS": "candidate or compiler requests forbidden data"
+  },
+  "required_negative_tests": [
+    "market regime field rejected by direct CSRank",
+    "interaction-only legacy label cannot bypass typed route",
+    "latched observation rejected as lifecycle exit/reseal source",
+    "post-event signal masked until maturity time",
+    "duplicate episode votes deduplicated",
+    "future revision hidden before revision observable time",
+    "candidate without matched control rejected",
+    "candidate without stable field lineage rejected"
+  ],
+  "route_contracts": [
+    {
+      "route_id": "MINUTE_STATIC",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "BAR_VALUE"
+      ],
+      "allowed_operator_families": [
+        "CSRank",
+        "ZScore",
+        "Arithmetic",
+        "CrossSectionalResidual"
+      ],
+      "forbidden_operator_families": [
+        "EventWindow",
+        "FutureWindow",
+        "DisclosureTransition"
+      ],
+      "support_unit": "stock-minute cross-section",
+      "maturity_rule": "bar_close",
+      "matched_control": "same fields, operator depth, horizon and cost; remove optional condition only",
+      "identity_unit": "exact signal on frozen coordinates",
+      "current_status": "IMPLEMENTED_PARTIAL"
+    },
+    {
+      "route_id": "FIRSTN_PATH",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "SESSION_VALUE",
+        "FIRSTN_MATURED"
+      ],
+      "allowed_operator_families": [
+        "CSRank",
+        "PathShape",
+        "OpeningGap",
+        "SignedPath",
+        "MeanReversion"
+      ],
+      "forbidden_operator_families": [
+        "PreMaturityRead",
+        "EventWindow"
+      ],
+      "support_unit": "stock-session after firstN maturity",
+      "maturity_rule": "firstN end timestamp",
+      "matched_control": "same firstN field and maturity; matched raw-path control",
+      "identity_unit": "stock-session signal behavior",
+      "current_status": "IMPLEMENTED"
+    },
+    {
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "SLOW_LEVEL",
+        "LATCHED_OBSERVATION"
+      ],
+      "allowed_operator_families": [
+        "CSRank",
+        "Winsorize",
+        "IndustryNeutralize",
+        "SizeNeutralize",
+        "MaskedZScore"
+      ],
+      "forbidden_operator_families": [
+        "MinuteDelta",
+        "MarketFieldCSRank",
+        "FutureRevision"
+      ],
+      "support_unit": "stock-session cross-section",
+      "maturity_rule": "latest PIT-observable version before session",
+      "matched_control": "same field, coverage mask, neutralization and complexity; remove conditioning only",
+      "identity_unit": "stock-session slow-state behavior",
+      "current_status": "PARTIALLY_WIRED_UNTYPED"
+    },
+    {
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "SLOW_CHANGE",
+        "REVISION_AWARE_CHANGE"
+      ],
+      "allowed_operator_families": [
+        "Delta",
+        "Slope",
+        "Acceleration",
+        "Persistence",
+        "MultiScaleRelation",
+        "QoQ",
+        "YoY",
+        "TTMChange"
+      ],
+      "forbidden_operator_families": [
+        "MinuteWindowOnSessionConstant",
+        "FutureRevision",
+        "UnqualifiedForwardFill"
+      ],
+      "support_unit": "stock-disclosure or stock-session change episode",
+      "maturity_rule": "both source versions observable before action time",
+      "matched_control": "same field versions, lookback, maturity and coverage; shuffled or level-only control",
+      "identity_unit": "slow-change episode behavior",
+      "current_status": "NOT_WIRED"
+    },
+    {
+      "route_id": "DISCLOSURE_EVENT",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "EVENT_PULSE",
+        "LATCHED_OBSERVATION"
+      ],
+      "allowed_operator_families": [
+        "EventWindow",
+        "TimeSince",
+        "FirstHit",
+        "EventCount",
+        "PreEventPath",
+        "PostMaturityOutcome"
+      ],
+      "forbidden_operator_families": [
+        "RepeatedLatchedMinuteVote",
+        "PreDisclosureRead",
+        "UnmaturedPostWindow"
+      ],
+      "support_unit": "unique disclosure episode",
+      "maturity_rule": "observable disclosure time plus registered action delay",
+      "matched_control": "same entity/date structure, fields, window and complexity; remove or placebo-shift trigger",
+      "identity_unit": "episode-level signal behavior",
+      "current_status": "PARTIALLY_IMPLEMENTED_VIA_BROAD_EVENT"
+    },
+    {
+      "route_id": "MARKET_REGIME_CONDITION",
+      "entity_scopes": [
+        "MARKET",
+        "INDUSTRY",
+        "PLATE"
+      ],
+      "temporal_semantics": [
+        "REGIME_STATE",
+        "REGIME_TRANSITION"
+      ],
+      "allowed_operator_families": [
+        "ConditionGate",
+        "Transition",
+        "StateAge",
+        "RegimeInteraction"
+      ],
+      "forbidden_operator_families": [
+        "DirectStockCSRank",
+        "RepeatedStockVoteForSameMarketState"
+      ],
+      "support_unit": "market-time block",
+      "maturity_rule": "state observable at or before candidate action time",
+      "matched_control": "same stock signal and time blocks; remove regime gate or matched placebo regime",
+      "identity_unit": "conditioned stock behavior by market block",
+      "current_status": "NOT_WIRED_IN_STATE_EXPRESSIONS"
+    },
+    {
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "LIFECYCLE_STATE",
+        "INTRADAY_DERIVED_STATE"
+      ],
+      "allowed_operator_families": [
+        "Transition",
+        "StateAge",
+        "Duration",
+        "ConditionedPath",
+        "StateResidual"
+      ],
+      "forbidden_operator_families": [
+        "LatchedAsLifecycle",
+        "IntrabarOrderFabrication"
+      ],
+      "support_unit": "stock-state episode",
+      "maturity_rule": "state transition observable from conservative bar evidence",
+      "matched_control": "same raw field, window and complexity; remove state transition only",
+      "identity_unit": "state-episode behavior",
+      "current_status": "IMPLEMENTED_FOR_PRICE_DERIVED_STATE_ONLY"
+    },
+    {
+      "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+      "entity_scopes": [
+        "STOCK",
+        "MARKET"
+      ],
+      "temporal_semantics": [
+        "EVENT_PULSE",
+        "LIFECYCLE_STATE",
+        "REGIME_TRANSITION"
+      ],
+      "allowed_operator_families": [
+        "FrozenMechanismReplay",
+        "MatchedControlReplay",
+        "BehaviorClusterAdmission"
+      ],
+      "forbidden_operator_families": [
+        "OnlineRefit",
+        "CrossSprintMemory",
+        "AutomaticPromotion"
+      ],
+      "support_unit": "frozen event episode",
+      "maturity_rule": "per semantic registry and frozen entry pack",
+      "matched_control": "frozen mechanism-specific matched controls",
+      "identity_unit": "frozen mechanism and behavior-cluster identity",
+      "current_status": "DISCOVERY_ENTRY_AUTHORIZED_NO_PROMOTION"
+    }
+  ]
+}

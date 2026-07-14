@@ -50,6 +50,9 @@ ROUTES: dict[str, str] = {
     "nextgen-dark-development-canary": "our_system_phase2.runtime.nextgen_dark_development_canary",
     "cn-b1s-development-canary": "our_system_phase2.runtime.cn_b1s_development_canary",
     "cn-generator-funnel-diagnosis": "our_system_phase2.runtime.cn_generator_funnel_diagnosis",
+    "cn-unified-capability-preflight": "our_system_phase2.runtime.cn_unified_capability_preflight",
+    "cn-broad-event-frozen-replay": "our_system_phase2.runtime.cn_broad_event_frozen_replay",
+    "cn-unified-capability-discovery": "our_system_phase2.runtime.cn_unified_capability_discovery",
     "build-development-only-true1min-release": "our_system_phase2.runtime.build_development_only_true1min_release",
 }
 

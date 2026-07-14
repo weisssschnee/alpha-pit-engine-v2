@@ -1,0 +1,68 @@
+{
+  "contract_version": "cn_unified_discovery_capability_preflight_v1",
+  "status": "DESIGN_READY_NOT_AUTHORIZED_TO_RUN",
+  "evidence_baseline_repo_sha": "afd0666404fed935072f7f6d73e13db17b7f6f9f",
+  "gates": [
+    {
+      "gate": "G0_AUTHORITY_AND_IDENTITY",
+      "pass_when": [
+        "single capability registry version frozen",
+        "all candidate-visible fields have stable field IDs",
+        "Codex fundamental source universe joined without ambiguous aliases"
+      ],
+      "failure_status": "SEMANTICS_UNRESOLVED"
+    },
+    {
+      "gate": "G1_SEMANTICS_AND_PIT",
+      "pass_when": [
+        "entity scope, temporal semantics and routes explicitly registered",
+        "observable, maturity, source-lag and revision policies pass tests",
+        "unresolved data families are isolated and blocked"
+      ],
+      "failure_status": "PIT_UNQUALIFIED"
+    },
+    {
+      "gate": "G2_TYPED_WIRING",
+      "pass_when": [
+        "generators query registry rather than hard-coded field arrays",
+        "typed route compiler rejects illegal operator-field combinations",
+        "state expressions consume the state fields they claim to test"
+      ],
+      "failure_status": "NOT_WIRED"
+    },
+    {
+      "gate": "G3_EXPOSURE_AND_BUDGET",
+      "pass_when": [
+        "every enabled route has non-zero frozen proposal/admission/strict budgets",
+        "exposure ledger is emitted during dry generation",
+        "exact identity dedup occurs before quota accounting"
+      ],
+      "failure_status": "NOT_EVALUATED"
+    },
+    {
+      "gate": "G4_MATCHED_CONTROLS",
+      "pass_when": [
+        "every candidate class has constructible matched controls",
+        "episode and regime routes use correct support units",
+        "one episode or market block cannot cast repeated stock-minute votes"
+      ],
+      "failure_status": "CONTROL_CONTRACT_INVALID"
+    },
+    {
+      "gate": "G5_ACCESS_AND_REPRODUCIBILITY",
+      "pass_when": [
+        "development-only physical release and hashes frozen",
+        "forbidden read counters are zero in smoke execution",
+        "registry, compiler, generator and ledger hashes recorded"
+      ],
+      "failure_status": "ACCESS_OR_REPRODUCIBILITY_BLOCKED"
+    }
+  ],
+  "success_status": "READY_FOR_FULL_DEVELOPMENT_CAPABILITY_CANARY",
+  "not_authorized": [
+    "formal performance search",
+    "challenge or forward access",
+    "candidate promotion",
+    "cross-sprint positive memory"
+  ]
+}

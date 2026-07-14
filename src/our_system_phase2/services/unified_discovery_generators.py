@@ -1,0 +1,275 @@
+"""Registry-driven proposal generator for the unified CN capability system."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Mapping, Sequence
+
+from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
+from our_system_phase2.services.unified_capability_registry import (
+    CapabilityField,
+    ROUTE_IDS,
+    UnifiedCapabilityRegistry,
+    stable_hash,
+)
+
+
+GENERATOR_VERSION = "cn_unified_registry_driven_generator_v1"
+
+
+@dataclass(frozen=True, slots=True)
+class GeneratedPair:
+    candidate: dict[str, Any]
+    control: dict[str, Any]
+
+
+def _pick(rows: Sequence[CapabilityField], index: int, seed: int, salt: str) -> CapabilityField:
+    if not rows:
+        raise ValueError(f"empty registry pool for {salt}")
+    offset = int(stable_hash({"seed": int(seed), "salt": salt})[:12], 16)
+    return rows[(offset + int(index) * 1009) % len(rows)]
+
+
+class RegistryDrivenGenerator:
+    def __init__(self, registry: UnifiedCapabilityRegistry) -> None:
+        self.registry = registry
+        self.compiler = TypedRouteCompiler(registry)
+
+    def _pool(self, route_id: str, predicate: Any | None = None) -> tuple[CapabilityField, ...]:
+        rows = self.registry.fields_for_route(route_id)
+        if predicate is not None:
+            rows = tuple(row for row in rows if predicate(row))
+        if not rows:
+            raise ValueError(f"route has no qualified registry fields: {route_id}")
+        return rows
+
+    def _base(
+        self,
+        *,
+        candidate_id: str,
+        route_id: str,
+        expression: str,
+        operator_family: str,
+        seed: int,
+        origin: str,
+        matched_control_id: str,
+        declared_field_ids: Sequence[str] = (),
+        condition_field_ids: Sequence[str] = (),
+        is_control: bool = False,
+        extra: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        row = {
+            "candidate_id": candidate_id,
+            "route_id": route_id,
+            "expression": expression,
+            "operator_family": operator_family,
+            "seed": int(seed),
+            "proposal_origin": origin,
+            "matched_control_id": matched_control_id,
+            "declared_field_ids": list(declared_field_ids),
+            "condition_field_ids": list(condition_field_ids),
+            "is_matched_control": bool(is_control),
+            "vote_policy": "CONTROL_NO_SEPARATE_VOTE" if is_control else "ONE_SUPPORT_UNIT_ONE_VOTE",
+            "maturity_contract_registered": route_id in {"DISCLOSURE_EVENT", "BROAD_EVENT_FROZEN_ENTRY"},
+            "exposure_ledger_required": True,
+            "access_roles": ["development"],
+            "uses_future_revision": False,
+            "requires_intrabar_order": False,
+            "generator_version": GENERATOR_VERSION,
+        }
+        row.update(dict(extra or {}))
+        return row
+
+    def _pair(self, route_id: str, index: int, seed: int) -> GeneratedPair:
+        tag = route_id.lower()
+        candidate_id = f"uc_{tag}_{seed}_{index:05d}"
+        control_id = candidate_id + "_control"
+        raw = self._pool(
+            route_id,
+            lambda row: row.source_family == "raw_1min" and row.entity_scope == "STOCK",
+        ) if route_id in {"MINUTE_STATIC", "FIRSTN_PATH", "MARKET_REGIME_CONDITION", "INTRADAY_STATE_TRANSITION"} else ()
+
+        if route_id == "MINUTE_STATIC":
+            field = _pick(raw, index, seed, route_id)
+            candidate_expression = f"CSRank(ZScore(${field.field_id}))"
+            control_expression = f"CSRank(${field.field_id})"
+            operator = "CSRank"
+            declared = [field.field_id]
+            extra: dict[str, Any] = {}
+            conditions: list[str] = []
+        elif route_id == "FIRSTN_PATH":
+            firstn = _pick(
+                self._pool(route_id, lambda row: row.source_family == "firstN"), index, seed, "firstn"
+            )
+            raw_field = _pick(raw, index, seed, "firstn_raw")
+            candidate_expression = f"CSRank(Add(${firstn.field_id},Sign(Delta(${raw_field.field_id},5))))"
+            control_expression = f"CSRank(${firstn.field_id})"
+            operator = "SignedPath"
+            declared = [firstn.field_id, raw_field.field_id]
+            extra = {}
+            conditions = []
+        elif route_id == "SLOW_CROSS_SECTIONAL_LEVEL":
+            pool = self._pool(route_id, lambda row: row.entity_scope == "STOCK")
+            field = _pick(pool, index, seed, route_id)
+            candidate_expression = f"CSRank(${field.field_id})"
+            control_expression = f"MaskedZScore(${field.field_id},60,0.6)"
+            operator = "CSRank"
+            declared = [field.field_id]
+            extra = {}
+            conditions = []
+        elif route_id == "SLOW_TEMPORAL_CHANGE":
+            pool = self._pool(route_id, lambda row: row.entity_scope == "STOCK")
+            field = _pick(pool, index, seed, route_id)
+            rep_type = str((field.metadata or {}).get("canonical_representation", {}).get("representation_type", ""))
+            if "slope" in rep_type:
+                operator = "Slope"
+            elif "acceleration" in rep_type:
+                operator = "Acceleration"
+            elif "persistence" in rep_type:
+                operator = "Persistence"
+            elif "yoy" in rep_type:
+                operator = "YoY"
+            else:
+                operator = "Delta"
+            candidate_expression = f"CSRank(${field.field_id})"
+            control_expression = f"CSRank(Sign(${field.field_id}))"
+            declared = [field.field_id]
+            extra = {}
+            conditions = []
+        elif route_id == "DISCLOSURE_EVENT":
+            pool = self._pool(route_id, lambda row: row.temporal_semantics in {"EVENT_PULSE", "DISCLOSURE_PULSE"})
+            field = _pick(pool, index, seed, route_id)
+            candidate_expression = f"EventCount(${field.field_id},5)"
+            control_expression = f"TimeSince(${field.field_id})"
+            operator = "EventCount"
+            declared = [field.field_id]
+            extra = {"episode_policy": "UNIQUE_DISCLOSURE_EPISODE"}
+            conditions = []
+        elif route_id == "MARKET_REGIME_CONDITION":
+            regime = _pick(
+                self._pool(route_id, lambda row: row.entity_scope == "MARKET"), index, seed, route_id
+            )
+            raw_field = _pick(raw, index, seed, "regime_payload")
+            candidate_expression = f"CSRank(Mul(Sign(${regime.field_id}),${raw_field.field_id}))"
+            control_expression = f"CSRank(${raw_field.field_id})"
+            operator = "ConditionGate"
+            declared = [regime.field_id, raw_field.field_id]
+            extra = {"market_vote_policy": "ONE_MARKET_BLOCK_ONE_VOTE"}
+            conditions = [regime.field_id]
+        elif route_id == "INTRADAY_STATE_TRANSITION":
+            state = _pick(
+                self._pool(route_id, lambda row: row.temporal_semantics == "INTRADAY_DERIVED_STATE"),
+                index,
+                seed,
+                route_id,
+            )
+            raw_field = _pick(raw, index, seed, "state_payload")
+            state_expression = str((state.metadata or {})["materialization_expression"])
+            candidate_expression = f"CSRank(Mul(Transition({state_expression},-1,1),Delta(${raw_field.field_id},5)))"
+            control_expression = f"CSRank(Delta(${raw_field.field_id},5))"
+            operator = "Transition"
+            declared = [state.field_id, raw_field.field_id, *(state.metadata or {}).get("source_fields", [])]
+            extra = {
+                "claimed_state_field_id": state.field_id,
+                "state_source_expression": state_expression,
+                "state_support_unit": "symbol-state episode",
+            }
+            conditions = []
+        elif route_id == "BROAD_EVENT_FROZEN_ENTRY":
+            field = _pick(
+                self._pool(route_id, lambda row: row.source_family == "broad_event_frozen_entry"),
+                index,
+                seed,
+                route_id,
+            )
+            candidate_expression = f"FrozenMechanismReplay(${field.field_id})"
+            control_expression = f"MatchedControlReplay(${field.field_id})"
+            operator = "FrozenMechanismReplay"
+            declared = [field.field_id]
+            mechanism = dict((field.metadata or {}).get("frozen_mechanism") or {})
+            extra = {
+                "frozen_mechanism_id": mechanism.get("mechanism_id"),
+                "event_tier": mechanism.get("priority_tier"),
+                "adaptive_descendant_cap": int(mechanism.get("adaptive_descendant_cap") or 0),
+                "tier_c_descendants_allowed": False,
+            }
+            conditions = [field.field_id] if field.entity_scope == "MARKET" else []
+        else:
+            raise KeyError(f"unsupported route: {route_id}")
+
+        candidate = self._base(
+            candidate_id=candidate_id,
+            route_id=route_id,
+            expression=candidate_expression,
+            operator_family=operator,
+            seed=seed,
+            origin="registry_root",
+            matched_control_id=control_id,
+            declared_field_ids=declared,
+            condition_field_ids=conditions,
+            extra=extra,
+        )
+        control_operator = operator
+        if route_id == "DISCLOSURE_EVENT":
+            control_operator = "TimeSince"
+        elif route_id == "BROAD_EVENT_FROZEN_ENTRY":
+            control_operator = "MatchedControlReplay"
+        control = self._base(
+            candidate_id=control_id,
+            route_id=route_id,
+            expression=control_expression,
+            operator_family=control_operator,
+            seed=seed,
+            origin="matched_control",
+            matched_control_id=candidate_id,
+            declared_field_ids=declared,
+            condition_field_ids=conditions,
+            is_control=True,
+            extra=extra,
+        )
+        return GeneratedPair(candidate, control)
+
+    def generate_route(self, route_id: str, *, proposal_budget: int, seed: int) -> list[dict[str, Any]]:
+        if route_id not in ROUTE_IDS:
+            raise KeyError(f"unknown route: {route_id}")
+        if proposal_budget <= 0 or proposal_budget % 2:
+            raise ValueError("route proposal budget must be a positive even number including controls")
+        output: list[dict[str, Any]] = []
+        exact_seen: set[str] = set()
+        index = 0
+        max_attempts = max(1000, proposal_budget * 100)
+        while len(output) < proposal_budget and index < max_attempts:
+            pair = self._pair(route_id, index, seed)
+            compiled_rows: list[dict[str, Any]] = []
+            pair_ids: set[str] = set()
+            for row in (pair.candidate, pair.control):
+                verdict = self.compiler.compile(row)
+                enriched = {**row, **verdict.to_dict()}
+                compiled_rows.append(enriched)
+                if verdict.legal:
+                    pair_ids.add(verdict.exact_identity)
+            if all(bool(row["legal"]) for row in compiled_rows) and len(pair_ids) == 2 and not exact_seen.intersection(pair_ids):
+                output.extend(compiled_rows)
+                exact_seen.update(pair_ids)
+            index += 1
+        if len(output) != proposal_budget:
+            raise RuntimeError(
+                f"natural underfill after exact pre-budget dedup on {route_id}: {len(output)} != {proposal_budget}"
+            )
+        return output
+
+    def dry_generate(self, contract: Mapping[str, Any], *, seed_name: str) -> list[dict[str, Any]]:
+        seeds = contract["seed_sets"][seed_name]
+        budgets = contract["route_budgets"]
+        rows: list[dict[str, Any]] = []
+        global_exact: set[str] = set()
+        for route_id in ROUTE_IDS:
+            budget = int(budgets[route_id]["proposal"])
+            generated = self.generate_route(route_id, proposal_budget=budget, seed=int(seeds[route_id]))
+            for row in generated:
+                if row["exact_identity"] in global_exact:
+                    raise RuntimeError("global exact identity reached budget accounting twice")
+                global_exact.add(row["exact_identity"])
+                row["seed_set"] = seed_name
+                rows.append(row)
+        return rows

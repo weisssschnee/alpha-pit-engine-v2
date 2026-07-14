@@ -1,0 +1,1977 @@
+{
+  "registry_version": "cn_unified_capability_registry_v0_2_external_audit",
+  "evidence_baseline_repo_sha": "afd0666404fed935072f7f6d73e13db17b7f6f9f",
+  "status": "PROVISIONAL_PENDING_FUNDAMENTAL_SOURCE_UNIVERSE_JOIN",
+  "authority_scope": "semantic and route contract; not performance authority",
+  "field_id_policy": {
+    "current": "active121::<field_name> provisional IDs",
+    "required_final": "stable source_field_id from Codex Fundamental Fabric",
+    "merge_key_requirement": "source_field_id preferred; source_table + source_field fallback only during migration"
+  },
+  "semantic_dimensions": {
+    "entity_scope": [
+      "STOCK",
+      "MARKET",
+      "INDUSTRY",
+      "PLATE",
+      "VENUE"
+    ],
+    "temporal_semantics": [
+      "BAR_VALUE",
+      "SESSION_VALUE",
+      "SLOW_LEVEL",
+      "SLOW_CHANGE",
+      "EVENT_PULSE",
+      "LIFECYCLE_STATE",
+      "LATCHED_OBSERVATION",
+      "REGIME_STATE",
+      "REGIME_TRANSITION"
+    ],
+    "evidence_states": [
+      "SEMANTICS_UNRESOLVED",
+      "PIT_UNQUALIFIED",
+      "NOT_WIRED",
+      "NOT_EVALUATED",
+      "DEVELOPMENT_INCREMENT_OBSERVED",
+      "FROZEN_REPRODUCED",
+      "CHALLENGE_CONFIRMED",
+      "FORWARD_CONFIRMED"
+    ]
+  },
+  "routes": [
+    {
+      "route_id": "MINUTE_STATIC",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "BAR_VALUE"
+      ],
+      "allowed_operator_families": [
+        "CSRank",
+        "ZScore",
+        "Arithmetic",
+        "CrossSectionalResidual"
+      ],
+      "forbidden_operator_families": [
+        "EventWindow",
+        "FutureWindow",
+        "DisclosureTransition"
+      ],
+      "support_unit": "stock-minute cross-section",
+      "maturity_rule": "bar_close",
+      "matched_control": "same fields, operator depth, horizon and cost; remove optional condition only",
+      "identity_unit": "exact signal on frozen coordinates",
+      "current_status": "IMPLEMENTED_PARTIAL"
+    },
+    {
+      "route_id": "FIRSTN_PATH",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "SESSION_VALUE",
+        "FIRSTN_MATURED"
+      ],
+      "allowed_operator_families": [
+        "CSRank",
+        "PathShape",
+        "OpeningGap",
+        "SignedPath",
+        "MeanReversion"
+      ],
+      "forbidden_operator_families": [
+        "PreMaturityRead",
+        "EventWindow"
+      ],
+      "support_unit": "stock-session after firstN maturity",
+      "maturity_rule": "firstN end timestamp",
+      "matched_control": "same firstN field and maturity; matched raw-path control",
+      "identity_unit": "stock-session signal behavior",
+      "current_status": "IMPLEMENTED"
+    },
+    {
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "SLOW_LEVEL",
+        "LATCHED_OBSERVATION"
+      ],
+      "allowed_operator_families": [
+        "CSRank",
+        "Winsorize",
+        "IndustryNeutralize",
+        "SizeNeutralize",
+        "MaskedZScore"
+      ],
+      "forbidden_operator_families": [
+        "MinuteDelta",
+        "MarketFieldCSRank",
+        "FutureRevision"
+      ],
+      "support_unit": "stock-session cross-section",
+      "maturity_rule": "latest PIT-observable version before session",
+      "matched_control": "same field, coverage mask, neutralization and complexity; remove conditioning only",
+      "identity_unit": "stock-session slow-state behavior",
+      "current_status": "PARTIALLY_WIRED_UNTYPED"
+    },
+    {
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "SLOW_CHANGE",
+        "REVISION_AWARE_CHANGE"
+      ],
+      "allowed_operator_families": [
+        "Delta",
+        "Slope",
+        "Acceleration",
+        "Persistence",
+        "MultiScaleRelation",
+        "QoQ",
+        "YoY",
+        "TTMChange"
+      ],
+      "forbidden_operator_families": [
+        "MinuteWindowOnSessionConstant",
+        "FutureRevision",
+        "UnqualifiedForwardFill"
+      ],
+      "support_unit": "stock-disclosure or stock-session change episode",
+      "maturity_rule": "both source versions observable before action time",
+      "matched_control": "same field versions, lookback, maturity and coverage; shuffled or level-only control",
+      "identity_unit": "slow-change episode behavior",
+      "current_status": "NOT_WIRED"
+    },
+    {
+      "route_id": "DISCLOSURE_EVENT",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "EVENT_PULSE",
+        "LATCHED_OBSERVATION"
+      ],
+      "allowed_operator_families": [
+        "EventWindow",
+        "TimeSince",
+        "FirstHit",
+        "EventCount",
+        "PreEventPath",
+        "PostMaturityOutcome"
+      ],
+      "forbidden_operator_families": [
+        "RepeatedLatchedMinuteVote",
+        "PreDisclosureRead",
+        "UnmaturedPostWindow"
+      ],
+      "support_unit": "unique disclosure episode",
+      "maturity_rule": "observable disclosure time plus registered action delay",
+      "matched_control": "same entity/date structure, fields, window and complexity; remove or placebo-shift trigger",
+      "identity_unit": "episode-level signal behavior",
+      "current_status": "PARTIALLY_IMPLEMENTED_VIA_BROAD_EVENT"
+    },
+    {
+      "route_id": "MARKET_REGIME_CONDITION",
+      "entity_scopes": [
+        "MARKET",
+        "INDUSTRY",
+        "PLATE"
+      ],
+      "temporal_semantics": [
+        "REGIME_STATE",
+        "REGIME_TRANSITION"
+      ],
+      "allowed_operator_families": [
+        "ConditionGate",
+        "Transition",
+        "StateAge",
+        "RegimeInteraction"
+      ],
+      "forbidden_operator_families": [
+        "DirectStockCSRank",
+        "RepeatedStockVoteForSameMarketState"
+      ],
+      "support_unit": "market-time block",
+      "maturity_rule": "state observable at or before candidate action time",
+      "matched_control": "same stock signal and time blocks; remove regime gate or matched placebo regime",
+      "identity_unit": "conditioned stock behavior by market block",
+      "current_status": "NOT_WIRED_IN_STATE_EXPRESSIONS"
+    },
+    {
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "entity_scopes": [
+        "STOCK"
+      ],
+      "temporal_semantics": [
+        "LIFECYCLE_STATE",
+        "INTRADAY_DERIVED_STATE"
+      ],
+      "allowed_operator_families": [
+        "Transition",
+        "StateAge",
+        "Duration",
+        "ConditionedPath",
+        "StateResidual"
+      ],
+      "forbidden_operator_families": [
+        "LatchedAsLifecycle",
+        "IntrabarOrderFabrication"
+      ],
+      "support_unit": "stock-state episode",
+      "maturity_rule": "state transition observable from conservative bar evidence",
+      "matched_control": "same raw field, window and complexity; remove state transition only",
+      "identity_unit": "state-episode behavior",
+      "current_status": "IMPLEMENTED_FOR_PRICE_DERIVED_STATE_ONLY"
+    },
+    {
+      "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+      "entity_scopes": [
+        "STOCK",
+        "MARKET"
+      ],
+      "temporal_semantics": [
+        "EVENT_PULSE",
+        "LIFECYCLE_STATE",
+        "REGIME_TRANSITION"
+      ],
+      "allowed_operator_families": [
+        "FrozenMechanismReplay",
+        "MatchedControlReplay",
+        "BehaviorClusterAdmission"
+      ],
+      "forbidden_operator_families": [
+        "OnlineRefit",
+        "CrossSprintMemory",
+        "AutomaticPromotion"
+      ],
+      "support_unit": "frozen event episode",
+      "maturity_rule": "per semantic registry and frozen entry pack",
+      "matched_control": "frozen mechanism-specific matched controls",
+      "identity_unit": "frozen mechanism and behavior-cluster identity",
+      "current_status": "DISCOVERY_ENTRY_AUTHORIZED_NO_PROMOTION"
+    }
+  ],
+  "field_entries": [
+    {
+      "provisional_field_id": "active121::ctx_ths_hot_rank",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_ths_hot_rank",
+      "source_family": "hotness",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOTNESS_CHANGE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_ths_hot_rank_diff",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_ths_hot_rank_diff",
+      "source_family": "hotness",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOTNESS_CHANGE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_ths_hot_last_pct",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_ths_hot_last_pct",
+      "source_family": "hotness",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOTNESS_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_ths_hot_last_price",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_ths_hot_last_price",
+      "source_family": "hotness",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOTNESS_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_ths_hot_circulation_value",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_ths_hot_circulation_value",
+      "source_family": "hotness",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOTNESS_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_rzrq_rzye",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_rzrq_rzye",
+      "source_family": "margin_financing",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARGIN_FINANCING_CHANGE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_rzrq_rqye",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_rzrq_rqye",
+      "source_family": "margin_financing",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARGIN_FINANCING_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_rzrq_rzrqye",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_rzrq_rzrqye",
+      "source_family": "margin_financing",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARGIN_FINANCING_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_rzrq_rzyezb",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_rzrq_rzyezb",
+      "source_family": "margin_financing",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARGIN_FINANCING_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_rzrq_rzmre",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_rzrq_rzmre",
+      "source_family": "margin_financing",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARGIN_FINANCING_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_rzrq_rzche",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_rzrq_rzche",
+      "source_family": "margin_financing",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARGIN_FINANCING_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_rzrq_rzjme",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_rzrq_rzjme",
+      "source_family": "margin_financing",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARGIN_FINANCING_CHANGE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_rzrq_rqyl",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_rzrq_rqyl",
+      "source_family": "margin_financing",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARGIN_FINANCING_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_deal_amount_ratio",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_deal_amount_ratio",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_billboard_deal_amt",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_billboard_deal_amt",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_billboard_net_amt",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_billboard_net_amt",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_billboard_buy_amt",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_billboard_buy_amt",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_billboard_sell_amt",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_billboard_sell_amt",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_deal_net_ratio",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_deal_net_ratio",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_accum_amount",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_accum_amount",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_turnoverrate",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_turnoverrate",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_buy_ratio",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_buy_ratio",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_sell_ratio",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_sell_ratio",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_sum_buy_amt",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_sum_buy_amt",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_sum_sell_amt",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_sum_sell_amt",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_billboard_net_bs_amt",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_billboard_net_bs_amt",
+      "source_family": "billboard",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "LATCHED_CONTEXT",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "LATCHED_CONTEXT": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "BILLBOARD_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_holder_holder_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_holder_holder_num",
+      "source_family": "holder_structure",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOLDER_STRUCTURE_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_holder_holder_num_change",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_holder_holder_num_change",
+      "source_family": "holder_structure",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOLDER_STRUCTURE_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_holder_holder_num_ratio",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_holder_holder_num_ratio",
+      "source_family": "holder_structure",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOLDER_STRUCTURE_CHANGE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_holder_avg_market_cap",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_holder_avg_market_cap",
+      "source_family": "holder_structure",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOLDER_STRUCTURE_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_holder_avg_hold_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_holder_avg_hold_num",
+      "source_family": "holder_structure",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED",
+        "DISCLOSURE_EVENT": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "HOLDER_STRUCTURE_CHANGE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_hfq_turnover_ratio",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_hfq_turnover_ratio",
+      "source_family": "valuation_market_state",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "NONE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_hfq_volume_ratio",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_hfq_volume_ratio",
+      "source_family": "valuation_market_state",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "NONE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_hfq_is_st",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_hfq_is_st",
+      "source_family": "valuation_market_state",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "condition-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "FUNDAMENTAL_CONDITION"
+      ],
+      "route_statuses": {
+        "FUNDAMENTAL_CONDITION": "NOT_WIRED"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "NONE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_hfq_prev_is_limit_up",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_hfq_prev_is_limit_up",
+      "source_family": "valuation_market_state",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "NONE",
+      "exposure_status": "DECLARED_STATE_BUT_NOT_CONSUMED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Listed in CONTEXT_STATE_FIELDS but current state expressions use raw-derived state_source, not this field."
+    },
+    {
+      "provisional_field_id": "active121::ctx_hfq_market_cap_yuan",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_hfq_market_cap_yuan",
+      "source_family": "valuation_market_state",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "NONE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_hfq_float_market_cap_yuan",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_hfq_float_market_cap_yuan",
+      "source_family": "valuation_market_state",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "NONE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_hfq_pe_ttm",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_hfq_pe_ttm",
+      "source_family": "valuation_market_state",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "NOT_WIRED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "NONE",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_hfq_pb",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_hfq_pb",
+      "source_family": "valuation_market_state",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "NONE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_hfq_ps_ttm",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_hfq_ps_ttm",
+      "source_family": "valuation_market_state",
+      "entity_scope": "STOCK",
+      "current_fabric_role": "interaction-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "route_statuses": {
+        "SLOW_CROSS_SECTIONAL_LEVEL": "PARTIALLY_WIRED_UNTYPED",
+        "SLOW_TEMPORAL_CHANGE": "NOT_WIRED"
+      },
+      "main_generator_context_pool": true,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "NONE",
+      "exposure_status": "DIRECT_CONTEXT_EXPOSED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Used by static/orthogonal/context-insert pool."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_uplimit_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_uplimit_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_downlimit_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_downlimit_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_up_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_up_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_down_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_down_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_zb_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_zb_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "DECLARED_STATE_BUT_NOT_CONSUMED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Listed in CONTEXT_STATE_FIELDS but current state expressions use raw-derived state_source, not this field."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_lb_2_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_lb_2_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "DECLARED_STATE_BUT_NOT_CONSUMED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Listed in CONTEXT_STATE_FIELDS but current state expressions use raw-derived state_source, not this field."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_lb_3_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_lb_3_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_max_lb_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_max_lb_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_mian_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_mian_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_tiandi_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_tiandi_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_ditian_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_ditian_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_damian_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_damian_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_gt5_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_gt5_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_lt5_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_lt5_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_sent_lb_h_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_sent_lb_h_num",
+      "source_family": "market_sentiment",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_zls_df_num",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_zls_df_num",
+      "source_family": "market_ecology",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_zls_lbgd",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_zls_lbgd",
+      "source_family": "market_ecology",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    },
+    {
+      "provisional_field_id": "active121::ctx_zls_strong",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_zls_strong",
+      "source_family": "market_ecology",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "DECLARED_STATE_BUT_NOT_CONSUMED",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer. Listed in CONTEXT_STATE_FIELDS but current state expressions use raw-derived state_source, not this field."
+    },
+    {
+      "provisional_field_id": "active121::ctx_zls_ztjs",
+      "source_field_id": null,
+      "source_field_id_status": "PENDING_CODEX_SOURCE_UNIVERSE_JOIN",
+      "current_release_field": "ctx_zls_ztjs",
+      "source_family": "market_ecology",
+      "entity_scope": "MARKET",
+      "current_fabric_role": "state-only",
+      "observable_clock": "previous_session",
+      "source_lag": 1,
+      "source_lag_unit": "sessions",
+      "pit_status": "CURRENT_RELEASE_PREVIOUS_SESSION_GUARD",
+      "recommended_routes": [
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "route_statuses": {
+        "MARKET_REGIME_CONDITION": "NOT_WIRED",
+        "BROAD_EVENT_FROZEN_ENTRY": "CANARY_EVIDENCE_AVAILABLE"
+      },
+      "main_generator_context_pool": false,
+      "actual_state_expression_consumption": false,
+      "broad_event_source": "MARKET_ECOLOGY_TRANSITION",
+      "exposure_status": "NOT_IN_MAIN_GENERATOR",
+      "semantic_review_status": "PROVISIONAL_EXTERNAL_AUDIT",
+      "notes": "Fabric role inferred lexically from ctx_* name; no route-level role enforcement in materializer."
+    }
+  ],
+  "hard_rules": [
+    "field registration is not search exposure",
+    "route labels must be enforced by compiler and evaluator, not documentation only",
+    "market-scope fields cannot be direct stock cross-sectional ranks",
+    "latched observations cannot be treated as lifecycle states",
+    "one event episode receives one vote",
+    "no claim of ineffectiveness without non-zero proposal, admission and strict execution",
+    "no claim of validation before an independent challenge release"
+  ]
+}

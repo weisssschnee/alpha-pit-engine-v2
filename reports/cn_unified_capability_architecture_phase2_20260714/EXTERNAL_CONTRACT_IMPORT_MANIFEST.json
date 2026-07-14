@@ -1,0 +1,39 @@
+{
+  "import_manifest_version": "cn_unified_capability_phase2_external_contract_import_v1",
+  "source_archive": "G:/CN_UNIFIED_CAPABILITY_ARCHITECTURE_PHASE2_BUNDLE_20260714.zip",
+  "source_archive_sha256": "df1cc7415e11f03cc624c7ac9fd7ae9c381e46f56c5a8dfa66ac2e3e9183e262",
+  "source_archive_size_bytes": 49615,
+  "import_policy": "BYTE_FOR_BYTE_IMMUTABLE_EXTERNAL_CONSTRAINTS",
+  "performance_search_triggered_by_import": false,
+  "broad_event_history_modified": false,
+  "files": [
+    {
+      "path": "external_contracts/CN_BROAD_EVENT_ENTRY_POLICY_V2_20260714.json",
+      "sha256": "0f4567bdc4b6ab2b91261afcd19b6b7b430068b22a16627143815ffc486344f6"
+    },
+    {
+      "path": "external_contracts/CN_SEARCH_EXPOSURE_LEDGER_SCHEMA_V1_20260714.json",
+      "sha256": "dee10fc5ddc7ca7cbd08625d3d724dbfc036535156e0db94c69e396536199d1e"
+    },
+    {
+      "path": "external_contracts/CN_TYPED_ROUTE_COMPILER_CONTRACT_V1_20260714.json",
+      "sha256": "c8354cf9ec533a5a4ec4a2363ede0153f316a4deccddb2b9181d48355f874b69"
+    },
+    {
+      "path": "external_contracts/CN_UNIFIED_CAPABILITY_ARCHITECTURE_PHASE2_20260714.md",
+      "sha256": "34497d8f6dee158ffc46966eb1bff1d9ab35b533d8fcc8df3db929882c2fcf77"
+    },
+    {
+      "path": "external_contracts/CN_UNIFIED_CAPABILITY_ARCHITECTURE_PHASE2_20260714.xlsx",
+      "sha256": "c2a6ef20b320968d0642063ec851a7aa4a47ae229bbe7f2924e09e56101f862e"
+    },
+    {
+      "path": "external_contracts/CN_UNIFIED_CAPABILITY_REGISTRY_V0_2_20260714.json",
+      "sha256": "03bfba530305d81e9bf250b6161980d5fe3145d9dff22ad96b18a05fc11c4fa3"
+    },
+    {
+      "path": "external_contracts/CN_UNIFIED_DISCOVERY_CAPABILITY_PREFLIGHT_V1_20260714.json",
+      "sha256": "4034295993ca49465a9b8d410c90cd2a5d0db52b257bab025f96674356edfecf"
+    }
+  ]
+}
