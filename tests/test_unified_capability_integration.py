@@ -386,6 +386,44 @@ def test_rx_ucb_freezes_an_exact_exhausted_arm_and_reallocates(
     )
 
 
+def test_adaptive_proxy_reload_includes_fields_introduced_after_roots(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    frame = pd.DataFrame(
+        {
+            "trade_time": [pd.Timestamp("2025-04-01 10:30:00")],
+            "code": ["000001"],
+            "close": [10.0],
+            "root_field": [1.0],
+        }
+    )
+    candidates = [
+        {"canonical_expression": "Sign($root_field)"},
+        {"canonical_expression": "Sign($adaptive_field)"},
+    ]
+    captured: dict[str, object] = {}
+
+    def fake_read_proxy_frame(release, *, columns, row_group_indices, dates):
+        captured["columns"] = list(columns)
+        output = frame.copy()
+        output["adaptive_field"] = 2.0
+        return output, [{"path": "development-only"}]
+
+    monkeypatch.setattr(unified_runner, "_read_proxy_frame", fake_read_proxy_frame)
+    output, reads = unified_runner._ensure_proxy_candidate_columns(
+        SimpleNamespace(),
+        frame=frame,
+        candidates=candidates,
+        row_group_indices=[0],
+        dates=["2025-04-01"],
+    )
+    assert captured["columns"] == [
+        "adaptive_field", "close", "code", "root_field", "trade_time"
+    ]
+    assert output["adaptive_field"].tolist() == [2.0]
+    assert reads == [{"path": "development-only"}]
+
+
 def test_generated_intraday_expressions_execute_on_a_synthetic_panel(
     built_registry: tuple[Path, dict[str, object]],
 ) -> None:

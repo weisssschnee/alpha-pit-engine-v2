@@ -384,6 +384,27 @@ def _read_proxy_frame(
     return output, reads
 
 
+def _ensure_proxy_candidate_columns(
+    release: ValidatedDevelopmentRelease,
+    *,
+    frame: pd.DataFrame,
+    candidates: Sequence[Mapping[str, Any]],
+    row_group_indices: Sequence[int],
+    dates: Sequence[str],
+) -> tuple[pd.DataFrame, list[dict[str, Any]]]:
+    """Reload frozen proxy coordinates when later proposals introduce fields."""
+
+    columns = _required_active_columns(candidates)
+    if set(columns).issubset(frame.columns):
+        return frame, []
+    return _read_proxy_frame(
+        release,
+        columns=columns,
+        row_group_indices=row_group_indices,
+        dates=dates,
+    )
+
+
 def _evaluate_active_candidates(frame: pd.DataFrame, candidates: Sequence[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     target = _same_session_future_return(frame, 5).to_numpy(dtype=float)
     expression_cache: dict[str, pd.Series] = {}
@@ -1034,13 +1055,20 @@ def run(
         )
         adaptive_active = [row for row in adaptive if _candidate_kind(row, registry) == "active"]
         adaptive_fund = [row for row in adaptive if _candidate_kind(row, registry) == "fundamental"]
-        adaptive_metrics = _evaluate_active_candidates(proxy_frame, adaptive_active)
+        adaptive_proxy_frame, _ = _ensure_proxy_candidate_columns(
+            release,
+            frame=proxy_frame,
+            candidates=active + adaptive_active,
+            row_group_indices=contract["capability_canary_scope"]["fixed_row_group_indices"],
+            dates=contract["capability_canary_scope"]["fixed_development_dates"],
+        )
+        adaptive_metrics = _evaluate_active_candidates(adaptive_proxy_frame, adaptive_active)
         adaptive_metrics.update(
             _evaluate_fundamental_candidates(
                 candidates=adaptive_fund,
                 registry=registry,
                 adapter=fundamental_adapter,
-                target_frame=_proxy_session_target(proxy_frame),
+                target_frame=_proxy_session_target(adaptive_proxy_frame),
                 cache_root=(
                     output_root / "unified_discovery" / seed_name
                     / "fundamental_proxy_cache" / contract["contract_hash"]
