@@ -16,6 +16,7 @@ from our_system_phase2.runtime.cn_unified_capability_discovery import (
     _apply_metrics,
     _evaluate_fundamental_candidates,
     _raw_expression,
+    _rx_ucb_expand,
     _route_summary,
 )
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
@@ -350,6 +351,39 @@ def test_holder_source_level_forwards_registered_aggregation() -> None:
     )
     assert adapter.observed_transform == "sum"
     assert output["fund_holder_test_sum"].tolist() == [1.0]
+
+
+def test_rx_ucb_freezes_an_exact_exhausted_arm_and_reallocates(
+    built_registry: tuple[Path, dict[str, object]],
+) -> None:
+    output, _ = built_registry
+    registry = UnifiedCapabilityRegistry.read(output / "unified_capability_registry.json")
+    generator = RegistryDrivenGenerator(registry)
+    disclosure = generator.generate_route(
+        "DISCLOSURE_EVENT", proposal_budget=8, seed=1753
+    )
+    minute = generator.generate_route("MINUTE_STATIC", proposal_budget=2, seed=1729)
+    roots = disclosure + minute
+    for row in roots:
+        if row["is_matched_control"]:
+            continue
+        row["matched_increment"] = (
+            float("nan") if row["route_id"] == "DISCLOSURE_EVENT" else -1.0
+        )
+    adaptive = _rx_ucb_expand(
+        generator=generator,
+        roots=roots,
+        seed=51729,
+        total_pairs=1,
+    )
+    assert len(adaptive) == 2
+    assert {row["route_id"] for row in adaptive} == {"MINUTE_STATIC"}
+    assert all(
+        "DISCLOSURE_EVENT" in row["adaptive_exhausted_arms"] for row in adaptive
+    )
+    assert not {row["exact_identity"] for row in adaptive}.intersection(
+        {row["exact_identity"] for row in roots}
+    )
 
 
 def test_generated_intraday_expressions_execute_on_a_synthetic_panel(

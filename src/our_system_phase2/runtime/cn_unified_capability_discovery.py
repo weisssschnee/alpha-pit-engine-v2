@@ -614,20 +614,38 @@ def _rx_ucb_expand(
     total = sum(counts.values())
     output: list[dict[str, Any]] = []
     exact_seen = {row["exact_identity"] for row in roots}
+    exhausted_arms: set[str] = set()
     for index in range(total_pairs):
-        route = max(
-            sorted(arms),
-            key=lambda arm: (float(np.mean(arms[arm])) if arms[arm] else 0.0) + math.sqrt(2.0 * math.log(max(total, 2)) / counts[arm]),
+        pair: list[dict[str, Any]] | None = None
+        route = ""
+        ranked_arms = sorted(
+            (arm for arm in arms if arm not in exhausted_arms),
+            key=lambda arm: (
+                (float(np.mean(arms[arm])) if arms[arm] else 0.0)
+                + math.sqrt(2.0 * math.log(max(total, 2)) / counts[arm]),
+                arm,
+            ),
+            reverse=True,
         )
-        attempt = 0
-        while True:
-            pair = generator.generate_route(route, proposal_budget=2, seed=seed + index * 1009 + attempt * 7919)
-            ids = {row["exact_identity"] for row in pair}
-            if not exact_seen.intersection(ids):
+        for proposed_route in ranked_arms:
+            for attempt in range(256):
+                proposed = generator.generate_route(
+                    proposed_route,
+                    proposal_budget=2,
+                    seed=seed + index * 1009 + attempt * 7919,
+                )
+                ids = {row["exact_identity"] for row in proposed}
+                if not exact_seen.intersection(ids):
+                    pair = proposed
+                    route = proposed_route
+                    break
+            if pair is not None:
                 break
-            attempt += 1
-            if attempt > 100:
-                raise RuntimeError("RX/UCB adaptive proposal underfill after global exact dedup")
+            exhausted_arms.add(proposed_route)
+        if pair is None:
+            raise RuntimeError(
+                "RX/UCB adaptive proposal underfill after exhausting every unique arm"
+            )
         parent = max(
             (row for row in roots if row["route_id"] == route and not row["is_matched_control"]),
             key=lambda row: (
@@ -641,6 +659,7 @@ def _rx_ucb_expand(
             row["proposal_origin"] = "ephemeral_rx_ucb_adaptive" if not row["is_matched_control"] else "matched_nonadaptive_control"
             row["parent_id"] = parent["candidate_id"]
             row["adaptive_state_persisted"] = False
+            row["adaptive_exhausted_arms"] = sorted(exhausted_arms)
             output.append(row)
         exact_seen.update(ids)
         counts[route] += 1
