@@ -1,0 +1,103 @@
+{
+  "all_gates_passed": true,
+  "candidate_promotion": false,
+  "completed_at_utc": "2026-07-14T08:41:12.855805+00:00",
+  "contract_hash": "6505cf498b57b649fc48cbf651737aa951716adb464623f47b06c071285f8bce",
+  "cross_sprint_memory": false,
+  "external_contract_version": "cn_unified_discovery_capability_preflight_v1",
+  "forward_2026_sealed": true,
+  "gates": {
+    "G0_AUTHORITY_AND_IDENTITY": {
+      "errors": [],
+      "passed": true
+    },
+    "G1_SEMANTICS_AND_PIT": {
+      "errors": [],
+      "passed": true
+    },
+    "G2_TYPED_WIRING": {
+      "errors": [],
+      "negative_checks": {
+        "future_revision": true,
+        "intrabar_order_fabrication": true,
+        "latched_observation_not_lifecycle_routable": true,
+        "market_field_direct_csrank": true,
+        "missing_matched_control": true,
+        "pre_maturity_event": true,
+        "repeated_episode_vote": true,
+        "sealed_data_access": true,
+        "unresolved_field_identity": true
+      },
+      "passed": true
+    },
+    "G3_EXPOSURE_AND_BUDGET": {
+      "dry_summaries": {
+        "seed_a": {
+          "candidate_count": 76,
+          "challenge_count": 0,
+          "claim_ceiling": "NOT_EVALUATED",
+          "exact_count": 76,
+          "forbidden_read_count": 0,
+          "forward_count": 0,
+          "ledger_version": "cn_search_exposure_ledger_v1",
+          "legal_count": 76,
+          "route_rows": {
+            "BROAD_EVENT_FROZEN_ENTRY": 22,
+            "DISCLOSURE_EVENT": 8,
+            "FIRSTN_PATH": 8,
+            "INTRADAY_STATE_TRANSITION": 6,
+            "MARKET_REGIME_CONDITION": 8,
+            "MINUTE_STATIC": 8,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 8,
+            "SLOW_TEMPORAL_CHANGE": 8
+          },
+          "run_id": "cn_unified_capability_integration_discovery_v1_dry_seed_a",
+          "strict_count": 0,
+          "survivor_count": 0
+        },
+        "seed_b": {
+          "candidate_count": 76,
+          "challenge_count": 0,
+          "claim_ceiling": "NOT_EVALUATED",
+          "exact_count": 76,
+          "forbidden_read_count": 0,
+          "forward_count": 0,
+          "ledger_version": "cn_search_exposure_ledger_v1",
+          "legal_count": 76,
+          "route_rows": {
+            "BROAD_EVENT_FROZEN_ENTRY": 22,
+            "DISCLOSURE_EVENT": 8,
+            "FIRSTN_PATH": 8,
+            "INTRADAY_STATE_TRANSITION": 6,
+            "MARKET_REGIME_CONDITION": 8,
+            "MINUTE_STATIC": 8,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 8,
+            "SLOW_TEMPORAL_CHANGE": 8
+          },
+          "run_id": "cn_unified_capability_integration_discovery_v1_dry_seed_b",
+          "strict_count": 0,
+          "survivor_count": 0
+        }
+      },
+      "errors": [],
+      "passed": true
+    },
+    "G4_MATCHED_CONTROLS": {
+      "errors": [],
+      "passed": true
+    },
+    "G5_ACCESS_AND_REPRODUCIBILITY": {
+      "errors": [],
+      "forbidden_read_count": 0,
+      "passed": true,
+      "physical_file_count": 16,
+      "release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827"
+    }
+  },
+  "holdout_accessed": false,
+  "preflight_version": "cn_unified_discovery_capability_preflight_v2_executable",
+  "registry_hash": "e4b8bc809ab9ae8e1463aa85c53c13c1710aed6915c967ff806c8906deea886d",
+  "repo_sha": "f8169e16c63bb1267fb5eeffe6f97cfe1186733e",
+  "status": "READY_FOR_FULL_DEVELOPMENT_CAPABILITY_CANARY",
+  "validation_accessed": false
+}

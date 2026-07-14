@@ -15,9 +15,11 @@ import our_system_phase2.runtime.cn_unified_capability_discovery as unified_runn
 from our_system_phase2.runtime.cn_unified_capability_discovery import (
     _apply_metrics,
     _evaluate_fundamental_candidates,
+    _independent_challenge_eligible,
     _raw_expression,
     _rx_ucb_expand,
     _route_summary,
+    _shared_survivor_class,
 )
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 from our_system_phase2.services.fundamental_representations import (
@@ -230,6 +232,28 @@ def test_zero_reward_is_valid_and_broad_event_uses_frozen_route_seeds() -> None:
     ).read_text(encoding="utf-8")
     assert "broad_seed_by_name" in runner
     assert "seeds=[1729, 2718]" not in runner
+
+
+def test_frozen_broad_replays_cannot_unlock_independent_challenge() -> None:
+    frozen = {
+        "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+        "exact_identity": "old-frozen-exact",
+    }
+    new = {
+        "route_id": "SLOW_TEMPORAL_CHANGE",
+        "exact_identity": "new-cross-seed-exact",
+    }
+    assert _shared_survivor_class(frozen) == "OLD_FROZEN_MECHANISM_REPRODUCED"
+    assert (
+        _shared_survivor_class(new)
+        == "NEW_CANONICAL_MECHANISM_CROSS_SEED_REPRODUCED"
+    )
+    assert not _independent_challenge_eligible(
+        [frozen], route_exposure_ok=True, full_development_access=True
+    )
+    assert _independent_challenge_eligible(
+        [frozen, new], route_exposure_ok=True, full_development_access=True
+    )
 
 
 def test_fundamental_evaluation_normalizes_exchange_suffixed_panel_codes(

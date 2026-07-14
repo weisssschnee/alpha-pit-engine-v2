@@ -75,6 +75,35 @@ BROAD_CHECKPOINT_CODE_PATHS = (
 )
 
 
+def _shared_survivor_class(row: Mapping[str, Any]) -> str:
+    """Classify cross-seed reproduction without promoting frozen replays.
+
+    The Broad Event route is an intentionally frozen replay.  Reproducing one
+    of those exact identities is useful regression evidence, but it is not a
+    newly discovered capability and therefore cannot qualify a run to apply
+    for an independent challenge.
+    """
+
+    if str(row.get("route_id") or "") == "BROAD_EVENT_FROZEN_ENTRY":
+        return "OLD_FROZEN_MECHANISM_REPRODUCED"
+    if str(row.get("exact_identity") or ""):
+        return "NEW_CANONICAL_MECHANISM_CROSS_SEED_REPRODUCED"
+    return "NEW_CAPABILITY_SHARED_SURVIVOR"
+
+
+def _independent_challenge_eligible(
+    pack_rows: Sequence[Mapping[str, Any]],
+    *,
+    route_exposure_ok: bool,
+    full_development_access: bool,
+) -> bool:
+    new_reproduction = any(
+        _shared_survivor_class(row) != "OLD_FROZEN_MECHANISM_REPRODUCED"
+        for row in pack_rows
+    )
+    return bool(new_reproduction and route_exposure_ok and full_development_access)
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:
@@ -1159,6 +1188,7 @@ def run(
         row["forward_2026_allowed"] = False
         row["candidate_promotion_allowed"] = False
         row["cross_sprint_memory_allowed"] = False
+        row["cross_seed_reproduction_class"] = _shared_survivor_class(row)
         pack_rows.append(row)
     _write_csv(output_root / "unified_development_discovery_pack.csv", pack_rows)
     pack_hash = _sha256(output_root / "unified_development_discovery_pack.csv")
@@ -1167,7 +1197,14 @@ def run(
         all(summary[route_id]["strict"] > 0 for route_id in ROUTE_IDS)
         for summary in route_summaries.values()
     )
-    challenge_eligible = bool(pack_rows) and route_exposure_ok and full_access["all_row_groups_read"]
+    reproduction_class_counts = dict(
+        Counter(row["cross_seed_reproduction_class"] for row in pack_rows)
+    )
+    challenge_eligible = _independent_challenge_eligible(
+        pack_rows,
+        route_exposure_ok=route_exposure_ok,
+        full_development_access=bool(full_access["all_row_groups_read"]),
+    )
     summary = {
         "status": "CN_UNIFIED_CAPABILITY_DISCOVERY_COMPLETED" if route_exposure_ok else "CN_UNIFIED_CAPABILITY_DISCOVERY_PARTIALLY_COMPLETED",
         "repo_sha": repo_sha,
@@ -1178,9 +1215,16 @@ def run(
         "data_families_tested": sorted({row.source_family for row in registry.fields if any(row.field_id in candidate["field_ids"] for rows in discovery_by_seed.values() for candidate in rows)}),
         "not_wired_or_not_evaluated": sorted({row.source_family for row in registry.fields if row.search_eligible and not any(row.field_id in candidate["field_ids"] for rows in discovery_by_seed.values() for candidate in rows)}),
         "shared_survivor_count": len(pack_rows),
+        "shared_survivor_reproduction_classes": reproduction_class_counts,
+        "new_capability_shared_survivor_count": sum(
+            count
+            for name, count in reproduction_class_counts.items()
+            if name != "OLD_FROZEN_MECHANISM_REPRODUCED"
+        ),
         "candidate_pack_sha256": pack_hash,
         "candidate_pack_role": "FROZEN_DEVELOPMENT_DISCOVERY_ONLY_NO_PROMOTION",
         "qualified_to_apply_for_independent_challenge": challenge_eligible,
+        "challenge_eligibility_policy": "REQUIRES_NON_FROZEN_CROSS_SEED_REPRODUCTION",
         "challenge_not_opened": True,
         "full_development_access": full_access,
         "evidence_ceiling": "DEVELOPMENT_ONLY_NOT_OOS",

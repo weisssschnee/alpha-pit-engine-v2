@@ -1,0 +1,315 @@
+{
+  "boundaries": {
+    "candidate_promotion": false,
+    "challenge": false,
+    "cross_sprint_adaptive_memory": false,
+    "development_reward": true,
+    "forward_2026": false,
+    "holdout": false,
+    "persistent_negative_memory": false,
+    "persistent_positive_memory": false,
+    "plate_industry": false,
+    "validation": false
+  },
+  "broad_event": {
+    "entry_pack_mutation_allowed": false,
+    "entry_pack_sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8",
+    "mechanism_count": 11,
+    "tier_c_descendants_allowed": false
+  },
+  "capability_canary": {
+    "admission": {
+      "family_caps": true,
+      "matched_controls_required": true,
+      "one_exact_identity_one_vote": true,
+      "one_support_unit_one_vote": true,
+      "route_caps": true
+    },
+    "exact_dedup_before_budget": true,
+    "route_budgets": {
+      "BROAD_EVENT_FROZEN_ENTRY": {
+        "admission": 22,
+        "proposal": 22,
+        "strict": 22
+      },
+      "DISCLOSURE_EVENT": {
+        "admission": 8,
+        "proposal": 8,
+        "strict": 4
+      },
+      "FIRSTN_PATH": {
+        "admission": 4,
+        "proposal": 8,
+        "strict": 2
+      },
+      "INTRADAY_STATE_TRANSITION": {
+        "admission": 4,
+        "proposal": 6,
+        "strict": 2
+      },
+      "MARKET_REGIME_CONDITION": {
+        "admission": 4,
+        "proposal": 8,
+        "strict": 2
+      },
+      "MINUTE_STATIC": {
+        "admission": 4,
+        "proposal": 8,
+        "strict": 2
+      },
+      "SLOW_CROSS_SECTIONAL_LEVEL": {
+        "admission": 4,
+        "proposal": 8,
+        "strict": 2
+      },
+      "SLOW_TEMPORAL_CHANGE": {
+        "admission": 4,
+        "proposal": 8,
+        "strict": 2
+      }
+    },
+    "seed_sets": {
+      "seed_a": {
+        "BROAD_EVENT_FROZEN_ENTRY": 1783,
+        "DISCLOSURE_EVENT": 1753,
+        "FIRSTN_PATH": 1733,
+        "INTRADAY_STATE_TRANSITION": 1777,
+        "MARKET_REGIME_CONDITION": 1759,
+        "MINUTE_STATIC": 1729,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 1741,
+        "SLOW_TEMPORAL_CHANGE": 1747
+      },
+      "seed_b": {
+        "BROAD_EVENT_FROZEN_ENTRY": 2777,
+        "DISCLOSURE_EVENT": 2749,
+        "FIRSTN_PATH": 2729,
+        "INTRADAY_STATE_TRANSITION": 2767,
+        "MARKET_REGIME_CONDITION": 2753,
+        "MINUTE_STATIC": 2718,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 2731,
+        "SLOW_TEMPORAL_CHANGE": 2741
+      }
+    },
+    "selector": {
+      "frozen_before_performance": true,
+      "objective": "development_rank_ic_cost_stability_with_route_family_caps",
+      "online_refit": false,
+      "version": "cn_unified_development_selector_v1_frozen"
+    }
+  },
+  "capability_canary_scope": {
+    "fixed_development_dates": [
+      "2024-04-29",
+      "2024-12-03",
+      "2025-03-04",
+      "2025-06-16"
+    ],
+    "fixed_row_group_indices": [
+      0,
+      9,
+      18,
+      27
+    ],
+    "selection_basis": "calendar blocks and physical coordinates fixed without labels or performance",
+    "shards": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ]
+  },
+  "challenge_application_requires_independent_authorization": true,
+  "code_hashes": {
+    "compiler": "30a170425e240e4d53615da1f0ffe9fcee0d40a449daca7db72fa056b6e17b0d",
+    "fundamental_materializer": "9a41dcc8079931ccc08f8fb8e2007b4d2f5cb2438662708b6a79a219452c7371",
+    "generator": "d2547cf3bc25de354063d57ff795ae172aa80f14c6d42554c0553047e1bf57ae",
+    "ledger": "0e0dfb24f63e6d57eee0063a2d1b4a3f0b49065f971476d3ce66bbaa5b9b76e6",
+    "preflight": "7ac943098c1620fceba96a037c1a3e9c246315ef89806e9d6b69b6c1b4ef0fea",
+    "runner": "96c58cc0672a973365af9cfe2a5218d7e31c3c4a971024bd71900c9a98a4b6d9"
+  },
+  "completion_boundary": "DEVELOPMENT_DISCOVERY_PACK_FROZEN",
+  "contract_hash": "6505cf498b57b649fc48cbf651737aa951716adb464623f47b06c071285f8bce",
+  "contract_version": "cn_unified_capability_discovery_contract_v1",
+  "data_release": {
+    "allowed_years": [
+      2024,
+      2025
+    ],
+    "development_session_scope": "ALL_TRAIN_SESSIONS",
+    "manifest_file_sha256": "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255",
+    "release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "release_id": "cn_true1min_development_only_release_v1_20260712_77o",
+    "required_shard_count": 16,
+    "row_group_scope": "ALL_ROW_GROUPS",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+  },
+  "execution_state": "FROZEN_DEVELOPMENT_ONLY_AUTOMATIC_PREFLIGHT_CANARY_DISCOVERY",
+  "experiment_id": "cn_unified_capability_integration_discovery_v1",
+  "fundamental": {
+    "canonical_root_count": 147,
+    "manifest_sha256": "aacadab2b29e6f3147070cd6f50f119c1706a2dced4f69254dd066f29423ad58",
+    "raw_source_root_exposure_allowed": false,
+    "zygc_status": "PIT_CONTRACT_UNRESOLVED"
+  },
+  "input_hashes": {
+    "broad_event_pack_sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8",
+    "fundamental_manifest_sha256": "aacadab2b29e6f3147070cd6f50f119c1706a2dced4f69254dd066f29423ad58",
+    "registry_file_sha256": "30f35019de7f93923417c5d241a293d7152655d9b37acd7e12a3840ecac7d89d",
+    "release_manifest_sha256": "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+  },
+  "maximum_observable_time": "2025-07-07T15:00:00",
+  "preflight_smoke": {
+    "row_group_index": 0,
+    "trade_date": "2025-04-01"
+  },
+  "registry_hash": "e4b8bc809ab9ae8e1463aa85c53c13c1710aed6915c967ff806c8906deea886d",
+  "repo_sha": "f8169e16c63bb1267fb5eeffe6f97cfe1186733e",
+  "seed_sets": {
+    "seed_a": {
+      "BROAD_EVENT_FROZEN_ENTRY": 1783,
+      "DISCLOSURE_EVENT": 1753,
+      "FIRSTN_PATH": 1733,
+      "INTRADAY_STATE_TRANSITION": 1777,
+      "MARKET_REGIME_CONDITION": 1759,
+      "MINUTE_STATIC": 1729,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 1741,
+      "SLOW_TEMPORAL_CHANGE": 1747
+    },
+    "seed_b": {
+      "BROAD_EVENT_FROZEN_ENTRY": 2777,
+      "DISCLOSURE_EVENT": 2749,
+      "FIRSTN_PATH": 2729,
+      "INTRADAY_STATE_TRANSITION": 2767,
+      "MARKET_REGIME_CONDITION": 2753,
+      "MINUTE_STATIC": 2718,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 2731,
+      "SLOW_TEMPORAL_CHANGE": 2741
+    }
+  },
+  "unified_discovery": {
+    "adaptive_challenger": {
+      "admission_budget_per_seed": 8,
+      "algorithm": "RX_UCB",
+      "cross_sprint_memory": false,
+      "matched_nonadaptive_control_budget_per_seed": 32,
+      "primary_adaptive_challenger": true,
+      "proposal_budget_per_seed": 32,
+      "state_persistence": "WITHIN_RUN_ONLY",
+      "strict_budget_per_seed": 4
+    },
+    "admission": {
+      "family_caps": true,
+      "matched_controls_required": true,
+      "one_exact_identity_one_vote": true,
+      "one_support_unit_one_vote": true,
+      "route_caps": true
+    },
+    "exact_dedup_before_budget": true,
+    "route_budgets": {
+      "BROAD_EVENT_FROZEN_ENTRY": {
+        "admission": 22,
+        "proposal": 22,
+        "strict": 22
+      },
+      "DISCLOSURE_EVENT": {
+        "admission": 8,
+        "proposal": 8,
+        "strict": 4
+      },
+      "FIRSTN_PATH": {
+        "admission": 12,
+        "proposal": 24,
+        "strict": 6
+      },
+      "INTRADAY_STATE_TRANSITION": {
+        "admission": 10,
+        "proposal": 18,
+        "strict": 6
+      },
+      "MARKET_REGIME_CONDITION": {
+        "admission": 8,
+        "proposal": 16,
+        "strict": 4
+      },
+      "MINUTE_STATIC": {
+        "admission": 8,
+        "proposal": 16,
+        "strict": 4
+      },
+      "SLOW_CROSS_SECTIONAL_LEVEL": {
+        "admission": 16,
+        "proposal": 32,
+        "strict": 8
+      },
+      "SLOW_TEMPORAL_CHANGE": {
+        "admission": 16,
+        "proposal": 32,
+        "strict": 8
+      }
+    },
+    "seed_sets": {
+      "seed_a": {
+        "BROAD_EVENT_FROZEN_ENTRY": 1783,
+        "DISCLOSURE_EVENT": 1753,
+        "FIRSTN_PATH": 1733,
+        "INTRADAY_STATE_TRANSITION": 1777,
+        "MARKET_REGIME_CONDITION": 1759,
+        "MINUTE_STATIC": 1729,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 1741,
+        "SLOW_TEMPORAL_CHANGE": 1747
+      },
+      "seed_b": {
+        "BROAD_EVENT_FROZEN_ENTRY": 2777,
+        "DISCLOSURE_EVENT": 2749,
+        "FIRSTN_PATH": 2729,
+        "INTRADAY_STATE_TRANSITION": 2767,
+        "MARKET_REGIME_CONDITION": 2753,
+        "MINUTE_STATIC": 2718,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 2731,
+        "SLOW_TEMPORAL_CHANGE": 2741
+      }
+    },
+    "selector": {
+      "frozen_before_performance": true,
+      "objective": "development_rank_ic_cost_stability_with_route_family_caps",
+      "online_refit": false,
+      "version": "cn_unified_development_selector_v1_frozen"
+    }
+  },
+  "unified_discovery_scope": {
+    "development_dates": "ALL_TRAIN",
+    "row_groups": "ALL",
+    "shards": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "support_units": "route_specific"
+  }
+}

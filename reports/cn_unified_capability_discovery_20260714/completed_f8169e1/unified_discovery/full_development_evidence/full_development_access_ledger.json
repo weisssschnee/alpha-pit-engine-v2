@@ -1,0 +1,3470 @@
+{
+  "all_row_groups_read": true,
+  "data_role": "development_only",
+  "elapsed_seconds": 10548.638974905014,
+  "expected_row_group_count": 576,
+  "forbidden_read_count": 0,
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "opened_file_count": 16,
+  "opened_row_group_count": 576,
+  "records": [
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 789034
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 778611
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 790224
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 790706
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 749977
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 809022
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 754268
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 496942
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 787106
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 776924
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786217
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 787106
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 788311
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 806462
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 734071
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 768293
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 429264
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 785660
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 788793
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 780780
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 817698
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 787814
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 721057
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788626
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 815440
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 790465
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 759858
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 787616
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 415002
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 807335
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 791188
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 734071
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 743470
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 340094
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 786383
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 785660
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 784877
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 788778
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 790224
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 721057
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 816493
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 793116
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 759376
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 790947
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 412876
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 785901
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 787106
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 788311
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 812080
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786850
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 791188
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 790706
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 733348
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 789019
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 764375
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 783297
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 326839
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 789034
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 777165
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 789983
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 734794
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 817216
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 778656
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 792875
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 790706
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 792393
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 393596
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 786639
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 800557
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 783476
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 788175
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 787212
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 788446
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788311
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 787106
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 786142
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 787106
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 787106
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 717398
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 792393
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 790706
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 789019
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 773548
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 409218
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 813842
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 758171
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 787573
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 788055
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 789019
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 742265
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 789260
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 759376
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 410466
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 759135
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786850
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786292
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 788793
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 783025
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788340
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 737883
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 789364
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 784758
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 789260
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 472644
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 760340
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 788145
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786865
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786383
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 787588
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 788552
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 789034
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 787106
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 783251
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788778
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 790224
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 722262
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 787948
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 777769
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 786562
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 775254
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 251888
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 761304
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 788055
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 789019
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 735758
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 817939
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 776728
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 762027
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 793116
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 789019
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 277916
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 807817
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 729010
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 787091
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786368
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 790706
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 721057
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788537
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 790706
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788778
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 818421
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 795705
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 760114
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 785419
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 263172
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 764256
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 789034
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 789034
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 784696
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 784696
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788070
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 717457
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 809385
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 793116
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 789019
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 759376
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788746
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 404157
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 789019
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 756966
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786609
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 813842
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 788055
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 816236
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 789276
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 785900
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 787106
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 725833
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 813842
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 788778
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 759858
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 789501
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 461317
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 0,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 1,
+      "rows": 810980
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 2,
+      "rows": 789275
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 3,
+      "rows": 757403
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 4,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 5,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 6,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 7,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 8,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 9,
+      "rows": 786127
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 10,
+      "rows": 787332
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 11,
+      "rows": 788055
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 12,
+      "rows": 789019
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 13,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 14,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 15,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 16,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 17,
+      "rows": 790706
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 18,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 19,
+      "rows": 730456
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 20,
+      "rows": 788296
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 21,
+      "rows": 789108
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 22,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 23,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 24,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 25,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 26,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 27,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 28,
+      "rows": 780599
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 29,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 30,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 31,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 32,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 33,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 34,
+      "rows": 789516
+    },
+    {
+      "data_role": "development",
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "row_group": 35,
+      "rows": 508510
+    }
+  ],
+  "validation_reads": 0
+}

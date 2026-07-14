@@ -1,0 +1,23 @@
+{
+  "candidate_count": 232,
+  "challenge_count": 0,
+  "claim_ceiling": "DEVELOPMENT_EVIDENCE_ONLY",
+  "exact_count": 232,
+  "forbidden_read_count": 0,
+  "forward_count": 0,
+  "ledger_version": "cn_search_exposure_ledger_v1",
+  "legal_count": 232,
+  "route_rows": {
+    "BROAD_EVENT_FROZEN_ENTRY": 22,
+    "DISCLOSURE_EVENT": 8,
+    "FIRSTN_PATH": 32,
+    "INTRADAY_STATE_TRANSITION": 28,
+    "MARKET_REGIME_CONDITION": 32,
+    "MINUTE_STATIC": 28,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 46,
+    "SLOW_TEMPORAL_CHANGE": 36
+  },
+  "run_id": "cn_unified_capability_integration_discovery_v1_discovery_seed_a",
+  "strict_count": 70,
+  "survivor_count": 7
+}
