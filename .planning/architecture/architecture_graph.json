@@ -15,16 +15,16 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-14T15:44:39.893260+00:00",
+    "generated_at": "2026-07-14T18:28:02.944111+00:00",
     "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
-    "generator_sha256": "c48c489054c41951195e6b6e3a7a1ea6f1f33913a3652af88a250e37268fa177",
-    "graph_type": "CN_SEARCH_SELECTION_EVENT_STATE_SPRINT2_CURRENT_ARCHITECTURE_CONTRACT",
-    "phase": "CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED",
-    "registry_sha256": "8cb2a76bf831cc64b72c7c56e5fec0b6dbe4f9c6ef2fd253f8078a93e20aee1b",
-    "registry_version": "cn_feature_runtime_wiring_architecture_registry_v7",
-    "source_repo_sha": "a03cd6e5c55e6c38b839cab97b4e359bc6ae9d30",
+    "generator_sha256": "7e043354eee8ae18b667d9f6ab0aaa747496b5a079ad5a75bf2d27d7ded59926",
+    "graph_type": "CN_RUNTIME_AUTHORITY_AND_SPLIT_CURRENT_ARCHITECTURE_CONTRACT",
+    "phase": "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED",
+    "registry_sha256": "38e52b69ddd101ca431741242d12c94382510f5926b641d91a22dd28887ad664",
+    "registry_version": "cn_runtime_authority_split_convergence_architecture_registry_v9",
+    "source_repo_sha": "30e5f8ad991b06ae271ce8d2ad08f0d1efa72a0f",
     "status_authority_path": ".planning/architecture/architecture_registry.json",
-    "status_authority_sha256": "b70aff28c5ba6306250ef1639d5d12d66e10df9d7c677aeedacfac650f52ce6f",
+    "status_authority_sha256": "bf6a0185820b5eaf078db355d666e99ab6baff5b140ecc377f86a47c995fee8a",
     "status_values": [
       "DEPRECATED",
       "FROZEN",
@@ -490,14 +490,70 @@
       "target": "unified_development_discovery"
     },
     {
-      "evidence": "runtime authority audit",
-      "permission": "FORBIDDEN",
-      "relation": "registry_receipt_required_but_not_wired",
+      "evidence": "immutable receipt schema and negative tests",
+      "permission": "ALLOWED",
+      "relation": "authorizes_field_route_primitive_pit_and_source_lag",
       "source": "unified_capability_registry_282",
-      "target": "legacy_phase3ga_runtime_bypass"
+      "target": "candidate_submission_receipt_gate"
     },
     {
-      "evidence": "runtime mismatch audit",
+      "evidence": "receipt split manifest hash",
+      "permission": "ALLOWED",
+      "relation": "binds_single_485_date_split_authority",
+      "source": "fixed_calendar_split",
+      "target": "candidate_submission_receipt_gate"
+    },
+    {
+      "evidence": "legacy proposal adapter and receipt rejection audit",
+      "permission": "ALLOWED",
+      "relation": "submits_proposals_for_authorization_before_admission",
+      "source": "legacy_phase3ga_runtime_bypass",
+      "target": "candidate_submission_receipt_gate"
+    },
+    {
+      "evidence": "Phase3CP pre-admission receipt gate",
+      "permission": "ALLOWED",
+      "relation": "supplies_authorized_candidates_only",
+      "source": "candidate_submission_receipt_gate",
+      "target": "admission_diversity"
+    },
+    {
+      "evidence": "Phase3CN receipt hash guard",
+      "permission": "ALLOWED",
+      "relation": "train_feedback_requires_exact_evaluator_receipt",
+      "source": "candidate_submission_receipt_gate",
+      "target": "scheduler_memory_feedback"
+    },
+    {
+      "evidence": "formal _split_map removed",
+      "permission": "FORBIDDEN",
+      "relation": "sample_derived_worker_split",
+      "source": "worker_local_split",
+      "target": "candidate_submission_receipt_gate"
+    },
+    {
+      "evidence": "actual 1/2/4-worker parity max error 12.0",
+      "permission": "FORBIDDEN",
+      "relation": "formal_shard_parallel_portfolio_execution",
+      "source": "candidate_submission_receipt_gate",
+      "target": "shard_parallel_portfolio_evaluation"
+    },
+    {
+      "evidence": "formal route fails closed",
+      "permission": "FORBIDDEN",
+      "relation": "diagnostic_shard_local_reward_to_feedback",
+      "source": "shard_parallel_portfolio_evaluation",
+      "target": "scheduler_memory_feedback"
+    },
+    {
+      "evidence": "repair report",
+      "permission": "FORBIDDEN",
+      "relation": "engineering_qualification_does_not_authorize_search",
+      "source": "runtime_authority_split_convergence_repair",
+      "target": "formal_search_frozen"
+    },
+    {
+      "evidence": "formal search remains frozen after repair",
       "permission": "FORBIDDEN",
       "relation": "formal_search_execution",
       "source": "legacy_phase3ga_runtime_bypass",
@@ -623,9 +679,9 @@
       ]
     },
     {
-      "blocker": "The 485-date manifest and final exact normalization are correct, but Phase3CM worker-local split mapping and the chunk-04 recovery worker path remain runtime-reachable",
+      "blocker": "",
       "data_role": "development+spent",
-      "feedback_permission": "TRAIN_ONLY",
+      "feedback_permission": "TRAIN_ONLY_VALIDATION_HOLDOUT_REPORT_ONLY_FORWARD_2026_FORBIDDEN",
       "id": "fixed_calendar_split",
       "implementation_path": [
         "runtime/run_plans/phase3ga_true1min_2024_2025_global_split_manifest.csv",
@@ -652,12 +708,14 @@
       "output_artifacts": [
         "runtime/run_plans/evaluation_data_roles_v1.json"
       ],
-      "status": "PARTIAL",
+      "status": "IMPLEMENTED",
       "test/evidence": [
-        "tests/test_phase3cm_global_date_split.py"
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
       ],
       "test_evidence": [
-        "tests/test_phase3cm_global_date_split.py"
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
       ],
       "verification_paths": [
         "runtime/run_plans/phase3ga_true1min_2024_2025_global_split_manifest.csv"
@@ -839,7 +897,7 @@
         "multi-arm candidate constructors"
       ],
       "label": "Generation candidate pack (24,576)",
-      "last_verified_sha": "d7121a54508b461dcb18825fc7d3566496aadfd9f4b9236951d7004b4d93c35a",
+      "last_verified_sha": "6cd1dbd447a442baa87f69524654332a5213c1f81a2590e9b4de8bf0689824f2",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py"
       ],
@@ -917,7 +975,7 @@
         "proxy_1536"
       ],
       "label": "CM admission (384)",
-      "last_verified_sha": "d7121a54508b461dcb18825fc7d3566496aadfd9f4b9236951d7004b4d93c35a",
+      "last_verified_sha": "6cd1dbd447a442baa87f69524654332a5213c1f81a2590e9b4de8bf0689824f2",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py"
       ],
@@ -958,7 +1016,7 @@
         "fixed_calendar_split"
       ],
       "label": "Strict development reward (324)",
-      "last_verified_sha": "1bf425804ee5e6df3f511b2f65eb8c297718849133b1f6c6ec2152dfefac6dd1",
+      "last_verified_sha": "9d58f0b0f5fd64a94f918dbe4db757a8dc9df275bfec45f8dc136f2406ad50a7",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
       ],
@@ -2165,7 +2223,7 @@
         "formal B1S funnel; repaired Capability CANARY; frozen two-seed development Epoch-A"
       ],
       "label": "CN Generator Research Sprint-1 partially completed",
-      "last_verified_sha": "c5915b90e5842754774370abf16d9297e252ded5cc94589a0d2b00ba9d63c5e7",
+      "last_verified_sha": "1a0747379663a07be02945abbfbe33aff7986fbb897a45ebfe5b566b0d751dc4",
       "last_verified_sha_scope": [
         "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
         "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json",
@@ -2667,7 +2725,7 @@
       ]
     },
     {
-      "blocker": "authoritative inside unified preflight/discovery, but not consulted by the active legacy Phase3GA/CM/CN candidate path",
+      "blocker": "",
       "data_role": "development_only_capability_authority",
       "feedback_permission": "NO_VALIDATION_NO_HOLDOUT_NO_2026_NO_PROMOTION",
       "id": "unified_capability_registry_282",
@@ -2696,7 +2754,7 @@
         "3 derived intraday states"
       ],
       "label": "Unified 282-representation semantic, PIT and route authority",
-      "last_verified_sha": "61efeb07e9f5c55e4703b517b34ed741b521d3b443bb8963513401861ca4b4ab",
+      "last_verified_sha": "3af2961af8e1aa1cb60425e8dc18920b076c6b4d51cc3e6e5a9483d659827a20",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/unified_capability_registry.py",
         "src/our_system_phase2/services/typed_route_compiler.py",
@@ -2707,20 +2765,24 @@
       "output_artifact": [
         "282 candidate-visible representations",
         "eight typed routes",
-        "source/representation lineage and fail-closed compiler receipts"
+        "source/representation lineage and immutable fail-closed candidate submission receipts"
       ],
       "output_artifacts": [
         "282 candidate-visible representations",
         "eight typed routes",
-        "source/representation lineage and fail-closed compiler receipts"
+        "source/representation lineage and immutable fail-closed candidate submission receipts"
       ],
-      "status": "PARTIAL",
+      "status": "IMPLEMENTED",
       "test/evidence": [
         "tests/test_unified_capability_integration.py",
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_RUNTIME_AUTHORITY_CONVERGENCE_MATRIX.csv",
         "reports/cn_feature_runtime_wiring_audit_20260714/CN_FEATURE_WIRING_CAPABILITY_TEST.json"
       ],
       "test_evidence": [
         "tests/test_unified_capability_integration.py",
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_RUNTIME_AUTHORITY_CONVERGENCE_MATRIX.csv",
         "reports/cn_feature_runtime_wiring_audit_20260714/CN_FEATURE_WIRING_CAPABILITY_TEST.json"
       ],
       "verification_paths": [
@@ -2795,7 +2857,7 @@
       ]
     },
     {
-      "blocker": "field search eligibility is not governed by UnifiedCapabilityRegistry or TypedRouteCompiler",
+      "blocker": "formal search remains frozen; proposal authority does not imply run authorization",
       "data_role": "historical_development_search_path",
       "feedback_permission": "FORMAL_SEARCH_FROZEN",
       "id": "legacy_phase3ga_runtime_bypass",
@@ -2819,8 +2881,8 @@
         "physical parquet schema availability",
         "legacy atom manifests"
       ],
-      "label": "Active legacy Phase3GA/CM/CN hardcoded field path",
-      "last_verified_sha": "f9b447b24fbf7a680dd5d44bf36cf142769db528e4b4f052352e5f36910e9d85",
+      "label": "Legacy Phase3GA generators as proposal sources only",
+      "last_verified_sha": "2f8655ba6a02620aade2b05141f492136553ed8df4331872b42508de8fa0cbbe",
       "last_verified_sha_scope": [
         "app.py",
         "src/our_system_phase2/runtime/phase3dv_budget_pool_self_deepen_pack.py",
@@ -2828,19 +2890,23 @@
         "reports/cn_feature_runtime_wiring_audit_20260714/CN_HARDCODED_FIELD_PATHS.md"
       ],
       "output_artifact": [
-        "legacy generation, proxy, admission, strict reward and Phase3CN feedback funnel"
+        "proposal rows; only receipt-authorized rows can enter proxy admission, semantic evaluation, reward or feedback"
       ],
       "output_artifacts": [
-        "legacy generation, proxy, admission, strict reward and Phase3CN feedback funnel"
+        "proposal rows; only receipt-authorized rows can enter proxy admission, semantic evaluation, reward or feedback"
       ],
-      "status": "PARTIAL",
+      "status": "IMPLEMENTED",
       "test/evidence": [
         "reports/cn_feature_runtime_wiring_audit_20260714/CN_HARDCODED_FIELD_PATHS.md",
-        "reports/cn_feature_runtime_wiring_audit_20260714/CN_FIELD_SEARCH_EXPOSURE_FUNNEL.csv"
+        "reports/cn_feature_runtime_wiring_audit_20260714/CN_FIELD_SEARCH_EXPOSURE_FUNNEL.csv",
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_LEGACY_RECEIPT_GATED_PARITY.json"
       ],
       "test_evidence": [
         "reports/cn_feature_runtime_wiring_audit_20260714/CN_HARDCODED_FIELD_PATHS.md",
-        "reports/cn_feature_runtime_wiring_audit_20260714/CN_FIELD_SEARCH_EXPOSURE_FUNNEL.csv"
+        "reports/cn_feature_runtime_wiring_audit_20260714/CN_FIELD_SEARCH_EXPOSURE_FUNNEL.csv",
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_LEGACY_RECEIPT_GATED_PARITY.json"
       ],
       "verification_paths": [
         "app.py",
@@ -2850,7 +2916,7 @@
       ]
     },
     {
-      "blocker": "audit confirms runtime convergence and worker-boundary split enforcement are still required",
+      "blocker": "superseded by the accepted runtime authority and split convergence repair",
       "data_role": "read_only_metadata_and_synthetic",
       "feedback_permission": "NO_PERFORMANCE_NO_REWARD_NO_PROMOTION",
       "id": "feature_runtime_wiring_audit",
@@ -2877,7 +2943,7 @@
         "source reachability"
       ],
       "label": "Independent feature representation runtime-wiring audit",
-      "last_verified_sha": "69cead1062059f9af0ab602a9627375a5a8c731a0f02eb44180c1f9aeac71e9b",
+      "last_verified_sha": "c28d407865b10dce355c3bebc8cd2ea8a55ff0c563e16036ceb08d013295eeb0",
       "last_verified_sha_scope": [
         "scripts/build_cn_feature_runtime_wiring_audit.py",
         "tests/test_cn_feature_runtime_wiring_audit.py",
@@ -2910,6 +2976,218 @@
         "tests/test_cn_feature_runtime_wiring_audit.py",
         "reports/cn_feature_runtime_wiring_audit_20260714/artifact_index.json",
         "reports/cn_feature_runtime_wiring_audit_20260714/CN_FEATURE_RUNTIME_WIRING_INDEPENDENT_AUDIT.md"
+      ]
+    },
+    {
+      "blocker": "",
+      "data_role": "development_only_candidate_authorization",
+      "feedback_permission": "TRAIN_ONLY_AFTER_EXACT_RECEIPT_VALIDATION",
+      "id": "candidate_submission_receipt_gate",
+      "implementation_path": [
+        "src/our_system_phase2/services/candidate_submission_receipt.py",
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
+        "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/services/candidate_submission_receipt.py",
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
+        "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
+      ],
+      "input_artifact": [
+        "legacy or unified proposal",
+        "UnifiedCapabilityRegistry",
+        "TypedRouteCompiler",
+        "fixed 485-date manifest",
+        "development data release hash",
+        "evaluator code hash"
+      ],
+      "input_artifacts": [
+        "legacy or unified proposal",
+        "UnifiedCapabilityRegistry",
+        "TypedRouteCompiler",
+        "fixed 485-date manifest",
+        "development data release hash",
+        "evaluator code hash"
+      ],
+      "label": "Immutable unified candidate submission receipt gate",
+      "last_verified_sha": "5986525692f69c5ae4927ce9c22aa4474ff1c7aae645cf1ad73a4b45c4075f28",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/services/candidate_submission_receipt.py",
+        "tests/test_runtime_authority_convergence.py",
+        "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
+        "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
+      ],
+      "output_artifact": [
+        "CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
+        "candidate_submission_receipts.jsonl",
+        "pre-admission rejection audit"
+      ],
+      "output_artifacts": [
+        "CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
+        "candidate_submission_receipts.jsonl",
+        "pre-admission rejection audit"
+      ],
+      "status": "IMPLEMENTED",
+      "test/evidence": [
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_LEGACY_RECEIPT_GATED_PARITY.json"
+      ],
+      "test_evidence": [
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_LEGACY_RECEIPT_GATED_PARITY.json"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/services/candidate_submission_receipt.py",
+        "tests/test_runtime_authority_convergence.py",
+        "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
+        "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
+      ]
+    },
+    {
+      "blocker": "actual 1/2/4-worker parity failed with max numeric error 12.0 because portfolios were formed from shard-local rather than global cross-sections",
+      "data_role": "source_and_synthetic_no_selection",
+      "feedback_permission": "NONE",
+      "id": "runtime_authority_split_convergence_repair",
+      "implementation_path": [
+        "src/our_system_phase2/services/fixed_split_authority.py",
+        "scripts/build_cn_runtime_authority_split_repair.py",
+        "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/services/fixed_split_authority.py",
+        "scripts/build_cn_runtime_authority_split_repair.py",
+        "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
+      ],
+      "input_artifact": [
+        "fixed 485-date manifest",
+        "formal runtime source reachability",
+        "frozen historical legal candidate"
+      ],
+      "input_artifacts": [
+        "fixed 485-date manifest",
+        "formal runtime source reachability",
+        "frozen historical legal candidate"
+      ],
+      "label": "Runtime authority and global split convergence repair",
+      "last_verified_sha": "51f71c8d9e60c1301be38406914224a1fb1d861e9c494ce59a38020281797f4e",
+      "last_verified_sha_scope": [
+        "reports/cn_runtime_authority_and_split_repair_20260715/artifact_index.json",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_RUNTIME_AUTHORITY_AND_SPLIT_REPAIR_REPORT.md"
+      ],
+      "output_artifact": [
+        "runtime authority matrix",
+        "global split enforcement matrix",
+        "1/2/4 worker parity",
+        "historical evidence reclassification"
+      ],
+      "output_artifacts": [
+        "runtime authority matrix",
+        "global split enforcement matrix",
+        "1/2/4 worker parity",
+        "historical evidence reclassification"
+      ],
+      "status": "PARTIAL",
+      "test/evidence": [
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/run_manifest.json"
+      ],
+      "test_evidence": [
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/run_manifest.json"
+      ],
+      "verification_paths": [
+        "reports/cn_runtime_authority_and_split_repair_20260715/artifact_index.json",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_RUNTIME_AUTHORITY_AND_SPLIT_REPAIR_REPORT.md"
+      ]
+    },
+    {
+      "blocker": "requires global cross-section exact merge and actual 1/2/4-worker parity; current max numeric error is 12.0",
+      "data_role": "synthetic_and_historical_diagnostic_only",
+      "feedback_permission": "FORBIDDEN_FAIL_CLOSED",
+      "id": "shard_parallel_portfolio_evaluation",
+      "implementation_path": [
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "runtime/launchers/phase3ga_recover_missing_chunk04_20260710.ps1"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "runtime/launchers/phase3ga_recover_missing_chunk04_20260710.ps1"
+      ],
+      "input_artifact": [
+        "receipt-authorized candidates",
+        "disjoint shard assignments",
+        "fixed 485-date manifest"
+      ],
+      "input_artifacts": [
+        "receipt-authorized candidates",
+        "disjoint shard assignments",
+        "fixed 485-date manifest"
+      ],
+      "label": "Shard-parallel cross-sectional portfolio evaluation and recovery",
+      "last_verified_sha": "2ddef1f5de21dce63b5b743c86908393b240de1aaea08d2dcae876e266aa4d48",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "runtime/launchers/phase3ga_recover_missing_chunk04_20260710.ps1",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
+      ],
+      "output_artifact": [
+        "diagnostic-only shard-local reward atoms and exact merge"
+      ],
+      "output_artifacts": [
+        "diagnostic-only shard-local reward atoms and exact merge"
+      ],
+      "status": "FROZEN",
+      "test/evidence": [
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
+      ],
+      "test_evidence": [
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "runtime/launchers/phase3ga_recover_missing_chunk04_20260710.ps1",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
+      ]
+    },
+    {
+      "blocker": "removed from the formal Phase3CM worker path",
+      "data_role": "historical_reproduction_only",
+      "feedback_permission": "FORBIDDEN",
+      "id": "worker_local_split",
+      "implementation_path": [],
+      "implementation_paths": [],
+      "input_artifact": [
+        "historical shard-local sampled timestamps"
+      ],
+      "input_artifacts": [
+        "historical shard-local sampled timestamps"
+      ],
+      "label": "Worker-local sample-derived split",
+      "last_verified_sha": "9d58f0b0f5fd64a94f918dbe4db757a8dc9df275bfec45f8dc136f2406ad50a7",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
+      ],
+      "output_artifact": [
+        "none in current formal runtime"
+      ],
+      "output_artifacts": [
+        "none in current formal runtime"
+      ],
+      "status": "DEPRECATED",
+      "test/evidence": [
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_GLOBAL_SPLIT_ENFORCEMENT_MATRIX.csv"
+      ],
+      "test_evidence": [
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_runtime_authority_and_split_repair_20260715/CN_GLOBAL_SPLIT_ENFORCEMENT_MATRIX.csv"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
       ]
     },
     {
