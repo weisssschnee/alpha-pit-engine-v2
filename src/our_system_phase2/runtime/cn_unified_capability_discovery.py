@@ -37,6 +37,7 @@ from our_system_phase2.services.fundamental_representations import (
 from our_system_phase2.services.pit_fundamental_fabric import (
     PITFundamentalFabricAdapter,
     load_development_sessions,
+    normalize_cn_code,
 )
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 from our_system_phase2.services.search_exposure_ledger import SearchExposureLedger
@@ -357,6 +358,19 @@ def _evaluate_fundamental_candidates(
     metrics: dict[str, dict[str, Any]] = {}
     by_id = {row["candidate_id"]: row for row in candidates}
     field_cache: dict[str, pd.DataFrame] = {}
+    # PIT sidecars use the canonical six-digit security key.  The minute
+    # release intentionally retains exchange suffixes (for example
+    # ``000001.SZ``), so normalize the evaluation coordinates before both
+    # materialization and the cache merge.  Otherwise a correctly populated
+    # sidecar is silently converted into all-null evidence at the second join.
+    fundamental_target = target_frame.copy()
+    fundamental_target["code"] = fundamental_target["code"].map(normalize_cn_code)
+    if fundamental_target["code"].eq("").any():
+        raise ValueError("fundamental evaluation received an unrecognized security code")
+    if fundamental_target.duplicated(["code", "session_time"]).any():
+        raise ValueError(
+            "fundamental evaluation coordinates are not unique after code normalization"
+        )
     for candidate in candidates:
         if candidate["candidate_id"] in metrics:
             continue
@@ -369,9 +383,16 @@ def _evaluate_fundamental_candidates(
                 materialized = pd.read_parquet(cache_path)
             else:
                 spec = dict((canonical.metadata or {})["canonical_representation"])
-                materialized = materializer.materialize(spec, target_frame[["code", "session_time"]])
+                materialized = materializer.materialize(
+                    spec, fundamental_target[["code", "session_time"]]
+                )
                 materialized.to_parquet(cache_path, index=False)
-            field_cache[field_id] = target_frame.merge(materialized, on=["code", "session_time"], how="left", validate="one_to_one")
+            field_cache[field_id] = fundamental_target.merge(
+                materialized,
+                on=["code", "session_time"],
+                how="left",
+                validate="one_to_one",
+            )
         frame = field_cache[field_id]
         signal, support = _fundamental_signal(frame, candidate, field_id)
         if candidate["route_id"] == "DISCLOSURE_EVENT" and not candidate["is_matched_control"]:

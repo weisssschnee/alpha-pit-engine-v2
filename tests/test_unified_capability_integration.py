@@ -3,13 +3,19 @@ from __future__ import annotations
 import csv
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
 import pytest
 
 from scripts.build_unified_capability_registry import build
-from our_system_phase2.runtime.cn_unified_capability_discovery import _apply_metrics, _raw_expression
+import our_system_phase2.runtime.cn_unified_capability_discovery as unified_runner
+from our_system_phase2.runtime.cn_unified_capability_discovery import (
+    _apply_metrics,
+    _evaluate_fundamental_candidates,
+    _raw_expression,
+)
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 from our_system_phase2.services.typed_primitive_gate import expression_fields
 from our_system_phase2.services.search_exposure_ledger import SearchExposureLedger
@@ -218,6 +224,68 @@ def test_zero_reward_is_valid_and_broad_event_uses_frozen_route_seeds() -> None:
     ).read_text(encoding="utf-8")
     assert "broad_seed_by_name" in runner
     assert "seeds=[1729, 2718]" not in runner
+
+
+def test_fundamental_evaluation_normalizes_exchange_suffixed_panel_codes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    field_id = "fund_test_level"
+
+    class FakeMaterializer:
+        def __init__(self, adapter: object) -> None:
+            del adapter
+
+        def materialize(
+            self, spec: dict[str, object], coordinates: pd.DataFrame
+        ) -> pd.DataFrame:
+            assert spec["field_id"] == field_id
+            assert coordinates["code"].str.fullmatch(r"\d{6}").all()
+            output = coordinates.copy()
+            output[field_id] = np.arange(len(output), dtype=float)
+            return output
+
+    class FakeRegistry:
+        def resolve(self, requested: str) -> SimpleNamespace:
+            assert requested == field_id
+            return SimpleNamespace(
+                field_id=field_id,
+                source_family="canonical_fundamental_test",
+                metadata={
+                    "canonical_representation": {
+                        "field_id": field_id,
+                        "search_eligible": True,
+                    }
+                },
+            )
+
+    monkeypatch.setattr(
+        unified_runner, "CanonicalFundamentalMaterializer", FakeMaterializer
+    )
+    session = pd.Timestamp("2024-04-29 15:00:00")
+    target = pd.DataFrame(
+        {
+            "code": [f"{index:06d}.SZ" for index in range(1, 31)],
+            "session_time": [session] * 30,
+            "target": np.arange(30, dtype=float),
+        }
+    )
+    candidate = {
+        "candidate_id": "fundamental",
+        "matched_control_id": "control",
+        "is_matched_control": False,
+        "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+        "field_ids": [field_id],
+        "canonical_expression": f"CSRank(${field_id})",
+    }
+    metrics = _evaluate_fundamental_candidates(
+        candidates=[candidate],
+        registry=FakeRegistry(),
+        adapter=object(),
+        target_frame=target,
+        cache_root=tmp_path / "cache",
+    )
+    assert metrics["fundamental"]["support"] == 30
+    assert metrics["fundamental"]["rank_ic_mean"] == pytest.approx(1.0)
 
 
 def test_generated_intraday_expressions_execute_on_a_synthetic_panel(
