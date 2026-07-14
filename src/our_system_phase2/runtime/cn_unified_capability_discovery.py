@@ -258,7 +258,7 @@ def _read_proxy_frame(
 
 def _evaluate_active_candidates(frame: pd.DataFrame, candidates: Sequence[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     target = _same_session_future_return(frame, 5).to_numpy(dtype=float)
-    cache: dict[str, np.ndarray] = {}
+    expression_cache: dict[str, pd.Series] = {}
     metrics: dict[str, dict[str, Any]] = {}
     by_id = {row["candidate_id"]: row for row in candidates}
     for candidate in candidates:
@@ -272,16 +272,17 @@ def _evaluate_active_candidates(frame: pd.DataFrame, candidates: Sequence[dict[s
             evaluate_panel_expression(
                 frame,
                 _raw_expression(candidate["canonical_expression"]),
+                cache=expression_cache,
                 data_role="development",
             ), errors="coerce"
         ).to_numpy(dtype=float)
-        cache[candidate_id] = signal
         if route_id == "INTRADAY_STATE_TRANSITION":
             control = by_id[candidate["matched_control_id"]]
             control_signal = pd.to_numeric(
                 evaluate_panel_expression(
                     frame,
                     _raw_expression(control["canonical_expression"]),
+                    cache=expression_cache,
                     data_role="development",
                 ), errors="coerce"
             ).to_numpy(dtype=float)
@@ -530,6 +531,7 @@ def _stream_full_active_evidence(
             frame["date"] = frame["trade_time"]
             target = _same_session_future_return(frame, 5).to_numpy(dtype=float)
             frame["session"] = frame["trade_time"].dt.normalize()
+            expression_cache: dict[str, pd.Series] = {}
             daily_parts.append(
                 frame.groupby(["code", "session"], sort=False).agg(close=("close", "last")).reset_index()
             )
@@ -539,6 +541,7 @@ def _stream_full_active_evidence(
                     evaluate_panel_expression(
                         frame,
                         _raw_expression(candidate["canonical_expression"]),
+                        cache=expression_cache,
                         data_role="development",
                     ), errors="coerce"
                 ).to_numpy(dtype=float)
@@ -549,6 +552,7 @@ def _stream_full_active_evidence(
                         evaluate_panel_expression(
                             frame,
                             _raw_expression(control["canonical_expression"]),
+                            cache=expression_cache,
                             data_role="development",
                         ), errors="coerce"
                     ).to_numpy(dtype=float)
@@ -716,7 +720,10 @@ def run(
                 registry=registry,
                 adapter=fundamental_adapter,
                 target_frame=target_frame,
-                cache_root=output_root / "capability_canary" / seed_name / "fundamental_cache",
+                cache_root=(
+                    output_root / "capability_canary" / seed_name
+                    / "fundamental_cache" / contract["contract_hash"]
+                ),
             )
         )
         mechanism_by_id = {
@@ -806,7 +813,10 @@ def run(
                 registry=registry,
                 adapter=fundamental_adapter,
                 target_frame=_proxy_session_target(proxy_frame),
-                cache_root=output_root / "unified_discovery" / seed_name / "fundamental_proxy_cache",
+                cache_root=(
+                    output_root / "unified_discovery" / seed_name
+                    / "fundamental_proxy_cache" / contract["contract_hash"]
+                ),
             )
         )
         # Reuse the already completed full16 frozen event replay.
@@ -842,7 +852,10 @@ def run(
                 registry=registry,
                 adapter=fundamental_adapter,
                 target_frame=_proxy_session_target(proxy_frame),
-                cache_root=output_root / "unified_discovery" / seed_name / "fundamental_proxy_cache",
+                cache_root=(
+                    output_root / "unified_discovery" / seed_name
+                    / "fundamental_proxy_cache" / contract["contract_hash"]
+                ),
             )
         )
         _apply_metrics(adaptive, adaptive_metrics)
@@ -883,7 +896,7 @@ def run(
         registry=registry,
         adapter=fundamental_adapter,
         target_frame=daily_target,
-        cache_root=full_root / "fundamental_cache",
+        cache_root=full_root / "fundamental_cache" / contract["contract_hash"],
     )
     strict_metrics = {**active_metrics, **fundamental_metrics}
     exact_metric = {
