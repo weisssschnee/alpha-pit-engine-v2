@@ -155,7 +155,7 @@ def worker_parity(
                         volume = 1000.0 + symbol_index * 10 + minute_index
                         panel_rows.append(
                             {
-                                "code": f"{symbol_index:06d}",
+                                "code": f"{shard_index * 100 + symbol_index:06d}",
                                 "trade_time": trade_time,
                                 "date": pd.Timestamp(trade_date),
                                 "open": base - 0.01,
@@ -253,12 +253,24 @@ def worker_parity(
                 }
             )
     baseline = _numeric_values(summaries["workers_1"])
+    train_feedback_baseline = _numeric_values(summaries["workers_1"]["reward"])
     max_error = 0.0
+    train_feedback_max_error = 0.0
     for key in ("workers_2", "workers_4"):
         compared = _numeric_values(summaries[key])
         if len(compared) != len(baseline):
             raise RuntimeError("worker parity metric shape drift")
         max_error = max(max_error, max((abs(left - right) for left, right in zip(baseline, compared)), default=0.0))
+        train_feedback_compared = _numeric_values(summaries[key]["reward"])
+        if len(train_feedback_compared) != len(train_feedback_baseline):
+            raise RuntimeError("worker parity train-feedback shape drift")
+        train_feedback_max_error = max(
+            train_feedback_max_error,
+            max(
+                (abs(left - right) for left, right in zip(train_feedback_baseline, train_feedback_compared)),
+                default=0.0,
+            ),
+        )
     deterministic_hashes_equal = len({row["metric_hash"] for row in cases}) == 1
     return {
         "status": "PASS" if max_error <= 1e-12 and deterministic_hashes_equal else "FAIL",
@@ -269,6 +281,7 @@ def worker_parity(
         "recovery_exact_merge": "actual worker chunks and exact recovery entrypoint executed",
         "split_manifest_hash": split.manifest_hash,
         "max_numeric_error": max_error,
+        "train_feedback_max_numeric_error": train_feedback_max_error,
         "tolerance": 1e-12,
         "deterministic_exact_output_hashes_equal": deterministic_hashes_equal,
         "cases": cases,
@@ -531,7 +544,7 @@ Legacy generators remain proposal sources. The conservative adapter can map only
 
 ## Engineering qualification
 
-- Actual disjoint-shard worker counts 1/2/4 plus exact recovery: `{worker['status']}`; max numeric error `{worker['max_numeric_error']}` at tolerance `{worker['tolerance']}`. The mismatch exposed shard-local cross-sectional portfolio semantics, so the formal shard-parallel path now fails closed.
+- Actual disjoint-shard worker counts 1/2/4 plus exact recovery: `{worker['status']}`; max numeric error `{worker['max_numeric_error']}` and train-feedback max error `{worker['train_feedback_max_numeric_error']}` at tolerance `{worker['tolerance']}`. The mismatch exposed shard-local cross-sectional portfolio semantics, so the formal shard-parallel path now fails closed.
 - Legacy direct versus receipt-gated synthetic parity: `{legacy['status']}`; maximum reported error `{max(value for key, value in legacy.items() if key.endswith('_error'))}`.
 - Fixed split: 485 sessions = 364 train / 73 validation / 48 holdout; manifest SHA-256 `{split.manifest_hash}`.
 - Validation and holdout were not read for decisions. 2026 was not accessed. No search, promotion or cross-sprint memory update ran.
@@ -588,6 +601,8 @@ Historical tables are preserved. Evidence produced before global worker authorit
         },
         "access": {
             "performance_search_started": False,
+            "synthetic_report_only_roles_exercised": ["validation", "holdout"],
+            "physical_validation_holdout_assets_read": False,
             "validation_read": False,
             "holdout_read": False,
             "forward_2026_read": False,
