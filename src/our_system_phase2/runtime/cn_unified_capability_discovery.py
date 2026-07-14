@@ -399,8 +399,10 @@ def _apply_metrics(candidates: Sequence[dict[str, Any]], metrics: Mapping[str, M
             row["matched_increment"] = None
             row["development_increment_positive"] = False
             continue
-        reward = float(row.get("reward") or float("nan"))
-        control_reward = float(control.get("reward") or float("nan"))
+        reward_value = row.get("reward")
+        control_value = control.get("reward")
+        reward = float(reward_value) if reward_value is not None else float("nan")
+        control_reward = float(control_value) if control_value is not None else float("nan")
         increment = reward - control_reward if np.isfinite(reward) and np.isfinite(control_reward) else float("nan")
         row["matched_increment"] = increment
         row["development_increment_positive"] = bool(np.isfinite(increment) and increment > 0)
@@ -447,6 +449,7 @@ def _rx_ucb_expand(
     for row in roots:
         if row["is_matched_control"] or row["route_id"] == "BROAD_EVENT_FROZEN_ENTRY":
             continue
+        arms.setdefault(row["route_id"], [])
         value = row.get("matched_increment")
         if value is not None and np.isfinite(float(value)):
             arms[row["route_id"]].append(float(value))
@@ -470,7 +473,12 @@ def _rx_ucb_expand(
                 raise RuntimeError("RX/UCB adaptive proposal underfill after global exact dedup")
         parent = max(
             (row for row in roots if row["route_id"] == route and not row["is_matched_control"]),
-            key=lambda row: float(row.get("matched_increment") or -1e99),
+            key=lambda row: (
+                float(row["matched_increment"])
+                if row.get("matched_increment") is not None
+                and np.isfinite(float(row["matched_increment"]))
+                else -1e99
+            ),
         )
         for row in pair:
             row["proposal_origin"] = "ephemeral_rx_ucb_adaptive" if not row["is_matched_control"] else "matched_nonadaptive_control"
@@ -637,6 +645,12 @@ def run(
     registry = UnifiedCapabilityRegistry.read(registry_path)
     if registry.registry_hash != contract["registry_hash"]:
         raise RuntimeError("registry hash drift")
+    if preflight.get("repo_sha") != repo_sha:
+        raise RuntimeError("preflight repo SHA drift")
+    if preflight.get("registry_hash") != registry.registry_hash:
+        raise RuntimeError("preflight registry hash drift")
+    if preflight.get("contract_hash") != contract["contract_hash"]:
+        raise RuntimeError("preflight contract hash drift")
     release = validate_development_release(
         panel_root, release_manifest_path, split_manifest_path,
         expected_release_hash=contract["data_release"]["release_hash"],
@@ -652,13 +666,17 @@ def run(
     all_seed_canary: dict[str, list[dict[str, Any]]] = {}
     proxy_reads: list[dict[str, Any]] = []
     broad_root = output_root / "capability_canary" / "broad_event_full16"
+    broad_seed_by_name = {
+        seed_name: int(seed_contract["BROAD_EVENT_FROZEN_ENTRY"])
+        for seed_name, seed_contract in contract["seed_sets"].items()
+    }
     broad_summary = run_replay(
         entry_pack_path=broad_event_pack_path,
         data_root=panel_root,
         chip_root=chip_root,
         output_root=broad_root,
         repo_sha=repo_sha,
-        seeds=[1729, 2718],
+        seeds=sorted(set(broad_seed_by_name.values())),
     )
     broad_results = pd.read_csv(broad_root / "frozen_mechanism_results.csv")
 
@@ -689,8 +707,7 @@ def run(
             str(row["frozen_mechanism_id"]): row for row in rows
             if row["route_id"] == "BROAD_EVENT_FROZEN_ENTRY" and not row["is_matched_control"]
         }
-        broad_seed = int(contract["seed_sets"][seed_name]["BROAD_EVENT_FROZEN_ENTRY"])
-        broad_seed = 1729 if seed_name == "seed_a" else 2718
+        broad_seed = broad_seed_by_name[seed_name]
         for mechanism_id, row in mechanism_by_id.items():
             evidence = broad_results.loc[
                 broad_results["mechanism_id"].astype(str).eq(mechanism_id)

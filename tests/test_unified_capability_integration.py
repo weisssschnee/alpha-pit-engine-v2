@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from scripts.build_unified_capability_registry import build
+from our_system_phase2.runtime.cn_unified_capability_discovery import _apply_metrics
 from our_system_phase2.services.search_exposure_ledger import SearchExposureLedger
 from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
 from our_system_phase2.services.unified_capability_registry import (
@@ -184,3 +185,32 @@ def test_external_contract_files_are_immutable_inputs() -> None:
     }
     assert expected.issubset({path.name for path in EXTERNAL_ROOT.iterdir()})
     assert all(json.loads((EXTERNAL_ROOT / name).read_text(encoding="utf-8")) for name in expected)
+
+
+def test_zero_reward_is_valid_and_broad_event_uses_frozen_route_seeds() -> None:
+    candidate = {
+        "candidate_id": "candidate",
+        "matched_control_id": "control",
+        "is_matched_control": False,
+    }
+    control = {
+        "candidate_id": "control",
+        "matched_control_id": "candidate",
+        "is_matched_control": True,
+    }
+    rows = [candidate, control]
+    _apply_metrics(
+        rows,
+        {
+            "candidate": {"reward": 0.0},
+            "control": {"reward": -0.1},
+        },
+    )
+    assert candidate["matched_increment"] == pytest.approx(0.1)
+    assert candidate["development_increment_positive"]
+
+    runner = (
+        REPO / "src/our_system_phase2/runtime/cn_unified_capability_discovery.py"
+    ).read_text(encoding="utf-8")
+    assert "broad_seed_by_name" in runner
+    assert "seeds=[1729, 2718]" not in runner
