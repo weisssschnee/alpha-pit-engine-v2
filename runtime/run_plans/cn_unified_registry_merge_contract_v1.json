@@ -1,0 +1,48 @@
+{
+  "contract_version": "cn_unified_registry_merge_contract_v1",
+  "authority_order": [
+    "physical source schema and versioned source identity",
+    "local PIT and semantic registry",
+    "executable typed-route and materialization tests",
+    "external audit contracts as non-authoritative constraints"
+  ],
+  "inputs": [
+    "runtime/cn_pit_fundamental_fabric_v1/fundamental_source_universe.csv",
+    "runtime/cn_unified_capability_v1/fundamental_field_qualification_matrix.csv",
+    "runtime/cn_unified_capability_v1/fundamental_canonical_representation_registry.json",
+    "runtime/field_registry/nextgen_dark_field_registry_v2.json",
+    "reports/cn_broad_event_recovery_20260713/DISCOVERY_ENTRY_PACK.json",
+    "reports/cn_unified_capability_architecture_phase2_20260714/external_contracts"
+  ],
+  "merge_keys": {
+    "fundamental": "source_field_id from cn_source_field_identity_v2",
+    "current_121": "fabric_field_id with explicit source-field linkage",
+    "broad_event": "mechanism_id + behavior_cluster_id"
+  },
+  "fail_closed_conditions": [
+    "ambiguous source alias",
+    "missing stable source_field_id",
+    "PIT unresolved",
+    "market entity used as direct stock cross-sectional rank",
+    "unit-uncertain raw level opened as a primary root",
+    "current snapshot represented as historical revision replay",
+    "generator field present only in metadata and not expression lineage",
+    "missing matched-control constructor"
+  ],
+  "required_outputs": [
+    "CN_UNIFIED_CAPABILITY_REGISTRY_V1.json",
+    "FIELD_FAMILY_EXPOSURE_MATRIX.csv",
+    "LANE_CAPABILITY_COVERAGE.csv",
+    "UNTESTED_INFORMATION_FAMILIES.csv",
+    "CANDIDATE_FIELD_LINEAGE.csv_or_parquet",
+    "CAPABILITY_PREFLIGHT_RESULT.json"
+  ],
+  "authorization": {
+    "capability_preflight": true,
+    "full_development_discovery": "only after all preflight gates pass",
+    "validation": false,
+    "holdout": false,
+    "forward_2026": false,
+    "promotion": false
+  }
+}

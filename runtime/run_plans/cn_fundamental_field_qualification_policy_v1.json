@@ -1,0 +1,124 @@
+{
+  "policy_version": "cn_fundamental_field_qualification_policy_v1",
+  "baseline_repo_sha": "d4319137dc9c86ad6eda250ce8fb15879d76ad7c",
+  "purpose": "Qualify the 1,227 PIT fundamental source fields without using performance outcomes.",
+  "authority": {
+    "external_heuristics": "PROVISIONAL_NON_AUTHORITATIVE_INPUT",
+    "source_schema": "AUTHORITATIVE_FOR_PHYSICAL_IDENTITY",
+    "local_semantic_registry": "AUTHORITATIVE_FOR_PIT_AND_FIELD_SEMANTICS",
+    "executable_tests": "AUTHORITATIVE_FOR_IMPLEMENTED_BEHAVIOR"
+  },
+  "source_identity": {
+    "identity_version": "cn_source_field_identity_v2",
+    "source_release_version": "cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603",
+    "required_components": [
+      "provider",
+      "source_release_version",
+      "source_table",
+      "source_field"
+    ]
+  },
+  "qualification_states": [
+    "QUALIFIED_ROOT",
+    "DERIVED_ONLY",
+    "EVENT_ONLY",
+    "CONDITION_ONLY",
+    "INDUSTRY_SPECIFIC",
+    "LOW_COVERAGE_ARCHIVE",
+    "SEMANTICS_UNRESOLVED",
+    "PIT_UNRESOLVED",
+    "BLOCKED_METADATA"
+  ],
+  "required_dimensions": [
+    "source_field_id",
+    "source_table",
+    "source_field",
+    "source_family",
+    "entity_scope",
+    "value_kind",
+    "flow_or_stock",
+    "period_basis",
+    "consolidation_scope",
+    "sign_semantics",
+    "unit_certainty",
+    "semantic_certainty",
+    "company_type_applicability",
+    "pit_status",
+    "observable_time_policy",
+    "coverage_ratio",
+    "source_reported_change",
+    "canonical_family",
+    "qualification_state",
+    "allowed_routes",
+    "blocked_reason"
+  ],
+  "non_performance_selection_rules": {
+    "qualified_root": [
+      "PIT qualified",
+      "unit and semantic certainty asserted from an exact source field contract",
+      "coverage ratio >= 0.10 unless a declared sector applicability contract exists",
+      "not metadata",
+      "direct level has a defensible cross-sectional meaning or an explicit aggregation"
+    ],
+    "derived_only": [
+      "currency statement levels require scale normalization or within-company change",
+      "source-reported YoY has its own representation identity",
+      "internally derived YoY uses the base level and a different representation identity"
+    ],
+    "event_only": [
+      "field expresses a unique disclosure occurrence or timing episode rather than a reusable numeric level"
+    ],
+    "condition_only": [
+      "field has an asserted boolean, applicability, or financial-company-type contract"
+    ],
+    "industry_specific": [
+      "native name suggests a financial-institution scope but unit or sector applicability remains unresolved",
+      "state is review-only and has no allowed search route until the contract is asserted"
+    ],
+    "low_coverage_archive": [
+      "coverage ratio < 0.10 and no asserted industry applicability",
+      "archive state has no allowed search route"
+    ],
+    "semantics_unresolved": [
+      "unit, period basis, sign, or meaning cannot be asserted from local source evidence",
+      "unresolved state has no search-eligible representation and no allowed search route"
+    ],
+    "pit_unresolved": [
+      "credible observable clock is unavailable",
+      "zygc_em remains PIT unresolved",
+      "a blocked registry placeholder may document the missing capability but cannot be search eligible"
+    ]
+  },
+  "canonical_families": [
+    "VALUATION_SIZE",
+    "PROFITABILITY",
+    "GROWTH",
+    "LEVERAGE",
+    "LIQUIDITY_SOLVENCY",
+    "WORKING_CAPITAL",
+    "CASH_FLOW_QUALITY",
+    "ACCRUALS",
+    "CAPEX_INVESTMENT",
+    "OPERATING_EFFICIENCY",
+    "SHAREHOLDER_STRUCTURE",
+    "BUSINESS_COMPOSITION",
+    "DISCLOSURE_FRESHNESS",
+    "FINANCIAL_INSTITUTION_SPECIFIC",
+    "OTHER_UNRESOLVED"
+  ],
+  "canonical_representation_contract": {
+    "maximum_roots": 384,
+    "raw_source_field_count_is_not_root_count": true,
+    "current_snapshot_revision_replay_supported": false,
+    "disclosure_episode_deduplication": "one source family episode one vote"
+  },
+  "hard_rules": [
+    "Do not use return, label, reward, IC, selector rank, survivor status, validation, holdout, or 2026 data to qualify fields.",
+    "Source-reported YoY and internally computed YoY must have different representation IDs.",
+    "Current-snapshot-only fields cannot claim historical revision replay.",
+    "No disclosure event may be created after the source release maximum observable time.",
+    "A field may produce multiple representations, but each representation has one typed route contract.",
+    "Raw 1,227-field exposure to generators is forbidden.",
+    "Unit-, period-, or applicability-unresolved raw levels fail closed."
+  ]
+}

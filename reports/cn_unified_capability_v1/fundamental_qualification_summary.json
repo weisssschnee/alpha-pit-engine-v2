@@ -1,0 +1,71 @@
+{
+  "candidate_promotion": false,
+  "canonical_family_count": 13,
+  "canonical_family_counts": {
+    "ACCRUALS": 0,
+    "BUSINESS_COMPOSITION": 17,
+    "CAPEX_INVESTMENT": 40,
+    "CASH_FLOW_QUALITY": 28,
+    "DISCLOSURE_FRESHNESS": 12,
+    "FINANCIAL_INSTITUTION_SPECIFIC": 136,
+    "GROWTH": 479,
+    "LEVERAGE": 46,
+    "LIQUIDITY_SOLVENCY": 6,
+    "OPERATING_EFFICIENCY": 0,
+    "OTHER_UNRESOLVED": 262,
+    "PROFITABILITY": 54,
+    "SHAREHOLDER_STRUCTURE": 16,
+    "VALUATION_SIZE": 64,
+    "WORKING_CAPITAL": 67
+  },
+  "derived_only_count": 38,
+  "forward_2026_accessed": false,
+  "holdout_accessed": false,
+  "industry_specific_count": 136,
+  "inputs": {
+    "merge_contract": "runtime/run_plans/cn_unified_registry_merge_contract_v1.json",
+    "merge_contract_sha256": "8039b10073f1a8b68e7a8f36e403711fc0ce9c06811bc17a11bd053f033fffb8",
+    "merge_contract_version": "cn_unified_registry_merge_contract_v1",
+    "policy": "runtime/run_plans/cn_fundamental_field_qualification_policy_v1.json",
+    "policy_sha256": "b7c898ecc80cc7692f7b325062e9d55930bc3b21dd7612264a5dbaed825f6b35",
+    "source": "runtime/cn_pit_fundamental_fabric_v1/fundamental_source_universe.csv",
+    "source_sha256": "fda02b750540b14a97a9b8365770c85b9d4f198fdccda8bfa23b2fce2c594698"
+  },
+  "limitations": [
+    "unknown unit, period, sign, and applicability fields remain fail closed",
+    "industry-specific native identifiers remain review-only until exact contracts exist",
+    "current statement snapshots cannot reproduce superseded historical revisions",
+    "zygc_em remains PIT unresolved",
+    "no performance search or candidate promotion was executed"
+  ],
+  "low_coverage_archive_count": 634,
+  "outputs": {
+    "qualification_matrix": "runtime/cn_unified_capability_v1/fundamental_field_qualification_matrix.csv",
+    "qualification_matrix_sha256": "d60c2362bed1ac304bd52d391c9dfae2ae1c3548a1ca880c0994357905bcb125",
+    "representation_registry": "runtime/cn_unified_capability_v1/fundamental_canonical_representation_registry.json",
+    "representation_registry_sha256": "0da984c0d7c6b22c5617054bb7709e04091dc3704026b032181f7d0acc1667be"
+  },
+  "performance_used": false,
+  "pit_unresolved_count": 17,
+  "qualification_state_counts": {
+    "BLOCKED_METADATA": 72,
+    "CONDITION_ONLY": 0,
+    "DERIVED_ONLY": 38,
+    "EVENT_ONLY": 0,
+    "INDUSTRY_SPECIFIC": 136,
+    "LOW_COVERAGE_ARCHIVE": 634,
+    "PIT_UNRESOLVED": 17,
+    "QUALIFIED_ROOT": 4,
+    "SEMANTICS_UNRESOLVED": 326
+  },
+  "qualified_root_count": 4,
+  "representation_count": 147,
+  "search_eligible_representation_count": 146,
+  "semantics_or_pit_unresolved_count": 343,
+  "semantics_unresolved_count": 326,
+  "source_field_count": 1227,
+  "source_reported_vs_internal_yoy_identity_checks": 19,
+  "stable_source_field_id_count": 1227,
+  "status": "FUNDAMENTAL_FIELD_QUALIFICATION_COMPLETED_NON_PERFORMANCE",
+  "validation_accessed": false
+}

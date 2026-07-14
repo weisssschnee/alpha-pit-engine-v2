@@ -1,0 +1,19 @@
+{
+  "candidate_promotion": false,
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "inputs": {
+    "merge_contract": "runtime/run_plans/cn_unified_registry_merge_contract_v1.json",
+    "merge_contract_sha256": "8039b10073f1a8b68e7a8f36e403711fc0ce9c06811bc17a11bd053f033fffb8",
+    "merge_contract_version": "cn_unified_registry_merge_contract_v1",
+    "policy": "runtime/run_plans/cn_fundamental_field_qualification_policy_v1.json",
+    "policy_sha256": "b7c898ecc80cc7692f7b325062e9d55930bc3b21dd7612264a5dbaed825f6b35",
+    "source": "runtime/cn_pit_fundamental_fabric_v1/fundamental_source_universe.csv",
+    "source_sha256": "fda02b750540b14a97a9b8365770c85b9d4f198fdccda8bfa23b2fce2c594698"
+  },
+  "ledger_version": "cn_fundamental_qualification_access_ledger_v1",
+  "performance_inputs": [],
+  "reward_reads": 0,
+  "selector_reads": 0,
+  "validation_reads": 0
+}

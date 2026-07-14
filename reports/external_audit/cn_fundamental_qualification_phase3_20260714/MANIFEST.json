@@ -1,0 +1,18 @@
+{
+  "README.md": {
+    "bytes": 941,
+    "sha256": "22efa47868dea420ab87ed3d0186f6f6c80efda1066fca9ba1ffe00ab196dadb"
+  },
+  "build_cn_fundamental_qualification.py": {
+    "bytes": 11661,
+    "sha256": "73ae17212fa73605f3db040637caeee0da5fb3fec3f050e15dd61dc91f988fdf"
+  },
+  "cn_fundamental_field_qualification_policy_v1.json": {
+    "bytes": 3149,
+    "sha256": "09ec4510eb74ce5053dc50e5b20cf1e97a051464466a778338bab79ec5fda00d"
+  },
+  "cn_unified_registry_merge_contract_v1.json": {
+    "bytes": 1530,
+    "sha256": "24d41d0d999e43515bde2ffe92a9e52dcba7f0491c255269e363d08e11bfa43a"
+  }
+}
