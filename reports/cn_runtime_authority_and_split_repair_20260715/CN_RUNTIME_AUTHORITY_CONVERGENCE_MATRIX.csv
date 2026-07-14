@@ -1,0 +1,9 @@
+runtime_path,entrypoint,fixed_manifest_required,local_split_reachable,candidate_receipt_required,validation_holdout_feedback,status,evidence
+Phase3CM direct/serial,phase3cm_train_portfolio_sortino_reward_audit.main,True,False,True,FORBIDDEN,PASS,required argparse plus FixedSplitAuthority.map_times
+Phase3CP pre-semantic,_run_pre_cm_semantic_viability_gate,True,False,True,FORBIDDEN,PASS,receipt arguments appended before semantic evaluator
+Phase3CP candidate parallel,_run_real_cm_chunk_subprocess,True,False,True,FORBIDDEN,PASS,same manifest and receipt arguments for every candidate chunk
+Phase3CP shard parallel,_run_real_cm_shard_subprocess,True,False,True,FORBIDDEN,BLOCKED_FAIL_CLOSED,formal main rejects shard-local cross-sectional portfolio evaluation
+Phase3CP retry/recovery,_run_real_cm_retry_table,True,False,True,FORBIDDEN,PASS,same authority arguments on candidate retry
+Phase3GA chunk04 recovery,phase3ga_recover_missing_chunk04_20260710.ps1,True,False,True,FORBIDDEN,DIAGNOSTIC_ONLY_BLOCKED_BY_DEFAULT,explicit switch required; output cannot feed formal memory
+exact atom merge,recover_phase3cm_exact_reward_atoms.py,True,False,True,FORBIDDEN,DIAGNOSTIC_ONLY,official manifest and receipt are required; shard-local portfolio limitation recorded
+Phase3CN feedback,build_feedback_memory,True,False,True,FORBIDDEN,PASS,standalone entry recompiles embedded contracts and validates context before train-only feedback

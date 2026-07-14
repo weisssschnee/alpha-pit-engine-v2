@@ -1,0 +1,52 @@
+{
+  "artifact_count": 9,
+  "artifacts": [
+    {
+      "path": "CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
+      "sha256": "bb79b5c406ad3368137927578dd380bd7f87f389dc8a6edaeb9b63e927b3f40b",
+      "size_bytes": 4552
+    },
+    {
+      "path": "CN_GLOBAL_SPLIT_ENFORCEMENT_MATRIX.csv",
+      "sha256": "1f1d8023c6aa31c40f9a2f5503bdc82a53e1e29caa26a03bf01441b48b844b80",
+      "size_bytes": 1360
+    },
+    {
+      "path": "CN_HISTORICAL_EVIDENCE_RECLASSIFICATION.csv",
+      "sha256": "4ad3d08577a0140ad9eaf40956123a97e3a7b9d240ae9a1e235cf293676777ec",
+      "size_bytes": 743
+    },
+    {
+      "path": "CN_LEGACY_RECEIPT_GATED_PARITY.json",
+      "sha256": "c3c6ccb2d747b6878dd83d9ac1cf8c511b5110f155ee3848bf09b1a5269d14c8",
+      "size_bytes": 1317
+    },
+    {
+      "path": "CN_RUNTIME_AUTHORITY_AND_SPLIT_REPAIR_REPORT.md",
+      "sha256": "ea1d74b90d81f59f9c9ff032eb97342e40e1d746f65183e77a2cc0b03bc11180",
+      "size_bytes": 4247
+    },
+    {
+      "path": "CN_RUNTIME_AUTHORITY_CONVERGENCE_MATRIX.csv",
+      "sha256": "b164b08fe2a87366667a2a05231b23b5cfadfc0b3443c1c64e9540b7acdb54f5",
+      "size_bytes": 1437
+    },
+    {
+      "path": "CN_WORKER_COUNT_SEMANTIC_PARITY.json",
+      "sha256": "9c5b27a96f6a942b5a45d4aa83958fbf1c68f201fd53f73bfa3a82ce82965fde",
+      "size_bytes": 2824
+    },
+    {
+      "path": "DECISION_CHANGE_LOG.md",
+      "sha256": "9c3cd5a0364d70236479dd3a28c23aaaa9d6b0e07c75c4519bfbf2dcb93fafb5",
+      "size_bytes": 1149
+    },
+    {
+      "path": "run_manifest.json",
+      "sha256": "3ae4760e89c34862d8c82535b39305cd8225f1d17e1814c8a05b9ee7266f89d4",
+      "size_bytes": 5906
+    }
+  ],
+  "schema_hash": "271ca48afc0e947e2ff86ab45bda7b57f4dc2bb668c5f57ff0ba235aa0b037d7",
+  "status": "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED"
+}

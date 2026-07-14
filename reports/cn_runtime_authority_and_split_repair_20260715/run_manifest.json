@@ -1,0 +1,119 @@
+{
+  "access": {
+    "candidate_promotion": false,
+    "cross_sprint_memory": false,
+    "forward_2026_read": false,
+    "holdout_read": false,
+    "performance_search_started": false,
+    "physical_validation_holdout_assets_read": false,
+    "synthetic_report_only_roles_exercised": [
+      "validation",
+      "holdout"
+    ],
+    "validation_read": false
+  },
+  "created_at_utc": "2026-07-14T18:27:21.821778+00:00",
+  "inputs": {
+    "data_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "evaluator": {
+      "path": "src\\our_system_phase2\\runtime\\phase3cm_train_portfolio_sortino_reward_audit.py",
+      "sha256": "eb1d2b2c150f22f099f6f6cfe26ef943b374af92b48a82f3c8d1cd266c95064f"
+    },
+    "split_manifest": {
+      "path": "runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+      "sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+    },
+    "unified_registry": {
+      "path": "reports\\cn_unified_capability_discovery_20260714\\completed_f8169e1\\registry\\unified_capability_registry.json",
+      "registry_hash": "e4b8bc809ab9ae8e1463aa85c53c13c1710aed6915c967ff806c8906deea886d",
+      "sha256": "30f35019de7f93923417c5d241a293d7152655d9b37acd7e12a3840ecac7d89d"
+    }
+  },
+  "legacy_receipt_parity": {
+    "alpha_or_promotion_evidence": false,
+    "candidate_id": "phase3cp_00024",
+    "cost_abs_error": 0.0,
+    "development_metric_abs_error": 0.0,
+    "expression_direct": "CSRank(CSResidual(CSRank(Sub(Div(Sub($close,$low),Add(Abs(Sub($high,$low)),0.000001)),Mean(Div(Sub($close,$low),Add(Abs(Sub($high,$low)),0.000001)),10))),CSRank(Div($m1_first5_vol,Add(Abs($volume),0.000001)))))",
+    "expression_gated": "CSRank(CSResidual(CSRank(Sub(Div(Sub($close,$low),Add(Abs(Sub($high,$low)),0.000001)),Mean(Div(Sub($close,$low),Add(Abs(Sub($high,$low)),0.000001)),10))),CSRank(Div($m1_first5_vol,Add(Abs($volume),0.000001)))))",
+    "mock_return_only": true,
+    "receipt_hash": "d9e420f394dc36b7450838c5dca7454b5288ccdc5d8b376de726656595b74436",
+    "route_id": "FIRSTN_PATH",
+    "scope": "SYNTHETIC_LEGACY_DIRECT_VS_RECEIPT_GATED_NO_SELECTION_PARITY",
+    "selection_rule": "lexicographically first current-contract legal candidate; no reward ranking",
+    "signal_max_abs_error": 0.0,
+    "source_candidate_pack": "reports\\phase3cp_real_cm_balanced_loop_20260623\\phase3ca_bridge\\phase3ca_bz_candidate_audit.csv",
+    "source_candidate_pack_sha256": "5fe8bdcab6d21b2c17028a09b5dc21919e3180a959e52317624938253a6fe8a8",
+    "status": "PASS",
+    "tolerance": 1e-12,
+    "turnover_abs_error": 0.0,
+    "weight_max_abs_error": 0.0
+  },
+  "repo_sha_before_delivery_commit": "e856da6ff6cc99122f64399571f2376fa9852fe0",
+  "scope": "SOURCE_REPAIR_AND_ACTUAL_ENTRYPOINT_SYNTHETIC_NO_SELECTION_PARITY",
+  "status": "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED",
+  "worker_parity": {
+    "cases": [
+      {
+        "actual_exact_recovery_invocations": 1,
+        "actual_phase3cm_worker_invocations": 1,
+        "behavior_identity": "32a11bf88610340e602cb805e59a3c8069d2b1078a2c827d6ae2f8a4cb32b402",
+        "holdout_atom_count": 2,
+        "metric_hash": "c958090ce6eb883d2c15c4389baa4c68a580120f2bb52e8b0ae2b1f46bcd8bce",
+        "recovery_worker_index": null,
+        "reward_atom_count": 6,
+        "reward_atom_hash": "5b1d08c34525451c82319d3d1c9c82df4f0239bb1a1bae98cba106ac1aef8816",
+        "role_assignment_hash": "0bed4a1e8a04c4d7d77603564d6e9239b5814fbad8292cba8f83d2f380c89f4a",
+        "train_atom_count": 2,
+        "validation_atom_count": 2,
+        "worker_count": 1
+      },
+      {
+        "actual_exact_recovery_invocations": 1,
+        "actual_phase3cm_worker_invocations": 2,
+        "behavior_identity": "32a11bf88610340e602cb805e59a3c8069d2b1078a2c827d6ae2f8a4cb32b402",
+        "holdout_atom_count": 4,
+        "metric_hash": "5626d5a319208e2ab4320af2130681caa7fc0d22b310711d1a0ae36f3f7b1977",
+        "recovery_worker_index": null,
+        "reward_atom_count": 12,
+        "reward_atom_hash": "7726f8ac38d2e22dde1ab32dc779713a46b80242e62ec438082cffda24171a06",
+        "role_assignment_hash": "ce75d58073015965cd29ab1294223fbe43002ec6a8d4c85a385ea8e9270b067e",
+        "train_atom_count": 4,
+        "validation_atom_count": 4,
+        "worker_count": 2
+      },
+      {
+        "actual_exact_recovery_invocations": 1,
+        "actual_phase3cm_worker_invocations": 4,
+        "behavior_identity": "32a11bf88610340e602cb805e59a3c8069d2b1078a2c827d6ae2f8a4cb32b402",
+        "holdout_atom_count": 8,
+        "metric_hash": "1ad733bc901e8ac586f0fcac02ec697c63e79157ebdb19222b3afbc7ce441207",
+        "recovery_worker_index": 3,
+        "reward_atom_count": 24,
+        "reward_atom_hash": "e260537483ce46d6a09b69cfdc4cddaeac9c4d94ee1cc0e6965304ffb5d27192",
+        "role_assignment_hash": "b3b334f15bafe493f9c8da5c3aaf773fd3b56938814806b8a5e58ef9f36da788",
+        "train_atom_count": 8,
+        "validation_atom_count": 8,
+        "worker_count": 4
+      }
+    ],
+    "deterministic_exact_output_hashes_equal": false,
+    "forward_2026_accessed": false,
+    "holdout_used_for_feedback": false,
+    "max_numeric_error": 12.0,
+    "recovery_entrypoint": "recover_phase3cm_exact_reward_atoms.main",
+    "recovery_exact_merge": "actual worker chunks and exact recovery entrypoint executed",
+    "scope": "ACTUAL_PHASE3CM_WORKER_AND_EXACT_RECOVERY_SYNTHETIC_NO_SELECTION_PARITY",
+    "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "status": "FAIL",
+    "tolerance": 1e-12,
+    "train_feedback_max_numeric_error": 12.0,
+    "validation_used_for_feedback": false,
+    "worker_counts": [
+      1,
+      2,
+      4
+    ],
+    "worker_entrypoint": "phase3cm_train_portfolio_sortino_reward_audit.main"
+  }
+}

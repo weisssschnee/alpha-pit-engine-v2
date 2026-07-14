@@ -1,0 +1,64 @@
+{
+  "cases": [
+    {
+      "actual_exact_recovery_invocations": 1,
+      "actual_phase3cm_worker_invocations": 1,
+      "behavior_identity": "32a11bf88610340e602cb805e59a3c8069d2b1078a2c827d6ae2f8a4cb32b402",
+      "holdout_atom_count": 2,
+      "metric_hash": "c958090ce6eb883d2c15c4389baa4c68a580120f2bb52e8b0ae2b1f46bcd8bce",
+      "recovery_worker_index": null,
+      "reward_atom_count": 6,
+      "reward_atom_hash": "5b1d08c34525451c82319d3d1c9c82df4f0239bb1a1bae98cba106ac1aef8816",
+      "role_assignment_hash": "0bed4a1e8a04c4d7d77603564d6e9239b5814fbad8292cba8f83d2f380c89f4a",
+      "train_atom_count": 2,
+      "validation_atom_count": 2,
+      "worker_count": 1
+    },
+    {
+      "actual_exact_recovery_invocations": 1,
+      "actual_phase3cm_worker_invocations": 2,
+      "behavior_identity": "32a11bf88610340e602cb805e59a3c8069d2b1078a2c827d6ae2f8a4cb32b402",
+      "holdout_atom_count": 4,
+      "metric_hash": "5626d5a319208e2ab4320af2130681caa7fc0d22b310711d1a0ae36f3f7b1977",
+      "recovery_worker_index": null,
+      "reward_atom_count": 12,
+      "reward_atom_hash": "7726f8ac38d2e22dde1ab32dc779713a46b80242e62ec438082cffda24171a06",
+      "role_assignment_hash": "ce75d58073015965cd29ab1294223fbe43002ec6a8d4c85a385ea8e9270b067e",
+      "train_atom_count": 4,
+      "validation_atom_count": 4,
+      "worker_count": 2
+    },
+    {
+      "actual_exact_recovery_invocations": 1,
+      "actual_phase3cm_worker_invocations": 4,
+      "behavior_identity": "32a11bf88610340e602cb805e59a3c8069d2b1078a2c827d6ae2f8a4cb32b402",
+      "holdout_atom_count": 8,
+      "metric_hash": "1ad733bc901e8ac586f0fcac02ec697c63e79157ebdb19222b3afbc7ce441207",
+      "recovery_worker_index": 3,
+      "reward_atom_count": 24,
+      "reward_atom_hash": "e260537483ce46d6a09b69cfdc4cddaeac9c4d94ee1cc0e6965304ffb5d27192",
+      "role_assignment_hash": "b3b334f15bafe493f9c8da5c3aaf773fd3b56938814806b8a5e58ef9f36da788",
+      "train_atom_count": 8,
+      "validation_atom_count": 8,
+      "worker_count": 4
+    }
+  ],
+  "deterministic_exact_output_hashes_equal": false,
+  "forward_2026_accessed": false,
+  "holdout_used_for_feedback": false,
+  "max_numeric_error": 12.0,
+  "recovery_entrypoint": "recover_phase3cm_exact_reward_atoms.main",
+  "recovery_exact_merge": "actual worker chunks and exact recovery entrypoint executed",
+  "scope": "ACTUAL_PHASE3CM_WORKER_AND_EXACT_RECOVERY_SYNTHETIC_NO_SELECTION_PARITY",
+  "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "status": "FAIL",
+  "tolerance": 1e-12,
+  "train_feedback_max_numeric_error": 12.0,
+  "validation_used_for_feedback": false,
+  "worker_counts": [
+    1,
+    2,
+    4
+  ],
+  "worker_entrypoint": "phase3cm_train_portfolio_sortino_reward_audit.main"
+}

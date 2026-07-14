@@ -1,0 +1,20 @@
+{
+  "alpha_or_promotion_evidence": false,
+  "candidate_id": "phase3cp_00024",
+  "cost_abs_error": 0.0,
+  "development_metric_abs_error": 0.0,
+  "expression_direct": "CSRank(CSResidual(CSRank(Sub(Div(Sub($close,$low),Add(Abs(Sub($high,$low)),0.000001)),Mean(Div(Sub($close,$low),Add(Abs(Sub($high,$low)),0.000001)),10))),CSRank(Div($m1_first5_vol,Add(Abs($volume),0.000001)))))",
+  "expression_gated": "CSRank(CSResidual(CSRank(Sub(Div(Sub($close,$low),Add(Abs(Sub($high,$low)),0.000001)),Mean(Div(Sub($close,$low),Add(Abs(Sub($high,$low)),0.000001)),10))),CSRank(Div($m1_first5_vol,Add(Abs($volume),0.000001)))))",
+  "mock_return_only": true,
+  "receipt_hash": "d9e420f394dc36b7450838c5dca7454b5288ccdc5d8b376de726656595b74436",
+  "route_id": "FIRSTN_PATH",
+  "scope": "SYNTHETIC_LEGACY_DIRECT_VS_RECEIPT_GATED_NO_SELECTION_PARITY",
+  "selection_rule": "lexicographically first current-contract legal candidate; no reward ranking",
+  "signal_max_abs_error": 0.0,
+  "source_candidate_pack": "reports\\phase3cp_real_cm_balanced_loop_20260623\\phase3ca_bridge\\phase3ca_bz_candidate_audit.csv",
+  "source_candidate_pack_sha256": "5fe8bdcab6d21b2c17028a09b5dc21919e3180a959e52317624938253a6fe8a8",
+  "status": "PASS",
+  "tolerance": 1e-12,
+  "turnover_abs_error": 0.0,
+  "weight_max_abs_error": 0.0
+}
