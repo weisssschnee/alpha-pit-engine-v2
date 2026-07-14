@@ -14,6 +14,7 @@ import csv
 import hashlib
 import json
 import math
+import shutil
 import subprocess
 import time
 from collections import Counter, defaultdict
@@ -64,6 +65,14 @@ FUNDAMENTAL_ROUTES = {
     "SLOW_TEMPORAL_CHANGE",
     "DISCLOSURE_EVENT",
 }
+BROAD_CHECKPOINT_CODE_PATHS = (
+    "src/our_system_phase2/runtime/cn_broad_event_frozen_replay.py",
+    "src/our_system_phase2/runtime/cn_broad_event_canary.py",
+    "src/our_system_phase2/services/broad_event_episodes.py",
+    "src/our_system_phase2/services/broad_event_preflight.py",
+    "src/our_system_phase2/services/broad_event_semantics.py",
+    "src/our_system_phase2/services/conservative_limit_lifecycle.py",
+)
 
 
 def _sha256(path: Path) -> str:
@@ -76,6 +85,124 @@ def _sha256(path: Path) -> str:
 
 def _git(repo: Path, *args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=repo, text=True).strip()
+
+
+def _git_blob_bundle_hash(repo: Path, repo_sha: str, paths: Sequence[str]) -> str:
+    digest = hashlib.sha256()
+    for relative in sorted(paths):
+        blob = subprocess.check_output(
+            ["git", "show", f"{repo_sha}:{relative}"], cwd=repo
+        )
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(blob)
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def _reuse_broad_checkpoint(
+    *,
+    repo: Path,
+    repo_sha: str,
+    checkpoint_root: Path,
+    output_root: Path,
+    entry_pack_path: Path,
+    chip_root: Path,
+    release: ValidatedDevelopmentRelease,
+    seeds: Sequence[int],
+) -> dict[str, Any]:
+    checkpoint_root = checkpoint_root.resolve()
+    required = {
+        name: checkpoint_root / name
+        for name in (
+            "summary.json",
+            "run_manifest.json",
+            "frozen_mechanism_results.csv",
+            "behavior_registry.json",
+            "episode_support.json",
+        )
+    }
+    missing = [str(path) for path in required.values() if not path.is_file()]
+    if missing:
+        raise FileNotFoundError("Broad checkpoint is incomplete: " + ", ".join(missing))
+    source_summary = json.loads(required["summary.json"].read_text(encoding="utf-8"))
+    source_manifest = json.loads(required["run_manifest.json"].read_text(encoding="utf-8"))
+    source_sha = str(source_summary.get("repo_sha") or "")
+    if source_summary.get("status") != "BROAD_EVENT_FROZEN_FULL16_REPLAY_COMPLETED":
+        raise PermissionError("Broad checkpoint did not complete")
+    if source_summary.get("entry_pack_sha256") != _sha256(entry_pack_path):
+        raise ValueError("Broad checkpoint entry-pack hash drift")
+    if int(source_summary.get("mechanism_count") or 0) != 11:
+        raise ValueError("Broad checkpoint mechanism count drift")
+    if sorted(source_summary.get("all_shards") or []) != list(range(16)):
+        raise ValueError("Broad checkpoint does not cover all 16 shards")
+    current_code_hash = _git_blob_bundle_hash(repo, repo_sha, BROAD_CHECKPOINT_CODE_PATHS)
+    source_code_hash = _git_blob_bundle_hash(repo, source_sha, BROAD_CHECKPOINT_CODE_PATHS)
+    if source_code_hash != current_code_hash:
+        raise ValueError("Broad checkpoint code dependency hash drift")
+    current_files = {row.sha256 for row in release.files}
+    source_files = list(source_manifest.get("data_files") or [])
+    if len(source_files) != 16 or {str(row.get("sha256")) for row in source_files} != current_files:
+        raise ValueError("Broad checkpoint development release drift")
+    for artifact in source_manifest.get("outputs") or []:
+        path = checkpoint_root / str(artifact["path"])
+        if not path.is_file() or _sha256(path) != artifact["sha256"]:
+            raise ValueError(f"Broad checkpoint output hash drift: {path.name}")
+    results = pd.read_csv(required["frozen_mechanism_results.csv"])
+    if sorted(results["seed"].astype(int).unique().tolist()) != sorted(set(map(int, seeds))):
+        raise ValueError("Broad checkpoint seed drift")
+    chip_manifest = chip_root / "chip_sidecar_manifest_v1.json"
+    if not chip_manifest.is_file():
+        raise FileNotFoundError("Broad checkpoint requires the versioned chip manifest")
+
+    output_root.mkdir(parents=True, exist_ok=True)
+    for name in ("frozen_mechanism_results.csv", "behavior_registry.json", "episode_support.json"):
+        shutil.copy2(required[name], output_root / name)
+    shutil.copy2(required["summary.json"], output_root / "checkpoint_source_summary.json")
+    shutil.copy2(required["run_manifest.json"], output_root / "checkpoint_source_run_manifest.json")
+    certified = {
+        **source_summary,
+        "repo_sha": repo_sha,
+        "checkpoint_reused": True,
+        "checkpoint_source_repo_sha": source_sha,
+        "checkpoint_code_bundle_sha256": current_code_hash,
+        "chip_manifest_sha256": _sha256(chip_manifest),
+    }
+    _write_json(output_root / "summary.json", certified)
+    provenance = {
+        "status": "BROAD_EVENT_CHECKPOINT_REUSED_AFTER_STRICT_VALIDATION",
+        "source_root": str(checkpoint_root),
+        "source_repo_sha": source_sha,
+        "current_repo_sha": repo_sha,
+        "source_run_manifest_sha256": _sha256(required["run_manifest.json"]),
+        "checkpoint_code_paths": list(BROAD_CHECKPOINT_CODE_PATHS),
+        "checkpoint_code_bundle_sha256": current_code_hash,
+        "entry_pack_sha256": _sha256(entry_pack_path),
+        "development_release_hash": release.release_hash,
+        "development_file_hashes": sorted(current_files),
+        "chip_manifest_sha256": _sha256(chip_manifest),
+        "seeds": sorted(set(map(int, seeds))),
+        "candidate_promotion": False,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    _write_json(output_root / "checkpoint_reuse.json", provenance)
+    manifest = {
+        "replay_version": source_manifest.get("replay_version"),
+        "repo_sha": repo_sha,
+        "checkpoint_reuse": provenance,
+        "data_files": source_files,
+        "outputs": [
+            {"path": path.name, "sha256": _sha256(path), "size": path.stat().st_size}
+            for path in sorted(output_root.iterdir())
+            if path.is_file() and path.name != "run_manifest.json"
+        ],
+        "reproducibility": "YES_STRICT_HASH_VALIDATED_BROAD_CHECKPOINT",
+        "access_role": "development_only",
+    }
+    _write_json(output_root / "run_manifest.json", manifest)
+    return certified
 
 
 def _write_json(path: Path, payload: Any) -> None:
@@ -679,6 +806,7 @@ def run(
     fundamental_source_root: Path,
     broad_event_pack_path: Path,
     chip_root: Path,
+    broad_event_checkpoint_root: Path | None,
     output_root: Path,
     repo_sha: str,
 ) -> dict[str, Any]:
@@ -719,14 +847,27 @@ def run(
         seed_name: int(seed_contract["BROAD_EVENT_FROZEN_ENTRY"])
         for seed_name, seed_contract in contract["seed_sets"].items()
     }
-    broad_summary = run_replay(
-        entry_pack_path=broad_event_pack_path,
-        data_root=panel_root,
-        chip_root=chip_root,
-        output_root=broad_root,
-        repo_sha=repo_sha,
-        seeds=sorted(set(broad_seed_by_name.values())),
-    )
+    broad_seeds = sorted(set(broad_seed_by_name.values()))
+    if broad_event_checkpoint_root is None:
+        broad_summary = run_replay(
+            entry_pack_path=broad_event_pack_path,
+            data_root=panel_root,
+            chip_root=chip_root,
+            output_root=broad_root,
+            repo_sha=repo_sha,
+            seeds=broad_seeds,
+        )
+    else:
+        broad_summary = _reuse_broad_checkpoint(
+            repo=repo,
+            repo_sha=repo_sha,
+            checkpoint_root=broad_event_checkpoint_root,
+            output_root=broad_root,
+            entry_pack_path=broad_event_pack_path,
+            chip_root=chip_root,
+            release=release,
+            seeds=broad_seeds,
+        )
     broad_results = pd.read_csv(broad_root / "frozen_mechanism_results.csv")
 
     for seed_name in sorted(contract["seed_sets"]):
@@ -1018,6 +1159,10 @@ def run(
             "release_manifest": {"path": str(release_manifest_path), "sha256": _sha256(release_manifest_path)},
             "split_manifest": {"path": str(split_manifest_path), "sha256": _sha256(split_manifest_path)},
             "broad_event_pack": {"path": str(broad_event_pack_path), "sha256": _sha256(broad_event_pack_path)},
+            "broad_event_checkpoint": (
+                {"path": str(broad_event_checkpoint_root), "reused": True}
+                if broad_event_checkpoint_root is not None else None
+            ),
         },
         "parameters": {
             "seeds": contract["seed_sets"],
@@ -1051,6 +1196,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fundamental-source-root", type=Path, required=True)
     parser.add_argument("--broad-event-pack", type=Path, required=True)
     parser.add_argument("--chip-root", type=Path, required=True)
+    parser.add_argument("--broad-event-checkpoint-root", type=Path)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--repo-sha", required=True)
     args = parser.parse_args(argv)
@@ -1065,6 +1211,7 @@ def main(argv: list[str] | None = None) -> int:
         fundamental_source_root=args.fundamental_source_root,
         broad_event_pack_path=args.broad_event_pack,
         chip_root=args.chip_root,
+        broad_event_checkpoint_root=args.broad_event_checkpoint_root,
         output_root=args.output_root,
         repo_sha=args.repo_sha,
     )

@@ -404,7 +404,11 @@ class CanonicalFundamentalMaterializer:
         params = dict(spec.get("parameters") or {})
 
         if operation == "source_level":
-            frame = self._level(sources[0], coordinates)
+            frame = self._level(
+                sources[0],
+                coordinates,
+                aggregation=str(params.get("aggregation", "latest")),
+            )
             value = [name for name in frame if name.startswith("fund_")][-1]
             return frame.rename(columns={value: output_name})
         if operation == "disclosed_change":

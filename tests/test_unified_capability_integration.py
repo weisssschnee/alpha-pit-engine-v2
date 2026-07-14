@@ -19,6 +19,9 @@ from our_system_phase2.runtime.cn_unified_capability_discovery import (
     _route_summary,
 )
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
+from our_system_phase2.services.fundamental_representations import (
+    CanonicalFundamentalMaterializer,
+)
 from our_system_phase2.services.typed_primitive_gate import expression_fields
 from our_system_phase2.services.search_exposure_ledger import SearchExposureLedger
 from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
@@ -311,6 +314,42 @@ def test_route_summary_handles_all_nan_increments_without_runtime_warning() -> N
         summary = _route_summary(rows)
     assert not captured
     assert summary["DISCLOSURE_EVENT"]["mean_matched_increment"] is None
+
+
+def test_holder_source_level_forwards_registered_aggregation() -> None:
+    class FakeAdapter:
+        observed_transform = ""
+
+        def materialize_level(
+            self, request: object, coordinates: pd.DataFrame
+        ) -> pd.DataFrame:
+            self.observed_transform = str(request.transform)
+            output = coordinates.copy()
+            output[str(request.output_name)] = 1.0
+            return output
+
+    adapter = FakeAdapter()
+    materializer = CanonicalFundamentalMaterializer(adapter)
+    coordinates = pd.DataFrame(
+        {"code": ["000001"], "session_time": [pd.Timestamp("2024-04-29 15:00:00")]}
+    )
+    output = materializer.materialize(
+        {
+            "field_id": "fund_holder_test_sum",
+            "search_eligible": True,
+            "operation": "source_level",
+            "source_fields": [
+                {
+                    "source_table": "main_stock_holder_sina",
+                    "source_field": "holder_amount",
+                }
+            ],
+            "parameters": {"aggregation": "sum"},
+        },
+        coordinates,
+    )
+    assert adapter.observed_transform == "sum"
+    assert output["fund_holder_test_sum"].tolist() == [1.0]
 
 
 def test_generated_intraday_expressions_execute_on_a_synthetic_panel(
