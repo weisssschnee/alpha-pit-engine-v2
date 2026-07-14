@@ -20,7 +20,7 @@ from our_system_phase2.services.unified_capability_registry import (
 )
 
 
-COMPILER_VERSION = "cn_typed_route_compiler_v1"
+COMPILER_VERSION = "cn_typed_route_compiler_v2_primitive_allowlist"
 
 
 REJECTION_CODES = {
@@ -42,6 +42,38 @@ REJECTION_CODES = {
     "SEALED_DATA_ACCESS",
     "EXPRESSION_PARSE_ERROR",
     "SEMANTIC_GATE_REJECTED",
+}
+
+
+_STATIC_PRIMITIVES = {
+    "CSRank", "CSResidual", "ZScore", "Add", "Sub", "Mul", "Div",
+    "Abs", "Sign", "Mean", "Std", "Min", "Max", "Log", "Log1p",
+    "Sqrt", "Neg", "Clip", "Winsorize", "Rank", "Scale",
+}
+ROUTE_PRIMITIVE_ALLOWLIST = {
+    "MINUTE_STATIC": _STATIC_PRIMITIVES,
+    "FIRSTN_PATH": _STATIC_PRIMITIVES
+    | {"Delta", "PathShape", "OpeningGap", "SignedPath", "MeanReversion"},
+    "SLOW_CROSS_SECTIONAL_LEVEL": {
+        "CSRank", "Sign", "Abs", "Winsorize", "IndustryNeutralize",
+        "SizeNeutralize", "MaskedZScore",
+    },
+    "SLOW_TEMPORAL_CHANGE": {
+        "CSRank", "Sign", "Abs", "Delta", "Slope", "Acceleration",
+        "Persistence", "MultiScaleRelation", "QoQ", "YoY", "TTMChange",
+    },
+    "DISCLOSURE_EVENT": {
+        "CSRank", "Sign", "Abs", "Add", "Sub", "Mul", "Div",
+        "EventWindow", "TimeSince", "FirstHit", "EventCount",
+        "PreEventPath", "PostMaturityOutcome",
+    },
+    "MARKET_REGIME_CONDITION": _STATIC_PRIMITIVES
+    | {"ConditionGate", "Transition", "StateAge", "RegimeInteraction"},
+    "INTRADAY_STATE_TRANSITION": _STATIC_PRIMITIVES
+    | {"Delta", "Transition", "StateAge", "Duration", "ConditionedPath", "StateResidual"},
+    "BROAD_EVENT_FROZEN_ENTRY": {
+        "FrozenMechanismReplay", "MatchedControlReplay", "BehaviorClusterAdmission",
+    },
 }
 
 
@@ -236,6 +268,18 @@ class TypedRouteCompiler:
             )
 
         operators = _operators(parsed)
+        allowed_primitives = ROUTE_PRIMITIVE_ALLOWLIST.get(route_id, set())
+        unauthorized_primitives = sorted(operators - allowed_primitives)
+        if unauthorized_primitives:
+            return _reject(
+                route_id=route_id,
+                code="ROUTE_OPERATOR_FORBIDDEN",
+                reason=f"expression primitives are not registered on {route_id}: {unauthorized_primitives}",
+                expression=semantic.canonical_expression,
+                fields=resolved,
+                support_unit=str(route["support_unit"]),
+                maturity_rule=str(route["maturity_rule"]),
+            )
         allowed = set(str(value) for value in route.get("allowed_operator_families", ()))
         forbidden = set(str(value) for value in route.get("forbidden_operator_families", ()))
         explicit_family = str(candidate.get("operator_family") or "")

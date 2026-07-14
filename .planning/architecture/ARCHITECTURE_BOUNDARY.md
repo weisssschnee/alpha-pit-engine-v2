@@ -124,6 +124,10 @@ authorize formal search, challenge access, promotion, persistent memory or
 
 The superseding runtime-authority repair is bound to
 `reports/cn_runtime_authority_and_split_repair_20260715/run_manifest.json`.
-Its status is `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED`. It grants
-engineering qualification to apply for a separately authorized small
-development-only capability run; it does not itself authorize or start one.
+Its status is
+`CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED`. Candidate
+authority, receipt propagation and fixed split enforcement are repaired, but
+actual 1/2/4-worker replay exposed non-invariant shard-local cross-sectional
+portfolio construction. Candidate-parallel is the supported safe path;
+shard-parallel portfolio and its formal recovery route fail closed. No
+capability run is authorized or started.

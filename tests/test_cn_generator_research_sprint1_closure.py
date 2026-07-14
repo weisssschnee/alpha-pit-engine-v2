@@ -65,7 +65,7 @@ def test_current_graph_preserves_sprint1_and_projects_sprint2_nodes() -> None:
     graph = json.loads((REPO / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8"))
     nodes = {row["id"]: row for row in graph["nodes"]}
 
-    assert graph["graph"]["phase"] == "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED"
+    assert graph["graph"]["phase"] == "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED"
     assert graph["graph"]["graph_type"] == (
         "CN_RUNTIME_AUTHORITY_AND_SPLIT_CURRENT_ARCHITECTURE_CONTRACT"
     )

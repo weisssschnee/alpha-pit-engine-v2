@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import csv
 import hashlib
+import io
 import json
 import math
 import subprocess
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -15,9 +18,7 @@ from typing import Any, Iterable, Mapping
 import numpy as np
 import pandas as pd
 
-from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
-    _candidate_summary_from_reward_atoms,
-)
+from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import main as phase3cm_main
 from our_system_phase2.services.candidate_submission_receipt import (
     CandidateSubmissionAuthority,
     LegacyCandidateSubmissionAdapter,
@@ -34,7 +35,7 @@ SPLIT = REPO / "runtime/run_plans/phase3ga_true1min_2024_2025_global_split_manif
 REGISTRY = REPO / "reports/cn_unified_capability_discovery_20260714/completed_f8169e1/registry/unified_capability_registry.json"
 EVALUATOR = REPO / "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
 DATA_RELEASE_HASH = "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827"
-STATUS = "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED"
+STATUS = "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED"
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -72,35 +73,9 @@ def _receipt_authority(registry: UnifiedCapabilityRegistry, split: FixedSplitAut
     )
 
 
-def _atoms(candidate: Mapping[str, Any], dates: list[str], split: FixedSplitAuthority) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
-    for index, trade_date in enumerate(dates):
-        role = split.role_for(trade_date)
-        value = (index - 2.5) * 0.0002
-        for horizon in ("all", "1"):
-            rows.append(
-                {
-                    "candidate_id": candidate["candidate_id"],
-                    "expression_hash": candidate["expression_hash"],
-                    "split": role,
-                    "horizon_min": horizon,
-                    "trade_date": trade_date,
-                    "curve_count": 3,
-                    "net_return_sum": value,
-                    "raw_return_sum": value + 0.00001,
-                    "net_positive_count": int(value > 0),
-                    "downside_square_sum": min(0.0, value) ** 2,
-                    "daily_net_return": value,
-                    "market_mean_return_sum": value / 2,
-                    "market_mean_return_count": 1,
-                    "turnover_sum": 0.15 + index * 0.001,
-                    "turnover_count": 1,
-                    "rank_ic_sum": 0.01 * (index - 1),
-                    "rank_ic_count": 1,
-                    "rank_ic_positive_count": int(index > 1),
-                }
-            )
-    return rows
+def read_csv(path: Path) -> list[dict[str, Any]]:
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        return [dict(row) for row in csv.DictReader(handle)]
 
 
 def _numeric_values(value: Any) -> list[float]:
@@ -113,6 +88,13 @@ def _numeric_values(value: Any) -> list[float]:
             output.extend(_numeric_values(item))
     elif isinstance(value, (int, float)) and math.isfinite(float(value)):
         output.append(float(value))
+    elif isinstance(value, str):
+        try:
+            parsed = float(value)
+        except ValueError:
+            return output
+        if math.isfinite(parsed):
+            output.append(parsed)
     return output
 
 
@@ -120,50 +102,156 @@ def worker_parity(
     registry: UnifiedCapabilityRegistry,
     split: FixedSplitAuthority,
 ) -> dict[str, Any]:
-    from our_system_phase2.services.unified_discovery_generators import RegistryDrivenGenerator
+    from scripts.recover_phase3cm_exact_reward_atoms import main as exact_recovery_main
 
-    candidate = RegistryDrivenGenerator(registry).generate_route("MINUTE_STATIC", proposal_budget=2, seed=151)[0]
-    candidate = {**candidate, "expression_hash": stable_hash(candidate["expression"])}
-    manifest_rows = list(split.rows)
+    candidate = {
+        "candidate_id": "actual-worker-parity",
+        "expression_hash": stable_hash("CSRank($close)"),
+        "expression": "CSRank($close)",
+        "generator_arm": "typed_static_parity",
+        "route_id": "MINUTE_STATIC",
+        "operator_family": "CSRank",
+        "matched_control_id": "actual-worker-parity-control",
+        "declared_field_ids": ["close"],
+        "condition_field_ids": [],
+        "is_matched_control": False,
+        "vote_policy": "ONE_SUPPORT_UNIT_ONE_VOTE",
+        "maturity_contract_registered": False,
+        "exposure_ledger_required": True,
+        "access_roles": ["development"],
+        "uses_future_revision": False,
+        "requires_intrabar_order": False,
+        "proposal_origin": "actual_worker_exact_recovery_parity",
+    }
+    control = {
+        **candidate,
+        "candidate_id": "actual-worker-parity-control",
+        "expression": "CSRank(Sign($close))",
+        "matched_control_id": candidate["candidate_id"],
+        "is_matched_control": True,
+        "vote_policy": "CONTROL_NO_SEPARATE_VOTE",
+    }
+    authority = _receipt_authority(registry, split)
+    receipts = authority.authorize_table([candidate, control])
+    candidate["exact_identity"] = receipts[0]["exact_identity"]
     dates = [
-        next(row["trade_date"] for row in manifest_rows if row["split"] == "train"),
-        next(row["trade_date"] for row in manifest_rows[1:] if row["split"] == "train"),
-        next(row["trade_date"] for row in manifest_rows if row["split"] == "validation"),
-        next(row["trade_date"] for row in manifest_rows[1:] if row["split"] == "validation"),
-        next(row["trade_date"] for row in manifest_rows if row["split"] == "holdout"),
-        next(row["trade_date"] for row in manifest_rows[1:] if row["split"] == "holdout"),
+        next(row["trade_date"] for row in split.rows if row["split"] == role)
+        for role in ("train", "validation", "holdout")
     ]
-    canonical_atoms = _atoms(candidate, dates, split)
     cases: list[dict[str, Any]] = []
     summaries: dict[str, dict[str, Any]] = {}
-    for workers in (1, 2, 4):
-        chunks = [[] for _ in range(workers)]
-        for index, row in enumerate(canonical_atoms):
-            chunks[index % workers].append(dict(row))
-        merged = sorted((row for chunk in chunks for row in chunk), key=lambda row: (row["trade_date"], row["horizon_min"]))
-        per_split, reward = _candidate_summary_from_reward_atoms(
-            candidate,
-            merged,
-            (1,),
-            seed=20260715,
-            rank_ic_loss_weight=6.0,
-            rank_ic_component_cap=0.35,
-            regime_stability_weight=0.08,
-            regime_component_cap=0.10,
-        )
-        payload = {"per_split": per_split, "reward": reward}
-        key = f"workers_{workers}"
-        summaries[key] = payload
-        cases.append(
-            {
-                "worker_count": workers,
-                "role_assignment_hash": stable_hash([(row["trade_date"], row["split"]) for row in merged]),
-                "reward_atom_hash": stable_hash(merged),
-                "metric_hash": stable_hash(payload),
-                "behavior_identity": candidate["exact_identity"],
-                "row_count": len(merged),
+    with tempfile.TemporaryDirectory(prefix="cn_runtime_worker_parity_") as temporary:
+        root = Path(temporary)
+        shard_root = root / "shards"
+        for shard_index in range(4):
+            panel_dir = shard_root / f"shard_{shard_index:02d}" / "phase3aq_wide_true1min" / "canary"
+            panel_dir.mkdir(parents=True)
+            panel_rows: list[dict[str, Any]] = []
+            for date_index, trade_date in enumerate(dates):
+                for minute_index in range(4):
+                    trade_time = pd.Timestamp(trade_date) + pd.Timedelta(hours=9, minutes=31 + minute_index)
+                    for symbol_index in range(8):
+                        base = 10.0 + shard_index * 0.1 + date_index * 0.2 + minute_index * 0.03 + symbol_index * 0.05
+                        volume = 1000.0 + symbol_index * 10 + minute_index
+                        panel_rows.append(
+                            {
+                                "code": f"{symbol_index:06d}",
+                                "trade_time": trade_time,
+                                "date": pd.Timestamp(trade_date),
+                                "open": base - 0.01,
+                                "high": base + 0.02,
+                                "low": base - 0.03,
+                                "close": base + ((symbol_index % 3) - 1) * 0.005,
+                                "volume": volume,
+                                "amount": volume * base,
+                                "ret_1m": ((symbol_index % 3) - 1) * 0.0005,
+                            }
+                        )
+            pd.DataFrame(panel_rows).to_parquet(
+                panel_dir / "phase3aq_true_1min_formula_canary.parquet", index=False
+            )
+        candidate_table = root / "candidates.csv"
+        write_csv(candidate_table, [candidate])
+        receipt_table = root / "receipts.jsonl"
+        from our_system_phase2.services.candidate_submission_receipt import write_receipt_table
+        write_receipt_table(receipt_table, receipts)
+
+        for workers in (1, 2, 4):
+            worker_root = root / f"workers_{workers}"
+            partitions = [list(map(int, part)) for part in np.array_split(np.arange(4), workers)]
+            chunk_dirs: list[Path] = []
+            all_atoms: list[dict[str, Any]] = []
+            for worker_index, shard_indices in enumerate(partitions):
+                chunk = worker_root / f"worker_{worker_index}"
+                report = worker_root / f"worker_{worker_index}_report"
+                argv = [
+                    "--candidate-audit", str(candidate_table),
+                    "--shard-root", str(shard_root),
+                    "--output-root", str(chunk),
+                    "--report-root", str(report),
+                    "--candidate-limit", "1",
+                    "--max-shards", "4",
+                    "--shard-indices", ",".join(map(str, shard_indices)),
+                    "--sample-trade-times-per-shard", "0",
+                    "--event-sample-trade-times-per-shard", "0",
+                    "--horizons", "1",
+                    "--split-manifest", str(SPLIT),
+                    "--candidate-receipt-table", str(receipt_table),
+                    "--unified-registry", str(REGISTRY),
+                    "--data-release-hash", DATA_RELEASE_HASH,
+                    "--min-obs-per-time", "2",
+                    "--write-reward-atoms",
+                    "--checkpoint-every-candidates", "1",
+                ]
+                with contextlib.redirect_stdout(io.StringIO()):
+                    if int(phase3cm_main(argv) or 0) != 0:
+                        raise RuntimeError(f"actual Phase3CM parity worker failed: {workers}/{worker_index}")
+                chunk_dirs.append(chunk)
+                all_atoms.extend(read_csv(chunk / "phase3cm_reward_atoms.csv"))
+            exact_root = worker_root / "exact_merge"
+            recover_argv = [
+                "--candidate-table", str(candidate_table),
+                "--output-root", str(exact_root),
+                "--expected-shard-count", "4",
+                "--horizons", "1",
+                "--split-manifest", str(SPLIT),
+                "--candidate-receipt-table", str(receipt_table),
+                "--unified-registry", str(REGISTRY),
+                "--data-release-hash", DATA_RELEASE_HASH,
+            ]
+            for chunk in chunk_dirs:
+                recover_argv.extend(["--chunk-dir", str(chunk)])
+            with contextlib.redirect_stdout(io.StringIO()):
+                if int(exact_recovery_main(recover_argv) or 0) != 0:
+                    raise RuntimeError(f"actual exact recovery failed for {workers} workers")
+            reward_rows = read_csv(exact_root / "phase3cm_train_reward.csv")
+            split_rows = read_csv(exact_root / "phase3cm_candidate_split_horizon_summary.csv")
+            payload = {"reward": reward_rows, "per_split": split_rows}
+            summaries[f"workers_{workers}"] = payload
+            role_counts = {
+                role: sum(str(row.get("split") or "") == role for row in all_atoms)
+                for role in ("train", "validation", "holdout")
             }
-        )
+            cases.append(
+                {
+                    "worker_count": workers,
+                    "actual_phase3cm_worker_invocations": workers,
+                    "actual_exact_recovery_invocations": 1,
+                    "recovery_worker_index": workers - 1 if workers == 4 else None,
+                    "role_assignment_hash": stable_hash(
+                        sorted((row.get("trade_date"), row.get("split")) for row in all_atoms)
+                    ),
+                    "reward_atom_hash": stable_hash(
+                        sorted(all_atoms, key=lambda row: (str(row.get("trade_date")), str(row.get("split"))))
+                    ),
+                    "metric_hash": stable_hash(payload),
+                    "behavior_identity": candidate["exact_identity"],
+                    "reward_atom_count": len(all_atoms),
+                    "train_atom_count": role_counts["train"],
+                    "validation_atom_count": role_counts["validation"],
+                    "holdout_atom_count": role_counts["holdout"],
+                }
+            )
     baseline = _numeric_values(summaries["workers_1"])
     max_error = 0.0
     for key in ("workers_2", "workers_4"):
@@ -171,14 +259,18 @@ def worker_parity(
         if len(compared) != len(baseline):
             raise RuntimeError("worker parity metric shape drift")
         max_error = max(max_error, max((abs(left - right) for left, right in zip(baseline, compared)), default=0.0))
+    deterministic_hashes_equal = len({row["metric_hash"] for row in cases}) == 1
     return {
-        "status": "PASS",
-        "scope": "SYNTHETIC_NO_SELECTION_WORKER_SEMANTIC_PARITY",
+        "status": "PASS" if max_error <= 1e-12 and deterministic_hashes_equal else "FAIL",
+        "scope": "ACTUAL_PHASE3CM_WORKER_AND_EXACT_RECOVERY_SYNTHETIC_NO_SELECTION_PARITY",
         "worker_counts": [1, 2, 4],
-        "recovery_exact_merge": "same atom authority and deterministic merge exercised",
+        "worker_entrypoint": "phase3cm_train_portfolio_sortino_reward_audit.main",
+        "recovery_entrypoint": "recover_phase3cm_exact_reward_atoms.main",
+        "recovery_exact_merge": "actual worker chunks and exact recovery entrypoint executed",
         "split_manifest_hash": split.manifest_hash,
         "max_numeric_error": max_error,
         "tolerance": 1e-12,
+        "deterministic_exact_output_hashes_equal": deterministic_hashes_equal,
         "cases": cases,
         "validation_used_for_feedback": False,
         "holdout_used_for_feedback": False,
@@ -292,18 +384,18 @@ def authority_matrix() -> list[dict[str, Any]]:
             "local_split_reachable": False,
             "candidate_receipt_required": receipt,
             "validation_holdout_feedback": "FORBIDDEN",
-            "status": "PASS",
+            "status": status,
             "evidence": evidence,
         }
-        for name, entry, receipt, evidence in (
-            ("Phase3CM direct/serial", "phase3cm_train_portfolio_sortino_reward_audit.main", True, "required argparse plus FixedSplitAuthority.map_times"),
-            ("Phase3CP pre-semantic", "_run_pre_cm_semantic_viability_gate", True, "receipt arguments appended before semantic evaluator"),
-            ("Phase3CP candidate parallel", "_run_real_cm_chunk_subprocess", True, "same manifest and receipt arguments for every chunk"),
-            ("Phase3CP shard parallel", "_run_real_cm_shard_subprocess", True, "same manifest and receipt arguments for every shard worker"),
-            ("Phase3CP retry/recovery", "_run_real_cm_retry_table", True, "same authority arguments on retry"),
-            ("Phase3GA chunk04 recovery", "phase3ga_recover_missing_chunk04_20260710.ps1", True, "manifest and receipt passed to each worker and exact merge"),
-            ("exact atom merge", "recover_phase3cm_exact_reward_atoms.py", True, "official manifest and receipt are required"),
-            ("Phase3CN feedback", "build_feedback_memory", True, "train-only guard plus exact evaluator receipt hash"),
+        for name, entry, receipt, status, evidence in (
+            ("Phase3CM direct/serial", "phase3cm_train_portfolio_sortino_reward_audit.main", True, "PASS", "required argparse plus FixedSplitAuthority.map_times"),
+            ("Phase3CP pre-semantic", "_run_pre_cm_semantic_viability_gate", True, "PASS", "receipt arguments appended before semantic evaluator"),
+            ("Phase3CP candidate parallel", "_run_real_cm_chunk_subprocess", True, "PASS", "same manifest and receipt arguments for every candidate chunk"),
+            ("Phase3CP shard parallel", "_run_real_cm_shard_subprocess", True, "BLOCKED_FAIL_CLOSED", "formal main rejects shard-local cross-sectional portfolio evaluation"),
+            ("Phase3CP retry/recovery", "_run_real_cm_retry_table", True, "PASS", "same authority arguments on candidate retry"),
+            ("Phase3GA chunk04 recovery", "phase3ga_recover_missing_chunk04_20260710.ps1", True, "DIAGNOSTIC_ONLY_BLOCKED_BY_DEFAULT", "explicit switch required; output cannot feed formal memory"),
+            ("exact atom merge", "recover_phase3cm_exact_reward_atoms.py", True, "DIAGNOSTIC_ONLY", "official manifest and receipt are required; shard-local portfolio limitation recorded"),
+            ("Phase3CN feedback", "build_feedback_memory", True, "PASS", "standalone entry recompiles embedded contracts and validates context before train-only feedback"),
         )
     ]
 
@@ -373,31 +465,35 @@ def schema() -> dict[str, Any]:
         "additionalProperties": False,
         "required": [
             "receipt_schema_version", "receipt_id", "receipt_hash", "authorization_status",
-            "candidate_id", "candidate_payload_hash", "proposal_source", "route_id", "expression",
+            "candidate_id", "candidate_payload_hash", "candidate_contract", "proposal_source", "route_id", "declared_operator_family", "expression",
             "generator_origin", "legacy_or_unified_proposal_source", "canonical_expression",
             "canonical_identity", "exact_identity", "field_ids", "source_field_ids",
             "representation_ids", "operator_paths", "primitive_ids", "entity_scope", "frequency",
             "observable_time_contract", "pit_source_lag_contract", "support_unit", "matched_control_id",
+            "is_matched_control", "vote_policy", "condition_field_ids",
             "metadata_fields_rejected",
             "compiler_version", "unified_registry_hash", "typed_compiler_hash",
             "split_manifest_hash", "data_release_hash", "evaluator_code_hash",
         ],
         "properties": {
+            **{
             key: {"type": "array", "items": {"type": "string"}} if key in {
                 "field_ids", "source_field_ids", "representation_ids", "operator_paths", "primitive_ids",
-                "entity_scope", "observable_time_contract", "pit_source_lag_contract", "metadata_fields_rejected",
+                "entity_scope", "observable_time_contract", "pit_source_lag_contract", "metadata_fields_rejected", "condition_field_ids",
             } else {"type": "string", "minLength": 1}
             for key in [
                 "receipt_schema_version", "receipt_id", "receipt_hash", "authorization_status",
-                "candidate_id", "candidate_payload_hash", "proposal_source", "route_id", "expression",
+                "candidate_id", "candidate_payload_hash", "proposal_source", "route_id", "declared_operator_family", "expression",
                 "generator_origin", "legacy_or_unified_proposal_source", "canonical_expression",
                 "canonical_identity", "exact_identity", "field_ids", "source_field_ids",
                 "representation_ids", "operator_paths", "primitive_ids", "entity_scope", "frequency",
-                "observable_time_contract", "pit_source_lag_contract", "support_unit", "matched_control_id",
+                "observable_time_contract", "pit_source_lag_contract", "support_unit", "matched_control_id", "vote_policy", "condition_field_ids",
                 "metadata_fields_rejected",
                 "compiler_version", "unified_registry_hash", "typed_compiler_hash",
                 "split_manifest_hash", "data_release_hash", "evaluator_code_hash",
-            ]
+            ]},
+            "candidate_contract": {"type": "object"},
+            "is_matched_control": {"type": "boolean"},
         },
     }
 
@@ -427,7 +523,7 @@ Status: `{STATUS}`
 
 ## Outcome
 
-The fixed 485-session manifest is now mandatory at direct, serial, candidate-parallel, shard-parallel, retry, recovery and exact-merge boundaries. Formal workers no longer call a local fraction splitter. Unknown dates fail closed and dates in 2026 are rejected as sealed.
+The fixed 485-session manifest is now mandatory at direct, serial, candidate-parallel, retry, diagnostic recovery and exact-merge boundaries. Formal workers no longer call a local fraction splitter. Unknown dates fail closed and dates in 2026 are rejected as sealed.
 
 Every formal evaluator input must carry an immutable receipt produced by `UnifiedCapabilityRegistry + TypedRouteCompiler`. The receipt binds the candidate contract to registry, compiler, split manifest, data release and evaluator-code hashes. Phase3CN additionally checks the exact receipt hash before train-only feedback can reach scheduler/memory.
 
@@ -435,7 +531,7 @@ Legacy generators remain proposal sources. The conservative adapter can map only
 
 ## Engineering qualification
 
-- Worker counts 1/2/4 and deterministic exact merge: `{worker['status']}`; max numeric error `{worker['max_numeric_error']}` at tolerance `{worker['tolerance']}`.
+- Actual disjoint-shard worker counts 1/2/4 plus exact recovery: `{worker['status']}`; max numeric error `{worker['max_numeric_error']}` at tolerance `{worker['tolerance']}`. The mismatch exposed shard-local cross-sectional portfolio semantics, so the formal shard-parallel path now fails closed.
 - Legacy direct versus receipt-gated synthetic parity: `{legacy['status']}`; maximum reported error `{max(value for key, value in legacy.items() if key.endswith('_error'))}`.
 - Fixed split: 485 sessions = 364 train / 73 validation / 48 holdout; manifest SHA-256 `{split.manifest_hash}`.
 - Validation and holdout were not read for decisions. 2026 was not accessed. No search, promotion or cross-sprint memory update ran.
@@ -451,12 +547,12 @@ Historical tables are preserved. Evidence produced before global worker authorit
 3. `UnifiedCapabilityRegistry + TypedRouteCompiler`, materialized as the candidate submission receipt, owns final field, route, primitive, PIT, source-lag and matched-control authorization.
 4. No formal path grants search eligibility merely because a parquet column exists. The physical schema gate may discard infeasible proposals, but every survivor is still receipt-authorized before any evaluator call.
 5. No worker-local split is reachable from the formal evaluator; `_split_map` was removed from Phase3CM.
-6. Serial, candidate-parallel, shard-parallel, retry, chunk recovery and exact merge all require the same explicit manifest.
+6. Serial, candidate-parallel and retry paths require the same explicit manifest. Shard-parallel and historical chunk recovery also receive it, but are blocked from formal use because split consistency alone cannot repair shard-local cross-sectional ranks.
 7. Validation and holdout remain report-only and cannot pass the Phase3CN train-role plus exact-receipt guard.
-8. The 1/2/4 worker and deterministic recovery/exact-merge semantic comparison passed with maximum numeric error `{worker['max_numeric_error']}`.
+8. Actual 1/2/4 disjoint-shard worker and exact-recovery comparison failed with maximum numeric error `{worker['max_numeric_error']}`; the unsafe path is fail-closed rather than certified.
 9. A non-performance, non-selected legal legacy static candidate preserved expression, signal, weights, turnover, cost, train-like synthetic metric and behavior identity under the receipt gate; maximum error was `{max(value for key, value in legacy.items() if key.endswith('_error'))}`.
 10. Pre-convergence search trajectories, B1S selection evidence, pre-receipt unified discovery and provenance-unverified Phase3FIX evidence are diagnostic only; the exact classifications are in the CSV.
-11. Engineering qualification to apply for one separately authorized, pre-registered, fixed-budget, development-only capability run is `YES`. This is not authorization to run it and is not Alpha/promotion evidence.
+11. Engineering qualification to apply for a capability run is `NO` until global cross-section exact merge is implemented or shard-parallel portfolio evaluation is permanently removed from the contract.
 
 ## Frozen boundaries
 
@@ -467,13 +563,14 @@ Historical tables are preserved. Evidence produced before global worker authorit
 
 ## 2026-07-15 - Runtime authority and split convergence
 
-- Supersede `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED` as the current engineering state with `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED`.
+- Supersede `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED` with `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED`.
 - Preserve the prior audit and all historical proposal, reward and performance tables unchanged.
 - Make the fixed 485-session manifest the sole formal split authority; deprecate worker-local splitting.
 - Make `UnifiedCapabilityRegistry + TypedRouteCompiler` the sole candidate admission authority through immutable receipts.
 - Retain legacy generators only as proposal sources. Physical schema presence remains a feasibility observation, not authorization.
 - Reclassify pre-convergence search trajectories and pre-receipt evidence as diagnostic according to the machine-readable CSV.
-- Record engineering qualification to apply for a separate small development-only capability run. Do not authorize or start it.
+- Record the actual 1/2/4 disjoint-shard parity failure and block shard-parallel portfolio/recovery from formal use.
+- Do not apply for or start a capability run until the worker semantic blocker is resolved.
 - Keep formal search, validation/holdout feedback, challenge, promotion, cross-sprint memory, plate/industry and forward 2026 frozen.
 """
     (output / "DECISION_CHANGE_LOG.md").write_text(decision_log, encoding="utf-8")
@@ -482,7 +579,7 @@ Historical tables are preserved. Evidence produced before global worker authorit
         "status": STATUS,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "repo_sha_before_delivery_commit": git_head(REPO),
-        "scope": "SOURCE_REPAIR_AND_SYNTHETIC_NO_SELECTION_PARITY",
+        "scope": "SOURCE_REPAIR_AND_ACTUAL_ENTRYPOINT_SYNTHETIC_NO_SELECTION_PARITY",
         "inputs": {
             "split_manifest": {"path": str(SPLIT.relative_to(REPO)), "sha256": split.manifest_hash},
             "unified_registry": {"path": str(REGISTRY.relative_to(REPO)), "sha256": file_sha256(REGISTRY), "registry_hash": registry.registry_hash},

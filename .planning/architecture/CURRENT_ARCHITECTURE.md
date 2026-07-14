@@ -2,7 +2,7 @@
 
 Updated: 2026-07-15
 
-State: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED` on the physically
+State: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED` on the physically
 isolated 2024-2025 development-only release. The unified registry/compiler is
 now the sole candidate admission authority and the fixed 485-date manifest is
 the sole formal split authority. Sealed evaluation, formal search, promotion
@@ -51,9 +51,10 @@ flowchart LR
     UNIFIED -->|"authorizes field / route / primitive / PIT"| RECEIPT
     SPLIT -->|"binds manifest hash"| RECEIPT
     RECEIPT --> ADMISSION["IMPLEMENTED<br/>receipt-gated proxy/admission/evaluator"]
-    ADMISSION --> REPAIR["IMPLEMENTED<br/>1/2/4 worker + recovery parity<br/>max error 0"]
+    ADMISSION --> REPAIR["PARTIAL<br/>candidate-parallel safe<br/>shard-parallel max error 12"]
     WORKER_SPLIT["DEPRECATED<br/>worker-local split"] -. "FORBIDDEN" .-> RECEIPT
-    REPAIR -. "ENGINEERING QUALIFICATION ONLY" .-> SEALED
+    SHARD_PORTFOLIO["FROZEN<br/>shard-local cross-sectional portfolio"] -. "FAIL CLOSED" .-> REPAIR
+    REPAIR -. "NO RUN AUTHORIZATION" .-> SEALED
     UDISC -. "4 shared = old frozen replay<br/>NO CHALLENGE / NO PROMOTION" .-> SEALED
     FUND_FABRIC -. "NO RAW 1,227 EXPOSURE" .-> SEALED
     ZYGC["FROZEN<br/>business composition<br/>no disclosure clock"] -. "PIT_CONTRACT_UNRESOLVED" .-> FUND_FABRIC
@@ -69,9 +70,11 @@ flowchart LR
   expression, field/source/representation lineage, typed route, primitives,
   PIT/source lag, matched control, registry/compiler/split/data/evaluator
   hashes. Phase3CN accepts only train feedback bearing the exact receipt hash.
-- Synthetic 1/2/4-worker and recovery/exact-merge parity passed with zero
-  numeric error at 1e-12 tolerance. Frozen historical legal-candidate direct
-  versus gated parity also passed with zero error and is not Alpha evidence.
+- Actual Phase3CM 1/2/4-worker shard-parallel replay failed parity with maximum
+  numeric error 12.0 at 1e-12 tolerance. The route and its formal recovery path
+  now fail closed; candidate-parallel remains the safe worker route. Frozen
+  historical legal-candidate direct versus gated parity passed with zero error
+  and is not Alpha evidence.
 - The strict-priority selector has both offline OOF lift and realized
   development strict lift. It is a frozen model, not online memory.
 - Shared-backbone proxy and strict-priority rank correlations are 1.0 for all
@@ -128,11 +131,11 @@ flowchart LR
 - `app.py` identifies receipt-gated Phase3CP as the current formal route and
   marks Phase3DV as a legacy proposal-only diagnostic route. Hardcoded pools
   and parquet schema presence cannot authorize admission or evaluation.
-- Phase3CM, serial/parallel Phase3CP, chunk recovery and exact merge all require
-  the same fixed manifest. The worker-local splitter is removed from the formal
-  evaluator; unknown dates and 2026 fail closed.
-- Engineering qualification for a small pre-registered development-only
-  capability run is complete. Formal search remains frozen pending separate
-  authorization; this repair did not run performance search or promotion.
+- Phase3CM, serial and candidate-parallel Phase3CP use the same fixed manifest.
+  The worker-local splitter is removed from the formal evaluator; unknown dates
+  and 2026 fail closed. Shard-parallel portfolio and chunk-recovery execution
+  are blocked until a global cross-section exact merge exists.
+- Engineering qualification remains partial. Formal search remains frozen;
+  this repair did not run performance search or promotion.
 - The old run's challenge-eligibility boolean is superseded. Frozen replay
   alone cannot qualify a challenge; no challenge is open.

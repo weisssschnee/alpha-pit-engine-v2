@@ -9,7 +9,8 @@ param(
   [string]$UnifiedRegistry = "D:\ChengboRemote\workspace\alpha_pit_true1min_engine_20260710_phase3ga_semantic_efficiency_v2\reports\cn_unified_capability_discovery_20260714\completed_f8169e1\registry\unified_capability_registry.json",
   [string]$CandidateReceiptTable = "D:\ChengboRemote\runtime\phase3fix_repaired_2y_train75_large_search_20260710_77o_scheduled_w4s12\candidate_submission_receipts.jsonl",
   [string]$DataReleaseHash = "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
-  [int]$Workers = 4
+  [int]$Workers = 4,
+  [switch]$AllowDiagnosticShardLocalPortfolioRecovery
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,6 +19,10 @@ foreach ($path in @($Repo, $Python, $ShardRoot, $CandidateTable, $SplitManifest,
   if (-not (Test-Path -LiteralPath $path)) { throw "required path missing: $path" }
 }
 if ($Workers -lt 1 -or $Workers -gt 6) { throw "Workers must be between 1 and 6" }
+if (-not $AllowDiagnosticShardLocalPortfolioRecovery) {
+  throw "FORMAL_SHARD_PARALLEL_PORTFOLIO_BLOCKED: historical chunk-04 recovery is diagnostic-only until global cross-section exact merge exists"
+}
+Write-Warning "Diagnostic-only shard-local portfolio recovery; output cannot feed formal search or Phase3CN memory."
 
 Set-Location -LiteralPath $Repo
 $env:PYTHONPATH = "$Repo\src;$Repo"

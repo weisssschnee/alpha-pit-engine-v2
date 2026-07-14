@@ -22,7 +22,7 @@ from our_system_phase2.services.typed_primitive_gate import expression_fields
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry, stable_hash
 
 
-RECEIPT_SCHEMA_VERSION = "cn_candidate_submission_receipt_v1"
+RECEIPT_SCHEMA_VERSION = "cn_candidate_submission_receipt_v2"
 AUTHORIZATION_STATUS = "AUTHORIZED_FOR_FORMAL_EVALUATION"
 CONTRACT_LIST_FIELDS = {
     "access_roles",
@@ -42,6 +42,8 @@ CONTRACT_BOOL_FIELDS = {
 }
 CONTRACT_KEYS = (
     "candidate_id",
+    "generator_version",
+    "generator_arm",
     "route_id",
     "expression",
     "operator_family",
@@ -205,8 +207,15 @@ def normalize_candidate_contract(candidate: Mapping[str, Any]) -> dict[str, Any]
 
 
 def candidate_payload_hash(candidate: Mapping[str, Any]) -> str:
+    return stable_hash(candidate_contract_payload(candidate))
+
+
+def candidate_contract_payload(candidate: Mapping[str, Any]) -> dict[str, Any]:
     normalized = normalize_candidate_contract(candidate)
-    return stable_hash({key: normalized.get(key, [] if key in CONTRACT_LIST_FIELDS else "") for key in CONTRACT_KEYS})
+    return {
+        key: normalized.get(key, [] if key in CONTRACT_LIST_FIELDS else "")
+        for key in CONTRACT_KEYS
+    }
 
 
 def _combined_file_hash(paths: Sequence[Path]) -> str:
@@ -305,10 +314,12 @@ class CandidateSubmissionAuthority:
             "authorization_status": AUTHORIZATION_STATUS,
             "candidate_id": str(normalized.get("candidate_id") or ""),
             "candidate_payload_hash": candidate_payload_hash(normalized),
+            "candidate_contract": candidate_contract_payload(normalized),
             "proposal_source": proposal_origin,
             "generator_origin": str(normalized.get("generator_arm") or proposal_origin),
             "legacy_or_unified_proposal_source": proposal_kind,
             "route_id": verdict.route_id,
+            "declared_operator_family": str(normalized.get("operator_family") or ""),
             "expression": str(normalized.get("expression") or ""),
             "canonical_expression": verdict.canonical_expression,
             "canonical_identity": verdict.canonical_identity,
@@ -330,6 +341,9 @@ class CandidateSubmissionAuthority:
             ],
             "support_unit": verdict.support_unit,
             "matched_control_id": str(normalized.get("matched_control_id") or ""),
+            "is_matched_control": bool(normalized.get("is_matched_control", False)),
+            "vote_policy": str(normalized.get("vote_policy") or ""),
+            "condition_field_ids": sorted(str(value) for value in normalized.get("condition_field_ids", ())),
             "metadata_fields_rejected": [],
             "compiler_version": COMPILER_VERSION,
             **self.context.to_dict(),
@@ -365,6 +379,42 @@ class CandidateSubmissionAuthority:
             raise CandidateReceiptError(f"candidate receipt authority drift: {drift}")
         return expected
 
+    @staticmethod
+    def _validate_control_pair(primary: Mapping[str, Any], control: Mapping[str, Any]) -> None:
+        candidate_id = str(primary.get("candidate_id") or "")
+        control_id = str(primary.get("matched_control_id") or "")
+        if not candidate_id or not control_id or control_id == candidate_id:
+            raise CandidateReceiptError("matched control must be a distinct candidate identity")
+        if bool(primary.get("is_matched_control")):
+            raise CandidateReceiptError(f"primary candidate is incorrectly marked as a control: {candidate_id}")
+        if not bool(control.get("is_matched_control")):
+            raise CandidateReceiptError(f"matched receipt is not marked as a control: {control_id}")
+        if str(control.get("matched_control_id") or "") != candidate_id:
+            raise CandidateReceiptError(
+                f"matched control does not point back to primary: candidate={candidate_id} control={control_id}"
+            )
+        if str(control.get("vote_policy") or "") != "CONTROL_NO_SEPARATE_VOTE":
+            raise CandidateReceiptError(f"matched control has an independent admission vote: {control_id}")
+        for key in ("route_id", "support_unit", "frequency", "entity_scope"):
+            if control.get(key) != primary.get(key):
+                raise CandidateReceiptError(
+                    f"matched control structural contract drift: candidate={candidate_id} key={key}"
+                )
+        if str(primary.get("route_id") or "") in {
+            "DISCLOSURE_EVENT",
+            "MARKET_REGIME_CONDITION",
+            "INTRADAY_STATE_TRANSITION",
+            "BROAD_EVENT_FROZEN_ENTRY",
+        }:
+            if control.get("field_ids") != primary.get("field_ids"):
+                raise CandidateReceiptError(
+                    f"event/state matched control field contract drift: candidate={candidate_id}"
+                )
+            if control.get("condition_field_ids") != primary.get("condition_field_ids"):
+                raise CandidateReceiptError(
+                    f"event/state matched control condition contract drift: candidate={candidate_id}"
+                )
+
     def authorize_table(self, candidates: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
         candidate_rows = [normalize_candidate_contract(row) for row in candidates]
         rows = [self.authorize(row) for row in candidate_rows]
@@ -378,6 +428,10 @@ class CandidateSubmissionAuthority:
                     f"matched control candidate is absent from submission table: "
                     f"candidate={row.get('candidate_id')} control={control_id or '<missing>'}"
                 )
+        by_id = {str(row["candidate_id"]): row for row in rows}
+        for row in rows:
+            if not bool(row.get("is_matched_control")):
+                self._validate_control_pair(row, by_id[str(row["matched_control_id"])])
         return rows
 
     def validate_table(
@@ -385,7 +439,10 @@ class CandidateSubmissionAuthority:
         candidates: Iterable[Mapping[str, Any]],
         receipts: Iterable[Mapping[str, Any]],
     ) -> list[dict[str, Any]]:
-        by_id = {str(row.get("candidate_id") or ""): dict(row) for row in receipts}
+        receipt_rows = [dict(row) for row in receipts]
+        by_id = {str(row.get("candidate_id") or ""): row for row in receipt_rows}
+        if len(by_id) != len(receipt_rows):
+            raise CandidateReceiptError("duplicate candidate_id in receipt table")
         output: list[dict[str, Any]] = []
         for candidate in candidates:
             candidate_id = str(candidate.get("candidate_id") or "")
@@ -397,7 +454,16 @@ class CandidateSubmissionAuthority:
                 raise CandidateReceiptError(
                     f"matched control receipt is absent: candidate={candidate_id} control={control_id or '<missing>'}"
                 )
-            self._validate_receipt_envelope(by_id[control_id])
+            control_receipt = by_id[control_id]
+            self._validate_receipt_envelope(control_receipt)
+            control_contract = control_receipt.get("candidate_contract")
+            if not isinstance(control_contract, Mapping):
+                raise CandidateReceiptError(
+                    f"matched control receipt lacks an embedded candidate contract: {control_id}"
+                )
+            self.validate(control_contract, control_receipt)
+            if not bool(validated.get("is_matched_control")):
+                self._validate_control_pair(validated, control_receipt)
             output.append(validated)
         return output
 

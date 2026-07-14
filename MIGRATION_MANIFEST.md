@@ -153,7 +153,11 @@ phase3du:
   retired from current route; diagnostic replay only
 
 phase3dv:
-  current budget-pool self-deepen route
+  legacy proposal source only; formal evaluation authority retired
+
+phase3cp:
+  current formal entry contract, frozen pending separate run authorization
+  legacy proposals -> unified receipt gate -> admission/evaluator
 ```
 
 Current durable records:
@@ -198,9 +202,10 @@ construction semantic gate
 -> exact/skeleton memory
 -> CA ranking
 -> semantic-only signal vector gate
--> fixed global trade-date manifest (364 train / 73 validation / 48 holdout)
+-> immutable UnifiedCapabilityRegistry + TypedRouteCompiler receipt
+-> fixed global trade-date manifest authority (364 train / 73 validation / 48 holdout)
 -> full Phase3CM train reward
--> guarded Phase3CN feedback
+-> exact-receipt and train-only guarded Phase3CN feedback
 ```
 
 Historical-run correction: the Phase3FIX large run set
@@ -246,3 +251,28 @@ This route is label-free and cannot write search memory. Architecture state is
 registered in `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json`
 and generated into `.planning/architecture/architecture_graph.json`; the graph contract includes
 the six forbidden evaluation-feedback edges.
+
+## 2026-07-15 Runtime Authority and Split Convergence
+
+The formal entry contract is now:
+
+```text
+legacy or unified proposal source
+-> UnifiedCapabilityRegistry + TypedRouteCompiler
+-> immutable candidate submission receipt before admission
+-> Phase3CM receipt validation and fixed 485-session split authority
+-> Phase3CN exact-receipt plus train-only feedback guard
+```
+
+Direct, serial and candidate-parallel execution require the same versioned
+split manifest. Worker-local split inference is removed from the formal
+evaluator. Shard-parallel portfolio and chunk recovery are fail-closed because
+actual 1/2/4-worker replay proved their shard-local cross-sectional semantics
+are not invariant; they cannot return to the formal route without a global
+cross-section exact merge. Parquet schema presence remains a physical
+feasibility filter only and cannot authorize a field or route.
+
+The current architecture status authority is
+`.planning/architecture/architecture_registry.json`. Formal search, validation,
+holdout, candidate promotion, cross-sprint memory and 2026 forward access remain
+frozen pending separate authorization.

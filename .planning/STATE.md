@@ -2,7 +2,7 @@
 
 Updated: 2026-07-15
 
-Current state: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED`
+Current state: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED`
 
 ## Accepted foundations
 
@@ -24,17 +24,18 @@ Current state: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED`
 - `CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED`
 - `CN_UNIFIED_CAPABILITY_DISCOVERY_COMPLETED_DEVELOPMENT_ONLY`
 - `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`
-- `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_REPAIRED`
+- `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED`
 - `UNIFIED_DISCOVERY_CHALLENGE_ELIGIBILITY_SUPERSEDED`
 
 ## Runtime authority and split convergence result
 
 The accepted non-performance repair makes the 485-session manifest the sole
 formal split authority: 364 train, 73 validation and 48 report-only holdout
-dates. Direct, serial, candidate-parallel, shard-parallel, retry, chunk
-recovery and exact-merge paths require the manifest. Phase3CM no longer has a
-worker-local `_split_map`; unknown dates hard-fail and 2026 is explicitly
-sealed rather than mapped to holdout.
+dates. Direct, serial and candidate-parallel paths require the manifest.
+Phase3CM no longer has a worker-local `_split_map`; unknown dates hard-fail and
+2026 is explicitly sealed rather than mapped to holdout. Shard-parallel
+portfolio evaluation and its chunk-recovery route now fail closed because
+their shard-local cross-sections are not worker-count invariant.
 
 `UnifiedCapabilityRegistry + TypedRouteCompiler` now authorize every formal
 evaluator input through an immutable candidate submission receipt before proxy
@@ -50,12 +51,16 @@ parquet presence cannot authorize a field. Blocked metadata, direct raw
 fundamentals, wrong lag, latched Event/State bypass and plate placeholders fail
 closed.
 
-Synthetic 1/2/4-worker plus deterministic recovery/exact-merge parity passed
-with maximum numeric error 0 at tolerance 1e-12. A lexicographically selected,
-current-contract-legal frozen historical candidate preserved expression,
+Actual Phase3CM entrypoint replay with disjoint shard assignments found that
+1/2/4-worker shard-parallel portfolio results are not equivalent: the maximum
+numeric error is 12.0 at tolerance 1e-12. Exact atom recovery cannot repair a
+portfolio that was already formed inside a shard-local cross-section. The
+unsafe route is therefore blocked; candidate-parallel remains the supported
+worker route because each worker evaluates full cross-sections. A
+current-contract-legal frozen historical candidate did preserve expression,
 signal, weights, turnover, cost, synthetic train-like metric and behavior
-identity through the receipt gate with zero error. This is engineering evidence,
-not Alpha or promotion evidence.
+identity through the receipt gate with zero error. This is engineering
+evidence, not Alpha or promotion evidence.
 
 The completed two-seed unified run remains development-only diagnostic evidence.
 Its four shared exact survivors are old frozen Broad Event replays; no challenge
@@ -180,10 +185,13 @@ No forward-authorization candidate pack was created.
 
 ## Next formal decision point
 
-Recommendation: `ELIGIBLE_TO_APPLY_FOR_SMALL_PREREGISTERED_DEVELOPMENT_ONLY_CAPABILITY_RUN`.
+Recommendation: `REPAIR_GLOBAL_CROSS_SECTION_MERGE_BEFORE_CAPABILITY_RUN`.
 
-The engineering qualification is complete, but it is not run authorization.
-Any next run still requires a separate frozen contract and explicit approval.
+Candidate and split authority convergence is complete, but overall engineering
+qualification remains partial until shard-parallel portfolio evaluation is
+either replaced by a global cross-section exact merge or removed from the
+formal contract. Any next run still requires a separate frozen contract and
+explicit approval.
 Business composition remains `PIT_CONTRACT_UNRESOLVED`, plate/industry remains
 disabled, formal search stays frozen, validation/holdout remain report-only,
 and 2026 stays sealed.

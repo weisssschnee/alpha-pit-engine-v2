@@ -24,7 +24,11 @@ from our_system_phase2.services.candidate_schema import (
     normalize_candidate_schema,
     safe_float,
 )
-from our_system_phase2.services.candidate_submission_receipt import read_receipt_table
+from our_system_phase2.services.candidate_submission_receipt import (
+    CandidateSubmissionAuthority,
+    ReceiptContext,
+    read_receipt_table,
+)
 from our_system_phase2.services.evaluation_access_guard import (
     DEVELOPMENT_ROLE,
     GUARD_VERSION,
@@ -32,6 +36,8 @@ from our_system_phase2.services.evaluation_access_guard import (
     project_train_only_feedback_row,
 )
 from our_system_phase2.services.expression_semantics import analyze_expression
+from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
+from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -557,9 +563,28 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-family-share", type=float, default=0.25)
     parser.add_argument("--min-clean-feedback", type=int, default=8)
     parser.add_argument("--candidate-receipt-table", type=Path, required=True)
+    parser.add_argument("--unified-registry", type=Path, required=True)
+    parser.add_argument("--split-manifest", type=Path, required=True)
+    parser.add_argument("--data-release-hash", required=True)
     args = parser.parse_args(argv)
 
     receipt_rows = read_receipt_table(_resolve(args.candidate_receipt_table))
+    registry = UnifiedCapabilityRegistry.read(_resolve(args.unified_registry))
+    split_authority = FixedSplitAuthority.read(_resolve(args.split_manifest), require_official=True)
+    phase3cm_path = REPO / "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
+    receipt_authority = CandidateSubmissionAuthority(
+        registry,
+        ReceiptContext.build(
+            registry=registry,
+            split_authority=split_authority,
+            data_release_hash=str(args.data_release_hash),
+            evaluator_paths=[phase3cm_path],
+        ),
+    )
+    receipt_authority.validate_table(
+        [dict(row.get("candidate_contract") or {}) for row in receipt_rows],
+        receipt_rows,
+    )
     authorized_receipt_hashes = {
         str(row.get("candidate_id") or ""): str(row.get("receipt_hash") or "")
         for row in receipt_rows

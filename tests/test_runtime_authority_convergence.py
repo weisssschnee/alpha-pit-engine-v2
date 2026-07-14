@@ -23,7 +23,7 @@ from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
     SplitAuthorityError,
 )
-from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
+from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry, stable_hash
 from our_system_phase2.services.unified_discovery_generators import RegistryDrivenGenerator
 
 
@@ -31,6 +31,7 @@ REPO = Path(__file__).resolve().parents[1]
 SPLIT = REPO / "runtime/run_plans/phase3ga_true1min_2024_2025_global_split_manifest.csv"
 REGISTRY = REPO / "reports/cn_unified_capability_discovery_20260714/completed_f8169e1/registry/unified_capability_registry.json"
 EVALUATOR = REPO / "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
+PHASE3CP = REPO / "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py"
 DATA_RELEASE_HASH = "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827"
 
 
@@ -69,6 +70,34 @@ def test_formal_worker_and_serial_entrypoints_fail_without_manifest_and_receipts
         phase3cm_main([])
     with pytest.raises(SystemExit):
         phase3cp_main([])
+
+
+def test_proposal_only_and_receipt_authorized_outputs_are_separate_namespaces() -> None:
+    source = PHASE3CP.read_text(encoding="utf-8")
+    assert 'output_root / "proposal_only_search_outputs"' in source
+    assert 'output_root / "receipt_authorized_search_outputs"' in source
+    assert "shutil.rmtree" not in source
+
+
+def test_formal_symbol_shard_parallel_portfolio_is_blocked_until_global_merge(
+    tmp_path: Path,
+) -> None:
+    shard_root = tmp_path / "shards"
+    shard_root.mkdir()
+    with pytest.raises(RuntimeError, match="FORMAL_SHARD_PARALLEL_PORTFOLIO_BLOCKED"):
+        phase3cp_main(
+            [
+                "--co-root", str(tmp_path),
+                "--shard-root", str(shard_root),
+                "--output-root", str(tmp_path / "out"),
+                "--report-root", str(tmp_path / "report"),
+                "--cm-split-manifest", str(SPLIT),
+                "--unified-registry", str(REGISTRY),
+                "--data-release-hash", DATA_RELEASE_HASH,
+                "--cm-workers", "2",
+                "--cm-parallel-axis", "shard",
+            ]
+        )
 
 
 def test_legal_registry_candidates_receive_and_validate_immutable_receipts() -> None:
@@ -131,6 +160,22 @@ def test_receipt_rejects_metadata_wrong_lag_and_missing_event_control() -> None:
     with pytest.raises(CandidateReceiptError, match="matched control candidate is absent"):
         authority.authorize_table(event_pair[:1])
 
+    invalid_control = {**event_pair[1], "is_matched_control": False}
+    with pytest.raises(CandidateReceiptError, match="not marked as a control"):
+        authority.authorize_table([event_pair[0], invalid_control])
+
+    valid_receipts = authority.authorize_table(event_pair)
+    forged_control = dict(valid_receipts[1])
+    forged_contract = dict(forged_control["candidate_contract"])
+    forged_contract["expression"] = "CSRank($close)"
+    forged_control["candidate_contract"] = forged_contract
+    forged_control.pop("receipt_hash")
+    forged_control.pop("receipt_id")
+    forged_control["receipt_hash"] = stable_hash(forged_control)
+    forged_control["receipt_id"] = "cn.receipt." + forged_control["receipt_hash"][:32]
+    with pytest.raises(CandidateReceiptError, match="candidate (authorization rejected|receipt authority drift)"):
+        authority.validate_table([event_pair[0]], [valid_receipts[0], forged_control])
+
     fundamental_pair = generator.generate_route("SLOW_CROSS_SECTIONAL_LEVEL", proposal_budget=2, seed=87)
     fundamental_field = next(
         field
@@ -190,6 +235,25 @@ def test_receipt_rejects_metadata_wrong_lag_and_missing_event_control() -> None:
         )
         with pytest.raises(CandidateReceiptError, match="UNKNOWN_FIELD_ID"):
             authority.authorize(raw)
+
+
+@pytest.mark.parametrize("primitive", ["Delta", "Slope", "Duration"])
+def test_minute_static_cannot_hide_typed_primitive_behind_self_reported_family(
+    primitive: str,
+) -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    split = FixedSplitAuthority.read(SPLIT)
+    candidate = RegistryDrivenGenerator(registry).generate_route(
+        "MINUTE_STATIC", proposal_budget=2, seed=89
+    )[0]
+    masquerade = {
+        **candidate,
+        "expression": f"CSRank({primitive}($close,5))",
+        "operator_family": "CSRank",
+        "declared_field_ids": ["close"],
+    }
+    with pytest.raises(CandidateReceiptError, match="primitives are not registered"):
+        _authority(registry, split).authorize(masquerade)
 
 
 def test_receipt_fails_closed_on_registry_or_split_hash_drift(tmp_path: Path) -> None:

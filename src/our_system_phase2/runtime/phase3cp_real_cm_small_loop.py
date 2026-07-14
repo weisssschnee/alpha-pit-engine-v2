@@ -18,7 +18,6 @@ import json
 import math
 import os
 import re
-import shutil
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -63,7 +62,7 @@ from our_system_phase2.services.candidate_submission_receipt import (
     write_receipt_table,
 )
 from our_system_phase2.services.expression_semantics import analyze_expression
-from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
+from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority, file_sha256
 from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule, read_csv_rows
 from our_system_phase2.services.signal_vector_semantics import classify_candidate_signal_semantics
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
@@ -449,10 +448,10 @@ def _generate_candidates(
         row["metric_boundary"] = "Phase3CP real-CM loop generation metrics are CA ranking only; CM train_reward is the feedback source"
         row.update(normalize_candidate_schema(row))
 
-    search_root = output_root / "search_outputs"
-    report_search_root = report_root / "search_outputs"
-    _write_arm_outputs(decisions, search_root)
-    _write_arm_outputs(decisions, report_search_root)
+    proposal_root = output_root / "proposal_only_search_outputs"
+    report_proposal_root = report_root / "proposal_only_search_outputs"
+    _write_arm_outputs(decisions, proposal_root)
+    _write_arm_outputs(decisions, report_proposal_root)
     _write_csv(output_root / "phase3cp_real_cm_arm_execution_plan.csv", scaled_plan)
     _write_csv(report_root / "phase3cp_real_cm_arm_execution_plan.csv", scaled_plan)
     _write_csv(output_root / "phase3cp_real_cm_generation_attempts.csv", generation_attempt_rows)
@@ -2141,6 +2140,12 @@ def main(argv: list[str] | None = None) -> int:
     FixedSplitAuthority.read(_resolve(args.cm_split_manifest), require_official=True)
     if not _resolve(args.unified_registry).exists():
         raise FileNotFoundError(f"unified registry does not exist: {_resolve(args.unified_registry)}")
+    if int(args.cm_workers) > 1 and str(args.cm_parallel_axis) == "shard":
+        raise RuntimeError(
+            "FORMAL_SHARD_PARALLEL_PORTFOLIO_BLOCKED: disjoint symbol-shard workers "
+            "produce shard-local cross-sectional ranks and are not semantically invariant; "
+            "use --cm-parallel-axis candidate until a global cross-section exact merge exists"
+        )
     shard_root_text = str(shard_root).lower()
     if "tdxofficial" in shard_root_text or "\\1d" in shard_root_text or "/1d" in shard_root_text:
         raise RuntimeError(f"refusing suspicious non-true1min shard root: {shard_root}")
@@ -2170,13 +2175,11 @@ def main(argv: list[str] | None = None) -> int:
         report_root=report_root,
     )
 
-    search_root = output_root / "search_outputs"
-    report_search_root = report_root / "search_outputs"
-    # Remove the proposal-only projection written by generation, then expose
-    # only receipt-authorized rows to Phase3CA admission.
-    for root in (search_root, report_search_root):
-        if root.exists():
-            shutil.rmtree(root)
+    receipt_namespace = file_sha256(args.cm_candidate_receipt_table)[:16]
+    search_root = output_root / "receipt_authorized_search_outputs" / receipt_namespace
+    report_search_root = report_root / "receipt_authorized_search_outputs" / receipt_namespace
+    # Proposal-only rows are retained in their own immutable namespace.  The
+    # admission namespace is written only after receipt authorization.
     _write_arm_outputs(decisions, search_root)
     _write_arm_outputs(decisions, report_search_root)
     ca_root = output_root / "phase3ca_bridge"

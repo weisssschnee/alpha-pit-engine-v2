@@ -39,7 +39,7 @@ Updated: 2026-07-15
 | Feature runtime authority mismatch confirmed | The unified registry could be mistaken for the active Phase3GA/CM/CN field authority | Unified registry/compiler govern only unified discovery; active Phase3DV/Phase3CP still use hardcoded/schema-derived fields, so formal search remains frozen pending runtime convergence |
 | Global split runtime reachability re-audited | Final exact fixed-manifest normalization could be mistaken for end-to-end worker enforcement | The 485-date manifest is correct, but worker-local Phase3CM splitting and chunk-04 recovery workers remain reachable; split repair is partial at runtime boundaries |
 | Candidate authority converged | Legacy hardcoded pools and parquet schema feasibility could reach proxy admission and evaluation without typed authorization | Legacy generators are proposal sources only; every candidate receives a UnifiedCapabilityRegistry + TypedRouteCompiler receipt before admission, and Phase3CN verifies the exact receipt hash before train feedback |
-| Global split enforcement converged | Formal workers and recovery could derive or omit local split roles before final normalization | The fixed 485-date manifest is mandatory for direct, serial, parallel, retry, recovery and exact merge; worker-local splitting is removed, unknown dates and 2026 fail closed, and 1/2/4-worker parity has zero error |
+| Global split enforcement partially converged | Formal workers and recovery could derive or omit local split roles before final normalization | The fixed 485-date manifest is mandatory and worker-local splitting is removed, but actual 1/2/4-worker replay exposed shard-local cross-sectional portfolio non-equivalence with max error 12.0; shard-parallel and formal chunk recovery now fail closed while candidate-parallel remains supported |
 
 ## Active lineage
 
@@ -81,7 +81,8 @@ shard-local split repair
   -> challenge eligibility fail-closed correction / no challenge opened
   -> runtime authority and worker split reachability mismatch confirmed
   -> immutable pre-admission candidate receipt gate
-  -> fixed-manifest worker / recovery / exact-merge convergence
-  -> 1/2/4 worker and frozen historical legal-candidate parity passed
-  -> engineering-qualified to apply for a separate development-only capability run
+  -> fixed-manifest direct / serial / candidate-parallel convergence
+  -> actual 1/2/4 shard-worker parity failed at max error 12.0
+  -> shard-parallel portfolio and formal recovery fail closed
+  -> global cross-section exact merge required before engineering qualification
 ```
