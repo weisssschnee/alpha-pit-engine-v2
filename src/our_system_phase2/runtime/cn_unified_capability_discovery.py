@@ -269,13 +269,21 @@ def _evaluate_active_candidates(frame: pd.DataFrame, candidates: Sequence[dict[s
         if route_id == "INTRADAY_STATE_TRANSITION" and candidate["is_matched_control"]:
             continue
         signal = pd.to_numeric(
-            evaluate_panel_expression(frame, _raw_expression(candidate["canonical_expression"])), errors="coerce"
+            evaluate_panel_expression(
+                frame,
+                _raw_expression(candidate["canonical_expression"]),
+                data_role="development",
+            ), errors="coerce"
         ).to_numpy(dtype=float)
         cache[candidate_id] = signal
         if route_id == "INTRADAY_STATE_TRANSITION":
             control = by_id[candidate["matched_control_id"]]
             control_signal = pd.to_numeric(
-                evaluate_panel_expression(frame, _raw_expression(control["canonical_expression"])), errors="coerce"
+                evaluate_panel_expression(
+                    frame,
+                    _raw_expression(control["canonical_expression"]),
+                    data_role="development",
+                ), errors="coerce"
             ).to_numpy(dtype=float)
             mask = np.isfinite(signal) & (np.abs(signal) > 1e-12)
             for row, values in ((candidate, signal), (control, control_signal)):
@@ -528,13 +536,21 @@ def _stream_full_active_evidence(
             for candidate in active_noncontrol:
                 route_id = candidate["route_id"]
                 values = pd.to_numeric(
-                    evaluate_panel_expression(frame, _raw_expression(candidate["canonical_expression"])), errors="coerce"
+                    evaluate_panel_expression(
+                        frame,
+                        _raw_expression(candidate["canonical_expression"]),
+                        data_role="development",
+                    ), errors="coerce"
                 ).to_numpy(dtype=float)
                 if route_id == "INTRADAY_STATE_TRANSITION":
                     mask = np.isfinite(values) & (np.abs(values) > 1e-12)
                     control = by_id[candidate["matched_control_id"]]
                     control_values = pd.to_numeric(
-                        evaluate_panel_expression(frame, _raw_expression(control["canonical_expression"])), errors="coerce"
+                        evaluate_panel_expression(
+                            frame,
+                            _raw_expression(control["canonical_expression"]),
+                            data_role="development",
+                        ), errors="coerce"
                     ).to_numpy(dtype=float)
                     for row, signal_values in ((candidate, values), (control, control_values)):
                         cid = row["candidate_id"]

@@ -91,10 +91,15 @@ class RegistryDrivenGenerator:
 
         if route_id == "MINUTE_STATIC":
             field = _pick(raw, index, seed, route_id)
-            candidate_expression = f"CSRank(ZScore(${field.field_id}))"
+            interaction = _pick(raw, index, seed, "minute_static_interaction")
+            if interaction.field_id == field.field_id:
+                interaction = _pick(raw, index + 1, seed, "minute_static_interaction_fallback")
+            candidate_expression = (
+                f"CSRank(Add(ZScore(${field.field_id}),ZScore(${interaction.field_id})))"
+            )
             control_expression = f"CSRank(${field.field_id})"
-            operator = "CSRank"
-            declared = [field.field_id]
+            operator = "Arithmetic"
+            declared = [field.field_id, interaction.field_id]
             extra: dict[str, Any] = {}
             conditions: list[str] = []
         elif route_id == "FIRSTN_PATH":
@@ -112,7 +117,7 @@ class RegistryDrivenGenerator:
             pool = self._pool(route_id, lambda row: row.entity_scope == "STOCK")
             field = _pick(pool, index, seed, route_id)
             candidate_expression = f"CSRank(${field.field_id})"
-            control_expression = f"MaskedZScore(${field.field_id},60,0.6)"
+            control_expression = f"CSRank(Sign(${field.field_id}))"
             operator = "CSRank"
             declared = [field.field_id]
             extra = {}

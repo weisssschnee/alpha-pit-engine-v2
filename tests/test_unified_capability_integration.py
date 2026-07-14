@@ -4,10 +4,14 @@ import csv
 import json
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import pytest
 
 from scripts.build_unified_capability_registry import build
-from our_system_phase2.runtime.cn_unified_capability_discovery import _apply_metrics
+from our_system_phase2.runtime.cn_unified_capability_discovery import _apply_metrics, _raw_expression
+from our_system_phase2.services.real_market_validation import evaluate_panel_expression
+from our_system_phase2.services.typed_primitive_gate import expression_fields
 from our_system_phase2.services.search_exposure_ledger import SearchExposureLedger
 from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
 from our_system_phase2.services.unified_capability_registry import (
@@ -214,3 +218,45 @@ def test_zero_reward_is_valid_and_broad_event_uses_frozen_route_seeds() -> None:
     ).read_text(encoding="utf-8")
     assert "broad_seed_by_name" in runner
     assert "seeds=[1729, 2718]" not in runner
+
+
+def test_generated_intraday_expressions_execute_on_a_synthetic_panel(
+    built_registry: tuple[Path, dict[str, object]],
+) -> None:
+    output, _ = built_registry
+    registry = UnifiedCapabilityRegistry.read(output / "unified_capability_registry.json")
+    generator = RegistryDrivenGenerator(registry)
+    routes = (
+        "MINUTE_STATIC",
+        "FIRSTN_PATH",
+        "MARKET_REGIME_CONDITION",
+        "INTRADAY_STATE_TRANSITION",
+    )
+    generated = [
+        row
+        for index, route_id in enumerate(routes)
+        for row in generator.generate_route(route_id, proposal_budget=2, seed=4000 + index)
+    ]
+    codes = [f"{index:06d}" for index in range(1, 31)]
+    times = pd.date_range("2025-04-01 09:31:00", periods=12, freq="min")
+    frame = pd.DataFrame(
+        [(code, timestamp) for code in codes for timestamp in times],
+        columns=["code", "trade_time"],
+    ).sort_values(["code", "trade_time"], kind="mergesort").reset_index(drop=True)
+    rng = np.random.default_rng(20260714)
+    for field_id in sorted(
+        {
+            field_id
+            for row in generated
+            for field_id in expression_fields(row["canonical_expression"])
+        }
+    ):
+        frame[field_id] = rng.normal(size=len(frame))
+    frame["date"] = frame["trade_time"]
+    for row in generated:
+        values = evaluate_panel_expression(
+            frame,
+            _raw_expression(row["canonical_expression"]),
+            data_role="development",
+        )
+        assert len(values) == len(frame)
