@@ -1,0 +1,9 @@
+﻿{
+    "repo_sha":  "6d49be00f5c1e31bbbf4b161979bb9ce953142e7",
+    "exit_code":  1,
+    "output_root":  "D:\\ChengboRemote\\runtime\\cn_unified_capability_6d49be0\\execution",
+    "pid":  29588,
+    "error":  "unified discovery failed: 1",
+    "status":  "FAILED",
+    "completed_at":  "2026-07-14T14:11:09.0818587+08:00"
+}

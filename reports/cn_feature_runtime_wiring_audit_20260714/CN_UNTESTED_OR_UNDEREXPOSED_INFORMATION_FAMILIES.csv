@@ -1,0 +1,11 @@
+source_family,qualified_representation_count,search_eligible_count,proposal_exposure_count,strict_exposure_count,survivor_count,status
+canonical_fundamental_business_composition_concentration,1,0,0,0,0,BLOCKED_NOT_SEARCH_ELIGIBLE
+canonical_fundamental_capital_investment,17,17,8,6,2,UNDEREXPOSED
+canonical_fundamental_growth,38,38,18,6,0,UNDEREXPOSED
+canonical_fundamental_leverage,10,10,4,2,0,UNDEREXPOSED
+canonical_fundamental_liquidity_solvency,14,14,10,0,0,UNDEREXPOSED
+canonical_fundamental_profitability,23,23,16,2,0,UNDEREXPOSED
+canonical_fundamental_size,4,4,2,0,0,UNDEREXPOSED
+canonical_fundamental_working_capital,15,15,12,2,0,UNDEREXPOSED
+event_state,13,0,0,0,0,BLOCKED_NOT_SEARCH_ELIGIBLE
+metadata,7,0,0,0,0,BLOCKED_NOT_SEARCH_ELIGIBLE

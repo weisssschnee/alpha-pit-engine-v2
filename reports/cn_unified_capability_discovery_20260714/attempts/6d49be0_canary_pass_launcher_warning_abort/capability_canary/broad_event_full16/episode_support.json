@@ -1,0 +1,161 @@
+{
+  "episode_count": 1655645,
+  "operational_sources": [
+    "BILLBOARD_CHANGE",
+    "CHIP_STRUCTURE_CHANGE",
+    "HOLDER_STRUCTURE_CHANGE",
+    "HOTNESS_CHANGE",
+    "LIMIT_UP_LIFECYCLE",
+    "MARGIN_FINANCING_CHANGE",
+    "MARKET_ECOLOGY_TRANSITION",
+    "VENDOR_LIMIT_OCCURRENCE"
+  ],
+  "row_count_used_as_effective_sample_size": false,
+  "source_reports": {
+    "BILLBOARD_CHANGE": {
+      "checks": {
+        "date_count": true,
+        "episode_count": true,
+        "one_episode_one_vote": true,
+        "single_date_concentration": true,
+        "single_symbol_concentration": true,
+        "symbol_count": true
+      },
+      "date_count": 361,
+      "decision": "SUPPORT_PASS",
+      "episode_count": 7187,
+      "inference_unit": "symbol-day",
+      "symbol_count": 1800,
+      "top_date_share": 0.004591623765131487,
+      "top_symbol_share": 0.00626130513427021
+    },
+    "CHIP_STRUCTURE_CHANGE": {
+      "checks": {
+        "date_count": true,
+        "episode_count": true,
+        "one_episode_one_vote": true,
+        "single_date_concentration": true,
+        "single_symbol_concentration": true,
+        "symbol_count": true
+      },
+      "date_count": 284,
+      "decision": "SUPPORT_PASS",
+      "episode_count": 437940,
+      "inference_unit": "symbol-day",
+      "symbol_count": 5131,
+      "top_date_share": 0.007062611316618715,
+      "top_symbol_share": 0.0005366031876512764
+    },
+    "HOLDER_STRUCTURE_CHANGE": {
+      "checks": {
+        "date_count": true,
+        "episode_count": true,
+        "one_episode_one_vote": true,
+        "single_date_concentration": true,
+        "single_symbol_concentration": true,
+        "symbol_count": true
+      },
+      "date_count": 208,
+      "decision": "SUPPORT_PASS",
+      "episode_count": 1210,
+      "inference_unit": "symbol-day",
+      "symbol_count": 788,
+      "top_date_share": 0.05950413223140496,
+      "top_symbol_share": 0.0049586776859504135
+    },
+    "HOTNESS_CHANGE": {
+      "checks": {
+        "date_count": true,
+        "episode_count": true,
+        "one_episode_one_vote": true,
+        "single_date_concentration": true,
+        "single_symbol_concentration": true,
+        "symbol_count": true
+      },
+      "date_count": 362,
+      "decision": "SUPPORT_PASS",
+      "episode_count": 2161,
+      "inference_unit": "symbol-day",
+      "symbol_count": 361,
+      "top_date_share": 0.004627487274409995,
+      "top_symbol_share": 0.026376677464136973
+    },
+    "LIMIT_UP_LIFECYCLE": {
+      "checks": {
+        "date_count": true,
+        "episode_count": true,
+        "one_episode_one_vote": true,
+        "single_date_concentration": true,
+        "single_symbol_concentration": true,
+        "symbol_count": true
+      },
+      "date_count": 317,
+      "decision": "SUPPORT_PASS",
+      "episode_count": 996,
+      "inference_unit": "lifecycle_episode",
+      "symbol_count": 799,
+      "top_date_share": 0.030120481927710843,
+      "top_symbol_share": 0.0050200803212851405
+    },
+    "MARGIN_FINANCING_CHANGE": {
+      "checks": {
+        "date_count": true,
+        "episode_count": true,
+        "one_episode_one_vote": true,
+        "single_date_concentration": true,
+        "single_symbol_concentration": true,
+        "symbol_count": true
+      },
+      "date_count": 362,
+      "decision": "SUPPORT_PASS",
+      "episode_count": 1204720,
+      "inference_unit": "symbol-day",
+      "symbol_count": 3484,
+      "top_date_share": 0.002840494056710273,
+      "top_symbol_share": 0.00030048475994421943
+    },
+    "MARKET_ECOLOGY_TRANSITION": {
+      "checks": {
+        "date_count": true,
+        "episode_count": true,
+        "one_episode_one_vote": true,
+        "single_date_concentration": true,
+        "single_symbol_concentration": true,
+        "symbol_count": true
+      },
+      "date_count": 362,
+      "decision": "SUPPORT_PASS",
+      "episode_count": 362,
+      "inference_unit": "market-time block",
+      "symbol_count": 0,
+      "top_date_share": 0.0027624309392265192,
+      "top_symbol_share": null
+    },
+    "VENDOR_LIMIT_OCCURRENCE": {
+      "checks": {
+        "date_count": true,
+        "episode_count": true,
+        "one_episode_one_vote": true,
+        "single_date_concentration": true,
+        "single_symbol_concentration": true,
+        "symbol_count": true
+      },
+      "date_count": 330,
+      "decision": "SUPPORT_PASS",
+      "episode_count": 1069,
+      "inference_unit": "symbol-day occurrence episode",
+      "symbol_count": 843,
+      "top_date_share": 0.028999064546304958,
+      "top_symbol_share": 0.004677268475210477
+    }
+  },
+  "thresholds": {
+    "max_single_date_share": 0.25,
+    "max_single_symbol_share": 0.2,
+    "min_market_block_count": 10,
+    "min_symbol_count": 10,
+    "min_symbol_date_count": 10,
+    "min_symbol_episode_count": 30
+  },
+  "version": "cn_broad_event_episode_system_v1"
+}

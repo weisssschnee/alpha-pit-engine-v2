@@ -34,6 +34,10 @@ Updated: 2026-07-14
 | Shared-backbone seed design executed | Seed sensitivity was judged mainly from exact pack overlap | An 8,192-identity shared backbone has rank correlation 1.0 and near-perfect cluster stability; the strict pack three-way Jaccard is 0.8488 |
 | Epoch-C global uniqueness defect recorded | Per-seed exact uniqueness was assumed to imply 32,768 global unique proposals | Cross-seed union found 29 RX overlaps; the run remains 32,739 / 32,768 and a seed-namespace guard now fails future regressions |
 | Sprint-2 closed partial | Strong development results could trigger an automatic forward pack or Epoch-D | Exact-budget fidelity fails and state matched-static increment is absent; Event was not executed, so no Event value conclusion is allowed; no forward pack, promotion, memory update or Epoch-D |
+| Unified capability discovery executed | Fundamental, Event and typed state infrastructure had no common development runtime evidence | Eight routes received non-zero proposal and strict evidence across two seeds; 232 candidates and 7 survivors were recorded per seed without validation, holdout, 2026, promotion or persistent memory |
+| Challenge eligibility superseded | Any shared exact survivor, including frozen replay, could set `qualified_to_apply_for_independent_challenge=true` | Four shared exact survivors are all old frozen Broad Event replays; current code requires a non-frozen cross-seed reproduction and no challenge is open |
+| Feature runtime authority mismatch confirmed | The unified registry could be mistaken for the active Phase3GA/CM/CN field authority | Unified registry/compiler govern only unified discovery; active Phase3DV/Phase3CP still use hardcoded/schema-derived fields, so formal search remains frozen pending runtime convergence |
+| Global split runtime reachability re-audited | Final exact fixed-manifest normalization could be mistaken for end-to-end worker enforcement | The 485-date manifest is correct, but worker-local Phase3CM splitting and chunk-04 recovery workers remain reachable; split repair is partial at runtime boundaries |
 
 ## Active lineage
 
@@ -69,4 +73,9 @@ shard-local split repair
   -> 1,227-field PIT fundamental universe and versioned sidecar manifest
   -> development-only session as-of resolver / lazy typed adapter / no search
   -> business composition clock and historical revision tape remain unresolved
+  -> 282-representation unified registry / eight typed routes
+  -> two-seed unified development discovery / 232 candidates and 7 survivors per seed
+  -> four shared exact survivors classified as old frozen Event replay only
+  -> challenge eligibility fail-closed correction / no challenge opened
+  -> runtime authority and worker split reachability mismatch confirmed
 ```

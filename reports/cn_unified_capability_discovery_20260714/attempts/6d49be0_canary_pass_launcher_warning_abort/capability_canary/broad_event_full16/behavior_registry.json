@@ -1,0 +1,619 @@
+{
+  "absolute_correlation_threshold": 0.95,
+  "behaviors": [
+    {
+      "activation_count": 7187,
+      "behavior_cluster_id": "10c61ec940c0a1acc42f",
+      "behavior_key": "BILLBOARD_CHANGE|event_conditioned|direction|compressed",
+      "behavior_support": 7187,
+      "exact_behavior_id": "020c095e719f73602e324a73",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 7187,
+      "behavior_cluster_id": "10c61ec940c0a1acc42f",
+      "behavior_key": "BILLBOARD_CHANGE|event_conditioned|direction|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "020c095e719f73602e324a73",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 7187,
+      "behavior_cluster_id": "a0677915d1f6f3b4d98c",
+      "behavior_key": "BILLBOARD_CHANGE|event_conditioned|intensity|compressed",
+      "behavior_support": 7187,
+      "exact_behavior_id": "0e12c0e346e44c6cf2d2a3aa",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 7187,
+      "behavior_cluster_id": "3a85e141fb442ff5af20",
+      "behavior_key": "BILLBOARD_CHANGE|event_conditioned|intensity|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "e200967321fcb8a935dbffd3",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 6970,
+      "behavior_cluster_id": "25d984a1e217c117d124",
+      "behavior_key": "BILLBOARD_CHANGE|event_conditioned|pre15_interaction|compressed",
+      "behavior_support": 7187,
+      "exact_behavior_id": "b9b2a58ac286257794f3a70a",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 6970,
+      "behavior_cluster_id": "398cda65b6b69c7fca5b",
+      "behavior_key": "BILLBOARD_CHANGE|event_conditioned|pre15_interaction|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "42a8d3d1ef309f5d54d130d3",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 6957,
+      "behavior_cluster_id": "a4983627b2175069abfb",
+      "behavior_key": "BILLBOARD_CHANGE|event_conditioned|pre5_interaction|compressed",
+      "behavior_support": 7187,
+      "exact_behavior_id": "f3f27c9321a8506ac0399968",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 6957,
+      "behavior_cluster_id": "a4983627b2175069abfb",
+      "behavior_key": "BILLBOARD_CHANGE|event_conditioned|pre5_interaction|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "5489f3a907c66811a47cfaba",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 6957,
+      "behavior_cluster_id": "7b373c652959921ab1d9",
+      "behavior_key": "BILLBOARD_CHANGE|static_control|fixed|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "b1dcef7b068df1f5f701c054",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 6957,
+      "behavior_cluster_id": "32cc66d748170320214a",
+      "behavior_key": "BILLBOARD_CHANGE|structural_control|direction|compressed",
+      "behavior_support": 7187,
+      "exact_behavior_id": "63a9fe3a71ff9658edb60d00",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 6957,
+      "behavior_cluster_id": "32cc66d748170320214a",
+      "behavior_key": "BILLBOARD_CHANGE|structural_control|direction|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "63a9fe3a71ff9658edb60d00",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 6893,
+      "behavior_cluster_id": "7b373c652959921ab1d9",
+      "behavior_key": "BILLBOARD_CHANGE|structural_control|intensity|compressed",
+      "behavior_support": 7187,
+      "exact_behavior_id": "c8528bc8aede69e989c86c67",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 6893,
+      "behavior_cluster_id": "7b373c652959921ab1d9",
+      "behavior_key": "BILLBOARD_CHANGE|structural_control|intensity|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "5796b621a7d86dc2f1dad4ab",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 6970,
+      "behavior_cluster_id": "7b373c652959921ab1d9",
+      "behavior_key": "BILLBOARD_CHANGE|structural_control|pre15_interaction|compressed",
+      "behavior_support": 7187,
+      "exact_behavior_id": "1eb53a804a67c4c7f288f1d8",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 6970,
+      "behavior_cluster_id": "7b373c652959921ab1d9",
+      "behavior_key": "BILLBOARD_CHANGE|structural_control|pre15_interaction|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "479ca4a9edfb2f3597bb15b9",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 6957,
+      "behavior_cluster_id": "7b373c652959921ab1d9",
+      "behavior_key": "BILLBOARD_CHANGE|structural_control|pre5_interaction|compressed",
+      "behavior_support": 7187,
+      "exact_behavior_id": "55c41b850935e9bb1053e2c7",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 6957,
+      "behavior_cluster_id": "7b373c652959921ab1d9",
+      "behavior_key": "BILLBOARD_CHANGE|structural_control|pre5_interaction|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "b1dcef7b068df1f5f701c054",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 4356,
+      "behavior_cluster_id": "f8b5fe26346145c184da",
+      "behavior_key": "BILLBOARD_CHANGE|temporal_control|fixed|raw",
+      "behavior_support": 7187,
+      "exact_behavior_id": "9aa3a8ce2e9c6684eb9064cf",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 437940,
+      "behavior_cluster_id": "a21925c65de2a53faaab",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|event_conditioned|direction|compressed",
+      "behavior_support": 437940,
+      "exact_behavior_id": "343104cb9bac9a4b609abfc7",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 437940,
+      "behavior_cluster_id": "a21925c65de2a53faaab",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|event_conditioned|direction|raw",
+      "behavior_support": 437940,
+      "exact_behavior_id": "343104cb9bac9a4b609abfc7",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 437940,
+      "behavior_cluster_id": "cf9076456952aa889b48",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|event_conditioned|intensity|compressed",
+      "behavior_support": 437940,
+      "exact_behavior_id": "d964cdb5292dc32ef74121a7",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 437940,
+      "behavior_cluster_id": "b5ab00a1248b92e60140",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|event_conditioned|intensity|raw",
+      "behavior_support": 437940,
+      "exact_behavior_id": "b5f34d49c0e33a1193a8447d",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 407878,
+      "behavior_cluster_id": "89396217485d0f95605f",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|event_conditioned|pre15_interaction|compressed",
+      "behavior_support": 437937,
+      "exact_behavior_id": "9b22a15d035828599543c9d1",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 407878,
+      "behavior_cluster_id": "5aff8d775a3e5c5fed78",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|event_conditioned|pre15_interaction|raw",
+      "behavior_support": 437937,
+      "exact_behavior_id": "9ccaeebd3aa38fb12244655c",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 402019,
+      "behavior_cluster_id": "dd4e3ade778c057a8de4",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|event_conditioned|pre5_interaction|compressed",
+      "behavior_support": 437937,
+      "exact_behavior_id": "757b1f5fb4de99be23befb2d",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 402019,
+      "behavior_cluster_id": "dd4e3ade778c057a8de4",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|event_conditioned|pre5_interaction|raw",
+      "behavior_support": 437937,
+      "exact_behavior_id": "8ed9ab94b9caa3336f7e7470",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 402019,
+      "behavior_cluster_id": "6d7fb1867832eafa30b1",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|static_control|fixed|raw",
+      "behavior_support": 437937,
+      "exact_behavior_id": "4c1cb06268a947fc4a5bd822",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 402019,
+      "behavior_cluster_id": "e26b4f05ae8bef9eb3d9",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|structural_control|direction|compressed",
+      "behavior_support": 437937,
+      "exact_behavior_id": "bf1f8dd5418876f55ef43691",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 402019,
+      "behavior_cluster_id": "e26b4f05ae8bef9eb3d9",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|structural_control|direction|raw",
+      "behavior_support": 437937,
+      "exact_behavior_id": "bf1f8dd5418876f55ef43691",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 381665,
+      "behavior_cluster_id": "c1f24392d13b32daa99d",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|structural_control|intensity|compressed",
+      "behavior_support": 437937,
+      "exact_behavior_id": "76148322d21fd58c6925cf85",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 381665,
+      "behavior_cluster_id": "6d7fb1867832eafa30b1",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|structural_control|intensity|raw",
+      "behavior_support": 437937,
+      "exact_behavior_id": "563ce5724c5f48864117b88e",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 407878,
+      "behavior_cluster_id": "c1f24392d13b32daa99d",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|structural_control|pre15_interaction|compressed",
+      "behavior_support": 437937,
+      "exact_behavior_id": "fb94b35eed6bd8cfa90d7392",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 407878,
+      "behavior_cluster_id": "6d7fb1867832eafa30b1",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|structural_control|pre15_interaction|raw",
+      "behavior_support": 437937,
+      "exact_behavior_id": "a7a393a0a7fa5e22084968f1",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 402019,
+      "behavior_cluster_id": "37b9dc65443bc999d712",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|structural_control|pre5_interaction|compressed",
+      "behavior_support": 437937,
+      "exact_behavior_id": "aa18fc7a88f138dcbac071f4",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 402019,
+      "behavior_cluster_id": "6d7fb1867832eafa30b1",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|structural_control|pre5_interaction|raw",
+      "behavior_support": 437937,
+      "exact_behavior_id": "4c1cb06268a947fc4a5bd822",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 361565,
+      "behavior_cluster_id": "12942d39e535058b8147",
+      "behavior_key": "CHIP_STRUCTURE_CHANGE|temporal_control|fixed|raw",
+      "behavior_support": 437937,
+      "exact_behavior_id": "cef3e1d4ebf27a6b81b9ab38",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 2159,
+      "behavior_cluster_id": "bef82e39afbb058f6fdc",
+      "behavior_key": "HOTNESS_CHANGE|event_conditioned|direction|compressed",
+      "behavior_support": 2159,
+      "exact_behavior_id": "6af8c501ea4fa68b8c216c47",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 2159,
+      "behavior_cluster_id": "bef82e39afbb058f6fdc",
+      "behavior_key": "HOTNESS_CHANGE|event_conditioned|direction|raw",
+      "behavior_support": 2159,
+      "exact_behavior_id": "6af8c501ea4fa68b8c216c47",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 2159,
+      "behavior_cluster_id": "e39015f1cfa0caa30cdd",
+      "behavior_key": "HOTNESS_CHANGE|event_conditioned|intensity|compressed",
+      "behavior_support": 2159,
+      "exact_behavior_id": "2067dd589464a90a2a1ca42a",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 2159,
+      "behavior_cluster_id": "f35d9887ace974436da4",
+      "behavior_key": "HOTNESS_CHANGE|event_conditioned|intensity|raw",
+      "behavior_support": 2159,
+      "exact_behavior_id": "39eec4533b4a5288889f9384",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 2106,
+      "behavior_cluster_id": "c3ab487960d3f9d22879",
+      "behavior_key": "HOTNESS_CHANGE|event_conditioned|pre15_interaction|compressed",
+      "behavior_support": 2159,
+      "exact_behavior_id": "5f41503878e07aa60089dcff",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 2106,
+      "behavior_cluster_id": "d91b5db76e75a13b7f62",
+      "behavior_key": "HOTNESS_CHANGE|event_conditioned|pre15_interaction|raw",
+      "behavior_support": 2159,
+      "exact_behavior_id": "9d491633707e9ae3f1884093",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 2108,
+      "behavior_cluster_id": "4db1238587aaa8eee0fb",
+      "behavior_key": "HOTNESS_CHANGE|event_conditioned|pre5_interaction|compressed",
+      "behavior_support": 2159,
+      "exact_behavior_id": "1e0b0323a50f986a8799bb9f",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 2108,
+      "behavior_cluster_id": "4db1238587aaa8eee0fb",
+      "behavior_key": "HOTNESS_CHANGE|event_conditioned|pre5_interaction|raw",
+      "behavior_support": 2159,
+      "exact_behavior_id": "9973444f959512c006e70f43",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 2110,
+      "behavior_cluster_id": "b3e546160218ea3fb434",
+      "behavior_key": "HOTNESS_CHANGE|static_control|fixed|raw",
+      "behavior_support": 2161,
+      "exact_behavior_id": "b77f9f942ee314411c928a88",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 2110,
+      "behavior_cluster_id": "ddccbf6b07527801f1ea",
+      "behavior_key": "HOTNESS_CHANGE|structural_control|direction|compressed",
+      "behavior_support": 2161,
+      "exact_behavior_id": "bb9a281588cc92f6fc1790af",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 2110,
+      "behavior_cluster_id": "ddccbf6b07527801f1ea",
+      "behavior_key": "HOTNESS_CHANGE|structural_control|direction|raw",
+      "behavior_support": 2161,
+      "exact_behavior_id": "bb9a281588cc92f6fc1790af",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 2089,
+      "behavior_cluster_id": "dc2fea4b2c8fb2581f14",
+      "behavior_key": "HOTNESS_CHANGE|structural_control|intensity|compressed",
+      "behavior_support": 2161,
+      "exact_behavior_id": "6d7ecd35c4e06796b9bc85c9",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 2089,
+      "behavior_cluster_id": "b3e546160218ea3fb434",
+      "behavior_key": "HOTNESS_CHANGE|structural_control|intensity|raw",
+      "behavior_support": 2161,
+      "exact_behavior_id": "ed57669ae9e670c66ff4b624",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 2108,
+      "behavior_cluster_id": "dc2fea4b2c8fb2581f14",
+      "behavior_key": "HOTNESS_CHANGE|structural_control|pre15_interaction|compressed",
+      "behavior_support": 2161,
+      "exact_behavior_id": "4604ece531417a3c0668b039",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 2108,
+      "behavior_cluster_id": "b3e546160218ea3fb434",
+      "behavior_key": "HOTNESS_CHANGE|structural_control|pre15_interaction|raw",
+      "behavior_support": 2161,
+      "exact_behavior_id": "ba6b68bce7fc30cdcbf79b8c",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 2110,
+      "behavior_cluster_id": "dc2fea4b2c8fb2581f14",
+      "behavior_key": "HOTNESS_CHANGE|structural_control|pre5_interaction|compressed",
+      "behavior_support": 2161,
+      "exact_behavior_id": "9d9d92f01af0e9bedec55bab",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 2110,
+      "behavior_cluster_id": "b3e546160218ea3fb434",
+      "behavior_key": "HOTNESS_CHANGE|structural_control|pre5_interaction|raw",
+      "behavior_support": 2161,
+      "exact_behavior_id": "b77f9f942ee314411c928a88",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 1470,
+      "behavior_cluster_id": "74bc368bf8dacb2297c4",
+      "behavior_key": "HOTNESS_CHANGE|temporal_control|fixed|raw",
+      "behavior_support": 2161,
+      "exact_behavior_id": "24e2209bc5083e0f7fada3bd",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "c196640664d93bc1fee2",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|event_conditioned|direction|compressed",
+      "behavior_support": 362,
+      "exact_behavior_id": "3fbfdd5f705ad4350bd8647a",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "c196640664d93bc1fee2",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|event_conditioned|direction|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "3fbfdd5f705ad4350bd8647a",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "0227a2f58cb9eed8a244",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|event_conditioned|intensity|compressed",
+      "behavior_support": 362,
+      "exact_behavior_id": "9234775f8907793db0079fe7",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "0227a2f58cb9eed8a244",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|event_conditioned|intensity|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "78c614ef7ddb5854fb8315f9",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "747104674549be2ebcd9",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|event_conditioned|pre15_interaction|compressed",
+      "behavior_support": 362,
+      "exact_behavior_id": "9aba74afbec3ccf15e191e37",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "747104674549be2ebcd9",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|event_conditioned|pre15_interaction|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "c12a30103ade0e941a7a34aa",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "4d64e6e3b95e17778ecc",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|event_conditioned|pre5_interaction|compressed",
+      "behavior_support": 362,
+      "exact_behavior_id": "275038aa2f39111d37e782d8",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "4d64e6e3b95e17778ecc",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|event_conditioned|pre5_interaction|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "275038aa2f39111d37e782d8",
+      "new_vs_matched_controls": true
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "36c063e8c30e70ad4029",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|static_control|fixed|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "c5397b6aa0c8a773f9034593",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "039e5b054c8661d51df4",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|structural_control|direction|compressed",
+      "behavior_support": 362,
+      "exact_behavior_id": "547df93a31c727c693d30134",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "039e5b054c8661d51df4",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|structural_control|direction|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "547df93a31c727c693d30134",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "675c83124ce4fbdd301b",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|structural_control|intensity|compressed",
+      "behavior_support": 362,
+      "exact_behavior_id": "d7039f472562328090e8fed4",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "36c063e8c30e70ad4029",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|structural_control|intensity|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "823ce3ae0b4e20cbe67a01e6",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "675c83124ce4fbdd301b",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|structural_control|pre15_interaction|compressed",
+      "behavior_support": 362,
+      "exact_behavior_id": "e65a24f8be18bf169e7e2b29",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "36c063e8c30e70ad4029",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|structural_control|pre15_interaction|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "afda297345c7015da126d922",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "6b409dedc6a048035675",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|structural_control|pre5_interaction|compressed",
+      "behavior_support": 362,
+      "exact_behavior_id": "2b015a4262f4b29f83613e9b",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "36c063e8c30e70ad4029",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|structural_control|pre5_interaction|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "c5397b6aa0c8a773f9034593",
+      "new_vs_matched_controls": false
+    },
+    {
+      "activation_count": 362,
+      "behavior_cluster_id": "642aa48be0ff7457e127",
+      "behavior_key": "MARKET_ECOLOGY_TRANSITION|temporal_control|fixed|raw",
+      "behavior_support": 362,
+      "exact_behavior_id": "bfd6a1d4776ed4b6157d3b2f",
+      "new_vs_matched_controls": false
+    }
+  ],
+  "canonical_mechanism_ids_used_as_behavior_clusters": false,
+  "cluster_scope": "within_event_source_on_episode_coordinates",
+  "minimum_common_episode_count": 30,
+  "source_reports": {
+    "BILLBOARD_CHANGE": {
+      "behavior_cluster_count": 9,
+      "behavior_spec_count": 18,
+      "episode_count": 7187,
+      "event_behavior_cluster_count": 6,
+      "event_new_vs_control_cluster_count": 6,
+      "exact_behavior_count": 15
+    },
+    "CHIP_STRUCTURE_CHANGE": {
+      "behavior_cluster_count": 11,
+      "behavior_spec_count": 18,
+      "episode_count": 437940,
+      "event_behavior_cluster_count": 6,
+      "event_new_vs_control_cluster_count": 6,
+      "exact_behavior_count": 15
+    },
+    "HOTNESS_CHANGE": {
+      "behavior_cluster_count": 10,
+      "behavior_spec_count": 18,
+      "episode_count": 2161,
+      "event_behavior_cluster_count": 6,
+      "event_new_vs_control_cluster_count": 6,
+      "exact_behavior_count": 15
+    },
+    "MARKET_ECOLOGY_TRANSITION": {
+      "behavior_cluster_count": 9,
+      "behavior_spec_count": 18,
+      "episode_count": 362,
+      "event_behavior_cluster_count": 4,
+      "event_new_vs_control_cluster_count": 4,
+      "exact_behavior_count": 14
+    }
+  },
+  "version": "cn_broad_event_behavior_registry_v1"
+}

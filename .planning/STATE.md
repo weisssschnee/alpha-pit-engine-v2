@@ -2,7 +2,7 @@
 
 Updated: 2026-07-14
 
-Current state: `CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED`
+Current state: `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`
 
 ## Accepted foundations
 
@@ -22,6 +22,37 @@ Current state: `CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED`
 - `BROAD_EVENT_DISCOVERY_ENTRY_AUTHORIZED`
 - `CN_BROAD_EVENT_SYSTEM_RECOVERY_COMPLETED_DISCOVERY_ELIGIBLE`
 - `CN_PIT_FUNDAMENTAL_FABRIC_PARTIALLY_COMPLETED`
+- `CN_UNIFIED_CAPABILITY_DISCOVERY_COMPLETED_DEVELOPMENT_ONLY`
+- `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`
+- `UNIFIED_DISCOVERY_CHALLENGE_ELIGIBILITY_SUPERSEDED`
+
+## Runtime wiring audit result
+
+The independent non-performance audit inventories 1,348 physical/source
+fields (121 versioned true1min fields plus 1,227 fundamental source fields),
+282 candidate-visible representations and eight typed routes. All nine planted
+capability cases pass their positive, matched-control, future-revision and
+metadata-misuse checks.
+
+The unified path is operational but is not the authority for the active legacy
+search chain. `RegistryDrivenGenerator` and `TypedRouteCompiler` govern unified
+preflight/discovery, while the current `Phase3GA -> Phase3CM -> Phase3CN` path
+still uses Phase3DV hardcoded pools and physical-schema filtering. Formal
+search remains frozen until candidate submission requires a unified registry
+and typed-compiler receipt.
+
+The completed two-seed unified run produced 232 candidate rows and 7 survivors
+per seed. Its four shared exact survivors are all old frozen Broad Event
+replays. They prove replay reproducibility, not new capability discovery. The
+historical `qualified_to_apply_for_independent_challenge=true` boolean is
+superseded; current code requires a non-frozen cross-seed reproduction. No
+challenge was opened and no frozen Event pack was rewritten.
+
+The 485-date global manifest remains correct (364 train, 73 validation, 48
+holdout), and final exact normalization uses it. Runtime enforcement is still
+partial because Phase3CM worker-local splitting and the chunk-04 recovery
+worker path remain reachable before or without final fixed-manifest
+normalization.
 
 Phase A conclusions remain unchanged: generation structural redundancy exists,
 but catastrophic signal-level collapse and downstream concentration
@@ -131,20 +162,23 @@ No forward-authorization candidate pack was created.
   reward, admission, scheduler, family decisions and memory.
 - Plate/industry remains user-deferred and disabled.
 - Broad Event semantics, multi-source episodes, matched controls and CANARY are
-  complete. Its discovery entry pack remains byte-for-byte frozen; this task
-  did not consume it or authorize candidate discovery.
-- All 1,227 fundamental source fields remain outside formal generator exposure,
-  reward, admission, scheduler and memory.
+  complete. Its byte-for-byte frozen entry pack was replayed by the unified
+  development-only run; it was not modified, promoted or written to memory.
+- All 1,227 raw fundamental source fields remain outside direct generator
+  exposure. The 147 canonical representations are available only through the
+  unified development runner; they do not enter legacy Phase3GA/CM/CN.
 - Sprint-2 selector, RX values and strict results are archived evidence, not
   persistent positive or negative memory.
 - Epoch-D remains unrun. No fundamental performance experiment has been run.
 
 ## Next formal decision point
 
-Recommendation: `RESOLVE_FUNDAMENTAL_SOURCE_CLOCK_AND_REVISION_GAPS`.
+Recommendation: `CONVERGE_RUNTIME_AUTHORITY_BEFORE_ANY_NEW_SEARCH`.
 
-The next decision is whether to acquire a trustworthy business-composition
-disclosure clock and a true historical statement revision tape. Until then,
-the safe statement/holder routes remain infrastructure-only, the 17 unresolved
-business-composition fields stay blocked, formal search stays frozen and the
-Broad Event discovery pack remains unchanged.
+The next engineering decision is to require every candidate entering the
+legacy evaluator to carry a frozen UnifiedCapabilityRegistry and
+TypedRouteCompiler receipt, then eliminate worker-local/manifest-optional split
+paths. After a non-performance wiring preflight passes, a separately authorized
+development-only run may be considered. Business composition remains
+`PIT_CONTRACT_UNRESOLVED`, plate/industry remains disabled, formal search stays
+frozen and 2026 stays sealed.

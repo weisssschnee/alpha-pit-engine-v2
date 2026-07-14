@@ -1,0 +1,7 @@
+component,status,evidence,path,runtime_reachable
+FIXED_GLOBAL_MANIFEST,PASS,485 dates; train=364; validation=73; holdout=48,runtime\run_plans\phase3ga_true1min_2024_2025_global_split_manifest.csv,True
+PRIMARY_PHASE3GA_LAUNCHER,PASS,primary launcher passes the fixed manifest to Phase3CP,runtime\launchers\phase3ga_77o_semantic_efficiency_v2_20260710.ps1,True
+PHASE3CP_PARALLEL_GUARD,PASS,parallel path fails when manifest is absent; serial fallback can still omit it,src\our_system_phase2\runtime\phase3cp_real_cm_small_loop.py,True
+PHASE3CM_WORKER_LOCAL_SPLIT,FAIL_REACHABLE,"worker evaluation calls _split_map(full_signal_times, ...) before fixed-manifest normalization",src\our_system_phase2\runtime\phase3cm_train_portfolio_sortino_reward_audit.py:2882,True
+CHUNK04_RECOVERY_WORKERS,FAIL_REACHABLE,worker subprocess arguments omit --split-manifest; only the final exact merge receives it,runtime\launchers\phase3ga_recover_missing_chunk04_20260710.ps1,True
+FINAL_EXACT_NORMALIZATION,PASS_WITH_UPSTREAM_CAVEAT,fixed manifest is supplied to final exact merge and unknown manifest dates hard fail,src\our_system_phase2\runtime\phase3cm_train_portfolio_sortino_reward_audit.py,True

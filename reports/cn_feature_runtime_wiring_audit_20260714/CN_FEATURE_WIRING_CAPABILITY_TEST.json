@@ -1,0 +1,147 @@
+{
+  "access_roles": [
+    "source_registry",
+    "synthetic_only"
+  ],
+  "audit_version": "cn_feature_runtime_wiring_audit_v1",
+  "case_count": 9,
+  "cases": [
+    {
+      "case": "raw_minute",
+      "matched_control_id": "uc_minute_static_8100_00000_control",
+      "metadata_misuse_rejection_code": "PIT_UNQUALIFIED",
+      "performance_used": false,
+      "positive_candidate_id": "uc_minute_static_8100_00000",
+      "positive_exact_identity": "363294d225268bfb2776c7b4a7ef0435e655d0be76e61261af19cb899197d0b2",
+      "positive_field_ids": [
+        "amount",
+        "close"
+      ],
+      "route_id": "MINUTE_STATIC",
+      "status": "PASS",
+      "wrong_lag_rejection_code": "PIT_UNQUALIFIED"
+    },
+    {
+      "case": "firstN_intraday_path",
+      "matched_control_id": "uc_firstn_path_8101_00000_control",
+      "metadata_misuse_rejection_code": "PIT_UNQUALIFIED",
+      "performance_used": false,
+      "positive_candidate_id": "uc_firstn_path_8101_00000",
+      "positive_exact_identity": "093bccede2cab33ad8e9fe2162738c08d6d5cc8e95b713b5e0d655198b46b808",
+      "positive_field_ids": [
+        "low",
+        "m1_first15_range"
+      ],
+      "route_id": "FIRSTN_PATH",
+      "status": "PASS",
+      "wrong_lag_rejection_code": "PIT_UNQUALIFIED"
+    },
+    {
+      "case": "lagged_context",
+      "matched_control_id": "uc_slow_cross_sectional_level_8102_00001_control",
+      "metadata_misuse_rejection_code": "PIT_UNQUALIFIED",
+      "performance_used": false,
+      "positive_candidate_id": "uc_slow_cross_sectional_level_8102_00001",
+      "positive_exact_identity": "54f8ae4d5f93b09b3c0f958aac5ab1ab544937dffb083992e897f994ee3dc1cb",
+      "positive_field_ids": [
+        "ctx_hfq_ps_ttm"
+      ],
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "status": "PASS",
+      "wrong_lag_rejection_code": "PIT_UNQUALIFIED"
+    },
+    {
+      "case": "typed_event",
+      "matched_control_id": "uc_broad_event_frozen_entry_8103_00000_control",
+      "metadata_misuse_rejection_code": "PIT_UNQUALIFIED",
+      "performance_used": false,
+      "positive_candidate_id": "uc_broad_event_frozen_entry_8103_00000",
+      "positive_exact_identity": "b1d8a7412457c5446d3a4506310f045ae0cbd7742611097f71dbbc867e1d0895",
+      "positive_field_ids": [
+        "broad_event_9618ee1100155073"
+      ],
+      "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+      "status": "PASS",
+      "wrong_lag_rejection_code": "PIT_UNQUALIFIED"
+    },
+    {
+      "case": "intraday_state_transition",
+      "matched_control_id": "uc_intraday_state_transition_8104_00000_control",
+      "metadata_misuse_rejection_code": "PIT_UNQUALIFIED",
+      "performance_used": false,
+      "positive_candidate_id": "uc_intraday_state_transition_8104_00000",
+      "positive_exact_identity": "92866d6d81cfd2b65d707813b5651c0d59029c46b0ba0afbbc10f681f737633b",
+      "positive_field_ids": [
+        "intraday_ret_from_open",
+        "pct_chg",
+        "state_intraday_return_sign"
+      ],
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "status": "PASS",
+      "wrong_lag_rejection_code": "PIT_UNQUALIFIED"
+    },
+    {
+      "case": "fundamental_level",
+      "matched_control_id": "uc_slow_cross_sectional_level_8105_00000_control",
+      "metadata_misuse_rejection_code": "PIT_UNQUALIFIED",
+      "performance_used": false,
+      "positive_candidate_id": "uc_slow_cross_sectional_level_8105_00000",
+      "positive_exact_identity": "51228beb966a4666d436975e26e756aee007c2d6b79a0fdcc24ee7e718ed1f30",
+      "positive_field_ids": [
+        "fund_disclosure_cashflow_age_sessions"
+      ],
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "status": "PASS",
+      "wrong_lag_rejection_code": "PIT_UNQUALIFIED"
+    },
+    {
+      "case": "fundamental_change",
+      "matched_control_id": "uc_slow_temporal_change_8106_00000_control",
+      "metadata_misuse_rejection_code": "PIT_UNQUALIFIED",
+      "performance_used": false,
+      "positive_candidate_id": "uc_slow_temporal_change_8106_00000",
+      "positive_exact_identity": "1563d9e0cf6d5f9a8dddf3fdb14af5ba3d9277fe8f2d9851a18b8d20596ab669",
+      "positive_field_ids": [
+        "fund_pr_operate_profit_yoy"
+      ],
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "status": "PASS",
+      "wrong_lag_rejection_code": "PIT_UNQUALIFIED"
+    },
+    {
+      "case": "disclosure_event",
+      "matched_control_id": "uc_disclosure_event_8107_00000_control",
+      "metadata_misuse_rejection_code": "PIT_UNQUALIFIED",
+      "performance_used": false,
+      "positive_candidate_id": "uc_disclosure_event_8107_00000",
+      "positive_exact_identity": "e775a14653c8cbde005d28e5d85fb4c0b0bcff14ad83b3babf0edf80bddd0da8",
+      "positive_field_ids": [
+        "fund_disclosure_cashflow_pulse"
+      ],
+      "route_id": "DISCLOSURE_EVENT",
+      "status": "PASS",
+      "wrong_lag_rejection_code": "PIT_UNQUALIFIED"
+    },
+    {
+      "case": "market_regime",
+      "matched_control_id": "uc_market_regime_condition_8108_00000_control",
+      "metadata_misuse_rejection_code": "PIT_UNQUALIFIED",
+      "performance_used": false,
+      "positive_candidate_id": "uc_market_regime_condition_8108_00000",
+      "positive_exact_identity": "f2f73f831ba6b3fdf86423eda87268df45a7685e3c41563ecc7cf72f0d2204f6",
+      "positive_field_ids": [
+        "ctx_sent_up_num",
+        "open"
+      ],
+      "route_id": "MARKET_REGIME_CONDITION",
+      "status": "PASS",
+      "wrong_lag_rejection_code": "PIT_UNQUALIFIED"
+    }
+  ],
+  "forward_2026_accessed": false,
+  "holdout_accessed": false,
+  "passed_count": 9,
+  "performance_used": false,
+  "status": "PASS",
+  "validation_accessed": false
+}

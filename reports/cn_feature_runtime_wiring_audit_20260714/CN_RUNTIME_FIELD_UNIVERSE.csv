@@ -1,0 +1,283 @@
+field_id,registered_in_unified_authority,source_family,pit_status,search_eligible_unified,allowed_routes,legacy_phase3ga_visible,unified_runner_visible,runtime_authority
+amount,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+amount_yuan,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+broad_event_01166fdd6c3a2aab,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_16c53855e757c585,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_4fbf6cc691461c6c,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_7b391e59670c491e,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_8a64cdfefa6bcc35,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_9041949344c58bcf,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_9618ee1100155073,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_ac96e6d4db507a1a,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_b22d9565d0b39241,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_cf70889cec0c77df,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+broad_event_d42c0973350238e0,True,broad_event_frozen_entry,PIT_VERSIONED_HISTORY,True,"[""BROAD_EVENT_FROZEN_ENTRY""]",False,True,UNIFIED_REGISTRY_PATH
+close,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+code,True,metadata,PIT_VERSIONED_HISTORY,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+ctx_billboard_accum_amount,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_billboard_billboard_buy_amt,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_billboard_billboard_deal_amt,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_billboard_billboard_net_amt,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_billboard_billboard_sell_amt,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_billboard_buy_ratio,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_billboard_deal_amount_ratio,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_billboard_deal_net_ratio,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_billboard_net_bs_amt,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_billboard_sell_ratio,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_billboard_sum_buy_amt,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_billboard_sum_sell_amt,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_billboard_turnoverrate,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_hfq_float_market_cap_yuan,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_hfq_is_st,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_hfq_market_cap_yuan,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_hfq_pb,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_hfq_pe_ttm,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_hfq_prev_is_limit_up,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_hfq_ps_ttm,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_hfq_turnover_ratio,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_hfq_volume_ratio,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_holder_avg_hold_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_holder_avg_market_cap,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_holder_holder_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_holder_holder_num_change,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_holder_holder_num_ratio,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_rzrq_rqye,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_rzrq_rqyl,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_rzrq_rzche,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_rzrq_rzjme,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_rzrq_rzmre,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_rzrq_rzrqye,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_rzrq_rzye,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_rzrq_rzyezb,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_damian_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_ditian_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_down_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_downlimit_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_gt5_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_lb_2_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_lb_3_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_lb_h_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_lt5_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_max_lb_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_mian_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_tiandi_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_up_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_uplimit_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_sent_zb_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_ths_hot_circulation_value,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_ths_hot_last_pct,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_ths_hot_last_price,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_ths_hot_rank,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_ths_hot_rank_diff,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL"", ""SLOW_TEMPORAL_CHANGE""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_zls_df_num,True,lagged_daily_context,PIT_VERSIONED_HISTORY,True,"[""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+ctx_zls_lbgd,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_zls_strong,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+ctx_zls_ztjs,True,lagged_daily_context,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+dataset_route_id,True,metadata,PIT_VERSIONED_HISTORY,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+date,True,metadata,PIT_VERSIONED_HISTORY,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+evt_uplimit_active,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_age_min,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_amount,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_auction_buy,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_auction_money,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_auction_offer,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_auction_pre1max_ratio,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_auction_turnover,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_cutoff_minute,True,event_state,PIT_VERSIONED_HISTORY,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+evt_uplimit_fd_close,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_fd_max,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+evt_uplimit_type_code,True,event_state,PIT_VERSIONED_HISTORY,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+evt_uplimit_up_limit_keep_times,True,event_state,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+exec_date,True,metadata,PIT_VERSIONED_HISTORY,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_accruals_profit_minus_cfo_assets,True,canonical_fundamental_accruals,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_accounts_payable_acceleration,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_accounts_payable_delta,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_accounts_payable_persistence,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_accounts_payable_slope,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_accounts_payable_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_accounts_payable_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_accounts_rece_acceleration,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_accounts_rece_delta,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_accounts_rece_persistence,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_accounts_rece_slope,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_accounts_rece_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_accounts_rece_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_fixed_asset_acceleration,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_fixed_asset_delta,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_fixed_asset_persistence,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_fixed_asset_slope,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_fixed_asset_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_fixed_asset_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_inventory_acceleration,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_inventory_delta,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_inventory_persistence,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_inventory_slope,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_inventory_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_inventory_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_monetaryfunds_acceleration,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_monetaryfunds_delta,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_monetaryfunds_persistence,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_monetaryfunds_slope,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_monetaryfunds_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_monetaryfunds_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_assets_acceleration,True,canonical_fundamental_size,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_assets_delta,True,canonical_fundamental_size,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_assets_persistence,True,canonical_fundamental_size,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_assets_slope,True,canonical_fundamental_size,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_total_assets_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_assets_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_total_current_assets_acceleration,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_total_current_assets_delta,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_current_assets_persistence,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_current_assets_slope,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_current_assets_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_current_assets_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_current_liab_acceleration,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_current_liab_delta,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_total_current_liab_persistence,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_total_current_liab_slope,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_current_liab_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_current_liab_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_total_equity_acceleration,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_equity_delta,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_equity_persistence,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_equity_slope,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_equity_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_equity_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_liabilities_acceleration,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ba_total_liabilities_delta,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_liabilities_persistence,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_liabilities_slope,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_liabilities_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ba_total_liabilities_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_business_composition_concentration_blocked,True,canonical_fundamental_business_composition_concentration,PIT_CONTRACT_UNRESOLVED,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_construct_long_asset_acceleration,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ca_construct_long_asset_delta,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_construct_long_asset_persistence,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_construct_long_asset_slope,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_construct_long_asset_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ca_construct_long_asset_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_finance_acceleration,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_finance_delta,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ca_netcash_finance_persistence,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_finance_slope,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_finance_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_finance_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_invest_acceleration,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_invest_delta,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ca_netcash_invest_persistence,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_invest_slope,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_invest_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_invest_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_operate_acceleration,True,canonical_fundamental_cashflow_quality,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_operate_delta,True,canonical_fundamental_cashflow_quality,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ca_netcash_operate_persistence,True,canonical_fundamental_cashflow_quality,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_ca_netcash_operate_slope,True,canonical_fundamental_cashflow_quality,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_operate_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_ca_netcash_operate_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_capex_construct_assets,True,canonical_fundamental_capital_investment,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_cashflow_cfo_profit,True,canonical_fundamental_cashflow_quality,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_cashflow_cfo_revenue,True,canonical_fundamental_cashflow_quality,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_disclosure_balance_age_sessions,True,canonical_fundamental_disclosure_timing_staleness,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_disclosure_balance_pulse,True,canonical_fundamental_disclosure_timing_staleness,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""DISCLOSURE_EVENT""]",False,True,UNIFIED_REGISTRY_PATH
+fund_disclosure_cashflow_age_sessions,True,canonical_fundamental_disclosure_timing_staleness,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_disclosure_cashflow_pulse,True,canonical_fundamental_disclosure_timing_staleness,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""DISCLOSURE_EVENT""]",False,True,UNIFIED_REGISTRY_PATH
+fund_disclosure_holder_age_sessions,True,canonical_fundamental_disclosure_timing_staleness,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_disclosure_holder_pulse,True,canonical_fundamental_disclosure_timing_staleness,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""DISCLOSURE_EVENT""]",False,True,UNIFIED_REGISTRY_PATH
+fund_disclosure_profit_age_sessions,True,canonical_fundamental_disclosure_timing_staleness,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_disclosure_profit_pulse,True,canonical_fundamental_disclosure_timing_staleness,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""DISCLOSURE_EVENT""]",False,True,UNIFIED_REGISTRY_PATH
+fund_efficiency_fixed_asset_intensity,True,canonical_fundamental_operating_efficiency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_efficiency_revenue_assets,True,canonical_fundamental_operating_efficiency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_holder_average_shares_log,True,canonical_fundamental_shareholder_structure,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_holder_average_shares_log_change,True,canonical_fundamental_shareholder_structure,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_holder_count_log,True,canonical_fundamental_shareholder_structure,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_holder_count_log_change,True,canonical_fundamental_shareholder_structure,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_holder_top10_share_ratio,True,canonical_fundamental_shareholder_structure,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_holder_top10_share_ratio_change,True,canonical_fundamental_shareholder_structure,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_holder_top10_shares_log,True,canonical_fundamental_shareholder_structure,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_holder_top10_shares_log_change,True,canonical_fundamental_shareholder_structure,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_leverage_equity_assets,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_leverage_liabilities_assets,True,canonical_fundamental_leverage,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_liquidity_cash_current_liab,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_liquidity_current_ratio,True,canonical_fundamental_liquidity_solvency,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_pr_deduct_parent_netprofit_acceleration,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_deduct_parent_netprofit_delta,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_pr_deduct_parent_netprofit_persistence,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_deduct_parent_netprofit_slope,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_deduct_parent_netprofit_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_pr_deduct_parent_netprofit_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_cost_acceleration,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_cost_delta,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_cost_persistence,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_pr_operate_cost_slope,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_cost_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_cost_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_income_acceleration,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_income_delta,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_income_persistence,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_income_slope,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_income_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_income_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_pr_operate_profit_acceleration,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_profit_delta,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_profit_persistence,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_pr_operate_profit_slope,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_pr_operate_profit_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_operate_profit_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_parent_netprofit_acceleration,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_parent_netprofit_delta,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_parent_netprofit_persistence,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_parent_netprofit_slope,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_pr_parent_netprofit_source_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_pr_parent_netprofit_yoy,True,canonical_fundamental_growth,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_TEMPORAL_CHANGE""]",False,True,UNIFIED_REGISTRY_PATH
+fund_profit_gross_margin,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+fund_profit_operating_margin,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_profit_parent_margin,True,canonical_fundamental_profitability,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_working_capital_inventory_assets,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_working_capital_payables_assets,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,True,UNIFIED_REGISTRY_PATH
+fund_working_capital_receivables_assets,True,canonical_fundamental_working_capital,PIT_SAFE_CURRENT_SNAPSHOT_ONLY,True,"[""SLOW_CROSS_SECTIONAL_LEVEL""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+high,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+intraday_ret_from_open,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+label_horizon,True,metadata,PIT_VERSIONED_HISTORY,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+low,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+m1_first15_amount,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first15_bars,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first15_high,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+m1_first15_last_close,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+m1_first15_last_return_vs_open,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first15_low,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+m1_first15_range,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first15_vol,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+m1_first15_vwap,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+m1_first15_vwap_return_vs_open,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first30_amount,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first30_bars,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first30_high,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first30_last_close,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+m1_first30_last_return_vs_open,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first30_low,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first30_range,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+m1_first30_vol,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+m1_first30_vwap,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+m1_first30_vwap_return_vs_open,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+m1_first5_amount,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first5_bars,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first5_high,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first5_last_close,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+m1_first5_last_return_vs_open,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+m1_first5_low,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first5_range,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first5_vol,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+m1_first5_vwap,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+m1_first5_vwap_return_vs_open,True,firstN,PIT_VERSIONED_HISTORY,True,"[""FIRSTN_PATH""]",False,True,UNIFIED_REGISTRY_PATH
+open,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+pct_chg,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",False,True,UNIFIED_REGISTRY_PATH
+ret_1m,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",False,True,UNIFIED_REGISTRY_PATH
+signal_time,True,metadata,PIT_VERSIONED_HISTORY,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+state_bar_return_sign,True,intraday_derived_state,PIT_VERSIONED_HISTORY,True,"[""INTRADAY_STATE_TRANSITION""]",False,True,UNIFIED_REGISTRY_PATH
+state_close_range_location_sign,True,intraday_derived_state,PIT_VERSIONED_HISTORY,True,"[""INTRADAY_STATE_TRANSITION""]",False,True,UNIFIED_REGISTRY_PATH
+state_intraday_return_sign,True,intraday_derived_state,PIT_VERSIONED_HISTORY,True,"[""INTRADAY_STATE_TRANSITION""]",False,True,UNIFIED_REGISTRY_PATH
+trade_time,True,metadata,PIT_VERSIONED_HISTORY,False,[],False,False,REGISTERED_NOT_RUNTIME_EXPOSED
+vol,True,raw_1min,PIT_VERSIONED_HISTORY,False,[],True,False,LEGACY_HARDCODED_OR_SCHEMA_PATH
+volume,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED
+vwap,True,raw_1min,PIT_VERSIONED_HISTORY,True,"[""MINUTE_STATIC"", ""FIRSTN_PATH"", ""INTRADAY_STATE_TRANSITION"", ""MARKET_REGIME_CONDITION""]",True,True,SPLIT_AUTHORITY_LEGACY_AND_UNIFIED

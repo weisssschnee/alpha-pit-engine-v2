@@ -1,0 +1,162 @@
+{
+  "access_role": "development_only",
+  "data_files": [
+    {
+      "episode_count": 323272,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 28026372,
+      "sha256": "dd721a50a2461a49f93cef747880381b342a0cc8900ce5a4bacf954929b4a1dd",
+      "shard": 0
+    },
+    {
+      "episode_count": 319600,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27954554,
+      "sha256": "ae6aeadd642aa48182e98f79bc4e6a1af00d1219a8e017e0aa5e77dbccecdc48",
+      "shard": 1
+    },
+    {
+      "episode_count": 319437,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27950457,
+      "sha256": "258ee0358247520c7a651c811433f6e8c661f65493ef9e1bdcd7ff7c526650a8",
+      "shard": 2
+    },
+    {
+      "episode_count": 318249,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27832367,
+      "sha256": "afbcff83b032523e110d01d65bcea55bebc9429d6617ccae08c8b09964645e0e",
+      "shard": 3
+    },
+    {
+      "episode_count": 318233,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27924911,
+      "sha256": "97940baea6bd071a4b7adc5c663f2712e979924927ebeddb81471e65cbcc0327",
+      "shard": 4
+    },
+    {
+      "episode_count": 319263,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27855021,
+      "sha256": "d42722d2e27866e485e3f209ece31d153e2648a9d47304e3e9854ad4c6c4ff7c",
+      "shard": 5
+    },
+    {
+      "episode_count": 317324,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27945637,
+      "sha256": "e92146b761770d97875e8d25cacc260813ea0f0e62c5b1b077f671f31af8091e",
+      "shard": 6
+    },
+    {
+      "episode_count": 319571,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27923465,
+      "sha256": "a15d10de196c732f1b3b49d7a3f4634d5a8449cde0bb65f34c333718e9d7eb99",
+      "shard": 7
+    },
+    {
+      "episode_count": 322746,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27907077,
+      "sha256": "b39e93d916d2c7ea2ed09265d6538b80f8f2ddb9a07a2a6272f68467ddcc8407",
+      "shard": 8
+    },
+    {
+      "episode_count": 321804,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27963953,
+      "sha256": "71c43c77728a7bb50a8de226553df6994b1ab98b26152170460c79347170c315",
+      "shard": 9
+    },
+    {
+      "episode_count": 316325,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27718374,
+      "sha256": "39ec02b7ff7bf225f06ccf2aa3db5c5a9a6b4bcaad92c1580ba43f63a0d0f02e",
+      "shard": 10
+    },
+    {
+      "episode_count": 314314,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27764887,
+      "sha256": "1f89764e4b612d33162dc0a257daafd539d2b2544769c118496a94b4e7356117",
+      "shard": 11
+    },
+    {
+      "episode_count": 318018,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27746812,
+      "sha256": "462f44aba0268048f0659006a565bc8726c074b1977b6738f95296deaed92d24",
+      "shard": 12
+    },
+    {
+      "episode_count": 319883,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27908041,
+      "sha256": "5e35d70d9f02834df38c3e313d9ea58f78ca823fbef4747a94e4beed49f7d1db",
+      "shard": 13
+    },
+    {
+      "episode_count": 316755,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 27993355,
+      "sha256": "3b8e5ce3459697ac1a25d2dc807a0d40c9bcf1c3b4691467633a3029190248fd",
+      "shard": 14
+    },
+    {
+      "episode_count": 322820,
+      "one_episode_one_admission_vote": true,
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+      "rows": 28028300,
+      "sha256": "e9293df82d68de2af566479077ff6d6a7b4f1250f315b7cd5b6a83f7779aaa37",
+      "shard": 15
+    }
+  ],
+  "entry_pack": {
+    "path": "reports\\cn_broad_event_recovery_20260713\\DISCOVERY_ENTRY_PACK.json",
+    "sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8"
+  },
+  "outputs": [
+    {
+      "path": "behavior_registry.json",
+      "sha256": "354e134b7465f5b03d8a955c6c7287d11521c47ca1561380773fe7a67468bf45",
+      "size": 24071
+    },
+    {
+      "path": "episode_support.json",
+      "sha256": "f479bd1ff4c6b2fc2eab9a6666c97b924a33575e9a590cdf856d238f0efd5d9f",
+      "size": 5021
+    },
+    {
+      "path": "frozen_mechanism_results.csv",
+      "sha256": "6acb33301780878ea14360c56d2742a8f3efd8000b864c1debbcfe096ac19184",
+      "size": 5435
+    },
+    {
+      "path": "summary.json",
+      "sha256": "40195521b0640495b17c3f9f046f66df06ea7cfb9bab021a1eb3d69475cf9a8b",
+      "size": 1729
+    }
+  ],
+  "replay_version": "cn_broad_event_frozen_11_full16_replay_v1",
+  "repo_sha": "21a06153f0b2ab7229e54f7767f5d6e73161998b",
+  "reproducibility": "YES_FIXED_PACK_FULL16_TWO_SEEDS"
+}

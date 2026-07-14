@@ -1,0 +1,88 @@
+{
+  "artifact_index_version": "cn_feature_runtime_wiring_artifact_index_v1",
+  "artifacts": [
+    {
+      "path": "CN_FEATURE_RUNTIME_WIRING_INDEPENDENT_AUDIT.md",
+      "sha256": "b70f547324c15c0285bd988c05cec5c0ae1eda32a843c0cce4fd25c9e8432f29",
+      "size_bytes": 2799
+    },
+    {
+      "path": "CN_FEATURE_WIRING_CAPABILITY_TEST.json",
+      "sha256": "da0322739859df09db5f5524b11decd4b6658abaf22716cb91e679f0b7ba7b36",
+      "size_bytes": 5747
+    },
+    {
+      "path": "CN_FIELD_RUNTIME_AUTHORITY_AUDIT.csv",
+      "sha256": "998542f760f7b6e3e838b4e47de438e618f0fcdda6009d9a5249b4183e5654b5",
+      "size_bytes": 1931
+    },
+    {
+      "path": "CN_FIELD_SEARCH_EXPOSURE_FUNNEL.csv",
+      "sha256": "33e6e03c3cff48876c83d6f133323f82af10e364b09e244d2003ffe467349cad",
+      "size_bytes": 89027
+    },
+    {
+      "path": "CN_FUNDAMENTAL_CROSS_SEED_MECHANISM_ALIGNMENT.md",
+      "sha256": "627e4160a572f5876c3096bc97cd9acfccdb547e83ecf93c6bccb447799a0cf8",
+      "size_bytes": 628
+    },
+    {
+      "path": "CN_FUNDAMENTAL_RUNTIME_WIRING_AUDIT.csv",
+      "sha256": "ef4ce06565d1cc0e99886b62d66c4b90867523a82d2d0c9552fe4a7640892466",
+      "size_bytes": 43948
+    },
+    {
+      "path": "CN_GLOBAL_SPLIT_RUNTIME_REACHABILITY_AUDIT.csv",
+      "sha256": "0ff3791eb7115164e0c08ac86d22faf286eb0cf177d84f792f03a9a50fca4075",
+      "size_bytes": 1189
+    },
+    {
+      "path": "CN_HARDCODED_FIELD_PATHS.md",
+      "sha256": "110a6e8dfcb3ac4990b1c158eb64ee9d2ae8b4540e610cda8bee4048f8a14556",
+      "size_bytes": 1262
+    },
+    {
+      "path": "CN_PHYSICAL_FIELD_UNIVERSE.csv",
+      "sha256": "87b8bc7f21d431c21f40e7b1c0c2ccc1f7735f662008aa2d413a10fd46eeb3f7",
+      "size_bytes": 387892
+    },
+    {
+      "path": "CN_QUALIFIED_REPRESENTATION_UNIVERSE.csv",
+      "sha256": "41ed17b45b1c709027daf38258377be2bbde641836739e4ded737bd13ff484c3",
+      "size_bytes": 101662
+    },
+    {
+      "path": "CN_ROUTE_CAPABILITY_COVERAGE.csv",
+      "sha256": "169d27d398e2b27ea9bbd841b67fd673f44ed51475d021e65afc772e310c7c14",
+      "size_bytes": 822
+    },
+    {
+      "path": "CN_RUNTIME_FIELD_UNIVERSE.csv",
+      "sha256": "29a5f145c8663ce4c04a555ae64fec5b7421021c3724684b4e01b8d7695ac03f",
+      "size_bytes": 45783
+    },
+    {
+      "path": "CN_SPLIT_LEAKAGE_REPAIR_VERIFICATION.md",
+      "sha256": "f505c113291478da54fa12dc33eaa79583f10572659488525a03bcb7de96f5e9",
+      "size_bytes": 575
+    },
+    {
+      "path": "CN_UNIFIED_DISCOVERY_ELIGIBILITY_AUDIT.md",
+      "sha256": "6c8940029a7756ff0f045f60da32989825cb7a55c692722b17d2222b44972ac2",
+      "size_bytes": 587
+    },
+    {
+      "path": "CN_UNTESTED_OR_UNDEREXPOSED_INFORMATION_FAMILIES.csv",
+      "sha256": "1109a7a357e055f97986a2d85c936bd757c8cc0ae2617c8bee4c02c308f071e9",
+      "size_bytes": 759
+    },
+    {
+      "path": "run_manifest.json",
+      "sha256": "fbd83bebdbbd289be7a5b2a5ef1cce9494917f7072a550e1d5ef6f4fbc99e92b",
+      "size_bytes": 4607
+    }
+  ],
+  "repo_sha": "a9964e3e78c7e36ba9940dee9f1009323c30e783",
+  "schema_hash": "a5e08dd9171cb6dafed7bd032aab49bda071fd6c554d1caf49106960153fc6cc",
+  "status": "CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED"
+}

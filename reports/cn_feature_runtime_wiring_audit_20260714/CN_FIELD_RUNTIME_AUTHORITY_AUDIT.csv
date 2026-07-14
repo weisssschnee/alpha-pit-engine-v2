@@ -1,0 +1,10 @@
+authority,status,runtime_scope,authoritative_path,finding
+121_FIELD_FABRIC,IMPLEMENTED_VERSIONED,true1min panel,runtime/field_registry/nextgen_dark_field_registry_v2.json,"121 registered fields: 7 metadata, 12 raw, 30 FirstN, 59 lagged context, 13 event/state"
+FUNDAMENTAL_SOURCE_QUALIFICATION,IMPLEMENTED_SIDECAR,unified development runner only,runtime/cn_unified_capability_v1/fundamental_field_qualification_matrix.csv,"1,227 source fields remain fail-closed; 147 canonical representations are the only roots"
+UNIFIED_CAPABILITY_REGISTRY,IMPLEMENTED_PARALLEL_PATH,unified preflight/discovery,src/our_system_phase2/services/unified_capability_registry.py,"single semantic/PIT/route authority inside unified runner, but not wired into legacy Phase3GA/CM/CN"
+LEGACY_PHASE3DV_GENERATOR,ACTIVE_BYPASS,CURRENT_SEARCH_ROUTE,src/our_system_phase2/runtime/phase3dv_budget_pool_self_deepen_pack.py,hardcoded field pools and physical-schema filtering bypass the unified registry
+TYPED_ROUTE_COMPILER,IMPLEMENTED_UNIFIED_ONLY,RegistryDrivenGenerator,src/our_system_phase2/services/typed_route_compiler.py,"PIT, unit, route, maturity, episode vote and sealed-access checks apply only on unified route"
+PHASE3CM_EVALUATOR,PARTIAL_GLOBAL_SPLIT,legacy exact evaluator,src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py,final normalization uses the fixed manifest; worker-local split mapping remains reachable
+PHASE3CN_FEEDBACK,LEGACY_ONLY,legacy search memory,runtime evidence: phase3cn_search_feedback_memory.csv,unified registry candidates do not flow to Phase3CN; unified run explicitly persisted no memory
+PLATE_INDUSTRY_PIT,DISABLED_NO_ACTIVE_RELEASE,none,.planning/STATE.md,"builders exist, but no trustworthy historical PIT membership release is registered; no plate field is exposed"
+FORWARD_2026,SEALED,forbidden,.planning/STATE.md,"this audit made no validation, holdout, challenge or 2026 read"

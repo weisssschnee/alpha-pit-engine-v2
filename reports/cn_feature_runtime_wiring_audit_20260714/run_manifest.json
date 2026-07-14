@@ -1,0 +1,85 @@
+{
+  "access": {
+    "candidate_promotion": false,
+    "challenge_accessed": false,
+    "cross_sprint_memory": false,
+    "forward_2026_accessed": false,
+    "holdout_accessed": false,
+    "performance_search_started": false,
+    "reward_used_to_select_fields": false,
+    "validation_accessed": false
+  },
+  "audit_version": "cn_feature_runtime_wiring_audit_v1",
+  "counts": {
+    "active_121": 121,
+    "canonical_fundamental_representations": 147,
+    "fundamental_source_fields": 1227,
+    "physical_field_universe": 1348,
+    "qualified_runtime_representations": 282,
+    "synthetic_cases_passed": 9,
+    "synthetic_cases_total": 9,
+    "unified_candidate_rows": 464
+  },
+  "created_at_utc": "2026-07-14T15:42:20.173885+00:00",
+  "inputs": [
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\field_registry\\nextgen_dark_field_registry_v2.json",
+      "sha256": "4ba9b0199033ea3d0cd4e5920309cb0866c13f1124c5f382cb14187ed4dc80ae"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\cn_unified_capability_v1\\fundamental_field_qualification_matrix.csv",
+      "sha256": "d60c2362bed1ac304bd52d391c9dfae2ae1c3548a1ca880c0994357905bcb125"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\cn_unified_capability_v1\\fundamental_canonical_representation_registry.json",
+      "sha256": "0da984c0d7c6b22c5617054bb7709e04091dc3704026b032181f7d0acc1667be"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\reports\\cn_unified_capability_discovery_20260714\\completed_f8169e1\\registry\\unified_capability_registry.json",
+      "sha256": "30f35019de7f93923417c5d241a293d7152655d9b37acd7e12a3840ecac7d89d"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\reports\\evalreset_phase1_20260711\\search_collapse_audit.json",
+      "sha256": "39e5be109bcd18c96aed13bb78c2bfbc58cdf92bd973e5525f765dd9b378b11c"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\reports\\cn_unified_capability_discovery_20260714\\completed_f8169e1\\unified_discovery\\seed_a\\candidate_results.csv",
+      "sha256": "5b8376af9cbf5e892c891ce8173b3677439fcfac0a4784d286957ca179ed7a51"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\reports\\cn_unified_capability_discovery_20260714\\completed_f8169e1\\unified_discovery\\seed_b\\candidate_results.csv",
+      "sha256": "c3f77215102f875678e7d917de743b8efe0190efda80757554dc3b1f197a3292"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\phase3fix_run\\phase3cp_real_cm_all_generated_top_decisions.csv",
+      "sha256": "0046b98fcf0cf2fb737f0244d782e59414bcc01c900282c3336d3d3214f9860e"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\phase3fix_run\\phase3ca_bz_candidate_audit.csv",
+      "sha256": "81b52f4aeb4a4ed67f95d141b61a395fb33802febba10f81aa052e623e738fd5"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\phase3fix_run\\phase3cp_real_cm_candidate_audit.csv",
+      "sha256": "a340ea6364620465c1754aa305e5e39048011b9c73fcb973975102e8b5b043f3"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\strict_reward\\phase3cm_train_reward.csv",
+      "sha256": "bf141d4983e52f3895f9ff116dbff1bc909ab3a33dda50ff108f23c14a50d4b8"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\co_input\\phase3cn_feedback_memory\\phase3cn_search_feedback_memory.csv",
+      "sha256": "5cc51b3a1d2d5b3d372878c743774dc27f282eb046781690706cf8b3cfe989c9"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\reports\\evalreset_phase1_20260711\\signal_sketch\\candidate_signal_cluster_registry.csv",
+      "sha256": "340a1e4f4afce9af460ec42f995230d73b0f802366a28d185e7df1f7467a3f20"
+    },
+    {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+      "sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+    }
+  ],
+  "repo_sha": "a9964e3e78c7e36ba9940dee9f1009323c30e783",
+  "scope": "READ_ONLY_RUNTIME_WIRING_AND_SYNTHETIC_CAPABILITY_TEST",
+  "status": "CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED"
+}

@@ -1,0 +1,75 @@
+{
+  "all_shards": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "candidate_promotion": false,
+  "cross_sprint_memory": false,
+  "elapsed_seconds": 3240.8083460330963,
+  "entry_pack_sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8",
+  "episode_count": 1655645,
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "mean_matched_increment": 0.0009667947580579803,
+  "mechanism_count": 11,
+  "observation_count": 1655645,
+  "operational_sources": [
+    "BILLBOARD_CHANGE",
+    "CHIP_STRUCTURE_CHANGE",
+    "HOLDER_STRUCTURE_CHANGE",
+    "HOTNESS_CHANGE",
+    "LIMIT_UP_LIFECYCLE",
+    "MARGIN_FINANCING_CHANGE",
+    "MARKET_ECOLOGY_TRANSITION",
+    "VENDOR_LIMIT_OCCURRENCE"
+  ],
+  "replay_version": "cn_broad_event_frozen_11_full16_replay_v1",
+  "repo_sha": "6d49be00f5c1e31bbbf4b161979bb9ce953142e7",
+  "seed_count": 2,
+  "seed_survivors": {
+    "1783": [
+      "16c53855e757c585",
+      "4fbf6cc691461c6c",
+      "7b391e59670c491e",
+      "8a64cdfefa6bcc35",
+      "9041949344c58bcf",
+      "cf70889cec0c77df",
+      "d42c0973350238e0"
+    ],
+    "2777": [
+      "16c53855e757c585",
+      "4fbf6cc691461c6c",
+      "7b391e59670c491e",
+      "8a64cdfefa6bcc35",
+      "9041949344c58bcf",
+      "cf70889cec0c77df",
+      "d42c0973350238e0"
+    ]
+  },
+  "shard_count": 16,
+  "shared_survivors": [
+    "16c53855e757c585",
+    "4fbf6cc691461c6c",
+    "7b391e59670c491e",
+    "8a64cdfefa6bcc35",
+    "9041949344c58bcf",
+    "cf70889cec0c77df",
+    "d42c0973350238e0"
+  ],
+  "status": "BROAD_EVENT_FROZEN_FULL16_REPLAY_COMPLETED",
+  "validation_reads": 0
+}

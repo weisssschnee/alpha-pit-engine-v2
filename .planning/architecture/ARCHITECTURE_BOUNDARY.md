@@ -72,6 +72,19 @@ repo SHA, generator hash and every declared derived display hash.
   current snapshot rows cannot claim unavailable historical revision values.
 - `zygc_em` values remain unread and blocked because report date is not an
   independent disclosure clock. No conservative-lag guess may unblock them.
+- The 282-representation UnifiedCapabilityRegistry and TypedRouteCompiler are
+  authoritative for unified preflight/discovery only. Physical parquet column
+  presence or a Phase3DV hardcoded field list cannot grant search eligibility.
+- The 147 canonical fundamental representations may be proposed only through
+  the unified development-only runner. The raw 1,227 source fields cannot be
+  exposed directly, and none may enter legacy Phase3GA/CM/CN until runtime
+  convergence is explicitly implemented and tested.
+- Frozen Broad Event replay is classified as
+  `OLD_FROZEN_MECHANISM_REPRODUCED`; it cannot by itself unlock independent
+  challenge eligibility.
+- Fixed-manifest final normalization does not waive worker-boundary
+  enforcement. Worker-local `_split_map` and manifest-optional recovery paths
+  are blockers, not alternate accepted split authorities.
 
 ## Acceptance boundary
 
@@ -99,3 +112,10 @@ Balance-sheet, profit, cash-flow and announcement-bearing major-holder routes
 are infrastructure-ready. Business composition and true historical revision
 replay remain blocked by source evidence, so the fabric is partially rather
 than fully completed. No performance search was run.
+
+The feature runtime-wiring audit is bound to
+`reports/cn_feature_runtime_wiring_audit_20260714/run_manifest.json`. It is a
+read-only metadata, source-reachability and synthetic capability audit. Its
+accepted status is `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`; it does not
+authorize formal search, challenge access, promotion, persistent memory or
+2026 access.
