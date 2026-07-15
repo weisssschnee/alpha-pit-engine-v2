@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
+
 from scripts.freeze_cn_compositional_resource_preflight import (
+    assign_evaluator_expression_identities,
     evaluator_expression_identity,
     representative_route_quotas,
     select_representative_pairs,
@@ -13,6 +16,19 @@ def test_evaluator_identity_keeps_duplicate_controls_in_distinct_pairs() -> None
     assert evaluator_expression_identity("control-a", expression) != evaluator_expression_identity(
         "control-b", expression
     )
+
+
+def test_evaluator_identity_changes_only_duplicate_expressions() -> None:
+    rows = [
+        {"candidate_id": "primary-a", "expression": "CSRank($x)"},
+        {"candidate_id": "control-a", "expression": "CSRank(Sign($y))"},
+        {"candidate_id": "control-b", "expression": "CSRank(Sign($y))"},
+    ]
+
+    assign_evaluator_expression_identities(rows)
+
+    assert rows[0]["expression_hash"] == hashlib.sha256(b"CSRank($x)").hexdigest()[:24]
+    assert rows[1]["expression_hash"] != rows[2]["expression_hash"]
 
 
 def test_resource_preflight_quotas_cover_every_route_and_preserve_stage_weight_ties() -> None:

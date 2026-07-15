@@ -79,6 +79,18 @@ def evaluator_expression_identity(candidate_id: str, expression: str) -> str:
     return hashlib.sha256((str(candidate_id) + "|" + str(expression)).encode("utf-8")).hexdigest()[:24]
 
 
+def assign_evaluator_expression_identities(candidates: Sequence[dict[str, Any]]) -> None:
+    """Keep legacy identities stable unless one expression belongs to several candidates."""
+    expression_counts = Counter(str(row["expression"]) for row in candidates)
+    for row in candidates:
+        expression = str(row["expression"])
+        row["expression_hash"] = (
+            evaluator_expression_identity(str(row["candidate_id"]), expression)
+            if expression_counts[expression] > 1
+            else hashlib.sha256(expression.encode("utf-8")).hexdigest()[:24]
+        )
+
+
 def _write_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
     if not rows:
         raise ValueError(f"cannot write empty CSV: {path}")
@@ -163,9 +175,7 @@ def _candidate_rows(
             # pairs reuse an identical neutral control.  Expression evaluation
             # remains shared by the expression-string cache, so this preserves
             # pair membership without duplicating materialization work.
-            row["expression_hash"] = evaluator_expression_identity(
-                str(row["candidate_id"]), str(row["expression"])
-            )
+            row["expression_hash"] = ""
             row["generator_arm"] = str(admission["policy_id"])
             row["run"] = "CN_COMPOSITIONAL_RESOURCE_PREFLIGHT"
             row["round_id"] = "RESOURCE_PREFLIGHT_32"
@@ -185,6 +195,7 @@ def _candidate_rows(
                 "performance_selected": False,
             }
         )
+    assign_evaluator_expression_identities(candidates)
     return candidates, pack
 
 
