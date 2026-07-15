@@ -190,3 +190,23 @@ def test_all_compositional_candidates_respect_registered_depth_and_field_volume(
             for candidate in (pair.primary, pair.control):
                 assert _call_depth(candidate["canonical_expression"]) <= 4
                 assert 1 <= len(candidate["declared_field_ids"]) <= 3
+
+
+def test_interaction_legs_do_not_collapse_to_the_same_source_field() -> None:
+    grammar = CompositionalGrammarV2(UnifiedCapabilityRegistry.read(REGISTRY))
+    expected_two_field_skeletons = {
+        "MINUTE_STATIC": set(range(1, 8)),
+        "FIRSTN_PATH": set(range(8)),
+        "SLOW_CROSS_SECTIONAL_LEVEL": {1, 2, 3, 4, 7},
+        "SLOW_TEMPORAL_CHANGE": {4, 7},
+        "DISCLOSURE_EVENT": {4},
+        "MARKET_REGIME_CONDITION": set(range(8)),
+    }
+    for route_id, indices in expected_two_field_skeletons.items():
+        for index in indices:
+            pair = grammar.propose(route_id, attempt_index=index, seed=104729)
+            assert len(pair.primary["declared_field_ids"]) >= 2
+
+    for index in range(8):
+        pair = grammar.propose("INTRADAY_STATE_TRANSITION", attempt_index=index, seed=104729)
+        assert len(pair.primary["declared_field_ids"]) == 3

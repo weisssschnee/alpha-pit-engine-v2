@@ -198,6 +198,22 @@ def _pick_value(values: Sequence[int], index: int, seed: int, salt: str) -> int:
     return int(values[choice % len(values)])
 
 
+def _pick_excluding(
+    rows: Sequence[CapabilityField],
+    excluded_field_ids: Sequence[str],
+    index: int,
+    seed: int,
+    salt: str,
+) -> CapabilityField:
+    excluded = set(excluded_field_ids)
+    eligible = tuple(row for row in rows if row.field_id not in excluded)
+    if not eligible:
+        raise ValueError(
+            f"FIELD_COVERAGE_BOTTLENECK: no distinct field remains for {salt}"
+        )
+    return _pick(eligible, index, seed, salt)
+
+
 class CompositionalGrammarV2:
     """Deterministic compositional proposal interface.
 
@@ -364,9 +380,13 @@ class CompositionalGrammarV2:
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         pool = self._payload_pool("MINUTE_STATIC")
         left = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":left")
-        right = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":right")
-        if right.field_id == left.field_id:
-            right = _pick(pool, attempt_index + 1, seed, skeleton.skeleton_id + ":right_fallback")
+        right = _pick_excluding(
+            pool,
+            (left.field_id,),
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":right",
+        )
         left_ref = f"${left.field_id}"
         right_ref = f"${right.field_id}"
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
@@ -469,13 +489,27 @@ class CompositionalGrammarV2:
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         pool = self._payload_pool("SLOW_CROSS_SECTIONAL_LEVEL")
         left = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":left")
-        right = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":right")
-        if right.field_id == left.field_id:
-            right = _pick(pool, attempt_index + 1, seed, skeleton.skeleton_id + ":right_fallback")
         size_pool = tuple(row for row in pool if "market_cap" in row.field_id.lower())
+        name = skeleton.skeleton_id.rsplit(".", 1)[-1]
+        if name in {"fundamental_cap_condition", "size_residual_level"} and any(
+            row.field_id == left.field_id for row in size_pool
+        ):
+            left = _pick_excluding(
+                pool,
+                tuple(row.field_id for row in size_pool),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":non_size_left",
+            )
+        right = _pick_excluding(
+            pool,
+            (left.field_id,),
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":right",
+        )
         size = _pick(size_pool, attempt_index, seed, skeleton.skeleton_id + ":size")
         left_ref, right_ref, size_ref = f"${left.field_id}", f"${right.field_id}", f"${size.field_id}"
-        name = skeleton.skeleton_id.rsplit(".", 1)[-1]
         fields: tuple[CapabilityField, ...]
         if name == "fundamental_level":
             primary_expression = f"CSRank({left_ref})"
@@ -537,9 +571,13 @@ class CompositionalGrammarV2:
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         pool = self._payload_pool("SLOW_TEMPORAL_CHANGE")
         left = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":left")
-        right = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":right")
-        if right.field_id == left.field_id:
-            right = _pick(pool, attempt_index + 1, seed, skeleton.skeleton_id + ":right_fallback")
+        right = _pick_excluding(
+            pool,
+            (left.field_id,),
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":right",
+        )
         left_ref, right_ref = f"${left.field_id}", f"${right.field_id}"
         window = _pick_value((2, 3, 5, 10), attempt_index, seed, skeleton.skeleton_id + ":window")
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
@@ -603,9 +641,13 @@ class CompositionalGrammarV2:
             field_roles=("condition-only",),
         )
         event = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":event")
-        prior = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":prior")
-        if prior.field_id == event.field_id:
-            prior = _pick(pool, attempt_index + 1, seed, skeleton.skeleton_id + ":prior_fallback")
+        prior = _pick_excluding(
+            pool,
+            (event.field_id,),
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":prior",
+        )
         event_ref, prior_ref = f"${event.field_id}", f"${prior.field_id}"
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
         fields: tuple[CapabilityField, ...] = (event,)
@@ -750,10 +792,16 @@ class CompositionalGrammarV2:
             field_roles=("primary", "interaction-only"),
         )
         state = _pick(state_pool, attempt_index, seed, skeleton.skeleton_id + ":state")
-        payload = _pick(payload_pool, attempt_index, seed, skeleton.skeleton_id + ":payload")
         state_expression = str(state.metadata.get("materialization_expression") or "")
         source_ids = tuple(str(value) for value in state.metadata.get("source_fields", ()))
         source_fields = tuple(self.registry.resolve(field_id) for field_id in source_ids)
+        payload = _pick_excluding(
+            payload_pool,
+            source_ids,
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":payload",
+        )
         payload_ref = f"${payload.field_id}"
         window = _pick_value((3, 5, 10, 20), attempt_index, seed, skeleton.skeleton_id + ":window")
         short, long = (3, 10) if window <= 5 else (5, 20)
