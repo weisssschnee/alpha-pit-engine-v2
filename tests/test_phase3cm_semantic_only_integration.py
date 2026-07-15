@@ -13,6 +13,11 @@ from our_system_phase2.services.candidate_submission_receipt import (
     write_receipt_table,
 )
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
+from our_system_phase2.services.matched_control_pairs import (
+    CandidatePairAuthority,
+    attach_pair_contract,
+    write_pair_receipt_table,
+)
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
 
 
@@ -40,18 +45,19 @@ def test_semantic_only_main_never_builds_future_return_labels(tmp_path, monkeypa
             "trade_time": [trade_times[0]] * 3 + [trade_times[1]] * 3,
             "date": pd.to_datetime(["2024-01-02"] * 6),
             "close": [10.0, 20.0, 30.0, 10.1, 19.9, 30.2],
+            "open": [9.9, 20.1, 29.8, 10.0, 20.0, 30.0],
             "x": [1.0, 3.0, 2.0, 2.0, 1.0, 3.0],
         }
     ).to_parquet(panel, index=False)
     candidate = {
         "candidate_id": "candidate-a",
         "expression_hash": "hash-a",
-        "expression": "CSRank($close)",
+        "expression": "CSRank(Add($close,$open))",
         "generator_arm": "typed_ast_fresh",
         "route_id": "MINUTE_STATIC",
         "operator_family": "CSRank",
         "matched_control_id": "candidate-a-control",
-        "declared_field_ids": ["close"],
+        "declared_field_ids": ["close", "open"],
         "condition_field_ids": [],
         "is_matched_control": False,
         "vote_policy": "ONE_SUPPORT_UNIT_ONE_VOTE",
@@ -69,12 +75,16 @@ def test_semantic_only_main_never_builds_future_return_labels(tmp_path, monkeypa
         "matched_control_id": "candidate-a",
         "is_matched_control": True,
         "vote_policy": "CONTROL_NO_SEPARATE_VOTE",
+        "declared_field_ids": ["close"],
     }
+    candidate, control = attach_pair_contract(candidate, control)
+    control["expression_hash"] = "hash-a-control"
     candidate_table = tmp_path / "candidates.csv"
     with candidate_table.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(candidate))
         writer.writeheader()
         writer.writerow(candidate)
+        writer.writerow(control)
     registry = UnifiedCapabilityRegistry.read(REGISTRY)
     split = FixedSplitAuthority.read(SPLIT)
     context = ReceiptContext.build(
@@ -84,9 +94,12 @@ def test_semantic_only_main_never_builds_future_return_labels(tmp_path, monkeypa
         evaluator_paths=[EVALUATOR],
     )
     receipt_table = tmp_path / "receipts.jsonl"
-    write_receipt_table(
-        receipt_table,
-        CandidateSubmissionAuthority(registry, context).authorize_table([candidate, control]),
+    candidate_receipts = CandidateSubmissionAuthority(registry, context).authorize_table([candidate, control])
+    write_receipt_table(receipt_table, candidate_receipts)
+    pair_receipt_table = tmp_path / "pair-receipts.jsonl"
+    write_pair_receipt_table(
+        pair_receipt_table,
+        CandidatePairAuthority().authorize_table([candidate, control], candidate_receipts),
     )
 
     def fail_if_labels_are_built(*_args, **_kwargs):
@@ -122,6 +135,8 @@ def test_semantic_only_main_never_builds_future_return_labels(tmp_path, monkeypa
             str(SPLIT),
             "--candidate-receipt-table",
             str(receipt_table),
+            "--candidate-pair-receipt-table",
+            str(pair_receipt_table),
             "--unified-registry",
             str(REGISTRY),
             "--data-release-hash",
@@ -144,9 +159,9 @@ def test_semantic_only_main_never_builds_future_return_labels(tmp_path, monkeypa
     summary = json.loads(
         (output_root / "phase3cm_train_reward_audit_summary.json").read_text(encoding="utf-8")
     )
-    assert len(progress) == 1
+    assert len(progress) == 2
     assert int(progress[0]["rows_added"]) == 0
-    assert int(progress[0]["signal_finite_count"]) == 6
-    assert progress[0]["signal_rank_sketch"]
+    assert all(int(row["signal_finite_count"]) == 6 for row in progress)
+    assert all(row["signal_rank_sketch"] for row in progress)
     assert summary["semantic_only"] is True
     assert summary["optimizer_reward_metric"] is None

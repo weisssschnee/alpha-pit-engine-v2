@@ -36,8 +36,6 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
 )
 from our_system_phase2.runtime.phase3ca_build_bz_candidate_audit import build_candidate_table
 from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
-    _candidate_summary_from_reward_atoms,
-    _normalize_global_date_splits,
     main as phase3cm_main,
 )
 from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import build_feedback_memory
@@ -63,6 +61,14 @@ from our_system_phase2.services.candidate_submission_receipt import (
 )
 from our_system_phase2.services.expression_semantics import analyze_expression
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority, file_sha256
+from our_system_phase2.services.matched_control_pairs import (
+    CandidatePairAuthority,
+    group_candidate_pairs,
+    partition_candidate_pairs,
+    read_pair_receipt_table,
+    select_candidate_pairs,
+    write_pair_receipt_table,
+)
 from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule, read_csv_rows
 from our_system_phase2.services.signal_vector_semantics import classify_candidate_signal_semantics
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
@@ -593,6 +599,7 @@ def _run_pre_cm_semantic_viability_gate(
     *,
     args: argparse.Namespace,
     candidate_table: Path,
+    authorized_pair_table: list[dict[str, Any]],
     output_root: Path,
     report_root: Path,
     final_limit: int,
@@ -623,7 +630,11 @@ def _run_pre_cm_semantic_viability_gate(
         raise RuntimeError("pre-CM semantic viability gate received no candidates")
 
     gate_input = gate_output_root / "phase3cp_pre_cm_semantic_viability_input.csv"
-    _write_csv(gate_input, candidates)
+    gate_pair_rows = select_candidate_pairs(
+        authorized_pair_table,
+        primary_ids=[str(row.get("candidate_id") or "") for row in candidates],
+    )
+    _write_csv(gate_input, gate_pair_rows)
     max_shards = max(1, min(int(args.cm_max_shards), int(args.pre_cm_semantic_max_shards)))
     sample_times = max(1, int(args.pre_cm_semantic_sample_trade_times_per_shard))
     event_sample_times = int(args.pre_cm_semantic_event_sample_trade_times_per_shard)
@@ -679,6 +690,7 @@ def _run_pre_cm_semantic_viability_gate(
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
+        "--write-reward-atoms",
         "--semantic-only",
         "--write-semantic-sketches",
         "--semantic-sketch-size",
@@ -899,10 +911,17 @@ def _write_minimal_parallel_cm_md(summary: dict[str, Any], reward_rows: list[dic
     )
 
 
-def _append_cm_persistent_cache_args(argv: list[str], args: argparse.Namespace) -> None:
+def _append_cm_persistent_cache_args(
+    argv: list[str],
+    args: argparse.Namespace,
+    *,
+    worker_namespace: str | None = None,
+) -> None:
     root = getattr(args, "cm_persistent_cache_root", None)
     if root is None:
         return
+    if worker_namespace:
+        root = Path(root) / worker_namespace
     argv.extend(
         [
             "--persistent-cache-root",
@@ -948,10 +967,15 @@ def _append_cm_submission_authority_args(argv: list[str], args: argparse.Namespa
     receipt_table = getattr(args, "cm_candidate_receipt_table", None)
     if receipt_table is None:
         raise RuntimeError("formal Phase3CM invocation requires a frozen candidate receipt table")
+    pair_receipt_table = getattr(args, "cm_candidate_pair_receipt_table", None)
+    if pair_receipt_table is None:
+        raise RuntimeError("formal Phase3CM invocation requires a frozen candidate pair receipt table")
     argv.extend(
         [
             "--candidate-receipt-table",
             str(_resolve(receipt_table)),
+            "--candidate-pair-receipt-table",
+            str(_resolve(pair_receipt_table)),
             "--unified-registry",
             str(_resolve(args.unified_registry)),
             "--data-release-hash",
@@ -974,20 +998,21 @@ def _freeze_candidate_receipts(args: argparse.Namespace, candidate_table: Path, 
         evaluator_paths=[evaluator_path],
     )
     adapter = LegacyCandidateSubmissionAdapter(registry)
-    evaluator_candidates: list[dict[str, Any]] = []
     authorization_candidates: list[dict[str, Any]] = []
     for candidate in candidates:
         if str(candidate.get("route_id") or ""):
             normalized = dict(candidate)
-            evaluator_candidates.append(normalized)
             authorization_candidates.append(normalized)
         else:
             adapted, control = adapter.adapt_pair(candidate)
-            evaluator_candidates.append(adapted)
             authorization_candidates.extend([adapted, control])
-    _write_csv(candidate_table, evaluator_candidates)
+    _write_csv(candidate_table, authorization_candidates)
     receipts = CandidateSubmissionAuthority(registry, context).authorize_table(authorization_candidates)
     write_receipt_table(output_path, receipts)
+    pair_receipt_path = output_path.with_name(output_path.stem + "_pairs.jsonl")
+    pair_receipts = CandidatePairAuthority().authorize_table(authorization_candidates, receipts)
+    write_pair_receipt_table(pair_receipt_path, pair_receipts)
+    args.cm_candidate_pair_receipt_table = pair_receipt_path
     return output_path
 
 
@@ -997,7 +1022,7 @@ def _authorize_proposal_decisions(
     *,
     output_root: Path,
     report_root: Path,
-) -> tuple[list[dict[str, Any]], Path]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], Path, Path]:
     """Authorize proposals before proxy admission or semantic evaluation."""
     split_authority = FixedSplitAuthority.read(_resolve(args.cm_split_manifest), require_official=True)
     registry = UnifiedCapabilityRegistry.read(_resolve(args.unified_registry))
@@ -1011,7 +1036,9 @@ def _authorize_proposal_decisions(
     authority = CandidateSubmissionAuthority(registry, context)
     adapter = LegacyCandidateSubmissionAdapter(registry)
     accepted: list[dict[str, Any]] = []
+    authorized_pairs: list[dict[str, Any]] = []
     receipts: list[dict[str, Any]] = []
+    pair_receipts: list[dict[str, Any]] = []
     rejected: list[dict[str, Any]] = []
     for proposal in decisions:
         try:
@@ -1021,13 +1048,24 @@ def _authorize_proposal_decisions(
                     "the legacy Phase3CP decision stream accepts proposal-only rows"
                 )
             adapted, control = adapter.adapt_pair(proposal)
-            pair_receipts = authority.authorize_table([adapted, control])
-            receipt = next(row for row in pair_receipts if row["candidate_id"] == adapted["candidate_id"])
-            adapted["candidate_submission_receipt_id"] = receipt["receipt_id"]
-            adapted["candidate_submission_receipt_hash"] = receipt["receipt_hash"]
-            adapted["candidate_submission_authorization"] = receipt["authorization_status"]
+            candidate_pair_receipts = authority.authorize_table([adapted, control])
+            immutable_pair_receipt = CandidatePairAuthority().authorize_table(
+                [adapted, control], candidate_pair_receipts
+            )[0]
+            receipt_by_id = {
+                str(row["candidate_id"]): row for row in candidate_pair_receipts
+            }
+            for member in (adapted, control):
+                receipt = receipt_by_id[str(member["candidate_id"])]
+                member["candidate_submission_receipt_id"] = receipt["receipt_id"]
+                member["candidate_submission_receipt_hash"] = receipt["receipt_hash"]
+                member["candidate_submission_authorization"] = receipt["authorization_status"]
+                member["candidate_pair_receipt_id"] = immutable_pair_receipt["pair_receipt_id"]
+                member["candidate_pair_receipt_hash"] = immutable_pair_receipt["pair_receipt_hash"]
             accepted.append(adapted)
-            receipts.extend(pair_receipts)
+            authorized_pairs.extend([adapted, control])
+            receipts.extend(candidate_pair_receipts)
+            pair_receipts.append(immutable_pair_receipt)
         except Exception as exc:
             rejected.append(
                 {
@@ -1042,12 +1080,16 @@ def _authorize_proposal_decisions(
     if not accepted:
         raise RuntimeError("unified candidate receipt gate rejected every legacy proposal before admission")
     receipt_path = output_root / "candidate_submission_receipts.jsonl"
+    pair_receipt_path = output_root / "candidate_pair_receipts.jsonl"
     write_receipt_table(receipt_path, receipts)
+    write_pair_receipt_table(pair_receipt_path, pair_receipts)
     _write_csv(output_root / "candidate_submission_receipt_rejections.csv", rejected)
     _write_csv(report_root / "candidate_submission_receipt_rejections.csv", rejected)
     _write_csv(output_root / "candidate_submission_authorized_proposals.csv", accepted)
     _write_csv(report_root / "candidate_submission_authorized_proposals.csv", accepted)
-    return accepted, receipt_path
+    _write_csv(output_root / "candidate_submission_authorized_pairs.csv", authorized_pairs)
+    _write_csv(report_root / "candidate_submission_authorized_pairs.csv", authorized_pairs)
+    return accepted, authorized_pairs, receipt_path, pair_receipt_path
 
 
 def _run_real_cm_chunk_subprocess(
@@ -1110,11 +1152,16 @@ def _run_real_cm_chunk_subprocess(
         "--numexpr-threads",
         str(args.numexpr_threads),
         "--fast-mode",
+        "--write-reward-atoms",
     ]
     _append_cm_checkpoint_args(argv, args)
     _append_cm_split_manifest_args(argv, args)
     _append_cm_submission_authority_args(argv, args)
-    _append_cm_persistent_cache_args(argv, args)
+    _append_cm_persistent_cache_args(
+        argv,
+        args,
+        worker_namespace=f"candidate_worker_{chunk_output_root.name}",
+    )
     env = os.environ.copy()
     env.setdefault("PYTHONPATH", "src")
     proc = subprocess.run(
@@ -1152,95 +1199,6 @@ def _run_real_cm_chunk_subprocess(
     return json.loads(summary_path.read_text(encoding="utf-8"))
 
 
-def _run_real_cm_shard_subprocess(
-    *,
-    args: argparse.Namespace,
-    candidate_table: Path,
-    shard_indices: list[int],
-    shard_output_root: Path,
-    shard_report_root: Path,
-    candidate_limit: int,
-) -> dict[str, Any]:
-    argv = [
-        sys.executable,
-        "-m",
-        "our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit",
-        "--candidate-audit",
-        str(candidate_table),
-        "--shard-root",
-        str(_resolve(args.shard_root)),
-        "--output-root",
-        str(shard_output_root),
-        "--report-root",
-        str(shard_report_root),
-        "--candidate-limit",
-        str(candidate_limit),
-        "--max-shards",
-        str(args.cm_max_shards),
-        "--shard-indices",
-        ",".join(str(item) for item in shard_indices),
-        "--sample-trade-times-per-shard",
-        str(args.cm_sample_trade_times_per_shard),
-        "--event-aware-sample-times" if bool(args.cm_event_aware_sample_times) else "--no-event-aware-sample-times",
-        "--event-sample-trade-times-per-shard",
-        str(args.cm_event_sample_trade_times_per_shard),
-        "--horizons",
-        str(args.cm_horizons),
-        "--train-fraction",
-        str(args.cm_train_fraction),
-        "--validation-fraction",
-        str(args.cm_validation_fraction),
-        "--min-obs-per-time",
-        str(args.cm_min_obs_per_time),
-        "--cost-bps",
-        str(args.cm_cost_bps),
-        "--top-quantile",
-        str(args.cm_top_quantile),
-        "--rank-ic-loss-weight",
-        str(args.cm_rank_ic_loss_weight),
-        "--rank-ic-component-cap",
-        str(args.cm_rank_ic_component_cap),
-        "--regime-stability-weight",
-        str(args.cm_regime_stability_weight),
-        "--regime-component-cap",
-        str(args.cm_regime_component_cap),
-        "--operator-cache-max-entries",
-        str(args.cm_operator_cache_max_entries),
-        "--operator-cache-max-mb",
-        str(args.cm_operator_cache_max_mb),
-        "--feature-matrix-cache-max-windows",
-        str(args.cm_feature_matrix_cache_max_windows),
-        "--feature-matrix-cache-max-mb",
-        str(args.cm_feature_matrix_cache_max_mb),
-        "--numexpr-threads",
-        str(args.numexpr_threads),
-        "--fast-mode",
-        "--disable-schema-gate",
-    ]
-    if bool(args.cm_shard_write_reward_atoms):
-        argv.append("--write-reward-atoms")
-    _append_cm_checkpoint_args(argv, args)
-    _append_cm_split_manifest_args(argv, args)
-    _append_cm_submission_authority_args(argv, args)
-    _append_cm_persistent_cache_args(argv, args)
-    env = os.environ.copy()
-    env.setdefault("PYTHONPATH", "src")
-    proc = subprocess.run(
-        argv,
-        cwd=str(REPO),
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    (shard_output_root / "phase3cm_subprocess_stdout.log").write_text(proc.stdout or "", encoding="utf-8")
-    (shard_output_root / "phase3cm_subprocess_stderr.log").write_text(proc.stderr or "", encoding="utf-8")
-    if proc.returncode != 0:
-        raise RuntimeError(f"Phase3CM shard chunk failed rc={proc.returncode}: shard_indices={shard_indices}")
-    summary_path = shard_output_root / "phase3cm_train_reward_audit_summary.json"
-    summary = json.loads(summary_path.read_text(encoding="utf-8"))
-    summary["parallel_shard_indices"] = ",".join(str(item) for item in shard_indices)
-    return summary
 
 
 def _run_real_cm_retry_table(
@@ -1303,174 +1261,17 @@ def _run_real_cm_retry_table(
         str(args.numexpr_threads),
         "--fast-mode",
     ]
+    argv.append("--write-reward-atoms")
     _append_cm_checkpoint_args(argv, args)
     _append_cm_split_manifest_args(argv, args)
     _append_cm_submission_authority_args(argv, args)
-    _append_cm_persistent_cache_args(argv, args)
+    _append_cm_persistent_cache_args(argv, args, worker_namespace="candidate_retry")
     result = phase3cm_main(argv)
     if int(result or 0) != 0:
         raise RuntimeError(f"Phase3CM retry failed with exit code {result}")
     return json.loads((retry_output_root / "phase3cm_train_reward_audit_summary.json").read_text(encoding="utf-8"))
 
 
-def _finite_metric(row: dict[str, Any], key: str) -> float | None:
-    value = safe_float(row.get(key), float("nan"))
-    return value if math.isfinite(value) else None
-
-
-def _format_metric(value: float | None, ndigits: int = 8) -> str:
-    if value is None or not math.isfinite(float(value)):
-        return ""
-    return str(round(float(value), ndigits))
-
-
-def _median_metric(values: list[float]) -> float | None:
-    if not values:
-        return None
-    ordered = sorted(values)
-    mid = len(ordered) // 2
-    if len(ordered) % 2:
-        return ordered[mid]
-    return (ordered[mid - 1] + ordered[mid]) / 2.0
-
-
-def _aggregate_shard_chunk_reward_rows(
-    *,
-    candidates: list[dict[str, Any]],
-    chunk_reward_rows: list[dict[str, Any]],
-    horizons: tuple[int, ...],
-    args: argparse.Namespace,
-) -> list[dict[str, Any]]:
-    """Recover shard-parallel CM rows when reward atoms were intentionally skipped.
-
-    This is a diagnostic fallback, not an exact replacement for atom-based
-    all-shard portfolio curve aggregation. Exact shard-axis aggregation still
-    requires `--cm-shard-write-reward-atoms`.
-    """
-
-    rows_by_key: dict[str, list[dict[str, Any]]] = {}
-    for row in chunk_reward_rows:
-        key = str(row.get("expression_hash") or row.get("candidate_id") or "")
-        if key:
-            rows_by_key.setdefault(key, []).append(row)
-
-    reward_metric_fields = [
-        "train_reward",
-        "optimizer_reward",
-        "train_day_sortino",
-        "train_minute_sortino",
-        "train_median_horizon_day_sortino",
-        "train_day_mcmc_p25",
-        "train_day_mcmc_prob_gt_0",
-        "train_mean_one_way_turnover",
-        "train_rank_ic_mean",
-        "train_rank_ic_hit_rate",
-        "train_rank_ic_loss",
-        "train_rank_ic_reward_component",
-        "train_regime_stability_score",
-        "train_regime_reward_component",
-        "train_regime_median_day_sortino",
-        "train_regime_positive_share",
-        "validation_day_sortino",
-        "validation_day_mcmc_prob_gt_0",
-        "validation_rank_ic_mean",
-        "validation_rank_ic_loss",
-        "holdout_day_sortino",
-        "holdout_day_mcmc_prob_gt_0",
-        "holdout_rank_ic_mean",
-        "holdout_rank_ic_loss",
-    ]
-    min_metric_fields = [
-        "train_worst_horizon_day_sortino",
-        "train_regime_worst_day_sortino",
-    ]
-    sum_metric_fields = [
-        "train_rank_ic_obs",
-        "train_regime_count",
-    ]
-
-    recovered: list[dict[str, Any]] = []
-    for idx, candidate in enumerate(candidates, 1):
-        key = str(candidate.get("expression_hash") or candidate.get("candidate_id") or "")
-        rows = rows_by_key.get(key, [])
-        if not rows:
-            _, empty_row = _candidate_summary_from_reward_atoms(
-                candidate,
-                [],
-                horizons,
-                seed=20260623 + idx,
-                rank_ic_loss_weight=args.cm_rank_ic_loss_weight,
-                rank_ic_component_cap=args.cm_rank_ic_component_cap,
-                regime_stability_weight=args.cm_regime_stability_weight,
-                regime_component_cap=args.cm_regime_component_cap,
-            )
-            empty_row["reward_atom_mode"] = "missing_shard_chunk_reward_fallback"
-            empty_row["shard_chunk_reward_fallback"] = "true"
-            empty_row["shard_chunk_count"] = 0
-            recovered.append(empty_row)
-            continue
-
-        best = max(rows, key=lambda row: safe_float(row.get("optimizer_reward") or row.get("train_reward"), -999.0))
-        out = dict(best)
-        reward_values = [
-            value
-            for row in rows
-            for value in [_finite_metric(row, "optimizer_reward") or _finite_metric(row, "train_reward")]
-            if value is not None
-        ]
-        followup_count = sum(1 for row in rows if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY")
-        chunk_count = len(rows)
-        reward_mean = (sum(reward_values) / len(reward_values)) if reward_values else None
-        reward_min = min(reward_values) if reward_values else None
-        reward_max = max(reward_values) if reward_values else None
-        followup_share = followup_count / chunk_count if chunk_count else 0.0
-
-        for field in reward_metric_fields:
-            values = [value for row in rows for value in [_finite_metric(row, field)] if value is not None]
-            if values:
-                out[field] = _format_metric(sum(values) / len(values))
-        for field in min_metric_fields:
-            values = [value for row in rows for value in [_finite_metric(row, field)] if value is not None]
-            if values:
-                out[field] = _format_metric(min(values))
-        for field in sum_metric_fields:
-            values = [value for row in rows for value in [_finite_metric(row, field)] if value is not None]
-            if values:
-                out[field] = _format_metric(sum(values), 0)
-
-        out["train_reward"] = _format_metric(reward_mean)
-        out["optimizer_reward"] = _format_metric(reward_mean)
-        out["train_worst_shard_chunk_reward"] = _format_metric(reward_min)
-        out["train_best_shard_chunk_reward"] = _format_metric(reward_max)
-        out["train_median_shard_chunk_reward"] = _format_metric(_median_metric(reward_values))
-        out["shard_chunk_reward_fallback"] = "true"
-        out["shard_chunk_reward_fallback_note"] = "mean_of_shard_chunk_reward_rows_not_exact_all_shard_curve"
-        out["shard_chunk_count"] = chunk_count
-        out["shard_chunk_followup_count"] = followup_count
-        out["shard_chunk_followup_share"] = _format_metric(followup_share)
-        out["reward_atom_mode"] = "shard_chunk_reward_fallback"
-
-        blockers = {
-            blocker
-            for row in rows
-            for blocker in str(row.get("train_reward_blockers") or "").split("|")
-            if blocker
-        }
-        if reward_mean is None or reward_mean <= 0.0:
-            blockers.add("non_positive_shard_chunk_mean_reward")
-        if followup_count <= 0:
-            blockers.add("no_followup_ready_shard_chunk")
-        out["train_reward_blockers"] = "|".join(sorted(blockers))
-        out["train_reward_decision"] = (
-            "TRAIN_REWARD_FOLLOWUP_READY"
-            if reward_mean is not None and reward_mean > 0.0 and followup_count > 0
-            else "HOLD_TRAIN_REWARD"
-        )
-        out.update(normalize_candidate_schema(out))
-        recovered.append(out)
-
-    recovered.sort(key=lambda row: safe_float(row.get("optimizer_reward") or row.get("train_reward"), -999.0), reverse=True)
-    return recovered
 
 
 def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
@@ -1480,7 +1281,8 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
     cm_report_root.mkdir(parents=True, exist_ok=True)
 
     candidates = _read_csv(candidate_table)
-    workers = max(1, min(int(args.cm_workers), len(candidates)))
+    candidate_pairs = group_candidate_pairs(candidates)
+    workers = max(1, min(int(args.cm_workers), len(candidate_pairs)))
     if workers <= 1:
         return _run_real_cm_serial(args, candidate_table, output_root, report_root)
 
@@ -1490,8 +1292,9 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
     chunk_report_root.mkdir(parents=True, exist_ok=True)
 
     chunks: list[tuple[int, Path, Path, Path, int]] = []
-    for worker_idx in range(workers):
-        rows = candidates[worker_idx::workers]
+    for worker_idx, rows in enumerate(
+        partition_candidate_pairs(candidates, worker_count=workers)
+    ):
         if not rows:
             continue
         chunk_table = chunk_root / f"candidate_chunk_{worker_idx + 1:02d}.csv"
@@ -1500,7 +1303,7 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
         chunk_out.mkdir(parents=True, exist_ok=True)
         chunk_rep.mkdir(parents=True, exist_ok=True)
         _write_csv(chunk_table, rows)
-        chunks.append((worker_idx + 1, chunk_table, chunk_out, chunk_rep, len(rows)))
+        chunks.append((worker_idx + 1, chunk_table, chunk_out, chunk_rep, len(rows) // 2))
 
     chunk_summaries: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=len(chunks)) as executor:
@@ -1525,6 +1328,8 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
             chunk_summaries.append(summary)
 
     reward_rows: list[dict[str, Any]] = []
+    pair_evaluation_rows: list[dict[str, Any]] = []
+    reward_atom_rows: list[dict[str, Any]] = []
     split_horizon_rows: list[dict[str, Any]] = []
     shard_meta_rows: list[dict[str, Any]] = []
     progress_rows: list[dict[str, Any]] = []
@@ -1542,6 +1347,12 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
         for row in _read_csv(chunk_reward_path):
             row["parallel_chunk_id"] = chunk_id
             reward_rows.append(row)
+        for row in _read_csv(chunk_out / "phase3cm_candidate_pair_evaluation.csv"):
+            row["parallel_chunk_id"] = chunk_id
+            pair_evaluation_rows.append(row)
+        for row in _read_csv(chunk_out / "phase3cm_reward_atoms.csv"):
+            row["parallel_chunk_id"] = chunk_id
+            reward_atom_rows.append(row)
         for row in _read_csv(chunk_out / "phase3cm_candidate_split_horizon_summary.csv"):
             row["parallel_chunk_id"] = chunk_id
             split_horizon_rows.append(row)
@@ -1554,7 +1365,15 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
 
     expected_by_id = {str(row.get("candidate_id") or ""): row for row in candidates if str(row.get("candidate_id") or "")}
     recovered_ids = {str(row.get("candidate_id") or "") for row in reward_rows if str(row.get("candidate_id") or "")}
-    missing_rows = [row for cid, row in expected_by_id.items() if cid not in recovered_ids]
+    missing_ids = {cid for cid in expected_by_id if cid not in recovered_ids}
+    missing_pair_ids = {
+        str(row.get("pair_id") or "")
+        for cid, row in expected_by_id.items()
+        if cid in missing_ids
+    }
+    missing_rows = [
+        row for row in candidates if str(row.get("pair_id") or "") in missing_pair_ids
+    ]
     retry_summary: dict[str, Any] = {
         "missing_candidate_count_before_retry": len(missing_rows),
         "retry_candidate_count": 0,
@@ -1571,12 +1390,18 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
             retry_table=retry_table,
             retry_output_root=retry_root,
             retry_report_root=retry_report_root,
-            retry_limit=len(missing_rows),
+            retry_limit=len(missing_rows) // 2,
         )
         retry_reward_rows = _read_csv(retry_root / "phase3cm_train_reward.csv")
         for row in retry_reward_rows:
             row["parallel_chunk_id"] = "retry_missing"
             reward_rows.append(row)
+        for row in _read_csv(retry_root / "phase3cm_candidate_pair_evaluation.csv"):
+            row["parallel_chunk_id"] = "retry_missing"
+            pair_evaluation_rows.append(row)
+        for row in _read_csv(retry_root / "phase3cm_reward_atoms.csv"):
+            row["parallel_chunk_id"] = "retry_missing"
+            reward_atom_rows.append(row)
         for row in _read_csv(retry_root / "phase3cm_candidate_split_horizon_summary.csv"):
             row["parallel_chunk_id"] = "retry_missing"
             split_horizon_rows.append(row)
@@ -1596,6 +1421,15 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
         }
 
     reward_rows.sort(key=lambda row: safe_float(row.get("train_reward"), -999.0), reverse=True)
+    pair_evaluation_rows.sort(key=lambda row: str(row.get("pair_id") or ""))
+    reward_atom_rows.sort(
+        key=lambda row: (
+            str(row.get("candidate_id") or ""),
+            str(row.get("split") or ""),
+            str(row.get("horizon_min") or ""),
+            str(row.get("trade_date") or ""),
+        )
+    )
     followup_count = sum(1 for row in reward_rows if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY")
     partial_chunk_count = sum(1 for row in chunk_summaries if bool(row.get("partial")))
     summary = {
@@ -1603,6 +1437,14 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
         "experiment_id": "20260623_phase3cm_train_portfolio_sortino_reward_audit",
         "decision": "PHASE3CM_TRAIN_REWARD_AUDIT_READY_DIAGNOSTIC_ONLY",
         "candidate_count": len(reward_rows),
+        "candidate_pair_count": len(candidate_pairs),
+        "pair_evaluated_count": sum(
+            row.get("pair_evaluation_status") == "PAIR_EVALUATED" for row in pair_evaluation_rows
+        ),
+        "pair_blocked_count": sum(
+            row.get("pair_evaluation_status") == "PAIR_EVALUATION_BLOCKED" for row in pair_evaluation_rows
+        ),
+        "reward_atom_rows_written": len(reward_atom_rows),
         "followup_count": followup_count,
         "input_candidate_audit": str(candidate_table),
         "shard_root": str(_resolve(args.shard_root)),
@@ -1649,11 +1491,19 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
             "numexpr_max_threads": os.environ.get("NUMEXPR_MAX_THREADS"),
             "parallel_workers": len(chunks),
             "global_worker_limit": len(chunks),
+            "parallel_axis": "candidate_pair",
+            "full_shard_universe_per_worker": True,
+            "pair_indivisible_across_workers": True,
+            "shared_cache_writes": False,
+            "worker_cache_namespace": "candidate_worker_<chunk>",
         },
     }
     for root in (cm_output_root, cm_report_root):
         _write_csv(root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
         _write_csv(root / "phase3cm_train_reward.csv", reward_rows)
+        _write_csv(root / "phase3cm_candidate_pair_evaluation.csv", pair_evaluation_rows)
+        _write_json(root / "phase3cm_candidate_pair_evaluation.json", pair_evaluation_rows)
+        _write_csv(root / "phase3cm_reward_atoms.csv", reward_atom_rows)
         _write_csv(root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
         _write_csv(root / "phase3cm_shard_meta.csv", shard_meta_rows)
         _write_csv(root / "phase3cm_candidate_progress.csv", progress_rows)
@@ -1679,246 +1529,6 @@ def _run_real_cm_parallel(args: argparse.Namespace, candidate_table: Path, outpu
     return summary
 
 
-def _run_real_cm_parallel_by_shard(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
-    cm_output_root = output_root / "phase3cm_train_reward"
-    cm_report_root = report_root / "phase3cm_train_reward"
-    cm_output_root.mkdir(parents=True, exist_ok=True)
-    cm_report_root.mkdir(parents=True, exist_ok=True)
-
-    candidates = _read_csv(candidate_table)
-    if int(args.cm_candidate_limit) > 0:
-        candidates = candidates[: int(args.cm_candidate_limit)]
-    panels = _discover_panels(_resolve(args.shard_root), args.cm_max_shards)
-    shard_indices = list(range(len(panels)))
-    workers = max(1, min(int(args.cm_workers), len(shard_indices)))
-    if workers <= 1:
-        return _run_real_cm_serial(args, candidate_table, output_root, report_root)
-
-    chunk_root = output_root / "phase3cm_train_reward_shard_chunks"
-    chunk_report_root = report_root / "phase3cm_train_reward_shard_chunks"
-    chunk_root.mkdir(parents=True, exist_ok=True)
-    chunk_report_root.mkdir(parents=True, exist_ok=True)
-
-    chunks: list[tuple[int, list[int], Path, Path]] = []
-    for worker_idx in range(workers):
-        indices = shard_indices[worker_idx::workers]
-        if not indices:
-            continue
-        chunk_out = chunk_root / f"shard_chunk_{worker_idx + 1:02d}"
-        chunk_rep = chunk_report_root / f"shard_chunk_{worker_idx + 1:02d}"
-        chunk_out.mkdir(parents=True, exist_ok=True)
-        chunk_rep.mkdir(parents=True, exist_ok=True)
-        chunks.append((worker_idx + 1, indices, chunk_out, chunk_rep))
-
-    chunk_summaries: list[dict[str, Any]] = []
-    with ThreadPoolExecutor(max_workers=len(chunks)) as executor:
-        futures = {
-            executor.submit(
-                _run_real_cm_shard_subprocess,
-                args=args,
-                candidate_table=candidate_table,
-                shard_indices=indices,
-                shard_output_root=chunk_out,
-                shard_report_root=chunk_rep,
-                candidate_limit=len(candidates),
-            ): (chunk_id, indices, chunk_out)
-            for chunk_id, indices, chunk_out, chunk_rep in chunks
-        }
-        for future in as_completed(futures):
-            chunk_id, indices, chunk_out = futures[future]
-            summary = future.result()
-            summary["parallel_chunk_id"] = chunk_id
-            summary["parallel_shard_indices"] = ",".join(str(item) for item in indices)
-            summary["parallel_chunk_output_root"] = str(chunk_out)
-            chunk_summaries.append(summary)
-
-    atom_rows: list[dict[str, Any]] = []
-    chunk_reward_rows: list[dict[str, Any]] = []
-    chunk_split_horizon_rows: list[dict[str, Any]] = []
-    shard_meta_rows: list[dict[str, Any]] = []
-    progress_rows: list[dict[str, Any]] = []
-    for chunk_id, indices, chunk_out, _ in chunks:
-        for row in _read_csv(chunk_out / "phase3cm_reward_atoms.csv"):
-            row["parallel_chunk_id"] = chunk_id
-            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
-            atom_rows.append(row)
-        for row in _read_csv(chunk_out / "phase3cm_train_reward.csv"):
-            row["parallel_chunk_id"] = chunk_id
-            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
-            chunk_reward_rows.append(row)
-        for row in _read_csv(chunk_out / "phase3cm_candidate_split_horizon_summary.csv"):
-            row["parallel_chunk_id"] = chunk_id
-            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
-            chunk_split_horizon_rows.append(row)
-        for row in _read_csv(chunk_out / "phase3cm_shard_meta.csv"):
-            row["parallel_chunk_id"] = chunk_id
-            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
-            shard_meta_rows.append(row)
-        for row in _read_csv(chunk_out / "phase3cm_candidate_progress.csv"):
-            row["parallel_chunk_id"] = chunk_id
-            row["parallel_shard_indices"] = ",".join(str(item) for item in indices)
-            progress_rows.append(row)
-
-    exact_split_authority = FixedSplitAuthority.read(_resolve(args.cm_split_manifest), require_official=True)
-    split_manifest_rows, split_reassignment_audit = _normalize_global_date_splits(
-        atom_rows,
-        train_fraction=args.cm_train_fraction,
-        validation_fraction=args.cm_validation_fraction,
-        split_manifest=[dict(row) for row in exact_split_authority.rows],
-    )
-
-    atom_rows_by_hash: dict[str, list[dict[str, Any]]] = {}
-    for row in atom_rows:
-        digest = str(row.get("expression_hash") or "")
-        if digest:
-            atom_rows_by_hash.setdefault(digest, []).append(row)
-
-    horizons = tuple(int(item.strip()) for item in str(args.cm_horizons).split(",") if item.strip())
-    reward_rows: list[dict[str, Any]] = []
-    split_horizon_rows: list[dict[str, Any]] = []
-    reward_aggregation_mode = "reward_atoms_exact_all_shard_curve"
-    if atom_rows:
-        for idx, candidate in enumerate(candidates, 1):
-            digest = str(candidate.get("expression_hash") or "")
-            per_split, reward_row = _candidate_summary_from_reward_atoms(
-                candidate,
-                atom_rows_by_hash.get(digest, []),
-                horizons,
-                seed=20260623 + idx,
-                rank_ic_loss_weight=args.cm_rank_ic_loss_weight,
-                rank_ic_component_cap=args.cm_rank_ic_component_cap,
-                regime_stability_weight=args.cm_regime_stability_weight,
-                regime_component_cap=args.cm_regime_component_cap,
-            )
-            for row in per_split:
-                split_horizon_rows.append(
-                    {
-                        "candidate_id": candidate.get("candidate_id"),
-                        "expression_hash": candidate.get("expression_hash"),
-                        "generator_arm": candidate.get("generator_arm"),
-                        "factor_lane": candidate.get("factor_lane"),
-                        "expression": candidate.get("expression"),
-                        **row,
-                    }
-                )
-            reward_rows.append(reward_row)
-    else:
-        reward_aggregation_mode = "shard_chunk_reward_fallback_not_exact_all_shard_curve"
-        reward_rows = _aggregate_shard_chunk_reward_rows(
-            candidates=candidates,
-            chunk_reward_rows=chunk_reward_rows,
-            horizons=horizons,
-            args=args,
-        )
-        split_horizon_rows = chunk_split_horizon_rows
-
-    reward_rows.sort(key=lambda row: safe_float(row.get("train_reward"), -999.0), reverse=True)
-    followup_count = sum(1 for row in reward_rows if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY")
-    summary = {
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "experiment_id": "20260623_phase3cm_train_portfolio_sortino_reward_audit",
-        "decision": "PHASE3CM_TRAIN_REWARD_AUDIT_READY_DIAGNOSTIC_ONLY",
-        "candidate_count": len(reward_rows),
-        "followup_count": followup_count,
-        "input_candidate_audit": str(candidate_table),
-        "shard_root": str(_resolve(args.shard_root)),
-        "max_shards": args.cm_max_shards,
-        "selected_shard_count": len(shard_indices),
-        "sample_trade_times_per_shard": args.cm_sample_trade_times_per_shard,
-        "horizons": [int(item) for item in horizons],
-        "train_fraction": args.cm_train_fraction,
-        "validation_fraction": args.cm_validation_fraction,
-        "holdout_fraction": round(1.0 - args.cm_train_fraction - args.cm_validation_fraction, 8),
-        "split_policy": split_reassignment_audit.get("split_policy"),
-        "split_manifest_input": str(_resolve(args.cm_split_manifest)),
-        "split_audit": split_reassignment_audit,
-        "cost_bps": args.cm_cost_bps,
-        "top_quantile": args.cm_top_quantile,
-        "rank_ic_loss_weight": args.cm_rank_ic_loss_weight,
-        "rank_ic_component_cap": args.cm_rank_ic_component_cap,
-        "regime_stability_weight": args.cm_regime_stability_weight,
-        "regime_component_cap": args.cm_regime_component_cap,
-        "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
-        "portfolio_pnl_rows_written": 0,
-        "reward_atom_rows_merged": len(atom_rows),
-        "shard_chunk_reward_rows_merged": len(chunk_reward_rows),
-        "reward_aggregation_mode": reward_aggregation_mode,
-        "reward_aggregation_warning": (
-            ""
-            if atom_rows
-            else "reward atoms absent; recovered from shard chunk reward summaries, so all-shard Sortino is approximate diagnostic only"
-        ),
-        "metric_boundary": "parallel shard-axis train portfolio Sortino + rankIC loss reward audit; not production proof; validation/holdout must not feed search",
-        "fast_mode": True,
-        "numexpr_threads": int(args.numexpr_threads),
-        "incremental_checkpoints_enabled": True,
-        "checkpoint_every_candidates": 8,
-        "drop_hard_blocked_input": False,
-        "python_executable": sys.executable,
-        "package_versions": chunk_summaries[0].get("package_versions", {}) if chunk_summaries else {},
-        "parallel_axis": "shard",
-        "parallel_chunk_count": len(chunks),
-        "partial_chunk_count": 0,
-        "parallel_chunk_summaries": sorted(chunk_summaries, key=lambda row: int(row.get("parallel_chunk_id") or 0)),
-        "missing_retry_summary": {
-            "missing_candidate_count_before_retry": 0,
-            "retry_candidate_count": 0,
-            "retry_success_count": 0,
-            "missing_candidate_count_after_retry": 0,
-        },
-        "acceleration_contract": {
-            "batched_shard_read": True,
-            "column_pruned_pyarrow_read": True,
-            "expression_cache_scope": "per_worker_distinct_shards",
-            "factor_expression_cache": True,
-            "feature_matrix_cache": True,
-            "operator_subtree_cache": True,
-            "operator_cache_max_entries": int(args.cm_operator_cache_max_entries),
-            "operator_cache_max_mb": float(args.cm_operator_cache_max_mb),
-            "feature_matrix_cache_max_windows": int(args.cm_feature_matrix_cache_max_windows),
-            "feature_matrix_cache_max_mb": float(args.cm_feature_matrix_cache_max_mb),
-            "fast_group_rank": True,
-            "omp_threads": os.environ.get("OMP_NUM_THREADS"),
-            "mkl_threads": os.environ.get("MKL_NUM_THREADS"),
-            "numexpr_max_threads": os.environ.get("NUMEXPR_MAX_THREADS"),
-            "parallel_workers": len(chunks),
-            "global_worker_limit": len(chunks),
-            "parallel_axis": "shard",
-            "duplicate_shard_reads_per_full_pass": 1,
-            "event_aware_sample_times": bool(args.cm_event_aware_sample_times),
-            "event_sample_trade_times_per_shard": int(args.cm_event_sample_trade_times_per_shard),
-        },
-    }
-    for root in (cm_output_root, cm_report_root):
-        _write_csv(root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
-        _write_csv(root / "phase3cm_train_reward.csv", reward_rows)
-        _write_csv(root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
-        _write_csv(root / "phase3cm_shard_meta.csv", shard_meta_rows)
-        _write_csv(root / "phase3cm_candidate_progress.csv", progress_rows)
-        _write_csv(root / "phase3cm_split_manifest.csv", split_manifest_rows)
-        _write_json(root / "phase3cm_split_reassignment_audit.json", split_reassignment_audit)
-        _write_csv(root / "phase3cm_reward_atoms.csv", atom_rows)
-        _write_csv(root / "phase3cm_train_reward_partial.csv", reward_rows)
-        _write_json(root / "phase3cm_train_reward_audit_summary.json", summary)
-        _write_json(
-            root / "phase3cm_incremental_checkpoint_summary.json",
-            {
-                "created_at": datetime.now(timezone.utc).isoformat(),
-                "experiment_id": "20260623_phase3cm_incremental_checkpoint",
-                "partial": False,
-                "final": True,
-                "candidate_count": len(reward_rows),
-                "shard_count": len(shard_indices),
-                "processed_candidate_shards": len(progress_rows),
-                "partial_reward_count": len(reward_rows),
-                "progress_row_count": len(progress_rows),
-                "completed_shards": len(shard_indices),
-                "parallel_workers": len(chunks),
-                "parallel_axis": "shard",
-            },
-        )
-    _write_minimal_parallel_cm_md(summary, reward_rows, cm_report_root)
-    return summary
 
 
 def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
@@ -1974,6 +1584,7 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
         str(args.numexpr_threads),
         "--fast-mode",
     ]
+    argv.append("--write-reward-atoms")
     _append_cm_checkpoint_args(argv, args)
     _append_cm_split_manifest_args(argv, args)
     _append_cm_submission_authority_args(argv, args)
@@ -1986,8 +1597,6 @@ def _run_real_cm_serial(args: argparse.Namespace, candidate_table: Path, output_
 
 def _run_real_cm(args: argparse.Namespace, candidate_table: Path, output_root: Path, report_root: Path) -> dict[str, Any]:
     if int(getattr(args, "cm_workers", 1) or 1) > 1:
-        if str(getattr(args, "cm_parallel_axis", "candidate")) == "shard":
-            return _run_real_cm_parallel_by_shard(args, candidate_table, output_root, report_root)
         return _run_real_cm_parallel(args, candidate_table, output_root, report_root)
     return _run_real_cm_serial(args, candidate_table, output_root, report_root)
 
@@ -2092,12 +1701,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cm-checkpoint-every-candidates", type=int, default=8)
     parser.add_argument("--cm-checkpoint-bootstrap-iterations", type=int, default=128)
     parser.add_argument("--cm-disable-incremental-checkpoints", action="store_true")
-    parser.add_argument(
-        "--cm-shard-write-reward-atoms",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Write per-trade reward atoms for shard-parallel CM. Disable for high-throughput search and replay top candidates later.",
-    )
     parser.add_argument("--pre-cm-turnover-proxy-max", type=float, default=float("nan"))
     parser.add_argument("--pre-cm-semantic-gate", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--pre-cm-semantic-oversample-multiplier", type=float, default=2.0)
@@ -2118,7 +1721,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write-semantic-block-memory", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--semantic-block-memory-root", type=Path, default=Path("runtime/search_memory/phase3cp_semantic_blocks"))
     parser.add_argument("--cm-workers", type=int, default=1)
-    parser.add_argument("--cm-parallel-axis", choices=("candidate", "shard"), default="candidate")
+    parser.add_argument("--cm-parallel-axis", choices=("candidate",), default="candidate")
     parser.add_argument("--numexpr-threads", type=int, default=4)
     parser.add_argument("--min-clean-feedback", type=int, default=2)
     parser.add_argument("--reschedule-total-budget", type=int, default=512)
@@ -2140,12 +1743,6 @@ def main(argv: list[str] | None = None) -> int:
     FixedSplitAuthority.read(_resolve(args.cm_split_manifest), require_official=True)
     if not _resolve(args.unified_registry).exists():
         raise FileNotFoundError(f"unified registry does not exist: {_resolve(args.unified_registry)}")
-    if int(args.cm_workers) > 1 and str(args.cm_parallel_axis) == "shard":
-        raise RuntimeError(
-            "FORMAL_SHARD_PARALLEL_PORTFOLIO_BLOCKED: disjoint symbol-shard workers "
-            "produce shard-local cross-sectional ranks and are not semantically invariant; "
-            "use --cm-parallel-axis candidate until a global cross-section exact merge exists"
-        )
     shard_root_text = str(shard_root).lower()
     if "tdxofficial" in shard_root_text or "\\1d" in shard_root_text or "/1d" in shard_root_text:
         raise RuntimeError(f"refusing suspicious non-true1min shard root: {shard_root}")
@@ -2168,14 +1765,22 @@ def main(argv: list[str] | None = None) -> int:
         shortfall_fill_rounds=args.shortfall_fill_rounds,
         shortfall_oversample_multiplier=args.shortfall_oversample_multiplier,
     )
-    decisions, args.cm_candidate_receipt_table = _authorize_proposal_decisions(
+    (
+        decisions,
+        authorized_pair_table,
+        args.cm_candidate_receipt_table,
+        args.cm_candidate_pair_receipt_table,
+    ) = _authorize_proposal_decisions(
         args,
         decisions,
         output_root=output_root,
         report_root=report_root,
     )
 
-    receipt_namespace = file_sha256(args.cm_candidate_receipt_table)[:16]
+    receipt_namespace = (
+        file_sha256(args.cm_candidate_receipt_table)[:8]
+        + file_sha256(args.cm_candidate_pair_receipt_table)[:8]
+    )
     search_root = output_root / "receipt_authorized_search_outputs" / receipt_namespace
     report_search_root = report_root / "receipt_authorized_search_outputs" / receipt_namespace
     # Proposal-only rows are retained in their own immutable namespace.  The
@@ -2210,16 +1815,30 @@ def main(argv: list[str] | None = None) -> int:
         output_root=output_root,
         report_root=report_root,
     )
-    cm_candidate_table, semantic_gate_summary = _run_pre_cm_semantic_viability_gate(
+    cm_primary_table, semantic_gate_summary = _run_pre_cm_semantic_viability_gate(
         args=args,
         candidate_table=cm_candidate_table_raw,
+        authorized_pair_table=authorized_pair_table,
         output_root=output_root,
         report_root=report_root,
         final_limit=int(args.cm_candidate_limit),
     )
+    selected_primary_ids = [
+        str(row.get("candidate_id") or "")
+        for row in _read_csv(cm_primary_table)
+        if str(row.get("candidate_id") or "")
+    ]
+    cm_candidate_table = output_root / "phase3cm_authorized_candidate_pairs.csv"
+    selected_pair_rows = select_candidate_pairs(
+        authorized_pair_table,
+        primary_ids=selected_primary_ids,
+        pair_limit=int(args.cm_candidate_limit),
+    )
+    _write_csv(cm_candidate_table, selected_pair_rows)
+    _write_csv(report_root / "phase3cm_authorized_candidate_pairs.csv", selected_pair_rows)
     cm_summary = _run_real_cm(args, cm_candidate_table, output_root, report_root)
 
-    cm_table = output_root / "phase3cm_train_reward" / "phase3cm_train_reward.csv"
+    cm_table = output_root / "phase3cm_train_reward" / "phase3cm_candidate_pair_evaluation.csv"
     lineage_consistency_summary = _audit_cm_lineage_consistency(
         candidate_table=cm_candidate_table,
         cm_table=cm_table,
@@ -2233,6 +1852,11 @@ def main(argv: list[str] | None = None) -> int:
         str(row.get("candidate_id") or ""): str(row.get("receipt_hash") or "")
         for row in receipt_rows
     }
+    pair_receipt_rows = read_pair_receipt_table(args.cm_candidate_pair_receipt_table)
+    authorized_pair_receipt_hashes = {
+        str(row.get("pair_id") or ""): str(row.get("pair_receipt_hash") or "")
+        for row in pair_receipt_rows
+    }
     cn_summary = build_feedback_memory(
         cm_tables=[cm_table],
         cm_roots=[],
@@ -2244,6 +1868,7 @@ def main(argv: list[str] | None = None) -> int:
         max_family_share=0.25,
         min_clean_feedback=args.min_clean_feedback,
         authorized_receipt_hashes=authorized_receipt_hashes,
+        authorized_pair_receipt_hashes=authorized_pair_receipt_hashes,
     )
 
     next_arm_rows = read_csv_rows(cn_output_root / "phase3cn_arm_score_table.csv")
@@ -2275,12 +1900,12 @@ def main(argv: list[str] | None = None) -> int:
         "true1min_shard_root_exists": shard_root.exists(),
         "suspicious_1d_path_blocked": "tdxofficial" not in shard_root_text and "\\1d" not in shard_root_text and "/1d" not in shard_root_text,
         "cm_fast_mode": bool(cm_summary.get("fast_mode")),
-        "cm_candidate_count_ok": int(cm_summary["candidate_count"]) == min(
+        "cm_candidate_count_ok": int(cm_summary["candidate_pair_count"]) == min(
             int(args.cm_candidate_limit),
             int(semantic_gate_summary.get("kept_candidate_count") or semantic_gate_summary.get("passed_candidate_count") or 0),
         ),
         "cm_lineage_consistent": bool(lineage_consistency_summary["lineage_consistent"]),
-        "cn_memory_matches_cm": int(cn_summary["candidate_count"]) == int(cm_summary["candidate_count"]),
+        "cn_memory_matches_cm": int(cn_summary["candidate_count"]) == int(cm_summary["pair_evaluated_count"]),
         "reschedule_total_ok": int(reschedule_summary["allocated_budget"]) == int(args.reschedule_total_budget),
         "holdout_not_optimizer_input": True,
         "memory_blocklist_loaded": len(memory_hashes) > 0,
@@ -2315,7 +1940,8 @@ def main(argv: list[str] | None = None) -> int:
         "cm_persistent_feature_matrix_cache": not bool(args.cm_disable_persistent_feature_matrix_cache),
         "cm_checkpoint_every_candidates": int(args.cm_checkpoint_every_candidates),
         "cm_incremental_checkpoints": not bool(args.cm_disable_incremental_checkpoints),
-        "cm_shard_write_reward_atoms": bool(args.cm_shard_write_reward_atoms),
+        "shard_parallel_portfolio_status": "DEPRECATED_DIAGNOSTIC_ONLY_FORMAL_ENTRY_REMOVED",
+        "mean_of_shard_reward_fallback_status": "DEPRECATED_FORBIDDEN_FROM_FEEDBACK",
         "pre_cm_semantic_gate": bool(args.pre_cm_semantic_gate),
         "checks": checks,
         "initial_arm_plan": scaled_plan,

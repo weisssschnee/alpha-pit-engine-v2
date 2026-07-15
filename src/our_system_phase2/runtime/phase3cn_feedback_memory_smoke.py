@@ -19,7 +19,6 @@ from typing import Any, Mapping
 import numpy as np
 
 from our_system_phase2.services.candidate_schema import (
-    OPTIMIZER_REWARD_METRIC,
     TRAIN_ONLY_FEEDBACK_FIELDS,
     normalize_candidate_schema,
     safe_float,
@@ -37,6 +36,12 @@ from our_system_phase2.services.evaluation_access_guard import (
 )
 from our_system_phase2.services.expression_semantics import analyze_expression
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
+from our_system_phase2.services.matched_control_pairs import (
+    CandidatePairAuthority,
+    MATCHED_OPTIMIZER_REWARD_METRIC,
+    MATCHED_OPTIMIZER_REWARD_SOURCE,
+    read_pair_receipt_table,
+)
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
 
 
@@ -127,12 +132,12 @@ def _assert_raw_phase3cm_provenance(raw: dict[str, Any], *, source: Path) -> Non
             f"raw Phase3CM source must declare optimizer_reward_split=train before normalization; "
             f"table={source} candidate={candidate} split={split or '<missing>'}"
         )
-    if reward_source != "train_only_phase3cm":
+    if reward_source != MATCHED_OPTIMIZER_REWARD_SOURCE:
         raise RuntimeError(
-            f"raw Phase3CM source must declare optimizer_reward_source=train_only_phase3cm before normalization; "
+            f"raw Phase3CM source must declare optimizer_reward_source={MATCHED_OPTIMIZER_REWARD_SOURCE} before normalization; "
             f"table={source} candidate={candidate} source={reward_source or '<missing>'}"
         )
-    if metric != OPTIMIZER_REWARD_METRIC:
+    if metric != MATCHED_OPTIMIZER_REWARD_METRIC:
         raise RuntimeError(
             f"raw Phase3CM source metric mismatch before normalization; "
             f"table={source} candidate={candidate} metric={metric or '<missing>'}"
@@ -142,6 +147,17 @@ def _assert_raw_phase3cm_provenance(raw: dict[str, Any], *, source: Path) -> Non
             f"raw Phase3CM source cannot relabel feedback_data_role={role} as development; "
             f"table={source} candidate={candidate}"
         )
+    if str(raw.get("pair_evaluation_status") or "") != "PAIR_EVALUATED":
+        raise RuntimeError(
+            f"raw Phase3CM source is not a completed matched pair evaluation; "
+            f"table={source} candidate={candidate}"
+        )
+    if str(raw.get("pair_member_role") or "") != "PRIMARY":
+        raise RuntimeError(
+            f"raw Phase3CM feedback may contain primary pair rows only; table={source} candidate={candidate}"
+        )
+    if str(raw.get("shard_chunk_reward_fallback") or "").strip().lower() in {"1", "true", "yes"}:
+        raise RuntimeError("mean-of-shard reward fallback is forbidden from Phase3CN feedback")
 
 
 def _load_rows(tables: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -356,8 +372,8 @@ def _arm_score_table(
                 "feedback_update_allowed": str(update_allowed).lower(),
                 "positive_train_reward_rate": _round(positive_rate),
                 "median_train_reward": _round(median_reward),
-                "optimizer_reward_source": "train_only_phase3cm",
-                "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
+                "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
+                "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
                 "new_family_rate": _round(new_family_rate),
                 "low_turnover_rate": _round(low_turnover_rate),
                 "rewardhack_family_rate": _round(rewardhack_rate),
@@ -442,9 +458,12 @@ def build_feedback_memory(
     max_family_share: float,
     min_clean_feedback: int,
     authorized_receipt_hashes: Mapping[str, str] | None = None,
+    authorized_pair_receipt_hashes: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     if authorized_receipt_hashes is None:
         raise RuntimeError("Phase3CN formal feedback requires candidate submission receipts")
+    if authorized_pair_receipt_hashes is None:
+        raise RuntimeError("Phase3CN formal feedback requires candidate pair receipts")
     tables = _discover_cm_tables(cm_tables, cm_roots)
     if not tables:
         raise RuntimeError("no Phase3CM reward tables found")
@@ -456,11 +475,29 @@ def build_feedback_memory(
         item = dict(row)
         if authorized_receipt_hashes is not None:
             candidate_id = str(item.get("candidate_id") or "")
-            expected_receipt_hash = str(authorized_receipt_hashes.get(candidate_id) or "")
-            observed_receipt_hash = str(item.get("candidate_submission_receipt_hash") or "")
-            if not expected_receipt_hash or observed_receipt_hash != expected_receipt_hash:
+            primary_id = str(item.get("primary_candidate_id") or "")
+            control_id = str(item.get("control_candidate_id") or "")
+            pair_id = str(item.get("pair_id") or "")
+            expected_primary_hash = str(authorized_receipt_hashes.get(primary_id) or "")
+            expected_control_hash = str(authorized_receipt_hashes.get(control_id) or "")
+            expected_pair_hash = str(authorized_pair_receipt_hashes.get(pair_id) or "")
+            if (
+                not expected_primary_hash
+                or candidate_id != primary_id
+                or str(item.get("primary_receipt_hash") or "") != expected_primary_hash
+            ):
                 raise RuntimeError(
-                    "Phase3CN feedback rejected candidate without the exact evaluator authorization receipt; "
+                    "Phase3CN feedback rejected primary without the exact evaluator authorization receipt; "
+                    f"candidate={candidate_id or '<missing>'}"
+                )
+            if not expected_control_hash or str(item.get("control_receipt_hash") or "") != expected_control_hash:
+                raise RuntimeError(
+                    "Phase3CN feedback rejected pair without the exact control authorization receipt; "
+                    f"candidate={candidate_id or '<missing>'}"
+                )
+            if not expected_pair_hash or str(item.get("pair_receipt_hash") or "") != expected_pair_hash:
+                raise RuntimeError(
+                    "Phase3CN feedback rejected pair without the exact immutable pair receipt; "
                     f"candidate={candidate_id or '<missing>'}"
                 )
         source_split = str(item.get("optimizer_reward_split") or "").strip().lower()
@@ -470,13 +507,13 @@ def build_feedback_memory(
                 f"candidate={item.get('candidate_id')} split={source_split or '<missing>'}"
             )
         source_name = str(item.get("optimizer_reward_source") or "").strip()
-        if source_name != "train_only_phase3cm":
+        if source_name != MATCHED_OPTIMIZER_REWARD_SOURCE:
             raise RuntimeError(
-                "Phase3CM feedback source must explicitly declare optimizer_reward_source=train_only_phase3cm; "
+                f"Phase3CM feedback source must explicitly declare optimizer_reward_source={MATCHED_OPTIMIZER_REWARD_SOURCE}; "
                 f"candidate={item.get('candidate_id')} source={source_name or '<missing>'}"
             )
         source_metric = str(item.get("optimizer_reward_metric") or "").strip()
-        if source_metric != OPTIMIZER_REWARD_METRIC:
+        if source_metric != MATCHED_OPTIMIZER_REWARD_METRIC:
             raise RuntimeError(
                 "Phase3CM feedback source metric mismatch; "
                 f"candidate={item.get('candidate_id')} metric={source_metric or '<missing>'}"
@@ -522,8 +559,8 @@ def build_feedback_memory(
         "legacy_validation_floor_ignored": validation_floor,
         "candidate_level_oos_fields_stripped": True,
         "evaluation_access_guard": GUARD_VERSION,
-        "optimizer_reward_source": "train_only_phase3cm",
-        "optimizer_reward_metric": OPTIMIZER_REWARD_METRIC,
+        "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
+        "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
         "optimizer_reward_split": "train",
         "max_turnover": max_turnover,
         "max_family_share": max_family_share,
@@ -563,6 +600,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-family-share", type=float, default=0.25)
     parser.add_argument("--min-clean-feedback", type=int, default=8)
     parser.add_argument("--candidate-receipt-table", type=Path, required=True)
+    parser.add_argument("--candidate-pair-receipt-table", type=Path, required=True)
     parser.add_argument("--unified-registry", type=Path, required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
     parser.add_argument("--data-release-hash", required=True)
@@ -585,9 +623,19 @@ def main(argv: list[str] | None = None) -> int:
         [dict(row.get("candidate_contract") or {}) for row in receipt_rows],
         receipt_rows,
     )
+    pair_receipt_rows = read_pair_receipt_table(_resolve(args.candidate_pair_receipt_table))
+    CandidatePairAuthority().validate_table(
+        [dict(row.get("candidate_contract") or {}) for row in receipt_rows],
+        receipt_rows,
+        pair_receipt_rows,
+    )
     authorized_receipt_hashes = {
         str(row.get("candidate_id") or ""): str(row.get("receipt_hash") or "")
         for row in receipt_rows
+    }
+    authorized_pair_receipt_hashes = {
+        str(row.get("pair_id") or ""): str(row.get("pair_receipt_hash") or "")
+        for row in pair_receipt_rows
     }
 
     summary = build_feedback_memory(
@@ -601,6 +649,7 @@ def main(argv: list[str] | None = None) -> int:
         max_family_share=args.max_family_share,
         min_clean_feedback=args.min_clean_feedback,
         authorized_receipt_hashes=authorized_receipt_hashes,
+        authorized_pair_receipt_hashes=authorized_pair_receipt_hashes,
     )
     print(json.dumps({"status": "ok", **summary}, ensure_ascii=False))
     return 0

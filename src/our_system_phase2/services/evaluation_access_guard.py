@@ -11,7 +11,10 @@ from __future__ import annotations
 import math
 from typing import Any, Iterable, Mapping
 
-from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC
+from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_METRIC,
+    MATCHED_OPTIMIZER_REWARD_SOURCE,
+)
 
 
 GUARD_VERSION = "evalreset_feedback_guard_v1"
@@ -75,13 +78,13 @@ def assert_train_only_feedback_row(
     if _has_reward(row):
         reward_source = str(row.get("optimizer_reward_source") or "").strip()
         reward_metric = str(row.get("optimizer_reward_metric") or "").strip()
-        if reward_source != "train_only_phase3cm":
+        if reward_source != MATCHED_OPTIMIZER_REWARD_SOURCE:
             raise EvaluationAccessViolation(
-                f"{source} optimizer_reward_source must be 'train_only_phase3cm'; observed {reward_source or '<missing>'}"
+                f"{source} optimizer_reward_source must be '{MATCHED_OPTIMIZER_REWARD_SOURCE}'; observed {reward_source or '<missing>'}"
             )
-        if reward_metric != OPTIMIZER_REWARD_METRIC:
+        if reward_metric != MATCHED_OPTIMIZER_REWARD_METRIC:
             raise EvaluationAccessViolation(
-                f"{source} optimizer_reward_metric must be '{OPTIMIZER_REWARD_METRIC}'; observed {reward_metric or '<missing>'}"
+                f"{source} optimizer_reward_metric must be '{MATCHED_OPTIMIZER_REWARD_METRIC}'; observed {reward_metric or '<missing>'}"
             )
     role = str(row.get("feedback_data_role") or "").strip().lower()
     if role != DEVELOPMENT_ROLE:

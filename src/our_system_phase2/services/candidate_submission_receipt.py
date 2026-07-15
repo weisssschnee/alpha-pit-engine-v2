@@ -11,6 +11,7 @@ from __future__ import annotations
 import ast
 import csv
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -34,6 +35,7 @@ CONTRACT_LIST_FIELDS = {
     "source_field_ids",
 }
 CONTRACT_BOOL_FIELDS = {
+    "allow_behavior_equivalence",
     "exposure_ledger_required",
     "is_matched_control",
     "maturity_contract_registered",
@@ -48,6 +50,11 @@ CONTRACT_KEYS = (
     "expression",
     "operator_family",
     "matched_control_id",
+    "pair_id",
+    "pair_member_role",
+    "control_constructor_id",
+    "pair_mapping_portfolio_contract",
+    "allow_behavior_equivalence",
     "declared_field_ids",
     "condition_field_ids",
     "is_matched_control",
@@ -68,7 +75,7 @@ class CandidateReceiptError(RuntimeError):
     """Raised when a candidate lacks a current, immutable authorization."""
 
 
-LEGACY_ADAPTER_VERSION = "cn_legacy_proposal_to_typed_route_adapter_v1"
+LEGACY_ADAPTER_VERSION = "cn_legacy_proposal_to_typed_route_adapter_v2"
 
 
 def _expression_operators(expression: str) -> set[str]:
@@ -105,15 +112,36 @@ class LegacyCandidateSubmissionAdapter:
             raise CandidateReceiptError("legacy proposal has no expression field lineage")
         fields = [self.registry.resolve(field_id) for field_id in field_ids]
         operators = _expression_operators(expression)
-        if any(field.source_family == "firstN" for field in fields):
+        firstn_fields = [field for field in fields if field.source_family == "firstN"]
+        raw_minute_fields = [
+            field for field in fields if field.source_family == "raw_1min" and field.entity_scope == "STOCK"
+        ]
+        if firstn_fields:
+            if len(firstn_fields) != 1 or not raw_minute_fields:
+                raise CandidateReceiptError(
+                    "FAIL_CLOSED_NO_MATCHED_CONTROL_CONSTRUCTOR: FIRSTN_PATH legacy mapping "
+                    "requires exactly one FirstN field plus a raw-minute path field"
+                )
             route_id = "FIRSTN_PATH"
             operator_family = "SignedPath"
         elif all("MINUTE_STATIC" in field.allowed_routes for field in fields):
+            if len({field.field_id for field in fields}) < 2 or not operators.intersection(
+                {"Add", "Sub", "Mul", "Div", "ZScore"}
+            ):
+                raise CandidateReceiptError(
+                    "FAIL_CLOSED_NO_MATCHED_CONTROL_CONSTRUCTOR: MINUTE_STATIC legacy mapping "
+                    "requires two raw-minute fields and an explicit interaction operator"
+                )
             route_id = "MINUTE_STATIC"
-            operator_family = "Arithmetic" if operators.intersection({"Add", "Sub", "Mul", "Div", "ZScore"}) else "CSRank"
+            operator_family = "Arithmetic"
         elif all("SLOW_TEMPORAL_CHANGE" in field.allowed_routes for field in fields) and operators.intersection(
             {"Delta", "Slope", "Acceleration", "Persistence", "MultiScaleRelation", "QoQ", "YoY", "TTMChange"}
         ):
+            if len({field.field_id for field in fields}) != 1:
+                raise CandidateReceiptError(
+                    "FAIL_CLOSED_NO_MATCHED_CONTROL_CONSTRUCTOR: SLOW_TEMPORAL_CHANGE legacy mapping "
+                    "requires exactly one qualified temporal field"
+                )
             route_id = "SLOW_TEMPORAL_CHANGE"
             operator_family = next(
                 name
@@ -121,6 +149,11 @@ class LegacyCandidateSubmissionAdapter:
                 if name in operators
             )
         elif all("SLOW_CROSS_SECTIONAL_LEVEL" in field.allowed_routes for field in fields):
+            if len({field.field_id for field in fields}) != 1:
+                raise CandidateReceiptError(
+                    "FAIL_CLOSED_NO_MATCHED_CONTROL_CONSTRUCTOR: SLOW_CROSS_SECTIONAL_LEVEL legacy mapping "
+                    "requires exactly one PIT-qualified field"
+                )
             route_id = "SLOW_CROSS_SECTIONAL_LEVEL"
             operator_family = "CSRank"
         else:
@@ -153,16 +186,47 @@ class LegacyCandidateSubmissionAdapter:
             "is_matched_control": False,
             "vote_policy": "ONE_SUPPORT_UNIT_ONE_VOTE",
         }
-        control_field = fields[0].field_id
+        if route_id == "FIRSTN_PATH":
+            raw_field_id = raw_minute_fields[0].field_id
+            delta_match = re.search(
+                rf"Delta\(\${re.escape(raw_field_id)}\s*,\s*([0-9]+)\s*\)",
+                expression,
+            )
+            if delta_match is None:
+                raise CandidateReceiptError(
+                    "FAIL_CLOSED_NO_MATCHED_CONTROL_CONSTRUCTOR: FIRSTN_PATH legacy mapping "
+                    "cannot preserve an unregistered path maturity clock"
+                )
+            window = int(delta_match.group(1))
+            control_expression = (
+                f"CSRank(Add(${firstn_fields[0].field_id},"
+                f"Mul(0,Delta(${raw_field_id},{window}))))"
+            )
+            control_declared = [firstn_fields[0].field_id, raw_field_id]
+        elif route_id == "MINUTE_STATIC":
+            control_expression = f"CSRank(Sign(${fields[0].field_id}))"
+            control_declared = [fields[0].field_id]
+        elif route_id == "SLOW_TEMPORAL_CHANGE":
+            canonical = analyze_expression(expression).canonical_expression
+            control_expression = f"CSRank(Sign({canonical}))"
+            control_declared = field_ids
+        else:
+            control_expression = f"CSRank(Sign(${fields[0].field_id}))"
+            control_declared = [fields[0].field_id]
         control = {
             **base,
             "candidate_id": control_id,
-            "expression": f"CSRank(${control_field})",
+            "expression": control_expression,
+            "declared_field_ids": control_declared,
             "matched_control_id": candidate_id,
             "is_matched_control": True,
             "vote_policy": "CONTROL_NO_SEPARATE_VOTE",
         }
-        return adapted, control
+        # Import locally to avoid making the receipt authority depend on its
+        # pair authority at module import time.
+        from our_system_phase2.services.matched_control_pairs import attach_pair_contract
+
+        return attach_pair_contract(adapted, control)
 
 
 def _as_list(value: Any) -> list[str]:
@@ -341,6 +405,13 @@ class CandidateSubmissionAuthority:
             ],
             "support_unit": verdict.support_unit,
             "matched_control_id": str(normalized.get("matched_control_id") or ""),
+            "pair_id": str(normalized.get("pair_id") or ""),
+            "pair_member_role": str(normalized.get("pair_member_role") or ""),
+            "control_constructor_id": str(normalized.get("control_constructor_id") or ""),
+            "pair_mapping_portfolio_contract": str(
+                normalized.get("pair_mapping_portfolio_contract") or ""
+            ),
+            "allow_behavior_equivalence": bool(normalized.get("allow_behavior_equivalence", False)),
             "is_matched_control": bool(normalized.get("is_matched_control", False)),
             "vote_policy": str(normalized.get("vote_policy") or ""),
             "condition_field_ids": sorted(str(value) for value in normalized.get("condition_field_ids", ())),
@@ -400,20 +471,9 @@ class CandidateSubmissionAuthority:
                 raise CandidateReceiptError(
                     f"matched control structural contract drift: candidate={candidate_id} key={key}"
                 )
-        if str(primary.get("route_id") or "") in {
-            "DISCLOSURE_EVENT",
-            "MARKET_REGIME_CONDITION",
-            "INTRADAY_STATE_TRANSITION",
-            "BROAD_EVENT_FROZEN_ENTRY",
-        }:
-            if control.get("field_ids") != primary.get("field_ids"):
-                raise CandidateReceiptError(
-                    f"event/state matched control field contract drift: candidate={candidate_id}"
-                )
-            if control.get("condition_field_ids") != primary.get("condition_field_ids"):
-                raise CandidateReceiptError(
-                    f"event/state matched control condition contract drift: candidate={candidate_id}"
-                )
+        # Field/condition differences are route-constructor responsibilities:
+        # regime and state controls intentionally remove their condition while
+        # retaining the same support unit and evaluation context.
 
     def authorize_table(self, candidates: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
         candidate_rows = [normalize_candidate_contract(row) for row in candidates]

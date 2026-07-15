@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
-    _normalize_global_date_splits,
+    normalize_against_fixed_manifest,
 )
+import pytest
 
 
-def test_global_date_split_removes_cross_shard_date_overlap() -> None:
+def test_fixed_manifest_removes_cross_shard_date_overlap() -> None:
     rows = []
     for day in range(1, 11):
         trade_date = f"2026-01-{day:02d}"
@@ -16,10 +17,18 @@ def test_global_date_split_removes_cross_shard_date_overlap() -> None:
             ]
         )
 
-    manifest, audit = _normalize_global_date_splits(
+    fixed_manifest = [
+        {
+            "trade_date": f"2026-01-{day:02d}",
+            "split": "train" if day <= 6 else "validation" if day <= 8 else "holdout",
+        }
+        for day in range(1, 11)
+    ]
+    manifest, audit = normalize_against_fixed_manifest(
         rows,
         train_fraction=0.60,
         validation_fraction=0.20,
+        split_manifest=fixed_manifest,
     )
 
     split_by_date = {row["trade_date"]: row["split"] for row in manifest}
@@ -48,7 +57,7 @@ def test_fixed_trade_date_manifest_is_authoritative() -> None:
         {"trade_date": "2026-01-04", "split": "holdout"},
     ]
 
-    manifest, audit = _normalize_global_date_splits(
+    manifest, audit = normalize_against_fixed_manifest(
         rows,
         train_fraction=0.50,
         validation_fraction=0.25,
@@ -62,3 +71,13 @@ def test_fixed_trade_date_manifest_is_authoritative() -> None:
     assert audit["manifest_trade_date_count"] == 4
     assert audit["manifest_unused_date_count"] == 2
     assert audit["post_normalization_cross_split_date_count"] == 0
+
+
+def test_formal_split_normalization_has_no_derived_fallback() -> None:
+    with pytest.raises(ValueError, match="requires a non-empty fixed manifest"):
+        normalize_against_fixed_manifest(
+            [{"trade_date": "2024-01-02", "split": "train"}],
+            train_fraction=0.75,
+            validation_fraction=0.15,
+            split_manifest=[],
+        )

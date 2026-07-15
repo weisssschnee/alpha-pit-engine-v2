@@ -12,7 +12,7 @@ from typing import Any
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import _write_csv, _write_json
 from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
     _candidate_summary_from_reward_atoms,
-    _normalize_global_date_splits,
+    normalize_against_fixed_manifest,
 )
 from our_system_phase2.services.candidate_schema import safe_float
 from our_system_phase2.services.candidate_submission_receipt import (
@@ -140,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
 
     all_atom_rows = [row for rows in atom_rows_by_hash.values() for row in rows]
     fixed_split_manifest = [dict(row) for row in split_authority.rows]
-    split_manifest_rows, split_reassignment_audit = _normalize_global_date_splits(
+    split_manifest_rows, split_reassignment_audit = normalize_against_fixed_manifest(
         all_atom_rows,
         train_fraction=args.train_fraction,
         validation_fraction=args.validation_fraction,

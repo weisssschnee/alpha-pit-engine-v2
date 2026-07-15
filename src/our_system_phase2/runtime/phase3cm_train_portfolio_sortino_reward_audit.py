@@ -56,9 +56,16 @@ from our_system_phase2.services.candidate_submission_receipt import (
     read_receipt_table,
 )
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
+from our_system_phase2.services.matched_control_pairs import (
+    CandidatePairAuthority,
+    build_pair_evaluation_rows,
+    flatten_candidate_pairs,
+    group_candidate_pairs,
+    read_pair_receipt_table,
+)
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 from our_system_phase2.services.signal_vector_semantics import build_signal_semantic_diagnostics
-from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
+from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry, stable_hash
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -246,24 +253,6 @@ def _safe_stdev(values: list[float]) -> float | None:
     if len(clean) < 2:
         return None
     return float(statistics.stdev(clean))
-
-
-def _parse_shard_indices(value: str | None, panel_count: int) -> list[int] | None:
-    if value is None or not str(value).strip():
-        return None
-    indices: list[int] = []
-    for item in str(value).split(","):
-        text = item.strip()
-        if not text:
-            continue
-        index = int(text)
-        if index < 0 or index >= panel_count:
-            raise ValueError(f"shard index out of range: {index} for panel_count={panel_count}")
-        indices.append(index)
-    deduped = sorted(set(indices))
-    if not deduped:
-        raise ValueError("--shard-indices did not contain any valid shard index")
-    return deduped
 
 
 def _bounded(value: float, cap: float) -> float:
@@ -833,13 +822,16 @@ def _load_candidates(
     m1_first_ret_replacement: str = "m1_first5_last_return_vs_open",
 ) -> list[dict[str, Any]]:
     rows = _read_csv(path)
-    rows.sort(
-        key=lambda row: (
-            _f(row.get("phase3ca_proxy_quality"), -999.0),
-            _f(row.get("aligned_ic_mean") or row.get("abs_aligned_ic_mean"), -999.0),
+    pairs = group_candidate_pairs(rows)
+    pairs.sort(
+        key=lambda pair: (
+            _f(pair[0].get("phase3ca_proxy_quality"), -999.0),
+            _f(pair[0].get("aligned_ic_mean") or pair[0].get("abs_aligned_ic_mean"), -999.0),
+            str(pair[0].get("pair_id") or ""),
         ),
         reverse=True,
     )
+    rows = flatten_candidate_pairs(pairs[: max(1, int(limit))])
     selected: list[dict[str, Any]] = []
     seen: set[str] = set()
     for row in rows:
@@ -878,11 +870,11 @@ def _load_candidates(
         item["fields_list"] = _fields(expression)
         item["max_window"] = _max_expression_window(expression)
         selected.append(item)
-        if len(selected) >= limit:
-            break
     if not selected:
         raise RuntimeError(f"no candidates selected from {path}")
-    return selected
+    # Re-validate after legacy alias handling/dedup so a formal worker can
+    # never receive a primary without its control.
+    return flatten_candidate_pairs(group_candidate_pairs(selected))
 
 
 def _schema_intersection(panels: list[Path]) -> set[str]:
@@ -899,14 +891,21 @@ def _schema_gate_candidates(
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     runnable: list[dict[str, Any]] = []
     held: list[dict[str, Any]] = []
-    for candidate in candidates:
-        missing = sorted(set(candidate.get("fields_list") or ()) - set(available_fields))
-        if missing:
+    for primary, control in group_candidate_pairs(candidates):
+        pair = [primary, control]
+        missing = sorted(
+            {
+                field
+                for candidate in pair
+                for field in set(candidate.get("fields_list") or ()) - set(available_fields)
+            }
+        )
+        target = held if missing else runnable
+        for candidate in pair:
             item = dict(candidate)
-            item["missing_schema_fields"] = "|".join(missing)
-            held.append(item)
-        else:
-            runnable.append(candidate)
+            if missing:
+                item["missing_schema_fields"] = "|".join(missing)
+            target.append(item)
     return runnable, held
 
 
@@ -972,14 +971,16 @@ def _row_trade_date(row: dict[str, Any]) -> str:
     return pd.Timestamp(parsed).date().isoformat()
 
 
-def _normalize_global_date_splits(
+def normalize_against_fixed_manifest(
     rows: list[dict[str, Any]],
     *,
     train_fraction: float,
     validation_fraction: float,
-    split_manifest: list[dict[str, Any]] | None = None,
+    split_manifest: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Apply one chronological trade-date split to rows from every shard."""
+    """Apply the required fixed trade-date authority to every formal row."""
+    if not split_manifest:
+        raise ValueError("formal split normalization requires a non-empty fixed manifest")
     if train_fraction <= 0 or validation_fraction < 0 or train_fraction + validation_fraction >= 1:
         raise ValueError("invalid global date split fractions")
 
@@ -995,54 +996,36 @@ def _normalize_global_date_splits(
             old_splits_by_date.setdefault(trade_date, set()).add(old_split)
 
     split_by_date: dict[str, str] = {}
-    split_policy = "fixed_trade_date_manifest" if split_manifest else "global_trade_date_union"
-    if split_manifest:
-        split_order = {"train": 0, "validation": 1, "holdout": 2}
-        previous_rank = -1
-        for raw in sorted(split_manifest, key=lambda item: str(item.get("trade_date") or "")):
-            trade_date = _row_trade_date(raw)
-            split = str(raw.get("split") or "")
-            if not trade_date or split not in split_order:
-                raise ValueError(f"invalid fixed split manifest row: {raw}")
-            if trade_date in split_by_date and split_by_date[trade_date] != split:
-                raise ValueError(f"conflicting fixed split manifest date: {trade_date}")
-            rank = split_order[split]
-            if rank < previous_rank:
-                raise ValueError("fixed split manifest is not chronologically contiguous")
-            previous_rank = rank
-            split_by_date[trade_date] = split
-        ordered_dates = sorted(split_by_date)
-        date_count = len(ordered_dates)
-        expected_counts = {
-            "train": max(1, min(date_count, int(round(date_count * train_fraction)))) if date_count else 0,
-            "validation": int(round(date_count * validation_fraction)) if date_count else 0,
-        }
-        expected_counts["holdout"] = date_count - expected_counts["train"] - expected_counts["validation"]
-        observed_counts = {
-            split: sum(value == split for value in split_by_date.values())
-            for split in ("train", "validation", "holdout")
-        }
-        if observed_counts != expected_counts:
-            raise ValueError(
-                f"fixed split manifest counts {observed_counts} do not match fractions {expected_counts}"
-            )
-    else:
-        ordered_dates = sorted(dates)
-        date_count = len(ordered_dates)
-        train_end = max(1, min(date_count, int(round(date_count * train_fraction)))) if date_count else 0
-        validation_end = (
-            max(train_end, min(date_count, train_end + int(round(date_count * validation_fraction))))
-            if date_count
-            else 0
+    split_policy = "fixed_trade_date_manifest"
+    split_order = {"train": 0, "validation": 1, "holdout": 2}
+    previous_rank = -1
+    for raw in sorted(split_manifest, key=lambda item: str(item.get("trade_date") or "")):
+        trade_date = _row_trade_date(raw)
+        split = str(raw.get("split") or "")
+        if not trade_date or split not in split_order:
+            raise ValueError(f"invalid fixed split manifest row: {raw}")
+        if trade_date in split_by_date and split_by_date[trade_date] != split:
+            raise ValueError(f"conflicting fixed split manifest date: {trade_date}")
+        rank = split_order[split]
+        if rank < previous_rank:
+            raise ValueError("fixed split manifest is not chronologically contiguous")
+        previous_rank = rank
+        split_by_date[trade_date] = split
+    ordered_dates = sorted(split_by_date)
+    date_count = len(ordered_dates)
+    expected_counts = {
+        "train": max(1, min(date_count, int(round(date_count * train_fraction)))) if date_count else 0,
+        "validation": int(round(date_count * validation_fraction)) if date_count else 0,
+    }
+    expected_counts["holdout"] = date_count - expected_counts["train"] - expected_counts["validation"]
+    observed_counts = {
+        split: sum(value == split for value in split_by_date.values())
+        for split in ("train", "validation", "holdout")
+    }
+    if observed_counts != expected_counts:
+        raise ValueError(
+            f"fixed split manifest counts {observed_counts} do not match fractions {expected_counts}"
         )
-        for index, trade_date in enumerate(ordered_dates):
-            if index < train_end:
-                split = "train"
-            elif index < validation_end:
-                split = "validation"
-            else:
-                split = "holdout"
-            split_by_date[trade_date] = split
 
     date_count = len(ordered_dates)
     manifest: list[dict[str, Any]] = []
@@ -1075,7 +1058,7 @@ def _normalize_global_date_splits(
             reassigned += 1
         row["split"] = split
         post_splits_by_date.setdefault(trade_date, set()).add(split)
-    if split_manifest and unassigned:
+    if unassigned:
         raise ValueError(f"fixed split manifest does not cover {unassigned} reward rows")
 
     boundaries: dict[str, str | None] = {}
@@ -1382,12 +1365,18 @@ def _candidate_portfolio_rows_from_precomputed_time_groups(
                     rank_ic_raw = _f(np.corrcoef(rank_valid, ret_rank_valid)[0, 1])
             rank_ic = rank_ic_raw * direction if math.isfinite(rank_ic_raw) else float("nan")
 
-            top_mask = rank_valid >= q_high
-            bottom_mask = rank_valid <= q_low
+            # Tie-aware cutoffs keep coarse matched controls (for example a
+            # sign projection) evaluable without changing the registered
+            # quantile. A truly constant signal still degenerates because the
+            # pair audit observes zero top/bottom signal spread.
+            top_mask = rank_valid >= float(np.nanquantile(rank_valid, q_high))
+            bottom_mask = rank_valid <= float(np.nanquantile(rank_valid, q_low))
             if not bool(top_mask.any()) or not bool(bottom_mask.any()):
                 continue
             top_codes = set(codes_valid[top_mask].astype(str))
             bottom_codes = set(codes_valid[bottom_mask].astype(str))
+            eligible_codes = sorted(set(codes_valid.astype(str)))
+            eligible_code_identity = stable_hash(eligible_codes)
 
             top_returns = ret_valid[top_mask]
             bottom_returns = ret_valid[bottom_mask]
@@ -1405,6 +1394,8 @@ def _candidate_portfolio_rows_from_precomputed_time_groups(
                 trading_cost = 2.0 * one_way_cost * one_way_turnover
                 long_count = int(top_mask.sum() if direction > 0 else bottom_mask.sum())
                 short_count = int(bottom_mask.sum() if direction > 0 else top_mask.sum())
+                selected_long_codes = top_codes if direction > 0 else bottom_codes
+                selected_short_codes = bottom_codes if direction > 0 else top_codes
             else:
                 long_mask = top_mask if direction > 0 else bottom_mask
                 long_codes = set(codes_valid[long_mask].astype(str))
@@ -1418,7 +1409,22 @@ def _candidate_portfolio_rows_from_precomputed_time_groups(
                 trading_cost = one_way_cost * one_way_turnover
                 long_count = int(long_mask.sum())
                 short_count = 0
+                selected_long_codes = long_codes
+                selected_short_codes = set()
             net_return = raw_return - trading_cost
+            selected_code_identity = stable_hash(
+                {"long": sorted(selected_long_codes), "short": sorted(selected_short_codes)}
+            )
+            portfolio_weight_identity = stable_hash(
+                {
+                    "long": [(code, 1.0 / max(1, len(selected_long_codes))) for code in sorted(selected_long_codes)],
+                    "short": [
+                        (code, -1.0 / max(1, len(selected_short_codes)))
+                        for code in sorted(selected_short_codes)
+                    ],
+                    "portfolio_mode": portfolio_mode,
+                }
+            )
             rows.append(
                 {
                     "candidate_id": candidate.get("candidate_id"),
@@ -1439,6 +1445,10 @@ def _candidate_portfolio_rows_from_precomputed_time_groups(
                     "trading_cost": trading_cost,
                     "net_return": net_return,
                     "one_way_turnover": one_way_turnover,
+                    "eligible_code_count": len(eligible_codes),
+                    "eligible_code_identity": eligible_code_identity,
+                    "selected_code_identity": selected_code_identity,
+                    "portfolio_weight_identity": portfolio_weight_identity,
                     "top_mean_return": float(np.mean(top_returns)),
                     "bottom_mean_return": float(np.mean(bottom_returns)),
                     "top_signal_mean": float(np.mean(signal_valid[top_mask])),
@@ -1490,6 +1500,11 @@ def _candidate_portfolio_rows_from_frame(
     feature_matrix_cache_max_bytes: int = 0,
 ) -> list[dict[str, Any]]:
     expression = str(candidate["expression"])
+    expression_data_role = (
+        "development"
+        if split_by_time and set(str(value) for value in split_by_time.values()) <= {"train"}
+        else None
+    )
     context_window = max(0, int(candidate.get("max_window") or 0))
     context_fingerprints = persistent_cache_scope.get("context_fingerprints") or {}
     context_fingerprint = str(context_fingerprints.get(str(context_window)) or "")
@@ -1623,6 +1638,7 @@ def _candidate_portfolio_rows_from_frame(
                     expression,
                     cache=operator_cache,
                     diagnostics=semantic_diagnostics,
+                    data_role=expression_data_role,
                 ),
                 errors="coerce",
             )
@@ -1647,6 +1663,7 @@ def _candidate_portfolio_rows_from_frame(
                         expression,
                         cache=full_operator_cache,
                         diagnostics=semantic_diagnostics,
+                        data_role=expression_data_role,
                     ),
                     errors="coerce",
                 )
@@ -1693,6 +1710,7 @@ def _candidate_portfolio_rows_from_frame(
                     expression,
                     cache=operator_cache,
                     diagnostics=semantic_diagnostics,
+                    data_role=expression_data_role,
                 ),
                 errors="coerce",
             )
@@ -1769,12 +1787,14 @@ def _candidate_portfolio_rows_from_frame(
                 ret_rank = block["ret"].rank(pct=True, method="average")
                 rank_ic_raw = _f(block["rank"].corr(ret_rank))
             rank_ic = rank_ic_raw * direction if math.isfinite(rank_ic_raw) else float("nan")
-            top_block = block.loc[block["rank"] >= q_high]
-            bottom_block = block.loc[block["rank"] <= q_low]
+            top_block = block.loc[block["rank"] >= float(block["rank"].quantile(q_high))]
+            bottom_block = block.loc[block["rank"] <= float(block["rank"].quantile(q_low))]
             if top_block.empty or bottom_block.empty:
                 continue
             top_codes = set(top_block["code"].astype(str))
             bottom_codes = set(bottom_block["code"].astype(str))
+            eligible_codes = sorted(set(block["code"].astype(str)))
+            eligible_code_identity = stable_hash(eligible_codes)
 
             market_mean_return = float(block["ret"].mean())
             if portfolio_mode == "long_short_spread":
@@ -1790,6 +1810,8 @@ def _candidate_portfolio_rows_from_frame(
                 trading_cost = 2.0 * one_way_cost * one_way_turnover
                 long_count = int(len(top_block) if direction > 0 else len(bottom_block))
                 short_count = int(len(bottom_block) if direction > 0 else len(top_block))
+                selected_long_codes = top_codes if direction > 0 else bottom_codes
+                selected_short_codes = bottom_codes if direction > 0 else top_codes
             else:
                 long_block = top_block if direction > 0 else bottom_block
                 long_codes = set(long_block["code"].astype(str))
@@ -1803,8 +1825,23 @@ def _candidate_portfolio_rows_from_frame(
                 trading_cost = one_way_cost * one_way_turnover
                 long_count = int(len(long_block))
                 short_count = 0
+                selected_long_codes = long_codes
+                selected_short_codes = set()
             net_return = raw_return - trading_cost
             ts = pd.Timestamp(trade_time)
+            selected_code_identity = stable_hash(
+                {"long": sorted(selected_long_codes), "short": sorted(selected_short_codes)}
+            )
+            portfolio_weight_identity = stable_hash(
+                {
+                    "long": [(code, 1.0 / max(1, len(selected_long_codes))) for code in sorted(selected_long_codes)],
+                    "short": [
+                        (code, -1.0 / max(1, len(selected_short_codes)))
+                        for code in sorted(selected_short_codes)
+                    ],
+                    "portfolio_mode": portfolio_mode,
+                }
+            )
             rows.append(
                 {
                     "candidate_id": candidate.get("candidate_id"),
@@ -1825,6 +1862,10 @@ def _candidate_portfolio_rows_from_frame(
                     "trading_cost": trading_cost,
                     "net_return": net_return,
                     "one_way_turnover": one_way_turnover,
+                    "eligible_code_count": len(eligible_codes),
+                    "eligible_code_identity": eligible_code_identity,
+                    "selected_code_identity": selected_code_identity,
+                    "portfolio_weight_identity": portfolio_weight_identity,
                     "top_mean_return": float(top_block["ret"].mean()),
                     "bottom_mean_return": float(bottom_block["ret"].mean()),
                     "top_signal_mean": float(top_block["signal"].mean()),
@@ -2702,7 +2743,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
     parser.add_argument("--candidate-limit", type=int, default=64)
     parser.add_argument("--max-shards", type=int, default=8)
-    parser.add_argument("--shard-indices", default="")
     parser.add_argument("--sample-trade-times-per-shard", type=int, default=240)
     parser.add_argument("--sample-block-count", type=int, default=1)
     parser.add_argument("--event-aware-sample-times", action=argparse.BooleanOptionalAction, default=True)
@@ -2717,6 +2757,7 @@ def main(argv: list[str] | None = None) -> int:
         help="Required fixed 485-session trade_date/split authority shared by every formal worker.",
     )
     parser.add_argument("--candidate-receipt-table", type=Path, required=True)
+    parser.add_argument("--candidate-pair-receipt-table", type=Path, required=True)
     parser.add_argument("--unified-registry", type=Path, required=True)
     parser.add_argument("--data-release-hash", required=True)
     parser.add_argument("--min-obs-per-time", type=int, default=20)
@@ -2833,20 +2874,32 @@ def main(argv: list[str] | None = None) -> int:
         enable_legacy_alias_rewrite=not bool(args.disable_legacy_alias_rewrite),
         m1_first_ret_replacement=str(args.m1_first_ret_replacement),
     )
+    authorized_candidates = [dict(row) for row in candidates]
     candidate_receipts = read_receipt_table(_resolve(args.candidate_receipt_table))
     validated_receipts = submission_authority.validate_table(candidates, candidate_receipts)
+    pair_ids = {str(row.get("pair_id") or "") for row in candidates}
+    pair_receipts = [
+        row
+        for row in read_pair_receipt_table(_resolve(args.candidate_pair_receipt_table))
+        if str(row.get("pair_id") or "") in pair_ids
+    ]
+    validated_pair_receipts = CandidatePairAuthority().validate_table(
+        candidates,
+        validated_receipts,
+        pair_receipts,
+    )
     receipt_by_candidate = {str(row["candidate_id"]): row for row in validated_receipts}
+    pair_receipt_by_id = {str(row["pair_id"]): row for row in validated_pair_receipts}
     for candidate in candidates:
         receipt = receipt_by_candidate[str(candidate.get("candidate_id") or "")]
+        pair_receipt = pair_receipt_by_id[str(candidate.get("pair_id") or "")]
         candidate["candidate_submission_receipt_id"] = receipt["receipt_id"]
         candidate["candidate_submission_receipt_hash"] = receipt["receipt_hash"]
         candidate["candidate_submission_authorization"] = receipt["authorization_status"]
+        candidate["candidate_pair_receipt_id"] = pair_receipt["pair_receipt_id"]
+        candidate["candidate_pair_receipt_hash"] = pair_receipt["pair_receipt_hash"]
     all_panels = _discover_panels(_resolve(args.shard_root), args.max_shards)
-    selected_shard_indices = _parse_shard_indices(args.shard_indices, len(all_panels))
     panel_items = list(enumerate(all_panels))
-    if selected_shard_indices is not None:
-        selected = set(selected_shard_indices)
-        panel_items = [(idx, panel) for idx, panel in panel_items if idx in selected]
     panels = [panel for _, panel in panel_items]
     input_candidate_count = len(candidates)
     schema_held_candidates: list[dict[str, Any]] = []
@@ -2859,6 +2912,9 @@ def main(argv: list[str] | None = None) -> int:
     rows_by_hash: dict[str, list[dict[str, Any]]] = {str(candidate["expression_hash"]): [] for candidate in candidates}
     reward_by_hash: dict[str, dict[str, Any]] = {}
     progress_rows: list[dict[str, Any]] = []
+    evaluator_invocation_counts: dict[str, int] = {
+        str(candidate.get("candidate_id") or ""): 0 for candidate in authorized_candidates
+    }
     processed_candidate_shards = 0
     pnl_rows: list[dict[str, Any]] = []
     shard_meta: list[dict[str, Any]] = []
@@ -2948,6 +3004,8 @@ def main(argv: list[str] | None = None) -> int:
                     operator_cache_max_bytes=max(0, int(float(args.operator_cache_max_mb) * 1024 * 1024)),
                     feature_matrix_cache_max_bytes=max(0, int(float(args.feature_matrix_cache_max_mb) * 1024 * 1024)),
                 )
+                candidate_id = str(candidate.get("candidate_id") or "")
+                evaluator_invocation_counts[candidate_id] = evaluator_invocation_counts.get(candidate_id, 0) + 1
                 expression_hash = str(candidate["expression_hash"])
                 rows_by_hash[expression_hash].extend(rows)
                 shard_rows += len(rows)
@@ -2967,6 +3025,7 @@ def main(argv: list[str] | None = None) -> int:
                     "expression_cache_size": len(expression_cache),
                     "checkpoint_partial": True,
                     "semantic_only": bool(args.semantic_only),
+                    "actual_evaluator_invocation_count": evaluator_invocation_counts[candidate_id],
                 }
                 if semantic_diagnostics:
                     progress_row.update(semantic_diagnostics)
@@ -3045,7 +3104,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     if not args.semantic_only:
         all_portfolio_rows = [row for candidate_rows in rows_by_hash.values() for row in candidate_rows]
-        split_manifest_rows, split_reassignment_audit = _normalize_global_date_splits(
+        split_manifest_rows, split_reassignment_audit = normalize_against_fixed_manifest(
             all_portfolio_rows,
             train_fraction=args.train_fraction,
             validation_fraction=args.validation_fraction,
@@ -3057,7 +3116,7 @@ def main(argv: list[str] | None = None) -> int:
                 candidate,
                 rows,
                 horizons,
-                seed=20260623 + idx,
+                seed=20260623 + int(stable_hash(str(candidate.get("candidate_id") or ""))[:8], 16),
                 rank_ic_loss_weight=args.rank_ic_loss_weight,
                 rank_ic_component_cap=args.rank_ic_component_cap,
                 regime_stability_weight=args.regime_stability_weight,
@@ -3079,6 +3138,24 @@ def main(argv: list[str] | None = None) -> int:
                 reward_atom_rows.extend(_reward_atoms_for_candidate(candidate, rows, horizons))
             reward_rows.append(reward_row)
 
+    portfolio_rows_by_expression_hash = {
+        str(expression_hash): list(rows)
+        for expression_hash, rows in rows_by_hash.items()
+    }
+    pair_evaluation_rows = (
+        []
+        if args.semantic_only
+        else build_pair_evaluation_rows(
+            candidates=authorized_candidates,
+            candidate_receipts=validated_receipts,
+            pair_receipts=validated_pair_receipts,
+            reward_rows=reward_rows,
+            portfolio_rows_by_expression_hash=portfolio_rows_by_expression_hash,
+            reward_atom_rows=reward_atom_rows,
+            evaluator_invocation_counts=evaluator_invocation_counts,
+        )
+    )
+
     reward_rows.sort(key=lambda row: _f(row.get("train_reward"), -999.0), reverse=True)
     followup_count = sum(1 for row in reward_rows if row.get("train_reward_decision") == "TRAIN_REWARD_FOLLOWUP_READY")
     summary = {
@@ -3090,6 +3167,13 @@ def main(argv: list[str] | None = None) -> int:
             else "PHASE3CM_TRAIN_REWARD_AUDIT_READY_DIAGNOSTIC_ONLY"
         ),
         "candidate_count": input_candidate_count,
+        "candidate_pair_count": input_candidate_count // 2,
+        "pair_evaluated_count": sum(
+            row.get("pair_evaluation_status") == "PAIR_EVALUATED" for row in pair_evaluation_rows
+        ),
+        "pair_blocked_count": sum(
+            row.get("pair_evaluation_status") == "PAIR_EVALUATION_BLOCKED" for row in pair_evaluation_rows
+        ),
         "runnable_candidate_count": len(candidates),
         "schema_gate_enabled": not bool(args.disable_schema_gate),
         "schema_gate_field_count": schema_field_count,
@@ -3207,6 +3291,8 @@ def main(argv: list[str] | None = None) -> int:
     _write_csv(output_root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
     _write_csv(output_root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
     _write_csv(output_root / "phase3cm_train_reward.csv", reward_rows)
+    _write_csv(output_root / "phase3cm_candidate_pair_evaluation.csv", pair_evaluation_rows)
+    _write_json(output_root / "phase3cm_candidate_pair_evaluation.json", pair_evaluation_rows)
     _write_csv(output_root / "phase3cm_shard_meta.csv", shard_meta)
     _write_csv(output_root / "phase3cm_split_manifest.csv", split_manifest_rows)
     _write_json(output_root / "phase3cm_split_reassignment_audit.json", split_reassignment_audit)
@@ -3214,6 +3300,8 @@ def main(argv: list[str] | None = None) -> int:
     report_root.mkdir(parents=True, exist_ok=True)
     _write_csv(report_root / "phase3cm_candidate_train_reward_summary.csv", reward_rows)
     _write_csv(report_root / "phase3cm_train_reward.csv", reward_rows)
+    _write_csv(report_root / "phase3cm_candidate_pair_evaluation.csv", pair_evaluation_rows)
+    _write_json(report_root / "phase3cm_candidate_pair_evaluation.json", pair_evaluation_rows)
     _write_csv(report_root / "phase3cm_candidate_split_horizon_summary.csv", split_horizon_rows)
     _write_csv(report_root / "phase3cm_split_manifest.csv", split_manifest_rows)
     _write_json(report_root / "phase3cm_split_reassignment_audit.json", split_reassignment_audit)

@@ -15,12 +15,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema, safe_float
+from our_system_phase2.services.candidate_schema import normalize_candidate_schema, safe_float
 from our_system_phase2.services.evaluation_access_guard import (
     assert_train_only_feedback_rows,
     project_train_only_feedback_row,
 )
 from our_system_phase2.services.expression_semantics import analyze_expression
+from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_METRIC,
+    MATCHED_OPTIMIZER_REWARD_SOURCE,
+)
 
 
 HOLDOUT_COLUMNS = {"holdout_day_sortino", "holdout_mcmc_prob_gt_0"}
@@ -43,8 +47,8 @@ class SearchFeedbackContext:
     validation_columns_present: bool = False
     validation_used_for_score: bool = False
     holdout_used_for_score: bool = False
-    optimizer_reward_source: str = "train_only_phase3cm"
-    optimizer_reward_metric: str = OPTIMIZER_REWARD_METRIC
+    optimizer_reward_source: str = MATCHED_OPTIMIZER_REWARD_SOURCE
+    optimizer_reward_metric: str = MATCHED_OPTIMIZER_REWARD_METRIC
     optimizer_reward_split: str = "train"
     guardrail: str = ""
     eligible_source: str = ""
@@ -120,8 +124,12 @@ def _normalize_feedback_row(row: dict[str, Any]) -> dict[str, Any]:
         out["expression"] = semantic.canonical_expression
     reward = _optimizer_reward(out)
     out["optimizer_reward"] = reward if math.isfinite(reward) else ""
-    out["optimizer_reward_source"] = str(out.get("optimizer_reward_source") or "train_only_phase3cm")
-    out["optimizer_reward_metric"] = str(out.get("optimizer_reward_metric") or OPTIMIZER_REWARD_METRIC)
+    out["optimizer_reward_source"] = str(
+        out.get("optimizer_reward_source") or MATCHED_OPTIMIZER_REWARD_SOURCE
+    )
+    out["optimizer_reward_metric"] = str(
+        out.get("optimizer_reward_metric") or MATCHED_OPTIMIZER_REWARD_METRIC
+    )
     out["optimizer_reward_split"] = str(out.get("optimizer_reward_split") or "train")
     return project_train_only_feedback_row(out)
 
@@ -280,8 +288,8 @@ def build_search_feedback_context(
         validation_columns_present=False,
         validation_used_for_score=False,
         holdout_used_for_score=False,
-        optimizer_reward_source="train_only_phase3cm",
-        optimizer_reward_metric=OPTIMIZER_REWARD_METRIC,
+        optimizer_reward_source=MATCHED_OPTIMIZER_REWARD_SOURCE,
+        optimizer_reward_metric=MATCHED_OPTIMIZER_REWARD_METRIC,
         optimizer_reward_split="train",
         guardrail=guardrail,
         eligible_source=eligible_source,

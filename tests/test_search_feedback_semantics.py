@@ -3,6 +3,10 @@ from __future__ import annotations
 from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import _family_tables, _is_clean
 from our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice import _feedback_eligible
 from our_system_phase2.services.search_feedback import clean_optimizer_feedback_rows
+from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_METRIC,
+    MATCHED_OPTIMIZER_REWARD_SOURCE,
+)
 
 
 def _reward_row(expression: str) -> dict[str, object]:
@@ -14,8 +18,13 @@ def _reward_row(expression: str) -> dict[str, object]:
         "generator_arm": "cem_exploit",
         "optimizer_reward": 0.25,
         "optimizer_reward_split": "train",
-        "optimizer_reward_source": "train_only_phase3cm",
-        "optimizer_reward_metric": "train_portfolio_sortino_rankic_regime_composite_reward",
+        "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
+        "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
+        "pair_evaluation_status": "PAIR_EVALUATED",
+        "pair_member_role": "PRIMARY",
+        "primary_receipt_hash": "p" * 64,
+        "control_receipt_hash": "c" * 64,
+        "pair_receipt_hash": "r" * 64,
         "feedback_data_role": "development",
         "evaluation_access_guard": "evalreset_feedback_guard_v1",
         "train_reward": 0.25,

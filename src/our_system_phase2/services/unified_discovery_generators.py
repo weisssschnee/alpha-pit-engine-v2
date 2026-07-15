@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
+from our_system_phase2.services.matched_control_pairs import attach_pair_contract
 from our_system_phase2.services.unified_capability_registry import (
     CapabilityField,
     ROUTE_IDS,
@@ -97,22 +98,28 @@ class RegistryDrivenGenerator:
             candidate_expression = (
                 f"CSRank(Add(ZScore(${field.field_id}),ZScore(${interaction.field_id})))"
             )
-            control_expression = f"CSRank(${field.field_id})"
+            control_expression = f"CSRank(Sign(${field.field_id}))"
             operator = "Arithmetic"
             declared = [field.field_id, interaction.field_id]
             extra: dict[str, Any] = {}
             conditions: list[str] = []
+            control_declared = [field.field_id]
+            control_conditions: list[str] = []
         elif route_id == "FIRSTN_PATH":
             firstn = _pick(
                 self._pool(route_id, lambda row: row.source_family == "firstN"), index, seed, "firstn"
             )
             raw_field = _pick(raw, index, seed, "firstn_raw")
             candidate_expression = f"CSRank(Add(${firstn.field_id},Sign(Delta(${raw_field.field_id},5))))"
-            control_expression = f"CSRank(${firstn.field_id})"
+            control_expression = (
+                f"CSRank(Add(${firstn.field_id},Mul(0,Delta(${raw_field.field_id},5))))"
+            )
             operator = "SignedPath"
             declared = [firstn.field_id, raw_field.field_id]
             extra = {}
             conditions = []
+            control_declared = [firstn.field_id, raw_field.field_id]
+            control_conditions = []
         elif route_id == "SLOW_CROSS_SECTIONAL_LEVEL":
             pool = self._pool(route_id, lambda row: row.entity_scope == "STOCK")
             field = _pick(pool, index, seed, route_id)
@@ -122,6 +129,8 @@ class RegistryDrivenGenerator:
             declared = [field.field_id]
             extra = {}
             conditions = []
+            control_declared = list(declared)
+            control_conditions = []
         elif route_id == "SLOW_TEMPORAL_CHANGE":
             pool = self._pool(route_id, lambda row: row.entity_scope == "STOCK")
             field = _pick(pool, index, seed, route_id)
@@ -141,6 +150,8 @@ class RegistryDrivenGenerator:
             declared = [field.field_id]
             extra = {}
             conditions = []
+            control_declared = list(declared)
+            control_conditions = []
         elif route_id == "DISCLOSURE_EVENT":
             pool = self._pool(route_id, lambda row: row.temporal_semantics in {"EVENT_PULSE", "DISCLOSURE_PULSE"})
             field = _pick(pool, index, seed, route_id)
@@ -150,6 +161,8 @@ class RegistryDrivenGenerator:
             declared = [field.field_id]
             extra = {"episode_policy": "UNIQUE_DISCLOSURE_EPISODE"}
             conditions = []
+            control_declared = list(declared)
+            control_conditions = []
         elif route_id == "MARKET_REGIME_CONDITION":
             regime = _pick(
                 self._pool(route_id, lambda row: row.entity_scope == "MARKET"), index, seed, route_id
@@ -161,6 +174,8 @@ class RegistryDrivenGenerator:
             declared = [regime.field_id, raw_field.field_id]
             extra = {"market_vote_policy": "ONE_MARKET_BLOCK_ONE_VOTE"}
             conditions = [regime.field_id]
+            control_declared = [regime.field_id, raw_field.field_id]
+            control_conditions = [regime.field_id]
         elif route_id == "INTRADAY_STATE_TRANSITION":
             state = _pick(
                 self._pool(route_id, lambda row: row.temporal_semantics == "INTRADAY_DERIVED_STATE"),
@@ -180,6 +195,8 @@ class RegistryDrivenGenerator:
                 "state_support_unit": "symbol-state episode",
             }
             conditions = []
+            control_declared = [raw_field.field_id]
+            control_conditions = []
         elif route_id == "BROAD_EVENT_FROZEN_ENTRY":
             field = _pick(
                 self._pool(route_id, lambda row: row.source_family == "broad_event_frozen_entry"),
@@ -199,6 +216,8 @@ class RegistryDrivenGenerator:
                 "tier_c_descendants_allowed": False,
             }
             conditions = [field.field_id] if field.entity_scope == "MARKET" else []
+            control_declared = list(declared)
+            control_conditions = list(conditions)
         else:
             raise KeyError(f"unsupported route: {route_id}")
 
@@ -227,11 +246,12 @@ class RegistryDrivenGenerator:
             seed=seed,
             origin="matched_control",
             matched_control_id=candidate_id,
-            declared_field_ids=declared,
-            condition_field_ids=conditions,
+            declared_field_ids=control_declared,
+            condition_field_ids=control_conditions,
             is_control=True,
             extra=extra,
         )
+        candidate, control = attach_pair_contract(candidate, control)
         return GeneratedPair(candidate, control)
 
     def generate_route(self, route_id: str, *, proposal_budget: int, seed: int) -> list[dict[str, Any]]:

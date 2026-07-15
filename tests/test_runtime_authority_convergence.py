@@ -79,12 +79,12 @@ def test_proposal_only_and_receipt_authorized_outputs_are_separate_namespaces() 
     assert "shutil.rmtree" not in source
 
 
-def test_formal_symbol_shard_parallel_portfolio_is_blocked_until_global_merge(
+def test_formal_symbol_shard_parallel_portfolio_has_no_cli_route(
     tmp_path: Path,
 ) -> None:
     shard_root = tmp_path / "shards"
     shard_root.mkdir()
-    with pytest.raises(RuntimeError, match="FORMAL_SHARD_PARALLEL_PORTFOLIO_BLOCKED"):
+    with pytest.raises(SystemExit):
         phase3cp_main(
             [
                 "--co-root", str(tmp_path),
@@ -98,6 +98,15 @@ def test_formal_symbol_shard_parallel_portfolio_is_blocked_until_global_merge(
                 "--cm-parallel-axis", "shard",
             ]
         )
+
+
+def test_formal_module_contains_no_shard_parallel_or_mean_reward_fallback() -> None:
+    source = PHASE3CP.read_text(encoding="utf-8")
+    assert "_run_real_cm_shard_subprocess" not in source
+    assert "_run_real_cm_parallel_by_shard" not in source
+    assert "mean_of_shard_chunk_reward_rows" not in source
+    assert "shard_chunk_reward_fallback" not in source
+    assert 'choices=("candidate",)' in source
 
 
 def test_legal_registry_candidates_receive_and_validate_immutable_receipts() -> None:
@@ -293,7 +302,7 @@ def test_legacy_proposals_are_proposal_only_until_conservative_typed_adaptation(
     firstn, firstn_control = adapter.adapt_pair(
         {
             "candidate_id": "legacy-firstn",
-            "expression": f"CSRank(Add(${firstn_field.field_id},$close))",
+            "expression": f"CSRank(Add(${firstn_field.field_id},Sign(Delta($close,5))))",
             "generator_arm": "legacy",
         }
     )
@@ -323,7 +332,7 @@ def test_phase3cp_receipt_gate_runs_before_admission_and_rejects_schema_only_fie
         unified_registry=REGISTRY,
         data_release_hash=DATA_RELEASE_HASH,
     )
-    accepted, receipts = _authorize_proposal_decisions(
+    accepted, authorized_pairs, receipts, pair_receipts = _authorize_proposal_decisions(
         args,
         [
             {"candidate_id": "legal", "expression": "CSRank(Add($close,$open))", "generator_arm": "legacy"},
@@ -333,7 +342,10 @@ def test_phase3cp_receipt_gate_runs_before_admission_and_rejects_schema_only_fie
         report_root=tmp_path / "reports",
     )
     assert [row["candidate_id"] for row in accepted] == ["legal"]
+    assert len(authorized_pairs) == 2
+    assert {row["pair_member_role"] for row in authorized_pairs} == {"PRIMARY", "CONTROL"}
     assert receipts.is_file()
+    assert pair_receipts.is_file()
     rejection_text = (tmp_path / "runtime/candidate_submission_receipt_rejections.csv").read_text(encoding="utf-8")
     assert "schema-only" in rejection_text
     assert "REJECTED_BEFORE_ADMISSION" in rejection_text
