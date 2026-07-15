@@ -169,7 +169,7 @@
       "semantic_role": "matched_pair_authority",
       "authority": {
         "path": "src/our_system_phase2/services/matched_control_pairs.py",
-        "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
       "contracts": [
         {
@@ -184,8 +184,8 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_EVALUATION_RESULTS.json",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
+        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       }
     },
     {
@@ -199,7 +199,7 @@
       "semantic_role": "formal_evaluation_authority",
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
-        "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
       "contracts": [
         {
@@ -222,29 +222,29 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
+        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
       "promotion_requirements": ["explicit search authorization", "frozen candidate pack"]
     },
     {
       "id": "matched_train_feedback",
-      "label": "Phase3CN matched train feedback",
+      "label": "Pair-native Phase3CN feedback authority",
       "kind": "feedback",
-      "lifecycle": "ACTIVE",
+      "lifecycle": "EXPERIMENTAL",
       "paths": ["src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py"],
       "critical": true,
       "active_authority": true,
       "semantic_role": "train_feedback_authority",
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
-        "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
       "contracts": [
         {
           "id": "matched_train_only",
           "type": "BOUNDARY",
-          "rule": "Feedback accepts only the primary row matched_train_increment after all three receipt hashes validate.",
+          "rule": "Feedback accepts only PAIR_TRAIN_FEEDBACK_READY primary rows governed by pair-native reward, blockers, support, turnover and RankIC fields after all three receipt hashes validate.",
           "severity": "HARD",
           "enforced_by": "phase3cn_receipt_gate",
           "bypass_forbidden": true
@@ -253,8 +253,8 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_TEST_RESULTS.json",
+        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       }
     },
     {
@@ -451,17 +451,17 @@
       "lifecycle": "ACTIVE",
       "critical": true,
       "contract": {"id": "pair_not_split", "type": "EVIDENCE", "rule": "A pair is assigned to exactly one candidate worker and both members are evaluated.", "severity": "HARD", "enforced_by": "candidate_parallel_dispatch", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json", "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"}
     },
     {
       "id": "evaluator_to_feedback",
       "source": "candidate_parallel_evaluator",
       "target": "matched_train_feedback",
-      "relation": "supplies_matched_train_increment",
-      "lifecycle": "ACTIVE",
+      "relation": "supplies_pair_native_train_feedback",
+      "lifecycle": "EXPERIMENTAL",
       "critical": true,
-      "contract": {"id": "matched_increment_only", "type": "ADMISSION", "rule": "Phase3CN consumes train-only pair increment, not standalone primary reward.", "severity": "HARD", "enforced_by": "phase3cn_receipt_gate", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}
+      "contract": {"id": "pair_native_ready_only", "type": "ADMISSION", "rule": "Phase3CN consumes only train-only pair-native READY rows; standalone-primary decisions and blockers are diagnostic only.", "severity": "HARD", "enforced_by": "phase3cn_pair_native_gate", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_CONTRACT.json", "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"}
     },
     {"id": "plate_to_lanes_forbidden", "source": "plate_industry_pit_route", "target": "hypothesis_lanes", "relation": "unresolved_pit_membership", "lifecycle": "FORBIDDEN", "forbidden": true},
     {
