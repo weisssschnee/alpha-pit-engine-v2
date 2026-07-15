@@ -8,7 +8,7 @@ from scripts.check_architecture_freshness import check_freshness
 
 
 REPO = Path(__file__).resolve().parents[1]
-RAW_SHA = "18f8e34021b871b10ebb794a0e10ec0e5e2b4587"
+RAW_SHA = "899ba0e0a21e077116c5ba804707540646949a29"
 
 
 def test_status_authority_and_graph_namespaces_are_separate() -> None:
@@ -35,8 +35,13 @@ def test_sha_bound_raw_codegraph_manifest_and_artifacts_are_intact() -> None:
         (root / f"CODEGRAPH_BUILD_MANIFEST_{RAW_SHA}.json").read_text(encoding="utf-8-sig")
     )
     assert manifest["source_repo_full_sha"] == RAW_SHA
-    assert manifest["node_count"] == 2619
-    assert manifest["edge_count"] == 6602
+    assert manifest["node_count"] == 3675
+    assert manifest["edge_count"] == 8743
+    assert manifest["extraction_mode"] == "AST_CODE_ONLY_NO_LLM"
+    assert manifest["research_data_reads"] == 0
+    assert manifest["validation_reads"] == 0
+    assert manifest["holdout_reads"] == 0
+    assert manifest["forward_2026_reads"] == 0
     expected = {
         f"codegraph_{RAW_SHA}.json",
         f"codegraph_{RAW_SHA}.html",
