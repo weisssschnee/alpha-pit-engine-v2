@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "timestamp": "2026-07-15T07:33:35.769Z",
+  "timestamp": "2026-07-15T08:04:05.789Z",
   "raw": {
-    "repo_head": "dc348e1c36cc4f2ba31193ad853546d700c235a4",
-    "built_sha": "dc348e1c36cc4f2ba31193ad853546d700c235a4",
-    "sha256": "EFA2A1F6A6141F7007A06F4AC2CC7E60BDB29C1421634C5EF8C1B4F72F552945"
+    "repo_head": "67ab8f2eb0dced851e4f5c7937549c4913a46983",
+    "built_sha": "67ab8f2eb0dced851e4f5c7937549c4913a46983",
+    "sha256": "F1798AD0FC1062645778E40C8FF4045E074E7ADB78C413C29814DA0909456860"
   },
   "current": {
     "status": "INSUFFICIENT_EVIDENCE",
-    "sha256": "81E43F28AFDD9D4CB783BC8A0FC7083E2E9E6C6B4E18EBC6F7488A6A49ABF071"
+    "sha256": "0875B23DBDF00A85C4D4E155CA4DBAEE40219DFA6E58B04AFECB514D21C74306"
   },
   "nodes": [
     {
@@ -31802,15 +31802,15 @@
       "norm_label": "test_evalreset_architecture_graph.py"
     },
     {
-      "label": "test_historical_phase_a_registry_is_superseded_by_graphskill_current()",
+      "label": "test_legacy_phase_a_control_plane_is_absent_and_graphskill_current_is_authoritative()",
       "file_type": "code",
       "source_file": "tests/test_evalreset_architecture_graph.py",
       "source_location": "L9",
       "_origin": "ast",
-      "id": "tests_test_evalreset_architecture_graph_test_historical_phase_a_registry_is_superseded_by_graphskill_current",
+      "id": "tests_test_evalreset_architecture_graph_test_legacy_phase_a_control_plane_is_absent_and_graphskill_current_is_authoritative",
       "community": 233,
       "community_name": "Community 233",
-      "norm_label": "test_historical_phase_a_registry_is_superseded_by_graphskill_current()"
+      "norm_label": "test_legacy_phase_a_control_plane_is_absent_and_graphskill_current_is_authoritative()"
     },
     {
       "label": "test_evalreset_artifact_index.py",
@@ -122571,7 +122571,7 @@
       "source_location": "L9",
       "weight": 1,
       "source": "tests_test_evalreset_architecture_graph",
-      "target": "tests_test_evalreset_architecture_graph_test_historical_phase_a_registry_is_superseded_by_graphskill_current",
+      "target": "tests_test_evalreset_architecture_graph_test_legacy_phase_a_control_plane_is_absent_and_graphskill_current_is_authoritative",
       "confidence_score": 1
     },
     {
