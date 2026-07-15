@@ -44,3 +44,9 @@ def test_pair_summary_keeps_diagnostic_positive_separate_from_execution_status()
     assert result["evaluated_pairs"] == 1
     assert result["blocked_pairs"] == 1
     assert result["diagnostic_matched_positive_behavior_identities"] == 1
+    assert result["by_route"]["MINUTE_STATIC"] == {
+        "blocked": 1,
+        "diagnostic_matched_positive": 1,
+        "evaluated": 1,
+        "pair_rows": 2,
+    }

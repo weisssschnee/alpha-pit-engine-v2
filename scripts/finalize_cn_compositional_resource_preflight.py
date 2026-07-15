@@ -84,10 +84,13 @@ def summarize_pair_rows(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
     for row in materialized:
         route = str(row.get("route_id") or "UNKNOWN")
         status = str(row.get("pair_evaluation_status") or "UNKNOWN")
-        by_route[route][status] += 1
+        by_route[route]["pair_rows"] += 1
+        by_route[route]["evaluated"] += int(status == "PAIR_EVALUATED")
+        by_route[route]["blocked"] += int(status != "PAIR_EVALUATED")
         decision = str(row.get("pair_train_reward_decision") or "")
         if decision == "PAIR_TRAIN_FEEDBACK_READY":
             matched_pairs += 1
+            by_route[route]["diagnostic_matched_positive"] += 1
             identity = str(row.get("primary_behavior_identity") or row.get("pair_id") or "")
             if identity:
                 matched_clusters.add(identity)
@@ -111,9 +114,9 @@ def _route_failure_markdown(summary: Mapping[str, Any]) -> str:
         "|---|---:|---:|---:|---|",
     ]
     for route, counts in summary["by_route"].items():
-        evaluated = int(counts.get("PAIR_EVALUATED", 0))
-        total = sum(int(value) for value in counts.values())
-        blocked = total - evaluated
+        evaluated = int(counts.get("evaluated", 0))
+        total = int(counts.get("pair_rows", 0))
+        blocked = int(counts.get("blocked", 0))
         attribution = "COMPUTE_OR_IO_BOTTLENECK" if evaluated else "SUPPORT_OR_MATERIALIZATION_DIAGNOSTIC"
         lines.append(f"| {route} | {total} | {evaluated} | {blocked} | {attribution} |")
     return "\n".join(lines)
@@ -164,6 +167,26 @@ def main() -> int:
         row["evaluation_scope"] = "RESOURCE_PREFLIGHT_DIAGNOSTIC_ONLY"
         row["strict_stage_a_executed"] = False
     pd.DataFrame(pair_rows).to_parquet(runtime / "CN_STRICT_PAIR_RESULTS.parquet", index=False)
+
+    waterfall = pd.read_csv(runtime / "CN_ADMISSION_WATERFALL.csv")
+    waterfall["diversity_admitted"] = 0
+    waterfall["resource_preflight_pairs"] = 0
+    waterfall["resource_preflight_evaluated"] = 0
+    waterfall["resource_preflight_blocked"] = 0
+    waterfall["resource_preflight_diagnostic_matched_positive"] = 0
+    for index, row in waterfall.iterrows():
+        route = str(row["route_id"])
+        behavior_route = dict(behavior.get("route_metrics", {}).get(route, {}))
+        preflight_route = dict(pair_summary["by_route"].get(route, {}))
+        waterfall.at[index, "behavior_unique"] = int(behavior_route.get("exact_behavior_identity_count", 0))
+        waterfall.at[index, "diversity_admitted"] = int(behavior_route.get("admitted_pair_count", 0))
+        waterfall.at[index, "resource_preflight_pairs"] = int(preflight_route.get("pair_rows", 0))
+        waterfall.at[index, "resource_preflight_evaluated"] = int(preflight_route.get("evaluated", 0))
+        waterfall.at[index, "resource_preflight_blocked"] = int(preflight_route.get("blocked", 0))
+        waterfall.at[index, "resource_preflight_diagnostic_matched_positive"] = int(
+            preflight_route.get("diagnostic_matched_positive", 0)
+        )
+    waterfall.to_csv(runtime / "CN_ADMISSION_WATERFALL.csv", index=False)
 
     peak_bytes = int(calibration_peak["peak_working_set_bytes"])
     workers = safe_worker_count(
