@@ -1,0 +1,2 @@
+# Generated RAW/CURRENT projections must not be re-ingested as source.
+.planning/graphs/

@@ -20,6 +20,7 @@ def _sha256(path: Path) -> str:
 def test_graphskill_has_one_raw_and_one_current_control_plane() -> None:
     config = _load(REPO / ".planning/config.json")
     overlay = _load(REPO / "config/architecture_overlay.json")
+    graphify_ignore = (REPO / ".graphifyignore").read_text(encoding="utf-8")
 
     assert config["graphify"] == {
         "enabled": True,
@@ -28,6 +29,7 @@ def test_graphskill_has_one_raw_and_one_current_control_plane() -> None:
     }
     assert overlay["schema_version"] == 1
     assert overlay["schema_ref"].endswith("architecture-overlay.schema.json")
+    assert ".planning/graphs/" in graphify_ignore.splitlines()
     assert not (REPO / ".planning/architecture").exists()
     assert not (REPO / ".planning/codegraph").exists()
     assert {path.name for path in GRAPHS.iterdir() if path.is_file()} >= {
