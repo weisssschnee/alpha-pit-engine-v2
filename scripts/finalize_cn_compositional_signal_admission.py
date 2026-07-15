@@ -287,6 +287,19 @@ def main() -> int:
         expected_candidates={row["candidate_id"] for row in session_generation},
     )
     registry_rows = [*active_registry, *session_registry]
+    diagnostic = {
+        "status": "SIGNAL_SKETCH_DIAGNOSTIC_COMPLETE_ADMISSION_GATE_PENDING",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "data_role": "development",
+        "labels_or_returns_used": False,
+        "validation_holdout_forward_read": False,
+        "clock_summaries": {
+            "active_bar": active_summary,
+            "stock_session": session_summary,
+        },
+    }
+    _write_csv(root / "CN_SIGNAL_CLUSTER_REGISTRY.csv", registry_rows)
+    _write_json(root / "CN_SIGNAL_SKETCH_DIAGNOSTIC.json", diagnostic)
     clock_offset = 0
     for clock in ("active_bar", "stock_session"):
         subset = [row for row in registry_rows if row["clock_namespace"] == clock]
@@ -322,7 +335,6 @@ def main() -> int:
     admitted = select_diversity_admission(admission_inputs, maximum_pairs=args.maximum_pairs)
     if not (active_summary["fidelity_gates"]["all_pass"] and session_summary["fidelity_gates"]["all_pass"]):
         raise RuntimeError("signal sketch fidelity/stability gates failed; diversity admission is not authoritative")
-    _write_csv(root / "CN_SIGNAL_CLUSTER_REGISTRY.csv", registry_rows)
     _write_csv(root / "CN_DIVERSITY_ADMISSION.csv", admitted)
     route_metrics = {
         route_id: _distribution(row for row in admission_inputs if row["route_id"] == route_id)
