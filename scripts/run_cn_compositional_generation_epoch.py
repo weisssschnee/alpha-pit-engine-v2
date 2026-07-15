@@ -92,6 +92,47 @@ def _route_skeleton_rows(unique_pairs: list[dict[str, Any]]) -> list[dict[str, A
     return output
 
 
+def _compact_pair_receipt(row: Mapping[str, Any]) -> dict[str, Any]:
+    primary = row["primary"]
+    control = row["control"]
+    return {
+        "receipt_schema": "cn_compositional_pair_reconstruction_receipt_v1",
+        "attempt_id": row["attempt_id"],
+        "route_attempt_index": row["route_attempt_index"],
+        "candidate_id": row["candidate_id"],
+        "control_candidate_id": row["control_candidate_id"],
+        "pair_id": row["pair_id"],
+        "route_id": row["route_id"],
+        "skeleton_id": row["skeleton_id"],
+        "policy_id": row["policy_id"],
+        "seed": row["seed"],
+        "exact_identity": row["exact_identity"],
+        "control_exact_identity": control["exact_identity"],
+        "canonical_identity": row["canonical_identity"],
+        "canonical_expression": row["canonical_expression"],
+        "control_canonical_expression": control["canonical_expression"],
+        "declared_field_ids": row["declared_field_ids"],
+        "condition_field_ids": list(primary.get("condition_field_ids", ())),
+        "source_field_ids": list(primary.get("source_field_ids", ())),
+        "representation_ids": list(primary.get("representation_ids", ())),
+        "source_families": row["source_families"],
+        "expression_depth": row["expression_depth"],
+        "operator_path_hash": row["operator_path_hash"],
+        "control_constructor_id": primary["control_constructor_id"],
+        "clock_contract": primary["clock_contract"],
+        "maturity_contract": primary["maturity_contract"],
+        "support_unit": primary["support_unit"],
+        "parent_candidate_id": row["parent_candidate_id"],
+        "mutation_receipt": row["mutation_receipt"],
+        "discovering_policy_ids": row["discovering_policy_ids"],
+        "discovering_seeds": row["discovering_seeds"],
+        "proposal_exposure_count": row["proposal_exposure_count"],
+        "owner_assignment_key": row["owner_assignment_key"],
+        "access_roles": ["development"],
+        "promotion_allowed": False,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--plan", type=Path, default=DEFAULT_PLAN)
@@ -129,7 +170,10 @@ def main() -> int:
     ledger_path = output / "CN_PROPOSAL_EXPOSURE_LEDGER.parquet"
     pd.DataFrame(result.ledger).to_parquet(ledger_path, index=False)
     pair_receipts_path = output / "CN_PAIR_RECEIPTS.jsonl"
-    _write_jsonl(pair_receipts_path, result.unique_pairs)
+    _write_jsonl(
+        pair_receipts_path,
+        (_compact_pair_receipt(row) for row in result.unique_pairs),
+    )
     preadmission_path = output / "CN_STRUCTURAL_PREADMISSION.json"
     _write_json(
         preadmission_path,

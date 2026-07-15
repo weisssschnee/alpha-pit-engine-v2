@@ -4,6 +4,7 @@ from pathlib import Path
 
 from our_system_phase2.services.compositional_generation_epoch import (
     build_compositional_generation_epoch,
+    reconstruct_generation_pair,
     select_structural_preadmission,
 )
 from our_system_phase2.services.unified_capability_registry import (
@@ -51,6 +52,10 @@ def test_generation_epoch_is_globally_exact_deduplicated_and_feedback_dark() -> 
     assert all(row["strict_call"] is False for row in result.ledger)
     assert all(row["policy_state_hash"] for row in result.ledger)
     assert all(row["control"]["vote_policy"] == "CONTROL_NO_SEPARATE_VOTE" for row in result.unique_pairs)
+    for receipt in result.unique_pairs[:8]:
+        reconstructed = reconstruct_generation_pair(registry, receipt)
+        assert reconstructed.primary["exact_identity"] == receipt["exact_identity"]
+        assert reconstructed.primary["candidate_id"] == receipt["candidate_id"]
 
 
 def test_structural_preadmission_is_deterministic_and_performance_blind() -> None:

@@ -73,6 +73,7 @@ def _pair_record(
     attempt_id: str,
     parent_candidate_id: str,
     mutation_receipt: str,
+    route_attempt_index: int,
 ) -> dict[str, Any]:
     declared = tuple(sorted(str(value) for value in primary.get("declared_field_ids", ())))
     source_families = tuple(sorted({registry.resolve(field_id).source_family for field_id in declared}))
@@ -81,6 +82,7 @@ def _pair_record(
     operator_path_hash = stable_hash(list(primary.get("operator_paths", ())))
     return {
         "attempt_id": attempt_id,
+        "route_attempt_index": int(route_attempt_index),
         "candidate_id": str(primary["candidate_id"]),
         "control_candidate_id": str(control["candidate_id"]),
         "pair_id": str(primary["pair_id"]),
@@ -247,6 +249,7 @@ def build_compositional_generation_epoch(
                         attempt_id=attempt_id,
                         parent_candidate_id=parent_id,
                         mutation_receipt=mutation_receipt,
+                        route_attempt_index=route_attempt_index,
                     )
                     discovery_policies[exact_identity].add(str(policy_id))
                     discovery_seeds[exact_identity].add(int(seed))
@@ -339,6 +342,24 @@ def build_compositional_generation_epoch(
         "forward_2026_accessed": False,
     }
     return GenerationEpochResult(summary, ledger, unique_pairs, waterfall)
+
+
+def reconstruct_generation_pair(
+    registry: UnifiedCapabilityRegistry,
+    receipt: Mapping[str, Any],
+) -> Any:
+    """Rebuild and verify a pair from its compact deterministic receipt."""
+    grammar = CompositionalGrammarV2(registry)
+    pair = grammar.propose(
+        str(receipt["route_id"]),
+        attempt_index=int(receipt["route_attempt_index"]),
+        seed=int(receipt["seed"]),
+    )
+    if str(pair.primary["exact_identity"]) != str(receipt["exact_identity"]):
+        raise ValueError("receipt exact identity does not reconstruct")
+    if str(pair.primary["candidate_id"]) != str(receipt["candidate_id"]):
+        raise ValueError("receipt candidate identity does not reconstruct")
+    return pair
 
 
 def select_structural_preadmission(
