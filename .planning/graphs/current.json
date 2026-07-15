@@ -291,24 +291,24 @@
       "source": "matched_control_pair_authority",
       "target": "candidate_parallel_evaluator",
       "validation": {
-        "checked_at": "2026-07-15T06:57:15.960384+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json",
-        "evidence_sha256": "C9C91CFFA416D0349257195A34896E8C17EF39AAE6D9F2820FD585D12F5E24B6",
+        "checked_at": "2026-07-15T10:02:06.610324+00:00",
+        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
+        "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       }
     },
     {
-      "color": "#2e7d32",
+      "color": "#f9a825",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "phase3cn_receipt_gate",
+        "enforced_by": "phase3cn_pair_native_gate",
         "evidence_ref": "",
-        "id": "matched_increment_only",
-        "rule": "Phase3CN consumes train-only pair increment, not standalone primary reward.",
+        "id": "pair_native_ready_only",
+        "rule": "Phase3CN consumes only train-only pair-native READY rows; standalone-primary decisions and blockers are diagnostic only.",
         "severity": "HARD",
         "type": "ADMISSION"
       },
@@ -318,21 +318,21 @@
       "evidence": "DECLARED",
       "forbidden": false,
       "id": "evaluator_to_feedback",
-      "lifecycle": "ACTIVE",
+      "lifecycle": "EXPERIMENTAL",
       "line_style": "dotted",
-      "relation": "supplies_matched_train_increment",
+      "relation": "supplies_pair_native_train_feedback",
       "required": false,
       "source": "candidate_parallel_evaluator",
       "target": "matched_train_feedback",
       "validation": {
-        "checked_at": "2026-07-15T06:57:15.960384+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
-        "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
+        "checked_at": "2026-07-15T10:02:06.610324+00:00",
+        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_CONTRACT.json",
+        "evidence_sha256": "136435AFB57ABB81FCEC1562A7E992BE0A8F90BE14EB995CE1227627A97A33DA",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       }
     },
     {
@@ -634,7 +634,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-15T08:03:34.590722+00:00",
+  "generated_at": "2026-07-15T10:24:33.889758+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1308,8 +1308,8 @@
       "authority": {
         "path": "src/our_system_phase2/services/matched_control_pairs.py",
         "repo_ref": "",
-        "sha256": "9723D8074292BEAECB9B664F903600C785D2105B41A3B6A5A789AE93F7D434B3",
-        "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "sha256": "E652D586A518A7512B9A5C30D81898C4F4A77598CD8FF5808D1CECB4BAC9EF1F",
+        "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
       "color": "#2e7d32",
       "contracts": [
@@ -1353,10 +1353,10 @@
         "src_our_system_phase2_services_matched_control_pairs_pair_identity",
         "src_our_system_phase2_services_matched_control_pairs_partition_candidate_pairs",
         "src_our_system_phase2_services_matched_control_pairs_rationale_1",
-        "src_our_system_phase2_services_matched_control_pairs_rationale_103",
-        "src_our_system_phase2_services_matched_control_pairs_rationale_245",
-        "src_our_system_phase2_services_matched_control_pairs_rationale_440",
-        "src_our_system_phase2_services_matched_control_pairs_rationale_479",
+        "src_our_system_phase2_services_matched_control_pairs_rationale_107",
+        "src_our_system_phase2_services_matched_control_pairs_rationale_249",
+        "src_our_system_phase2_services_matched_control_pairs_rationale_444",
+        "src_our_system_phase2_services_matched_control_pairs_rationale_483",
         "src_our_system_phase2_services_matched_control_pairs_read_pair_receipt_table",
         "src_our_system_phase2_services_matched_control_pairs_receipt_payload",
         "src_our_system_phase2_services_matched_control_pairs_select_candidate_pairs",
@@ -1368,14 +1368,14 @@
       "required": false,
       "semantic_role": "matched_pair_authority",
       "validation": {
-        "checked_at": "2026-07-15T06:57:15.960384+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_EVALUATION_RESULTS.json",
-        "evidence_sha256": "0522800B3249CB6FA9F63C9685A58CE40C266F72F836CF02654DFE2C13F34C54",
+        "checked_at": "2026-07-15T10:06:26.894516+00:00",
+        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
+        "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
       "visible_by_default": true
     },
@@ -1384,8 +1384,8 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
         "repo_ref": "",
-        "sha256": "425DEE0C27F8BB5323B96288CAD39E488911EF6F32A9A31B6EA570E10B75DC7B",
-        "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "sha256": "F2D55DD23FF220141333F0424DCD8E46CF336EB6F4D14FE7ACB0194F57506F70",
+        "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
       "color": "#2e7d32",
       "contracts": [
@@ -1476,10 +1476,10 @@
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rank_pct_1d_average",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rank_pct_1d_average_numba",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_1",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_1997",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_610",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_699",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_981",
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_2014",
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_613",
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_702",
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_989",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_read_cached_feature_matrix",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_read_cached_series",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_read_csv",
@@ -1512,14 +1512,14 @@
       "required": false,
       "semantic_role": "formal_evaluation_authority",
       "validation": {
-        "checked_at": "2026-07-15T06:57:15.960384+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json",
-        "evidence_sha256": "C9C91CFFA416D0349257195A34896E8C17EF39AAE6D9F2820FD585D12F5E24B6",
+        "checked_at": "2026-07-15T10:06:26.894516+00:00",
+        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
+        "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
       "visible_by_default": true
     },
@@ -1528,17 +1528,17 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
         "repo_ref": "",
-        "sha256": "30C0FD3B523C624AF0F0F88BEC8E17E435CCF806A673DAAACDA10CAB5DEFBC82",
-        "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "sha256": "40C65CB37E6E5F8239AFE446269216345CBE234E17202A58DF4E54751962519A",
+        "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
-      "color": "#2e7d32",
+      "color": "#f9a825",
       "contracts": [
         {
           "bypass_forbidden": true,
           "enforced_by": "phase3cn_receipt_gate",
           "evidence_ref": "",
           "id": "matched_train_only",
-          "rule": "Feedback accepts only the primary row matched_train_increment after all three receipt hashes validate.",
+          "rule": "Feedback accepts only PAIR_TRAIN_FEEDBACK_READY primary rows governed by pair-native reward, blockers, support, turnover and RankIC fields after all three receipt hashes validate.",
           "severity": "HARD",
           "type": "BOUNDARY"
         }
@@ -1548,8 +1548,8 @@
       "expires_at": "",
       "id": "matched_train_feedback",
       "kind": "feedback",
-      "label": "Phase3CN matched train feedback",
-      "lifecycle": "ACTIVE",
+      "label": "Pair-native Phase3CN feedback authority",
+      "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
         "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py"
@@ -1572,7 +1572,7 @@
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_median",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_optimizer_reward",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_rationale_1",
-        "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_rationale_123",
+        "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_rationale_124",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_read_csv",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_render_md",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_resolve",
@@ -1583,14 +1583,14 @@
       "required": false,
       "semantic_role": "train_feedback_authority",
       "validation": {
-        "checked_at": "2026-07-15T06:57:15.960384+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
-        "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
+        "checked_at": "2026-07-15T10:06:26.894516+00:00",
+        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_TEST_RESULTS.json",
+        "evidence_sha256": "FC996215C353588E01A4537EBED4B86B85A9AB6E556B223CB54EF92CDB4D17D9",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
       "visible_by_default": true
     },
@@ -1979,18 +1979,18 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "D794A1CC5F26328214CA0CFFE4C3B3F8FD26E4D2D98ED35CFBDF05C4020A483E"
+    "sha256": "C457F1B9E5A6163EBE46C73F550B90D742AB7C984D8A896F14505E7542B0C33E"
   },
   "profile_id": null,
   "profiles": [],
   "raw": {
-    "built_at_commit": "67ab8f2eb0dced851e4f5c7937549c4913a46983",
-    "edge_count": 8586,
-    "node_count": 3532,
+    "built_at_commit": "5c19d0c3932b6de293acbc73806d82c5b0d16775",
+    "edge_count": 8878,
+    "node_count": 3783,
     "path": ".planning/graphs/graph.json",
-    "sha256": "F1798AD0FC1062645778E40C8FF4045E074E7ADB78C413C29814DA0909456860"
+    "sha256": "BFFB657C392DDF2F82E0C6277698BC7B4A2B7FB5E4531E8BDF2EDD6B7D33E4CC"
   },
-  "repo_head": "67ab8f2eb0dced851e4f5c7937549c4913a46983",
+  "repo_head": "5c19d0c3932b6de293acbc73806d82c5b0d16775",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
