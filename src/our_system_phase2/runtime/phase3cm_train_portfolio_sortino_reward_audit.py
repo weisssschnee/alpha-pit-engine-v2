@@ -63,7 +63,10 @@ from our_system_phase2.services.matched_control_pairs import (
     group_candidate_pairs,
     read_pair_receipt_table,
 )
-from our_system_phase2.services.real_market_validation import evaluate_panel_expression
+from our_system_phase2.services.real_market_validation import (
+    evaluate_panel_expression,
+    frozen_replay_channels,
+)
 from our_system_phase2.services.signal_vector_semantics import build_signal_semantic_diagnostics
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry, stable_hash
 
@@ -868,6 +871,7 @@ def _load_candidates(
             item["legacy_alias_rewrites"] = rewrite_summary(rewrites)
             item["legacy_alias_rewrite_policy"] = "|".join(sorted({rewrite.policy for rewrite in rewrites}))
         item["fields_list"] = _fields(expression)
+        item["runtime_fields_list"] = frozen_replay_channels(expression)
         item["max_window"] = _max_expression_window(expression)
         selected.append(item)
     if not selected:
@@ -897,7 +901,11 @@ def _schema_gate_candidates(
             {
                 field
                 for candidate in pair
-                for field in set(candidate.get("fields_list") or ()) - set(available_fields)
+                for field in (
+                    set(candidate.get("fields_list") or ())
+                    | set(candidate.get("runtime_fields_list") or ())
+                )
+                - set(available_fields)
             }
         )
         target = held if missing else runnable
@@ -1109,7 +1117,16 @@ def _read_train_shard(
 ]:
     max_window = max((int(candidate.get("max_window") or 0) for candidate in candidates), default=0)
     max_horizon = max(horizons) if prepare_labels else 0
-    fields = sorted({field for candidate in candidates for field in candidate["fields_list"]})
+    fields = sorted(
+        {
+            field
+            for candidate in candidates
+            for field in (
+                list(candidate["fields_list"])
+                + list(candidate.get("runtime_fields_list") or ())
+            )
+        }
+    )
     required = {
         "code",
         "trade_time",

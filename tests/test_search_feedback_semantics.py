@@ -28,9 +28,17 @@ def _reward_row(expression: str) -> dict[str, object]:
         "feedback_data_role": "development",
         "evaluation_access_guard": "evalreset_feedback_guard_v1",
         "train_reward": 0.25,
-        "train_mean_one_way_turnover": 0.2,
-        "train_reward_blockers": "",
-        "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+        "matched_train_increment": 0.25,
+        "pair_train_reward": 0.25,
+        "pair_train_reward_decision": "PAIR_TRAIN_FEEDBACK_READY",
+        "pair_train_reward_blockers": "",
+        "pair_turnover_metric": 0.2,
+        "pair_support_metric": 1.0,
+        "pair_rank_ic_metric": 0.01,
+        "primary_evaluator_invocation_count": 1,
+        "control_evaluator_invocation_count": 1,
+        "primary_standalone_train_reward_blockers": "",
+        "primary_standalone_train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
     }
 
 

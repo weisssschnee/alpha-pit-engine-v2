@@ -40,6 +40,7 @@ from our_system_phase2.services.matched_control_pairs import (
     CandidatePairAuthority,
     MATCHED_OPTIMIZER_REWARD_METRIC,
     MATCHED_OPTIMIZER_REWARD_SOURCE,
+    PAIR_TRAIN_FEEDBACK_READY,
     read_pair_receipt_table,
 )
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
@@ -152,6 +153,33 @@ def _assert_raw_phase3cm_provenance(raw: dict[str, Any], *, source: Path) -> Non
             f"raw Phase3CM source is not a completed matched pair evaluation; "
             f"table={source} candidate={candidate}"
         )
+    pair_decision = str(raw.get("pair_train_reward_decision") or "")
+    pair_blockers = str(raw.get("pair_train_reward_blockers") or "")
+    if pair_decision != PAIR_TRAIN_FEEDBACK_READY or pair_blockers:
+        raise RuntimeError(
+            "raw Phase3CM source is not pair-native feedback ready; "
+            f"table={source} candidate={candidate} decision={pair_decision or '<missing>'} "
+            f"blockers={pair_blockers or '<none>'}"
+        )
+    pair_reward = safe_float(raw.get("pair_train_reward"), float("nan"))
+    matched_increment = safe_float(raw.get("matched_train_increment"), float("nan"))
+    pair_turnover = safe_float(raw.get("pair_turnover_metric"), float("nan"))
+    pair_support = safe_float(raw.get("pair_support_metric"), float("nan"))
+    pair_rank_ic = safe_float(raw.get("pair_rank_ic_metric"), float("nan"))
+    if not math.isfinite(pair_reward) or pair_reward <= 0.0:
+        raise RuntimeError(f"raw Phase3CM pair_train_reward must be finite and positive; candidate={candidate}")
+    if not math.isfinite(matched_increment) or not math.isclose(pair_reward, matched_increment, rel_tol=0.0, abs_tol=1e-12):
+        raise RuntimeError(f"raw Phase3CM pair reward must equal matched_train_increment; candidate={candidate}")
+    if not math.isfinite(pair_turnover):
+        raise RuntimeError(f"raw Phase3CM pair_turnover_metric must be finite; candidate={candidate}")
+    if pair_support != 1.0:
+        raise RuntimeError(f"raw Phase3CM pair_support_metric must equal 1.0; candidate={candidate}")
+    if not math.isfinite(pair_rank_ic):
+        raise RuntimeError(f"raw Phase3CM pair_rank_ic_metric must be finite; candidate={candidate}")
+    if int(safe_float(raw.get("primary_evaluator_invocation_count"), 0.0)) <= 0:
+        raise RuntimeError(f"raw Phase3CM primary evaluator was not invoked; candidate={candidate}")
+    if int(safe_float(raw.get("control_evaluator_invocation_count"), 0.0)) <= 0:
+        raise RuntimeError(f"raw Phase3CM control evaluator was not invoked; candidate={candidate}")
     if str(raw.get("pair_member_role") or "") != "PRIMARY":
         raise RuntimeError(
             f"raw Phase3CM feedback may contain primary pair rows only; table={source} candidate={candidate}"
@@ -182,15 +210,15 @@ def _load_rows(tables: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str,
 def _has_wrong_lag_or_corr(row: dict[str, Any]) -> bool:
     text = "|".join(
         str(row.get(name) or "")
-        for name in ("blocker_flags", "train_reward_blockers", "inherited_blockers")
+        for name in ("blocker_flags", "pair_train_reward_blockers", "inherited_blockers")
     ).lower()
     return "wrong_lag" in text or "future_signal_wrong_lag" in text or "high_corr" in text or "signal_corr_abs" in text
 
 
 def _optimizer_reward(row: dict[str, Any]) -> float:
-    reward = safe_float(row.get("optimizer_reward"), float("nan"))
+    reward = safe_float(row.get("pair_train_reward"), float("nan"))
     if not math.isfinite(reward):
-        reward = safe_float(row.get("train_reward"), float("nan"))
+        reward = safe_float(row.get("optimizer_reward"), float("nan"))
     return reward
 
 
@@ -203,16 +231,20 @@ def _is_clean(row: dict[str, Any], *, train_threshold: float, validation_floor: 
     if _has_semantic_degeneracy(row):
         return False
     train_reward = _optimizer_reward(row)
-    turnover = safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 0.0)
-    decision = str(row.get("train_reward_decision") or "")
-    blockers = str(row.get("train_reward_blockers") or "")
+    turnover = safe_float(row.get("pair_turnover_metric"), float("nan"))
+    decision = str(row.get("pair_train_reward_decision") or "")
+    blockers = str(row.get("pair_train_reward_blockers") or "")
+    support = safe_float(row.get("pair_support_metric"), float("nan"))
+    rank_ic = safe_float(row.get("pair_rank_ic_metric"), float("nan"))
+    if str(row.get("pair_evaluation_status") or "") != "PAIR_EVALUATED":
+        return False
+    if decision != PAIR_TRAIN_FEEDBACK_READY or blockers:
+        return False
     if not math.isfinite(train_reward) or train_reward <= train_threshold:
         return False
-    if math.isfinite(turnover) and turnover > max_turnover:
+    if not math.isfinite(turnover) or turnover > max_turnover:
         return False
-    if blockers:
-        return False
-    if "FOLLOWUP_READY" not in decision and decision:
+    if support != 1.0 or not math.isfinite(rank_ic):
         return False
     if _has_wrong_lag_or_corr(row):
         return False
@@ -254,7 +286,7 @@ def _family_tables(
         clean_count = sum(1 for row in semantic_clean_items if _is_clean(row, train_threshold=train_threshold, validation_floor=0.0, max_turnover=max_turnover))
         rewardhack_count = sum(1 for row in semantic_clean_items if _is_rewardhack(row))
         wrong_lag_or_corr_count = sum(1 for row in items if _has_wrong_lag_or_corr(row))
-        high_turnover_count = sum(1 for row in items if safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 0.0) > max_turnover)
+        high_turnover_count = sum(1 for row in items if safe_float(row.get("pair_turnover_metric"), float("inf")) > max_turnover)
         family_share = len(items) / total
         status = "normal"
         reasons: list[str] = []
@@ -335,7 +367,7 @@ def _arm_score_table(
         clean_count = sum(1 for row in semantic_clean_items if _is_clean(row, train_threshold=train_threshold, validation_floor=0.0, max_turnover=max_turnover))
         rewardhack_count = sum(1 for row in semantic_clean_items if _is_rewardhack(row))
         wrong_lag_count = sum(1 for row in items if _has_wrong_lag_or_corr(row))
-        low_turnover_count = sum(1 for row in semantic_clean_items if safe_float(row.get("train_mean_one_way_turnover") or row.get("mean_one_way_turnover"), 1.0) <= max_turnover)
+        low_turnover_count = sum(1 for row in semantic_clean_items if safe_float(row.get("pair_turnover_metric"), float("inf")) <= max_turnover)
         families = {str(row.get("family_id") or "") for row in semantic_clean_items}
         allowed_families = sum(1 for family in families if family_by_id.get(family, {}).get("family_status") == "exploit_allowed")
         top_family_count = max((sum(1 for row in semantic_clean_items if row.get("family_id") == family) for family in families), default=0)
@@ -519,9 +551,7 @@ def build_feedback_memory(
                 f"candidate={item.get('candidate_id')} metric={source_metric or '<missing>'}"
             )
         item.update(normalize_candidate_schema(item))
-        reward = safe_float(item.get("optimizer_reward"), float("nan"))
-        if not math.isfinite(reward):
-            reward = safe_float(item.get("train_reward"), float("nan"))
+        reward = safe_float(item.get("pair_train_reward"), float("nan"))
         item["optimizer_reward"] = reward if math.isfinite(reward) else ""
         item["feedback_data_role"] = "development"
         normalized_rows.append(project_train_only_feedback_row(item))

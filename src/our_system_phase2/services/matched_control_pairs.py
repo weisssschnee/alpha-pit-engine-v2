@@ -25,6 +25,8 @@ PAIR_RECEIPT_SCHEMA_VERSION = "cn_candidate_pair_receipt_v2"
 PAIR_AUTHORIZATION_STATUS = "AUTHORIZED_FOR_FORMAL_PAIR_EVALUATION"
 MATCHED_OPTIMIZER_REWARD_SOURCE = "train_only_phase3cm_matched_increment"
 MATCHED_OPTIMIZER_REWARD_METRIC = "matched_train_primary_minus_control_composite_reward"
+PAIR_TRAIN_FEEDBACK_READY = "PAIR_TRAIN_FEEDBACK_READY"
+PAIR_TRAIN_FEEDBACK_BLOCKED = "PAIR_TRAIN_FEEDBACK_BLOCKED"
 PAIR_MAPPING_PORTFOLIO_CONTRACT = (
     "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|"
     "SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS"
@@ -97,6 +99,8 @@ CONTROL_CONSTRUCTOR_MATRIX: dict[str, dict[str, Any]] = {
         "rationale": "preserves the accepted Broad Event control without redesign from performance",
     },
 }
+
+PAIR_RANK_IC_REQUIRED_ROUTES = frozenset(CONTROL_CONSTRUCTOR_MATRIX)
 
 
 class CandidatePairError(RuntimeError):
@@ -583,7 +587,11 @@ def build_pair_evaluation_rows(
             blockers.append("primary_signal_empty_or_constant")
         if not control_signal_spread or max(control_signal_spread, default=0.0) <= 1e-15:
             blockers.append("control_signal_empty_or_constant")
-        if invocation_counts and invocation_counts.get(str(control["candidate_id"]), 0) <= 0:
+        primary_invocations = invocation_counts.get(str(primary["candidate_id"]), 0)
+        control_invocations = invocation_counts.get(str(control["candidate_id"]), 0)
+        if primary_invocations <= 0:
+            blockers.append("primary_evaluator_not_invoked")
+        if control_invocations <= 0:
             blockers.append("control_evaluator_not_invoked")
 
         primary_value = _finite((primary_reward or {}).get("optimizer_reward"))
@@ -600,6 +608,35 @@ def build_pair_evaluation_rows(
         )
         rank_ic_increment = None if primary_rank_ic is None or control_rank_ic is None else primary_rank_ic - control_rank_ic
         status = "PAIR_EVALUATED" if not blockers else "PAIR_EVALUATION_BLOCKED"
+        pair_turnover_metric = (
+            None if primary_turnover is None or control_turnover is None else max(primary_turnover, control_turnover)
+        )
+        pair_support_metric = overlap
+        pair_rank_ic_metric = rank_ic_increment
+        pair_feedback_blockers = set(blockers)
+        if status != "PAIR_EVALUATED":
+            pair_feedback_blockers.add("pair_evaluation_not_completed")
+        if not str((primary_receipt or {}).get("receipt_hash") or ""):
+            pair_feedback_blockers.add("primary_receipt_hash_missing")
+        if not str((control_receipt or {}).get("receipt_hash") or ""):
+            pair_feedback_blockers.add("control_receipt_hash_missing")
+        if not str((pair_receipt or {}).get("pair_receipt_hash") or ""):
+            pair_feedback_blockers.add("pair_receipt_hash_missing")
+        if matched_increment is None:
+            pair_feedback_blockers.add("matched_train_increment_not_finite")
+        elif matched_increment <= 0.0:
+            pair_feedback_blockers.add("matched_train_increment_nonpositive")
+        if pair_support_metric != 1.0:
+            pair_feedback_blockers.add("pair_support_mismatch")
+        if pair_turnover_metric is None:
+            pair_feedback_blockers.add("pair_turnover_metric_not_finite")
+        if str(primary.get("route_id") or "") in PAIR_RANK_IC_REQUIRED_ROUTES and pair_rank_ic_metric is None:
+            pair_feedback_blockers.add("pair_rank_ic_metric_not_finite")
+        pair_feedback_decision = (
+            PAIR_TRAIN_FEEDBACK_READY
+            if not pair_feedback_blockers
+            else PAIR_TRAIN_FEEDBACK_BLOCKED
+        )
         primary_atoms = sum(str(row.get("candidate_id") or "") == str(primary["candidate_id"]) for row in atoms)
         control_atoms = sum(str(row.get("candidate_id") or "") == str(control["candidate_id"]) for row in atoms)
         row = {
@@ -620,6 +657,12 @@ def build_pair_evaluation_rows(
             "control_constructor_id": str(primary.get("control_constructor_id") or ""),
             "pair_evaluation_status": status,
             "pair_evaluation_blockers": "|".join(sorted(set(blockers))),
+            "pair_train_reward": matched_increment,
+            "pair_train_reward_decision": pair_feedback_decision,
+            "pair_train_reward_blockers": "|".join(sorted(pair_feedback_blockers)),
+            "pair_turnover_metric": pair_turnover_metric,
+            "pair_support_metric": pair_support_metric,
+            "pair_rank_ic_metric": pair_rank_ic_metric,
             "primary_train_reward": primary_value,
             "control_train_reward": control_value,
             "matched_train_increment": matched_increment,
@@ -638,16 +681,26 @@ def build_pair_evaluation_rows(
             "control_support_coordinate_count": len(control_coordinates),
             "primary_reward_atom_count": primary_atoms,
             "control_reward_atom_count": control_atoms,
-            "primary_evaluator_invocation_count": invocation_counts.get(str(primary["candidate_id"]), 0),
-            "control_evaluator_invocation_count": invocation_counts.get(str(control["candidate_id"]), 0),
-            "optimizer_reward": matched_increment if status == "PAIR_EVALUATED" else "",
-            "train_reward": matched_increment if status == "PAIR_EVALUATED" else "",
+            "primary_evaluator_invocation_count": primary_invocations,
+            "control_evaluator_invocation_count": control_invocations,
+            "primary_standalone_train_reward_decision": str(
+                (primary_reward or {}).get("train_reward_decision") or ""
+            ),
+            "primary_standalone_train_reward_blockers": str(
+                (primary_reward or {}).get("train_reward_blockers") or ""
+            ),
+            "primary_standalone_train_mean_one_way_turnover": primary_turnover,
+            "optimizer_reward": matched_increment if pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY else "",
+            "train_reward": matched_increment if pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY else "",
             "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
             "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
             "optimizer_reward_split": "train",
             "control_independent_vote": False,
             "control_independent_memory": False,
         }
+        row.pop("train_reward_decision", None)
+        row.pop("train_reward_blockers", None)
+        row.pop("train_mean_one_way_turnover", None)
         output.append(row)
     return sorted(output, key=lambda row: str(row["pair_id"]))
 

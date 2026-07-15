@@ -219,6 +219,37 @@ class UnsupportedExpressionError(ValueError):
     pass
 
 
+FROZEN_PRIMARY_REPLAY_SUFFIX = "__frozen_primary_replay"
+FROZEN_CONTROL_REPLAY_SUFFIX = "__frozen_matched_control_replay"
+_FROZEN_REPLAY_CALL_RE = re.compile(
+    r"\b(FrozenMechanismReplay|MatchedControlReplay)\s*\(\s*\$([A-Za-z_][A-Za-z0-9_]*)\s*\)"
+)
+
+
+def frozen_replay_channel(field_id: str, *, is_control: bool) -> str:
+    """Return the physical channel for one registered frozen mechanism handle.
+
+    A frozen mechanism and its preregistered matched control are independent
+    materialized series.  They must never be reconstructed from each other in
+    the generic expression evaluator.
+    """
+    normalized = str(field_id or "").strip()
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", normalized):
+        raise ValueError(f"invalid frozen replay field id: {field_id!r}")
+    suffix = FROZEN_CONTROL_REPLAY_SUFFIX if is_control else FROZEN_PRIMARY_REPLAY_SUFFIX
+    return normalized + suffix
+
+
+def frozen_replay_channels(expression: str) -> list[str]:
+    """List physical frozen replay channels required by an expression."""
+    return sorted(
+        {
+            frozen_replay_channel(field_id, is_control=operator == "MatchedControlReplay")
+            for operator, field_id in _FROZEN_REPLAY_CALL_RE.findall(str(expression or ""))
+        }
+    )
+
+
 def expression_validation_cost_report(expression: str) -> dict[str, Any]:
     normalized = expand_derived_fields(expression.strip())
     operators = [item.lower() for item in re.findall(r"\b([A-Za-z][A-Za-z0-9_]*)\s*\(", normalized)]
@@ -898,6 +929,24 @@ def evaluate_panel_expression(
         return store(evaluate_child(args[0]).abs())
     if name_lower == "sign" and len(args) == 1:
         return store(np.sign(evaluate_child(args[0])))
+    if name_lower in {"frozenmechanismreplay", "matchedcontrolreplay"} and len(args) == 1:
+        field_expression = args[0].strip()
+        if not re.fullmatch(r"\$[A-Za-z_][A-Za-z0-9_]*", field_expression):
+            raise UnsupportedExpressionError(
+                f"frozen_replay_requires_registered_field_handle:{field_expression}"
+            )
+        field_id = FIELD_ALIASES.get(field_expression[1:], field_expression[1:])
+        channel = frozen_replay_channel(
+            field_id,
+            is_control=name_lower == "matchedcontrolreplay",
+        )
+        if channel not in frame.columns:
+            raise UnsupportedExpressionError(f"missing_frozen_replay_channel:{channel}")
+        series = pd.to_numeric(frame[channel], errors="coerce")
+        lag = int((field_lags or {}).get(field_id, 0))
+        if lag > 0:
+            series = series.groupby(frame["code"], sort=False).shift(lag)
+        return store(series)
     if name_lower == "log" and len(args) == 1:
         return store(_safe_log(evaluate_child(args[0])))
     if name_lower == "neg" and len(args) == 1:

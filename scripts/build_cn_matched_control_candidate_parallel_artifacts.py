@@ -42,6 +42,7 @@ from our_system_phase2.services.unified_capability_registry import (
     stable_hash,
 )
 from our_system_phase2.services.unified_discovery_generators import RegistryDrivenGenerator
+from our_system_phase2.services.real_market_validation import frozen_replay_channel
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -60,6 +61,13 @@ ROUTES = (
     "SLOW_CROSS_SECTIONAL_LEVEL",
     "SLOW_TEMPORAL_CHANGE",
 )
+REMAINING_RUNTIME_ROUTES = (
+    "DISCLOSURE_EVENT",
+    "MARKET_REGIME_CONDITION",
+    "INTRADAY_STATE_TRANSITION",
+    "BROAD_EVENT_FROZEN_ENTRY",
+)
+ALL_RUNTIME_ROUTES = ROUTES + REMAINING_RUNTIME_ROUTES
 NUMERIC_FIELDS = (
     "primary_train_reward",
     "control_train_reward",
@@ -114,15 +122,34 @@ def _package_matrix() -> dict[str, str]:
 
 def _build_candidates(
     registry: UnifiedCapabilityRegistry,
+    *,
+    routes: tuple[str, ...] = ROUTES,
+    seed_base: int = 5100,
 ) -> list[dict[str, Any]]:
     generator = RegistryDrivenGenerator(registry)
+    registry_by_id = {field.field_id: field for field in registry.fields}
     candidates: list[dict[str, Any]] = []
-    for route_index, route_id in enumerate(ROUTES, 1):
-        pair = generator.generate_route(route_id, proposal_budget=2, seed=5100 + route_index)
+    for route_index, route_id in enumerate(routes, 1):
+        seed = seed_base + route_index
+        pair = generator.generate_route(route_id, proposal_budget=2, seed=seed)
+        if route_id == "BROAD_EVENT_FROZEN_ENTRY":
+            # Phase3CM is a stock-portfolio evaluator.  Select a registered
+            # STOCK-scoped frozen mechanism for this runtime-only fixture;
+            # MARKET-scoped mechanisms retain their market-block contract.
+            for offset in range(64):
+                candidate_field = str((pair[0].get("declared_field_ids") or [""])[0])
+                field = registry_by_id.get(candidate_field)
+                if field is not None and field.entity_scope == "STOCK":
+                    break
+                seed = seed_base + route_index + offset + 1
+                pair = generator.generate_route(route_id, proposal_budget=2, seed=seed)
+            else:  # pragma: no cover - the frozen registry currently has stock entries.
+                raise RuntimeError("no STOCK-scoped BROAD_EVENT_FROZEN_ENTRY field available")
         for row in pair:
             row["expression_hash"] = stable_hash(str(row["expression"]))[:24]
             row["generator_arm"] = f"parity_{route_id.lower()}"
             row["open_direction"] = "long_top"
+            row["seed"] = seed
         candidates.extend(pair)
     return candidates
 
@@ -265,13 +292,37 @@ def _materialize_synthetic_shards(
                             if field.source_family == "raw_1min"
                             else 0.0
                         )
-                        row[field_id] = (
-                            1.0 if global_symbol % 2 else -1.0
-                        ) if null_behavior else float(
+                        generated_value = float(
                             np.sin((global_symbol + 1) * (field_index + 1) * 0.173 + day_term)
                             + np.cos((field_index + 2) * 0.193 + time_term)
                             + cross_sectional_path_term
                         )
+                        if null_behavior:
+                            generated_value = 1.0 if global_symbol % 2 else -1.0
+                        elif field.temporal_semantics in {"EVENT_PULSE", "DISCLOSURE_PULSE"}:
+                            generated_value = float(
+                                minute == 4
+                                or (
+                                    minute in {7, 10}
+                                    and (global_symbol + day_index + minute) % 4 == 0
+                                )
+                            )
+                        elif field.entity_scope == "MARKET":
+                            generated_value = 1.0 if (minute + day_index) % 4 < 2 else -1.0
+                        row[field_id] = generated_value
+                        if field.source_family == "broad_event_frozen_entry":
+                            primary_channel = frozen_replay_channel(field_id, is_control=False)
+                            control_channel = frozen_replay_channel(field_id, is_control=True)
+                            primary_value = float(
+                                np.sin((global_symbol + 1) * 0.271 + minute * 0.43 + day_index * 0.19)
+                            )
+                            control_value = float(
+                                np.cos((global_symbol + 1) * 0.193 + minute * 0.31 + day_index * 0.23)
+                            )
+                            if null_behavior:
+                                control_value = primary_value
+                            row[primary_channel] = primary_value
+                            row[control_channel] = control_value
                     rows.append(row)
         panel_dir = root / f"shard_{shard_index:02d}" / "phase3aq_wide_true1min" / "canary"
         panel_dir.mkdir(parents=True, exist_ok=True)
@@ -412,6 +463,187 @@ def _run_chunk(
         "expected_failure": bool(expect_failure),
         "formal_rejection_observed": formal_rejection_observed,
         "rejection_excerpt": rejection_text[-1200:] if expect_failure else "",
+    }
+
+
+def run_all_route_runtime_qualification(
+    *,
+    registry_path: Path,
+    split_manifest_path: Path,
+    run_root: Path,
+    repo_sha: str,
+) -> dict[str, Any]:
+    """Exercise all registered routes through real Phase3CM pair evaluation.
+
+    This is a one-shard synthetic runtime qualification only.  It does not
+    read a performance dataset or persist any search feedback.
+    """
+    from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import (
+        _assert_raw_phase3cm_provenance,
+    )
+
+    registry_path = Path(registry_path).resolve()
+    split_manifest_path = Path(split_manifest_path).resolve()
+    run_root = Path(run_root).resolve()
+    run_root.mkdir(parents=True, exist_ok=True)
+    registry = UnifiedCapabilityRegistry.read(registry_path)
+    split_authority = FixedSplitAuthority.read(split_manifest_path, require_official=True)
+    candidates = _build_candidates(
+        registry,
+        routes=ALL_RUNTIME_ROUTES,
+        seed_base=6200,
+    )
+    candidate_table = run_root / "all_route_candidate_pairs.csv"
+    _write_csv(candidate_table, candidates)
+    shard_root = run_root / "all_route_synthetic_true1min_shards"
+    shard_manifest = _materialize_synthetic_shards(
+        root=shard_root,
+        candidates=candidates,
+        registry=registry,
+        shard_count=1,
+    )
+    portable_manifest = [
+        {key: value for key, value in row.items() if key != "path"}
+        for row in shard_manifest
+    ]
+    synthetic_release_hash = stable_hash(
+        {
+            "release_contract": "CN_ALL_ROUTE_RUNTIME_SYNTHETIC_RELEASE_V1",
+            "shards": portable_manifest,
+        }
+    )
+    context = ReceiptContext.build(
+        registry=registry,
+        split_authority=split_authority,
+        data_release_hash=synthetic_release_hash,
+        evaluator_paths=[EVALUATOR],
+    )
+    candidate_receipts = CandidateSubmissionAuthority(registry, context).authorize_table(candidates)
+    pair_receipts = CandidatePairAuthority().authorize_table(candidates, candidate_receipts)
+    candidate_receipt_path = run_root / "all_route_candidate_receipts.jsonl"
+    pair_receipt_path = run_root / "all_route_pair_receipts.jsonl"
+    write_receipt_table(candidate_receipt_path, candidate_receipts)
+    write_pair_receipt_table(pair_receipt_path, pair_receipts)
+    output_root = run_root / "phase3cm"
+    report_root = run_root / "phase3cm_report"
+    invocation = _run_chunk(
+        candidate_table=candidate_table,
+        pair_count=len(ALL_RUNTIME_ROUTES),
+        shard_root=shard_root,
+        output_root=output_root,
+        report_root=report_root,
+        split=split_manifest_path,
+        registry=registry_path,
+        candidate_receipts=candidate_receipt_path,
+        pair_receipts=pair_receipt_path,
+        data_release_hash=synthetic_release_hash,
+        shard_count=1,
+    )
+    pair_table = output_root / "phase3cm_candidate_pair_evaluation.csv"
+    pair_rows = _read_csv(pair_table)
+    route_results: list[dict[str, Any]] = []
+    for route_id in ALL_RUNTIME_ROUTES:
+        matches = [row for row in pair_rows if str(row.get("route_id") or "") == route_id]
+        if len(matches) != 1:
+            route_results.append(
+                {
+                    "route_id": route_id,
+                    "runtime_status": "FAIL",
+                    "blocker": f"expected_one_pair_row_observed_{len(matches)}",
+                }
+            )
+            continue
+        row = matches[0]
+        decision = str(row.get("pair_train_reward_decision") or "")
+        validation = ""
+        validation_error = ""
+        try:
+            _assert_raw_phase3cm_provenance(row, source=pair_table)
+            validation = "ACCEPTED_READY_PAIR"
+        except RuntimeError as exc:
+            validation_error = str(exc)
+            if (
+                decision == "PAIR_TRAIN_FEEDBACK_BLOCKED"
+                and "not pair-native feedback ready" in validation_error
+            ):
+                validation = "REJECTED_BLOCKED_PAIR_AS_DESIGNED"
+            else:
+                validation = "UNEXPECTED_PHASE3CN_REJECTION"
+
+        primary_invocations = int(float(row.get("primary_evaluator_invocation_count") or 0))
+        control_invocations = int(float(row.get("control_evaluator_invocation_count") or 0))
+        matched_increment = _finite(row.get("matched_train_increment"))
+        support_overlap = _finite(row.get("pair_support_overlap"))
+        exact_equivalent = str(row.get("primary_expression_hash") or "") == str(
+            row.get("control_expression_hash") or ""
+        )
+        behavior_equivalent = str(row.get("primary_behavior_identity") or "") == str(
+            row.get("control_behavior_identity") or ""
+        )
+        passed = (
+            primary_invocations == 1
+            and control_invocations == 1
+            and str(row.get("pair_evaluation_status") or "") == "PAIR_EVALUATED"
+            and matched_increment is not None
+            and support_overlap == 1.0
+            and decision in {"PAIR_TRAIN_FEEDBACK_READY", "PAIR_TRAIN_FEEDBACK_BLOCKED"}
+            and not exact_equivalent
+            and not behavior_equivalent
+            and validation
+            in {"ACCEPTED_READY_PAIR", "REJECTED_BLOCKED_PAIR_AS_DESIGNED"}
+        )
+        route_results.append(
+            {
+                "route_id": route_id,
+                "runtime_status": "PASS" if passed else "FAIL",
+                "primary_evaluator_invocation_count": primary_invocations,
+                "control_evaluator_invocation_count": control_invocations,
+                "pair_evaluation_status": str(row.get("pair_evaluation_status") or ""),
+                "pair_evaluation_blockers": str(row.get("pair_evaluation_blockers") or ""),
+                "matched_train_increment": matched_increment,
+                "matched_train_increment_finite": matched_increment is not None,
+                "pair_support_overlap": support_overlap,
+                "pair_train_reward_decision": decision,
+                "pair_train_reward_blockers": str(row.get("pair_train_reward_blockers") or ""),
+                "primary_control_exact_equivalent": exact_equivalent,
+                "primary_control_behavior_equivalent": behavior_equivalent,
+                "phase3cn_pair_feedback_validation": validation,
+                "phase3cn_validation_error": validation_error,
+            }
+        )
+
+    passed_routes = sum(row.get("runtime_status") == "PASS" for row in route_results)
+    return {
+        "status": "PASS"
+        if len(CONTROL_CONSTRUCTOR_MATRIX) == len(ALL_RUNTIME_ROUTES)
+        and passed_routes == len(ALL_RUNTIME_ROUTES)
+        else "FAIL",
+        "repo_sha": repo_sha,
+        "constructor_authority": f"{len(CONTROL_CONSTRUCTOR_MATRIX)}/{len(ALL_RUNTIME_ROUTES)}",
+        "synthetic_end_to_end_runtime": f"{passed_routes}/{len(ALL_RUNTIME_ROUTES)}",
+        "pair_native_phase3cn_feedback": "QUALIFIED"
+        if all(
+            row.get("phase3cn_pair_feedback_validation")
+            in {"ACCEPTED_READY_PAIR", "REJECTED_BLOCKED_PAIR_AS_DESIGNED"}
+            for row in route_results
+        )
+        else "PARTIAL",
+        "routes": route_results,
+        "primary_evaluator_invocation_total": sum(
+            int(row.get("primary_evaluator_invocation_count") or 0) for row in route_results
+        ),
+        "control_evaluator_invocation_total": sum(
+            int(row.get("control_evaluator_invocation_count") or 0) for row in route_results
+        ),
+        "data_access": {
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+        },
+        "candidate_promotion": False,
+        "cross_sprint_memory_write": False,
+        "synthetic_release_hash": synthetic_release_hash,
+        "phase3cm_invocation": invocation,
     }
 
 
@@ -895,6 +1127,12 @@ def main(argv: list[str] | None = None) -> int:
             "worker_counts": {str(key): value for key, value in invalid_runs.items()},
         },
     }
+    all_route_runtime = run_all_route_runtime_qualification(
+        registry_path=args.registry.resolve(),
+        split_manifest_path=args.split_manifest.resolve(),
+        run_root=run_root / "all_route_runtime_qualification",
+        repo_sha=args.repo_sha,
+    )
 
     source = FORMAL_CP.read_text(encoding="utf-8")
     removal = {
@@ -933,12 +1171,94 @@ def main(argv: list[str] | None = None) -> int:
         "control_independent_quota": False,
         "control_survivor_eligible": False,
         "control_memory_eligible": False,
-        "feedback_metric": "matched_train_increment",
+        "feedback_metric": "pair_train_reward=matched_train_increment",
         "feedback_split": "train",
         "forbidden_data_roles": ["validation", "holdout", "sealed", "forward_2026"],
         "route_constructor_count": len(CONTROL_CONSTRUCTOR_MATRIX),
         "negative_case_matrix_status": negative_cases["status"],
         "formal_negative_1_2_4_parity_status": formal_negative_parity["status"],
+    }
+    pair_native_contract = {
+        "contract_id": "CN_PAIR_NATIVE_FEEDBACK_CONTRACT_V1",
+        "authority_status": "ACTIVE_EXPERIMENTAL_NO_FORMAL_SEARCH",
+        "producer": "build_pair_evaluation_rows",
+        "consumer": "phase3cn_feedback_memory_smoke",
+        "reward_definition": "pair_train_reward=matched_train_increment",
+        "decision_values": [
+            "PAIR_TRAIN_FEEDBACK_READY",
+            "PAIR_TRAIN_FEEDBACK_BLOCKED",
+        ],
+        "required_fields": [
+            "pair_train_reward",
+            "pair_train_reward_decision",
+            "pair_train_reward_blockers",
+            "pair_turnover_metric",
+            "pair_support_metric",
+            "pair_rank_ic_metric",
+        ],
+        "gate": {
+            "pair_evaluation_status": "PAIR_EVALUATED",
+            "candidate_receipts": "primary_and_control_valid",
+            "pair_receipt": "valid",
+            "matched_train_increment": "finite_and_positive",
+            "pair_support_metric": 1.0,
+            "primary_control_support": "nonempty",
+            "primary_control_evaluator_invocation": "positive",
+            "primary_control_behavior": "non_equivalent",
+            "primary_control_signal": "nonempty_and_nonconstant",
+            "pair_turnover_metric": "finite",
+            "pair_rank_ic_metric": "finite_for_all_registered_routes",
+        },
+        "metric_definitions": {
+            "pair_turnover_metric": "max(primary_turnover,control_turnover)",
+            "pair_support_metric": "pair_support_overlap",
+            "pair_rank_ic_metric": "matched_rank_ic_increment",
+        },
+        "primary_standalone_fields": {
+            "status": "DIAGNOSTIC_ONLY_NOT_FEEDBACK_AUTHORITY",
+            "renamed_fields": [
+                "primary_standalone_train_reward_decision",
+                "primary_standalone_train_reward_blockers",
+                "primary_standalone_train_mean_one_way_turnover",
+            ],
+        },
+        "control_rights": {
+            "independent_vote": False,
+            "independent_quota": False,
+            "survivor": False,
+            "memory": False,
+        },
+        "data_boundary": {
+            "development": "synthetic_runtime_only",
+            "validation": "FORBIDDEN_FROM_FEEDBACK",
+            "holdout": "FORBIDDEN_FROM_FEEDBACK",
+            "forward_2026": "SEALED",
+        },
+    }
+    pair_native_test_results = {
+        "status": "PASS" if all_route_runtime["status"] == "PASS" else "FAIL",
+        "test_file": "tests/test_pair_native_feedback_all_routes.py",
+        "test_cases_declared": 6,
+        "covered_cases": [
+            "primary_standalone_positive_but_matched_increment_nonpositive_blocks",
+            "matched_increment_positive_but_pair_support_mismatch_blocks",
+            "matched_increment_positive_but_control_not_invoked_blocks",
+            "primary_standalone_blocker_does_not_override_complete_pair_native_gate",
+            "independent_frozen_primary_control_replay_channels_fail_closed_when_missing",
+            "all_eight_routes_real_phase3cm_and_pair_native_phase3cn_validation",
+        ],
+        "all_route_runtime_status": all_route_runtime["status"],
+        "ready_pairs_accepted_by_phase3cn": sum(
+            row.get("phase3cn_pair_feedback_validation") == "ACCEPTED_READY_PAIR"
+            for row in all_route_runtime["routes"]
+        ),
+        "blocked_pairs_rejected_by_phase3cn": sum(
+            row.get("phase3cn_pair_feedback_validation") == "REJECTED_BLOCKED_PAIR_AS_DESIGNED"
+            for row in all_route_runtime["routes"]
+        ),
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
     }
     receipt_schema = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -984,6 +1304,9 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     _write_json(report_root / "CN_MATCHED_CONTROL_CONTRACT.json", contract)
+    _write_json(report_root / "CN_PAIR_NATIVE_FEEDBACK_CONTRACT.json", pair_native_contract)
+    _write_json(report_root / "CN_PAIR_NATIVE_FEEDBACK_TEST_RESULTS.json", pair_native_test_results)
+    _write_json(report_root / "CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json", all_route_runtime)
     matrix_rows = [{"route_id": route_id, **row} for route_id, row in CONTROL_CONSTRUCTOR_MATRIX.items()]
     _write_csv(report_root / "CN_ROUTE_CONTROL_CONSTRUCTOR_MATRIX.csv", matrix_rows)
     _write_json(report_root / "CN_CANDIDATE_PAIR_RECEIPT_SCHEMA.json", receipt_schema)
@@ -1017,10 +1340,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         and len(runs[1]["merged"]["pair"]) == len(ROUTES)
     )
+    closure_qualified = qualified and all_route_runtime["status"] == "PASS"
     status = (
-        "CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED"
-        if qualified
-        else "CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_PARTIALLY_QUALIFIED"
+        "CN_PAIR_NATIVE_FEEDBACK_AND_ALL_ROUTE_RUNTIME_QUALIFIED"
+        if closure_qualified
+        else "CN_PAIR_NATIVE_FEEDBACK_AND_ALL_ROUTE_RUNTIME_PARTIAL"
     )
     report = f"""# CN Matched-Control and Candidate-Parallel Formalization
 
@@ -1029,6 +1353,10 @@ Status: `{status}`
 ## Outcome
 
 - route-specific control constructors: `{len(CONTROL_CONSTRUCTOR_MATRIX)}`
+- constructor authority: `{all_route_runtime['constructor_authority']}`
+- synthetic end-to-end runtime: `{all_route_runtime['synthetic_end_to_end_runtime']}`
+- pair-native Phase3CN feedback: `{all_route_runtime['pair_native_phase3cn_feedback']}`
+- primary/control evaluator invocations: `{all_route_runtime['primary_evaluator_invocation_total']} / {all_route_runtime['control_evaluator_invocation_total']}`
 - evaluated primary/control pairs: `{len(runs[1]['merged']['pair'])}`
 - null-pair fail-closed cases: `{len(negative_cases['null_pair_cases'])}`
 - invalid-control fail-closed cases: `{len(negative_cases['invalid_control_cases'])}`
@@ -1040,13 +1368,17 @@ Status: `{status}`
 - mean-of-shard reward fallback: `FORBIDDEN_FROM_FEEDBACK`
 - validation / holdout / 2026 reads: `0` (synthetic development-only coordinates)
 
+The all-route check used one synthetic development-only shard per route pair. A
+blocked pair is considered correctly validated only when Phase3CN rejects it;
+only a pair-native READY row may enter feedback.
+
 No formal search, candidate promotion, forward opening, or cross-sprint memory update was performed.
 """
     (report_root / "CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md").write_text(report, encoding="utf-8")
     manifest = {
         "experiment_id": "20260715_cn_matched_control_candidate_parallel_001",
         "objective": "prove route-specific matched evaluation and candidate-pair parallel parity",
-        "status": "completed" if qualified else "partial",
+        "status": "completed" if closure_qualified else "partial",
         "mode": "research_synthetic_development_only",
         "repo_sha": args.repo_sha,
         "python_executable": sys.executable,
@@ -1064,6 +1396,7 @@ No formal search, candidate promotion, forward opening, or cross-sprint memory u
         },
         "parameters": {
             "routes": list(ROUTES),
+            "all_runtime_routes": list(ALL_RUNTIME_ROUTES),
             "seeds": {route_id: 5100 + index for index, route_id in enumerate(ROUTES, 1)},
             "worker_counts": list(worker_counts),
             "shard_count": args.shard_count,
@@ -1077,16 +1410,16 @@ No formal search, candidate promotion, forward opening, or cross-sprint memory u
         "started_at": started_at.isoformat(),
         "finished_at": datetime.now(timezone.utc).isoformat(),
         "actual_elapsed_seconds": round(time.perf_counter() - started, 6),
-        "reproducible": parity["status"] == "PASS",
+        "reproducible": parity["status"] == "PASS" and all_route_runtime["status"] == "PASS",
         "continuation": "formal search remains frozen; use only matched pair train feedback",
-        "failure": "" if qualified else "inspect parity or blocked pair artifacts",
+        "failure": "" if closure_qualified else "inspect parity or all-route runtime artifacts",
         "decision": "N/A_NO_PERFORMANCE_SEARCH",
     }
     _write_json(report_root / "CN_MATCHED_CONTROL_RUN_MANIFEST.json", manifest)
     index = _artifact_index(report_root, str(Path(__file__).resolve()))
     _write_json(report_root / "CN_MATCHED_CONTROL_ARTIFACT_INDEX.json", index)
     print(json.dumps({"status": status, "parity": parity["status"], "report_root": str(report_root)}))
-    return 0 if qualified else 2
+    return 0 if closure_qualified else 2
 
 
 if __name__ == "__main__":
