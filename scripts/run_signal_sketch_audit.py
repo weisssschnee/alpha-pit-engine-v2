@@ -465,7 +465,15 @@ def worker(args: argparse.Namespace) -> int:
                         prefix=f"signal_sketch_w{current_window}_operator_cache",
                     )
                 assert cache is not None
-                signal = pd.to_numeric(evaluate_panel_expression(frame, str(candidate["expression"]), cache=cache), errors="coerce")
+                signal = pd.to_numeric(
+                    evaluate_panel_expression(
+                        frame,
+                        str(candidate["expression"]),
+                        cache=cache,
+                        data_role="development",
+                    ),
+                    errors="coerce",
+                )
                 materialized_positions = sorted(
                     {
                         coordinate_lookup[(str(row["code"]), pd.Timestamp(row["trade_time"]))]
