@@ -105,7 +105,33 @@
     "finite_reward_required": true,
     "non_equivalent_pair_required": true,
     "pair_train_feedback_status": "PAIR_TRAIN_FEEDBACK_READY",
+    "pair_rank_ic_increment": "FINITE_REQUIRED_SIGN_NOT_GATED",
+    "pair_support_overlap": 1.0,
+    "pair_turnover_metric": "FINITE_REQUIRED",
     "support_contract_complete": true
+  },
+  "strict_evaluation_contract": {
+    "cost_bps": 5.0,
+    "development_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "development_release_rows": 446443583,
+    "development_source_rows_before_role_filter": 598061503,
+    "horizons_bars": [
+      1,
+      5,
+      15,
+      30
+    ],
+    "minimum_observations_per_cross_section": 20,
+    "optimizer_reward_metric": "matched_train_primary_minus_control_composite_reward",
+    "pair_maturity_alignment_policy": "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT",
+    "pair_support_alignment_policy": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+    "portfolio_mode": "long_only_top",
+    "primary_horizon_bars": 5,
+    "split_roles_physically_present": [
+      "train"
+    ],
+    "top_quantile": 0.2,
+    "validation_holdout_forward_rows_present": 0
   },
   "policies": [
     "stratified_typed_random",

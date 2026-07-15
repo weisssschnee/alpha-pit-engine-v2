@@ -269,3 +269,18 @@ def test_all_search_skeletons_execute_against_typed_synthetic_inputs() -> None:
                 )
                 assert len(result) == len(frame)
                 assert not np.isinf(result.to_numpy(dtype=float)).any()
+
+
+def test_all_compositional_pairs_freeze_shared_support_and_maturity_alignment() -> None:
+    grammar = CompositionalGrammarV2(UnifiedCapabilityRegistry.read(REGISTRY))
+
+    for route_id in ROUTE_IDS:
+        pair = grammar.propose(route_id, attempt_index=3, seed=155921)
+        for member in (pair.primary, pair.control):
+            assert member["pair_support_alignment_policy"] == (
+                "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE"
+            )
+            assert member["pair_maturity_alignment_policy"] == (
+                "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT"
+            )
+            assert "SAME_SUPPORT_COORDINATES" in member["pair_mapping_portfolio_contract"]

@@ -31,6 +31,8 @@ PAIR_MAPPING_PORTFOLIO_CONTRACT = (
     "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|"
     "SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS"
 )
+PAIR_SUPPORT_ALIGNMENT_POLICY = "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE"
+PAIR_MATURITY_ALIGNMENT_POLICY = "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT"
 
 
 CONTROL_CONSTRUCTOR_MATRIX: dict[str, dict[str, Any]] = {
@@ -273,6 +275,14 @@ def attach_pair_contract(
         "pair_id": pair_id,
         "control_constructor_id": selected_constructor,
         "pair_mapping_portfolio_contract": PAIR_MAPPING_PORTFOLIO_CONTRACT,
+        # Raw expressions may have different finite masks after the core
+        # mechanism is ablated (event windows and state transitions are the
+        # important cases).  Formal evaluation is therefore authorized only
+        # on the pairwise finite intersection after both members have reached
+        # their maximum required maturity.  The downstream pair audit still
+        # requires byte-identical eligible-support coordinates.
+        "pair_support_alignment_policy": PAIR_SUPPORT_ALIGNMENT_POLICY,
+        "pair_maturity_alignment_policy": PAIR_MATURITY_ALIGNMENT_POLICY,
         "allow_behavior_equivalence": False,
     }
     return (
