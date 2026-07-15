@@ -121,7 +121,9 @@ def build_compositional_generation_epoch(
 
     grammar = CompositionalGrammarV2(registry)
     ledger: list[dict[str, Any]] = []
-    unique_pairs: list[dict[str, Any]] = []
+    unique_by_exact: dict[str, dict[str, Any]] = {}
+    discovery_policies: dict[str, set[str]] = defaultdict(set)
+    discovery_seeds: dict[str, set[int]] = defaultdict(set)
     exact_exposure: Counter[str] = Counter()
     seen_exact: set[str] = set()
     failure_counts: Counter[str] = Counter()
@@ -129,14 +131,18 @@ def build_compositional_generation_epoch(
         route_id: Counter() for route_id in SEARCHABLE_ROUTES
     }
     previous_candidate_by_cell: dict[tuple[str, str, int], str] = {}
+    policy_slots = {value: index for index, value in enumerate(sorted(str(value) for value in policies))}
+    seed_slots = {int(value): index for index, value in enumerate(sorted(int(value) for value in seeds))}
 
     for route_id in SEARCHABLE_ROUTES:
         per_cell = int(route_attempt_quotas[route_id]) // cells
-        for policy_index, policy_id in enumerate(policies):
-            for seed_index, seed in enumerate(seeds):
+        for policy_id in policies:
+            for seed in seeds:
                 cell = (route_id, str(policy_id), int(seed))
                 state_hash = _policy_state_hash(str(policy_id), int(seed), route_id)
-                cell_offset = (policy_index * len(seeds) + seed_index) * per_cell
+                cell_offset = (
+                    policy_slots[str(policy_id)] * len(seeds) + seed_slots[int(seed)]
+                ) * per_cell
                 for local_index in range(per_cell):
                     route_attempt_index = cell_offset + local_index
                     attempt_id = (
@@ -242,15 +248,27 @@ def build_compositional_generation_epoch(
                         parent_candidate_id=parent_id,
                         mutation_receipt=mutation_receipt,
                     )
+                    discovery_policies[exact_identity].add(str(policy_id))
+                    discovery_seeds[exact_identity].add(int(seed))
                     if first_visit:
                         seen_exact.add(exact_identity)
-                        unique_pairs.append(record)
                         route_counters[route_id]["exact_unique"] += 1
                         outcome = "ACCEPTED_EXACT_UNIQUE"
                     else:
                         failure_counts["SEMANTIC_ALIAS_COLLAPSE"] += 1
                         route_counters[route_id]["SEMANTIC_ALIAS_COLLAPSE"] += 1
                         outcome = "DUPLICATE_EXACT_IDENTITY"
+                    existing = unique_by_exact.get(exact_identity)
+                    owner_key = stable_hash(
+                        {
+                            "owner_assignment": "ORDER_INDEPENDENT_V1",
+                            "exact_identity": exact_identity,
+                            "attempt_id": attempt_id,
+                        }
+                    )
+                    if existing is None or owner_key < str(existing["owner_assignment_key"]):
+                        record["owner_assignment_key"] = owner_key
+                        unique_by_exact[exact_identity] = record
                     previous_candidate_by_cell[cell] = str(primary["candidate_id"])
                     ledger.append(
                         {
@@ -273,6 +291,14 @@ def build_compositional_generation_epoch(
                             "outcome": outcome,
                         }
                     )
+
+    unique_pairs = [unique_by_exact[key] for key in sorted(unique_by_exact)]
+    for row in unique_pairs:
+        identity = str(row["exact_identity"])
+        row["discovering_policy_ids"] = sorted(discovery_policies[identity])
+        row["discovering_seeds"] = sorted(discovery_seeds[identity])
+        row["proposal_exposure_count"] = int(exact_exposure[identity])
+        row["multi_policy_discovery"] = len(discovery_policies[identity]) > 1
 
     waterfall: list[dict[str, Any]] = []
     for route_id in SEARCHABLE_ROUTES:

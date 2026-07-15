@@ -78,3 +78,32 @@ def test_structural_preadmission_is_deterministic_and_performance_blind() -> Non
     assert len({row["route_id"] for row in selected_a}) == 7
     assert len({row["policy_id"] for row in selected_a}) == 4
     assert len({row["seed"] for row in selected_a}) == 4
+
+
+def test_exact_identity_owner_is_independent_of_policy_and_seed_iteration_order() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    quotas = {
+        route_id: 64
+        for route_id in registry.route_contracts
+        if route_id != "BROAD_EVENT_FROZEN_ENTRY"
+    }
+    forward = build_compositional_generation_epoch(
+        registry,
+        route_attempt_quotas=quotas,
+        policies=POLICIES,
+        seeds=SEEDS,
+    )
+    reversed_order = build_compositional_generation_epoch(
+        registry,
+        route_attempt_quotas=quotas,
+        policies=tuple(reversed(POLICIES)),
+        seeds=tuple(reversed(SEEDS)),
+    )
+
+    def owners(result: object) -> dict[str, tuple[str, int]]:
+        return {
+            row["exact_identity"]: (row["policy_id"], row["seed"])
+            for row in getattr(result, "unique_pairs")
+        }
+
+    assert owners(forward) == owners(reversed_order)
