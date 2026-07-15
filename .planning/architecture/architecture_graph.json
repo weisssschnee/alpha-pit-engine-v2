@@ -15,16 +15,16 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-14T18:28:02.944111+00:00",
+    "generated_at": "2026-07-15T05:23:21.242039+00:00",
     "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
     "generator_sha256": "7e043354eee8ae18b667d9f6ab0aaa747496b5a079ad5a75bf2d27d7ded59926",
     "graph_type": "CN_RUNTIME_AUTHORITY_AND_SPLIT_CURRENT_ARCHITECTURE_CONTRACT",
-    "phase": "CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED",
-    "registry_sha256": "38e52b69ddd101ca431741242d12c94382510f5926b641d91a22dd28887ad664",
-    "registry_version": "cn_runtime_authority_split_convergence_architecture_registry_v9",
-    "source_repo_sha": "30e5f8ad991b06ae271ce8d2ad08f0d1efa72a0f",
+    "phase": "CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED",
+    "registry_sha256": "b4213b2e4190327fc2f11b438570979814020cc1a8372dfc4941d66234042c3b",
+    "registry_version": "cn_matched_control_candidate_parallel_architecture_registry_v10",
+    "source_repo_sha": "74d425626769c6d74837640b3b88d194fca999fe",
     "status_authority_path": ".planning/architecture/architecture_registry.json",
-    "status_authority_sha256": "bf6a0185820b5eaf078db355d666e99ab6baff5b140ecc377f86a47c995fee8a",
+    "status_authority_sha256": "d13abf96f53df84882f2862f5575086b51bd11b6490a8778064510872c9f6fbd",
     "status_values": [
       "DEPRECATED",
       "FROZEN",
@@ -518,10 +518,31 @@
       "target": "admission_diversity"
     },
     {
-      "evidence": "Phase3CN receipt hash guard",
+      "evidence": "candidate and pair receipt v2 tests",
       "permission": "ALLOWED",
-      "relation": "train_feedback_requires_exact_evaluator_receipt",
+      "relation": "authorizes_indivisible_primary_control_pair",
       "source": "candidate_submission_receipt_gate",
+      "target": "matched_control_pair_authority"
+    },
+    {
+      "evidence": "pair receipt split hash and negative tests",
+      "permission": "ALLOWED",
+      "relation": "binds_pair_to_single_split_manifest",
+      "source": "fixed_calendar_split",
+      "target": "matched_control_pair_authority"
+    },
+    {
+      "evidence": "legal/null/invalid 1/2/4 formal parity",
+      "permission": "ALLOWED",
+      "relation": "supplies_whole_authorized_pairs",
+      "source": "matched_control_pair_authority",
+      "target": "candidate_parallel_formal_evaluator"
+    },
+    {
+      "evidence": "Phase3CN verifies primary, control and pair receipt hashes; no memory write executed",
+      "permission": "ALLOWED",
+      "relation": "matched_train_increment_to_ephemeral_feedback_only",
+      "source": "candidate_parallel_formal_evaluator",
       "target": "scheduler_memory_feedback"
     },
     {
@@ -532,7 +553,7 @@
       "target": "candidate_submission_receipt_gate"
     },
     {
-      "evidence": "actual 1/2/4-worker parity max error 12.0",
+      "evidence": "formal functions and CLI route physically removed",
       "permission": "FORBIDDEN",
       "relation": "formal_shard_parallel_portfolio_execution",
       "source": "candidate_submission_receipt_gate",
@@ -544,6 +565,20 @@
       "relation": "diagnostic_shard_local_reward_to_feedback",
       "source": "shard_parallel_portfolio_evaluation",
       "target": "scheduler_memory_feedback"
+    },
+    {
+      "evidence": "fallback absent and evaluation access guard rejects provenance",
+      "permission": "FORBIDDEN",
+      "relation": "mean_of_shard_reward_to_feedback",
+      "source": "mean_of_shard_reward_fallback",
+      "target": "scheduler_memory_feedback"
+    },
+    {
+      "evidence": "qualification report preserves formal search freeze",
+      "permission": "FORBIDDEN",
+      "relation": "engineering_qualification_does_not_authorize_search",
+      "source": "candidate_parallel_formal_evaluator",
+      "target": "formal_search_frozen"
     },
     {
       "evidence": "repair report",
@@ -897,7 +932,7 @@
         "multi-arm candidate constructors"
       ],
       "label": "Generation candidate pack (24,576)",
-      "last_verified_sha": "6cd1dbd447a442baa87f69524654332a5213c1f81a2590e9b4de8bf0689824f2",
+      "last_verified_sha": "4d79d0b178272db0f14c51ea23a208d1083de867e319b7a15a1e590a39dcf82d",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py"
       ],
@@ -975,7 +1010,7 @@
         "proxy_1536"
       ],
       "label": "CM admission (384)",
-      "last_verified_sha": "6cd1dbd447a442baa87f69524654332a5213c1f81a2590e9b4de8bf0689824f2",
+      "last_verified_sha": "4d79d0b178272db0f14c51ea23a208d1083de867e319b7a15a1e590a39dcf82d",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py"
       ],
@@ -1016,7 +1051,7 @@
         "fixed_calendar_split"
       ],
       "label": "Strict development reward (324)",
-      "last_verified_sha": "9d58f0b0f5fd64a94f918dbe4db757a8dc9df275bfec45f8dc136f2406ad50a7",
+      "last_verified_sha": "d1b6b2444ddff12ab5b75bfe3f48a86d2bb292b3fb5e5675a11b8c28633ee8df",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
       ],
@@ -1147,7 +1182,7 @@
         "candidate expression and lineage fields"
       ],
       "label": "Candidate identity registry",
-      "last_verified_sha": "6186badb3fe8406d6d1a66d595d25b1d502562824db258ff07752944a68ff469",
+      "last_verified_sha": "5e4ef4b938a1f23ba6a81b0adc4a371706463f1fa456119bebec4c2661421f51",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/candidate_schema.py"
       ],
@@ -1272,7 +1307,7 @@
         "strict_reward_324"
       ],
       "label": "Development/train-only feedback guard",
-      "last_verified_sha": "38162f5dfbb0a30677949ca3843d6bb12e67d724c733bb6e34fe5ea7d85773d9",
+      "last_verified_sha": "1bf3c20b6073fa098cc5fcdae197123937f4735a231b41f84093ada0ca62bcce",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/evaluation_access_guard.py"
       ],
@@ -1313,7 +1348,7 @@
         "feedback_guard"
       ],
       "label": "Scheduler and memory feedback",
-      "last_verified_sha": "d5cc48a2c21de702e5c419218a91491dbdf7cda1e493933c5c70d25038e5f28b",
+      "last_verified_sha": "718c62c07c4c66c37c83b2877f388ee1b458166b7ab85c98a7dd453c6c10eacd",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/search_feedback.py",
         "src/our_system_phase2/services/multi_arm_scheduler.py"
@@ -2754,7 +2789,7 @@
         "3 derived intraday states"
       ],
       "label": "Unified 282-representation semantic, PIT and route authority",
-      "last_verified_sha": "3af2961af8e1aa1cb60425e8dc18920b076c6b4d51cc3e6e5a9483d659827a20",
+      "last_verified_sha": "43c24f7364d0df858b4c0985e2fd4de0d8316d2bcfd8ec27521eb4ae2aeed217",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/unified_capability_registry.py",
         "src/our_system_phase2/services/typed_route_compiler.py",
@@ -2882,7 +2917,7 @@
         "legacy atom manifests"
       ],
       "label": "Legacy Phase3GA generators as proposal sources only",
-      "last_verified_sha": "2f8655ba6a02620aade2b05141f492136553ed8df4331872b42508de8fa0cbbe",
+      "last_verified_sha": "72d01073d430075d3307e6ef2244f2377062aa2b5fb3b29ec29bee7a94bdc13d",
       "last_verified_sha_scope": [
         "app.py",
         "src/our_system_phase2/runtime/phase3dv_budget_pool_self_deepen_pack.py",
@@ -2981,7 +3016,7 @@
     {
       "blocker": "",
       "data_role": "development_only_candidate_authorization",
-      "feedback_permission": "TRAIN_ONLY_AFTER_EXACT_RECEIPT_VALIDATION",
+      "feedback_permission": "NO_STANDALONE_REWARD_PAIR_AUTHORITY_REQUIRED",
       "id": "candidate_submission_receipt_gate",
       "implementation_path": [
         "src/our_system_phase2/services/candidate_submission_receipt.py",
@@ -3011,11 +3046,12 @@
         "development data release hash",
         "evaluator code hash"
       ],
-      "label": "Immutable unified candidate submission receipt gate",
-      "last_verified_sha": "5986525692f69c5ae4927ce9c22aa4474ff1c7aae645cf1ad73a4b45c4075f28",
+      "label": "ACTIVE immutable unified candidate submission receipt authority",
+      "last_verified_sha": "8e05b2410879877b725587ed9af064e40b76894fe9a341642fed9d2b5cb77744",
       "last_verified_sha_scope": [
         "src/our_system_phase2/services/candidate_submission_receipt.py",
         "tests/test_runtime_authority_convergence.py",
+        "tests/test_matched_control_candidate_parallel.py",
         "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
         "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
       ],
@@ -3032,125 +3068,279 @@
       "status": "IMPLEMENTED",
       "test/evidence": [
         "tests/test_runtime_authority_convergence.py",
-        "reports/cn_runtime_authority_and_split_repair_20260715/CN_LEGACY_RECEIPT_GATED_PARITY.json"
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PAIR_RECEIPT_SCHEMA.json"
       ],
       "test_evidence": [
         "tests/test_runtime_authority_convergence.py",
-        "reports/cn_runtime_authority_and_split_repair_20260715/CN_LEGACY_RECEIPT_GATED_PARITY.json"
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PAIR_RECEIPT_SCHEMA.json"
       ],
       "verification_paths": [
         "src/our_system_phase2/services/candidate_submission_receipt.py",
         "tests/test_runtime_authority_convergence.py",
+        "tests/test_matched_control_candidate_parallel.py",
         "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
         "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
       ]
     },
     {
-      "blocker": "actual 1/2/4-worker parity failed with max numeric error 12.0 because portfolios were formed from shard-local rather than global cross-sections",
+      "blocker": "",
       "data_role": "source_and_synthetic_no_selection",
       "feedback_permission": "NONE",
       "id": "runtime_authority_split_convergence_repair",
       "implementation_path": [
         "src/our_system_phase2/services/fixed_split_authority.py",
-        "scripts/build_cn_runtime_authority_split_repair.py",
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "scripts/build_cn_matched_control_candidate_parallel_artifacts.py",
         "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
       ],
       "implementation_paths": [
         "src/our_system_phase2/services/fixed_split_authority.py",
-        "scripts/build_cn_runtime_authority_split_repair.py",
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "scripts/build_cn_matched_control_candidate_parallel_artifacts.py",
         "docs/adr/0004-unified-candidate-authority-and-fixed-split-runtime.md"
       ],
       "input_artifact": [
         "fixed 485-date manifest",
-        "formal runtime source reachability",
-        "frozen historical legal candidate"
+        "candidate and pair receipts",
+        "content-addressed synthetic parity release"
       ],
       "input_artifacts": [
         "fixed 485-date manifest",
-        "formal runtime source reachability",
-        "frozen historical legal candidate"
+        "candidate and pair receipts",
+        "content-addressed synthetic parity release"
       ],
-      "label": "Runtime authority and global split convergence repair",
-      "last_verified_sha": "51f71c8d9e60c1301be38406914224a1fb1d861e9c494ce59a38020281797f4e",
+      "label": "Implemented runtime authority, fixed split and matched-pair convergence",
+      "last_verified_sha": "ae43292fe9bdc9151ca04e164604e6a7691fd32648dc7b4df7414de98de09c1e",
       "last_verified_sha_scope": [
-        "reports/cn_runtime_authority_and_split_repair_20260715/artifact_index.json",
-        "reports/cn_runtime_authority_and_split_repair_20260715/CN_RUNTIME_AUTHORITY_AND_SPLIT_REPAIR_REPORT.md"
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json"
       ],
       "output_artifact": [
-        "runtime authority matrix",
-        "global split enforcement matrix",
-        "1/2/4 worker parity",
-        "historical evidence reclassification"
+        "route-specific pair authority",
+        "legal/null/invalid 1/2/4 parity",
+        "formal shard-parallel removal audit"
       ],
       "output_artifacts": [
-        "runtime authority matrix",
-        "global split enforcement matrix",
-        "1/2/4 worker parity",
-        "historical evidence reclassification"
+        "route-specific pair authority",
+        "legal/null/invalid 1/2/4 parity",
+        "formal shard-parallel removal audit"
       ],
-      "status": "PARTIAL",
+      "status": "IMPLEMENTED",
       "test/evidence": [
         "tests/test_runtime_authority_convergence.py",
-        "reports/cn_runtime_authority_and_split_repair_20260715/run_manifest.json"
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json"
       ],
       "test_evidence": [
         "tests/test_runtime_authority_convergence.py",
-        "reports/cn_runtime_authority_and_split_repair_20260715/run_manifest.json"
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json"
       ],
       "verification_paths": [
-        "reports/cn_runtime_authority_and_split_repair_20260715/artifact_index.json",
-        "reports/cn_runtime_authority_and_split_repair_20260715/CN_RUNTIME_AUTHORITY_AND_SPLIT_REPAIR_REPORT.md"
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json"
       ]
     },
     {
-      "blocker": "requires global cross-section exact merge and actual 1/2/4-worker parity; current max numeric error is 12.0",
-      "data_role": "synthetic_and_historical_diagnostic_only",
-      "feedback_permission": "FORBIDDEN_FAIL_CLOSED",
+      "blocker": "formal entry and recovery fallback are permanently absent",
+      "data_role": "historical_diagnostic_only",
+      "feedback_permission": "FORBIDDEN_PHYSICALLY_REMOVED_FROM_FORMAL_MODULE",
       "id": "shard_parallel_portfolio_evaluation",
-      "implementation_path": [
-        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
-        "runtime/launchers/phase3ga_recover_missing_chunk04_20260710.ps1"
-      ],
-      "implementation_paths": [
-        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
-        "runtime/launchers/phase3ga_recover_missing_chunk04_20260710.ps1"
-      ],
+      "implementation_path": [],
+      "implementation_paths": [],
       "input_artifact": [
-        "receipt-authorized candidates",
-        "disjoint shard assignments",
-        "fixed 485-date manifest"
+        "historical shard-local portfolio chunks"
       ],
       "input_artifacts": [
-        "receipt-authorized candidates",
-        "disjoint shard assignments",
-        "fixed 485-date manifest"
+        "historical shard-local portfolio chunks"
       ],
-      "label": "Shard-parallel cross-sectional portfolio evaluation and recovery",
-      "last_verified_sha": "2ddef1f5de21dce63b5b743c86908393b240de1aaea08d2dcae876e266aa4d48",
+      "label": "DEPRECATED / FORBIDDEN shard-parallel portfolio evaluation",
+      "last_verified_sha": "93ae42ff13aa5e7020ff6cbef7c81a3de8d51ec2fe929f49917e8763aa5a852e",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
-        "runtime/launchers/phase3ga_recover_missing_chunk04_20260710.ps1",
-        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json"
       ],
       "output_artifact": [
-        "diagnostic-only shard-local reward atoms and exact merge"
+        "none in current formal runtime"
       ],
       "output_artifacts": [
-        "diagnostic-only shard-local reward atoms and exact merge"
+        "none in current formal runtime"
       ],
-      "status": "FROZEN",
+      "status": "DEPRECATED",
       "test/evidence": [
         "tests/test_runtime_authority_convergence.py",
-        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json"
       ],
       "test_evidence": [
         "tests/test_runtime_authority_convergence.py",
-        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json"
       ],
       "verification_paths": [
         "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
-        "runtime/launchers/phase3ga_recover_missing_chunk04_20260710.ps1",
-        "reports/cn_runtime_authority_and_split_repair_20260715/CN_WORKER_COUNT_SEMANTIC_PARITY.json"
+        "tests/test_runtime_authority_convergence.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json"
+      ]
+    },
+    {
+      "blocker": "",
+      "data_role": "development_only_pair_authorization_and_evaluation",
+      "feedback_permission": "PRIMARY_ONLY_MATCHED_TRAIN_INCREMENT_NO_CONTROL_VOTE",
+      "id": "matched_control_pair_authority",
+      "implementation_path": [
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "src/our_system_phase2/services/unified_discovery_generators.py"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "src/our_system_phase2/services/unified_discovery_generators.py"
+      ],
+      "input_artifact": [
+        "primary/control candidate receipts",
+        "route-specific constructor matrix",
+        "PIT and observable-time contracts"
+      ],
+      "input_artifacts": [
+        "primary/control candidate receipts",
+        "route-specific constructor matrix",
+        "PIT and observable-time contracts"
+      ],
+      "label": "ACTIVE matched-control pair authority",
+      "last_verified_sha": "9279e2fcdb3921b6266b27f269e668ef6f7083ac09c19b80b5a57d3febfd21fb",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "src/our_system_phase2/services/unified_discovery_generators.py",
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_EVALUATION_RESULTS.json"
+      ],
+      "output_artifact": [
+        "immutable pair receipt v2",
+        "matched train increment",
+        "actual support and behavior identities"
+      ],
+      "output_artifacts": [
+        "immutable pair receipt v2",
+        "matched train increment",
+        "actual support and behavior identities"
+      ],
+      "status": "IMPLEMENTED",
+      "test/evidence": [
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_EVALUATION_RESULTS.json"
+      ],
+      "test_evidence": [
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_EVALUATION_RESULTS.json"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "src/our_system_phase2/services/unified_discovery_generators.py",
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_EVALUATION_RESULTS.json"
+      ]
+    },
+    {
+      "blocker": "formal search remains separately frozen",
+      "data_role": "synthetic_development_only_qualification",
+      "feedback_permission": "MATCHED_TRAIN_INCREMENT_ONLY_NO_RUN_AUTHORIZATION",
+      "id": "candidate_parallel_formal_evaluator",
+      "implementation_path": [
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
+      ],
+      "implementation_paths": [
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
+      ],
+      "input_artifact": [
+        "whole candidate pairs",
+        "full identical shard universe per worker",
+        "fixed split and pair receipts"
+      ],
+      "input_artifacts": [
+        "whole candidate pairs",
+        "full identical shard universe per worker",
+        "fixed split and pair receipts"
+      ],
+      "label": "ACTIVE candidate-parallel formal evaluator",
+      "last_verified_sha": "545fd2aa4e0e3ff80f41f02cb7c271af0e70cad7b141314acc01290f5d065730",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json"
+      ],
+      "output_artifact": [
+        "1/2/4 parity max error 0",
+        "48 reward atoms per configuration",
+        "one pair result per pair"
+      ],
+      "output_artifacts": [
+        "1/2/4 parity max error 0",
+        "48 reward atoms per configuration",
+        "one pair result per pair"
+      ],
+      "status": "IMPLEMENTED",
+      "test/evidence": [
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json"
+      ],
+      "test_evidence": [
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/runtime/phase3cp_real_cm_small_loop.py",
+        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
+        "tests/test_matched_control_candidate_parallel.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_CANDIDATE_PARALLEL_PAIR_PARITY.json"
+      ]
+    },
+    {
+      "blocker": "permanently removed; no recovery path",
+      "data_role": "historical_diagnostic_only",
+      "feedback_permission": "FORBIDDEN_FROM_PHASE3CN_SCHEDULER_MEMORY_AND_FORMAL_EVIDENCE",
+      "id": "mean_of_shard_reward_fallback",
+      "implementation_path": [],
+      "implementation_paths": [],
+      "input_artifact": [
+        "historical shard chunk reward rows"
+      ],
+      "input_artifacts": [
+        "historical shard chunk reward rows"
+      ],
+      "label": "DEPRECATED / FORBIDDEN mean-of-shard reward fallback",
+      "last_verified_sha": "f9fd4af423f522225797350ffc517f5217d5f310492b59a654e2b83abf7fa384",
+      "last_verified_sha_scope": [
+        "src/our_system_phase2/services/evaluation_access_guard.py",
+        "tests/test_evaluation_access_guard.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json"
+      ],
+      "output_artifact": [
+        "none in current formal runtime or feedback"
+      ],
+      "output_artifacts": [
+        "none in current formal runtime or feedback"
+      ],
+      "status": "DEPRECATED",
+      "test/evidence": [
+        "tests/test_evaluation_access_guard.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json"
+      ],
+      "test_evidence": [
+        "tests/test_evaluation_access_guard.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json"
+      ],
+      "verification_paths": [
+        "src/our_system_phase2/services/evaluation_access_guard.py",
+        "tests/test_evaluation_access_guard.py",
+        "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json"
       ]
     },
     {
@@ -3167,7 +3357,7 @@
         "historical shard-local sampled timestamps"
       ],
       "label": "Worker-local sample-derived split",
-      "last_verified_sha": "9d58f0b0f5fd64a94f918dbe4db757a8dc9df275bfec45f8dc136f2406ad50a7",
+      "last_verified_sha": "d1b6b2444ddff12ab5b75bfe3f48a86d2bb292b3fb5e5675a11b8c28633ee8df",
       "last_verified_sha_scope": [
         "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
       ],
