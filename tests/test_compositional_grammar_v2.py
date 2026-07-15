@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+
 from our_system_phase2.services.compositional_grammar import (
     CompositionalGrammarV2,
     skeleton_registry,
 )
 from our_system_phase2.services.expression_semantics import parse_expression
+from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 from our_system_phase2.services.unified_capability_registry import (
     ROUTE_IDS,
     UnifiedCapabilityRegistry,
@@ -210,3 +214,58 @@ def test_interaction_legs_do_not_collapse_to_the_same_source_field() -> None:
     for index in range(8):
         pair = grammar.propose("INTRADAY_STATE_TRANSITION", attempt_index=index, seed=104729)
         assert len(pair.primary["declared_field_ids"]) == 3
+
+
+def test_persistence_skeletons_feed_registered_binary_states() -> None:
+    grammar = CompositionalGrammarV2(UnifiedCapabilityRegistry.read(REGISTRY))
+
+    for route_id in (
+        "FIRSTN_PATH",
+        "SLOW_TEMPORAL_CHANGE",
+        "MARKET_REGIME_CONDITION",
+        "INTRADAY_STATE_TRANSITION",
+    ):
+        expressions = [
+            grammar.propose(route_id, attempt_index=index, seed=130363).primary[
+                "expression"
+            ]
+            for index in range(8)
+        ]
+        persistence = [value for value in expressions if "Persistence(" in value]
+        assert persistence, route_id
+        assert all("Persistence(Positive(" in value for value in persistence)
+
+
+def test_all_search_skeletons_execute_against_typed_synthetic_inputs() -> None:
+    grammar = CompositionalGrammarV2(UnifiedCapabilityRegistry.read(REGISTRY))
+    pairs = {
+        route_id: [
+            grammar.propose(route_id, attempt_index=index, seed=155921)
+            for index in range(8)
+        ]
+        for route_id in ROUTE_IDS
+        if route_id != "BROAD_EVENT_FROZEN_ENTRY"
+    }
+    times = pd.date_range("2025-01-02 09:31", periods=30, freq="min")
+    frame = pd.DataFrame(
+        {
+            "code": np.repeat([f"S{index}" for index in range(6)], len(times)),
+            "trade_time": np.tile(times, 6),
+        }
+    )
+    position = np.arange(len(frame), dtype=float)
+    for route_id, route_pairs in pairs.items():
+        for pair in route_pairs:
+            for field_index, field_id in enumerate(pair.primary["declared_field_ids"]):
+                if route_id == "DISCLOSURE_EVENT":
+                    frame[field_id] = ((position + field_index) % 11 == 0).astype(float)
+                else:
+                    frame[field_id] = ((position + 3 * field_index) % 17) - 8.0
+            for candidate in (pair.primary, pair.control):
+                result = evaluate_panel_expression(
+                    frame,
+                    candidate["expression"],
+                    data_role="development",
+                )
+                assert len(result) == len(frame)
+                assert not np.isinf(result.to_numpy(dtype=float)).any()

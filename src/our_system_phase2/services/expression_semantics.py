@@ -139,6 +139,7 @@ _CANONICAL_OPERATORS = {
         "Sub",
         "PathShape",
         "Persistence",
+        "Positive",
         "TimeSince",
         "Transition",
         "ValidRatioGate",
@@ -261,6 +262,8 @@ def infer_value_domain(node: ExpressionNode) -> ValueDomain:
     if operator in {"csrank", "rank"}:
         return ValueDomain.STRICT_POSITIVE_UNIT
     if operator == "abs":
+        return ValueDomain.NON_NEGATIVE
+    if operator == "positive":
         return ValueDomain.NON_NEGATIVE
     if operator == "sign":
         return ValueDomain.CONSTANT_ONE_VALID_MASK if child_domains[0] in strict_positive else ValueDomain.SIGN_UNIT

@@ -48,7 +48,7 @@ REJECTION_CODES = {
 _STATIC_PRIMITIVES = {
     "CSRank", "CSResidual", "ZScore", "Add", "Sub", "Mul", "Div", "SafeDiv",
     "Abs", "Sign", "Mean", "Std", "Min", "Max", "Log", "Log1p",
-    "Sqrt", "Neg", "Clip", "Winsorize", "Rank", "Scale",
+    "Sqrt", "Neg", "Positive", "Clip", "Winsorize", "Rank", "Scale",
 }
 ROUTE_PRIMITIVE_ALLOWLIST = {
     "MINUTE_STATIC": _STATIC_PRIMITIVES,
@@ -63,7 +63,7 @@ ROUTE_PRIMITIVE_ALLOWLIST = {
         "Div", "SafeDiv", "CSResidual",
     },
     "SLOW_TEMPORAL_CHANGE": {
-        "CSRank", "Sign", "Abs", "Delta", "Slope", "Acceleration",
+        "CSRank", "Sign", "Abs", "Positive", "Delta", "Slope", "Acceleration",
         "Persistence", "MultiScaleRelation", "QoQ", "YoY", "TTMChange",
         "ZScore", "Add", "Sub", "Mul", "Div", "SafeDiv", "CSResidual",
     },

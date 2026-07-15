@@ -929,6 +929,9 @@ def evaluate_panel_expression(
         return store(evaluate_child(args[0]).abs())
     if name_lower == "sign" and len(args) == 1:
         return store(np.sign(evaluate_child(args[0])))
+    if name_lower == "positive" and len(args) == 1:
+        value = evaluate_child(args[0])
+        return store(value.gt(0.0).astype(float).where(value.notna()))
     if name_lower in {"frozenmechanismreplay", "matchedcontrolreplay"} and len(args) == 1:
         field_expression = args[0].strip()
         if not re.fullmatch(r"\$[A-Za-z_][A-Za-z0-9_]*", field_expression):

@@ -111,6 +111,32 @@ def test_existing_expression_evaluator_dispatches_new_temporal_calls() -> None:
     assert relation.notna().sum() > 0
 
 
+def test_multiscale_relation_non_finite_correlation_is_missing_not_a_signal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    frame = _frame()
+    call_count = 0
+
+    def unstable_corr(self: object, other: pd.Series) -> pd.Series:
+        nonlocal call_count
+        call_count += 1
+        value = np.inf if call_count % 2 else 0.0
+        return pd.Series(value, index=other.index, dtype=float)
+
+    monkeypatch.setattr(pd.core.window.rolling.Rolling, "corr", unstable_corr)
+
+    relation = evaluate_temporal_primitive(
+        frame,
+        "MultiScaleRelation",
+        [frame["x"], frame["y"]],
+        [2, 4],
+        data_role="development",
+    )
+
+    assert not np.isinf(relation.to_numpy(dtype=float)).any()
+    assert relation.isna().all()
+
+
 @pytest.mark.parametrize(
     ("name", "inputs", "params"),
     [

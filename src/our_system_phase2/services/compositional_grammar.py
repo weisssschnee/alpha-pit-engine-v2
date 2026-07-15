@@ -452,7 +452,7 @@ class CompositionalGrammarV2:
             primary_expression = f"CSRank(Mul(ZScore(PathShape({firstn_ref},{window})),ZScore({raw_ref})))"
             family = "PathShape"
         elif name == "opening_imbalance_persistence":
-            primary_expression = f"CSRank(Mul(ZScore({firstn_ref}),ZScore(Persistence({raw_ref},{window}))))"
+            primary_expression = f"Mul(ZScore({firstn_ref}),Persistence(Positive({raw_ref}),{window}))"
             family = "SignedPath"
         elif name == "relative_strength_reversal":
             primary_expression = f"CSRank(Sub(ZScore({firstn_ref}),ZScore(Delta({raw_ref},{window}))))"
@@ -608,8 +608,8 @@ class CompositionalGrammarV2:
             control_expression = f"CSRank(Add(ZScore({left_ref}),Mul(0,Delta({left_ref},10))))"
             family = "MultiScaleRelation"
         elif name == "change_persistence":
-            primary_expression = f"CSRank(Persistence({left_ref},{window}))"
-            control_expression = f"CSRank(Add(ZScore({left_ref}),Mul(0,Persistence({left_ref},{window}))))"
+            primary_expression = f"CSRank(Persistence(Positive({left_ref}),{window}))"
+            control_expression = f"Add(ZScore({left_ref}),Mul(0,Persistence(Positive({left_ref}),{window})))"
             family = "Persistence"
         elif name == "cross_change_interaction":
             primary_expression = f"CSRank(Mul(ZScore(Delta({left_ref},{window})),ZScore(Delta({right_ref},{window}))))"
@@ -726,7 +726,7 @@ class CompositionalGrammarV2:
             family = "Transition"
         elif name == "regime_maturity_payload":
             primary_expression = (
-                f"CSRank(Mul(Sign({payload_ref}),Persistence(Sign({condition_ref}),{window})))"
+                f"CSRank(Mul(Sign({payload_ref}),Persistence(Positive({condition_ref}),{window})))"
             )
             family = "StateAge"
         elif name == "regime_age_response":
@@ -736,7 +736,7 @@ class CompositionalGrammarV2:
             family = "StateAge"
         elif name == "regime_multiscale_response":
             primary_expression = (
-                f"CSRank(Mul(MultiScaleRelation({payload_ref},{payload_ref},{short},{long}),Sign({condition_ref})))"
+                f"CSRank(Mul(MultiScaleRelation({payload_ref},{condition_ref},{short},{long}),Sign({condition_ref})))"
             )
         elif name == "regime_conditioned_path":
             primary_expression = (
@@ -817,7 +817,7 @@ class CompositionalGrammarV2:
             )
         elif name == "transition_persistence":
             primary_expression = (
-                f"CSRank(Mul(Persistence({state_expression},{window}),Sign({payload_ref})))"
+                f"Mul(Persistence(Positive({state_expression}),{window}),Sign({payload_ref}))"
             )
         elif name == "transition_state_age":
             primary_expression = (

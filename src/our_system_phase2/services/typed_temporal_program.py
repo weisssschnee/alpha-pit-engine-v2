@@ -437,7 +437,8 @@ def _evaluate_temporal_primitive_canonical(
             right = values[1].loc[indices]
             short_corr = left.rolling(short, min_periods=short).corr(right)
             long_corr = left.rolling(long, min_periods=long).corr(right)
-            out.loc[indices] = (short_corr - long_corr).to_numpy()
+            relation = (short_corr - long_corr).replace([np.inf, -np.inf], np.nan)
+            out.loc[indices] = relation.to_numpy()
         return out
     raise AssertionError(f"unhandled primitive: {spec.name}")
 
