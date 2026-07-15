@@ -156,7 +156,9 @@ def main() -> int:
     )
     calibration_wall = _json(preflight / "active_full_coordinate_wall.json")
     calibration_peak = _json(preflight / "active_full_coordinate_peak.json")
+    calibration_io = _json(preflight / "active_full_coordinate_io.json")
     active_peak = _json(preflight / "active_peak_monitor.json")
+    active_metrics = _json(preflight / "active_resource_metrics.json")
     session_peak = _json(preflight / "session_peak_monitor_v2.json")
 
     active_rows = _csv(preflight / "active_full/phase3cm_candidate_pair_evaluation.csv")
@@ -228,6 +230,7 @@ def main() -> int:
                 "blocked": int(active_summary["pair_blocked_count"]),
                 "rows": int(active_summary["split_audit"]["row_count"]),
                 "sample_trade_times_per_shard": int(active_summary["sample_trade_times_per_shard"]),
+                "wall_time_seconds": float(active_metrics["wall_time_seconds"]),
                 "peak_working_set_bytes": int(active_peak["peak_working_set_bytes"]),
             },
             "session_full": {
@@ -236,6 +239,7 @@ def main() -> int:
                 "blocked": int(session_summary["pair_blocked_count"]),
                 "rows": int(session_summary["split_audit"]["row_count"]),
                 "sample_trade_times_per_shard": int(session_summary["sample_trade_times_per_shard"]),
+                "wall_time_seconds": float(session_peak["monitor_seconds"]),
                 "peak_working_set_bytes": int(session_peak["peak_working_set_bytes"]),
             },
         },
@@ -247,7 +251,16 @@ def main() -> int:
             "sample_trade_times_per_shard": int(calibration_summary["sample_trade_times_per_shard"]),
             "wall_time_seconds": float(calibration_wall["wall_time_seconds"]),
             "peak_working_set_bytes": peak_bytes,
+            "read_transfer_bytes": int(calibration_io["read_transfer_bytes"]),
+            "write_transfer_bytes": int(calibration_io["write_transfer_bytes"]),
+            "cpu_seconds": float(calibration_io["cpu_seconds"]),
             "selected_shards": int(calibration_summary["selected_shard_count"]),
+            "phase_timing": {
+                "materialization_time_seconds": None,
+                "evaluator_time_seconds": None,
+                "status": "UNAVAILABLE_IN_CURRENT_PHASE3CM_TELEMETRY",
+                "remediation": "Add separate panel-read, expression-materialization, portfolio and bootstrap timers before repeating preflight.",
+            },
         },
         "host": {
             "total_memory_bytes": int(args.total_memory_bytes),
