@@ -211,11 +211,12 @@ def main() -> int:
     )
 
     split = FixedSplitAuthority.read(args.split_manifest)
+    # ReceiptContext must match the formal evaluator's own authority envelope.
+    # Its transitive implementation is pinned separately by the repo SHA and
+    # artifact manifest; the evaluator receipt hash intentionally follows the
+    # Phase3CM entrypoint contract used during validation.
     evaluator_paths = [
-        REPO / "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
-        REPO / "src/our_system_phase2/services/real_market_validation.py",
-        REPO / "src/our_system_phase2/services/matched_control_pairs.py",
-        Path(__file__).resolve(),
+        REPO / "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
     ]
     authority = CandidateSubmissionAuthority(
         registry,
