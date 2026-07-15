@@ -1,65 +1,93 @@
 [
   {
-    "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\reports\\CN_BACKTEST_ACCELERATION_AUDIT.json",
-    "producer": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "e6d0e44be6a62a849217f4c617559e3d80ed8174ea7978e986d12db0025fde0f",
+    "size_bytes": 10874,
+    "stage": "final"
+  },
+  {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_BACKTEST_ACCELERATION_AUDIT.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
     "sha256": "a3d0059c9a17431a65ce9e201dd86d69b7d074a0019c4c262bfb30fda9670609",
     "size_bytes": 921,
     "stage": "final"
   },
   {
-    "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\reports\\CN_CANDIDATE_PAIR_RECEIPT_SCHEMA.json",
-    "producer": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_CANDIDATE_PAIR_RECEIPT_SCHEMA.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
     "sha256": "30367d000afa591d3ae53de3254b0f98fbfd2d2880aa3860c7366a0869c44735",
     "size_bytes": 760,
     "stage": "final"
   },
   {
-    "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\reports\\CN_CANDIDATE_PARALLEL_PAIR_PARITY.json",
-    "producer": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
-    "sha256": "6006d444cdcb03dbbb8d369de460f9f2aacea4c9af7873b8c3de3da38bd46806",
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_CANDIDATE_PARALLEL_PAIR_PARITY.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "19d09c0b53db7650ac71be11d2ccbad606bc1105c7bf88dd4a72ede0e7d2bfc8",
     "size_bytes": 4286,
     "stage": "final"
   },
   {
-    "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\reports\\CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
-    "producer": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
-    "sha256": "9f121587bdeeaa3ab1ff7373d85c22e749af0718e0b91970517b78a64372a59b",
-    "size_bytes": 758,
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "eca047aa3f8816d75727adb19331594092f77a2f5c37ac111a9db186fe61be51",
+    "size_bytes": 1141,
     "stage": "final"
   },
   {
-    "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\reports\\CN_MATCHED_CONTROL_CONTRACT.json",
-    "producer": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
-    "sha256": "c456972b0dc1018493a5abf32bebcf868bae6f3ba5c31512b8f6d94ba3b6b617",
-    "size_bytes": 909,
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_MATCHED_CONTROL_ARTIFACT_INDEX.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "bf07fc03e6c0cde876486b18565a5d8abcd51309a6492eee2675b78c10adb982",
+    "size_bytes": 3510,
     "stage": "final"
   },
   {
-    "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\reports\\CN_MATCHED_CONTROL_RUN_MANIFEST.json",
-    "producer": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
-    "sha256": "8458ffd51fdf7d458e979fa1ba0bd511f634ce90b4d9e18e9365c8272e362bed",
-    "size_bytes": 6147,
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_MATCHED_CONTROL_CONTRACT.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "71350c3f49b056a34627ce5f27aa7a82e10291156600567e9bc43e4fbbfa07cf",
+    "size_bytes": 927,
     "stage": "final"
   },
   {
-    "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\reports\\CN_PAIR_EVALUATION_RESULTS.json",
-    "producer": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
-    "sha256": "d7b34eb6093c41c6a1c7aff24d7fdd1b91e44f43e2665a399cef7d50d1dd57f8",
-    "size_bytes": 141494,
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_MATCHED_CONTROL_RUN_MANIFEST.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "a4e1b4a2c08be78fb5c72c983fc256e6df8d90cbf38285231676daad8fa014a5",
+    "size_bytes": 6617,
     "stage": "final"
   },
   {
-    "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\reports\\CN_ROUTE_CONTROL_CONSTRUCTOR_MATRIX.csv",
-    "producer": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_PAIR_EVALUATION_RESULTS.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "7599d86bbda479cf26b2f2e83941e65ed7f035e708da4969a8df93166c27dc1f",
+    "size_bytes": 149574,
+    "stage": "final"
+  },
+  {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_PAIR_NATIVE_FEEDBACK_CONTRACT.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "f360ad6191b9d27cbe6f45eae2d731c0b7fce97b9e5293b6bdd5b5e8fd8cc063",
+    "size_bytes": 1983,
+    "stage": "final"
+  },
+  {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_PAIR_NATIVE_FEEDBACK_TEST_RESULTS.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "29059afc5575415fe7b3c0a6b8806891c528a2c703ebf9ea53b9bf80c557bb6e",
+    "size_bytes": 798,
+    "stage": "final"
+  },
+  {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_ROUTE_CONTROL_CONSTRUCTOR_MATRIX.csv",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
     "sha256": "d856b7353e101a47ff7f3c0ca40915be3084b956958575489466eef3d352d7fd",
     "size_bytes": 2974,
     "stage": "final"
   },
   {
-    "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\reports\\CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
-    "producer": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
-    "sha256": "a17123b5d42a08d98e3d1333a5fc47246804714050b44130bccc25757c622272",
-    "size_bytes": 548,
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\reports\\cn_matched_control_candidate_parallel_20260715\\CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
+    "producer": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\scripts\\build_cn_matched_control_candidate_parallel_artifacts.py",
+    "sha256": "5fcc6021c42e19e9c4c2c3faa51924397576d985b131f12ed1461bb12293123e",
+    "size_bytes": 562,
     "stage": "final"
   }
 ]

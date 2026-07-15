@@ -6,7 +6,7 @@
   "control_independent_vote": false,
   "control_memory_eligible": false,
   "control_survivor_eligible": false,
-  "feedback_metric": "matched_train_increment",
+  "feedback_metric": "pair_train_reward=matched_train_increment",
   "feedback_split": "train",
   "forbidden_data_roles": [
     "validation",

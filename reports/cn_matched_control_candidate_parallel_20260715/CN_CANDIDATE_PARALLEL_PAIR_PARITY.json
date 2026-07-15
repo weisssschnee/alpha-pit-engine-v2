@@ -9,7 +9,7 @@
   "tolerance": 1e-12,
   "worker_counts": {
     "1": {
-      "elapsed_seconds": 1.978004,
+      "elapsed_seconds": 2.947059,
       "pair": {
         "baseline_count": 4,
         "exact_mismatch_count": 0,
@@ -55,7 +55,7 @@
       }
     },
     "2": {
-      "elapsed_seconds": 1.496337,
+      "elapsed_seconds": 1.544222,
       "pair": {
         "baseline_count": 4,
         "exact_mismatch_count": 0,
@@ -101,7 +101,7 @@
       }
     },
     "4": {
-      "elapsed_seconds": 1.365265,
+      "elapsed_seconds": 1.387905,
       "pair": {
         "baseline_count": 4,
         "exact_mismatch_count": 0,

@@ -1,0 +1,57 @@
+{
+  "authority_status": "ACTIVE_EXPERIMENTAL_NO_FORMAL_SEARCH",
+  "consumer": "phase3cn_feedback_memory_smoke",
+  "contract_id": "CN_PAIR_NATIVE_FEEDBACK_CONTRACT_V1",
+  "control_rights": {
+    "independent_quota": false,
+    "independent_vote": false,
+    "memory": false,
+    "survivor": false
+  },
+  "data_boundary": {
+    "development": "synthetic_runtime_only",
+    "forward_2026": "SEALED",
+    "holdout": "FORBIDDEN_FROM_FEEDBACK",
+    "validation": "FORBIDDEN_FROM_FEEDBACK"
+  },
+  "decision_values": [
+    "PAIR_TRAIN_FEEDBACK_READY",
+    "PAIR_TRAIN_FEEDBACK_BLOCKED"
+  ],
+  "gate": {
+    "candidate_receipts": "primary_and_control_valid",
+    "matched_train_increment": "finite_and_positive",
+    "pair_evaluation_status": "PAIR_EVALUATED",
+    "pair_rank_ic_metric": "finite_for_all_registered_routes",
+    "pair_receipt": "valid",
+    "pair_support_metric": 1.0,
+    "pair_turnover_metric": "finite",
+    "primary_control_behavior": "non_equivalent",
+    "primary_control_evaluator_invocation": "positive",
+    "primary_control_signal": "nonempty_and_nonconstant",
+    "primary_control_support": "nonempty"
+  },
+  "metric_definitions": {
+    "pair_rank_ic_metric": "matched_rank_ic_increment",
+    "pair_support_metric": "pair_support_overlap",
+    "pair_turnover_metric": "max(primary_turnover,control_turnover)"
+  },
+  "primary_standalone_fields": {
+    "renamed_fields": [
+      "primary_standalone_train_reward_decision",
+      "primary_standalone_train_reward_blockers",
+      "primary_standalone_train_mean_one_way_turnover"
+    ],
+    "status": "DIAGNOSTIC_ONLY_NOT_FEEDBACK_AUTHORITY"
+  },
+  "producer": "build_pair_evaluation_rows",
+  "required_fields": [
+    "pair_train_reward",
+    "pair_train_reward_decision",
+    "pair_train_reward_blockers",
+    "pair_turnover_metric",
+    "pair_support_metric",
+    "pair_rank_ic_metric"
+  ],
+  "reward_definition": "pair_train_reward=matched_train_increment"
+}

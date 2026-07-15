@@ -1,0 +1,19 @@
+{
+  "all_route_runtime_status": "PASS",
+  "blocked_pairs_rejected_by_phase3cn": 4,
+  "covered_cases": [
+    "primary_standalone_positive_but_matched_increment_nonpositive_blocks",
+    "matched_increment_positive_but_pair_support_mismatch_blocks",
+    "matched_increment_positive_but_control_not_invoked_blocks",
+    "primary_standalone_blocker_does_not_override_complete_pair_native_gate",
+    "independent_frozen_primary_control_replay_channels_fail_closed_when_missing",
+    "all_eight_routes_real_phase3cm_and_pair_native_phase3cn_validation"
+  ],
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "ready_pairs_accepted_by_phase3cn": 4,
+  "status": "PASS",
+  "test_cases_declared": 6,
+  "test_file": "tests/test_pair_native_feedback_all_routes.py",
+  "validation_reads": 0
+}

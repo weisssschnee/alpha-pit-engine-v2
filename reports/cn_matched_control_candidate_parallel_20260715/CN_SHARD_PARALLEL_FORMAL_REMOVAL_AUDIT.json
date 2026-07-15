@@ -1,8 +1,8 @@
 {
   "deprecated_state": "DEPRECATED_DIAGNOSTIC_ONLY",
   "formal_cli_candidate_only": true,
-  "formal_module": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\src\\our_system_phase2\\runtime\\phase3cp_real_cm_small_loop.py",
-  "formal_module_sha256": "1c713c511753efe9021e12cfef380eaa78abe343c5efde271be6af1f7b2a3e8c",
+  "formal_module": "D:\\ChengboRemote\\workspace\\alpha_pit_pair_native_10582c3_20260715\\src\\our_system_phase2\\runtime\\phase3cp_real_cm_small_loop.py",
+  "formal_module_sha256": "9893b06f260dde15a57b58faaea6d37aa0a5693a615c0270b81c0c2d08cd819b",
   "formal_shard_parallel_entry_absent": true,
   "global_cross_section_merge_implemented": false,
   "mean_of_shard_reward_fallback_absent": true,
