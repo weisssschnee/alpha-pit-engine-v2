@@ -1,0 +1,27 @@
+{
+  "$id": "cn_candidate_pair_receipt_v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "required": [
+    "pair_id",
+    "primary_candidate_id",
+    "control_candidate_id",
+    "primary_receipt_hash",
+    "control_receipt_hash",
+    "pair_receipt_hash",
+    "route_id",
+    "support_unit",
+    "pair_clock_alignment_policy",
+    "primary_observable_time_contract",
+    "control_observable_time_contract",
+    "primary_pit_source_lag_contract",
+    "control_pit_source_lag_contract",
+    "mapping_portfolio_contract",
+    "split_manifest_hash",
+    "data_release_hash",
+    "evaluator_code_hash",
+    "pair_authority_code_hash",
+    "control_constructor_id"
+  ],
+  "type": "object"
+}

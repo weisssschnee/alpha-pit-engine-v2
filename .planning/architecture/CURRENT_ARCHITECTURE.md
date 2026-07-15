@@ -2,11 +2,12 @@
 
 Updated: 2026-07-15
 
-State: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED` on the physically
+State: `CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED` on the physically
 isolated 2024-2025 development-only release. The unified registry/compiler is
-now the sole candidate admission authority and the fixed 485-date manifest is
-the sole formal split authority. Sealed evaluation, formal search, promotion
-and cross-sprint memory remain frozen.
+the sole candidate admission authority, the fixed 485-date manifest is the sole
+formal split authority, and primary/control pairs are indivisible formal
+evaluation objects. Sealed evaluation, formal search, promotion and cross-sprint
+memory remain frozen.
 
 This projection is generated and checked from
 `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json` plus
@@ -50,11 +51,14 @@ flowchart LR
     LEGACY["IMPLEMENTED<br/>legacy generators<br/>proposal sources only"] --> RECEIPT["IMPLEMENTED<br/>immutable candidate receipt gate"]
     UNIFIED -->|"authorizes field / route / primitive / PIT"| RECEIPT
     SPLIT -->|"binds manifest hash"| RECEIPT
-    RECEIPT --> ADMISSION["IMPLEMENTED<br/>receipt-gated proxy/admission/evaluator"]
-    ADMISSION --> REPAIR["PARTIAL<br/>candidate-parallel safe<br/>shard-parallel max error 12"]
+    RECEIPT --> PAIR["IMPLEMENTED / ACTIVE<br/>matched-control pair authority<br/>receipt v2 + PIT/support binding"]
+    PAIR --> ADMISSION["IMPLEMENTED<br/>primary selects whole pair<br/>control has no vote/quota/memory"]
+    ADMISSION --> CPA["IMPLEMENTED / ACTIVE<br/>candidate-parallel formal evaluator<br/>1/2/4 max error 0"]
+    CPA --> FEEDBACK["IMPLEMENTED<br/>Phase3CN matched train increment only"]
     WORKER_SPLIT["DEPRECATED<br/>worker-local split"] -. "FORBIDDEN" .-> RECEIPT
-    SHARD_PORTFOLIO["FROZEN<br/>shard-local cross-sectional portfolio"] -. "FAIL CLOSED" .-> REPAIR
-    REPAIR -. "NO RUN AUTHORIZATION" .-> SEALED
+    SHARD_PORTFOLIO["DEPRECATED<br/>shard-parallel portfolio<br/>formal entry removed"] -. "FORBIDDEN" .-> CPA
+    SHARD_MEAN["DEPRECATED<br/>mean-of-shard reward fallback"] -. "FORBIDDEN" .-> FEEDBACK
+    CPA -. "NO RUN AUTHORIZATION" .-> SEALED
     UDISC -. "4 shared = old frozen replay<br/>NO CHALLENGE / NO PROMOTION" .-> SEALED
     FUND_FABRIC -. "NO RAW 1,227 EXPOSURE" .-> SEALED
     ZYGC["FROZEN<br/>business composition<br/>no disclosure clock"] -. "PIT_CONTRACT_UNRESOLVED" .-> FUND_FABRIC
@@ -66,15 +70,23 @@ flowchart LR
 - The fixed 485-session manifest is mandatory at every formal worker, serial,
   parallel, retry, recovery and exact-merge boundary. Validation and holdout
   are report-only; 2026 is sealed.
-- Every evaluator input carries an immutable receipt bound to canonical
-  expression, field/source/representation lineage, typed route, primitives,
-  PIT/source lag, matched control, registry/compiler/split/data/evaluator
-  hashes. Phase3CN accepts only train feedback bearing the exact receipt hash.
-- Actual Phase3CM 1/2/4-worker shard-parallel replay failed parity with maximum
-  numeric error 12.0 at 1e-12 tolerance. The route and its formal recovery path
-  now fail closed; candidate-parallel remains the safe worker route. Frozen
-  historical legal-candidate direct versus gated parity passed with zero error
-  and is not Alpha evidence.
+- Every evaluator input carries an immutable candidate receipt, and every
+  primary/control object carries a pair receipt v2 binding route constructor,
+  field lineage, observable/PIT/source-lag clocks, exact eligible-symbol support,
+  split, data release and evaluator hashes.
+- Four legal route pairs (`MINUTE_STATIC`, `FIRSTN_PATH`, slow level and slow
+  temporal change) entered the real evaluator on the same full four-shard
+  universe. Candidate-worker 1/2/4 parity passed with maximum numeric error 0,
+  48 reward atoms in every configuration and one pair result per pair.
+- Four null-behavior pairs and four invalid-control pairs were also exercised
+  through `app.py -> Phase3CM` at 1/2/4 workers. Null behavior was blocked after
+  actual control evaluation; invalid pointers were rejected by authority.
+- Phase3CN accepts only the primary row's train matched increment after verifying
+  primary, control and pair receipt hashes. A control has no independent vote,
+  family quota, survivor eligibility, scheduler credit or memory entry.
+- Formal shard-parallel functions, recovery entry and mean-of-shard reward
+  fallback are absent. Their historical evidence remains diagnostic only and
+  cannot enter Phase3CN, scheduler, memory or formal evidence.
 - The strict-priority selector has both offline OOF lift and realized
   development strict lift. It is a frozen model, not online memory.
 - Shared-backbone proxy and strict-priority rank correlations are 1.0 for all
@@ -131,11 +143,12 @@ flowchart LR
 - `app.py` identifies receipt-gated Phase3CP as the current formal route and
   marks Phase3DV as a legacy proposal-only diagnostic route. Hardcoded pools
   and parquet schema presence cannot authorize admission or evaluation.
-- Phase3CM, serial and candidate-parallel Phase3CP use the same fixed manifest.
-  The worker-local splitter is removed from the formal evaluator; unknown dates
-  and 2026 fail closed. Shard-parallel portfolio and chunk-recovery execution
-  are blocked until a global cross-section exact merge exists.
-- Engineering qualification remains partial. Formal search remains frozen;
-  this repair did not run performance search or promotion.
+- Phase3CM and candidate-parallel Phase3CP use the same fixed manifest and every
+  worker reads the identical full shard universe. The worker-local splitter,
+  shard-parallel portfolio entry and shard reward fallback are removed; unknown
+  dates and 2026 fail closed.
+- Matched-control and candidate-parallel infrastructure is engineering-qualified.
+  This status does not authorize performance search, promotion, forward access
+  or persistent adaptive memory.
 - The old run's challenge-eligibility boolean is superseded. Frozen replay
   alone cannot qualify a challenge; no challenge is open.

@@ -11,3 +11,11 @@
 - Record the actual 1/2/4 disjoint-shard parity failure and block shard-parallel portfolio/recovery from formal use.
 - Do not apply for or start a capability run until the worker semantic blocker is resolved.
 - Keep formal search, validation/holdout feedback, challenge, promotion, cross-sprint memory, plate/industry and forward 2026 frozen.
+
+## 2026-07-15 - Matched-control and candidate-parallel formalization
+
+- Supersede the partial engineering status with `CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED`; preserve the historical shard-parallel max-error-12 result as diagnostic evidence.
+- Promote the formal object from a standalone candidate row to one indivisible primary/control pair with pair receipt v2 and matched train increment.
+- Permanently remove formal shard-parallel execution and mean-of-shard reward fallback instead of implementing a global cross-section merge in this task.
+- Accept 77o legal/null/invalid 1/2/4 candidate-worker parity at maximum error 0 and 48 reward atoms per configuration as engineering evidence only.
+- Keep formal search, candidate promotion, validation/holdout feedback, cross-sprint memory, plate/industry and forward 2026 frozen.

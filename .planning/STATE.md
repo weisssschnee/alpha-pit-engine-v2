@@ -2,7 +2,7 @@
 
 Updated: 2026-07-15
 
-Current state: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED`
+Current state: `CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED`
 
 ## Accepted foundations
 
@@ -25,6 +25,7 @@ Current state: `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED`
 - `CN_UNIFIED_CAPABILITY_DISCOVERY_COMPLETED_DEVELOPMENT_ONLY`
 - `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`
 - `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED`
+- `CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED`
 - `UNIFIED_DISCOVERY_CHALLENGE_ELIGIBILITY_SUPERSEDED`
 
 ## Runtime authority and split convergence result
@@ -51,16 +52,26 @@ parquet presence cannot authorize a field. Blocked metadata, direct raw
 fundamentals, wrong lag, latched Event/State bypass and plate placeholders fail
 closed.
 
-Actual Phase3CM entrypoint replay with disjoint shard assignments found that
-1/2/4-worker shard-parallel portfolio results are not equivalent: the maximum
-numeric error is 12.0 at tolerance 1e-12. Exact atom recovery cannot repair a
-portfolio that was already formed inside a shard-local cross-section. The
-unsafe route is therefore blocked; candidate-parallel remains the supported
-worker route because each worker evaluates full cross-sections. A
-current-contract-legal frozen historical candidate did preserve expression,
-signal, weights, turnover, cost, synthetic train-like metric and behavior
-identity through the receipt gate with zero error. This is engineering
-evidence, not Alpha or promotion evidence.
+The matched-control follow-up replaces the formal single-row object with an
+indivisible primary/control pair. Pair receipt v2 binds both candidate receipts,
+route-specific constructor, field lineage, observable/PIT/source-lag clocks,
+actual eligible-symbol support, fixed split, content-addressed data release and
+evaluator code. CA ranks the primary but carries the whole pair; the control has
+no independent vote, quota, survivor eligibility, scheduler credit or memory.
+
+On 77o, four legal route pairs were evaluated through `app.py -> Phase3CM` on
+the same complete four-shard universe with 1/2/4 candidate workers. Maximum
+numeric error is 0 at tolerance 1e-12 and reward atoms remain 48 in every worker
+configuration. Four null-behavior pairs and four invalid-control pairs also ran
+through the formal 1/2/4 path: null behavior was blocked after the control was
+actually invoked, and invalid control pointers failed authority. Phase3CN now
+accepts only the primary row's matched train increment after validating primary,
+control and pair receipt hashes.
+
+Formal shard-parallel functions and the mean-of-shard reward fallback have been
+physically removed from the formal module. Their old max-error-12 evidence stays
+diagnostic history and cannot enter Phase3CN, scheduler, memory or formal proof.
+This is engineering evidence, not Alpha or promotion evidence.
 
 The completed two-seed unified run remains development-only diagnostic evidence.
 Its four shared exact survivors are old frozen Broad Event replays; no challenge
@@ -185,13 +196,12 @@ No forward-authorization candidate pack was created.
 
 ## Next formal decision point
 
-Recommendation: `REPAIR_GLOBAL_CROSS_SECTION_MERGE_BEFORE_CAPABILITY_RUN`.
+Recommendation: `REQUIRE_SEPARATE_FROZEN_CONTRACT_BEFORE_ANY_FORMAL_SEARCH`.
 
-Candidate and split authority convergence is complete, but overall engineering
-qualification remains partial until shard-parallel portfolio evaluation is
-either replaced by a global cross-section exact merge or removed from the
-formal contract. Any next run still requires a separate frozen contract and
-explicit approval.
+Candidate, pair, split and candidate-parallel evaluator authority is qualified.
+This task did not run performance search, promote candidates, open forward data
+or persist cross-sprint memory. Any next run still requires a separate frozen
+contract and explicit approval.
 Business composition remains `PIT_CONTRACT_UNRESOLVED`, plate/industry remains
 disabled, formal search stays frozen, validation/holdout remain report-only,
 and 2026 stays sealed.

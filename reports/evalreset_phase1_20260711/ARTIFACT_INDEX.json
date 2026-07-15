@@ -91,30 +91,30 @@
     {
       "exists": true,
       "id": "architecture_registry",
-      "last_verified_sha": "088f871fa5cddd3add73f83e4416480102dd1aa3fbcc2a8f4ec434ddcb50402c",
+      "last_verified_sha": "da8d524a040c1e0ace49561f03a7b089efa97cb1500c7d754beb36fde9540d89",
       "path": "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json",
-      "size_bytes": 18730,
+      "size_bytes": 18736,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "architecture_graph",
-      "last_verified_sha": "cb410b120a3785a8c452efd9db55c43242fd97e5454320d8a8aa28166507ab9c",
+      "last_verified_sha": "8cc94230b153bf12b234c6e44081fdadc8a125d46326ca016c044b11a2758682",
       "path": ".planning/graphs/graph.json",
-      "size_bytes": 36905,
+      "size_bytes": 286,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "phase_state",
-      "last_verified_sha": "0d2379cc7c819c62b53bd5f8c2147e0ec51d6459c35a407d1f81a1bdd7c699c9",
+      "last_verified_sha": "529323913ac9ed50c0f37d2d59d916b99188d3c822f64ca8374531eb4837fce1",
       "path": ".planning/STATE.md",
-      "size_bytes": 1646,
+      "size_bytes": 10527,
       "state": "IMPLEMENTED"
     }
   ],
   "index_version": "evalreset_phase1_artifact_index_v1",
   "phase": "A_EVALRESET",
-  "refreshed_at": "2026-07-11T10:48:43.769564+00:00",
+  "refreshed_at": "2026-07-15T05:11:23.553112+00:00",
   "status": "COMPLETE"
 }

@@ -1,0 +1,136 @@
+{
+  "actual_elapsed_seconds": 12.133465,
+  "continuation": "formal search remains frozen; use only matched pair train feedback",
+  "decision": "N/A_NO_PERFORMANCE_SEARCH",
+  "experiment_id": "20260715_cn_matched_control_candidate_parallel_001",
+  "failure": "",
+  "finished_at": "2026-07-15T05:00:07.388476+00:00",
+  "inputs": {
+    "candidate_receipt_table_sha256": "c8d6b6efafb34609a33e5e19060e387d023cacf34188dc2b49f7fa201c802fe7",
+    "null_behavior_synthetic_shards": [
+      {
+        "column_count": 10,
+        "date_max": "2024-01-04",
+        "date_min": "2024-01-02",
+        "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\runtime\\null_behavior_synthetic_true1min_shards\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_count": 1152,
+        "sha256": "6e876be31dc0b05a16b07dbfc461079f992d7593fab4bd7667402aa37b1560f2",
+        "shard_index": 0
+      },
+      {
+        "column_count": 10,
+        "date_max": "2024-01-04",
+        "date_min": "2024-01-02",
+        "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\runtime\\null_behavior_synthetic_true1min_shards\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_count": 1152,
+        "sha256": "fc9b9db23cf0a45db3da20a4fad3e006133f7a257db375c22bb7b9901d044c8f",
+        "shard_index": 1
+      },
+      {
+        "column_count": 10,
+        "date_max": "2024-01-04",
+        "date_min": "2024-01-02",
+        "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\runtime\\null_behavior_synthetic_true1min_shards\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_count": 1152,
+        "sha256": "b5a6b2d23c93f42253c9b13947965a7282b821427b31c2cb8b6e151ec92d75a4",
+        "shard_index": 2
+      },
+      {
+        "column_count": 10,
+        "date_max": "2024-01-04",
+        "date_min": "2024-01-02",
+        "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\runtime\\null_behavior_synthetic_true1min_shards\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_count": 1152,
+        "sha256": "664b0a89faf181e67332a533a84bdc91711fd4fc1a8e17da1285140413348d00",
+        "shard_index": 3
+      }
+    ],
+    "pair_receipt_table_sha256": "c3fe0bd802e107789671aeca60acc5eb3209eab9e66d272266ca02b41e9e24d8",
+    "parity_data_release_hash": "9a798aaa67b49809b9d53b88cdd999640030fe12896f954d10ee04fd2bda2df2",
+    "registry": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\reports\\cn_unified_capability_discovery_20260714\\completed_f8169e1\\registry\\unified_capability_registry.json",
+    "registry_sha256": "30f35019de7f93923417c5d241a293d7152655d9b37acd7e12a3840ecac7d89d",
+    "source_reference_data_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "split_manifest": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\repo\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "synthetic_shards": [
+      {
+        "column_count": 10,
+        "date_max": "2024-01-04",
+        "date_min": "2024-01-02",
+        "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\runtime\\synthetic_true1min_shards\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_count": 1152,
+        "sha256": "17cb652392d498c5da5ac5e79ef2650ee33f66d82e29fddb0e4ffaeac2fabedd",
+        "shard_index": 0
+      },
+      {
+        "column_count": 10,
+        "date_max": "2024-01-04",
+        "date_min": "2024-01-02",
+        "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\runtime\\synthetic_true1min_shards\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_count": 1152,
+        "sha256": "3d07bcb7de5f55677979cf6c9b06dfc1ad76b68950df0bf3f9f117b3a959cbba",
+        "shard_index": 1
+      },
+      {
+        "column_count": 10,
+        "date_max": "2024-01-04",
+        "date_min": "2024-01-02",
+        "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\runtime\\synthetic_true1min_shards\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_count": 1152,
+        "sha256": "1341d0e60f32908be6931626b748366f144f26c65882a8fcbd471a3d2fe528e1",
+        "shard_index": 2
+      },
+      {
+        "column_count": 10,
+        "date_max": "2024-01-04",
+        "date_min": "2024-01-02",
+        "path": "D:\\ChengboRemote\\jobs\\cn_matched_pair_05739d2\\runtime\\synthetic_true1min_shards\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_count": 1152,
+        "sha256": "4825084f8f9508b8d84e8877e1c239fad74902f180bf96875fa1c216b822583d",
+        "shard_index": 3
+      }
+    ]
+  },
+  "mode": "research_synthetic_development_only",
+  "objective": "prove route-specific matched evaluation and candidate-pair parallel parity",
+  "parameters": {
+    "cache_mode": "off",
+    "cost_bps": 5,
+    "horizon": 1,
+    "negative_case_routes": [
+      "MINUTE_STATIC",
+      "FIRSTN_PATH",
+      "SLOW_CROSS_SECTIONAL_LEVEL",
+      "SLOW_TEMPORAL_CHANGE"
+    ],
+    "negative_formal_worker_counts": [
+      1,
+      2,
+      4
+    ],
+    "routes": [
+      "MINUTE_STATIC",
+      "FIRSTN_PATH",
+      "SLOW_CROSS_SECTIONAL_LEVEL",
+      "SLOW_TEMPORAL_CHANGE"
+    ],
+    "seeds": {
+      "FIRSTN_PATH": 5102,
+      "MINUTE_STATIC": 5101,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 5103,
+      "SLOW_TEMPORAL_CHANGE": 5104
+    },
+    "shard_count": 4,
+    "top_quantile": 0.2,
+    "worker_counts": [
+      1,
+      2,
+      4
+    ]
+  },
+  "python_executable": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+  "repo_sha": "05739d279efc60a710c9ccb47ada398b10ec839c",
+  "reproducible": true,
+  "started_at": "2026-07-15T04:59:55.255573+00:00",
+  "status": "completed"
+}

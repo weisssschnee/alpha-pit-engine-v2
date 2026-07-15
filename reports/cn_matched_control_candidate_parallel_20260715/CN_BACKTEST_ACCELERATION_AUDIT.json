@@ -1,0 +1,29 @@
+{
+  "full_shard_universe_per_worker": true,
+  "global_worker_limit": 4,
+  "hot_path": "pyarrow pruned shard reads + expression/subtree cache + numba group rank + numpy portfolio loop",
+  "package_matrix": {
+    "bottleneck": "1.6.0",
+    "joblib": "1.5.3",
+    "numba": "0.65.1",
+    "numexpr": "2.14.1",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "polars": "1.42.0",
+    "pyarrow": "24.0.0",
+    "sklearn": "1.9.0"
+  },
+  "parallel_axis": "candidate_pair",
+  "persistent_cache_mode": "off",
+  "python_executable": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+  "runtime_worker_counts": [
+    1,
+    2,
+    4
+  ],
+  "safe_concurrency_limit_for_parity": 4,
+  "semantic_change": "tie-aware quantile cutoffs for coarse controls; covered by serial/parallel parity",
+  "shared_cache_writes": false,
+  "successive_halving": false,
+  "use_fast_context": "Phase3CM --fast-mode"
+}

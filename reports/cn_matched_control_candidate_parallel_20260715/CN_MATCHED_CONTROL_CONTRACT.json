@@ -1,0 +1,23 @@
+{
+  "authority_status": "AUTHORIZED_FOR_FORMAL_PAIR_EVALUATION",
+  "candidate_limit_unit": "primary_pair_count",
+  "contract_id": "CN_MATCHED_CONTROL_CONTRACT_V1",
+  "control_independent_quota": false,
+  "control_independent_vote": false,
+  "control_memory_eligible": false,
+  "control_survivor_eligible": false,
+  "feedback_metric": "matched_train_increment",
+  "feedback_split": "train",
+  "forbidden_data_roles": [
+    "validation",
+    "holdout",
+    "sealed",
+    "forward_2026"
+  ],
+  "formal_negative_1_2_4_parity_status": "PASS",
+  "formal_object": "candidate_pair=primary+matched_control",
+  "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+  "negative_case_matrix_status": "PASS",
+  "primary_controls_selection": true,
+  "route_constructor_count": 8
+}

@@ -87,6 +87,14 @@ repo SHA, generator hash and every declared derived display hash.
 - Worker-local `_split_map` is removed from the formal evaluator. Unknown
   dates, missing manifests and 2026 fail closed; validation and holdout cannot
   enter optimizer feedback.
+- A candidate receipt alone cannot enter reward or feedback. The primary and
+  route-specific control must form one immutable pair receipt v2 with matching
+  split/data/evaluator authority, controlled PIT/source-lag clocks and exact
+  eligible-symbol support. The control has no independent vote or memory.
+- Candidate-parallel is the only formal multi-worker axis: every worker reads
+  the identical complete shard universe and partitions whole pairs. Formal
+  shard-parallel execution and mean-of-shard reward fallback are permanently
+  absent and forbidden from Phase3CN, scheduler, memory and formal evidence.
 
 ## Acceptance boundary
 
@@ -122,12 +130,11 @@ accepted status is `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`; it does not
 authorize formal search, challenge access, promotion, persistent memory or
 2026 access.
 
-The superseding runtime-authority repair is bound to
-`reports/cn_runtime_authority_and_split_repair_20260715/run_manifest.json`.
-Its status is
-`CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED`. Candidate
-authority, receipt propagation and fixed split enforcement are repaired, but
-actual 1/2/4-worker replay exposed non-invariant shard-local cross-sectional
-portfolio construction. Candidate-parallel is the supported safe path;
-shard-parallel portfolio and its formal recovery route fail closed. No
-capability run is authorized or started.
+The superseding matched-control repair is bound to
+`reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json`.
+Its status is `CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED`. Four legal
+pairs and per-route null/invalid cases traversed the formal `app.py` route at
+1/2/4 candidate workers on 77o. Maximum numerical error is zero and reward-atom
+count is invariant at 48. This qualifies the engineering contract only: no
+performance search, capability run, promotion, persistent memory or sealed
+access is authorized or started.

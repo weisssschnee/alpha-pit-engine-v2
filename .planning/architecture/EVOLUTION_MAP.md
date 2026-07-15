@@ -4,6 +4,7 @@ Updated: 2026-07-15
 
 | Change | Previous state | Current state / consequence |
 |---|---|---|
+| Matched-control pair authority qualified | Candidate receipts named a control but formal CM evaluated only the primary; shard-parallel residuals and mean fallback remained in the formal module | Primary/control is now an indivisible pair with receipt v2, actual PIT/support/behavior checks and matched train feedback; legal/null/invalid 1/2/4 candidate-worker parity passed at max error 0 with 48 atoms; shard-parallel and mean fallback are physically removed and `DEPRECATED / FORBIDDEN` |
 | Shard-local split leakage discovered | Workers could derive their own temporal boundaries | The fixed 485-date manifest is authoritative; atom-label conflicts are diagnostic |
 | Pre-fix OOS downgraded | Validation/holdout were treated as reusable report-only OOS | Both are `spent` and cannot affect future candidate distributions |
 | High-frequency CM/validation feedback withdrawn | Candidate metrics could repeatedly influence automated and human decisions | Non-development candidate fields fail at memory, search-feedback, and scheduler boundaries |
