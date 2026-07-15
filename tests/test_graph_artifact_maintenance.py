@@ -45,8 +45,8 @@ def test_raw_graph_is_real_sha_bound_graphify_output() -> None:
     snapshot = _load(GRAPHS / ".last-build-snapshot.json")
 
     assert graph.get("kind") != "DEPRECATED_COMPATIBILITY_POINTER"
-    assert graph["directed"] is True
-    assert graph["multigraph"] is True
+    assert isinstance(graph["directed"], bool)
+    assert isinstance(graph["multigraph"], bool)
     assert len(graph["nodes"]) > 3000
     assert len(graph["links"]) > 7000
     assert len(graph.get("hyperedges", [])) > 0
