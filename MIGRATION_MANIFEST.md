@@ -247,10 +247,11 @@ fixed development-only coordinate registry
 -> unchanged cluster IDs mapped through proxy/admission/strict/coverage stages
 ```
 
-This route is label-free and cannot write search memory. Architecture state is
-registered in `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json`
-and generated into `.planning/architecture/architecture_graph.json`; the graph contract includes
-the six forbidden evaluation-feedback edges.
+This route is label-free and cannot write search memory. The historical Phase A
+registry remains in `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json`.
+Current architecture lifecycle and boundary decisions live only in
+`config/architecture_overlay.json`; GraphSkill generates RAW and CURRENT into
+`.planning/graphs/`.
 
 ## 2026-07-15 Runtime Authority and Split Convergence
 
@@ -272,7 +273,8 @@ are not invariant; they cannot return to the formal route without a global
 cross-section exact merge. Parquet schema presence remains a physical
 feasibility filter only and cannot authorize a field or route.
 
-The current architecture status authority is
-`.planning/architecture/architecture_registry.json`. Formal search, validation,
-holdout, candidate promotion, cross-sprint memory and 2026 forward access remain
-frozen pending separate authorization.
+The current architecture lifecycle authority is `config/architecture_overlay.json`.
+`.planning/graphs/graph.json` is non-authoritative RAW navigation evidence and
+`.planning/graphs/current.json` is its generated CURRENT projection. Formal
+search, validation, holdout, candidate promotion, cross-sprint memory and 2026
+forward access remain frozen pending separate authorization.

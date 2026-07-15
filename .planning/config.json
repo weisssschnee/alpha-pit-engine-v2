@@ -3,10 +3,7 @@
   "granularity": "standard",
   "graphify": {
     "enabled": true,
-    "raw_output_dir": ".planning/codegraph",
-    "architecture_registry": ".planning/architecture/architecture_registry.json",
-    "architecture_graph": ".planning/architecture/architecture_graph.json",
-    "architecture_freshness": ".planning/architecture/ARCHITECTURE_FRESHNESS.json",
-    "compatibility_entry": ".planning/graphs/graph.json"
+    "build_timeout": 600,
+    "audit_timeout": 120
   }
 }

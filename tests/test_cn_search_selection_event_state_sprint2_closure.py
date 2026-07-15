@@ -54,18 +54,14 @@ def test_sprint2_joint_analysis_is_research_positive_but_contract_partial() -> N
     }
 
 
-def test_sprint2_graph_contains_selector_generators_epoch_and_frozen_pack() -> None:
-    graph = json.loads((REPO / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8"))
-    nodes = {row["id"]: row for row in graph["nodes"]}
-    links = {(row["source"], row["target"], row["relation"]): row for row in graph["links"]}
+def test_current_graph_keeps_event_capability_and_feedback_boundaries() -> None:
+    current = json.loads(
+        (REPO / ".planning/graphs/current.json").read_text(encoding="utf-8")
+    )
+    nodes = {row["id"]: row for row in current["nodes"]}
+    edges = {row["id"]: row for row in current["edges"]}
 
-    assert graph["graph"]["phase"] == "CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED"
-    assert nodes["sprint2_strict_priority_selector"]["status"] == "IMPLEMENTED"
-    assert nodes["sprint2_event_generator"]["status"] == "DEPRECATED"
-    assert nodes["broad_event_recovery"]["status"] == "IMPLEMENTED"
-    assert nodes["sprint2_state_generator"]["status"] == "PARTIAL"
-    assert nodes["sprint2_rx_ucb"]["status"] == "IMPLEMENTED"
-    assert nodes["sprint2_epoch_c"]["status"] == "PARTIAL"
-    assert nodes["sprint2_research_pack"]["status"] == "FROZEN"
-    assert links[("forward_2026", "sprint2_epoch_c", "forward_to_sprint2_search_policy")]["permission"] == "FORBIDDEN"
-    assert links[("sprint2_research_pack", "scheduler_memory_feedback", "report_only_to_positive_memory")]["permission"] == "FORBIDDEN"
+    assert nodes["broad_event_system"]["lifecycle"] == "ACTIVE"
+    assert "sprint2_epoch_c" not in nodes
+    assert edges["forward_to_memory_forbidden"]["forbidden"] is True
+    assert edges["validation_to_memory_forbidden"]["forbidden"] is True

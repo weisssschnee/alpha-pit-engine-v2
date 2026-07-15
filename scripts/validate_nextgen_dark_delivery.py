@@ -9,12 +9,13 @@ from pathlib import Path
 from typing import Any
 
 
-REQUIRED_NODES = {
-    "nextgen_field_registry_121", "feature_state_fabric", "typed_temporal_program",
-    "nextgen_event_state_system", "pit_group_sidecar", "hypothesis_lane_registry",
-    "chip_pit_sidecar",
-    "admission_diversity", "benchmark_competitor_harness", "coverage_metrics",
-    "atomic_checkpoint_resume", "nextgen_canary_plan", "formal_search_frozen",
+REQUIRED_CURRENT_NODES = {
+    "feature_state_fabric",
+    "typed_temporal_program",
+    "broad_event_system",
+    "hypothesis_lanes",
+    "plate_industry_pit_route",
+    "formal_search",
 }
 
 
@@ -30,14 +31,14 @@ def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
     manifest = json.loads((repo / "runtime/run_plans/nextgen_dark_run_manifest_v1.json").read_text(encoding="utf-8"))
     canary = json.loads((repo / "runtime/run_plans/nextgen_dark_canary_plan_v1.json").read_text(encoding="utf-8"))
     registry = json.loads((repo / "runtime/field_registry/nextgen_dark_field_registry_v2.json").read_text(encoding="utf-8"))
-    graph = json.loads((repo / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8"))
+    graph = json.loads((repo / ".planning/graphs/current.json").read_text(encoding="utf-8"))
     artifact_index = json.loads((repo / "reports/nextgen_dark_20260711/ARTIFACT_INDEX.json").read_text(encoding="utf-8"))
     temporal = json.loads((repo / "runtime/run_plans/nextgen_dark_temporal_registry_v1.json").read_text(encoding="utf-8"))
     events = json.loads((repo / "runtime/run_plans/nextgen_dark_event_registry_v1.json").read_text(encoding="utf-8"))
     lanes = json.loads((repo / "runtime/run_plans/nextgen_dark_hypothesis_lane_registry_v1.json").read_text(encoding="utf-8"))
     benchmarks = json.loads((repo / "runtime/run_plans/nextgen_dark_benchmark_registry_v1.json").read_text(encoding="utf-8"))
     nodes = {node["id"]: node for node in graph["nodes"]}
-    missing_nodes = sorted(REQUIRED_NODES - set(nodes))
+    missing_nodes = sorted(REQUIRED_CURRENT_NODES - set(nodes))
     if missing_nodes:
         raise RuntimeError(f"NEXTGEN graph missing nodes: {missing_nodes}")
     if registry["field_count"] != 121:
@@ -79,10 +80,11 @@ def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
     plate_scope = manifest.get("scope_exclusions", {}).get("plate_industry")
     if plate_scope != "USER_DEFERRED_EXCLUDED_FROM_CLOSURE":
         raise RuntimeError("plate/industry scope must be explicitly excluded from closure")
-    if nodes["pit_group_sidecar"]["status"] != "FROZEN":
-        raise RuntimeError("deferred PIT group node must remain frozen")
-    if nodes["pit_group_sidecar"]["feedback_permission"] != "FORBIDDEN_USER_DEFERRED":
-        raise RuntimeError("deferred PIT group node cannot feed NEXTGEN candidates")
+    if nodes["plate_industry_pit_route"]["lifecycle"] != "FORBIDDEN":
+        raise RuntimeError("deferred PIT group route must remain forbidden")
+    edges = {row["id"]: row for row in graph["edges"]}
+    if not edges["plate_to_lanes_forbidden"]["forbidden"]:
+        raise RuntimeError("deferred PIT group route cannot feed NEXTGEN candidates")
     for row in artifact_index["artifacts"]:
         path = repo / row["path"]
         if row["exists"] != path.is_file():
@@ -92,7 +94,7 @@ def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
     return {
         "status": manifest["status"],
         "graph_node_count": len(nodes),
-        "graph_edge_count": len(graph["links"]),
+        "graph_edge_count": len(graph["edges"]),
         "field_count": registry["field_count"],
         "temporal_primitive_count": temporal["primitive_count"],
         "event_feature_count": events["feature_count"],

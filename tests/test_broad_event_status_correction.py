@@ -37,11 +37,8 @@ def test_active_architecture_does_not_repeat_retracted_event_denial() -> None:
     retracted = "EVENT_" + "GENERATOR_NOT_OPERATIONAL"
     active_assets = [
         ".planning/STATE.md",
-        ".planning/architecture/CURRENT_ARCHITECTURE.md",
-        ".planning/architecture/ARCHITECTURE_BOUNDARY.md",
-        ".planning/architecture/EVOLUTION_MAP.md",
-        ".planning/architecture/architecture_graph.json",
-        ".planning/architecture/architecture_registry.json",
+        ".planning/graphs/current.json",
+        "config/architecture_overlay.json",
         "reports/cn_search_selection_event_state_sprint2_20260713/DECISION_CHANGE_LOG.md",
         "reports/cn_broad_event_recovery_20260713/DECISION_CHANGE_LOG.md",
     ]
@@ -49,20 +46,18 @@ def test_active_architecture_does_not_repeat_retracted_event_denial() -> None:
         assert retracted not in (REPO / relative).read_text(encoding="utf-8"), relative
 
 
-def test_graph_records_legacy_path_and_completed_broad_recovery_separately() -> None:
-    graph = json.loads((REPO / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8"))
-    nodes = {row["id"]: row for row in graph["nodes"]}
-    links = {(row["source"], row["target"], row["relation"]): row for row in graph["links"]}
+def test_current_architecture_keeps_broad_event_active_and_forward_sealed() -> None:
+    current = json.loads(
+        (REPO / ".planning/graphs/current.json").read_text(encoding="utf-8")
+    )
+    nodes = {row["id"]: row for row in current["nodes"]}
+    edges = {row["id"]: row for row in current["edges"]}
 
-    assert graph["graph"]["phase"] == "CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED"
-    assert nodes["sprint2_event_generator"]["status"] == "DEPRECATED"
-    assert nodes["broad_event_recovery"]["status"] == "IMPLEMENTED"
-    assert links[
-        ("sprint2_event_generator", "broad_event_recovery", "superseded_by_semantic_recovery")
-    ]["permission"] == "ALLOWED"
-    assert links[("forward_2026", "broad_event_recovery", "forward_to_broad_event_policy")][
-        "permission"
-    ] == "FORBIDDEN"
+    assert current["kind"] == "current-architecture"
+    assert nodes["broad_event_system"]["lifecycle"] == "ACTIVE"
+    assert "sprint2_event_generator" not in nodes
+    assert edges["forward_to_search_forbidden"]["lifecycle"] == "FORBIDDEN"
+    assert edges["forward_to_search_forbidden"]["forbidden"] is True
 
 
 def test_broad_event_closure_preserves_boundaries_and_reproducible_entry_pack() -> None:

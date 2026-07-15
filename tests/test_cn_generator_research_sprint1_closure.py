@@ -61,17 +61,14 @@ def test_sprint1_epoch_a_closure_records_partial_result_without_forward_pack() -
     assert result["boundaries"]["forward_2026_sealed"] is True
 
 
-def test_current_graph_preserves_sprint1_and_projects_sprint2_nodes() -> None:
-    graph = json.loads((REPO / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8"))
-    nodes = {row["id"]: row for row in graph["nodes"]}
-
-    assert graph["graph"]["phase"] == "CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED"
-    assert graph["graph"]["graph_type"] == (
-        "CN_RUNTIME_AUTHORITY_AND_SPLIT_CURRENT_ARCHITECTURE_CONTRACT"
+def test_current_graph_keeps_live_boundaries_not_historical_sprint_nodes() -> None:
+    current = json.loads(
+        (REPO / ".planning/graphs/current.json").read_text(encoding="utf-8")
     )
-    assert nodes["development_only_release"]["status"] == "IMPLEMENTED"
-    assert nodes["formal_b1s_canary"]["status"] == "IMPLEMENTED"
-    assert nodes["generator_research_sprint1"]["status"] == "PARTIAL"
-    assert nodes["sprint2_epoch_c"]["status"] == "PARTIAL"
-    assert nodes["sprint2_research_pack"]["status"] == "FROZEN"
-    assert nodes["formal_search_frozen"]["status"] == "FROZEN"
+    nodes = {row["id"]: row for row in current["nodes"]}
+
+    assert current["kind"] == "current-architecture"
+    assert nodes["development_data"]["lifecycle"] == "ACTIVE"
+    assert nodes["formal_search"]["lifecycle"] == "FORBIDDEN"
+    assert "generator_research_sprint1" not in nodes
+    assert "sprint2_epoch_c" not in nodes

@@ -4,62 +4,81 @@ import hashlib
 import json
 from pathlib import Path
 
-from scripts.check_architecture_freshness import check_freshness
-
 
 REPO = Path(__file__).resolve().parents[1]
-RAW_SHA = "ea31ce4dc9053547330ac1a06c4403765ede222d"
+GRAPHS = REPO / ".planning/graphs"
 
 
-def test_status_authority_and_graph_namespaces_are_separate() -> None:
-    registry = json.loads(
-        (REPO / ".planning/architecture/architecture_registry.json").read_text(encoding="utf-8")
-    )
-    graph = json.loads(
-        (REPO / ".planning/architecture/architecture_graph.json").read_text(encoding="utf-8")
-    )
-    compatibility = json.loads(
-        (REPO / ".planning/graphs/graph.json").read_text(encoding="utf-8")
-    )
-
-    assert registry["authority_contract"]["status_authority"] == ".planning/architecture/architecture_registry.json"
-    assert registry["authority_contract"]["raw_codegraph_may_assert_research_status"] is False
-    assert graph["graph"]["status_authority_path"] == registry["authority_contract"]["status_authority"]
-    assert compatibility["kind"] == "DEPRECATED_COMPATIBILITY_POINTER"
-    assert compatibility["may_assert_current_status"] is False
+def _load(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def test_sha_bound_raw_codegraph_manifest_and_artifacts_are_intact() -> None:
-    root = REPO / ".planning/codegraph"
-    manifest = json.loads(
-        (root / f"CODEGRAPH_BUILD_MANIFEST_{RAW_SHA}.json").read_text(encoding="utf-8-sig")
-    )
-    assert manifest["source_repo_full_sha"] == RAW_SHA
-    assert manifest["node_count"] == 3563
-    assert manifest["edge_count"] == 8633
-    assert manifest["extraction_mode"] == "AST_CODE_ONLY_NO_LLM"
-    assert manifest["excluded_generated_paths"] == [".planning/codegraph"]
-    assert manifest["research_data_reads"] == 0
-    assert manifest["validation_reads"] == 0
-    assert manifest["holdout_reads"] == 0
-    assert manifest["forward_2026_reads"] == 0
-    expected = {
-        f"codegraph_{RAW_SHA}.json",
-        f"codegraph_{RAW_SHA}.html",
-        f"CODEGRAPH_REPORT_{RAW_SHA}.md",
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+
+
+def test_graphskill_has_one_raw_and_one_current_control_plane() -> None:
+    config = _load(REPO / ".planning/config.json")
+    overlay = _load(REPO / "config/architecture_overlay.json")
+
+    assert config["graphify"] == {
+        "enabled": True,
+        "build_timeout": 600,
+        "audit_timeout": 120,
     }
-    assert {artifact["path"] for artifact in manifest["artifacts"]} == expected
-    for artifact in manifest["artifacts"]:
-        path = root / artifact["path"]
-        assert path.stat().st_size == artifact["size"]
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == artifact["sha256"]
-    snapshot = json.loads((root / f"CODEGRAPH_SNAPSHOT_{RAW_SHA}.json").read_text(encoding="utf-8"))
-    assert len(snapshot["nodes"]) == manifest["node_count"]
-    assert len(snapshot["edges"]) == manifest["edge_count"]
+    assert overlay["schema_version"] == 1
+    assert overlay["schema_ref"].endswith("architecture-overlay.schema.json")
+    assert not (REPO / ".planning/architecture").exists()
+    assert not (REPO / ".planning/codegraph").exists()
+    assert {path.name for path in GRAPHS.iterdir() if path.is_file()} >= {
+        "graph.json",
+        "graph.html",
+        "GRAPH_REPORT.md",
+        "current.json",
+        "current.html",
+        ".last-build-snapshot.json",
+    }
 
 
-def test_architecture_freshness_checks_registry_repo_generator_and_all_views() -> None:
-    report = check_freshness(REPO)
-    assert report["stale"] is False, report
-    assert report["status_authority"] == ".planning/architecture/architecture_registry.json"
-    assert report["derived_artifact_count"] >= 5
+def test_raw_graph_is_real_sha_bound_graphify_output() -> None:
+    graph = _load(GRAPHS / "graph.json")
+    snapshot = _load(GRAPHS / ".last-build-snapshot.json")
+
+    assert graph.get("kind") != "DEPRECATED_COMPATIBILITY_POINTER"
+    assert len(graph["nodes"]) > 3000
+    assert len(graph.get("links", graph.get("edges", []))) > 7000
+    assert len(graph["built_at_commit"]) == 40
+    assert graph["metadata"]["generator"] == "graphify"
+    assert graph["metadata"]["graphify_version"] == "0.9.6"
+    assert graph["metadata"]["extraction_mode"] == "AST_CODE_ONLY_NO_LLM"
+    assert snapshot["raw"]["built_sha"] == graph["built_at_commit"]
+    assert snapshot["raw"]["sha256"] == _sha256(GRAPHS / "graph.json")
+    assert len(snapshot["nodes"]) == len(graph["nodes"])
+
+
+def test_current_is_generated_from_raw_and_overlay_without_runtime_inference() -> None:
+    current = _load(GRAPHS / "current.json")
+    nodes = {row["id"]: row for row in current["nodes"]}
+    edges = {row["id"]: row for row in current["edges"]}
+
+    assert current["kind"] == "current-architecture"
+    assert current["status"] == "INSUFFICIENT_EVIDENCE"
+    assert current["strict_ready"] is False
+    assert current["raw"]["path"] == ".planning/graphs/graph.json"
+    assert current["raw"]["sha256"] == _sha256(GRAPHS / "graph.json")
+    assert current["overlay"]["path"] == "config/architecture_overlay.json"
+    assert current["overlay"]["sha256"] == _sha256(
+        REPO / "config/architecture_overlay.json"
+    )
+    assert current["trace"]["path"] is None
+    assert current["summary"]["runtime_nodes"] == 0
+    assert current["summary"]["runtime_edges"] == 0
+
+    assert nodes["matched_control_pair_authority"]["lifecycle"] == "ACTIVE"
+    assert nodes["candidate_parallel_evaluator"]["lifecycle"] == "ACTIVE"
+    assert nodes["formal_search"]["lifecycle"] == "FORBIDDEN"
+    assert nodes["shard_parallel_evaluation"]["lifecycle"] == "DEPRECATED"
+    assert nodes["mean_shard_reward_fallback"]["lifecycle"] == "FORBIDDEN"
+    assert edges["validation_to_feedback_forbidden"]["forbidden"] is True
+    assert edges["forward_to_search_forbidden"]["forbidden"] is True
+    assert edges["mean_shard_to_feedback_forbidden"]["forbidden"] is True

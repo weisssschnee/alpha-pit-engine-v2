@@ -4,6 +4,11 @@ Updated: 2026-07-15
 
 Current state: `CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED`
 
+Architecture lifecycle authority: `config/architecture_overlay.json`.
+Generated architecture views: `.planning/graphs/graph.json` (RAW) and
+`.planning/graphs/current.json` (CURRENT). Historical graph namespaces are not
+current status authorities.
+
 ## Accepted foundations
 
 - `PHASE_A_EVALRESET_ACCEPTED`

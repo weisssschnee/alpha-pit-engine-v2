@@ -1,8 +1,0 @@
-{
-  "deprecated": true,
-  "kind": "DEPRECATED_COMPATIBILITY_POINTER",
-  "status_authority": "../architecture/architecture_registry.json",
-  "architecture_graph": "../architecture/architecture_graph.json",
-  "codegraph_namespace": "../codegraph/",
-  "may_assert_current_status": false
-}
