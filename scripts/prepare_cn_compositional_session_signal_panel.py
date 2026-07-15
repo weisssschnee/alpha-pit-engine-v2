@@ -28,7 +28,7 @@ if str(SRC) not in sys.path:
 from our_system_phase2.services.compositional_session_signal_panel import (  # noqa: E402
     SESSION_PANEL_VERSION,
     attach_coordinate_row_indices,
-    build_session_coordinate_rows,
+    build_full_session_coordinate_rows,
     field_partition,
 )
 from our_system_phase2.services.fundamental_representations import (  # noqa: E402
@@ -143,8 +143,8 @@ def prepare(args: argparse.Namespace) -> int:
         (str(code), pd.Timestamp(trade_time).normalize())
         for code, trade_time in zip(base["code"], base["trade_time"], strict=True)
     }
-    coordinates = build_session_coordinate_rows(
-        active_coordinates, available_keys=available
+    coordinates = build_full_session_coordinate_rows(
+        active_coordinates, sessions=sessions, available_keys=available
     )
     coordinates = attach_coordinate_row_indices(coordinates, base)
     args.output_root.mkdir(parents=True, exist_ok=True)
