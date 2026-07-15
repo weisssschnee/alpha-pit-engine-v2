@@ -1,0 +1,4 @@
+config/architecture_overlay.json text eol=lf
+.planning/graphs/*.json text eol=lf
+.planning/graphs/*.html text eol=lf
+.planning/graphs/*.md text eol=lf
