@@ -36,13 +36,12 @@ def test_graphskill_has_one_raw_and_one_current_control_plane() -> None:
         "GRAPH_REPORT.md",
         "current.json",
         "current.html",
-        ".last-build-snapshot.json",
     }
+    assert not (GRAPHS / ".last-build-snapshot.json").exists()
 
 
 def test_raw_graph_is_real_sha_bound_graphify_output() -> None:
     graph = _load(GRAPHS / "graph.json")
-    snapshot = _load(GRAPHS / ".last-build-snapshot.json")
 
     assert graph.get("kind") != "DEPRECATED_COMPATIBILITY_POINTER"
     assert isinstance(graph["directed"], bool)
@@ -53,9 +52,6 @@ def test_raw_graph_is_real_sha_bound_graphify_output() -> None:
     assert len(graph["built_at_commit"]) == 40
     assert all("id" in row for row in graph["nodes"][:100])
     assert all("source" in row and "target" in row for row in graph["links"][:100])
-    assert snapshot["raw"]["built_sha"] == graph["built_at_commit"]
-    assert snapshot["raw"]["sha256"] == _sha256(GRAPHS / "graph.json")
-    assert len(snapshot["nodes"]) == len(graph["nodes"])
 
 
 def test_current_is_generated_from_raw_and_overlay_without_runtime_inference() -> None:
