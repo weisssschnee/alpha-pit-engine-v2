@@ -1,0 +1,43 @@
+{
+  "artifacts": [
+    {
+      "bytes": 13386270,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_PROPOSAL_EXPOSURE_LEDGER.parquet",
+      "sha256": "1b61d90bb37f5f6f7421f79d94fcccb73770cd972b937d5a3f687c334835fb02"
+    },
+    {
+      "bytes": 60556271,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_PAIR_RECEIPTS.jsonl",
+      "sha256": "11d3103f6ca5f2fb9f7574a1d84ba4b27435e5223aba084165c6248c160e8de8"
+    },
+    {
+      "bytes": 1752265,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_STRUCTURAL_PREADMISSION.json",
+      "sha256": "9cb735e74a63a5d77b426bf81c9395a6e20774c7b1cf99110143bf4e06df2474"
+    },
+    {
+      "bytes": 841,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_ADMISSION_WATERFALL.csv",
+      "sha256": "d7ab35adaea9d119eaf84f0c849fe26b5eca503cc5d0e7779878ebcb6687d93a"
+    },
+    {
+      "bytes": 5551,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_ROUTE_SKELETON_METRICS.csv",
+      "sha256": "74333872b5124d29f4bb8770aae270fd39a67554dc02e302bfc3856158163c8d"
+    },
+    {
+      "bytes": 1386,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_GENERATION_EPOCH_SUMMARY.json",
+      "sha256": "3e9ae8b0f36da3b07d61d6bfd620c85b8465fc0929efff273a7a7e18000e2b08"
+    }
+  ],
+  "data_roles_accessed": [],
+  "economic_evaluator_accessed": false,
+  "manifest_hash": "88ef035d1ca8cd0cb1044312343ea30e43a555a6bf1921b859c81652aabf1b66",
+  "manifest_version": "cn_compositional_nline_epoch1_generation_manifest_v1",
+  "plan_sha256": "853ff80fd44e3b46ba0b58932123ca9e324c40c6cd4d32a07610a2847921460e",
+  "registry_sha256": "30f35019de7f93923417c5d241a293d7152655d9b37acd7e12a3840ecac7d89d",
+  "repo_sha": "136c3bb615a695944469f34ed162fb665bcad75f",
+  "stage": "GENERATION_AND_STRUCTURAL_PREADMISSION",
+  "tree_sha": "49c3cf9bf3411d49f32b3332e3478d88183e47e2"
+}

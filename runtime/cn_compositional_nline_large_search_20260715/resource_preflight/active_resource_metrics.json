@@ -1,0 +1,9 @@
+﻿{
+    "kind":  "active",
+    "exit_code":  null,
+    "wall_time_seconds":  709.044,
+    "peak_working_set_bytes":  4063232,
+    "cpu_seconds":  0,
+    "stdout":  "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_compositional_nline_large_search_20260715\\resource_preflight\\active_full.stdout.log",
+    "stderr":  "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_compositional_nline_large_search_20260715\\resource_preflight\\active_full.stderr.log"
+}

@@ -1,0 +1,1026 @@
+{
+  "BROAD_EVENT_FROZEN_ENTRY": [
+    {
+      "allowed_routes": [
+        "BROAD_EVENT_FROZEN_ENTRY"
+      ],
+      "clock_contract": "frozen_mechanism_observable_clock",
+      "control_ablation_rule": "registered_matched_control_replay",
+      "financial_hypothesis": "frozen Broad Event mechanism is replayed without structural expansion",
+      "input_roles": [
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "registered frozen episode maturity",
+      "maximum_depth": 2,
+      "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+      "search_role": "FROZEN_REFERENCE_ONLY",
+      "skeleton_id": "cn.comp.v2.broad_event_frozen_entry.frozen_mechanism_reference",
+      "unit_signature": "registered-frozen-signal"
+    }
+  ],
+  "DISCLOSURE_EVENT": [
+    {
+      "allowed_routes": [
+        "DISCLOSURE_EVENT"
+      ],
+      "clock_contract": "episode_observable_time",
+      "control_ablation_rule": "pulse_to_recency",
+      "financial_hypothesis": "new disclosure pulse has immediate information",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "episode maturity plus registered action delay",
+      "maximum_depth": 2,
+      "route_id": "DISCLOSURE_EVENT",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.disclosure_event.event_pulse",
+      "unit_signature": "event-indicator"
+    },
+    {
+      "allowed_routes": [
+        "DISCLOSURE_EVENT"
+      ],
+      "clock_contract": "episode_observable_time",
+      "control_ablation_rule": "age_to_pulse",
+      "financial_hypothesis": "information decays with disclosure age",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "episode maturity plus registered action delay",
+      "maximum_depth": 2,
+      "route_id": "DISCLOSURE_EVENT",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.disclosure_event.event_age",
+      "unit_signature": "episode-age"
+    },
+    {
+      "allowed_routes": [
+        "DISCLOSURE_EVENT"
+      ],
+      "clock_contract": "episode_observable_time",
+      "control_ablation_rule": "remove_pre_event_path",
+      "financial_hypothesis": "pre-event path changes disclosure interpretation",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "episode maturity plus registered action delay",
+      "maximum_depth": 3,
+      "route_id": "DISCLOSURE_EVENT",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.disclosure_event.pre_event_path",
+      "unit_signature": "dimensionless-path"
+    },
+    {
+      "allowed_routes": [
+        "DISCLOSURE_EVENT"
+      ],
+      "clock_contract": "episode_observable_time",
+      "control_ablation_rule": "state_to_recency",
+      "financial_hypothesis": "post-maturity state distinguishes continuation",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "episode maturity plus registered action delay",
+      "maximum_depth": 3,
+      "route_id": "DISCLOSURE_EVENT",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.disclosure_event.post_maturity_state",
+      "unit_signature": "dimensionless-state"
+    },
+    {
+      "allowed_routes": [
+        "DISCLOSURE_EVENT"
+      ],
+      "clock_contract": "episode_observable_time",
+      "control_ablation_rule": "remove_condition_gate",
+      "financial_hypothesis": "prior PIT condition changes event impact",
+      "input_roles": [
+        "PRIMARY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "episode maturity plus registered action delay",
+      "maximum_depth": 4,
+      "route_id": "DISCLOSURE_EVENT",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.disclosure_event.event_prior_condition",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "DISCLOSURE_EVENT"
+      ],
+      "clock_contract": "episode_observable_time",
+      "control_ablation_rule": "count_to_first_event",
+      "financial_hypothesis": "repeated events contain less incremental information",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "episode maturity plus registered action delay",
+      "maximum_depth": 3,
+      "route_id": "DISCLOSURE_EVENT",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.disclosure_event.repeated_event_suppression",
+      "unit_signature": "event-count"
+    },
+    {
+      "allowed_routes": [
+        "DISCLOSURE_EVENT"
+      ],
+      "clock_contract": "episode_observable_time",
+      "control_ablation_rule": "window_to_recency",
+      "financial_hypothesis": "mature event window summarizes episode response",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "episode maturity plus registered action delay",
+      "maximum_depth": 3,
+      "route_id": "DISCLOSURE_EVENT",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.disclosure_event.event_window",
+      "unit_signature": "dimensionless-window"
+    },
+    {
+      "allowed_routes": [
+        "DISCLOSURE_EVENT"
+      ],
+      "clock_contract": "episode_observable_time",
+      "control_ablation_rule": "first_hit_to_recency",
+      "financial_hypothesis": "first event timing differs from repeated occurrence",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "episode maturity plus registered action delay",
+      "maximum_depth": 3,
+      "route_id": "DISCLOSURE_EVENT",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.disclosure_event.event_first_hit",
+      "unit_signature": "episode-position"
+    }
+  ],
+  "FIRSTN_PATH": [
+    {
+      "allowed_routes": [
+        "FIRSTN_PATH"
+      ],
+      "clock_contract": "bar_close_and_firstN_clock",
+      "control_ablation_rule": "remove_subsequent_path",
+      "financial_hypothesis": "opening path and subsequent state interact",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "firstN end timestamp",
+      "maximum_depth": 4,
+      "route_id": "FIRSTN_PATH",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.firstn_path.firstn_path_state",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "FIRSTN_PATH"
+      ],
+      "clock_contract": "bar_close_and_firstN_clock",
+      "control_ablation_rule": "remove_liquidity_leg",
+      "financial_hypothesis": "opening path depends on intraday liquidity",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "firstN end timestamp",
+      "maximum_depth": 4,
+      "route_id": "FIRSTN_PATH",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.firstn_path.opening_path_liquidity",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "FIRSTN_PATH"
+      ],
+      "clock_contract": "bar_close_and_firstN_clock",
+      "control_ablation_rule": "remove_persistence_leg",
+      "financial_hypothesis": "opening imbalance persists through the early session",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "firstN end timestamp",
+      "maximum_depth": 4,
+      "route_id": "FIRSTN_PATH",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.firstn_path.opening_imbalance_persistence",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "FIRSTN_PATH"
+      ],
+      "clock_contract": "bar_close_and_firstN_clock",
+      "control_ablation_rule": "remove_reversal_leg",
+      "financial_hypothesis": "firstN relative strength predicts post-open reversal",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "firstN end timestamp",
+      "maximum_depth": 4,
+      "route_id": "FIRSTN_PATH",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.firstn_path.relative_strength_reversal",
+      "unit_signature": "dimensionless-spread"
+    },
+    {
+      "allowed_routes": [
+        "FIRSTN_PATH"
+      ],
+      "clock_contract": "bar_close_and_firstN_clock",
+      "control_ablation_rule": "replace_acceleration_with_level",
+      "financial_hypothesis": "opening path acceleration contains information beyond level",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "firstN end timestamp",
+      "maximum_depth": 4,
+      "route_id": "FIRSTN_PATH",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.firstn_path.opening_path_acceleration",
+      "unit_signature": "dimensionless"
+    },
+    {
+      "allowed_routes": [
+        "FIRSTN_PATH"
+      ],
+      "clock_contract": "bar_close_and_firstN_clock",
+      "control_ablation_rule": "remove_multiscale_leg",
+      "financial_hypothesis": "short and long opening paths disagree",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "firstN end timestamp",
+      "maximum_depth": 4,
+      "route_id": "FIRSTN_PATH",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.firstn_path.opening_multiscale_relation",
+      "unit_signature": "dimensionless-relation"
+    },
+    {
+      "allowed_routes": [
+        "FIRSTN_PATH"
+      ],
+      "clock_contract": "bar_close_and_firstN_clock",
+      "control_ablation_rule": "remove_residualizer",
+      "financial_hypothesis": "opening state has residual information beyond raw path",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "firstN end timestamp",
+      "maximum_depth": 4,
+      "route_id": "FIRSTN_PATH",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.firstn_path.opening_state_residual",
+      "unit_signature": "dimensionless-residual"
+    },
+    {
+      "allowed_routes": [
+        "FIRSTN_PATH"
+      ],
+      "clock_contract": "bar_close_and_firstN_clock",
+      "control_ablation_rule": "remove_path_sign_gate",
+      "financial_hypothesis": "opening path sign changes subsequent path interpretation",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "firstN end timestamp",
+      "maximum_depth": 4,
+      "route_id": "FIRSTN_PATH",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.firstn_path.conditioned_opening_path",
+      "unit_signature": "dimensionless-gated"
+    }
+  ],
+  "INTRADAY_STATE_TRANSITION": [
+    {
+      "allowed_routes": [
+        "INTRADAY_STATE_TRANSITION"
+      ],
+      "clock_contract": "conservative_bar_observable_transition",
+      "control_ablation_rule": "remove_transition_gate",
+      "financial_hypothesis": "state transition changes payload direction",
+      "input_roles": [
+        "PRIMARY",
+        "STATE_ONLY"
+      ],
+      "maturity_contract": "transition bar close",
+      "maximum_depth": 4,
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.transition_payload",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "INTRADAY_STATE_TRANSITION"
+      ],
+      "clock_contract": "conservative_bar_observable_transition",
+      "control_ablation_rule": "remove_persistence_leg",
+      "financial_hypothesis": "persistent transition differs from a transient one",
+      "input_roles": [
+        "PRIMARY",
+        "STATE_ONLY"
+      ],
+      "maturity_contract": "transition bar close",
+      "maximum_depth": 4,
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.transition_persistence",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "INTRADAY_STATE_TRANSITION"
+      ],
+      "clock_contract": "conservative_bar_observable_transition",
+      "control_ablation_rule": "remove_state_age",
+      "financial_hypothesis": "state age modulates transition response",
+      "input_roles": [
+        "PRIMARY",
+        "STATE_ONLY"
+      ],
+      "maturity_contract": "transition bar close",
+      "maximum_depth": 4,
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.transition_state_age",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "INTRADAY_STATE_TRANSITION"
+      ],
+      "clock_contract": "conservative_bar_observable_transition",
+      "control_ablation_rule": "remove_liquidity_gate",
+      "financial_hypothesis": "liquidity conditions transition response",
+      "input_roles": [
+        "PRIMARY",
+        "STATE_ONLY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "transition bar close",
+      "maximum_depth": 4,
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.transition_liquidity_condition",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "INTRADAY_STATE_TRANSITION"
+      ],
+      "clock_contract": "conservative_bar_observable_transition",
+      "control_ablation_rule": "remove_state_residualizer",
+      "financial_hypothesis": "payload retains information orthogonal to state",
+      "input_roles": [
+        "PRIMARY",
+        "STATE_ONLY"
+      ],
+      "maturity_contract": "transition bar close",
+      "maximum_depth": 4,
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.state_residual",
+      "unit_signature": "dimensionless-residual"
+    },
+    {
+      "allowed_routes": [
+        "INTRADAY_STATE_TRANSITION"
+      ],
+      "clock_contract": "conservative_bar_observable_transition",
+      "control_ablation_rule": "remove_state_gate",
+      "financial_hypothesis": "state conditions the subsequent intraday path",
+      "input_roles": [
+        "PRIMARY",
+        "STATE_ONLY"
+      ],
+      "maturity_contract": "transition bar close",
+      "maximum_depth": 4,
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.conditioned_state_path",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "INTRADAY_STATE_TRANSITION"
+      ],
+      "clock_contract": "conservative_bar_observable_transition",
+      "control_ablation_rule": "remove_duration_leg",
+      "financial_hypothesis": "state duration changes payload interpretation",
+      "input_roles": [
+        "PRIMARY",
+        "STATE_ONLY"
+      ],
+      "maturity_contract": "transition bar close",
+      "maximum_depth": 4,
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.duration_payload",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "INTRADAY_STATE_TRANSITION"
+      ],
+      "clock_contract": "conservative_bar_observable_transition",
+      "control_ablation_rule": "remove_multiscale_leg",
+      "financial_hypothesis": "short and long state responses diverge",
+      "input_roles": [
+        "PRIMARY",
+        "STATE_ONLY"
+      ],
+      "maturity_contract": "transition bar close",
+      "maximum_depth": 4,
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.multiscale_state_response",
+      "unit_signature": "dimensionless-relation"
+    }
+  ],
+  "MARKET_REGIME_CONDITION": [
+    {
+      "allowed_routes": [
+        "MARKET_REGIME_CONDITION"
+      ],
+      "clock_contract": "market_state_observable_at_or_before_payload",
+      "control_ablation_rule": "remove_regime_gate",
+      "financial_hypothesis": "stock payload behaves differently by market regime",
+      "input_roles": [
+        "PRIMARY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "joint payload and regime maturity",
+      "maximum_depth": 4,
+      "route_id": "MARKET_REGIME_CONDITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.market_regime_condition.payload_regime_interaction",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "MARKET_REGIME_CONDITION"
+      ],
+      "clock_contract": "market_state_observable_at_or_before_payload",
+      "control_ablation_rule": "remove_regime_residualizer",
+      "financial_hypothesis": "stock payload residual differs under regime",
+      "input_roles": [
+        "PRIMARY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "joint payload and regime maturity",
+      "maximum_depth": 4,
+      "route_id": "MARKET_REGIME_CONDITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.market_regime_condition.payload_regime_residual",
+      "unit_signature": "dimensionless-residual"
+    },
+    {
+      "allowed_routes": [
+        "MARKET_REGIME_CONDITION"
+      ],
+      "clock_contract": "market_state_observable_at_or_before_payload",
+      "control_ablation_rule": "remove_transition_gate",
+      "financial_hypothesis": "stock response changes at regime transition",
+      "input_roles": [
+        "PRIMARY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "joint payload and regime maturity",
+      "maximum_depth": 4,
+      "route_id": "MARKET_REGIME_CONDITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.market_regime_condition.regime_transition_response",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "MARKET_REGIME_CONDITION"
+      ],
+      "clock_contract": "market_state_observable_at_or_before_payload",
+      "control_ablation_rule": "remove_maturity_gate",
+      "financial_hypothesis": "mature regime state modulates stock payload",
+      "input_roles": [
+        "PRIMARY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "joint payload and regime maturity",
+      "maximum_depth": 4,
+      "route_id": "MARKET_REGIME_CONDITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.market_regime_condition.regime_maturity_payload",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "MARKET_REGIME_CONDITION"
+      ],
+      "clock_contract": "market_state_observable_at_or_before_payload",
+      "control_ablation_rule": "remove_regime_age",
+      "financial_hypothesis": "stock payload varies with regime age",
+      "input_roles": [
+        "PRIMARY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "joint payload and regime maturity",
+      "maximum_depth": 4,
+      "route_id": "MARKET_REGIME_CONDITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.market_regime_condition.regime_age_response",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "MARKET_REGIME_CONDITION"
+      ],
+      "clock_contract": "market_state_observable_at_or_before_payload",
+      "control_ablation_rule": "remove_multiscale_leg",
+      "financial_hypothesis": "short and long payload relation changes by regime",
+      "input_roles": [
+        "PRIMARY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "joint payload and regime maturity",
+      "maximum_depth": 4,
+      "route_id": "MARKET_REGIME_CONDITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.market_regime_condition.regime_multiscale_response",
+      "unit_signature": "dimensionless-relation"
+    },
+    {
+      "allowed_routes": [
+        "MARKET_REGIME_CONDITION"
+      ],
+      "clock_contract": "market_state_observable_at_or_before_payload",
+      "control_ablation_rule": "remove_condition_gate",
+      "financial_hypothesis": "regime conditions the recent stock path",
+      "input_roles": [
+        "PRIMARY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "joint payload and regime maturity",
+      "maximum_depth": 4,
+      "route_id": "MARKET_REGIME_CONDITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.market_regime_condition.regime_conditioned_path",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "MARKET_REGIME_CONDITION"
+      ],
+      "clock_contract": "market_state_observable_at_or_before_payload",
+      "control_ablation_rule": "remove_persistence_gate",
+      "financial_hypothesis": "persistent regime differs from transient state",
+      "input_roles": [
+        "PRIMARY",
+        "CONDITION_ONLY"
+      ],
+      "maturity_contract": "joint payload and regime maturity",
+      "maximum_depth": 4,
+      "route_id": "MARKET_REGIME_CONDITION",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.market_regime_condition.regime_persistence_gate",
+      "unit_signature": "dimensionless-gated"
+    }
+  ],
+  "MINUTE_STATIC": [
+    {
+      "allowed_routes": [
+        "MINUTE_STATIC"
+      ],
+      "clock_contract": "bar_close",
+      "control_ablation_rule": "magnitude_to_sign",
+      "financial_hypothesis": "cross-sectional normalization exposes relative minute state",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "bar_close",
+      "maximum_depth": 3,
+      "route_id": "MINUTE_STATIC",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.minute_static.normalized_level",
+      "unit_signature": "dimensionless"
+    },
+    {
+      "allowed_routes": [
+        "MINUTE_STATIC"
+      ],
+      "clock_contract": "bar_close",
+      "control_ablation_rule": "remove_secondary_spread",
+      "financial_hypothesis": "normalized field spread captures relative dislocation",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "bar_close",
+      "maximum_depth": 4,
+      "route_id": "MINUTE_STATIC",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.minute_static.field_spread",
+      "unit_signature": "dimensionless-minus-dimensionless"
+    },
+    {
+      "allowed_routes": [
+        "MINUTE_STATIC"
+      ],
+      "clock_contract": "bar_close",
+      "control_ablation_rule": "remove_ratio_denominator",
+      "financial_hypothesis": "relative normalized intensity captures imbalance",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "bar_close",
+      "maximum_depth": 4,
+      "route_id": "MINUTE_STATIC",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.minute_static.normalized_ratio",
+      "unit_signature": "dimensionless-ratio"
+    },
+    {
+      "allowed_routes": [
+        "MINUTE_STATIC"
+      ],
+      "clock_contract": "bar_close",
+      "control_ablation_rule": "remove_interaction",
+      "financial_hypothesis": "price and volume state interact nonlinearly",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "bar_close",
+      "maximum_depth": 4,
+      "route_id": "MINUTE_STATIC",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.minute_static.price_volume_interaction",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "MINUTE_STATIC"
+      ],
+      "clock_contract": "bar_close",
+      "control_ablation_rule": "remove_interaction",
+      "financial_hypothesis": "liquidity conditions modulate volatility state",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "bar_close",
+      "maximum_depth": 4,
+      "route_id": "MINUTE_STATIC",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.minute_static.liquidity_volatility_interaction",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "MINUTE_STATIC"
+      ],
+      "clock_contract": "bar_close",
+      "control_ablation_rule": "remove_residualizer",
+      "financial_hypothesis": "one minute field has residual information beyond another",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "bar_close",
+      "maximum_depth": 4,
+      "route_id": "MINUTE_STATIC",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.minute_static.cross_sectional_residual",
+      "unit_signature": "dimensionless-residual"
+    },
+    {
+      "allowed_routes": [
+        "MINUTE_STATIC"
+      ],
+      "clock_contract": "bar_close",
+      "control_ablation_rule": "remove_magnitude_leg",
+      "financial_hypothesis": "magnitude and signed state jointly matter",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "bar_close",
+      "maximum_depth": 4,
+      "route_id": "MINUTE_STATIC",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.minute_static.absolute_state_interaction",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "MINUTE_STATIC"
+      ],
+      "clock_contract": "bar_close",
+      "control_ablation_rule": "remove_dispersion_leg",
+      "financial_hypothesis": "cross-sectional dispersion changes the meaning of level",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "bar_close",
+      "maximum_depth": 4,
+      "route_id": "MINUTE_STATIC",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.minute_static.dispersion_interaction",
+      "unit_signature": "dimensionless-product"
+    }
+  ],
+  "SLOW_CROSS_SECTIONAL_LEVEL": [
+    {
+      "allowed_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL"
+      ],
+      "clock_contract": "latest_PIT_observable_version_before_session",
+      "control_ablation_rule": "magnitude_to_sign",
+      "financial_hypothesis": "PIT fundamental level differentiates firms",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "session_open_after_observable_version",
+      "maximum_depth": 3,
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.fundamental_level",
+      "unit_signature": "nominal-source-unit"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL"
+      ],
+      "clock_contract": "latest_PIT_observable_version_before_session",
+      "control_ablation_rule": "remove_ratio_denominator",
+      "financial_hypothesis": "two normalized fundamental levels form a relative ratio",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "session_open_after_observable_version",
+      "maximum_depth": 4,
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.fundamental_ratio",
+      "unit_signature": "dimensionless-ratio"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL"
+      ],
+      "clock_contract": "latest_PIT_observable_version_before_session",
+      "control_ablation_rule": "remove_size_interaction",
+      "financial_hypothesis": "size changes the interpretation of a fundamental level",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "session_open_after_observable_version",
+      "maximum_depth": 4,
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.fundamental_cap_condition",
+      "unit_signature": "dimensionless-gated"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL"
+      ],
+      "clock_contract": "latest_PIT_observable_version_before_session",
+      "control_ablation_rule": "remove_residualizer",
+      "financial_hypothesis": "fundamental information remains after cross-sectional residualization",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "session_open_after_observable_version",
+      "maximum_depth": 4,
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.fundamental_residual",
+      "unit_signature": "dimensionless-residual"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL"
+      ],
+      "clock_contract": "latest_PIT_observable_version_before_session",
+      "control_ablation_rule": "remove_interaction",
+      "financial_hypothesis": "independent fundamental families interact",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "session_open_after_observable_version",
+      "maximum_depth": 4,
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.cross_family_interaction",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL"
+      ],
+      "clock_contract": "latest_PIT_observable_version_before_session",
+      "control_ablation_rule": "winsorized_to_sign",
+      "financial_hypothesis": "robust level information survives tail control",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "session_open_after_observable_version",
+      "maximum_depth": 3,
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.winsorized_level",
+      "unit_signature": "nominal-source-unit"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL"
+      ],
+      "clock_contract": "latest_PIT_observable_version_before_session",
+      "control_ablation_rule": "masked_level_to_sign",
+      "financial_hypothesis": "coverage-qualified normalized level carries information",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "session_open_after_observable_version",
+      "maximum_depth": 3,
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.masked_normalized_level",
+      "unit_signature": "dimensionless"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_CROSS_SECTIONAL_LEVEL"
+      ],
+      "clock_contract": "latest_PIT_observable_version_before_session",
+      "control_ablation_rule": "remove_size_residualizer",
+      "financial_hypothesis": "fundamental level has information orthogonal to size",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "session_open_after_observable_version",
+      "maximum_depth": 4,
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.size_residual_level",
+      "unit_signature": "dimensionless-residual"
+    }
+  ],
+  "SLOW_TEMPORAL_CHANGE": [
+    {
+      "allowed_routes": [
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "clock_contract": "all_source_versions_observable_before_action",
+      "control_ablation_rule": "change_to_level",
+      "financial_hypothesis": "newly observable level change carries information",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "latest_required_version maturity",
+      "maximum_depth": 3,
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.delta",
+      "unit_signature": "source-unit-change"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "clock_contract": "all_source_versions_observable_before_action",
+      "control_ablation_rule": "slope_to_level",
+      "financial_hypothesis": "persistent direction of disclosed change matters",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "latest_required_version maturity",
+      "maximum_depth": 3,
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.slope",
+      "unit_signature": "source-unit-per-session"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "clock_contract": "all_source_versions_observable_before_action",
+      "control_ablation_rule": "acceleration_to_slope",
+      "financial_hypothesis": "acceleration of disclosed change carries incremental information",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "latest_required_version maturity",
+      "maximum_depth": 4,
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.acceleration",
+      "unit_signature": "source-unit-per-session2"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "clock_contract": "all_source_versions_observable_before_action",
+      "control_ablation_rule": "change_to_sign",
+      "financial_hypothesis": "reported YoY QoQ or TTM change is informative",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "latest_required_version maturity",
+      "maximum_depth": 3,
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.reported_change",
+      "unit_signature": "reported-change-unit"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "clock_contract": "all_source_versions_observable_before_action",
+      "control_ablation_rule": "remove_level_leg",
+      "financial_hypothesis": "change has different meaning conditional on level",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "latest_required_version maturity",
+      "maximum_depth": 4,
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.change_level_interaction",
+      "unit_signature": "dimensionless-product"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "clock_contract": "all_source_versions_observable_before_action",
+      "control_ablation_rule": "remove_short_long_spread",
+      "financial_hypothesis": "short and long change horizons diverge",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "latest_required_version maturity",
+      "maximum_depth": 4,
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.short_long_change",
+      "unit_signature": "dimensionless-spread"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "clock_contract": "all_source_versions_observable_before_action",
+      "control_ablation_rule": "persistence_to_level",
+      "financial_hypothesis": "persistent change differs from a one-off move",
+      "input_roles": [
+        "PRIMARY"
+      ],
+      "maturity_contract": "latest_required_version maturity",
+      "maximum_depth": 3,
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.change_persistence",
+      "unit_signature": "source-unit"
+    },
+    {
+      "allowed_routes": [
+        "SLOW_TEMPORAL_CHANGE"
+      ],
+      "clock_contract": "all_source_versions_observable_before_action",
+      "control_ablation_rule": "remove_interaction",
+      "financial_hypothesis": "changes from independent families interact",
+      "input_roles": [
+        "PRIMARY",
+        "INTERACTION_ONLY"
+      ],
+      "maturity_contract": "latest_required_version maturity",
+      "maximum_depth": 4,
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "search_role": "PRIMARY_SEARCH",
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.cross_change_interaction",
+      "unit_signature": "dimensionless-product"
+    }
+  ]
+}

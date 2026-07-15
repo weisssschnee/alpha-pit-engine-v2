@@ -45,12 +45,14 @@ def test_raw_graph_is_real_sha_bound_graphify_output() -> None:
     snapshot = _load(GRAPHS / ".last-build-snapshot.json")
 
     assert graph.get("kind") != "DEPRECATED_COMPATIBILITY_POINTER"
+    assert graph["directed"] is True
+    assert graph["multigraph"] is True
     assert len(graph["nodes"]) > 3000
-    assert len(graph.get("links", graph.get("edges", []))) > 7000
+    assert len(graph["links"]) > 7000
+    assert len(graph.get("hyperedges", [])) > 0
     assert len(graph["built_at_commit"]) == 40
-    assert graph["metadata"]["generator"] == "graphify"
-    assert graph["metadata"]["graphify_version"] == "0.9.6"
-    assert graph["metadata"]["extraction_mode"] == "AST_CODE_ONLY_NO_LLM"
+    assert all("id" in row for row in graph["nodes"][:100])
+    assert all("source" in row and "target" in row for row in graph["links"][:100])
     assert snapshot["raw"]["built_sha"] == graph["built_at_commit"]
     assert snapshot["raw"]["sha256"] == _sha256(GRAPHS / "graph.json")
     assert len(snapshot["nodes"]) == len(graph["nodes"])
@@ -77,8 +79,10 @@ def test_current_is_generated_from_raw_and_overlay_without_runtime_inference() -
     assert nodes["matched_control_pair_authority"]["lifecycle"] == "ACTIVE"
     assert nodes["candidate_parallel_evaluator"]["lifecycle"] == "ACTIVE"
     assert nodes["formal_search"]["lifecycle"] == "FORBIDDEN"
+    assert nodes["compositional_nline_bounded_search"]["lifecycle"] == "EXPERIMENTAL"
     assert nodes["shard_parallel_evaluation"]["lifecycle"] == "DEPRECATED"
     assert nodes["mean_shard_reward_fallback"]["lifecycle"] == "FORBIDDEN"
     assert edges["validation_to_feedback_forbidden"]["forbidden"] is True
     assert edges["forward_to_search_forbidden"]["forbidden"] is True
     assert edges["mean_shard_to_feedback_forbidden"]["forbidden"] is True
+    assert edges["compositional_to_receipt"]["relation"] == "EXPERIMENTAL_CURRENT_NON_FORMAL"

@@ -1,0 +1,89 @@
+{
+  "created_at": "2026-07-15T20:44:18.113424+00:00",
+  "repo_sha": "b6eb0fc954d2e250a36eb401a2eb8d474bf73240",
+  "reports": [
+    {
+      "bytes": 3264,
+      "path": "reports/cn_compositional_nline_large_search_20260715/CN_COMPOSITIONAL_SEARCH_REPORT.md",
+      "sha256": "425e0128872521e7e8ac5e1723756876b9b8660ad07d6b254b8bd8f144384800"
+    },
+    {
+      "bytes": 887,
+      "path": "reports/cn_compositional_nline_large_search_20260715/CN_COMPOSITIONAL_SEARCH_DECISION.json",
+      "sha256": "ab2ae1b9b406a81ee92a2dc427314f180ebf5bcaa09ec350106dd50e2622dff0"
+    },
+    {
+      "bytes": 908,
+      "path": "reports/cn_compositional_nline_large_search_20260715/CN_FAILURE_ATTRIBUTION_REPORT.md",
+      "sha256": "15497e843f9a14ab11700c0936213f6e8378aeb508a827643b362c5b43d4b858"
+    }
+  ],
+  "runtime": [
+    {
+      "bytes": 38816,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_GENERATOR_EXPRESSIVITY_AUDIT.json",
+      "sha256": "61615bc65a231b71484369032bfbe09f3f8f21a676865c8a55646880d3d29eb4"
+    },
+    {
+      "bytes": 9686,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_TYPED_COMPOSITIONAL_GRAMMAR_V2.json",
+      "sha256": "702b1b5dc4920ec02d18b1356cc179e410437156aa8f704756b02799a7ab2bc7"
+    },
+    {
+      "bytes": 37323,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_SKELETON_REGISTRY.json",
+      "sha256": "d2177bfcfcc38c695f6c5b4f86038c42e30d7f8b3d64f2bddc02d82582533ab1"
+    },
+    {
+      "bytes": 13386270,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_PROPOSAL_EXPOSURE_LEDGER.parquet",
+      "sha256": "1b61d90bb37f5f6f7421f79d94fcccb73770cd972b937d5a3f687c334835fb02"
+    },
+    {
+      "bytes": 1144,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_ADMISSION_WATERFALL.csv",
+      "sha256": "d61c4264361ae6795af05a50b52a4e39df3b3fccc78c1cdb140801f6371225ed"
+    },
+    {
+      "bytes": 60556271,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_PAIR_RECEIPTS.jsonl",
+      "sha256": "11d3103f6ca5f2fb9f7574a1d84ba4b27435e5223aba084165c6248c160e8de8"
+    },
+    {
+      "bytes": 125252,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_STRICT_PAIR_RESULTS.parquet",
+      "sha256": "bcc1b78e0b3f77a6eeb9ff0393f6c946c21c34f9526873ccc2e0f5a6f1942be4"
+    },
+    {
+      "bytes": 5551,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_ROUTE_SKELETON_METRICS.csv",
+      "sha256": "74333872b5124d29f4bb8770aae270fd39a67554dc02e302bfc3856158163c8d"
+    },
+    {
+      "bytes": 7535,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_BEHAVIOR_CLUSTERS.json",
+      "sha256": "9b52888811f154bb06dec8a07cbd856eb6d0b1b9a7b5359ac12679b18695ade5"
+    },
+    {
+      "bytes": 186,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_CROSS_SEED_REPRODUCTION.json",
+      "sha256": "f48789103e00f139abd970d1c60fe48cb59d0ee920fe58936b8db4a9a79114c8"
+    },
+    {
+      "bytes": 567,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_POLICY_BEHAVIOR_AUDIT.json",
+      "sha256": "a901f2227c3d1ab8ded94b96c56b5f36fa858fa48d5c572b76667fc5dfa5a41e"
+    },
+    {
+      "bytes": 6197,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_RESOURCE_PREFLIGHT.json",
+      "sha256": "247186666accf734db76c7afd1722ca9ddd021670b57f5df4955b5b19deaebdc"
+    }
+  ],
+  "sealed_reads": {
+    "forward_2026": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "status": "CN_COMPOSITIONAL_SEARCH_ARTIFACTS_COMPLETE_COMPUTE_BOTTLENECK"
+}

@@ -2,7 +2,7 @@
 
 Updated: 2026-07-15
 
-Current state: `CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED`
+Current state: `CN_COMPOSITIONAL_SEARCH_COMPUTE_BOTTLENECK`
 
 Architecture lifecycle authority: `config/architecture_overlay.json`.
 Generated architecture views: `.planning/graphs/graph.json` (RAW) and
@@ -31,7 +31,44 @@ current status authorities.
 - `CN_FEATURE_RUNTIME_WIRING_MISMATCH_CONFIRMED`
 - `CN_RUNTIME_AUTHORITY_AND_SPLIT_CONVERGENCE_PARTIALLY_REPAIRED`
 - `CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED`
+- `CN_COMPOSITIONAL_SEARCH_COMPUTE_BOTTLENECK`
 - `UNIFIED_DISCOVERY_CHALLENGE_ELIGIBILITY_SUPERSEDED`
+
+## Compositional N-line bounded-search result
+
+The frozen development-only compositional epoch attempted 200,000 proposals
+and produced 28,640 legal exact identities. Structural pre-admission retained
+24,000 candidates. Deterministic signal sketches found 12,375 exact behavior
+identities and 11,978 signal clusters with `N_eff=426.453`; the fixed admission
+contract filled all 12,000 slots. These are diversity and execution results,
+not performance or promotion evidence.
+
+The frozen resource preflight contained 32 matched pairs and 64 evaluator
+calls across all required route families. Thirty pairs completed in the
+sampled/session-level diagnostics and two were support-blocked. Twenty-one
+diagnostic pairs showed positive matched development behavior, but they remain
+`RESOURCE_PREFLIGHT_DIAGNOSTIC_ONLY` and cannot enter Stage A, promotion,
+scheduler credit or cross-sprint memory.
+
+The full-coordinate active evaluator did not complete one fixed pair within
+the 120-minute resource gate. At atomic abort it had used at least 7,200.63
+seconds wall time, 7,212.97 seconds CPU time and 39,006,842,880 bytes peak
+working set while reading 13,796,062,545 bytes and writing no PNL artifacts.
+With a 20 GiB host reserve, the measured safe concurrency is two workers. A
+linear lower-bound projection is 48.671 days for the minimum 2,048-pair run
+and 97.342 days for the intended Stage A active share.
+
+Consequently Stage A strict pairs and strict evaluator calls remain zero. This
+result attributes the stop to the evaluator/materialization cost path; it does
+not establish no-alpha, generator failure or admission failure. The next
+formal decision point is an evaluator rewrite with shared multi-candidate DAG
+execution, bounded caches/reducers and phase timers, followed by the same
+frozen full-coordinate preflight. Formal search remains frozen until that
+evidence exists.
+
+All access counters for validation, holdout and 2026 forward are zero.
+`FORWARD_2026_SEALED`, `NO_CANDIDATE_PROMOTION` and
+`NO_CROSS_SPRINT_ADAPTIVE_MEMORY` remain in force.
 
 ## Runtime authority and split convergence result
 

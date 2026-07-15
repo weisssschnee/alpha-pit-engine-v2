@@ -1,0 +1,17 @@
+{
+    "status":  "ABORTED_AT_RESOURCE_GATE",
+    "reason":  "ONE_PAIR_FULL_COORDINATE_DID_NOT_COMPLETE_WITHIN_120_MINUTES",
+    "resource_gate_seconds":  7200,
+    "wall_time_lower_bound_seconds":  7200.63,
+    "cpu_seconds":  7212.969,
+    "peak_working_set_bytes":  39006842880,
+    "working_set_bytes_at_abort":  35277008896,
+    "read_transfer_bytes":  13796062545,
+    "write_transfer_bytes":  0,
+    "selected_shards_requested":  16,
+    "sample_trade_times_per_shard":  0,
+    "candidate_pairs_requested":  1,
+    "development_release_rows":  446443583,
+    "validation_holdout_forward_read":  false,
+    "command_line":  "\"D:\\ChengboRemote\\python\\cpython-3.11.9-windows-x86_64-none\\python.exe\" -m our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit --candidate-audit runtime\\cn_compositional_nline_large_search_20260715\\preflight_active_candidates.csv --shard-root D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o --output-root runtime\\cn_compositional_nline_large_search_20260715\\resource_preflight\\active_full_coordinate_calibration --report-root runtime\\cn_compositional_nline_large_search_20260715\\resource_preflight\\active_full_coordinate_calibration_report --candidate-limit 1 --max-shards 16 --sample-trade-times-per-shard 0 --no-event-aware-sample-times --horizons 1,5,15,30 --split-manifest runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv --candidate-receipt-table runtime\\cn_compositional_nline_large_search_20260715\\preflight_active_candidate_receipts.jsonl --candidate-pair-receipt-table runtime\\cn_compositional_nline_large_search_20260715\\preflight_active_pair_receipts.jsonl --unified-registry reports\\cn_unified_capability_discovery_20260714\\completed_f8169e1\\registry\\unified_capability_registry.json --data-release-hash cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827 --min-obs-per-time 20 --cost-bps 5 --top-quantile 0.2 --portfolio-mode long_only_top --fast-mode --numexpr-threads 16 --disable-incremental-checkpoints --persistent-cache-mode off --enforce-pair-shared-support"
+}

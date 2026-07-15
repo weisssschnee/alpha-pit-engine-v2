@@ -1,0 +1,37 @@
+{
+  "access_roles": [],
+  "behavior_identity_status": "PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+  "broad_event_new_search_attempts": 0,
+  "economic_evaluator_accessed": false,
+  "failure_counts": {
+    "SEMANTIC_ALIAS_COLLAPSE": 171360
+  },
+  "formal_search_unfrozen": false,
+  "forward_2026_accessed": false,
+  "generation_epoch_version": "cn_compositional_generation_epoch_v1",
+  "holdout_accessed": false,
+  "legal_control_valid_attempts": 200000,
+  "legal_exact_unique_primaries": 28640,
+  "plan_sha256": "853ff80fd44e3b46ba0b58932123ca9e324c40c6cd4d32a07610a2847921460e",
+  "policy_exact_unique_counts": {
+    "diversity_preserving_cem": 7164,
+    "evolutionary_mutation": 7106,
+    "stratified_typed_random": 7245,
+    "uct_ucb_structural_search": 7125
+  },
+  "promotion_allowed": false,
+  "proposal_attempts": 200000,
+  "registry_content_hash": "e4b8bc809ab9ae8e1463aa85c53c13c1710aed6915c967ff806c8906deea886d",
+  "registry_sha256": "30f35019de7f93923417c5d241a293d7152655d9b37acd7e12a3840ecac7d89d",
+  "repo_sha": "136c3bb615a695944469f34ed162fb665bcad75f",
+  "seed_exact_unique_counts": {
+    "1729": 7232,
+    "2718": 7135,
+    "31415": 7202,
+    "65537": 7071
+  },
+  "status": "GENERATION_NATURAL_UNDERFILL",
+  "structural_preadmission_pairs": 24000,
+  "tree_sha": "49c3cf9bf3411d49f32b3332e3478d88183e47e2",
+  "validation_accessed": false
+}

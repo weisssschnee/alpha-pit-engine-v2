@@ -129,6 +129,17 @@
       "paths": ["src/our_system_phase2/services/hypothesis_lanes.py"]
     },
     {
+      "id": "compositional_nline_bounded_search",
+      "label": "Compositional N-line Bounded Search",
+      "kind": "experimental-search",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "runtime/run_plans/cn_compositional_nline_bounded_search_epoch1_v1.json",
+        "src/our_system_phase2/services/compositional_grammar.py",
+        "reports/cn_compositional_nline_large_search_20260715/CN_COMPOSITIONAL_SEARCH_DECISION.json"
+      ]
+    },
+    {
       "id": "candidate_submission_receipt",
       "label": "Candidate submission receipt gate",
       "kind": "admission",
@@ -433,6 +444,7 @@
       "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}
     },
     {"id": "lanes_to_receipt", "source": "hypothesis_lanes", "target": "candidate_submission_receipt", "relation": "submits_candidates", "lifecycle": "ACTIVE"},
+    {"id": "compositional_to_receipt", "source": "compositional_nline_bounded_search", "target": "candidate_submission_receipt", "relation": "EXPERIMENTAL_CURRENT_NON_FORMAL", "lifecycle": "EXPERIMENTAL"},
     {
       "id": "receipt_to_pair",
       "source": "candidate_submission_receipt",

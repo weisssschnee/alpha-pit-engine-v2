@@ -1,0 +1,77 @@
+{
+  "artifacts": [
+    {
+      "bytes": 7666,
+      "path": "CN_RESOURCE_PREFLIGHT_PACK.csv",
+      "sha256": "f78b417c0f4a50751348caa1a78d440fcc08269096cbed667f41ed859b84a294"
+    },
+    {
+      "bytes": 67356,
+      "path": "preflight_active_candidates.csv",
+      "sha256": "3f00632539caa30dc87845756a0bb458b3f7755cdba817779aa2257b2ffa4adc"
+    },
+    {
+      "bytes": 150643,
+      "path": "preflight_active_candidate_receipts.jsonl",
+      "sha256": "b94a08d11df793faf100e72a33c51b9687b182d7902e062cd4f0b5827a09f025"
+    },
+    {
+      "bytes": 55497,
+      "path": "preflight_active_pair_receipts.jsonl",
+      "sha256": "c96066cff75af436a05d33348068d04f557da3b523f2195d700f86e1865786b4"
+    },
+    {
+      "bytes": 51184,
+      "path": "preflight_session_candidates.csv",
+      "sha256": "f726701fb4942a552358ebfa47f5739156f5ea3a0b632d77761e3781e83b6eeb"
+    },
+    {
+      "bytes": 117435,
+      "path": "preflight_session_candidate_receipts.jsonl",
+      "sha256": "ca7521f7232cb9c1b6b125fa21a71014287cf55588435441f676e472eb40dfdc"
+    },
+    {
+      "bytes": 43713,
+      "path": "preflight_session_pair_receipts.jsonl",
+      "sha256": "abcad93f9ae7ffc33886c52175754f753a51c1a77382d34d92f98aea00d12d82"
+    }
+  ],
+  "clock_counts": {
+    "active_bar": 18,
+    "stock_session": 14
+  },
+  "created_at": "2026-07-15T18:30:27.112606+00:00",
+  "data_role": "development",
+  "evaluator_call_count": 64,
+  "pack_identity": "dfb23c7887e3fa2233a3bb096f62f6c0fce583aed2a780bfb2357f5b19a918f3",
+  "pair_count": 32,
+  "policy_counts": {
+    "diversity_preserving_cem": 8,
+    "evolutionary_mutation": 9,
+    "stratified_typed_random": 8,
+    "uct_ucb_structural_search": 7
+  },
+  "registry_hash": "e4b8bc809ab9ae8e1463aa85c53c13c1710aed6915c967ff806c8906deea886d",
+  "release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+  "release_rows": 446443583,
+  "route_quotas": {
+    "DISCLOSURE_EVENT": 4,
+    "FIRSTN_PATH": 5,
+    "INTRADAY_STATE_TRANSITION": 4,
+    "MARKET_REGIME_CONDITION": 4,
+    "MINUTE_STATIC": 5,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 5,
+    "SLOW_TEMPORAL_CHANGE": 5
+  },
+  "seed_counts": {
+    "1729": 7,
+    "2718": 10,
+    "31415": 7,
+    "65537": 8
+  },
+  "selection_used_performance": false,
+  "source_rows_before_role_filter": 598061503,
+  "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "status": "CN_COMPOSITIONAL_RESOURCE_PREFLIGHT_PACK_FROZEN",
+  "validation_holdout_forward_read": false
+}

@@ -1,0 +1,8 @@
+route_id,proposal_attempts,parse_pass,route_type_pass,pit_pass,unit_pass,control_valid,exact_unique,behavior_unique,materialization_pass,support_pass,pair_evaluated,gross_positive,net_positive,matched_positive,pair_native_ready,independent_positive_cluster,cross_seed_reproduced_cluster,diversity_admitted,resource_preflight_pairs,resource_preflight_evaluated,resource_preflight_blocked,resource_preflight_diagnostic_matched_positive
+MINUTE_STATIC,28576,28576,28576,28576,28576,28576,781,533,781,781,0,0,0,0,0,0,0,781,5,5,0,4
+FIRSTN_PATH,28576,28576,28576,28576,28576,28576,9273,2854,4972,3169,0,0,0,0,0,0,0,2743,5,4,1,3
+SLOW_CROSS_SECTIONAL_LEVEL,28576,28576,28576,28576,28576,28576,5015,2032,5015,2432,0,0,0,0,0,0,0,2432,5,4,1,4
+SLOW_TEMPORAL_CHANGE,28576,28576,28576,28576,28576,28576,9310,5444,9310,6314,0,0,0,0,0,0,0,2743,5,5,0,4
+DISCLOSURE_EVENT,28576,28576,28576,28576,28576,28576,40,13,40,18,0,0,0,0,0,0,0,18,4,4,0,3
+MARKET_REGIME_CONDITION,28576,28576,28576,28576,28576,28576,3681,1166,3342,3160,0,0,0,0,0,0,0,2743,4,4,0,1
+INTRADAY_STATE_TRANSITION,28544,28544,28544,28544,28544,28544,540,364,540,540,0,0,0,0,0,0,0,540,4,4,0,2

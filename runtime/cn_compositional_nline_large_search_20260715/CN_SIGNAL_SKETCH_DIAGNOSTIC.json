@@ -1,0 +1,101 @@
+{
+  "clock_summaries": {
+    "active_bar": {
+      "ab_stability": {
+        "adjusted_rand_index": 0.91416047,
+        "normalized_mutual_information": 0.97072855,
+        "top1_share_absolute_difference": 0.00679738
+      },
+      "candidate_count": 9635,
+      "clock_namespace": "active_bar",
+      "consensus": {
+        "cluster_count": 4610,
+        "n_eff": 95.22201793,
+        "top1_share": 0.0951634,
+        "top3_share": 0.13333333
+      },
+      "coverage_limited_count": 1985,
+      "coverage_qualified_count": 7650,
+      "exact_behavior_identity_count": 4906,
+      "fidelity": {
+        "A": {
+          "boundary_misclassification_rate": 0.0,
+          "boundary_pair_count": 22,
+          "cluster_pair_purity": 0.99612403,
+          "evaluated_pair_count": 50000,
+          "sampled_candidate_count": 342,
+          "sketch_exact_correlation": 0.99996562
+        },
+        "B": {
+          "boundary_misclassification_rate": 0.0,
+          "boundary_pair_count": 30,
+          "cluster_pair_purity": 0.996633,
+          "evaluated_pair_count": 50000,
+          "sampled_candidate_count": 342,
+          "sketch_exact_correlation": 0.99993328
+        }
+      },
+      "fidelity_gates": {
+        "all_pass": true,
+        "boundary_misclassification": true,
+        "cluster_pair_purity": true,
+        "coordinate_ari": true,
+        "coordinate_nmi": true,
+        "sketch_exact_correlation": true,
+        "top1_stability": true
+      },
+      "joint_finite_min": 183
+    },
+    "stock_session": {
+      "ab_stability": {
+        "adjusted_rand_index": 0.93002382,
+        "normalized_mutual_information": 0.99704921,
+        "top1_share_absolute_difference": 0.0
+      },
+      "candidate_count": 14365,
+      "clock_namespace": "stock_session",
+      "consensus": {
+        "cluster_count": 7368,
+        "n_eff": 4471.28280359,
+        "top1_share": 0.00821543,
+        "top3_share": 0.01004108
+      },
+      "coverage_limited_count": 5601,
+      "coverage_qualified_count": 8764,
+      "exact_behavior_identity_count": 7469,
+      "fidelity": {
+        "A": {
+          "boundary_misclassification_rate": 0.0,
+          "boundary_pair_count": 6,
+          "cluster_pair_purity": 1.0,
+          "evaluated_pair_count": 29150,
+          "sampled_candidate_count": 242,
+          "sketch_exact_correlation": 0.99996299
+        },
+        "B": {
+          "boundary_misclassification_rate": 0.0,
+          "boundary_pair_count": 6,
+          "cluster_pair_purity": 1.0,
+          "evaluated_pair_count": 29150,
+          "sampled_candidate_count": 242,
+          "sketch_exact_correlation": 0.99996824
+        }
+      },
+      "fidelity_gates": {
+        "all_pass": true,
+        "boundary_misclassification": true,
+        "cluster_pair_purity": true,
+        "coordinate_ari": true,
+        "coordinate_nmi": true,
+        "sketch_exact_correlation": true,
+        "top1_stability": true
+      },
+      "joint_finite_min": 144
+    }
+  },
+  "created_at": "2026-07-15T17:33:56.208922+00:00",
+  "data_role": "development",
+  "labels_or_returns_used": false,
+  "status": "SIGNAL_SKETCH_DIAGNOSTIC_COMPLETE_ADMISSION_GATE_PENDING",
+  "validation_holdout_forward_read": false
+}

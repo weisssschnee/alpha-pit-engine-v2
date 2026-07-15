@@ -1,0 +1,135 @@
+{
+  "bottleneck": {
+    "category": "COMPUTE_OR_IO_BOTTLENECK",
+    "primary": "Full-coordinate minute materialization and full-series expression caching do not qualify for the minimum 2048-pair budget.",
+    "required_fix": "Bounded streaming multi-candidate DAG materialization with reusable field blocks and bounded expression caches, followed by a repeated full-coordinate representative preflight."
+  },
+  "created_at": "2026-07-15T20:44:18.112334+00:00",
+  "data_role": "development_train_only",
+  "diagnostic_positive_results_are_alpha_claims": false,
+  "final_search_status": "CN_COMPOSITIONAL_SEARCH_COMPUTE_BOTTLENECK",
+  "forward_2026_accessed": false,
+  "full_coordinate_calibration": {
+    "command_line": "\"D:\\ChengboRemote\\python\\cpython-3.11.9-windows-x86_64-none\\python.exe\" -m our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit --candidate-audit runtime\\cn_compositional_nline_large_search_20260715\\preflight_active_candidates.csv --shard-root D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o --output-root runtime\\cn_compositional_nline_large_search_20260715\\resource_preflight\\active_full_coordinate_calibration --report-root runtime\\cn_compositional_nline_large_search_20260715\\resource_preflight\\active_full_coordinate_calibration_report --candidate-limit 1 --max-shards 16 --sample-trade-times-per-shard 0 --no-event-aware-sample-times --horizons 1,5,15,30 --split-manifest runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv --candidate-receipt-table runtime\\cn_compositional_nline_large_search_20260715\\preflight_active_candidate_receipts.jsonl --candidate-pair-receipt-table runtime\\cn_compositional_nline_large_search_20260715\\preflight_active_pair_receipts.jsonl --unified-registry reports\\cn_unified_capability_discovery_20260714\\completed_f8169e1\\registry\\unified_capability_registry.json --data-release-hash cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827 --min-obs-per-time 20 --cost-bps 5 --top-quantile 0.2 --portfolio-mode long_only_top --fast-mode --numexpr-threads 16 --disable-incremental-checkpoints --persistent-cache-mode off --enforce-pair-shared-support",
+    "cpu_seconds": 7212.969,
+    "development_release_rows": 446443583,
+    "evaluated": 0,
+    "pairs_requested": 1,
+    "peak_working_set_bytes": 39006842880,
+    "phase_timing": {
+      "evaluator_time_seconds": null,
+      "materialization_time_seconds": null,
+      "remediation": "Add separate panel-read, expression-materialization, portfolio and bootstrap timers before repeating preflight.",
+      "status": "UNAVAILABLE_IN_CURRENT_PHASE3CM_TELEMETRY"
+    },
+    "read_transfer_bytes": 13796062545,
+    "reason": "ONE_PAIR_FULL_COORDINATE_DID_NOT_COMPLETE_WITHIN_120_MINUTES",
+    "rows_completed": null,
+    "sample_trade_times_per_shard": 0,
+    "selected_shards_requested": 16,
+    "status": "ABORTED_AT_RESOURCE_GATE",
+    "wall_time_lower_bound_seconds": 7200.63,
+    "write_transfer_bytes": 0
+  },
+  "holdout_accessed": false,
+  "host": {
+    "logical_processors": 32,
+    "reserve_memory_bytes": 21474836480,
+    "safe_worker_count": 2,
+    "total_memory_bytes": 100265193472
+  },
+  "preflight": {
+    "active_sampled": {
+      "blocked": 1,
+      "evaluated": 17,
+      "pairs": 18,
+      "peak_working_set_bytes": 3946074112,
+      "rows": 524440,
+      "sample_trade_times_per_shard": 240,
+      "wall_time_seconds": 709.044
+    },
+    "frozen_evaluator_calls": 64,
+    "frozen_pairs": 32,
+    "pair_results": {
+      "blocked_pairs": 2,
+      "by_route": {
+        "DISCLOSURE_EVENT": {
+          "blocked": 0,
+          "diagnostic_matched_positive": 3,
+          "evaluated": 4,
+          "pair_rows": 4
+        },
+        "FIRSTN_PATH": {
+          "blocked": 1,
+          "diagnostic_matched_positive": 3,
+          "evaluated": 4,
+          "pair_rows": 5
+        },
+        "INTRADAY_STATE_TRANSITION": {
+          "blocked": 0,
+          "diagnostic_matched_positive": 2,
+          "evaluated": 4,
+          "pair_rows": 4
+        },
+        "MARKET_REGIME_CONDITION": {
+          "blocked": 0,
+          "diagnostic_matched_positive": 1,
+          "evaluated": 4,
+          "pair_rows": 4
+        },
+        "MINUTE_STATIC": {
+          "blocked": 0,
+          "diagnostic_matched_positive": 4,
+          "evaluated": 5,
+          "pair_rows": 5
+        },
+        "SLOW_CROSS_SECTIONAL_LEVEL": {
+          "blocked": 1,
+          "diagnostic_matched_positive": 4,
+          "evaluated": 4,
+          "pair_rows": 5
+        },
+        "SLOW_TEMPORAL_CHANGE": {
+          "blocked": 0,
+          "diagnostic_matched_positive": 4,
+          "evaluated": 5,
+          "pair_rows": 5
+        }
+      },
+      "diagnostic_matched_positive_behavior_identities": 21,
+      "diagnostic_matched_positive_pairs": 21,
+      "evaluated_pairs": 30,
+      "pair_rows": 32
+    },
+    "session_full": {
+      "blocked": 1,
+      "evaluated": 13,
+      "pairs": 14,
+      "peak_working_set_bytes": 1675321344,
+      "rows": 516628,
+      "sample_trade_times_per_shard": 0,
+      "wall_time_seconds": 333.634
+    }
+  },
+  "projections": {
+    "caveat": "The one-pair calibration did not finish before the 120-minute gate, so projected wall times are lower bounds. Shared reads can reduce wall time, but current unbounded full-series expression caching prevents assuming that economy at 2048-pair scale.",
+    "method": "ONE_PAIR_FULL_COORDINATE_RESOURCE_GATE_LOWER_BOUND_LINEAR_PROJECTION",
+    "minimum_2048_pair_run_active_share": {
+      "active_pairs": 1168,
+      "linear_wall_days": 48.671,
+      "linear_wall_hours": 1168.102,
+      "linear_wall_seconds": 4205167.92,
+      "workers": 2
+    },
+    "stage_a_active_share": {
+      "active_pairs": 2336,
+      "linear_wall_days": 97.342,
+      "linear_wall_hours": 2336.204,
+      "linear_wall_seconds": 8410335.84,
+      "workers": 2
+    }
+  },
+  "status": "COMPUTE_OR_MATERIALIZATION_BOTTLENECK",
+  "strict_stage_a": "NOT_EXECUTED_COMPUTE_BOTTLENECK",
+  "validation_accessed": false
+}

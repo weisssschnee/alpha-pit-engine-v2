@@ -1,0 +1,1041 @@
+{
+  "audit_scope": "STRUCTURAL_COMPILE_ONLY",
+  "audit_version": "cn_generator_expressivity_audit_v2",
+  "behavior_identity_claim_ceiling": "AST_AND_COMPILE_RESULTS_CANNOT_PROVE_SIGNAL_BEHAVIOR_IDENTITY",
+  "behavior_identity_status": "NOT_EVALUATED",
+  "data_roles_accessed": [],
+  "economic_evaluator_accessed": false,
+  "generators": {
+    "compositional_v2": {
+      "attempts": 100000,
+      "generator_expressivity_bottleneck_observed": true,
+      "route_allocation": {
+        "BROAD_EVENT_FROZEN_ENTRY": 12500,
+        "DISCLOSURE_EVENT": 12500,
+        "FIRSTN_PATH": 12500,
+        "INTRADAY_STATE_TRANSITION": 12500,
+        "MARKET_REGIME_CONDITION": 12500,
+        "MINUTE_STATIC": 12500,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 12500,
+        "SLOW_TEMPORAL_CHANGE": 12500
+      },
+      "routes": {
+        "BROAD_EVENT_FROZEN_ENTRY": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 11,
+          "condition_field_coverage_count": 11,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 1,
+          "exact_identity_count": 11,
+          "expressivity_bottleneck": false,
+          "expressivity_bottleneck_reasons": [],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "1": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 1,
+          "median_field_arity": 1.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 1,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "FrozenMechanismReplay"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "FROZEN_REFERENCE_ONLY",
+          "source_family_coverage": [
+            "broad_event_frozen_entry"
+          ],
+          "template_level_collision_rate": 0.99912,
+          "top_operator_path_share": 1.0,
+          "window_coverage": []
+        },
+        "DISCLOSURE_EVENT": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 40,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 8,
+          "exact_identity_count": 40,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "MEDIAN_FIELD_ARITY_LE_2"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "1": 10938,
+            "2": 1562
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 3,
+          "median_field_arity": 1.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 6,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "Add",
+            "EventCount",
+            "EventWindow",
+            "FirstHit",
+            "Mul",
+            "SafeDiv",
+            "Sign",
+            "TimeSince"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "canonical_fundamental_disclosure_timing_staleness"
+          ],
+          "template_level_collision_rate": 0.9968,
+          "top_operator_path_share": 0.37504,
+          "window_coverage": [
+            "0",
+            "1",
+            "5",
+            "20"
+          ]
+        },
+        "FIRSTN_PATH": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 7013,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 8,
+          "exact_identity_count": 7013,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "MEDIAN_FIELD_ARITY_LE_2"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "2": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 4,
+          "median_field_arity": 2.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 8,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "Acceleration",
+            "CSRank",
+            "CSResidual",
+            "Delta",
+            "Mul",
+            "MultiScaleRelation",
+            "PathShape",
+            "Persistence",
+            "Positive",
+            "Sign",
+            "Sub",
+            "ZScore"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "firstN",
+            "raw_1min"
+          ],
+          "template_level_collision_rate": 0.43896,
+          "top_operator_path_share": 0.12504,
+          "window_coverage": [
+            "3",
+            "5",
+            "10",
+            "20"
+          ]
+        },
+        "INTRADAY_STATE_TRANSITION": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 540,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 8,
+          "exact_identity_count": 540,
+          "expressivity_bottleneck": false,
+          "expressivity_bottleneck_reasons": [],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "3": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 4,
+          "median_field_arity": 3.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 8,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "CSRank",
+            "CSResidual",
+            "Delta",
+            "Duration",
+            "Mul",
+            "MultiScaleRelation",
+            "PathShape",
+            "Persistence",
+            "Positive",
+            "Sign",
+            "StateAge",
+            "Transition",
+            "ZScore"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "intraday_derived_state",
+            "raw_1min"
+          ],
+          "template_level_collision_rate": 0.9568,
+          "top_operator_path_share": 0.12504,
+          "window_coverage": [
+            "3",
+            "5",
+            "10",
+            "20"
+          ]
+        },
+        "MARKET_REGIME_CONDITION": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 3378,
+          "condition_field_coverage_count": 16,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 8,
+          "exact_identity_count": 3378,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "MEDIAN_FIELD_ARITY_LE_2"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "2": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 4,
+          "median_field_arity": 2.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 8,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "Add",
+            "CSRank",
+            "Delta",
+            "Mul",
+            "MultiScaleRelation",
+            "PathShape",
+            "Persistence",
+            "Positive",
+            "Sign",
+            "StateAge",
+            "Sub",
+            "Transition",
+            "ZScore"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "lagged_daily_context",
+            "raw_1min"
+          ],
+          "template_level_collision_rate": 0.72976,
+          "top_operator_path_share": 0.12504,
+          "window_coverage": [
+            "3",
+            "5",
+            "10",
+            "20"
+          ]
+        },
+        "MINUTE_STATIC": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 781,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 8,
+          "exact_identity_count": 781,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "MEDIAN_FIELD_ARITY_LE_2"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "1": 1563,
+            "2": 10937
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 4,
+          "median_field_arity": 2.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 8,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "Abs",
+            "CSRank",
+            "CSResidual",
+            "Mul",
+            "SafeDiv",
+            "Sign",
+            "Sub",
+            "ZScore"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "raw_1min"
+          ],
+          "template_level_collision_rate": 0.93752,
+          "top_operator_path_share": 0.12504,
+          "window_coverage": []
+        },
+        "SLOW_CROSS_SECTIONAL_LEVEL": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 3542,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 8,
+          "exact_identity_count": 3542,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "MEDIAN_FIELD_ARITY_LE_2"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "1": 4687,
+            "2": 7813
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 3,
+          "median_field_arity": 2.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 8,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "CSRank",
+            "CSResidual",
+            "MaskedZScore",
+            "Mul",
+            "SafeDiv",
+            "Sign",
+            "Sub",
+            "Winsorize",
+            "ZScore"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "canonical_fundamental_accruals",
+            "canonical_fundamental_capital_investment",
+            "canonical_fundamental_cashflow_quality",
+            "canonical_fundamental_leverage",
+            "canonical_fundamental_liquidity_solvency",
+            "canonical_fundamental_operating_efficiency",
+            "canonical_fundamental_profitability",
+            "canonical_fundamental_shareholder_structure",
+            "canonical_fundamental_working_capital",
+            "lagged_daily_context"
+          ],
+          "template_level_collision_rate": 0.71664,
+          "top_operator_path_share": 0.12504,
+          "window_coverage": []
+        },
+        "SLOW_TEMPORAL_CHANGE": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 5433,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 8,
+          "exact_identity_count": 5433,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "MEDIAN_FIELD_ARITY_LE_2"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "1": 9376,
+            "2": 3124
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 4,
+          "median_field_arity": 1.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 8,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "Acceleration",
+            "CSRank",
+            "Delta",
+            "Mul",
+            "Persistence",
+            "Positive",
+            "Slope",
+            "Sub",
+            "ZScore"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "canonical_fundamental_capital_investment",
+            "canonical_fundamental_cashflow_quality",
+            "canonical_fundamental_growth",
+            "canonical_fundamental_leverage",
+            "canonical_fundamental_liquidity_solvency",
+            "canonical_fundamental_profitability",
+            "canonical_fundamental_shareholder_structure",
+            "canonical_fundamental_size",
+            "canonical_fundamental_working_capital",
+            "lagged_daily_context"
+          ],
+          "template_level_collision_rate": 0.56536,
+          "top_operator_path_share": 0.12504,
+          "window_coverage": [
+            "2",
+            "3",
+            "5",
+            "10"
+          ]
+        }
+      }
+    },
+    "legacy_registry_v1": {
+      "attempts": 100000,
+      "generator_expressivity_bottleneck_observed": true,
+      "route_allocation": {
+        "BROAD_EVENT_FROZEN_ENTRY": 12500,
+        "DISCLOSURE_EVENT": 12500,
+        "FIRSTN_PATH": 12500,
+        "INTRADAY_STATE_TRANSITION": 12500,
+        "MARKET_REGIME_CONDITION": 12500,
+        "MINUTE_STATIC": 12500,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 12500,
+        "SLOW_TEMPORAL_CHANGE": 12500
+      },
+      "routes": {
+        "BROAD_EVENT_FROZEN_ENTRY": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 11,
+          "condition_field_coverage_count": 4,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 1,
+          "exact_identity_count": 11,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "DISTINCT_SKELETONS_LT_8",
+            "MEDIAN_FIELD_ARITY_LE_2",
+            "TOP_OPERATOR_PATH_SHARE_GE_0_95"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "1": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 1,
+          "median_field_arity": 1.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 1,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "FrozenMechanismReplay"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "broad_event_frozen_entry"
+          ],
+          "template_level_collision_rate": 0.99912,
+          "top_operator_path_share": 1.0,
+          "window_coverage": []
+        },
+        "DISCLOSURE_EVENT": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 4,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 1,
+          "exact_identity_count": 4,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "DISTINCT_SKELETONS_LT_8",
+            "MEDIAN_FIELD_ARITY_LE_2",
+            "TOP_OPERATOR_PATH_SHARE_GE_0_95"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "1": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 1,
+          "median_field_arity": 1.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 1,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "EventCount"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "canonical_fundamental_disclosure_timing_staleness"
+          ],
+          "template_level_collision_rate": 0.99968,
+          "top_operator_path_share": 1.0,
+          "window_coverage": [
+            "5"
+          ]
+        },
+        "FIRSTN_PATH": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 330,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 1,
+          "exact_identity_count": 330,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "DISTINCT_SKELETONS_LT_8",
+            "MEDIAN_FIELD_ARITY_LE_2",
+            "TOP_OPERATOR_PATH_SHARE_GE_0_95"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "2": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 4,
+          "median_field_arity": 2.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 1,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "Add",
+            "CSRank",
+            "Delta",
+            "Sign"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "firstN",
+            "raw_1min"
+          ],
+          "template_level_collision_rate": 0.9736,
+          "top_operator_path_share": 1.0,
+          "window_coverage": [
+            "5"
+          ]
+        },
+        "INTRADAY_STATE_TRANSITION": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 33,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 6,
+          "exact_identity_count": 33,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "DISTINCT_SKELETONS_LT_8"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "3": 8334,
+            "5": 4166
+          },
+          "field_substitution_rate": 0.90909091,
+          "maximum_expression_depth": 6,
+          "median_field_arity": 3.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 2,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "Add",
+            "CSRank",
+            "Delta",
+            "Mul",
+            "Sign",
+            "Sub",
+            "Transition"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "intraday_derived_state",
+            "raw_1min"
+          ],
+          "template_level_collision_rate": 0.99736,
+          "top_operator_path_share": 0.66672,
+          "window_coverage": [
+            "5"
+          ]
+        },
+        "MARKET_REGIME_CONDITION": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 176,
+          "condition_field_coverage_count": 16,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 1,
+          "exact_identity_count": 176,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "DISTINCT_SKELETONS_LT_8",
+            "MEDIAN_FIELD_ARITY_LE_2",
+            "TOP_OPERATOR_PATH_SHARE_GE_0_95"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "2": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 3,
+          "median_field_arity": 2.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 1,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "CSRank",
+            "Mul",
+            "Sign"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "lagged_daily_context",
+            "raw_1min"
+          ],
+          "template_level_collision_rate": 0.98592,
+          "top_operator_path_share": 1.0,
+          "window_coverage": []
+        },
+        "MINUTE_STATIC": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 11,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 1,
+          "exact_identity_count": 11,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "DISTINCT_SKELETONS_LT_8",
+            "MEDIAN_FIELD_ARITY_LE_2",
+            "TOP_OPERATOR_PATH_SHARE_GE_0_95"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "2": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 3,
+          "median_field_arity": 2.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 1,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "Add",
+            "CSRank",
+            "ZScore"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "raw_1min"
+          ],
+          "template_level_collision_rate": 0.99912,
+          "top_operator_path_share": 1.0,
+          "window_coverage": []
+        },
+        "SLOW_CROSS_SECTIONAL_LEVEL": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 47,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 1,
+          "exact_identity_count": 47,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "DISTINCT_SKELETONS_LT_8",
+            "MEDIAN_FIELD_ARITY_LE_2",
+            "TOP_OPERATOR_PATH_SHARE_GE_0_95"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "1": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 1,
+          "median_field_arity": 1.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 1,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "CSRank"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "canonical_fundamental_accruals",
+            "canonical_fundamental_capital_investment",
+            "canonical_fundamental_cashflow_quality",
+            "canonical_fundamental_disclosure_timing_staleness",
+            "canonical_fundamental_leverage",
+            "canonical_fundamental_liquidity_solvency",
+            "canonical_fundamental_operating_efficiency",
+            "canonical_fundamental_profitability",
+            "canonical_fundamental_shareholder_structure",
+            "canonical_fundamental_working_capital",
+            "lagged_daily_context"
+          ],
+          "template_level_collision_rate": 0.99624,
+          "top_operator_path_share": 1.0,
+          "window_coverage": []
+        },
+        "SLOW_TEMPORAL_CHANGE": {
+          "attempts": 12500,
+          "behavior_identity_count": null,
+          "behavior_identity_status": "NOT_EVALUATED_PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+          "canonical_identity_count": 141,
+          "condition_field_coverage_count": 0,
+          "control_valid": 12500,
+          "distinct_expression_skeleton_count": 1,
+          "exact_identity_count": 141,
+          "expressivity_bottleneck": true,
+          "expressivity_bottleneck_reasons": [
+            "DISTINCT_SKELETONS_LT_8",
+            "MEDIAN_FIELD_ARITY_LE_2",
+            "TOP_OPERATOR_PATH_SHARE_GE_0_95"
+          ],
+          "failure_categories_are_mutually_exclusive": true,
+          "failure_counts": {
+            "COMPUTE_OR_IO_BOTTLENECK": 0,
+            "CONTROL_CONSTRUCTION_FAILURE": 0,
+            "CONTROL_NOT_BEATEN": 0,
+            "CROSS_SEED_INSTABILITY": 0,
+            "FIELD_COVERAGE_BOTTLENECK": 0,
+            "GENERATOR_TEMPLATE_COLLAPSE": 0,
+            "MATERIALIZATION_FAILURE": 0,
+            "NO_GROSS_EDGE": 0,
+            "PIT_OR_CLOCK_REJECTION": 0,
+            "SEARCH_POLICY_COLLAPSE": 0,
+            "SEMANTIC_ALIAS_COLLAPSE": 0,
+            "SUPPORT_COLLAPSE": 0,
+            "TURNOVER_COST_DOMINATED": 0,
+            "UNIT_CONTRACT_REJECTION": 0
+          },
+          "field_arity_distribution": {
+            "1": 12500
+          },
+          "field_substitution_rate": 1.0,
+          "maximum_expression_depth": 1,
+          "median_field_arity": 1.0,
+          "numeric_behavior_alias_rate": null,
+          "operator_path_coverage_count": 1,
+          "pair_constructed": 12500,
+          "parse_pass": 12500,
+          "primitive_coverage": [
+            "CSRank"
+          ],
+          "route_type_pit_unit_pass": 12500,
+          "search_role": "PRIMARY_SEARCH",
+          "source_family_coverage": [
+            "canonical_fundamental_capital_investment",
+            "canonical_fundamental_cashflow_quality",
+            "canonical_fundamental_growth",
+            "canonical_fundamental_leverage",
+            "canonical_fundamental_liquidity_solvency",
+            "canonical_fundamental_profitability",
+            "canonical_fundamental_shareholder_structure",
+            "canonical_fundamental_size",
+            "canonical_fundamental_working_capital",
+            "lagged_daily_context"
+          ],
+          "template_level_collision_rate": 0.98872,
+          "top_operator_path_share": 1.0,
+          "window_coverage": []
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "generation_policy_exact_unique_counts": {
+    "diversity_preserving_cem": 7164,
+    "evolutionary_mutation": 7106,
+    "stratified_typed_random": 7245,
+    "uct_ucb_structural_search": 7125
+  },
+  "preflight_policy_counts": {
+    "diversity_preserving_cem": 8,
+    "evolutionary_mutation": 9,
+    "stratified_typed_random": 8,
+    "uct_ucb_structural_search": 7
+  },
+  "search_policy_collapse_claim": "NOT_EVALUATED_AT_STRICT_SCALE",
+  "status": "GENERATION_AND_ADMISSION_OBSERVED_STRICT_COMPARISON_NOT_EXECUTED",
+  "strict_policy_lift": null
+}

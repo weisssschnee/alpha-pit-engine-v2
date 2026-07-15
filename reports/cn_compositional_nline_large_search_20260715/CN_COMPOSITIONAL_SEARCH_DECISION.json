@@ -1,0 +1,24 @@
+{
+  "behavior_clusters": 11978,
+  "behavior_unique": 12375,
+  "closure_sha": "4cbb228cedabd93dc1b98bcce17ec11296b68860",
+  "cross_seed_reproduced_clusters": 0,
+  "cross_sprint_memory": "FORBIDDEN",
+  "legal_exact_unique": 28640,
+  "matched_positive_clusters": 0,
+  "preflight_status": "COMPUTE_OR_MATERIALIZATION_BOTTLENECK",
+  "promotion": "FORBIDDEN",
+  "proposal_attempts": 200000,
+  "resource_preflight_evaluator_calls": 64,
+  "resource_preflight_pairs": 32,
+  "sealed_reads": {
+    "forward_2026": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "source_sha": "b6eb0fc954d2e250a36eb401a2eb8d474bf73240",
+  "status": "CN_COMPOSITIONAL_SEARCH_COMPUTE_BOTTLENECK",
+  "strict_evaluator_calls": 0,
+  "strict_stage_a_pairs": 0,
+  "why_not_no_alpha": "Strict Stage A was not executed; preflight diagnostic rewards cannot support an Alpha or no-Alpha conclusion."
+}
