@@ -1078,6 +1078,24 @@ def evaluate_panel_expression(
         denominator = right.replace(0, np.nan)
         return store(left / denominator)
 
+    if name_lower == "safediv" and len(args) == 3:
+        left = evaluate_child(args[0])
+        right = evaluate_child(args[1])
+        floor = float(args[2])
+        if not math.isfinite(floor) or floor <= 0.0:
+            raise UnsupportedExpressionError(f"invalid_safediv_floor:{args[2]}")
+        _record_division_diagnostics(
+            evaluation_context.diagnostics,
+            right,
+            denominator_expression=args[1],
+        )
+        numeric = pd.to_numeric(right, errors="coerce")
+        safe = numeric.copy()
+        finite = numeric.notna()
+        small = finite & (numeric.abs() < floor)
+        safe.loc[small] = np.where(numeric.loc[small] < 0.0, -floor, floor)
+        return store(left / safe)
+
     if name_lower in {"corr", "cov"} and len(args) in {2, 3}:
         left = evaluate_child(args[0])
         right = evaluate_child(args[1])

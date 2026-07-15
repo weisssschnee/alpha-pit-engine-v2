@@ -127,6 +127,7 @@ _CANONICAL_OPERATORS = {
         "Rank",
         "RecoveryPath",
         "SafeCSResidual",
+        "SafeDiv",
         "Sign",
         "SinceLastEvent",
         "Skew",
@@ -304,7 +305,7 @@ def infer_value_domain(node: ExpressionNode) -> ValueDomain:
     if operator in {
         "sub", "delta", "mom", "log", "skew", "kurt", "slope",
         "acceleration", "pathshape", "drawdownpath", "recoverypath",
-        "eventwindow", "multiscalerelation", "transition",
+        "eventwindow", "multiscalerelation", "transition", "safediv",
     }:
         return ValueDomain.SIGNED_REAL
     return ValueDomain.UNKNOWN
@@ -426,6 +427,16 @@ def _simplify(
                 "block",
                 f"{path}.1",
                 "division requires an explicit positive denominator guard",
+            )
+    if operator == "safediv" and len(args) == 3:
+        floor = _numeric_value(args[2])
+        if floor is None or floor <= 0.0:
+            _issue(
+                issues,
+                "INVALID_SAFEDIV_FLOOR",
+                "block",
+                f"{path}.2",
+                "SafeDiv requires a finite positive denominator floor",
             )
 
     return current

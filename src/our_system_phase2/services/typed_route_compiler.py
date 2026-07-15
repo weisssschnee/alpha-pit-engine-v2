@@ -46,31 +46,42 @@ REJECTION_CODES = {
 
 
 _STATIC_PRIMITIVES = {
-    "CSRank", "CSResidual", "ZScore", "Add", "Sub", "Mul", "Div",
+    "CSRank", "CSResidual", "ZScore", "Add", "Sub", "Mul", "Div", "SafeDiv",
     "Abs", "Sign", "Mean", "Std", "Min", "Max", "Log", "Log1p",
     "Sqrt", "Neg", "Clip", "Winsorize", "Rank", "Scale",
 }
 ROUTE_PRIMITIVE_ALLOWLIST = {
     "MINUTE_STATIC": _STATIC_PRIMITIVES,
     "FIRSTN_PATH": _STATIC_PRIMITIVES
-    | {"Delta", "PathShape", "OpeningGap", "SignedPath", "MeanReversion"},
+    | {
+        "Delta", "PathShape", "OpeningGap", "SignedPath", "MeanReversion",
+        "Persistence", "Acceleration", "MultiScaleRelation",
+    },
     "SLOW_CROSS_SECTIONAL_LEVEL": {
         "CSRank", "Sign", "Abs", "Winsorize", "IndustryNeutralize",
-        "SizeNeutralize", "MaskedZScore",
+        "SizeNeutralize", "MaskedZScore", "ZScore", "Add", "Sub", "Mul",
+        "Div", "SafeDiv", "CSResidual",
     },
     "SLOW_TEMPORAL_CHANGE": {
         "CSRank", "Sign", "Abs", "Delta", "Slope", "Acceleration",
         "Persistence", "MultiScaleRelation", "QoQ", "YoY", "TTMChange",
+        "ZScore", "Add", "Sub", "Mul", "Div", "SafeDiv", "CSResidual",
     },
     "DISCLOSURE_EVENT": {
-        "CSRank", "Sign", "Abs", "Add", "Sub", "Mul", "Div",
+        "CSRank", "Sign", "Abs", "Add", "Sub", "Mul", "Div", "SafeDiv",
         "EventWindow", "TimeSince", "FirstHit", "EventCount",
         "PreEventPath", "PostMaturityOutcome",
     },
     "MARKET_REGIME_CONDITION": _STATIC_PRIMITIVES
-    | {"ConditionGate", "Transition", "StateAge", "RegimeInteraction"},
+    | {
+        "ConditionGate", "Transition", "StateAge", "RegimeInteraction",
+        "Delta", "Persistence", "PathShape", "MultiScaleRelation",
+    },
     "INTRADAY_STATE_TRANSITION": _STATIC_PRIMITIVES
-    | {"Delta", "Transition", "StateAge", "Duration", "ConditionedPath", "StateResidual"},
+    | {
+        "Delta", "Transition", "StateAge", "Duration", "ConditionedPath",
+        "StateResidual", "Persistence", "PathShape", "MultiScaleRelation",
+    },
     "BROAD_EVENT_FROZEN_ENTRY": {
         "FrozenMechanismReplay", "MatchedControlReplay", "BehaviorClusterAdmission",
     },

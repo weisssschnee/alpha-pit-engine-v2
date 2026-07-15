@@ -1,0 +1,180 @@
+{
+  "access_contract": {
+    "allowed_feedback": [
+      "development_train_pair_native_reward"
+    ],
+    "allowed_roles": [
+      "development"
+    ],
+    "cross_policy_private_feedback_reads": "FORBIDDEN",
+    "cross_sprint_memory": "FORBIDDEN",
+    "forward_2026": "SEALED",
+    "holdout": "FORBIDDEN",
+    "promotion": "FORBIDDEN",
+    "validation": "FORBIDDEN"
+  },
+  "admission_contract": {
+    "dimensions": [
+      "route_id",
+      "skeleton_id",
+      "source_family",
+      "operator_path",
+      "expression_depth",
+      "development_signal_sketch_cluster",
+      "seed"
+    ],
+    "maximum_pairs": 12000,
+    "performance_selection": "FORBIDDEN",
+    "selection": "DETERMINISTIC_STRATIFIED_DIVERSITY"
+  },
+  "authorization": "EXPERIMENTAL_BOUNDED_DEVELOPMENT_SEARCH",
+  "broad_event_contract": "FROZEN_REFERENCE_AND_PARENT_ONLY_NO_NEW_SEARCH_BUDGET",
+  "closure_sha": "4cbb228cedabd93dc1b98bcce17ec11296b68860",
+  "compute_contract": {
+    "heavy_python_host": "77o",
+    "local_python_scope": "LIGHTWEIGHT_UNIT_TESTS_ONLY",
+    "minimum_supported_pairs_after_preflight": 2048,
+    "preflight_pairs": 32,
+    "preflight_resource_metrics": [
+      "wall_time",
+      "peak_rss",
+      "io_bytes",
+      "materialization_time",
+      "evaluator_time",
+      "cache_behavior"
+    ]
+  },
+  "contract_version": "cn_compositional_nline_bounded_search_epoch1_v1",
+  "failure_categories": [
+    "GENERATOR_TEMPLATE_COLLAPSE",
+    "SEMANTIC_ALIAS_COLLAPSE",
+    "FIELD_COVERAGE_BOTTLENECK",
+    "UNIT_CONTRACT_REJECTION",
+    "PIT_OR_CLOCK_REJECTION",
+    "CONTROL_CONSTRUCTION_FAILURE",
+    "MATERIALIZATION_FAILURE",
+    "SUPPORT_COLLAPSE",
+    "TURNOVER_COST_DOMINATED",
+    "NO_GROSS_EDGE",
+    "CONTROL_NOT_BEATEN",
+    "CROSS_SEED_INSTABILITY",
+    "SEARCH_POLICY_COLLAPSE",
+    "COMPUTE_OR_IO_BOTTLENECK"
+  ],
+  "final_status_allowlist": [
+    "CN_COMPOSITIONAL_SEARCH_REPRODUCIBLE_ALPHA_FAMILIES_FOUND",
+    "CN_COMPOSITIONAL_SEARCH_LOCALIZED_MECHANISMS_ONLY",
+    "CN_COMPOSITIONAL_SEARCH_NO_EDGE_UNDER_CURRENT_INFORMATION",
+    "CN_COMPOSITIONAL_SEARCH_GENERATOR_OR_REPRESENTATION_BOTTLENECK",
+    "CN_COMPOSITIONAL_SEARCH_DATA_OR_SUPPORT_BOTTLENECK",
+    "CN_COMPOSITIONAL_SEARCH_COST_DOMINATED",
+    "CN_COMPOSITIONAL_SEARCH_COMPUTE_BOTTLENECK",
+    "CN_COMPOSITIONAL_SEARCH_INVALID"
+  ],
+  "generation_contract": {
+    "behavior_identity_authority": "DEVELOPMENT_SIGNAL_SKETCH_ONLY",
+    "compositional_proposal_attempts": 200000,
+    "exact_identity_authority": "TYPED_ROUTE_COMPILER",
+    "initial_legacy_and_v2_structural_audit_attempts_each": 100000,
+    "legal_exact_unique_target": 30000,
+    "natural_underfill": "REPORT_AND_ATTRIBUTE_DO_NOT_FILL_WITH_MEANINGLESS_TREES",
+    "route_attempt_quotas": {
+      "DISCLOSURE_EVENT": 28576,
+      "FIRSTN_PATH": 28576,
+      "INTRADAY_STATE_TRANSITION": 28544,
+      "MARKET_REGIME_CONDITION": 28576,
+      "MINUTE_STATIC": 28576,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 28576,
+      "SLOW_TEMPORAL_CHANGE": 28576
+    }
+  },
+  "grammar_contract": {
+    "condition_gates_max": 1,
+    "cross_sectional_outer_mappings_max": 1,
+    "expression_depth_max": 4,
+    "expression_depth_min": 1,
+    "leaf_fields_max": 3,
+    "leaf_fields_min": 1,
+    "plate_industry_neutralization": "DISABLED_UNTIL_HISTORICAL_PIT_MEMBERSHIP_QUALIFIED",
+    "temporal_windows_max": 2,
+    "version": "cn_typed_compositional_grammar_v2"
+  },
+  "matched_positive_contract": {
+    "cluster_independence_required": true,
+    "cost_adjusted_pair_train_reward_gt": 0.0,
+    "finite_reward_required": true,
+    "non_equivalent_pair_required": true,
+    "pair_train_feedback_status": "PAIR_TRAIN_FEEDBACK_READY",
+    "support_contract_complete": true
+  },
+  "policies": [
+    "stratified_typed_random",
+    "diversity_preserving_cem",
+    "uct_ucb_structural_search",
+    "evolutionary_mutation"
+  ],
+  "policy_contract": {
+    "adaptive_state_lifetime": "WITHIN_RUN_EPHEMERAL_ONLY",
+    "budget_reallocation_from_winners": "FORBIDDEN",
+    "first_visit_receipt_required": true,
+    "matched_nonadaptive_control_required": true,
+    "policy_state_hash_required": true,
+    "proposal_transcript_required": true
+  },
+  "repo_identity_resolution": "FREEZE_CLEAN_HEAD_AND_TREE_HASH_IN_LAUNCH_MANIFEST",
+  "route_search_roles": {
+    "BROAD_EVENT_FROZEN_ENTRY": "FROZEN_REFERENCE_ONLY",
+    "DISCLOSURE_EVENT": "PRIMARY_SEARCH",
+    "FIRSTN_PATH": "PRIMARY_SEARCH",
+    "INTRADAY_STATE_TRANSITION": "PRIMARY_SEARCH",
+    "MARKET_REGIME_CONDITION": "PRIMARY_SEARCH",
+    "MINUTE_STATIC": "PRIMARY_SEARCH",
+    "SLOW_CROSS_SECTIONAL_LEVEL": "PRIMARY_SEARCH",
+    "SLOW_TEMPORAL_CHANGE": "PRIMARY_SEARCH"
+  },
+  "seeds": [
+    1729,
+    2718,
+    31415,
+    65537
+  ],
+  "source_branch": "experiment/cn-compositional-nline-large-search-20260715",
+  "stage_a": {
+    "evaluator_call_cap": 8192,
+    "pair_budget": 4096,
+    "route_pair_quotas": {
+      "DISCLOSURE_EVENT": 576,
+      "FIRSTN_PATH": 592,
+      "INTRADAY_STATE_TRANSITION": 576,
+      "MARKET_REGIME_CONDITION": 576,
+      "MINUTE_STATIC": 592,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 592,
+      "SLOW_TEMPORAL_CHANGE": 592
+    }
+  },
+  "stage_b": {
+    "additional_evaluator_call_cap": 8192,
+    "additional_pair_cap": 4096,
+    "balanced_extension": true,
+    "route_pair_quotas": {
+      "DISCLOSURE_EVENT": 576,
+      "FIRSTN_PATH": 592,
+      "INTRADAY_STATE_TRANSITION": 576,
+      "MARKET_REGIME_CONDITION": 576,
+      "MINUTE_STATIC": 592,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 592,
+      "SLOW_TEMPORAL_CHANGE": 592
+    },
+    "trigger_any": [
+      "matched_positive_independent_behavior_clusters_gte_8",
+      "any_route_matched_positive_yield_gt_0.005",
+      "adaptive_policy_stable_top_quartile_lift_vs_matched_random"
+    ]
+  },
+  "strict_hard_cap": {
+    "evaluator_calls": 16384,
+    "pairs": 8192
+  },
+  "tree_hash_resolution": "LAUNCH_TIME_CLEAN_GIT_TREE",
+  "unified_registry_path": "reports/cn_unified_capability_discovery_20260714/completed_f8169e1/registry/unified_capability_registry.json"
+}

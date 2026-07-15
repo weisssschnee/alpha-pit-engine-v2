@@ -100,6 +100,28 @@ CONTROL_CONSTRUCTOR_MATRIX: dict[str, dict[str, Any]] = {
     },
 }
 
+
+# Experiment-scoped compositional controls keep every source field and clock
+# carrier.  The legacy matrix above remains valid for historical receipts.
+COMPOSITIONAL_CONTROL_CONSTRUCTOR_MATRIX: dict[str, dict[str, Any]] = {
+    route_id: {
+        "control_constructor_id": f"cn_compositional_same_fields_{route_id.lower()}_v2",
+        "keeps": [
+            "same source fields",
+            "same observable clocks",
+            "same source lags",
+            "same maturity",
+            "same support",
+            "same outer mapping",
+        ],
+        "removes": "only the registered skeleton core mechanism",
+        "control_form": "route-specific neutral ablation with zero-valued field carriers",
+        "legacy_mapping": "not applicable; experiment-scoped compositional grammar only",
+        "rationale": "isolates the declared mechanism without changing field or support eligibility",
+    }
+    for route_id in CONTROL_CONSTRUCTOR_MATRIX
+}
+
 PAIR_RANK_IC_REQUIRED_ROUTES = frozenset(CONTROL_CONSTRUCTOR_MATRIX)
 
 
@@ -107,11 +129,21 @@ class CandidatePairError(RuntimeError):
     """Raised when a primary/control pair cannot enter formal evaluation."""
 
 
-def constructor_for_route(route_id: str) -> dict[str, Any]:
+def constructor_for_route(
+    route_id: str,
+    control_constructor_id: str | None = None,
+) -> dict[str, Any]:
     try:
-        return dict(CONTROL_CONSTRUCTOR_MATRIX[str(route_id)])
+        legacy = dict(CONTROL_CONSTRUCTOR_MATRIX[str(route_id)])
+        compositional = dict(COMPOSITIONAL_CONTROL_CONSTRUCTOR_MATRIX[str(route_id)])
     except KeyError as exc:
         raise CandidatePairError(f"no registered matched-control constructor for route: {route_id}") from exc
+    selected = str(control_constructor_id or legacy["control_constructor_id"])
+    if selected == legacy["control_constructor_id"]:
+        return legacy
+    if selected == compositional["control_constructor_id"]:
+        return compositional
+    raise CandidatePairError(f"unregistered control constructor for {route_id}: {selected}")
 
 
 def pair_identity(
@@ -135,11 +167,40 @@ def _validate_constructor_shape(
     route_id: str,
     primary: Mapping[str, Any],
     control: Mapping[str, Any],
+    control_constructor_id: str,
 ) -> None:
     primary_expression = str(primary.get("expression") or "")
     control_expression = str(control.get("expression") or "")
     primary_fields = {str(value) for value in primary.get("declared_field_ids") or ()}
     control_fields = {str(value) for value in control.get("declared_field_ids") or ()}
+    compositional_id = str(
+        COMPOSITIONAL_CONTROL_CONSTRUCTOR_MATRIX.get(route_id, {}).get("control_constructor_id") or ""
+    )
+    if control_constructor_id == compositional_id:
+        valid = (
+            bool(primary_fields)
+            and primary_fields == control_fields
+            and primary_expression != control_expression
+            and str(primary.get("clock_contract") or "") == str(control.get("clock_contract") or "")
+            and str(primary.get("maturity_contract") or "") == str(control.get("maturity_contract") or "")
+            and str(primary.get("unit_signature") or "") == str(control.get("unit_signature") or "")
+            and str(primary.get("support_unit") or "") == str(control.get("support_unit") or "")
+            and bool(str(primary.get("control_ablation_rule") or ""))
+            and str(primary.get("control_ablation_rule") or "")
+            == str(control.get("control_ablation_rule") or "")
+        )
+        if route_id == "BROAD_EVENT_FROZEN_ENTRY":
+            valid = valid and "FrozenMechanismReplay(" in primary_expression and "MatchedControlReplay(" in control_expression
+        elif route_id == "DISCLOSURE_EVENT":
+            valid = valid and "TimeSince(" in control_expression
+        else:
+            valid = valid and ("Mul(0," in control_expression or "Sign(" in control_expression)
+        if not valid:
+            raise CandidatePairError(
+                f"FAIL_CLOSED_NO_MATCHED_CONTROL_CONSTRUCTOR: proposal does not match registered {route_id} compositional constructor"
+            )
+        return
+
     valid = False
     if route_id == "MINUTE_STATIC":
         valid = (
@@ -187,13 +248,15 @@ def attach_pair_contract(
     route_id = str(primary_row.get("route_id") or "")
     if not route_id or str(control_row.get("route_id") or "") != route_id:
         raise CandidatePairError("primary/control route mismatch")
-    constructor = constructor_for_route(route_id)
+    selected_constructor = str(
+        control_constructor_id
+        or CONTROL_CONSTRUCTOR_MATRIX.get(route_id, {}).get("control_constructor_id")
+        or ""
+    )
+    constructor = constructor_for_route(route_id, selected_constructor)
     expected_constructor = str(constructor["control_constructor_id"])
-    selected_constructor = str(control_constructor_id or expected_constructor)
     if selected_constructor != expected_constructor:
-        raise CandidatePairError(
-            f"unregistered control constructor for {route_id}: {selected_constructor} != {expected_constructor}"
-        )
+        raise CandidatePairError(f"unregistered control constructor for {route_id}: {selected_constructor}")
     primary_id = str(primary_row.get("candidate_id") or "")
     control_id = str(control_row.get("candidate_id") or "")
     if not primary_id or not control_id or primary_id == control_id:
@@ -204,7 +267,7 @@ def attach_pair_contract(
         raise CandidatePairError("control does not point to its primary")
     if bool(primary_row.get("is_matched_control")) or not bool(control_row.get("is_matched_control")):
         raise CandidatePairError("pair member roles are invalid")
-    _validate_constructor_shape(route_id, primary_row, control_row)
+    _validate_constructor_shape(route_id, primary_row, control_row, selected_constructor)
     pair_id = pair_identity(primary_id, control_id, route_id, selected_constructor)
     shared = {
         "pair_id": pair_id,
