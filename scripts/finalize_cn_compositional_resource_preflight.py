@@ -151,12 +151,7 @@ def main() -> int:
     freeze = _json(runtime / "CN_RESOURCE_PREFLIGHT_FREEZE.json")
     active_summary = _json(preflight / "active_full/phase3cm_train_reward_audit_summary.json")
     session_summary = _json(preflight / "session_full_v2/phase3cm_train_reward_audit_summary.json")
-    calibration_summary = _json(
-        preflight / "active_full_coordinate_calibration/phase3cm_train_reward_audit_summary.json"
-    )
-    calibration_wall = _json(preflight / "active_full_coordinate_wall.json")
-    calibration_peak = _json(preflight / "active_full_coordinate_peak.json")
-    calibration_io = _json(preflight / "active_full_coordinate_io.json")
+    calibration_abort = _json(preflight / "active_full_coordinate_abort.json")
     active_peak = _json(preflight / "active_peak_monitor.json")
     active_metrics = _json(preflight / "active_resource_metrics.json")
     session_peak = _json(preflight / "session_peak_monitor_v2.json")
@@ -190,7 +185,8 @@ def main() -> int:
         )
     waterfall.to_csv(runtime / "CN_ADMISSION_WATERFALL.csv", index=False)
 
-    peak_bytes = int(calibration_peak["peak_working_set_bytes"])
+    peak_bytes = int(calibration_abort["peak_working_set_bytes"])
+    calibration_wall_seconds = float(calibration_abort["wall_time_lower_bound_seconds"])
     workers = safe_worker_count(
         total_memory_bytes=args.total_memory_bytes,
         observed_peak_bytes=peak_bytes,
@@ -199,17 +195,17 @@ def main() -> int:
     min_active_pairs = math.ceil(2048 * (2336 / 4096))
     projections = {
         "minimum_2048_pair_run_active_share": linear_capacity_projection(
-            one_pair_wall_seconds=float(calibration_wall["wall_time_seconds"]),
+            one_pair_wall_seconds=calibration_wall_seconds,
             active_pairs=min_active_pairs,
             workers=workers,
         ),
         "stage_a_active_share": linear_capacity_projection(
-            one_pair_wall_seconds=float(calibration_wall["wall_time_seconds"]),
+            one_pair_wall_seconds=calibration_wall_seconds,
             active_pairs=2336,
             workers=workers,
         ),
-        "method": "ONE_PAIR_FULL_COORDINATE_LINEAR_PROJECTION",
-        "caveat": "Shared reads can reduce wall time, but current unbounded full-series expression caching prevents assuming that economy at 2048-pair scale.",
+        "method": "ONE_PAIR_FULL_COORDINATE_RESOURCE_GATE_LOWER_BOUND_LINEAR_PROJECTION",
+        "caveat": "The one-pair calibration did not finish before the 120-minute gate, so projected wall times are lower bounds. Shared reads can reduce wall time, but current unbounded full-series expression caching prevents assuming that economy at 2048-pair scale.",
     }
 
     resource = {
@@ -244,17 +240,20 @@ def main() -> int:
             },
         },
         "full_coordinate_calibration": {
-            "pairs": int(calibration_summary["candidate_pair_count"]),
-            "evaluated": int(calibration_summary["pair_evaluated_count"]),
-            "blocked": int(calibration_summary["pair_blocked_count"]),
-            "rows": int(calibration_summary["split_audit"]["row_count"]),
-            "sample_trade_times_per_shard": int(calibration_summary["sample_trade_times_per_shard"]),
-            "wall_time_seconds": float(calibration_wall["wall_time_seconds"]),
+            "status": str(calibration_abort["status"]),
+            "reason": str(calibration_abort["reason"]),
+            "pairs_requested": int(calibration_abort["candidate_pairs_requested"]),
+            "evaluated": 0,
+            "rows_completed": None,
+            "development_release_rows": int(calibration_abort["development_release_rows"]),
+            "sample_trade_times_per_shard": int(calibration_abort["sample_trade_times_per_shard"]),
+            "wall_time_lower_bound_seconds": calibration_wall_seconds,
             "peak_working_set_bytes": peak_bytes,
-            "read_transfer_bytes": int(calibration_io["read_transfer_bytes"]),
-            "write_transfer_bytes": int(calibration_io["write_transfer_bytes"]),
-            "cpu_seconds": float(calibration_io["cpu_seconds"]),
-            "selected_shards": int(calibration_summary["selected_shard_count"]),
+            "read_transfer_bytes": int(calibration_abort["read_transfer_bytes"]),
+            "write_transfer_bytes": int(calibration_abort["write_transfer_bytes"]),
+            "cpu_seconds": float(calibration_abort["cpu_seconds"]),
+            "selected_shards_requested": int(calibration_abort["selected_shards_requested"]),
+            "command_line": str(calibration_abort["command_line"]),
             "phase_timing": {
                 "materialization_time_seconds": None,
                 "evaluator_time_seconds": None,
@@ -336,9 +335,9 @@ The expression system materially expanded the structural and signal hypothesis s
 
 ## Capacity result
 
-The sampled active preflight covered all 16 shards but only {active_summary['sample_trade_times_per_shard']} fixed minute coordinates per shard. A separate one-pair calibration disabled sampling and traversed {calibration_summary['split_audit']['row_count']:,} development rows. It took {float(calibration_wall['wall_time_seconds'])/60:.2f} minutes and peaked at {peak_bytes/1024**3:.2f} GiB. With a 20 GiB host reserve, the 77o host supports at most {workers} such workers before candidate-batch growth.
+The sampled active preflight covered all 16 shards but only {active_summary['sample_trade_times_per_shard']} fixed minute coordinates per shard. A separate one-pair calibration disabled sampling and targeted the complete {int(calibration_abort['development_release_rows']):,}-row development release. It did not complete before the {float(calibration_abort['resource_gate_seconds'])/60:.0f}-minute resource gate, consumed {float(calibration_abort['cpu_seconds'])/60:.2f} CPU minutes, read {int(calibration_abort['read_transfer_bytes'])/1024**3:.2f} GiB, wrote no result, and peaked at {peak_bytes/1024**3:.2f} GiB. With a 20 GiB host reserve, the 77o host supports at most {workers} such workers before candidate-batch growth.
 
-The current evaluator keeps full-series expression results in process memory. Consequently it has no qualified bounded batch size for 2,048 pairs, and a linear one-pair projection is {projections['minimum_2048_pair_run_active_share']['linear_wall_days']:.2f} days for the active share even before session work and coordination overhead. Running Stage A under the 240-coordinate sample would be cheaper, but would not satisfy the command's full-release strict claim.
+The current evaluator keeps full-series expression and reward rows in process memory. Consequently it has no qualified bounded batch size for 2,048 pairs, and a linear lower-bound projection is {projections['minimum_2048_pair_run_active_share']['linear_wall_days']:.2f} days for the active share even before session work and coordination overhead. Running Stage A under the 240-coordinate sample would be cheaper, but would not satisfy the command's full-release strict claim.
 
 ## Route preflight
 
