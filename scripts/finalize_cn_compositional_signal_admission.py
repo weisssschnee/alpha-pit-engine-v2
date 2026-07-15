@@ -298,8 +298,6 @@ def main() -> int:
             "stock_session": session_summary,
         },
     }
-    _write_csv(root / "CN_SIGNAL_CLUSTER_REGISTRY.csv", registry_rows)
-    _write_json(root / "CN_SIGNAL_SKETCH_DIAGNOSTIC.json", diagnostic)
     clock_offset = 0
     for clock in ("active_bar", "stock_session"):
         subset = [row for row in registry_rows if row["clock_namespace"] == clock]
@@ -309,6 +307,12 @@ def main() -> int:
                 clock_offset + int(row["clock_cluster_id"]) if int(row["clock_cluster_id"]) > 0 else 0
             )
         clock_offset += maximum
+    # Persist the registry only after the clock-local cluster identifiers have
+    # been mapped into the globally unique behavior-cluster namespace.  The
+    # diagnostic remains available even when the downstream admission gate
+    # fails, but it must never expose ambiguous clock-local IDs as authority.
+    _write_csv(root / "CN_SIGNAL_CLUSTER_REGISTRY.csv", registry_rows)
+    _write_json(root / "CN_SIGNAL_SKETCH_DIAGNOSTIC.json", diagnostic)
     behavior_by_candidate = {row["candidate_id"]: row for row in registry_rows}
     admission_inputs: list[dict[str, Any]] = []
     for candidate_id, receipt in by_candidate.items():
