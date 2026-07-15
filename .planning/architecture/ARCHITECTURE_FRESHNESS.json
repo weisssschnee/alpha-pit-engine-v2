@@ -12,12 +12,12 @@
   "derived_artifacts": [
     {
       "path": ".planning/architecture/architecture_graph.json",
-      "sha256": "2d27fdcbefd668c4e9523e8097bfa9b3e2ac76e6441f3db0876993ce1cb46a2b",
+      "sha256": "0b58272aa30d0dbba6f05543fae3d1522cd09104b6352d2c747171ed67aa7bcc",
       "size": 140399
     },
     {
       "path": ".planning/architecture/architecture_graph.html",
-      "sha256": "41514776e162e103b559d807bb440287658470023df3530c6e4eedf9c2aaebfb",
+      "sha256": "419b3ba8eb8b5f4da84709d443447b43fdea89110e7524dfec201b8ff12c9eab",
       "size": 26795
     },
     {
@@ -41,10 +41,10 @@
       "size": 10527
     }
   ],
-  "generated_at": "2026-07-15T05:23:21.282591+00:00",
+  "generated_at": "2026-07-15T05:34:44.831833+00:00",
   "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
   "generator_sha256": "7e043354eee8ae18b667d9f6ab0aaa747496b5a079ad5a75bf2d27d7ded59926",
-  "source_repo_sha": "74d425626769c6d74837640b3b88d194fca999fe",
+  "source_repo_sha": "93579c2331953793b91133ca0a77b94aeb3a84c3",
   "stale": false,
   "status_authority_path": ".planning/architecture/architecture_registry.json",
   "status_authority_sha256": "d13abf96f53df84882f2862f5575086b51bd11b6490a8778064510872c9f6fbd",

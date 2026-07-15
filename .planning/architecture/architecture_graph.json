@@ -15,14 +15,14 @@
       "validation_holdout_to_family_kill_freeze",
       "validation_holdout_to_scheduler"
     ],
-    "generated_at": "2026-07-15T05:23:21.242039+00:00",
+    "generated_at": "2026-07-15T05:34:44.803337+00:00",
     "generator_path": "scripts/build_nextgen_dark_architecture_graph.py",
     "generator_sha256": "7e043354eee8ae18b667d9f6ab0aaa747496b5a079ad5a75bf2d27d7ded59926",
     "graph_type": "CN_RUNTIME_AUTHORITY_AND_SPLIT_CURRENT_ARCHITECTURE_CONTRACT",
     "phase": "CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_QUALIFIED",
     "registry_sha256": "b4213b2e4190327fc2f11b438570979814020cc1a8372dfc4941d66234042c3b",
     "registry_version": "cn_matched_control_candidate_parallel_architecture_registry_v10",
-    "source_repo_sha": "74d425626769c6d74837640b3b88d194fca999fe",
+    "source_repo_sha": "93579c2331953793b91133ca0a77b94aeb3a84c3",
     "status_authority_path": ".planning/architecture/architecture_registry.json",
     "status_authority_sha256": "d13abf96f53df84882f2862f5575086b51bd11b6490a8778064510872c9f6fbd",
     "status_values": [
@@ -2258,7 +2258,7 @@
         "formal B1S funnel; repaired Capability CANARY; frozen two-seed development Epoch-A"
       ],
       "label": "CN Generator Research Sprint-1 partially completed",
-      "last_verified_sha": "1a0747379663a07be02945abbfbe33aff7986fbb897a45ebfe5b566b0d751dc4",
+      "last_verified_sha": "016b3f9d3a0cf6ba99add16a71ff8e2df64b0fa439b608edb96426341780a6ff",
       "last_verified_sha_scope": [
         "runtime/run_plans/cn_generator_research_sprint1_manifest_v1.json",
         "runtime/run_plans/cn_generator_epoch_a_sprint1_v1.json",

@@ -165,7 +165,7 @@
     {
       "exists": true,
       "id": "architecture_graph",
-      "last_verified_sha": "2d27fdcbefd668c4e9523e8097bfa9b3e2ac76e6441f3db0876993ce1cb46a2b",
+      "last_verified_sha": "0b58272aa30d0dbba6f05543fae3d1522cd09104b6352d2c747171ed67aa7bcc",
       "path": ".planning/architecture/architecture_graph.json",
       "size_bytes": 140399,
       "state": "IMPLEMENTED"
@@ -204,6 +204,6 @@
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-15T05:23:25.159499+00:00",
+  "refreshed_at": "2026-07-15T05:34:52.137478+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
 }
