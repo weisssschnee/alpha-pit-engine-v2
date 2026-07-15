@@ -247,8 +247,8 @@ fixed development-only coordinate registry
 -> unchanged cluster IDs mapped through proxy/admission/strict/coverage stages
 ```
 
-This route is label-free and cannot write search memory. The historical Phase A
-registry remains in `runtime/run_plans/evalreset_phase1_architecture_registry_v1.json`.
+This route is label-free and cannot write search memory. The superseded Phase A
+architecture registry is retained only in Git history, not in the active tree.
 Current architecture lifecycle and boundary decisions live only in
 `config/architecture_overlay.json`; GraphSkill generates RAW and CURRENT into
 `.planning/graphs/`.

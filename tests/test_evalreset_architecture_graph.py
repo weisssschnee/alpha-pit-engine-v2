@@ -6,14 +6,13 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 
 
-def test_historical_phase_a_registry_is_superseded_by_graphskill_current() -> None:
-    historical = json.loads(
-        (REPO / "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json").read_text(encoding="utf-8")
-    )
+def test_legacy_phase_a_control_plane_is_absent_and_graphskill_current_is_authoritative() -> None:
     overlay = json.loads((REPO / "config/architecture_overlay.json").read_text(encoding="utf-8"))
     current = json.loads((REPO / ".planning/graphs/current.json").read_text(encoding="utf-8"))
 
-    assert historical["registry_version"] == "evalreset_phase1_architecture_registry_v1"
+    assert not (
+        REPO / "runtime/run_plans/evalreset_phase1_architecture_registry_v1.json"
+    ).exists()
     assert not (REPO / ".planning/architecture").exists()
     assert not (REPO / ".planning/codegraph").exists()
     assert current["overlay"]["path"] == "config/architecture_overlay.json"
