@@ -1,9 +1,18 @@
 from __future__ import annotations
 
 from scripts.freeze_cn_compositional_resource_preflight import (
+    evaluator_expression_identity,
     representative_route_quotas,
     select_representative_pairs,
 )
+
+
+def test_evaluator_identity_keeps_duplicate_controls_in_distinct_pairs() -> None:
+    expression = "CSRank(Sign($x))"
+
+    assert evaluator_expression_identity("control-a", expression) != evaluator_expression_identity(
+        "control-b", expression
+    )
 
 
 def test_resource_preflight_quotas_cover_every_route_and_preserve_stage_weight_ties() -> None:

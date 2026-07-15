@@ -75,6 +75,10 @@ def _csv_value(value: Any) -> Any:
     return value
 
 
+def evaluator_expression_identity(candidate_id: str, expression: str) -> str:
+    return hashlib.sha256((str(candidate_id) + "|" + str(expression)).encode("utf-8")).hexdigest()[:24]
+
+
 def _write_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
     if not rows:
         raise ValueError(f"cannot write empty CSV: {path}")
@@ -155,7 +159,13 @@ def _candidate_rows(
             raise RuntimeError(f"typed control reconstruction drift: {candidate_id}")
         for member in (pair.primary, pair.control):
             row = dict(member)
-            row["expression_hash"] = hashlib.sha256(str(row["expression"]).encode("utf-8")).hexdigest()[:24]
+            # Formal evaluator identity is candidate-specific even when several
+            # pairs reuse an identical neutral control.  Expression evaluation
+            # remains shared by the expression-string cache, so this preserves
+            # pair membership without duplicating materialization work.
+            row["expression_hash"] = evaluator_expression_identity(
+                str(row["candidate_id"]), str(row["expression"])
+            )
             row["generator_arm"] = str(admission["policy_id"])
             row["run"] = "CN_COMPOSITIONAL_RESOURCE_PREFLIGHT"
             row["round_id"] = "RESOURCE_PREFLIGHT_32"
