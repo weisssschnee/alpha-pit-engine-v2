@@ -634,7 +634,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-15T07:10:20.856276+00:00",
+  "generated_at": "2026-07-15T07:32:57.172939+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1984,13 +1984,13 @@
   "profile_id": null,
   "profiles": [],
   "raw": {
-    "built_at_commit": "2acddb512d3e78857f5b73de23b716213dbde4b0",
-    "edge_count": 8602,
-    "node_count": 3540,
+    "built_at_commit": "dc348e1c36cc4f2ba31193ad853546d700c235a4",
+    "edge_count": 8586,
+    "node_count": 3532,
     "path": ".planning/graphs/graph.json",
-    "sha256": "DFF9A4A6D163B09AF0DB0DAE8E1F67D283FF4CBBCD29E42AA41C4720F65C64F0"
+    "sha256": "EFA2A1F6A6141F7007A06F4AC2CC7E60BDB29C1421634C5EF8C1B4F72F552945"
   },
-  "repo_head": "2acddb512d3e78857f5b73de23b716213dbde4b0",
+  "repo_head": "dc348e1c36cc4f2ba31193ad853546d700c235a4",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
