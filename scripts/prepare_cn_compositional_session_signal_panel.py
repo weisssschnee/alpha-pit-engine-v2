@@ -1,0 +1,388 @@
+"""Build the development-only stock-session panel for compositional sketches."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import hashlib
+import json
+import os
+import sys
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Iterable, Mapping
+
+import numpy as np
+import pandas as pd
+import pyarrow as pa
+import pyarrow.compute as pc
+import pyarrow.parquet as pq
+
+
+REPO = Path(__file__).resolve().parents[1]
+SRC = REPO / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from our_system_phase2.services.compositional_session_signal_panel import (  # noqa: E402
+    SESSION_PANEL_VERSION,
+    attach_coordinate_row_indices,
+    build_session_coordinate_rows,
+    field_partition,
+)
+from our_system_phase2.services.fundamental_representations import (  # noqa: E402
+    CanonicalFundamentalMaterializer,
+)
+from our_system_phase2.services.pit_fundamental_fabric import (  # noqa: E402
+    PITFundamentalFabricAdapter,
+    normalize_cn_code,
+)
+from our_system_phase2.services.unified_capability_registry import (  # noqa: E402
+    UnifiedCapabilityRegistry,
+)
+
+
+def _read_csv(path: Path) -> list[dict[str, str]]:
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        return [dict(row) for row in csv.DictReader(handle)]
+
+
+def _write_csv(path: Path, rows: list[Mapping[str, Any]]) -> None:
+    fields: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        for key in row:
+            if key not in seen:
+                seen.add(key)
+                fields.append(key)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def _write_json(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _development_sessions(path: Path) -> pd.DatetimeIndex:
+    rows = _read_csv(path)
+    values = [pd.Timestamp(row["trade_date"]) for row in rows if row.get("split") == "train"]
+    if not values or len(values) != len(set(values)):
+        raise ValueError("split manifest must provide unique development/train sessions")
+    return pd.DatetimeIndex(sorted(values))
+
+
+def _context_fields(path: Path) -> list[str]:
+    return sorted(
+        {
+            line.strip()
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        }
+    )
+
+
+def prepare(args: argparse.Namespace) -> int:
+    sessions = _development_sessions(args.split_manifest)
+    session_set = set(sessions)
+    selections = _read_csv(args.stock_selection)
+    active_coordinates = _read_csv(args.active_coordinate_manifest)
+    context_fields = _context_fields(args.session_context_fields)
+    parts: list[pd.DataFrame] = []
+    selection_frame = pd.DataFrame(selections)
+    if selection_frame["code"].astype(str).duplicated().any():
+        raise ValueError("stock selection must contain unique codes")
+    for (panel_text, row_group), group in selection_frame.groupby(
+        ["panel", "row_group"], sort=True
+    ):
+        panel = Path(str(panel_text))
+        parquet = pq.ParquetFile(panel)
+        columns = ["code", "trade_time", "date", *context_fields]
+        missing = sorted(set(columns) - set(parquet.schema_arrow.names))
+        if missing:
+            raise RuntimeError(f"{panel} missing session fields: {missing}")
+        table = parquet.read_row_group(int(row_group), columns=columns)
+        codes = group["code"].astype(str).tolist()
+        table = table.filter(pc.is_in(table["code"], value_set=pa.array(codes)))
+        frame = table.to_pandas()
+        frame["trade_time"] = pd.to_datetime(frame["trade_time"], errors="coerce")
+        frame["_session"] = frame["trade_time"].dt.normalize()
+        frame = frame.loc[frame["_session"].isin(session_set)].copy()
+        frame = (
+            frame.sort_values(["code", "trade_time"], kind="mergesort")
+            .groupby(["code", "_session"], sort=False, as_index=False)
+            .tail(1)
+        )
+        parts.append(frame[["code", "_session", *context_fields]])
+    base = (
+        pd.concat(parts, ignore_index=True)
+        .drop_duplicates(["code", "_session"], keep="last")
+        .sort_values(["code", "_session"], kind="mergesort")
+        .reset_index(drop=True)
+    )
+    base["trade_time"] = base["_session"] + pd.Timedelta(hours=15)
+    base["session_time"] = base["trade_time"]
+    base["date"] = base["_session"]
+    base = base[["code", "trade_time", "session_time", "date", *context_fields]]
+    available = {
+        (str(code), pd.Timestamp(trade_time).normalize())
+        for code, trade_time in zip(base["code"], base["trade_time"], strict=True)
+    }
+    coordinates = build_session_coordinate_rows(
+        active_coordinates, available_keys=available
+    )
+    coordinates = attach_coordinate_row_indices(coordinates, base)
+    args.output_root.mkdir(parents=True, exist_ok=True)
+    base_path = args.output_root / "session_signal_base_panel.parquet"
+    coordinate_path = args.output_root / "signal_sketch_coordinate_manifest.csv"
+    base.to_parquet(base_path, index=False, compression="zstd")
+    _write_csv(coordinate_path, coordinates)
+    manifest = {
+        "status": "SESSION_SIGNAL_BASE_PANEL_PREPARED",
+        "panel_version": SESSION_PANEL_VERSION,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "data_role": "development",
+        "labels_or_returns_read": False,
+        "validation_holdout_forward_read": False,
+        "selected_stock_count": int(base["code"].nunique()),
+        "development_session_count": len(sessions),
+        "base_panel_rows": len(base),
+        "context_field_count": len(context_fields),
+        "coordinate_count": len(coordinates),
+        "coordinate_count_by_set": dict(
+            Counter(row["coordinate_set"] for row in coordinates)
+        ),
+        "materialized_coordinate_count_by_set": dict(
+            Counter(
+                row["coordinate_set"]
+                for row in coordinates
+                if int(row["row_index"]) >= 0
+            )
+        ),
+        "inputs": {
+            "split_manifest": {"path": str(args.split_manifest), "sha256": _sha256(args.split_manifest)},
+            "stock_selection": {"path": str(args.stock_selection), "sha256": _sha256(args.stock_selection)},
+            "active_coordinate_manifest": {"path": str(args.active_coordinate_manifest), "sha256": _sha256(args.active_coordinate_manifest)},
+            "shard_root": str(args.shard_root),
+        },
+        "artifacts": {
+            "base_panel": {"path": str(base_path), "sha256": _sha256(base_path)},
+            "coordinate_manifest": {"path": str(coordinate_path), "sha256": _sha256(coordinate_path)},
+        },
+    }
+    _write_json(args.output_root / "session_signal_base_manifest.json", manifest)
+    print(json.dumps(manifest, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+def materialize(args: argparse.Namespace) -> int:
+    sessions = _development_sessions(args.split_manifest)
+    base = pd.read_parquet(args.base_panel, columns=["code", "session_time"])
+    coordinates = base.copy()
+    coordinates["code"] = coordinates["code"].map(normalize_cn_code)
+    if coordinates["code"].eq("").any() or coordinates.duplicated(
+        ["code", "session_time"]
+    ).any():
+        raise ValueError("fundamental coordinates are invalid after code normalization")
+    registry = UnifiedCapabilityRegistry.read(args.registry)
+    input_manifest = json.loads(args.input_manifest.read_text(encoding="utf-8"))
+    all_fields = sorted(str(value) for value in input_manifest["canonical_fundamental_fields"])
+    fields = [
+        value
+        for value in all_fields
+        if field_partition(value, args.partition_count) == args.partition_index
+    ]
+    adapter = PITFundamentalFabricAdapter(
+        source_root=args.fundamental_root,
+        sessions=sessions,
+        maximum_observable_time=args.maximum_observable_time,
+    )
+    materializer = CanonicalFundamentalMaterializer(adapter)
+    args.cache_root.mkdir(parents=True, exist_ok=True)
+    rows: list[dict[str, Any]] = []
+    failures: list[dict[str, str]] = []
+    for field_id in fields:
+        path = args.cache_root / f"{field_id}.parquet"
+        try:
+            if path.exists() and field_id in pq.ParquetFile(path).schema_arrow.names:
+                frame = pd.read_parquet(path, columns=[field_id])
+                rows.append(
+                    {
+                        "field_id": field_id,
+                        "status": "RESUMED",
+                        "coverage": round(float(frame[field_id].notna().mean()), 8),
+                        "sha256": _sha256(path),
+                    }
+                )
+                continue
+            capability = registry.resolve(field_id)
+            spec = dict((capability.metadata or {}).get("canonical_representation") or {})
+            if not spec or not bool(spec.get("search_eligible")):
+                raise PermissionError("canonical representation is not search eligible")
+            frame = materializer.materialize(spec, coordinates)
+            keep = frame[["code", "session_time", field_id]].copy()
+            temp = path.with_suffix(".tmp.parquet")
+            keep.to_parquet(temp, index=False, compression="zstd")
+            os.replace(temp, path)
+            rows.append(
+                {
+                    "field_id": field_id,
+                    "status": "MATERIALIZED",
+                    "coverage": round(float(keep[field_id].notna().mean()), 8),
+                    "sha256": _sha256(path),
+                }
+            )
+        except Exception as exc:  # field failures are isolated and reported fail-closed.
+            failures.append({"field_id": field_id, "error": repr(exc)})
+    summary = {
+        "status": "SESSION_FUNDAMENTAL_FIELDS_MATERIALIZED" if not failures else "SESSION_FUNDAMENTAL_FIELD_FAILURE",
+        "panel_version": SESSION_PANEL_VERSION,
+        "partition_index": args.partition_index,
+        "partition_count": args.partition_count,
+        "assigned_field_count": len(fields),
+        "completed_field_count": len(rows),
+        "failure_count": len(failures),
+        "data_role": "development",
+        "labels_or_returns_read": False,
+        "validation_holdout_forward_read": False,
+        "fields": rows,
+        "failures": failures,
+    }
+    _write_json(args.cache_root / f"worker_{args.partition_index}.summary.json", summary)
+    print(json.dumps(summary, ensure_ascii=False, sort_keys=True))
+    return 0 if not failures else 2
+
+
+def assemble(args: argparse.Namespace) -> int:
+    base = pd.read_parquet(args.base_panel).sort_values(
+        ["code", "trade_time"], kind="mergesort"
+    ).reset_index(drop=True)
+    base["_normal_code"] = base["code"].map(normalize_cn_code)
+    input_manifest = json.loads(args.input_manifest.read_text(encoding="utf-8"))
+    fields = sorted(str(value) for value in input_manifest["canonical_fundamental_fields"])
+    key = pd.MultiIndex.from_frame(base[["_normal_code", "session_time"]])
+    missing: list[str] = []
+    for field_id in fields:
+        path = args.cache_root / f"{field_id}.parquet"
+        if not path.exists():
+            missing.append(field_id)
+            continue
+        frame = pd.read_parquet(path, columns=["code", "session_time", field_id])
+        series = frame.set_index(["code", "session_time"])[field_id]
+        if series.index.has_duplicates:
+            raise ValueError(f"duplicate fundamental materialization coordinates: {field_id}")
+        base[field_id] = series.reindex(key).to_numpy()
+    if missing:
+        raise RuntimeError(f"missing fundamental materializations: {missing[:8]}")
+    base = base.drop(columns=["_normal_code", "session_time"])
+    coordinate_rows = attach_coordinate_row_indices(
+        _read_csv(args.coordinate_manifest), base
+    )
+    output_panel = args.output_root / "signal_sketch_compact_panel.parquet"
+    output_coordinates = args.output_root / "signal_sketch_coordinate_manifest.csv"
+    args.output_root.mkdir(parents=True, exist_ok=True)
+    base.to_parquet(output_panel, index=False, compression="zstd")
+    _write_csv(output_coordinates, coordinate_rows)
+    summary_paths = sorted(args.cache_root.glob("worker_*.summary.json"))
+    summary = {
+        "status": "SESSION_SIGNAL_PANEL_ASSEMBLED",
+        "panel_version": SESSION_PANEL_VERSION,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "data_role": "development",
+        "labels_or_returns_read": False,
+        "validation_holdout_forward_read": False,
+        "panel_rows": len(base),
+        "panel_columns": len(base.columns),
+        "canonical_fundamental_field_count": len(fields),
+        "coordinate_count": len(coordinate_rows),
+        "materialized_coordinate_count_by_set": dict(
+            Counter(
+                row["coordinate_set"]
+                for row in coordinate_rows
+                if int(row["row_index"]) >= 0
+            )
+        ),
+        "worker_summary_sha256": {path.name: _sha256(path) for path in summary_paths},
+        "artifacts": {
+            "compact_panel": {"path": str(output_panel), "sha256": _sha256(output_panel)},
+            "coordinate_manifest": {"path": str(output_coordinates), "sha256": _sha256(output_coordinates)},
+        },
+    }
+    _write_json(args.output_root / "session_signal_panel_manifest.json", summary)
+    _write_json(
+        args.output_root / "development_only_access_ledger.json",
+        {
+            "ledger_version": "cn_compositional_session_sketch_access_v1",
+            "requested_role": "development",
+            "labels_or_returns_read": False,
+            "validation_rows_read": 0,
+            "holdout_rows_read": 0,
+            "forward_2026_rows_read": 0,
+            "source_release": str(args.source_release),
+            "fundamental_root": str(args.fundamental_root),
+            "maximum_observable_time": args.maximum_observable_time,
+        },
+    )
+    print(json.dumps(summary, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+def parser() -> argparse.ArgumentParser:
+    root = argparse.ArgumentParser()
+    sub = root.add_subparsers(dest="command", required=True)
+    prep = sub.add_parser("prepare")
+    prep.add_argument("--shard-root", type=Path, required=True)
+    prep.add_argument("--split-manifest", type=Path, required=True)
+    prep.add_argument("--stock-selection", type=Path, required=True)
+    prep.add_argument("--active-coordinate-manifest", type=Path, required=True)
+    prep.add_argument("--session-context-fields", type=Path, required=True)
+    prep.add_argument("--output-root", type=Path, required=True)
+    prep.set_defaults(func=prepare)
+
+    material = sub.add_parser("materialize")
+    material.add_argument("--base-panel", type=Path, required=True)
+    material.add_argument("--split-manifest", type=Path, required=True)
+    material.add_argument("--registry", type=Path, required=True)
+    material.add_argument("--input-manifest", type=Path, required=True)
+    material.add_argument("--fundamental-root", type=Path, required=True)
+    material.add_argument("--maximum-observable-time", required=True)
+    material.add_argument("--cache-root", type=Path, required=True)
+    material.add_argument("--partition-index", type=int, required=True)
+    material.add_argument("--partition-count", type=int, required=True)
+    material.set_defaults(func=materialize)
+
+    assemble_parser = sub.add_parser("assemble")
+    assemble_parser.add_argument("--base-panel", type=Path, required=True)
+    assemble_parser.add_argument("--coordinate-manifest", type=Path, required=True)
+    assemble_parser.add_argument("--input-manifest", type=Path, required=True)
+    assemble_parser.add_argument("--cache-root", type=Path, required=True)
+    assemble_parser.add_argument("--output-root", type=Path, required=True)
+    assemble_parser.add_argument("--source-release", type=Path, required=True)
+    assemble_parser.add_argument("--fundamental-root", type=Path, required=True)
+    assemble_parser.add_argument("--maximum-observable-time", required=True)
+    assemble_parser.set_defaults(func=assemble)
+    return root
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parser().parse_args(argv)
+    return int(args.func(args))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
