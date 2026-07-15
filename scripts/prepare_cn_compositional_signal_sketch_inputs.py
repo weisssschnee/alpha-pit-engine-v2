@@ -131,6 +131,10 @@ def main() -> int:
         output / "active_exact_fidelity_candidates.csv",
         _fidelity_sample(active_rows, min(args.fidelity_count, len(active_rows))),
     )
+    _write_csv(
+        output / "session_exact_fidelity_candidates.csv",
+        _fidelity_sample(session_rows, min(args.fidelity_count, len(session_rows))),
+    )
     (output / "session_context_fields.txt").write_text(
         "\n".join(classification.session_context_fields) + "\n",
         encoding="utf-8",
@@ -141,6 +145,9 @@ def main() -> int:
         "active_generation_sha256": _sha256(output / "active_generation.csv"),
         "session_generation_sha256": _sha256(output / "session_generation.csv"),
         "session_receipts_sha256": _sha256(output / "session_pair_receipts.jsonl"),
+        "session_exact_fidelity_sha256": _sha256(
+            output / "session_exact_fidelity_candidates.csv"
+        ),
         "preadmission_sha256": _sha256(args.preadmission),
         "pair_receipts_sha256": _sha256(args.receipts),
         "registry_hash": registry.registry_hash,

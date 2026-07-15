@@ -277,6 +277,7 @@ def assemble(args: argparse.Namespace) -> int:
     fields = sorted(str(value) for value in input_manifest["canonical_fundamental_fields"])
     key = pd.MultiIndex.from_frame(base[["_normal_code", "session_time"]])
     missing: list[str] = []
+    materialized_columns: dict[str, np.ndarray] = {}
     for field_id in fields:
         path = args.cache_root / f"{field_id}.parquet"
         if not path.exists():
@@ -286,9 +287,12 @@ def assemble(args: argparse.Namespace) -> int:
         series = frame.set_index(["code", "session_time"])[field_id]
         if series.index.has_duplicates:
             raise ValueError(f"duplicate fundamental materialization coordinates: {field_id}")
-        base[field_id] = series.reindex(key).to_numpy()
+        materialized_columns[field_id] = series.reindex(key).to_numpy()
     if missing:
         raise RuntimeError(f"missing fundamental materializations: {missing[:8]}")
+    base = pd.concat(
+        [base, pd.DataFrame(materialized_columns, index=base.index)], axis=1
+    )
     base = base.drop(columns=["_normal_code", "session_time"])
     coordinate_rows = attach_coordinate_row_indices(
         _read_csv(args.coordinate_manifest), base
