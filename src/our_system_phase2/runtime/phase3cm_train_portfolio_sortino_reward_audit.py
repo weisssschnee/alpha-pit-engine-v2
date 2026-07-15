@@ -58,6 +58,8 @@ from our_system_phase2.services.candidate_submission_receipt import (
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
 from our_system_phase2.services.matched_control_pairs import (
     CandidatePairAuthority,
+    PAIR_MATURITY_ALIGNMENT_POLICY,
+    PAIR_SUPPORT_ALIGNMENT_POLICY,
     build_pair_evaluation_rows,
     flatten_candidate_pairs,
     group_candidate_pairs,
@@ -1479,6 +1481,16 @@ def _candidate_portfolio_rows_from_precomputed_time_groups(
     return rows
 
 
+def _pair_common_finite_mask(primary: pd.Series, control: pd.Series) -> np.ndarray:
+    """Return the only support on which a formal matched pair may be scored."""
+
+    if len(primary) != len(control):
+        raise ValueError("primary/control signal lengths differ")
+    return np.isfinite(pd.to_numeric(primary, errors="coerce").to_numpy(dtype=float)) & np.isfinite(
+        pd.to_numeric(control, errors="coerce").to_numpy(dtype=float)
+    )
+
+
 def _candidate_portfolio_rows_from_frame(
     *,
     candidate: dict[str, Any],
@@ -1515,6 +1527,7 @@ def _candidate_portfolio_rows_from_frame(
     semantic_sketch_size: int = 512,
     operator_cache_max_bytes: int = 0,
     feature_matrix_cache_max_bytes: int = 0,
+    eligible_signal_mask: np.ndarray | None = None,
 ) -> list[dict[str, Any]]:
     expression = str(candidate["expression"])
     expression_data_role = (
@@ -1736,6 +1749,11 @@ def _candidate_portfolio_rows_from_frame(
         if expression_disk_cache is not None:
             expression_disk_cache[expression_cache_key] = signal
         _inc(cache_stats, "factor_expression_cache_stores")
+    if eligible_signal_mask is not None:
+        mask = np.asarray(eligible_signal_mask, dtype=bool)
+        if mask.shape != (len(signal),):
+            raise ValueError("eligible_signal_mask length does not match candidate signal")
+        signal = signal.where(mask, np.nan)
     if eval_time_index is not None:
         signal_rank = _rank_by_eval_time_index(signal, eval_time_index, cache_stats=cache_stats)
         if semantic_diagnostics is not None:
@@ -2853,6 +2871,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--disable-operator-cache", action="store_true")
     parser.add_argument("--disable-feature-matrix-cache", action="store_true")
     parser.add_argument("--disable-fast-portfolio-loop", action="store_true")
+    parser.add_argument(
+        "--enforce-pair-shared-support",
+        action="store_true",
+        help=(
+            "Evaluate every primary/control pair only on their finite-signal intersection. "
+            "Required by the compositional matched-control contract."
+        ),
+    )
     parser.add_argument("--disable-schema-gate", action="store_true")
     parser.add_argument("--disable-legacy-alias-rewrite", action="store_true")
     parser.add_argument("--m1-first-ret-replacement", default="m1_first5_last_return_vs_open")
@@ -2983,43 +3009,71 @@ def main(argv: list[str] | None = None) -> int:
             operator_cache_by_window: dict[int, dict[str, pd.Series]] = {}
             shard_cache_stats: dict[str, int] = {}
             shard_rows = 0
-            for candidate_index, candidate in enumerate(candidates, 1):
+            evaluation_kwargs = {
+                "frame": frame,
+                "eval_mask": eval_mask,
+                "eval_frame": eval_frame,
+                "labels": labels,
+                "eval_time_index": eval_time_index,
+                "split_by_time": split_by_time,
+                "context_times_by_window": context_times_by_window,
+                "shard_index": shard_index,
+                "horizons": horizons,
+                "min_obs": args.min_obs_per_time,
+                "cost_bps": args.cost_bps,
+                "top_quantile": args.top_quantile,
+                "portfolio_mode": args.portfolio_mode,
+                "expression_cache": expression_cache,
+                "feature_matrix_cache": feature_matrix_cache if not args.disable_feature_matrix_cache else {},
+                "operator_cache_by_window": operator_cache_by_window if not args.disable_operator_cache else {},
+                "cache_stats": shard_cache_stats,
+                "operator_cache_max_entries": -1 if args.disable_operator_cache else args.operator_cache_max_entries,
+                "feature_matrix_cache_max_windows": 0 if args.disable_feature_matrix_cache else args.feature_matrix_cache_max_windows,
+                "persistent_cache_root": _resolve(args.persistent_cache_root) if args.persistent_cache_root is not None else None,
+                "persistent_cache_mode": "off" if args.persistent_cache_mode == "off" else args.persistent_cache_mode,
+                "persistent_expression_cache": not bool(args.disable_persistent_expression_cache),
+                "persistent_operator_cache": not bool(args.disable_persistent_operator_cache),
+                "persistent_feature_matrix_cache": not bool(args.disable_persistent_feature_matrix_cache),
+                "persistent_cache_min_free_gb": float(args.persistent_cache_min_free_gb),
+                "persistent_cache_max_gb": float(args.persistent_cache_max_gb),
+                "persistent_cache_ttl_days": float(args.persistent_cache_ttl_days),
+                "persistent_cache_scope": persistent_scope,
+                "semantic_sketch_size": max(16, int(args.semantic_sketch_size)),
+                "operator_cache_max_bytes": max(0, int(float(args.operator_cache_max_mb) * 1024 * 1024)),
+                "feature_matrix_cache_max_bytes": max(0, int(float(args.feature_matrix_cache_max_mb) * 1024 * 1024)),
+            }
+            evaluation_sequence: list[tuple[dict[str, Any], np.ndarray | None]] = []
+            if args.enforce_pair_shared_support:
+                if args.disable_factor_expression_cache:
+                    raise ValueError("pair shared-support alignment requires the factor expression cache")
+                for primary, control in group_candidate_pairs(candidates):
+                    for member in (primary, control):
+                        if str(member.get("pair_support_alignment_policy") or "") != PAIR_SUPPORT_ALIGNMENT_POLICY:
+                            raise ValueError("candidate does not declare the frozen pair support-alignment policy")
+                        if str(member.get("pair_maturity_alignment_policy") or "") != PAIR_MATURITY_ALIGNMENT_POLICY:
+                            raise ValueError("candidate does not declare the frozen pair maturity-alignment policy")
+                        _candidate_portfolio_rows_from_frame(
+                            candidate=member,
+                            semantic_only=True,
+                            semantic_diagnostics=None,
+                            eligible_signal_mask=None,
+                            **evaluation_kwargs,
+                        )
+                    common_mask = _pair_common_finite_mask(
+                        expression_cache[str(primary["expression"])],
+                        expression_cache[str(control["expression"])],
+                    )
+                    evaluation_sequence.extend(((primary, common_mask), (control, common_mask)))
+            else:
+                evaluation_sequence = [(candidate, None) for candidate in candidates]
+            for candidate_index, (candidate, shared_support_mask) in enumerate(evaluation_sequence, 1):
                 semantic_diagnostics: dict[str, Any] | None = {} if write_semantic_sketches else None
                 rows = _candidate_portfolio_rows_from_frame(
                     candidate=candidate,
-                    frame=frame,
-                    eval_mask=eval_mask,
-                    eval_frame=eval_frame,
-                    labels=labels,
-                    eval_time_index=eval_time_index,
-                    split_by_time=split_by_time,
-                    context_times_by_window=context_times_by_window,
-                    shard_index=shard_index,
-                    horizons=horizons,
-                    min_obs=args.min_obs_per_time,
-                    cost_bps=args.cost_bps,
-                    top_quantile=args.top_quantile,
-                    portfolio_mode=args.portfolio_mode,
-                    expression_cache=expression_cache if not args.disable_factor_expression_cache else {},
-                    feature_matrix_cache=feature_matrix_cache if not args.disable_feature_matrix_cache else {},
-                    operator_cache_by_window=operator_cache_by_window if not args.disable_operator_cache else {},
-                    cache_stats=shard_cache_stats,
-                    operator_cache_max_entries=-1 if args.disable_operator_cache else args.operator_cache_max_entries,
-                    feature_matrix_cache_max_windows=0 if args.disable_feature_matrix_cache else args.feature_matrix_cache_max_windows,
-                    persistent_cache_root=_resolve(args.persistent_cache_root) if args.persistent_cache_root is not None else None,
-                    persistent_cache_mode="off" if args.persistent_cache_mode == "off" else args.persistent_cache_mode,
-                    persistent_expression_cache=not bool(args.disable_persistent_expression_cache),
-                    persistent_operator_cache=not bool(args.disable_persistent_operator_cache),
-                    persistent_feature_matrix_cache=not bool(args.disable_persistent_feature_matrix_cache),
-                    persistent_cache_min_free_gb=float(args.persistent_cache_min_free_gb),
-                    persistent_cache_max_gb=float(args.persistent_cache_max_gb),
-                    persistent_cache_ttl_days=float(args.persistent_cache_ttl_days),
-                    persistent_cache_scope=persistent_scope,
                     semantic_only=bool(args.semantic_only),
                     semantic_diagnostics=semantic_diagnostics,
-                    semantic_sketch_size=max(16, int(args.semantic_sketch_size)),
-                    operator_cache_max_bytes=max(0, int(float(args.operator_cache_max_mb) * 1024 * 1024)),
-                    feature_matrix_cache_max_bytes=max(0, int(float(args.feature_matrix_cache_max_mb) * 1024 * 1024)),
+                    eligible_signal_mask=shared_support_mask,
+                    **evaluation_kwargs,
                 )
                 candidate_id = str(candidate.get("candidate_id") or "")
                 evaluator_invocation_counts[candidate_id] = evaluator_invocation_counts.get(candidate_id, 0) + 1
@@ -3216,6 +3270,13 @@ def main(argv: list[str] | None = None) -> int:
         "top_quantile": args.top_quantile,
         "portfolio_mode": args.portfolio_mode,
         "short_allowed": bool(args.portfolio_mode == "long_short_spread"),
+        "pair_shared_support_enforced": bool(args.enforce_pair_shared_support),
+        "pair_support_alignment_policy": (
+            PAIR_SUPPORT_ALIGNMENT_POLICY if args.enforce_pair_shared_support else "LEGACY_INDEPENDENT_SUPPORT"
+        ),
+        "pair_maturity_alignment_policy": (
+            PAIR_MATURITY_ALIGNMENT_POLICY if args.enforce_pair_shared_support else "LEGACY_MEMBER_LOCAL_MATURITY"
+        ),
         "rank_ic_loss_weight": args.rank_ic_loss_weight,
         "rank_ic_component_cap": args.rank_ic_component_cap,
         "regime_stability_weight": args.regime_stability_weight,

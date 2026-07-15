@@ -121,6 +121,15 @@
       15,
       30
     ],
+    "horizon_unit_by_route": {
+      "DISCLOSURE_EVENT": "stock_session",
+      "FIRSTN_PATH": "minute",
+      "INTRADAY_STATE_TRANSITION": "minute",
+      "MARKET_REGIME_CONDITION": "minute",
+      "MINUTE_STATIC": "minute",
+      "SLOW_CROSS_SECTIONAL_LEVEL": "stock_session",
+      "SLOW_TEMPORAL_CHANGE": "stock_session"
+    },
     "minimum_observations_per_cross_section": 20,
     "optimizer_reward_metric": "matched_train_primary_minus_control_composite_reward",
     "pair_maturity_alignment_policy": "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT",

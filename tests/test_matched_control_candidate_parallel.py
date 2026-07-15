@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import csv
+import json
 from pathlib import Path
 
 import numpy as np
@@ -43,6 +44,19 @@ REGISTRY = (
 )
 EVALUATOR = REPO / "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
 DATA_RELEASE_HASH = "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827"
+
+
+def test_pair_common_finite_mask_uses_strict_intersection() -> None:
+    primary = pd.Series([1.0, np.nan, 3.0, np.inf, 5.0])
+    control = pd.Series([2.0, 2.0, np.nan, 4.0, 6.0])
+
+    assert phase3cm._pair_common_finite_mask(primary, control).tolist() == [
+        True,
+        False,
+        False,
+        False,
+        True,
+    ]
 
 
 def _candidate_authority(registry: UnifiedCapabilityRegistry) -> CandidateSubmissionAuthority:
@@ -425,6 +439,7 @@ def test_phase3cm_formally_evaluates_both_pair_members_and_writes_matched_increm
             "10",
             "--write-pnl-rows",
             "--write-reward-atoms",
+            "--enforce-pair-shared-support",
             "--disable-incremental-checkpoints",
             "--disable-persistent-expression-cache",
             "--disable-persistent-operator-cache",
@@ -451,3 +466,5 @@ def test_phase3cm_formally_evaluates_both_pair_members_and_writes_matched_increm
     assert pair_rows[0]["matched_train_increment"] != ""
     assert int(pair_rows[0]["primary_evaluator_invocation_count"]) == 1
     assert int(pair_rows[0]["control_evaluator_invocation_count"]) == 1
+    summary = json.loads((output_root / "phase3cm_train_reward_audit_summary.json").read_text())
+    assert summary["pair_shared_support_enforced"] is True
