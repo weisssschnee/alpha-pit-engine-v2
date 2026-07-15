@@ -11,7 +11,6 @@ import csv
 import hashlib
 import json
 import math
-import subprocess
 import zipfile
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
@@ -104,10 +103,6 @@ def summarize_pair_rows(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _git(repo: Path, *args: str) -> str:
-    return subprocess.check_output(["git", *args], cwd=repo, text=True).strip()
-
-
 def _route_failure_markdown(summary: Mapping[str, Any]) -> str:
     lines = [
         "| Route | Preflight pairs | Evaluated | Blocked | Primary attribution |",
@@ -137,12 +132,15 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=Path.cwd())
     parser.add_argument("--total-memory-bytes", type=int, required=True)
     parser.add_argument("--logical-processors", type=int, required=True)
+    parser.add_argument("--source-sha", required=True)
     args = parser.parse_args()
 
     repo = args.repo.resolve()
     runtime = args.runtime_root.resolve()
     reports = args.report_root.resolve()
     reports.mkdir(parents=True, exist_ok=True)
+    if len(args.source_sha) != 40 or any(char not in "0123456789abcdef" for char in args.source_sha.lower()):
+        raise ValueError("source SHA must be a 40-character hexadecimal Git identity")
     preflight = runtime / "resource_preflight"
 
     generation = _json(runtime / "CN_GENERATION_EPOCH_SUMMARY.json")
@@ -297,7 +295,7 @@ def main() -> int:
     decision = {
         "status": FINAL_STATUS,
         "preflight_status": PREFLIGHT_STATUS,
-        "source_sha": _git(repo, "rev-parse", "HEAD"),
+        "source_sha": args.source_sha.lower(),
         "closure_sha": "4cbb228cedabd93dc1b98bcce17ec11296b68860",
         "proposal_attempts": int(generation["proposal_attempts"]),
         "legal_exact_unique": int(generation["legal_exact_unique_primaries"]),
@@ -390,7 +388,7 @@ The route rows above describe only the representative preflight. `NO_GROSS_EDGE`
     manifest = {
         "status": "CN_COMPOSITIONAL_SEARCH_ARTIFACTS_COMPLETE_COMPUTE_BOTTLENECK",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "repo_sha": _git(repo, "rev-parse", "HEAD"),
+        "repo_sha": args.source_sha.lower(),
         "runtime": [_artifact_record(runtime / name, repo) for name in required_runtime],
         "reports": [_artifact_record(reports / name, repo) for name in required_reports],
         "sealed_reads": {"validation": 0, "holdout": 0, "forward_2026": 0},
