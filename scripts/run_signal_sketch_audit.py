@@ -177,6 +177,15 @@ def prepare(args: argparse.Namespace) -> int:
     generation = _read_csv(args.generation_csv)
     expressions = [str(row.get("expression") or "") for row in generation]
     required_fields = sorted({field for expression in expressions for field in _fields(expression)})
+    if args.extra_fields_file is not None:
+        required_fields = sorted(
+            set(required_fields)
+            | {
+                line.strip()
+                for line in args.extra_fields_file.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            }
+        )
     max_window = max((_max_expression_window(expression) for expression in expressions), default=0)
     if max_window > args.max_window:
         raise RuntimeError(f"observed expression window {max_window} exceeds configured {args.max_window}")
@@ -825,6 +834,7 @@ def parser() -> argparse.ArgumentParser:
     prep.add_argument("--shard-root", type=Path, required=True)
     prep.add_argument("--split-manifest", type=Path, required=True)
     prep.add_argument("--output-root", type=Path, required=True)
+    prep.add_argument("--extra-fields-file", type=Path)
     prep.add_argument("--codes-per-row-group", type=int, default=2)
     prep.add_argument("--max-window", type=int, default=120)
     prep.set_defaults(func=prepare)

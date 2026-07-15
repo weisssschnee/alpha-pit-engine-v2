@@ -956,6 +956,13 @@ def evaluate_panel_expression(
         cross_key = _cross_section_key(frame, evaluation_context)
         cross_layout = _cached_group_layout(frame, "cross_section", cross_key, context=evaluation_context)
         return store(fast_zscore_by_group(value, cross_key, layout=cross_layout))
+    if name_lower == "winsorize" and len(args) == 1:
+        value = pd.to_numeric(evaluate_child(args[0]), errors="coerce")
+        cross_key = _cross_section_key(frame, evaluation_context)
+        grouped = value.groupby(cross_key, sort=False)
+        lower = grouped.transform(lambda item: item.quantile(0.01))
+        upper = grouped.transform(lambda item: item.quantile(0.99))
+        return store(value.clip(lower=lower, upper=upper))
     if name_lower == "csresidual" and len(args) == 2:
         left = evaluate_child(args[0])
         right = evaluate_child(args[1])

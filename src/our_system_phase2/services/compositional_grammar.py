@@ -726,11 +726,12 @@ class CompositionalGrammarV2:
             family = "Transition"
         elif name == "regime_maturity_payload":
             primary_expression = (
-                f"CSRank(Mul(ZScore({payload_ref}),Sign(Delta({condition_ref},{window}))))"
+                f"CSRank(Mul(Sign({payload_ref}),Persistence(Sign({condition_ref}),{window})))"
             )
+            family = "StateAge"
         elif name == "regime_age_response":
             primary_expression = (
-                f"CSRank(Mul(ZScore({payload_ref}),StateAge({condition_ref})))"
+                f"CSRank(Mul(ZScore({payload_ref}),StateAge(Sign({condition_ref}))))"
             )
             family = "StateAge"
         elif name == "regime_multiscale_response":
@@ -744,7 +745,7 @@ class CompositionalGrammarV2:
             family = "ConditionGate"
         elif name == "regime_persistence_gate":
             primary_expression = (
-                f"CSRank(Mul(ZScore({payload_ref}),Sign(Persistence({condition_ref},{window}))))"
+                f"CSRank(Add(ZScore({payload_ref}),Mul(PathShape({payload_ref},{window}),Sign({condition_ref}))))"
             )
             family = "ConditionGate"
         else:  # pragma: no cover
