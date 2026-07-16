@@ -9,6 +9,19 @@ from pathlib import Path
 from typing import Any
 
 
+_TEXT_SUFFIXES = {
+    ".csv",
+    ".html",
+    ".json",
+    ".md",
+    ".ps1",
+    ".py",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
+
+
 REQUIRED_CURRENT_NODES = {
     "feature_state_fabric",
     "typed_temporal_program",
@@ -20,11 +33,10 @@ REQUIRED_CURRENT_NODES = {
 
 
 def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    payload = path.read_bytes()
+    if path.suffix.lower() in _TEXT_SUFFIXES:
+        payload = payload.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
@@ -33,6 +45,8 @@ def validate_nextgen_dark(repo: Path) -> dict[str, Any]:
     registry = json.loads((repo / "runtime/field_registry/nextgen_dark_field_registry_v2.json").read_text(encoding="utf-8"))
     graph = json.loads((repo / ".planning/graphs/current.json").read_text(encoding="utf-8"))
     artifact_index = json.loads((repo / "reports/nextgen_dark_20260711/ARTIFACT_INDEX.json").read_text(encoding="utf-8"))
+    if artifact_index.get("hash_contract") != "SHA256_TEXT_NEWLINES_LF_V1":
+        raise RuntimeError("NEXTGEN artifact index hash contract is missing or unsupported")
     temporal = json.loads((repo / "runtime/run_plans/nextgen_dark_temporal_registry_v1.json").read_text(encoding="utf-8"))
     events = json.loads((repo / "runtime/run_plans/nextgen_dark_event_registry_v1.json").read_text(encoding="utf-8"))
     lanes = json.loads((repo / "runtime/run_plans/nextgen_dark_hypothesis_lane_registry_v1.json").read_text(encoding="utf-8"))

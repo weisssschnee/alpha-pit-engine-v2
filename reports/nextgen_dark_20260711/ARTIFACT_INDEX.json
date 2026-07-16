@@ -173,21 +173,22 @@
     {
       "exists": true,
       "id": "delivery_validator",
-      "last_verified_sha": "56a818695d8aab3294979068c6fcea5cc0111e7e481813d77eacace295188fa3",
+      "last_verified_sha": "cb092c3c88366ec38c1aed59e391f578785ca6cb82d3674bf309d2b8efb976c6",
       "path": "scripts/validate_nextgen_dark_delivery.py",
-      "size_bytes": 6191,
+      "size_bytes": 6494,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "artifact_index_refresher",
-      "last_verified_sha": "13a1a6ac599c3d7c3c55406035dea92461a04e78c9836a9b5fb88ecf777faf26",
+      "last_verified_sha": "f10fe0897af1f4cb1e80afa787fd1a818ea532188549c87358b4977ed9f44b91",
       "path": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "size_bytes": 2205,
+      "size_bytes": 2472,
       "state": "IMPLEMENTED"
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-16T16:14:26.952848+00:00",
-  "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
+  "refreshed_at": "2026-07-16T16:22:10.619816+00:00",
+  "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY",
+  "hash_contract": "SHA256_TEXT_NEWLINES_LF_V1"
 }
