@@ -72,8 +72,12 @@ def _decode(value: Any, arrays: dict[str, np.ndarray]) -> Any:
     return value
 
 
+def _atomic_json_temporary_path(path: Path) -> Path:
+    return path.with_name(f".{uuid.uuid4().hex}.tmp")
+
+
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
-    temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
+    temporary = _atomic_json_temporary_path(path)
     temporary.write_text(
         json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
         encoding="utf-8",

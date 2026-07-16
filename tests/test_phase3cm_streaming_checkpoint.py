@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -8,6 +9,7 @@ import pytest
 from our_system_phase2.services.phase3cm_streaming_checkpoint import (
     CheckpointDriftError,
     StreamingCheckpointPayload,
+    _atomic_json_temporary_path,
     load_checkpoint,
     write_checkpoint,
 )
@@ -101,3 +103,14 @@ def test_checkpoint_retention_prunes_only_after_latest_manifest_is_committed(tmp
     assert float(restored.streaming_reducer_payload["net_sum"][0]) == 4.0
     assert records[-1]["retained_complete_checkpoint_count"] == 2
     assert records[-1]["pruned_complete_checkpoint_count"] == 1
+
+
+def test_atomic_manifest_temporary_name_stays_short_at_windows_path_boundary() -> None:
+    target = Path("C:/") / ("nested" * 24) / "CN_STREAMING_CHECKPOINT_MANIFEST.json"
+    temporary = _atomic_json_temporary_path(target)
+
+    assert temporary.parent == target.parent
+    assert temporary.name.startswith(".")
+    assert temporary.name.endswith(".tmp")
+    assert len(temporary.name) == 37
+    assert len(str(temporary)) < len(str(target)) + 8
