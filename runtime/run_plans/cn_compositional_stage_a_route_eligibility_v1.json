@@ -1,0 +1,235 @@
+{
+  "access_contract": {
+    "cross_sprint_memory": "FORBIDDEN",
+    "development": "ONLY",
+    "forward_2026": "SEALED",
+    "holdout": "FORBIDDEN",
+    "promotion": "FORBIDDEN",
+    "validation": "FORBIDDEN"
+  },
+  "decision_hash": "b0d62233ba6bdf434eb01cb6def1ad02b9a9328d4524d81b342315c065802c2e",
+  "eligible_routes": [
+    "FIRSTN_PATH",
+    "INTRADAY_STATE_TRANSITION",
+    "MARKET_REGIME_CONDITION",
+    "MINUTE_STATIC",
+    "SLOW_CROSS_SECTIONAL_LEVEL",
+    "SLOW_TEMPORAL_CHANGE"
+  ],
+  "excluded_claims": [
+    "COMPLETE_SEVEN_ROUTE_COMPOSITIONAL_CAPABILITY",
+    "BROAD_DISCLOSURE_EVENT_CAPABILITY",
+    "VALIDATION_HOLDOUT_OR_FORWARD_PERFORMANCE",
+    "CANDIDATE_PROMOTION"
+  ],
+  "excluded_routes": [
+    "DISCLOSURE_EVENT"
+  ],
+  "frozen_stage_a_pair_budget": 3484,
+  "manifest_hash": "6821b006bc84be7ea1aa6badaaa630c756b914be273adc55107473f74ab4710f",
+  "next_authorized_action": "PREPARE_FROZEN_STAGE_A_INPUTS_PENDING_SEPARATE_EXECUTION_AUTHORIZATION",
+  "research_claim": "CURRENT_FORMALLY_EVALUABLE_ROUTES_DEVELOPMENT_INCREMENT",
+  "route_decisions": {
+    "DISCLOSURE_EVENT": {
+      "admitted_behavior_identity_supply": 13,
+      "admitted_exact_supply": 18,
+      "admitted_policy_count": 4,
+      "admitted_seed_count": 4,
+      "admitted_signal_cluster_supply": 13,
+      "admitted_skeleton_count": 5,
+      "eligible_pair_quota": 0,
+      "generated_behavior_unique": 13,
+      "generated_exact_unique": 40,
+      "materialization_pass": 40,
+      "original_pair_quota": 576,
+      "reasons": [
+        "SOURCE_AND_AUDIT_CEILING_40",
+        "FINAL_EXACT_SUPPLY_40",
+        "SUPPORT_QUALIFIED_ADMISSION_18",
+        "CURRENT_GENERATOR_DOES_NOT_REPRESENT_BROAD_DISCLOSURE_CAPABILITY"
+      ],
+      "selection_used_performance": false,
+      "status": "PARTIAL_NOT_FORMALLY_EVALUABLE",
+      "supply_to_quota_ratio": 0.03125,
+      "support_pass": 18,
+      "unused_pair_quota": 576
+    },
+    "FIRSTN_PATH": {
+      "admitted_behavior_identity_supply": 2559,
+      "admitted_exact_supply": 2743,
+      "admitted_policy_count": 4,
+      "admitted_seed_count": 4,
+      "admitted_signal_cluster_supply": 2498,
+      "admitted_skeleton_count": 7,
+      "eligible_pair_quota": 592,
+      "generated_behavior_unique": 2854,
+      "generated_exact_unique": 9273,
+      "materialization_pass": 4972,
+      "original_pair_quota": 592,
+      "reasons": [
+        "ADMITTED_EXACT_SUPPLY_MEETS_FROZEN_ROUTE_QUOTA",
+        "ALL_FROZEN_POLICIES_AND_SEEDS_PRESENT"
+      ],
+      "selection_used_performance": false,
+      "status": "FORMALLY_EVALUABLE",
+      "supply_to_quota_ratio": 4.633445945945946,
+      "support_pass": 3169,
+      "unused_pair_quota": 0
+    },
+    "INTRADAY_STATE_TRANSITION": {
+      "admitted_behavior_identity_supply": 364,
+      "admitted_exact_supply": 540,
+      "admitted_policy_count": 4,
+      "admitted_seed_count": 4,
+      "admitted_signal_cluster_supply": 364,
+      "admitted_skeleton_count": 8,
+      "eligible_pair_quota": 540,
+      "generated_behavior_unique": 364,
+      "generated_exact_unique": 540,
+      "materialization_pass": 540,
+      "original_pair_quota": 576,
+      "reasons": [
+        "NATURAL_UNDERFILL_REPORTED_WITHOUT_BUDGET_REALLOCATION",
+        "ALL_FROZEN_POLICIES_AND_SEEDS_PRESENT"
+      ],
+      "selection_used_performance": false,
+      "status": "FORMALLY_EVALUABLE_WITH_NATURAL_UNDERFILL",
+      "supply_to_quota_ratio": 0.9375,
+      "support_pass": 540,
+      "unused_pair_quota": 36
+    },
+    "MARKET_REGIME_CONDITION": {
+      "admitted_behavior_identity_supply": 1166,
+      "admitted_exact_supply": 2743,
+      "admitted_policy_count": 4,
+      "admitted_seed_count": 4,
+      "admitted_signal_cluster_supply": 1054,
+      "admitted_skeleton_count": 8,
+      "eligible_pair_quota": 576,
+      "generated_behavior_unique": 1166,
+      "generated_exact_unique": 3681,
+      "materialization_pass": 3342,
+      "original_pair_quota": 576,
+      "reasons": [
+        "ADMITTED_EXACT_SUPPLY_MEETS_FROZEN_ROUTE_QUOTA",
+        "ALL_FROZEN_POLICIES_AND_SEEDS_PRESENT"
+      ],
+      "selection_used_performance": false,
+      "status": "FORMALLY_EVALUABLE",
+      "supply_to_quota_ratio": 4.762152777777778,
+      "support_pass": 3160,
+      "unused_pair_quota": 0
+    },
+    "MINUTE_STATIC": {
+      "admitted_behavior_identity_supply": 533,
+      "admitted_exact_supply": 781,
+      "admitted_policy_count": 4,
+      "admitted_seed_count": 4,
+      "admitted_signal_cluster_supply": 466,
+      "admitted_skeleton_count": 8,
+      "eligible_pair_quota": 592,
+      "generated_behavior_unique": 533,
+      "generated_exact_unique": 781,
+      "materialization_pass": 781,
+      "original_pair_quota": 592,
+      "reasons": [
+        "ADMITTED_EXACT_SUPPLY_MEETS_FROZEN_ROUTE_QUOTA",
+        "ALL_FROZEN_POLICIES_AND_SEEDS_PRESENT"
+      ],
+      "selection_used_performance": false,
+      "status": "FORMALLY_EVALUABLE",
+      "supply_to_quota_ratio": 1.3192567567567568,
+      "support_pass": 781,
+      "unused_pair_quota": 0
+    },
+    "SLOW_CROSS_SECTIONAL_LEVEL": {
+      "admitted_behavior_identity_supply": 2032,
+      "admitted_exact_supply": 2432,
+      "admitted_policy_count": 4,
+      "admitted_seed_count": 4,
+      "admitted_signal_cluster_supply": 2007,
+      "admitted_skeleton_count": 8,
+      "eligible_pair_quota": 592,
+      "generated_behavior_unique": 2032,
+      "generated_exact_unique": 5015,
+      "materialization_pass": 5015,
+      "original_pair_quota": 592,
+      "reasons": [
+        "ADMITTED_EXACT_SUPPLY_MEETS_FROZEN_ROUTE_QUOTA",
+        "ALL_FROZEN_POLICIES_AND_SEEDS_PRESENT"
+      ],
+      "selection_used_performance": false,
+      "status": "FORMALLY_EVALUABLE",
+      "supply_to_quota_ratio": 4.108108108108108,
+      "support_pass": 2432,
+      "unused_pair_quota": 0
+    },
+    "SLOW_TEMPORAL_CHANGE": {
+      "admitted_behavior_identity_supply": 2606,
+      "admitted_exact_supply": 2743,
+      "admitted_policy_count": 4,
+      "admitted_seed_count": 4,
+      "admitted_signal_cluster_supply": 2593,
+      "admitted_skeleton_count": 8,
+      "eligible_pair_quota": 592,
+      "generated_behavior_unique": 5444,
+      "generated_exact_unique": 9310,
+      "materialization_pass": 9310,
+      "original_pair_quota": 592,
+      "reasons": [
+        "ADMITTED_EXACT_SUPPLY_MEETS_FROZEN_ROUTE_QUOTA",
+        "ALL_FROZEN_POLICIES_AND_SEEDS_PRESENT"
+      ],
+      "selection_used_performance": false,
+      "status": "FORMALLY_EVALUABLE",
+      "supply_to_quota_ratio": 4.633445945945946,
+      "support_pass": 6314,
+      "unused_pair_quota": 0
+    }
+  },
+  "schema_version": "cn_compositional_stage_a_route_eligibility_v1",
+  "selection_contract": {
+    "excluded_budget_reallocation": "FORBIDDEN",
+    "natural_underfill_budget_reallocation": "FORBIDDEN",
+    "one_exact_identity_one_vote": true,
+    "ordering": [
+      "route_id",
+      "admission_rank",
+      "pair_id"
+    ],
+    "performance_selection": "FORBIDDEN",
+    "source": "CN_DIVERSITY_ADMISSION.csv"
+  },
+  "source_artifacts": [
+    {
+      "bytes": 7552,
+      "path": "runtime/run_plans/cn_compositional_nline_bounded_search_epoch1_v1.json",
+      "sha256": "143f2109d28c951ef35bff3d27d26fea8966dce94a36c107e1919378ffb1f76e"
+    },
+    {
+      "bytes": 1144,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_ADMISSION_WATERFALL.csv",
+      "sha256": "d61c4264361ae6795af05a50b52a4e39df3b3fccc78c1cdb140801f6371225ed"
+    },
+    {
+      "bytes": 5849227,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_DIVERSITY_ADMISSION.csv",
+      "sha256": "f7f9c9c0f08918d9441090707c1fe9ba61e1c40ce19a57e6f153081a0f238d9a"
+    },
+    {
+      "bytes": 38816,
+      "path": "runtime/cn_compositional_nline_large_search_20260715/CN_GENERATOR_EXPRESSIVITY_AUDIT.json",
+      "sha256": "61615bc65a231b71484369032bfbe09f3f8f21a676865c8a55646880d3d29eb4"
+    }
+  ],
+  "source_stage_a_pair_budget": 4096,
+  "stage_a_pack": {
+    "bytes": 1715595,
+    "pair_count": 3484,
+    "path": "runtime/cn_compositional_nline_large_search_20260715/CN_STAGE_A_ROUTE_ELIGIBLE_PACK.csv",
+    "sha256": "93c59ec37eef415a062f76e2f1e9dd92b2cf3e005127116a04657fc379dec459"
+  },
+  "status": "CN_COMPOSITIONAL_STAGE_A_ROUTE_ELIGIBILITY_FROZEN",
+  "strict_stage_a": "NOT_AUTHORIZED",
+  "unused_pair_budget_not_reallocated": 612
+}
