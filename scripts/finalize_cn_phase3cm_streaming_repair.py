@@ -168,6 +168,7 @@ def _combined_summary(root: Path, receipt_name: str) -> dict[str, Any]:
         "heavy_processes": int(receipt["heavy_processes"]),
         "compute_threads_per_process": int(receipt["compute_threads_per_process"]),
         "global_active_native_compute_threads": int(receipt["global_active_native_compute_threads"]),
+        "qualification_repo_sha": receipt.get("combined_contract_repo_sha"),
         "pair_count": active["pair_count"] + session["pair_count"],
         "candidate_count": active["candidate_count"] + session["candidate_count"],
         "rows_processed": active["rows_processed"] + session["rows_processed"],
@@ -311,9 +312,17 @@ def main() -> int:
     parser.add_argument("--phase-d-32-root", type=Path, required=True)
     parser.add_argument("--phase-e-32-root", type=Path, required=True)
     parser.add_argument("--source-sha", required=True)
+    parser.add_argument("--qualification-sha", required=True)
     parser.add_argument("--test-summary", type=Path, required=True)
     parser.add_argument("--device-bandwidth-bytes-per-second", type=float, default=9_076_000_000.0)
     args = parser.parse_args()
+
+    for label, value in (
+        ("source SHA", args.source_sha),
+        ("qualification SHA", args.qualification_sha),
+    ):
+        if len(str(value)) != 40 or any(character not in "0123456789abcdef" for character in str(value)):
+            raise ValueError(f"{label} must be a full lowercase Git SHA")
 
     runtime_root = args.runtime_root.resolve()
     report_root = args.report_root.resolve()
@@ -556,6 +565,8 @@ def main() -> int:
             "coordinate_rows_retained_zero": phase_e_32["coordinate_rows_retained"] == 0,
             "semantic_mismatch_zero": parity_summary["mismatch_total"] == 0,
             "pair_drift_zero": observed_pair_ids == expected_pair_ids,
+            "qualification_repo_sha_matches": phase_e_32["qualification_repo_sha"]
+            == args.qualification_sha,
             "infrastructure_failed_pair_zero": phase_e_32["infrastructure_failed_pair_count"] == 0,
             "validation_reads_zero": phase_e_32["validation_reads"] == 0,
             "holdout_reads_zero": phase_e_32["holdout_reads"] == 0,
@@ -608,6 +619,7 @@ def main() -> int:
     combined_dag = {
         "schema_version": "cn_shared_multicandidate_dag_plan_combined_v1",
         "source_sha": args.source_sha,
+        "qualification_repo_sha": args.qualification_sha,
         "active_bar": {
             "plan_hash": phase_e_32["active_bar"]["dag_plan_hash"],
             "execution_plan_hash": phase_e_32["active_bar"]["execution_plan_hash"],
@@ -765,6 +777,45 @@ def main() -> int:
                 ),
             }
         ),
+        "qualification_execution_harness": _stable_hash(
+            {
+                "checkpoint": _sha256(
+                    repo_root
+                    / "src"
+                    / "our_system_phase2"
+                    / "services"
+                    / "phase3cm_streaming_checkpoint.py"
+                ),
+                "resource_contract": _sha256(
+                    repo_root
+                    / "src"
+                    / "our_system_phase2"
+                    / "services"
+                    / "phase3cm_streaming_resource_contract.py"
+                ),
+                "process_tree_monitor": _sha256(
+                    repo_root / "scripts" / "cn_phase3cm_process_tree_monitor.ps1"
+                ),
+                "backend_exit_wrapper": _sha256(
+                    repo_root
+                    / "scripts"
+                    / "invoke_cn_phase3cm_backend_with_exit_receipt.ps1"
+                ),
+                "phase_d_orchestrator": _sha256(
+                    repo_root
+                    / "scripts"
+                    / "run_cn_phase3cm_phase_d_32pair_scaling_77o.ps1"
+                ),
+                "phase_e_orchestrator": _sha256(
+                    repo_root
+                    / "scripts"
+                    / "run_cn_phase3cm_phase_e_qualification_77o.ps1"
+                ),
+                "phase_e_freezer": _sha256(
+                    repo_root / "scripts" / "freeze_cn_phase3cm_phase_e_plans.py"
+                ),
+            }
+        ),
     }
     artifact_by_name = {str(row["path"]): row for row in binding["artifacts"]}
     frozen_artifact_hashes = {
@@ -783,6 +834,7 @@ def main() -> int:
         ),
     }
     source_contract["source_implementation_sha"] = args.source_sha
+    source_contract["qualification_repo_sha"] = args.qualification_sha
     source_contract["source_component_hashes"] = source_component_hashes
     source_contract["frozen_artifact_hashes"] = frozen_artifact_hashes
     source_contract["final_evaluator_status"] = evaluator_status
@@ -795,6 +847,7 @@ def main() -> int:
         "stage_a_entry_readiness": stage_a_status,
         "strict_stage_a": "NOT_AUTHORIZED",
         "source_implementation_sha": args.source_sha,
+        "qualification_repo_sha": args.qualification_sha,
         "base_closure_sha": binding.get("source_closure_sha"),
         "frozen_input_hashes": {
             "binding_hash": binding["binding_hash"],
@@ -829,6 +882,7 @@ Stage A resource readiness: `{stage_a_status}`. Strict Stage A remains `NOT_AUTH
 ## Frozen scope
 
 - Source implementation SHA: `{args.source_sha}`
+- Final qualification repo SHA: `{args.qualification_sha}`
 - Frozen input binding: `{binding['binding_hash']}`
 - Development release: `{binding['development_release_hash']}`
 - Split manifest: `{binding['split_manifest_hash']}`
@@ -893,6 +947,7 @@ This is a resource-readiness decision only. It is not Alpha evidence and does no
         "schema_version": "cn_streaming_artifact_manifest_v1",
         "status": "CN_PHASE3CM_STREAMING_REPAIR_ARTIFACTS_COMPLETE",
         "source_implementation_sha": args.source_sha,
+        "qualification_repo_sha": args.qualification_sha,
         "source_component_hashes": source_component_hashes,
         "frozen_artifact_hashes": frozen_artifact_hashes,
         "artifacts": [
