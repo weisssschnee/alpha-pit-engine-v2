@@ -2,3 +2,7 @@ config/architecture_overlay.json text eol=lf
 .planning/graphs/*.json text eol=lf
 .planning/graphs/*.html text eol=lf
 .planning/graphs/*.md text eol=lf
+runtime/field_registry/nextgen_dark_field_registry_v2.json text eol=lf
+runtime/run_plans/nextgen_dark_*.json text eol=lf
+reports/evalreset_phase1_20260711/ARTIFACT_INDEX.json text eol=lf
+reports/nextgen_dark_20260711/ARTIFACT_INDEX.json text eol=lf

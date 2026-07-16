@@ -39,7 +39,11 @@ def main(argv: list[str] | None = None) -> int:
     repo = Path(__file__).resolve().parents[1]
     payload = json.loads(args.index.read_text(encoding="utf-8"))
     payload = refresh(payload, repo=repo)
-    args.index.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.index.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     print(json.dumps({"artifact_count": len(payload["artifacts"]), "existing_count": sum(row["exists"] for row in payload["artifacts"])}, indent=2))
     return 0
 

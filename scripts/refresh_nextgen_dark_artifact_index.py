@@ -35,7 +35,9 @@ def refresh(repo: Path, index_path: Path) -> dict:
     temporary = Path(name)
     try:
         temporary.write_text(
-            json.dumps(index, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            json.dumps(index, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+            newline="\n",
         )
         os.replace(temporary, index_path)
     finally:

@@ -3,41 +3,41 @@
     {
       "exists": true,
       "id": "field_registry_121",
-      "last_verified_sha": "4ba9b0199033ea3d0cd4e5920309cb0866c13f1124c5f382cb14187ed4dc80ae",
+      "last_verified_sha": "fdb536dc20e2e3146838deec0a4f49afe8b880af4eabb31654cdd64477d5a5a4",
       "path": "runtime/field_registry/nextgen_dark_field_registry_v2.json",
-      "size_bytes": 69540,
+      "size_bytes": 67175,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "temporal_registry",
-      "last_verified_sha": "7ed3288a765603eafad55d5e99cf4eae4f83a76a50227caf81e2da9637bb9ca4",
+      "last_verified_sha": "34f708aaa746155e7a8e5089317998ee94d8c883c0500fc2ae30e9ff07ca348e",
       "path": "runtime/run_plans/nextgen_dark_temporal_registry_v1.json",
-      "size_bytes": 9010,
+      "size_bytes": 8775,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "event_registry",
-      "last_verified_sha": "d486e37d74da32f02197dda6de4781f73b2a00d363c79442312c0382e59513fd",
+      "last_verified_sha": "422a79f8b5c95898324d5141a36275c0d4aa72cb6580e6d94d8d375f2e0b77b2",
       "path": "runtime/run_plans/nextgen_dark_event_registry_v1.json",
-      "size_bytes": 7660,
+      "size_bytes": 7428,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "hypothesis_lane_registry",
-      "last_verified_sha": "d5307820f7ed5208ea655ddf6d4b50bd7c7b6115a95844ddf8d5c655faae0e60",
+      "last_verified_sha": "282de3aa0058fbb3e040709b8c77b2f46b165fd7f992901274aebad74a6ea2dc",
       "path": "runtime/run_plans/nextgen_dark_hypothesis_lane_registry_v1.json",
-      "size_bytes": 4379,
+      "size_bytes": 4242,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "benchmark_registry",
-      "last_verified_sha": "3a2ab5a492d4e69292f6a41b71e56029eacbd545940759c17aee5ddc0bca8ba8",
+      "last_verified_sha": "46ed532c1a6e781200068029e39a62ff693f1ea36c4b8ea2a31e49de30b8cf8b",
       "path": "runtime/run_plans/nextgen_dark_benchmark_registry_v1.json",
-      "size_bytes": 6246,
+      "size_bytes": 6074,
       "state": "IMPLEMENTED"
     },
     {
@@ -181,13 +181,13 @@
     {
       "exists": true,
       "id": "artifact_index_refresher",
-      "last_verified_sha": "fb2ee5f1ea69648f6fd6e5821ee221cb7228955c0e6454065e49e25b3c8ec4e5",
+      "last_verified_sha": "13a1a6ac599c3d7c3c55406035dea92461a04e78c9836a9b5fb88ecf777faf26",
       "path": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "size_bytes": 2166,
+      "size_bytes": 2205,
       "state": "IMPLEMENTED"
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-16T15:54:49.422528+00:00",
+  "refreshed_at": "2026-07-16T16:14:26.952848+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
 }
