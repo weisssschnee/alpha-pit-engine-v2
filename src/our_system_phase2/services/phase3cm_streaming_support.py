@@ -32,8 +32,14 @@ class PairSupportAccumulator:
         source_shards: np.ndarray,
         source_row_identity: np.ndarray,
         duplicate_ordinal: np.ndarray,
+        pair_indices: Sequence[int] | None = None,
     ) -> None:
         masks = np.asarray(common_masks, dtype=np.bool_)
+        indices = tuple(range(len(self.pair_ids))) if pair_indices is None else tuple(int(value) for value in pair_indices)
+        if not indices or len(set(indices)) != len(indices):
+            raise ValueError("pair indices must be non-empty and unique")
+        if min(indices) < 0 or max(indices) >= len(self.pair_ids):
+            raise ValueError("pair index outside frozen support accumulator")
         coordinates = tuple(
             np.asarray(value)
             for value in (
@@ -45,7 +51,7 @@ class PairSupportAccumulator:
             )
         )
         row_count = len(coordinates[0])
-        if masks.shape != (len(self.pair_ids), row_count):
+        if masks.shape != (len(indices), row_count):
             raise ValueError("common support mask shape drift")
         if any(len(value) != row_count for value in coordinates):
             raise ValueError("support coordinate shape drift")
@@ -68,8 +74,8 @@ class PairSupportAccumulator:
             ^ row * np.uint64(0x9E6C63D0676A9A99)
             ^ duplicate * np.uint64(0xC6BC279692B5CC83)
         )
-        for pair_index in range(len(self.pair_ids)):
-            active = masks[pair_index]
+        for local_index, pair_index in enumerate(indices):
+            active = masks[local_index]
             first = token1[active]
             second = token2[active]
             self.counts[pair_index] += np.uint64(len(first))

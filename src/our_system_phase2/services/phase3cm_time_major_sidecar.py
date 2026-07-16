@@ -6,6 +6,7 @@ import hashlib
 import json
 import time
 from pathlib import Path
+from datetime import date
 from typing import Any, Sequence
 
 import polars as pl
@@ -13,7 +14,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 
-SIDECAR_SCHEMA_VERSION = "cn_development_time_major_execution_layout_v1"
+SIDECAR_SCHEMA_VERSION = "cn_development_time_major_execution_layout_v2_train_only"
 STABLE_KEY = (
     "trade_time",
     "code",
@@ -31,13 +32,21 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _identity(source_sha: str, source_shard: int, fields: Sequence[str]) -> str:
+def _identity(
+    source_sha: str,
+    source_shard: int,
+    fields: Sequence[str],
+    eligible_trade_dates: Sequence[str] | None,
+    split_manifest_hash: str | None,
+) -> str:
     payload = {
         "schema_version": SIDECAR_SCHEMA_VERSION,
         "source_sha256": source_sha,
         "source_shard": int(source_shard),
         "fields": list(fields),
         "sort_key": list(STABLE_KEY),
+        "eligible_trade_dates": list(eligible_trade_dates or ()),
+        "split_manifest_hash": str(split_manifest_hash or ""),
     }
     return hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -51,6 +60,8 @@ def build_time_major_shard(
     source_shard: int,
     fields: Sequence[str],
     row_group_size: int = 262_144,
+    eligible_trade_dates: Sequence[str] | None = None,
+    split_manifest_hash: str | None = None,
 ) -> dict[str, Any]:
     source = Path(source_path)
     output = Path(output_path)
@@ -62,12 +73,17 @@ def build_time_major_shard(
     if not {"trade_time", "code"} <= set(selected):
         raise ValueError("time-major sidecar requires trade_time and code")
     source_sha = _sha256(source)
-    identity = _identity(source_sha, source_shard, selected)
+    eligible = tuple(sorted({date.fromisoformat(str(value)) for value in eligible_trade_dates or ()}))
+    eligible_strings = tuple(value.isoformat() for value in eligible)
+    identity = _identity(source_sha, source_shard, selected, eligible_strings, split_manifest_hash)
     started = time.perf_counter()
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_name(output.name + ".tmp.parquet")
+    lazy = pl.scan_parquet(source, row_index_name="source_row_identity", rechunk=False, low_memory=True)
+    if eligible:
+        lazy = lazy.filter(pl.col("trade_time").dt.date().is_in(eligible))
     lazy = (
-        pl.scan_parquet(source, row_index_name="source_row_identity", rechunk=False, low_memory=True)
+        lazy
         .select(
             *[pl.col(field) for field in selected],
             pl.lit(int(source_shard), dtype=pl.UInt16).alias("source_shard"),
@@ -100,18 +116,19 @@ def build_time_major_shard(
         "source_path": str(source),
         "source_sha256": source_sha,
         "source_bytes": source.stat().st_size,
-        "source_rows": parquet.metadata.num_rows,
+        "source_total_rows": parquet.metadata.num_rows,
         "output_path": str(output),
         "output_sha256": _sha256(output),
         "output_bytes": output.stat().st_size,
         "rows": pq.ParquetFile(output).metadata.num_rows,
         "fields": list(selected),
+        "eligible_trade_date_count": len(eligible_strings),
+        "split_manifest_hash": str(split_manifest_hash or ""),
         "stable_key": list(STABLE_KEY),
         "wall_seconds": elapsed,
         "status": "TIME_MAJOR_SHARD_READY",
     }
-    if result["rows"] != result["source_rows"]:
-        raise RuntimeError("sidecar row count drift")
+    result["source_rows"] = result["rows"]
     return result
 
 
@@ -173,12 +190,18 @@ def audit_sidecar_parity(
     sidecar_path: Path,
     source_shard: int,
     fields: Sequence[str],
+    eligible_trade_dates: Sequence[str] | None = None,
+    split_manifest_hash: str | None = None,
 ) -> dict[str, Any]:
     source = Path(source_path)
     sidecar = Path(sidecar_path)
     selected = tuple(dict.fromkeys(str(field) for field in fields))
+    eligible = tuple(sorted({date.fromisoformat(str(value)) for value in eligible_trade_dates or ()}))
+    source_lazy = pl.scan_parquet(source, row_index_name="source_row_identity", rechunk=False, low_memory=True)
+    if eligible:
+        source_lazy = source_lazy.filter(pl.col("trade_time").dt.date().is_in(eligible))
     source_lazy = (
-        pl.scan_parquet(source, row_index_name="source_row_identity", rechunk=False, low_memory=True)
+        source_lazy
         .select(
             *[pl.col(field) for field in selected],
             pl.lit(int(source_shard), dtype=pl.UInt16).alias("source_shard"),
@@ -221,10 +244,12 @@ def audit_sidecar_parity(
         "field_value_digest_match": values_source == values_sidecar,
     }
     return {
-        "schema_version": "cn_time_major_sidecar_parity_v1",
+        "schema_version": "cn_time_major_sidecar_parity_v2_train_only",
         "status": "SIDECAR_PARITY_PASS" if all(checks.values()) else "SIDECAR_PARITY_FAIL",
         "source_path": str(source),
         "sidecar_path": str(sidecar),
+        "eligible_trade_date_count": len(eligible),
+        "split_manifest_hash": str(split_manifest_hash or ""),
         "source_rows": source_count,
         "sidecar_rows": sidecar_count,
         "stable_key_unique_count": unique_keys,

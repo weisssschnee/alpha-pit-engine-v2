@@ -17,14 +17,29 @@ $env:POLARS_MAX_THREADS = [string]$PolarsThreads
 
 $RuntimeRoot = Join-Path $RepoRoot "runtime\cn_phase3cm_streaming_repair_20260716"
 $CandidateRoot = Join-Path $RepoRoot "runtime\cn_compositional_nline_large_search_20260715"
+$SplitManifest = Join-Path $RepoRoot "runtime\run_plans\phase3ga_true1min_2024_2025_global_split_manifest.csv"
+$SplitManifestHash = "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
 $SessionSourceRoot = Join-Path $CandidateRoot "resource_preflight\session_shards"
 New-Item -ItemType Directory -Force -Path $RuntimeRoot | Out-Null
 
 Push-Location $RepoRoot
 try {
-    & $PythonExe scripts\build_cn_phase3cm_forward_label_sidecars.py `
+    & $PythonExe scripts\build_cn_phase3cm_time_major_sidecar.py `
         --source-root $MinuteSourceRoot `
-        --output-root (Join-Path $RuntimeRoot "time_major_v1_labels") `
+        --output-root (Join-Path $RuntimeRoot "time_major_train_v2") `
+        --candidate-table (Join-Path $CandidateRoot "preflight_active_candidates.csv") `
+        --split-manifest $SplitManifest `
+        --split-manifest-hash $SplitManifestHash `
+        --max-shards 16 `
+        --polars-threads $PolarsThreads `
+        --parity
+    if ($LASTEXITCODE -ne 0) { throw "minute time-major sidecar build failed: $LASTEXITCODE" }
+
+    & $PythonExe scripts\build_cn_phase3cm_forward_label_sidecars.py `
+        --source-root (Join-Path $RuntimeRoot "time_major_train_v2") `
+        --output-root (Join-Path $RuntimeRoot "time_major_train_v3_labels") `
+        --split-manifest $SplitManifest `
+        --split-manifest-hash $SplitManifestHash `
         --horizons 1,5,15,30 `
         --max-shards 16 `
         --polars-threads $PolarsThreads
@@ -32,16 +47,20 @@ try {
 
     & $PythonExe scripts\build_cn_phase3cm_time_major_sidecar.py `
         --source-root $SessionSourceRoot `
-        --output-root (Join-Path $RuntimeRoot "session_time_major_v1") `
+        --output-root (Join-Path $RuntimeRoot "session_time_major_train_v2") `
         --candidate-table (Join-Path $CandidateRoot "preflight_session_candidates.csv") `
+        --split-manifest $SplitManifest `
+        --split-manifest-hash $SplitManifestHash `
         --max-shards 16 `
         --polars-threads $PolarsThreads `
         --parity
     if ($LASTEXITCODE -ne 0) { throw "session time-major sidecar build failed: $LASTEXITCODE" }
 
     & $PythonExe scripts\build_cn_phase3cm_forward_label_sidecars.py `
-        --source-root $SessionSourceRoot `
-        --output-root (Join-Path $RuntimeRoot "session_time_major_v1_labels") `
+        --source-root (Join-Path $RuntimeRoot "session_time_major_train_v2") `
+        --output-root (Join-Path $RuntimeRoot "session_time_major_train_v3_labels") `
+        --split-manifest $SplitManifest `
+        --split-manifest-hash $SplitManifestHash `
         --horizons 1,5,15,30 `
         --max-shards 16 `
         --polars-threads $PolarsThreads

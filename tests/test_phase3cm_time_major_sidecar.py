@@ -54,3 +54,45 @@ def test_time_major_sidecar_preserves_rows_values_and_stable_identity(tmp_path) 
     assert parity["stable_key_unique"] is True
     assert parity["null_bitmap_match"] is True
     assert parity["field_value_digest_match"] is True
+
+
+def test_train_only_sidecar_parity_filters_sealed_dates_before_materialization(tmp_path) -> None:
+    source = tmp_path / "source.parquet"
+    frame = pd.DataFrame(
+        {
+            "code": ["A", "A", "A"],
+            "trade_time": pd.to_datetime(
+                ["2024-01-02 09:30", "2024-01-02 09:31", "2024-01-03 09:30"]
+            ),
+            "close": [1.0, 2.0, 3.0],
+        }
+    )
+    table = pa.Table.from_pandas(frame, preserve_index=False).set_column(
+        0, "code", pa.array(frame["code"], type=pa.large_string())
+    )
+    pq.write_table(table, source)
+    output = tmp_path / "train.parquet"
+    record = build_time_major_shard(
+        source_path=source,
+        output_path=output,
+        source_shard=0,
+        fields=("code", "trade_time", "close"),
+        eligible_trade_dates=("2024-01-02",),
+        split_manifest_hash="b" * 64,
+    )
+    parity = audit_sidecar_parity(
+        source_path=source,
+        sidecar_path=output,
+        source_shard=0,
+        fields=("code", "trade_time", "close"),
+        eligible_trade_dates=("2024-01-02",),
+        split_manifest_hash="b" * 64,
+    )
+
+    assert record["source_total_rows"] == 3
+    assert record["rows"] == 2
+    assert pd.read_parquet(output)["trade_time"].dt.strftime("%Y-%m-%d").unique().tolist() == [
+        "2024-01-02"
+    ]
+    assert parity["status"] == "SIDECAR_PARITY_PASS"
+    assert parity["source_rows"] == 2

@@ -35,8 +35,20 @@ def _plan() -> FrozenExecutionPlan:
 def test_phase_e_plan_is_content_addressed_and_rejects_adaptation() -> None:
     plan = _plan()
     assert plan.execution_plan_hash == _plan().execution_plan_hash
+    assert FrozenExecutionPlan.from_dict(plan.to_dict()) == plan
     with pytest.raises(FrozenPlanDriftError):
         plan.with_runtime_adjustment(block_size=4)
+
+
+def test_frozen_plan_loader_rejects_hash_or_thread_environment_drift() -> None:
+    raw = _plan().to_dict()
+    raw["block_size"] = 6
+    with pytest.raises(FrozenPlanDriftError):
+        FrozenExecutionPlan.from_dict(raw)
+    raw = _plan().to_dict()
+    raw["thread_environment"]["OMP_NUM_THREADS"] = "2"
+    with pytest.raises(FrozenPlanDriftError):
+        FrozenExecutionPlan.from_dict(raw)
 
 
 def test_thread_environment_must_match_single_primary_pool(monkeypatch: pytest.MonkeyPatch) -> None:

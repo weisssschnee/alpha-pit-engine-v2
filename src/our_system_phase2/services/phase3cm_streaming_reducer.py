@@ -47,8 +47,24 @@ class StreamingPortfolioReducer:
         self.completed_block_count = 0
         self.coordinate_rows_retained = 0
 
-    def update(self, result: PortfolioBlockResult, *, day_labels: Sequence[str]) -> None:
-        expected_stats = self.stats.shape
+    def update(
+        self,
+        result: PortfolioBlockResult,
+        *,
+        day_labels: Sequence[str],
+        candidate_indices: Sequence[int] | None = None,
+        complete_block: bool = True,
+    ) -> None:
+        indices = (
+            tuple(range(len(self.candidates)))
+            if candidate_indices is None
+            else tuple(int(value) for value in candidate_indices)
+        )
+        if not indices or len(set(indices)) != len(indices):
+            raise ValueError("candidate indices must be non-empty and unique")
+        if min(indices) < 0 or max(indices) >= len(self.candidates):
+            raise ValueError("candidate index outside frozen reducer")
+        expected_stats = (len(indices), *self.stats.shape[1:])
         if result.stats.shape != expected_stats:
             raise ValueError("portfolio stats shape drift")
         if result.daily.shape[:2] != expected_stats[:2] or result.daily.shape[2] != len(day_labels):
@@ -57,41 +73,48 @@ class StreamingPortfolioReducer:
             raise ValueError("portfolio daily schema drift")
         if int(result.coordinate_rows_retained) != 0:
             raise ValueError("formal streaming reducer forbids coordinate-row retention")
-        if len(result.behavior_block_digests) != len(self.candidates):
+        if len(result.behavior_block_digests) != len(indices):
             raise ValueError("portfolio behavior digest count drift")
         maximum_index = STAT_FIELDS.index("signal_spread_max")
         for field_index in range(len(STAT_FIELDS)):
             if field_index == maximum_index:
-                self.stats[:, :, field_index] = np.maximum(
-                    self.stats[:, :, field_index], result.stats[:, :, field_index]
+                self.stats[indices, :, field_index] = np.maximum(
+                    self.stats[indices, :, field_index], result.stats[:, :, field_index]
                 )
             else:
-                self.stats[:, :, field_index] += result.stats[:, :, field_index]
+                self.stats[indices, :, field_index] += result.stats[:, :, field_index]
         for day_index, label in enumerate(day_labels):
             date = str(label)
             values = np.asarray(result.daily[:, :, day_index, :], dtype=np.float64)
             if date not in self.daily:
-                self.daily[date] = np.zeros_like(values)
+                self.daily[date] = np.zeros(
+                    (len(self.candidates), len(self.horizons) + 1, len(STAT_FIELDS)),
+                    dtype=np.float64,
+                )
             for field_index in range(len(STAT_FIELDS)):
                 if field_index == maximum_index:
-                    self.daily[date][:, :, field_index] = np.maximum(
-                        self.daily[date][:, :, field_index], values[:, :, field_index]
+                    self.daily[date][indices, :, field_index] = np.maximum(
+                        self.daily[date][indices, :, field_index], values[:, :, field_index]
                     )
                 else:
-                    self.daily[date][:, :, field_index] += values[:, :, field_index]
+                    self.daily[date][indices, :, field_index] += values[:, :, field_index]
             month = date[:7]
             if month not in self.monthly:
-                self.monthly[month] = np.zeros_like(values)
+                self.monthly[month] = np.zeros(
+                    (len(self.candidates), len(self.horizons) + 1, len(STAT_FIELDS)),
+                    dtype=np.float64,
+                )
             for field_index in range(len(STAT_FIELDS)):
                 if field_index == maximum_index:
-                    self.monthly[month][:, :, field_index] = np.maximum(
-                        self.monthly[month][:, :, field_index], values[:, :, field_index]
+                    self.monthly[month][indices, :, field_index] = np.maximum(
+                        self.monthly[month][indices, :, field_index], values[:, :, field_index]
                     )
                 else:
-                    self.monthly[month][:, :, field_index] += values[:, :, field_index]
-        self.completed_block_count += 1
-        for candidate_index, digest in enumerate(result.behavior_block_digests):
-            self.behavior_blocks[candidate_index].append(str(digest))
+                    self.monthly[month][indices, :, field_index] += values[:, :, field_index]
+        if complete_block:
+            self.completed_block_count += 1
+        for local_index, digest in enumerate(result.behavior_block_digests):
+            self.behavior_blocks[indices[local_index]].append(str(digest))
 
     def reward_atoms(self) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []

@@ -116,3 +116,52 @@ def test_mapping_mask_isolated_without_changing_value_state() -> None:
     assert np.isfinite(base[mask]).any()
     assert executor.audit["value_node_evaluations"] > 0
     assert executor.audit["mapping_node_evaluations"] > 0
+
+
+def test_two_level_namespaces_share_values_only_within_value_cohort() -> None:
+    frame = _frame()
+    executor = _executor(frame)
+    expression = "CSRank(Delta($x,2))"
+
+    first, second, third = executor.evaluate_ordered(
+        (expression, expression, expression),
+        value_namespaces=("value.a", "value.a", "value.b"),
+        mapping_namespaces=("mapping.a", "mapping.b", "mapping.c"),
+    )
+
+    np.testing.assert_allclose(first, second, rtol=0.0, atol=0.0, equal_nan=True)
+    np.testing.assert_allclose(first, third, rtol=0.0, atol=0.0, equal_nan=True)
+    continuation = executor.continuation_payload()
+    assert len(continuation["rolling"]) == 2
+    assert executor.audit["mapping_node_evaluations"] == 3
+
+
+def test_cache_liveness_release_frees_owned_arrays_without_losing_state() -> None:
+    frame = _frame()
+    executor = _executor(frame)
+    expression = "CSRank(Delta($x,2))"
+    executor.evaluate_ordered(
+        (expression,),
+        value_namespaces=("value.a",),
+        mapping_namespaces=("mapping.a",),
+    )
+    before = int(executor.audit["cache_current_bytes"])
+    released = executor.release_cache_keys(
+        (
+            executor.cache_key(
+                expression,
+                value_namespace="value.a",
+                mapping_namespace="mapping.a",
+            ),
+            executor.cache_key(
+                "Delta($x,2)",
+                value_namespace="value.a",
+                mapping_namespace=None,
+            ),
+        )
+    )
+
+    assert released["released_entries"] == 2
+    assert released["released_bytes"] > 0
+    assert int(executor.audit["cache_current_bytes"]) < before
+    assert executor.continuation_payload()["rolling"]

@@ -390,6 +390,7 @@ class StreamingExpressionExecutor:
         self._time_starts = np.empty(0, dtype=np.int64)
         self._time_ends = np.empty(0, dtype=np.int64)
         self._cache: dict[str, np.ndarray] = {}
+        self._cache_owned_bytes: dict[str, int] = {}
         self._cache_bytes = 0
         self.audit: dict[str, Any] = {}
 
@@ -422,6 +423,7 @@ class StreamingExpressionExecutor:
         self._code_starts, self._code_ends = _boundaries(self._sorted_codes)
         self._time_starts, self._time_ends = _boundaries(time_ids)
         self._cache = {}
+        self._cache_owned_bytes = {}
         self._cache_bytes = 0
         self.audit = {
             "rows": int(len(code_ids)),
@@ -451,11 +453,49 @@ class StreamingExpressionExecutor:
                 f"DAG block cache byte cap reached: {self._cache_bytes + incremental} > {self.cache_max_bytes}"
             )
         self._cache[key] = array
+        self._cache_owned_bytes[key] = incremental
         self._cache_bytes += incremental
         self.audit["cache_current_bytes"] = self._cache_bytes
         self.audit["cache_peak_bytes"] = max(int(self.audit.get("cache_peak_bytes") or 0), self._cache_bytes)
         self.audit["cache_entry_count"] = len(self._cache)
         return array
+
+    @staticmethod
+    def cache_key(
+        canonical_expression: str,
+        *,
+        value_namespace: str,
+        mapping_namespace: str | None,
+    ) -> str:
+        canonical = parse_expression(str(canonical_expression)).render()
+        return (
+            f"mapping:{mapping_namespace}:{canonical}"
+            if mapping_namespace is not None
+            else f"value:{value_namespace}:{canonical}"
+        )
+
+    def release_cache_keys(self, keys: Iterable[str]) -> dict[str, int]:
+        released_entries = 0
+        released_bytes = 0
+        for raw_key in keys:
+            key = str(raw_key)
+            if key not in self._cache:
+                continue
+            self._cache.pop(key)
+            released_bytes += int(self._cache_owned_bytes.pop(key, 0))
+            released_entries += 1
+        self._cache_bytes -= released_bytes
+        if self._cache_bytes < 0:
+            raise RuntimeError("expression cache byte accounting underflow")
+        self.audit["cache_current_bytes"] = self._cache_bytes
+        self.audit["cache_entry_count"] = len(self._cache)
+        self.audit["cache_released_entries"] = int(
+            self.audit.get("cache_released_entries") or 0
+        ) + released_entries
+        self.audit["cache_released_bytes"] = int(
+            self.audit.get("cache_released_bytes") or 0
+        ) + released_bytes
+        return {"released_entries": released_entries, "released_bytes": released_bytes}
 
     def _rolling(self, key: str, values: np.ndarray, window: int, operation: int, parameter: float = 0.0) -> np.ndarray:
         if _rolling_kernel is None:
@@ -511,9 +551,18 @@ class StreamingExpressionExecutor:
             raise ValueError(f"numeric atom required: {node.render()}")
         return float(node.token)
 
-    def _evaluate(self, node: ExpressionNode, mapping_namespace: str) -> np.ndarray:
+    def _evaluate(
+        self,
+        node: ExpressionNode,
+        value_namespace: str,
+        mapping_namespace: str,
+    ) -> np.ndarray:
         canonical = node.render()
-        key = f"mapping:{mapping_namespace}:{canonical}" if _contains_mapping(node) else canonical
+        key = self.cache_key(
+            canonical,
+            value_namespace=value_namespace,
+            mapping_namespace=mapping_namespace if _contains_mapping(node) else None,
+        )
         cached = self._cache.get(key)
         if cached is not None:
             self.audit["cache_hits"] += 1
@@ -531,7 +580,7 @@ class StreamingExpressionExecutor:
 
         name = node.token.lower()
         args = [
-            self._evaluate(child, mapping_namespace)
+            self._evaluate(child, value_namespace, mapping_namespace)
             for child in node.args
             if not (not child.args and not child.token.startswith("$") and name in ROLLING_OPERATORS)
         ]
@@ -606,27 +655,40 @@ class StreamingExpressionExecutor:
             self.audit["value_node_evaluations"] += 1
         return self._store_cache(key, result, owned=True)
 
-    def evaluate_many(
+    def evaluate_ordered(
         self,
         expressions: Iterable[str],
         *,
-        mapping_masks: Mapping[str, np.ndarray] | None = None,
-        mapping_namespaces: Mapping[str, str] | None = None,
-    ) -> dict[str, np.ndarray]:
+        value_namespaces: Iterable[str] | None = None,
+        mapping_namespaces: Iterable[str] | None = None,
+    ) -> tuple[np.ndarray, ...]:
+        expression_rows = tuple(str(value) for value in expressions)
+        value_rows = (
+            tuple("default" for _ in expression_rows)
+            if value_namespaces is None
+            else tuple(str(value) for value in value_namespaces)
+        )
+        mapping_rows = (
+            tuple("default" for _ in expression_rows)
+            if mapping_namespaces is None
+            else tuple(str(value) for value in mapping_namespaces)
+        )
+        if len(value_rows) != len(expression_rows) or len(mapping_rows) != len(expression_rows):
+            raise ValueError("expression namespace count drift")
         started_wall = time.perf_counter()
         started_cpu = time.process_time()
-        result: dict[str, np.ndarray] = {}
-        for expression in expressions:
-            canonical = parse_expression(str(expression)).render()
-            namespace = str((mapping_namespaces or {}).get(str(expression), "default"))
-            values = self._evaluate(parse_expression(canonical), namespace)
-            mask = (mapping_masks or {}).get(expression)
-            if mask is not None:
-                mask_array = np.asarray(mask, dtype=bool)
-                if mask_array.shape != values.shape:
-                    raise ValueError("mapping mask shape mismatch")
-                values = np.where(mask_array, values, np.nan)
-            result[str(expression)] = values
+        result = tuple(
+            self._evaluate(
+                parse_expression(parse_expression(expression).render()),
+                value_namespace,
+                mapping_namespace,
+            )
+            for expression, value_namespace, mapping_namespace in zip(
+                expression_rows,
+                value_rows,
+                mapping_rows,
+            )
+        )
         wall = time.perf_counter() - started_wall
         cpu = time.process_time() - started_cpu
         self.audit["last_evaluate_wall_seconds"] = wall
@@ -643,6 +705,38 @@ class StreamingExpressionExecutor:
                 "NUMEXPR_MAX_THREADS",
             )
         }
+        return result
+
+    def evaluate_many(
+        self,
+        expressions: Iterable[str],
+        *,
+        mapping_masks: Mapping[str, np.ndarray] | None = None,
+        value_namespaces: Mapping[str, str] | None = None,
+        mapping_namespaces: Mapping[str, str] | None = None,
+    ) -> dict[str, np.ndarray]:
+        expression_rows = tuple(str(expression) for expression in expressions)
+        evaluated = self.evaluate_ordered(
+            expression_rows,
+            value_namespaces=tuple(
+                str((value_namespaces or {}).get(expression, "default"))
+                for expression in expression_rows
+            ),
+            mapping_namespaces=tuple(
+                str((mapping_namespaces or {}).get(expression, "default"))
+                for expression in expression_rows
+            ),
+        )
+        result: dict[str, np.ndarray] = {}
+        for expression, evaluated_values in zip(expression_rows, evaluated):
+            values = evaluated_values
+            mask = (mapping_masks or {}).get(expression)
+            if mask is not None:
+                mask_array = np.asarray(mask, dtype=bool)
+                if mask_array.shape != values.shape:
+                    raise ValueError("mapping mask shape mismatch")
+                values = np.where(mask_array, values, np.nan)
+            result[expression] = values
         return result
 
     def continuation_payload(self) -> dict[str, Any]:

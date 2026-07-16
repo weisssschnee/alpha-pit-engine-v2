@@ -6,6 +6,7 @@ from our_system_phase2.services.phase3cm_streaming_telemetry import (
     PhaseTelemetryRecorder,
     ResourceSnapshot,
     ThreadBudgetError,
+    aggregate_compute_phase_parallelism,
     build_phase_event,
     freeze_thread_budget,
     _process_snapshot,
@@ -40,6 +41,38 @@ def test_compute_phase_records_effective_cores_and_parallelism_failure() -> None
     assert event["effective_cores"] == pytest.approx(1.1)
     assert event["parallel_efficiency"] == pytest.approx(0.1375)
     assert event["parallelism_status"] == "PARALLELISM_NOT_ENGAGED"
+
+
+def test_compute_gate_qualifies_complete_phase_not_single_short_block() -> None:
+    events = [
+        build_phase_event(
+            phase="turnover_and_cost",
+            wall_seconds=0.01,
+            cpu_seconds=0.01,
+            allocated_compute_threads=4,
+            compute_heavy=True,
+            rss_before_bytes=100,
+            rss_after_bytes=100,
+            peak_rss_bytes=100,
+        ),
+        build_phase_event(
+            phase="turnover_and_cost",
+            wall_seconds=0.99,
+            cpu_seconds=3.99,
+            allocated_compute_threads=4,
+            compute_heavy=True,
+            rss_before_bytes=100,
+            rss_after_bytes=100,
+            peak_rss_bytes=100,
+        ),
+    ]
+
+    aggregate = aggregate_compute_phase_parallelism(events)["turnover_and_cost"]
+
+    assert events[0]["parallelism_status"] == "PARALLELISM_NOT_ENGAGED"
+    assert aggregate["effective_cores"] == pytest.approx(4.0)
+    assert aggregate["parallelism_status"] == "PARALLELISM_ENGAGED"
+    assert aggregate["subphase_event_failure_count"] == 1
 
 
 def test_io_phase_requires_device_or_arrow_decode_evidence() -> None:

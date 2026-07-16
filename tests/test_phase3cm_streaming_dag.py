@@ -81,3 +81,34 @@ def test_plan_is_deterministic_and_records_consumer_reuse() -> None:
     assert delta.consumer_count == 2
     assert delta.reuse_count == 1
 
+
+def test_liveness_schedule_releases_shared_value_only_after_last_batch() -> None:
+    candidates = [
+        _candidate(
+            "candidate.a",
+            expression="CSRank(Delta($close,5))",
+            support="support.a",
+        ),
+        _candidate(
+            "candidate.b",
+            expression="CSRank(Delta($close,5))",
+            support="support.b",
+        ),
+    ]
+    plan = SharedMultiCandidateDAGPlan.build(candidates)
+    release = plan.release_node_ids_by_candidate_batch((("candidate.a",), ("candidate.b",)))
+    node_by_id = {node.node_id: node for node in plan.nodes}
+    first = [node_by_id[node_id] for node_id in release[0]]
+    second = [node_by_id[node_id] for node_id in release[1]]
+
+    assert any(node.layer == "MAPPING" for node in first)
+    assert not any(node.canonical_expression == "Delta($close,5)" for node in first)
+    assert any(node.canonical_expression == "Delta($close,5)" for node in second)
+
+
+def test_masked_zscore_is_a_mapping_node() -> None:
+    plan = SharedMultiCandidateDAGPlan.build(
+        [_candidate("candidate.a", expression="MaskedZScore($close,20,0.8)", support="same")]
+    )
+    root = next(node for node in plan.nodes if node.canonical_expression.startswith("MaskedZScore("))
+    assert root.layer == "MAPPING"

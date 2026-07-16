@@ -90,6 +90,11 @@ if njit is not None:
         upper = int(np.ceil(position))
         if lower == upper:
             return ordered[lower]
+        # Preserve tie-aware legacy selection exactly.  Interpolating two
+        # identical order statistics can move the cutoff by one ULP and
+        # incorrectly exclude the entire cutoff tie group.
+        if ordered[lower] == ordered[upper]:
+            return ordered[lower]
         weight = position - lower
         return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
 
@@ -98,6 +103,17 @@ if njit is not None:
     def _pearson(left: np.ndarray, right: np.ndarray) -> float:
         count = left.shape[0]
         if count < 2:
+            return np.nan
+        left_min = left[0]
+        left_max = left[0]
+        right_min = right[0]
+        right_max = right[0]
+        for index in range(1, count):
+            left_min = min(left_min, left[index])
+            left_max = max(left_max, left[index])
+            right_min = min(right_min, right[index])
+            right_max = max(right_max, right[index])
+        if left_min == left_max or right_min == right_max:
             return np.nan
         left_centered = left - np.mean(left)
         right_centered = right - np.mean(right)

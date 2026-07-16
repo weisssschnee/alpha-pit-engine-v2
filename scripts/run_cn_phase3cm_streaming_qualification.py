@@ -36,6 +36,7 @@ from our_system_phase2.services.phase3cm_streaming_support import PairSupportAcc
 from our_system_phase2.services.phase3cm_streaming_telemetry import (
     PhaseTelemetryRecorder,
     _process_snapshot,
+    aggregate_compute_phase_parallelism,
     build_phase_event,
 )
 
@@ -81,6 +82,31 @@ def _write_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
 
 def _truthy(value: Any) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
+def _finite_float(value: Any) -> float | None:
+    try:
+        converted = float(value)
+    except (TypeError, ValueError):
+        return None
+    return converted if math.isfinite(converted) else None
+
+
+def _train_calendar(split_manifest: Path, binding: Mapping[str, Any]) -> tuple[str, ...]:
+    path = Path(split_manifest)
+    if not path.is_file() or _sha256(path) != str(binding.get("split_manifest_hash") or ""):
+        raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: split manifest")
+    rows = _read_csv(path)
+    train_dates = tuple(
+        str(row["trade_date"])
+        for row in rows
+        if str(row.get("split") or "").strip().lower() == "train"
+    )
+    if not train_dates or len(set(train_dates)) != len(train_dates):
+        raise RuntimeError("frozen train calendar is empty or duplicated")
+    if any(str(row.get("optimizer_usage") or "") != "allowed" for row in rows if row["trade_date"] in train_dates):
+        raise RuntimeError("frozen train calendar contains a disallowed optimizer date")
+    return train_dates
 
 
 def _verify_binding(binding_path: Path, artifact_root: Path) -> dict[str, Any]:
@@ -182,15 +208,53 @@ def _pair_batches(pair_ids: Sequence[str], batch_pairs: int) -> tuple[tuple[str,
     )
 
 
+def _candidate_direction(candidate: Mapping[str, Any]) -> float:
+    value = str(candidate.get("open_direction") or "long_top").strip().lower()
+    if value in {"long_top", "top", "positive", "1", "+1"}:
+        return 1.0
+    if value in {"long_bottom", "bottom", "negative", "-1"}:
+        return -1.0
+    raise ValueError(f"unsupported frozen candidate direction: {value}")
+
+
+def _portfolio_continuation_payload(batches: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    return {
+        "schema_version": "cn_phase3cm_batched_portfolio_continuation_v1",
+        "batches": [
+            {
+                "pair_ids": list(batch["pair_ids"]),
+                "pair_indices": list(batch["pair_indices"]),
+                "candidate_indices": list(batch["candidate_indices"]),
+                "payload": batch["kernel"].continuation_payload(),
+            }
+            for batch in batches
+        ],
+    }
+
+
+def _restore_portfolio_continuation_payload(
+    batches: Sequence[Mapping[str, Any]],
+    payload: Mapping[str, Any],
+) -> None:
+    if str(payload.get("schema_version")) != "cn_phase3cm_batched_portfolio_continuation_v1":
+        raise ValueError("portfolio continuation schema drift")
+    rows = list(payload.get("batches") or [])
+    if len(rows) != len(batches):
+        raise ValueError("portfolio continuation batch count drift")
+    for expected, observed in zip(batches, rows):
+        if tuple(map(str, observed.get("pair_ids") or ())) != tuple(expected["pair_ids"]):
+            raise ValueError("portfolio continuation pair identity drift")
+        if tuple(map(int, observed.get("pair_indices") or ())) != tuple(expected["pair_indices"]):
+            raise ValueError("portfolio continuation pair index drift")
+        if tuple(map(int, observed.get("candidate_indices") or ())) != tuple(
+            expected["candidate_indices"]
+        ):
+            raise ValueError("portfolio continuation candidate index drift")
+        expected["kernel"].restore_continuation_payload(observed["payload"])
+
+
 def _load_plan(path: Path) -> FrozenExecutionPlan:
-    raw = json.loads(Path(path).read_text(encoding="utf-8"))
-    claimed = str(raw.pop("execution_plan_hash"))
-    raw.pop("schema_version", None)
-    raw.pop("thread_environment", None)
-    plan = FrozenExecutionPlan.create(**raw)
-    if plan.execution_plan_hash != claimed:
-        raise RuntimeError("frozen execution-plan hash drift")
-    return plan
+    return FrozenExecutionPlan.from_dict(json.loads(Path(path).read_text(encoding="utf-8")))
 
 
 def _write_json(path: Path, payload: Any) -> None:
@@ -233,8 +297,8 @@ def _finalize_pairs(
         pair_id = str(primary["pair_id"])
         primary_reward = reward_by_id.get(str(primary["candidate_id"]), {})
         control_reward = reward_by_id.get(str(control["candidate_id"]), {})
-        primary_value = primary_reward.get("optimizer_reward")
-        control_value = control_reward.get("optimizer_reward")
+        primary_value = _finite_float(primary_reward.get("optimizer_reward"))
+        control_value = _finite_float(control_reward.get("optimizer_reward"))
         blockers: list[str] = []
         support_row = support_identity[pair_id]
         if int(support_row["count"]) == 0:
@@ -249,9 +313,9 @@ def _finalize_pairs(
             blockers.append("primary_signal_empty_or_constant")
         if control_spread <= 1e-15:
             blockers.append("control_signal_empty_or_constant")
-        if not isinstance(primary_value, (int, float)) or not math.isfinite(float(primary_value)):
+        if primary_value is None:
             blockers.append("primary_not_evaluated")
-        if not isinstance(control_value, (int, float)) or not math.isfinite(float(control_value)):
+        if control_value is None:
             blockers.append("control_not_evaluated")
         matched = None if blockers else float(primary_value) - float(control_value)
         bound_pair = pair_binding[pair_id]
@@ -290,6 +354,7 @@ def main() -> int:
     parser.add_argument("--pair-count", type=int, required=True)
     parser.add_argument("--candidate-table", type=Path, required=True)
     parser.add_argument("--binding", type=Path, required=True)
+    parser.add_argument("--split-manifest", type=Path, required=True)
     parser.add_argument("--artifact-root", type=Path, required=True)
     parser.add_argument("--field-sidecar-root", type=Path, required=True)
     parser.add_argument("--label-sidecar-root", type=Path, required=True)
@@ -321,6 +386,7 @@ def main() -> int:
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     binding = _verify_binding(args.binding.resolve(), args.artifact_root.resolve())
+    train_dates = _train_calendar(args.split_manifest.resolve(), binding)
     candidates = _candidate_pairs(
         _read_csv(args.candidate_table.resolve()),
         pair_limit=int(args.pair_count),
@@ -338,8 +404,7 @@ def main() -> int:
     field_paths = _sidecar_files(args.field_sidecar_root.resolve())
     label_paths = _sidecar_files(args.label_sidecar_root.resolve())
     symbols = _symbol_registry(field_paths)
-    dates = _session_dates(field_paths)
-    discovered_boundaries = _block_boundaries(dates, int(args.block_sessions))
+    discovered_boundaries = _block_boundaries(train_dates, int(args.block_sessions))
     batches = _pair_batches(pair_ids, int(args.pair_batch_size))
     if args.phase == "E":
         if args.execution_plan is None:
@@ -405,22 +470,74 @@ def main() -> int:
         raw_fields=_raw_fields(candidates),
         horizons=horizons,
         symbol_registry=symbols,
+        eligible_trade_dates=train_dates,
     )
     expression = StreamingExpressionExecutor(
         code_count=len(symbols),
         compute_threads=plan.compute_threads,
         cache_max_bytes=plan.cache_caps["dag_block_cache_bytes"],
     )
-    portfolio = BatchedPortfolioKernel(
-        candidate_count=len(candidates),
-        code_count=len(symbols),
-        horizons=horizons,
-        compute_threads=plan.compute_threads,
-        min_obs=int(args.min_obs),
-        top_quantile=float(args.top_quantile),
-        cost_bps=float(args.cost_bps),
-        portfolio_mode=str(args.portfolio_mode),
+    root_by_candidate = {row.candidate_id: row for row in dag_plan.candidate_roots}
+    pair_index_by_id = {pair_id: index for index, pair_id in enumerate(pair_ids)}
+    candidate_indices_by_pair = {
+        pair_id: (2 * pair_index, 2 * pair_index + 1)
+        for pair_id, pair_index in pair_index_by_id.items()
+    }
+    portfolio_batches: list[dict[str, Any]] = []
+    for batch_ordinal, batch_pair_ids in enumerate(plan.pair_batches):
+        batch_pair_indices = tuple(pair_index_by_id[pair_id] for pair_id in batch_pair_ids)
+        batch_candidate_indices = tuple(
+            candidate_index
+            for pair_id in batch_pair_ids
+            for candidate_index in candidate_indices_by_pair[pair_id]
+        )
+        members = tuple(candidates[index] for index in batch_candidate_indices)
+        roots = tuple(root_by_candidate[str(row["candidate_id"])] for row in members)
+        portfolio_batches.append(
+            {
+                "batch_ordinal": batch_ordinal,
+                "pair_ids": tuple(batch_pair_ids),
+                "pair_indices": batch_pair_indices,
+                "candidate_indices": batch_candidate_indices,
+                "members": members,
+                "value_namespaces": tuple(root.value_cohort_id for root in roots),
+                "mapping_namespaces": tuple(root.mapping_subcohort_id for root in roots),
+                "directions": np.asarray(
+                    [_candidate_direction(row) for row in members],
+                    dtype=np.float64,
+                ),
+                "kernel": BatchedPortfolioKernel(
+                    candidate_count=len(members),
+                    code_count=len(symbols),
+                    horizons=horizons,
+                    compute_threads=plan.compute_threads,
+                    min_obs=int(args.min_obs),
+                    top_quantile=float(args.top_quantile),
+                    cost_bps=float(args.cost_bps),
+                    portfolio_mode=str(args.portfolio_mode),
+                ),
+            }
+        )
+    release_node_ids = dag_plan.release_node_ids_by_candidate_batch(
+        tuple(
+            tuple(str(row["candidate_id"]) for row in batch["members"])
+            for batch in portfolio_batches
+        )
     )
+    dag_node_by_id = {node.node_id: node for node in dag_plan.nodes}
+    for portfolio_batch, node_ids in zip(portfolio_batches, release_node_ids):
+        portfolio_batch["release_cache_keys"] = tuple(
+            expression.cache_key(
+                dag_node_by_id[node_id].canonical_expression,
+                value_namespace=dag_node_by_id[node_id].cohort_id,
+                mapping_namespace=(
+                    dag_node_by_id[node_id].mapping_subcohort_id
+                    if dag_node_by_id[node_id].layer == "MAPPING"
+                    else None
+                ),
+            )
+            for node_id in node_ids
+        )
     reducer = StreamingPortfolioReducer(candidates=candidates, horizons=horizons)
     support = PairSupportAccumulator(pair_ids=pair_ids)
     completed_blocks: list[int] = []
@@ -448,7 +565,10 @@ def main() -> int:
             }
         )
         support.restore_continuation_payload(payload.state_event_continuation_payload["support"])
-        portfolio.restore_continuation_payload(payload.portfolio_continuation_payload)
+        _restore_portfolio_continuation_payload(
+            portfolio_batches,
+            payload.portfolio_continuation_payload,
+        )
         reducer.restore_continuation_payload(payload.streaming_reducer_payload)
         completed_blocks = list(payload.completed_blocks)
         checkpoint_ordinal = int(payload.execution_position.get("checkpoint_ordinal") or 0)
@@ -493,7 +613,7 @@ def main() -> int:
                     "state": continuation["state"],
                     "support": support.continuation_payload(),
                 },
-                portfolio_continuation_payload=portfolio.continuation_payload(),
+                portfolio_continuation_payload=_portfolio_continuation_payload(portfolio_batches),
                 streaming_reducer_payload=reducer.continuation_payload(),
             ),
             checkpoint_ordinal=checkpoint_ordinal,
@@ -519,87 +639,166 @@ def main() -> int:
                 portfolio_coordinates_processed=block.row_count,
             )
         total_rows += block.row_count
-        with telemetry.phase("expression_value_dag", compute_heavy=True) as phase:
+        with telemetry.phase("expression_block_bind", compute_heavy=False) as phase:
             expression.bind_block(
                 raw_fields=block.raw_fields,
                 code_ids=block.code_ids,
                 time_ids=block.time_ids,
             )
-            result_by_expression: dict[str, np.ndarray] = {}
-            for batch in plan.pair_batches:
-                members = [row for row in candidates if str(row["pair_id"]) in set(batch)]
-                expressions = [str(row["expression"]) for row in members]
-                namespaces = {
-                    str(row["expression"]): "|".join(
-                        (
-                            str(row.get("support_unit") or ""),
-                            str(row.get("outer_mapping") or ""),
-                            str(args.portfolio_mode),
-                        )
-                    )
-                    for row in members
-                }
-                result_by_expression.update(
-                    expression.evaluate_many(expressions, mapping_namespaces=namespaces)
-                )
-            signals = np.vstack(
-                [result_by_expression[str(row["expression"])] for row in candidates]
-            )
             phase.add(
-                dag_nodes_evaluated=expression.audit["value_node_evaluations"]
-                + expression.audit["mapping_node_evaluations"],
-                dag_reuse_count=expression.audit["cache_hits"],
-                signals_materialized=len(candidates),
+                dag_nodes_evaluated=0,
+                dag_reuse_count=0,
+                signals_materialized=0,
                 temporary_rows_allocated=0,
                 cache_peak_bytes=expression.audit.get("cache_peak_bytes", 0),
+                block_bind=True,
             )
-            expression_audits.append(dict(expression.audit))
-        with telemetry.phase("pair_common_support", compute_heavy=False) as phase:
-            common_masks = _support_masks(signals)
-            support.update(
-                common_masks=common_masks,
-                trade_times_ns=block.trade_times_ns,
-                code_ids=block.code_ids,
-                source_shards=block.source_shards,
-                source_row_identity=block.source_row_identity,
-                duplicate_ordinal=block.duplicate_ordinal,
-            )
-            phase.add(pair_count=len(pair_ids), support_coordinates=int(common_masks.sum()))
-        result = portfolio.evaluate_block(
-            signals=signals,
-            labels=block.labels,
-            time_ids=block.time_ids,
-            code_ids=block.code_ids,
-            day_ids=block.day_ids,
-            directions=np.ones(len(candidates), dtype=np.float64),
-            day_count=len(block.day_labels),
-        )
-        snapshot = _process_snapshot()
-        for phase_name, prefix in (
-            ("cross_sectional_rank_mapping", "mapping"),
-            ("turnover_and_cost", "turnover_cost"),
-        ):
-            wall = float(result.audit[f"{prefix}_wall_seconds"])
-            cpu = float(result.audit[f"{prefix}_cpu_seconds"])
-            telemetry._append(
-                build_phase_event(
-                    phase=phase_name,
-                    wall_seconds=wall,
-                    cpu_seconds=cpu,
-                    allocated_compute_threads=plan.compute_threads,
-                    compute_heavy=True,
-                    rss_before_bytes=snapshot.rss_bytes,
-                    rss_after_bytes=snapshot.rss_bytes,
-                    peak_rss_bytes=snapshot.peak_rss_bytes,
-                    blocks_processed=1,
-                    portfolio_coordinates_processed=block.row_count * len(candidates),
-                    coordinate_rows_retained=0,
+        for portfolio_batch in portfolio_batches:
+            batch_ordinal = int(portfolio_batch["batch_ordinal"])
+            members = tuple(portfolio_batch["members"])
+            candidate_indices = tuple(portfolio_batch["candidate_indices"])
+            pair_indices = tuple(portfolio_batch["pair_indices"])
+            pair_batch_ids = tuple(portfolio_batch["pair_ids"])
+            before = {
+                key: int(expression.audit.get(key) or 0)
+                for key in (
+                    "value_node_evaluations",
+                    "mapping_node_evaluations",
+                    "cache_hits",
+                    "native_kernel_calls",
                 )
+            }
+            with telemetry.phase("expression_value_dag", compute_heavy=True) as phase:
+                evaluated = expression.evaluate_ordered(
+                    (str(row["expression"]) for row in members),
+                    value_namespaces=portfolio_batch["value_namespaces"],
+                    mapping_namespaces=portfolio_batch["mapping_namespaces"],
+                )
+                signals = np.vstack(evaluated)
+                del evaluated
+                delta = {
+                    key: int(expression.audit.get(key) or 0) - before[key]
+                    for key in before
+                }
+                phase.add(
+                    dag_nodes_evaluated=delta["value_node_evaluations"]
+                    + delta["mapping_node_evaluations"],
+                    dag_reuse_count=delta["cache_hits"],
+                    native_kernel_calls=delta["native_kernel_calls"],
+                    signals_materialized=len(members),
+                    temporary_rows_allocated=block.row_count * len(members),
+                    cache_peak_bytes=expression.audit.get("cache_peak_bytes", 0),
+                    pair_batch_ordinal=batch_ordinal,
+                    pair_ids=list(pair_batch_ids),
+                    candidate_indices=list(candidate_indices),
+                )
+                expression_audits.append(
+                    {
+                        **delta,
+                        "last_evaluate_wall_seconds": float(
+                            expression.audit.get("last_evaluate_wall_seconds") or 0.0
+                        ),
+                        "last_evaluate_cpu_seconds": float(
+                            expression.audit.get("last_evaluate_cpu_seconds") or 0.0
+                        ),
+                        "last_evaluate_effective_cores": float(
+                            expression.audit.get("last_evaluate_effective_cores") or 0.0
+                        ),
+                        "cache_current_bytes": int(
+                            expression.audit.get("cache_current_bytes") or 0
+                        ),
+                        "cache_peak_bytes": int(expression.audit.get("cache_peak_bytes") or 0),
+                        "cache_entry_count": int(
+                            expression.audit.get("cache_entry_count") or 0
+                        ),
+                        "pair_batch_ordinal": batch_ordinal,
+                        "pair_ids": list(pair_batch_ids),
+                        "candidate_indices": list(candidate_indices),
+                    }
+                )
+            with telemetry.phase("pair_common_support", compute_heavy=False) as phase:
+                common_masks = _support_masks(signals)
+                support.update(
+                    common_masks=common_masks,
+                    trade_times_ns=block.trade_times_ns,
+                    code_ids=block.code_ids,
+                    source_shards=block.source_shards,
+                    source_row_identity=block.source_row_identity,
+                    duplicate_ordinal=block.duplicate_ordinal,
+                    pair_indices=pair_indices,
+                )
+                phase.add(
+                    pair_count=len(pair_batch_ids),
+                    support_coordinates=int(common_masks.sum()),
+                    pair_batch_ordinal=batch_ordinal,
+                )
+                del common_masks
+            result = portfolio_batch["kernel"].evaluate_block(
+                signals=signals,
+                labels=block.labels,
+                time_ids=block.time_ids,
+                code_ids=block.code_ids,
+                day_ids=block.day_ids,
+                directions=portfolio_batch["directions"],
+                day_count=len(block.day_labels),
             )
-        portfolio_audits.append(dict(result.audit))
-        with telemetry.phase("streaming_reducer", compute_heavy=False) as phase:
-            reducer.update(result, day_labels=block.day_labels)
-            phase.add(blocks_processed=1, coordinate_rows_retained=0, reducer_bytes=reducer.stats.nbytes)
+            del signals
+            snapshot = _process_snapshot()
+            for phase_name, prefix in (
+                ("cross_sectional_rank_mapping", "mapping"),
+                ("turnover_and_cost", "turnover_cost"),
+            ):
+                wall = float(result.audit[f"{prefix}_wall_seconds"])
+                cpu = float(result.audit[f"{prefix}_cpu_seconds"])
+                telemetry._append(
+                    build_phase_event(
+                        phase=phase_name,
+                        wall_seconds=wall,
+                        cpu_seconds=cpu,
+                        allocated_compute_threads=plan.compute_threads,
+                        compute_heavy=True,
+                        rss_before_bytes=snapshot.rss_bytes,
+                        rss_after_bytes=snapshot.rss_bytes,
+                        peak_rss_bytes=snapshot.peak_rss_bytes,
+                        blocks_processed=1,
+                        pair_batch_ordinal=batch_ordinal,
+                        pair_ids=list(pair_batch_ids),
+                        portfolio_coordinates_processed=block.row_count * len(members),
+                        coordinate_rows_retained=0,
+                    )
+                )
+            portfolio_audits.append(
+                {
+                    **dict(result.audit),
+                    "pair_batch_ordinal": batch_ordinal,
+                    "pair_ids": list(pair_batch_ids),
+                    "candidate_indices": list(candidate_indices),
+                }
+            )
+            with telemetry.phase("streaming_reducer", compute_heavy=False) as phase:
+                reducer.update(
+                    result,
+                    day_labels=block.day_labels,
+                    candidate_indices=candidate_indices,
+                    complete_block=batch_ordinal == len(portfolio_batches) - 1,
+                )
+                phase.add(
+                    blocks_processed=1 if batch_ordinal == len(portfolio_batches) - 1 else 0,
+                    pair_batch_ordinal=batch_ordinal,
+                    coordinate_rows_retained=0,
+                    reducer_bytes=reducer.stats.nbytes,
+                )
+            del result
+            with telemetry.phase("expression_cache_release", compute_heavy=False) as phase:
+                released = expression.release_cache_keys(
+                    portfolio_batch["release_cache_keys"]
+                )
+                phase.add(
+                    pair_batch_ordinal=batch_ordinal,
+                    cache_released_entries=released["released_entries"],
+                    cache_released_bytes=released["released_bytes"],
+                    cache_current_bytes=int(expression.audit.get("cache_current_bytes") or 0),
+                )
         completed_blocks.append(block_ordinal)
         with telemetry.phase("checkpoint", compute_heavy=False) as phase:
             rss_gate.periodic_checkpoint(
@@ -684,10 +883,13 @@ def main() -> int:
         bottleneck = "VALUE_DAG_BOTTLENECK"
     else:
         bottleneck = "MIXED_COMPUTE_BOTTLENECK"
-    compute_events = [event for event in events if bool(event.get("compute_heavy"))]
+    compute_phase_parallelism = aggregate_compute_phase_parallelism(events)
     parallelism_status = (
         "PARALLELISM_NOT_ENGAGED"
-        if any(event.get("parallelism_status") == "PARALLELISM_NOT_ENGAGED" for event in compute_events)
+        if any(
+            row.get("parallelism_status") == "PARALLELISM_NOT_ENGAGED"
+            for row in compute_phase_parallelism.values()
+        )
         else "PARALLELISM_ENGAGED"
     )
     evaluator_wall = prior_evaluator_wall_seconds + (time.perf_counter() - run_started)
@@ -727,9 +929,12 @@ def main() -> int:
         "peak_rss_bytes": max((int(event.get("peak_rss_bytes") or 0) for event in events), default=0),
         "execution_plan_hash": plan.execution_plan_hash,
         "input_binding_hash": binding["binding_hash"],
+        "split_manifest_hash": binding["split_manifest_hash"],
+        "eligible_train_date_count": len(train_dates),
         "dag_plan_hash": dag_plan.plan_hash,
         "coordinate_rows_retained": reducer.coordinate_rows_retained,
         "parallelism_status": parallelism_status,
+        "compute_phase_parallelism": compute_phase_parallelism,
         "hot_path_bottleneck": bottleneck,
         "phase_timing_coverage": timing_coverage,
         "phase_c_gates": phase_c_gates,

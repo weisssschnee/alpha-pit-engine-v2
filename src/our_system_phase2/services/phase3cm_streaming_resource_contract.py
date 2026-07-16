@@ -97,6 +97,21 @@ class FrozenExecutionPlan:
         }
         return cls(**payload, execution_plan_hash=_stable_hash(payload))
 
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> "FrozenExecutionPlan":
+        raw = dict(value)
+        claimed_hash = str(raw.pop("execution_plan_hash", ""))
+        claimed_schema = str(raw.pop("schema_version", ""))
+        claimed_environment = dict(raw.pop("thread_environment", {}))
+        if claimed_schema != "cn_phase3cm_frozen_execution_plan_v1":
+            raise FrozenPlanDriftError("frozen execution-plan schema drift")
+        plan = cls.create(**raw)
+        if plan.execution_plan_hash != claimed_hash:
+            raise FrozenPlanDriftError("frozen execution-plan hash drift")
+        if plan.thread_environment != claimed_environment:
+            raise FrozenPlanDriftError("frozen execution-plan thread environment drift")
+        return plan
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 

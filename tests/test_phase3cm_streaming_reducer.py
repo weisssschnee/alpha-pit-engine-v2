@@ -124,3 +124,62 @@ def test_reducer_payload_round_trip_is_exact() -> None:
     restored.restore_continuation_payload(payload)
     assert restored.continuation_payload()["candidate_identity"] == payload["candidate_identity"]
     assert restored.coordinate_rows_retained == 0
+
+
+def test_reducer_pair_batches_match_single_full_candidate_update() -> None:
+    frame, signals, labels = _fixture()
+    time_ids = pd.factorize(frame["trade_time"], sort=False)[0].astype(np.int64)
+    code_ids = pd.factorize(frame["code"], sort=True)[0].astype(np.int32)
+    candidates = [
+        {"candidate_id": f"c{index}", "expression_hash": f"h{index}"}
+        for index in range(4)
+    ]
+    four_signals = np.vstack((signals, signals * 0.5))
+    common = dict(
+        code_count=6,
+        horizons=(1, 5),
+        compute_threads=2,
+        min_obs=5,
+        top_quantile=0.2,
+        cost_bps=5.0,
+        portfolio_mode="long_only_top",
+    )
+    full = BatchedPortfolioKernel(candidate_count=4, **common).evaluate_block(
+        signals=four_signals,
+        labels=labels,
+        time_ids=time_ids,
+        code_ids=code_ids,
+        day_ids=np.zeros(len(frame), dtype=np.int32),
+        directions=np.array([1.0, -1.0, 1.0, -1.0]),
+        day_count=1,
+    )
+    full_reducer = StreamingPortfolioReducer(candidates=candidates, horizons=(1, 5))
+    full_reducer.update(full, day_labels=("2025-01-02",))
+
+    batched_reducer = StreamingPortfolioReducer(candidates=candidates, horizons=(1, 5))
+    for batch_index, indices in enumerate(((0, 1), (2, 3))):
+        result = BatchedPortfolioKernel(candidate_count=2, **common).evaluate_block(
+            signals=four_signals[list(indices)],
+            labels=labels,
+            time_ids=time_ids,
+            code_ids=code_ids,
+            day_ids=np.zeros(len(frame), dtype=np.int32),
+            directions=np.array([1.0, -1.0]),
+            day_count=1,
+        )
+        batched_reducer.update(
+            result,
+            day_labels=("2025-01-02",),
+            candidate_indices=indices,
+            complete_block=batch_index == 1,
+        )
+
+    np.testing.assert_allclose(batched_reducer.stats, full_reducer.stats, rtol=0.0, atol=0.0)
+    np.testing.assert_allclose(
+        batched_reducer.daily["2025-01-02"],
+        full_reducer.daily["2025-01-02"],
+        rtol=0.0,
+        atol=0.0,
+    )
+    assert batched_reducer.completed_block_count == 1
+    assert batched_reducer.behavior_blocks == full_reducer.behavior_blocks

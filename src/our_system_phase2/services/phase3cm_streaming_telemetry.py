@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 from typing import Any
+from typing import Mapping, Sequence
 
 
 THREAD_ENV_BY_POOL = {
@@ -286,6 +287,45 @@ def build_phase_event(
     }
     event.update({str(key): value for key, value in counters.items()})
     return event
+
+
+def aggregate_compute_phase_parallelism(
+    events: Sequence[Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """Apply the CPU gate to complete hot phases, not timer-granularity blocks."""
+
+    grouped: dict[str, list[Mapping[str, Any]]] = {}
+    for event in events:
+        if bool(event.get("compute_heavy")):
+            grouped.setdefault(str(event.get("phase")), []).append(event)
+    output: dict[str, dict[str, Any]] = {}
+    for phase, rows in sorted(grouped.items()):
+        allocations = {int(row.get("allocated_compute_threads") or 0) for row in rows}
+        if len(allocations) != 1 or min(allocations) < 1:
+            raise ThreadBudgetError(f"compute phase thread allocation drift: {phase}")
+        allocated = allocations.pop()
+        wall = sum(float(row.get("wall_seconds") or 0.0) for row in rows)
+        cpu = sum(float(row.get("cpu_seconds") or 0.0) for row in rows)
+        effective = cpu / wall if wall > 0 else 0.0
+        output[phase] = {
+            "event_count": len(rows),
+            "wall_seconds": wall,
+            "cpu_seconds": cpu,
+            "allocated_compute_threads": allocated,
+            "qualification_threshold_effective_cores": 0.5 * allocated,
+            "effective_cores": effective,
+            "parallel_efficiency": effective / allocated,
+            "parallelism_status": (
+                "PARALLELISM_ENGAGED"
+                if effective >= 0.5 * allocated
+                else "PARALLELISM_NOT_ENGAGED"
+            ),
+            "subphase_event_failure_count": sum(
+                str(row.get("parallelism_status")) == "PARALLELISM_NOT_ENGAGED"
+                for row in rows
+            ),
+        }
+    return output
 
 
 def freeze_thread_budget(

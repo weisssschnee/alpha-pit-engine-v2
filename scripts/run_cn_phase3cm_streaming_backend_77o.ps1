@@ -34,13 +34,13 @@ $RuntimeRoot = Join-Path $RepoRoot "runtime\cn_phase3cm_streaming_repair_2026071
 $CandidateRoot = Join-Path $RepoRoot "runtime\cn_compositional_nline_large_search_20260715"
 if ($Backend -eq "active_bar") {
     $CandidateTable = Join-Path $CandidateRoot "preflight_active_candidates.csv"
-    $FieldRoot = Join-Path $RuntimeRoot "time_major_v1"
-    $LabelRoot = Join-Path $RuntimeRoot "time_major_v1_labels"
+    $FieldRoot = Join-Path $RuntimeRoot "time_major_train_v2"
+    $LabelRoot = Join-Path $RuntimeRoot "time_major_train_v3_labels"
 }
 else {
     $CandidateTable = Join-Path $CandidateRoot "preflight_session_candidates.csv"
-    $FieldRoot = Join-Path $RuntimeRoot "session_time_major_v1"
-    $LabelRoot = Join-Path $RuntimeRoot "session_time_major_v1_labels"
+    $FieldRoot = Join-Path $RuntimeRoot "session_time_major_train_v2"
+    $LabelRoot = Join-Path $RuntimeRoot "session_time_major_train_v3_labels"
 }
 $Arguments = @(
     "scripts\run_cn_phase3cm_streaming_qualification.py",
@@ -49,6 +49,7 @@ $Arguments = @(
     "--pair-count", [string]$PairCount,
     "--candidate-table", $CandidateTable,
     "--binding", (Join-Path $RuntimeRoot "CN_STREAMING_REPAIR_FROZEN_INPUT_BINDING.json"),
+    "--split-manifest", (Join-Path $RepoRoot "runtime\run_plans\phase3ga_true1min_2024_2025_global_split_manifest.csv"),
     "--artifact-root", $CandidateRoot,
     "--field-sidecar-root", $FieldRoot,
     "--label-sidecar-root", $LabelRoot,

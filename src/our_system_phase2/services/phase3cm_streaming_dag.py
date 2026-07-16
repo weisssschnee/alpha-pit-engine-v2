@@ -17,6 +17,7 @@ CROSS_SECTIONAL_MAPPING_OPERATORS = {
     "zscore",
     "csresidual",
     "safecsresidual",
+    "maskedzscore",
 }
 WINDOW_OPERATORS = {
     "acceleration",
@@ -287,3 +288,45 @@ class SharedMultiCandidateDAGPlan:
             "nodes": [asdict(item) for item in self.nodes],
             "candidate_roots": [asdict(item) for item in self.candidate_roots],
         }
+
+    def release_node_ids_by_candidate_batch(
+        self,
+        candidate_batches: Iterable[Iterable[str]],
+    ) -> tuple[tuple[str, ...], ...]:
+        batches = tuple(tuple(str(value) for value in batch) for batch in candidate_batches)
+        if not batches or any(not batch for batch in batches):
+            raise ValueError("candidate batches must be non-empty")
+        flattened = tuple(value for batch in batches for value in batch)
+        if len(flattened) != len(set(flattened)):
+            raise ValueError("candidate batches must not contain duplicates")
+        root_by_candidate = {root.candidate_id: root for root in self.candidate_roots}
+        if set(flattened) != set(root_by_candidate):
+            raise ValueError("candidate batches must cover the frozen DAG roots exactly")
+        node_by_id = {node.node_id: node for node in self.nodes}
+        dependencies: dict[str, set[str]] = {}
+
+        def visit(node_id: str) -> set[str]:
+            cached = dependencies.get(node_id)
+            if cached is not None:
+                return cached
+            node = node_by_id[node_id]
+            result = {node_id}
+            for child_id in node.input_node_ids:
+                result.update(visit(child_id))
+            dependencies[node_id] = result
+            return result
+
+        used_by_batch: list[set[str]] = []
+        for batch in batches:
+            used: set[str] = set()
+            for candidate_id in batch:
+                used.update(visit(root_by_candidate[candidate_id].root_node_id))
+            used_by_batch.append(used)
+        last_use: dict[str, int] = {}
+        for batch_index, used in enumerate(used_by_batch):
+            for node_id in used:
+                last_use[node_id] = batch_index
+        return tuple(
+            tuple(sorted(node_id for node_id, index in last_use.items() if index == batch_index))
+            for batch_index in range(len(batches))
+        )

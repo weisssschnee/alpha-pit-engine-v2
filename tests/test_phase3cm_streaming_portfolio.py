@@ -8,7 +8,11 @@ from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit imp
     _candidate_portfolio_rows_from_precomputed_time_groups,
     _rank_by_eval_time_index,
 )
-from our_system_phase2.services.phase3cm_streaming_portfolio import BatchedPortfolioKernel
+from our_system_phase2.services.phase3cm_streaming_portfolio import (
+    BatchedPortfolioKernel,
+    _linear_quantile,
+    _pearson,
+)
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
 
@@ -126,6 +130,25 @@ def test_batched_native_portfolio_matches_merged_legacy_reference() -> None:
     assert observed.audit["native_portfolio_kernel_called"] is True
 
 
+def test_linear_quantile_does_not_move_an_equal_cutoff_tie_by_one_ulp() -> None:
+    tied_value = np.float64(0.8659217877094972)
+    values = np.array([0.1, 0.2, tied_value, tied_value], dtype=np.float64)
+
+    cutoff = _linear_quantile(values, 0.8)
+
+    assert cutoff == tied_value
+    assert int((values >= cutoff).sum()) == 2
+
+
+def test_native_pearson_returns_nan_for_constant_rank_vector() -> None:
+    observed = _pearson(
+        np.full(64, np.float64(0.5)),
+        np.linspace(-1.0, 1.0, 64, dtype=np.float64),
+    )
+
+    assert np.isnan(observed)
+
+
 def test_portfolio_turnover_state_matches_across_block_boundary() -> None:
     frame, signals, labels = _fixture()
     time_ids = pd.factorize(frame["trade_time"], sort=False)[0].astype(np.int64)
@@ -205,3 +228,61 @@ def test_full_market_barrier_differs_from_shard_local_mapping() -> None:
         local_rows = _legacy_rows(local_frame, signals[0, code_mask], {1: labels[1][code_mask]}, "long_top")
         shard_sum += sum(float(row["net_return"]) for row in local_rows)
     assert not np.isclose(float(merged.stats[0, 0, 1]), shard_sum)
+
+
+def test_independent_pair_batch_kernels_match_one_full_candidate_kernel() -> None:
+    frame, signals, labels = _fixture()
+    time_ids = pd.factorize(frame["trade_time"], sort=False)[0].astype(np.int64)
+    code_ids = pd.factorize(frame["code"], sort=True)[0].astype(np.int32)
+    four_signals = np.vstack((signals, signals * 0.5))
+    kwargs = dict(
+        code_count=6,
+        horizons=(1, 5),
+        compute_threads=2,
+        min_obs=5,
+        top_quantile=0.2,
+        cost_bps=5.0,
+        portfolio_mode="long_only_top",
+    )
+    full_kernel = BatchedPortfolioKernel(candidate_count=4, **kwargs)
+    full = full_kernel.evaluate_block(
+        signals=four_signals,
+        labels=labels,
+        time_ids=time_ids,
+        code_ids=code_ids,
+        day_ids=np.zeros(len(frame), dtype=np.int32),
+        directions=np.array([1.0, -1.0, 1.0, -1.0]),
+        day_count=1,
+    )
+
+    parts = []
+    batch_kernels = []
+    for indices in ((0, 1), (2, 3)):
+        kernel = BatchedPortfolioKernel(candidate_count=2, **kwargs)
+        batch_kernels.append(kernel)
+        parts.append(
+            kernel.evaluate_block(
+                signals=four_signals[list(indices)],
+                labels=labels,
+                time_ids=time_ids,
+                code_ids=code_ids,
+                day_ids=np.zeros(len(frame), dtype=np.int32),
+                directions=np.array([1.0, -1.0]),
+                day_count=1,
+            )
+        )
+
+    np.testing.assert_allclose(
+        np.concatenate([part.stats for part in parts], axis=0),
+        full.stats,
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_array_equal(
+        np.concatenate([kernel.selection_epoch for kernel in batch_kernels], axis=0),
+        full_kernel.selection_epoch,
+    )
+    np.testing.assert_array_equal(
+        np.concatenate([kernel.epoch_counter for kernel in batch_kernels], axis=0),
+        full_kernel.epoch_counter,
+    )
