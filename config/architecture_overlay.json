@@ -140,6 +140,37 @@
       ]
     },
     {
+      "id": "compositional_stage_a_route_eligibility",
+      "label": "Compositional Stage A route eligibility gate",
+      "kind": "admission",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
+        "scripts/freeze_cn_compositional_stage_a_eligibility.py"
+      ],
+      "critical": true,
+      "contracts": [
+        {
+          "id": "stage_a_route_supply_required",
+          "type": "ADMISSION",
+          "rule": "A Stage A route receives at most its evidence-bound admitted exact supply; excluded and naturally underfilled budget is never reallocated.",
+          "severity": "HARD",
+          "enforced_by": "freeze_cn_compositional_stage_a_eligibility",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
+        "verified_at_sha": "c64b988ef1d36176dea55179811ecce56f36a9dd"
+      },
+      "promotion_requirements": [
+        "separate strict Stage A authorization",
+        "frozen Stage A input binding"
+      ]
+    },
+    {
       "id": "candidate_submission_receipt",
       "label": "Candidate submission receipt gate",
       "kind": "admission",
@@ -503,6 +534,16 @@
     {"id": "lanes_to_receipt", "source": "hypothesis_lanes", "target": "candidate_submission_receipt", "relation": "submits_candidates", "lifecycle": "ACTIVE"},
     {"id": "compositional_to_receipt", "source": "compositional_nline_bounded_search", "target": "candidate_submission_receipt", "relation": "EXPERIMENTAL_CURRENT_NON_FORMAL", "lifecycle": "EXPERIMENTAL"},
     {
+      "id": "compositional_to_stage_a_route_eligibility",
+      "source": "compositional_nline_bounded_search",
+      "target": "compositional_stage_a_route_eligibility",
+      "relation": "supplies_evidence_bound_admission",
+      "lifecycle": "EXPERIMENTAL",
+      "critical": true,
+      "contract": {"id": "current_generator_scope_only", "type": "EVIDENCE", "rule": "Stage A eligibility describes only the routes and exact pairs reachable in the frozen current generator output; it cannot claim complete seven-route capability.", "severity": "HARD", "enforced_by": "freeze_cn_compositional_stage_a_eligibility", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json", "verified_at_sha": "c64b988ef1d36176dea55179811ecce56f36a9dd"}
+    },
+    {
       "id": "receipt_to_pair",
       "source": "candidate_submission_receipt",
       "target": "matched_control_pair_authority",
@@ -541,6 +582,16 @@
       "critical": true,
       "contract": {"id": "stage_a_requires_separate_authorization", "type": "BOUNDARY", "rule": "Resource readiness permits a later frozen Stage A proposal only after separate explicit authorization; it does not start search.", "severity": "HARD", "enforced_by": "formal_search_freeze", "bypass_forbidden": true},
       "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STAGE_A_READINESS_REPORT.md", "verified_at_sha": "a59c3956e078cd7c7861a57ec3d1d78b724c13c1"}
+    },
+    {
+      "id": "stage_a_route_eligibility_to_streaming_evaluator",
+      "source": "compositional_stage_a_route_eligibility",
+      "target": "phase3cm_streaming_multicandidate_evaluator",
+      "relation": "qualifies_scoped_input_pack_only",
+      "lifecycle": "EXPERIMENTAL",
+      "critical": true,
+      "contract": {"id": "eligibility_not_execution_authority", "type": "BOUNDARY", "rule": "The scoped 3484-pair eligibility pack does not authorize Stage A execution, candidate promotion, persistent memory or forward access.", "severity": "HARD", "enforced_by": "formal_search_freeze", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json", "verified_at_sha": "c64b988ef1d36176dea55179811ecce56f36a9dd"}
     },
     {
       "id": "evaluator_to_feedback",

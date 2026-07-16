@@ -260,6 +260,40 @@
       }
     },
     {
+      "color": "#f9a825",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "freeze_cn_compositional_stage_a_eligibility",
+        "evidence_ref": "",
+        "id": "current_generator_scope_only",
+        "rule": "Stage A eligibility describes only the routes and exact pairs reachable in the frozen current generator output; it cannot claim complete seven-route capability.",
+        "severity": "HARD",
+        "type": "EVIDENCE"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "compositional_to_stage_a_route_eligibility",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "supplies_evidence_bound_admission",
+      "required": false,
+      "source": "compositional_nline_bounded_search",
+      "target": "compositional_stage_a_route_eligibility",
+      "validation": {
+        "checked_at": "2026-07-16T21:05:39.120711+00:00",
+        "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
+        "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "c64b988ef1d36176dea55179811ecce56f36a9dd"
+      }
+    },
+    {
       "color": "#2e7d32",
       "contract": {
         "bypass_forbidden": true,
@@ -393,6 +427,40 @@
         "profile": "",
         "result": "PASS",
         "verified_at_sha": "a59c3956e078cd7c7861a57ec3d1d78b724c13c1"
+      }
+    },
+    {
+      "color": "#f9a825",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "formal_search_freeze",
+        "evidence_ref": "",
+        "id": "eligibility_not_execution_authority",
+        "rule": "The scoped 3484-pair eligibility pack does not authorize Stage A execution, candidate promotion, persistent memory or forward access.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "stage_a_route_eligibility_to_streaming_evaluator",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "qualifies_scoped_input_pack_only",
+      "required": false,
+      "source": "compositional_stage_a_route_eligibility",
+      "target": "phase3cm_streaming_multicandidate_evaluator",
+      "validation": {
+        "checked_at": "2026-07-16T21:05:39.120711+00:00",
+        "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
+        "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "c64b988ef1d36176dea55179811ecce56f36a9dd"
       }
     },
     {
@@ -762,7 +830,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-16T17:40:26.619240+00:00",
+  "generated_at": "2026-07-16T21:09:07.073280+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1372,6 +1440,68 @@
       "visible_by_default": true
     },
     {
+      "active_authority": false,
+      "authority": null,
+      "color": "#f9a825",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "freeze_cn_compositional_stage_a_eligibility",
+          "evidence_ref": "",
+          "id": "stage_a_route_supply_required",
+          "rule": "A Stage A route receives at most its evidence-bound admitted exact supply; excluded and naturally underfilled budget is never reallocated.",
+          "severity": "HARD",
+          "type": "ADMISSION"
+        }
+      ],
+      "critical": true,
+      "evidence": "STATIC",
+      "expires_at": "",
+      "id": "compositional_stage_a_route_eligibility",
+      "kind": "admission",
+      "label": "Compositional Stage A route eligibility gate",
+      "lifecycle": "EXPERIMENTAL",
+      "owner": "",
+      "paths": [
+        "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
+        "scripts/freeze_cn_compositional_stage_a_eligibility.py"
+      ],
+      "promotion_requirements": [
+        "separate strict Stage A authorization",
+        "frozen Stage A input binding"
+      ],
+      "raw_node_ids": [
+        "scripts_freeze_cn_compositional_stage_a_eligibility",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_artifact",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_atomic_csv",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_atomic_json",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_build_stage_a_eligibility",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_fail",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_freeze_stage_a_eligibility",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_main",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_rationale_103",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_rationale_24",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_read_csv",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_sha256",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_stable_hash",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_stageaeligibilityerror",
+        "scripts_freeze_cn_compositional_stage_a_eligibility_unique_count"
+      ],
+      "required": false,
+      "semantic_role": "",
+      "validation": {
+        "checked_at": "2026-07-16T21:09:07.073280+00:00",
+        "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
+        "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "c64b988ef1d36176dea55179811ecce56f36a9dd"
+      },
+      "visible_by_default": true
+    },
+    {
       "active_authority": true,
       "authority": {
         "path": "src/our_system_phase2/services/candidate_submission_receipt.py",
@@ -1813,12 +1943,14 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
+        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -1835,7 +1967,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-15T21:26:36.179347+00:00",
+        "checked_at": "2026-07-16T21:09:07.073280+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -1881,12 +2013,14 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
+        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -1903,7 +2037,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-15T21:26:36.179347+00:00",
+        "checked_at": "2026-07-16T21:09:07.073280+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2103,25 +2237,25 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "CC96888697A0C8069FFD7FF80AF2784FFBBF73F6CCD3F991C7A654D914D0289A"
+    "sha256": "C8D7474633233909BC2DA7FDF04A0B381EAB5DD7A10B23833DCFC420AF5DBDE4"
   },
   "profile_id": null,
   "profiles": [],
   "raw": {
-    "built_at_commit": "17e4581b716dd4cdfd661a5e93c699622f52a748",
-    "edge_count": 8484,
-    "node_count": 3699,
+    "built_at_commit": "c64b988ef1d36176dea55179811ecce56f36a9dd",
+    "edge_count": 8537,
+    "node_count": 3719,
     "path": ".planning/graphs/graph.json",
-    "sha256": "44BE2531D18C992201512251B4441EE2F53363F3FC62DAC67E243CF6B53C02FE"
+    "sha256": "50E2610EE0F6C872EAD42E59B1478B0A5CD5938D34FF4D93216D199F1CB9EA13"
   },
-  "repo_head": "17e4581b716dd4cdfd661a5e93c699622f52a748",
+  "repo_head": "c64b988ef1d36176dea55179811ecce56f36a9dd",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 24,
-    "current_nodes": 21,
+    "current_edges": 26,
+    "current_nodes": 22,
     "errors": 0,
     "runtime_edges": 0,
     "runtime_nodes": 0,
