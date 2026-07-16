@@ -4,12 +4,12 @@
 - cluster-only mode — file stats not available
 
 ## Summary
-- 3690 nodes · 8462 edges · 336 communities (256 shown, 80 thin omitted)
+- 3690 nodes · 8462 edges · 337 communities (257 shown, 80 thin omitted)
 - Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 942 edges (avg confidence: 0.77)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ce8b9883`
+- Built from commit: `48c04a7e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -68,7 +68,7 @@
 - [[_COMMUNITY_StreamingPortfolioReducer|StreamingPortfolioReducer]]
 - [[_COMMUNITY_build_release|build_release]]
 - [[_COMMUNITY_BoundedBlockCache|BoundedBlockCache]]
-- [[_COMMUNITY_main|main]]
+- [[_COMMUNITY_build_global_continuity_forward_label_sidecars|build_global_continuity_forward_label_sidecars]]
 - [[_COMMUNITY_audit_event_state_support|audit_event_state_support]]
 - [[_COMMUNITY_PITGroupContract|PITGroupContract]]
 - [[_COMMUNITY_test_development_only_data_access.py|test_development_only_data_access.py]]
@@ -215,9 +215,9 @@
 - [[_COMMUNITY_data_release_hash|data_release_hash]]
 - [[_COMMUNITY_declared_operator_family|declared_operator_family]]
 - [[_COMMUNITY_evaluator_code_hash|evaluator_code_hash]]
-- [[_COMMUNITY_expression|expression]]
-- [[_COMMUNITY_field_ids|field_ids]]
+- [[_COMMUNITY_exact_identity|exact_identity]]
 - [[_COMMUNITY_frequency|frequency]]
+- [[_COMMUNITY_generator_origin|generator_origin]]
 - [[_COMMUNITY_legacy_or_unified_proposal_source|legacy_or_unified_proposal_source]]
 - [[_COMMUNITY_matched_control_id|matched_control_id]]
 - [[_COMMUNITY_operator_paths|operator_paths]]
@@ -227,6 +227,7 @@
 - [[_COMMUNITY_receipt_schema_version|receipt_schema_version]]
 - [[_COMMUNITY_representation_ids|representation_ids]]
 - [[_COMMUNITY_route_id|route_id]]
+- [[_COMMUNITY_field_ids|field_ids]]
 - [[_COMMUNITY_split_manifest_hash|split_manifest_hash]]
 - [[_COMMUNITY_support_unit|support_unit]]
 - [[_COMMUNITY_typed_compiler_hash|typed_compiler_hash]]
@@ -348,7 +349,7 @@
 - **EVALRESET Phase 1 Report Set** — reports_evalreset_phase1_20260711_phase1_baseline_and_plan, reports_evalreset_phase1_20260711_search_collapse_audit, reports_evalreset_phase1_20260711_signal_sketch_signal_sketch_audit [EXTRACTED 1.00]
 - **Phase3CE Typed Primitive Gate Documents** — reports_phase3ce1_g2_input_gate_smoke_20260618_phase3ce1_g2_input_gate_smoke_20260618, reports_phase3ce1_search_memory_blocked_view_20260618_phase3ce1_search_memory_blocked_view_20260618, reports_phase3ce2_fullwidth_realdata_eval_20260618_phase3as_true_1min_sidecar_canary_eval_20260610, reports_phase3ce2_typed_primitive_candidate_pack_canary_20260618_phase3ce2_typed_primitive_canary_20260618, reports_phase3ce2_typed_primitive_evaluator_smoke_20260618_phase3ce2_typed_primitive_evaluator_smoke_20260618, reports_phase3ce_unsafe_motif_quarantine_audit_20260618_phase3ce_unsafe_motif_quarantine_audit_20260618 [EXTRACTED 1.00]
 
-## Communities (336 total, 80 thin omitted)
+## Communities (337 total, 80 thin omitted)
 
 ### Community 0 - "real_market_validation.py"
 Cohesion: 0.08
@@ -435,8 +436,8 @@ Cohesion: 0.14
 Nodes (35): adaptive_comparison(), adaptive_research_diagnostics(), _admission_comparison(), apply_strict_priority_layer(), assign_signal_clusters(), _atomic_text(), _benchmark_increment(), _bottleneck() (+27 more)
 
 ### Community 21 - "FrozenExecutionPlan"
-Cohesion: 0.11
-Nodes (28): MemoryError, MonkeyPatch, _load_plan(), main(), _phase_e(), Any, Path, _sha256() (+20 more)
+Cohesion: 0.12
+Nodes (27): MonkeyPatch, _load_plan(), main(), _phase_e(), Any, Path, _sha256(), _write_json() (+19 more)
 
 ### Community 22 - "main"
 Cohesion: 0.14
@@ -455,16 +456,16 @@ Cohesion: 0.13
 Nodes (31): assemble(), _context_fields(), _development_sessions(), main(), materialize(), parser(), prepare(), Any (+23 more)
 
 ### Community 26 - "ValueError"
-Cohesion: 0.15
-Nodes (18): CacheBudgetError, Raised when one value cannot fit without violating the cache contract., _boundaries(), _contains_mapping(), Any, ExpressionNode, ndarray, _rank_kernel() (+10 more)
+Cohesion: 0.14
+Nodes (19): MemoryError, CacheBudgetError, Raised when one value cannot fit without violating the cache contract., _boundaries(), _contains_mapping(), Any, ExpressionNode, ndarray (+11 more)
 
 ### Community 27 - "build_time_major_shard"
-Cohesion: 0.10
-Nodes (32): LazyFrame, build_forward_label_shard(), build_global_continuity_forward_label_sidecars(), Any, Path, Exact forward-label sidecars and complete-market time-major block reads., Build aligned labels while preserving per-symbol continuity across physical shar, Read aligned per-shard sidecars and release one global time block. (+24 more)
+Cohesion: 0.14
+Nodes (25): LazyFrame, _candidate_fields(), main(), Path, _train_dates(), Read aligned per-shard sidecars and release one global time block., TimeMajorBlockReader, audit_sidecar_parity() (+17 more)
 
 ### Community 28 - "phase3cm_streaming_telemetry.py"
-Cohesion: 0.12
-Nodes (18): aggregate_compute_phase_parallelism(), build_phase_event(), freeze_thread_budget(), _PhaseSpan, PhaseTelemetryRecorder, Any, Path, Resource telemetry and thread-budget contracts for streaming Phase3CM. (+10 more)
+Cohesion: 0.11
+Nodes (20): aggregate_compute_phase_parallelism(), build_phase_event(), freeze_thread_budget(), _PhaseSpan, PhaseTelemetryRecorder, _process_snapshot(), Any, Path (+12 more)
 
 ### Community 29 - "main"
 Cohesion: 0.20
@@ -566,9 +567,9 @@ Nodes (19): DataType, Scalar, build_release(), _build_shard(), _date_values(), m
 Cohesion: 0.15
 Nodes (10): Hashable, BoundedBlockCache, _Entry, Any, Byte-bounded deterministic caches for streaming Phase3CM blocks., LRU cache whose byte and entry limits are hard contracts., _value_bytes(), test_bounded_block_cache_evicts_deterministically_by_lru() (+2 more)
 
-### Community 54 - "main"
-Cohesion: 0.25
-Nodes (9): main(), Path, _train_dates(), _candidate_fields(), main(), Path, _train_dates(), _process_snapshot() (+1 more)
+### Community 54 - "build_global_continuity_forward_label_sidecars"
+Cohesion: 0.15
+Nodes (14): main(), Path, _train_dates(), build_forward_label_shard(), build_global_continuity_forward_label_sidecars(), Any, Path, Exact forward-label sidecars and complete-market time-major block reads. (+6 more)
 
 ### Community 55 - "audit_event_state_support"
 Cohesion: 0.20
@@ -779,8 +780,8 @@ Cohesion: 0.18
 Nodes (11): type, minLength, type, type, properties, candidate_contract, expression, is_matched_control (+3 more)
 
 ### Community 107 - "properties"
-Cohesion: 0.14
-Nodes (14): type, minLength, type, minLength, type, type, properties, candidate_contract (+6 more)
+Cohesion: 0.18
+Nodes (11): type, minLength, type, type, properties, candidate_contract, expression, is_matched_control (+3 more)
 
 ### Community 108 - "run_preflight"
 Cohesion: 0.42
@@ -1126,53 +1127,57 @@ Nodes (3): minLength, type, declared_operator_family
 Cohesion: 0.67
 Nodes (3): minLength, type, evaluator_code_hash
 
-### Community 206 - "expression"
+### Community 206 - "exact_identity"
 Cohesion: 0.67
-Nodes (3): minLength, type, expression
+Nodes (3): minLength, type, exact_identity
 
-### Community 207 - "field_ids"
-Cohesion: 0.67
-Nodes (3): items, type, field_ids
-
-### Community 208 - "frequency"
+### Community 207 - "frequency"
 Cohesion: 0.67
 Nodes (3): minLength, type, frequency
 
-### Community 210 - "legacy_or_unified_proposal_source"
+### Community 208 - "generator_origin"
+Cohesion: 0.67
+Nodes (3): minLength, type, generator_origin
+
+### Community 209 - "legacy_or_unified_proposal_source"
 Cohesion: 0.67
 Nodes (3): minLength, type, legacy_or_unified_proposal_source
 
-### Community 211 - "matched_control_id"
+### Community 210 - "matched_control_id"
 Cohesion: 0.67
 Nodes (3): minLength, type, matched_control_id
 
-### Community 212 - "operator_paths"
+### Community 211 - "operator_paths"
 Cohesion: 0.67
 Nodes (3): items, type, operator_paths
 
-### Community 213 - "primitive_ids"
+### Community 212 - "primitive_ids"
 Cohesion: 0.67
 Nodes (3): items, type, primitive_ids
 
-### Community 214 - "proposal_source"
+### Community 213 - "proposal_source"
 Cohesion: 0.67
 Nodes (3): proposal_source, minLength, type
 
-### Community 215 - "receipt_id"
+### Community 214 - "receipt_id"
 Cohesion: 0.67
 Nodes (3): receipt_id, minLength, type
 
-### Community 216 - "receipt_schema_version"
+### Community 215 - "receipt_schema_version"
 Cohesion: 0.67
 Nodes (3): receipt_schema_version, minLength, type
 
-### Community 217 - "representation_ids"
+### Community 216 - "representation_ids"
 Cohesion: 0.67
 Nodes (3): representation_ids, items, type
 
-### Community 218 - "route_id"
+### Community 217 - "route_id"
 Cohesion: 0.67
 Nodes (3): route_id, minLength, type
+
+### Community 218 - "field_ids"
+Cohesion: 0.67
+Nodes (3): items, type, field_ids
 
 ### Community 219 - "split_manifest_hash"
 Cohesion: 0.67
@@ -1207,11 +1212,11 @@ Nodes (3): _materialization_input_columns(), Include registry-declared PIT clock
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `evaluate_panel_expression()` connect `real_market_validation.py` to `typed_temporal_program.py`, `run_signal_sketch_audit.py`, `phase3dy_true1min_tplus1_tradable_replay.py`, `phase3bl_bk_priority_signal_materialization.py`, `phase3ce2_typed_primitive_evaluator_smoke.py`, `validate_expression`, `test_unified_capability_integration.py`, `phase3ar_sidecar_field_adapter.py`, `cn_unified_capability_discovery.py`, `build_cn_runtime_authority_split_repair.py`, `evaluate_proxy_rows`, `CompositionalGrammarV2`?**
-  _High betweenness centrality (0.176) - this node is a cross-community bridge._
+  _High betweenness centrality (0.157) - this node is a cross-community bridge._
 - **Why does `main()` connect `cn_b1s_development_canary.py` to `_materialization_input_columns`, `real_market_validation.py`, `generate_adaptive_proposals`, `run_signal_sketch_audit.py`, `phase3bl_bk_priority_signal_materialization.py`, `FieldRegistry`, `strict_priority_selector.py`, `validate_development_release`, `test_cn_b1s_development_canary.py`, `atomic_write_json`, `evaluate_proxy_rows`, `nextgen_dark_development_canary.py`?**
-  _High betweenness centrality (0.123) - this node is a cross-community bridge._
+  _High betweenness centrality (0.093) - this node is a cross-community bridge._
 - **Why does `atomic_write_json()` connect `atomic_write_json` to `run_signal_sketch_audit.py`, `validate_development_release`, `main`, `_persist_attempt`, `build_tdx_plate_release`, `analyze_generator_funnel`, `test_true1min_plate_aggregation.py`, `test_windows_einval_after_flush_is_not_candidate_failure`, `cn_b1s_development_canary.py`, `build_release`, `main`, `nextgen_dark_development_canary.py`?**
-  _High betweenness centrality (0.090) - this node is a cross-community bridge._
+  _High betweenness centrality (0.070) - this node is a cross-community bridge._
 - **Are the 22 inferred relationships involving `evaluate_panel_expression()` (e.g. with `legacy_gated_parity()` and `worker()`) actually correct?**
   _`evaluate_panel_expression()` has 22 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 40 inferred relationships involving `ValueError` (e.g. with `main()` and `main()`) actually correct?**

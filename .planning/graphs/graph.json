@@ -2236,9 +2236,9 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L57",
       "_origin": "ast",
-      "community": 107,
+      "community": 206,
       "norm_label": "exact_identity",
-      "community_name": "properties",
+      "community_name": "exact_identity",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_exact_identity"
     },
     {
@@ -2247,9 +2247,9 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L58",
       "_origin": "ast",
-      "community": 107,
+      "community": 206,
       "norm_label": "minlength",
-      "community_name": "properties",
+      "community_name": "exact_identity",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_exact_identity_minlength"
     },
     {
@@ -2258,9 +2258,9 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L59",
       "_origin": "ast",
-      "community": 107,
+      "community": 206,
       "norm_label": "type",
-      "community_name": "properties",
+      "community_name": "exact_identity",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_exact_identity_type"
     },
     {
@@ -2269,9 +2269,9 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L61",
       "_origin": "ast",
-      "community": 206,
+      "community": 107,
       "norm_label": "expression",
-      "community_name": "expression",
+      "community_name": "properties",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_expression"
     },
     {
@@ -2280,9 +2280,9 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L62",
       "_origin": "ast",
-      "community": 206,
+      "community": 107,
       "norm_label": "minlength",
-      "community_name": "expression",
+      "community_name": "properties",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_expression_minlength"
     },
     {
@@ -2291,9 +2291,9 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L63",
       "_origin": "ast",
-      "community": 206,
+      "community": 107,
       "norm_label": "type",
-      "community_name": "expression",
+      "community_name": "properties",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_expression_type"
     },
     {
@@ -2302,7 +2302,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 207,
+      "community": 218,
       "norm_label": "field_ids",
       "community_name": "field_ids",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_field_ids"
@@ -2313,7 +2313,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L66",
       "_origin": "ast",
-      "community": 207,
+      "community": 218,
       "norm_label": "items",
       "community_name": "field_ids",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_field_ids_items"
@@ -2324,7 +2324,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L69",
       "_origin": "ast",
-      "community": 207,
+      "community": 218,
       "norm_label": "type",
       "community_name": "field_ids",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_field_ids_type"
@@ -2335,7 +2335,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L71",
       "_origin": "ast",
-      "community": 208,
+      "community": 207,
       "norm_label": "frequency",
       "community_name": "frequency",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_frequency"
@@ -2346,7 +2346,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L72",
       "_origin": "ast",
-      "community": 208,
+      "community": 207,
       "norm_label": "minlength",
       "community_name": "frequency",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_frequency_minlength"
@@ -2357,7 +2357,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L73",
       "_origin": "ast",
-      "community": 208,
+      "community": 207,
       "norm_label": "type",
       "community_name": "frequency",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_frequency_type"
@@ -2368,9 +2368,9 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L75",
       "_origin": "ast",
-      "community": 107,
+      "community": 208,
       "norm_label": "generator_origin",
-      "community_name": "properties",
+      "community_name": "generator_origin",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_generator_origin"
     },
     {
@@ -2379,9 +2379,9 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L76",
       "_origin": "ast",
-      "community": 107,
+      "community": 208,
       "norm_label": "minlength",
-      "community_name": "properties",
+      "community_name": "generator_origin",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_generator_origin_minlength"
     },
     {
@@ -2390,9 +2390,9 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 107,
+      "community": 208,
       "norm_label": "type",
-      "community_name": "properties",
+      "community_name": "generator_origin",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_generator_origin_type"
     },
     {
@@ -2423,7 +2423,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L82",
       "_origin": "ast",
-      "community": 210,
+      "community": 209,
       "norm_label": "legacy_or_unified_proposal_source",
       "community_name": "legacy_or_unified_proposal_source",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_legacy_or_unified_proposal_source"
@@ -2434,7 +2434,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L83",
       "_origin": "ast",
-      "community": 210,
+      "community": 209,
       "norm_label": "minlength",
       "community_name": "legacy_or_unified_proposal_source",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_legacy_or_unified_proposal_source_minlength"
@@ -2445,7 +2445,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L84",
       "_origin": "ast",
-      "community": 210,
+      "community": 209,
       "norm_label": "type",
       "community_name": "legacy_or_unified_proposal_source",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_legacy_or_unified_proposal_source_type"
@@ -2456,7 +2456,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 211,
+      "community": 210,
       "norm_label": "matched_control_id",
       "community_name": "matched_control_id",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_matched_control_id"
@@ -2467,7 +2467,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L87",
       "_origin": "ast",
-      "community": 211,
+      "community": 210,
       "norm_label": "minlength",
       "community_name": "matched_control_id",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_matched_control_id_minlength"
@@ -2478,7 +2478,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 211,
+      "community": 210,
       "norm_label": "type",
       "community_name": "matched_control_id",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_matched_control_id_type"
@@ -2555,7 +2555,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L102",
       "_origin": "ast",
-      "community": 212,
+      "community": 211,
       "norm_label": "operator_paths",
       "community_name": "operator_paths",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_operator_paths"
@@ -2566,7 +2566,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L103",
       "_origin": "ast",
-      "community": 212,
+      "community": 211,
       "norm_label": "items",
       "community_name": "operator_paths",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_operator_paths_items"
@@ -2577,7 +2577,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L106",
       "_origin": "ast",
-      "community": 212,
+      "community": 211,
       "norm_label": "type",
       "community_name": "operator_paths",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_operator_paths_type"
@@ -2621,7 +2621,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 213,
+      "community": 212,
       "norm_label": "primitive_ids",
       "community_name": "primitive_ids",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_primitive_ids"
@@ -2632,7 +2632,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L115",
       "_origin": "ast",
-      "community": 213,
+      "community": 212,
       "norm_label": "items",
       "community_name": "primitive_ids",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_primitive_ids_items"
@@ -2643,7 +2643,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L118",
       "_origin": "ast",
-      "community": 213,
+      "community": 212,
       "norm_label": "type",
       "community_name": "primitive_ids",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_primitive_ids_type"
@@ -2654,7 +2654,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L120",
       "_origin": "ast",
-      "community": 214,
+      "community": 213,
       "norm_label": "proposal_source",
       "community_name": "proposal_source",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_proposal_source"
@@ -2665,7 +2665,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L121",
       "_origin": "ast",
-      "community": 214,
+      "community": 213,
       "norm_label": "minlength",
       "community_name": "proposal_source",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_proposal_source_minlength"
@@ -2676,7 +2676,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L122",
       "_origin": "ast",
-      "community": 214,
+      "community": 213,
       "norm_label": "type",
       "community_name": "proposal_source",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_proposal_source_type"
@@ -2720,7 +2720,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 215,
+      "community": 214,
       "norm_label": "receipt_id",
       "community_name": "receipt_id",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_receipt_id"
@@ -2731,7 +2731,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L129",
       "_origin": "ast",
-      "community": 215,
+      "community": 214,
       "norm_label": "minlength",
       "community_name": "receipt_id",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_receipt_id_minlength"
@@ -2742,7 +2742,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L130",
       "_origin": "ast",
-      "community": 215,
+      "community": 214,
       "norm_label": "type",
       "community_name": "receipt_id",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_receipt_id_type"
@@ -2753,7 +2753,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L132",
       "_origin": "ast",
-      "community": 216,
+      "community": 215,
       "norm_label": "receipt_schema_version",
       "community_name": "receipt_schema_version",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_receipt_schema_version"
@@ -2764,7 +2764,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L133",
       "_origin": "ast",
-      "community": 216,
+      "community": 215,
       "norm_label": "minlength",
       "community_name": "receipt_schema_version",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_receipt_schema_version_minlength"
@@ -2775,7 +2775,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L134",
       "_origin": "ast",
-      "community": 216,
+      "community": 215,
       "norm_label": "type",
       "community_name": "receipt_schema_version",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_receipt_schema_version_type"
@@ -2786,7 +2786,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L136",
       "_origin": "ast",
-      "community": 217,
+      "community": 216,
       "norm_label": "representation_ids",
       "community_name": "representation_ids",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_representation_ids"
@@ -2797,7 +2797,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L137",
       "_origin": "ast",
-      "community": 217,
+      "community": 216,
       "norm_label": "items",
       "community_name": "representation_ids",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_representation_ids_items"
@@ -2808,7 +2808,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L140",
       "_origin": "ast",
-      "community": 217,
+      "community": 216,
       "norm_label": "type",
       "community_name": "representation_ids",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_representation_ids_type"
@@ -2819,7 +2819,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L142",
       "_origin": "ast",
-      "community": 218,
+      "community": 217,
       "norm_label": "route_id",
       "community_name": "route_id",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_properties_route_id"
@@ -2830,7 +2830,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L143",
       "_origin": "ast",
-      "community": 218,
+      "community": 217,
       "norm_label": "minlength",
       "community_name": "route_id",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_route_id_minlength"
@@ -2841,7 +2841,7 @@
       "source_file": "runtime/run_plans/CN_CANDIDATE_SUBMISSION_RECEIPT_SCHEMA.json",
       "source_location": "L144",
       "_origin": "ast",
-      "community": 218,
+      "community": 217,
       "norm_label": "type",
       "community_name": "route_id",
       "id": "runtime_run_plans_cn_candidate_submission_receipt_schema_route_id_type"
@@ -6455,28 +6455,6 @@
       "id": "scripts_recover_phase3cm_exact_reward_atoms_rationale_1"
     },
     {
-      "label": "refresh_evalreset_artifact_index.py",
-      "file_type": "code",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 128,
-      "norm_label": "refresh_evalreset_artifact_index.py",
-      "community_name": "refresh",
-      "id": "scripts_refresh_evalreset_artifact_index"
-    },
-    {
-      "label": "_sha256()",
-      "file_type": "code",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L12",
-      "_origin": "ast",
-      "community": 128,
-      "norm_label": "_sha256()",
-      "community_name": "refresh",
-      "id": "scripts_refresh_evalreset_artifact_index_sha256"
-    },
-    {
       "label": "Path",
       "file_type": "code",
       "source_file": "",
@@ -6488,61 +6466,6 @@
       "id": "scripts_refresh_evalreset_artifact_index_py_path"
     },
     {
-      "label": "refresh()",
-      "file_type": "code",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L20",
-      "_origin": "ast",
-      "community": 128,
-      "norm_label": "refresh()",
-      "community_name": "refresh",
-      "id": "scripts_refresh_evalreset_artifact_index_refresh"
-    },
-    {
-      "label": "main()",
-      "file_type": "code",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L35",
-      "_origin": "ast",
-      "community": 128,
-      "norm_label": "main()",
-      "community_name": "refresh",
-      "id": "scripts_refresh_evalreset_artifact_index_main"
-    },
-    {
-      "label": "Refresh file existence, size, and SHA evidence in the Phase A artifact index.",
-      "file_type": "rationale",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 128,
-      "norm_label": "refresh file existence, size, and sha evidence in the phase a artifact index.",
-      "community_name": "refresh",
-      "id": "scripts_refresh_evalreset_artifact_index_rationale_1"
-    },
-    {
-      "label": "refresh_nextgen_dark_artifact_index.py",
-      "file_type": "code",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 140,
-      "norm_label": "refresh_nextgen_dark_artifact_index.py",
-      "community_name": "refresh_nextgen_dark_artifact_index.py",
-      "id": "scripts_refresh_nextgen_dark_artifact_index"
-    },
-    {
-      "label": "_sha256()",
-      "file_type": "code",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L14",
-      "_origin": "ast",
-      "community": 140,
-      "norm_label": "_sha256()",
-      "community_name": "refresh_nextgen_dark_artifact_index.py",
-      "id": "scripts_refresh_nextgen_dark_artifact_index_sha256"
-    },
-    {
       "label": "Path",
       "file_type": "code",
       "source_file": "",
@@ -6552,39 +6475,6 @@
       "norm_label": "path",
       "community_name": "refresh_nextgen_dark_artifact_index.py",
       "id": "scripts_refresh_nextgen_dark_artifact_index_py_path"
-    },
-    {
-      "label": "refresh()",
-      "file_type": "code",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L22",
-      "_origin": "ast",
-      "community": 140,
-      "norm_label": "refresh()",
-      "community_name": "refresh_nextgen_dark_artifact_index.py",
-      "id": "scripts_refresh_nextgen_dark_artifact_index_refresh"
-    },
-    {
-      "label": "main()",
-      "file_type": "code",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L46",
-      "_origin": "ast",
-      "community": 140,
-      "norm_label": "main()",
-      "community_name": "refresh_nextgen_dark_artifact_index.py",
-      "id": "scripts_refresh_nextgen_dark_artifact_index_main"
-    },
-    {
-      "label": "Refresh NEXTGEN-DARK artifact evidence from the repository filesystem.",
-      "file_type": "rationale",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 140,
-      "norm_label": "refresh nextgen-dark artifact evidence from the repository filesystem.",
-      "community_name": "refresh_nextgen_dark_artifact_index.py",
-      "id": "scripts_refresh_nextgen_dark_artifact_index_rationale_1"
     },
     {
       "label": "run_cn_compositional_generation_epoch.py",
@@ -36197,7 +36087,7 @@
       "_origin": "ast",
       "community": 54,
       "norm_label": "build_cn_phase3cm_forward_label_sidecars.py",
-      "community_name": "main",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "scripts_build_cn_phase3cm_forward_label_sidecars"
     },
     {
@@ -36208,7 +36098,7 @@
       "_origin": "ast",
       "community": 54,
       "norm_label": "_train_dates()",
-      "community_name": "main",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "scripts_build_cn_phase3cm_forward_label_sidecars_train_dates"
     },
     {
@@ -36219,7 +36109,7 @@
       "_origin": "ast",
       "community": 54,
       "norm_label": "path",
-      "community_name": "main",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "scripts_build_cn_phase3cm_forward_label_sidecars_py_path"
     },
     {
@@ -36230,7 +36120,7 @@
       "_origin": "ast",
       "community": 54,
       "norm_label": "main()",
-      "community_name": "main",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "scripts_build_cn_phase3cm_forward_label_sidecars_main"
     },
     {
@@ -36316,9 +36206,9 @@
       "source_file": "scripts/build_cn_phase3cm_time_major_sidecar.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 54,
+      "community": 27,
       "norm_label": "build_cn_phase3cm_time_major_sidecar.py",
-      "community_name": "main",
+      "community_name": "build_time_major_shard",
       "id": "scripts_build_cn_phase3cm_time_major_sidecar"
     },
     {
@@ -36327,9 +36217,9 @@
       "source_file": "scripts/build_cn_phase3cm_time_major_sidecar.py",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 54,
+      "community": 27,
       "norm_label": "_candidate_fields()",
-      "community_name": "main",
+      "community_name": "build_time_major_shard",
       "id": "scripts_build_cn_phase3cm_time_major_sidecar_candidate_fields"
     },
     {
@@ -36338,9 +36228,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 54,
+      "community": 27,
       "norm_label": "path",
-      "community_name": "main",
+      "community_name": "build_time_major_shard",
       "id": "scripts_build_cn_phase3cm_time_major_sidecar_py_path"
     },
     {
@@ -36349,9 +36239,9 @@
       "source_file": "scripts/build_cn_phase3cm_time_major_sidecar.py",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 54,
+      "community": 27,
       "norm_label": "_train_dates()",
-      "community_name": "main",
+      "community_name": "build_time_major_shard",
       "id": "scripts_build_cn_phase3cm_time_major_sidecar_train_dates"
     },
     {
@@ -36360,9 +36250,9 @@
       "source_file": "scripts/build_cn_phase3cm_time_major_sidecar.py",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 54,
+      "community": 27,
       "norm_label": "main()",
-      "community_name": "main",
+      "community_name": "build_time_major_shard",
       "id": "scripts_build_cn_phase3cm_time_major_sidecar_main"
     },
     {
@@ -37515,9 +37405,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "phase3cm_streaming_block_reader.py",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader"
     },
     {
@@ -37526,9 +37416,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "_sha256()",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_sha256"
     },
     {
@@ -37537,9 +37427,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "path",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_py_path"
     },
     {
@@ -37548,9 +37438,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "build_forward_label_shard()",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_build_forward_label_shard"
     },
     {
@@ -37559,9 +37449,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "any",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_py_any"
     },
     {
@@ -37570,9 +37460,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "_stable_key_digest()",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_stable_key_digest"
     },
     {
@@ -37581,9 +37471,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L132",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "build_global_continuity_forward_label_sidecars()",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_build_global_continuity_forward_label_sidecars"
     },
     {
@@ -37592,9 +37482,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L357",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "timemajorblock",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_timemajorblock"
     },
     {
@@ -37603,9 +37493,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L371",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": ".row_count()",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_timemajorblock_row_count"
     },
     {
@@ -37614,9 +37504,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L375",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": ".trade_time_count()",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_timemajorblock_trade_time_count"
     },
     {
@@ -37636,9 +37526,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L382",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": ".__init__()",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_timemajorblockreader_init"
     },
     {
@@ -37647,9 +37537,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L406",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": ".read_block()",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_timemajorblockreader_read_block"
     },
     {
@@ -37658,9 +37548,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "timestamp",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "timestamp"
     },
     {
@@ -37669,9 +37559,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "exact forward-label sidecars and complete-market time-major block reads.",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_rationale_1"
     },
     {
@@ -37680,9 +37570,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "materialize the legacy per-symbol group-shift labels without pandas.",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_rationale_39"
     },
     {
@@ -37691,9 +37581,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
       "source_location": "L140",
       "_origin": "ast",
-      "community": 27,
+      "community": 54,
       "norm_label": "build aligned labels while preserving per-symbol continuity across physical shar",
-      "community_name": "build_time_major_shard",
+      "community_name": "build_global_continuity_forward_label_sidecars",
       "id": "src_our_system_phase2_services_phase3cm_streaming_block_reader_rationale_140"
     },
     {
@@ -37735,9 +37625,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 21,
+      "community": 26,
       "norm_label": "memoryerror",
-      "community_name": "FrozenExecutionPlan",
+      "community_name": "ValueError",
       "id": "memoryerror"
     },
     {
@@ -39484,9 +39374,9 @@
       "source_file": "src/our_system_phase2/services/phase3cm_streaming_telemetry.py",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 54,
+      "community": 28,
       "norm_label": "_process_snapshot()",
-      "community_name": "main",
+      "community_name": "phase3cm_streaming_telemetry.py",
       "id": "src_our_system_phase2_services_phase3cm_streaming_telemetry_process_snapshot"
     },
     {
@@ -40760,9 +40650,9 @@
       "source_file": "tests/test_phase3cm_streaming_telemetry.py",
       "source_location": "L148",
       "_origin": "ast",
-      "community": 54,
+      "community": 28,
       "norm_label": "test_process_snapshot_exposes_real_windows_rss_without_psutil()",
-      "community_name": "main",
+      "community_name": "phase3cm_streaming_telemetry.py",
       "id": "tests_test_phase3cm_streaming_telemetry_test_process_snapshot_exposes_real_windows_rss_without_psutil"
     },
     {
@@ -40809,8 +40699,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "phase3cm streaming multi-candidate evaluator",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_streaming_evaluator",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_streaming_evaluator"
     },
     {
       "label": "Candidate-Parallel Phase3CM Evaluator",
@@ -40823,8 +40713,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "candidate-parallel phase3cm evaluator",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_candidate_parallel_evaluator",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_candidate_parallel_evaluator"
     },
     {
       "label": "Engineering Qualification",
@@ -40837,8 +40727,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "engineering qualification",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_engineering_qualification",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_engineering_qualification"
     },
     {
       "label": "Value Cohort",
@@ -40851,8 +40741,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "value cohort",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_value_cohort",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_value_cohort"
     },
     {
       "label": "Mapping Subcohort",
@@ -40865,8 +40755,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "mapping subcohort",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_mapping_subcohort",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_mapping_subcohort"
     },
     {
       "label": "Expression Nodes",
@@ -40879,8 +40769,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "expression nodes",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_expression_nodes",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_expression_nodes"
     },
     {
       "label": "Pair Support",
@@ -40893,8 +40783,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "pair support",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_pair_support",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_pair_support"
     },
     {
       "label": "Native Batched Portfolio Kernels",
@@ -40907,8 +40797,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "native batched portfolio kernels",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_native_batched_portfolio_kernels",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_native_batched_portfolio_kernels"
     },
     {
       "label": "Bounded Streaming Reducers",
@@ -40921,8 +40811,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "bounded streaming reducers",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_bounded_streaming_reducers",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_bounded_streaming_reducers"
     },
     {
       "label": "Periodic Atomic Checkpoints",
@@ -40935,8 +40825,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "periodic atomic checkpoints",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_periodic_atomic_checkpoints",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_periodic_atomic_checkpoints"
     },
     {
       "label": "Continuation Payloads",
@@ -40949,8 +40839,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "continuation payloads",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_continuation_payloads",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_continuation_payloads"
     },
     {
       "label": "Phase D",
@@ -40963,8 +40853,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "phase d",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_phase_d",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_phase_d"
     },
     {
       "label": "Phase E",
@@ -40977,8 +40867,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "phase e",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_phase_e",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_phase_e"
     },
     {
       "label": "Resource Gates",
@@ -40991,8 +40881,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "resource gates",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_resource_gates",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_resource_gates"
     },
     {
       "label": "Qualification Requirements",
@@ -41005,8 +40895,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "qualification requirements",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_qualification_requirements",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_qualification_requirements"
     },
     {
       "label": "BATCHED_PORTFOLIO_KERNEL_BOTTLENECK",
@@ -41019,8 +40909,8 @@
       "contributor": null,
       "community": 73,
       "norm_label": "batched_portfolio_kernel_bottleneck",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_bottleneck",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_bottleneck"
     },
     {
       "label": "Consequences",
@@ -41033,8 +40923,118 @@
       "contributor": null,
       "community": 73,
       "norm_label": "consequences",
-      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_consequences",
-      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator"
+      "community_name": "Phase3CM Streaming Multi-Candidate Evaluator",
+      "id": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_consequences"
+    },
+    {
+      "label": "refresh_evalreset_artifact_index.py",
+      "file_type": "code",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 128,
+      "norm_label": "refresh_evalreset_artifact_index.py",
+      "id": "scripts_refresh_evalreset_artifact_index",
+      "community_name": "refresh"
+    },
+    {
+      "label": "_sha256()",
+      "file_type": "code",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L12",
+      "_origin": "ast",
+      "community": 128,
+      "norm_label": "_sha256()",
+      "id": "scripts_refresh_evalreset_artifact_index_sha256",
+      "community_name": "refresh"
+    },
+    {
+      "label": "refresh()",
+      "file_type": "code",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L20",
+      "_origin": "ast",
+      "community": 128,
+      "norm_label": "refresh()",
+      "id": "scripts_refresh_evalreset_artifact_index_refresh",
+      "community_name": "refresh"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L35",
+      "_origin": "ast",
+      "community": 128,
+      "norm_label": "main()",
+      "id": "scripts_refresh_evalreset_artifact_index_main",
+      "community_name": "refresh"
+    },
+    {
+      "label": "Refresh file existence, size, and SHA evidence in the Phase A artifact index.",
+      "file_type": "rationale",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 128,
+      "norm_label": "refresh file existence, size, and sha evidence in the phase a artifact index.",
+      "id": "scripts_refresh_evalreset_artifact_index_rationale_1",
+      "community_name": "refresh"
+    },
+    {
+      "label": "refresh_nextgen_dark_artifact_index.py",
+      "file_type": "code",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 140,
+      "norm_label": "refresh_nextgen_dark_artifact_index.py",
+      "id": "scripts_refresh_nextgen_dark_artifact_index",
+      "community_name": "refresh_nextgen_dark_artifact_index.py"
+    },
+    {
+      "label": "_sha256()",
+      "file_type": "code",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L14",
+      "_origin": "ast",
+      "community": 140,
+      "norm_label": "_sha256()",
+      "id": "scripts_refresh_nextgen_dark_artifact_index_sha256",
+      "community_name": "refresh_nextgen_dark_artifact_index.py"
+    },
+    {
+      "label": "refresh()",
+      "file_type": "code",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L22",
+      "_origin": "ast",
+      "community": 140,
+      "norm_label": "refresh()",
+      "id": "scripts_refresh_nextgen_dark_artifact_index_refresh",
+      "community_name": "refresh_nextgen_dark_artifact_index.py"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L48",
+      "_origin": "ast",
+      "community": 140,
+      "norm_label": "main()",
+      "id": "scripts_refresh_nextgen_dark_artifact_index_main",
+      "community_name": "refresh_nextgen_dark_artifact_index.py"
+    },
+    {
+      "label": "Refresh NEXTGEN-DARK artifact evidence from the repository filesystem.",
+      "file_type": "rationale",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 140,
+      "norm_label": "refresh nextgen-dark artifact evidence from the repository filesystem.",
+      "id": "scripts_refresh_nextgen_dark_artifact_index_rationale_1",
+      "community_name": "refresh_nextgen_dark_artifact_index.py"
     }
   ],
   "links": [
@@ -52257,79 +52257,6 @@
       "target": "scripts_recover_phase3cm_exact_reward_atoms_main"
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_evalreset_artifact_index",
-      "target": "scripts_refresh_evalreset_artifact_index_main"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_evalreset_artifact_index",
-      "target": "scripts_refresh_evalreset_artifact_index_refresh"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_evalreset_artifact_index",
-      "target": "scripts_refresh_evalreset_artifact_index_sha256"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_evalreset_artifact_index_rationale_1",
-      "target": "scripts_refresh_evalreset_artifact_index"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/test_evalreset_artifact_index.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_evalreset_artifact_index",
-      "target": "scripts_refresh_evalreset_artifact_index"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L28",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_evalreset_artifact_index_refresh",
-      "target": "scripts_refresh_evalreset_artifact_index_sha256"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_evalreset_artifact_index_sha256",
-      "target": "scripts_refresh_evalreset_artifact_index_py_path"
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -52352,88 +52279,37 @@
       "target": "scripts_refresh_evalreset_artifact_index_py_path"
     },
     {
-      "relation": "calls",
-      "context": "call",
+      "relation": "references",
+      "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "scripts/refresh_evalreset_artifact_index.py",
-      "source_location": "L41",
+      "source_location": "L12",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "scripts_refresh_evalreset_artifact_index_main",
-      "target": "scripts_refresh_evalreset_artifact_index_refresh"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/test_evalreset_artifact_index.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_evalreset_artifact_index",
-      "target": "scripts_refresh_evalreset_artifact_index_refresh"
+      "source": "scripts_refresh_evalreset_artifact_index_sha256",
+      "target": "scripts_refresh_evalreset_artifact_index_py_path"
     },
     {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "tests/test_evalreset_artifact_index.py",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_evalreset_artifact_index_test_implemented_artifacts_exist_and_receive_hashes",
-      "target": "scripts_refresh_evalreset_artifact_index_refresh"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L46",
+      "source_location": "L50",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "scripts_refresh_nextgen_dark_artifact_index",
-      "target": "scripts_refresh_nextgen_dark_artifact_index_main"
+      "source": "scripts_refresh_nextgen_dark_artifact_index_main",
+      "target": "scripts_refresh_nextgen_dark_artifact_index_py_path"
     },
     {
-      "relation": "contains",
+      "relation": "references",
+      "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
       "source_location": "L22",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "scripts_refresh_nextgen_dark_artifact_index",
-      "target": "scripts_refresh_nextgen_dark_artifact_index_refresh"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_nextgen_dark_artifact_index",
-      "target": "scripts_refresh_nextgen_dark_artifact_index_sha256"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_nextgen_dark_artifact_index_rationale_1",
-      "target": "scripts_refresh_nextgen_dark_artifact_index"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "scripts_refresh_nextgen_dark_artifact_index_refresh",
-      "target": "scripts_refresh_nextgen_dark_artifact_index_sha256"
+      "target": "scripts_refresh_nextgen_dark_artifact_index_py_path"
     },
     {
       "relation": "references",
@@ -52445,39 +52321,6 @@
       "confidence_score": 1.0,
       "source": "scripts_refresh_nextgen_dark_artifact_index_sha256",
       "target": "scripts_refresh_nextgen_dark_artifact_index_py_path"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L48",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_nextgen_dark_artifact_index_main",
-      "target": "scripts_refresh_nextgen_dark_artifact_index_py_path"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L22",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_nextgen_dark_artifact_index_refresh",
-      "target": "scripts_refresh_nextgen_dark_artifact_index_py_path"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
-      "source_location": "L57",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_refresh_nextgen_dark_artifact_index_main",
-      "target": "scripts_refresh_nextgen_dark_artifact_index_refresh"
     },
     {
       "relation": "contains",
@@ -116156,6 +115999,28 @@
       "target": "tests_test_evalreset_architecture_graph_test_legacy_phase_a_control_plane_is_absent_and_graphskill_current_is_authoritative"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_evalreset_artifact_index.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_evalreset_artifact_index",
+      "target": "scripts_refresh_evalreset_artifact_index"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_evalreset_artifact_index.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_evalreset_artifact_index",
+      "target": "scripts_refresh_evalreset_artifact_index_refresh"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_evalreset_artifact_index.py",
@@ -116164,6 +116029,17 @@
       "confidence_score": 1.0,
       "source": "tests_test_evalreset_artifact_index",
       "target": "tests_test_evalreset_artifact_index_test_implemented_artifacts_exist_and_receive_hashes"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_evalreset_artifact_index.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_evalreset_artifact_index_test_implemented_artifacts_exist_and_receive_hashes",
+      "target": "scripts_refresh_evalreset_artifact_index_refresh"
     },
     {
       "relation": "contains",
@@ -131139,6 +131015,130 @@
       "weight": 1.0,
       "source": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_engineering_qualification",
       "target": "docs_adr_0007_phase3cm_streaming_multicandidate_evaluator_qualification_requirements"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_evalreset_artifact_index",
+      "target": "scripts_refresh_evalreset_artifact_index_main"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_evalreset_artifact_index",
+      "target": "scripts_refresh_evalreset_artifact_index_refresh"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_evalreset_artifact_index",
+      "target": "scripts_refresh_evalreset_artifact_index_sha256"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_evalreset_artifact_index_rationale_1",
+      "target": "scripts_refresh_evalreset_artifact_index"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_evalreset_artifact_index_refresh",
+      "target": "scripts_refresh_evalreset_artifact_index_sha256"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_evalreset_artifact_index.py",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_evalreset_artifact_index_main",
+      "target": "scripts_refresh_evalreset_artifact_index_refresh"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_nextgen_dark_artifact_index",
+      "target": "scripts_refresh_nextgen_dark_artifact_index_main"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_nextgen_dark_artifact_index",
+      "target": "scripts_refresh_nextgen_dark_artifact_index_refresh"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_nextgen_dark_artifact_index",
+      "target": "scripts_refresh_nextgen_dark_artifact_index_sha256"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_nextgen_dark_artifact_index_rationale_1",
+      "target": "scripts_refresh_nextgen_dark_artifact_index"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_nextgen_dark_artifact_index_refresh",
+      "target": "scripts_refresh_nextgen_dark_artifact_index_sha256"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/refresh_nextgen_dark_artifact_index.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_refresh_nextgen_dark_artifact_index_main",
+      "target": "scripts_refresh_nextgen_dark_artifact_index_refresh"
     }
   ],
   "hyperedges": [
@@ -131321,5 +131321,5 @@
       "source_file": "reports/phase3cf_reward_gated_large_search_prelaunch_20260618/PHASE3CF_REWARD_GATED_LARGE_SEARCH_PRELAUNCH_20260618.md"
     }
   ],
-  "built_at_commit": "ce8b9883cca172e2defabfc7e707ca67e3aa5f80"
+  "built_at_commit": "48c04a7e32fe3ef17319f79c011ad280ea73e8de"
 }
