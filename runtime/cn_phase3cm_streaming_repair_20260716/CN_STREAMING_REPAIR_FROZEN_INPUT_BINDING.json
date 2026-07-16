@@ -1,0 +1,2142 @@
+{
+  "artifacts": [
+    {
+      "bytes": 7666,
+      "git_blob_hash": "f463931e31835b8ca7fa17d4e35d0ae6f55f1eee",
+      "path": "CN_RESOURCE_PREFLIGHT_PACK.csv",
+      "row_count": 32,
+      "sha256": "f78b417c0f4a50751348caa1a78d440fcc08269096cbed667f41ed859b84a294"
+    },
+    {
+      "bytes": 67356,
+      "git_blob_hash": "677170d99a1904cb9e8f4407983b6bfcb6e77f69",
+      "path": "preflight_active_candidates.csv",
+      "row_count": 36,
+      "sha256": "3f00632539caa30dc87845756a0bb458b3f7755cdba817779aa2257b2ffa4adc"
+    },
+    {
+      "bytes": 150643,
+      "git_blob_hash": "dc643dbb5cc7fb65ed0dc50b77bb28e32d467525",
+      "path": "preflight_active_candidate_receipts.jsonl",
+      "row_count": 36,
+      "sha256": "b94a08d11df793faf100e72a33c51b9687b182d7902e062cd4f0b5827a09f025"
+    },
+    {
+      "bytes": 55497,
+      "git_blob_hash": "8934071d3828f05e25b997ccc193c3f0730cf473",
+      "path": "preflight_active_pair_receipts.jsonl",
+      "row_count": 18,
+      "sha256": "c96066cff75af436a05d33348068d04f557da3b523f2195d700f86e1865786b4"
+    },
+    {
+      "bytes": 51184,
+      "git_blob_hash": "3844e057a6a3f9c4bb103f31569fbc95a2a6eab1",
+      "path": "preflight_session_candidates.csv",
+      "row_count": 28,
+      "sha256": "f726701fb4942a552358ebfa47f5739156f5ea3a0b632d77761e3781e83b6eeb"
+    },
+    {
+      "bytes": 117435,
+      "git_blob_hash": "541e3df4c8c8e5a4541796b985dec455fa43a657",
+      "path": "preflight_session_candidate_receipts.jsonl",
+      "row_count": 28,
+      "sha256": "ca7521f7232cb9c1b6b125fa21a71014287cf55588435441f676e472eb40dfdc"
+    },
+    {
+      "bytes": 43713,
+      "git_blob_hash": "f14bf67f839ad92585b429ca0fd42d3afcfc9b5a",
+      "path": "preflight_session_pair_receipts.jsonl",
+      "row_count": 14,
+      "sha256": "abcad93f9ae7ffc33886c52175754f753a51c1a77382d34d92f98aea00d12d82"
+    }
+  ],
+  "binding_hash": "68eeb9dc1819b5f52f586ceb6740bee25df9d1e687b3b924948a75e7bb3da93f",
+  "candidate_member_count": 64,
+  "candidate_members": [
+    {
+      "candidate_id": "cn.comp.139919dc6d410acad453",
+      "candidate_receipt_id": "cn.receipt.3f92b997e6d5587611808ce8d9e1bb45",
+      "canonical_expression": "SafeDiv(1,Add(TimeSince($fund_disclosure_holder_pulse),1),1)",
+      "clock_namespace": "stock_session",
+      "expression": "SafeDiv(1,Add(TimeSince($fund_disclosure_holder_pulse),1),1)",
+      "field_ids": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "observable_time_contract": [
+        "fund_disclosure_holder_pulse|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.95791760a6c8e57a7b2f14678dc82ecc",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "fund_disclosure_holder_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 1,
+      "receipt_hash": "3f92b997e6d5587611808ce8d9e1bb45c88963949721c098edd13f0ed25180e9",
+      "route_id": "DISCLOSURE_EVENT"
+    },
+    {
+      "candidate_id": "cn.comp.139919dc6d410acad453.control",
+      "candidate_receipt_id": "cn.receipt.e04d454bba5ea725d2bfea0e78f707db",
+      "canonical_expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "clock_namespace": "stock_session",
+      "expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "field_ids": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "observable_time_contract": [
+        "fund_disclosure_holder_pulse|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.95791760a6c8e57a7b2f14678dc82ecc",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "fund_disclosure_holder_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 1,
+      "receipt_hash": "e04d454bba5ea725d2bfea0e78f707dbcef51b54560845bf4dc20d6548b40373",
+      "route_id": "DISCLOSURE_EVENT"
+    },
+    {
+      "candidate_id": "cn.comp.14a0c5a404e94f447996",
+      "candidate_receipt_id": "cn.receipt.65a5accbfce8ccd8c7db1bbf0f048ec1",
+      "canonical_expression": "FirstHit($fund_disclosure_holder_pulse,20)",
+      "clock_namespace": "stock_session",
+      "expression": "FirstHit($fund_disclosure_holder_pulse,20)",
+      "field_ids": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "observable_time_contract": [
+        "fund_disclosure_holder_pulse|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.37a4c1ff0a61900ff4f19228b84ee8f6",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "fund_disclosure_holder_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 2,
+      "receipt_hash": "65a5accbfce8ccd8c7db1bbf0f048ec11eeeda8c42556ce270e76b369367193f",
+      "route_id": "DISCLOSURE_EVENT"
+    },
+    {
+      "candidate_id": "cn.comp.14a0c5a404e94f447996.control",
+      "candidate_receipt_id": "cn.receipt.ead2c223328253cc0c5d12402a9d1479",
+      "canonical_expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "clock_namespace": "stock_session",
+      "expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "field_ids": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "observable_time_contract": [
+        "fund_disclosure_holder_pulse|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.37a4c1ff0a61900ff4f19228b84ee8f6",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "fund_disclosure_holder_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 2,
+      "receipt_hash": "ead2c223328253cc0c5d12402a9d14791e361451d858a8c0930eb56bdb55bcf7",
+      "route_id": "DISCLOSURE_EVENT"
+    },
+    {
+      "candidate_id": "cn.comp.1cd90075384b59e2c9bb",
+      "candidate_receipt_id": "cn.receipt.fe30b55741e5c7a9b951ea8dcddb6f09",
+      "canonical_expression": "Mul(EventCount($fund_disclosure_balance_pulse,1),Sign(TimeSince($fund_disclosure_holder_pulse)))",
+      "clock_namespace": "stock_session",
+      "expression": "Mul(EventCount($fund_disclosure_balance_pulse,1),Sign(TimeSince($fund_disclosure_holder_pulse)))",
+      "field_ids": [
+        "fund_disclosure_balance_pulse",
+        "fund_disclosure_holder_pulse"
+      ],
+      "observable_time_contract": [
+        "fund_disclosure_balance_pulse|next_session_after_source_disclosure|max_dependency_observable_time",
+        "fund_disclosure_holder_pulse|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.1b9f66f5515575ceecd6d3b6e92e038c",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "fund_disclosure_balance_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions",
+        "fund_disclosure_holder_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 3,
+      "receipt_hash": "fe30b55741e5c7a9b951ea8dcddb6f098b2f86e321a16e08d5e1d534eb60a86c",
+      "route_id": "DISCLOSURE_EVENT"
+    },
+    {
+      "candidate_id": "cn.comp.1cd90075384b59e2c9bb.control",
+      "candidate_receipt_id": "cn.receipt.6093e3d3160c78cb2fe9f012111bf8c4",
+      "canonical_expression": "Add(TimeSince($fund_disclosure_balance_pulse),Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+      "clock_namespace": "stock_session",
+      "expression": "Add(TimeSince($fund_disclosure_balance_pulse),Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+      "field_ids": [
+        "fund_disclosure_balance_pulse",
+        "fund_disclosure_holder_pulse"
+      ],
+      "observable_time_contract": [
+        "fund_disclosure_balance_pulse|next_session_after_source_disclosure|max_dependency_observable_time",
+        "fund_disclosure_holder_pulse|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.1b9f66f5515575ceecd6d3b6e92e038c",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "fund_disclosure_balance_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions",
+        "fund_disclosure_holder_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 3,
+      "receipt_hash": "6093e3d3160c78cb2fe9f012111bf8c4be196e8629a8a7a5844cdc7013489284",
+      "route_id": "DISCLOSURE_EVENT"
+    },
+    {
+      "candidate_id": "cn.comp.51ea6181b202080fde09",
+      "candidate_receipt_id": "cn.receipt.e826f9b22a301f83f4832881e54b0f95",
+      "canonical_expression": "SafeDiv(EventCount($fund_disclosure_holder_pulse,5),Add(EventCount($fund_disclosure_holder_pulse,20),1),1)",
+      "clock_namespace": "stock_session",
+      "expression": "SafeDiv(EventCount($fund_disclosure_holder_pulse,5),Add(EventCount($fund_disclosure_holder_pulse,20),1),1)",
+      "field_ids": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "observable_time_contract": [
+        "fund_disclosure_holder_pulse|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.f23b52d4dd96c733cbfe1e64f079064e",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "fund_disclosure_holder_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 4,
+      "receipt_hash": "e826f9b22a301f83f4832881e54b0f9523b85620147c5ad08d32a6ca0c12e78d",
+      "route_id": "DISCLOSURE_EVENT"
+    },
+    {
+      "candidate_id": "cn.comp.51ea6181b202080fde09.control",
+      "candidate_receipt_id": "cn.receipt.4306c50bf725886660ef6af894a8976a",
+      "canonical_expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "clock_namespace": "stock_session",
+      "expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "field_ids": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "observable_time_contract": [
+        "fund_disclosure_holder_pulse|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.f23b52d4dd96c733cbfe1e64f079064e",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "fund_disclosure_holder_pulse|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 4,
+      "receipt_hash": "4306c50bf725886660ef6af894a8976a78371114876eeea451e490b753be83ca",
+      "route_id": "DISCLOSURE_EVENT"
+    },
+    {
+      "candidate_id": "cn.comp.004beeac754c1d957b5e",
+      "candidate_receipt_id": "cn.receipt.5a3999ede049e3b1b832e6549bb1b125",
+      "canonical_expression": "CSRank(Mul(ZScore($m1_first5_vwap_return_vs_open),ZScore(Delta($vwap,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(ZScore($m1_first5_vwap_return_vs_open),ZScore(Delta($vwap,5))))",
+      "field_ids": [
+        "m1_first5_vwap_return_vs_open",
+        "vwap"
+      ],
+      "observable_time_contract": [
+        "m1_first5_vwap_return_vs_open|first_n_end|5 minutes",
+        "vwap|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.a13952aac2db53c408a8ce40fb753fa0",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "m1_first5_vwap_return_vs_open|PIT_VERSIONED_HISTORY|0 bars",
+        "vwap|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 5,
+      "receipt_hash": "5a3999ede049e3b1b832e6549bb1b125e1d242fc1de13f7a72c0190e5f0fbf08",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.004beeac754c1d957b5e.control",
+      "candidate_receipt_id": "cn.receipt.272cbd7c1d5a1d6060af75f267a05cd6",
+      "canonical_expression": "CSRank(Add(ZScore($m1_first5_vwap_return_vs_open),Mul(0,Delta($vwap,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($m1_first5_vwap_return_vs_open),Mul(0,Delta($vwap,5))))",
+      "field_ids": [
+        "m1_first5_vwap_return_vs_open",
+        "vwap"
+      ],
+      "observable_time_contract": [
+        "m1_first5_vwap_return_vs_open|first_n_end|5 minutes",
+        "vwap|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.a13952aac2db53c408a8ce40fb753fa0",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "m1_first5_vwap_return_vs_open|PIT_VERSIONED_HISTORY|0 bars",
+        "vwap|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 5,
+      "receipt_hash": "272cbd7c1d5a1d6060af75f267a05cd61d9b8a90c275c778536483217306f43e",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.0078ffdf6ff7942322c1",
+      "candidate_receipt_id": "cn.receipt.563ec1725687e1a754e0387b9866c9be",
+      "canonical_expression": "CSRank(Mul(ZScore($m1_first15_amount),ZScore(Acceleration($pct_chg,3))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(ZScore($m1_first15_amount),ZScore(Acceleration($pct_chg,3))))",
+      "field_ids": [
+        "m1_first15_amount",
+        "pct_chg"
+      ],
+      "observable_time_contract": [
+        "m1_first15_amount|first_n_end|15 minutes",
+        "pct_chg|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.ed9dbb9e05d721a9f20b29cb762a35c8",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "m1_first15_amount|PIT_VERSIONED_HISTORY|0 bars",
+        "pct_chg|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 6,
+      "receipt_hash": "563ec1725687e1a754e0387b9866c9be4bc08acc5777a83462a631ebfe7c68f4",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.0078ffdf6ff7942322c1.control",
+      "candidate_receipt_id": "cn.receipt.667995ab788bdf7495f322e35a353687",
+      "canonical_expression": "CSRank(Add(ZScore($m1_first15_amount),Mul(0,Delta($pct_chg,3))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($m1_first15_amount),Mul(0,Delta($pct_chg,3))))",
+      "field_ids": [
+        "m1_first15_amount",
+        "pct_chg"
+      ],
+      "observable_time_contract": [
+        "m1_first15_amount|first_n_end|15 minutes",
+        "pct_chg|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.ed9dbb9e05d721a9f20b29cb762a35c8",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "m1_first15_amount|PIT_VERSIONED_HISTORY|0 bars",
+        "pct_chg|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 6,
+      "receipt_hash": "667995ab788bdf7495f322e35a3536876b26d6dfa5fb1763ec17325f54b130f0",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.02166051383236380f95",
+      "candidate_receipt_id": "cn.receipt.9d910256d38e0b9718e92938841a2704",
+      "canonical_expression": "CSRank(Sub(ZScore($m1_first5_range),ZScore(Delta($low,20))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Sub(ZScore($m1_first5_range),ZScore(Delta($low,20))))",
+      "field_ids": [
+        "low",
+        "m1_first5_range"
+      ],
+      "observable_time_contract": [
+        "low|bar_close|0 bars",
+        "m1_first5_range|first_n_end|5 minutes"
+      ],
+      "pair_id": "cn.pair.75ad82cb82acf017e72d3f2aa86b5e11",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "low|PIT_VERSIONED_HISTORY|0 bars",
+        "m1_first5_range|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 7,
+      "receipt_hash": "9d910256d38e0b9718e92938841a2704ba1fbc7c274a7a4858e712642e8892a7",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.02166051383236380f95.control",
+      "candidate_receipt_id": "cn.receipt.b61e1bccb4ddf768e8a558254cfb5500",
+      "canonical_expression": "CSRank(Add(ZScore($m1_first5_range),Mul(0,Delta($low,20))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($m1_first5_range),Mul(0,Delta($low,20))))",
+      "field_ids": [
+        "low",
+        "m1_first5_range"
+      ],
+      "observable_time_contract": [
+        "low|bar_close|0 bars",
+        "m1_first5_range|first_n_end|5 minutes"
+      ],
+      "pair_id": "cn.pair.75ad82cb82acf017e72d3f2aa86b5e11",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "low|PIT_VERSIONED_HISTORY|0 bars",
+        "m1_first5_range|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 7,
+      "receipt_hash": "b61e1bccb4ddf768e8a558254cfb55002ec58c7fa3ccc71a245a68b5f6dc6f71",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.0813b37e10a5faef3f0d",
+      "candidate_receipt_id": "cn.receipt.a55c00b24656b6fffc98f144d4ae0633",
+      "canonical_expression": "Mul(ZScore($m1_first30_low),Persistence(Positive($vwap),5))",
+      "clock_namespace": "active_bar",
+      "expression": "Mul(ZScore($m1_first30_low),Persistence(Positive($vwap),5))",
+      "field_ids": [
+        "m1_first30_low",
+        "vwap"
+      ],
+      "observable_time_contract": [
+        "m1_first30_low|first_n_end|30 minutes",
+        "vwap|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.95b2d91dddf385eff8a56db079d9acb1",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "m1_first30_low|PIT_VERSIONED_HISTORY|0 bars",
+        "vwap|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 8,
+      "receipt_hash": "a55c00b24656b6fffc98f144d4ae063352fdbd8c1e8a0837f36c19e2f0daf985",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.0813b37e10a5faef3f0d.control",
+      "candidate_receipt_id": "cn.receipt.771b31281e2242310a26e537126278fc",
+      "canonical_expression": "CSRank(Add(ZScore($m1_first30_low),Mul(0,Delta($vwap,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($m1_first30_low),Mul(0,Delta($vwap,5))))",
+      "field_ids": [
+        "m1_first30_low",
+        "vwap"
+      ],
+      "observable_time_contract": [
+        "m1_first30_low|first_n_end|30 minutes",
+        "vwap|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.95b2d91dddf385eff8a56db079d9acb1",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "m1_first30_low|PIT_VERSIONED_HISTORY|0 bars",
+        "vwap|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 8,
+      "receipt_hash": "771b31281e2242310a26e537126278fc925dd9495cf2e2f98be3a4879858a13d",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.008067510f2c70180937",
+      "candidate_receipt_id": "cn.receipt.d06b27e615fc022c1784aeebd4555530",
+      "canonical_expression": "CSResidual(ZScore($m1_first30_amount),ZScore(Delta($close,20)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSResidual(ZScore($m1_first30_amount),ZScore(Delta($close,20)))",
+      "field_ids": [
+        "close",
+        "m1_first30_amount"
+      ],
+      "observable_time_contract": [
+        "close|bar_close|0 bars",
+        "m1_first30_amount|first_n_end|30 minutes"
+      ],
+      "pair_id": "cn.pair.8c276c8c2e13a4769edfaf9b5fc8c7b4",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "close|PIT_VERSIONED_HISTORY|0 bars",
+        "m1_first30_amount|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 9,
+      "receipt_hash": "d06b27e615fc022c1784aeebd45555304e96de4008e379bee0b9f298477b4905",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.008067510f2c70180937.control",
+      "candidate_receipt_id": "cn.receipt.a99c93c23fe920976f56a76a74d8872f",
+      "canonical_expression": "CSRank(Add(ZScore($m1_first30_amount),Mul(0,Delta($close,20))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($m1_first30_amount),Mul(0,Delta($close,20))))",
+      "field_ids": [
+        "close",
+        "m1_first30_amount"
+      ],
+      "observable_time_contract": [
+        "close|bar_close|0 bars",
+        "m1_first30_amount|first_n_end|30 minutes"
+      ],
+      "pair_id": "cn.pair.8c276c8c2e13a4769edfaf9b5fc8c7b4",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "close|PIT_VERSIONED_HISTORY|0 bars",
+        "m1_first30_amount|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 9,
+      "receipt_hash": "a99c93c23fe920976f56a76a74d8872f594fd07639703b91078db74d20f1061e",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "cn.comp.0157cddcc51c7971e8c0",
+      "candidate_receipt_id": "cn.receipt.2b832c514b77a4a7010760b9f710111b",
+      "canonical_expression": "Mul(Persistence(Positive(Sign($ret_1m)),20),Sign($close))",
+      "clock_namespace": "active_bar",
+      "expression": "Mul(Persistence(Positive(Sign($ret_1m)),20),Sign($close))",
+      "field_ids": [
+        "close",
+        "ret_1m",
+        "state_bar_return_sign"
+      ],
+      "observable_time_contract": [
+        "close|bar_close|0 bars",
+        "ret_1m|bar_close|0 bars",
+        "state_bar_return_sign|bar_close|bar_close"
+      ],
+      "pair_id": "cn.pair.705f4ebb77a0be4614c3672d2765984d",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "close|PIT_VERSIONED_HISTORY|0 bars",
+        "ret_1m|PIT_VERSIONED_HISTORY|0 bars",
+        "state_bar_return_sign|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 10,
+      "receipt_hash": "2b832c514b77a4a7010760b9f710111ba4592fa51b4b47e1acc9aa0eff51b665",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "cn.comp.0157cddcc51c7971e8c0.control",
+      "candidate_receipt_id": "cn.receipt.ccbe5bf99622413165150abd473ef1bc",
+      "canonical_expression": "CSRank(Add(ZScore(Delta($close,20)),Mul(0,Sign($ret_1m))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore(Delta($close,20)),Mul(0,Sign($ret_1m))))",
+      "field_ids": [
+        "close",
+        "ret_1m",
+        "state_bar_return_sign"
+      ],
+      "observable_time_contract": [
+        "close|bar_close|0 bars",
+        "ret_1m|bar_close|0 bars",
+        "state_bar_return_sign|bar_close|bar_close"
+      ],
+      "pair_id": "cn.pair.705f4ebb77a0be4614c3672d2765984d",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "close|PIT_VERSIONED_HISTORY|0 bars",
+        "ret_1m|PIT_VERSIONED_HISTORY|0 bars",
+        "state_bar_return_sign|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 10,
+      "receipt_hash": "ccbe5bf99622413165150abd473ef1bc02f34306dd811d79c5877857e06b754e",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "cn.comp.01ee73708199d579a925",
+      "candidate_receipt_id": "cn.receipt.437e541cfb2eb1c44908acef374241ff",
+      "canonical_expression": "CSRank(Mul(Duration(Sign($intraday_ret_from_open)),Delta($volume,20)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Duration(Sign($intraday_ret_from_open)),Delta($volume,20)))",
+      "field_ids": [
+        "intraday_ret_from_open",
+        "state_intraday_return_sign",
+        "volume"
+      ],
+      "observable_time_contract": [
+        "intraday_ret_from_open|bar_close|0 bars",
+        "state_intraday_return_sign|bar_close|bar_close",
+        "volume|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.ed19c2575dbb26727f37f1dffbfe0ee3",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "intraday_ret_from_open|PIT_VERSIONED_HISTORY|0 bars",
+        "state_intraday_return_sign|PIT_VERSIONED_HISTORY|0 bars",
+        "volume|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 11,
+      "receipt_hash": "437e541cfb2eb1c44908acef374241ff0020553fe2334d970313b21bf1cdc074",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "cn.comp.01ee73708199d579a925.control",
+      "candidate_receipt_id": "cn.receipt.94f6636f94c13d43234dfbd4026fb72a",
+      "canonical_expression": "CSRank(Add(ZScore(Delta($volume,20)),Mul(0,Sign($intraday_ret_from_open))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore(Delta($volume,20)),Mul(0,Sign($intraday_ret_from_open))))",
+      "field_ids": [
+        "intraday_ret_from_open",
+        "state_intraday_return_sign",
+        "volume"
+      ],
+      "observable_time_contract": [
+        "intraday_ret_from_open|bar_close|0 bars",
+        "state_intraday_return_sign|bar_close|bar_close",
+        "volume|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.ed19c2575dbb26727f37f1dffbfe0ee3",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "intraday_ret_from_open|PIT_VERSIONED_HISTORY|0 bars",
+        "state_intraday_return_sign|PIT_VERSIONED_HISTORY|0 bars",
+        "volume|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 11,
+      "receipt_hash": "94f6636f94c13d43234dfbd4026fb72a0e1cb73ba8c6c1928286722b3cbd58b1",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "cn.comp.0500527600ac9cf79f59",
+      "candidate_receipt_id": "cn.receipt.7be41779aebbbd5dd42c312479ead5fa",
+      "canonical_expression": "CSResidual(ZScore(Delta($low,20)),Sign($ret_1m))",
+      "clock_namespace": "active_bar",
+      "expression": "CSResidual(ZScore(Delta($low,20)),Sign($ret_1m))",
+      "field_ids": [
+        "low",
+        "ret_1m",
+        "state_bar_return_sign"
+      ],
+      "observable_time_contract": [
+        "low|bar_close|0 bars",
+        "ret_1m|bar_close|0 bars",
+        "state_bar_return_sign|bar_close|bar_close"
+      ],
+      "pair_id": "cn.pair.ef9060d8c952810a7be37906fd423709",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "low|PIT_VERSIONED_HISTORY|0 bars",
+        "ret_1m|PIT_VERSIONED_HISTORY|0 bars",
+        "state_bar_return_sign|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 12,
+      "receipt_hash": "7be41779aebbbd5dd42c312479ead5faea00175f61e7d7b6d490c9969312080e",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "cn.comp.0500527600ac9cf79f59.control",
+      "candidate_receipt_id": "cn.receipt.19e27d0d2dd4c42c1c178ded6cf596f8",
+      "canonical_expression": "CSRank(Add(ZScore(Delta($low,20)),Mul(0,Sign($ret_1m))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore(Delta($low,20)),Mul(0,Sign($ret_1m))))",
+      "field_ids": [
+        "low",
+        "ret_1m",
+        "state_bar_return_sign"
+      ],
+      "observable_time_contract": [
+        "low|bar_close|0 bars",
+        "ret_1m|bar_close|0 bars",
+        "state_bar_return_sign|bar_close|bar_close"
+      ],
+      "pair_id": "cn.pair.ef9060d8c952810a7be37906fd423709",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "low|PIT_VERSIONED_HISTORY|0 bars",
+        "ret_1m|PIT_VERSIONED_HISTORY|0 bars",
+        "state_bar_return_sign|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 12,
+      "receipt_hash": "19e27d0d2dd4c42c1c178ded6cf596f8d149cc922895259c2d7160b7b0e22e4e",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "cn.comp.0ddd8dfa965f95c62a1e",
+      "candidate_receipt_id": "cn.receipt.428bcac41cf0df7d1f6265628de70e3e",
+      "canonical_expression": "CSRank(Mul(Sign($ret_1m),PathShape($volume,20)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Sign($ret_1m),PathShape($volume,20)))",
+      "field_ids": [
+        "ret_1m",
+        "state_bar_return_sign",
+        "volume"
+      ],
+      "observable_time_contract": [
+        "ret_1m|bar_close|0 bars",
+        "state_bar_return_sign|bar_close|bar_close",
+        "volume|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.75d21f01c33bfd7941c10eddca8e5d31",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "ret_1m|PIT_VERSIONED_HISTORY|0 bars",
+        "state_bar_return_sign|PIT_VERSIONED_HISTORY|0 bars",
+        "volume|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 13,
+      "receipt_hash": "428bcac41cf0df7d1f6265628de70e3edffabd61d6cf005b0ee1bb260b6e820f",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "cn.comp.0ddd8dfa965f95c62a1e.control",
+      "candidate_receipt_id": "cn.receipt.57fe11c3b62f75b4d6c45bac70cfa041",
+      "canonical_expression": "CSRank(Add(ZScore(Delta($volume,20)),Mul(0,Sign($ret_1m))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore(Delta($volume,20)),Mul(0,Sign($ret_1m))))",
+      "field_ids": [
+        "ret_1m",
+        "state_bar_return_sign",
+        "volume"
+      ],
+      "observable_time_contract": [
+        "ret_1m|bar_close|0 bars",
+        "state_bar_return_sign|bar_close|bar_close",
+        "volume|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.75d21f01c33bfd7941c10eddca8e5d31",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "ret_1m|PIT_VERSIONED_HISTORY|0 bars",
+        "state_bar_return_sign|PIT_VERSIONED_HISTORY|0 bars",
+        "volume|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 13,
+      "receipt_hash": "57fe11c3b62f75b4d6c45bac70cfa0418b836e5689405a0aaac90fa33134fe9b",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "cn.comp.0005b788298c74987f0e",
+      "candidate_receipt_id": "cn.receipt.7c6092a8c66184e786e98519a463479c",
+      "canonical_expression": "CSRank(Mul(PathShape($volume,5),Sign($ctx_sent_lb_h_num)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(PathShape($volume,5),Sign($ctx_sent_lb_h_num)))",
+      "field_ids": [
+        "ctx_sent_lb_h_num",
+        "volume"
+      ],
+      "observable_time_contract": [
+        "ctx_sent_lb_h_num|previous_session|1 sessions",
+        "volume|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.f47f5d8a8baa3fd68c4985a6595c5ffb",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "ctx_sent_lb_h_num|PIT_VERSIONED_HISTORY|1 sessions",
+        "volume|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 14,
+      "receipt_hash": "7c6092a8c66184e786e98519a463479cbc21f6adef59ca6a382539ad288196a1",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "candidate_id": "cn.comp.0005b788298c74987f0e.control",
+      "candidate_receipt_id": "cn.receipt.99db7df8026033cded678399edc9a0aa",
+      "canonical_expression": "CSRank(Add(ZScore($volume),Mul(0,$ctx_sent_lb_h_num)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($volume),Mul(0,$ctx_sent_lb_h_num)))",
+      "field_ids": [
+        "ctx_sent_lb_h_num",
+        "volume"
+      ],
+      "observable_time_contract": [
+        "ctx_sent_lb_h_num|previous_session|1 sessions",
+        "volume|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.f47f5d8a8baa3fd68c4985a6595c5ffb",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "ctx_sent_lb_h_num|PIT_VERSIONED_HISTORY|1 sessions",
+        "volume|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 14,
+      "receipt_hash": "99db7df8026033cded678399edc9a0aa9bd0084e61fc45aee2c50f16ebd603cf",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "candidate_id": "cn.comp.001f11ed63fda7eff2f5",
+      "candidate_receipt_id": "cn.receipt.eadaea1b96ef169c181cbdbc10129786",
+      "canonical_expression": "CSRank(Sub(ZScore($amount),Mul(Sign($amount),Sign($ctx_sent_ditian_num))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Sub(ZScore($amount),Mul(Sign($amount),Sign($ctx_sent_ditian_num))))",
+      "field_ids": [
+        "amount",
+        "ctx_sent_ditian_num"
+      ],
+      "observable_time_contract": [
+        "amount|bar_close|0 bars",
+        "ctx_sent_ditian_num|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.8a25592e33bc8f54da043bd7116f2a6d",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "amount|PIT_VERSIONED_HISTORY|0 bars",
+        "ctx_sent_ditian_num|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 15,
+      "receipt_hash": "eadaea1b96ef169c181cbdbc10129786479c5f5df0c27aa8ba583a645dd5cd44",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "candidate_id": "cn.comp.001f11ed63fda7eff2f5.control",
+      "candidate_receipt_id": "cn.receipt.0f72e9b6e3766c61183f4155d1e26f94",
+      "canonical_expression": "CSRank(Add(ZScore($amount),Mul(0,$ctx_sent_ditian_num)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($amount),Mul(0,$ctx_sent_ditian_num)))",
+      "field_ids": [
+        "amount",
+        "ctx_sent_ditian_num"
+      ],
+      "observable_time_contract": [
+        "amount|bar_close|0 bars",
+        "ctx_sent_ditian_num|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.8a25592e33bc8f54da043bd7116f2a6d",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "amount|PIT_VERSIONED_HISTORY|0 bars",
+        "ctx_sent_ditian_num|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 15,
+      "receipt_hash": "0f72e9b6e3766c61183f4155d1e26f94e6ffa4e9772f2c3e40c86247eca3ccbe",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "candidate_id": "cn.comp.0025f568d532689ff3b9",
+      "candidate_receipt_id": "cn.receipt.b688985e13149c8f67fa24d8ae552fe1",
+      "canonical_expression": "CSRank(Add(ZScore($amount_yuan),Mul(PathShape($amount_yuan,3),Sign($ctx_sent_down_num))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($amount_yuan),Mul(PathShape($amount_yuan,3),Sign($ctx_sent_down_num))))",
+      "field_ids": [
+        "amount_yuan",
+        "ctx_sent_down_num"
+      ],
+      "observable_time_contract": [
+        "amount_yuan|bar_close|0 bars",
+        "ctx_sent_down_num|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.9269e46315f0bc97b2579e9cb10499df",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "amount_yuan|PIT_VERSIONED_HISTORY|0 bars",
+        "ctx_sent_down_num|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 16,
+      "receipt_hash": "b688985e13149c8f67fa24d8ae552fe18d2e2051d49d94b7bd6f09e2ae41611a",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "candidate_id": "cn.comp.0025f568d532689ff3b9.control",
+      "candidate_receipt_id": "cn.receipt.9b67a6ec76a1a743c8fb1d7ce75be422",
+      "canonical_expression": "CSRank(Add(ZScore($amount_yuan),Mul(0,$ctx_sent_down_num)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($amount_yuan),Mul(0,$ctx_sent_down_num)))",
+      "field_ids": [
+        "amount_yuan",
+        "ctx_sent_down_num"
+      ],
+      "observable_time_contract": [
+        "amount_yuan|bar_close|0 bars",
+        "ctx_sent_down_num|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.9269e46315f0bc97b2579e9cb10499df",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "amount_yuan|PIT_VERSIONED_HISTORY|0 bars",
+        "ctx_sent_down_num|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 16,
+      "receipt_hash": "9b67a6ec76a1a743c8fb1d7ce75be42299c93a6011b9370973ee592497de161e",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "candidate_id": "cn.comp.035e1306d1ca020f3c84",
+      "candidate_receipt_id": "cn.receipt.3c562a6f4efbe7d2af2c4e2e9e2243d7",
+      "canonical_expression": "CSRank(Mul(Sign($amount_yuan),Persistence(Positive($ctx_sent_uplimit_num),10)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Sign($amount_yuan),Persistence(Positive($ctx_sent_uplimit_num),10)))",
+      "field_ids": [
+        "amount_yuan",
+        "ctx_sent_uplimit_num"
+      ],
+      "observable_time_contract": [
+        "amount_yuan|bar_close|0 bars",
+        "ctx_sent_uplimit_num|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.9454e12b3def25fac7a30d9e39ff277e",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "amount_yuan|PIT_VERSIONED_HISTORY|0 bars",
+        "ctx_sent_uplimit_num|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 17,
+      "receipt_hash": "3c562a6f4efbe7d2af2c4e2e9e2243d715045162c914ce29901d2b474f1ba35b",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "candidate_id": "cn.comp.035e1306d1ca020f3c84.control",
+      "candidate_receipt_id": "cn.receipt.e43bacf542ad86e97aae14440f33a247",
+      "canonical_expression": "CSRank(Add(ZScore($amount_yuan),Mul(0,$ctx_sent_uplimit_num)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($amount_yuan),Mul(0,$ctx_sent_uplimit_num)))",
+      "field_ids": [
+        "amount_yuan",
+        "ctx_sent_uplimit_num"
+      ],
+      "observable_time_contract": [
+        "amount_yuan|bar_close|0 bars",
+        "ctx_sent_uplimit_num|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.9454e12b3def25fac7a30d9e39ff277e",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "amount_yuan|PIT_VERSIONED_HISTORY|0 bars",
+        "ctx_sent_uplimit_num|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 17,
+      "receipt_hash": "e43bacf542ad86e97aae14440f33a2479a981efdb98bfb07e2b9d85cb622c743",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "candidate_id": "cn.comp.004d92e1acb484600e52",
+      "candidate_receipt_id": "cn.receipt.2a02a3b50cdc84692fe14239f85cb557",
+      "canonical_expression": "CSRank(Mul(ZScore($low),ZScore($amount_yuan)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(ZScore($low),ZScore($amount_yuan)))",
+      "field_ids": [
+        "amount_yuan",
+        "low"
+      ],
+      "observable_time_contract": [
+        "amount_yuan|bar_close|0 bars",
+        "low|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.fc767527ff61198f1678fb157ea77d08",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "amount_yuan|PIT_VERSIONED_HISTORY|0 bars",
+        "low|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 18,
+      "receipt_hash": "2a02a3b50cdc84692fe14239f85cb55729030d36593a4e1ad27b15179dec7fad",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.004d92e1acb484600e52.control",
+      "candidate_receipt_id": "cn.receipt.675f646c826301c9d8802656bc9fe486",
+      "canonical_expression": "CSRank(Add(ZScore($low),Mul(0,ZScore($amount_yuan))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($low),Mul(0,ZScore($amount_yuan))))",
+      "field_ids": [
+        "amount_yuan",
+        "low"
+      ],
+      "observable_time_contract": [
+        "amount_yuan|bar_close|0 bars",
+        "low|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.fc767527ff61198f1678fb157ea77d08",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "amount_yuan|PIT_VERSIONED_HISTORY|0 bars",
+        "low|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 18,
+      "receipt_hash": "675f646c826301c9d8802656bc9fe4860032367c66777fd548ae759570f57388",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.008283c6a2fccb93edb2",
+      "candidate_receipt_id": "cn.receipt.68d017395ec632106a5cfacbd2abe1e5",
+      "canonical_expression": "CSRank(Mul(Sign($close),Abs(ZScore($vwap))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Sign($close),Abs(ZScore($vwap))))",
+      "field_ids": [
+        "close",
+        "vwap"
+      ],
+      "observable_time_contract": [
+        "close|bar_close|0 bars",
+        "vwap|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.8988969e2367209cc9db2b565d9e4d85",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "close|PIT_VERSIONED_HISTORY|0 bars",
+        "vwap|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 19,
+      "receipt_hash": "68d017395ec632106a5cfacbd2abe1e51a97f3c8263d42af7001d065b332b750",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.008283c6a2fccb93edb2.control",
+      "candidate_receipt_id": "cn.receipt.36b7f65ece86ddd5bd839d14119b6412",
+      "canonical_expression": "CSRank(Add(ZScore($close),Mul(0,ZScore($vwap))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($close),Mul(0,ZScore($vwap))))",
+      "field_ids": [
+        "close",
+        "vwap"
+      ],
+      "observable_time_contract": [
+        "close|bar_close|0 bars",
+        "vwap|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.8988969e2367209cc9db2b565d9e4d85",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "close|PIT_VERSIONED_HISTORY|0 bars",
+        "vwap|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 19,
+      "receipt_hash": "36b7f65ece86ddd5bd839d14119b64121cc337d14a4a4043d9b9c017919be7cf",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.010176cebda604991de2",
+      "candidate_receipt_id": "cn.receipt.3a4d350bdbf1cf13d879ea0a3789505d",
+      "canonical_expression": "CSRank(Sub(Abs(ZScore($open)),Abs(ZScore($volume))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Sub(Abs(ZScore($open)),Abs(ZScore($volume))))",
+      "field_ids": [
+        "open",
+        "volume"
+      ],
+      "observable_time_contract": [
+        "open|bar_close|0 bars",
+        "volume|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.3e7dbbfd8518998c10e75340fc4460b5",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "open|PIT_VERSIONED_HISTORY|0 bars",
+        "volume|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 20,
+      "receipt_hash": "3a4d350bdbf1cf13d879ea0a3789505db934b2267bf03f7fe390658ceb2fa286",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.010176cebda604991de2.control",
+      "candidate_receipt_id": "cn.receipt.42da9fa73b47087be7aa2ccc2dc9057d",
+      "canonical_expression": "CSRank(Add(ZScore($open),Mul(0,ZScore($volume))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($open),Mul(0,ZScore($volume))))",
+      "field_ids": [
+        "open",
+        "volume"
+      ],
+      "observable_time_contract": [
+        "open|bar_close|0 bars",
+        "volume|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.3e7dbbfd8518998c10e75340fc4460b5",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "open|PIT_VERSIONED_HISTORY|0 bars",
+        "volume|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 20,
+      "receipt_hash": "42da9fa73b47087be7aa2ccc2dc9057db22cac717dcff65955683bf6e70ea3f9",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.085cf4ce3d4f08caedc7",
+      "candidate_receipt_id": "cn.receipt.f56b384946162839ba951e2c0d47e14e",
+      "canonical_expression": "CSRank(Sub(ZScore($intraday_ret_from_open),ZScore($vwap)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Sub(ZScore($intraday_ret_from_open),ZScore($vwap)))",
+      "field_ids": [
+        "intraday_ret_from_open",
+        "vwap"
+      ],
+      "observable_time_contract": [
+        "intraday_ret_from_open|bar_close|0 bars",
+        "vwap|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.b0b85227569ad32e01765094ac3e32e4",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "intraday_ret_from_open|PIT_VERSIONED_HISTORY|0 bars",
+        "vwap|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 21,
+      "receipt_hash": "f56b384946162839ba951e2c0d47e14e6f673be794f4a553f386cd6c4496b378",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.085cf4ce3d4f08caedc7.control",
+      "candidate_receipt_id": "cn.receipt.0791fd2d33df95b944d305ad682526c6",
+      "canonical_expression": "CSRank(Add(ZScore($intraday_ret_from_open),Mul(0,ZScore($vwap))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($intraday_ret_from_open),Mul(0,ZScore($vwap))))",
+      "field_ids": [
+        "intraday_ret_from_open",
+        "vwap"
+      ],
+      "observable_time_contract": [
+        "intraday_ret_from_open|bar_close|0 bars",
+        "vwap|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.b0b85227569ad32e01765094ac3e32e4",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "intraday_ret_from_open|PIT_VERSIONED_HISTORY|0 bars",
+        "vwap|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 21,
+      "receipt_hash": "0791fd2d33df95b944d305ad682526c6acd655c9af1c219e890258c67a7ebd8e",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.008822b04f162f01856a",
+      "candidate_receipt_id": "cn.receipt.99f48516259ebf14c002dc6a858a663f",
+      "canonical_expression": "CSResidual(ZScore($low),ZScore($amount))",
+      "clock_namespace": "active_bar",
+      "expression": "CSResidual(ZScore($low),ZScore($amount))",
+      "field_ids": [
+        "amount",
+        "low"
+      ],
+      "observable_time_contract": [
+        "amount|bar_close|0 bars",
+        "low|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.aea6393b80b1b891ed1bb8dbd2c110ac",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "amount|PIT_VERSIONED_HISTORY|0 bars",
+        "low|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 22,
+      "receipt_hash": "99f48516259ebf14c002dc6a858a663f5bdb1c2bc4ed4ac96ffe456da8702287",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.008822b04f162f01856a.control",
+      "candidate_receipt_id": "cn.receipt.08ce14f4243790899517e2c24b52dde3",
+      "canonical_expression": "CSRank(Add(ZScore($low),Mul(0,ZScore($amount))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($low),Mul(0,ZScore($amount))))",
+      "field_ids": [
+        "amount",
+        "low"
+      ],
+      "observable_time_contract": [
+        "amount|bar_close|0 bars",
+        "low|bar_close|0 bars"
+      ],
+      "pair_id": "cn.pair.aea6393b80b1b891ed1bb8dbd2c110ac",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "amount|PIT_VERSIONED_HISTORY|0 bars",
+        "low|PIT_VERSIONED_HISTORY|0 bars"
+      ],
+      "preflight_ordinal": 22,
+      "receipt_hash": "08ce14f4243790899517e2c24b52dde3f1aed5c36e658a43a1955fe0cb6ce849",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "cn.comp.0015774e241b02955f6e",
+      "candidate_receipt_id": "cn.receipt.a19a0b32cbe0d6dd1309f7419fe3b087",
+      "canonical_expression": "CSRank(SafeDiv(ZScore($fund_liquidity_cash_current_liab),ZScore($ctx_hfq_ps_ttm),0.05))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(SafeDiv(ZScore($fund_liquidity_cash_current_liab),ZScore($ctx_hfq_ps_ttm),0.05))",
+      "field_ids": [
+        "ctx_hfq_ps_ttm",
+        "fund_liquidity_cash_current_liab"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_ps_ttm|previous_session|1 sessions",
+        "fund_liquidity_cash_current_liab|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.3d20fb3fda1468e9123041ef2a74be10",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "ctx_hfq_ps_ttm|PIT_VERSIONED_HISTORY|1 sessions",
+        "fund_liquidity_cash_current_liab|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 23,
+      "receipt_hash": "a19a0b32cbe0d6dd1309f7419fe3b0874c19a0476b44c11da509a2828ead5ee8",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.0015774e241b02955f6e.control",
+      "candidate_receipt_id": "cn.receipt.94233208a7ec9c800a4c7484ef45d3d2",
+      "canonical_expression": "CSRank(Add(ZScore($fund_liquidity_cash_current_liab),Mul(0,ZScore($ctx_hfq_ps_ttm))))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Add(ZScore($fund_liquidity_cash_current_liab),Mul(0,ZScore($ctx_hfq_ps_ttm))))",
+      "field_ids": [
+        "ctx_hfq_ps_ttm",
+        "fund_liquidity_cash_current_liab"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_ps_ttm|previous_session|1 sessions",
+        "fund_liquidity_cash_current_liab|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.3d20fb3fda1468e9123041ef2a74be10",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "ctx_hfq_ps_ttm|PIT_VERSIONED_HISTORY|1 sessions",
+        "fund_liquidity_cash_current_liab|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 23,
+      "receipt_hash": "94233208a7ec9c800a4c7484ef45d3d236a1a021e57ab9015ef88d0beb41b1e5",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.00429cca3245137b3eac",
+      "candidate_receipt_id": "cn.receipt.37e64cf5eb6d5baa5d737dd784f8b184",
+      "canonical_expression": "CSRank(Mul(ZScore($ctx_hfq_pb),ZScore($fund_working_capital_payables_assets)))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Mul(ZScore($ctx_hfq_pb),ZScore($fund_working_capital_payables_assets)))",
+      "field_ids": [
+        "ctx_hfq_pb",
+        "fund_working_capital_payables_assets"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_pb|previous_session|1 sessions",
+        "fund_working_capital_payables_assets|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.8d4f05326fc4272cf3643e98fc0dfce4",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "ctx_hfq_pb|PIT_VERSIONED_HISTORY|1 sessions",
+        "fund_working_capital_payables_assets|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 24,
+      "receipt_hash": "37e64cf5eb6d5baa5d737dd784f8b1847b7a02866fecc0f4431923780aab8160",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.00429cca3245137b3eac.control",
+      "candidate_receipt_id": "cn.receipt.ace5c262be0286c1c5e63d4f4545dd26",
+      "canonical_expression": "CSRank(Add(ZScore($ctx_hfq_pb),Mul(0,ZScore($fund_working_capital_payables_assets))))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Add(ZScore($ctx_hfq_pb),Mul(0,ZScore($fund_working_capital_payables_assets))))",
+      "field_ids": [
+        "ctx_hfq_pb",
+        "fund_working_capital_payables_assets"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_pb|previous_session|1 sessions",
+        "fund_working_capital_payables_assets|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.8d4f05326fc4272cf3643e98fc0dfce4",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "ctx_hfq_pb|PIT_VERSIONED_HISTORY|1 sessions",
+        "fund_working_capital_payables_assets|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 24,
+      "receipt_hash": "ace5c262be0286c1c5e63d4f4545dd26ffd56c656588ef8248b395df73c22146",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.026dedc07bee4100e5da",
+      "candidate_receipt_id": "cn.receipt.f4c8a0bfdb8607f42a55f508519a0b3a",
+      "canonical_expression": "MaskedZScore($ctx_hfq_turnover_ratio,20,0.8)",
+      "clock_namespace": "stock_session",
+      "expression": "MaskedZScore($ctx_hfq_turnover_ratio,20,0.8)",
+      "field_ids": [
+        "ctx_hfq_turnover_ratio"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_turnover_ratio|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.d494112aeb0567fe2ce4fa9ba4cda88f",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "ctx_hfq_turnover_ratio|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 25,
+      "receipt_hash": "f4c8a0bfdb8607f42a55f508519a0b3a33f4b1c6da278037d6139282979e5d36",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.026dedc07bee4100e5da.control",
+      "candidate_receipt_id": "cn.receipt.4ba2e9d075b2f52c4aef57d1a7c4d911",
+      "canonical_expression": "CSRank(Sign($ctx_hfq_turnover_ratio))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($ctx_hfq_turnover_ratio))",
+      "field_ids": [
+        "ctx_hfq_turnover_ratio"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_turnover_ratio|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.d494112aeb0567fe2ce4fa9ba4cda88f",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "ctx_hfq_turnover_ratio|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 25,
+      "receipt_hash": "4ba2e9d075b2f52c4aef57d1a7c4d911e9fd72b96157dc93add5ff68f117c089",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.0779dca10a25f909fdfb",
+      "candidate_receipt_id": "cn.receipt.ed326a0c4095e67bfe2a99cea405bf60",
+      "canonical_expression": "CSResidual(ZScore($ctx_hfq_pb),ZScore($ctx_hfq_float_market_cap_yuan))",
+      "clock_namespace": "stock_session",
+      "expression": "CSResidual(ZScore($ctx_hfq_pb),ZScore($ctx_hfq_float_market_cap_yuan))",
+      "field_ids": [
+        "ctx_hfq_float_market_cap_yuan",
+        "ctx_hfq_pb"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_float_market_cap_yuan|previous_session|1 sessions",
+        "ctx_hfq_pb|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.55c5408d938e797b000e5fd56dd18fb2",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "ctx_hfq_float_market_cap_yuan|PIT_VERSIONED_HISTORY|1 sessions",
+        "ctx_hfq_pb|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 26,
+      "receipt_hash": "ed326a0c4095e67bfe2a99cea405bf60b16d0832f519a8d59c5af9cde68c712c",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.0779dca10a25f909fdfb.control",
+      "candidate_receipt_id": "cn.receipt.bfe87d7407033b1fe77815849a07b18c",
+      "canonical_expression": "CSRank(Add(ZScore($ctx_hfq_pb),Mul(0,ZScore($ctx_hfq_float_market_cap_yuan))))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Add(ZScore($ctx_hfq_pb),Mul(0,ZScore($ctx_hfq_float_market_cap_yuan))))",
+      "field_ids": [
+        "ctx_hfq_float_market_cap_yuan",
+        "ctx_hfq_pb"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_float_market_cap_yuan|previous_session|1 sessions",
+        "ctx_hfq_pb|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.55c5408d938e797b000e5fd56dd18fb2",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "ctx_hfq_float_market_cap_yuan|PIT_VERSIONED_HISTORY|1 sessions",
+        "ctx_hfq_pb|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 26,
+      "receipt_hash": "bfe87d7407033b1fe77815849a07b18c6616175e55eee44dcce2da55b864b128",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.008579c79a021575795b",
+      "candidate_receipt_id": "cn.receipt.dc22036927b8a26e8007cfd035763f00",
+      "canonical_expression": "CSRank(Sub(ZScore($ctx_rzrq_rzjme),ZScore($ctx_hfq_market_cap_yuan)))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sub(ZScore($ctx_rzrq_rzjme),ZScore($ctx_hfq_market_cap_yuan)))",
+      "field_ids": [
+        "ctx_hfq_market_cap_yuan",
+        "ctx_rzrq_rzjme"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_market_cap_yuan|previous_session|1 sessions",
+        "ctx_rzrq_rzjme|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.ec87c7f7d263bd50cd4d300ecf96955e",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "ctx_hfq_market_cap_yuan|PIT_VERSIONED_HISTORY|1 sessions",
+        "ctx_rzrq_rzjme|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 27,
+      "receipt_hash": "dc22036927b8a26e8007cfd035763f00afd4ea87c7a05e9d5bfaafab9c1deaf4",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.008579c79a021575795b.control",
+      "candidate_receipt_id": "cn.receipt.dd005635769af4b023a242823e694856",
+      "canonical_expression": "CSRank(Add(ZScore($ctx_rzrq_rzjme),Mul(0,ZScore($ctx_hfq_market_cap_yuan))))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Add(ZScore($ctx_rzrq_rzjme),Mul(0,ZScore($ctx_hfq_market_cap_yuan))))",
+      "field_ids": [
+        "ctx_hfq_market_cap_yuan",
+        "ctx_rzrq_rzjme"
+      ],
+      "observable_time_contract": [
+        "ctx_hfq_market_cap_yuan|previous_session|1 sessions",
+        "ctx_rzrq_rzjme|previous_session|1 sessions"
+      ],
+      "pair_id": "cn.pair.ec87c7f7d263bd50cd4d300ecf96955e",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "ctx_hfq_market_cap_yuan|PIT_VERSIONED_HISTORY|1 sessions",
+        "ctx_rzrq_rzjme|PIT_VERSIONED_HISTORY|1 sessions"
+      ],
+      "preflight_ordinal": 27,
+      "receipt_hash": "dd005635769af4b023a242823e694856f02c4441293d5412a253c74cce84c241",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "cn.comp.00370e431906c55f4ef4",
+      "candidate_receipt_id": "cn.receipt.557151f20b979ba18799da35502d0107",
+      "canonical_expression": "CSRank(Mul(ZScore($fund_pr_operate_profit_source_yoy),ZScore($fund_ba_total_assets_delta)))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Mul(ZScore($fund_pr_operate_profit_source_yoy),ZScore($fund_ba_total_assets_delta)))",
+      "field_ids": [
+        "fund_ba_total_assets_delta",
+        "fund_pr_operate_profit_source_yoy"
+      ],
+      "observable_time_contract": [
+        "fund_ba_total_assets_delta|next_session_after_source_disclosure|max_dependency_observable_time",
+        "fund_pr_operate_profit_source_yoy|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.327d8e727a4f72e1ef3866c8109b480e",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "fund_ba_total_assets_delta|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions",
+        "fund_pr_operate_profit_source_yoy|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 28,
+      "receipt_hash": "557151f20b979ba18799da35502d010794a6024469d7ad09e978549dc277d320",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "cn.comp.00370e431906c55f4ef4.control",
+      "candidate_receipt_id": "cn.receipt.32b268d00f8b2449e9607af16944c232",
+      "canonical_expression": "CSRank(Add(ZScore($fund_pr_operate_profit_source_yoy),Mul(0,ZScore($fund_ba_total_assets_delta))))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Add(ZScore($fund_pr_operate_profit_source_yoy),Mul(0,ZScore($fund_ba_total_assets_delta))))",
+      "field_ids": [
+        "fund_ba_total_assets_delta",
+        "fund_pr_operate_profit_source_yoy"
+      ],
+      "observable_time_contract": [
+        "fund_ba_total_assets_delta|next_session_after_source_disclosure|max_dependency_observable_time",
+        "fund_pr_operate_profit_source_yoy|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.327d8e727a4f72e1ef3866c8109b480e",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "fund_ba_total_assets_delta|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions",
+        "fund_pr_operate_profit_source_yoy|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 28,
+      "receipt_hash": "32b268d00f8b2449e9607af16944c2326c1a94dd69399b1326f8511a99f667cf",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "cn.comp.00510669da4fe8efda26",
+      "candidate_receipt_id": "cn.receipt.8b52101766b6700530ea069d0a93c2f7",
+      "canonical_expression": "CSRank(Acceleration($fund_ba_inventory_delta,2))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Acceleration($fund_ba_inventory_delta,2))",
+      "field_ids": [
+        "fund_ba_inventory_delta"
+      ],
+      "observable_time_contract": [
+        "fund_ba_inventory_delta|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.33ba416831620eb93eee819ffa63dce2",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "fund_ba_inventory_delta|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 29,
+      "receipt_hash": "8b52101766b6700530ea069d0a93c2f7575f7c0ee71a0647bd88dd583537f1c5",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "cn.comp.00510669da4fe8efda26.control",
+      "candidate_receipt_id": "cn.receipt.1fe8a6bcf855db9914cfce30f0b3470f",
+      "canonical_expression": "CSRank(Add(ZScore($fund_ba_inventory_delta),Mul(0,Acceleration($fund_ba_inventory_delta,2))))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Add(ZScore($fund_ba_inventory_delta),Mul(0,Acceleration($fund_ba_inventory_delta,2))))",
+      "field_ids": [
+        "fund_ba_inventory_delta"
+      ],
+      "observable_time_contract": [
+        "fund_ba_inventory_delta|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.33ba416831620eb93eee819ffa63dce2",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "fund_ba_inventory_delta|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 29,
+      "receipt_hash": "1fe8a6bcf855db9914cfce30f0b3470f781a214ad14cd4c5ff4f14838c1197fe",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "cn.comp.010d4892f77a348fa246",
+      "candidate_receipt_id": "cn.receipt.f63cc7c35950d77d80252ee8482eb294",
+      "canonical_expression": "CSRank(Persistence(Positive($fund_ba_accounts_rece_delta),5))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Persistence(Positive($fund_ba_accounts_rece_delta),5))",
+      "field_ids": [
+        "fund_ba_accounts_rece_delta"
+      ],
+      "observable_time_contract": [
+        "fund_ba_accounts_rece_delta|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.f10b38da40de8a201e7f0d24ae946b1c",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "fund_ba_accounts_rece_delta|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 30,
+      "receipt_hash": "f63cc7c35950d77d80252ee8482eb294b4db1420c84aa10e87307012a8b13069",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "cn.comp.010d4892f77a348fa246.control",
+      "candidate_receipt_id": "cn.receipt.72968931f78e5b8cf0b03ed3b618d4ee",
+      "canonical_expression": "Add(ZScore($fund_ba_accounts_rece_delta),Mul(0,Persistence(Positive($fund_ba_accounts_rece_delta),5)))",
+      "clock_namespace": "stock_session",
+      "expression": "Add(ZScore($fund_ba_accounts_rece_delta),Mul(0,Persistence(Positive($fund_ba_accounts_rece_delta),5)))",
+      "field_ids": [
+        "fund_ba_accounts_rece_delta"
+      ],
+      "observable_time_contract": [
+        "fund_ba_accounts_rece_delta|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.f10b38da40de8a201e7f0d24ae946b1c",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "fund_ba_accounts_rece_delta|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 30,
+      "receipt_hash": "72968931f78e5b8cf0b03ed3b618d4eec11dc4a7684a2c205862f26ec97e9487",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "cn.comp.0256313a154bde772278",
+      "candidate_receipt_id": "cn.receipt.7988b59dff145bdf7deabbe379d312f2",
+      "canonical_expression": "CSRank(Slope($fund_ca_netcash_invest_persistence,3))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Slope($fund_ca_netcash_invest_persistence,3))",
+      "field_ids": [
+        "fund_ca_netcash_invest_persistence"
+      ],
+      "observable_time_contract": [
+        "fund_ca_netcash_invest_persistence|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.a7ed26cb6199441825cfb80baf86b93f",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "fund_ca_netcash_invest_persistence|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 31,
+      "receipt_hash": "7988b59dff145bdf7deabbe379d312f243d8f8637c058f7cf49a8ef7e2539c3e",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "cn.comp.0256313a154bde772278.control",
+      "candidate_receipt_id": "cn.receipt.5848a1e3bdd9366a8fd1cd9f3ba4d64c",
+      "canonical_expression": "CSRank(Add(ZScore($fund_ca_netcash_invest_persistence),Mul(0,Slope($fund_ca_netcash_invest_persistence,3))))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Add(ZScore($fund_ca_netcash_invest_persistence),Mul(0,Slope($fund_ca_netcash_invest_persistence,3))))",
+      "field_ids": [
+        "fund_ca_netcash_invest_persistence"
+      ],
+      "observable_time_contract": [
+        "fund_ca_netcash_invest_persistence|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.a7ed26cb6199441825cfb80baf86b93f",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "fund_ca_netcash_invest_persistence|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 31,
+      "receipt_hash": "5848a1e3bdd9366a8fd1cd9f3ba4d64caf1f039a336974f74dc5515d6d96bd61",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "cn.comp.00639bdf7d3958113fbe",
+      "candidate_receipt_id": "cn.receipt.33e81e4ad232d1e0db143a2703bf1e8a",
+      "canonical_expression": "CSRank(Mul(ZScore(Delta($fund_ca_netcash_invest_yoy,3)),ZScore(Delta($fund_ba_total_equity_yoy,3))))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Mul(ZScore(Delta($fund_ca_netcash_invest_yoy,3)),ZScore(Delta($fund_ba_total_equity_yoy,3))))",
+      "field_ids": [
+        "fund_ba_total_equity_yoy",
+        "fund_ca_netcash_invest_yoy"
+      ],
+      "observable_time_contract": [
+        "fund_ba_total_equity_yoy|next_session_after_source_disclosure|max_dependency_observable_time",
+        "fund_ca_netcash_invest_yoy|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.6b25ec213012d5defbabf4dde3b3422f",
+      "pair_member_role": "PRIMARY",
+      "pit_source_lag_contract": [
+        "fund_ba_total_equity_yoy|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions",
+        "fund_ca_netcash_invest_yoy|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 32,
+      "receipt_hash": "33e81e4ad232d1e0db143a2703bf1e8aa0ea679fad0903d454a44b793b044238",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "cn.comp.00639bdf7d3958113fbe.control",
+      "candidate_receipt_id": "cn.receipt.e8b949bde7a5d36f19fb6756d6331a85",
+      "canonical_expression": "CSRank(Add(Delta($fund_ca_netcash_invest_yoy,3),Mul(0,Delta($fund_ba_total_equity_yoy,3))))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Add(Delta($fund_ca_netcash_invest_yoy,3),Mul(0,Delta($fund_ba_total_equity_yoy,3))))",
+      "field_ids": [
+        "fund_ba_total_equity_yoy",
+        "fund_ca_netcash_invest_yoy"
+      ],
+      "observable_time_contract": [
+        "fund_ba_total_equity_yoy|next_session_after_source_disclosure|max_dependency_observable_time",
+        "fund_ca_netcash_invest_yoy|next_session_after_source_disclosure|max_dependency_observable_time"
+      ],
+      "pair_id": "cn.pair.6b25ec213012d5defbabf4dde3b3422f",
+      "pair_member_role": "CONTROL",
+      "pit_source_lag_contract": [
+        "fund_ba_total_equity_yoy|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions",
+        "fund_ca_netcash_invest_yoy|PIT_SAFE_CURRENT_SNAPSHOT_ONLY|1 sessions"
+      ],
+      "preflight_ordinal": 32,
+      "receipt_hash": "e8b949bde7a5d36f19fb6756d6331a856c193a3d767073afd79fa9130deed415",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    }
+  ],
+  "clock_counts": {
+    "active_bar": 18,
+    "stock_session": 14
+  },
+  "cross_sprint_memory": "FORBIDDEN",
+  "data_role": "development",
+  "development_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+  "development_release_rows": 446443583,
+  "pack_identity": "dfb23c7887e3fa2233a3bb096f62f6c0fce583aed2a780bfb2357f5b19a918f3",
+  "pair_count": 32,
+  "pairs": [
+    {
+      "candidate_id": "cn.comp.139919dc6d410acad453",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.139919dc6d410acad453.control",
+      "control_expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.95791760a6c8e57a7b2f14678dc82ecc",
+      "pair_receipt_hash": "d2ad27e37e69a118413331e3e06562bb3ffbcdfae5c5513a9a43e4579cfa3dbc",
+      "pair_receipt_id": "cn.pair.receipt.d2ad27e37e69a118413331e3e06562bb",
+      "policy_id": "stratified_typed_random",
+      "preflight_ordinal": 1,
+      "primary_expression": "SafeDiv(1,Add(TimeSince($fund_disclosure_holder_pulse),1),1)",
+      "route_id": "DISCLOSURE_EVENT",
+      "seed": 31415,
+      "skeleton_id": "cn.comp.v2.disclosure_event.event_age",
+      "support_unit": "unique disclosure episode"
+    },
+    {
+      "candidate_id": "cn.comp.14a0c5a404e94f447996",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.14a0c5a404e94f447996.control",
+      "control_expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.37a4c1ff0a61900ff4f19228b84ee8f6",
+      "pair_receipt_hash": "37f01835c643a371c082bef681fcb88694e24152240165fa54baa9ba11967979",
+      "pair_receipt_id": "cn.pair.receipt.37f01835c643a371c082bef681fcb886",
+      "policy_id": "diversity_preserving_cem",
+      "preflight_ordinal": 2,
+      "primary_expression": "FirstHit($fund_disclosure_holder_pulse,20)",
+      "route_id": "DISCLOSURE_EVENT",
+      "seed": 1729,
+      "skeleton_id": "cn.comp.v2.disclosure_event.event_first_hit",
+      "support_unit": "unique disclosure episode"
+    },
+    {
+      "candidate_id": "cn.comp.1cd90075384b59e2c9bb",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.1cd90075384b59e2c9bb.control",
+      "control_expression": "Add(TimeSince($fund_disclosure_balance_pulse),Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.1b9f66f5515575ceecd6d3b6e92e038c",
+      "pair_receipt_hash": "b9e27f34cf2cbeb37298297ddc90c9c88b63fb2556107ece3134546af508c65e",
+      "pair_receipt_id": "cn.pair.receipt.b9e27f34cf2cbeb37298297ddc90c9c8",
+      "policy_id": "evolutionary_mutation",
+      "preflight_ordinal": 3,
+      "primary_expression": "Mul(EventCount($fund_disclosure_balance_pulse,1),Sign(TimeSince($fund_disclosure_holder_pulse)))",
+      "route_id": "DISCLOSURE_EVENT",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.disclosure_event.event_prior_condition",
+      "support_unit": "unique disclosure episode"
+    },
+    {
+      "candidate_id": "cn.comp.51ea6181b202080fde09",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.51ea6181b202080fde09.control",
+      "control_expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.f23b52d4dd96c733cbfe1e64f079064e",
+      "pair_receipt_hash": "2a6d760aa38d9929be1b0c78ab67d7e7d6b80890208c74c0a3cdb6fa48b4fada",
+      "pair_receipt_id": "cn.pair.receipt.2a6d760aa38d9929be1b0c78ab67d7e7",
+      "policy_id": "uct_ucb_structural_search",
+      "preflight_ordinal": 4,
+      "primary_expression": "SafeDiv(EventCount($fund_disclosure_holder_pulse,5),Add(EventCount($fund_disclosure_holder_pulse,20),1),1)",
+      "route_id": "DISCLOSURE_EVENT",
+      "seed": 65537,
+      "skeleton_id": "cn.comp.v2.disclosure_event.repeated_event_suppression",
+      "support_unit": "unique disclosure episode"
+    },
+    {
+      "candidate_id": "cn.comp.004beeac754c1d957b5e",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.004beeac754c1d957b5e.control",
+      "control_expression": "CSRank(Add(ZScore($m1_first5_vwap_return_vs_open),Mul(0,Delta($vwap,5))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.a13952aac2db53c408a8ce40fb753fa0",
+      "pair_receipt_hash": "e24fcad71ebb37f6ffafdc22cd28fb0cb43f4180ae1f6611328f75767cf7a7b7",
+      "pair_receipt_id": "cn.pair.receipt.e24fcad71ebb37f6ffafdc22cd28fb0c",
+      "policy_id": "evolutionary_mutation",
+      "preflight_ordinal": 5,
+      "primary_expression": "CSRank(Mul(ZScore($m1_first5_vwap_return_vs_open),ZScore(Delta($vwap,5))))",
+      "route_id": "FIRSTN_PATH",
+      "seed": 31415,
+      "skeleton_id": "cn.comp.v2.firstn_path.firstn_path_state",
+      "support_unit": "stock-session after firstN maturity"
+    },
+    {
+      "candidate_id": "cn.comp.0078ffdf6ff7942322c1",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.0078ffdf6ff7942322c1.control",
+      "control_expression": "CSRank(Add(ZScore($m1_first15_amount),Mul(0,Delta($pct_chg,3))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.ed9dbb9e05d721a9f20b29cb762a35c8",
+      "pair_receipt_hash": "fd7be421749c1d9c3f6a1a8b83dcb686b0b1d96fb38307b6828f9f7d65070da1",
+      "pair_receipt_id": "cn.pair.receipt.fd7be421749c1d9c3f6a1a8b83dcb686",
+      "policy_id": "diversity_preserving_cem",
+      "preflight_ordinal": 6,
+      "primary_expression": "CSRank(Mul(ZScore($m1_first15_amount),ZScore(Acceleration($pct_chg,3))))",
+      "route_id": "FIRSTN_PATH",
+      "seed": 65537,
+      "skeleton_id": "cn.comp.v2.firstn_path.opening_path_acceleration",
+      "support_unit": "stock-session after firstN maturity"
+    },
+    {
+      "candidate_id": "cn.comp.02166051383236380f95",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.02166051383236380f95.control",
+      "control_expression": "CSRank(Add(ZScore($m1_first5_range),Mul(0,Delta($low,20))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.75ad82cb82acf017e72d3f2aa86b5e11",
+      "pair_receipt_hash": "96cc2f40d6497dd6009beed7fa1573927e06f1882740226bd382c598e2e25616",
+      "pair_receipt_id": "cn.pair.receipt.96cc2f40d6497dd6009beed7fa157392",
+      "policy_id": "uct_ucb_structural_search",
+      "preflight_ordinal": 7,
+      "primary_expression": "CSRank(Sub(ZScore($m1_first5_range),ZScore(Delta($low,20))))",
+      "route_id": "FIRSTN_PATH",
+      "seed": 1729,
+      "skeleton_id": "cn.comp.v2.firstn_path.relative_strength_reversal",
+      "support_unit": "stock-session after firstN maturity"
+    },
+    {
+      "candidate_id": "cn.comp.0813b37e10a5faef3f0d",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.0813b37e10a5faef3f0d.control",
+      "control_expression": "CSRank(Add(ZScore($m1_first30_low),Mul(0,Delta($vwap,5))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.95b2d91dddf385eff8a56db079d9acb1",
+      "pair_receipt_hash": "e23261cec7340ddec00b7c36c580f2638d67ccc500f0ce52cdd10038d58ed1cb",
+      "pair_receipt_id": "cn.pair.receipt.e23261cec7340ddec00b7c36c580f263",
+      "policy_id": "stratified_typed_random",
+      "preflight_ordinal": 8,
+      "primary_expression": "Mul(ZScore($m1_first30_low),Persistence(Positive($vwap),5))",
+      "route_id": "FIRSTN_PATH",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.firstn_path.opening_imbalance_persistence",
+      "support_unit": "stock-session after firstN maturity"
+    },
+    {
+      "candidate_id": "cn.comp.008067510f2c70180937",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.008067510f2c70180937.control",
+      "control_expression": "CSRank(Add(ZScore($m1_first30_amount),Mul(0,Delta($close,20))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.8c276c8c2e13a4769edfaf9b5fc8c7b4",
+      "pair_receipt_hash": "c84ad2fd20321926d3535a611ba8f292eecb2ec2518dd13a0a7970db70b520b9",
+      "pair_receipt_id": "cn.pair.receipt.c84ad2fd20321926d3535a611ba8f292",
+      "policy_id": "diversity_preserving_cem",
+      "preflight_ordinal": 9,
+      "primary_expression": "CSResidual(ZScore($m1_first30_amount),ZScore(Delta($close,20)))",
+      "route_id": "FIRSTN_PATH",
+      "seed": 65537,
+      "skeleton_id": "cn.comp.v2.firstn_path.opening_state_residual",
+      "support_unit": "stock-session after firstN maturity"
+    },
+    {
+      "candidate_id": "cn.comp.0157cddcc51c7971e8c0",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.0157cddcc51c7971e8c0.control",
+      "control_expression": "CSRank(Add(ZScore(Delta($close,20)),Mul(0,Sign($ret_1m))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.705f4ebb77a0be4614c3672d2765984d",
+      "pair_receipt_hash": "9e4fb1ecb7dbc48ca5ffb1ee0973c1298d0da84d3e945142c2fa87c92190bab2",
+      "pair_receipt_id": "cn.pair.receipt.9e4fb1ecb7dbc48ca5ffb1ee0973c129",
+      "policy_id": "diversity_preserving_cem",
+      "preflight_ordinal": 10,
+      "primary_expression": "Mul(Persistence(Positive(Sign($ret_1m)),20),Sign($close))",
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "seed": 65537,
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.transition_persistence",
+      "support_unit": "stock-state episode"
+    },
+    {
+      "candidate_id": "cn.comp.01ee73708199d579a925",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.01ee73708199d579a925.control",
+      "control_expression": "CSRank(Add(ZScore(Delta($volume,20)),Mul(0,Sign($intraday_ret_from_open))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.ed19c2575dbb26727f37f1dffbfe0ee3",
+      "pair_receipt_hash": "610dc1e60eaa54696c9ef10a30c32c7514dc3b43059732cdd9e2c165c26a6bcd",
+      "pair_receipt_id": "cn.pair.receipt.610dc1e60eaa54696c9ef10a30c32c75",
+      "policy_id": "evolutionary_mutation",
+      "preflight_ordinal": 11,
+      "primary_expression": "CSRank(Mul(Duration(Sign($intraday_ret_from_open)),Delta($volume,20)))",
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "seed": 1729,
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.duration_payload",
+      "support_unit": "stock-state episode"
+    },
+    {
+      "candidate_id": "cn.comp.0500527600ac9cf79f59",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.0500527600ac9cf79f59.control",
+      "control_expression": "CSRank(Add(ZScore(Delta($low,20)),Mul(0,Sign($ret_1m))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.ef9060d8c952810a7be37906fd423709",
+      "pair_receipt_hash": "f3d2f5bb667632581fb361c479ee6d11bcf58aa0de0ee4a9218e0e9fc8a66eab",
+      "pair_receipt_id": "cn.pair.receipt.f3d2f5bb667632581fb361c479ee6d11",
+      "policy_id": "stratified_typed_random",
+      "preflight_ordinal": 12,
+      "primary_expression": "CSResidual(ZScore(Delta($low,20)),Sign($ret_1m))",
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "seed": 31415,
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.state_residual",
+      "support_unit": "stock-state episode"
+    },
+    {
+      "candidate_id": "cn.comp.0ddd8dfa965f95c62a1e",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.0ddd8dfa965f95c62a1e.control",
+      "control_expression": "CSRank(Add(ZScore(Delta($volume,20)),Mul(0,Sign($ret_1m))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.75d21f01c33bfd7941c10eddca8e5d31",
+      "pair_receipt_hash": "7542765df5bee0dd9fbd8aa592ca4b65dc5516ce65022978a1257a493c2bd006",
+      "pair_receipt_id": "cn.pair.receipt.7542765df5bee0dd9fbd8aa592ca4b65",
+      "policy_id": "uct_ucb_structural_search",
+      "preflight_ordinal": 13,
+      "primary_expression": "CSRank(Mul(Sign($ret_1m),PathShape($volume,20)))",
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.intraday_state_transition.conditioned_state_path",
+      "support_unit": "stock-state episode"
+    },
+    {
+      "candidate_id": "cn.comp.0005b788298c74987f0e",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.0005b788298c74987f0e.control",
+      "control_expression": "CSRank(Add(ZScore($volume),Mul(0,$ctx_sent_lb_h_num)))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.f47f5d8a8baa3fd68c4985a6595c5ffb",
+      "pair_receipt_hash": "a82d803362f5f750e1d227691789a65ce519e85d2ad5ceb7eb84fa4d00182bc6",
+      "pair_receipt_id": "cn.pair.receipt.a82d803362f5f750e1d227691789a65c",
+      "policy_id": "stratified_typed_random",
+      "preflight_ordinal": 14,
+      "primary_expression": "CSRank(Mul(PathShape($volume,5),Sign($ctx_sent_lb_h_num)))",
+      "route_id": "MARKET_REGIME_CONDITION",
+      "seed": 31415,
+      "skeleton_id": "cn.comp.v2.market_regime_condition.regime_conditioned_path",
+      "support_unit": "market-time block"
+    },
+    {
+      "candidate_id": "cn.comp.001f11ed63fda7eff2f5",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.001f11ed63fda7eff2f5.control",
+      "control_expression": "CSRank(Add(ZScore($amount),Mul(0,$ctx_sent_ditian_num)))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.8a25592e33bc8f54da043bd7116f2a6d",
+      "pair_receipt_hash": "6fa082dbeacd85a121ba5174d14ed7cea03b66626f6f4bd2747c86bc29d41a6e",
+      "pair_receipt_id": "cn.pair.receipt.6fa082dbeacd85a121ba5174d14ed7ce",
+      "policy_id": "evolutionary_mutation",
+      "preflight_ordinal": 15,
+      "primary_expression": "CSRank(Sub(ZScore($amount),Mul(Sign($amount),Sign($ctx_sent_ditian_num))))",
+      "route_id": "MARKET_REGIME_CONDITION",
+      "seed": 1729,
+      "skeleton_id": "cn.comp.v2.market_regime_condition.payload_regime_residual",
+      "support_unit": "market-time block"
+    },
+    {
+      "candidate_id": "cn.comp.0025f568d532689ff3b9",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.0025f568d532689ff3b9.control",
+      "control_expression": "CSRank(Add(ZScore($amount_yuan),Mul(0,$ctx_sent_down_num)))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.9269e46315f0bc97b2579e9cb10499df",
+      "pair_receipt_hash": "20b0f69dc3c21c65e5938620339c419f8a7bd8937dcdea4b6ad4c8cf1e885645",
+      "pair_receipt_id": "cn.pair.receipt.20b0f69dc3c21c65e5938620339c419f",
+      "policy_id": "uct_ucb_structural_search",
+      "preflight_ordinal": 16,
+      "primary_expression": "CSRank(Add(ZScore($amount_yuan),Mul(PathShape($amount_yuan,3),Sign($ctx_sent_down_num))))",
+      "route_id": "MARKET_REGIME_CONDITION",
+      "seed": 65537,
+      "skeleton_id": "cn.comp.v2.market_regime_condition.regime_persistence_gate",
+      "support_unit": "market-time block"
+    },
+    {
+      "candidate_id": "cn.comp.035e1306d1ca020f3c84",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.035e1306d1ca020f3c84.control",
+      "control_expression": "CSRank(Add(ZScore($amount_yuan),Mul(0,$ctx_sent_uplimit_num)))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.9454e12b3def25fac7a30d9e39ff277e",
+      "pair_receipt_hash": "c7fdac3a6982e624c888aae74094d6a58b6932fcdf282e555a1394f8c9bb73d7",
+      "pair_receipt_id": "cn.pair.receipt.c7fdac3a6982e624c888aae74094d6a5",
+      "policy_id": "diversity_preserving_cem",
+      "preflight_ordinal": 17,
+      "primary_expression": "CSRank(Mul(Sign($amount_yuan),Persistence(Positive($ctx_sent_uplimit_num),10)))",
+      "route_id": "MARKET_REGIME_CONDITION",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.market_regime_condition.regime_maturity_payload",
+      "support_unit": "market-time block"
+    },
+    {
+      "candidate_id": "cn.comp.004d92e1acb484600e52",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.004d92e1acb484600e52.control",
+      "control_expression": "CSRank(Add(ZScore($low),Mul(0,ZScore($amount_yuan))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.fc767527ff61198f1678fb157ea77d08",
+      "pair_receipt_hash": "b08cd9f33270ae4b57fc73c45864258a58e90b51565ce6f078a6e5a9001e5742",
+      "pair_receipt_id": "cn.pair.receipt.b08cd9f33270ae4b57fc73c45864258a",
+      "policy_id": "stratified_typed_random",
+      "preflight_ordinal": 18,
+      "primary_expression": "CSRank(Mul(ZScore($low),ZScore($amount_yuan)))",
+      "route_id": "MINUTE_STATIC",
+      "seed": 65537,
+      "skeleton_id": "cn.comp.v2.minute_static.price_volume_interaction",
+      "support_unit": "stock-minute cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.008283c6a2fccb93edb2",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.008283c6a2fccb93edb2.control",
+      "control_expression": "CSRank(Add(ZScore($close),Mul(0,ZScore($vwap))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.8988969e2367209cc9db2b565d9e4d85",
+      "pair_receipt_hash": "0ac8223dd85f38c87563677d360e268ada0937497e8433056f29b5a2e888a840",
+      "pair_receipt_id": "cn.pair.receipt.0ac8223dd85f38c87563677d360e268a",
+      "policy_id": "uct_ucb_structural_search",
+      "preflight_ordinal": 19,
+      "primary_expression": "CSRank(Mul(Sign($close),Abs(ZScore($vwap))))",
+      "route_id": "MINUTE_STATIC",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.minute_static.absolute_state_interaction",
+      "support_unit": "stock-minute cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.010176cebda604991de2",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.010176cebda604991de2.control",
+      "control_expression": "CSRank(Add(ZScore($open),Mul(0,ZScore($volume))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.3e7dbbfd8518998c10e75340fc4460b5",
+      "pair_receipt_hash": "30a630ed99f31f983cfe71ae04451371a5da911da9b00d795328b3599c4c5d22",
+      "pair_receipt_id": "cn.pair.receipt.30a630ed99f31f983cfe71ae04451371",
+      "policy_id": "evolutionary_mutation",
+      "preflight_ordinal": 20,
+      "primary_expression": "CSRank(Sub(Abs(ZScore($open)),Abs(ZScore($volume))))",
+      "route_id": "MINUTE_STATIC",
+      "seed": 1729,
+      "skeleton_id": "cn.comp.v2.minute_static.dispersion_interaction",
+      "support_unit": "stock-minute cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.085cf4ce3d4f08caedc7",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.085cf4ce3d4f08caedc7.control",
+      "control_expression": "CSRank(Add(ZScore($intraday_ret_from_open),Mul(0,ZScore($vwap))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.b0b85227569ad32e01765094ac3e32e4",
+      "pair_receipt_hash": "aa3b056a45d0b3070594e7e2f9e0a2489be807e6f5829da342d722c56c1c24ee",
+      "pair_receipt_id": "cn.pair.receipt.aa3b056a45d0b3070594e7e2f9e0a248",
+      "policy_id": "diversity_preserving_cem",
+      "preflight_ordinal": 21,
+      "primary_expression": "CSRank(Sub(ZScore($intraday_ret_from_open),ZScore($vwap)))",
+      "route_id": "MINUTE_STATIC",
+      "seed": 31415,
+      "skeleton_id": "cn.comp.v2.minute_static.field_spread",
+      "support_unit": "stock-minute cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.008822b04f162f01856a",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "cn.comp.008822b04f162f01856a.control",
+      "control_expression": "CSRank(Add(ZScore($low),Mul(0,ZScore($amount))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.aea6393b80b1b891ed1bb8dbd2c110ac",
+      "pair_receipt_hash": "4d10230fd111b5332eee209b6b5bdceeb30f25c0ff4c815abec553372184fedd",
+      "pair_receipt_id": "cn.pair.receipt.4d10230fd111b5332eee209b6b5bdcee",
+      "policy_id": "evolutionary_mutation",
+      "preflight_ordinal": 22,
+      "primary_expression": "CSResidual(ZScore($low),ZScore($amount))",
+      "route_id": "MINUTE_STATIC",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.minute_static.cross_sectional_residual",
+      "support_unit": "stock-minute cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.0015774e241b02955f6e",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.0015774e241b02955f6e.control",
+      "control_expression": "CSRank(Add(ZScore($fund_liquidity_cash_current_liab),Mul(0,ZScore($ctx_hfq_ps_ttm))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.3d20fb3fda1468e9123041ef2a74be10",
+      "pair_receipt_hash": "54deaab9c3e05acf107ad9fb40cf15462106dd26e1e9dbe3f281fa9fd18d3d87",
+      "pair_receipt_id": "cn.pair.receipt.54deaab9c3e05acf107ad9fb40cf1546",
+      "policy_id": "evolutionary_mutation",
+      "preflight_ordinal": 23,
+      "primary_expression": "CSRank(SafeDiv(ZScore($fund_liquidity_cash_current_liab),ZScore($ctx_hfq_ps_ttm),0.05))",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "seed": 1729,
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.fundamental_ratio",
+      "support_unit": "stock-session cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.00429cca3245137b3eac",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.00429cca3245137b3eac.control",
+      "control_expression": "CSRank(Add(ZScore($ctx_hfq_pb),Mul(0,ZScore($fund_working_capital_payables_assets))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.8d4f05326fc4272cf3643e98fc0dfce4",
+      "pair_receipt_hash": "9c23ef467a229383254d371a90ac6d5b75f07e6aa3a0993404df70d47bb04724",
+      "pair_receipt_id": "cn.pair.receipt.9c23ef467a229383254d371a90ac6d5b",
+      "policy_id": "diversity_preserving_cem",
+      "preflight_ordinal": 24,
+      "primary_expression": "CSRank(Mul(ZScore($ctx_hfq_pb),ZScore($fund_working_capital_payables_assets)))",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.cross_family_interaction",
+      "support_unit": "stock-session cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.026dedc07bee4100e5da",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.026dedc07bee4100e5da.control",
+      "control_expression": "CSRank(Sign($ctx_hfq_turnover_ratio))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.d494112aeb0567fe2ce4fa9ba4cda88f",
+      "pair_receipt_hash": "dc61b91c5e0df711a956b7c363f80de5dff29716f9394e9b363c448b169b95cf",
+      "pair_receipt_id": "cn.pair.receipt.dc61b91c5e0df711a956b7c363f80de5",
+      "policy_id": "stratified_typed_random",
+      "preflight_ordinal": 25,
+      "primary_expression": "MaskedZScore($ctx_hfq_turnover_ratio,20,0.8)",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "seed": 65537,
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.masked_normalized_level",
+      "support_unit": "stock-session cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.0779dca10a25f909fdfb",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.0779dca10a25f909fdfb.control",
+      "control_expression": "CSRank(Add(ZScore($ctx_hfq_pb),Mul(0,ZScore($ctx_hfq_float_market_cap_yuan))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.55c5408d938e797b000e5fd56dd18fb2",
+      "pair_receipt_hash": "d5ac17536cbbc720c330dc7600ed26d8a2c10d90d61a9d4435b1959a3509a3b6",
+      "pair_receipt_id": "cn.pair.receipt.d5ac17536cbbc720c330dc7600ed26d8",
+      "policy_id": "uct_ucb_structural_search",
+      "preflight_ordinal": 26,
+      "primary_expression": "CSResidual(ZScore($ctx_hfq_pb),ZScore($ctx_hfq_float_market_cap_yuan))",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "seed": 31415,
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.fundamental_residual",
+      "support_unit": "stock-session cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.008579c79a021575795b",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.008579c79a021575795b.control",
+      "control_expression": "CSRank(Add(ZScore($ctx_rzrq_rzjme),Mul(0,ZScore($ctx_hfq_market_cap_yuan))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.ec87c7f7d263bd50cd4d300ecf96955e",
+      "pair_receipt_hash": "cbe5c7226d2377f59094e13159ec0dee634827a5e1f8349182daf297ad5fcf7e",
+      "pair_receipt_id": "cn.pair.receipt.cbe5c7226d2377f59094e13159ec0dee",
+      "policy_id": "evolutionary_mutation",
+      "preflight_ordinal": 27,
+      "primary_expression": "CSRank(Sub(ZScore($ctx_rzrq_rzjme),ZScore($ctx_hfq_market_cap_yuan)))",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.slow_cross_sectional_level.size_residual_level",
+      "support_unit": "stock-session cross-section"
+    },
+    {
+      "candidate_id": "cn.comp.00370e431906c55f4ef4",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.00370e431906c55f4ef4.control",
+      "control_expression": "CSRank(Add(ZScore($fund_pr_operate_profit_source_yoy),Mul(0,ZScore($fund_ba_total_assets_delta))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.327d8e727a4f72e1ef3866c8109b480e",
+      "pair_receipt_hash": "1e9943a7acef789fc8a0445072de2aea08bbe1ca52c34ad3c27e8d79b980b7d7",
+      "pair_receipt_id": "cn.pair.receipt.1e9943a7acef789fc8a0445072de2aea",
+      "policy_id": "stratified_typed_random",
+      "preflight_ordinal": 28,
+      "primary_expression": "CSRank(Mul(ZScore($fund_pr_operate_profit_source_yoy),ZScore($fund_ba_total_assets_delta)))",
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "seed": 31415,
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.change_level_interaction",
+      "support_unit": "stock-disclosure or stock-session change episode"
+    },
+    {
+      "candidate_id": "cn.comp.00510669da4fe8efda26",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.00510669da4fe8efda26.control",
+      "control_expression": "CSRank(Add(ZScore($fund_ba_inventory_delta),Mul(0,Acceleration($fund_ba_inventory_delta,2))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.33ba416831620eb93eee819ffa63dce2",
+      "pair_receipt_hash": "57944c70eaea5ea1a90dd6e1f688a826103eff8377498ed5bc8525b3da6ef133",
+      "pair_receipt_id": "cn.pair.receipt.57944c70eaea5ea1a90dd6e1f688a826",
+      "policy_id": "diversity_preserving_cem",
+      "preflight_ordinal": 29,
+      "primary_expression": "CSRank(Acceleration($fund_ba_inventory_delta,2))",
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.acceleration",
+      "support_unit": "stock-disclosure or stock-session change episode"
+    },
+    {
+      "candidate_id": "cn.comp.010d4892f77a348fa246",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.010d4892f77a348fa246.control",
+      "control_expression": "Add(ZScore($fund_ba_accounts_rece_delta),Mul(0,Persistence(Positive($fund_ba_accounts_rece_delta),5)))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.f10b38da40de8a201e7f0d24ae946b1c",
+      "pair_receipt_hash": "b50ae9b874677dc2b9c95c2bdb00b2f69746fa9b4a0347abc094c36e1b277a80",
+      "pair_receipt_id": "cn.pair.receipt.b50ae9b874677dc2b9c95c2bdb00b2f6",
+      "policy_id": "uct_ucb_structural_search",
+      "preflight_ordinal": 30,
+      "primary_expression": "CSRank(Persistence(Positive($fund_ba_accounts_rece_delta),5))",
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "seed": 1729,
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.change_persistence",
+      "support_unit": "stock-disclosure or stock-session change episode"
+    },
+    {
+      "candidate_id": "cn.comp.0256313a154bde772278",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.0256313a154bde772278.control",
+      "control_expression": "CSRank(Add(ZScore($fund_ca_netcash_invest_persistence),Mul(0,Slope($fund_ca_netcash_invest_persistence,3))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.a7ed26cb6199441825cfb80baf86b93f",
+      "pair_receipt_hash": "5798c0171ba287400b342d6ed500c09fc3a4f93f182ffad096f513372f60f802",
+      "pair_receipt_id": "cn.pair.receipt.5798c0171ba287400b342d6ed500c09f",
+      "policy_id": "evolutionary_mutation",
+      "preflight_ordinal": 31,
+      "primary_expression": "CSRank(Slope($fund_ca_netcash_invest_persistence,3))",
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "seed": 65537,
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.slope",
+      "support_unit": "stock-disclosure or stock-session change episode"
+    },
+    {
+      "candidate_id": "cn.comp.00639bdf7d3958113fbe",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "cn.comp.00639bdf7d3958113fbe.control",
+      "control_expression": "CSRank(Add(Delta($fund_ca_netcash_invest_yoy,3),Mul(0,Delta($fund_ba_total_equity_yoy,3))))",
+      "mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+      "pair_id": "cn.pair.6b25ec213012d5defbabf4dde3b3422f",
+      "pair_receipt_hash": "c29b2c54848dbc647425185adf9be5c7ef6b0640cb76cf845f5cf71201117fc1",
+      "pair_receipt_id": "cn.pair.receipt.c29b2c54848dbc647425185adf9be5c7",
+      "policy_id": "stratified_typed_random",
+      "preflight_ordinal": 32,
+      "primary_expression": "CSRank(Mul(ZScore(Delta($fund_ca_netcash_invest_yoy,3)),ZScore(Delta($fund_ba_total_equity_yoy,3))))",
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "seed": 2718,
+      "skeleton_id": "cn.comp.v2.slow_temporal_change.cross_change_interaction",
+      "support_unit": "stock-disclosure or stock-session change episode"
+    }
+  ],
+  "promotion": "FORBIDDEN",
+  "registry_hash": "e4b8bc809ab9ae8e1463aa85c53c13c1710aed6915c967ff806c8906deea886d",
+  "sealed_reads": {
+    "forward_2026": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "source_closure_sha": "b71fa6b239ceb602576f1769ef1f512603ce326b",
+  "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "status": "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND",
+  "strict_stage_a": "NOT_AUTHORIZED"
+}
