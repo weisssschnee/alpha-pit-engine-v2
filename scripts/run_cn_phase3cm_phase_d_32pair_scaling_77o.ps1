@@ -21,6 +21,7 @@ $env:MKL_NUM_THREADS = "1"
 $env:OPENBLAS_NUM_THREADS = "1"
 $env:NUMEXPR_MAX_THREADS = "1"
 $env:POLARS_MAX_THREADS = "1"
+. (Join-Path $RepoRoot "scripts\cn_phase3cm_process_tree_monitor.ps1")
 
 $RuntimeRoot = Join-Path $RepoRoot "runtime\cn_phase3cm_streaming_repair_20260716"
 $CandidateRoot = Join-Path $RepoRoot "runtime\cn_compositional_nline_large_search_20260715"
@@ -75,12 +76,40 @@ $SessionArgs = New-BackendArguments `
     -LabelRoot (Join-Path $RuntimeRoot "session_time_major_train_v3_labels") `
     -OutputRoot $SessionRoot
 
+$ActiveCommandPath = Join-Path $ActiveRoot "CN_BACKEND_COMMAND.json"
+$SessionCommandPath = Join-Path $SessionRoot "CN_BACKEND_COMMAND.json"
+$ActiveExitReceiptPath = Join-Path $ActiveRoot "CN_BACKEND_EXIT_RECEIPT.json"
+$SessionExitReceiptPath = Join-Path $SessionRoot "CN_BACKEND_EXIT_RECEIPT.json"
+$ThreadEnvironment = [ordered]@{
+    NUMBA_NUM_THREADS = $env:NUMBA_NUM_THREADS
+    ARROW_NUM_THREADS = $env:ARROW_NUM_THREADS
+    OMP_NUM_THREADS = $env:OMP_NUM_THREADS
+    MKL_NUM_THREADS = $env:MKL_NUM_THREADS
+    OPENBLAS_NUM_THREADS = $env:OPENBLAS_NUM_THREADS
+    NUMEXPR_MAX_THREADS = $env:NUMEXPR_MAX_THREADS
+    POLARS_MAX_THREADS = $env:POLARS_MAX_THREADS
+}
+Write-CnAtomicJson -Path $ActiveCommandPath -Payload ([ordered]@{ schema_version = "cn_phase3cm_backend_command_v1"; backend = "active_bar"; arguments = $ActiveArgs; thread_environment = $ThreadEnvironment })
+Write-CnAtomicJson -Path $SessionCommandPath -Payload ([ordered]@{ schema_version = "cn_phase3cm_backend_command_v1"; backend = "stock_session"; arguments = $SessionArgs; thread_environment = $ThreadEnvironment })
+$Wrapper = Join-Path $RepoRoot "scripts\invoke_cn_phase3cm_backend_with_exit_receipt.ps1"
+$PowerShellExe = (Get-Command powershell.exe).Source
+$RssTimelinePath = Join-Path $RunRoot "CN_GLOBAL_PROCESS_TREE_RSS_TIMELINE.csv"
+"sampled_at,active_process_ids,active_rss_bytes,session_process_ids,session_rss_bytes,global_rss_bytes" | Set-Content -LiteralPath $RssTimelinePath -Encoding UTF8
+
 $Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-$Active = Start-Process -FilePath $PythonExe -ArgumentList $ActiveArgs -WorkingDirectory $RepoRoot `
+$Active = Start-Process -FilePath $PowerShellExe -ArgumentList @(
+    "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $Wrapper,
+    "-PythonExe", $PythonExe, "-RepoRoot", $RepoRoot,
+    "-ArgumentFile", $ActiveCommandPath, "-ExitReceipt", $ActiveExitReceiptPath
+) -WorkingDirectory $RepoRoot `
     -RedirectStandardOutput (Join-Path $ActiveRoot "stdout.log") `
     -RedirectStandardError (Join-Path $ActiveRoot "stderr.log") `
     -WindowStyle Hidden -PassThru
-$Session = Start-Process -FilePath $PythonExe -ArgumentList $SessionArgs -WorkingDirectory $RepoRoot `
+$Session = Start-Process -FilePath $PowerShellExe -ArgumentList @(
+    "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $Wrapper,
+    "-PythonExe", $PythonExe, "-RepoRoot", $RepoRoot,
+    "-ArgumentFile", $SessionCommandPath, "-ExitReceipt", $SessionExitReceiptPath
+) -WorkingDirectory $RepoRoot `
     -RedirectStandardOutput (Join-Path $SessionRoot "stdout.log") `
     -RedirectStandardError (Join-Path $SessionRoot "stderr.log") `
     -WindowStyle Hidden -PassThru
@@ -88,21 +117,29 @@ $Processes = @($Active, $Session)
 $GlobalPeakRss = [int64]0
 $GlobalHardRss = [int64](60 * 1024 * 1024 * 1024)
 $GlobalGateFailure = $false
+$RssSampleCount = 0
+$ActivePeakRss = [int64]0
+$SessionPeakRss = [int64]0
+$Roots = @{ active_bar = $Active.Id; stock_session = $Session.Id }
 
 while ($true) {
     $Running = @()
-    $CurrentGlobalRss = [int64]0
     foreach ($Process in $Processes) {
         $Process.Refresh()
         if (-not $Process.HasExited) {
             $Running += $Process
-            $CurrentGlobalRss += [int64]$Process.WorkingSet64
         }
     }
+    $Snapshot = Get-CnProcessTreeRssSnapshot -Roots $Roots
+    Add-CnRssTimelineSample -Path $RssTimelinePath -Snapshot $Snapshot
+    $RssSampleCount += 1
+    $CurrentGlobalRss = [int64]$Snapshot.total_rss_bytes
+    $ActivePeakRss = [Math]::Max($ActivePeakRss, [int64]$Snapshot.groups["active_bar"].rss_bytes)
+    $SessionPeakRss = [Math]::Max($SessionPeakRss, [int64]$Snapshot.groups["stock_session"].rss_bytes)
     if ($CurrentGlobalRss -gt $GlobalPeakRss) { $GlobalPeakRss = $CurrentGlobalRss }
     if ($CurrentGlobalRss -ge $GlobalHardRss) {
         $GlobalGateFailure = $true
-        foreach ($Process in $Running) { Stop-Process -Id $Process.Id -Force -ErrorAction SilentlyContinue }
+        Stop-CnProcessTrees -Roots $Roots
         break
     }
     if ($Running.Count -eq 0) { break }
@@ -110,6 +147,10 @@ while ($true) {
 }
 $Stopwatch.Stop()
 foreach ($Process in $Processes) { $Process.WaitForExit(); $Process.Refresh() }
+$ActiveExit = if (Test-Path $ActiveExitReceiptPath) { Get-Content $ActiveExitReceiptPath -Raw | ConvertFrom-Json } else { $null }
+$SessionExit = if (Test-Path $SessionExitReceiptPath) { Get-Content $SessionExitReceiptPath -Raw | ConvertFrom-Json } else { $null }
+$ActiveExitCode = if ($null -ne $ActiveExit) { [int]$ActiveExit.exit_code } else { $null }
+$SessionExitCode = if ($null -ne $SessionExit) { [int]$SessionExit.exit_code } else { $null }
 
 $ActiveResultPath = Join-Path $ActiveRoot "CN_STREAMING_BACKEND_RESULT.json"
 $SessionResultPath = Join-Path $SessionRoot "CN_STREAMING_BACKEND_RESULT.json"
@@ -117,8 +158,8 @@ $ActiveResult = if (Test-Path $ActiveResultPath) { Get-Content $ActiveResultPath
 $SessionResult = if (Test-Path $SessionResultPath) { Get-Content $SessionResultPath -Raw | ConvertFrom-Json } else { $null }
 $Pass = (
     -not $GlobalGateFailure -and
-    $Active.ExitCode -eq 0 -and
-    $Session.ExitCode -eq 0 -and
+    $ActiveExitCode -eq 0 -and
+    $SessionExitCode -eq 0 -and
     $null -ne $ActiveResult -and
     $null -ne $SessionResult -and
     $ActiveResult.status -eq "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED" -and
@@ -138,11 +179,17 @@ $Pass = (
 $Receipt = [ordered]@{
     schema_version = "cn_phase3cm_phase_d_32pair_scaling_receipt_v1"
     status = if ($Pass) { "CN_PHASE3CM_PHASE_D_32PAIR_SCALING_PASS" } elseif ($GlobalGateFailure) { "CN_PHASE3CM_PHASE_D_GLOBAL_RSS_GATE_FAIL" } else { "CN_PHASE3CM_PHASE_D_32PAIR_SCALING_FAIL" }
-    active_exit_code = $Active.ExitCode
-    session_exit_code = $Session.ExitCode
+    active_exit_code = $ActiveExitCode
+    session_exit_code = $SessionExitCode
     wall_seconds = $Stopwatch.Elapsed.TotalSeconds
     global_peak_rss_bytes = $GlobalPeakRss
+    active_peak_process_tree_rss_bytes = $ActivePeakRss
+    session_peak_process_tree_rss_bytes = $SessionPeakRss
     global_hard_rss_bytes = $GlobalHardRss
+    rss_monitor = "PROCESS_TREE_RSS"
+    rss_sample_count = $RssSampleCount
+    rss_timeline = $RssTimelinePath
+    rss_timeline_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $RssTimelinePath).Hash.ToLowerInvariant()
     heavy_processes = 2
     compute_threads_per_process = $ComputeThreads
     global_active_native_compute_threads = 2 * $ComputeThreads
@@ -150,6 +197,8 @@ $Receipt = [ordered]@{
     session_result = $SessionResultPath
     active_execution_plan = Join-Path $ActiveRoot "CN_FROZEN_EXECUTION_PLAN.json"
     session_execution_plan = Join-Path $SessionRoot "CN_FROZEN_EXECUTION_PLAN.json"
+    active_exit_receipt = $ActiveExitReceiptPath
+    session_exit_receipt = $SessionExitReceiptPath
     validation_reads = 0
     holdout_reads = 0
     forward_2026_reads = 0
