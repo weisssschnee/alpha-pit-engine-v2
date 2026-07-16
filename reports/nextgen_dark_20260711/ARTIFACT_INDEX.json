@@ -157,9 +157,9 @@
     {
       "exists": true,
       "id": "architecture_overlay",
-      "last_verified_sha": "e64076e2f28fc5ddf0ad9174a958ff53db1faaa4eba5c4b2dc16592a5a73099e",
+      "last_verified_sha": "cc96888697a0c8069ffd7ff80af2784ffbbf73f6ccd3f991c7a654d914d0289a",
       "path": "config/architecture_overlay.json",
-      "size_bytes": 31846,
+      "size_bytes": 32160,
       "state": "IMPLEMENTED"
     },
     {
@@ -188,7 +188,7 @@
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-16T16:33:44.886965+00:00",
+  "refreshed_at": "2026-07-16T16:43:46.263226+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY",
   "hash_contract": "SHA256_TEXT_NEWLINES_LF_V1"
 }
