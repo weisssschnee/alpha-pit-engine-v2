@@ -17,6 +17,7 @@ from typing import Any, Iterable, Mapping
 import numpy as np
 
 from our_system_phase2.services.expression_semantics import ExpressionNode, parse_expression
+from our_system_phase2.services.phase3cm_streaming_cache import CacheBudgetError
 
 try:  # pragma: no cover - exercised on the 77o qualification host.
     from numba import njit, prange, set_num_threads
@@ -359,13 +360,24 @@ class _StateState:
 class StreamingExpressionExecutor:
     """Evaluate canonical expressions on one complete-market time block."""
 
-    def __init__(self, *, code_count: int, compute_threads: int) -> None:
+    def __init__(
+        self,
+        *,
+        code_count: int,
+        compute_threads: int,
+        cache_max_bytes: int = 8 * 1024**3,
+        cache_max_entries: int = 2048,
+    ) -> None:
         if code_count <= 0:
             raise ValueError("code_count must be positive")
         if compute_threads <= 0 or compute_threads > 24:
             raise ValueError("compute_threads must be between 1 and 24")
         self.code_count = int(code_count)
         self.compute_threads = int(compute_threads)
+        self.cache_max_bytes = int(cache_max_bytes)
+        self.cache_max_entries = int(cache_max_entries)
+        if self.cache_max_bytes <= 0 or self.cache_max_entries <= 0:
+            raise ValueError("cache byte and entry caps must be positive")
         self._rolling_states: dict[str, _RollingState] = {}
         self._state_states: dict[str, _StateState] = {}
         self.raw_fields: dict[str, np.ndarray] = {}
@@ -378,6 +390,7 @@ class StreamingExpressionExecutor:
         self._time_starts = np.empty(0, dtype=np.int64)
         self._time_ends = np.empty(0, dtype=np.int64)
         self._cache: dict[str, np.ndarray] = {}
+        self._cache_bytes = 0
         self.audit: dict[str, Any] = {}
 
     def bind_block(
@@ -409,6 +422,7 @@ class StreamingExpressionExecutor:
         self._code_starts, self._code_ends = _boundaries(self._sorted_codes)
         self._time_starts, self._time_ends = _boundaries(time_ids)
         self._cache = {}
+        self._cache_bytes = 0
         self.audit = {
             "rows": int(len(code_ids)),
             "raw_field_count": len(normalized),
@@ -418,10 +432,30 @@ class StreamingExpressionExecutor:
             "native_kernel_calls": 0,
             "compute_threads": self.compute_threads,
             "python_pandas_hot_path_calls": 0,
+            "cache_max_bytes": self.cache_max_bytes,
+            "cache_max_entries": self.cache_max_entries,
         }
         if set_num_threads is not None:
             set_num_threads(self.compute_threads)
         return self
+
+    def _store_cache(self, key: str, value: np.ndarray, *, owned: bool) -> np.ndarray:
+        array = np.asarray(value, dtype=np.float64)
+        if key in self._cache:
+            return self._cache[key]
+        incremental = int(array.nbytes) if owned else 0
+        if len(self._cache) + 1 > self.cache_max_entries:
+            raise CacheBudgetError("DAG block cache entry cap reached")
+        if self._cache_bytes + incremental > self.cache_max_bytes:
+            raise CacheBudgetError(
+                f"DAG block cache byte cap reached: {self._cache_bytes + incremental} > {self.cache_max_bytes}"
+            )
+        self._cache[key] = array
+        self._cache_bytes += incremental
+        self.audit["cache_current_bytes"] = self._cache_bytes
+        self.audit["cache_peak_bytes"] = max(int(self.audit.get("cache_peak_bytes") or 0), self._cache_bytes)
+        self.audit["cache_entry_count"] = len(self._cache)
+        return array
 
     def _rolling(self, key: str, values: np.ndarray, window: int, operation: int, parameter: float = 0.0) -> np.ndarray:
         if _rolling_kernel is None:
@@ -493,8 +527,7 @@ class StreamingExpressionExecutor:
             else:
                 result = np.full(len(self.code_ids), float(node.token), dtype=np.float64)
             self.audit["value_node_evaluations"] += 1
-            self._cache[key] = result
-            return result
+            return self._store_cache(key, result, owned=not node.token.startswith("$"))
 
         name = node.token.lower()
         args = [
@@ -571,8 +604,7 @@ class StreamingExpressionExecutor:
             self.audit["mapping_node_evaluations"] += 1
         else:
             self.audit["value_node_evaluations"] += 1
-        self._cache[key] = np.asarray(result, dtype=np.float64)
-        return self._cache[key]
+        return self._store_cache(key, result, owned=True)
 
     def evaluate_many(
         self,

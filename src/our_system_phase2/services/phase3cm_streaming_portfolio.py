@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import time
 from dataclasses import dataclass
@@ -32,6 +33,7 @@ STAT_FIELDS = (
     "rank_ic_positive_count",
     "support_count",
     "selected_count",
+    "signal_spread_max",
 )
 
 DAILY_FIELDS = STAT_FIELDS
@@ -107,26 +109,20 @@ if njit is not None:
 
 
     @njit(cache=True, parallel=True)
-    def _portfolio_kernel(
+    def _mapping_kernel(
         signals: np.ndarray,
         labels: np.ndarray,
         starts: np.ndarray,
         ends: np.ndarray,
-        code_ids: np.ndarray,
-        day_ids: np.ndarray,
         directions: np.ndarray,
-        selection_epoch: np.ndarray,
-        epoch_counter: np.ndarray,
         min_obs: int,
         top_quantile: float,
-        one_way_cost: float,
-        day_count: int,
         excess_market: bool,
     ) -> tuple[np.ndarray, np.ndarray]:
         candidate_count = signals.shape[0]
         horizon_count = labels.shape[0]
-        stats = np.zeros((candidate_count, horizon_count + 1, len(STAT_FIELDS)), dtype=np.float64)
-        daily = np.zeros((candidate_count, horizon_count + 1, day_count, len(DAILY_FIELDS)), dtype=np.float64)
+        selected = np.zeros((candidate_count, horizon_count, signals.shape[1]), dtype=np.bool_)
+        metrics = np.full((candidate_count, horizon_count, starts.shape[0], 7), np.nan, dtype=np.float64)
         for candidate in prange(candidate_count):
             direction = directions[candidate]
             for group in range(starts.shape[0]):
@@ -134,16 +130,6 @@ if njit is not None:
                 end = ends[group]
                 signal_part = signals[candidate, start:end]
                 signal_rank = _rank_average(signal_part)
-                all_net = 0.0
-                all_raw = 0.0
-                all_market = 0.0
-                all_turnover = 0.0
-                all_rank_ic = 0.0
-                all_support = 0.0
-                all_selected = 0.0
-                sleeve_count = 0
-                rank_ic_sleeves = 0
-                day = int(day_ids[start])
                 for horizon in range(horizon_count):
                     ret_part = labels[horizon, start:end]
                     valid_count = 0
@@ -154,13 +140,13 @@ if njit is not None:
                         continue
                     ranks = np.empty(valid_count, dtype=np.float64)
                     returns = np.empty(valid_count, dtype=np.float64)
-                    codes = np.empty(valid_count, dtype=np.int32)
+                    local_positions = np.empty(valid_count, dtype=np.int64)
                     cursor = 0
                     for local in range(end - start):
                         if np.isfinite(signal_rank[local]) and np.isfinite(ret_part[local]):
                             ranks[cursor] = signal_rank[local]
                             returns[cursor] = ret_part[local]
-                            codes[cursor] = code_ids[start + local]
+                            local_positions[cursor] = local
                             cursor += 1
                     low = _linear_quantile(ranks, top_quantile)
                     high = _linear_quantile(ranks, 1.0 - top_quantile)
@@ -171,37 +157,95 @@ if njit is not None:
                     top_count = 0
                     bottom_sum = 0.0
                     bottom_count = 0
-                    current_epoch = epoch_counter[candidate, horizon] + 1
-                    previous_epoch = epoch_counter[candidate, horizon]
-                    intersection = 0
+                    top_signal_sum = 0.0
+                    bottom_signal_sum = 0.0
                     for index in range(valid_count):
                         market_sum += returns[index]
                         if ranks[index] >= high:
                             top_sum += returns[index]
+                            top_signal_sum += signal_part[local_positions[index]]
                             top_count += 1
                         if ranks[index] <= low:
                             bottom_sum += returns[index]
+                            bottom_signal_sum += signal_part[local_positions[index]]
                             bottom_count += 1
                         chosen = ranks[index] >= high if direction > 0.0 else ranks[index] <= low
                         if chosen:
-                            code = codes[index]
-                            if previous_epoch > 0 and selection_epoch[candidate, horizon, code] == previous_epoch:
-                                intersection += 1
-                            selection_epoch[candidate, horizon, code] = current_epoch
+                            selected[candidate, horizon, start + local_positions[index]] = True
                             selected_count += 1
                             selected_return_sum += returns[index]
                     if selected_count == 0 or top_count == 0 or bottom_count == 0:
                         continue
-                    epoch_counter[candidate, horizon] = current_epoch
-                    turnover = 1.0 if previous_epoch == 0 else 1.0 - intersection / selected_count
                     market_mean = market_sum / valid_count
                     selected_mean = selected_return_sum / selected_count
                     raw_return = selected_mean - market_mean if excess_market else selected_mean
-                    net_return = raw_return - one_way_cost * turnover
                     return_rank = _rank_average(returns)
                     rank_ic_raw = _pearson(ranks, return_rank)
                     rank_ic = rank_ic_raw * direction if np.isfinite(rank_ic_raw) else np.nan
+                    metrics[candidate, horizon, group, 0] = 1.0
+                    metrics[candidate, horizon, group, 1] = raw_return
+                    metrics[candidate, horizon, group, 2] = market_mean
+                    metrics[candidate, horizon, group, 3] = rank_ic
+                    metrics[candidate, horizon, group, 4] = valid_count
+                    metrics[candidate, horizon, group, 5] = selected_count
+                    metrics[candidate, horizon, group, 6] = abs(top_signal_sum / top_count - bottom_signal_sum / bottom_count)
+        return selected, metrics
 
+
+    @njit(cache=True, parallel=True)
+    def _turnover_cost_kernel(
+        selected: np.ndarray,
+        metrics: np.ndarray,
+        starts: np.ndarray,
+        ends: np.ndarray,
+        code_ids: np.ndarray,
+        day_ids: np.ndarray,
+        selection_epoch: np.ndarray,
+        epoch_counter: np.ndarray,
+        one_way_cost: float,
+        day_count: int,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        candidate_count = selected.shape[0]
+        horizon_count = selected.shape[1]
+        stats = np.zeros((candidate_count, horizon_count + 1, len(STAT_FIELDS)), dtype=np.float64)
+        daily = np.zeros((candidate_count, horizon_count + 1, day_count, len(DAILY_FIELDS)), dtype=np.float64)
+        for candidate in prange(candidate_count):
+            for group in range(starts.shape[0]):
+                start = starts[group]
+                end = ends[group]
+                day = int(day_ids[start])
+                all_net = 0.0
+                all_raw = 0.0
+                all_market = 0.0
+                all_turnover = 0.0
+                all_rank_ic = 0.0
+                all_support = 0.0
+                all_selected = 0.0
+                all_spread = 0.0
+                sleeve_count = 0
+                rank_ic_sleeves = 0
+                for horizon in range(horizon_count):
+                    if not np.isfinite(metrics[candidate, horizon, group, 0]):
+                        continue
+                    current_epoch = epoch_counter[candidate, horizon] + 1
+                    previous_epoch = epoch_counter[candidate, horizon]
+                    intersection = 0
+                    selected_count = 0
+                    for row in range(start, end):
+                        if selected[candidate, horizon, row]:
+                            code = code_ids[row]
+                            if previous_epoch > 0 and selection_epoch[candidate, horizon, code] == previous_epoch:
+                                intersection += 1
+                            selection_epoch[candidate, horizon, code] = current_epoch
+                            selected_count += 1
+                    epoch_counter[candidate, horizon] = current_epoch
+                    turnover = 1.0 if previous_epoch == 0 else 1.0 - intersection / selected_count
+                    raw_return = metrics[candidate, horizon, group, 1]
+                    market_mean = metrics[candidate, horizon, group, 2]
+                    rank_ic = metrics[candidate, horizon, group, 3]
+                    support_count = metrics[candidate, horizon, group, 4]
+                    spread = metrics[candidate, horizon, group, 6]
+                    net_return = raw_return - one_way_cost * turnover
                     stats[candidate, horizon, 0] += 1.0
                     stats[candidate, horizon, 1] += net_return
                     stats[candidate, horizon, 2] += raw_return
@@ -215,8 +259,9 @@ if njit is not None:
                         stats[candidate, horizon, 9] += rank_ic
                         stats[candidate, horizon, 10] += 1.0
                         stats[candidate, horizon, 11] += 1.0 if rank_ic > 0.0 else 0.0
-                    stats[candidate, horizon, 12] += valid_count
+                    stats[candidate, horizon, 12] += support_count
                     stats[candidate, horizon, 13] += selected_count
+                    stats[candidate, horizon, 14] = max(stats[candidate, horizon, 14], spread)
                     daily[candidate, horizon, day, 0] += 1.0
                     daily[candidate, horizon, day, 1] += net_return
                     daily[candidate, horizon, day, 2] += raw_return
@@ -230,26 +275,27 @@ if njit is not None:
                         daily[candidate, horizon, day, 9] += rank_ic
                         daily[candidate, horizon, day, 10] += 1.0
                         daily[candidate, horizon, day, 11] += 1.0 if rank_ic > 0.0 else 0.0
-                    daily[candidate, horizon, day, 12] += valid_count
+                    daily[candidate, horizon, day, 12] += support_count
                     daily[candidate, horizon, day, 13] += selected_count
-
+                    daily[candidate, horizon, day, 14] = max(daily[candidate, horizon, day, 14], spread)
                     all_net += net_return
                     all_raw += raw_return
                     all_market += market_mean
                     all_turnover += turnover
-                    all_support += valid_count
+                    all_support += support_count
                     all_selected += selected_count
+                    all_spread = max(all_spread, spread)
                     sleeve_count += 1
                     if np.isfinite(rank_ic):
                         all_rank_ic += rank_ic
                         rank_ic_sleeves += 1
-
                 if sleeve_count > 0:
                     slot = horizon_count
                     net_return = all_net / sleeve_count
                     raw_return = all_raw / sleeve_count
                     market_mean = all_market / sleeve_count
                     turnover = all_turnover / sleeve_count
+                    rank_ic = all_rank_ic / rank_ic_sleeves if rank_ic_sleeves > 0 else np.nan
                     stats[candidate, slot, 0] += 1.0
                     stats[candidate, slot, 1] += net_return
                     stats[candidate, slot, 2] += raw_return
@@ -259,13 +305,13 @@ if njit is not None:
                     stats[candidate, slot, 6] += 1.0
                     stats[candidate, slot, 7] += turnover
                     stats[candidate, slot, 8] += 1.0
-                    if rank_ic_sleeves > 0:
-                        rank_ic = all_rank_ic / rank_ic_sleeves
+                    if np.isfinite(rank_ic):
                         stats[candidate, slot, 9] += rank_ic
                         stats[candidate, slot, 10] += 1.0
                         stats[candidate, slot, 11] += 1.0 if rank_ic > 0.0 else 0.0
                     stats[candidate, slot, 12] += all_support / sleeve_count
                     stats[candidate, slot, 13] += all_selected / sleeve_count
+                    stats[candidate, slot, 14] = max(stats[candidate, slot, 14], all_spread)
                     daily[candidate, slot, day, 0] += 1.0
                     daily[candidate, slot, day, 1] += net_return
                     daily[candidate, slot, day, 2] += raw_return
@@ -275,16 +321,17 @@ if njit is not None:
                     daily[candidate, slot, day, 6] += 1.0
                     daily[candidate, slot, day, 7] += turnover
                     daily[candidate, slot, day, 8] += 1.0
-                    if rank_ic_sleeves > 0:
-                        daily[candidate, slot, day, 9] += all_rank_ic / rank_ic_sleeves
+                    if np.isfinite(rank_ic):
+                        daily[candidate, slot, day, 9] += rank_ic
                         daily[candidate, slot, day, 10] += 1.0
-                        daily[candidate, slot, day, 11] += 1.0 if all_rank_ic / rank_ic_sleeves > 0.0 else 0.0
+                        daily[candidate, slot, day, 11] += 1.0 if rank_ic > 0.0 else 0.0
                     daily[candidate, slot, day, 12] += all_support / sleeve_count
                     daily[candidate, slot, day, 13] += all_selected / sleeve_count
+                    daily[candidate, slot, day, 14] = max(daily[candidate, slot, day, 14], all_spread)
         return stats, daily
 
 else:  # pragma: no cover
-    _portfolio_kernel = None
+    _mapping_kernel = _turnover_cost_kernel = None
 
 
 @dataclass(slots=True)
@@ -293,6 +340,7 @@ class PortfolioBlockResult:
     daily: np.ndarray
     audit: dict[str, Any]
     coordinate_rows_retained: int = 0
+    behavior_block_digests: tuple[str, ...] = ()
 
 
 class BatchedPortfolioKernel:
@@ -343,7 +391,7 @@ class BatchedPortfolioKernel:
         directions: np.ndarray,
         day_count: int,
     ) -> PortfolioBlockResult:
-        if _portfolio_kernel is None:
+        if _mapping_kernel is None or _turnover_cost_kernel is None:
             raise RuntimeError("Numba is required for the batched portfolio hot path")
         signal_array = np.asarray(signals, dtype=np.float64)
         time_ids = np.asarray(time_ids, dtype=np.int64)
@@ -368,26 +416,47 @@ class BatchedPortfolioKernel:
         starts, ends = _boundaries(time_ids)
         if set_num_threads is not None:
             set_num_threads(self.compute_threads)
-        started_wall = time.perf_counter()
-        started_cpu = time.process_time()
-        stats, daily = _portfolio_kernel(
+        mapping_wall_start = time.perf_counter()
+        mapping_cpu_start = time.process_time()
+        selected, metrics = _mapping_kernel(
             signal_array,
             label_array,
             starts,
             ends,
-            code_ids,
-            day_ids,
             directions,
-            self.selection_epoch,
-            self.epoch_counter,
             self.min_obs,
             self.top_quantile,
-            self.cost_bps / 10000.0,
-            int(day_count),
             self.portfolio_mode == "long_only_excess_market",
         )
-        wall = time.perf_counter() - started_wall
-        cpu = time.process_time() - started_cpu
+        mapping_wall = time.perf_counter() - mapping_wall_start
+        mapping_cpu = time.process_time() - mapping_cpu_start
+        turnover_wall_start = time.perf_counter()
+        turnover_cpu_start = time.process_time()
+        stats, daily = _turnover_cost_kernel(
+            selected,
+            metrics,
+            starts,
+            ends,
+            code_ids,
+            day_ids,
+            self.selection_epoch,
+            self.epoch_counter,
+            self.cost_bps / 10000.0,
+            int(day_count),
+        )
+        turnover_wall = time.perf_counter() - turnover_wall_start
+        turnover_cpu = time.process_time() - turnover_cpu_start
+        behavior_block_digests = tuple(
+            hashlib.sha256(
+                np.packbits(selected[candidate].reshape(-1), bitorder="little").tobytes()
+                + np.nan_to_num(metrics[candidate], nan=np.inf).tobytes()
+            ).hexdigest()
+            for candidate in range(self.candidate_count)
+        )
+        wall = mapping_wall + turnover_wall
+        cpu = mapping_cpu + turnover_cpu
+        mapping_effective = mapping_cpu / mapping_wall if mapping_wall > 0.0 else 0.0
+        turnover_effective = turnover_cpu / turnover_wall if turnover_wall > 0.0 else 0.0
         audit = {
             "native_portfolio_kernel_called": True,
             "candidate_count": self.candidate_count,
@@ -404,6 +473,23 @@ class BatchedPortfolioKernel:
                 else "PARALLELISM_NOT_ENGAGED"
             ),
             "coordinate_rows_retained": 0,
+            "mapping_wall_seconds": mapping_wall,
+            "mapping_cpu_seconds": mapping_cpu,
+            "mapping_effective_cores": mapping_effective,
+            "mapping_parallelism_status": (
+                "PARALLELISM_ENGAGED"
+                if mapping_effective >= 0.5 * self.compute_threads
+                else "PARALLELISM_NOT_ENGAGED"
+            ),
+            "turnover_cost_wall_seconds": turnover_wall,
+            "turnover_cost_cpu_seconds": turnover_cpu,
+            "turnover_cost_effective_cores": turnover_effective,
+            "turnover_cost_parallelism_status": (
+                "PARALLELISM_ENGAGED"
+                if turnover_effective >= 0.5 * self.compute_threads
+                else "PARALLELISM_NOT_ENGAGED"
+            ),
+            "mapping_temporary_bytes": int(selected.nbytes + metrics.nbytes),
             "python_pandas_hot_path_calls": 0,
             "native_thread_environment": {
                 key: os.environ.get(key)
@@ -417,7 +503,12 @@ class BatchedPortfolioKernel:
                 )
             },
         }
-        return PortfolioBlockResult(stats=stats, daily=daily, audit=audit)
+        return PortfolioBlockResult(
+            stats=stats,
+            daily=daily,
+            audit=audit,
+            behavior_block_digests=behavior_block_digests,
+        )
 
     def continuation_payload(self) -> dict[str, np.ndarray]:
         return {

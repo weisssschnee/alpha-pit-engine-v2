@@ -43,6 +43,7 @@ class StreamingPortfolioReducer:
         )
         self.daily: dict[str, np.ndarray] = {}
         self.monthly: dict[str, np.ndarray] = {}
+        self.behavior_blocks: list[list[str]] = [[] for _ in self.candidates]
         self.completed_block_count = 0
         self.coordinate_rows_retained = 0
 
@@ -56,18 +57,41 @@ class StreamingPortfolioReducer:
             raise ValueError("portfolio daily schema drift")
         if int(result.coordinate_rows_retained) != 0:
             raise ValueError("formal streaming reducer forbids coordinate-row retention")
-        self.stats += result.stats
+        if len(result.behavior_block_digests) != len(self.candidates):
+            raise ValueError("portfolio behavior digest count drift")
+        maximum_index = STAT_FIELDS.index("signal_spread_max")
+        for field_index in range(len(STAT_FIELDS)):
+            if field_index == maximum_index:
+                self.stats[:, :, field_index] = np.maximum(
+                    self.stats[:, :, field_index], result.stats[:, :, field_index]
+                )
+            else:
+                self.stats[:, :, field_index] += result.stats[:, :, field_index]
         for day_index, label in enumerate(day_labels):
             date = str(label)
             values = np.asarray(result.daily[:, :, day_index, :], dtype=np.float64)
             if date not in self.daily:
                 self.daily[date] = np.zeros_like(values)
-            self.daily[date] += values
+            for field_index in range(len(STAT_FIELDS)):
+                if field_index == maximum_index:
+                    self.daily[date][:, :, field_index] = np.maximum(
+                        self.daily[date][:, :, field_index], values[:, :, field_index]
+                    )
+                else:
+                    self.daily[date][:, :, field_index] += values[:, :, field_index]
             month = date[:7]
             if month not in self.monthly:
                 self.monthly[month] = np.zeros_like(values)
-            self.monthly[month] += values
+            for field_index in range(len(STAT_FIELDS)):
+                if field_index == maximum_index:
+                    self.monthly[month][:, :, field_index] = np.maximum(
+                        self.monthly[month][:, :, field_index], values[:, :, field_index]
+                    )
+                else:
+                    self.monthly[month][:, :, field_index] += values[:, :, field_index]
         self.completed_block_count += 1
+        for candidate_index, digest in enumerate(result.behavior_block_digests):
+            self.behavior_blocks[candidate_index].append(str(digest))
 
     def reward_atoms(self) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
@@ -101,6 +125,7 @@ class StreamingPortfolioReducer:
                             "rank_ic_positive_count": int(values[field["rank_ic_positive_count"]]),
                             "support_count": float(values[field["support_count"]]),
                             "selected_count": float(values[field["selected_count"]]),
+                            "signal_spread_max": float(values[field["signal_spread_max"]]),
                         }
                     )
         return rows
@@ -114,6 +139,7 @@ class StreamingPortfolioReducer:
             "monthly": {key: value.copy() for key, value in sorted(self.monthly.items())},
             "completed_block_count": int(self.completed_block_count),
             "coordinate_rows_retained": int(self.coordinate_rows_retained),
+            "behavior_blocks": [list(values) for values in self.behavior_blocks],
         }
 
     def restore_continuation_payload(self, payload: Mapping[str, Any]) -> None:
@@ -136,7 +162,14 @@ class StreamingPortfolioReducer:
             for key, value in dict(payload.get("monthly") or {}).items()
         }
         self.completed_block_count = int(payload.get("completed_block_count") or 0)
+        behavior = [list(map(str, values)) for values in payload.get("behavior_blocks") or []]
+        if len(behavior) != len(self.candidates):
+            raise ValueError("streaming reducer behavior payload drift")
+        self.behavior_blocks = behavior
         self.coordinate_rows_retained = 0
+
+    def behavior_identity(self, candidate_index: int) -> str:
+        return _stable_hash(self.behavior_blocks[int(candidate_index)])
 
     def contract(self) -> dict[str, Any]:
         return {

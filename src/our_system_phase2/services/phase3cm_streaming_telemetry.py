@@ -201,15 +201,18 @@ class PhaseTelemetryRecorder:
             raise ValueError("allocated_compute_threads must be positive")
         self.snapshot_provider = snapshot_provider
         self.events: list[dict[str, Any]] = []
+        self.telemetry_write_wall_seconds = 0.0
 
     def phase(self, phase: str, *, compute_heavy: bool) -> _PhaseSpan:
         return _PhaseSpan(self, phase, compute_heavy)
 
     def _append(self, event: dict[str, Any]) -> None:
+        started = time.perf_counter()
         self.events.append(dict(event))
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
         with self.output_path.open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
+        self.telemetry_write_wall_seconds += time.perf_counter() - started
 
 
 def build_phase_event(

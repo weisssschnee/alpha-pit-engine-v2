@@ -142,6 +142,8 @@ def test_portfolio_turnover_state_matches_across_block_boundary() -> None:
         )
     combined_stats = parts[0].stats + parts[1].stats
     combined_daily = parts[0].daily + parts[1].daily
+    combined_stats[:, :, -1] = np.maximum(parts[0].stats[:, :, -1], parts[1].stats[:, :, -1])
+    combined_daily[:, :, :, -1] = np.maximum(parts[0].daily[:, :, :, -1], parts[1].daily[:, :, :, -1])
     np.testing.assert_allclose(combined_stats, whole.stats, rtol=1e-12, atol=1e-12)
     np.testing.assert_allclose(combined_daily, whole.daily, rtol=1e-12, atol=1e-12)
     payload = streamed_kernel.continuation_payload()
