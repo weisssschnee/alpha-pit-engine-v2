@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 from scripts.finalize_cn_phase3cm_streaming_repair import (
+    ARTIFACT_MANIFEST_NAME,
+    BUNDLE_NAME,
+    BUNDLE_SHA_NAME,
     SIDECAR_COST_SUMMARY_NAME,
     _last_phase_value,
     _linear_fit,
+    _manifest_candidates,
     _resource_projection,
 )
 
@@ -11,6 +15,23 @@ from scripts.finalize_cn_phase3cm_streaming_repair import (
 def test_sidecar_cost_summary_does_not_overwrite_detailed_layout_manifest() -> None:
     assert SIDECAR_COST_SUMMARY_NAME == "CN_PHASE3CM_SIDECAR_COST_SUMMARY.json"
     assert SIDECAR_COST_SUMMARY_NAME != "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V1.json"
+
+
+def test_manifest_candidates_exclude_previous_bundle_outputs(tmp_path) -> None:
+    runtime_root = tmp_path / "runtime"
+    report_root = tmp_path / "reports"
+    runtime_root.mkdir()
+    report_root.mkdir()
+
+    runtime_result = runtime_root / "result.json"
+    report = report_root / "report.md"
+    runtime_result.write_text("{}\n", encoding="utf-8")
+    report.write_text("report\n", encoding="utf-8")
+    (runtime_root / ARTIFACT_MANIFEST_NAME).write_text("{}\n", encoding="utf-8")
+    (report_root / BUNDLE_NAME).write_bytes(b"previous bundle")
+    (report_root / BUNDLE_SHA_NAME).write_text("previous checksum\n", encoding="utf-8")
+
+    assert _manifest_candidates(runtime_root, report_root) == [runtime_result, report]
 
 
 def _backend(pair_count: int, wall: float, cpu: float) -> dict[str, object]:

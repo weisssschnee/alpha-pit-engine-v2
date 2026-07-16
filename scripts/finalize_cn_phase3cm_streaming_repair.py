@@ -13,6 +13,14 @@ from typing import Any, Iterable, Mapping, Sequence
 
 
 SIDECAR_COST_SUMMARY_NAME = "CN_PHASE3CM_SIDECAR_COST_SUMMARY.json"
+ARTIFACT_MANIFEST_NAME = "CN_STREAMING_ARTIFACT_MANIFEST.json"
+BUNDLE_NAME = "CN_PHASE3CM_STREAMING_REPAIR_BUNDLE.zip"
+BUNDLE_SHA_NAME = "CN_PHASE3CM_STREAMING_REPAIR_BUNDLE.sha256"
+_MANIFEST_EXCLUDED_NAMES = {
+    ARTIFACT_MANIFEST_NAME,
+    BUNDLE_NAME,
+    BUNDLE_SHA_NAME,
+}
 
 
 def _sha256(path: Path) -> str:
@@ -53,6 +61,15 @@ def _write_json(path: Path, payload: Any) -> None:
         encoding="utf-8",
     )
     temporary.replace(path)
+
+
+def _manifest_candidates(runtime_root: Path, report_root: Path) -> list[Path]:
+    return [
+        path
+        for root in (runtime_root, report_root)
+        for path in root.iterdir()
+        if path.is_file() and path.name not in _MANIFEST_EXCLUDED_NAMES
+    ]
 
 
 def _write_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
@@ -940,12 +957,7 @@ This is a resource-readiness decision only. It is not Alpha evidence and does no
         readiness_report, encoding="utf-8"
     )
 
-    manifest_candidates = [
-        path
-        for root in (runtime_root, report_root)
-        for path in root.iterdir()
-        if path.is_file() and path.name not in {"CN_STREAMING_ARTIFACT_MANIFEST.json"}
-    ]
+    manifest_candidates = _manifest_candidates(runtime_root, report_root)
     manifest = {
         "schema_version": "cn_streaming_artifact_manifest_v1",
         "status": "CN_PHASE3CM_STREAMING_REPAIR_ARTIFACTS_COMPLETE",
@@ -965,17 +977,17 @@ This is a resource-readiness decision only. It is not Alpha evidence and does no
         "holdout_reads": 0,
         "forward_2026_reads": 0,
     }
-    manifest_path = runtime_root / "CN_STREAMING_ARTIFACT_MANIFEST.json"
+    manifest_path = runtime_root / ARTIFACT_MANIFEST_NAME
     _write_json(manifest_path, manifest)
 
-    bundle_path = report_root / "CN_PHASE3CM_STREAMING_REPAIR_BUNDLE.zip"
+    bundle_path = report_root / BUNDLE_NAME
     with zipfile.ZipFile(bundle_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for path in sorted([*manifest_candidates, manifest_path]):
             base = runtime_root if path.is_relative_to(runtime_root) else report_root
             prefix = "runtime" if base == runtime_root else "reports"
             archive.write(path, arcname=f"{prefix}/{path.relative_to(base).as_posix()}")
     bundle_sha = _sha256(bundle_path)
-    (report_root / "CN_PHASE3CM_STREAMING_REPAIR_BUNDLE.sha256").write_text(
+    (report_root / BUNDLE_SHA_NAME).write_text(
         f"{bundle_sha}  {bundle_path.name}\n", encoding="utf-8"
     )
     print(
