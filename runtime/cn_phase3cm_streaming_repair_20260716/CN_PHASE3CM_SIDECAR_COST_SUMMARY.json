@@ -1,0 +1,30 @@
+{
+  "active_field_layout": {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v2\\CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json",
+    "sha256": "30517256289cf5615373a8ece18204800c6bdc0a3e95ae8a66412b7937a52a25"
+  },
+  "active_label_layout": {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v3_labels\\CN_FORWARD_LABEL_SIDECAR_MANIFEST.json",
+    "sha256": "3179cb203e8c1692d7817e42230d47cfb9d45fc465f267ee4198b2b9f7377f34"
+  },
+  "amortization_assumption": "One content-addressed development/train layout is reused across all frozen pair prefixes and final qualification; rebuild on source release, split, stable-key, field surface, or generator SHA drift.",
+  "application_cold_runtime_seconds": 361.3607320000883,
+  "build_wall_seconds": 329.1535964999348,
+  "disk_footprint_bytes": 14904121273,
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "os_page_cache_warm_runtime_seconds": 360.3440747000277,
+  "schema_version": "cn_phase3cm_sidecar_cost_summary_v1",
+  "session_field_layout": {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\session_time_major_train_v2\\CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json",
+    "sha256": "5ec2b28956b575b7d767204688bac3769a7c01a6ba1f10608d1ae07b75fa02a4"
+  },
+  "session_label_layout": {
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\session_time_major_train_v3_labels\\CN_FORWARD_LABEL_SIDECAR_MANIFEST.json",
+    "sha256": "594e144466b2e24e8678e9dbcfc44ca61a5f9a76bd99d0a5515d36fb061448e2"
+  },
+  "sidecar_build_inclusive_single_pair_seconds": 690.5143285000231,
+  "sidecar_ready_single_pair_seconds": 361.3607320000883,
+  "status": "CN_PHASE3CM_SIDECAR_COST_SUMMARY_QUALIFIED",
+  "validation_reads": 0
+}

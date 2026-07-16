@@ -1,0 +1,80 @@
+{
+  "gates": {
+    "4096_pair_conservative_wall_lte_72h": true,
+    "disk_cache_has_explicit_bound": true,
+    "no_superlinear_marginal_collapse": true,
+    "projected_global_peak_rss_lte_60gb": true,
+    "projected_total_disk_lte_128gb": true
+  },
+  "model": {
+    "active_conservative_marginal_seconds_per_pair": 198.36093823751435,
+    "active_measured_marginal_seconds_per_pair": 191.51380422683314,
+    "active_startup_intercept_seconds": 131.66134490549712,
+    "checkpoint_retention": "latest_two_complete_payloads_per_worker",
+    "device_sequential_bandwidth_bytes_per_second": 9076000000.0,
+    "last_to_previous_marginal_ratio": 1.050000547600549,
+    "observed_interval_marginals_seconds_per_pair": [
+      171.21791683331443,
+      188.91508075001184,
+      198.36093823751435
+    ],
+    "projection_warning": "Pair-count extrapolation assumes fixed four-pair mapping batches, bounded DAG liveness, stable route mix, and two active workers duplicating the active sidecar scan.",
+    "retained_checkpoint_bytes_per_candidate": 1047402.0625,
+    "session_seconds_per_pair": 1.4299635999902551,
+    "sidecar_build_seconds": 329.1535964999348,
+    "sidecar_disk_bytes": 14904121273
+  },
+  "schema_version": "cn_phase3cm_stage_a_resource_projection_v1",
+  "stage_a_resource_readiness": "PASS",
+  "strict_stage_a": "NOT_AUTHORIZED",
+  "targets": {
+    "2048": {
+      "assumed_route_mix": {
+        "minute_active": 1152,
+        "session_pit": 896
+      },
+      "conservative_linear_bound_wall_seconds": 114387.56176971376,
+      "cpu_lower_bound_wall_seconds": 93755.00944640239,
+      "fixed_sidecar_disk_bytes": 14904121273,
+      "io_lower_bound_wall_seconds": 3.2842929204495372,
+      "measured_marginal_throughput_wall_seconds": 110443.61257956139,
+      "projected_global_peak_rss_bytes": 18029777920,
+      "projected_retained_checkpoint_disk_bytes": 2145079424,
+      "projected_total_disk_bytes": 17049200697,
+      "projected_two_worker_dag_cache_cap_bytes": 17179869184,
+      "sidecar_build_inclusive_wall_seconds": 114716.7153662137,
+      "sidecar_ready_wall_seconds": 114387.56176971376,
+      "total_pairs": 2048,
+      "two_worker_partition": {
+        "duplicate_active_sidecar_scan": true,
+        "session_pairs_scheduled_on_less_loaded_worker": 896,
+        "worker_1_minute_active_pairs": 576,
+        "worker_2_minute_active_pairs": 576
+      }
+    },
+    "4096": {
+      "assumed_route_mix": {
+        "minute_active": 2304,
+        "session_pit": 1792
+      },
+      "conservative_linear_bound_wall_seconds": 228643.46219452203,
+      "cpu_lower_bound_wall_seconds": 187510.01889280477,
+      "fixed_sidecar_disk_bytes": 14904121273,
+      "io_lower_bound_wall_seconds": 3.2842929204495372,
+      "measured_marginal_throughput_wall_seconds": 220755.56381421728,
+      "projected_global_peak_rss_bytes": 18029777920,
+      "projected_retained_checkpoint_disk_bytes": 4290158848,
+      "projected_total_disk_bytes": 19194280121,
+      "projected_two_worker_dag_cache_cap_bytes": 17179869184,
+      "sidecar_build_inclusive_wall_seconds": 228972.61579102196,
+      "sidecar_ready_wall_seconds": 228643.46219452203,
+      "total_pairs": 4096,
+      "two_worker_partition": {
+        "duplicate_active_sidecar_scan": true,
+        "session_pairs_scheduled_on_less_loaded_worker": 1792,
+        "worker_1_minute_active_pairs": 1152,
+        "worker_2_minute_active_pairs": 1152
+      }
+    }
+  }
+}

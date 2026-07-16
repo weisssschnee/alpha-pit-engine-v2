@@ -1,0 +1,15 @@
+{
+  "active_reducer_bytes": 21600,
+  "bounded_payloads": [
+    "global sufficient statistics",
+    "daily aggregate vector",
+    "monthly aggregate vector",
+    "portfolio continuation state"
+  ],
+  "coordinate_rows_retained": 0,
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "schema_version": "cn_streaming_reducer_contract_combined_v1",
+  "session_reducer_bytes": 16800,
+  "validation_reads": 0
+}

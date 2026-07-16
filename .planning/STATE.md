@@ -247,3 +247,24 @@ contract and explicit approval.
 Business composition remains `PIT_CONTRACT_UNRESOLVED`, plate/industry remains
 disabled, formal search stays frozen, validation/holdout remain report-only,
 and 2026 stays sealed.
+
+## Phase3CM streaming qualification result
+
+`CN_PHASE3CM_STREAMING_EVALUATOR_QUALIFIED` is complete against source
+implementation SHA `984181aeaaa54ed7602dd47cc726713224b25a42` and frozen
+qualification SHA `71828442e0b566bdec27a7a091e1b24c16b88b7b`. Full-coordinate
+parity and resume parity passed. The frozen 32-pair Phase E run completed in
+3657.57 seconds with 13.37 GiB global peak process-tree RSS and zero retained
+coordinate rows. The dominant hot path is
+`BATCHED_PORTFOLIO_KERNEL_BOTTLENECK`.
+
+The 77o test gate passed 434/434 repository tests and 50/50 Phase3CM-targeted
+tests. Validation, holdout and 2026 read counters are all zero. The conservative
+4096-pair projection is 228643.46 seconds (63.51 hours), so resource readiness
+is `CN_COMPOSITIONAL_STAGE_A_ENTRY_READY` under the frozen route-mix and cache
+assumptions.
+
+Strict Stage A remains `NOT_AUTHORIZED` and was not executed. Candidate
+promotion, persistent adaptive memory and forward opening remain forbidden.
+The next formal decision is whether to issue a separate frozen Stage A
+authorization; evaluator qualification alone does not grant it.

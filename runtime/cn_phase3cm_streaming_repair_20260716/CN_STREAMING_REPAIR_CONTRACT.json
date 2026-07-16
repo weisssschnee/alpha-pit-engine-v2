@@ -1,0 +1,118 @@
+{
+  "base_closure_sha": "b71fa6b239ceb602576f1769ef1f512603ce326b",
+  "branch": "repair/cn-phase3cm-streaming-multicandidate-20260716",
+  "data_boundary": {
+    "cross_sprint_memory": "FORBIDDEN",
+    "development_train": "ALLOWED",
+    "forward_2026": "SEALED",
+    "holdout": "FORBIDDEN",
+    "promotion": "FORBIDDEN",
+    "strict_stage_a": "NOT_AUTHORIZED",
+    "validation": "FORBIDDEN"
+  },
+  "execution_contract": "STREAMING_EXECUTION_CONTRACT_ACCEPTED",
+  "execution_topology": {
+    "mapping_subcohort_keys": [
+      "support_contract",
+      "eligibility_contract",
+      "mapping_family",
+      "portfolio_mode"
+    ],
+    "minute_active": [
+      "aligned_global_time_block",
+      "shard_local_temporal_state_continuation",
+      "global_trade_time_cross_section_barrier",
+      "candidate_pair_batches",
+      "batched_portfolio_kernel",
+      "streaming_reducers"
+    ],
+    "session_pit": [
+      "stock_session_pit_sidecar",
+      "complete_session_cross_section",
+      "candidate_pair_batches",
+      "shared_value_dag",
+      "batched_portfolio_kernel",
+      "streaming_reducers"
+    ],
+    "value_cohort_keys": [
+      "backend",
+      "raw_field_surface",
+      "observable_clock_maturity",
+      "window_profile"
+    ]
+  },
+  "final_evaluator_status": "CN_PHASE3CM_STREAMING_EVALUATOR_QUALIFIED",
+  "final_states": [
+    "CN_PHASE3CM_STREAMING_EVALUATOR_QUALIFIED",
+    "CN_PHASE3CM_STREAMING_EVALUATOR_MIXED",
+    "CN_PHASE3CM_STREAMING_EVALUATOR_NO_IMPROVEMENT",
+    "CN_PHASE3CM_STREAMING_EVALUATOR_INVALID"
+  ],
+  "frozen_artifact_hashes": {
+    "candidate_pack_hash": "f78b417c0f4a50751348caa1a78d440fcc08269096cbed667f41ed859b84a294",
+    "candidate_receipt_hash": "491e0f3345b99f8f1b2f028901b40294c5e855c3a3a964ed2ebe2d2d02ece534",
+    "pair_receipt_hash": "583c153248e45653926433fada52970967d3f8c922044ac937d550e50866c271"
+  },
+  "frozen_inputs": {
+    "candidate_members": 64,
+    "development_release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "development_release_rows": 446443583,
+    "freeze_manifest": "runtime/cn_compositional_nline_large_search_20260715/CN_RESOURCE_PREFLIGHT_FREEZE.json",
+    "minute_active_pairs": 18,
+    "pack": "runtime/cn_compositional_nline_large_search_20260715/CN_RESOURCE_PREFLIGHT_PACK.csv",
+    "pairs": 32,
+    "registry_hash": "e4b8bc809ab9ae8e1463aa85c53c13c1710aed6915c967ff806c8906deea886d",
+    "runtime_root": "runtime/cn_compositional_nline_large_search_20260715",
+    "session_pit_pairs": 14,
+    "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+  },
+  "original_evaluator_source_sha": "b6eb0fc954d2e250a36eb401a2eb8d474bf73240",
+  "phase_policy": {
+    "phase_a_baseline_telemetry_wall_seconds_max": 900,
+    "phase_c_d_resource_adaptation": "ALLOWED_NO_ECONOMIC_FEEDBACK",
+    "phase_e_execution_plan": "FROZEN_NO_ADAPTATION",
+    "scaling_pair_prefixes": [
+      1,
+      4,
+      8,
+      16,
+      32
+    ]
+  },
+  "qualification_repo_sha": "71828442e0b566bdec27a7a091e1b24c16b88b7b",
+  "resource_gates": {
+    "coordinate_rows_retained": 0,
+    "final_32_pair_peak_rss_bytes_max": 64424509440,
+    "final_32_pair_wall_seconds_max": 7200,
+    "global_rss_hard_bytes_max": 64424509440,
+    "single_pair_full_coordinate_wall_seconds_max": 3600,
+    "single_pair_peak_rss_bytes_max": 25769803776,
+    "single_worker_cache_bytes_max": 8589934592,
+    "single_worker_rss_hard_bytes_max": 30064771072,
+    "telemetry_wall_overhead_ratio_max": 0.03
+  },
+  "schema_version": "cn_phase3cm_streaming_multicandidate_repair_v1",
+  "source_component_hashes": {
+    "evaluator_semantic_contract": "40e6c8ecf447974ef82449d33d9e6c4f61ce3e15d7a778e3225097d7a9845efd",
+    "expression_compiler": "8c74bf147821dfc62a17c42cb43ce01141ea9ddd9861854a9aed26f648712525",
+    "mapping_and_cost": "11a5457074f30390a383d4246cca7e11dc86efd933c3db035d4136a14c1f1294",
+    "qualification_execution_harness": "5d3c9cf025dca609fa2fd9f91c46088bbcdb4e5145f78081823c5f9a0aa6cbeb",
+    "reward": "31da69429889758a398ca3433bb8b131863611854303c6eeb64b5fa18e963a9a"
+  },
+  "source_implementation_sha": "984181aeaaa54ed7602dd47cc726713224b25a42",
+  "stage_a_entry_readiness": "CN_COMPOSITIONAL_STAGE_A_ENTRY_READY",
+  "status": "CN_PHASE3CM_STREAMING_REPAIR_AUTHORIZED_WITH_ARCHITECTURE_AMENDMENTS",
+  "thread_budget": {
+    "environment_variables": [
+      "NUMBA_NUM_THREADS",
+      "ARROW_NUM_THREADS",
+      "OMP_NUM_THREADS",
+      "MKL_NUM_THREADS",
+      "OPENBLAS_NUM_THREADS",
+      "NUMEXPR_MAX_THREADS"
+    ],
+    "global_native_compute_threads_max": 24,
+    "heavy_processes_max": 2,
+    "nested_parallelism": "FORBIDDEN"
+  }
+}

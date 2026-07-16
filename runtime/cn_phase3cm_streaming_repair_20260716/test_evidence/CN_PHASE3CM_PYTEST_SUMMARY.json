@@ -1,0 +1,19 @@
+﻿{
+    "schema_version":  "cn_phase3cm_pytest_summary_v1",
+    "status":  "TEST_SUITE_PASS",
+    "tests":  435,
+    "passed":  435,
+    "failed":  0,
+    "skipped":  0,
+    "targeted_tests":  51,
+    "targeted_passed":  51,
+    "targeted_failed":  0,
+    "full_exit_code":  0,
+    "targeted_exit_code":  0,
+    "full_junit":  "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\test_evidence\\CN_FULL_PYTEST.xml",
+    "targeted_junit":  "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\test_evidence\\CN_PHASE3CM_TARGETED_PYTEST.xml",
+    "data_role":  "synthetic_and_test_fixtures_only",
+    "validation_reads":  0,
+    "holdout_reads":  0,
+    "forward_2026_reads":  0
+}

@@ -157,17 +157,17 @@
     {
       "exists": true,
       "id": "architecture_overlay",
-      "last_verified_sha": "529e7f27a33440f4ad30955ada462c7a0a11814f264cb9bd97230c834249add5",
+      "last_verified_sha": "e64076e2f28fc5ddf0ad9174a958ff53db1faaa4eba5c4b2dc16592a5a73099e",
       "path": "config/architecture_overlay.json",
-      "size_bytes": 27215,
+      "size_bytes": 31846,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "state",
-      "last_verified_sha": "987e5d387cb11f0dd97438c5b2c6feaa933965572af0e98028c91a49d975508c",
+      "last_verified_sha": "614a672874ded7d146698dce1d5ba020496dbbdb28fc0edf40c985fc6df25567",
       "path": ".planning/STATE.md",
-      "size_bytes": 12866,
+      "size_bytes": 13984,
       "state": "IMPLEMENTED"
     },
     {
@@ -188,7 +188,7 @@
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-16T16:22:10.619816+00:00",
+  "refreshed_at": "2026-07-16T16:33:44.886965+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY",
   "hash_contract": "SHA256_TEXT_NEWLINES_LF_V1"
 }

@@ -78,9 +78,14 @@ def test_current_is_generated_from_raw_and_overlay_without_runtime_inference() -
     assert nodes["candidate_parallel_evaluator"]["lifecycle"] == "ACTIVE"
     assert nodes["formal_search"]["lifecycle"] == "FORBIDDEN"
     assert nodes["compositional_nline_bounded_search"]["lifecycle"] == "EXPERIMENTAL"
+    assert nodes["phase3cm_streaming_multicandidate_evaluator"]["lifecycle"] == "EXPERIMENTAL"
     assert nodes["shard_parallel_evaluation"]["lifecycle"] == "DEPRECATED"
     assert nodes["mean_shard_reward_fallback"]["lifecycle"] == "FORBIDDEN"
     assert edges["validation_to_feedback_forbidden"]["forbidden"] is True
     assert edges["forward_to_search_forbidden"]["forbidden"] is True
     assert edges["mean_shard_to_feedback_forbidden"]["forbidden"] is True
     assert edges["compositional_to_receipt"]["relation"] == "EXPERIMENTAL_CURRENT_NON_FORMAL"
+    assert edges["compositional_to_streaming_evaluator"]["relation"] == (
+        "resource_qualified_for_separate_authorization"
+    )
+    assert edges["streaming_evaluator_to_search_forbidden"]["forbidden"] is True

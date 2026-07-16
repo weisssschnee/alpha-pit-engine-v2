@@ -1,0 +1,8 @@
+{
+  "coordinate_rows_retained": 0,
+  "mismatch_total": 0,
+  "schema_version": "cn_streaming_evaluator_parity_summary_v1",
+  "source_sha": "984181aeaaa54ed7602dd47cc726713224b25a42",
+  "status": "CN_STREAMING_EVALUATOR_PARITY_PASS",
+  "surface_count": 7
+}

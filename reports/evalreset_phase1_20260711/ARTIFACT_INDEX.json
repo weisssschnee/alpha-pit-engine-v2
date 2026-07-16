@@ -27,9 +27,9 @@
     {
       "exists": true,
       "id": "data_roles",
-      "last_verified_sha": "ee4d526bde75a59b2a0898be05a596011abbf6b804903b65587e8434334aa7f0",
+      "last_verified_sha": "c647e1c007834f8c26dd7190d6a325e368c02cc2ca182e5814605958f458f251",
       "path": "runtime/run_plans/evaluation_data_roles_v1.json",
-      "size_bytes": 2073,
+      "size_bytes": 2135,
       "state": "IMPLEMENTED"
     },
     {
@@ -51,9 +51,9 @@
     {
       "exists": true,
       "id": "phase1_run_manifest",
-      "last_verified_sha": "9bb3192b70cca11648cf67b847b375b29206d491445c27b69317d57d870c764e",
+      "last_verified_sha": "753d53ca631f6a018cc51a65662561ffd356d65647db381f5d5c8181082fdfbf",
       "path": "runtime/run_plans/evalreset_phase1_run_manifest_v1.json",
-      "size_bytes": 5589,
+      "size_bytes": 5708,
       "state": "IMPLEMENTED"
     },
     {
@@ -91,22 +91,22 @@
     {
       "exists": true,
       "id": "architecture_overlay",
-      "last_verified_sha": "529e7f27a33440f4ad30955ada462c7a0a11814f264cb9bd97230c834249add5",
+      "last_verified_sha": "e64076e2f28fc5ddf0ad9174a958ff53db1faaa4eba5c4b2dc16592a5a73099e",
       "path": "config/architecture_overlay.json",
-      "size_bytes": 27215,
+      "size_bytes": 31846,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "phase_state",
-      "last_verified_sha": "987e5d387cb11f0dd97438c5b2c6feaa933965572af0e98028c91a49d975508c",
+      "last_verified_sha": "614a672874ded7d146698dce1d5ba020496dbbdb28fc0edf40c985fc6df25567",
       "path": ".planning/STATE.md",
-      "size_bytes": 12866,
+      "size_bytes": 13984,
       "state": "IMPLEMENTED"
     }
   ],
   "index_version": "evalreset_phase1_artifact_index_v1",
   "phase": "A_EVALRESET",
-  "refreshed_at": "2026-07-16T15:54:47.468918+00:00",
+  "refreshed_at": "2026-07-16T16:33:42.908118+00:00",
   "status": "COMPLETE"
 }

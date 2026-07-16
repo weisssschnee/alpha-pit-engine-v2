@@ -1,0 +1,25 @@
+{
+  "active_bar": {
+    "execution_plan_hash": "b306e864ecf9a653bd02f0e59846bad87b42406e9f08d067e0f583f470298f12",
+    "plan_hash": "ac7d1fccbcc89dd3f2297c22932ac6a13688f260c7fb0aebff30e76c6b9cbd8a"
+  },
+  "mapping_subcohort_keys": [
+    "support_contract",
+    "eligibility_contract",
+    "mapping_family",
+    "portfolio_mode"
+  ],
+  "qualification_repo_sha": "71828442e0b566bdec27a7a091e1b24c16b88b7b",
+  "schema_version": "cn_shared_multicandidate_dag_plan_combined_v1",
+  "source_sha": "984181aeaaa54ed7602dd47cc726713224b25a42",
+  "stock_session": {
+    "execution_plan_hash": "bd23b19661fbc2d452592c738280eb23e50fd9d856062032c7feacb5448e7d62",
+    "plan_hash": "402b5fcef93331020fd4c8ec7c5ef400257f5b6a4ab65720a4141b1a440845a4"
+  },
+  "value_cohort_keys": [
+    "backend",
+    "raw_field_surface",
+    "observable_clock_maturity",
+    "window_profile"
+  ]
+}

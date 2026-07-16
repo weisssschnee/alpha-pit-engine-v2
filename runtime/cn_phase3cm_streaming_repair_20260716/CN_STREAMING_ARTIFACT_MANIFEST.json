@@ -1,0 +1,208 @@
+{
+  "artifacts": [
+    {
+      "bytes": 616,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\reports\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_STAGE_A_READINESS_REPORT.md",
+      "sha256": "a3735c11da993eb22b256d8b1d82f72c33b8d7414324f7fa138ac6c5bd9be458"
+    },
+    {
+      "bytes": 107,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\reports\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_STREAMING_REPAIR_BUNDLE.sha256",
+      "sha256": "80ced637e53767a8b73d6e7f848e8e4dd10e9e952793d255e155f01b69d8364c"
+    },
+    {
+      "bytes": 160912,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\reports\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_STREAMING_REPAIR_BUNDLE.zip",
+      "sha256": "47b73a12417e195648ca3b002ac0c39f3ea087afeea60e5da7d41edb50c4a1cd"
+    },
+    {
+      "bytes": 2117,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\reports\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_STREAMING_REPAIR_DECISION.json",
+      "sha256": "0e575630234fbb59eb75a53e03543c272e8da880014148a885fc97a09a98d7a4"
+    },
+    {
+      "bytes": 2106,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\reports\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_STREAMING_REPAIR_REPORT.md",
+      "sha256": "16fbafd93c2601b022deefba61cf67999e3c7846a81ca3d0fa72b66e885cb52a"
+    },
+    {
+      "bytes": 82391,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V1.json",
+      "sha256": "d6a9aa315710a46492603f674a87c028a30fb039fe2898000e55247e48ff29c7"
+    },
+    {
+      "bytes": 10587,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_77O_ENVIRONMENT_AUDIT.json",
+      "sha256": "309a3eec498ad131e7e4211c56187424754288e12c500b974275bf8340385773"
+    },
+    {
+      "bytes": 4885,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_BASELINE_BOTTLENECK_ATTRIBUTION.json",
+      "sha256": "39bfc82c1546fde63fb041d3586987b90e96a58b7c142960b18d25768fa89f21"
+    },
+    {
+      "bytes": 3506,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_LEGACY_BASELINE_TELEMETRY.json",
+      "sha256": "870c18705e28471af58312cea79d874ccf93b3bfaae8354ae32d2bc6694b4ca2"
+    },
+    {
+      "bytes": 2013316,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_PHASE_TIMING.jsonl",
+      "sha256": "346061c8950b4ad40028376a24c513a98d9ef816d6b1c9be1677fb195a89a64d"
+    },
+    {
+      "bytes": 1242,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_RESOURCE_TIMELINE.csv",
+      "sha256": "008162ec5a6c105a9513db7f1b927d2cdcc548dddfb72d931290e71387df32b4"
+    },
+    {
+      "bytes": 2047,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_PHASE3CM_SIDECAR_COST_SUMMARY.json",
+      "sha256": "35a6589040158e7e43c8c4c66be172afeb0b5035249fb08ad1fa23f7d0ac877c"
+    },
+    {
+      "bytes": 8722,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_SHARED_DAG_EXECUTION_AUDIT.json",
+      "sha256": "b57f777a2f214652e8210c7209a63d622385354d198575748584d59fde1c860f"
+    },
+    {
+      "bytes": 890,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_SHARED_DAG_PLAN.json",
+      "sha256": "e224f48b838b2bcdd1281558b595bc309666c9d25c42f180897e1fdd0375e0ba"
+    },
+    {
+      "bytes": 20860,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_32PAIR_FULL_COORDINATE_RESULT.json",
+      "sha256": "85b53b29c72f76a66102c0d47da7941fb9e996e042d7d1ba272a34d8c66a80d8"
+    },
+    {
+      "bytes": 2618,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_EVALUATOR_PARITY.csv",
+      "sha256": "71ce670ad20ef0485ce15e5d2ca51edb91fdcbf93436ed714eba352d4f12508e"
+    },
+    {
+      "bytes": 263,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_EVALUATOR_PARITY_SUMMARY.json",
+      "sha256": "025f08f07fdf9f1be09bc0b79ace8ac1bd0a9c14ac30174378d223539d4678b8"
+    },
+    {
+      "bytes": 419,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_REDUCER_CONTRACT.json",
+      "sha256": "5ca95bd9074c4fbdc96a0dbf1f8d6b714b2a4e73a758fd4609ba8f0fc4867e0d"
+    },
+    {
+      "bytes": 4775,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_REPAIR_CONTRACT.json",
+      "sha256": "1c3a473a2f1689cff7c12436bebfe9ea0d5294576913fc53108267f6a3a60e79"
+    },
+    {
+      "bytes": 104884,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_REPAIR_FROZEN_INPUT_BINDING.json",
+      "sha256": "8bc37a7859a0fff399f0ed365ef6f740d7ee4249484499fb31321ec34130f2f6"
+    },
+    {
+      "bytes": 44712,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_RUNTIME_EVENT_LOG.json",
+      "sha256": "c0da06f91c1e42a768dc6973cdd5bf19f158d4b1c4904da6449f7e4a3601985f"
+    },
+    {
+      "bytes": 2210,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_SCALING_CURVE.csv",
+      "sha256": "c9a3b3e44f644d545d1fa16aa53993879ae08ce849d2331ed573be9aea2e394b"
+    },
+    {
+      "bytes": 7351,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_SINGLE_PAIR_FULL_COORDINATE.json",
+      "sha256": "8f34bcfabcb946c4bc8f81cf1a0db4656e242307ba29406add2fdb6d3a2a2a47"
+    },
+    {
+      "bytes": 3508,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\CN_STREAMING_STAGE_A_RESOURCE_PROJECTION.json",
+      "sha256": "4c5e5ac8a6eb0fbd4d08d45d6e7e370bb841a1db86389868fead9d158dc88a50"
+    },
+    {
+      "bytes": 4180,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\d32q2_984181a.orchestrator.log",
+      "sha256": "e10463f8720c9736c39ab61f68d0ae253678abc77ccf42c99fa8a80a6707e32a"
+    },
+    {
+      "bytes": 3940,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\e32q_7182844.orchestrator.log",
+      "sha256": "de84fafc1f3dd0be8ae4b3374a9749b1877f161181b7e63df85bcb6a871b2b42"
+    },
+    {
+      "bytes": 0,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\phase0_legacy_baseline.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\phase0_legacy_baseline.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\phase0_monitor.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\phase0_monitor.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\phase_d_scale_32pairs_final2_984181a.orchestrator.combined.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\phase_d_scale_32pairs_final2_984181a.orchestrator.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\phase_d_scale_32pairs_final2_984181a.orchestrator.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 7,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\sidecar_build.pid",
+      "sha256": "bbe0f2388d78c4ed38c622e683aa9589f7856f40ecb9dc436304845d95d5d328"
+    },
+    {
+      "bytes": 0,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\sidecar_build.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\sidecar_build.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 24,
+      "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\SIDECAR_BUILD_COMPLETE.txt",
+      "sha256": "85d722f2ec8aff3cbccf3040b650ab89780569b5b967b77d05ab66d1fdb4b8d5"
+    }
+  ],
+  "forward_2026_reads": 0,
+  "frozen_artifact_hashes": {
+    "candidate_pack_hash": "f78b417c0f4a50751348caa1a78d440fcc08269096cbed667f41ed859b84a294",
+    "candidate_receipt_hash": "491e0f3345b99f8f1b2f028901b40294c5e855c3a3a964ed2ebe2d2d02ece534",
+    "pair_receipt_hash": "583c153248e45653926433fada52970967d3f8c922044ac937d550e50866c271"
+  },
+  "holdout_reads": 0,
+  "qualification_repo_sha": "71828442e0b566bdec27a7a091e1b24c16b88b7b",
+  "schema_version": "cn_streaming_artifact_manifest_v1",
+  "source_component_hashes": {
+    "evaluator_semantic_contract": "40e6c8ecf447974ef82449d33d9e6c4f61ce3e15d7a778e3225097d7a9845efd",
+    "expression_compiler": "8c74bf147821dfc62a17c42cb43ce01141ea9ddd9861854a9aed26f648712525",
+    "mapping_and_cost": "11a5457074f30390a383d4246cca7e11dc86efd933c3db035d4136a14c1f1294",
+    "qualification_execution_harness": "5d3c9cf025dca609fa2fd9f91c46088bbcdb4e5145f78081823c5f9a0aa6cbeb",
+    "reward": "31da69429889758a398ca3433bb8b131863611854303c6eeb64b5fa18e963a9a"
+  },
+  "source_implementation_sha": "984181aeaaa54ed7602dd47cc726713224b25a42",
+  "status": "CN_PHASE3CM_STREAMING_REPAIR_ARTIFACTS_COMPLETE",
+  "validation_reads": 0
+}
