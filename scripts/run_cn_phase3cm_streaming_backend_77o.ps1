@@ -13,6 +13,7 @@ param(
     [int]$ComputeThreads = 16,
     [int]$BlockSessions = 5,
     [int]$PairBatchSize = 4,
+    [int]$StopAfterBlocks = 0,
     [switch]$Resume,
     [string]$RepoRoot = "D:\ChengboRemote\workspace\alpha_pit_compositional_667c82f_git",
     [string]$PythonExe = "D:\ChengboRemote\venvs\alpha311\Scripts\python.exe"
@@ -56,6 +57,7 @@ $Arguments = @(
     "--pair-batch-size", [string]$PairBatchSize,
     "--compute-threads", [string]$ComputeThreads
 )
+if ($StopAfterBlocks -gt 0) { $Arguments += @("--stop-after-blocks", [string]$StopAfterBlocks) }
 if ($Phase -eq "E") {
     if (-not $ExecutionPlan) { throw "Phase E requires -ExecutionPlan" }
     $Arguments += @("--execution-plan", $ExecutionPlan)

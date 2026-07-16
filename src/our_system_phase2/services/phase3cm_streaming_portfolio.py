@@ -118,7 +118,7 @@ if njit is not None:
         min_obs: int,
         top_quantile: float,
         excess_market: bool,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         candidate_count = signals.shape[0]
         horizon_count = labels.shape[0]
         selected = np.zeros((candidate_count, horizon_count, signals.shape[1]), dtype=np.bool_)
@@ -209,6 +209,7 @@ if njit is not None:
         horizon_count = selected.shape[1]
         stats = np.zeros((candidate_count, horizon_count + 1, len(STAT_FIELDS)), dtype=np.float64)
         daily = np.zeros((candidate_count, horizon_count + 1, day_count, len(DAILY_FIELDS)), dtype=np.float64)
+        coordinate_metrics = np.full((candidate_count, horizon_count, starts.shape[0], 4), np.nan, dtype=np.float64)
         for candidate in prange(candidate_count):
             for group in range(starts.shape[0]):
                 start = starts[group]
@@ -246,6 +247,10 @@ if njit is not None:
                     support_count = metrics[candidate, horizon, group, 4]
                     spread = metrics[candidate, horizon, group, 6]
                     net_return = raw_return - one_way_cost * turnover
+                    coordinate_metrics[candidate, horizon, group, 0] = raw_return
+                    coordinate_metrics[candidate, horizon, group, 1] = net_return
+                    coordinate_metrics[candidate, horizon, group, 2] = turnover
+                    coordinate_metrics[candidate, horizon, group, 3] = rank_ic
                     stats[candidate, horizon, 0] += 1.0
                     stats[candidate, horizon, 1] += net_return
                     stats[candidate, horizon, 2] += raw_return
@@ -328,7 +333,7 @@ if njit is not None:
                     daily[candidate, slot, day, 12] += all_support / sleeve_count
                     daily[candidate, slot, day, 13] += all_selected / sleeve_count
                     daily[candidate, slot, day, 14] = max(daily[candidate, slot, day, 14], all_spread)
-        return stats, daily
+        return stats, daily, coordinate_metrics
 
 else:  # pragma: no cover
     _mapping_kernel = _turnover_cost_kernel = None
@@ -341,6 +346,9 @@ class PortfolioBlockResult:
     audit: dict[str, Any]
     coordinate_rows_retained: int = 0
     behavior_block_digests: tuple[str, ...] = ()
+    audit_selected: np.ndarray | None = None
+    audit_mapping_metrics: np.ndarray | None = None
+    audit_coordinate_metrics: np.ndarray | None = None
 
 
 class BatchedPortfolioKernel:
@@ -390,6 +398,7 @@ class BatchedPortfolioKernel:
         day_ids: np.ndarray,
         directions: np.ndarray,
         day_count: int,
+        audit_coordinate_arrays: bool = False,
     ) -> PortfolioBlockResult:
         if _mapping_kernel is None or _turnover_cost_kernel is None:
             raise RuntimeError("Numba is required for the batched portfolio hot path")
@@ -432,7 +441,7 @@ class BatchedPortfolioKernel:
         mapping_cpu = time.process_time() - mapping_cpu_start
         turnover_wall_start = time.perf_counter()
         turnover_cpu_start = time.process_time()
-        stats, daily = _turnover_cost_kernel(
+        stats, daily, coordinate_metrics = _turnover_cost_kernel(
             selected,
             metrics,
             starts,
@@ -508,6 +517,9 @@ class BatchedPortfolioKernel:
             daily=daily,
             audit=audit,
             behavior_block_digests=behavior_block_digests,
+            audit_selected=selected if audit_coordinate_arrays else None,
+            audit_mapping_metrics=metrics if audit_coordinate_arrays else None,
+            audit_coordinate_metrics=coordinate_metrics if audit_coordinate_arrays else None,
         )
 
     def continuation_payload(self) -> dict[str, np.ndarray]:

@@ -59,6 +59,26 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
         return [dict(row) for row in csv.DictReader(handle)]
 
 
+def _write_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_name(destination.name + ".tmp")
+    fieldnames = list(rows[0].keys()) if rows else []
+    with temporary.open("w", encoding="utf-8", newline="") as handle:
+        if fieldnames:
+            writer = csv.DictWriter(handle, fieldnames=fieldnames, extrasaction="raise")
+            writer.writeheader()
+            writer.writerows(rows)
+        handle.flush()
+    temporary.replace(destination)
+    return {
+        "path": destination.name,
+        "row_count": len(rows),
+        "sha256": _sha256(destination),
+        "bytes": destination.stat().st_size,
+    }
+
+
 def _truthy(value: Any) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y"}
 
@@ -285,7 +305,18 @@ def main() -> int:
     parser.add_argument("--portfolio-mode", default="long_only_top")
     parser.add_argument("--checkpoint-every-blocks", type=int, default=1)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument(
+        "--stop-after-blocks",
+        type=int,
+        default=0,
+        help="Phase C/D controlled-stop hook used only to prove checkpoint/resume parity.",
+    )
     args = parser.parse_args()
+
+    if int(args.stop_after_blocks) < 0:
+        raise ValueError("stop-after-blocks cannot be negative")
+    if args.phase == "E" and int(args.stop_after_blocks):
+        raise RuntimeError("Phase E forbids adaptive or controlled plan interruption")
 
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
@@ -345,7 +376,8 @@ def main() -> int:
     _write_json(output_root / "CN_SHARED_DAG_PLAN.json", dag_plan.to_dict())
     dag_seconds = time.perf_counter() - dag_started
     timing_path = output_root / "CN_PHASE3CM_PHASE_TIMING.jsonl"
-    timing_path.unlink(missing_ok=True)
+    if not args.resume:
+        timing_path.unlink(missing_ok=True)
     telemetry = PhaseTelemetryRecorder(
         output_path=timing_path,
         allocated_compute_threads=plan.compute_threads,
@@ -394,27 +426,42 @@ def main() -> int:
     completed_blocks: list[int] = []
     checkpoint_ordinal = 0
     checkpoint_root = output_root / "checkpoints" / str(args.backend)
+    total_rows = 0
+    expression_audits: list[dict[str, Any]] = []
+    portfolio_audits: list[dict[str, Any]] = []
+    prior_evaluator_wall_seconds = 0.0
 
     if args.resume:
         manifest_path = checkpoint_root / "CN_STREAMING_CHECKPOINT_MANIFEST.json"
-        if manifest_path.is_file():
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            payload = load_checkpoint(
-                checkpoint_root / str(manifest["latest_complete_checkpoint"]),
-                expected_execution_plan_hash=plan.execution_plan_hash,
-                expected_input_binding_hash=str(binding["binding_hash"]),
-            )
-            expression.restore_continuation_payload(
-                {
-                    "rolling": payload.temporal_continuation_payload,
-                    "state": payload.state_event_continuation_payload["state"],
-                }
-            )
-            support.restore_continuation_payload(payload.state_event_continuation_payload["support"])
-            portfolio.restore_continuation_payload(payload.portfolio_continuation_payload)
-            reducer.restore_continuation_payload(payload.streaming_reducer_payload)
-            completed_blocks = list(payload.completed_blocks)
-            checkpoint_ordinal = int(payload.execution_position.get("checkpoint_ordinal") or 0)
+        if not manifest_path.is_file():
+            raise RuntimeError("resume requested without a complete checkpoint manifest")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        payload = load_checkpoint(
+            checkpoint_root / str(manifest["latest_complete_checkpoint"]),
+            expected_execution_plan_hash=plan.execution_plan_hash,
+            expected_input_binding_hash=str(binding["binding_hash"]),
+        )
+        expression.restore_continuation_payload(
+            {
+                "rolling": payload.temporal_continuation_payload,
+                "state": payload.state_event_continuation_payload["state"],
+            }
+        )
+        support.restore_continuation_payload(payload.state_event_continuation_payload["support"])
+        portfolio.restore_continuation_payload(payload.portfolio_continuation_payload)
+        reducer.restore_continuation_payload(payload.streaming_reducer_payload)
+        completed_blocks = list(payload.completed_blocks)
+        checkpoint_ordinal = int(payload.execution_position.get("checkpoint_ordinal") or 0)
+        total_rows = int(payload.execution_position.get("rows_processed") or 0)
+        expression_audits = [
+            dict(row) for row in payload.execution_position.get("expression_audits") or []
+        ]
+        portfolio_audits = [
+            dict(row) for row in payload.execution_position.get("portfolio_audits") or []
+        ]
+        prior_evaluator_wall_seconds = float(
+            payload.execution_position.get("evaluator_wall_seconds") or 0.0
+        )
 
     runtime_position = {"block_ordinal": -1}
 
@@ -433,6 +480,11 @@ def main() -> int:
                     "block_ordinal": int(runtime_position["block_ordinal"]),
                     "checkpoint_ordinal": checkpoint_ordinal,
                     "reason": reason,
+                    "rows_processed": int(total_rows),
+                    "evaluator_wall_seconds": prior_evaluator_wall_seconds
+                    + (time.perf_counter() - run_started),
+                    "expression_audits": list(expression_audits),
+                    "portfolio_audits": list(portfolio_audits),
                 },
                 completed_blocks=list(completed_blocks),
                 completed_pair_batches=[_stable_hash(list(batch)) for batch in plan.pair_batches],
@@ -453,9 +505,6 @@ def main() -> int:
         global_hard_bytes=plan.global_rss_hard_bytes,
         checkpoint=checkpoint,
     )
-    total_rows = 0
-    expression_audits: list[dict[str, Any]] = []
-    portfolio_audits: list[dict[str, Any]] = []
     run_started = time.perf_counter()
     for block_ordinal, (start, end) in enumerate(plan.block_boundaries):
         if block_ordinal in completed_blocks:
@@ -559,6 +608,29 @@ def main() -> int:
             )
             phase.add(blocks_processed=1, checkpoint_ordinal=checkpoint_ordinal)
         rss_gate.check(_process_snapshot(), global_rss_bytes=_process_snapshot().rss_bytes)
+        if int(args.stop_after_blocks) and len(completed_blocks) >= int(args.stop_after_blocks):
+            checkpoint("CONTROLLED_RESUME_PARITY_PAUSE")
+            pause_payload = {
+                "schema_version": "cn_phase3cm_streaming_pause_receipt_v1",
+                "status": "CN_PHASE3CM_STREAMING_BACKEND_PAUSED_RECOVERABLE",
+                "backend": args.backend,
+                "phase": args.phase,
+                "completed_blocks": list(completed_blocks),
+                "rows_processed": int(total_rows),
+                "evaluator_wall_seconds": prior_evaluator_wall_seconds
+                + (time.perf_counter() - run_started),
+                "checkpoint_ordinal": int(checkpoint_ordinal),
+                "execution_plan_hash": plan.execution_plan_hash,
+                "input_binding_hash": binding["binding_hash"],
+                "validation_reads": 0,
+                "holdout_reads": 0,
+                "forward_2026_reads": 0,
+                "promotion": "FORBIDDEN",
+                "strict_stage_a": "NOT_AUTHORIZED",
+            }
+            _write_json(output_root / "CN_STREAMING_PAUSE_RECEIPT.json", pause_payload)
+            print(json.dumps(pause_payload, sort_keys=True))
+            return 0
 
     with telemetry.phase("candidate_pair_finalization", compute_heavy=False) as phase:
         atom_rows = reducer.reward_atoms()
@@ -589,6 +661,11 @@ def main() -> int:
         )
         phase.add(candidate_count=len(candidates), pair_count=len(pair_rows))
 
+    reward_atom_artifact = _write_csv(
+        output_root / "CN_STREAMING_REWARD_ATOMS.csv",
+        atom_rows,
+    )
+
     events = [json.loads(line) for line in timing_path.read_text(encoding="utf-8").splitlines() if line]
     phase_totals: dict[str, dict[str, float]] = {}
     for event in events:
@@ -613,7 +690,7 @@ def main() -> int:
         if any(event.get("parallelism_status") == "PARALLELISM_NOT_ENGAGED" for event in compute_events)
         else "PARALLELISM_ENGAGED"
     )
-    evaluator_wall = time.perf_counter() - run_started
+    evaluator_wall = prior_evaluator_wall_seconds + (time.perf_counter() - run_started)
     required_timing_phases = {
         "global_trade_time_barrier",
         "expression_value_dag",
@@ -667,7 +744,7 @@ def main() -> int:
         "support_identities": support.identities(),
         "candidate_rewards": reward_rows,
         "pair_results": pair_rows,
-        "reward_atoms": atom_rows,
+        "reward_atoms": reward_atom_artifact,
         "split_rows": split_rows,
         "expression_audits": expression_audits,
         "portfolio_audits": portfolio_audits,

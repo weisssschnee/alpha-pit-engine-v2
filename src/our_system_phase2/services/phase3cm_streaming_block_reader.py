@@ -187,7 +187,10 @@ class TimeMajorBlockReader:
             code_ids = np.fromiter((self.symbol_to_id[code] for code in codes), dtype=np.int32, count=len(codes))
         except KeyError as exc:
             raise RuntimeError(f"block code is absent from frozen symbol registry: {exc}") from exc
-        dates = unique_times.astype("datetime64[D]")
+        # ``unique_times`` is an int64 nanosecond epoch array.  Converting it
+        # directly to datetime64[D] interprets each nanosecond count as a day
+        # count and silently turns every minute into a distinct pseudo-day.
+        dates = unique_times.astype("datetime64[ns]").astype("datetime64[D]")
         unique_days, time_day_ids = np.unique(dates, return_inverse=True)
         day_ids = time_day_ids[time_ids].astype(np.int32)
         raw = {

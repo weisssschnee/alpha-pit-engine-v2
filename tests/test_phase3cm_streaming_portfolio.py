@@ -9,6 +9,7 @@ from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit imp
     _rank_by_eval_time_index,
 )
 from our_system_phase2.services.phase3cm_streaming_portfolio import BatchedPortfolioKernel
+from our_system_phase2.services.unified_capability_registry import stable_hash
 
 
 def _fixture() -> tuple[pd.DataFrame, np.ndarray, dict[int, np.ndarray]]:
@@ -78,6 +79,7 @@ def test_batched_native_portfolio_matches_merged_legacy_reference() -> None:
         day_ids=day_ids,
         directions=np.array([1.0, -1.0]),
         day_count=1,
+        audit_coordinate_arrays=True,
     )
     for candidate_index, direction in enumerate(("long_top", "long_bottom")):
         rows = _legacy_rows(frame, signals[candidate_index], labels, direction)
@@ -96,6 +98,30 @@ def test_batched_native_portfolio_matches_merged_legacy_reference() -> None:
             np.testing.assert_allclose(stats[2], expected["raw_sum"], rtol=1e-12, atol=1e-12)
             np.testing.assert_allclose(stats[7], expected["turnover_sum"], rtol=1e-12, atol=1e-12)
             np.testing.assert_allclose(stats[9], expected["rank_ic_sum"], rtol=1e-12, atol=1e-12)
+        for row in rows:
+            horizon_index = (1, 5).index(int(row["horizon_min"]))
+            time_index = int(
+                (pd.Timestamp(row["trade_time"]) - pd.Timestamp("2025-01-02 09:30"))
+                / pd.Timedelta(minutes=1)
+            )
+            positions = np.flatnonzero(time_ids == time_index)
+            chosen = positions[observed.audit_selected[candidate_index, horizon_index, positions]]
+            selected_codes = sorted(frame.iloc[chosen]["code"].astype(str).tolist())
+            assert row["selected_code_identity"] == stable_hash(
+                {"long": selected_codes, "short": []}
+            )
+            assert row["portfolio_weight_identity"] == stable_hash(
+                {
+                    "long": [(code, 1.0 / len(selected_codes)) for code in selected_codes],
+                    "short": [],
+                    "portfolio_mode": "long_only_top",
+                }
+            )
+            metrics = observed.audit_coordinate_metrics[candidate_index, horizon_index, time_index]
+            np.testing.assert_allclose(metrics[0], float(row["raw_return"]), rtol=1e-12, atol=1e-12)
+            np.testing.assert_allclose(metrics[1], float(row["net_return"]), rtol=1e-12, atol=1e-12)
+            np.testing.assert_allclose(metrics[2], float(row["one_way_turnover"]), rtol=1e-12, atol=1e-12)
+            np.testing.assert_allclose(metrics[3], float(row["rank_ic"]), rtol=1e-12, atol=1e-12)
     assert observed.coordinate_rows_retained == 0
     assert observed.audit["native_portfolio_kernel_called"] is True
 

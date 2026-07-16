@@ -69,6 +69,8 @@ def test_forward_label_sidecar_matches_group_shift_and_reader_has_global_barrier
     )
     assert block.row_count == 24
     assert block.trade_time_count == 6
+    assert block.day_labels == ("2025-01-02",)
+    assert np.unique(block.day_ids).tolist() == [0]
     assert np.all(block.time_ids[1:] >= block.time_ids[:-1])
     for time_id in range(6):
         assert set(block.code_ids[block.time_ids == time_id].tolist()) == {0, 1, 2, 3}

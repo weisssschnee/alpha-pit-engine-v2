@@ -13,6 +13,7 @@ param(
     [int]$ComputeThreads = 16,
     [int]$BlockSessions = 5,
     [int]$PairBatchSize = 4,
+    [int]$StopAfterBlocks = 0,
     [switch]$Resume,
     [string]$RepoRoot = "D:\ChengboRemote\workspace\alpha_pit_compositional_667c82f_git"
 )
@@ -31,6 +32,7 @@ $arguments = @(
     "-BlockSessions", [string]$BlockSessions,
     "-PairBatchSize", [string]$PairBatchSize
 )
+if ($StopAfterBlocks -gt 0) { $arguments += @("-StopAfterBlocks", [string]$StopAfterBlocks) }
 if ($ExecutionPlan) { $arguments += @("-ExecutionPlan", $ExecutionPlan) }
 if ($Resume) { $arguments += "-Resume" }
 $process = Start-Process powershell.exe `

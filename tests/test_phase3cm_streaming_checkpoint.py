@@ -74,3 +74,30 @@ def test_resume_state_matches_uninterrupted_reducer_result(tmp_path) -> None:
     manifest = json.loads((tmp_path / "CN_STREAMING_CHECKPOINT_MANIFEST.json").read_text())
     assert manifest["latest_complete_checkpoint"] == record["checkpoint_path"].name
 
+
+def test_checkpoint_retention_prunes_only_after_latest_manifest_is_committed(tmp_path) -> None:
+    records = [
+        write_checkpoint(
+            tmp_path,
+            _payload(float(ordinal)),
+            checkpoint_ordinal=ordinal,
+            retain_complete_checkpoints=2,
+        )
+        for ordinal in range(1, 5)
+    ]
+
+    retained = sorted(tmp_path.glob("checkpoint_*.npz"))
+    assert [path.name for path in retained] == [
+        records[-2]["checkpoint_path"].name,
+        records[-1]["checkpoint_path"].name,
+    ]
+    manifest = json.loads((tmp_path / "CN_STREAMING_CHECKPOINT_MANIFEST.json").read_text())
+    assert manifest["latest_complete_checkpoint"] == records[-1]["checkpoint_path"].name
+    restored = load_checkpoint(
+        retained[-1],
+        expected_execution_plan_hash="a" * 64,
+        expected_input_binding_hash="b" * 64,
+    )
+    assert float(restored.streaming_reducer_payload["net_sum"][0]) == 4.0
+    assert records[-1]["retained_complete_checkpoint_count"] == 2
+    assert records[-1]["pruned_complete_checkpoint_count"] == 1

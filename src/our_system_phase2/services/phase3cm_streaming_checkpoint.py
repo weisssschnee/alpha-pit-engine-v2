@@ -86,7 +86,10 @@ def write_checkpoint(
     payload: StreamingCheckpointPayload,
     *,
     checkpoint_ordinal: int,
+    retain_complete_checkpoints: int = 2,
 ) -> dict[str, Any]:
+    if int(retain_complete_checkpoints) < 1:
+        raise ValueError("retain_complete_checkpoints must be at least 1")
     root = Path(checkpoint_root)
     root.mkdir(parents=True, exist_ok=True)
     arrays: dict[str, np.ndarray] = {}
@@ -122,6 +125,14 @@ def write_checkpoint(
         "completed_pair_batch_count": len(payload.completed_pair_batches),
         "status": "COMPLETE_RECOVERABLE_PAYLOAD",
     }
+    completed = sorted(
+        root.glob("checkpoint_[0-9][0-9][0-9][0-9][0-9][0-9]_*.npz"),
+        key=lambda path: path.name,
+    )
+    stale = completed[: -int(retain_complete_checkpoints)]
+    record["retained_complete_checkpoint_count"] = len(completed) - len(stale)
+    record["pruned_complete_checkpoint_count"] = len(stale)
+    record["retention_limit"] = int(retain_complete_checkpoints)
     manifest_record = {**record, "checkpoint_path": final.name}
     _atomic_json(
         root / "CN_STREAMING_CHECKPOINT_MANIFEST.json",
@@ -131,6 +142,9 @@ def write_checkpoint(
             "record": manifest_record,
         },
     )
+    for stale_path in stale:
+        if stale_path != final:
+            stale_path.unlink(missing_ok=True)
     return record
 
 
