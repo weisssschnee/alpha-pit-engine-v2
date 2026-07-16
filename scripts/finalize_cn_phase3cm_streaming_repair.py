@@ -73,6 +73,13 @@ def _phase_total(events: Iterable[Mapping[str, Any]], phase: str, field: str) ->
     return sum(float(row.get(field) or 0.0) for row in events if str(row.get("phase")) == phase)
 
 
+def _last_phase_value(
+    events: Iterable[Mapping[str, Any]], phase: str, field: str, *, default: int = 0
+) -> int:
+    values = [int(row.get(field) or 0) for row in events if str(row.get("phase")) == phase]
+    return values[-1] if values else default
+
+
 def _backend_summary(root: Path) -> dict[str, Any]:
     result_path = root / "CN_STREAMING_BACKEND_RESULT.json"
     result = _read_json(result_path)
@@ -118,9 +125,8 @@ def _backend_summary(root: Path) -> dict[str, Any]:
         ),
         "cache_released_bytes": sum(int(row.get("cache_released_bytes") or 0) for row in cache_release),
         "cache_released_entries": sum(int(row.get("cache_released_entries") or 0) for row in cache_release),
-        "cache_after_last_batch_bytes": max(
-            (int(row.get("cache_current_bytes") or 0) for row in cache_release),
-            default=0,
+        "cache_after_last_batch_bytes": _last_phase_value(
+            events, "expression_cache_release", "cache_current_bytes"
         ),
         "reducer_bytes": max((int(row.get("reducer_bytes") or 0) for row in events), default=0),
         "mapping_wall_seconds": _phase_total(events, "cross_sectional_rank_mapping", "wall_seconds"),

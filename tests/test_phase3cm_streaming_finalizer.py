@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from scripts.finalize_cn_phase3cm_streaming_repair import _linear_fit, _resource_projection
+from scripts.finalize_cn_phase3cm_streaming_repair import (
+    _last_phase_value,
+    _linear_fit,
+    _resource_projection,
+)
 
 
 def _backend(pair_count: int, wall: float, cpu: float) -> dict[str, object]:
@@ -51,3 +55,13 @@ def test_resource_projection_separates_startup_marginal_cpu_and_io_bounds() -> N
 def test_linear_fit_is_deterministic() -> None:
     points = ((1, 10.0), (4, 25.0), (8, 45.0), (16, 85.0))
     assert _linear_fit(points) == _linear_fit(tuple(reversed(points)))
+
+
+def test_last_phase_value_reports_post_release_balance_not_peak() -> None:
+    events = [
+        {"phase": "expression_cache_release", "cache_current_bytes": 512},
+        {"phase": "checkpoint", "cache_current_bytes": 999},
+        {"phase": "expression_cache_release", "cache_current_bytes": 0},
+    ]
+
+    assert _last_phase_value(events, "expression_cache_release", "cache_current_bytes") == 0
