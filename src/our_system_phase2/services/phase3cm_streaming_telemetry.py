@@ -20,6 +20,7 @@ THREAD_ENV_BY_POOL = {
     "mkl": "MKL_NUM_THREADS",
     "openblas": "OPENBLAS_NUM_THREADS",
     "numexpr": "NUMEXPR_MAX_THREADS",
+    "polars": "POLARS_MAX_THREADS",
 }
 GLOBAL_NATIVE_THREAD_MAX = 24
 
@@ -83,16 +84,33 @@ def _process_snapshot() -> ResourceSnapshot:
                         ("private_usage", ctypes.c_size_t),
                     ]
 
+                kernel32.GetCurrentProcess.restype = ctypes.c_void_p
                 handle = kernel32.GetCurrentProcess()
                 memory = PROCESS_MEMORY_COUNTERS_EX()
                 memory.cb = ctypes.sizeof(memory)
+                psapi.GetProcessMemoryInfo.argtypes = [
+                    ctypes.c_void_p,
+                    ctypes.POINTER(PROCESS_MEMORY_COUNTERS_EX),
+                    ctypes.c_ulong,
+                ]
+                psapi.GetProcessMemoryInfo.restype = ctypes.c_int
                 if psapi.GetProcessMemoryInfo(handle, ctypes.byref(memory), memory.cb):
                     rss = int(memory.working_set_size)
                     peak = int(memory.peak_working_set_size)
                 io = IO_COUNTERS()
+                kernel32.GetProcessIoCounters.argtypes = [ctypes.c_void_p, ctypes.POINTER(IO_COUNTERS)]
+                kernel32.GetProcessIoCounters.restype = ctypes.c_int
                 if kernel32.GetProcessIoCounters(handle, ctypes.byref(io)):
                     read_bytes = int(io.read_transfer_count)
                 creation, exit_time, kernel, user = FILETIME(), FILETIME(), FILETIME(), FILETIME()
+                kernel32.GetProcessTimes.argtypes = [
+                    ctypes.c_void_p,
+                    ctypes.POINTER(FILETIME),
+                    ctypes.POINTER(FILETIME),
+                    ctypes.POINTER(FILETIME),
+                    ctypes.POINTER(FILETIME),
+                ]
+                kernel32.GetProcessTimes.restype = ctypes.c_int
                 if kernel32.GetProcessTimes(
                     handle,
                     ctypes.byref(creation),
