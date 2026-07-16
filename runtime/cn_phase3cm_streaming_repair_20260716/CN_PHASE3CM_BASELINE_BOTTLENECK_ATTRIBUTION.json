@@ -1,0 +1,125 @@
+{
+  "controlled_baseline": {
+    "allocated_compute_threads": 16,
+    "bytes_read": 905330236,
+    "cpu_seconds": 60.171875,
+    "device_bound_bytes_per_second": 9076954004.419504,
+    "device_throughput_utilization": 0.001647533846964123,
+    "effective_cores": 0.9939419022704281,
+    "io_status": "EXECUTION_ARCHITECTURE_BOTTLENECK_NOT_DEVICE_SATURATION",
+    "parallel_efficiency": 0.06212136889190176,
+    "parallelism_status": "PARALLELISM_NOT_ENGAGED",
+    "peak_working_set_bytes": 13341687808,
+    "read_throughput_bytes_per_second": 14954588.949617667,
+    "wall_seconds": 60.5386239
+  },
+  "historical_full_coordinate_gate": {
+    "cpu_seconds": 7212.969,
+    "effective_cores": 1.0017136000599947,
+    "evaluated_pairs": 0,
+    "peak_working_set_bytes": 39006842880,
+    "read_transfer_bytes": 13796062545,
+    "status": "ABORTED_AT_RESOURCE_GATE",
+    "wall_time_lower_bound_seconds": 7200.63
+  },
+  "hot_path_decision": {
+    "batched_portfolio_kernel_still_required": true,
+    "caveat": "The controlled stop occurred during the first candidate expression on the first stock shard; downstream mapping did not receive a complete full-market block, so its eventual share is not inferable from this baseline.",
+    "dominant_completed_or_active_phase": "expression_value_dag",
+    "dominant_compute_share": 0.6598240469208211,
+    "primary_bottleneck": "VALUE_DAG_FULL_SERIES_AND_PANDAS_BOTTLENECK",
+    "rank_mapping_compute_share_observed_before_stop": 0.022394028259130897,
+    "value_dag_compute_share": 0.6598240469208211
+  },
+  "legacy_evaluator_receipt_hash": "53d75376ae4375ea915f0958300d9864f904d72d771fb0035e5f19ad6e2586ac",
+  "phase0_is_qualification_evidence": false,
+  "phase_timing": [
+    {
+      "calls": 1,
+      "compute_share": 0.022394028259130897,
+      "cpu_seconds": 1.3125,
+      "evaluator": "legacy_reference_receipt_frozen",
+      "phase": "cross_sectional_rank",
+      "status": "CONTROLLED_STOP_AT_PHASE0_GATE",
+      "wall_seconds": 1.3069223000202328
+    },
+    {
+      "active_at_stop": 1,
+      "calls": 1,
+      "compute_share": 0.6598240469208211,
+      "cpu_seconds": 38.671875,
+      "evaluator": "legacy_reference_receipt_frozen",
+      "phase": "expression_value_dag",
+      "status": "CONTROLLED_STOP_AT_PHASE0_GATE",
+      "wall_seconds": 38.82094130013138
+    },
+    {
+      "calls": 1,
+      "compute_share": 0.023993601706211676,
+      "cpu_seconds": 1.40625,
+      "evaluator": "legacy_reference_receipt_frozen",
+      "phase": "global_trade_time_index",
+      "status": "CONTROLLED_STOP_AT_PHASE0_GATE",
+      "wall_seconds": 1.4252520001027733
+    },
+    {
+      "calls": 1,
+      "compute_share": 0.018661690215942415,
+      "cpu_seconds": 1.09375,
+      "evaluator": "legacy_reference_receipt_frozen",
+      "phase": "label_preparation",
+      "status": "CONTROLLED_STOP_AT_PHASE0_GATE",
+      "wall_seconds": 1.0936722999904305
+    },
+    {
+      "calls": 1,
+      "compute_share": 0.21567581978139164,
+      "cpu_seconds": 12.640625,
+      "evaluator": "legacy_reference_receipt_frozen",
+      "phase": "normalization_orchestration",
+      "status": "CONTROLLED_STOP_AT_PHASE0_GATE",
+      "wall_seconds": 12.674503699643537
+    },
+    {
+      "calls": 1,
+      "compute_share": 0.0,
+      "cpu_seconds": 0.0,
+      "evaluator": "legacy_reference_receipt_frozen",
+      "phase": "panel_discovery",
+      "status": "CONTROLLED_STOP_AT_PHASE0_GATE",
+      "wall_seconds": 0.0008278000168502331
+    },
+    {
+      "calls": 1,
+      "compute_share": 0.059450813116502264,
+      "cpu_seconds": 3.484375,
+      "evaluator": "legacy_reference_receipt_frozen",
+      "phase": "panel_read",
+      "status": "CONTROLLED_STOP_AT_PHASE0_GATE",
+      "wall_seconds": 3.528095400193706
+    }
+  ],
+  "repair_priorities": [
+    "GLOBAL_TRADE_TIME_BARRIER_ACROSS_16_STOCK_SHARDS",
+    "SHARED_VALUE_DAG_WITH_BOUNDED_BLOCK_CACHE",
+    "BATCHED_NATIVE_CROSS_SECTIONAL_RANK_MAPPING_TURNOVER_COST",
+    "ONLINE_REDUCER_ZERO_COORDINATE_ROW_RETENTION",
+    "PERIODIC_ATOMIC_CHECKPOINT_AND_FAIL_CLOSED_RSS_GATES"
+  ],
+  "schema_version": "cn_phase3cm_baseline_bottleneck_attribution_v1",
+  "scope": "RECEIPT_FROZEN_ONE_PAIR_FULL_COORDINATE_CONTROLLED_STOP",
+  "sealed_reads": {
+    "forward_2026": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "semantic_architecture_finding": {
+    "legacy_execution": "SHARD_LOCAL_CROSS_SECTIONAL_MAPPING",
+    "legacy_execution_is_full_market": false,
+    "parity_authority": "LEGACY_KERNEL_ON_MERGED_ALL_SHARDS_FIXTURE_NOT_LEGACY_SHARD_LOOP_OUTPUT",
+    "physical_layout": "SAME_TIME_RANGE_STOCK_PARTITIONS",
+    "required_execution": "GLOBAL_TRADE_TIME_BARRIER_ACROSS_ALL_16_SHARDS"
+  },
+  "status": "CN_PHASE3CM_LEGACY_BASELINE_ATTRIBUTED",
+  "strict_stage_a": "NOT_AUTHORIZED"
+}

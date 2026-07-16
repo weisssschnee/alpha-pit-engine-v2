@@ -1,0 +1,260 @@
+{
+  "device_read_benchmark": {
+    "bytes_per_second": 9076954004.419504,
+    "bytes_read": 15060804316,
+    "interpretation": "ACHIEVABLE_SEQUENTIAL_READ_BOUND_NOT_GUARANTEED_APPLICATION_COLD",
+    "method": "DOTNET_FILESTREAM_SEQUENTIAL_SCAN_8M_BUFFER",
+    "os_page_cache_purged": false,
+    "wall_seconds": 1.6592355
+  },
+  "execution_host": "77o",
+  "host": {
+    "cpu": {
+      "MaxClockSpeed": 4300,
+      "Name": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+      "NumberOfCores": 16,
+      "NumberOfLogicalProcessors": 32
+    },
+    "disks": {
+      "InterfaceType": "SCSI",
+      "Model": "KIOXIA-EXCERIA PLUS G4 SSD",
+      "Size": 2000396321280
+    },
+    "execution_volume": {
+      "DriveLetter": "D",
+      "FileSystem": "NTFS",
+      "Size": 1449366908928,
+      "SizeRemaining": 609313165312
+    },
+    "memory": {
+      "TotalPhysicalMemory": 100265193472
+    }
+  },
+  "legacy_evaluator": {
+    "active_hot_path": {
+      "bottleneck": {
+        "status": "INSTALLED_NOT_CALLED_BY_LEGACY_EVALUATOR"
+      },
+      "full_series_retention_evidence": {
+        "expression_cache": true,
+        "feature_matrix_cache": true,
+        "pnl_row_dicts": true,
+        "rows_by_hash": true
+      },
+      "numba": {
+        "kernel": "_rank_pct_1d_average_numba",
+        "parallel_kernel": false,
+        "status": "ACTIVE_HOT_PATH_SINGLE_RANK_KERNEL"
+      },
+      "numexpr": {
+        "status": "THREAD_ENV_CONFIGURED_NO_EXPLICIT_KERNEL_CALL"
+      },
+      "numpy": {
+        "calls": [
+          "np.argsort",
+          "np.nanquantile",
+          "np.corrcoef"
+        ],
+        "status": "ACTIVE_HOT_PATH"
+      },
+      "pandas": {
+        "fallback_paths": [
+          "to_pandas",
+          "pd.DataFrame",
+          ".groupby(",
+          ".sort_values(",
+          ".rank("
+        ],
+        "status": "ACTIVE_HOT_PATH"
+      },
+      "parallel_axis": "NONE_SERIAL_CANDIDATE_AND_SHARD_LOOPS",
+      "polars": {
+        "status": "INSTALLED_NOT_CALLED_BY_LEGACY_EVALUATOR"
+      },
+      "pyarrow": {
+        "calls": [
+          "pq.read_table",
+          "pq.ParquetFile",
+          "read_row_group"
+        ],
+        "status": "ACTIVE_HOT_PATH"
+      }
+    },
+    "path": "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\src\\our_system_phase2\\runtime\\phase3cm_train_portfolio_sortino_reward_audit.py",
+    "receipt_context_evaluator_hash": "53d75376ae4375ea915f0958300d9864f904d72d771fb0035e5f19ad6e2586ac"
+  },
+  "packages": {
+    "bottleneck": "1.6.0",
+    "numba": "0.65.1",
+    "numexpr": "2.14.1",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "polars": "1.42.0",
+    "pyarrow": "24.0.0"
+  },
+  "physical_release_layout": {
+    "legacy_shard_local_cross_section_is_full_market": false,
+    "partitioning_finding": "SAME_TIME_RANGE_STOCK_PARTITIONS",
+    "required_repair": "GLOBAL_TRADE_TIME_BARRIER_ACROSS_ALL_16_SHARDS",
+    "shard_count": 16,
+    "shards": [
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_00\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 28026372,
+        "source_shard": 0,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_01\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27954554,
+        "source_shard": 1,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_02\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27950457,
+        "source_shard": 2,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_03\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27832367,
+        "source_shard": 3,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_04\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27924911,
+        "source_shard": 4,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_05\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27855021,
+        "source_shard": 5,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_06\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27945637,
+        "source_shard": 6,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_07\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27923465,
+        "source_shard": 7,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_08\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27907077,
+        "source_shard": 8,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_09\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27963953,
+        "source_shard": 9,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_10\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27718374,
+        "source_shard": 10,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_11\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27764887,
+        "source_shard": 11,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_12\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27746812,
+        "source_shard": 12,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_13\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27908041,
+        "source_shard": 13,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_14\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 27993355,
+        "source_shard": 14,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      },
+      {
+        "every_row_group_spans_full_development_range": true,
+        "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\shard_15\\phase3aq_wide_true1min\\canary\\phase3aq_true_1min_formula_canary.parquet",
+        "row_groups": 36,
+        "rows": 28028300,
+        "source_shard": 15,
+        "trade_time_max": "2025-07-07 15:00:00",
+        "trade_time_min": "2024-01-02 09:30:00"
+      }
+    ]
+  },
+  "python": {
+    "executable": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+    "version": "3.11.9"
+  },
+  "schema_version": "cn_phase3cm_77o_environment_audit_v1",
+  "thread_environment": {
+    "ARROW_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "NUMBA_NUM_THREADS": "1",
+    "NUMEXPR_MAX_THREADS": "16",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  }
+}
