@@ -1,0 +1,49 @@
+{
+  "artifacts": {
+    "compact_panel": {
+      "path": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\signal_sketch_v1\\signal_sketch_compact_panel.parquet",
+      "sha256": "aa99730e7f3a4ed2eefdb875955784e9f01a3dc30dad080fdf107e816a53123e"
+    },
+    "coordinate_manifest": {
+      "path": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\signal_sketch_v1\\signal_sketch_coordinate_manifest.csv",
+      "sha256": "88a23e3e2879767d57cf78bd2563b296aa276c7c9ac5d60d0d27f1a7b23826ee"
+    },
+    "stock_selection": {
+      "path": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\signal_sketch_v1\\signal_sketch_stock_selection.csv",
+      "sha256": "e02f00fe29fab6ee442b1367694c818f999066a0dfb17f70e09ba747aea5fd0c"
+    }
+  },
+  "candidate_count": 24576,
+  "candidate_field_count": 86,
+  "compact_panel_rows": 290331,
+  "coordinate_count": 7296,
+  "coordinate_count_by_set": {
+    "A": 3648,
+    "B": 3648
+  },
+  "coordinate_version": "evalreset_development_coordinates_v1",
+  "created_at": "2026-07-11T06:02:53.124734+00:00",
+  "data_role": "development",
+  "inputs": {
+    "generation_csv": {
+      "path": "G:\\Project_V7_Rotation\\cn_evalreset_evidence_20260711\\phase3fix_run\\phase3cp_real_cm_all_generated_top_decisions.csv",
+      "sha256": "0046b98fcf0cf2fb737f0244d782e59414bcc01c900282c3336d3d3214f9860e"
+    },
+    "shard_root": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_20260619\\runtime\\phase3fix_true1min_2024_2025_sidecar_augmented_shards_20260709",
+    "split_manifest": {
+      "path": "runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+      "sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+    }
+  },
+  "labels_or_returns_read": false,
+  "materialized_coordinate_count_by_set": {
+    "A": 1804,
+    "B": 1802
+  },
+  "max_expression_window": 120,
+  "run_type": "evalreset_signal_sketch_prepare",
+  "selected_stock_count": 16,
+  "sketch_version": "evalreset_signal_sketch_v1",
+  "source_shard_count": 16,
+  "validation_holdout_forward_read": false
+}

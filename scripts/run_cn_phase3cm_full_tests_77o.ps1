@@ -30,6 +30,9 @@ try {
         -WindowStyle Hidden -PassThru -Wait
     $TargetFiles = @(
         "tests\test_phase3cm_streaming_block_reader.py",
+        "tests\test_phase3cm_qualification_orchestrators.py",
+        "tests\test_phase3cm_streaming_cache.py",
+        "tests\test_phase3cm_streaming_checkpoint.py",
         "tests\test_phase3cm_streaming_dag.py",
         "tests\test_phase3cm_streaming_expression.py",
         "tests\test_phase3cm_streaming_finalizer.py",
@@ -53,11 +56,20 @@ finally {
 function Read-TestCounts {
     param([string]$Path)
     [xml]$Document = Get-Content -LiteralPath $Path -Raw
-    $Root = $Document.testsuites
-    $Tests = [int]$Root.tests
-    $Failures = [int]$Root.failures
-    $Errors = [int]$Root.errors
-    $Skipped = [int]$Root.skipped
+    $Suites = @()
+    if ($null -ne $Document.testsuites) {
+        $Suites = @($Document.testsuites.testsuite)
+    }
+    elseif ($null -ne $Document.testsuite) {
+        $Suites = @($Document.testsuite)
+    }
+    if ($Suites.Count -eq 0) {
+        throw "JUnit report does not contain a testsuite: $Path"
+    }
+    $Tests = [int](($Suites | Measure-Object -Property tests -Sum).Sum)
+    $Failures = [int](($Suites | Measure-Object -Property failures -Sum).Sum)
+    $Errors = [int](($Suites | Measure-Object -Property errors -Sum).Sum)
+    $Skipped = [int](($Suites | Measure-Object -Property skipped -Sum).Sum)
     return [ordered]@{
         tests = $Tests
         passed = $Tests - $Failures - $Errors - $Skipped

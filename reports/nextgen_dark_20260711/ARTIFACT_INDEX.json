@@ -51,9 +51,9 @@
     {
       "exists": true,
       "id": "typed_temporal_program",
-      "last_verified_sha": "cd56494ff965eb5421cbc48af0dac2989cb26ab442d8942db771baf50cdd2b0d",
+      "last_verified_sha": "355bcd2d70f160005c764ed0dd3b246904f0c00639273f95516717e60d1c7a16",
       "path": "src/our_system_phase2/services/typed_temporal_program.py",
-      "size_bytes": 26363,
+      "size_bytes": 26430,
       "state": "IMPLEMENTED"
     },
     {
@@ -157,17 +157,17 @@
     {
       "exists": true,
       "id": "architecture_overlay",
-      "last_verified_sha": "d794a1cc5f26328214ca0cffe4c3b3f8fd26e4d2d98ed35cfbdf05c4020a483e",
+      "last_verified_sha": "529e7f27a33440f4ad30955ada462c7a0a11814f264cb9bd97230c834249add5",
       "path": "config/architecture_overlay.json",
-      "size_bytes": 26410,
+      "size_bytes": 27215,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "state",
-      "last_verified_sha": "1aed45ff4f007141e71e6f1c07d40114fb082dfbcd7326957d2521eb7a9e04a6",
+      "last_verified_sha": "987e5d387cb11f0dd97438c5b2c6feaa933965572af0e98028c91a49d975508c",
       "path": ".planning/STATE.md",
-      "size_bytes": 10775,
+      "size_bytes": 12866,
       "state": "IMPLEMENTED"
     },
     {
@@ -188,6 +188,6 @@
     }
   ],
   "index_version": "nextgen_dark_artifact_index_v1",
-  "refreshed_at": "2026-07-15T07:06:56.208961+00:00",
+  "refreshed_at": "2026-07-16T15:54:49.422528+00:00",
   "status": "NEXTGEN_DARK_INFRASTRUCTURE_READY"
 }

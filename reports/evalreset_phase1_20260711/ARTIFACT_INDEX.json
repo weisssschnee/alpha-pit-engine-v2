@@ -67,9 +67,9 @@
     {
       "exists": true,
       "id": "signal_sketch_prepare",
-      "last_verified_sha": "d256d38b1f9fb8c465a4172cf0690cc8cf514dbfce6d0c131c69a88b699e0bae",
-      "path": "G:/Project_V7_Rotation/cn_evalreset_evidence_20260711/signal_sketch_v1/signal_sketch_prepare_manifest.json",
-      "size_bytes": 2109,
+      "last_verified_sha": "7d44a83e10c53a66b6b546a22606cb7566a1358524faabbe0fa913d33f48a433",
+      "path": "reports/evalreset_phase1_20260711/external_evidence/signal_sketch_prepare_manifest.json",
+      "size_bytes": 2060,
       "state": "IMPLEMENTED"
     },
     {
@@ -91,22 +91,22 @@
     {
       "exists": true,
       "id": "architecture_overlay",
-      "last_verified_sha": "d794a1cc5f26328214ca0cffe4c3b3f8fd26e4d2d98ed35cfbdf05c4020a483e",
+      "last_verified_sha": "529e7f27a33440f4ad30955ada462c7a0a11814f264cb9bd97230c834249add5",
       "path": "config/architecture_overlay.json",
-      "size_bytes": 26410,
+      "size_bytes": 27215,
       "state": "IMPLEMENTED"
     },
     {
       "exists": true,
       "id": "phase_state",
-      "last_verified_sha": "1aed45ff4f007141e71e6f1c07d40114fb082dfbcd7326957d2521eb7a9e04a6",
+      "last_verified_sha": "987e5d387cb11f0dd97438c5b2c6feaa933965572af0e98028c91a49d975508c",
       "path": ".planning/STATE.md",
-      "size_bytes": 10775,
+      "size_bytes": 12866,
       "state": "IMPLEMENTED"
     }
   ],
   "index_version": "evalreset_phase1_artifact_index_v1",
   "phase": "A_EVALRESET",
-  "refreshed_at": "2026-07-15T07:06:51.026122+00:00",
+  "refreshed_at": "2026-07-16T15:54:47.468918+00:00",
   "status": "COMPLETE"
 }
