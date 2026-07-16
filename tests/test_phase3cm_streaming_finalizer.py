@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 from scripts.finalize_cn_phase3cm_streaming_repair import (
+    SIDECAR_COST_SUMMARY_NAME,
     _last_phase_value,
     _linear_fit,
     _resource_projection,
 )
+
+
+def test_sidecar_cost_summary_does_not_overwrite_detailed_layout_manifest() -> None:
+    assert SIDECAR_COST_SUMMARY_NAME == "CN_PHASE3CM_SIDECAR_COST_SUMMARY.json"
+    assert SIDECAR_COST_SUMMARY_NAME != "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V1.json"
 
 
 def _backend(pair_count: int, wall: float, cpu: float) -> dict[str, object]:

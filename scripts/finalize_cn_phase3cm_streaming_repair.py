@@ -12,6 +12,9 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 
+SIDECAR_COST_SUMMARY_NAME = "CN_PHASE3CM_SIDECAR_COST_SUMMARY.json"
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -362,8 +365,8 @@ def main() -> int:
         for row in (active_layout, session_layout, active_labels, session_labels)
     )
     sidecar_summary = {
-        "schema_version": "cn_development_time_major_execution_layout_v1",
-        "status": "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_QUALIFIED",
+        "schema_version": "cn_phase3cm_sidecar_cost_summary_v1",
+        "status": "CN_PHASE3CM_SIDECAR_COST_SUMMARY_QUALIFIED",
         "active_field_layout": {"path": str(active_layout_path), "sha256": _sha256(active_layout_path)},
         "active_label_layout": {"path": str(active_label_path), "sha256": _sha256(active_label_path)},
         "session_field_layout": {"path": str(session_layout_path), "sha256": _sha256(session_layout_path)},
@@ -380,7 +383,7 @@ def main() -> int:
         "holdout_reads": 0,
         "forward_2026_reads": 0,
     }
-    _write_json(runtime_root / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V1.json", sidecar_summary)
+    _write_json(runtime_root / SIDECAR_COST_SUMMARY_NAME, sidecar_summary)
 
     coordinate_parity_path = runtime_root / "parity" / "CN_SESSION_FULL_COORDINATE_PARITY.json"
     resume_parity_path = runtime_root / "resume_parity" / "CN_ACTIVE_RESUME_PARITY.json"
