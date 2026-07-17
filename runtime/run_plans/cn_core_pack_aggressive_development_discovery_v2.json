@@ -26,7 +26,7 @@
   "authorization": "CURRENT_USER_AGGRESSIVE_DEVELOPMENT_DISCOVERY_AUTHORIZATION_20260718",
   "code_hashes": {
     "generation_epoch": "907a8294ae33fb5471560bcf23495c3d3587ea9b6c87d2102d3f23d04717a1db",
-    "generation_runner": "cfe6643c33ed5cbe5c38f19607bcf727b74d1dcfb6055c71b0a245e0d1f49db8",
+    "generation_runner": "c83c9706017e23cb4246c1528ed2aa4c7512cfad9b09218b0b8f8966be7cf4f7",
     "grammar": "10d055cb9a53c72c45400ed889f65c26bd6ff813dff214720a036bdb4dba4cf6",
     "streaming_evaluator": "755807c3c79eca10bc76d2f9604e7940fd1b062ca650796380fda8fff4958df5",
     "typed_compiler": "8a5b5fd8552f01fcc09d1bf0768be84f1e5490e32d4a03fc561777d053038327"
@@ -50,7 +50,7 @@
       "select_highest_parity_safe_throughput": true
     }
   },
-  "contract_hash": "23734d51c8fbbbb500c8932ee3f3716ecc96f7d6973b59a1afb4c77497574d27",
+  "contract_hash": "c12be81630c7ecf97ea35dad9930e1f1233651f22287fee9e23714194eba2c64",
   "contract_version": "cn_core_pack_aggressive_development_discovery_v2",
   "data_access_contract": {
     "candidate_promotion": "FORBIDDEN",
@@ -158,7 +158,7 @@
     "terminal_total_pair_cap": null
   },
   "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
-  "repo_sha": "2a24b2f7c6417eb7bb9c92ebd0e14079635a2876",
+  "repo_sha": "ac81237a8c0d0759c965cb3eddbc3645ce2c336f",
   "route_root_allowlists": {
     "DISCLOSURE_EVENT": [
       "fund_ba_accounts_payable_acceleration_at_disclosure",
@@ -526,6 +526,6 @@
     "top_quantile": 0.2,
     "validation_holdout_forward_rows_present": 0
   },
-  "tree_sha": "64900f17adca5853cdc9d64466a60047b7049e64",
+  "tree_sha": "031dba3a8328f210f47c6765ff7b82a84ab1970e",
   "unified_registry_path": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json"
 }
