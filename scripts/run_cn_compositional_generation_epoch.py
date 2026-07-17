@@ -42,6 +42,11 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _source_sha256(path: Path) -> str:
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -97,7 +102,7 @@ def _source_identity(plan: Mapping[str, Any], *, repo_sha: str, tree_sha: str) -
     }
     for name, expected in dict(plan.get("code_hashes") or {}).items():
         path = code_paths.get(str(name))
-        if path is None or not path.exists() or _sha256(path) != str(expected):
+        if path is None or not path.exists() or _source_sha256(path) != str(expected):
             raise RuntimeError(f"generation contract code hash drift: {name}")
     return observed_repo_sha, observed_tree_sha
 

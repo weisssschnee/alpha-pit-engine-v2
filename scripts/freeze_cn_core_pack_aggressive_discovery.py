@@ -49,6 +49,11 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _source_sha256(path: Path) -> str:
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 def _json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -138,7 +143,7 @@ def freeze(
             "split_manifest_sha256": _sha256(split_manifest_path),
         },
         "code_hashes": {
-            name: _sha256(path) for name, path in sorted(code_paths.items())
+            name: _source_sha256(path) for name, path in sorted(code_paths.items())
         },
         "route_root_allowlists": route_allowlists,
         "held_or_blocked_roots": {

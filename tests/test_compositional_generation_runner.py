@@ -19,8 +19,9 @@ def _module() -> object:
     return module
 
 
-def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def _source_sha256(path: Path) -> str:
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def test_packaged_source_identity_requires_explicit_sha_and_code_hashes(
@@ -32,7 +33,7 @@ def test_packaged_source_identity_requires_explicit_sha_and_code_hashes(
     plan = {
         "repo_sha": "a" * 40,
         "tree_sha": "b" * 40,
-        "code_hashes": {"grammar": _sha256(grammar)},
+        "code_hashes": {"grammar": _source_sha256(grammar)},
     }
 
     assert runner._source_identity(
