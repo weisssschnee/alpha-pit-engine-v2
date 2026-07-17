@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "schema_ref": "gsd-graphify-runtime-fidelity/schemas/architecture-overlay.schema.json",
+  "profile_refs": ["profiles/field_information_research.json"],
   "nodes": [
     {
       "id": "development_data",
@@ -144,7 +145,57 @@
         "src/our_system_phase2/services/field_information_v0.py",
         "runtime/cn_field_information_v0_20260717/run_manifest.json"
       ],
-      "claim_badges": ["STRUCTURAL ONLY", "NO PERFORMANCE", "NO OOS"]
+      "claim_badges": ["PARTIAL CENSUS", "NO PERFORMANCE", "NO OOS"]
+    },
+    {
+      "id": "field_information_census",
+      "label": "Context-bound non-performance Information Census",
+      "kind": "experimental-research",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "src/our_system_phase2/services/field_information_census.py",
+        "runtime/run_plans/cn_chip_plate_information_census_v1.json",
+        "runtime/cn_chip_plate_information_census_20260717/run_manifest.json",
+        "runtime/cn_chip_plate_information_census_20260717/access_ledger.json"
+      ],
+      "critical": true,
+      "contracts": [
+        {
+          "id": "information_census_non_performance_only",
+          "type": "BOUNDARY",
+          "rule": "The Information Census may measure coverage, variation, entropy and field-to-field redundancy only; returns, labels, reward, validation, holdout and 2026 are forbidden.",
+          "severity": "HARD",
+          "enforced_by": "run_cn_chip_plate_information_census",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "information_materialization_fail_closed",
+          "type": "EVIDENCE",
+          "rule": "A field family without real PIT materialization remains NOT_EVALUATED and cannot be inferred from registry rows, schemas or placeholders.",
+          "severity": "HARD",
+          "enforced_by": "information_census_input_contract",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "tests/test_field_information_census.py",
+        "verified_at_sha": "ca91741e842ec77c92d32e3962f2b5aa1fccd6b1"
+      },
+      "claim_badges": ["CHIP RUNTIME COMPLETE", "PLATE NOT EVALUATED", "NO PERFORMANCE", "NO OOS"]
+    },
+    {
+      "id": "field_information_core_pack",
+      "label": "Exploratory non-performance Core Pack",
+      "kind": "evidence",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "runtime/cn_chip_plate_information_census_20260717/core_pack.json",
+        "runtime/cn_chip_plate_information_census_20260717/field_information_metrics.json",
+        "runtime/cn_chip_plate_information_census_20260717/pairwise_nmi.json"
+      ],
+      "claim_badges": ["6 CHIP INTERACTION FIELDS", "EXPLORATORY", "NOT SEARCH AUTHORITY", "NO PERFORMANCE"]
     },
     {
       "id": "feature_state_fabric",
@@ -645,6 +696,36 @@
       "target": "unified_capability_registry",
       "relation": "observes_structural_route_and_generator_exposure",
       "lifecycle": "EXPERIMENTAL"
+    },
+    {
+      "id": "information_evidence_to_census",
+      "source": "field_information_evidence",
+      "target": "field_information_census",
+      "relation": "supplies_context_bound_field_tokens",
+      "lifecycle": "EXPERIMENTAL",
+      "critical": true,
+      "contract": {"id": "census_requires_registered_materialized_tokens", "type": "ADMISSION", "rule": "Only context-bound tokens with real materialization and explicit roles may enter an Information Census.", "severity": "HARD", "enforced_by": "information_census_input_contract", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_chip_plate_information_census_20260717/information_census_contract.json", "verified_at_sha": "a67653e41506fe2c984da1dc52e3bf7156378997"}
+    },
+    {
+      "id": "census_to_core_pack",
+      "source": "field_information_census",
+      "target": "field_information_core_pack",
+      "relation": "produces_exploratory_representatives",
+      "lifecycle": "EXPERIMENTAL",
+      "critical": true,
+      "contract": {"id": "core_pack_non_performance_evidence_only", "type": "EVIDENCE", "rule": "Core Pack membership reflects non-performance quality and redundancy gates only and cannot make an Alpha claim.", "severity": "HARD", "enforced_by": "select_core_pack", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_chip_plate_information_census_20260717/core_pack.json", "verified_at_sha": "a67653e41506fe2c984da1dc52e3bf7156378997"}
+    },
+    {
+      "id": "core_pack_to_registry_advisory",
+      "source": "field_information_core_pack",
+      "target": "unified_capability_registry",
+      "relation": "advises_future_route_review_only",
+      "lifecycle": "EXPERIMENTAL",
+      "critical": true,
+      "contract": {"id": "core_pack_cannot_authorize_routes", "type": "BOUNDARY", "rule": "An exploratory Core Pack cannot itself change field roles, generator exposure, route admission, search budgets or promotion state.", "severity": "HARD", "enforced_by": "UnifiedCapabilityRegistry", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_field_information_v0_20260717/run_manifest.json", "verified_at_sha": "a67653e41506fe2c984da1dc52e3bf7156378997"}
     },
     {
       "id": "registry_to_receipt",
