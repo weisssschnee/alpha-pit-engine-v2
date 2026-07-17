@@ -1,4 +1,4 @@
-"""Add selected PIT fundamental/chip fields to a parity-proven session sidecar."""
+"""Add PIT fundamental, chip, and pre-lagged daily context to a session sidecar."""
 
 from __future__ import annotations
 
