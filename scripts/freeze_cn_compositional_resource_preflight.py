@@ -203,6 +203,11 @@ def _candidate_rows(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--runtime-root", type=Path, required=True)
+    parser.add_argument(
+        "--source-runtime-root",
+        type=Path,
+        help="read immutable admission and pair receipts here while writing the wave into runtime-root",
+    )
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
@@ -212,6 +217,9 @@ def main() -> int:
     args = parser.parse_args()
 
     root = args.runtime_root.resolve()
+    source_root = (
+        args.source_runtime_root.resolve() if args.source_runtime_root else root
+    )
     plan = json.loads(args.plan.read_text(encoding="utf-8"))
     release = json.loads(args.release_manifest.read_text(encoding="utf-8"))
     strict = dict(plan["strict_evaluation_contract"])
@@ -222,8 +230,8 @@ def main() -> int:
     if release.get("forbidden_roles_present") or bool(release.get("forward_2026_present")):
         raise RuntimeError("development release contains a forbidden role")
 
-    admissions = _read_csv(root / "CN_DIVERSITY_ADMISSION.csv")
-    compact = _read_jsonl(root / "CN_PAIR_RECEIPTS.jsonl")
+    admissions = _read_csv(source_root / "CN_DIVERSITY_ADMISSION.csv")
+    compact = _read_jsonl(source_root / "CN_PAIR_RECEIPTS.jsonl")
     compact_by_id = {str(row["candidate_id"]): row for row in compact}
     configured_count = args.pair_count
     if configured_count is None:
@@ -305,6 +313,7 @@ def main() -> int:
         "split_manifest_hash": split.manifest_hash,
         "registry_hash": registry.registry_hash,
         "pack_identity": stable_hash(pack),
+        "source_runtime_root": str(source_root),
         "artifacts": [
             {"path": str(path.relative_to(root)).replace("\\", "/"), "sha256": _sha256(path), "bytes": path.stat().st_size}
             for path in artifacts
