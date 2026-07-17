@@ -242,6 +242,58 @@
       }
     },
     {
+      "color": "#f9a825",
+      "contract": null,
+      "critical": false,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "field_master_to_information_evidence",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "compiles_non_authoritative_token_view",
+      "required": false,
+      "source": "cn_field_master_registry",
+      "target": "field_information_evidence",
+      "validation": {
+        "checked_at": "2026-07-17T14:18:20.271881+00:00",
+        "evidence_ref": "",
+        "evidence_sha256": null,
+        "level": "NOT_REQUIRED",
+        "notes": [],
+        "profile": "",
+        "result": "NOT_REQUIRED",
+        "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#f9a825",
+      "contract": null,
+      "critical": false,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "information_evidence_observes_route_registry",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "observes_structural_route_and_generator_exposure",
+      "required": false,
+      "source": "field_information_evidence",
+      "target": "unified_capability_registry",
+      "validation": {
+        "checked_at": "2026-07-17T14:18:20.271881+00:00",
+        "evidence_ref": "",
+        "evidence_sha256": null,
+        "level": "NOT_REQUIRED",
+        "notes": [],
+        "profile": "",
+        "result": "NOT_REQUIRED",
+        "verified_at_sha": null
+      }
+    },
+    {
       "color": "#2e7d32",
       "contract": {
         "bypass_forbidden": true,
@@ -932,7 +984,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-17T13:06:48.765742+00:00",
+  "generated_at": "2026-07-17T14:18:20.271881+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1175,6 +1227,53 @@
         "profile": "",
         "result": "PASS",
         "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+      },
+      "visible_by_default": true
+    },
+    {
+      "active_authority": false,
+      "authority": null,
+      "color": "#f9a825",
+      "contracts": [],
+      "critical": false,
+      "evidence": "STATIC",
+      "expires_at": "",
+      "id": "field_information_evidence",
+      "kind": "evidence",
+      "label": "Context-bound field token and exposure evidence",
+      "lifecycle": "EXPERIMENTAL",
+      "owner": "",
+      "paths": [
+        "src/our_system_phase2/services/field_information_v0.py",
+        "runtime/cn_field_information_v0_20260717/run_manifest.json"
+      ],
+      "promotion_requirements": [],
+      "raw_node_ids": [
+        "reports_cn_matched_control_candidate_parallel_20260715_cn_matched_control_run_manifest_json",
+        "scripts_build_cn_field_information_v0",
+        "scripts_build_cn_field_information_v0_main",
+        "scripts_build_cn_field_information_v0_rationale_1",
+        "src_our_system_phase2_services_field_information_v0",
+        "src_our_system_phase2_services_field_information_v0_compile_tokens",
+        "src_our_system_phase2_services_field_information_v0_context",
+        "src_our_system_phase2_services_field_information_v0_file_sha256",
+        "src_our_system_phase2_services_field_information_v0_observed_exposure",
+        "src_our_system_phase2_services_field_information_v0_rationale_1",
+        "src_our_system_phase2_services_field_information_v0_summarize",
+        "tests_test_field_information_v0",
+        "tests_test_field_information_v0_test_tokens_trace_authority_and_exposure_without_information_claims"
+      ],
+      "required": false,
+      "semantic_role": "",
+      "validation": {
+        "checked_at": "2026-07-17T14:18:20.271881+00:00",
+        "evidence_ref": "",
+        "evidence_sha256": null,
+        "level": "NOT_REQUIRED",
+        "notes": [],
+        "profile": "",
+        "result": "NOT_REQUIRED",
+        "verified_at_sha": null
       },
       "visible_by_default": true
     },
@@ -2157,12 +2256,14 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
+        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -2179,7 +2280,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-17T13:03:22.447518+00:00",
+        "checked_at": "2026-07-17T14:18:20.271881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2225,12 +2326,14 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
+        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -2247,7 +2350,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-17T13:03:22.447518+00:00",
+        "checked_at": "2026-07-17T14:18:20.271881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2447,25 +2550,25 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "882AFD52D3ACC176950C2986D0482A4A13BD69043BF68F3451D342E3E331D29F"
+    "sha256": "9272F8DB0E542BA6E91931EFED8F59C2875788D82F4821687FA39172FB3EDCA4"
   },
   "profile_id": null,
   "profiles": [],
   "raw": {
-    "built_at_commit": "0a4a16e5b19618235b61a3f8d3c3b8f13c8ab744",
-    "edge_count": 8586,
-    "node_count": 3754,
+    "built_at_commit": "c152bc393d4b4fab1917ab525a3c06da56b33b11",
+    "edge_count": 8628,
+    "node_count": 3780,
     "path": ".planning/graphs/graph.json",
-    "sha256": "AA02B6BC11BC426A18E54D4F12C92585F58969DEA126885B913FE7ADB5C1E7C9"
+    "sha256": "0393D8391CF6E28C9F830F0124A54B7ED7492841F0E2EDD534F812EA5FC13F29"
   },
-  "repo_head": "0a4a16e5b19618235b61a3f8d3c3b8f13c8ab744",
+  "repo_head": "c152bc393d4b4fab1917ab525a3c06da56b33b11",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 29,
-    "current_nodes": 23,
+    "current_edges": 31,
+    "current_nodes": 24,
     "errors": 0,
     "runtime_edges": 0,
     "runtime_nodes": 0,
