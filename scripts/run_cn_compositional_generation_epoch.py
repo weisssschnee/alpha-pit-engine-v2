@@ -71,7 +71,13 @@ def _git(*args: str) -> str:
     ).strip()
 
 
-def _source_identity(plan: Mapping[str, Any], *, repo_sha: str, tree_sha: str) -> tuple[str, str]:
+def _source_identity(
+    plan: Mapping[str, Any],
+    *,
+    repo_sha: str,
+    tree_sha: str,
+    ignored_code_hashes: frozenset[str] = frozenset(),
+) -> tuple[str, str]:
     git_executable = os.environ.get("GIT_EXECUTABLE", "git")
     git_available = bool(shutil.which(git_executable)) and (REPO / ".git").exists()
     if git_available:
@@ -101,10 +107,84 @@ def _source_identity(plan: Mapping[str, Any], *, repo_sha: str, tree_sha: str) -
         "streaming_evaluator": REPO / "scripts/run_cn_phase3cm_streaming_qualification.py",
     }
     for name, expected in dict(plan.get("code_hashes") or {}).items():
+        if str(name) in ignored_code_hashes:
+            continue
         path = code_paths.get(str(name))
         if path is None or not path.exists() or _source_sha256(path) != str(expected):
             raise RuntimeError(f"generation contract code hash drift: {name}")
     return observed_repo_sha, observed_tree_sha
+
+
+def _artifact_reference(path: Path) -> str:
+    try:
+        reference = path.relative_to(REPO)
+    except ValueError:
+        reference = path
+    return str(reference).replace("\\", "/")
+
+
+def _finalize_existing_generation(
+    *,
+    output: Path,
+    plan_path: Path,
+    registry_path: Path,
+    repo_sha: str,
+    tree_sha: str,
+) -> int:
+    names = (
+        "CN_PROPOSAL_EXPOSURE_LEDGER.parquet",
+        "CN_PAIR_RECEIPTS.jsonl",
+        "CN_STRUCTURAL_PREADMISSION.json",
+        "CN_ADMISSION_WATERFALL.csv",
+        "CN_ROUTE_SKELETON_METRICS.csv",
+        "CN_GENERATION_EPOCH_SUMMARY.json",
+    )
+    artifact_paths = tuple(output / name for name in names)
+    missing = [str(path) for path in artifact_paths if not path.is_file()]
+    if missing:
+        raise RuntimeError(f"cannot finalize incomplete generation artifacts: {missing}")
+    summary = json.loads((output / "CN_GENERATION_EPOCH_SUMMARY.json").read_text(encoding="utf-8"))
+    expected = {
+        "repo_sha": repo_sha,
+        "tree_sha": tree_sha,
+        "plan_sha256": _sha256(plan_path),
+        "registry_sha256": _sha256(registry_path),
+    }
+    drift = {
+        key: {"expected": value, "observed": summary.get(key)}
+        for key, value in expected.items()
+        if str(summary.get(key)) != str(value)
+    }
+    if drift:
+        raise RuntimeError(f"existing generation artifact identity drift: {drift}")
+    manifest = {
+        "manifest_version": "cn_compositional_nline_generation_manifest_repair_v2",
+        "stage": "GENERATION_AND_STRUCTURAL_PREADMISSION",
+        "status": "COMPLETED_WITH_MANIFEST_PATH_REPAIR",
+        "repo_sha": repo_sha,
+        "tree_sha": tree_sha,
+        "plan_sha256": _sha256(plan_path),
+        "registry_sha256": _sha256(registry_path),
+        "repair_reason": "external output root was not relative to packaged workspace",
+        "finalizer_source_sha256": _source_sha256(Path(__file__)),
+        "artifacts": [
+            {
+                "path": _artifact_reference(path),
+                "sha256": _sha256(path),
+                "bytes": path.stat().st_size,
+            }
+            for path in artifact_paths
+        ],
+        "data_roles_accessed": [],
+        "economic_evaluator_accessed": False,
+        "manifest_hash": "",
+    }
+    manifest["manifest_hash"] = stable_hash(
+        {key: value for key, value in manifest.items() if key != "manifest_hash"}
+    )
+    _write_json(output / "CN_GENERATION_ARTIFACT_MANIFEST.json", manifest)
+    print(json.dumps({**summary, "artifact_manifest_status": manifest["status"]}, ensure_ascii=False, sort_keys=True))
+    return 0
 
 
 def _route_skeleton_rows(unique_pairs: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -181,6 +261,7 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--repo-sha", default="")
     parser.add_argument("--tree-sha", default="")
+    parser.add_argument("--finalize-existing", action="store_true")
     args = parser.parse_args()
 
     plan_path = args.plan.resolve()
@@ -194,7 +275,20 @@ def main() -> int:
         plan,
         repo_sha=args.repo_sha,
         tree_sha=args.tree_sha,
+        ignored_code_hashes=(
+            frozenset({"generation_runner"})
+            if args.finalize_existing
+            else frozenset()
+        ),
     )
+    if args.finalize_existing:
+        return _finalize_existing_generation(
+            output=output,
+            plan_path=plan_path,
+            registry_path=registry_path,
+            repo_sha=repo_sha,
+            tree_sha=tree_sha,
+        )
 
     result = build_compositional_generation_epoch(
         registry,
@@ -294,7 +388,7 @@ def main() -> int:
         "registry_sha256": _sha256(registry_path),
         "artifacts": [
             {
-                "path": str(path.relative_to(REPO)).replace("\\", "/"),
+                "path": _artifact_reference(path),
                 "sha256": _sha256(path),
                 "bytes": path.stat().st_size,
             }
