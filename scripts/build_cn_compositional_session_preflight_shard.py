@@ -13,6 +13,11 @@ from typing import Any
 import pandas as pd
 import pyarrow.parquet as pq
 
+from our_system_phase2.services.chip_sidecar import (
+    CHIP_FIELDS,
+    load_chip_context,
+    point_in_time_chip_context,
+)
 from our_system_phase2.services.fundamental_representations import CanonicalFundamentalMaterializer
 from our_system_phase2.services.pit_fundamental_fabric import PITFundamentalFabricAdapter, normalize_cn_code
 from our_system_phase2.services.typed_primitive_gate import expression_fields
@@ -56,6 +61,7 @@ def main() -> int:
     parser.add_argument("--candidate-table", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--fundamental-root", type=Path, required=True)
+    parser.add_argument("--chip-root", type=Path)
     parser.add_argument("--maximum-observable-time", required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--shard-index", type=int, required=True)
@@ -73,6 +79,10 @@ def main() -> int:
     schema = set(parquet.schema_arrow.names)
     physical_fields = sorted(set(required_fields) & schema)
     sidecar_fields = sorted(set(required_fields) - schema)
+    chip_fields = sorted(set(sidecar_fields) & set(CHIP_FIELDS.values()))
+    fundamental_fields = sorted(set(sidecar_fields) - set(chip_fields))
+    if chip_fields and args.chip_root is None:
+        raise PermissionError("session preflight chip fields require --chip-root")
     base_columns = [
         column
         for column in (
@@ -126,7 +136,7 @@ def main() -> int:
     coordinates["code"] = coordinates["code"].map(normalize_cn_code)
     coordinate_index = pd.MultiIndex.from_frame(coordinates)
     coverage: dict[str, float] = {}
-    for field_id in sidecar_fields:
+    for field_id in fundamental_fields:
         capability = registry.resolve(field_id)
         spec = dict((capability.metadata or {}).get("canonical_representation") or {})
         if not spec or not bool(spec.get("search_eligible")):
@@ -137,6 +147,23 @@ def main() -> int:
             raise ValueError(f"duplicate PIT materialization coordinates: {field_id}")
         base[field_id] = values.reindex(coordinate_index).to_numpy()
         coverage[field_id] = round(float(base[field_id].notna().mean()), 8)
+
+    chip_input: dict[str, Any] | None = None
+    if chip_fields:
+        chip, chip_input = load_chip_context(
+            args.chip_root,
+            allowed_codes=set(base["code"].astype(str)),
+            fields=chip_fields,
+            maximum_observable_time=args.maximum_observable_time,
+        )
+        base = point_in_time_chip_context(
+            base,
+            chip,
+            fields=chip_fields,
+            data_role="development",
+        )
+        for field_id in chip_fields:
+            coverage[field_id] = round(float(base[field_id].notna().mean()), 8)
 
     for column in ("open", "high", "low", "vwap"):
         if column not in base:
@@ -175,6 +202,9 @@ def main() -> int:
         "symbol_count": int(base["code"].nunique()),
         "physical_field_count": len(physical_fields),
         "sidecar_field_count": len(sidecar_fields),
+        "fundamental_field_count": len(fundamental_fields),
+        "chip_field_count": len(chip_fields),
+        "chip_sidecar": chip_input,
         "sidecar_coverage": coverage,
         "output": {"path": str(target), "sha256": _sha256(target), "bytes": target.stat().st_size},
     }

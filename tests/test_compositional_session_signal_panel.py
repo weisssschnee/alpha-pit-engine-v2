@@ -5,6 +5,7 @@ import json
 import pandas as pd
 
 from scripts.prepare_cn_compositional_session_signal_panel import _load_chip_context
+from our_system_phase2.services.chip_sidecar import load_chip_context
 from our_system_phase2.services.compositional_session_signal_panel import (
     attach_coordinate_row_indices,
     build_full_session_coordinate_rows,
@@ -121,5 +122,13 @@ def test_session_panel_loads_only_requested_development_chip_context(tmp_path) -
     assert frame[["code", "chip_cost_p50"]].to_dict("records") == [
         {"code": "000001", "chip_cost_p50": 10.0}
     ]
+    direct, direct_evidence = load_chip_context(
+        root,
+        allowed_codes={"000001"},
+        fields=["chip_cost_p50"],
+        maximum_observable_time="2025-01-05T15:00:00",
+    )
+    assert direct.equals(frame)
+    assert direct_evidence == evidence
     assert evidence["loaded_row_count"] == 1
     assert evidence["shard_count"] == 1

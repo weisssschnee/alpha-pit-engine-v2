@@ -17,6 +17,7 @@ from zipfile import ZipFile, ZipInfo
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 
 from our_system_phase2.services.atomic_checkpoint import atomic_write_json, durable_flush
 from our_system_phase2.services.feature_state_fabric import (
@@ -53,6 +54,61 @@ class ChipSidecarResult:
     manifest_path: Path
     field_registry_path: Path
     shard_paths: tuple[Path, ...]
+
+
+def load_chip_context(
+    root: Path,
+    *,
+    allowed_codes: set[str],
+    fields: Sequence[str],
+    maximum_observable_time: str,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Load only requested PIT chip rows under a sealed-2026 cutoff."""
+    root = Path(root)
+    requested = tuple(sorted(set(map(str, fields))))
+    unknown = sorted(set(requested) - set(CHIP_FIELDS.values()))
+    if unknown:
+        raise ValueError(f"unknown chip fields: {unknown}")
+    maximum = pd.Timestamp(maximum_observable_time)
+    if maximum >= FORWARD_SEALED_FROM:
+        raise PermissionError("chip maximum observable time cannot enter sealed 2026")
+    manifest_path = root / "chip_sidecar_manifest_v1.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"chip sidecar manifest missing: {manifest_path}")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    if bool(manifest.get("forward_2026_performance_accessed")) or bool(
+        manifest.get("sealed_2026_values_converted_or_used")
+    ):
+        raise PermissionError("chip sidecar manifest reports sealed 2026 value access")
+    paths = sorted((root / "shards").glob("*.parquet"))
+    if len(paths) != int(manifest.get("shard_count") or -1):
+        raise RuntimeError("chip sidecar shard closure does not match manifest")
+    columns = ["code", "source_session", "source_observed_at", *requested]
+    normalized_codes = {_normalize_code(value) for value in allowed_codes}
+    parts: list[pd.DataFrame] = []
+    for path in paths:
+        table = pq.read_table(
+            path,
+            columns=columns,
+            filters=[("code", "in", sorted(normalized_codes))],
+        )
+        if table.num_rows:
+            parts.append(table.to_pandas())
+    chip = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(columns=columns)
+    if not chip.empty:
+        chip["code"] = chip["code"].map(_normalize_code)
+        observed = pd.to_datetime(chip["source_observed_at"], errors="raise")
+        chip = chip.loc[observed.le(maximum)].copy()
+        if pd.to_datetime(chip["source_observed_at"], errors="raise").dt.year.ge(2026).any():
+            raise PermissionError("chip sidecar exposes sealed 2026 observation")
+    return chip, {
+        "manifest_path": str(manifest_path),
+        "manifest_sha256": _file_sha256(manifest_path),
+        "sidecar_version": str(manifest.get("sidecar_version") or ""),
+        "shard_count": len(paths),
+        "loaded_row_count": len(chip),
+        "maximum_observable_time": maximum_observable_time,
+    }
 
 
 def _decode(payload: bytes) -> tuple[str, str]:

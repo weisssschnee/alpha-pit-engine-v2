@@ -33,6 +33,7 @@ from our_system_phase2.services.compositional_session_signal_panel import (  # n
 )
 from our_system_phase2.services.chip_sidecar import (  # noqa: E402
     CHIP_FIELDS,
+    load_chip_context,
     point_in_time_chip_context,
 )
 from our_system_phase2.services.fundamental_representations import (  # noqa: E402
@@ -108,44 +109,12 @@ def _load_chip_context(
     fields: list[str],
     maximum_observable_time: str,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
-    manifest_path = root / "chip_sidecar_manifest_v1.json"
-    if not manifest_path.exists():
-        raise FileNotFoundError(f"chip sidecar manifest missing: {manifest_path}")
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-    if bool(manifest.get("forward_2026_performance_accessed")) or bool(
-        manifest.get("sealed_2026_values_converted_or_used")
-    ):
-        raise PermissionError("chip sidecar manifest reports sealed 2026 value access")
-    paths = sorted((root / "shards").glob("*.parquet"))
-    if len(paths) != int(manifest.get("shard_count") or -1):
-        raise RuntimeError("chip sidecar shard closure does not match manifest")
-    columns = ["code", "source_session", "source_observed_at", *fields]
-    parts: list[pd.DataFrame] = []
-    normalized_codes = {normalize_cn_code(value) for value in allowed_codes}
-    for path in paths:
-        table = pq.read_table(
-            path,
-            columns=columns,
-            filters=[("code", "in", sorted(normalized_codes))],
-        )
-        if table.num_rows:
-            parts.append(table.to_pandas())
-    chip = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(columns=columns)
-    if not chip.empty:
-        chip["code"] = chip["code"].map(normalize_cn_code)
-        observed = pd.to_datetime(chip["source_observed_at"], errors="raise")
-        maximum = pd.Timestamp(maximum_observable_time)
-        chip = chip.loc[observed.le(maximum)].copy()
-        if observed.dt.year.ge(2026).any():
-            raise PermissionError("chip sidecar exposes sealed 2026 observation")
-    return chip, {
-        "manifest_path": str(manifest_path),
-        "manifest_sha256": _sha256(manifest_path),
-        "sidecar_version": str(manifest.get("sidecar_version") or ""),
-        "shard_count": len(paths),
-        "loaded_row_count": len(chip),
-        "maximum_observable_time": maximum_observable_time,
-    }
+    return load_chip_context(
+        root,
+        allowed_codes=allowed_codes,
+        fields=fields,
+        maximum_observable_time=maximum_observable_time,
+    )
 
 
 def prepare(args: argparse.Namespace) -> int:
