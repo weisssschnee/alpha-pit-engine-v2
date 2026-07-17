@@ -201,6 +201,66 @@
       "claim_badges": ["272 REPRESENTATIVES", "62 TRUE1MIN", "204 FUNDAMENTAL", "6 CHIP", "EXPLORATORY", "NOT SEARCH AUTHORITY", "NO PERFORMANCE"]
     },
     {
+      "id": "core_pack_generator_capacity_review",
+      "label": "Core Pack generator capacity review",
+      "kind": "experimental-research",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "src/our_system_phase2/services/core_pack_generator_review.py",
+        "scripts/run_cn_core_pack_generator_capacity_review.py",
+        "runtime/cn_core_pack_generator_capacity_v1_20260718/route_capacity_review.json",
+        "runtime/cn_core_pack_generator_capacity_v1_20260718/field_root_review.json",
+        "runtime/cn_core_pack_generator_capacity_v1_20260718/run_manifest.json"
+      ],
+      "critical": true,
+      "contracts": [
+        {
+          "id": "generator_capacity_structural_only",
+          "type": "EVIDENCE",
+          "rule": "Generator capacity review measures typed construction, compile legality, root consumption and structural identity only; it cannot make a signal, reward or Alpha claim.",
+          "severity": "HARD",
+          "enforced_by": "run_cn_core_pack_generator_capacity_review",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/run_manifest.json",
+        "verified_at_sha": "773167bf7816ead66985c5fa5d3e066c9ed5a505"
+      },
+      "claim_badges": ["466,944 STRUCTURAL ATTEMPTS", "42,189 ROUTE-LEVEL EXACT IDENTITIES", "264/272 CORE ROOTS", "8 HELD", "NO PERFORMANCE", "NO OOS"]
+    },
+    {
+      "id": "core_pack_development_discovery_contract",
+      "label": "Core Pack development discovery contract",
+      "kind": "contract",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
+        "src/our_system_phase2/services/compositional_grammar.py",
+        "tests/test_core_pack_generator_review.py"
+      ],
+      "critical": true,
+      "contracts": [
+        {
+          "id": "discovery_contract_zero_active_budget",
+          "type": "BOUNDARY",
+          "rule": "The frozen root scope has zero active proposal, admission and strict-evaluation budget and does not authorize execution, promotion, adaptive reward or cross-epoch memory.",
+          "severity": "HARD",
+          "enforced_by": "CompositionalGrammarV2 route_root_allowlist and contract execution_authorized flag",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
+        "verified_at_sha": "773167bf7816ead66985c5fa5d3e066c9ed5a505"
+      },
+      "claim_badges": ["FROZEN ROOT SCOPE", "ZERO ACTIVE BUDGET", "PLATE DISABLED", "2026 SEALED", "NOT SEARCH AUTHORITY"]
+    },
+    {
       "id": "feature_state_fabric",
       "label": "Feature and State Fabric",
       "kind": "capability",
@@ -729,6 +789,40 @@
       "critical": true,
       "contract": {"id": "core_pack_cannot_authorize_routes", "type": "BOUNDARY", "rule": "An exploratory Core Pack cannot itself change field roles, generator exposure, route admission, search budgets or promotion state.", "severity": "HARD", "enforced_by": "UnifiedCapabilityRegistry", "bypass_forbidden": true},
       "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/run_manifest.json", "verified_at_sha": "71bf30b05391ab6793dde8853e95a5a3b3ff1df3"}
+    },
+    {
+      "id": "core_pack_to_generator_capacity_review",
+      "source": "field_information_core_pack",
+      "target": "core_pack_generator_capacity_review",
+      "relation": "supplies_non_performance_representative_roots",
+      "lifecycle": "EXPERIMENTAL"
+    },
+    {
+      "id": "registry_to_generator_capacity_review",
+      "source": "unified_capability_registry",
+      "target": "core_pack_generator_capacity_review",
+      "relation": "supplies_typed_route_and_pit_authority",
+      "lifecycle": "EXPERIMENTAL"
+    },
+    {
+      "id": "generator_capacity_to_discovery_contract",
+      "source": "core_pack_generator_capacity_review",
+      "target": "core_pack_development_discovery_contract",
+      "relation": "freezes_reachable_core_plus_mandatory_support_roots",
+      "lifecycle": "EXPERIMENTAL",
+      "critical": true,
+      "contract": {"id": "reachable_root_scope_only", "type": "ADMISSION", "rule": "Only information-core roots consumed by the current constructor plus route-required support roots may enter the prepared scope; registry-eligible but constructor-unreachable roots remain held.", "severity": "HARD", "enforced_by": "build_frozen_discovery_contract", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/route_capacity_review.json", "verified_at_sha": "773167bf7816ead66985c5fa5d3e066c9ed5a505"}
+    },
+    {
+      "id": "prepared_contract_does_not_authorize_search",
+      "source": "core_pack_development_discovery_contract",
+      "target": "compositional_nline_bounded_search",
+      "relation": "scopes_future_proposals_without_execution_authority",
+      "lifecycle": "EXPERIMENTAL",
+      "critical": true,
+      "contract": {"id": "separate_search_authorization_required", "type": "BOUNDARY", "rule": "A prepared root contract with zero active budgets cannot start search; a separate development-only authorization and newly frozen nonzero budgets are required.", "severity": "HARD", "enforced_by": "execution_authorized and active budget gates", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_core_pack_development_discovery_v1.json", "verified_at_sha": "773167bf7816ead66985c5fa5d3e066c9ed5a505"}
     },
     {
       "id": "registry_to_receipt",

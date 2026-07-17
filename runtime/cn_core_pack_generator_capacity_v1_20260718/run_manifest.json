@@ -1,0 +1,65 @@
+{
+  "continuation": "AWAIT_SEPARATE_DEVELOPMENT_ONLY_DISCOVERY_AUTHORIZATION",
+  "contract_hash": "c189ab4942e7864627e8f016c5be332f7ce993d55d43c298205c2b8f9a35fba3",
+  "core_review_outcomes": {
+    "ALLOW_KEEP_REVIEW": 264,
+    "HOLD_RESEARCH": 8
+  },
+  "core_root_count": 272,
+  "core_root_exposed_count": 264,
+  "cost": {
+    "economic_evaluator_calls": 0,
+    "market_data_rows_read": 0,
+    "remote_compute_runtime_seconds": 76.59954770002514
+  },
+  "execution_authorized": false,
+  "execution_host": "DESKTOP-77OPJ6F",
+  "experiment_id": "20260718_cn_core_pack_generator_capacity_001",
+  "failure": null,
+  "field_root_review_schema_hash": "e7bedff30100958e5c49c7ebb42440069b537f0140ea0ec3f434472862222c1b",
+  "finished_at_utc": "2026-07-17T17:49:35.141407+00:00",
+  "input_files": {
+    "capability_information_metrics": "D:/ChengboRemote/workspace/cn_core_pack_capacity_773167b/runtime/cn_full_field_information_research_v1_20260717/capability_information_metrics.json",
+    "field_master_registry": "D:/ChengboRemote/workspace/cn_core_pack_capacity_773167b/runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
+    "information_core_pack": "D:/ChengboRemote/workspace/cn_core_pack_capacity_773167b/runtime/cn_full_field_information_research_v1_20260717/core_pack.json",
+    "information_research_manifest": "D:/ChengboRemote/workspace/cn_core_pack_capacity_773167b/runtime/cn_full_field_information_research_v1_20260717/run_manifest.json",
+    "unified_capability_registry": "D:/ChengboRemote/workspace/cn_core_pack_capacity_773167b/runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json"
+  },
+  "input_hashes": {
+    "capability_information_metrics": "962d3cd223aa0c1a01494ed63528520ffb9eaa8ebd4c2892a03cde6333c9f97b",
+    "field_master_registry": "42c4972f62a3b1d85d70f3852a0a8fed2fab97b15e71b2f9a3cc634356b53301",
+    "information_core_pack": "e54f18235ff01206cfea7abc9ef9e372f25d5291c46057aeb0900d5309596fe9",
+    "information_research_manifest": "e7a83ab31822c760c572a9493a12229e8eda4f504858bdb090f4f6b4d2db0aff",
+    "unified_capability_registry": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+  },
+  "mode": "STRUCTURAL_RESEARCH_NO_PERFORMANCE",
+  "objective": "QUALIFY_CORE_PACK_ROOT_CONSUMPTION_AND_FREEZE_A_NON_EXECUTABLE_DISCOVERY_SCOPE",
+  "parameters": {
+    "attempts_by_route": {
+      "BROAD_EVENT_FROZEN_ENTRY": 4096,
+      "DISCLOSURE_EVENT": 32768,
+      "FIRSTN_PATH": 32768,
+      "INTRADAY_STATE_TRANSITION": 32768,
+      "MARKET_REGIME_CONDITION": 32768,
+      "MINUTE_STATIC": 32768,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 32768,
+      "SLOW_TEMPORAL_CHANGE": 32768
+    },
+    "checkpoints": [
+      2048,
+      8192,
+      32768
+    ],
+    "seeds": [
+      20260718,
+      20260719
+    ]
+  },
+  "python_executable": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "reproducible": true,
+  "runtime_seconds": 76.59954770002514,
+  "source_repo_sha": "773167bf7816ead66985c5fa5d3e066c9ed5a505",
+  "started_at_utc": "2026-07-17T17:48:18.541516+00:00",
+  "status": "CN_CORE_PACK_GENERATOR_CAPACITY_REVIEW_COMPLETED"
+}

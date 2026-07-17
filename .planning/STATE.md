@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-17
+Updated: 2026-07-18
 
-Current state: `CN_FULL_FIELD_INFORMATION_RESEARCH_V1_COMPLETED_STAGE_A_NOT_AUTHORIZED`
+Current state: `CN_CORE_PACK_GENERATOR_CAPACITY_REVIEW_COMPLETED_DISCOVERY_NOT_AUTHORIZED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -57,6 +57,25 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   capabilities and six membership metadata records therefore remain explicitly
   `NOT_EVALUATED`; no current snapshot, placeholder, or `plate=0` substitute
   was used. `zygc_em` remains `PIT_CONTRACT_UNRESOLVED`.
+- The 77o Core Pack generator review executed 466,944 deterministic structural
+  attempts across two seeds. Every constructed primary/control pair compiled
+  legally, all declared route skeletons were exercised, and the current typed
+  grammar produced 42,189 route-level distinct exact/canonical identities
+  without reading market data, returns, reward, validation, holdout, or 2026.
+- The current grammar consumes 264 of 272 Core Pack roots. Seven roots remain
+  correctly fail-closed: five unqualified RZRQ unit fields, unqualified `vol`,
+  and latched `evt_uplimit_active` with no direct typed route. The eighth,
+  `state_close_range_location_sign`, is registered and information-qualified
+  but held because expanding its compound state expression exceeds the current
+  depth/leaf contract.
+- Six additional non-Core fields are route-eligible but not consumed by their
+  current constructors: four slow-level disclosure-age conditions and two
+  stock-scope regime contexts. They remain visible as generator gaps and are
+  not represented as active support roots.
+- `cn_core_pack_development_discovery_v1` freezes reachable Core roots plus only
+  the support roots actually required by present constructors. It has zero
+  active proposal, admission, and strict-evaluation budget and is not search
+  authorization. Plate-minute roots remain excluded.
 
 ## Hard boundaries
 
@@ -72,16 +91,18 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-Full-field information coverage is complete for currently materializable
-true1min, canonical fundamental, chip, and frozen event capabilities. Real PIT
-plate-minute materialization is absent on 77o, so plate information
-qualification remains fail-closed rather than being inferred from schemas or
-registry rows.
+Core Pack root capacity and constructor reachability are now explicit. Formal
+discovery remains blocked only by the absence of a separate development-only
+search authorization and nonzero frozen budgets. Plate remains independently
+blocked by missing real PIT minute materialization; one compound intraday state
+root and six condition roots remain held as localized constructor gaps.
 
 ## Next action
 
-Use the unified Core Pack and per-field information evidence to review typed
-generator/root capacity and define the next bounded discovery contract. Plate
-is resumed only when its real PIT materialization is present on 77o. Do not
-start Stage A, broad performance search, candidate promotion, or 2026 access
-without a new frozen authorization.
+If bounded development discovery is desired, separately authorize and freeze
+nonzero route budgets against
+`runtime/run_plans/cn_core_pack_development_discovery_v1.json`; do not silently
+expand the root allowlists. Plate resumes only when real PIT minute
+materialization is present on 77o. Do not start Stage A, candidate promotion,
+adaptive memory, validation/holdout access, or 2026 access without new explicit
+authority.

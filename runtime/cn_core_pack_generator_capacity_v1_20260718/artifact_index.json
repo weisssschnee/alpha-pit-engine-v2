@@ -1,0 +1,47 @@
+{
+  "artifacts": [
+    {
+      "bytes": 58834,
+      "path": "route_capacity_review.json",
+      "sha256": "6563ae7d076c8e09e2a15f490e0e2abb069728d94329a0900e1f368d08df43e8",
+      "stage": "FINAL"
+    },
+    {
+      "bytes": 2039081,
+      "path": "field_root_review.json",
+      "sha256": "43981dfb2a1cbc18100e23661bf50876f681add34824e8650915c85e305f4c99",
+      "stage": "FINAL"
+    },
+    {
+      "bytes": 864649,
+      "path": "field_root_review.csv",
+      "sha256": "1230a7d2676e82dc6b40e402029d580b58aaa55b224a27e7243a01ea74425bab",
+      "stage": "FINAL"
+    },
+    {
+      "bytes": 556,
+      "path": "candidate_factor_review.json",
+      "sha256": "8ee6cab59c115e5c7e80c2f337ebe5142ba9920a87ffe68be9bb7f6b723ec187",
+      "stage": "FINAL"
+    },
+    {
+      "bytes": 42828,
+      "path": "frozen_discovery_contract.json",
+      "sha256": "c9f6a0f9bc3380ca731d71958a8b68a88b3805d665778a37c2a8564276e2f640",
+      "stage": "FINAL"
+    },
+    {
+      "bytes": 330,
+      "path": "access_ledger.json",
+      "sha256": "3f8538b3a92602fa2a3c1cf1acbed6461cc5f9673a0d2666e211e7ac93bb8f9f",
+      "stage": "FINAL"
+    },
+    {
+      "bytes": 3304,
+      "path": "run_manifest.json",
+      "sha256": "367cd37159f00c196624db0dd967411adfcdd9f653e89bae17ed8678900c4da2",
+      "stage": "FINAL"
+    }
+  ],
+  "status": "CN_CORE_PACK_GENERATOR_CAPACITY_REVIEW_COMPLETED"
+}

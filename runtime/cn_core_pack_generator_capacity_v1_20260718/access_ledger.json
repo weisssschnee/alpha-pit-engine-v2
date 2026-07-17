@@ -1,0 +1,10 @@
+{
+  "candidate_promotion": false,
+  "cross_epoch_memory": false,
+  "development_market_data_accessed": false,
+  "forward_2026_accessed": false,
+  "holdout_accessed": false,
+  "returns_labels_reward_or_selector_accessed": false,
+  "status": "DEVELOPMENT_ROLE_NOT_OPENED_STRUCTURAL_ONLY",
+  "validation_accessed": false
+}

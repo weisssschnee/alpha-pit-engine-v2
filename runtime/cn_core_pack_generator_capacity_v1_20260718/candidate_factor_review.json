@@ -1,0 +1,19 @@
+{
+  "all_review_outcomes": {
+    "ALLOW_KEEP_REVIEW": 264,
+    "HOLD_RESEARCH": 1419
+  },
+  "core_hold_reasons": {
+    "NO_DIRECT_TYPED_ROUTE_USE_FROZEN_EVENT_ENTRY_OR_DERIVED_REPRESENTATION": 1,
+    "REGISTERED_CORE_ROOT_NOT_CONSUMED_BY_CURRENT_GENERATOR": 1,
+    "SOURCE_UNIT_GLOSSARY_NOT_ASSERTED": 6
+  },
+  "core_review_outcomes": {
+    "ALLOW_KEEP_REVIEW": 264,
+    "HOLD_RESEARCH": 8
+  },
+  "core_root_count": 272,
+  "field_record_count": 1683,
+  "performance_or_reward_used": false,
+  "review_does_not_promote_candidates": true
+}
