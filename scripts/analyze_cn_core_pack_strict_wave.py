@@ -237,7 +237,6 @@ def analyze_strict_wave(
         and not unexpected_pair_ids
         and all(
             summary["status"] == "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
-            and summary["blocked_pair_count"] == 0
             for summary in backend_summaries.values()
         )
     )

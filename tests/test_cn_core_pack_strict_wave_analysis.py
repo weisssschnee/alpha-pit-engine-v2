@@ -109,3 +109,22 @@ def test_analysis_fails_closed_on_binding_hash_mismatch() -> None:
 
     with pytest.raises(ValueError, match="binding hash mismatch"):
         analyze_strict_wave(binding=_binding(), backend_results=[("active_bar", result)])
+
+
+def test_semantic_pair_blocker_is_not_mislabeled_as_infrastructure_failure() -> None:
+    result = _result("active_bar", "p1", "a", "ac", 0.0)
+    result["pair_results"][0]["pair_evaluation_status"] = "PAIR_EVALUATION_BLOCKED"
+    result["pair_results"][0]["pair_evaluation_blockers"] = "control_signal_empty_or_constant"
+
+    summary, _ = analyze_strict_wave(
+        binding={
+            **_binding(),
+            "pair_count": 1,
+            "pairs": _binding()["pairs"][:1],
+            "candidate_members": _binding()["candidate_members"][:2],
+        },
+        backend_results=[("active_bar", result)],
+    )
+
+    assert summary["gates"]["no_infrastructure_failed_pairs"] is True
+    assert summary["overall"]["blocked_pair_count"] == 1
