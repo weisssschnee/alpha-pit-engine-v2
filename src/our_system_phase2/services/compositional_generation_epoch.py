@@ -112,6 +112,7 @@ def build_compositional_generation_epoch(
     route_attempt_quotas: Mapping[str, int],
     policies: Sequence[str],
     seeds: Sequence[int],
+    route_root_allowlist: Mapping[str, Sequence[str]] | None = None,
 ) -> GenerationEpochResult:
     if set(route_attempt_quotas) != set(SEARCHABLE_ROUTES):
         raise ValueError("generation quotas must cover exactly the seven searchable routes")
@@ -121,7 +122,10 @@ def build_compositional_generation_epoch(
     if any(int(quota) <= 0 or int(quota) % cells for quota in route_attempt_quotas.values()):
         raise ValueError("every route quota must be positive and policy-seed balanced")
 
-    grammar = CompositionalGrammarV2(registry)
+    grammar = CompositionalGrammarV2(
+        registry,
+        route_root_allowlist=route_root_allowlist,
+    )
     ledger: list[dict[str, Any]] = []
     unique_by_exact: dict[str, dict[str, Any]] = {}
     discovery_policies: dict[str, set[str]] = defaultdict(set)
@@ -340,6 +344,8 @@ def build_compositional_generation_epoch(
         "formal_search_unfrozen": False,
         "promotion_allowed": False,
         "forward_2026_accessed": False,
+        "proposal_partition_semantics": "PARTITION_LABEL_ONLY_NO_ADAPTIVE_POLICY_CLAIM",
+        "proposal_root_scope_hash": stable_hash(route_root_allowlist or {}),
     }
     return GenerationEpochResult(summary, ledger, unique_pairs, waterfall)
 
@@ -347,9 +353,14 @@ def build_compositional_generation_epoch(
 def reconstruct_generation_pair(
     registry: UnifiedCapabilityRegistry,
     receipt: Mapping[str, Any],
+    *,
+    route_root_allowlist: Mapping[str, Sequence[str]] | None = None,
 ) -> Any:
     """Rebuild and verify a pair from its compact deterministic receipt."""
-    grammar = CompositionalGrammarV2(registry)
+    grammar = CompositionalGrammarV2(
+        registry,
+        route_root_allowlist=route_root_allowlist,
+    )
     pair = grammar.propose(
         str(receipt["route_id"]),
         attempt_index=int(receipt["route_attempt_index"]),

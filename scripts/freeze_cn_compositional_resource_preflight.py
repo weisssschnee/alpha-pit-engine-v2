@@ -228,7 +228,10 @@ def main() -> int:
     candidates, pack = _candidate_rows(
         selected,
         compact_by_id=compact_by_id,
-        grammar=CompositionalGrammarV2(registry),
+        grammar=CompositionalGrammarV2(
+            registry,
+            route_root_allowlist=plan.get("route_root_allowlists"),
+        ),
     )
 
     split = FixedSplitAuthority.read(args.split_manifest)

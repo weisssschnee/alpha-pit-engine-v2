@@ -157,10 +157,16 @@ def main() -> int:
         route_attempt_quotas=plan["generation_contract"]["route_attempt_quotas"],
         policies=plan["policies"],
         seeds=plan["seeds"],
+        route_root_allowlist=plan.get("route_root_allowlists"),
     )
     preadmission_cap = min(
         len(result.unique_pairs),
-        int(plan["admission_contract"]["maximum_pairs"]) * 2,
+        int(
+            plan["generation_contract"].get(
+                "structural_preadmission_maximum_pairs",
+                int(plan["admission_contract"]["maximum_pairs"]) * 2,
+            )
+        ),
     )
     preadmission = select_structural_preadmission(
         result.unique_pairs,
@@ -217,6 +223,8 @@ def main() -> int:
         "policy_exact_unique_counts": dict(sorted(policy_counts.items())),
         "seed_exact_unique_counts": dict(sorted(seed_counts.items())),
         "behavior_identity_status": "PENDING_DEVELOPMENT_SIGNAL_SKETCH",
+        "proposal_partition_semantics": result.summary["proposal_partition_semantics"],
+        "proposal_root_scope_hash": result.summary["proposal_root_scope_hash"],
         "formal_search_unfrozen": False,
         "validation_accessed": False,
         "holdout_accessed": False,
