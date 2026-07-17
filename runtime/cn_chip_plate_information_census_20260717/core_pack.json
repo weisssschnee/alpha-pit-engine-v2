@@ -1,0 +1,77 @@
+{
+  "decisions": [
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p05",
+      "reason": "NON_PERFORMANCE_QUALITY_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.8074441434139645
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p15",
+      "reason": "NON_PERFORMANCE_QUALITY_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.7833251722890513
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p50",
+      "reason": "NON_PERFORMANCE_QUALITY_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.8534972267492087
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p85",
+      "reason": "NON_PERFORMANCE_QUALITY_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.8121846030683433
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p95",
+      "reason": "NON_PERFORMANCE_QUALITY_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.7086656759068944
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_weighted_mean",
+      "reason": "NON_PERFORMANCE_QUALITY_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "chip_historical_high",
+      "reason": "ROLE_BENCHMARK_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "chip_historical_low",
+      "reason": "ROLE_BENCHMARK_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "chip_profit_ratio",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0
+    }
+  ],
+  "performance_claim_allowed": false,
+  "selected_field_ids": [
+    "chip_cost_weighted_mean",
+    "chip_cost_p95",
+    "chip_cost_p50",
+    "chip_cost_p15",
+    "chip_cost_p85",
+    "chip_cost_p05"
+  ],
+  "status": "EXPLORATORY_NON_PERFORMANCE_CORE_PACK"
+}

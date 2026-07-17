@@ -46,8 +46,17 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   372 appeared in the fixed structural grammar sample. All 30 chip/plate value
   fields are registered, while only six chip interaction fields and three
   true1min plate-peer interaction fields are payload-eligible and observed.
-  Benchmark, condition, and membership metadata remain non-payload. Information
-  qualification and Core Pack selection remain `NOT_EVALUATED`.
+  Benchmark, condition, and membership metadata remain non-payload.
+- The first fixed `CHIP_PLATE_STATE` non-performance Information Census ran on
+  77o over 3,822,719 PIT chip rows with a deterministic 478,366-row two-bucket
+  information sample. Nine chip fields were evaluated, seven passed information
+  quality gates, and all six interaction-only cost-distribution fields entered
+  an `EXPLORATORY_NON_PERFORMANCE_CORE_PACK`. The profit-ratio field remains a
+  qualified condition control; historical high/low remain benchmark controls.
+  Field-to-field NMI was stable across the two hash buckets and did not cross
+  the frozen 0.95 redundancy threshold. This is information evidence only and
+  makes no Alpha or performance claim. The three registered true1min plate-peer
+  fields remain `NOT_EVALUATED_MATERIALIZATION_ABSENT_ON_77O`.
 
 ## Hard boundaries
 
@@ -63,14 +72,15 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The inventory authority, structural exposure ledger, and minimal chip/plate
-typed route admission are complete. The remaining gap is evidence, not wiring:
-no chip or plate field has completed development information qualification.
+The inventory authority, structural exposure ledger, minimal chip/plate typed
+route admission, and chip information pilot are complete. Real PIT plate-minute
+materialization is absent on 77o, so plate information qualification remains
+fail-closed rather than being inferred from schemas or registry rows.
 
 ## Next action
 
-Freeze a small development-only Information Census contract for the
-`CHIP_PLATE_STATE` context, limited to the nine payload-eligible interaction
-fields plus matched benchmark/condition controls. Do not start Stage A, broad
-performance search, candidate promotion, or 2026 access without a new frozen
-authorization.
+Use the accepted non-performance census contract context by context to expand
+coverage beyond the chip pilot, while keeping unavailable materializations
+`NOT_EVALUATED`. Plate is resumed only when its real PIT materialization is
+present on 77o. Do not start Stage A, broad performance search, candidate
+promotion, or 2026 access without a new frozen authorization.

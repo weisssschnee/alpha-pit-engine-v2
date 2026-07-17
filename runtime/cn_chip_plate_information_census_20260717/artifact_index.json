@@ -1,0 +1,39 @@
+{
+  "artifacts": [
+    {
+      "path": "access_ledger.json",
+      "sha256": "eb920734f67998a4d2722bde7e23f5a0b34747c8d0fe3908912f98141f523acd",
+      "size": 490
+    },
+    {
+      "path": "core_pack.json",
+      "sha256": "9830558601e4a5ac00733908684319e75a4baec54ecbeaab6880671ccfa51c09",
+      "size": 2386
+    },
+    {
+      "path": "field_information_metrics.csv",
+      "sha256": "92b1d4f84d7c6cf5622a7deb2bddad403454c1f66531fc423dd70e3981e6d3eb",
+      "size": 1328
+    },
+    {
+      "path": "field_information_metrics.json",
+      "sha256": "58fb99aae2d2ccfad3e8a79b582798bb8cb40fc48a8a185254cb317b29add754",
+      "size": 3803
+    },
+    {
+      "path": "information_census_contract.json",
+      "sha256": "209e2474d8afe73288e63e99ae583183e46935c9a571453e4ad343e8e6c916e4",
+      "size": 767
+    },
+    {
+      "path": "pairwise_nmi.csv",
+      "sha256": "538771fa428bed5f5bf0f04e6ea01dac92f9289e830ac23199ccee3fa84e64d6",
+      "size": 5071
+    },
+    {
+      "path": "pairwise_nmi.json",
+      "sha256": "0a6747e20a0f6849c3ab118b95ae868181470bd63774d591fa55e9389d3db4da",
+      "size": 12799
+    }
+  ]
+}

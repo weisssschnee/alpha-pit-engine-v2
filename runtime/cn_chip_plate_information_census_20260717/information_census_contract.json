@@ -1,0 +1,26 @@
+{
+  "core_pack_status": "EXPLORATORY_NON_PERFORMANCE_ONLY",
+  "data_roles": [
+    "development_only"
+  ],
+  "experiment_id": "20260717_cn_chip_plate_information_census_001",
+  "forbidden_inputs": [
+    "return",
+    "label",
+    "reward",
+    "validation",
+    "holdout",
+    "2026_forward"
+  ],
+  "objective": "Measure non-performance information quality and redundancy for CHIP_PLATE_STATE",
+  "plate_policy": "FAIL_CLOSED_WHEN_REAL_MATERIALIZATION_IS_ABSENT",
+  "policy": {
+    "bins": 16,
+    "min_coverage": 0.6,
+    "min_sample_unique": 32,
+    "min_temporal_change_rate": 0.01,
+    "redundancy_nmi": 0.95
+  },
+  "repo_sha": "ca91741e842ec77c92d32e3962f2b5aa1fccd6b1",
+  "sample_rule": "pandas_hash(code,source_session)%16 in [0,1]"
+}
