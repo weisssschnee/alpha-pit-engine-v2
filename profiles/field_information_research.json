@@ -8,27 +8,5 @@
     "field_information_census",
     "field_information_core_pack",
     "compositional_nline_bounded_search"
-  ],
-  "required_edges": [
-    {
-      "id": "field_master_to_information_evidence",
-      "source": "cn_field_master_registry",
-      "target": "field_information_evidence"
-    },
-    {
-      "id": "information_evidence_to_census",
-      "source": "field_information_evidence",
-      "target": "field_information_census"
-    },
-    {
-      "id": "census_to_core_pack",
-      "source": "field_information_census",
-      "target": "field_information_core_pack"
-    },
-    {
-      "id": "core_pack_to_registry_advisory",
-      "source": "field_information_core_pack",
-      "target": "unified_capability_registry"
-    }
   ]
 }
