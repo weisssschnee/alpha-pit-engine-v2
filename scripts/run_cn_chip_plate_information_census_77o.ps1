@@ -1,7 +1,7 @@
 param(
-    [string]$RepoSha = "37c06734b6f1580fba0dd7f281d358fd4fb231fc",
-    [string]$StageRoot = "D:\ChengboRemote\staging\cn_field_information_37c0673",
-    [string]$OutputRoot = "D:\ChengboRemote\runtime\cn_chip_plate_information_census_20260717"
+    [string]$RepoSha = "ca91741e842ec77c92d32e3962f2b5aa1fccd6b1",
+    [string]$StageRoot = "D:\ChengboRemote\staging\cn_field_information_ca91741",
+    [string]$OutputRoot = "D:\ChengboRemote\runtime\cn_chip_plate_information_census_20260717_r2"
 )
 
 $ErrorActionPreference = "Stop"
