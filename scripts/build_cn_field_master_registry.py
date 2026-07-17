@@ -42,7 +42,7 @@ def _normalized(rows: Iterable[dict[str, Any]]) -> list[dict[str, str]]:
 
 def build(output: Path = OUTPUT) -> dict[str, Any]:
     source_path = REPO / "reports/cn_field_universe_search_exposure_audit_20260714/fundamental_source_universe.csv"
-    capability_path = REPO / "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json"
+    capability_path = REPO / "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json"
     active_path = REPO / "runtime/field_registry/nextgen_dark_field_registry_v2.json"
     with source_path.open("r", encoding="utf-8", newline="") as handle:
         fundamental_sources = list(csv.DictReader(handle))
@@ -93,6 +93,8 @@ def build(output: Path = OUTPUT) -> dict[str, Any]:
             "blocked_reason": row["blocked_reason"],
         })
 
+    capability_by_name = {str(row["field_id"]) for row in capability["fields"]}
+
     sidecars = (
         ("CHIP_SIDECAR_FIELD", "chip_distribution", "STOCK", chip_field_specs(), "G:/BaiduNetdiskDownload/每日筹码及胜率.zip"),
         ("PLATE_MARKET_FIELD", "plate_market_context", "PLATE", plate_market_field_specs(), "G:/BaiduNetdiskDownload/*板块_历史行情数据"),
@@ -101,6 +103,8 @@ def build(output: Path = OUTPUT) -> dict[str, Any]:
     for kind, family, scope, specs, artifact in sidecars:
         for spec in specs:
             row = spec.canonical()
+            if row["name"] in capability_by_name:
+                continue
             rows.append({
                 "field_uid": f'sidecar::{row["name"]}',
                 "field_name": row["name"],

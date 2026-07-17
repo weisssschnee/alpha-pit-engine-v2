@@ -42,10 +42,12 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   field or route authorities.
 - Field Information V0 structural qualification compiled all 1,683 master
   records into traceable tokens and observed current grammar exposure without
-  reading reward or performance. Of 420 route-registry fields, 363 appeared in
-  the fixed structural grammar sample. All 36 chip/plate records remain outside
-  the route registry and generator. Information qualification and Core Pack
-  selection remain `NOT_EVALUATED`.
+  reading reward or performance. The route registry now contains 450 fields;
+  372 appeared in the fixed structural grammar sample. All 30 chip/plate value
+  fields are registered, while only six chip interaction fields and three
+  true1min plate-peer interaction fields are payload-eligible and observed.
+  Benchmark, condition, and membership metadata remain non-payload. Information
+  qualification and Core Pack selection remain `NOT_EVALUATED`.
 
 ## Hard boundaries
 
@@ -61,17 +63,14 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The inventory authority and structural exposure ledger are complete. Chip and
-plate capabilities have not been admitted into the unified typed route
-registry: 36 inventory records currently have zero route-registry presence and
-zero observed generator exposure. This is an explicit capability-policy gap,
-not missing data and not a performance conclusion.
+The inventory authority, structural exposure ledger, and minimal chip/plate
+typed route admission are complete. The remaining gap is evidence, not wiring:
+no chip or plate field has completed development information qualification.
 
 ## Next action
 
-Define the minimal typed route contract for chip and plate fields, preserving
-their existing benchmark/condition/interaction-only roles and PIT membership
-guards. After that structural admission is tested, freeze a small
-development-only Information Census contract for one context. Do not start
-Stage A, broad performance search, candidate promotion, or 2026 access without
-a new frozen authorization.
+Freeze a small development-only Information Census contract for the
+`CHIP_PLATE_STATE` context, limited to the nine payload-eligible interaction
+fields plus matched benchmark/condition controls. Do not start Stage A, broad
+performance search, candidate promotion, or 2026 access without a new frozen
+authorization.

@@ -9,7 +9,7 @@ from our_system_phase2.services.unified_capability_registry import UnifiedCapabi
 
 REPO = Path(__file__).resolve().parents[1]
 MASTER = REPO / "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json"
-REGISTRY = REPO / "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json"
+REGISTRY = REPO / "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json"
 
 
 def test_tokens_trace_authority_and_exposure_without_information_claims() -> None:
@@ -24,8 +24,25 @@ def test_tokens_trace_authority_and_exposure_without_information_claims() -> Non
     assert not any(row["information_qualified"] or row["core_pack_selected"] for row in tokens)
     chip = next(row for row in tokens if row["field_id"] == "chip_cost_p50")
     assert chip["context"] == "CHIP_PLATE_STATE"
-    assert chip["registry_present"] is False
-    assert chip["generator_exposed"] is False
+    assert chip["registry_present"] is True
+    assert chip["search_allowed"] is True
+    assert set(chip["allowed_routes"]) == {"SLOW_CROSS_SECTIONAL_LEVEL", "SLOW_TEMPORAL_CHANGE"}
+    assert any(
+        row["family"] == "chip_distribution" and row["generator_exposed"]
+        for row in tokens
+    )
+    chip_benchmark = next(row for row in tokens if row["field_id"] == "chip_historical_low")
+    assert chip_benchmark["benchmark_only"] is True
+    assert chip_benchmark["search_allowed"] is False
+    plate_peer = next(row for row in tokens if row["field_id"] == "plate_peer_return_mean")
+    assert plate_peer["allowed_routes"] == ["MINUTE_STATIC"]
+    assert any(
+        row["family"] == "true1min_plate_sparse" and row["generator_exposed"]
+        for row in tokens
+    )
+    plate_condition = next(row for row in tokens if row["field_id"] == "plate_coverage")
+    assert plate_condition["condition_only"] is True
+    assert plate_condition["search_allowed"] is False
     disclosure = next(
         row for row in tokens
         if row["field_id"].endswith("_at_disclosure") and row["generator_exposed"]

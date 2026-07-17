@@ -2,8 +2,8 @@
   "attempts_per_route": 2048,
   "contexts": {
     "CHIP_PLATE_STATE": {
-      "generator_exposed": 0,
-      "registry_present": 0,
+      "generator_exposed": 9,
+      "registry_present": 30,
       "total": 36
     },
     "FIRSTN_INTRADAY": {
@@ -24,13 +24,13 @@
   },
   "core_pack_selected_count": 0,
   "forward_2026_accessed": false,
-  "generator_exposed_count": 363,
+  "generator_exposed_count": 372,
   "holdout_accessed": false,
   "information_qualified_count": 0,
   "master_registry": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\field_registry\\cn_field_master_registry_v1\\cn_field_master_registry_v1.json",
   "performance_or_reward_used": false,
-  "registry_present_count": 420,
-  "route_registry": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\field_registry\\cn_unified_capability_registry_v2_20260717\\unified_capability_registry.json",
+  "registry_present_count": 450,
+  "route_registry": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
   "scope": "TOKEN_AND_EXPOSURE_ONLY_NO_INFORMATION_CENSUS_NO_CORE_PACK",
   "status": "CN_FIELD_INFORMATION_V0_STRUCTURAL_COMPLETE",
   "token_count": 1683,

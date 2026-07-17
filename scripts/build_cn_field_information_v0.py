@@ -17,7 +17,7 @@ REPO = Path(__file__).resolve().parents[1]
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--master", type=Path, default=REPO / "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json")
-    parser.add_argument("--registry", type=Path, default=REPO / "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json")
+    parser.add_argument("--registry", type=Path, default=REPO / "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json")
     parser.add_argument("--output", type=Path, default=REPO / "runtime/cn_field_information_v0_20260717")
     parser.add_argument("--attempts-per-route", type=int, default=2048)
     args = parser.parse_args()

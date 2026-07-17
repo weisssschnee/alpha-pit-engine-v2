@@ -16,6 +16,15 @@ from our_system_phase2.services.fundamental_representations import (
     canonical_representation_specs,
     qualify_source_universe,
 )
+from our_system_phase2.services.chip_sidecar import CHIP_SIDECAR_VERSION, chip_field_specs
+from our_system_phase2.services.tdx_plate_market_sidecar import (
+    TDX_PLATE_MARKET_VERSION,
+    plate_market_field_specs,
+)
+from our_system_phase2.services.true1min_plate_aggregation import (
+    TRUE1MIN_PLATE_AGGREGATION_VERSION,
+    true1min_plate_field_specs,
+)
 from our_system_phase2.services.unified_capability_registry import (
     REGISTRY_VERSION,
     freeze_registry,
@@ -255,6 +264,73 @@ def _synthetic_state_fields(active_capabilities: Iterable[Mapping[str, Any]]) ->
     return rows
 
 
+def _sidecar_capabilities() -> list[dict[str, Any]]:
+    definitions = (
+        ("chip_distribution", CHIP_SIDECAR_VERSION, chip_field_specs(), "stock-session cross-section"),
+        ("plate_market_context", TDX_PLATE_MARKET_VERSION, plate_market_field_specs(), "plate-session context"),
+        ("true1min_plate_sparse", TRUE1MIN_PLATE_AGGREGATION_VERSION, true1min_plate_field_specs(), "stock-minute cross-section"),
+    )
+    rows: list[dict[str, Any]] = []
+    for family, release, specs, support_unit in definitions:
+        for spec in specs:
+            field = spec.canonical()
+            role = str(field["role"])
+            routes: list[str] = []
+            if family == "chip_distribution" and role == "interaction-only":
+                routes = ["SLOW_CROSS_SECTIONAL_LEVEL", "SLOW_TEMPORAL_CHANGE"]
+            elif family == "true1min_plate_sparse" and role == "interaction-only":
+                routes = ["MINUTE_STATIC"]
+            eligible = bool(routes)
+            blocker = "" if eligible else f"ROLE_{role.upper().replace('-', '_')}_NOT_PAYLOAD_ELIGIBLE"
+            source_id = source_field_id(
+                provider="CN_PIT_SIDECAR",
+                source_release_version=release,
+                source_table=family,
+                source_field=str(field["name"]),
+            )
+            rows.append(
+                {
+                    "field_id": field["name"],
+                    "source_field_id": source_id,
+                    "representation_id": representation_id(
+                        representation_type=f"pit_sidecar_{family}",
+                        source_field_ids=[source_id],
+                        parameters={"transform": field["transform"], "role": role},
+                    ),
+                    "source_family": family,
+                    "source_table": family,
+                    "source_field": field["name"],
+                    "entity_scope": "STOCK",
+                    "temporal_semantics": (
+                        "BAR_CLOSE_PIT_PLATE_CONTEXT"
+                        if family == "true1min_plate_sparse"
+                        else "PREVIOUS_SESSION_PIT_CONTEXT"
+                    ),
+                    "observable_clock": field["observable_clock"],
+                    "maturity_rule": f'{field["maturity"]} {field["maturity_unit"]}',
+                    "pit_status": "PIT_SAFE_WITH_REGISTERED_LAG_AND_MEMBERSHIP",
+                    "allowed_routes": routes,
+                    "search_eligible": eligible,
+                    "semantic_role": role,
+                    "support_unit": support_unit,
+                    "field_role": role,
+                    "blocked_reason": blocker,
+                    "unit_status": "SIDECAR_FIELD_CONTRACT_ASSERTED",
+                    "source_lag": int(field.get("source_lag") or 0),
+                    "source_lag_unit": str(field.get("source_lag_unit") or "bars"),
+                    "reset_semantics": "SESSION_RESET" if family == "true1min_plate_sparse" else "ASOF_HOLD",
+                    "matched_control_required": False,
+                    "metadata": {
+                        "field_spec": field,
+                        "formal_performance_search_allowed": False,
+                        "pit_membership_release_required": family.startswith(("plate_", "true1min_plate")),
+                        "survivorship_guard_required": family.startswith(("plate_", "true1min_plate")),
+                    },
+                }
+            )
+    return rows
+
+
 def build(
     *,
     external_root: Path,
@@ -320,6 +396,7 @@ def build(
     active_registry = json.loads(active121_registry_path.read_text(encoding="utf-8"))
     active_glossary, active_capabilities = _active_source_glossary(active_registry["fields"], external_entries)
     state_capabilities = _synthetic_state_fields(active_capabilities)
+    sidecar_capabilities = _sidecar_capabilities()
 
     representation_specs = canonical_representation_specs(source_ids)
     fundamental_capabilities: list[dict[str, Any]] = []
@@ -401,7 +478,13 @@ def build(
             }
         )
 
-    all_capabilities = active_capabilities + state_capabilities + fundamental_capabilities + event_capabilities
+    all_capabilities = (
+        active_capabilities
+        + state_capabilities
+        + fundamental_capabilities
+        + event_capabilities
+        + sidecar_capabilities
+    )
     registry_payload = {
         "registry_version": REGISTRY_VERSION,
         "status": "FROZEN_FOR_CAPABILITY_PREFLIGHT",
@@ -415,6 +498,9 @@ def build(
             "active121": ACTIVE121_RELEASE,
             "fundamental": FUNDAMENTAL_SOURCE_RELEASE,
             "broad_event": BROAD_EVENT_RELEASE,
+            "chip": CHIP_SIDECAR_VERSION,
+            "plate_market": TDX_PLATE_MARKET_VERSION,
+            "true1min_plate": TRUE1MIN_PLATE_AGGREGATION_VERSION,
         },
         "routes": route_contract["route_contracts"],
         "fields": all_capabilities,
@@ -489,6 +575,8 @@ def build(
         "external_active121_join_count": sum(row["join_status"] == "EXACT_ACTIVE121_JOIN" for row in join_rows),
         "external_active121_unresolved_count": sum(row["join_status"] != "EXACT_ACTIVE121_JOIN" for row in join_rows),
         "broad_event_mechanism_count": len(event_capabilities),
+        "sidecar_field_count": len(sidecar_capabilities),
+        "sidecar_search_eligible_count": sum(row["search_eligible"] for row in sidecar_capabilities),
         "zygc_status": "PIT_CONTRACT_UNRESOLVED",
     }
     if len(representation_specs) > 384:
