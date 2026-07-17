@@ -4,10 +4,15 @@
 
 1. Current user instruction.
 2. This `AGENTS.md`.
-3. `MIGRATION_MANIFEST.md`.
-4. Run plans under `runtime/run_plans`.
-5. Reports under `reports`.
-6. Source code and command output.
+3. `.planning/PROJECT.md` for the accepted project mission.
+4. `.planning/STATE.md` for current progress, boundaries, blockers, and next action.
+5. Accepted run plans under `runtime/run_plans` and architecture decisions.
+6. Runtime behavior, tests, source, and generated artifacts as observed reality.
+7. Reports and historical planning claims.
+
+Architecture authority is projected from `config/architecture_overlay.json` into
+`.planning/graphs/current.json`. RAW `.planning/graphs/graph.json` is for source
+navigation and is not current-state authority.
 
 ## Repository Scope
 
@@ -36,9 +41,14 @@ Disallowed by default:
 - Set `PYTHONPATH=src` before running.
 - Use `app.py` routes; do not add broad historical routes casually.
 - Treat BZ fragment replay as a diagnostic slice replay, not the search reward.
-- Treat Phase3CM train portfolio Sortino as the next reward audit target before any large search restart.
+- Treat the qualified Phase3CM streaming evaluator as engineering capability,
+  not authorization for strict Stage A or formal search.
 - Treat CEM as an optimizer, not as reward-hacking defense.
 - Keep company-machine heavy work isolated from crypto-line tasks.
+- The complete field-universe authority is
+  `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`.
+  Presence there does not grant generator exposure; route eligibility remains
+  owned by the unified capability registry.
 
 ## Data Boundary
 
