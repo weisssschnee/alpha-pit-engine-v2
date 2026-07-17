@@ -70,8 +70,11 @@ def normalized_mutual_information(left: np.ndarray, right: np.ndarray) -> tuple[
     expected = px[:, None] * py[None, :]
     positive = probability > 0
     mi = float((probability[positive] * np.log(probability[positive] / expected[positive])).sum())
-    hx = float(-(px[px > 0] * np.log(px[px > 0])).sum())
-    hy = float(-(py[py > 0] * np.log(py[py > 0])).sum())
+    # Entropy is non-negative analytically, but a degenerate distribution can
+    # produce a tiny negative value (for example -2e-16) after floating-point
+    # summation.  Clamp only that impossible numerical residue before sqrt.
+    hx = max(0.0, float(-(px[px > 0] * np.log(px[px > 0])).sum()))
+    hy = max(0.0, float(-(py[py > 0] * np.log(py[py > 0])).sum()))
     denominator = sqrt(hx * hy)
     return (mi / denominator if denominator > 0 else 0.0), support
 
@@ -221,3 +224,146 @@ def select_core_pack(
         "performance_claim_allowed": False,
     }
 
+
+def aligned_pairwise_nmi(
+    series_by_field: Mapping[str, pd.Series],
+    *,
+    groups: Mapping[str, str],
+    bins: int = 16,
+    maximum_rows: int = 40_000,
+) -> list[dict[str, Any]]:
+    """Measure redundancy only inside a declared semantic/support group.
+
+    Fundamental event payloads do not necessarily share the same episode
+    coordinates.  Aligning on the explicit Series index prevents unrelated
+    rows from being compared merely because two arrays have the same length.
+    The deterministic row cap is based on sorted coordinate order and is a
+    resource bound, not a performance-selected sample.
+    """
+
+    fields = sorted(series_by_field)
+    rows: list[dict[str, Any]] = []
+    for left_index, left in enumerate(fields):
+        left_group = str(groups.get(left, ""))
+        if not left_group:
+            continue
+        for right in fields[left_index + 1 :]:
+            if str(groups.get(right, "")) != left_group:
+                continue
+            aligned = pd.concat(
+                [series_by_field[left].rename("left"), series_by_field[right].rename("right")],
+                axis=1,
+                join="inner",
+            ).sort_index(kind="mergesort")
+            if len(aligned) > maximum_rows:
+                positions = np.linspace(0, len(aligned) - 1, maximum_rows, dtype="int64")
+                aligned = aligned.iloc[np.unique(positions)]
+            left_codes = quantile_codes(aligned["left"], bins=bins)
+            right_codes = quantile_codes(aligned["right"], bins=bins)
+            nmi, support = normalized_mutual_information(left_codes, right_codes)
+            rows.append(
+                {
+                    "left_field_id": left,
+                    "right_field_id": right,
+                    "semantic_support_group": left_group,
+                    "normalized_mutual_information": nmi,
+                    "joint_support": support,
+                }
+            )
+    return rows
+
+
+def select_representative_core_pack(
+    metrics: Iterable[Mapping[str, Any]],
+    pair_rows: Iterable[Mapping[str, Any]],
+    *,
+    redundancy_nmi: float = 0.95,
+) -> dict[str, Any]:
+    """Select non-performance representatives from already qualified fields.
+
+    Qualification is route-aware and is calculated by the caller.  This
+    function only removes near-duplicates inside the caller's declared
+    semantic/support group.  Condition, benchmark and metadata fields remain
+    available as controls but never win a representative vote.
+    """
+
+    rows = [dict(row) for row in metrics]
+    redundancy = {
+        frozenset((str(row["left_field_id"]), str(row["right_field_id"]))): float(
+            row["normalized_mutual_information"]
+        )
+        for row in pair_rows
+    }
+    eligible_roles = {"primary", "interaction-only", "state-only"}
+    candidates = [
+        row
+        for row in rows
+        if bool(row.get("information_qualified"))
+        and str(row.get("field_role")) in eligible_roles
+    ]
+    candidates.sort(
+        key=lambda row: (
+            str(row.get("semantic_support_group", "")),
+            -float(row.get("coverage", 0.0)),
+            -float(row.get("normalized_entropy", 0.0)),
+            str(row["field_id"]),
+        )
+    )
+    selected: list[str] = []
+    selected_by_group: dict[str, list[str]] = {}
+    decisions: list[dict[str, Any]] = []
+    for row in candidates:
+        field = str(row["field_id"])
+        group = str(row.get("semantic_support_group", ""))
+        priors = selected_by_group.setdefault(group, [])
+        strongest = max(
+            ((redundancy.get(frozenset((field, prior)), 0.0), prior) for prior in priors),
+            default=(0.0, ""),
+        )
+        if strongest[0] >= redundancy_nmi:
+            decision = "REDUNDANCY_ARCHIVE"
+            reason = "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP"
+        else:
+            decision = "EXPLORATORY_CORE"
+            reason = "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS"
+            selected.append(field)
+            priors.append(field)
+        decisions.append(
+            {
+                "field_id": field,
+                "semantic_support_group": group,
+                "decision": decision,
+                "reason": reason,
+                "representative_field_id": strongest[1],
+                "representative_nmi": strongest[0],
+            }
+        )
+    candidate_ids = {str(row["field_id"]) for row in candidates}
+    for row in sorted(rows, key=lambda item: str(item["field_id"])):
+        field = str(row["field_id"])
+        if field in candidate_ids:
+            continue
+        role = str(row.get("field_role", ""))
+        decisions.append(
+            {
+                "field_id": field,
+                "semantic_support_group": str(row.get("semantic_support_group", "")),
+                "decision": "CONTROL_ONLY" if role in {"condition-only", "benchmark-only"} else "NOT_QUALIFIED",
+                "reason": (
+                    f"ROLE_{role.upper().replace('-', '_')}"
+                    if role in {"condition-only", "benchmark-only"}
+                    else str(row.get("information_status", "INFORMATION_GATE_NOT_PASSED"))
+                ),
+                "representative_field_id": "",
+                "representative_nmi": 0.0,
+            }
+        )
+    return {
+        "status": "EXPLORATORY_NON_PERFORMANCE_CORE_PACK",
+        "selected_field_ids": selected,
+        "selected_count": len(selected),
+        "decisions": sorted(decisions, key=lambda row: str(row["field_id"])),
+        "selection_basis": "INFORMATION_ONLY_NO_RETURN_LABEL_REWARD_OR_SELECTOR",
+        "performance_claim_allowed": False,
+        "generator_authority_changed": False,
+    }
