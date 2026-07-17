@@ -634,21 +634,28 @@ class CompositionalGrammarV2:
         attempt_index: int,
         seed: int,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        pool = self._route_pool(
+        event_pool = self._route_pool(
             "DISCLOSURE_EVENT",
             temporal_semantics="DISCLOSURE_PULSE",
             entity_scope="STOCK",
             field_roles=("condition-only",),
         )
-        event = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":event")
-        prior = _pick_excluding(
-            pool,
-            (event.field_id,),
+        payload_pool = tuple(
+            row
+            for row in self._payload_pool("DISCLOSURE_EVENT")
+            if row.temporal_semantics
+            in {"DISCLOSURE_LEVEL_PAYLOAD", "DISCLOSURE_CHANGE_PAYLOAD"}
+        )
+        if not payload_pool:
+            raise ValueError("FIELD_COVERAGE_BOTTLENECK: no disclosure payload fields")
+        event = _pick(event_pool, attempt_index, seed, skeleton.skeleton_id + ":event")
+        payload = _pick(
+            payload_pool,
             attempt_index,
             seed,
-            skeleton.skeleton_id + ":prior",
+            skeleton.skeleton_id + ":payload",
         )
-        event_ref, prior_ref = f"${event.field_id}", f"${prior.field_id}"
+        event_ref, payload_ref = f"${event.field_id}", f"${payload.field_id}"
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
         fields: tuple[CapabilityField, ...] = (event,)
         control_expression = f"TimeSince({event_ref})"
@@ -659,22 +666,28 @@ class CompositionalGrammarV2:
             primary_expression = f"SafeDiv(1,Add(TimeSince({event_ref}),1),1)"
             family = "TimeSince"
         elif name == "pre_event_path":
-            primary_expression = f"EventWindow({event_ref},{event_ref},5,0)"
+            primary_expression = f"EventWindow({payload_ref},{event_ref},5,0)"
+            control_expression = f"Add({payload_ref},Mul(0,TimeSince({event_ref})))"
             family = "PreEventPath"
+            fields = (event, payload)
         elif name == "post_maturity_state":
-            primary_expression = f"EventWindow({event_ref},{event_ref},0,5)"
+            primary_expression = f"EventWindow({payload_ref},{event_ref},0,5)"
+            control_expression = f"Add({payload_ref},Mul(0,TimeSince({event_ref})))"
             family = "PostMaturityOutcome"
+            fields = (event, payload)
         elif name == "event_prior_condition":
-            primary_expression = f"Mul(EventCount({event_ref},1),Sign(TimeSince({prior_ref})))"
-            control_expression = f"Add(TimeSince({event_ref}),Mul(0,TimeSince({prior_ref})))"
+            primary_expression = f"Mul(EventCount({event_ref},1),Sign({payload_ref}))"
+            control_expression = f"Add({payload_ref},Mul(0,TimeSince({event_ref})))"
             family = "EventWindow"
-            fields = (event, prior)
+            fields = (event, payload)
         elif name == "repeated_event_suppression":
             primary_expression = f"SafeDiv(EventCount({event_ref},5),Add(EventCount({event_ref},20),1),1)"
             family = "EventCount"
         elif name == "event_window":
-            primary_expression = f"EventWindow({event_ref},{event_ref},5,5)"
+            primary_expression = f"EventWindow({payload_ref},{event_ref},5,5)"
+            control_expression = f"Add({payload_ref},Mul(0,TimeSince({event_ref})))"
             family = "EventWindow"
+            fields = (event, payload)
         elif name == "event_first_hit":
             primary_expression = f"FirstHit({event_ref},20)"
             family = "FirstHit"
@@ -688,6 +701,7 @@ class CompositionalGrammarV2:
             control_expression=control_expression,
             operator_family=family,
             fields=fields,
+            condition_fields=(event,),
             extra={"episode_policy": "UNIQUE_DISCLOSURE_EPISODE"},
         )
 

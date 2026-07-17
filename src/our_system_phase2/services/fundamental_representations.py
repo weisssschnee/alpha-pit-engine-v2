@@ -198,6 +198,7 @@ def canonical_representation_specs(
         parameters: Mapping[str, Any] | None = None,
         field_role: str = "primary",
         support_unit: str = "stock-session cross-section",
+        temporal_semantics: str | None = None,
         search_eligible: bool = True,
         blocked_reason: str = "",
     ) -> None:
@@ -222,7 +223,7 @@ def canonical_representation_specs(
                 "operation": operation,
                 "parameters": params,
                 "entity_scope": "STOCK",
-                "temporal_semantics": (
+                "temporal_semantics": temporal_semantics or (
                     "DISCLOSURE_PULSE" if route_id == "DISCLOSURE_EVENT" else
                     "SLOW_CHANGE" if route_id == "SLOW_TEMPORAL_CHANGE" else
                     "ASOF_LEVEL"
@@ -373,6 +374,42 @@ def canonical_representation_specs(
     )
     rows[-1]["pit_status"] = "PIT_CONTRACT_UNRESOLVED"
     rows[-1]["unit_status"] = "SOURCE_UNIT_GLOSSARY_NOT_ASSERTED"
+
+    # Disclosure candidates need an event pulse *and* a payload describing the
+    # information that became observable at that episode.  Keep these as
+    # route-specific representations: this exposes the already-qualified
+    # canonical fabric without opening the 1,227 raw source columns.
+    payload_sources = [
+        row
+        for row in rows
+        if row["search_eligible"]
+        and row["route_id"] in {"SLOW_CROSS_SECTIONAL_LEVEL", "SLOW_TEMPORAL_CHANGE"}
+        and row["operation"] != "staleness_sessions"
+        and row["field_role"] in {"primary", "interaction-only"}
+    ]
+    for source in payload_sources:
+        semantics = (
+            "DISCLOSURE_CHANGE_PAYLOAD"
+            if source["route_id"] == "SLOW_TEMPORAL_CHANGE"
+            else "DISCLOSURE_LEVEL_PAYLOAD"
+        )
+        add(
+            field_id=f'{source["field_id"]}_at_disclosure',
+            family=str(source["semantic_family"]),
+            representation_type=f'disclosure_payload__{source["representation_type"]}',
+            sources=[
+                (str(item["source_table"]), str(item["source_field"]))
+                for item in source["source_fields"]
+            ],
+            route_id="DISCLOSURE_EVENT",
+            operation=str(source["operation"]),
+            parameters={
+                **dict(source["parameters"]),
+                "payload_source_representation_id": source["representation_id"],
+            },
+            support_unit="disclosure episode",
+            temporal_semantics=semantics,
+        )
     return rows
 
 

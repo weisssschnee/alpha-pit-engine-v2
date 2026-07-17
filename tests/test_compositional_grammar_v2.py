@@ -20,7 +20,7 @@ from our_system_phase2.services.unified_capability_registry import (
 REPO = Path(__file__).resolve().parents[1]
 REGISTRY = (
     REPO
-    / "reports/cn_unified_capability_discovery_20260714/completed_f8169e1/registry"
+    / "runtime/field_registry/cn_unified_capability_registry_v2_20260717"
     / "unified_capability_registry.json"
 )
 
@@ -123,6 +123,11 @@ def test_disclosure_compositions_are_episode_mature_and_controlled_by_recency() 
         assert set(pair.primary["declared_field_ids"]) == set(
             pair.control["declared_field_ids"]
         )
+        assert pair.primary["condition_field_ids"] == pair.control["condition_field_ids"]
+        assert len(pair.primary["condition_field_ids"]) == 1
+        if pair.primary["expression"].startswith("EventWindow("):
+            arguments = pair.primary["expression"][len("EventWindow(") :].split(",")
+            assert arguments[0] != arguments[1]
 
 
 def test_market_regime_compositions_condition_stock_payload_without_direct_market_rank() -> None:

@@ -106,6 +106,29 @@ def test_fundamental_qualification_is_stable_and_fail_closed(tmp_path: Path) -> 
     assert shared
     assert all(source_yoy[name] != internal_yoy[name] for name in shared)
 
+    representations = registry["representations"]
+    payloads = {
+        row["parameters"]["payload_source_representation_id"]: row
+        for row in representations
+        if row["route_id"] == "DISCLOSURE_EVENT"
+        and row["temporal_semantics"]
+        in {"DISCLOSURE_LEVEL_PAYLOAD", "DISCLOSURE_CHANGE_PAYLOAD"}
+    }
+    eligible_payload_sources = {
+        row["representation_id"]
+        for row in representations
+        if row["search_eligible"]
+        and row["route_id"] in {"SLOW_CROSS_SECTIONAL_LEVEL", "SLOW_TEMPORAL_CHANGE"}
+        and row["operation"] != "staleness_sessions"
+        and row["field_role"] in {"primary", "interaction-only"}
+    }
+    assert set(payloads) == eligible_payload_sources
+    assert all(row["support_unit"] == "disclosure episode" for row in payloads.values())
+    assert not any(
+        any(source["source_table"] == "zygc_em" for source in row["source_fields"])
+        for row in payloads.values()
+    )
+
     assert summary["qualification_state_counts"]["PIT_UNRESOLVED"] == 17
     assert not summary["performance_used"]
     assert not summary["validation_accessed"]

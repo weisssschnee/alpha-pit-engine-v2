@@ -1,0 +1,14 @@
+{
+  "broad_event_pack_modified": false,
+  "current_repo_sha": "WORKTREE_PENDING",
+  "effective_baseline": "70f8c3dff4e191631186b8c57d636956b558c2c8",
+  "external_evidence_baseline": "afd0666404fed935072f7f6d73e13db17b7f6f9f",
+  "external_status_superseded": "PROVISIONAL_PENDING_FUNDAMENTAL_SOURCE_UNIVERSE_JOIN",
+  "historical_results_modified": false,
+  "identity_supersession": "cn_source::<table>::<field> retained as legacy ID; release-bound cn.sf.<hash> is authoritative",
+  "new_status": "SOURCE_UNIVERSE_JOINED_EXECUTABLE_REGISTRY_FROZEN",
+  "preflight_authorization_supersession": "current user instruction authorizes automatic preflight, CANARY and development discovery; challenge/forward/promotion remain forbidden",
+  "reason": "preserve subsequently pushed immutable Phase-1 field audit merge and release-bound source identity inputs",
+  "supersession_version": "cn_unified_capability_contract_supersession_v1",
+  "task_declared_baseline": "d4319137dc9c86ad6eda250ce8fb15879d76ad7c"
+}
