@@ -23,12 +23,19 @@ $arguments = @(
     "--repo-sha", $RepoSha,
     "--sample-modulus", "16"
 )
-$process = Start-Process -FilePath $Python -ArgumentList $arguments -WindowStyle Hidden -PassThru `
-    -RedirectStandardOutput $stdout -RedirectStandardError $stderr
 @{
-    pid = $process.Id
+    pid = $PID
     repo_sha = $RepoSha
     output_root = $OutputRoot
     started_at = [DateTimeOffset]::UtcNow.ToString("o")
 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputRoot "launcher_receipt.json") -Encoding UTF8
-Write-Output $process.Id
+& $Python @arguments 1> $stdout 2> $stderr
+$exitCode = $LASTEXITCODE
+@{
+    pid = $PID
+    repo_sha = $RepoSha
+    output_root = $OutputRoot
+    completed_at = [DateTimeOffset]::UtcNow.ToString("o")
+    exit_code = $exitCode
+} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputRoot "completion_receipt.json") -Encoding UTF8
+exit $exitCode
