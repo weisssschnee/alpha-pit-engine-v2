@@ -11,6 +11,17 @@ from our_system_phase2.services.deterministic_signal_sketch import (
     projection_matrix,
     sketch_similarity,
 )
+from scripts.run_signal_sketch_audit import _resume_writer_fieldnames
+
+
+def test_resume_writer_uses_persisted_csv_header_order(tmp_path) -> None:
+    path = tmp_path / "worker.csv"
+    path.write_text("candidate_id,coordinate_set,value\nold,A,1\n", encoding="utf-8")
+
+    assert _resume_writer_fieldnames(
+        path,
+        {"value": 2, "coordinate_set": "B", "candidate_id": "new"},
+    ) == ["candidate_id", "coordinate_set", "value"]
 
 
 def _coordinates(size: int) -> list[dict[str, str]]:

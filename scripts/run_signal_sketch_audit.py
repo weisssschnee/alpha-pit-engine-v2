@@ -83,6 +83,19 @@ def _write_json(path: Path, payload: Any) -> None:
     atomic_write_json(path, payload)
 
 
+def _resume_writer_fieldnames(path: Path, output: dict[str, Any]) -> list[str]:
+    if not path.exists() or not path.stat().st_size:
+        return list(output)
+    with path.open("r", encoding="utf-8-sig", newline="") as existing:
+        fieldnames = list(csv.DictReader(existing).fieldnames or [])
+    if not fieldnames:
+        raise RuntimeError(f"resume CSV has no header: {path}")
+    extras = sorted(set(output) - set(fieldnames))
+    if extras:
+        raise RuntimeError(f"resume CSV header cannot represent new fields: {extras}")
+    return fieldnames
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -510,7 +523,10 @@ def worker(args: argparse.Namespace) -> int:
                 checkpoint_store.put(candidate_id, {"rows": candidate_outputs})
                 for output in candidate_outputs:
                     if writer is None:
-                        writer = csv.DictWriter(handle, fieldnames=list(output))
+                        writer = csv.DictWriter(
+                            handle,
+                            fieldnames=_resume_writer_fieldnames(args.output_csv, output),
+                        )
                         if mode == "w":
                             writer.writeheader()
                     writer.writerow(output)
