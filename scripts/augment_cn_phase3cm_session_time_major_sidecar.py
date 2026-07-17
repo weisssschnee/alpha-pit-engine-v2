@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import polars as pl
 
 from our_system_phase2.services.chip_sidecar import (
     CHIP_FIELDS,
@@ -55,6 +56,81 @@ def _frame_digest(frame: pd.DataFrame, columns: list[str]) -> str:
     return hashlib.sha256(values).hexdigest()
 
 
+def _bar_source_path(root: Path, shard_index: int) -> Path:
+    paths = sorted((root / f"shard_{shard_index:02d}").rglob("*.parquet"))
+    if len(paths) != 1:
+        raise ValueError(
+            f"expected one development bar source for shard {shard_index}, found {len(paths)}"
+        )
+    return paths[0]
+
+
+def _materialize_lagged_daily_context(
+    frame: pd.DataFrame,
+    *,
+    fields: list[str],
+    bar_source_root: Path,
+    shard_index: int,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    if not fields:
+        return frame, {}
+    manifest_path = bar_source_root / "development_only_release_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    if manifest.get("forbidden_roles_present") or bool(manifest.get("forward_2026_present")):
+        raise PermissionError("bar context source contains forbidden or sealed roles")
+    source = _bar_source_path(bar_source_root, shard_index)
+    source_schema = set(pl.read_parquet_schema(source))
+    missing = sorted(set(fields) - source_schema)
+    if missing:
+        raise ValueError(f"bar context source fields are missing: {missing}")
+
+    aggregations: list[pl.Expr] = []
+    for field in fields:
+        aggregations.extend(
+            (
+                pl.col(field).sort_by("trade_time").last().alias(field),
+                pl.col(field).n_unique().alias(f"__nunique_{field}"),
+            )
+        )
+    daily = (
+        pl.scan_parquet(source)
+        .select("code", "trade_time", *fields)
+        .with_columns(pl.col("trade_time").dt.date().alias("__session_date"))
+        .group_by("code", "__session_date")
+        .agg(*aggregations)
+        .collect(engine="streaming")
+    )
+    variation = {
+        field: int(daily[f"__nunique_{field}"].max() or 0) for field in fields
+    }
+    invalid = {field: count for field, count in variation.items() if count > 1}
+    if invalid:
+        raise ValueError(f"lagged daily context changes within a session: {invalid}")
+    daily = daily.select("code", "__session_date", *fields).with_columns(
+        (
+            pl.col("__session_date").cast(pl.Datetime("us"))
+            + pl.duration(hours=15)
+        ).alias("trade_time")
+    )
+    context = daily.select("code", "trade_time", *fields).to_pandas()
+    if context.duplicated(["code", "trade_time"]).any():
+        raise ValueError("lagged daily context has duplicate stock-session coordinates")
+    output = frame.merge(
+        context,
+        on=["code", "trade_time"],
+        how="left",
+        validate="one_to_one",
+        sort=False,
+    )
+    return output, {
+        "source": str(source),
+        "source_sha256": _sha256(source),
+        "fields": fields,
+        "maximum_intraday_unique_values": variation,
+        "join_policy": "same_session_1500_value_of_pre_lagged_daily_context",
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, required=True)
@@ -64,6 +140,7 @@ def main() -> int:
     parser.add_argument("--split-manifest", type=Path, required=True)
     parser.add_argument("--fundamental-root", type=Path, required=True)
     parser.add_argument("--chip-root", type=Path)
+    parser.add_argument("--bar-source-root", type=Path)
     parser.add_argument("--maximum-observable-time", required=True)
     parser.add_argument("--shard-index", type=int, required=True)
     args = parser.parse_args()
@@ -94,7 +171,6 @@ def main() -> int:
     )
     missing_fields = sorted(set(required_fields) - set(frame.columns))
     chip_fields = sorted(set(missing_fields) & set(CHIP_FIELDS.values()))
-    fundamental_fields = sorted(set(missing_fields) - set(chip_fields))
     if chip_fields and args.chip_root is None:
         raise PermissionError("chip fields require --chip-root")
 
@@ -103,6 +179,20 @@ def main() -> int:
     original_payload_digest = _frame_digest(frame, original_columns)
     sessions = _sessions(args.split_manifest)
     registry = UnifiedCapabilityRegistry.read(args.registry)
+    bar_context_fields: list[str] = []
+    fundamental_fields: list[str] = []
+    for field_id in sorted(set(missing_fields) - set(chip_fields)):
+        capability = registry.resolve(field_id)
+        if (
+            capability.source_family == "lagged_daily_context"
+            and capability.temporal_semantics == "PREVIOUS_SESSION_STOCK_CONTEXT"
+        ):
+            bar_context_fields.append(field_id)
+        else:
+            fundamental_fields.append(field_id)
+    if bar_context_fields and args.bar_source_root is None:
+        raise PermissionError("lagged daily context fields require --bar-source-root")
+
     specs: dict[str, dict[str, Any]] = {}
     prefetch_fields: dict[str, set[str]] = {}
     for field_id in fundamental_fields:
@@ -126,6 +216,17 @@ def main() -> int:
     coordinates["code"] = coordinates["code"].map(normalize_cn_code)
     coordinate_index = pd.MultiIndex.from_frame(coordinates)
     coverage: dict[str, float] = {}
+    bar_context_input: dict[str, Any] = {}
+    if bar_context_fields:
+        frame, bar_context_input = _materialize_lagged_daily_context(
+            frame,
+            fields=bar_context_fields,
+            bar_source_root=args.bar_source_root,
+            shard_index=int(args.shard_index),
+        )
+        for field_id in bar_context_fields:
+            coverage[field_id] = round(float(frame[field_id].notna().mean()), 8)
+
     for field_id in fundamental_fields:
         spec = specs[field_id]
         materialized = materializer.materialize(spec, coordinates)
@@ -178,6 +279,8 @@ def main() -> int:
         "already_present_field_count": len(set(required_fields) & set(original_columns)),
         "fundamental_fields": fundamental_fields,
         "chip_fields": chip_fields,
+        "bar_context_fields": bar_context_fields,
+        "bar_context_source": bar_context_input,
         "coverage": coverage,
         "chip_sidecar": chip_input,
         "validation_reads": 0,
