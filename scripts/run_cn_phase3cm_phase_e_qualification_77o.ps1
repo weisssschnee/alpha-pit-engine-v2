@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$CombinedContract,
-    [string]$OutputName = "phase_e_32pairs_final",
+    [string]$OutputName = "phase_e_strict_wave_final",
+    [double]$WallSecondsHardMax = 0.0,
     [switch]$Resume,
     [string]$RepoRoot = "D:\ChengboRemote\workspace\alpha_pit_compositional_667c82f_git",
     [string]$CandidateRoot = "",
@@ -24,6 +25,13 @@ if ([int]$Contract.heavy_processes -ne 2) { throw "Phase E requires exactly two 
 if ([int]$Contract.global_active_native_compute_threads -gt 24) {
     throw "global native compute thread budget exceeds 24"
 }
+$ActivePairCount = [int]$Contract.plans.active_bar.pair_count
+$SessionPairCount = [int]$Contract.plans.stock_session.pair_count
+$TotalPairCount = $ActivePairCount + $SessionPairCount
+if ($ActivePairCount -le 0 -or $SessionPairCount -le 0 -or $TotalPairCount -le 0) {
+    throw "Phase E strict wave requires non-zero active and session pair counts"
+}
+if ($WallSecondsHardMax -lt 0.0) { throw "wall-seconds hard maximum cannot be negative" }
 
 $ComputeThreads = [int]$Contract.compute_threads_per_process
 $env:PYTHONPATH = Join-Path $RepoRoot "src"
@@ -90,7 +98,7 @@ $SessionRoot = Join-Path $RunRoot "stock_session"
 New-Item -ItemType Directory -Force -Path $ActiveRoot,$SessionRoot | Out-Null
 $ActiveArgs = New-BackendArguments `
     -Backend "active_bar" `
-    -PairCount ([int]$Contract.plans.active_bar.pair_count) `
+    -PairCount $ActivePairCount `
     -CandidateTable (Join-Path $CandidateRoot "preflight_active_candidates.csv") `
     -FieldRoot $ActiveFieldRoot `
     -LabelRoot $ActiveLabelRoot `
@@ -98,7 +106,7 @@ $ActiveArgs = New-BackendArguments `
     -ExecutionPlan ([string]$Contract.plans.active_bar.path)
 $SessionArgs = New-BackendArguments `
     -Backend "stock_session" `
-    -PairCount ([int]$Contract.plans.stock_session.pair_count) `
+    -PairCount $SessionPairCount `
     -CandidateTable (Join-Path $CandidateRoot "preflight_session_candidates.csv") `
     -FieldRoot $SessionFieldRoot `
     -LabelRoot $SessionLabelRoot `
@@ -186,6 +194,7 @@ $ActiveResultPath = Join-Path $ActiveRoot "CN_STREAMING_BACKEND_RESULT.json"
 $SessionResultPath = Join-Path $SessionRoot "CN_STREAMING_BACKEND_RESULT.json"
 $ActiveResult = if (Test-Path $ActiveResultPath) { Get-Content $ActiveResultPath -Raw | ConvertFrom-Json } else { $null }
 $SessionResult = if (Test-Path $SessionResultPath) { Get-Content $SessionResultPath -Raw | ConvertFrom-Json } else { $null }
+$WallGatePass = ($WallSecondsHardMax -le 0.0 -or $Stopwatch.Elapsed.TotalSeconds -le $WallSecondsHardMax)
 $Pass = (
     -not $GlobalGateFailure -and
     $ActiveExitCode -eq 0 -and
@@ -204,17 +213,22 @@ $Pass = (
     [int]$SessionResult.validation_reads -eq 0 -and
     [int]$SessionResult.holdout_reads -eq 0 -and
     [int]$SessionResult.forward_2026_reads -eq 0 -and
-    $Stopwatch.Elapsed.TotalSeconds -le 7200.0 -and
+    $WallGatePass -and
     $GlobalPeakRss -lt $GlobalHardRss
 )
 $Receipt = [ordered]@{
     schema_version = "cn_phase3cm_phase_e_combined_execution_receipt_v1"
-    status = if ($Pass) { "CN_PHASE3CM_PHASE_E_32PAIR_QUALIFICATION_PASS" } elseif ($GlobalGateFailure) { "CN_PHASE3CM_PHASE_E_GLOBAL_RSS_GATE_FAIL" } else { "CN_PHASE3CM_PHASE_E_32PAIR_QUALIFICATION_FAIL" }
+    status = if ($Pass) { "CN_PHASE3CM_PHASE_E_STRICT_WAVE_PASS" } elseif ($GlobalGateFailure) { "CN_PHASE3CM_PHASE_E_GLOBAL_RSS_GATE_FAIL" } elseif (-not $WallGatePass) { "CN_PHASE3CM_PHASE_E_WALL_GATE_FAIL" } else { "CN_PHASE3CM_PHASE_E_STRICT_WAVE_FAIL" }
     combined_contract = $CombinedContract
     combined_contract_repo_sha = [string]$Contract.repo_sha
     active_exit_code = $ActiveExitCode
     session_exit_code = $SessionExitCode
     wall_seconds = $Stopwatch.Elapsed.TotalSeconds
+    wall_seconds_hard_max = if ($WallSecondsHardMax -gt 0.0) { $WallSecondsHardMax } else { $null }
+    wall_gate_enforced = $WallSecondsHardMax -gt 0.0
+    active_pair_count = $ActivePairCount
+    session_pair_count = $SessionPairCount
+    total_pair_count = $TotalPairCount
     global_peak_rss_bytes = $GlobalPeakRss
     active_peak_process_tree_rss_bytes = $ActivePeakRss
     session_peak_process_tree_rss_bytes = $SessionPeakRss
@@ -241,4 +255,4 @@ $Temporary = $ReceiptPath + ".tmp"
 $Receipt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $Temporary -Encoding UTF8
 Move-Item -LiteralPath $Temporary -Destination $ReceiptPath -Force
 $Receipt | ConvertTo-Json -Compress
-if (-not $Pass) { throw "Phase E 32-pair qualification failed closed" }
+if (-not $Pass) { throw "Phase E strict wave failed closed" }
