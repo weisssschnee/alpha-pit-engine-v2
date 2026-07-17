@@ -109,6 +109,13 @@ def freeze(
 
     repo_sha = _git(repo, "rev-parse", "HEAD")
     tree_sha = _git(repo, "rev-parse", "HEAD^{tree}")
+    code_paths = {
+        "grammar": repo / "src/our_system_phase2/services/compositional_grammar.py",
+        "generation_epoch": repo / "src/our_system_phase2/services/compositional_generation_epoch.py",
+        "generation_runner": repo / "scripts/run_cn_compositional_generation_epoch.py",
+        "typed_compiler": repo / "src/our_system_phase2/services/typed_route_compiler.py",
+        "streaming_evaluator": repo / "scripts/run_cn_phase3cm_streaming_qualification.py",
+    }
     contract: dict[str, Any] = {
         "contract_version": "cn_core_pack_aggressive_development_discovery_v2",
         "experiment_id": "20260718_cn_core_pack_aggressive_discovery_001",
@@ -129,6 +136,9 @@ def freeze(
             "registry_file_sha256": _sha256(registry_path),
             "base_plan_sha256": _sha256(base_plan_path),
             "split_manifest_sha256": _sha256(split_manifest_path),
+        },
+        "code_hashes": {
+            name: _sha256(path) for name, path in sorted(code_paths.items())
         },
         "route_root_allowlists": route_allowlists,
         "held_or_blocked_roots": {
