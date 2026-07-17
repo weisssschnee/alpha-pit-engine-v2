@@ -932,7 +932,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-17T03:06:20.461335+00:00",
+  "generated_at": "2026-07-17T13:06:48.765742+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1091,6 +1091,7 @@
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
+        "runtime_field_registry_cn_field_master_registry_v1_cn_field_master_registry_v1",
         "scripts_build_cn_field_master_registry",
         "scripts_build_cn_field_master_registry_build",
         "scripts_build_cn_field_master_registry_normalized",
@@ -1100,7 +1101,7 @@
       "required": false,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-07-17T03:06:20.461335+00:00",
+        "checked_at": "2026-07-17T13:03:22.447518+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
@@ -2156,14 +2157,12 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
-        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
-        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -2180,7 +2179,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-17T03:06:20.461335+00:00",
+        "checked_at": "2026-07-17T13:03:22.447518+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2226,14 +2225,12 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
-        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
-        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -2250,7 +2247,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-17T03:06:20.461335+00:00",
+        "checked_at": "2026-07-17T13:03:22.447518+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2455,13 +2452,13 @@
   "profile_id": null,
   "profiles": [],
   "raw": {
-    "built_at_commit": "8774de474906f73c8050e139638434a8e0a1f243",
-    "edge_count": 8583,
-    "node_count": 3748,
+    "built_at_commit": "0a4a16e5b19618235b61a3f8d3c3b8f13c8ab744",
+    "edge_count": 8586,
+    "node_count": 3754,
     "path": ".planning/graphs/graph.json",
-    "sha256": "2453CE16537B5E9EAAD7AF3B126D9D1DD081CA6F1149F3CB6FF0621C33388BCB"
+    "sha256": "AA02B6BC11BC426A18E54D4F12C92585F58969DEA126885B913FE7ADB5C1E7C9"
   },
-  "repo_head": "8774de474906f73c8050e139638434a8e0a1f243",
+  "repo_head": "0a4a16e5b19618235b61a3f8d3c3b8f13c8ab744",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
