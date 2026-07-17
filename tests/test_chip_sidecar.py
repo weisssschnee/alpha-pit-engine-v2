@@ -89,7 +89,7 @@ def test_chip_join_is_strictly_previous_session() -> None:
     )
     bars = pd.DataFrame(
         {
-            "code": ["000001", "000001"],
+            "code": ["000001.SZ", "000001.SZ"],
             "trade_time": pd.to_datetime(["2025-01-03 09:30", "2025-01-06 09:30"]),
         }
     )
@@ -99,6 +99,7 @@ def test_chip_join_is_strictly_previous_session() -> None:
     )
 
     assert joined["chip_cost_p50"].tolist() == [10.0, 11.0]
+    assert joined["code"].tolist() == ["000001.SZ", "000001.SZ"]
     assert joined["chip_source_session"].tolist() == [
         pd.Timestamp("2025-01-02"),
         pd.Timestamp("2025-01-03"),

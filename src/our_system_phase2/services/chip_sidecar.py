@@ -439,6 +439,7 @@ def point_in_time_chip_context(
     if not required_chip <= set(chip.columns):
         raise ValueError(f"chip sidecar missing fields: {sorted(required_chip - set(chip.columns))}")
     left = bars.copy()
+    left["_original_code"] = left["code"].astype(str)
     left["code"] = left["code"].map(_normalize_code)
     left["trade_time"] = pd.to_datetime(left["trade_time"], errors="coerce", format="mixed")
     if left["trade_time"].isna().any() or left["trade_time"].ge(FORWARD_SEALED_FROM).any():
@@ -472,4 +473,5 @@ def point_in_time_chip_context(
         pieces.append(merged)
     joined = pd.concat(pieces, ignore_index=True).sort_values("_row_id", kind="mergesort")
     joined = joined.rename(columns={"source_session": "chip_source_session"})
-    return joined.drop(columns=["_exec_session", "_row_id"]).reset_index(drop=True)
+    joined["code"] = joined["_original_code"]
+    return joined.drop(columns=["_exec_session", "_row_id", "_original_code"]).reset_index(drop=True)
