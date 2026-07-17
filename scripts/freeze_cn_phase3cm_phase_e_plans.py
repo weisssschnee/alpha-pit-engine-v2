@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from our_system_phase2.services.phase3cm_streaming_resource_contract import FrozenExecutionPlan
+from our_system_phase2.services.phase3cm_streaming_expression import unsupported_streaming_operators
 
 
 def _sha256(path: Path) -> str:
@@ -94,6 +95,12 @@ def main() -> int:
         raise ValueError("frozen input binding sealed-read contract drift")
 
     bound_pairs = list(binding.get("pairs") or [])
+    unsupported = unsupported_streaming_operators(
+        str(member.get("canonical_expression") or member.get("expression") or "")
+        for member in binding.get("candidate_members") or []
+    )
+    if unsupported:
+        raise ValueError(f"streaming evaluator operator surface incomplete: {list(unsupported)}")
     active_pair_ids = [
         str(row["pair_id"])
         for row in bound_pairs

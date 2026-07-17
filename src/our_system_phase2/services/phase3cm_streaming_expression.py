@@ -27,7 +27,7 @@ except Exception:  # pragma: no cover
     set_num_threads = None
 
 
-MAPPING_OPERATORS = {"csrank", "rank", "zscore", "csresidual", "maskedzscore"}
+MAPPING_OPERATORS = {"csrank", "rank", "zscore", "csresidual", "maskedzscore", "winsorize"}
 ROLLING_OPERATORS = {
     "acceleration",
     "delta",
@@ -35,14 +35,39 @@ ROLLING_OPERATORS = {
     "firsthit",
     "lasthit",
     "maskedzscore",
+    "multiscalerelation",
     "pathshape",
     "persistence",
     "slope",
+    "transition",
 }
+STREAMING_OPERATOR_SURFACE = frozenset(
+    {
+        "abs", "acceleration", "add", "csrank", "csresidual", "delta", "div",
+        "duration", "eventage", "eventcount", "firsthit", "lasthit", "maskedzscore",
+        "mul", "multiscalerelation", "pathshape", "persistence", "positive", "rank",
+        "safediv", "sign", "sincelastevent", "slope", "stateage", "sub", "timesince",
+        "transition", "winsorize", "zscore",
+    }
+)
 
 
 def _contains_mapping(node: ExpressionNode) -> bool:
     return node.token.lower() in MAPPING_OPERATORS or any(_contains_mapping(child) for child in node.args)
+
+
+def unsupported_streaming_operators(expressions: Iterable[str]) -> tuple[str, ...]:
+    observed: set[str] = set()
+
+    def visit(node: ExpressionNode) -> None:
+        if node.args:
+            observed.add(node.token.lower())
+        for child in node.args:
+            visit(child)
+
+    for expression in expressions:
+        visit(parse_expression(str(expression)))
+    return tuple(sorted(observed - STREAMING_OPERATOR_SURFACE))
 
 
 def _boundaries(sorted_ids: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -200,6 +225,8 @@ if njit is not None:
         age: np.ndarray,
         has_previous: np.ndarray,
         operation: int,
+        source: float,
+        target: float,
     ) -> np.ndarray:
         out = np.empty(values.shape[0], dtype=np.float64)
         out[:] = np.nan
@@ -222,7 +249,7 @@ if njit is not None:
                         prev = value
                         seen = True
                         out[row] = counter
-                else:  # TimeSince
+                elif operation == 2:  # TimeSince
                     if np.isfinite(value):
                         if value > 0.0:
                             counter = 0.0
@@ -233,9 +260,137 @@ if njit is not None:
                             out[row] = counter
                     elif seen:
                         counter += 1.0
+                else:  # Transition; missing previous/current state is false.
+                    matched = (
+                        seen
+                        and np.isfinite(prev)
+                        and np.isfinite(value)
+                        and prev == source
+                        and value == target
+                    )
+                    out[row] = 1.0 if matched else 0.0
+                    prev = value
+                    seen = True
             previous[code] = prev
             age[code] = counter
             has_previous[code] = seen
+        return out
+
+
+    @njit(cache=True, parallel=True)
+    def _winsorize_kernel(values: np.ndarray, starts: np.ndarray, ends: np.ndarray) -> np.ndarray:
+        out = values.copy()
+        for group in prange(starts.shape[0]):
+            start = starts[group]
+            end = ends[group]
+            count = 0
+            for pos in range(start, end):
+                if np.isfinite(values[pos]):
+                    count += 1
+            if count == 0:
+                continue
+            valid = np.empty(count, dtype=np.float64)
+            cursor = 0
+            for pos in range(start, end):
+                if np.isfinite(values[pos]):
+                    valid[cursor] = values[pos]
+                    cursor += 1
+            valid.sort()
+            lower_position = (count - 1) * 0.01
+            upper_position = (count - 1) * 0.99
+            lower_index = int(math.floor(lower_position))
+            upper_index = int(math.floor(upper_position))
+            lower_fraction = lower_position - lower_index
+            upper_fraction = upper_position - upper_index
+            lower_next = lower_index + 1 if lower_index + 1 < count else lower_index
+            upper_next = upper_index + 1 if upper_index + 1 < count else upper_index
+            lower = valid[lower_index] + lower_fraction * (valid[lower_next] - valid[lower_index])
+            upper = valid[upper_index] + upper_fraction * (valid[upper_next] - valid[upper_index])
+            for pos in range(start, end):
+                value = values[pos]
+                if np.isfinite(value):
+                    out[pos] = lower if value < lower else upper if value > upper else value
+        return out
+
+
+    @njit(cache=True)
+    def _correlation(values_left: np.ndarray, values_right: np.ndarray, start: int, end: int) -> float:
+        count = end - start
+        if count < 2:
+            return np.nan
+        left_mean = 0.0
+        right_mean = 0.0
+        for pos in range(start, end):
+            left = values_left[pos]
+            right = values_right[pos]
+            if not np.isfinite(left) or not np.isfinite(right):
+                return np.nan
+            left_mean += left
+            right_mean += right
+        left_mean /= count
+        right_mean /= count
+        covariance = 0.0
+        left_variance = 0.0
+        right_variance = 0.0
+        for pos in range(start, end):
+            left_delta = values_left[pos] - left_mean
+            right_delta = values_right[pos] - right_mean
+            covariance += left_delta * right_delta
+            left_variance += left_delta * left_delta
+            right_variance += right_delta * right_delta
+        denominator = math.sqrt(left_variance * right_variance)
+        if denominator <= 0.0 or not np.isfinite(denominator):
+            return np.nan
+        return covariance / denominator
+
+
+    @njit(cache=True, parallel=True)
+    def _multiscale_relation_kernel(
+        left: np.ndarray,
+        right: np.ndarray,
+        order: np.ndarray,
+        starts: np.ndarray,
+        ends: np.ndarray,
+        sorted_codes: np.ndarray,
+        history_left: np.ndarray,
+        history_right: np.ndarray,
+        history_counts: np.ndarray,
+        short: int,
+        long: int,
+    ) -> np.ndarray:
+        out = np.empty(left.shape[0], dtype=np.float64)
+        out[:] = np.nan
+        for group in prange(starts.shape[0]):
+            start = starts[group]
+            end = ends[group]
+            code = sorted_codes[start]
+            old_count = int(history_counts[code])
+            length = end - start
+            combined_left = np.empty(old_count + length, dtype=np.float64)
+            combined_right = np.empty(old_count + length, dtype=np.float64)
+            for pos in range(old_count):
+                combined_left[pos] = history_left[code, pos]
+                combined_right[pos] = history_right[code, pos]
+            for pos in range(length):
+                row = order[start + pos]
+                combined_left[old_count + pos] = left[row]
+                combined_right[old_count + pos] = right[row]
+            for pos in range(length):
+                absolute = old_count + pos
+                long_start = absolute - long + 1
+                if long_start < 0:
+                    continue
+                short_start = absolute - short + 1
+                short_corr = _correlation(combined_left, combined_right, short_start, absolute + 1)
+                long_corr = _correlation(combined_left, combined_right, long_start, absolute + 1)
+                if np.isfinite(short_corr) and np.isfinite(long_corr):
+                    out[order[start + pos]] = short_corr - long_corr
+            keep = long if long < combined_left.shape[0] else combined_left.shape[0]
+            source_start = combined_left.shape[0] - keep
+            for pos in range(keep):
+                history_left[code, pos] = combined_left[source_start + pos]
+                history_right[code, pos] = combined_right[source_start + pos]
+            history_counts[code] = keep
         return out
 
 
@@ -342,6 +497,7 @@ if njit is not None:
 
 else:  # pragma: no cover - development environment has Numba.
     _rolling_kernel = _state_kernel = _rank_kernel = _zscore_kernel = _residual_kernel = None
+    _winsorize_kernel = _multiscale_relation_kernel = None
 
 
 @dataclass(slots=True)
@@ -355,6 +511,13 @@ class _StateState:
     previous: np.ndarray
     age: np.ndarray
     has_previous: np.ndarray
+
+
+@dataclass(slots=True)
+class _BivariateRollingState:
+    history_left: np.ndarray
+    history_right: np.ndarray
+    counts: np.ndarray
 
 
 class StreamingExpressionExecutor:
@@ -380,6 +543,7 @@ class StreamingExpressionExecutor:
             raise ValueError("cache byte and entry caps must be positive")
         self._rolling_states: dict[str, _RollingState] = {}
         self._state_states: dict[str, _StateState] = {}
+        self._multiscale_states: dict[str, _BivariateRollingState] = {}
         self.raw_fields: dict[str, np.ndarray] = {}
         self.code_ids = np.empty(0, dtype=np.int32)
         self.time_ids = np.empty(0, dtype=np.int64)
@@ -521,7 +685,14 @@ class StreamingExpressionExecutor:
             float(parameter),
         )
 
-    def _state(self, key: str, values: np.ndarray, operation: int) -> np.ndarray:
+    def _state(
+        self,
+        key: str,
+        values: np.ndarray,
+        operation: int,
+        source: float = 0.0,
+        target: float = 0.0,
+    ) -> np.ndarray:
         if _state_kernel is None:
             raise RuntimeError("Numba is required for the streaming state hot path")
         state = self._state_states.get(key)
@@ -543,6 +714,43 @@ class StreamingExpressionExecutor:
             state.age,
             state.has_previous,
             int(operation),
+            float(source),
+            float(target),
+        )
+
+    def _multiscale(
+        self,
+        key: str,
+        left: np.ndarray,
+        right: np.ndarray,
+        short: int,
+        long: int,
+    ) -> np.ndarray:
+        if _multiscale_relation_kernel is None:
+            raise RuntimeError("Numba is required for the streaming multiscale hot path")
+        if short <= 1 or long <= short:
+            raise ValueError("MultiScaleRelation requires 1 < short < long")
+        state = self._multiscale_states.get(key)
+        if state is None:
+            state = _BivariateRollingState(
+                history_left=np.full((self.code_count, long), np.nan, dtype=np.float64),
+                history_right=np.full((self.code_count, long), np.nan, dtype=np.float64),
+                counts=np.zeros(self.code_count, dtype=np.int32),
+            )
+            self._multiscale_states[key] = state
+        self.audit["native_kernel_calls"] += 1
+        return _multiscale_relation_kernel(
+            left,
+            right,
+            self._code_order,
+            self._code_starts,
+            self._code_ends,
+            self._sorted_codes,
+            state.history_left,
+            state.history_right,
+            state.counts,
+            int(short),
+            int(long),
         )
 
     @staticmethod
@@ -624,6 +832,22 @@ class StreamingExpressionExecutor:
             result = self._state(key, args[0], 1)
         elif name in {"timesince", "eventage", "sincelastevent"}:
             result = self._state(key, args[0], 2)
+        elif name == "transition":
+            result = self._state(
+                key,
+                args[0],
+                3,
+                self._number(node.args[1]),
+                self._number(node.args[2]),
+            )
+        elif name == "multiscalerelation":
+            result = self._multiscale(
+                key,
+                args[0],
+                args[1],
+                int(self._number(node.args[2])),
+                int(self._number(node.args[3])),
+            )
         elif name in {"csrank", "rank"}:
             if _rank_kernel is None:
                 raise RuntimeError("Numba is required for cross-sectional mapping")
@@ -633,6 +857,11 @@ class StreamingExpressionExecutor:
             if _zscore_kernel is None:
                 raise RuntimeError("Numba is required for cross-sectional mapping")
             result = _zscore_kernel(args[0], self._time_starts, self._time_ends)
+            self.audit["native_kernel_calls"] += 1
+        elif name == "winsorize":
+            if _winsorize_kernel is None:
+                raise RuntimeError("Numba is required for cross-sectional winsorization")
+            result = _winsorize_kernel(args[0], self._time_starts, self._time_ends)
             self.audit["native_kernel_calls"] += 1
         elif name == "csresidual":
             if _residual_kernel is None:
@@ -753,6 +982,14 @@ class StreamingExpressionExecutor:
                 }
                 for key, value in sorted(self._state_states.items())
             },
+            "multiscale": {
+                key: {
+                    "history_left": value.history_left.copy(),
+                    "history_right": value.history_right.copy(),
+                    "counts": value.counts.copy(),
+                }
+                for key, value in sorted(self._multiscale_states.items())
+            },
         }
 
     def restore_continuation_payload(self, payload: Mapping[str, Any]) -> None:
@@ -770,4 +1007,12 @@ class StreamingExpressionExecutor:
                 has_previous=np.asarray(value["has_previous"], dtype=np.bool_).copy(),
             )
             for key, value in dict(payload.get("state") or {}).items()
+        }
+        self._multiscale_states = {
+            str(key): _BivariateRollingState(
+                history_left=np.asarray(value["history_left"], dtype=np.float64).copy(),
+                history_right=np.asarray(value["history_right"], dtype=np.float64).copy(),
+                counts=np.asarray(value["counts"], dtype=np.int32).copy(),
+            )
+            for key, value in dict(payload.get("multiscale") or {}).items()
         }

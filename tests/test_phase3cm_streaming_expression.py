@@ -5,6 +5,7 @@ import pandas as pd
 
 from our_system_phase2.services.phase3cm_streaming_expression import (
     StreamingExpressionExecutor,
+    unsupported_streaming_operators,
 )
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 
@@ -18,6 +19,7 @@ def _frame() -> pd.DataFrame:
                     "trade_time": pd.Timestamp("2025-01-02 09:30") + pd.Timedelta(minutes=minute),
                     "code": code,
                     "x": float(minute + code_index + 1),
+                    "y": float((minute + 1) ** 2 + code_index * (minute + 1)),
                     "event": float(minute in {1, 5}),
                 }
             )
@@ -35,6 +37,7 @@ def _executor(frame: pd.DataFrame) -> StreamingExpressionExecutor:
     ).bind_block(
         raw_fields={
             "x": frame["x"].to_numpy(dtype=np.float64),
+            "y": frame["y"].to_numpy(dtype=np.float64),
             "event": frame["event"].to_numpy(dtype=np.float64),
         },
         code_ids=code_ids,
@@ -55,6 +58,9 @@ def test_streaming_expression_matches_reference_for_frozen_operator_surface() ->
         "CSRank(Slope($x,3))",
         "FirstHit($event,3)",
         "Duration(Sign($x))",
+        "Winsorize($x)",
+        "Transition($event,0,1)",
+        "MultiScaleRelation($x,$y,2,4)",
     )
     executor = _executor(frame)
     observed = executor.evaluate_many(expressions)
@@ -73,6 +79,8 @@ def test_streaming_expression_continuation_matches_uninterrupted() -> None:
         "Duration(Sign($x))",
         "TimeSince($event)",
         "EventCount($event,3)",
+        "Transition($event,0,1)",
+        "MultiScaleRelation($x,$y,2,4)",
     )
     expected_executor = _executor(frame)
     expected = expected_executor.evaluate_many(expressions)
@@ -86,6 +94,7 @@ def test_streaming_expression_continuation_matches_uninterrupted() -> None:
         streaming.bind_block(
             raw_fields={
                 "x": part["x"].to_numpy(dtype=np.float64),
+                "y": part["y"].to_numpy(dtype=np.float64),
                 "event": part["event"].to_numpy(dtype=np.float64),
             },
             code_ids=part["code"].map(code_map).to_numpy(dtype=np.int32),
@@ -165,3 +174,56 @@ def test_cache_liveness_release_frees_owned_arrays_without_losing_state() -> Non
     assert released["released_bytes"] > 0
     assert int(executor.audit["cache_current_bytes"]) < before
     assert executor.continuation_payload()["rolling"]
+
+
+def test_new_streaming_operators_resume_from_serialized_continuation() -> None:
+    frame = _frame()
+    expressions = (
+        "Transition($event,0,1)",
+        "MultiScaleRelation($x,$y,2,4)",
+    )
+    expected = _executor(frame).evaluate_many(expressions)
+    code_values = sorted(frame["code"].unique())
+    code_map = {code: index for index, code in enumerate(code_values)}
+    split = 12
+    first = StreamingExpressionExecutor(code_count=len(code_values), compute_threads=2)
+    first_part = frame.iloc[:split]
+    first.bind_block(
+        raw_fields={
+            "x": first_part["x"].to_numpy(dtype=np.float64),
+            "y": first_part["y"].to_numpy(dtype=np.float64),
+            "event": first_part["event"].to_numpy(dtype=np.float64),
+        },
+        code_ids=first_part["code"].map(code_map).to_numpy(dtype=np.int32),
+        time_ids=pd.factorize(first_part["trade_time"], sort=False)[0].astype(np.int64),
+    )
+    first_values = first.evaluate_many(expressions)
+    payload = first.continuation_payload()
+
+    second = StreamingExpressionExecutor(code_count=len(code_values), compute_threads=2)
+    second.restore_continuation_payload(payload)
+    second_part = frame.iloc[split:]
+    second.bind_block(
+        raw_fields={
+            "x": second_part["x"].to_numpy(dtype=np.float64),
+            "y": second_part["y"].to_numpy(dtype=np.float64),
+            "event": second_part["event"].to_numpy(dtype=np.float64),
+        },
+        code_ids=second_part["code"].map(code_map).to_numpy(dtype=np.int32),
+        time_ids=pd.factorize(second_part["trade_time"], sort=False)[0].astype(np.int64),
+    )
+    second_values = second.evaluate_many(expressions)
+    for expression in expressions:
+        observed = np.concatenate((first_values[expression], second_values[expression]))
+        np.testing.assert_allclose(
+            observed,
+            expected[expression],
+            rtol=1e-12,
+            atol=1e-12,
+            equal_nan=True,
+        )
+
+
+def test_operator_surface_preflight_reports_unknown_calls() -> None:
+    assert unsupported_streaming_operators(("CSRank(Winsorize($x))",)) == ()
+    assert unsupported_streaming_operators(("CSRank(FutureMagic($x))",)) == ("futuremagic",)

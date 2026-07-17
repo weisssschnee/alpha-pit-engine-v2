@@ -18,6 +18,7 @@ CROSS_SECTIONAL_MAPPING_OPERATORS = {
     "csresidual",
     "safecsresidual",
     "maskedzscore",
+    "winsorize",
 }
 WINDOW_OPERATORS = {
     "acceleration",
