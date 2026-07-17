@@ -5,6 +5,7 @@ import csv
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -63,6 +64,42 @@ def _git(*args: str) -> str:
         text=True,
         encoding="utf-8",
     ).strip()
+
+
+def _source_identity(plan: Mapping[str, Any], *, repo_sha: str, tree_sha: str) -> tuple[str, str]:
+    git_executable = os.environ.get("GIT_EXECUTABLE", "git")
+    git_available = bool(shutil.which(git_executable)) and (REPO / ".git").exists()
+    if git_available:
+        status_before = _git("status", "--porcelain", "--untracked-files=no")
+        if status_before:
+            raise RuntimeError("tracked working tree must be clean before generation epoch")
+        observed_repo_sha = _git("rev-parse", "HEAD")
+        observed_tree_sha = _git("rev-parse", "HEAD^{tree}")
+    else:
+        if not repo_sha or not tree_sha:
+            raise RuntimeError(
+                "packaged no-git execution requires explicit --repo-sha and --tree-sha"
+            )
+        observed_repo_sha = str(repo_sha)
+        observed_tree_sha = str(tree_sha)
+
+    if plan.get("repo_sha") and str(plan["repo_sha"]) != observed_repo_sha:
+        raise RuntimeError("generation contract repo SHA drift")
+    if plan.get("tree_sha") and str(plan["tree_sha"]) != observed_tree_sha:
+        raise RuntimeError("generation contract tree SHA drift")
+
+    code_paths = {
+        "grammar": REPO / "src/our_system_phase2/services/compositional_grammar.py",
+        "generation_epoch": REPO / "src/our_system_phase2/services/compositional_generation_epoch.py",
+        "generation_runner": REPO / "scripts/run_cn_compositional_generation_epoch.py",
+        "typed_compiler": REPO / "src/our_system_phase2/services/typed_route_compiler.py",
+        "streaming_evaluator": REPO / "scripts/run_cn_phase3cm_streaming_qualification.py",
+    }
+    for name, expected in dict(plan.get("code_hashes") or {}).items():
+        path = code_paths.get(str(name))
+        if path is None or not path.exists() or _sha256(path) != str(expected):
+            raise RuntimeError(f"generation contract code hash drift: {name}")
+    return observed_repo_sha, observed_tree_sha
 
 
 def _route_skeleton_rows(unique_pairs: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -137,6 +174,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--plan", type=Path, default=DEFAULT_PLAN)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--repo-sha", default="")
+    parser.add_argument("--tree-sha", default="")
     args = parser.parse_args()
 
     plan_path = args.plan.resolve()
@@ -146,11 +185,11 @@ def main() -> int:
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
 
-    status_before = _git("status", "--porcelain", "--untracked-files=no")
-    if status_before:
-        raise RuntimeError("tracked working tree must be clean before generation epoch")
-    repo_sha = _git("rev-parse", "HEAD")
-    tree_sha = _git("rev-parse", "HEAD^{tree}")
+    repo_sha, tree_sha = _source_identity(
+        plan,
+        repo_sha=args.repo_sha,
+        tree_sha=args.tree_sha,
+    )
 
     result = build_compositional_generation_epoch(
         registry,
