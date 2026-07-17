@@ -62,7 +62,7 @@
       }
     },
     {
-      "color": "#f9a825",
+      "color": "#2e7d32",
       "contract": null,
       "critical": false,
       "declared": true,
@@ -70,14 +70,14 @@
       "evidence": "DECLARED",
       "forbidden": false,
       "id": "fundamental_to_fabric",
-      "lifecycle": "EXPERIMENTAL",
+      "lifecycle": "ACTIVE",
       "line_style": "dotted",
       "relation": "supplies_lazy_pit_features",
       "required": false,
       "source": "pit_fundamental_fabric",
       "target": "feature_state_fabric",
       "validation": {
-        "checked_at": "2026-07-15T06:57:15.960384+00:00",
+        "checked_at": "2026-07-17T02:46:36.024701+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -85,6 +85,74 @@
         "profile": "",
         "result": "NOT_REQUIRED",
         "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#2e7d32",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "canonical_representation_specs",
+        "evidence_ref": "",
+        "id": "qualified_fundamental_representation_only",
+        "rule": "Only canonical PIT-qualified fundamental representations may enter typed routes; raw 1,227-field exposure and PIT-unresolved families are forbidden.",
+        "severity": "HARD",
+        "type": "ADMISSION"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "fundamental_authority_to_registry",
+      "lifecycle": "ACTIVE",
+      "line_style": "dotted",
+      "relation": "qualifies_level_change_and_disclosure_payload_representations",
+      "required": false,
+      "source": "pit_fundamental_fabric",
+      "target": "unified_capability_registry",
+      "validation": {
+        "checked_at": "2026-07-17T02:46:36.024701+00:00",
+        "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v2_20260717/registry_build_summary.json",
+        "evidence_sha256": "4A6876654CF9CC702D9DC41073631A9E4831F2B73D3D5371D5932E55078E926D",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+      }
+    },
+    {
+      "color": "#2e7d32",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "CompositionalGrammarV2",
+        "evidence_ref": "",
+        "id": "registry_driven_generator_capacity",
+        "rule": "The generator consumes the versioned registry, including distinct disclosure pulse and qualified disclosure payload roles; historical narrow packs are evidence snapshots, not field authority.",
+        "severity": "HARD",
+        "type": "AUTHORITY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "registry_to_compositional_generator",
+      "lifecycle": "ACTIVE",
+      "line_style": "dotted",
+      "relation": "authorizes_typed_generator_inputs",
+      "required": false,
+      "source": "unified_capability_registry",
+      "target": "compositional_nline_bounded_search",
+      "validation": {
+        "checked_at": "2026-07-17T02:46:36.024701+00:00",
+        "evidence_ref": "tests/test_compositional_grammar_v2.py",
+        "evidence_sha256": "00A6C843D60B1C6E23280E99539BB99E8C08A86CA38EEC95B36575BB140CA8CF",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       }
     },
     {
@@ -830,7 +898,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-16T21:09:07.073280+00:00",
+  "generated_at": "2026-07-17T02:46:36.024701+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -951,7 +1019,7 @@
         "path": "src/our_system_phase2/services/unified_capability_registry.py",
         "repo_ref": "",
         "sha256": "6E3F74C26FC6BBEBEF8E38808D219418C4F05079474CCC8163330C7D817B60A0",
-        "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       },
       "color": "#2e7d32",
       "contracts": [
@@ -974,7 +1042,8 @@
       "lifecycle": "ACTIVE",
       "owner": "",
       "paths": [
-        "src/our_system_phase2/services/unified_capability_registry.py"
+        "src/our_system_phase2/services/unified_capability_registry.py",
+        "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
@@ -999,14 +1068,14 @@
       "required": false,
       "semantic_role": "field_route_authority",
       "validation": {
-        "checked_at": "2026-07-15T21:26:36.179347+00:00",
-        "evidence_ref": "reports/cn_unified_capability_discovery_20260714/completed_f8169e1/registry/unified_capability_registry.json",
-        "evidence_sha256": "58324147427077EB26565BD6CAD2B0F970D1738EB270EB7AD6A2F55B0615ED9C",
+        "checked_at": "2026-07-17T02:46:36.024701+00:00",
+        "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json",
+        "evidence_sha256": "28C391C9989CB97686EFFE547BB9C7F3FCB1A631DACB29761CE2EE730C3DB78C",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       },
       "visible_by_default": true
     },
@@ -1252,25 +1321,54 @@
       "visible_by_default": true
     },
     {
-      "active_authority": false,
-      "authority": null,
-      "color": "#f9a825",
-      "contracts": [],
-      "critical": false,
+      "active_authority": true,
+      "authority": {
+        "path": "src/our_system_phase2/services/pit_fundamental_fabric.py",
+        "repo_ref": "",
+        "sha256": "DCBEA382D2B2875FB5D93837B23EECE67576410F8B98CE69E6DCA0CAFEADD16C",
+        "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+      },
+      "color": "#2e7d32",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "PITFundamentalFabricAdapter and canonical_representation_specs",
+          "evidence_ref": "",
+          "id": "fundamental_pit_clock_and_episode_required",
+          "rule": "Fundamental level, change and disclosure payloads must resolve through registered observable-time, maturity and unique disclosure-episode semantics; raw source fields and PIT-unresolved families fail closed.",
+          "severity": "HARD",
+          "type": "AUTHORITY"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "PITFundamentalFabricAdapter",
+          "evidence_ref": "",
+          "id": "fundamental_snapshot_limit_preserved",
+          "rule": "Current-snapshot-only source families cannot claim historical superseded revision replay; zygc_em remains PIT_CONTRACT_UNRESOLVED.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        }
+      ],
+      "critical": true,
       "evidence": "STATIC",
       "expires_at": "",
       "id": "pit_fundamental_fabric",
-      "kind": "capability",
-      "label": "PIT fundamental fabric",
-      "lifecycle": "EXPERIMENTAL",
+      "kind": "authority",
+      "label": "PIT fundamental observable-time and episode authority",
+      "lifecycle": "ACTIVE",
       "owner": "",
       "paths": [
-        "src/our_system_phase2/services/pit_fundamental_fabric.py"
+        "src/our_system_phase2/services/pit_fundamental_fabric.py",
+        "src/our_system_phase2/services/fundamental_representations.py",
+        "runtime/cn_pit_fundamental_fabric_v1/pit_sidecar_manifest.json"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
+        "dataframe",
         "field",
+        "fundamentalfieldrequest",
         "normalize_cn_code",
+        "pitfundamentalfabricadapter",
         "scripts_build_pit_fundamental_fabric",
         "scripts_build_pit_fundamental_fabric_allowed_change_transforms",
         "scripts_build_pit_fundamental_fabric_arrow_schema",
@@ -1297,6 +1395,23 @@
         "scripts_build_pit_fundamental_fabric_table_hash",
         "scripts_build_pit_fundamental_fabric_write_csv",
         "scripts_build_pit_fundamental_fabric_write_json",
+        "src_our_system_phase2_services_fundamental_representations",
+        "src_our_system_phase2_services_fundamental_representations_amount",
+        "src_our_system_phase2_services_fundamental_representations_canonical_representation_specs",
+        "src_our_system_phase2_services_fundamental_representations_canonicalfundamentalmaterializer",
+        "src_our_system_phase2_services_fundamental_representations_canonicalfundamentalmaterializer_init",
+        "src_our_system_phase2_services_fundamental_representations_canonicalfundamentalmaterializer_level",
+        "src_our_system_phase2_services_fundamental_representations_canonicalfundamentalmaterializer_materialize",
+        "src_our_system_phase2_services_fundamental_representations_canonicalfundamentalmaterializer_request",
+        "src_our_system_phase2_services_fundamental_representations_py_any",
+        "src_our_system_phase2_services_fundamental_representations_qualify_source_field",
+        "src_our_system_phase2_services_fundamental_representations_qualify_source_universe",
+        "src_our_system_phase2_services_fundamental_representations_rationale_1",
+        "src_our_system_phase2_services_fundamental_representations_rationale_186",
+        "src_our_system_phase2_services_fundamental_representations_rationale_417",
+        "src_our_system_phase2_services_fundamental_representations_rationale_99",
+        "src_our_system_phase2_services_fundamental_representations_slug",
+        "src_our_system_phase2_services_fundamental_representations_unitassertion",
         "tests_test_pit_fundamental_fabric",
         "tests_test_pit_fundamental_fabric_finance_frame",
         "tests_test_pit_fundamental_fabric_py_dataframe",
@@ -1322,16 +1437,16 @@
         "tests_test_pit_fundamental_fabric_write_fixture_sources"
       ],
       "required": false,
-      "semantic_role": "",
+      "semantic_role": "pit_fundamental_observable_episode_authority",
       "validation": {
-        "checked_at": "2026-07-15T21:26:36.179347+00:00",
-        "evidence_ref": "",
-        "evidence_sha256": null,
-        "level": "NOT_REQUIRED",
+        "checked_at": "2026-07-17T02:46:36.024701+00:00",
+        "evidence_ref": "tests/test_pit_fundamental_fabric.py",
+        "evidence_sha256": "20617E5E750049057A210DDE3451559B55388D7AD869605D0E9839E461A24769",
+        "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
-        "result": "NOT_REQUIRED",
-        "verified_at_sha": null
+        "result": "PASS",
+        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       },
       "visible_by_default": true
     },
@@ -1943,14 +2058,12 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
-        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
-        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -1967,7 +2080,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-16T21:09:07.073280+00:00",
+        "checked_at": "2026-07-17T02:46:36.024701+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2013,14 +2126,12 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
-        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
-        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -2037,7 +2148,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-16T21:09:07.073280+00:00",
+        "checked_at": "2026-07-17T02:46:36.024701+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2237,24 +2348,24 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "C8D7474633233909BC2DA7FDF04A0B381EAB5DD7A10B23833DCFC420AF5DBDE4"
+    "sha256": "18EC37174EDDD480114F6399E4AD9FF093DC4F0ACC5A9203EA147D5634D2C47A"
   },
   "profile_id": null,
   "profiles": [],
   "raw": {
-    "built_at_commit": "c64b988ef1d36176dea55179811ecce56f36a9dd",
-    "edge_count": 8537,
-    "node_count": 3719,
+    "built_at_commit": "1cfdf640ec30b9072410558d01da7618cbe684ac",
+    "edge_count": 8568,
+    "node_count": 3739,
     "path": ".planning/graphs/graph.json",
-    "sha256": "50E2610EE0F6C872EAD42E59B1478B0A5CD5938D34FF4D93216D199F1CB9EA13"
+    "sha256": "20C54CFD3E3BC899F1422682850E3310E03C8310CF35A293513D51D876BDEAE0"
   },
-  "repo_head": "c64b988ef1d36176dea55179811ecce56f36a9dd",
+  "repo_head": "1cfdf640ec30b9072410558d01da7618cbe684ac",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 26,
+    "current_edges": 28,
     "current_nodes": 22,
     "errors": 0,
     "runtime_edges": 0,

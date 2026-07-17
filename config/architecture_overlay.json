@@ -65,13 +65,16 @@
       "label": "Unified capability and route authority",
       "kind": "authority",
       "lifecycle": "ACTIVE",
-      "paths": ["src/our_system_phase2/services/unified_capability_registry.py"],
+      "paths": [
+        "src/our_system_phase2/services/unified_capability_registry.py",
+        "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json"
+      ],
       "critical": true,
       "active_authority": true,
       "semantic_role": "field_route_authority",
       "authority": {
         "path": "src/our_system_phase2/services/unified_capability_registry.py",
-        "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       },
       "contracts": [
         {
@@ -86,8 +89,8 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "reports/cn_unified_capability_discovery_20260714/completed_f8169e1/registry/unified_capability_registry.json",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json",
+        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       }
     },
     {
@@ -116,10 +119,45 @@
     },
     {
       "id": "pit_fundamental_fabric",
-      "label": "PIT fundamental fabric",
-      "kind": "capability",
-      "lifecycle": "EXPERIMENTAL",
-      "paths": ["src/our_system_phase2/services/pit_fundamental_fabric.py"]
+      "label": "PIT fundamental observable-time and episode authority",
+      "kind": "authority",
+      "lifecycle": "ACTIVE",
+      "paths": [
+        "src/our_system_phase2/services/pit_fundamental_fabric.py",
+        "src/our_system_phase2/services/fundamental_representations.py",
+        "runtime/cn_pit_fundamental_fabric_v1/pit_sidecar_manifest.json"
+      ],
+      "critical": true,
+      "active_authority": true,
+      "semantic_role": "pit_fundamental_observable_episode_authority",
+      "authority": {
+        "path": "src/our_system_phase2/services/pit_fundamental_fabric.py",
+        "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+      },
+      "contracts": [
+        {
+          "id": "fundamental_pit_clock_and_episode_required",
+          "type": "AUTHORITY",
+          "rule": "Fundamental level, change and disclosure payloads must resolve through registered observable-time, maturity and unique disclosure-episode semantics; raw source fields and PIT-unresolved families fail closed.",
+          "severity": "HARD",
+          "enforced_by": "PITFundamentalFabricAdapter and canonical_representation_specs",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "fundamental_snapshot_limit_preserved",
+          "type": "BOUNDARY",
+          "rule": "Current-snapshot-only source families cannot claim historical superseded revision replay; zygc_em remains PIT_CONTRACT_UNRESOLVED.",
+          "severity": "HARD",
+          "enforced_by": "PITFundamentalFabricAdapter",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "tests/test_pit_fundamental_fabric.py",
+        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+      }
     },
     {
       "id": "hypothesis_lanes",
@@ -508,7 +546,27 @@
   "edges": [
     {"id": "fabric_to_temporal", "source": "feature_state_fabric", "target": "typed_temporal_program", "relation": "supplies_typed_inputs", "lifecycle": "ACTIVE"},
     {"id": "fabric_to_event", "source": "feature_state_fabric", "target": "broad_event_system", "relation": "supplies_pit_inputs", "lifecycle": "ACTIVE"},
-    {"id": "fundamental_to_fabric", "source": "pit_fundamental_fabric", "target": "feature_state_fabric", "relation": "supplies_lazy_pit_features", "lifecycle": "EXPERIMENTAL"},
+    {"id": "fundamental_to_fabric", "source": "pit_fundamental_fabric", "target": "feature_state_fabric", "relation": "supplies_lazy_pit_features", "lifecycle": "ACTIVE"},
+    {
+      "id": "fundamental_authority_to_registry",
+      "source": "pit_fundamental_fabric",
+      "target": "unified_capability_registry",
+      "relation": "qualifies_level_change_and_disclosure_payload_representations",
+      "lifecycle": "ACTIVE",
+      "critical": true,
+      "contract": {"id": "qualified_fundamental_representation_only", "type": "ADMISSION", "rule": "Only canonical PIT-qualified fundamental representations may enter typed routes; raw 1,227-field exposure and PIT-unresolved families are forbidden.", "severity": "HARD", "enforced_by": "canonical_representation_specs", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v2_20260717/registry_build_summary.json", "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"}
+    },
+    {
+      "id": "registry_to_compositional_generator",
+      "source": "unified_capability_registry",
+      "target": "compositional_nline_bounded_search",
+      "relation": "authorizes_typed_generator_inputs",
+      "lifecycle": "ACTIVE",
+      "critical": true,
+      "contract": {"id": "registry_driven_generator_capacity", "type": "AUTHORITY", "rule": "The generator consumes the versioned registry, including distinct disclosure pulse and qualified disclosure payload roles; historical narrow packs are evidence snapshots, not field authority.", "severity": "HARD", "enforced_by": "CompositionalGrammarV2", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_compositional_grammar_v2.py", "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"}
+    },
     {"id": "temporal_to_lanes", "source": "typed_temporal_program", "target": "hypothesis_lanes", "relation": "types_temporal_lane", "lifecycle": "ACTIVE"},
     {"id": "event_to_lanes", "source": "broad_event_system", "target": "hypothesis_lanes", "relation": "types_event_lane", "lifecycle": "ACTIVE"},
     {
@@ -637,6 +695,7 @@
   "semantic_authorities": [
     {"semantic_role": "split_authority", "authoritative_component": "fixed_split_authority"},
     {"semantic_role": "field_route_authority", "authoritative_component": "unified_capability_registry"},
+    {"semantic_role": "pit_fundamental_observable_episode_authority", "authoritative_component": "pit_fundamental_fabric"},
     {"semantic_role": "candidate_identity_authority", "authoritative_component": "candidate_submission_receipt"},
     {"semantic_role": "matched_pair_authority", "authoritative_component": "matched_control_pair_authority"},
     {"semantic_role": "formal_evaluation_authority", "authoritative_component": "candidate_parallel_evaluator"},
