@@ -6,7 +6,12 @@ param(
     [string]$RepoRoot = "D:\ChengboRemote\workspace\alpha_pit_compositional_667c82f_git",
     [string]$CandidateRoot = "",
     [string]$RuntimeRoot = "",
+    [string]$RunParentRoot = "",
     [string]$Binding = "",
+    [string]$ActiveFieldRoot = "",
+    [string]$ActiveLabelRoot = "",
+    [string]$SessionFieldRoot = "",
+    [string]$SessionLabelRoot = "",
     [string]$PythonExe = "D:\ChengboRemote\venvs\alpha311\Scripts\python.exe"
 )
 
@@ -33,9 +38,14 @@ $env:POLARS_MAX_THREADS = "1"
 
 if (-not $RuntimeRoot) { $RuntimeRoot = Join-Path $RepoRoot "runtime\cn_phase3cm_streaming_repair_20260716" }
 if (-not $CandidateRoot) { $CandidateRoot = Join-Path $RepoRoot "runtime\cn_compositional_nline_large_search_20260715" }
+if (-not $RunParentRoot) { $RunParentRoot = $RuntimeRoot }
 $SplitManifest = Join-Path $RepoRoot "runtime\run_plans\phase3ga_true1min_2024_2025_global_split_manifest.csv"
 if (-not $Binding) { $Binding = Join-Path $RuntimeRoot "CN_STREAMING_REPAIR_FROZEN_INPUT_BINDING.json" }
-$RunRoot = Join-Path $RuntimeRoot $OutputName
+if (-not $ActiveFieldRoot) { $ActiveFieldRoot = Join-Path $RuntimeRoot "time_major_train_v2" }
+if (-not $ActiveLabelRoot) { $ActiveLabelRoot = Join-Path $RuntimeRoot "time_major_train_v3_labels" }
+if (-not $SessionFieldRoot) { $SessionFieldRoot = Join-Path $RuntimeRoot "session_time_major_train_v2" }
+if (-not $SessionLabelRoot) { $SessionLabelRoot = Join-Path $RuntimeRoot "session_time_major_train_v3_labels" }
+$RunRoot = Join-Path $RunParentRoot $OutputName
 if ((Test-Path $RunRoot) -and -not $Resume) {
     throw "Phase E output already exists; refuse to overwrite or adapt: $RunRoot"
 }
@@ -82,16 +92,16 @@ $ActiveArgs = New-BackendArguments `
     -Backend "active_bar" `
     -PairCount ([int]$Contract.plans.active_bar.pair_count) `
     -CandidateTable (Join-Path $CandidateRoot "preflight_active_candidates.csv") `
-    -FieldRoot (Join-Path $RuntimeRoot "time_major_train_v2") `
-    -LabelRoot (Join-Path $RuntimeRoot "time_major_train_v3_labels") `
+    -FieldRoot $ActiveFieldRoot `
+    -LabelRoot $ActiveLabelRoot `
     -OutputRoot $ActiveRoot `
     -ExecutionPlan ([string]$Contract.plans.active_bar.path)
 $SessionArgs = New-BackendArguments `
     -Backend "stock_session" `
     -PairCount ([int]$Contract.plans.stock_session.pair_count) `
     -CandidateTable (Join-Path $CandidateRoot "preflight_session_candidates.csv") `
-    -FieldRoot (Join-Path $RuntimeRoot "session_time_major_train_v2") `
-    -LabelRoot (Join-Path $RuntimeRoot "session_time_major_train_v3_labels") `
+    -FieldRoot $SessionFieldRoot `
+    -LabelRoot $SessionLabelRoot `
     -OutputRoot $SessionRoot `
     -ExecutionPlan ([string]$Contract.plans.stock_session.path)
 
