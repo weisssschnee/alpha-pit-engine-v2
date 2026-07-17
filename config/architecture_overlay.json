@@ -708,7 +708,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "census_requires_registered_materialized_tokens", "type": "ADMISSION", "rule": "Only context-bound tokens with real materialization and explicit roles may enter an Information Census.", "severity": "HARD", "enforced_by": "information_census_input_contract", "bypass_forbidden": true},
-      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/information_research_contract.json", "verified_at_sha": "395759edcfc76c5a89b5ed6111229fac1a6e5ac4"}
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/information_research_contract.json", "verified_at_sha": "71bf30b05391ab6793dde8853e95a5a3b3ff1df3"}
     },
     {
       "id": "census_to_core_pack",
@@ -718,7 +718,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "core_pack_non_performance_evidence_only", "type": "EVIDENCE", "rule": "Core Pack membership reflects non-performance quality and redundancy gates only and cannot make an Alpha claim.", "severity": "HARD", "enforced_by": "select_core_pack", "bypass_forbidden": true},
-      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/core_pack.json", "verified_at_sha": "395759edcfc76c5a89b5ed6111229fac1a6e5ac4"}
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/core_pack.json", "verified_at_sha": "71bf30b05391ab6793dde8853e95a5a3b3ff1df3"}
     },
     {
       "id": "core_pack_to_registry_advisory",
@@ -728,7 +728,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "core_pack_cannot_authorize_routes", "type": "BOUNDARY", "rule": "An exploratory Core Pack cannot itself change field roles, generator exposure, route admission, search budgets or promotion state.", "severity": "HARD", "enforced_by": "UnifiedCapabilityRegistry", "bypass_forbidden": true},
-      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/run_manifest.json", "verified_at_sha": "395759edcfc76c5a89b5ed6111229fac1a6e5ac4"}
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/run_manifest.json", "verified_at_sha": "71bf30b05391ab6793dde8853e95a5a3b3ff1df3"}
     },
     {
       "id": "registry_to_receipt",
