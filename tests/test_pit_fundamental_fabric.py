@@ -257,6 +257,40 @@ def test_balance_sheet_ttm_route_is_rejected_before_source_access(tmp_path: Path
         )
 
 
+def test_adapter_prefetches_a_table_cohort_once(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    source = tmp_path / "source"
+    _write_fixture_sources(source)
+    calls = 0
+    original = pd.read_parquet
+
+    def counted(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(pd, "read_parquet", counted)
+    adapter = PITFundamentalFabricAdapter(
+        source_root=source,
+        sessions=_sessions(),
+        maximum_observable_time="2025-04-22 15:00",
+        prefetch_source_fields_by_table={
+            "balance_sheet_report_em": ["TOTAL_ASSETS", "TOTAL_ASSETS_YOY"]
+        },
+    )
+    coordinates = pd.DataFrame(
+        {"code": ["000001"], "session_time": pd.to_datetime(["2024-04-22 09:30"])}
+    )
+
+    adapter.materialize_level(
+        FundamentalFieldRequest("balance_sheet_report_em", "TOTAL_ASSETS"), coordinates
+    )
+    adapter.materialize_level(
+        FundamentalFieldRequest("balance_sheet_report_em", "TOTAL_ASSETS_YOY"), coordinates
+    )
+
+    assert calls == 1
+
+
 def test_atomic_session_cache_is_deterministic(tmp_path: Path) -> None:
     cache = DeterministicSessionCache(tmp_path)
     coordinates = pd.DataFrame(

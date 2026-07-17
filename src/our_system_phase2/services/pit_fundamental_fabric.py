@@ -378,19 +378,31 @@ class PITFundamentalFabricAdapter:
         source_root: Path,
         sessions: Sequence[pd.Timestamp] | pd.DatetimeIndex,
         maximum_observable_time: pd.Timestamp | str,
+        prefetch_source_fields_by_table: Mapping[str, Sequence[str]] | None = None,
     ) -> None:
         self.source_root = Path(source_root)
         self.sessions = pd.DatetimeIndex(pd.to_datetime(list(sessions), errors="raise"))
         self.maximum_observable_time = pd.Timestamp(maximum_observable_time)
         self.resolver = StockSessionAsOfResolver(maximum_observable_time=self.maximum_observable_time)
+        self.prefetch_source_fields_by_table = {
+            str(table): tuple(sorted(set(map(str, fields))))
+            for table, fields in dict(prefetch_source_fields_by_table or {}).items()
+        }
+        self._financial_versions_cache: dict[tuple[str, tuple[str, ...]], pd.DataFrame] = {}
 
     def _load_financial(self, request: FundamentalFieldRequest, codes: Iterable[str]) -> pd.DataFrame:
+        normalized_codes = tuple(sorted({normalize_cn_code(item) for item in codes}))
+        prefetched = self.prefetch_source_fields_by_table.get(request.source_table, ())
+        source_fields = prefetched if request.source_field in prefetched else (request.source_field,)
         columns = [
             "source_code6", "SECURITY_CODE", "NOTICE_DATE", "UPDATE_DATE", "REPORT_DATE",
-            request.source_field,
+            *source_fields,
         ]
+        cache_key = (request.source_table, normalized_codes)
+        if prefetched and cache_key in self._financial_versions_cache:
+            return self._financial_versions_cache[cache_key].copy()
         parts: list[pd.DataFrame] = []
-        for code in sorted({normalize_cn_code(item) for item in codes}):
+        for code in normalized_codes:
             path = source_partition_path(self.source_root, request.source_table, code)
             if not path.exists():
                 continue
@@ -401,12 +413,15 @@ class PITFundamentalFabricAdapter:
             parts.append(pd.read_parquet(path, columns=selected))
         if not parts:
             return pd.DataFrame()
-        return conservative_financial_versions(
+        versions = conservative_financial_versions(
             pd.concat(parts, ignore_index=True),
             table=request.source_table,
             sessions=self.sessions,
             maximum_observable_time=self.maximum_observable_time,
         )
+        if prefetched:
+            self._financial_versions_cache[cache_key] = versions
+        return versions.copy()
 
     def _load_holder(self, request: FundamentalFieldRequest, codes: Iterable[str]) -> pd.DataFrame:
         columns = ["source_code6", "股票代码", "公告日期", "截至日期", request.source_field]

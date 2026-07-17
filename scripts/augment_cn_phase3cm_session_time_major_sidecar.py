@@ -103,10 +103,23 @@ def main() -> int:
     original_payload_digest = _frame_digest(frame, original_columns)
     sessions = _sessions(args.split_manifest)
     registry = UnifiedCapabilityRegistry.read(args.registry)
+    specs: dict[str, dict[str, Any]] = {}
+    prefetch_fields: dict[str, set[str]] = {}
+    for field_id in fundamental_fields:
+        capability = registry.resolve(field_id)
+        spec = dict((capability.metadata or {}).get("canonical_representation") or {})
+        if not spec or not bool(spec.get("search_eligible")):
+            raise PermissionError(f"session field is not PIT search eligible: {field_id}")
+        specs[field_id] = spec
+        for source_spec in spec.get("source_fields") or []:
+            prefetch_fields.setdefault(str(source_spec["source_table"]), set()).add(
+                str(source_spec["source_field"])
+            )
     adapter = PITFundamentalFabricAdapter(
         source_root=args.fundamental_root,
         sessions=sessions,
         maximum_observable_time=args.maximum_observable_time,
+        prefetch_source_fields_by_table=prefetch_fields,
     )
     materializer = CanonicalFundamentalMaterializer(adapter)
     coordinates = frame[["code", "trade_time"]].rename(columns={"trade_time": "session_time"}).copy()
@@ -114,10 +127,7 @@ def main() -> int:
     coordinate_index = pd.MultiIndex.from_frame(coordinates)
     coverage: dict[str, float] = {}
     for field_id in fundamental_fields:
-        capability = registry.resolve(field_id)
-        spec = dict((capability.metadata or {}).get("canonical_representation") or {})
-        if not spec or not bool(spec.get("search_eligible")):
-            raise PermissionError(f"session field is not PIT search eligible: {field_id}")
+        spec = specs[field_id]
         materialized = materializer.materialize(spec, coordinates)
         values = materialized.set_index(["code", "session_time"])[field_id]
         if values.index.has_duplicates:
