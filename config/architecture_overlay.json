@@ -136,6 +136,17 @@
       }
     },
     {
+      "id": "field_information_evidence",
+      "label": "Context-bound field token and exposure evidence",
+      "kind": "evidence",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "src/our_system_phase2/services/field_information_v0.py",
+        "runtime/cn_field_information_v0_20260717/run_manifest.json"
+      ],
+      "claim_badges": ["STRUCTURAL ONLY", "NO PERFORMANCE", "NO OOS"]
+    },
+    {
       "id": "feature_state_fabric",
       "label": "Feature and State Fabric",
       "kind": "capability",
@@ -620,6 +631,20 @@
       "critical": true,
       "contract": {"id": "inventory_and_route_authority_separated", "type": "AUTHORITY", "rule": "The field master is authoritative for existence and status; the unified capability registry is authoritative for generator and route eligibility.", "severity": "HARD", "enforced_by": "build_cn_field_master_registry and UnifiedCapabilityRegistry", "bypass_forbidden": true},
       "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json", "verified_at_sha": "8774de474906f73c8050e139638434a8e0a1f243"}
+    },
+    {
+      "id": "field_master_to_information_evidence",
+      "source": "cn_field_master_registry",
+      "target": "field_information_evidence",
+      "relation": "compiles_non_authoritative_token_view",
+      "lifecycle": "EXPERIMENTAL"
+    },
+    {
+      "id": "information_evidence_observes_route_registry",
+      "source": "field_information_evidence",
+      "target": "unified_capability_registry",
+      "relation": "observes_structural_route_and_generator_exposure",
+      "lifecycle": "EXPERIMENTAL"
     },
     {
       "id": "registry_to_receipt",
