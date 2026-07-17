@@ -1,0 +1,34 @@
+param(
+    [string]$RepoSha = "37c06734b6f1580fba0dd7f281d358fd4fb231fc",
+    [string]$StageRoot = "D:\ChengboRemote\staging\cn_field_information_37c0673",
+    [string]$OutputRoot = "D:\ChengboRemote\runtime\cn_chip_plate_information_census_20260717"
+)
+
+$ErrorActionPreference = "Stop"
+$Python = "D:\ChengboRemote\venvs\alpha311\Scripts\python.exe"
+$Manifest = "D:\ChengboRemote\data\chip_pit_v1_20260713\chip_sidecar_manifest_v1.json"
+$Script = Join-Path $StageRoot "scripts\run_cn_chip_plate_information_census.py"
+$env:PYTHONPATH = Join-Path $StageRoot "src"
+$env:OMP_NUM_THREADS = "1"
+$env:MKL_NUM_THREADS = "1"
+$env:OPENBLAS_NUM_THREADS = "1"
+$env:NUMEXPR_MAX_THREADS = "8"
+New-Item -ItemType Directory -Force -Path $OutputRoot | Out-Null
+$stdout = Join-Path $OutputRoot "runner.stdout.log"
+$stderr = Join-Path $OutputRoot "runner.stderr.log"
+$arguments = @(
+    $Script,
+    "--chip-manifest", $Manifest,
+    "--output", $OutputRoot,
+    "--repo-sha", $RepoSha,
+    "--sample-modulus", "16"
+)
+$process = Start-Process -FilePath $Python -ArgumentList $arguments -WindowStyle Hidden -PassThru `
+    -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+@{
+    pid = $process.Id
+    repo_sha = $RepoSha
+    output_root = $OutputRoot
+    started_at = [DateTimeOffset]::UtcNow.ToString("o")
+} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputRoot "launcher_receipt.json") -Encoding UTF8
+Write-Output $process.Id
