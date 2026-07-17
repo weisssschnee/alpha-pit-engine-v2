@@ -13,7 +13,7 @@ from our_system_phase2.services.unified_capability_registry import (
 REPO = Path(__file__).resolve().parents[1]
 REGISTRY = (
     REPO
-    / "reports/cn_unified_capability_discovery_20260714/completed_f8169e1/registry"
+    / "runtime/field_registry/cn_unified_capability_registry_v3_20260717"
     / "unified_capability_registry.json"
 )
 

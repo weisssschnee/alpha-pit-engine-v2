@@ -289,3 +289,27 @@ def test_all_compositional_pairs_freeze_shared_support_and_maturity_alignment() 
                 "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT"
             )
             assert "SAME_SUPPORT_COORDINATES" in member["pair_mapping_portfolio_contract"]
+
+
+def test_route_root_allowlist_is_enforced_without_changing_registry_authority() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    grammar = CompositionalGrammarV2(
+        registry,
+        route_root_allowlist={"MINUTE_STATIC": ["amount", "close"]},
+    )
+
+    for index in range(32):
+        pair = grammar.propose("MINUTE_STATIC", attempt_index=index, seed=20260718)
+        assert pair.primary["legal"] is True
+        assert pair.control["legal"] is True
+        assert set(pair.primary["declared_field_ids"]) <= {"amount", "close"}
+
+    try:
+        CompositionalGrammarV2(
+            registry,
+            route_root_allowlist={"MINUTE_STATIC": ["chip_cost_p50"]},
+        )
+    except ValueError as exc:
+        assert "not eligible on route" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("route-ineligible proposal root was accepted")

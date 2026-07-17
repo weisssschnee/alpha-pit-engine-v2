@@ -7,7 +7,7 @@ pair-native evaluator authorities remain separate and fail closed.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 from our_system_phase2.services.matched_control_pairs import (
     COMPOSITIONAL_CONTROL_CONSTRUCTOR_MATRIX,
@@ -221,10 +221,55 @@ class CompositionalGrammarV2:
     returned object and has no independent proposal or vote.
     """
 
-    def __init__(self, registry: UnifiedCapabilityRegistry) -> None:
+    def __init__(
+        self,
+        registry: UnifiedCapabilityRegistry,
+        *,
+        route_root_allowlist: Mapping[str, Iterable[str]] | None = None,
+    ) -> None:
         self.registry = registry
         self.compiler = TypedRouteCompiler(registry)
         self._skeletons = skeleton_registry()
+        self._route_root_allowlist = self._validate_route_root_allowlist(
+            route_root_allowlist
+        )
+
+    def _validate_route_root_allowlist(
+        self,
+        value: Mapping[str, Iterable[str]] | None,
+    ) -> dict[str, frozenset[str]]:
+        if value is None:
+            return {}
+        unknown_routes = set(value) - set(ROUTE_IDS)
+        if unknown_routes:
+            raise ValueError(
+                f"unknown routes in proposal root allowlist: {sorted(unknown_routes)}"
+            )
+        output: dict[str, frozenset[str]] = {}
+        for route_id, field_ids in value.items():
+            allowed: set[str] = set()
+            for field_id in field_ids:
+                field = self.registry.resolve(str(field_id))
+                if not field.search_eligible or route_id not in field.allowed_routes:
+                    raise ValueError(
+                        "proposal root is not eligible on route "
+                        f"{route_id}: {field.field_id}"
+                    )
+                allowed.add(field.field_id)
+            if not allowed:
+                raise ValueError(f"empty proposal root allowlist on {route_id}")
+            output[route_id] = frozenset(allowed)
+        return output
+
+    def _filter_proposal_roots(
+        self,
+        route_id: str,
+        rows: Sequence[CapabilityField],
+    ) -> tuple[CapabilityField, ...]:
+        allowed = self._route_root_allowlist.get(route_id)
+        if allowed is None:
+            return tuple(rows)
+        return tuple(row for row in rows if row.field_id in allowed)
 
     def _payload_pool(self, route_id: str) -> tuple[CapabilityField, ...]:
         rows = self.registry.fields_for_route(
@@ -232,6 +277,7 @@ class CompositionalGrammarV2:
             entity_scopes=("STOCK",),
             field_roles=("primary", "interaction-only"),
         )
+        rows = self._filter_proposal_roots(route_id, rows)
         if not rows:
             raise ValueError(f"FIELD_COVERAGE_BOTTLENECK: no payload fields on {route_id}")
         return rows
@@ -250,6 +296,7 @@ class CompositionalGrammarV2:
             entity_scopes=(entity_scope,) if entity_scope else None,
             field_roles=field_roles or None,
         )
+        rows = self._filter_proposal_roots(route_id, rows)
         if source_family is not None:
             rows = tuple(row for row in rows if row.source_family == source_family)
         if temporal_semantics is not None:
