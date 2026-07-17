@@ -111,14 +111,14 @@
       "source": "pit_fundamental_fabric",
       "target": "unified_capability_registry",
       "validation": {
-        "checked_at": "2026-07-17T02:46:36.024701+00:00",
-        "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v2_20260717/registry_build_summary.json",
-        "evidence_sha256": "4A6876654CF9CC702D9DC41073631A9E4831F2B73D3D5371D5932E55078E926D",
+        "checked_at": "2026-07-17T14:40:33.195946+00:00",
+        "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/registry_build_summary.json",
+        "evidence_sha256": "B13934479658DFBD7AF8868D354D231FF247FA07C199542CC577BD10A5C5A3B9",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+        "verified_at_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       }
     },
     {
@@ -145,14 +145,14 @@
       "source": "unified_capability_registry",
       "target": "compositional_nline_bounded_search",
       "validation": {
-        "checked_at": "2026-07-17T02:46:36.024701+00:00",
+        "checked_at": "2026-07-17T14:40:33.195946+00:00",
         "evidence_ref": "tests/test_compositional_grammar_v2.py",
-        "evidence_sha256": "00A6C843D60B1C6E23280E99539BB99E8C08A86CA38EEC95B36575BB140CA8CF",
+        "evidence_sha256": "A441DE038804439865DAF4729025CF36B7DD4F6BF134C6D5A11037F2A754DCBA",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+        "verified_at_sha": "947a2988b720a42ed319fdcfc0eddbfdde9be496"
       }
     },
     {
@@ -231,14 +231,14 @@
       "source": "cn_field_master_registry",
       "target": "unified_capability_registry",
       "validation": {
-        "checked_at": "2026-07-17T03:06:20.461335+00:00",
+        "checked_at": "2026-07-17T14:40:33.195946+00:00",
         "evidence_ref": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
-        "evidence_sha256": "C20EF262604694FD78BA0C8B33FCEB5C9115C722C7CFEC64C1ED0D56BEBE9F3F",
+        "evidence_sha256": "D34B6FCCC721A9F9866B067418C0740F2CF5CEB00C003A7B57D279008AE32258",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "8774de474906f73c8050e139638434a8e0a1f243"
+        "verified_at_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       }
     },
     {
@@ -984,7 +984,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-17T14:18:20.271881+00:00",
+  "generated_at": "2026-07-17T14:51:57.418425+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1104,8 +1104,8 @@
       "authority": {
         "path": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
         "repo_ref": "",
-        "sha256": "C20EF262604694FD78BA0C8B33FCEB5C9115C722C7CFEC64C1ED0D56BEBE9F3F",
-        "verified_sha": "8774de474906f73c8050e139638434a8e0a1f243"
+        "sha256": "D34B6FCCC721A9F9866B067418C0740F2CF5CEB00C003A7B57D279008AE32258",
+        "verified_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       },
       "color": "#2e7d32",
       "contracts": [
@@ -1153,14 +1153,14 @@
       "required": false,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-07-17T13:03:22.447518+00:00",
+        "checked_at": "2026-07-17T14:40:33.195946+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "8774de474906f73c8050e139638434a8e0a1f243"
+        "verified_at_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       },
       "visible_by_default": true
     },
@@ -1170,7 +1170,7 @@
         "path": "src/our_system_phase2/services/unified_capability_registry.py",
         "repo_ref": "",
         "sha256": "6E3F74C26FC6BBEBEF8E38808D219418C4F05079474CCC8163330C7D817B60A0",
-        "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+        "verified_sha": "947a2988b720a42ed319fdcfc0eddbfdde9be496"
       },
       "color": "#2e7d32",
       "contracts": [
@@ -1194,7 +1194,7 @@
       "owner": "",
       "paths": [
         "src/our_system_phase2/services/unified_capability_registry.py",
-        "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json"
+        "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
@@ -1212,6 +1212,7 @@
         "scripts_build_unified_capability_registry_rationale_1",
         "scripts_build_unified_capability_registry_read_csv",
         "scripts_build_unified_capability_registry_sha256",
+        "scripts_build_unified_capability_registry_sidecar_capabilities",
         "scripts_build_unified_capability_registry_synthetic_state_fields",
         "scripts_build_unified_capability_registry_write_csv",
         "src_our_system_phase2_services_unified_capability_registry_py"
@@ -1219,14 +1220,14 @@
       "required": false,
       "semantic_role": "field_route_authority",
       "validation": {
-        "checked_at": "2026-07-17T02:46:36.024701+00:00",
-        "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json",
-        "evidence_sha256": "28C391C9989CB97686EFFE547BB9C7F3FCB1A631DACB29761CE2EE730C3DB78C",
+        "checked_at": "2026-07-17T14:51:57.418425+00:00",
+        "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
+        "evidence_sha256": "4855AE00D975C5E05066CF21F73C6FA3DC08A15280DD9AD145D5EA5F30B1CF7F",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+        "verified_at_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       },
       "visible_by_default": true
     },
@@ -1372,6 +1373,21 @@
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
+        "src_our_system_phase2_services_event_state_system",
+        "src_our_system_phase2_services_event_state_system_build_event_state_features",
+        "src_our_system_phase2_services_event_state_system_event_spec",
+        "src_our_system_phase2_services_event_state_system_event_state_contract",
+        "src_our_system_phase2_services_event_state_system_eventstateconfig",
+        "src_our_system_phase2_services_event_state_system_eventstateconfig_validate",
+        "src_our_system_phase2_services_event_state_system_eventstatefeaturespec",
+        "src_our_system_phase2_services_event_state_system_eventstatefeaturespec_canonical",
+        "src_our_system_phase2_services_event_state_system_merge_group_confirmation",
+        "src_our_system_phase2_services_event_state_system_py_any",
+        "src_our_system_phase2_services_event_state_system_py_dataframe",
+        "src_our_system_phase2_services_event_state_system_py_series",
+        "src_our_system_phase2_services_event_state_system_rationale_1",
+        "src_our_system_phase2_services_event_state_system_rolling_sum",
+        "src_our_system_phase2_services_event_state_system_session_keys",
         "src_our_system_phase2_services_typed_temporal_program",
         "src_our_system_phase2_services_typed_temporal_program_canonical_temporal_call",
         "src_our_system_phase2_services_typed_temporal_program_drawdown",
@@ -1413,6 +1429,15 @@
         "src_our_system_phase2_services_typed_temporal_program_validate_binary_input",
         "src_our_system_phase2_services_typed_temporal_program_validate_output_type",
         "src_our_system_phase2_services_typed_temporal_program_validate_temporal_signature",
+        "tests_test_event_state_system",
+        "tests_test_event_state_system_frame",
+        "tests_test_event_state_system_py_dataframe",
+        "tests_test_event_state_system_test_daily_context_is_hidden_until_observed",
+        "tests_test_event_state_system_test_event_contract_covers_required_system_capabilities",
+        "tests_test_event_state_system_test_group_confirmation_requires_versioned_nonplaceholder_pit_rows",
+        "tests_test_event_state_system_test_overlap_policy_rejects_contradictory_limit_inputs",
+        "tests_test_event_state_system_test_post_event_path_only_appears_after_maturity",
+        "tests_test_event_state_system_test_seal_break_and_reseal_are_detected_without_future_rows",
         "tests_test_typed_temporal_program",
         "tests_test_typed_temporal_program_frame",
         "tests_test_typed_temporal_program_py_dataframe",
@@ -1436,7 +1461,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-16T16:23:39.669779+00:00",
+        "checked_at": "2026-07-17T14:51:57.418425+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2256,14 +2281,12 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
-        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
-        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -2280,7 +2303,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-17T14:18:20.271881+00:00",
+        "checked_at": "2026-07-17T14:51:57.418425+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2326,14 +2349,12 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
-        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
-        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -2350,7 +2371,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-17T14:18:20.271881+00:00",
+        "checked_at": "2026-07-17T14:51:57.418425+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2550,18 +2571,18 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "9272F8DB0E542BA6E91931EFED8F59C2875788D82F4821687FA39172FB3EDCA4"
+    "sha256": "4243455132235C38D86711DCE3FBB9C64EEF1F0A7C4F99F099131D3FEA8A115F"
   },
   "profile_id": null,
   "profiles": [],
   "raw": {
-    "built_at_commit": "c152bc393d4b4fab1917ab525a3c06da56b33b11",
-    "edge_count": 8628,
-    "node_count": 3780,
+    "built_at_commit": "769c4f9fe3f34c308932d966100c0b32aca855e6",
+    "edge_count": 8604,
+    "node_count": 3782,
     "path": ".planning/graphs/graph.json",
-    "sha256": "0393D8391CF6E28C9F830F0124A54B7ED7492841F0E2EDD534F812EA5FC13F29"
+    "sha256": "EA389CDED99208D6C1EF769B3B5DF53308F3476F2DD6132ADE3AA173311014EE"
   },
-  "repo_head": "c152bc393d4b4fab1917ab525a3c06da56b33b11",
+  "repo_head": "769c4f9fe3f34c308932d966100c0b32aca855e6",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
