@@ -1,0 +1,35 @@
+{
+  "contract_version": "cn_chip_plate_information_census_v1",
+  "experiment_id": "20260717_cn_chip_plate_information_census_001",
+  "scope": "CHIP_PLATE_STATE_NON_PERFORMANCE_INFORMATION_ONLY",
+  "input_context": "CHIP_PLATE_STATE",
+  "allowed_data_roles": ["development_only"],
+  "metrics": [
+    "coverage",
+    "sample_unique",
+    "normalized_entropy",
+    "temporal_change_rate",
+    "cross_sectional_std_mean",
+    "field_to_field_normalized_mutual_information",
+    "independent_hash_bucket_nmi_stability"
+  ],
+  "core_pack_policy": {
+    "status": "EXPLORATORY_NON_PERFORMANCE_ONLY",
+    "payload_role": "interaction-only",
+    "minimum_coverage": 0.6,
+    "minimum_sample_unique": 32,
+    "minimum_temporal_change_rate": 0.01,
+    "redundancy_nmi": 0.95
+  },
+  "forbidden": [
+    "return_or_label_read",
+    "reward_or_performance_metric",
+    "validation_read",
+    "holdout_read",
+    "forward_2026_read",
+    "candidate_promotion",
+    "search_memory_update"
+  ],
+  "plate_missing_policy": "NOT_EVALUATED_MATERIALIZATION_ABSENT_FAIL_CLOSED",
+  "formal_search_authorized": false
+}
