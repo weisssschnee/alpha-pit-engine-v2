@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from our_system_phase2.services.field_information_v0 import (
+from our_system_phase2.services.field_route_exposure import (
     apply_information_census,
     compile_tokens,
     summarize,
@@ -83,3 +83,29 @@ def test_census_evidence_updates_only_evaluated_tokens(tmp_path: Path) -> None:
     assert chip["core_pack_selected"] is True
     assert plate["information_status"] == "NOT_EVALUATED"
     assert summarize(updated)["core_pack_selected_count"] == 1
+
+
+def test_route_specific_information_decision_is_preserved(tmp_path: Path) -> None:
+    master = json.loads(MASTER.read_text(encoding="utf-8"))
+    tokens = compile_tokens(
+        master, UnifiedCapabilityRegistry.read(REGISTRY),
+        master_path=MASTER, registry_path=REGISTRY, attempts_per_route=2,
+    )
+    evidence = tmp_path / "run_manifest.json"
+    evidence.write_text('{"status":"completed"}\n', encoding="utf-8")
+    updated = apply_information_census(
+        tokens,
+        metrics=[{
+            "field_id": "chip_cost_p50",
+            "coverage": 0.10,
+            "sample_unique": 2,
+            "temporal_change_rate": 0.0,
+            "information_qualified": True,
+            "information_status": "EVALUATED_ROUTE_SPECIFIC_GATE",
+        }],
+        core_pack={"selected_field_ids": ["chip_cost_p50"]},
+        evidence_path=evidence,
+    )
+    chip = next(row for row in updated if row["field_id"] == "chip_cost_p50")
+    assert chip["information_qualified"] is True
+    assert chip["information_status"] == "EVALUATED_ROUTE_SPECIFIC_GATE"

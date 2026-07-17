@@ -1,0 +1,67 @@
+{
+  "allowed_inputs": [
+    "field values",
+    "PIT clocks",
+    "coverage",
+    "missingness",
+    "field-to-field redundancy"
+  ],
+  "broad_event_pack_policy": "FROZEN_UNMODIFIED_SUPPORT_COUNTS_ONLY_PERFORMANCE_FIELDS_IGNORED",
+  "contract_id": "CN_FULL_FIELD_INFORMATION_RESEARCH_V1",
+  "core_pack_authority": "EXPLORATORY_NON_PERFORMANCE_ONLY_NO_GENERATOR_PROMOTION",
+  "data_role": "development_only",
+  "field_authority_count": 1683,
+  "forbidden_inputs": [
+    "future return",
+    "label",
+    "reward",
+    "selector",
+    "validation",
+    "holdout",
+    "2026_forward"
+  ],
+  "frozen_inputs": {
+    "broad_event_pack": {
+      "path": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\DISCOVERY_ENTRY_PACK.json",
+      "sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8"
+    },
+    "capability_registry": {
+      "path": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\unified_capability_registry.json",
+      "sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+    },
+    "chip_census_manifest": {
+      "path": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\chip_census\\run_manifest.json",
+      "sha256": "7dec99ff4bd21239c088e3879144098657722b644e305c9d3c25b137ded3ade0"
+    },
+    "fundamental_manifest": {
+      "path": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\pit_sidecar_manifest.json",
+      "sha256": "aacadab2b29e6f3147070cd6f50f119c1706a2dced4f69254dd066f29423ad58"
+    },
+    "fundamental_qualification": {
+      "path": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\fundamental_field_qualification_matrix.csv",
+      "sha256": "d60c2362bed1ac304bd52d391c9dfae2ae1c3548a1ca880c0994357905bcb125"
+    },
+    "master_registry": {
+      "path": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\cn_field_master_registry_v1.json",
+      "sha256": "42c4972f62a3b1d85d70f3852a0a8fed2fab97b15e71b2f9a3cc634356b53301"
+    },
+    "split_manifest": {
+      "path": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+      "sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+    },
+    "true1min_release_manifest": {
+      "path": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\development_only_release_manifest.json",
+      "sha256": "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255"
+    }
+  },
+  "plate_policy": "NOT_EVALUATED_UNTIL_REAL_PIT_MINUTE_MATERIALIZATION_EXISTS_ON_77O",
+  "raw_fundamental_generator_exposure": "FORBIDDEN_QUALIFIED_CANONICAL_REPRESENTATIONS_ONLY",
+  "repo_sha": "395759edcfc76c5a89b5ed6111229fac1a6e5ac4",
+  "sampling_parameters": {
+    "fundamental_code_count": 384,
+    "fundamental_session_count": 72,
+    "row_groups_per_file": 3,
+    "true1min_field_batch_size": 16,
+    "true1min_sample_modulus": 256
+  }
+}

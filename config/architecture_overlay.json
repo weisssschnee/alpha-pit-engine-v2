@@ -138,25 +138,27 @@
     },
     {
       "id": "field_information_evidence",
-      "label": "Context-bound field token and exposure evidence",
+      "label": "Full field universe and route exposure evidence",
       "kind": "evidence",
       "lifecycle": "EXPERIMENTAL",
       "paths": [
-        "src/our_system_phase2/services/field_information_v0.py",
-        "runtime/cn_field_information_v0_20260717/run_manifest.json"
+        "src/our_system_phase2/services/field_route_exposure.py",
+        "runtime/cn_full_field_information_research_v1_20260717/field_universe_information.json",
+        "runtime/cn_full_field_information_research_v1_20260717/coverage_summary.json"
       ],
-      "claim_badges": ["PARTIAL CENSUS", "NO PERFORMANCE", "NO OOS"]
+      "claim_badges": ["1,683 FIELD UNIVERSE", "450 TYPED CAPABILITIES", "NO PERFORMANCE", "NO OOS"]
     },
     {
       "id": "field_information_census",
-      "label": "Context-bound non-performance Information Census",
+      "label": "Development-only full-field non-performance Information Census",
       "kind": "experimental-research",
       "lifecycle": "EXPERIMENTAL",
       "paths": [
         "src/our_system_phase2/services/field_information_census.py",
-        "runtime/run_plans/cn_chip_plate_information_census_v1.json",
-        "runtime/cn_chip_plate_information_census_20260717/run_manifest.json",
-        "runtime/cn_chip_plate_information_census_20260717/access_ledger.json"
+        "scripts/run_cn_full_field_information_research.py",
+        "runtime/cn_full_field_information_research_v1_20260717/information_research_contract.json",
+        "runtime/cn_full_field_information_research_v1_20260717/run_manifest.json",
+        "runtime/cn_full_field_information_research_v1_20260717/access_ledger.json"
       ],
       "critical": true,
       "contracts": [
@@ -165,7 +167,7 @@
           "type": "BOUNDARY",
           "rule": "The Information Census may measure coverage, variation, entropy and field-to-field redundancy only; returns, labels, reward, validation, holdout and 2026 are forbidden.",
           "severity": "HARD",
-          "enforced_by": "run_cn_chip_plate_information_census",
+          "enforced_by": "run_cn_full_field_information_research",
           "bypass_forbidden": true
         },
         {
@@ -181,9 +183,9 @@
         "level": "STATIC_VERIFIED",
         "result": "PASS",
         "evidence_ref": "tests/test_field_information_census.py",
-        "verified_at_sha": "ca91741e842ec77c92d32e3962f2b5aa1fccd6b1"
+        "verified_at_sha": "395759edcfc76c5a89b5ed6111229fac1a6e5ac4"
       },
-      "claim_badges": ["CHIP RUNTIME COMPLETE", "PLATE NOT EVALUATED", "NO PERFORMANCE", "NO OOS"]
+      "claim_badges": ["421 CAPABILITY METRICS", "284 FUNDAMENTAL REPRESENTATIONS", "4,931 WITHIN-CONTEXT NMI PAIRS", "PLATE NOT EVALUATED", "NO PERFORMANCE", "NO OOS"]
     },
     {
       "id": "field_information_core_pack",
@@ -192,11 +194,11 @@
       "lifecycle": "EXPERIMENTAL",
       "paths": [
         "src/our_system_phase2/services/field_information_census.py",
-        "runtime/cn_chip_plate_information_census_20260717/core_pack.json",
-        "runtime/cn_chip_plate_information_census_20260717/field_information_metrics.json",
-        "runtime/cn_chip_plate_information_census_20260717/pairwise_nmi.json"
+        "runtime/cn_full_field_information_research_v1_20260717/core_pack.json",
+        "runtime/cn_full_field_information_research_v1_20260717/capability_information_metrics.json",
+        "runtime/cn_full_field_information_research_v1_20260717/pairwise_nmi.json"
       ],
-      "claim_badges": ["6 CHIP INTERACTION FIELDS", "EXPLORATORY", "NOT SEARCH AUTHORITY", "NO PERFORMANCE"]
+      "claim_badges": ["272 REPRESENTATIVES", "62 TRUE1MIN", "204 FUNDAMENTAL", "6 CHIP", "EXPLORATORY", "NOT SEARCH AUTHORITY", "NO PERFORMANCE"]
     },
     {
       "id": "feature_state_fabric",
@@ -706,7 +708,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "census_requires_registered_materialized_tokens", "type": "ADMISSION", "rule": "Only context-bound tokens with real materialization and explicit roles may enter an Information Census.", "severity": "HARD", "enforced_by": "information_census_input_contract", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_chip_plate_information_census_20260717/information_census_contract.json", "verified_at_sha": "a67653e41506fe2c984da1dc52e3bf7156378997"}
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/information_research_contract.json", "verified_at_sha": "395759edcfc76c5a89b5ed6111229fac1a6e5ac4"}
     },
     {
       "id": "census_to_core_pack",
@@ -716,7 +718,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "core_pack_non_performance_evidence_only", "type": "EVIDENCE", "rule": "Core Pack membership reflects non-performance quality and redundancy gates only and cannot make an Alpha claim.", "severity": "HARD", "enforced_by": "select_core_pack", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_chip_plate_information_census_20260717/core_pack.json", "verified_at_sha": "a67653e41506fe2c984da1dc52e3bf7156378997"}
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/core_pack.json", "verified_at_sha": "395759edcfc76c5a89b5ed6111229fac1a6e5ac4"}
     },
     {
       "id": "core_pack_to_registry_advisory",
@@ -726,7 +728,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "core_pack_cannot_authorize_routes", "type": "BOUNDARY", "rule": "An exploratory Core Pack cannot itself change field roles, generator exposure, route admission, search budgets or promotion state.", "severity": "HARD", "enforced_by": "UnifiedCapabilityRegistry", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_field_information_v0_20260717/run_manifest.json", "verified_at_sha": "a67653e41506fe2c984da1dc52e3bf7156378997"}
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_full_field_information_research_v1_20260717/run_manifest.json", "verified_at_sha": "395759edcfc76c5a89b5ed6111229fac1a6e5ac4"}
     },
     {
       "id": "registry_to_receipt",

@@ -137,7 +137,7 @@ def apply_information_census(
         row = dict(source)
         metric = metric_by_field.get(str(row["field_id"]))
         if metric is not None:
-            qualified = (
+            qualified = bool(metric.get("information_qualified")) if "information_qualified" in metric else (
                 float(metric["coverage"]) >= 0.60
                 and int(metric["sample_unique"]) >= 32
                 and float(metric["temporal_change_rate"]) >= 0.01
@@ -145,8 +145,9 @@ def apply_information_census(
             row.update(
                 information_qualified=qualified,
                 core_pack_selected=str(row["field_id"]) in selected,
-                information_status=(
-                    "INFORMATION_CENSUS_QUALIFIED" if qualified else "INFORMATION_CENSUS_LOW_INFORMATION"
+                information_status=str(
+                    metric.get("information_status")
+                    or ("INFORMATION_CENSUS_QUALIFIED" if qualified else "INFORMATION_CENSUS_LOW_INFORMATION")
                 ),
                 information_evidence_path=evidence_path.as_posix(),
                 information_evidence_sha256=evidence_hash,

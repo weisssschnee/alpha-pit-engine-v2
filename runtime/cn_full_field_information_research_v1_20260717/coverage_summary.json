@@ -1,0 +1,43 @@
+{
+  "authoritative_field_record_count": 1683,
+  "capability_field_count": 450,
+  "core_pack_selected_count": 272,
+  "information_qualified_capability_count": 301,
+  "information_status_counts": {
+    "EVALUATED_DEVELOPMENT_ONLY": 401,
+    "EVALUATED_DEVELOPMENT_ONLY_IMPORTED_VERIFIED_CENSUS": 9,
+    "IMPORTED_FROZEN_EPISODE_SUPPORT_ONLY": 11,
+    "METADATA_OR_SEARCH_BLOCKED": 7,
+    "NOT_EVALUATED_REAL_PIT_PLATE_MATERIALIZATION_ABSENT_ON_77O": 27,
+    "PIT_CONTRACT_UNRESOLVED": 1,
+    "SOURCE_QUALIFICATION_EVIDENCE_BLOCKED_METADATA": 72,
+    "SOURCE_QUALIFICATION_EVIDENCE_DERIVED_ONLY": 38,
+    "SOURCE_QUALIFICATION_EVIDENCE_INDUSTRY_SPECIFIC": 136,
+    "SOURCE_QUALIFICATION_EVIDENCE_LOW_COVERAGE_ARCHIVE": 634,
+    "SOURCE_QUALIFICATION_EVIDENCE_PIT_UNRESOLVED": 17,
+    "SOURCE_QUALIFICATION_EVIDENCE_QUALIFIED_ROOT": 4,
+    "SOURCE_QUALIFICATION_EVIDENCE_SEMANTICS_UNRESOLVED": 326
+  },
+  "materialized_capability_metric_count": 421,
+  "metric_context_counts": {
+    "BROAD_EVENT_FROZEN_ENTRY": 11,
+    "CHIP": 9,
+    "FUNDAMENTAL": 284,
+    "TRUE1MIN": 117
+  },
+  "pairwise_nmi_count": 4931,
+  "performance_claim_allowed": false,
+  "plate_capability_status": "NOT_EVALUATED_MATERIALIZATION_ABSENT",
+  "plate_membership_metadata_count": 6,
+  "raw_fundamental_columns_opened_to_generator": 0,
+  "raw_fundamental_qualification_state_counts": {
+    "BLOCKED_METADATA": 72,
+    "DERIVED_ONLY": 38,
+    "INDUSTRY_SPECIFIC": 136,
+    "LOW_COVERAGE_ARCHIVE": 634,
+    "PIT_UNRESOLVED": 17,
+    "QUALIFIED_ROOT": 4,
+    "SEMANTICS_UNRESOLVED": 326
+  },
+  "source_field_count": 1227
+}

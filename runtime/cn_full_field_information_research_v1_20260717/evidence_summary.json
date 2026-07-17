@@ -1,0 +1,49 @@
+{
+  "broad_event": {
+    "mechanism_count": 11,
+    "pack_modified": false,
+    "pack_path": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\DISCOVERY_ENTRY_PACK.json",
+    "pack_sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8",
+    "performance_fields_ignored": true
+  },
+  "chip": {
+    "census_manifest": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\chip_census\\run_manifest.json",
+    "census_manifest_sha256": "7dec99ff4bd21239c088e3879144098657722b644e305c9d3c25b137ded3ade0",
+    "evaluated_field_count": 9,
+    "pair_count": 36
+  },
+  "fundamental": {
+    "daily_pulse_coordinate_count": 139776,
+    "evaluated_representation_count": 284,
+    "fabric_manifest": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\pit_sidecar_manifest.json",
+    "fabric_manifest_hash": "a06362fd4a88cac18c542759a294c8f1598dac6fec8d73b5a3ae284dce8361f3",
+    "fabric_manifest_sha256": "aacadab2b29e6f3147070cd6f50f119c1706a2dced4f69254dd066f29423ad58",
+    "level_coordinate_count": 27648,
+    "materialization_error_count": 0,
+    "materialization_errors": [],
+    "raw_source_columns_opened_to_generator": 0,
+    "selected_code_count": 384,
+    "selected_session_count": 72,
+    "source_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned",
+    "split_manifest": "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e\\inputs\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "zygc_status": "PIT_CONTRACT_UNRESOLVED_NOT_ACCESSED"
+  },
+  "plate": {
+    "placeholder_or_current_snapshot_substitution_used": false,
+    "status": "NOT_EVALUATED_REAL_PIT_MINUTE_MATERIALIZATION_ABSENT_ON_77O"
+  },
+  "true1min": {
+    "deterministic_sample_row_count": 246569,
+    "evaluated_field_count": 117,
+    "field_batch_size": 16,
+    "file_count": 16,
+    "full_release_row_count": 446443583,
+    "release_hash": "cfb2742d975f2f6f1dcdf78d011f6d471b8d0e444164bae1d1816ba1fdcc5827",
+    "release_manifest": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o\\development_only_release_manifest.json",
+    "release_manifest_sha256": "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255",
+    "sample_rule": "hash(code,trade_time)%256 in [0,1] within evenly spaced row groups",
+    "schema_sha256": "6d0f3f3854b594fa2cce6cfaea11bf965a9aaa2a5833be209f6def81430b8cb6",
+    "selected_row_group_count": 48
+  }
+}

@@ -2,7 +2,7 @@
 
 Updated: 2026-07-17
 
-Current state: `CN_FIELD_AUTHORITY_CONVERGED_STAGE_A_NOT_AUTHORIZED`
+Current state: `CN_FULL_FIELD_INFORMATION_RESEARCH_V1_COMPLETED_STAGE_A_NOT_AUTHORIZED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -40,23 +40,23 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 - Broad Event recovery and its frozen discovery entry pack remain accepted
   research evidence. Historical packs are immutable evidence snapshots, not
   field or route authorities.
-- Field Information V0 structural qualification compiled all 1,683 master
-  records into traceable tokens and observed current grammar exposure without
-  reading reward or performance. The route registry now contains 450 fields;
-  372 appeared in the fixed structural grammar sample. All 30 chip/plate value
-  fields are registered, while only six chip interaction fields and three
-  true1min plate-peer interaction fields are payload-eligible and observed.
-  Benchmark, condition, and membership metadata remain non-payload.
-- The first fixed `CHIP_PLATE_STATE` non-performance Information Census ran on
-  77o over 3,822,719 PIT chip rows with a deterministic 478,366-row two-bucket
-  information sample. Nine chip fields were evaluated, seven passed information
-  quality gates, and all six interaction-only cost-distribution fields entered
-  an `EXPLORATORY_NON_PERFORMANCE_CORE_PACK`. The profit-ratio field remains a
-  qualified condition control; historical high/low remain benchmark controls.
-  Field-to-field NMI was stable across the two hash buckets and did not cross
-  the frozen 0.95 redundancy threshold. This is information evidence only and
-  makes no Alpha or performance claim. The three registered true1min plate-peer
-  fields remain `NOT_EVALUATED_MATERIALIZATION_ABSENT_ON_77O`.
+- `CN_FULL_FIELD_INFORMATION_RESEARCH_V1` now covers all 1,683 authoritative
+  field records in one machine-readable universe. It combines the existing
+  1,227-field fundamental qualification matrix with runtime evidence for 421
+  typed capabilities: 117 true1min, 284 canonical PIT fundamental, nine chip,
+  and 11 frozen Broad Event entries. No raw fundamental source column was
+  opened to the generator.
+- The 77o run used 246,569 deterministic true1min sample rows and successfully
+  materialized every one of the 284 eligible canonical fundamental
+  representations with zero materialization errors. It measured 4,931
+  within-semantic-support-group NMI pairs and produced a 272-field
+  `EXPLORATORY_NON_PERFORMANCE_CORE_PACK`: 62 true1min, 204 fundamental, and
+  six chip representatives. This is information/redundancy evidence only; it
+  changes neither generator authority nor search admission.
+- Real PIT plate-minute materialization was not present on 77o. All 21 plate
+  capabilities and six membership metadata records therefore remain explicitly
+  `NOT_EVALUATED`; no current snapshot, placeholder, or `plate=0` substitute
+  was used. `zygc_em` remains `PIT_CONTRACT_UNRESOLVED`.
 
 ## Hard boundaries
 
@@ -72,15 +72,16 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The inventory authority, structural exposure ledger, minimal chip/plate typed
-route admission, and chip information pilot are complete. Real PIT plate-minute
-materialization is absent on 77o, so plate information qualification remains
-fail-closed rather than being inferred from schemas or registry rows.
+Full-field information coverage is complete for currently materializable
+true1min, canonical fundamental, chip, and frozen event capabilities. Real PIT
+plate-minute materialization is absent on 77o, so plate information
+qualification remains fail-closed rather than being inferred from schemas or
+registry rows.
 
 ## Next action
 
-Use the accepted non-performance census contract context by context to expand
-coverage beyond the chip pilot, while keeping unavailable materializations
-`NOT_EVALUATED`. Plate is resumed only when its real PIT materialization is
-present on 77o. Do not start Stage A, broad performance search, candidate
-promotion, or 2026 access without a new frozen authorization.
+Use the unified Core Pack and per-field information evidence to review typed
+generator/root capacity and define the next bounded discovery contract. Plate
+is resumed only when its real PIT materialization is present on 77o. Do not
+start Stage A, broad performance search, candidate promotion, or 2026 access
+without a new frozen authorization.

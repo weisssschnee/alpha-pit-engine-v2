@@ -1,0 +1,3651 @@
+{
+  "decisions": [
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "amount",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "amount_yuan",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "amount",
+      "representative_nmi": 1.0,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_01166fdd6c3a2aab",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_16c53855e757c585",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_4fbf6cc691461c6c",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_7b391e59670c491e",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_8a64cdfefa6bcc35",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_9041949344c58bcf",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_9618ee1100155073",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_ac96e6d4db507a1a",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_b22d9565d0b39241",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_cf70889cec0c77df",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "broad_event_d42c0973350238e0",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "BROAD_EVENT::frozen_entry"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p05",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "chip_cost_p15",
+      "representative_nmi": 0.8074441434139645,
+      "semantic_support_group": "CHIP::chip_distribution"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p15",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "chip_cost_p50",
+      "representative_nmi": 0.7833251722890513,
+      "semantic_support_group": "CHIP::chip_distribution"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p50",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "chip_cost_weighted_mean",
+      "representative_nmi": 0.8534972267492087,
+      "semantic_support_group": "CHIP::chip_distribution"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p85",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "chip_cost_weighted_mean",
+      "representative_nmi": 0.8121846030683433,
+      "semantic_support_group": "CHIP::chip_distribution"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_p95",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "chip_cost_weighted_mean",
+      "representative_nmi": 0.7086656759068944,
+      "semantic_support_group": "CHIP::chip_distribution"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "chip_cost_weighted_mean",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "CHIP::chip_distribution"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "chip_historical_high",
+      "reason": "ROLE_BENCHMARK_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "CHIP::chip_distribution"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "chip_historical_low",
+      "reason": "ROLE_BENCHMARK_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "CHIP::chip_distribution"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "chip_profit_ratio",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "CHIP::chip_distribution"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "close",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "open",
+      "representative_nmi": 0.985754187412365,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_accum_amount",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_billboard_buy_amt",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_billboard_deal_amt",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_billboard_net_amt",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_billboard_sell_amt",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_buy_ratio",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_deal_amount_ratio",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_deal_net_ratio",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_net_bs_amt",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_sell_ratio",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_sum_buy_amt",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_sum_sell_amt",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_billboard_turnoverrate",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_hfq_float_market_cap_yuan",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_uplimit_num",
+      "representative_nmi": 0.0026612389329998946,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "ctx_hfq_is_st",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_hfq_market_cap_yuan",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_hfq_float_market_cap_yuan",
+      "representative_nmi": 0.38334477422590785,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_hfq_pb",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_hfq_ps_ttm",
+      "representative_nmi": 0.10609952413363759,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_hfq_pe_ttm",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_hfq_ps_ttm",
+      "representative_nmi": 0.07161564162379756,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_hfq_prev_is_limit_up",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_hfq_ps_ttm",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_hfq_float_market_cap_yuan",
+      "representative_nmi": 0.04498124734593757,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_hfq_turnover_ratio",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_hfq_float_market_cap_yuan",
+      "representative_nmi": 0.04642898185146498,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_hfq_volume_ratio",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_hfq_turnover_ratio",
+      "representative_nmi": 0.01867912380101994,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_holder_avg_hold_num",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_holder_avg_market_cap",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_holder_holder_num",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_holder_holder_num_change",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_holder_holder_num_ratio",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_rzrq_rqye",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_rzrq_rqyl",
+      "representative_nmi": 0.5164417681708052,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_rzrq_rqyl",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_hfq_float_market_cap_yuan",
+      "representative_nmi": 0.14702741128606034,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_rzrq_rzche",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_rzrq_rzjme",
+      "representative_nmi": 0.155049676478844,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_rzrq_rzjme",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_rzrq_rzye",
+      "representative_nmi": 0.059388272676230744,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_rzrq_rzmre",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_rzrq_rzche",
+      "representative_nmi": 0.3535572550656876,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_rzrq_rzrqye",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_rzrq_rzye",
+      "representative_nmi": 0.9236045290457755,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_rzrq_rzye",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_hfq_float_market_cap_yuan",
+      "representative_nmi": 0.2624942647505039,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_rzrq_rzyezb",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_hfq_float_market_cap_yuan",
+      "representative_nmi": 0.047498874312634026,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_damian_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_mian_num",
+      "representative_nmi": 0.11784872052181442,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_ditian_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_uplimit_num",
+      "representative_nmi": 0.04485118444946616,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_down_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_downlimit_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_lt5_num",
+      "representative_nmi": 0.2970606137359897,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_gt5_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_up_num",
+      "representative_nmi": 0.3238828447736967,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_lb_2_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_uplimit_num",
+      "representative_nmi": 0.23479549523119578,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_lb_3_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_uplimit_num",
+      "representative_nmi": 0.1536413520216709,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_lb_h_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_uplimit_num",
+      "representative_nmi": 0.1656357461270827,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_lt5_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_down_num",
+      "representative_nmi": 0.3010356876839323,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_max_lb_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_lb_h_num",
+      "representative_nmi": 0.29064488519553566,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_mian_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_lt5_num",
+      "representative_nmi": 0.12673068734333143,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_tiandi_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_damian_num",
+      "representative_nmi": 1.948990390930677e-08,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_up_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_down_num",
+      "representative_nmi": 0.7760734993136317,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_uplimit_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_gt5_num",
+      "representative_nmi": 0.35833870643822796,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ctx_sent_zb_num",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "ctx_sent_uplimit_num",
+      "representative_nmi": 0.21300869328084837,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_ths_hot_circulation_value",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_ths_hot_last_pct",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_ths_hot_last_price",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_ths_hot_rank",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_ths_hot_rank_diff",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_zls_df_num",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_zls_lbgd",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_zls_strong",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "ctx_zls_ztjs",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::lagged_daily_context"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "evt_uplimit_active",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_age_min",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_amount",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_auction_buy",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_auction_money",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_auction_offer",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_auction_pre1max_ratio",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_auction_turnover",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_cutoff_minute",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_fd_close",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_fd_max",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_type_code",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "evt_uplimit_up_limit_keep_times",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::event_state"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_accruals_profit_minus_cfo_assets",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::accruals::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_accruals_profit_minus_cfo_assets_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::accruals::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_delta",
+      "representative_nmi": 0.23578514055849067,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_delta_at_disclosure",
+      "representative_nmi": 0.2210779340490013,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_slope",
+      "representative_nmi": 0.7667724542183786,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_inventory_delta_at_disclosure",
+      "representative_nmi": 0.10768064012562047,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_slope",
+      "representative_nmi": 0.02323151706681799,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_inventory_persistence_at_disclosure",
+      "representative_nmi": 0.016950858485097697,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_delta_at_disclosure",
+      "representative_nmi": 0.702988536096536,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_source_yoy",
+      "representative_nmi": 0.0985120040865958,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_source_yoy_at_disclosure",
+      "representative_nmi": 0.1032665930692092,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_source_yoy",
+      "representative_nmi": 0.29426738149758636,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_payable_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_source_yoy_at_disclosure",
+      "representative_nmi": 0.29923115071784784,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_rece_delta",
+      "representative_nmi": 0.23063246050501898,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_rece_slope_at_disclosure",
+      "representative_nmi": 0.19922921514886469,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_delta",
+      "representative_nmi": 0.12914166863372487,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_delta_at_disclosure",
+      "representative_nmi": 0.12179933399981052,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_rece_slope",
+      "representative_nmi": 0.027672988078208886,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_working_capital_receivables_assets_at_disclosure",
+      "representative_nmi": 0.027667576523154016,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_rece_delta",
+      "representative_nmi": 0.7589012312080422,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_rece_delta_at_disclosure",
+      "representative_nmi": 0.6811632985294139,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy",
+      "representative_nmi": 0.07316607481722505,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy_at_disclosure",
+      "representative_nmi": 0.07282924775641726,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_rece_source_yoy",
+      "representative_nmi": 0.29024027702385935,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_accounts_rece_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_rece_source_yoy_at_disclosure",
+      "representative_nmi": 0.28228504101206064,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_delta",
+      "representative_nmi": 0.21969588529765036,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_delta_at_disclosure",
+      "representative_nmi": 0.22020390284009764,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_delta",
+      "representative_nmi": 0.02792358616645347,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_slope_at_disclosure",
+      "representative_nmi": 0.026788981990061054,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_delta",
+      "representative_nmi": 0.7797168369487933,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_delta_at_disclosure",
+      "representative_nmi": 0.7254367825643266,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_yoy",
+      "representative_nmi": 0.2892651663979685,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy_at_disclosure",
+      "representative_nmi": 0.06875928241292581,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_yoy",
+      "representative_nmi": 0.12155462075151816,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_fixed_asset_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_source_yoy_at_disclosure",
+      "representative_nmi": 0.3125036563190295,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_inventory_delta",
+      "representative_nmi": 0.2509290792370605,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_inventory_delta_at_disclosure",
+      "representative_nmi": 0.2369185114361413,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_inventory_slope",
+      "representative_nmi": 0.7682072850738161,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_working_capital_inventory_assets_at_disclosure",
+      "representative_nmi": 0.08614435025377476,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_acceleration",
+      "representative_nmi": 0.01767160979751567,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_working_capital_inventory_assets_at_disclosure",
+      "representative_nmi": 0.015024062091270073,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_accounts_payable_slope",
+      "representative_nmi": 0.12127914837078264,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_inventory_delta_at_disclosure",
+      "representative_nmi": 0.7146927729159677,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_inventory_yoy",
+      "representative_nmi": 0.28433213590697487,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy_at_disclosure",
+      "representative_nmi": 0.08307847837649007,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_liab_yoy",
+      "representative_nmi": 0.14246541381963884,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_inventory_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_inventory_source_yoy_at_disclosure",
+      "representative_nmi": 0.2830780075928207,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_delta",
+      "representative_nmi": 0.2288831234173875,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_delta_at_disclosure",
+      "representative_nmi": 0.20069818884770826,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_liquidity_current_ratio_at_disclosure",
+      "representative_nmi": 0.050068004186184595,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_delta",
+      "representative_nmi": 0.012550384529999146,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_assets_persistence_at_disclosure",
+      "representative_nmi": 0.032289490630717864,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_delta",
+      "representative_nmi": 0.7623585131445927,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_delta_at_disclosure",
+      "representative_nmi": 0.7078122912964686,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_yoy",
+      "representative_nmi": 0.2906419107381566,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy_at_disclosure",
+      "representative_nmi": 0.06747467856179924,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_yoy",
+      "representative_nmi": 0.13016900902996564,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_monetaryfunds_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_source_yoy_at_disclosure",
+      "representative_nmi": 0.2967434853275373,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_slope",
+      "representative_nmi": 0.21950094856340405,
+      "semantic_support_group": "FUNDAMENTAL::size::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_delta_at_disclosure",
+      "representative_nmi": 0.2014421504794477,
+      "semantic_support_group": "FUNDAMENTAL::size::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::size::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::size::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_slope",
+      "representative_nmi": 0.028728865306868034,
+      "semantic_support_group": "FUNDAMENTAL::size::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_slope_at_disclosure",
+      "representative_nmi": 0.028065468135829833,
+      "semantic_support_group": "FUNDAMENTAL::size::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_delta",
+      "representative_nmi": 0.7549356576352072,
+      "semantic_support_group": "FUNDAMENTAL::size::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_delta_at_disclosure",
+      "representative_nmi": 0.7025345288571164,
+      "semantic_support_group": "FUNDAMENTAL::size::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_source_yoy",
+      "representative_nmi": 0.041152466336241096,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy",
+      "representative_nmi": 0.32382489027831074,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_assets_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy_at_disclosure",
+      "representative_nmi": 0.33839736855493746,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_liab_acceleration",
+      "representative_nmi": 0.25459773826615406,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_liab_acceleration_at_disclosure",
+      "representative_nmi": 0.2542277333539762,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_liab_delta",
+      "representative_nmi": 0.2669358102994232,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_delta_at_disclosure",
+      "representative_nmi": 0.18365236965901346,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_persistence",
+      "representative_nmi": 0.034804305499391355,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_liquidity_current_ratio_at_disclosure",
+      "representative_nmi": 0.014999258513889812,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_assets_delta",
+      "representative_nmi": 0.7507039343967618,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_assets_delta_at_disclosure",
+      "representative_nmi": 0.7011217344196503,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_assets_yoy",
+      "representative_nmi": 0.35347393504180263,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy_at_disclosure",
+      "representative_nmi": 0.22487509171521305,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_yoy",
+      "representative_nmi": 0.30045616543851245,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_assets_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_assets_source_yoy_at_disclosure",
+      "representative_nmi": 0.3536950933117082,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_liab_delta",
+      "representative_nmi": 0.22348301176050042,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_liab_delta_at_disclosure",
+      "representative_nmi": 0.20473042003479336,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_monetaryfunds_delta",
+      "representative_nmi": 0.11942908951953934,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_assets_delta_at_disclosure",
+      "representative_nmi": 0.24542312704825903,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_assets_persistence",
+      "representative_nmi": 0.0925642440694076,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_assets_persistence_at_disclosure",
+      "representative_nmi": 0.09817684861000066,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_liab_delta",
+      "representative_nmi": 0.7666660887196334,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_current_liab_delta_at_disclosure",
+      "representative_nmi": 0.7059747266952852,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_source_yoy",
+      "representative_nmi": 0.3304113129580621,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_source_yoy_at_disclosure",
+      "representative_nmi": 0.3347251425113164,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_yoy",
+      "representative_nmi": 0.41777152291063285,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_current_liab_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_yoy_at_disclosure",
+      "representative_nmi": 0.42042395493954887,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_equity_slope",
+      "representative_nmi": 0.2315337012869004,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_equity_slope_at_disclosure",
+      "representative_nmi": 0.21654222580092689,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_delta",
+      "representative_nmi": 0.12024744521450911,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_delta_at_disclosure",
+      "representative_nmi": 0.11567522753300385,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_acceleration",
+      "representative_nmi": 0.022434825555057634,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_leverage_liabilities_assets_at_disclosure",
+      "representative_nmi": 0.03271159486251493,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_equity_delta",
+      "representative_nmi": 0.752815662691342,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_equity_delta_at_disclosure",
+      "representative_nmi": 0.6983158678723055,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy",
+      "representative_nmi": 0.15572844199982,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy_at_disclosure",
+      "representative_nmi": 0.15021857464331895,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_equity_source_yoy",
+      "representative_nmi": 0.36769211601358615,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_equity_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_equity_source_yoy_at_disclosure",
+      "representative_nmi": 0.36531454369012384,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_delta",
+      "representative_nmi": 0.23212078433832664,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_acceleration_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_delta_at_disclosure",
+      "representative_nmi": 0.21933049508561248,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_delta_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_leverage_liabilities_assets_at_disclosure",
+      "representative_nmi": 0.09140784663204968,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_delta",
+      "representative_nmi": 0.031049598625950622,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_persistence_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_slope_at_disclosure",
+      "representative_nmi": 0.028921743974761858,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_delta",
+      "representative_nmi": 0.7690852680295365,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_slope_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_liabilities_delta_at_disclosure",
+      "representative_nmi": 0.719306860572114,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy",
+      "representative_nmi": 0.20141257703239904,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_source_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_source_yoy_at_disclosure",
+      "representative_nmi": 0.2120589396977303,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_yoy",
+      "representative_nmi": 0.34137194801272924,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ba_total_liabilities_yoy_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_total_assets_yoy_at_disclosure",
+      "representative_nmi": 0.3567598844290551,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_construct_long_asset_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_construct_long_asset_slope",
+      "representative_nmi": 0.37717667341979894,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_construct_long_asset_acceleration_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "fund_ca_construct_long_asset_delta",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "fund_ca_construct_long_asset_slope",
+      "representative_nmi": 0.9614118476128876,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_construct_long_asset_delta_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_construct_long_asset_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_construct_long_asset_slope",
+      "representative_nmi": 0.22332442502676772,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_construct_long_asset_persistence_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_construct_long_asset_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_invest_delta",
+      "representative_nmi": 0.23883832104204608,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_construct_long_asset_slope_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_construct_long_asset_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_invest_source_yoy",
+      "representative_nmi": 0.08280012125439816,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_construct_long_asset_source_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_construct_long_asset_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_construct_long_asset_source_yoy",
+      "representative_nmi": 0.2870801046085087,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_construct_long_asset_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_finance_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_finance_delta",
+      "representative_nmi": 0.3087615131305004,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_finance_acceleration_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_finance_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_construct_long_asset_slope",
+      "representative_nmi": 0.12057391319630513,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_finance_delta_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_finance_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_construct_long_asset_persistence",
+      "representative_nmi": 0.038776777777357954,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_finance_persistence_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "fund_ca_netcash_finance_slope",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "fund_ca_netcash_finance_delta",
+      "representative_nmi": 0.9529121081525931,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_finance_slope_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_finance_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_finance_yoy",
+      "representative_nmi": 0.29626740998250767,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_finance_source_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_finance_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_operate_yoy",
+      "representative_nmi": 0.1186804643082074,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_finance_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_invest_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_invest_delta",
+      "representative_nmi": 0.30973317553392243,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_invest_acceleration_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_invest_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_delta",
+      "representative_nmi": 0.08389756190874698,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_invest_delta_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_invest_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_invest_delta",
+      "representative_nmi": 0.043461761295475354,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_invest_persistence_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "fund_ca_netcash_invest_slope",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "fund_ca_netcash_invest_delta",
+      "representative_nmi": 0.9557409203094247,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_invest_slope_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_invest_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ba_fixed_asset_yoy",
+      "representative_nmi": 0.03625058949560811,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_invest_source_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_invest_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_invest_source_yoy",
+      "representative_nmi": 0.2792418773738764,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_invest_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_operate_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_operate_delta",
+      "representative_nmi": 0.3074724355095797,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_operate_acceleration_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_operate_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_operate_delta_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_operate_persistence",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_operate_persistence_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_operate_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_operate_delta",
+      "representative_nmi": 0.9300858181168538,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_operate_slope_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_operate_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_ca_netcash_operate_yoy",
+      "representative_nmi": 0.27683726075185566,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_operate_source_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_ca_netcash_operate_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_profit_yoy",
+      "representative_nmi": 0.13611178564214582,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_ca_netcash_operate_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_capex_construct_assets",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_capex_construct_assets_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::capital_investment::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_cashflow_cfo_profit",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_cashflow_cfo_profit_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_cashflow_cfo_revenue",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_cashflow_cfo_profit",
+      "representative_nmi": 0.19623732601051583,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_cashflow_cfo_revenue_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::cashflow_quality::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "fund_disclosure_balance_age_sessions",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::disclosure_timing_staleness::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "fund_disclosure_balance_pulse",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::disclosure_timing_staleness::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "fund_disclosure_cashflow_age_sessions",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::disclosure_timing_staleness::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "fund_disclosure_cashflow_pulse",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::disclosure_timing_staleness::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "fund_disclosure_holder_age_sessions",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::disclosure_timing_staleness::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "fund_disclosure_holder_pulse",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::disclosure_timing_staleness::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "fund_disclosure_profit_age_sessions",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::disclosure_timing_staleness::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "CONTROL_ONLY",
+      "field_id": "fund_disclosure_profit_pulse",
+      "reason": "ROLE_CONDITION_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::disclosure_timing_staleness::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_efficiency_fixed_asset_intensity",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::operating_efficiency::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_efficiency_fixed_asset_intensity_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::operating_efficiency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_efficiency_revenue_assets",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_efficiency_fixed_asset_intensity",
+      "representative_nmi": 0.053282306708772015,
+      "semantic_support_group": "FUNDAMENTAL::operating_efficiency::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_efficiency_revenue_assets_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::operating_efficiency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_average_shares_log",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_shares_log",
+      "representative_nmi": 0.17147346612188563,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_average_shares_log_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_shares_log_at_disclosure",
+      "representative_nmi": 0.1722739970740945,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_average_shares_log_change",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_share_ratio_change",
+      "representative_nmi": 0.3836906833178403,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_average_shares_log_change_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_shares_log_change_at_disclosure",
+      "representative_nmi": 0.057432037966823946,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_count_log",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_shares_log",
+      "representative_nmi": 0.18899274571831315,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_count_log_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_shares_log_at_disclosure",
+      "representative_nmi": 0.1810752942826509,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_count_log_change",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_shares_log_change",
+      "representative_nmi": 0.23821879038194865,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_count_log_change_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_average_shares_log_change_at_disclosure",
+      "representative_nmi": 0.8141926863559266,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_top10_share_ratio",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_top10_share_ratio_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_shares_log_at_disclosure",
+      "representative_nmi": 0.12236491250000942,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_top10_share_ratio_change",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_top10_share_ratio_change_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_share_ratio_at_disclosure",
+      "representative_nmi": 0.045816251791106724,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_top10_shares_log",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_share_ratio",
+      "representative_nmi": 0.11137034295791638,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_top10_shares_log_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_top10_shares_log_change",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_share_ratio_change",
+      "representative_nmi": 0.8886453179292599,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_holder_top10_shares_log_change_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_holder_top10_share_ratio_change_at_disclosure",
+      "representative_nmi": 0.7058700035357746,
+      "semantic_support_group": "FUNDAMENTAL::shareholder_structure::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "fund_leverage_equity_assets",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "fund_leverage_liabilities_assets",
+      "representative_nmi": 0.9769501120467464,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "fund_leverage_equity_assets_at_disclosure",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "fund_leverage_liabilities_assets_at_disclosure",
+      "representative_nmi": 0.9836624417749936,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_leverage_liabilities_assets",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::leverage::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_leverage_liabilities_assets_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::leverage::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_liquidity_cash_current_liab",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_liquidity_current_ratio",
+      "representative_nmi": 0.1939065641009522,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_liquidity_cash_current_liab_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_liquidity_current_ratio_at_disclosure",
+      "representative_nmi": 0.20830102223114638,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_liquidity_current_ratio",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_liquidity_current_ratio_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::liquidity_solvency::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_deduct_parent_netprofit_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_acceleration",
+      "representative_nmi": 0.5902838858206839,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_deduct_parent_netprofit_acceleration_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_deduct_parent_netprofit_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_delta",
+      "representative_nmi": 0.6720580059900105,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_deduct_parent_netprofit_delta_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_deduct_parent_netprofit_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_persistence",
+      "representative_nmi": 0.6216278938561416,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_deduct_parent_netprofit_persistence_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_deduct_parent_netprofit_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_deduct_parent_netprofit_delta",
+      "representative_nmi": 0.9309603918899253,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_deduct_parent_netprofit_slope_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_deduct_parent_netprofit_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_source_yoy",
+      "representative_nmi": 0.4345404348812845,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_deduct_parent_netprofit_source_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_deduct_parent_netprofit_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_yoy",
+      "representative_nmi": 0.5287718029518927,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_deduct_parent_netprofit_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_cost_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_income_acceleration",
+      "representative_nmi": 0.6432323496225452,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_cost_acceleration_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "fund_pr_operate_cost_delta",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "fund_pr_operate_cost_slope",
+      "representative_nmi": 0.9625118587870461,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_cost_delta_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_cost_persistence",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_cost_persistence_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_cost_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_income_slope",
+      "representative_nmi": 0.6995552941600277,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_cost_slope_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_cost_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_income_source_yoy",
+      "representative_nmi": 0.4070722600590016,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_cost_source_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_cost_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_income_yoy",
+      "representative_nmi": 0.486275353885626,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_cost_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_income_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_income_slope",
+      "representative_nmi": 0.42600848379816125,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_income_acceleration_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "fund_pr_operate_income_delta",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "fund_pr_operate_income_slope",
+      "representative_nmi": 0.9630958955481137,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_income_delta_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_income_persistence",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_income_persistence_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_income_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_profit_delta",
+      "representative_nmi": 0.2815427140982362,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_income_slope_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_income_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_income_yoy",
+      "representative_nmi": 0.2960112273530808,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_income_source_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_income_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_profit_yoy",
+      "representative_nmi": 0.21396907568301513,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_income_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_profit_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_acceleration",
+      "representative_nmi": 0.6479868856960268,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_profit_acceleration_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_profit_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_delta",
+      "representative_nmi": 0.7204637224851012,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_profit_delta_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_profit_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_persistence",
+      "representative_nmi": 0.6763605966428725,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_profit_persistence_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_profit_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_operate_profit_delta",
+      "representative_nmi": 0.9399758225224911,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_profit_slope_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_profit_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_source_yoy",
+      "representative_nmi": 0.5370667199609661,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_profit_source_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_operate_profit_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_yoy",
+      "representative_nmi": 0.6171258858428568,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_operate_profit_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_parent_netprofit_acceleration",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_delta",
+      "representative_nmi": 0.30327145223187374,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_parent_netprofit_acceleration_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_parent_netprofit_delta",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_slope",
+      "representative_nmi": 0.9365482317247874,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_parent_netprofit_delta_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_parent_netprofit_persistence",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_delta",
+      "representative_nmi": 0.0872109508821187,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_parent_netprofit_persistence_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_parent_netprofit_slope",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_parent_netprofit_slope_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_parent_netprofit_source_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_pr_parent_netprofit_yoy",
+      "representative_nmi": 0.2770965315423062,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_parent_netprofit_source_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_pr_parent_netprofit_yoy",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::stock-session cross-section::SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_pr_parent_netprofit_yoy_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::growth::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_profit_gross_margin",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_profit_operating_margin",
+      "representative_nmi": 0.16390798047848457,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_profit_gross_margin_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_profit_operating_margin",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_profit_operating_margin_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_profit_parent_margin",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_profit_operating_margin",
+      "representative_nmi": 0.6136092125929965,
+      "semantic_support_group": "FUNDAMENTAL::profitability::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "fund_profit_parent_margin_at_disclosure",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::profitability::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_working_capital_inventory_assets",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_working_capital_receivables_assets",
+      "representative_nmi": 0.07126041317578898,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_working_capital_inventory_assets_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_working_capital_payables_assets",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_working_capital_payables_assets_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_working_capital_inventory_assets_at_disclosure",
+      "representative_nmi": 0.06109052477165125,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_working_capital_receivables_assets",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_working_capital_payables_assets",
+      "representative_nmi": 0.07929651346883468,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::stock-session cross-section::SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "fund_working_capital_receivables_assets_at_disclosure",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "fund_working_capital_payables_assets_at_disclosure",
+      "representative_nmi": 0.08850907962579435,
+      "semantic_support_group": "FUNDAMENTAL::working_capital::disclosure episode::DISCLOSURE_EVENT"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "high",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "open",
+      "representative_nmi": 0.9871889801730774,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "intraday_ret_from_open",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "amount",
+      "representative_nmi": 0.004848747587270482,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "low",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "open",
+      "representative_nmi": 0.9886587664772875,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first15_amount",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_amount",
+      "representative_nmi": 0.49663115479312975,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "m1_first15_bars",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "m1_first15_high",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "m1_first5_high",
+      "representative_nmi": 0.9565680710600588,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first15_last_close",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_last_close",
+      "representative_nmi": 0.9332280830585523,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first15_last_return_vs_open",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_last_return_vs_open",
+      "representative_nmi": 0.16891153172271597,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "m1_first15_low",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "m1_first5_low",
+      "representative_nmi": 0.9691127763874472,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first15_range",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_range",
+      "representative_nmi": 0.3087097328242073,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first15_vol",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_vol",
+      "representative_nmi": 0.5454961794736074,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "m1_first15_vwap",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "m1_first5_last_close",
+      "representative_nmi": 0.959845864007089,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first15_vwap_return_vs_open",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_last_return_vs_open",
+      "representative_nmi": 0.32044301220176175,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first30_amount",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first15_amount",
+      "representative_nmi": 0.6024830434945472,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "m1_first30_bars",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first30_high",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_high",
+      "representative_nmi": 0.9396230304839042,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first30_last_close",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first15_last_close",
+      "representative_nmi": 0.9388443662909164,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first30_last_return_vs_open",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first15_last_return_vs_open",
+      "representative_nmi": 0.23944018564838726,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "m1_first30_low",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "m1_first5_low",
+      "representative_nmi": 0.9539778283794206,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first30_range",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first15_range",
+      "representative_nmi": 0.4304158297539093,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first30_vol",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first15_vol",
+      "representative_nmi": 0.6428878439180519,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "m1_first30_vwap",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "m1_first15_last_close",
+      "representative_nmi": 0.9592904116896096,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first30_vwap_return_vs_open",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first15_vwap_return_vs_open",
+      "representative_nmi": 0.4351840404743342,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first5_amount",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "NOT_QUALIFIED",
+      "field_id": "m1_first5_bars",
+      "reason": "EVALUATED_DEVELOPMENT_ONLY",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first5_high",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_last_close",
+      "representative_nmi": 0.9425662115452544,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first5_last_close",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_vol",
+      "representative_nmi": 0.06448594751683047,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first5_last_return_vs_open",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_range",
+      "representative_nmi": 0.15871895176243306,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first5_low",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_last_close",
+      "representative_nmi": 0.9411963849662246,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first5_range",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_amount",
+      "representative_nmi": 0.02804313240840668,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first5_vol",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_amount",
+      "representative_nmi": 0.19854513328204065,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "m1_first5_vwap",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "m1_first5_high",
+      "representative_nmi": 0.9593089371397366,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "m1_first5_vwap_return_vs_open",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "m1_first5_last_return_vs_open",
+      "representative_nmi": 0.3042127825985664,
+      "semantic_support_group": "TRUE1MIN::firstN"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "open",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "amount",
+      "representative_nmi": 0.007571683665132347,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "pct_chg",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "open",
+      "representative_nmi": 0.10895339739479624,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "ret_1m",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "pct_chg",
+      "representative_nmi": 0.9003558047538399,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "state_bar_return_sign",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "state_intraday_return_sign",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::intraday_derived_state"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "state_close_range_location_sign",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::intraday_derived_state"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "state_intraday_return_sign",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "state_close_range_location_sign",
+      "representative_nmi": 0.0,
+      "semantic_support_group": "TRUE1MIN::intraday_derived_state"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "vol",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "amount",
+      "representative_nmi": 0.28700773906876986,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "REDUNDANCY_ARCHIVE",
+      "field_id": "volume",
+      "reason": "NMI_AT_OR_ABOVE_THRESHOLD_WITHIN_SEMANTIC_SUPPORT_GROUP",
+      "representative_field_id": "vol",
+      "representative_nmi": 1.0,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    },
+    {
+      "decision": "EXPLORATORY_CORE",
+      "field_id": "vwap",
+      "reason": "NON_PERFORMANCE_INFORMATION_AND_DISTINCTNESS_GATES_PASS",
+      "representative_field_id": "open",
+      "representative_nmi": 0.9369454679817664,
+      "semantic_support_group": "TRUE1MIN::raw_1min"
+    }
+  ],
+  "generator_authority_changed": false,
+  "performance_claim_allowed": false,
+  "selected_count": 272,
+  "selected_field_ids": [
+    "chip_cost_weighted_mean",
+    "chip_cost_p95",
+    "chip_cost_p50",
+    "chip_cost_p15",
+    "chip_cost_p85",
+    "chip_cost_p05",
+    "fund_accruals_profit_minus_cfo_assets",
+    "fund_ba_fixed_asset_delta_at_disclosure",
+    "fund_ba_fixed_asset_slope_at_disclosure",
+    "fund_ba_fixed_asset_persistence_at_disclosure",
+    "fund_ba_fixed_asset_acceleration_at_disclosure",
+    "fund_capex_construct_assets",
+    "fund_ba_fixed_asset_delta",
+    "fund_ba_fixed_asset_slope",
+    "fund_ba_fixed_asset_persistence",
+    "fund_ca_netcash_invest_delta",
+    "fund_ca_netcash_invest_persistence",
+    "fund_ca_construct_long_asset_slope",
+    "fund_ca_construct_long_asset_persistence",
+    "fund_ba_fixed_asset_acceleration",
+    "fund_ca_netcash_invest_acceleration",
+    "fund_ca_construct_long_asset_acceleration",
+    "fund_ca_netcash_finance_delta",
+    "fund_ca_netcash_finance_persistence",
+    "fund_ca_netcash_finance_acceleration",
+    "fund_cashflow_cfo_profit",
+    "fund_cashflow_cfo_revenue",
+    "fund_ca_netcash_operate_delta",
+    "fund_ca_netcash_operate_slope",
+    "fund_ca_netcash_operate_acceleration",
+    "fund_ba_total_assets_source_yoy_at_disclosure",
+    "fund_ba_total_assets_yoy_at_disclosure",
+    "fund_ba_total_liabilities_source_yoy_at_disclosure",
+    "fund_ba_total_liabilities_yoy_at_disclosure",
+    "fund_ba_fixed_asset_source_yoy_at_disclosure",
+    "fund_ba_fixed_asset_yoy_at_disclosure",
+    "fund_ba_total_equity_source_yoy_at_disclosure",
+    "fund_ba_total_equity_yoy_at_disclosure",
+    "fund_ba_monetaryfunds_source_yoy_at_disclosure",
+    "fund_ba_monetaryfunds_yoy_at_disclosure",
+    "fund_ba_total_current_assets_source_yoy_at_disclosure",
+    "fund_ba_total_current_assets_yoy_at_disclosure",
+    "fund_ba_total_current_liab_source_yoy_at_disclosure",
+    "fund_ba_total_current_liab_yoy_at_disclosure",
+    "fund_ba_inventory_source_yoy_at_disclosure",
+    "fund_ba_inventory_yoy_at_disclosure",
+    "fund_ba_accounts_payable_source_yoy_at_disclosure",
+    "fund_ba_accounts_payable_yoy_at_disclosure",
+    "fund_ba_accounts_rece_source_yoy_at_disclosure",
+    "fund_ba_accounts_rece_yoy_at_disclosure",
+    "fund_pr_parent_netprofit_yoy",
+    "fund_pr_parent_netprofit_source_yoy",
+    "fund_pr_operate_profit_yoy",
+    "fund_ba_total_assets_source_yoy",
+    "fund_ba_total_assets_yoy",
+    "fund_ba_total_liabilities_source_yoy",
+    "fund_ba_total_liabilities_yoy",
+    "fund_ca_netcash_operate_yoy",
+    "fund_ca_netcash_operate_source_yoy",
+    "fund_pr_operate_profit_source_yoy",
+    "fund_pr_deduct_parent_netprofit_source_yoy",
+    "fund_pr_deduct_parent_netprofit_yoy",
+    "fund_ba_fixed_asset_yoy",
+    "fund_ba_total_equity_source_yoy",
+    "fund_ba_total_equity_yoy",
+    "fund_ba_fixed_asset_source_yoy",
+    "fund_pr_operate_income_yoy",
+    "fund_pr_operate_income_source_yoy",
+    "fund_ca_netcash_invest_source_yoy",
+    "fund_ca_netcash_invest_yoy",
+    "fund_ca_construct_long_asset_source_yoy",
+    "fund_ca_construct_long_asset_yoy",
+    "fund_ba_monetaryfunds_yoy",
+    "fund_ba_monetaryfunds_source_yoy",
+    "fund_ba_accounts_payable_source_yoy",
+    "fund_ba_accounts_payable_yoy",
+    "fund_ba_total_current_liab_source_yoy",
+    "fund_ba_accounts_rece_source_yoy",
+    "fund_ba_total_current_assets_yoy",
+    "fund_ba_accounts_rece_yoy",
+    "fund_ba_total_current_liab_yoy",
+    "fund_ba_total_current_assets_source_yoy",
+    "fund_ca_netcash_finance_yoy",
+    "fund_pr_operate_cost_yoy",
+    "fund_pr_operate_cost_source_yoy",
+    "fund_ca_netcash_finance_source_yoy",
+    "fund_ba_inventory_yoy",
+    "fund_ba_inventory_source_yoy",
+    "fund_leverage_liabilities_assets_at_disclosure",
+    "fund_ba_total_liabilities_delta_at_disclosure",
+    "fund_ba_total_liabilities_slope_at_disclosure",
+    "fund_ba_total_liabilities_persistence_at_disclosure",
+    "fund_ba_total_liabilities_acceleration_at_disclosure",
+    "fund_ba_total_equity_delta_at_disclosure",
+    "fund_ba_total_equity_slope_at_disclosure",
+    "fund_ba_total_equity_persistence_at_disclosure",
+    "fund_ba_total_equity_acceleration_at_disclosure",
+    "fund_leverage_liabilities_assets",
+    "fund_ba_total_liabilities_delta",
+    "fund_ba_total_liabilities_slope",
+    "fund_ba_total_liabilities_persistence",
+    "fund_ba_total_equity_delta",
+    "fund_ba_total_equity_slope",
+    "fund_ba_total_liabilities_acceleration",
+    "fund_ba_total_equity_persistence",
+    "fund_ba_total_equity_acceleration",
+    "fund_liquidity_current_ratio_at_disclosure",
+    "fund_ba_monetaryfunds_delta_at_disclosure",
+    "fund_ba_monetaryfunds_slope_at_disclosure",
+    "fund_ba_total_current_assets_delta_at_disclosure",
+    "fund_ba_total_current_assets_slope_at_disclosure",
+    "fund_ba_total_current_liab_delta_at_disclosure",
+    "fund_ba_total_current_liab_slope_at_disclosure",
+    "fund_ba_total_current_assets_persistence_at_disclosure",
+    "fund_ba_total_current_liab_persistence_at_disclosure",
+    "fund_ba_monetaryfunds_persistence_at_disclosure",
+    "fund_ba_monetaryfunds_acceleration_at_disclosure",
+    "fund_ba_total_current_liab_acceleration_at_disclosure",
+    "fund_ba_total_current_assets_acceleration_at_disclosure",
+    "fund_liquidity_cash_current_liab_at_disclosure",
+    "fund_liquidity_current_ratio",
+    "fund_liquidity_cash_current_liab",
+    "fund_ba_monetaryfunds_delta",
+    "fund_ba_monetaryfunds_slope",
+    "fund_ba_monetaryfunds_persistence",
+    "fund_ba_monetaryfunds_acceleration",
+    "fund_ba_total_current_liab_delta",
+    "fund_ba_total_current_liab_slope",
+    "fund_ba_total_current_assets_delta",
+    "fund_ba_total_current_assets_slope",
+    "fund_ba_total_current_assets_persistence",
+    "fund_ba_total_current_liab_persistence",
+    "fund_ba_total_current_liab_acceleration",
+    "fund_ba_total_current_assets_acceleration",
+    "fund_efficiency_fixed_asset_intensity_at_disclosure",
+    "fund_efficiency_fixed_asset_intensity",
+    "fund_efficiency_revenue_assets",
+    "fund_profit_operating_margin",
+    "fund_profit_parent_margin",
+    "fund_profit_gross_margin",
+    "fund_pr_parent_netprofit_slope",
+    "fund_pr_parent_netprofit_delta",
+    "fund_pr_parent_netprofit_persistence",
+    "fund_pr_deduct_parent_netprofit_delta",
+    "fund_pr_deduct_parent_netprofit_slope",
+    "fund_pr_parent_netprofit_acceleration",
+    "fund_pr_deduct_parent_netprofit_persistence",
+    "fund_pr_operate_profit_delta",
+    "fund_pr_operate_profit_slope",
+    "fund_pr_operate_profit_persistence",
+    "fund_pr_operate_profit_acceleration",
+    "fund_pr_operate_income_slope",
+    "fund_pr_operate_income_acceleration",
+    "fund_pr_deduct_parent_netprofit_acceleration",
+    "fund_pr_operate_cost_slope",
+    "fund_pr_operate_cost_acceleration",
+    "fund_holder_top10_shares_log_at_disclosure",
+    "fund_holder_top10_share_ratio_at_disclosure",
+    "fund_holder_count_log_at_disclosure",
+    "fund_holder_average_shares_log_at_disclosure",
+    "fund_holder_top10_share_ratio_change_at_disclosure",
+    "fund_holder_top10_shares_log_change_at_disclosure",
+    "fund_holder_average_shares_log_change_at_disclosure",
+    "fund_holder_count_log_change_at_disclosure",
+    "fund_holder_top10_share_ratio",
+    "fund_holder_top10_shares_log",
+    "fund_holder_average_shares_log",
+    "fund_holder_count_log",
+    "fund_holder_top10_share_ratio_change",
+    "fund_holder_top10_shares_log_change",
+    "fund_holder_count_log_change",
+    "fund_holder_average_shares_log_change",
+    "fund_ba_total_assets_delta_at_disclosure",
+    "fund_ba_total_assets_slope_at_disclosure",
+    "fund_ba_total_assets_persistence_at_disclosure",
+    "fund_ba_total_assets_acceleration_at_disclosure",
+    "fund_ba_total_assets_delta",
+    "fund_ba_total_assets_slope",
+    "fund_ba_total_assets_persistence",
+    "fund_ba_total_assets_acceleration",
+    "fund_working_capital_inventory_assets_at_disclosure",
+    "fund_ba_inventory_delta_at_disclosure",
+    "fund_ba_inventory_slope_at_disclosure",
+    "fund_ba_inventory_persistence_at_disclosure",
+    "fund_ba_inventory_acceleration_at_disclosure",
+    "fund_working_capital_payables_assets_at_disclosure",
+    "fund_working_capital_receivables_assets_at_disclosure",
+    "fund_ba_accounts_payable_delta_at_disclosure",
+    "fund_ba_accounts_payable_slope_at_disclosure",
+    "fund_ba_accounts_payable_persistence_at_disclosure",
+    "fund_ba_accounts_rece_delta_at_disclosure",
+    "fund_ba_accounts_rece_slope_at_disclosure",
+    "fund_ba_accounts_rece_persistence_at_disclosure",
+    "fund_ba_accounts_payable_acceleration_at_disclosure",
+    "fund_ba_accounts_rece_acceleration_at_disclosure",
+    "fund_working_capital_payables_assets",
+    "fund_working_capital_receivables_assets",
+    "fund_working_capital_inventory_assets",
+    "fund_ba_accounts_payable_slope",
+    "fund_ba_accounts_payable_delta",
+    "fund_ba_accounts_payable_persistence",
+    "fund_ba_accounts_rece_delta",
+    "fund_ba_accounts_rece_slope",
+    "fund_ba_accounts_payable_acceleration",
+    "fund_ba_inventory_slope",
+    "fund_ba_inventory_delta",
+    "fund_ba_accounts_rece_persistence",
+    "fund_ba_inventory_persistence",
+    "fund_ba_accounts_rece_acceleration",
+    "fund_ba_inventory_acceleration",
+    "evt_uplimit_active",
+    "m1_first5_amount",
+    "m1_first5_vol",
+    "m1_first5_range",
+    "m1_first5_last_close",
+    "m1_first5_low",
+    "m1_first5_high",
+    "m1_first5_last_return_vs_open",
+    "m1_first5_vwap_return_vs_open",
+    "m1_first15_amount",
+    "m1_first15_vol",
+    "m1_first15_range",
+    "m1_first15_last_close",
+    "m1_first15_last_return_vs_open",
+    "m1_first15_vwap_return_vs_open",
+    "m1_first30_amount",
+    "m1_first30_vol",
+    "m1_first30_range",
+    "m1_first30_high",
+    "m1_first30_last_close",
+    "m1_first30_last_return_vs_open",
+    "m1_first30_vwap_return_vs_open",
+    "state_close_range_location_sign",
+    "state_intraday_return_sign",
+    "state_bar_return_sign",
+    "ctx_sent_down_num",
+    "ctx_sent_up_num",
+    "ctx_sent_gt5_num",
+    "ctx_sent_lt5_num",
+    "ctx_sent_uplimit_num",
+    "ctx_sent_zb_num",
+    "ctx_sent_downlimit_num",
+    "ctx_sent_lb_2_num",
+    "ctx_sent_mian_num",
+    "ctx_sent_lb_3_num",
+    "ctx_sent_lb_h_num",
+    "ctx_sent_max_lb_num",
+    "ctx_sent_damian_num",
+    "ctx_sent_ditian_num",
+    "ctx_sent_tiandi_num",
+    "ctx_hfq_float_market_cap_yuan",
+    "ctx_hfq_market_cap_yuan",
+    "ctx_hfq_ps_ttm",
+    "ctx_hfq_pb",
+    "ctx_hfq_pe_ttm",
+    "ctx_hfq_turnover_ratio",
+    "ctx_hfq_volume_ratio",
+    "ctx_rzrq_rzye",
+    "ctx_rzrq_rzjme",
+    "ctx_rzrq_rzyezb",
+    "ctx_rzrq_rzche",
+    "ctx_rzrq_rzmre",
+    "ctx_rzrq_rzrqye",
+    "ctx_rzrq_rqyl",
+    "ctx_rzrq_rqye",
+    "amount",
+    "open",
+    "vol",
+    "intraday_ret_from_open",
+    "pct_chg",
+    "ret_1m",
+    "vwap"
+  ],
+  "selection_basis": "INFORMATION_ONLY_NO_RETURN_LABEL_REWARD_OR_SELECTOR",
+  "status": "EXPLORATORY_NON_PERFORMANCE_CORE_PACK"
+}

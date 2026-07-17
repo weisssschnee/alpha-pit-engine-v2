@@ -1,0 +1,15 @@
+﻿{
+    "repo_sha":  "395759edcfc76c5a89b5ed6111229fac1a6e5ac4",
+    "started_at":  "2026-07-17T16:24:24.1228464+00:00",
+    "pid":  22516,
+    "thread_contract":  {
+                            "ARROW_NUM_THREADS":  "12",
+                            "OPENBLAS_NUM_THREADS":  "1",
+                            "NUMBA_NUM_THREADS":  "1",
+                            "OMP_NUM_THREADS":  "1",
+                            "NUMEXPR_MAX_THREADS":  "12",
+                            "MKL_NUM_THREADS":  "1"
+                        },
+    "output_root":  "D:\\ChengboRemote\\runtime\\cn_full_field_information_research_v1_20260717",
+    "stage_root":  "D:\\ChengboRemote\\staging\\cn_full_field_information_395759e"
+}

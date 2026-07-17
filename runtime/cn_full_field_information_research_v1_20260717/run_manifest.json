@@ -1,0 +1,82 @@
+{
+  "authority_field_count": 1683,
+  "capability_metric_count": 421,
+  "core_pack_selected_count": 272,
+  "created_at": "2026-07-17T16:33:08.836099+00:00",
+  "frozen_input_hashes": {
+    "broad_event_pack": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8",
+    "capability_registry": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "chip_census_manifest": "7dec99ff4bd21239c088e3879144098657722b644e305c9d3c25b137ded3ade0",
+    "fundamental_manifest": "aacadab2b29e6f3147070cd6f50f119c1706a2dced4f69254dd066f29423ad58",
+    "fundamental_qualification": "d60c2362bed1ac304bd52d391c9dfae2ae1c3548a1ca880c0994357905bcb125",
+    "master_registry": "42c4972f62a3b1d85d70f3852a0a8fed2fab97b15e71b2f9a3cc634356b53301",
+    "split_manifest": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "true1min_release_manifest": "3d82f4178277d53f588cc516af3c2c4317046ceac504333a91de5fb716a76255"
+  },
+  "fundamental_materialization_error_count": 0,
+  "generator_authority_changed": false,
+  "outputs": [
+    {
+      "path": "access_ledger.json",
+      "sha256": "464e21f83aabbd48933a0556c459e61a61fe4bceb3ca8c5b429ad8f17d13247d",
+      "size": 446
+    },
+    {
+      "path": "capability_information_metrics.csv",
+      "sha256": "b627f6fd78c81b2a1d83fda118da992132f1e6b7b331eafc2540cebb9cd1ceac",
+      "size": 201213
+    },
+    {
+      "path": "capability_information_metrics.json",
+      "sha256": "962d3cd223aa0c1a01494ed63528520ffb9eaa8ebd4c2892a03cde6333c9f97b",
+      "size": 455242
+    },
+    {
+      "path": "core_pack.json",
+      "sha256": "e54f18235ff01206cfea7abc9ef9e372f25d5291c46057aeb0900d5309596fe9",
+      "size": 165634
+    },
+    {
+      "path": "coverage_summary.json",
+      "sha256": "ce02164b69e7218dd2d89a2ad65491404cc8840e906a066930d434ff5bf62013",
+      "size": 1631
+    },
+    {
+      "path": "evidence_summary.json",
+      "sha256": "7831c814fa4cb2448593164765824c84cb7b6a43c2aced8b4e13f959ad26834b",
+      "size": 2646
+    },
+    {
+      "path": "field_universe_information.csv",
+      "sha256": "34d8b2c1a1fd061f9cb0a91ccff11aa30d7fc83b383c0f13a4000f804dad45d3",
+      "size": 1036997
+    },
+    {
+      "path": "field_universe_information.json",
+      "sha256": "e1d0570a9343eec0d336fb1a55a70ebfb8c1c823b10cd4ce84d9255d4b925888",
+      "size": 2185591
+    },
+    {
+      "path": "information_research_contract.json",
+      "sha256": "474e6d4eb553cdbc01fcbd98ac74cdaef40c66a41117b0bbd5c922fa5834db21",
+      "size": 3075
+    },
+    {
+      "path": "pairwise_nmi.csv",
+      "sha256": "2c045755d5d158a25e35e82a338717b0605a0841fd37b4c172991d6da89d7708",
+      "size": 809816
+    },
+    {
+      "path": "pairwise_nmi.json",
+      "sha256": "351500a413bfcaf3a02ead99fc8a888c06380ec2a8e5d876d01277653a7ac185",
+      "size": 1789483
+    }
+  ],
+  "pairwise_nmi_count": 4931,
+  "performance_claim_allowed": false,
+  "plate_status": "NOT_EVALUATED_REAL_PIT_MINUTE_MATERIALIZATION_ABSENT_ON_77O",
+  "repo_sha": "395759edcfc76c5a89b5ed6111229fac1a6e5ac4",
+  "reproducibility": "YES_FIXED_INPUTS_AND_DETERMINISTIC_COORDINATES",
+  "runtime_seconds": 524.3378749999683,
+  "status": "CN_FULL_FIELD_INFORMATION_RESEARCH_V1_COMPLETED"
+}
