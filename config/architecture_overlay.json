@@ -227,7 +227,7 @@
         "level": "STATIC_VERIFIED",
         "result": "PASS",
         "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/run_manifest.json",
-        "verified_at_sha": "773167bf7816ead66985c5fa5d3e066c9ed5a505"
+        "verified_at_sha": "ece83b3b4d49f0f5c6b85e9916c0df9a43e8c1e8"
       },
       "claim_badges": ["466,944 STRUCTURAL ATTEMPTS", "42,189 ROUTE-LEVEL EXACT IDENTITIES", "264/272 CORE ROOTS", "8 HELD", "NO PERFORMANCE", "NO OOS"]
     },
@@ -256,7 +256,7 @@
         "level": "STATIC_VERIFIED",
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
-        "verified_at_sha": "773167bf7816ead66985c5fa5d3e066c9ed5a505"
+        "verified_at_sha": "ece83b3b4d49f0f5c6b85e9916c0df9a43e8c1e8"
       },
       "claim_badges": ["FROZEN ROOT SCOPE", "ZERO ACTIVE BUDGET", "PLATE DISABLED", "2026 SEALED", "NOT SEARCH AUTHORITY"]
     },
@@ -812,7 +812,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "reachable_root_scope_only", "type": "ADMISSION", "rule": "Only information-core roots consumed by the current constructor plus route-required support roots may enter the prepared scope; registry-eligible but constructor-unreachable roots remain held.", "severity": "HARD", "enforced_by": "build_frozen_discovery_contract", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/route_capacity_review.json", "verified_at_sha": "773167bf7816ead66985c5fa5d3e066c9ed5a505"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/route_capacity_review.json", "verified_at_sha": "ece83b3b4d49f0f5c6b85e9916c0df9a43e8c1e8"}
     },
     {
       "id": "prepared_contract_does_not_authorize_search",
@@ -822,7 +822,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "separate_search_authorization_required", "type": "BOUNDARY", "rule": "A prepared root contract with zero active budgets cannot start search; a separate development-only authorization and newly frozen nonzero budgets are required.", "severity": "HARD", "enforced_by": "execution_authorized and active budget gates", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_core_pack_development_discovery_v1.json", "verified_at_sha": "773167bf7816ead66985c5fa5d3e066c9ed5a505"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_core_pack_development_discovery_v1.json", "verified_at_sha": "ece83b3b4d49f0f5c6b85e9916c0df9a43e8c1e8"}
     },
     {
       "id": "registry_to_receipt",
