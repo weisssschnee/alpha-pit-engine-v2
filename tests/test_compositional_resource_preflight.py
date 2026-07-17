@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 
 from scripts.freeze_cn_compositional_resource_preflight import (
+    _candidate_rows,
     assign_evaluator_expression_identities,
     evaluator_expression_identity,
     representative_route_quotas,
@@ -63,3 +64,34 @@ def test_resource_preflight_selection_is_deterministic_and_covers_dimensions() -
     assert len({row["policy_id"] for row in first}) == 4
     assert len({row["seed"] for row in first}) == 4
     assert len({row["behavior_cluster_id"] for row in first}) == 4
+
+
+def test_candidate_rows_accepts_explicit_evaluation_round_id() -> None:
+    class _Pair:
+        primary = {"candidate_id": "c1", "canonical_expression": "CSRank($x)", "expression": "CSRank($x)"}
+        control = {"candidate_id": "k1", "canonical_expression": "CSRank(Sign($x))", "expression": "CSRank(Sign($x))"}
+
+    class _Grammar:
+        def propose(self, route_id: str, *, attempt_index: int, seed: int) -> _Pair:
+            _Pair.primary = dict(_Pair.primary, pair_id="p1", route_id=route_id)
+            _Pair.control = dict(_Pair.control, pair_id="p1", route_id=route_id)
+            return _Pair()
+
+    selected = [{
+        "candidate_id": "c1", "route_id": "MINUTE_STATIC", "policy_id": "p",
+        "seed": "1", "skeleton_id": "s", "behavior_cluster_id": "1",
+    }]
+    compact = {"c1": {
+        "candidate_id": "c1", "route_id": "MINUTE_STATIC", "route_attempt_index": 0,
+        "seed": 1, "canonical_expression": "CSRank($x)",
+        "control_canonical_expression": "CSRank(Sign($x))",
+    }}
+
+    rows, _ = _candidate_rows(
+        selected,
+        compact_by_id=compact,
+        grammar=_Grammar(),
+        round_id="STRICT_WAVE_00064",
+    )
+
+    assert {row["round_id"] for row in rows} == {"STRICT_WAVE_00064"}

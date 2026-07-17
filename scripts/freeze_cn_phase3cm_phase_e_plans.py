@@ -36,6 +36,8 @@ def _phase_e(
     source: FrozenExecutionPlan,
     *,
     heavy_processes: int,
+    pair_ids: list[str],
+    pair_batch_size: int,
 ) -> FrozenExecutionPlan:
     if source.phase != "D":
         raise ValueError("Phase E freeze requires a completed Phase D execution plan")
@@ -43,7 +45,10 @@ def _phase_e(
         phase="E",
         block_size=source.block_size,
         block_boundaries=source.block_boundaries,
-        pair_batches=source.pair_batches,
+        pair_batches=tuple(
+            tuple(pair_ids[start : start + int(pair_batch_size)])
+            for start in range(0, len(pair_ids), int(pair_batch_size))
+        ),
         heavy_processes=int(heavy_processes),
         compute_threads=source.compute_threads,
         primary_thread_pool=source.primary_thread_pool,
@@ -63,6 +68,7 @@ def main() -> int:
     parser.add_argument("--repo-sha", required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--heavy-processes", type=int, default=2)
+    parser.add_argument("--pair-batch-size", type=int, default=4)
     args = parser.parse_args()
 
     if not re.fullmatch(r"[0-9a-f]{40}", str(args.repo_sha)):
@@ -75,10 +81,8 @@ def main() -> int:
         raise ValueError("active and session Phase D calendar blocks drift")
     if active_source.compute_threads != session_source.compute_threads:
         raise ValueError("active and session Phase D compute-thread counts drift")
-    if sum(map(len, active_source.pair_batches)) != 18:
-        raise ValueError("active Phase E freeze requires the completed 18-pair Phase D plan")
-    if sum(map(len, session_source.pair_batches)) != 14:
-        raise ValueError("session Phase E freeze requires the completed 14-pair backend plan")
+    if int(args.pair_batch_size) <= 0:
+        raise ValueError("pair batch size must be positive")
     if int(args.heavy_processes) * active_source.compute_threads > 24:
         raise ValueError("global native compute thread budget exceeds 24")
 
@@ -89,8 +93,34 @@ def main() -> int:
     if binding.get("sealed_reads") != {"validation": 0, "holdout": 0, "forward_2026": 0}:
         raise ValueError("frozen input binding sealed-read contract drift")
 
-    active = _phase_e(active_source, heavy_processes=int(args.heavy_processes))
-    session = _phase_e(session_source, heavy_processes=int(args.heavy_processes))
+    bound_pairs = list(binding.get("pairs") or [])
+    active_pair_ids = [
+        str(row["pair_id"])
+        for row in bound_pairs
+        if str(row.get("clock_namespace")) == "active_bar"
+    ]
+    session_pair_ids = [
+        str(row["pair_id"])
+        for row in bound_pairs
+        if str(row.get("clock_namespace")) == "stock_session"
+    ]
+    if not active_pair_ids or not session_pair_ids:
+        raise ValueError("Phase E binding must contain both active and session pairs")
+    if len(active_pair_ids) + len(session_pair_ids) != int(binding.get("pair_count") or -1):
+        raise ValueError("Phase E binding pair counts drift")
+
+    active = _phase_e(
+        active_source,
+        heavy_processes=int(args.heavy_processes),
+        pair_ids=active_pair_ids,
+        pair_batch_size=int(args.pair_batch_size),
+    )
+    session = _phase_e(
+        session_source,
+        heavy_processes=int(args.heavy_processes),
+        pair_ids=session_pair_ids,
+        pair_batch_size=int(args.pair_batch_size),
+    )
     output_root = args.output_root.resolve()
     active_path = output_root / "active_bar" / "CN_FROZEN_EXECUTION_PLAN.json"
     session_path = output_root / "stock_session" / "CN_FROZEN_EXECUTION_PLAN.json"
@@ -113,18 +143,18 @@ def main() -> int:
         "plans": {
             "active_bar": {
                 "path": str(active_path),
-                "pair_count": 18,
+                "pair_count": len(active_pair_ids),
                 "execution_plan_hash": active.execution_plan_hash,
                 "source_phase_d_execution_plan_hash": active_source.execution_plan_hash,
-                "source_phase_d_pair_count": 18,
+                "source_phase_d_pair_count": sum(map(len, active_source.pair_batches)),
                 "sha256": _sha256(active_path),
             },
             "stock_session": {
                 "path": str(session_path),
-                "pair_count": 14,
+                "pair_count": len(session_pair_ids),
                 "execution_plan_hash": session.execution_plan_hash,
                 "source_phase_d_execution_plan_hash": session_source.execution_plan_hash,
-                "source_phase_d_pair_count": 14,
+                "source_phase_d_pair_count": sum(map(len, session_source.pair_batches)),
                 "sha256": _sha256(session_path),
             },
         },

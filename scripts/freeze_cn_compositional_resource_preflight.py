@@ -1,4 +1,4 @@
-"""Freeze a balanced, immutable 32-pair resource preflight pack.
+"""Freeze a balanced, immutable development pair pack.
 
 This stage selects without labels or rewards.  It reconstructs every typed
 pair from its proposal receipt, reauthorizes both members against the frozen
@@ -152,6 +152,7 @@ def _candidate_rows(
     *,
     compact_by_id: Mapping[str, Mapping[str, Any]],
     grammar: CompositionalGrammarV2,
+    round_id: str = "RESOURCE_PREFLIGHT_32",
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     candidates: list[dict[str, Any]] = []
     pack: list[dict[str, Any]] = []
@@ -178,7 +179,7 @@ def _candidate_rows(
             row["expression_hash"] = ""
             row["generator_arm"] = str(admission["policy_id"])
             row["run"] = "CN_COMPOSITIONAL_RESOURCE_PREFLIGHT"
-            row["round_id"] = "RESOURCE_PREFLIGHT_32"
+            row["round_id"] = str(round_id)
             candidates.append(row)
         pack.append(
             {
@@ -206,6 +207,8 @@ def main() -> int:
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
     parser.add_argument("--release-manifest", type=Path, required=True)
+    parser.add_argument("--pair-count", type=int)
+    parser.add_argument("--round-id")
     args = parser.parse_args()
 
     root = args.runtime_root.resolve()
@@ -222,7 +225,15 @@ def main() -> int:
     admissions = _read_csv(root / "CN_DIVERSITY_ADMISSION.csv")
     compact = _read_jsonl(root / "CN_PAIR_RECEIPTS.jsonl")
     compact_by_id = {str(row["candidate_id"]): row for row in compact}
-    quotas = representative_route_quotas(plan["stage_a"]["route_pair_quotas"], int(plan["compute_contract"]["preflight_pairs"]))
+    configured_count = args.pair_count
+    if configured_count is None:
+        configured_count = int(plan["compute_contract"]["preflight_pairs"])
+    if int(configured_count) <= 0:
+        raise ValueError("pair count must be positive")
+    route_weights = dict((plan.get("stage_a") or {}).get("route_pair_quotas") or {})
+    if not route_weights:
+        route_weights = dict(Counter(str(row["route_id"]) for row in admissions))
+    quotas = representative_route_quotas(route_weights, int(configured_count))
     selected = select_representative_pairs(admissions, route_quotas=quotas)
     registry = UnifiedCapabilityRegistry.read(args.registry)
     candidates, pack = _candidate_rows(
@@ -232,6 +243,7 @@ def main() -> int:
             registry,
             route_root_allowlist=plan.get("route_root_allowlists"),
         ),
+        round_id=str(args.round_id or plan.get("evaluation_round_id") or "RESOURCE_PREFLIGHT_32"),
     )
 
     split = FixedSplitAuthority.read(args.split_manifest)
@@ -279,6 +291,9 @@ def main() -> int:
         "data_role": "development",
         "validation_holdout_forward_read": False,
         "pair_count": len(pack),
+        "evaluation_round_id": str(
+            args.round_id or plan.get("evaluation_round_id") or "RESOURCE_PREFLIGHT_32"
+        ),
         "evaluator_call_count": len(candidates),
         "route_quotas": quotas,
         "policy_counts": dict(Counter(row["policy_id"] for row in pack)),
