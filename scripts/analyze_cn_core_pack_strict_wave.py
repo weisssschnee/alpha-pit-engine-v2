@@ -232,6 +232,11 @@ def analyze_strict_wave(
         role: sum(int(summary[role]) for summary in backend_summaries.values())
         for role in ("validation_reads", "holdout_reads", "forward_2026_reads")
     }
+    pit_contract_complete = all(
+        member.get("observable_time_contract")
+        and member.get("pit_source_lag_contract")
+        for member in binding.get("candidate_members") or []
+    )
     infrastructure_gate = (
         not missing_pair_ids
         and not unexpected_pair_ids
@@ -250,7 +255,7 @@ def analyze_strict_wave(
         "schema_version": "cn_core_pack_strict_wave_analysis_v1",
         "status": (
             "CN_CORE_PACK_STRICT_WAVE_ANALYZED"
-            if infrastructure_gate and not any(access_reads.values())
+            if infrastructure_gate and not any(access_reads.values()) and pit_contract_complete
             else "CN_CORE_PACK_STRICT_WAVE_ANALYSIS_FAILED_CLOSED"
         ),
         "binding_hash": binding_hash,
@@ -265,7 +270,9 @@ def analyze_strict_wave(
         "maximum_route_pair_share": max(route_shares.values(), default=0.0),
         "access_reads": access_reads,
         "gates": {
-            "no_access_or_pit_violation": not any(access_reads.values()),
+            "no_access_or_pit_violation": not any(access_reads.values())
+            and pit_contract_complete,
+            "pit_contract_complete": pit_contract_complete,
             "no_infrastructure_failed_pairs": infrastructure_gate,
             "resource_gates_pass": resource_gate,
             "new_matched_mechanism_observed": new_matched_mechanism_observed,

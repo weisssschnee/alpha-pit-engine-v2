@@ -32,10 +32,10 @@ def _binding() -> dict:
             },
         ],
         "candidate_members": [
-            {"candidate_id": "a", "receipt_hash": "ra"},
-            {"candidate_id": "ac", "receipt_hash": "rac"},
-            {"candidate_id": "b", "receipt_hash": "rb"},
-            {"candidate_id": "bc", "receipt_hash": "rbc"},
+            {"candidate_id": "a", "receipt_hash": "ra", "observable_time_contract": ["x"], "pit_source_lag_contract": ["x"]},
+            {"candidate_id": "ac", "receipt_hash": "rac", "observable_time_contract": ["x"], "pit_source_lag_contract": ["x"]},
+            {"candidate_id": "b", "receipt_hash": "rb", "observable_time_contract": ["x"], "pit_source_lag_contract": ["x"]},
+            {"candidate_id": "bc", "receipt_hash": "rbc", "observable_time_contract": ["x"], "pit_source_lag_contract": ["x"]},
         ],
     }
 
