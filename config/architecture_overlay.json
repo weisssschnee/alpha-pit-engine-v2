@@ -191,6 +191,7 @@
       "kind": "evidence",
       "lifecycle": "EXPERIMENTAL",
       "paths": [
+        "src/our_system_phase2/services/field_information_census.py",
         "runtime/cn_chip_plate_information_census_20260717/core_pack.json",
         "runtime/cn_chip_plate_information_census_20260717/field_information_metrics.json",
         "runtime/cn_chip_plate_information_census_20260717/pairwise_nmi.json"

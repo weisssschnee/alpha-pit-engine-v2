@@ -29,11 +29,6 @@
       "id": "core_pack_to_registry_advisory",
       "source": "field_information_core_pack",
       "target": "unified_capability_registry"
-    },
-    {
-      "id": "registry_to_compositional_generator",
-      "source": "unified_capability_registry",
-      "target": "compositional_nline_bounded_search"
     }
   ]
 }
