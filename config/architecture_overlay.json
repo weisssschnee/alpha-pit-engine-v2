@@ -75,7 +75,7 @@
       "semantic_role": "complete_field_universe_authority",
       "authority": {
         "path": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
-        "verified_sha": "8774de474906f73c8050e139638434a8e0a1f243"
+        "verified_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       },
       "contracts": [
         {
@@ -99,7 +99,7 @@
         "level": "STATIC_VERIFIED",
         "result": "PASS",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
-        "verified_at_sha": "8774de474906f73c8050e139638434a8e0a1f243"
+        "verified_at_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       }
     },
     {
@@ -109,14 +109,14 @@
       "lifecycle": "ACTIVE",
       "paths": [
         "src/our_system_phase2/services/unified_capability_registry.py",
-        "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json"
+        "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json"
       ],
       "critical": true,
       "active_authority": true,
       "semantic_role": "field_route_authority",
       "authority": {
         "path": "src/our_system_phase2/services/unified_capability_registry.py",
-        "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+        "verified_sha": "947a2988b720a42ed319fdcfc0eddbfdde9be496"
       },
       "contracts": [
         {
@@ -131,8 +131,8 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v2_20260717/unified_capability_registry.json",
-        "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
+        "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
+        "verified_at_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       }
     },
     {
@@ -608,7 +608,7 @@
       "lifecycle": "ACTIVE",
       "critical": true,
       "contract": {"id": "qualified_fundamental_representation_only", "type": "ADMISSION", "rule": "Only canonical PIT-qualified fundamental representations may enter typed routes; raw 1,227-field exposure and PIT-unresolved families are forbidden.", "severity": "HARD", "enforced_by": "canonical_representation_specs", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v2_20260717/registry_build_summary.json", "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/registry_build_summary.json", "verified_at_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"}
     },
     {
       "id": "registry_to_compositional_generator",
@@ -618,7 +618,7 @@
       "lifecycle": "ACTIVE",
       "critical": true,
       "contract": {"id": "registry_driven_generator_capacity", "type": "AUTHORITY", "rule": "The generator consumes the versioned registry, including distinct disclosure pulse and qualified disclosure payload roles; historical narrow packs are evidence snapshots, not field authority.", "severity": "HARD", "enforced_by": "CompositionalGrammarV2", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_compositional_grammar_v2.py", "verified_at_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_compositional_grammar_v2.py", "verified_at_sha": "947a2988b720a42ed319fdcfc0eddbfdde9be496"}
     },
     {"id": "temporal_to_lanes", "source": "typed_temporal_program", "target": "hypothesis_lanes", "relation": "types_temporal_lane", "lifecycle": "ACTIVE"},
     {"id": "event_to_lanes", "source": "broad_event_system", "target": "hypothesis_lanes", "relation": "types_event_lane", "lifecycle": "ACTIVE"},
@@ -630,7 +630,7 @@
       "lifecycle": "ACTIVE",
       "critical": true,
       "contract": {"id": "inventory_and_route_authority_separated", "type": "AUTHORITY", "rule": "The field master is authoritative for existence and status; the unified capability registry is authoritative for generator and route eligibility.", "severity": "HARD", "enforced_by": "build_cn_field_master_registry and UnifiedCapabilityRegistry", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json", "verified_at_sha": "8774de474906f73c8050e139638434a8e0a1f243"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json", "verified_at_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"}
     },
     {
       "id": "field_master_to_information_evidence",
