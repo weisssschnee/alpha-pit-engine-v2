@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
+
 import pandas as pd
 
+from scripts.prepare_cn_compositional_session_signal_panel import _load_chip_context
 from our_system_phase2.services.compositional_session_signal_panel import (
     attach_coordinate_row_indices,
     build_full_session_coordinate_rows,
@@ -79,3 +82,44 @@ def test_full_session_coordinates_use_every_development_date_once_per_stock() ->
         for row in rows
     )
     assert len({(row["code"], row["trade_date"]) for row in rows}) == 12
+
+
+def test_session_panel_loads_only_requested_development_chip_context(tmp_path) -> None:
+    root = tmp_path / "chip"
+    (root / "shards").mkdir(parents=True)
+    (root / "chip_sidecar_manifest_v1.json").write_text(
+        json.dumps(
+            {
+                "sidecar_version": "nextgen_dark_chip_sidecar_v3",
+                "shard_count": 1,
+                "forward_2026_performance_accessed": False,
+                "sealed_2026_values_converted_or_used": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "code": ["000001", "000001", "000002"],
+            "source_session": pd.to_datetime(
+                ["2025-01-02", "2025-01-06", "2025-01-02"]
+            ),
+            "source_observed_at": pd.to_datetime(
+                ["2025-01-03", "2025-01-07", "2025-01-03"]
+            ),
+            "chip_cost_p50": [10.0, 11.0, 20.0],
+        }
+    ).to_parquet(root / "shards" / "chip_00000.parquet", index=False)
+
+    frame, evidence = _load_chip_context(
+        root,
+        allowed_codes={"000001.SZ"},
+        fields=["chip_cost_p50"],
+        maximum_observable_time="2025-01-05T15:00:00",
+    )
+
+    assert frame[["code", "chip_cost_p50"]].to_dict("records") == [
+        {"code": "000001", "chip_cost_p50": 10.0}
+    ]
+    assert evidence["loaded_row_count"] == 1
+    assert evidence["shard_count"] == 1

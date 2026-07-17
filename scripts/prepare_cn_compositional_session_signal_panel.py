@@ -31,6 +31,10 @@ from our_system_phase2.services.compositional_session_signal_panel import (  # n
     build_full_session_coordinate_rows,
     field_partition,
 )
+from our_system_phase2.services.chip_sidecar import (  # noqa: E402
+    CHIP_FIELDS,
+    point_in_time_chip_context,
+)
 from our_system_phase2.services.fundamental_representations import (  # noqa: E402
     CanonicalFundamentalMaterializer,
 )
@@ -97,12 +101,66 @@ def _context_fields(path: Path) -> list[str]:
     )
 
 
+def _load_chip_context(
+    root: Path,
+    *,
+    allowed_codes: set[str],
+    fields: list[str],
+    maximum_observable_time: str,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    manifest_path = root / "chip_sidecar_manifest_v1.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"chip sidecar manifest missing: {manifest_path}")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    if bool(manifest.get("forward_2026_performance_accessed")) or bool(
+        manifest.get("sealed_2026_values_converted_or_used")
+    ):
+        raise PermissionError("chip sidecar manifest reports sealed 2026 value access")
+    paths = sorted((root / "shards").glob("*.parquet"))
+    if len(paths) != int(manifest.get("shard_count") or -1):
+        raise RuntimeError("chip sidecar shard closure does not match manifest")
+    columns = ["code", "source_session", "source_observed_at", *fields]
+    parts: list[pd.DataFrame] = []
+    normalized_codes = {normalize_cn_code(value) for value in allowed_codes}
+    for path in paths:
+        table = pq.read_table(
+            path,
+            columns=columns,
+            filters=[("code", "in", sorted(normalized_codes))],
+        )
+        if table.num_rows:
+            parts.append(table.to_pandas())
+    chip = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(columns=columns)
+    if not chip.empty:
+        chip["code"] = chip["code"].map(normalize_cn_code)
+        observed = pd.to_datetime(chip["source_observed_at"], errors="raise")
+        maximum = pd.Timestamp(maximum_observable_time)
+        chip = chip.loc[observed.le(maximum)].copy()
+        if observed.dt.year.ge(2026).any():
+            raise PermissionError("chip sidecar exposes sealed 2026 observation")
+    return chip, {
+        "manifest_path": str(manifest_path),
+        "manifest_sha256": _sha256(manifest_path),
+        "sidecar_version": str(manifest.get("sidecar_version") or ""),
+        "shard_count": len(paths),
+        "loaded_row_count": len(chip),
+        "maximum_observable_time": maximum_observable_time,
+    }
+
+
 def prepare(args: argparse.Namespace) -> int:
     sessions = _development_sessions(args.split_manifest)
     session_set = set(sessions)
     selections = _read_csv(args.stock_selection)
     active_coordinates = _read_csv(args.active_coordinate_manifest)
     context_fields = _context_fields(args.session_context_fields)
+    chip_field_names = set(CHIP_FIELDS.values())
+    chip_fields = sorted(set(context_fields) & chip_field_names)
+    panel_context_fields = sorted(set(context_fields) - chip_field_names)
+    if chip_fields and (args.chip_root is None or not args.maximum_observable_time):
+        raise ValueError(
+            "chip context fields require --chip-root and --maximum-observable-time"
+        )
     parts: list[pd.DataFrame] = []
     selection_frame = pd.DataFrame(selections)
     if selection_frame["code"].astype(str).duplicated().any():
@@ -112,7 +170,7 @@ def prepare(args: argparse.Namespace) -> int:
     ):
         panel = Path(str(panel_text))
         parquet = pq.ParquetFile(panel)
-        columns = ["code", "trade_time", "date", *context_fields]
+        columns = ["code", "trade_time", "date", *panel_context_fields]
         missing = sorted(set(columns) - set(parquet.schema_arrow.names))
         if missing:
             raise RuntimeError(f"{panel} missing session fields: {missing}")
@@ -128,7 +186,7 @@ def prepare(args: argparse.Namespace) -> int:
             .groupby(["code", "_session"], sort=False, as_index=False)
             .tail(1)
         )
-        parts.append(frame[["code", "_session", *context_fields]])
+        parts.append(frame[["code", "_session", *panel_context_fields]])
     base = (
         pd.concat(parts, ignore_index=True)
         .drop_duplicates(["code", "_session"], keep="last")
@@ -138,7 +196,21 @@ def prepare(args: argparse.Namespace) -> int:
     base["trade_time"] = base["_session"] + pd.Timedelta(hours=15)
     base["session_time"] = base["trade_time"]
     base["date"] = base["_session"]
-    base = base[["code", "trade_time", "session_time", "date", *context_fields]]
+    base = base[["code", "trade_time", "session_time", "date", *panel_context_fields]]
+    chip_input: dict[str, Any] | None = None
+    if chip_fields:
+        chip, chip_input = _load_chip_context(
+            args.chip_root,
+            allowed_codes=set(base["code"].astype(str)),
+            fields=chip_fields,
+            maximum_observable_time=args.maximum_observable_time,
+        )
+        base = point_in_time_chip_context(
+            base,
+            chip,
+            fields=chip_fields,
+            data_role="development",
+        )
     available = {
         (str(code), pd.Timestamp(trade_time).normalize())
         for code, trade_time in zip(base["code"], base["trade_time"], strict=True)
@@ -163,6 +235,8 @@ def prepare(args: argparse.Namespace) -> int:
         "development_session_count": len(sessions),
         "base_panel_rows": len(base),
         "context_field_count": len(context_fields),
+        "panel_context_field_count": len(panel_context_fields),
+        "chip_context_field_count": len(chip_fields),
         "coordinate_count": len(coordinates),
         "coordinate_count_by_set": dict(
             Counter(row["coordinate_set"] for row in coordinates)
@@ -179,6 +253,7 @@ def prepare(args: argparse.Namespace) -> int:
             "stock_selection": {"path": str(args.stock_selection), "sha256": _sha256(args.stock_selection)},
             "active_coordinate_manifest": {"path": str(args.active_coordinate_manifest), "sha256": _sha256(args.active_coordinate_manifest)},
             "shard_root": str(args.shard_root),
+            "chip_sidecar": chip_input,
         },
         "artifacts": {
             "base_panel": {"path": str(base_path), "sha256": _sha256(base_path)},
@@ -355,6 +430,8 @@ def parser() -> argparse.ArgumentParser:
     prep.add_argument("--stock-selection", type=Path, required=True)
     prep.add_argument("--active-coordinate-manifest", type=Path, required=True)
     prep.add_argument("--session-context-fields", type=Path, required=True)
+    prep.add_argument("--chip-root", type=Path)
+    prep.add_argument("--maximum-observable-time")
     prep.add_argument("--output-root", type=Path, required=True)
     prep.set_defaults(func=prepare)
 
