@@ -51,6 +51,53 @@ def _state_root_is_constructible(field: CapabilityField) -> bool:
     return bool(expression) and expression.count("(") <= 1
 
 
+def _root_is_constructible_on_route(
+    route_id: str,
+    field: CapabilityField,
+) -> bool:
+    payload = field.field_role in {"primary", "interaction-only"}
+    if route_id == "MINUTE_STATIC":
+        return payload and field.entity_scope == "STOCK"
+    if route_id == "FIRSTN_PATH":
+        return payload and field.entity_scope == "STOCK" and field.source_family in {
+            "firstN",
+            "raw_1min",
+        }
+    if route_id in {"SLOW_CROSS_SECTIONAL_LEVEL", "SLOW_TEMPORAL_CHANGE"}:
+        return payload and field.entity_scope == "STOCK"
+    if route_id == "DISCLOSURE_EVENT":
+        return (
+            field.entity_scope == "STOCK"
+            and (
+                (
+                    field.field_role == "condition-only"
+                    and field.temporal_semantics == "DISCLOSURE_PULSE"
+                )
+                or (
+                    payload
+                    and field.temporal_semantics
+                    in {"DISCLOSURE_LEVEL_PAYLOAD", "DISCLOSURE_CHANGE_PAYLOAD"}
+                )
+            )
+        )
+    if route_id == "MARKET_REGIME_CONDITION":
+        return (payload and field.entity_scope == "STOCK") or field.entity_scope == "MARKET"
+    if route_id == "INTRADAY_STATE_TRANSITION":
+        return (
+            payload
+            and field.entity_scope == "STOCK"
+            and field.source_family == "raw_1min"
+        ) or (
+            field.field_role == "state-only"
+            and field.entity_scope == "STOCK"
+            and field.temporal_semantics == "INTRADAY_DERIVED_STATE"
+            and _state_root_is_constructible(field)
+        )
+    if route_id == "BROAD_EVENT_FROZEN_ENTRY":
+        return field.source_family == "broad_event_frozen_entry"
+    return False
+
+
 def audit_generator_capacity(
     registry: UnifiedCapabilityRegistry,
     *,
@@ -156,7 +203,9 @@ def audit_generator_capacity(
 
         seen = set(field_counts)
         expected_structural = {
-            field.field_id for field in eligible if _state_root_is_constructible(field)
+            field.field_id
+            for field in eligible
+            if _root_is_constructible_on_route(route_id, field)
         }
         total_attempts = attempt_cap * len(seeds)
         routes[route_id] = {
@@ -324,10 +373,21 @@ def _add_support_roots(
 ) -> dict[str, str]:
     reasons: dict[str, str] = {}
     for field in eligible:
-        if field.field_role in {"condition-only", "state-only"}:
-            if _state_root_is_constructible(field):
-                roots.add(field.field_id)
-                reasons[field.field_id] = "MANDATORY_CONDITION_OR_STATE_ROOT"
+        support_root = (
+            route_id == "DISCLOSURE_EVENT"
+            and field.field_role == "condition-only"
+            and field.temporal_semantics == "DISCLOSURE_PULSE"
+        ) or (
+            route_id == "MARKET_REGIME_CONDITION"
+            and field.entity_scope == "MARKET"
+        ) or (
+            route_id == "INTRADAY_STATE_TRANSITION"
+            and field.field_role == "state-only"
+            and _state_root_is_constructible(field)
+        )
+        if support_root:
+            roots.add(field.field_id)
+            reasons[field.field_id] = "MANDATORY_CONDITION_OR_STATE_ROOT"
         if route_id == "BROAD_EVENT_FROZEN_ENTRY":
             roots.add(field.field_id)
             reasons[field.field_id] = "FROZEN_REFERENCE_ROOT"

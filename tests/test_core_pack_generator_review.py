@@ -48,6 +48,12 @@ def test_capacity_review_is_structural_and_records_registered_depth_gap() -> Non
     assert "state_close_range_location_sign" in review["routes"][
         "INTRADAY_STATE_TRANSITION"
     ]["structurally_unconstructible_root_ids"]
+    assert "fund_disclosure_balance_age_sessions" in review["routes"][
+        "SLOW_CROSS_SECTIONAL_LEVEL"
+    ]["structurally_unconstructible_root_ids"]
+    assert "ctx_hfq_is_st" in review["routes"]["MARKET_REGIME_CONDITION"][
+        "structurally_unconstructible_root_ids"
+    ]
 
 
 def test_frozen_contract_uses_core_plus_support_and_authorizes_nothing() -> None:
@@ -80,6 +86,12 @@ def test_frozen_contract_uses_core_plus_support_and_authorizes_nothing() -> None
         field_id.startswith("plate_")
         for field_id in contract["route_root_allowlists"]["MINUTE_STATIC"]
     )
+    assert "fund_disclosure_balance_age_sessions" not in contract[
+        "route_root_allowlists"
+    ]["SLOW_CROSS_SECTIONAL_LEVEL"]
+    assert "ctx_hfq_is_st" not in contract["route_root_allowlists"][
+        "MARKET_REGIME_CONDITION"
+    ]
     assert all(
         row["all_primary_legal"] and row["all_controls_legal"]
         for row in contract["route_smoke_validation"].values()
