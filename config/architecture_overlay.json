@@ -61,6 +61,48 @@
       }
     },
     {
+      "id": "cn_field_master_registry",
+      "label": "CN complete field universe authority",
+      "kind": "authority",
+      "lifecycle": "ACTIVE",
+      "paths": [
+        "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.csv",
+        "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
+        "scripts/build_cn_field_master_registry.py"
+      ],
+      "critical": true,
+      "active_authority": true,
+      "semantic_role": "complete_field_universe_authority",
+      "authority": {
+        "path": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
+        "verified_sha": "8774de474906f73c8050e139638434a8e0a1f243"
+      },
+      "contracts": [
+        {
+          "id": "complete_field_universe_required",
+          "type": "AUTHORITY",
+          "rule": "The complete CN field inventory includes raw/fabric fields, PIT fundamental sources and representations, chip sidecar fields, plate market fields, PIT membership metadata and true1min plate aggregates; the historical 121-field registry is an input, not the total-table authority.",
+          "severity": "HARD",
+          "enforced_by": "build_cn_field_master_registry",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "inventory_not_search_authorization",
+          "type": "BOUNDARY",
+          "rule": "Presence in the field master inventory does not authorize generator exposure; route eligibility remains controlled by the unified capability registry.",
+          "severity": "HARD",
+          "enforced_by": "UnifiedCapabilityRegistry",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "tests/test_cn_field_master_registry.py",
+        "verified_at_sha": "8774de474906f73c8050e139638434a8e0a1f243"
+      }
+    },
+    {
       "id": "unified_capability_registry",
       "label": "Unified capability and route authority",
       "kind": "authority",
@@ -570,6 +612,16 @@
     {"id": "temporal_to_lanes", "source": "typed_temporal_program", "target": "hypothesis_lanes", "relation": "types_temporal_lane", "lifecycle": "ACTIVE"},
     {"id": "event_to_lanes", "source": "broad_event_system", "target": "hypothesis_lanes", "relation": "types_event_lane", "lifecycle": "ACTIVE"},
     {
+      "id": "field_master_to_route_registry",
+      "source": "cn_field_master_registry",
+      "target": "unified_capability_registry",
+      "relation": "supplies_complete_inventory_for_typed_route_qualification",
+      "lifecycle": "ACTIVE",
+      "critical": true,
+      "contract": {"id": "inventory_and_route_authority_separated", "type": "AUTHORITY", "rule": "The field master is authoritative for existence and status; the unified capability registry is authoritative for generator and route eligibility.", "severity": "HARD", "enforced_by": "build_cn_field_master_registry and UnifiedCapabilityRegistry", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json", "verified_at_sha": "8774de474906f73c8050e139638434a8e0a1f243"}
+    },
+    {
       "id": "registry_to_receipt",
       "source": "unified_capability_registry",
       "target": "candidate_submission_receipt",
@@ -694,6 +746,7 @@
   ],
   "semantic_authorities": [
     {"semantic_role": "split_authority", "authoritative_component": "fixed_split_authority"},
+    {"semantic_role": "complete_field_universe_authority", "authoritative_component": "cn_field_master_registry"},
     {"semantic_role": "field_route_authority", "authoritative_component": "unified_capability_registry"},
     {"semantic_role": "pit_fundamental_observable_episode_authority", "authoritative_component": "pit_fundamental_fabric"},
     {"semantic_role": "candidate_identity_authority", "authoritative_component": "candidate_submission_receipt"},

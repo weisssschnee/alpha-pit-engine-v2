@@ -211,6 +211,40 @@
       "color": "#2e7d32",
       "contract": {
         "bypass_forbidden": true,
+        "enforced_by": "build_cn_field_master_registry and UnifiedCapabilityRegistry",
+        "evidence_ref": "",
+        "id": "inventory_and_route_authority_separated",
+        "rule": "The field master is authoritative for existence and status; the unified capability registry is authoritative for generator and route eligibility.",
+        "severity": "HARD",
+        "type": "AUTHORITY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "field_master_to_route_registry",
+      "lifecycle": "ACTIVE",
+      "line_style": "dotted",
+      "relation": "supplies_complete_inventory_for_typed_route_qualification",
+      "required": false,
+      "source": "cn_field_master_registry",
+      "target": "unified_capability_registry",
+      "validation": {
+        "checked_at": "2026-07-17T03:06:20.461335+00:00",
+        "evidence_ref": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
+        "evidence_sha256": "C20EF262604694FD78BA0C8B33FCEB5C9115C722C7CFEC64C1ED0D56BEBE9F3F",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "8774de474906f73c8050e139638434a8e0a1f243"
+      }
+    },
+    {
+      "color": "#2e7d32",
+      "contract": {
+        "bypass_forbidden": true,
         "enforced_by": "candidate_submission_receipt_gate",
         "evidence_ref": "",
         "id": "registered_candidate_only",
@@ -898,7 +932,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-17T02:46:36.024701+00:00",
+  "generated_at": "2026-07-17T03:06:20.461335+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1010,6 +1044,70 @@
         "profile": "",
         "result": "PASS",
         "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+      },
+      "visible_by_default": true
+    },
+    {
+      "active_authority": true,
+      "authority": {
+        "path": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
+        "repo_ref": "",
+        "sha256": "C20EF262604694FD78BA0C8B33FCEB5C9115C722C7CFEC64C1ED0D56BEBE9F3F",
+        "verified_sha": "8774de474906f73c8050e139638434a8e0a1f243"
+      },
+      "color": "#2e7d32",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "build_cn_field_master_registry",
+          "evidence_ref": "",
+          "id": "complete_field_universe_required",
+          "rule": "The complete CN field inventory includes raw/fabric fields, PIT fundamental sources and representations, chip sidecar fields, plate market fields, PIT membership metadata and true1min plate aggregates; the historical 121-field registry is an input, not the total-table authority.",
+          "severity": "HARD",
+          "type": "AUTHORITY"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "UnifiedCapabilityRegistry",
+          "evidence_ref": "",
+          "id": "inventory_not_search_authorization",
+          "rule": "Presence in the field master inventory does not authorize generator exposure; route eligibility remains controlled by the unified capability registry.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        }
+      ],
+      "critical": true,
+      "evidence": "STATIC",
+      "expires_at": "",
+      "id": "cn_field_master_registry",
+      "kind": "authority",
+      "label": "CN complete field universe authority",
+      "lifecycle": "ACTIVE",
+      "owner": "",
+      "paths": [
+        "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.csv",
+        "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
+        "scripts/build_cn_field_master_registry.py"
+      ],
+      "promotion_requirements": [],
+      "raw_node_ids": [
+        "scripts_build_cn_field_master_registry",
+        "scripts_build_cn_field_master_registry_build",
+        "scripts_build_cn_field_master_registry_normalized",
+        "scripts_build_cn_field_master_registry_rationale_1",
+        "scripts_build_cn_field_master_registry_text"
+      ],
+      "required": false,
+      "semantic_role": "complete_field_universe_authority",
+      "validation": {
+        "checked_at": "2026-07-17T03:06:20.461335+00:00",
+        "evidence_ref": "tests/test_cn_field_master_registry.py",
+        "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "8774de474906f73c8050e139638434a8e0a1f243"
       },
       "visible_by_default": true
     },
@@ -2058,12 +2156,14 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
+        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -2080,7 +2180,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-17T02:46:36.024701+00:00",
+        "checked_at": "2026-07-17T03:06:20.461335+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2126,12 +2226,14 @@
         "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
         "src_our_system_phase2_services_evaluation_access_guard_has_reward",
         "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_py_any",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_111",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_34",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
         "src_our_system_phase2_services_evaluation_access_guard_rationale_65",
         "tests_test_evaluation_access_guard",
+        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -2148,7 +2250,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-17T02:46:36.024701+00:00",
+        "checked_at": "2026-07-17T03:06:20.461335+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -2348,25 +2450,25 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "18EC37174EDDD480114F6399E4AD9FF093DC4F0ACC5A9203EA147D5634D2C47A"
+    "sha256": "882AFD52D3ACC176950C2986D0482A4A13BD69043BF68F3451D342E3E331D29F"
   },
   "profile_id": null,
   "profiles": [],
   "raw": {
-    "built_at_commit": "1cfdf640ec30b9072410558d01da7618cbe684ac",
-    "edge_count": 8568,
-    "node_count": 3739,
+    "built_at_commit": "8774de474906f73c8050e139638434a8e0a1f243",
+    "edge_count": 8583,
+    "node_count": 3748,
     "path": ".planning/graphs/graph.json",
-    "sha256": "20C54CFD3E3BC899F1422682850E3310E03C8310CF35A293513D51D876BDEAE0"
+    "sha256": "2453CE16537B5E9EAAD7AF3B126D9D1DD081CA6F1149F3CB6FF0621C33388BCB"
   },
-  "repo_head": "1cfdf640ec30b9072410558d01da7618cbe684ac",
+  "repo_head": "8774de474906f73c8050e139638434a8e0a1f243",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 28,
-    "current_nodes": 22,
+    "current_edges": 29,
+    "current_nodes": 23,
     "errors": 0,
     "runtime_edges": 0,
     "runtime_nodes": 0,
