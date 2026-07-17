@@ -121,6 +121,40 @@ def compile_tokens(
     return sorted(tokens, key=lambda row: row["field_token_id"])
 
 
+def apply_information_census(
+    tokens: Iterable[dict[str, Any]],
+    *,
+    metrics: Iterable[dict[str, Any]],
+    core_pack: dict[str, Any],
+    evidence_path: Path,
+) -> list[dict[str, Any]]:
+    """Attach non-performance census evidence without changing route authority."""
+    metric_by_field = {str(row["field_id"]): row for row in metrics}
+    selected = set(str(field) for field in core_pack.get("selected_field_ids", []))
+    output: list[dict[str, Any]] = []
+    evidence_hash = file_sha256(evidence_path)
+    for source in tokens:
+        row = dict(source)
+        metric = metric_by_field.get(str(row["field_id"]))
+        if metric is not None:
+            qualified = (
+                float(metric["coverage"]) >= 0.60
+                and int(metric["sample_unique"]) >= 32
+                and float(metric["temporal_change_rate"]) >= 0.01
+            )
+            row.update(
+                information_qualified=qualified,
+                core_pack_selected=str(row["field_id"]) in selected,
+                information_status=(
+                    "INFORMATION_CENSUS_QUALIFIED" if qualified else "INFORMATION_CENSUS_LOW_INFORMATION"
+                ),
+                information_evidence_path=evidence_path.as_posix(),
+                information_evidence_sha256=evidence_hash,
+            )
+        output.append(row)
+    return output
+
+
 def summarize(tokens: Iterable[dict[str, Any]]) -> dict[str, Any]:
     rows = list(tokens)
     contexts: dict[str, dict[str, int]] = {}
@@ -133,8 +167,8 @@ def summarize(tokens: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "token_count": len(rows),
         "registry_present_count": sum(row["registry_present"] for row in rows),
         "generator_exposed_count": sum(row["generator_exposed"] for row in rows),
-        "information_qualified_count": 0,
-        "core_pack_selected_count": 0,
+        "information_qualified_count": sum(row["information_qualified"] for row in rows),
+        "core_pack_selected_count": sum(row["core_pack_selected"] for row in rows),
         "contexts": contexts,
         "performance_or_reward_used": False,
         "validation_accessed": False,

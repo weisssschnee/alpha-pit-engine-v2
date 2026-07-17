@@ -194,9 +194,16 @@ def main() -> int:
     atomic_json(args.output / "access_ledger.json", access_ledger)
     elapsed = time.perf_counter() - started
     outputs = []
-    for path in sorted(args.output.iterdir()):
-        if path.name in {"run_manifest.json", "artifact_index.json"}:
-            continue
+    primary_names = {
+        "access_ledger.json",
+        "core_pack.json",
+        "field_information_metrics.csv",
+        "field_information_metrics.json",
+        "information_census_contract.json",
+        "pairwise_nmi.csv",
+        "pairwise_nmi.json",
+    }
+    for path in sorted(args.output / name for name in primary_names):
         outputs.append({"path": path.name, "sha256": sha256(path), "size": path.stat().st_size})
     manifest = {
         "status": "CN_CHIP_PLATE_INFORMATION_CENSUS_PARTIALLY_COMPLETED",
@@ -221,4 +228,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
