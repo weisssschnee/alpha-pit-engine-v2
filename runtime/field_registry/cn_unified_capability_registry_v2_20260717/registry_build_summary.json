@@ -7,8 +7,8 @@
   "field_count": 420,
   "fundamental_source_field_count": 1227,
   "fundamental_unit_qualified_count": 42,
-  "registry_hash": "e1d759e863c6c9d468ba31a0fc6f66dbdc9159b59785e3708c68adea6759a20e",
-  "repo_sha": "WORKTREE_PENDING",
+  "registry_hash": "e93d722f2d93840ae553c0c3ccc8d2e36bf0a50e9daa5ab00c85b82b2fa791cb",
+  "repo_sha": "098139ca1bfac1735a10310d8ad4432456f824ed",
   "route_eligible_counts": {
     "BROAD_EVENT_FROZEN_ENTRY": 11,
     "DISCLOSURE_EVENT": 142,

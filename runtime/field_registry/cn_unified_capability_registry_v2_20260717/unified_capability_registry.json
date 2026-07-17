@@ -22047,9 +22047,9 @@
     "validation": "FORBIDDEN",
     "zygc_em": "PIT_CONTRACT_UNRESOLVED"
   },
-  "registry_hash": "e1d759e863c6c9d468ba31a0fc6f66dbdc9159b59785e3708c68adea6759a20e",
+  "registry_hash": "e93d722f2d93840ae553c0c3ccc8d2e36bf0a50e9daa5ab00c85b82b2fa791cb",
   "registry_version": "cn_unified_capability_registry_v1",
-  "repo_sha": "WORKTREE_PENDING",
+  "repo_sha": "098139ca1bfac1735a10310d8ad4432456f824ed",
   "routes": [
     {
       "allowed_operator_families": [
