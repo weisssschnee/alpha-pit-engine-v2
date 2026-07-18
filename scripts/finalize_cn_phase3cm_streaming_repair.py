@@ -186,7 +186,21 @@ def _combined_summary(root: Path, receipt_name: str) -> dict[str, Any]:
         "global_peak_rss_bytes": int(receipt["global_peak_rss_bytes"]),
         "global_hard_rss_bytes": int(receipt["global_hard_rss_bytes"]),
         "heavy_processes": int(receipt["heavy_processes"]),
-        "compute_threads_per_process": int(receipt["compute_threads_per_process"]),
+        "compute_threads_per_process": (
+            int(receipt["compute_threads_per_process"])
+            if receipt.get("compute_threads_per_process") is not None
+            else None
+        ),
+        "compute_threads_by_backend": {
+            str(key): int(value)
+            for key, value in (
+                receipt.get("compute_threads_by_backend")
+                or {
+                    "active_bar": receipt["compute_threads_per_process"],
+                    "stock_session": receipt["compute_threads_per_process"],
+                }
+            ).items()
+        },
         "global_active_native_compute_threads": int(receipt["global_active_native_compute_threads"]),
         "qualification_repo_sha": receipt.get("combined_contract_repo_sha"),
         "pair_count": active["pair_count"] + session["pair_count"],

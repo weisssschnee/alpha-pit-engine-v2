@@ -13,6 +13,13 @@ $Failure = $null
 try {
     $Command = Get-Content -LiteralPath $ArgumentFile -Raw | ConvertFrom-Json
     $Arguments = @($Command.arguments | ForEach-Object { [string]$_ })
+    foreach ($Property in $Command.thread_environment.PSObject.Properties) {
+        [Environment]::SetEnvironmentVariable(
+            [string]$Property.Name,
+            [string]$Property.Value,
+            "Process"
+        )
+    }
     Push-Location $RepoRoot
     try {
         & $PythonExe @Arguments

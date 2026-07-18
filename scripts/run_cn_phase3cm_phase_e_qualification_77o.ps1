@@ -33,9 +33,8 @@ if ($ActivePairCount -le 0 -or $SessionPairCount -le 0 -or $TotalPairCount -le 0
 }
 if ($WallSecondsHardMax -lt 0.0) { throw "wall-seconds hard maximum cannot be negative" }
 
-$ComputeThreads = [int]$Contract.compute_threads_per_process
 $env:PYTHONPATH = Join-Path $RepoRoot "src"
-$env:NUMBA_NUM_THREADS = [string]$ComputeThreads
+$env:NUMBA_NUM_THREADS = "1"
 $env:ARROW_NUM_THREADS = "1"
 $env:OMP_NUM_THREADS = "1"
 $env:MKL_NUM_THREADS = "1"
@@ -70,7 +69,10 @@ function New-BackendArguments {
         [string]$FieldRoot,
         [string]$LabelRoot,
         [string]$OutputRoot,
-        [string]$ExecutionPlan
+        [string]$ExecutionPlan,
+        [int]$BlockSessions,
+        [int]$PairBatchSize,
+        [int]$ComputeThreads
     )
     $Arguments = @(
         "scripts\run_cn_phase3cm_streaming_qualification.py",
@@ -85,8 +87,8 @@ function New-BackendArguments {
         "--label-sidecar-root", $LabelRoot,
         "--output-root", $OutputRoot,
         "--execution-plan", $ExecutionPlan,
-        "--block-sessions", "10",
-        "--pair-batch-size", "4",
+        "--block-sessions", [string]$BlockSessions,
+        "--pair-batch-size", [string]$PairBatchSize,
         "--compute-threads", [string]$ComputeThreads
     )
     if ($Resume) { $Arguments += "--resume" }
@@ -96,6 +98,15 @@ function New-BackendArguments {
 $ActiveRoot = Join-Path $RunRoot "active_bar"
 $SessionRoot = Join-Path $RunRoot "stock_session"
 New-Item -ItemType Directory -Force -Path $ActiveRoot,$SessionRoot | Out-Null
+$ActivePlan = Get-Content -LiteralPath ([string]$Contract.plans.active_bar.path) -Raw | ConvertFrom-Json
+$SessionPlan = Get-Content -LiteralPath ([string]$Contract.plans.stock_session.path) -Raw | ConvertFrom-Json
+$ActiveComputeThreads = [int]$ActivePlan.compute_threads
+$SessionComputeThreads = [int]$SessionPlan.compute_threads
+if ($ActiveComputeThreads + $SessionComputeThreads -ne [int]$Contract.global_active_native_compute_threads) {
+    throw "combined native thread total drifts from backend plans"
+}
+$ActivePairBatchSize = [int](($ActivePlan.pair_batches | ForEach-Object { @($_).Count } | Measure-Object -Maximum).Maximum)
+$SessionPairBatchSize = [int](($SessionPlan.pair_batches | ForEach-Object { @($_).Count } | Measure-Object -Maximum).Maximum)
 $ActiveArgs = New-BackendArguments `
     -Backend "active_bar" `
     -PairCount $ActivePairCount `
@@ -103,7 +114,10 @@ $ActiveArgs = New-BackendArguments `
     -FieldRoot $ActiveFieldRoot `
     -LabelRoot $ActiveLabelRoot `
     -OutputRoot $ActiveRoot `
-    -ExecutionPlan ([string]$Contract.plans.active_bar.path)
+    -ExecutionPlan ([string]$Contract.plans.active_bar.path) `
+    -BlockSessions ([int]$ActivePlan.block_size) `
+    -PairBatchSize $ActivePairBatchSize `
+    -ComputeThreads $ActiveComputeThreads
 $SessionArgs = New-BackendArguments `
     -Backend "stock_session" `
     -PairCount $SessionPairCount `
@@ -111,23 +125,30 @@ $SessionArgs = New-BackendArguments `
     -FieldRoot $SessionFieldRoot `
     -LabelRoot $SessionLabelRoot `
     -OutputRoot $SessionRoot `
-    -ExecutionPlan ([string]$Contract.plans.stock_session.path)
+    -ExecutionPlan ([string]$Contract.plans.stock_session.path) `
+    -BlockSessions ([int]$SessionPlan.block_size) `
+    -PairBatchSize $SessionPairBatchSize `
+    -ComputeThreads $SessionComputeThreads
 
 $ActiveCommandPath = Join-Path $ActiveRoot "CN_BACKEND_COMMAND.json"
 $SessionCommandPath = Join-Path $SessionRoot "CN_BACKEND_COMMAND.json"
 $ActiveExitReceiptPath = Join-Path $ActiveRoot "CN_BACKEND_EXIT_RECEIPT.json"
 $SessionExitReceiptPath = Join-Path $SessionRoot "CN_BACKEND_EXIT_RECEIPT.json"
-$ThreadEnvironment = [ordered]@{
-    NUMBA_NUM_THREADS = $env:NUMBA_NUM_THREADS
+function New-BackendThreadEnvironment([int]$ComputeThreads) {
+    return [ordered]@{
+    NUMBA_NUM_THREADS = [string]$ComputeThreads
     ARROW_NUM_THREADS = $env:ARROW_NUM_THREADS
     OMP_NUM_THREADS = $env:OMP_NUM_THREADS
     MKL_NUM_THREADS = $env:MKL_NUM_THREADS
     OPENBLAS_NUM_THREADS = $env:OPENBLAS_NUM_THREADS
     NUMEXPR_MAX_THREADS = $env:NUMEXPR_MAX_THREADS
     POLARS_MAX_THREADS = $env:POLARS_MAX_THREADS
+    }
 }
-Write-CnAtomicJson -Path $ActiveCommandPath -Payload ([ordered]@{ schema_version = "cn_phase3cm_backend_command_v1"; backend = "active_bar"; arguments = $ActiveArgs; thread_environment = $ThreadEnvironment })
-Write-CnAtomicJson -Path $SessionCommandPath -Payload ([ordered]@{ schema_version = "cn_phase3cm_backend_command_v1"; backend = "stock_session"; arguments = $SessionArgs; thread_environment = $ThreadEnvironment })
+$ActiveThreadEnvironment = New-BackendThreadEnvironment $ActiveComputeThreads
+$SessionThreadEnvironment = New-BackendThreadEnvironment $SessionComputeThreads
+Write-CnAtomicJson -Path $ActiveCommandPath -Payload ([ordered]@{ schema_version = "cn_phase3cm_backend_command_v1"; backend = "active_bar"; arguments = $ActiveArgs; thread_environment = $ActiveThreadEnvironment })
+Write-CnAtomicJson -Path $SessionCommandPath -Payload ([ordered]@{ schema_version = "cn_phase3cm_backend_command_v1"; backend = "stock_session"; arguments = $SessionArgs; thread_environment = $SessionThreadEnvironment })
 $Wrapper = Join-Path $RepoRoot "scripts\invoke_cn_phase3cm_backend_with_exit_receipt.ps1"
 $PowerShellExe = (Get-Command powershell.exe).Source
 $RssTimelinePath = Join-Path $RunRoot "CN_GLOBAL_PROCESS_TREE_RSS_TIMELINE.csv"
@@ -152,7 +173,6 @@ $Session = Start-Process -FilePath $PowerShellExe -ArgumentList @(
     -WindowStyle Hidden -PassThru
 $Processes = @($Active, $Session)
 $GlobalPeakRss = [int64]0
-$ActivePlan = Get-Content -LiteralPath ([string]$Contract.plans.active_bar.path) -Raw | ConvertFrom-Json
 $GlobalHardRss = [int64]$ActivePlan.global_rss_hard_bytes
 $GlobalGateFailure = $false
 $RssSampleCount = 0
@@ -238,8 +258,9 @@ $Receipt = [ordered]@{
     rss_timeline = $RssTimelinePath
     rss_timeline_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $RssTimelinePath).Hash.ToLowerInvariant()
     heavy_processes = 2
-    compute_threads_per_process = $ComputeThreads
-    global_active_native_compute_threads = 2 * $ComputeThreads
+    compute_threads_per_process = if ($ActiveComputeThreads -eq $SessionComputeThreads) { $ActiveComputeThreads } else { $null }
+    compute_threads_by_backend = @{ active_bar = $ActiveComputeThreads; stock_session = $SessionComputeThreads }
+    global_active_native_compute_threads = $ActiveComputeThreads + $SessionComputeThreads
     active_result = $ActiveResultPath
     session_result = $SessionResultPath
     active_exit_receipt = $ActiveExitReceiptPath

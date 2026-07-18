@@ -80,11 +80,9 @@ def main() -> int:
     session_source = _load_plan(args.session_phase_d_plan.resolve())
     if active_source.block_boundaries != session_source.block_boundaries:
         raise ValueError("active and session Phase D calendar blocks drift")
-    if active_source.compute_threads != session_source.compute_threads:
-        raise ValueError("active and session Phase D compute-thread counts drift")
     if int(args.pair_batch_size) <= 0:
         raise ValueError("pair batch size must be positive")
-    if int(args.heavy_processes) * active_source.compute_threads > 24:
+    if active_source.compute_threads + session_source.compute_threads > 24:
         raise ValueError("global native compute thread budget exceeds 24")
 
     binding_path = args.binding.resolve()
@@ -140,11 +138,22 @@ def main() -> int:
         "input_binding_hash": str(binding["binding_hash"]),
         "input_binding_sha256": _sha256(binding_path),
         "heavy_processes": int(args.heavy_processes),
-        "compute_threads_per_process": active.compute_threads,
-        "global_active_native_compute_threads": int(args.heavy_processes)
-        * active.compute_threads,
+        "compute_threads_per_process": (
+            active.compute_threads
+            if active.compute_threads == session.compute_threads
+            else None
+        ),
+        "compute_threads_by_backend": {
+            "active_bar": active.compute_threads,
+            "stock_session": session.compute_threads,
+        },
+        "global_active_native_compute_threads": active.compute_threads
+        + session.compute_threads,
         "primary_thread_pool": active.primary_thread_pool,
-        "thread_environment": active.thread_environment,
+        "thread_environment_by_backend": {
+            "active_bar": active.thread_environment,
+            "stock_session": session.thread_environment,
+        },
         "adaptation": "FORBIDDEN",
         "resource_gate_action": "FAIL_CLOSED_NO_PLAN_CHANGE",
         "plans": {
@@ -154,6 +163,7 @@ def main() -> int:
                 "execution_plan_hash": active.execution_plan_hash,
                 "source_phase_d_execution_plan_hash": active_source.execution_plan_hash,
                 "source_phase_d_pair_count": sum(map(len, active_source.pair_batches)),
+                "compute_threads": active.compute_threads,
                 "sha256": _sha256(active_path),
             },
             "stock_session": {
@@ -162,6 +172,7 @@ def main() -> int:
                 "execution_plan_hash": session.execution_plan_hash,
                 "source_phase_d_execution_plan_hash": session_source.execution_plan_hash,
                 "source_phase_d_pair_count": sum(map(len, session_source.pair_batches)),
+                "compute_threads": session.compute_threads,
                 "sha256": _sha256(session_path),
             },
         },
