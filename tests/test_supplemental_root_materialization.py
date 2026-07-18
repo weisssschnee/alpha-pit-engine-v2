@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from argparse import Namespace
 from dataclasses import replace
@@ -461,6 +462,49 @@ def test_session_panel_materializes_age_and_emits_panel_bound_receipt(
     )
     base_path = tmp_path / "base.parquet"
     base.to_parquet(base_path, index=False)
+    split_sha256 = hashlib.sha256(split.read_bytes()).hexdigest()
+    sidecar_authority = tmp_path / "CN_SESSION_SIDECAR_AUGMENTATION_MANIFEST.json"
+    sidecar_payload = {
+        "schema_version": "cn_phase3cm_session_sidecar_augmentation_manifest_v1",
+        "status": "SESSION_SIDECAR_AUGMENTATION_PARITY_PASS",
+        "row_count": len(base),
+        "shard_count": 1,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    sidecar_authority.write_text(json.dumps(sidecar_payload), encoding="utf-8")
+    base_manifest = tmp_path / "session_signal_base_manifest.json"
+    base_manifest_payload = {
+        "schema_version": "cn_full_development_session_coordinate_base_v1",
+        "status": "FULL_DEVELOPMENT_SESSION_BASE_PREPARED",
+        "data_role": "development_train_only",
+        "labels_or_returns_read": False,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "development_session_count": 3,
+        "stock_count": 1,
+        "base_panel_rows": len(base),
+        "coordinate_unique": True,
+        "inputs": {
+            "session_sidecar_manifest": {
+                "path": str(sidecar_authority.resolve()),
+                "sha256": hashlib.sha256(sidecar_authority.read_bytes()).hexdigest(),
+            },
+            "split_manifest": {
+                "path": str(split.resolve()),
+                "sha256": split_sha256,
+            },
+        },
+        "artifacts": {
+            "base_panel": {
+                "path": str(base_path.resolve()),
+                "sha256": hashlib.sha256(base_path.read_bytes()).hexdigest(),
+            }
+        },
+    }
+    base_manifest.write_text(json.dumps(base_manifest_payload), encoding="utf-8")
     registry = _registry()
     input_manifest = tmp_path / "input_manifest.json"
     input_manifest.write_text(
@@ -473,11 +517,22 @@ def test_session_panel_materializes_age_and_emits_panel_bound_receipt(
         encoding="utf-8",
     )
     fundamental_manifest = tmp_path / "pit_sidecar_manifest.json"
-    fundamental_manifest.write_text('{"manifest_version":"fixture"}', encoding="utf-8")
+    fundamental_manifest.write_text(
+        json.dumps(
+            {
+                "manifest_version": "fixture",
+                "source_root": str(source_root.resolve()),
+                "split_manifest_sha256": split_sha256,
+                "development_maximum_observable_time": "2024-04-23 15:00",
+            }
+        ),
+        encoding="utf-8",
+    )
     cache_root = tmp_path / "cache"
     result = materialize_session_panel(
         Namespace(
             base_panel=base_path,
+            base_manifest=base_manifest,
             split_manifest=split,
             registry=REGISTRY_PATH,
             input_manifest=input_manifest,
@@ -493,6 +548,14 @@ def test_session_panel_materializes_age_and_emits_panel_bound_receipt(
     materialized = pd.read_parquet(cache_root / f"{field_id}.parquet")
     assert np.isnan(materialized[field_id].iloc[0])
     assert materialized[field_id].iloc[1:].tolist() == [0.0, 1.0]
+    cache_receipt = json.loads(
+        (
+            cache_root / f"{field_id}.materialization_support_receipt.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert cache_receipt["source_binding"]["fundamental_root"] == str(
+        source_root.resolve()
+    )
 
     coordinates = tmp_path / "coordinates.csv"
     pd.DataFrame(
@@ -508,6 +571,7 @@ def test_session_panel_materializes_age_and_emits_panel_bound_receipt(
         assemble_session_panel(
             Namespace(
                 base_panel=base_path,
+                base_manifest=base_manifest,
                 coordinate_manifest=coordinates,
                 input_manifest=input_manifest,
                 cache_root=cache_root,
@@ -554,6 +618,7 @@ def test_session_panel_materializes_age_and_emits_panel_bound_receipt(
         assemble_session_panel(
             Namespace(
                 base_panel=base_path,
+                base_manifest=base_manifest,
                 coordinate_manifest=None,
                 input_manifest=input_manifest,
                 cache_root=cache_root,
@@ -576,3 +641,71 @@ def test_session_panel_materializes_age_and_emits_panel_bound_receipt(
     assert not (
         full_authority_root / "signal_sketch_coordinate_manifest.csv"
     ).exists()
+
+    mismatched_manifest = tmp_path / "mismatched_pit_sidecar_manifest.json"
+    mismatched_manifest.write_text(
+        json.dumps(
+            {
+                "source_root": str((tmp_path / "other_source").resolve()),
+                "split_manifest_sha256": split_sha256,
+                "development_maximum_observable_time": "2024-04-23 15:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="source_root differs"):
+        assemble_session_panel(
+            Namespace(
+                base_panel=base_path,
+                base_manifest=base_manifest,
+                coordinate_manifest=None,
+                input_manifest=input_manifest,
+                cache_root=cache_root,
+                output_root=tmp_path / "mismatched_assembly",
+                source_release=tmp_path / "source_release.json",
+                fundamental_root=source_root,
+                fundamental_manifest=mismatched_manifest,
+                split_manifest=split,
+                maximum_observable_time="2024-04-23 15:00",
+            )
+        )
+
+    sparse_sidecar_authority = tmp_path / "sparse_sidecar_authority.json"
+    sparse_sidecar_authority.write_text(
+        json.dumps({**sidecar_payload, "row_count": len(base) + 1}),
+        encoding="utf-8",
+    )
+    sparse_base_manifest = tmp_path / "sparse_base_manifest.json"
+    sparse_base_manifest.write_text(
+        json.dumps(
+            {
+                **base_manifest_payload,
+                "inputs": {
+                    **base_manifest_payload["inputs"],
+                    "session_sidecar_manifest": {
+                        "path": str(sparse_sidecar_authority.resolve()),
+                        "sha256": hashlib.sha256(
+                            sparse_sidecar_authority.read_bytes()
+                        ).hexdigest(),
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="row count differs from sidecar authority"):
+        materialize_session_panel(
+            Namespace(
+                base_panel=base_path,
+                base_manifest=sparse_base_manifest,
+                split_manifest=split,
+                registry=REGISTRY_PATH,
+                input_manifest=input_manifest,
+                fundamental_root=source_root,
+                fundamental_manifest=fundamental_manifest,
+                maximum_observable_time="2024-04-23 15:00",
+                cache_root=tmp_path / "sparse_cache",
+                partition_index=0,
+                partition_count=1,
+            )
+        )

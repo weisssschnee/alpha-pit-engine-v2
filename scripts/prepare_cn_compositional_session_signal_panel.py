@@ -90,6 +90,44 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _verify_fundamental_source_binding(
+    manifest_path: Path,
+    fundamental_root: Path,
+    *,
+    split_manifest: Path,
+    maximum_observable_time: str,
+) -> dict[str, str]:
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    declared = str(payload.get("source_root") or "").strip()
+    if not declared:
+        raise ValueError("fundamental manifest lacks source_root")
+    declared_path = Path(declared)
+    if not declared_path.is_absolute():
+        declared_path = manifest_path.parent / declared_path
+    declared_identity = os.path.normcase(str(declared_path.resolve()))
+    observed_identity = os.path.normcase(str(fundamental_root.resolve()))
+    if declared_identity != observed_identity:
+        raise ValueError("fundamental manifest source_root differs from requested root")
+    split_sha256 = _sha256(split_manifest)
+    if str(payload.get("split_manifest_sha256") or "") != split_sha256:
+        raise ValueError("fundamental manifest split differs from requested split")
+    declared_maximum = pd.Timestamp(
+        str(payload.get("development_maximum_observable_time") or "")
+    )
+    requested_maximum = pd.Timestamp(maximum_observable_time)
+    if declared_maximum != requested_maximum:
+        raise ValueError(
+            "fundamental manifest maximum observable time differs from request"
+        )
+    return {
+        "fundamental_root": str(fundamental_root.resolve()),
+        "fundamental_manifest": str(manifest_path.resolve()),
+        "fundamental_manifest_sha256": _sha256(manifest_path),
+        "split_manifest_sha256": split_sha256,
+        "maximum_observable_time": requested_maximum.isoformat(),
+    }
+
+
 def _development_sessions(path: Path) -> pd.DatetimeIndex:
     rows = _read_csv(path)
     values = [pd.Timestamp(row["trade_date"]) for row in rows if row.get("split") == "train"]
@@ -118,6 +156,95 @@ def _required_zero_access(payload: Mapping[str, Any]) -> None:
             raise PermissionError(
                 f"session sidecar manifest must record exact integer zero for {key}"
             )
+
+
+def _verify_full_development_base_binding(
+    base_panel: Path, base_manifest: Path, split_manifest: Path
+) -> dict[str, Any]:
+    payload = json.loads(base_manifest.read_text(encoding="utf-8"))
+    if (
+        payload.get("schema_version")
+        != "cn_full_development_session_coordinate_base_v1"
+        or payload.get("status") != "FULL_DEVELOPMENT_SESSION_BASE_PREPARED"
+        or payload.get("data_role") != "development_train_only"
+    ):
+        raise PermissionError("session base lacks full-development authority")
+    if payload.get("labels_or_returns_read") is not False:
+        raise PermissionError("session base does not prove label-free preparation")
+    _required_zero_access(payload)
+    if payload.get("coordinate_unique") is not True:
+        raise ValueError("session base does not assert unique coordinates")
+
+    artifacts = payload.get("artifacts")
+    inputs = payload.get("inputs")
+    if not isinstance(artifacts, Mapping) or not isinstance(inputs, Mapping):
+        raise ValueError("session base binding is incomplete")
+    artifact = artifacts.get("base_panel")
+    split = inputs.get("split_manifest")
+    source = inputs.get("session_sidecar_manifest")
+    if not all(isinstance(value, Mapping) for value in (artifact, split, source)):
+        raise ValueError("session base source bindings are incomplete")
+
+    observed_base = base_panel.resolve()
+    declared_base = Path(str(artifact.get("path") or "")).resolve()
+    if observed_base != declared_base:
+        raise ValueError("session base manifest points to a different panel")
+    base_sha256 = _sha256(observed_base)
+    if str(artifact.get("sha256") or "") != base_sha256:
+        raise ValueError("session base panel hash drift")
+    parquet_rows = int(pq.ParquetFile(observed_base).metadata.num_rows)
+    if type(payload.get("base_panel_rows")) is not int or int(
+        payload["base_panel_rows"]
+    ) != parquet_rows:
+        raise ValueError("session base panel row count drift")
+    if type(payload.get("stock_count")) is not int or int(payload["stock_count"]) <= 0:
+        raise ValueError("session base stock count is invalid")
+
+    split_sha256 = _sha256(split_manifest)
+    if (
+        str(split.get("sha256") or "") != split_sha256
+        or Path(str(split.get("path") or "")).resolve() != split_manifest.resolve()
+    ):
+        raise ValueError("session base split binding drift")
+    sessions = _development_sessions(split_manifest)
+    if type(payload.get("development_session_count")) is not int or int(
+        payload["development_session_count"]
+    ) != len(sessions):
+        raise ValueError("session base development calendar drift")
+
+    source_path = Path(str(source.get("path") or "")).resolve()
+    if not source_path.is_file():
+        raise FileNotFoundError(source_path)
+    source_sha256 = _sha256(source_path)
+    if str(source.get("sha256") or "") != source_sha256:
+        raise ValueError("session sidecar authority hash drift")
+    source_payload = json.loads(source_path.read_text(encoding="utf-8-sig"))
+    if (
+        source_payload.get("schema_version")
+        != "cn_phase3cm_session_sidecar_augmentation_manifest_v1"
+        or source_payload.get("status")
+        != "SESSION_SIDECAR_AUGMENTATION_PARITY_PASS"
+    ):
+        raise PermissionError("session sidecar authority is not parity PASS")
+    _required_zero_access(source_payload)
+    if type(source_payload.get("row_count")) is not int or int(
+        source_payload["row_count"]
+    ) != parquet_rows:
+        raise ValueError("session base row count differs from sidecar authority")
+    if type(source_payload.get("shard_count")) is not int or int(
+        source_payload["shard_count"]
+    ) <= 0:
+        raise ValueError("session sidecar shard authority is invalid")
+    return {
+        "base_manifest": str(base_manifest.resolve()),
+        "base_manifest_sha256": _sha256(base_manifest),
+        "base_panel": str(observed_base),
+        "base_panel_sha256": base_sha256,
+        "base_panel_rows": parquet_rows,
+        "session_sidecar_manifest": str(source_path),
+        "session_sidecar_manifest_sha256": source_sha256,
+        "split_manifest_sha256": split_sha256,
+    }
 
 
 def prepare_sidecar_base(args: argparse.Namespace) -> int:
@@ -437,6 +564,15 @@ def prepare(args: argparse.Namespace) -> int:
 
 
 def materialize(args: argparse.Namespace) -> int:
+    base_source_binding = _verify_full_development_base_binding(
+        args.base_panel, args.base_manifest, args.split_manifest
+    )
+    fundamental_source_binding = _verify_fundamental_source_binding(
+        args.fundamental_manifest,
+        args.fundamental_root,
+        split_manifest=args.split_manifest,
+        maximum_observable_time=args.maximum_observable_time,
+    )
     sessions = _development_sessions(args.split_manifest)
     base = pd.read_parquet(args.base_panel, columns=["code", "session_time"])
     coordinates = base.copy()
@@ -528,6 +664,7 @@ def materialize(args: argparse.Namespace) -> int:
                 ).hexdigest(),
                 "split_manifest_sha256": _sha256(args.split_manifest),
                 "fundamental_manifest_sha256": _sha256(args.fundamental_manifest),
+                "full_development_base": base_source_binding,
             }
             receipt = build_materialization_support_receipt(
                 keep,
@@ -551,12 +688,8 @@ def materialize(args: argparse.Namespace) -> int:
                     "source_table": capability.source_table,
                     "source_field": capability.source_field,
                     "pit_status": capability.pit_status,
-                    "fundamental_manifest": str(args.fundamental_manifest),
-                    "fundamental_manifest_sha256": _sha256(
-                        args.fundamental_manifest
-                    ),
-                    "split_manifest_sha256": _sha256(args.split_manifest),
-                    "maximum_observable_time": str(args.maximum_observable_time),
+                    **base_source_binding,
+                    **fundamental_source_binding,
                 },
             )
             verify_materialization_support_receipt(
@@ -606,6 +739,15 @@ def materialize(args: argparse.Namespace) -> int:
 
 
 def assemble(args: argparse.Namespace) -> int:
+    base_source_binding = _verify_full_development_base_binding(
+        args.base_panel, args.base_manifest, args.split_manifest
+    )
+    fundamental_source_binding = _verify_fundamental_source_binding(
+        args.fundamental_manifest,
+        args.fundamental_root,
+        split_manifest=args.split_manifest,
+        maximum_observable_time=args.maximum_observable_time,
+    )
     base = pd.read_parquet(args.base_panel).sort_values(
         ["code", "trade_time"], kind="mergesort"
     ).reset_index(drop=True)
@@ -641,10 +783,15 @@ def assemble(args: argparse.Namespace) -> int:
                 "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
             ),
         )
-        if receipt["source_binding"].get(
-            "fundamental_manifest_sha256"
-        ) != fundamental_manifest_sha256:
-            raise ValueError(f"fundamental source manifest mismatch: {field_id}")
+        expected_source_binding = {
+            **base_source_binding,
+            **fundamental_source_binding,
+        }
+        if any(
+            receipt["source_binding"].get(key) != value
+            for key, value in expected_source_binding.items()
+        ):
+            raise ValueError(f"full-development source binding mismatch: {field_id}")
         fingerprints = materialization_frame_fingerprints(
             frame, field_id=field_id, row_keys=("code", "session_time")
         )
@@ -685,7 +832,7 @@ def assemble(args: argparse.Namespace) -> int:
             materializer_manifest={
                 "panel_version": SESSION_PANEL_VERSION,
                 "upstream_receipt_hash": upstream["receipt_hash"],
-                "base_panel_sha256": _sha256(args.base_panel),
+                "full_development_base": base_source_binding,
                 "fundamental_manifest_sha256": fundamental_manifest_sha256,
             },
             support_unit=str(upstream["support"]["support_unit"]),
@@ -698,9 +845,8 @@ def assemble(args: argparse.Namespace) -> int:
             },
             source_binding={
                 **dict(upstream.get("source_binding") or {}),
+                **fundamental_source_binding,
                 "upstream_receipt_hash": upstream["receipt_hash"],
-                "split_manifest_sha256": _sha256(args.split_manifest),
-                "maximum_observable_time": str(args.maximum_observable_time),
             },
             evidence_contract={
                 "evidence_role": "FULL_DEVELOPMENT_ROOT_AUTHORITY",
@@ -767,6 +913,8 @@ def assemble(args: argparse.Namespace) -> int:
         "data_role": "development",
         "labels_or_returns_read": False,
         "validation_holdout_forward_read": False,
+        "full_development_base": base_source_binding,
+        "fundamental_source": fundamental_source_binding,
         "panel_rows": len(base),
         "panel_columns": len(base.columns),
         "canonical_fundamental_field_count": len(fields),
@@ -830,6 +978,7 @@ def parser() -> argparse.ArgumentParser:
 
     material = sub.add_parser("materialize")
     material.add_argument("--base-panel", type=Path, required=True)
+    material.add_argument("--base-manifest", type=Path, required=True)
     material.add_argument("--split-manifest", type=Path, required=True)
     material.add_argument("--registry", type=Path, required=True)
     material.add_argument("--input-manifest", type=Path, required=True)
@@ -843,6 +992,7 @@ def parser() -> argparse.ArgumentParser:
 
     assemble_parser = sub.add_parser("assemble")
     assemble_parser.add_argument("--base-panel", type=Path, required=True)
+    assemble_parser.add_argument("--base-manifest", type=Path, required=True)
     assemble_parser.add_argument(
         "--coordinate-manifest",
         type=Path,
