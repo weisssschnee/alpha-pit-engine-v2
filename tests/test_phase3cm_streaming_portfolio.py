@@ -10,9 +10,13 @@ from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit imp
 )
 from our_system_phase2.services.phase3cm_streaming_portfolio import (
     BatchedPortfolioKernel,
+    _filtered_rank_quantile_pair,
     _linear_quantile,
     _linear_quantile_pair,
     _pearson,
+    _prepare_label_orders,
+    _rank_average_with_order,
+    _rank_filtered_returns_from_order,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
@@ -158,6 +162,24 @@ def _float64_bits(value: float) -> np.uint64:
     return np.asarray(value, dtype=np.float64).view(np.uint64).item()
 
 
+def _legacy_rank_average(values: np.ndarray) -> np.ndarray:
+    out = np.full(values.shape, np.nan, dtype=np.float64)
+    positions = np.flatnonzero(np.isfinite(values))
+    if not len(positions):
+        return out
+    valid_values = values[positions]
+    order = np.argsort(valid_values)
+    tie_start = 0
+    while tie_start < len(order):
+        tie_end = tie_start + 1
+        while tie_end < len(order) and valid_values[order[tie_end]] == valid_values[order[tie_start]]:
+            tie_end += 1
+        rank = (((tie_start + 1) + tie_end) / 2.0) / len(order)
+        out[positions[order[tie_start:tie_end]]] = rank
+        tie_start = tie_end
+    return out
+
+
 def test_linear_quantile_pair_is_bit_and_selection_mask_exact() -> None:
     tied_value = np.float64(0.8659217877094972)
     adjacent = np.nextafter(tied_value, np.inf)
@@ -184,6 +206,79 @@ def test_linear_quantile_pair_is_bit_and_selection_mask_exact() -> None:
         np.testing.assert_array_equal(values >= observed_high, values >= expected_high)
 
 
+def test_reused_orders_match_legacy_ranking_and_quantiles_with_nonfinite_values() -> None:
+    rng = np.random.default_rng(20260719)
+    explicit = (
+        np.array([np.nan, np.inf, -np.inf, 0.0, -0.0, 1.0, 1.0]),
+        np.array([2.0, 2.0, 2.0, np.nan, 1.0, 3.0, 3.0]),
+    )
+    cases = list(explicit)
+    for _ in range(20):
+        values = np.round(rng.normal(size=31), 1)
+        values[rng.choice(len(values), size=4, replace=False)] = np.nan
+        values[rng.choice(len(values), size=2, replace=False)] = np.inf
+        cases.append(values)
+
+    for signal in cases:
+        labels = np.round(rng.normal(size=len(signal)), 1)
+        labels[rng.choice(len(labels), size=max(1, len(labels) // 6), replace=False)] = np.nan
+        labels[rng.choice(len(labels), size=1, replace=False)] = -np.inf
+        expected_rank = _legacy_rank_average(signal)
+        observed_rank, signal_order = _rank_average_with_order(signal)
+        np.testing.assert_array_equal(observed_rank, expected_rank)
+        np.testing.assert_array_equal(
+            np.sort(signal_order),
+            np.flatnonzero(np.isfinite(signal)),
+        )
+
+        valid = np.isfinite(signal) & np.isfinite(labels)
+        if not np.any(valid):
+            continue
+        expected_low = _legacy_linear_quantile(expected_rank[valid], 0.2)
+        expected_high = _legacy_linear_quantile(expected_rank[valid], 0.8)
+        observed_low, observed_high = _filtered_rank_quantile_pair(
+            observed_rank,
+            signal_order,
+            labels,
+            int(valid.sum()),
+            0.2,
+        )
+        assert _float64_bits(observed_low) == _float64_bits(expected_low)
+        assert _float64_bits(observed_high) == _float64_bits(expected_high)
+
+
+def test_shared_label_order_rebuilds_candidate_specific_return_rank_exactly() -> None:
+    labels = np.array(
+        [[2.0, 1.0, 1.0, np.nan, 3.0, np.inf, 2.0, -0.0, 0.0]],
+        dtype=np.float64,
+    )
+    starts = np.array([0], dtype=np.int64)
+    ends = np.array([labels.shape[1]], dtype=np.int64)
+    orders, counts = _prepare_label_orders(labels, starts, ends)
+    signal_masks = (
+        np.array([True, True, False, True, True, True, True, True, True]),
+        np.array([False, True, True, True, False, True, True, False, True]),
+    )
+
+    for signal_finite in signal_masks:
+        valid = signal_finite & np.isfinite(labels[0])
+        valid_positions = np.flatnonzero(valid)
+        valid_index_by_local = np.full(labels.shape[1], -1, dtype=np.int64)
+        valid_index_by_local[valid_positions] = np.arange(len(valid_positions), dtype=np.int64)
+        observed = np.empty(labels.shape[1], dtype=np.float64)
+        label_count = int(counts[0, 0])
+        _rank_filtered_returns_from_order(
+            labels[0],
+            orders[0, :label_count],
+            label_count,
+            valid_index_by_local,
+            len(valid_positions),
+            observed,
+        )
+        expected = _legacy_rank_average(labels[0, valid])
+        np.testing.assert_array_equal(observed[: len(valid_positions)], expected)
+
+
 def test_native_pearson_returns_nan_for_constant_rank_vector() -> None:
     observed = _pearson(
         np.full(64, np.float64(0.5)),
@@ -191,6 +286,132 @@ def test_native_pearson_returns_nan_for_constant_rank_vector() -> None:
     )
 
     assert np.isnan(observed)
+
+
+def test_mapping_reuses_orders_without_changing_randomized_legacy_results() -> None:
+    rng = np.random.default_rng(7319)
+    group_size = 13
+    group_count = 4
+    row_count = group_size * group_count
+    signals = np.round(rng.normal(size=(3, row_count)), 1)
+    labels = {
+        1: np.round(rng.normal(scale=0.01, size=row_count), 3),
+        5: np.round(rng.normal(scale=0.02, size=row_count), 3),
+    }
+    signals[0, [1, 15, 39]] = np.nan
+    signals[1, [2, 17]] = np.inf
+    signals[2, 39:] = np.nan
+    labels[1][[3, 16, 42]] = np.nan
+    labels[5][[4, 18]] = -np.inf
+    time_ids = np.repeat(np.arange(group_count, dtype=np.int64), group_size)
+    kernel = BatchedPortfolioKernel(
+        candidate_count=3,
+        code_count=group_size,
+        horizons=(1, 5),
+        compute_threads=2,
+        min_obs=5,
+        top_quantile=0.2,
+        cost_bps=5.0,
+        portfolio_mode="long_only_top",
+    )
+    observed = kernel.evaluate_block(
+        signals=signals,
+        labels=labels,
+        time_ids=time_ids,
+        code_ids=np.tile(np.arange(group_size, dtype=np.int32), group_count),
+        day_ids=np.zeros(row_count, dtype=np.int32),
+        directions=np.array([1.0, -1.0, 1.0]),
+        day_count=1,
+        audit_coordinate_arrays=True,
+    )
+
+    expected_selected = np.zeros_like(observed.audit_selected)
+    expected_metrics = np.full_like(observed.audit_mapping_metrics, np.nan)
+    for candidate in range(signals.shape[0]):
+        for group in range(group_count):
+            start = group * group_size
+            end = start + group_size
+            signal_part = signals[candidate, start:end]
+            signal_rank = _legacy_rank_average(signal_part)
+            for horizon_index, horizon in enumerate((1, 5)):
+                ret_part = labels[horizon][start:end]
+                valid = np.isfinite(signal_rank) & np.isfinite(ret_part)
+                if int(valid.sum()) < 5:
+                    continue
+                ranks = signal_rank[valid]
+                returns = ret_part[valid]
+                local_positions = np.flatnonzero(valid)
+                low = _legacy_linear_quantile(ranks, 0.2)
+                high = _legacy_linear_quantile(ranks, 0.8)
+                chosen = ranks >= high if candidate != 1 else ranks <= low
+                expected_selected[candidate, horizon_index, start + local_positions[chosen]] = True
+                top = ranks >= high
+                bottom = ranks <= low
+                market_sum = 0.0
+                selected_sum = 0.0
+                top_signal_sum = 0.0
+                bottom_signal_sum = 0.0
+                for index in range(len(ranks)):
+                    market_sum += returns[index]
+                    if chosen[index]:
+                        selected_sum += returns[index]
+                    if top[index]:
+                        top_signal_sum += signal_part[local_positions[index]]
+                    if bottom[index]:
+                        bottom_signal_sum += signal_part[local_positions[index]]
+                return_rank = _legacy_rank_average(returns)
+                rank_ic = _pearson(ranks, return_rank)
+                if candidate == 1 and np.isfinite(rank_ic):
+                    rank_ic *= -1.0
+                expected_metrics[candidate, horizon_index, group] = (
+                    1.0,
+                    selected_sum / int(chosen.sum()),
+                    market_sum / len(ranks),
+                    rank_ic,
+                    len(ranks),
+                    int(chosen.sum()),
+                    abs(
+                        top_signal_sum / int(top.sum())
+                        - bottom_signal_sum / int(bottom.sum())
+                    ),
+                )
+
+    np.testing.assert_array_equal(observed.audit_selected, expected_selected)
+    np.testing.assert_allclose(
+        observed.audit_mapping_metrics,
+        expected_metrics,
+        rtol=0.0,
+        atol=0.0,
+        equal_nan=True,
+    )
+
+
+def test_mapping_fails_closed_when_finite_support_is_below_minimum() -> None:
+    signals = np.array([[1.0, np.nan, np.inf, 2.0]], dtype=np.float64)
+    kernel = BatchedPortfolioKernel(
+        candidate_count=1,
+        code_count=4,
+        horizons=(1,),
+        compute_threads=1,
+        min_obs=3,
+        top_quantile=0.2,
+        cost_bps=5.0,
+        portfolio_mode="long_only_top",
+    )
+    observed = kernel.evaluate_block(
+        signals=signals,
+        labels={1: np.array([0.1, 0.2, 0.3, np.nan])},
+        time_ids=np.zeros(4, dtype=np.int64),
+        code_ids=np.arange(4, dtype=np.int32),
+        day_ids=np.zeros(4, dtype=np.int32),
+        directions=np.array([1.0]),
+        day_count=1,
+        audit_coordinate_arrays=True,
+    )
+
+    assert not observed.audit_selected.any()
+    assert np.isnan(observed.audit_mapping_metrics).all()
+    assert not observed.stats.any()
 
 
 def test_portfolio_turnover_state_matches_across_block_boundary() -> None:

@@ -50,7 +50,7 @@ def _boundaries(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 if njit is not None:
 
     @njit(cache=True)
-    def _rank_average(values: np.ndarray) -> np.ndarray:
+    def _rank_average_with_order(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         out = np.empty(values.shape[0], dtype=np.float64)
         out[:] = np.nan
         count = 0
@@ -58,7 +58,7 @@ if njit is not None:
             if np.isfinite(values[index]):
                 count += 1
         if count == 0:
-            return out
+            return out, np.empty(0, dtype=np.int64)
         positions = np.empty(count, dtype=np.int64)
         valid_values = np.empty(count, dtype=np.float64)
         cursor = 0
@@ -77,7 +77,16 @@ if njit is not None:
             for index in range(tie_start, tie_end):
                 out[positions[order[index]]] = rank
             tie_start = tie_end
-        return out
+        sorted_positions = np.empty(count, dtype=np.int64)
+        for index in range(count):
+            sorted_positions[index] = positions[order[index]]
+        return out, sorted_positions
+
+
+    @njit(cache=True)
+    def _rank_average(values: np.ndarray) -> np.ndarray:
+        ranks, _ = _rank_average_with_order(values)
+        return ranks
 
 
     @njit(cache=True)
@@ -113,6 +122,150 @@ if njit is not None:
 
 
     @njit(cache=True)
+    def _quantile_from_order_stats(
+        lower_value: float,
+        upper_value: float,
+        position: float,
+        lower: int,
+        upper: int,
+    ) -> float:
+        if lower == upper or lower_value == upper_value:
+            return lower_value
+        weight = position - lower
+        return lower_value * (1.0 - weight) + upper_value * weight
+
+
+    @njit(cache=True)
+    def _filtered_rank_quantile_pair(
+        signal_rank: np.ndarray,
+        signal_order: np.ndarray,
+        label_values: np.ndarray,
+        valid_count: int,
+        quantile: float,
+    ) -> tuple[float, float]:
+        """Take the four required order statistics without sorting ranks again."""
+
+        low_position = (valid_count - 1) * quantile
+        low_lower = int(np.floor(low_position))
+        low_upper = int(np.ceil(low_position))
+        high_position = (valid_count - 1) * (1.0 - quantile)
+        high_lower = int(np.floor(high_position))
+        high_upper = int(np.ceil(high_position))
+        low_lower_value = np.nan
+        low_upper_value = np.nan
+        high_lower_value = np.nan
+        high_upper_value = np.nan
+        filtered_index = 0
+        for order_index in range(signal_order.shape[0]):
+            local = signal_order[order_index]
+            if not np.isfinite(label_values[local]):
+                continue
+            rank = signal_rank[local]
+            if filtered_index == low_lower:
+                low_lower_value = rank
+            if filtered_index == low_upper:
+                low_upper_value = rank
+            if filtered_index == high_lower:
+                high_lower_value = rank
+            if filtered_index == high_upper:
+                high_upper_value = rank
+            filtered_index += 1
+        return (
+            _quantile_from_order_stats(
+                low_lower_value,
+                low_upper_value,
+                low_position,
+                low_lower,
+                low_upper,
+            ),
+            _quantile_from_order_stats(
+                high_lower_value,
+                high_upper_value,
+                high_position,
+                high_lower,
+                high_upper,
+            ),
+        )
+
+
+    @njit(cache=True, parallel=True)
+    def _prepare_label_orders(
+        labels: np.ndarray,
+        starts: np.ndarray,
+        ends: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Sort each finite group/horizon label surface once per block."""
+
+        horizon_count = labels.shape[0]
+        group_count = starts.shape[0]
+        # Orders are group-local row positions.  int32 is ample for the frozen
+        # block-row contract and halves the extra mapping scratch surface.
+        orders = np.full(labels.shape, -1, dtype=np.int32)
+        counts = np.zeros((horizon_count, group_count), dtype=np.int32)
+        for work_index in prange(horizon_count * group_count):
+            horizon = work_index // group_count
+            group = work_index - horizon * group_count
+            start = starts[group]
+            end = ends[group]
+            count = 0
+            for local in range(end - start):
+                if np.isfinite(labels[horizon, start + local]):
+                    count += 1
+            counts[horizon, group] = count
+            if count == 0:
+                continue
+            finite_positions = np.empty(count, dtype=np.int32)
+            finite_values = np.empty(count, dtype=np.float64)
+            cursor = 0
+            for local in range(end - start):
+                value = labels[horizon, start + local]
+                if np.isfinite(value):
+                    finite_positions[cursor] = local
+                    finite_values[cursor] = value
+                    cursor += 1
+            order = np.argsort(finite_values)
+            for index in range(count):
+                orders[horizon, start + index] = finite_positions[order[index]]
+        return orders, counts
+
+
+    @njit(cache=True)
+    def _rank_filtered_returns_from_order(
+        label_values: np.ndarray,
+        label_order: np.ndarray,
+        label_order_count: int,
+        valid_index_by_local: np.ndarray,
+        valid_count: int,
+        out: np.ndarray,
+    ) -> None:
+        """Rebuild legacy candidate-specific return ranks from a shared label order."""
+
+        selected_before = 0
+        tie_start = 0
+        while tie_start < label_order_count:
+            tie_end = tie_start + 1
+            tie_value = label_values[label_order[tie_start]]
+            while tie_end < label_order_count and label_values[label_order[tie_end]] == tie_value:
+                tie_end += 1
+            selected_in_tie = 0
+            for order_index in range(tie_start, tie_end):
+                local = label_order[order_index]
+                if valid_index_by_local[local] >= 0:
+                    selected_in_tie += 1
+            if selected_in_tie > 0:
+                rank = (
+                    ((selected_before + 1) + (selected_before + selected_in_tie)) / 2.0
+                ) / valid_count
+                for order_index in range(tie_start, tie_end):
+                    local = label_order[order_index]
+                    valid_index = valid_index_by_local[local]
+                    if valid_index >= 0:
+                        out[valid_index] = rank
+                selected_before += selected_in_tie
+            tie_start = tie_end
+
+
+    @njit(cache=True)
     def _pearson(left: np.ndarray, right: np.ndarray) -> float:
         count = left.shape[0]
         if count < 2:
@@ -141,13 +294,15 @@ if njit is not None:
     def _mapping_kernel(
         signals: np.ndarray,
         labels: np.ndarray,
+        label_orders: np.ndarray,
+        label_order_counts: np.ndarray,
         starts: np.ndarray,
         ends: np.ndarray,
         directions: np.ndarray,
         min_obs: int,
         top_quantile: float,
         excess_market: bool,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         candidate_count = signals.shape[0]
         horizon_count = labels.shape[0]
         selected = np.zeros((candidate_count, horizon_count, signals.shape[1]), dtype=np.bool_)
@@ -161,26 +316,34 @@ if njit is not None:
             start = starts[group]
             end = ends[group]
             signal_part = signals[candidate, start:end]
-            signal_rank = _rank_average(signal_part)
+            signal_rank, signal_order = _rank_average_with_order(signal_part)
+            group_size = end - start
+            ranks = np.empty(group_size, dtype=np.float64)
+            returns = np.empty(group_size, dtype=np.float64)
+            local_positions = np.empty(group_size, dtype=np.int64)
+            return_rank = np.empty(group_size, dtype=np.float64)
+            valid_index_by_local = np.empty(group_size, dtype=np.int64)
             for horizon in range(horizon_count):
                 ret_part = labels[horizon, start:end]
                 valid_count = 0
-                for local in range(end - start):
+                for local in range(group_size):
                     if np.isfinite(signal_rank[local]) and np.isfinite(ret_part[local]):
+                        ranks[valid_count] = signal_rank[local]
+                        returns[valid_count] = ret_part[local]
+                        local_positions[valid_count] = local
+                        valid_index_by_local[local] = valid_count
                         valid_count += 1
+                    else:
+                        valid_index_by_local[local] = -1
                 if valid_count < min_obs:
                     continue
-                ranks = np.empty(valid_count, dtype=np.float64)
-                returns = np.empty(valid_count, dtype=np.float64)
-                local_positions = np.empty(valid_count, dtype=np.int64)
-                cursor = 0
-                for local in range(end - start):
-                    if np.isfinite(signal_rank[local]) and np.isfinite(ret_part[local]):
-                        ranks[cursor] = signal_rank[local]
-                        returns[cursor] = ret_part[local]
-                        local_positions[cursor] = local
-                        cursor += 1
-                low, high = _linear_quantile_pair(ranks, top_quantile)
+                low, high = _filtered_rank_quantile_pair(
+                    signal_rank,
+                    signal_order,
+                    ret_part,
+                    valid_count,
+                    top_quantile,
+                )
                 selected_count = 0
                 selected_return_sum = 0.0
                 market_sum = 0.0
@@ -210,8 +373,16 @@ if njit is not None:
                 market_mean = market_sum / valid_count
                 selected_mean = selected_return_sum / selected_count
                 raw_return = selected_mean - market_mean if excess_market else selected_mean
-                return_rank = _rank_average(returns)
-                rank_ic_raw = _pearson(ranks, return_rank)
+                label_order_count = label_order_counts[horizon, group]
+                _rank_filtered_returns_from_order(
+                    ret_part,
+                    label_orders[horizon, start : start + label_order_count],
+                    label_order_count,
+                    valid_index_by_local,
+                    valid_count,
+                    return_rank,
+                )
+                rank_ic_raw = _pearson(ranks[:valid_count], return_rank[:valid_count])
                 rank_ic = rank_ic_raw * direction if np.isfinite(rank_ic_raw) else np.nan
                 metrics[candidate, horizon, group, 0] = 1.0
                 metrics[candidate, horizon, group, 1] = raw_return
@@ -367,7 +538,7 @@ if njit is not None:
         return stats, daily, coordinate_metrics
 
 else:  # pragma: no cover
-    _mapping_kernel = _turnover_cost_kernel = None
+    _mapping_kernel = _prepare_label_orders = _turnover_cost_kernel = None
 
 
 @dataclass(slots=True)
@@ -431,7 +602,7 @@ class BatchedPortfolioKernel:
         day_count: int,
         audit_coordinate_arrays: bool = False,
     ) -> PortfolioBlockResult:
-        if _mapping_kernel is None or _turnover_cost_kernel is None:
+        if _mapping_kernel is None or _prepare_label_orders is None or _turnover_cost_kernel is None:
             raise RuntimeError("Numba is required for the batched portfolio hot path")
         signal_array = np.asarray(signals, dtype=np.float64)
         time_ids = np.asarray(time_ids, dtype=np.int64)
@@ -458,9 +629,12 @@ class BatchedPortfolioKernel:
             set_num_threads(self.compute_threads)
         mapping_wall_start = time.perf_counter()
         mapping_cpu_start = time.process_time()
+        label_orders, label_order_counts = _prepare_label_orders(label_array, starts, ends)
         selected, metrics = _mapping_kernel(
             signal_array,
             label_array,
+            label_orders,
+            label_order_counts,
             starts,
             ends,
             directions,
