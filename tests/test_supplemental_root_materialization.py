@@ -548,3 +548,31 @@ def test_session_panel_materializes_age_and_emits_panel_bound_receipt(
         receipt_paths=[panel_receipt],
     )
     assert bindings[field_id] == json.loads(panel_receipt.read_text())["receipt_hash"]
+
+    full_authority_root = tmp_path / "assembled_full_authority"
+    assert (
+        assemble_session_panel(
+            Namespace(
+                base_panel=base_path,
+                coordinate_manifest=None,
+                input_manifest=input_manifest,
+                cache_root=cache_root,
+                output_root=full_authority_root,
+                source_release=tmp_path / "source_release.json",
+                fundamental_root=source_root,
+                fundamental_manifest=fundamental_manifest,
+                split_manifest=split,
+                maximum_observable_time="2024-04-23 15:00",
+            )
+        )
+        == 0
+    )
+    full_manifest = json.loads(
+        (full_authority_root / "session_signal_panel_manifest.json").read_text()
+    )
+    assert full_manifest["coordinate_projection_status"] == "NOT_REQUESTED"
+    assert full_manifest["coordinate_count"] == 0
+    assert "coordinate_manifest" not in full_manifest["artifacts"]
+    assert not (
+        full_authority_root / "signal_sketch_coordinate_manifest.csv"
+    ).exists()

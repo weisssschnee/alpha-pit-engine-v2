@@ -740,11 +740,26 @@ def assemble(args: argparse.Namespace) -> int:
             "path": str(panel_receipt_path),
             "upstream_receipt_hash": str(upstream["receipt_hash"]),
         }
-    coordinate_rows = attach_coordinate_row_indices(
-        _read_csv(args.coordinate_manifest), base
-    )
-    _write_csv(output_coordinates, coordinate_rows)
+    coordinate_manifest = getattr(args, "coordinate_manifest", None)
+    coordinate_rows: list[dict[str, Any]] = []
+    coordinate_projection_status = "NOT_REQUESTED"
+    if coordinate_manifest is not None:
+        coordinate_rows = attach_coordinate_row_indices(
+            _read_csv(coordinate_manifest), base
+        )
+        _write_csv(output_coordinates, coordinate_rows)
+        coordinate_projection_status = "MATERIALIZED"
+    else:
+        output_coordinates.unlink(missing_ok=True)
     summary_paths = sorted(args.cache_root.glob("worker_*.summary.json"))
+    artifacts = {
+        "compact_panel": {"path": str(output_panel), "sha256": _sha256(output_panel)},
+    }
+    if coordinate_projection_status == "MATERIALIZED":
+        artifacts["coordinate_manifest"] = {
+            "path": str(output_coordinates),
+            "sha256": _sha256(output_coordinates),
+        }
     summary = {
         "status": "SESSION_SIGNAL_PANEL_ASSEMBLED",
         "panel_version": SESSION_PANEL_VERSION,
@@ -758,6 +773,7 @@ def assemble(args: argparse.Namespace) -> int:
         "materialization_support_receipt_count": len(receipt_bindings),
         "cache_materialization_support_receipts": receipt_bindings,
         "materialization_support_receipts": panel_receipt_bindings,
+        "coordinate_projection_status": coordinate_projection_status,
         "coordinate_count": len(coordinate_rows),
         "materialized_coordinate_count_by_set": dict(
             Counter(
@@ -767,10 +783,7 @@ def assemble(args: argparse.Namespace) -> int:
             )
         ),
         "worker_summary_sha256": {path.name: _sha256(path) for path in summary_paths},
-        "artifacts": {
-            "compact_panel": {"path": str(output_panel), "sha256": _sha256(output_panel)},
-            "coordinate_manifest": {"path": str(output_coordinates), "sha256": _sha256(output_coordinates)},
-        },
+        "artifacts": artifacts,
     }
     _write_json(args.output_root / "session_signal_panel_manifest.json", summary)
     _write_json(
@@ -830,7 +843,11 @@ def parser() -> argparse.ArgumentParser:
 
     assemble_parser = sub.add_parser("assemble")
     assemble_parser.add_argument("--base-panel", type=Path, required=True)
-    assemble_parser.add_argument("--coordinate-manifest", type=Path, required=True)
+    assemble_parser.add_argument(
+        "--coordinate-manifest",
+        type=Path,
+        help="optional sketch-coordinate projection; the base panel remains authority",
+    )
     assemble_parser.add_argument("--input-manifest", type=Path, required=True)
     assemble_parser.add_argument("--cache-root", type=Path, required=True)
     assemble_parser.add_argument("--output-root", type=Path, required=True)
