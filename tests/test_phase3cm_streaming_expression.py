@@ -176,6 +176,89 @@ def test_cache_liveness_release_frees_owned_arrays_without_losing_state() -> Non
     assert executor.continuation_payload()["rolling"]
 
 
+def test_intra_batch_liveness_materialization_matches_ordered_results() -> None:
+    frame = _frame()
+    expressions = (
+        "CSRank(Delta($x,2))",
+        "CSRank(Delta($x,2))",
+        "CSRank(Acceleration($y,3))",
+    )
+    value_namespaces = ("value.a", "value.a", "value.b")
+    mapping_namespaces = ("mapping.a", "mapping.a", "mapping.b")
+    expected_executor = _executor(frame)
+    expected = np.vstack(
+        expected_executor.evaluate_ordered(
+            expressions,
+            value_namespaces=value_namespaces,
+            mapping_namespaces=mapping_namespaces,
+        )
+    )
+
+    observed_executor = _executor(frame)
+    first_root = observed_executor.cache_key(
+        expressions[0],
+        value_namespace=value_namespaces[0],
+        mapping_namespace=mapping_namespaces[0],
+    )
+    observed = observed_executor.evaluate_ordered_into(
+        expressions,
+        value_namespaces=value_namespaces,
+        mapping_namespaces=mapping_namespaces,
+        release_keys_after_each=((), (first_root,), ()),
+    )
+
+    np.testing.assert_allclose(observed, expected, rtol=0.0, atol=0.0, equal_nan=True)
+    assert observed_executor.audit["intra_batch_released_entries"] == 1
+    assert observed_executor.audit["intra_batch_released_bytes"] > 0
+
+
+def test_intra_batch_liveness_stays_within_byte_cap_without_changing_values() -> None:
+    frame = _frame()
+    code_values = sorted(frame["code"].unique())
+    code_map = {code: index for index, code in enumerate(code_values)}
+    expressions = ("Add($x,$y)", "Sub($x,$y)", "Mul($x,$y)")
+    array_bytes = len(frame) * np.dtype(np.float64).itemsize
+    executor = StreamingExpressionExecutor(
+        code_count=len(code_values),
+        compute_threads=2,
+        cache_max_bytes=array_bytes,
+    ).bind_block(
+        raw_fields={
+            "x": frame["x"].to_numpy(dtype=np.float64),
+            "y": frame["y"].to_numpy(dtype=np.float64),
+        },
+        code_ids=frame["code"].map(code_map).to_numpy(dtype=np.int32),
+        time_ids=pd.factorize(frame["trade_time"], sort=False)[0].astype(np.int64),
+    )
+    release_keys = tuple(
+        (
+            executor.cache_key(
+                expression,
+                value_namespace="default",
+                mapping_namespace=None,
+            ),
+        )
+        for expression in expressions
+    )
+
+    observed = executor.evaluate_ordered_into(
+        expressions,
+        release_keys_after_each=release_keys,
+    )
+
+    expected = np.vstack(
+        [
+            evaluate_panel_expression(frame, expression, data_role="development").to_numpy(
+                dtype=float
+            )
+            for expression in expressions
+        ]
+    )
+    np.testing.assert_allclose(observed, expected, rtol=0.0, atol=0.0, equal_nan=True)
+    assert executor.audit["cache_peak_bytes"] <= array_bytes
+    assert executor.audit["cache_current_bytes"] == 0
+
+
 def test_new_streaming_operators_resume_from_serialized_continuation() -> None:
     frame = _frame()
     expressions = (

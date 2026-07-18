@@ -8,7 +8,7 @@ import math
 import re
 import time
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -523,8 +523,9 @@ def main() -> int:
         )
     )
     dag_node_by_id = {node.node_id: node for node in dag_plan.nodes}
-    for portfolio_batch, node_ids in zip(portfolio_batches, release_node_ids):
-        portfolio_batch["release_cache_keys"] = tuple(
+
+    def cache_keys_for_nodes(node_ids: Iterable[str]) -> tuple[str, ...]:
+        return tuple(
             expression.cache_key(
                 dag_node_by_id[node_id].canonical_expression,
                 value_namespace=dag_node_by_id[node_id].cohort_id,
@@ -535,6 +536,29 @@ def main() -> int:
                 ),
             )
             for node_id in node_ids
+        )
+
+    for portfolio_batch, node_ids in zip(portfolio_batches, release_node_ids):
+        portfolio_batch["release_cache_keys"] = cache_keys_for_nodes(node_ids)
+    ordered_candidate_ids = tuple(
+        str(row["candidate_id"])
+        for portfolio_batch in portfolio_batches
+        for row in portfolio_batch["members"]
+    )
+    release_node_ids_by_candidate = dag_plan.release_node_ids_by_candidate_batch(
+        tuple((candidate_id,) for candidate_id in ordered_candidate_ids)
+    )
+    release_keys_by_candidate = {
+        candidate_id: cache_keys_for_nodes(node_ids)
+        for candidate_id, node_ids in zip(
+            ordered_candidate_ids,
+            release_node_ids_by_candidate,
+        )
+    }
+    for portfolio_batch in portfolio_batches:
+        portfolio_batch["release_cache_keys_after_member"] = tuple(
+            release_keys_by_candidate[str(row["candidate_id"])]
+            for row in portfolio_batch["members"]
         )
     reducer = StreamingPortfolioReducer(candidates=candidates, horizons=horizons)
     support = PairSupportAccumulator(pair_ids=pair_ids)
@@ -667,13 +691,14 @@ def main() -> int:
                 )
             }
             with telemetry.phase("expression_value_dag", compute_heavy=True) as phase:
-                evaluated = expression.evaluate_ordered(
+                signals = expression.evaluate_ordered_into(
                     (str(row["expression"]) for row in members),
                     value_namespaces=portfolio_batch["value_namespaces"],
                     mapping_namespaces=portfolio_batch["mapping_namespaces"],
+                    release_keys_after_each=portfolio_batch[
+                        "release_cache_keys_after_member"
+                    ],
                 )
-                signals = np.vstack(evaluated)
-                del evaluated
                 delta = {
                     key: int(expression.audit.get(key) or 0) - before[key]
                     for key in before

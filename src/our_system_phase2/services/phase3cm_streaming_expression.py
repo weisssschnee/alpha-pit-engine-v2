@@ -936,6 +936,78 @@ class StreamingExpressionExecutor:
         }
         return result
 
+    def evaluate_ordered_into(
+        self,
+        expressions: Iterable[str],
+        *,
+        value_namespaces: Iterable[str] | None = None,
+        mapping_namespaces: Iterable[str] | None = None,
+        release_keys_after_each: Iterable[Iterable[str]] | None = None,
+    ) -> np.ndarray:
+        """Materialize roots into one matrix while releasing nodes after their last consumer."""
+        expression_rows = tuple(str(value) for value in expressions)
+        value_rows = (
+            tuple("default" for _ in expression_rows)
+            if value_namespaces is None
+            else tuple(str(value) for value in value_namespaces)
+        )
+        mapping_rows = (
+            tuple("default" for _ in expression_rows)
+            if mapping_namespaces is None
+            else tuple(str(value) for value in mapping_namespaces)
+        )
+        release_rows = (
+            tuple(() for _ in expression_rows)
+            if release_keys_after_each is None
+            else tuple(tuple(str(key) for key in keys) for keys in release_keys_after_each)
+        )
+        if not (
+            len(value_rows)
+            == len(mapping_rows)
+            == len(release_rows)
+            == len(expression_rows)
+        ):
+            raise ValueError("expression namespace/release count drift")
+
+        started_wall = time.perf_counter()
+        started_cpu = time.process_time()
+        result = np.empty((len(expression_rows), len(self.code_ids)), dtype=np.float64)
+        released_entries = 0
+        released_bytes = 0
+        for index, (expression, value_namespace, mapping_namespace, release_keys) in enumerate(
+            zip(expression_rows, value_rows, mapping_rows, release_rows)
+        ):
+            values = self._evaluate(
+                parse_expression(parse_expression(expression).render()),
+                value_namespace,
+                mapping_namespace,
+            )
+            result[index] = values
+            released = self.release_cache_keys(release_keys)
+            released_entries += int(released["released_entries"])
+            released_bytes += int(released["released_bytes"])
+            del values
+
+        wall = time.perf_counter() - started_wall
+        cpu = time.process_time() - started_cpu
+        self.audit["last_evaluate_wall_seconds"] = wall
+        self.audit["last_evaluate_cpu_seconds"] = cpu
+        self.audit["last_evaluate_effective_cores"] = cpu / wall if wall > 0.0 else 0.0
+        self.audit["intra_batch_released_entries"] = released_entries
+        self.audit["intra_batch_released_bytes"] = released_bytes
+        self.audit["native_thread_environment"] = {
+            key: os.environ.get(key)
+            for key in (
+                "NUMBA_NUM_THREADS",
+                "ARROW_NUM_THREADS",
+                "OMP_NUM_THREADS",
+                "MKL_NUM_THREADS",
+                "OPENBLAS_NUM_THREADS",
+                "NUMEXPR_MAX_THREADS",
+            )
+        }
+        return result
+
     def evaluate_many(
         self,
         expressions: Iterable[str],
