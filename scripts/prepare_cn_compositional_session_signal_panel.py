@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import sys
+import uuid
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -105,6 +106,202 @@ def _context_fields(path: Path) -> list[str]:
             if line.strip()
         }
     )
+
+
+SESSION_SIDECAR_MANIFEST = "CN_SESSION_SIDECAR_AUGMENTATION_MANIFEST.json"
+
+
+def _required_zero_access(payload: Mapping[str, Any]) -> None:
+    for key in ("validation_reads", "holdout_reads", "forward_2026_reads"):
+        value = payload.get(key)
+        if type(value) is not int or value != 0:
+            raise PermissionError(
+                f"session sidecar manifest must record exact integer zero for {key}"
+            )
+
+
+def prepare_sidecar_base(args: argparse.Namespace) -> int:
+    """Publish a full-development stock-session coordinate base from sidecars."""
+
+    sidecar_root = args.session_sidecar_root.resolve()
+    source_manifest_path = sidecar_root / SESSION_SIDECAR_MANIFEST
+    source_manifest = json.loads(source_manifest_path.read_text(encoding="utf-8-sig"))
+    if (
+        source_manifest.get("schema_version")
+        != "cn_phase3cm_session_sidecar_augmentation_manifest_v1"
+        or source_manifest.get("status")
+        != "SESSION_SIDECAR_AUGMENTATION_PARITY_PASS"
+    ):
+        raise PermissionError("session sidecar augmentation lacks its parity authority")
+    if Path(str(source_manifest.get("output_root") or "")).resolve() != sidecar_root:
+        raise ValueError("session sidecar manifest output root drift")
+    _required_zero_access(source_manifest)
+
+    sessions = _development_sessions(args.split_manifest)
+    session_dates = {value.normalize() for value in sessions}
+    split_hash = _sha256(args.split_manifest)
+
+    expected_shards = int(getattr(args, "expected_shard_count", 16))
+    discovered_shards = sorted(sidecar_root.glob("shard_*.parquet"))
+    expected_names = [f"shard_{index:02d}.parquet" for index in range(expected_shards)]
+    if [path.name for path in discovered_shards] != expected_names:
+        raise ValueError("session sidecar directory does not contain the exact shard set")
+    if type(source_manifest.get("shard_count")) is not int or int(
+        source_manifest["shard_count"]
+    ) != expected_shards:
+        raise ValueError("session sidecar manifest shard count mismatch")
+    if type(source_manifest.get("row_count")) is not int or int(
+        source_manifest["row_count"]
+    ) <= 0:
+        raise ValueError("session sidecar manifest row count is invalid")
+    shard_records = source_manifest.get("shards")
+    if not isinstance(shard_records, list) or len(shard_records) != expected_shards:
+        raise ValueError("session sidecar manifest shard inventory mismatch")
+    records_by_index = {int(row["shard_index"]): row for row in shard_records}
+    if set(records_by_index) != set(range(expected_shards)):
+        raise ValueError("session sidecar manifest shard indices are incomplete")
+
+    parts: list[pd.DataFrame] = []
+    shard_inputs: list[dict[str, Any]] = []
+    actual_row_count = 0
+    for shard_index in range(expected_shards):
+        record = records_by_index[shard_index]
+        if record.get("status") != "SESSION_SIDECAR_AUGMENTATION_PARITY_PASS":
+            raise PermissionError(f"session sidecar shard {shard_index} lacks parity PASS")
+        if record.get("data_role") != "development_train_only":
+            raise PermissionError(
+                f"session sidecar shard {shard_index} is not development/train-only"
+            )
+        _required_zero_access(record)
+        output = record.get("output")
+        source = record.get("source")
+        if not isinstance(output, Mapping) or not isinstance(source, Mapping):
+            raise ValueError(f"session sidecar shard {shard_index} binding is incomplete")
+        path = Path(str(output.get("path") or "")).resolve()
+        if path.parent != sidecar_root or path.name != f"shard_{shard_index:02d}.parquet":
+            raise ValueError(f"session sidecar shard {shard_index} output path drift")
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        expected_sha256 = str(output.get("sha256") or "")
+        if len(expected_sha256) != 64 or _sha256(path) != expected_sha256:
+            raise ValueError(f"session sidecar shard {shard_index} output hash drift")
+        if type(output.get("bytes")) is not int or int(output["bytes"]) != path.stat().st_size:
+            raise ValueError(f"session sidecar shard {shard_index} output size drift")
+        parquet = pq.ParquetFile(path)
+        source_rows = source.get("rows")
+        if type(source_rows) is not int or int(source_rows) != parquet.metadata.num_rows:
+            raise ValueError(f"session sidecar shard {shard_index} row count drift")
+        actual_row_count += int(source_rows)
+        names = set(parquet.schema_arrow.names)
+        if "code" not in names:
+            raise ValueError(f"session sidecar shard lacks code: {path}")
+        if "session_time" in names:
+            source_time_column = "session_time"
+        elif "trade_time" in names:
+            source_time_column = "trade_time"
+        else:
+            raise ValueError(f"session sidecar shard lacks a session clock: {path}")
+        frame = pd.read_parquet(path, columns=["code", source_time_column]).rename(
+            columns={source_time_column: "session_time"}
+        )
+        if parquet.metadata.num_rows != len(frame):
+            raise ValueError(f"session sidecar shard row count mismatch: {path}")
+        frame["session_time"] = pd.to_datetime(frame["session_time"], errors="raise")
+        if frame["code"].isna().any() or frame["code"].astype(str).str.strip().eq("").any():
+            raise ValueError(f"session sidecar shard has invalid codes: {path}")
+        if frame["session_time"].isna().any():
+            raise ValueError(f"session sidecar shard has invalid session times: {path}")
+        parts.append(frame)
+        shard_inputs.append(
+            {
+                "source_shard": shard_index,
+                "path": str(path),
+                "rows": len(frame),
+                "sha256": expected_sha256,
+                "source_time_column": source_time_column,
+            }
+        )
+
+    if actual_row_count != int(source_manifest["row_count"]):
+        raise ValueError("session sidecar manifest total row count drift")
+
+    base = pd.concat(parts, ignore_index=True)
+    base["code"] = base["code"].astype(str)
+    if base.duplicated(["code", "session_time"]).any():
+        raise ValueError("session sidecar has duplicate stock-session coordinates")
+    base["date"] = base["session_time"].dt.normalize()
+    if base.duplicated(["code", "date"]).any():
+        raise ValueError("session sidecar has multiple coordinates for one stock-session")
+    observed_dates = set(base["date"].drop_duplicates())
+    if observed_dates != session_dates:
+        missing = sorted(value.strftime("%Y-%m-%d") for value in session_dates - observed_dates)
+        extra = sorted(value.strftime("%Y-%m-%d") for value in observed_dates - session_dates)
+        raise ValueError(
+            f"session sidecar date set differs from frozen train split: missing={missing[:8]} extra={extra[:8]}"
+        )
+    base["trade_time"] = base["session_time"]
+    base = (
+        base[["code", "trade_time", "session_time", "date"]]
+        .sort_values(["code", "session_time"], kind="mergesort")
+        .reset_index(drop=True)
+    )
+
+    output_root = args.output_root.resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
+    base_path = output_root / "session_signal_base_panel.parquet"
+    manifest_path = output_root / "session_signal_base_manifest.json"
+    if base_path.exists() or manifest_path.exists():
+        raise FileExistsError("refusing to replace an existing committed session base")
+    token = uuid.uuid4().hex
+    temporary_base = output_root / f".{base_path.name}.{token}.tmp"
+    temporary_manifest = output_root / f".{manifest_path.name}.{token}.tmp"
+    base_installed = False
+    try:
+        base.to_parquet(temporary_base, index=False, compression="zstd")
+        manifest = {
+            "schema_version": "cn_full_development_session_coordinate_base_v1",
+            "status": "FULL_DEVELOPMENT_SESSION_BASE_PREPARED",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "data_role": "development_train_only",
+            "labels_or_returns_read": False,
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+            "development_session_count": len(sessions),
+            "stock_count": int(base["code"].nunique()),
+            "base_panel_rows": len(base),
+            "coordinate_unique": True,
+            "inputs": {
+                "session_sidecar_manifest": {
+                    "path": str(source_manifest_path),
+                    "sha256": _sha256(source_manifest_path),
+                },
+                "split_manifest": {
+                    "path": str(args.split_manifest.resolve()),
+                    "sha256": split_hash,
+                },
+                "shards": shard_inputs,
+            },
+            "artifacts": {
+                "base_panel": {
+                    "path": str(base_path),
+                    "sha256": _sha256(temporary_base),
+                }
+            },
+        }
+        _write_json(temporary_manifest, manifest)
+        os.replace(temporary_base, base_path)
+        base_installed = True
+        os.replace(temporary_manifest, manifest_path)
+    except BaseException:
+        if base_installed:
+            base_path.unlink(missing_ok=True)
+        raise
+    finally:
+        temporary_base.unlink(missing_ok=True)
+        temporary_manifest.unlink(missing_ok=True)
+    print(json.dumps(manifest, ensure_ascii=False, sort_keys=True))
+    return 0
 
 
 def _load_chip_context(
@@ -597,6 +794,16 @@ def assemble(args: argparse.Namespace) -> int:
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser()
     sub = root.add_subparsers(dest="command", required=True)
+    sidecar_base = sub.add_parser(
+        "prepare-sidecar-base",
+        help="build the full-development coordinate base from stock-session sidecars",
+    )
+    sidecar_base.add_argument("--session-sidecar-root", type=Path, required=True)
+    sidecar_base.add_argument("--split-manifest", type=Path, required=True)
+    sidecar_base.add_argument("--expected-shard-count", type=int, default=16)
+    sidecar_base.add_argument("--output-root", type=Path, required=True)
+    sidecar_base.set_defaults(func=prepare_sidecar_base)
+
     prep = sub.add_parser("prepare")
     prep.add_argument("--shard-root", type=Path, required=True)
     prep.add_argument("--split-manifest", type=Path, required=True)
