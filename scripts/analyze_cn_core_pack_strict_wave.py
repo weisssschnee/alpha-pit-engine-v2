@@ -112,12 +112,22 @@ def analyze_strict_wave(
     binding: Mapping[str, Any],
     backend_results: Sequence[tuple[str, Mapping[str, Any]]],
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    pair_contracts = {str(row["pair_id"]): row for row in binding.get("pairs") or []}
+    pair_contract_rows = list(binding.get("pairs") or [])
+    pair_contracts = {str(row["pair_id"]): row for row in pair_contract_rows}
+    member_contract_rows = list(binding.get("candidate_members") or [])
     member_contracts = {
-        str(row["candidate_id"]): row for row in binding.get("candidate_members") or []
+        str(row["candidate_id"]): row for row in member_contract_rows
     }
     if len(pair_contracts) != int(binding.get("pair_count") or 0):
         raise ValueError("binding pair_count does not match unique pair rows")
+    if len(pair_contracts) != len(pair_contract_rows):
+        raise ValueError("binding contains duplicate pair IDs")
+    if len(member_contracts) != len(member_contract_rows):
+        raise ValueError("binding contains duplicate candidate member IDs")
+    if binding.get("candidate_member_count") is not None and len(member_contracts) != int(
+        binding["candidate_member_count"]
+    ):
+        raise ValueError("binding candidate_member_count does not match unique members")
 
     pair_rows: list[dict[str, Any]] = []
     backend_summaries: dict[str, Any] = {}
@@ -125,14 +135,26 @@ def analyze_strict_wave(
     binding_hash = str(binding.get("binding_hash") or "")
 
     for backend_name, result in backend_results:
+        if backend_name in backend_summaries:
+            raise ValueError(f"backend result name is not unique: {backend_name}")
         result_backend = str(result.get("backend") or backend_name)
         if str(result.get("input_binding_hash") or "") != binding_hash:
             raise ValueError(f"{backend_name}: input binding hash mismatch")
-        rewards = {
-            str(row["candidate_id"]): row for row in result.get("candidate_rewards") or []
-        }
+        reward_rows = list(result.get("candidate_rewards") or [])
+        rewards = {str(row["candidate_id"]): row for row in reward_rows}
+        if len(rewards) != len(reward_rows):
+            raise ValueError(f"{backend_name}: candidate rewards contain duplicate IDs")
+        unexpected_reward_ids = sorted(set(rewards) - set(member_contracts))
+        if unexpected_reward_ids:
+            raise ValueError(
+                f"{backend_name}: candidate rewards contain members absent from binding: "
+                + ",".join(unexpected_reward_ids)
+            )
+        result_pair_rows = list(result.get("pair_results") or [])
+        if int(result.get("pair_count") or -1) != len(result_pair_rows):
+            raise ValueError(f"{backend_name}: result pair_count does not match pair rows")
         backend_pair_ids: list[str] = []
-        for row in result.get("pair_results") or []:
+        for row in result_pair_rows:
             pair_id = str(row["pair_id"])
             if pair_id in observed_pair_ids:
                 raise ValueError(f"pair evaluated by more than one backend: {pair_id}")
@@ -141,10 +163,51 @@ def analyze_strict_wave(
             contract = pair_contracts.get(pair_id)
             if contract is None:
                 raise ValueError(f"result contains pair absent from binding: {pair_id}")
+            if str(contract.get("clock_namespace") or "") != result_backend:
+                raise ValueError(
+                    f"{backend_name}: pair clock namespace does not match logical backend: {pair_id}"
+                )
             primary_id = str(row["primary_candidate_id"])
             control_id = str(row["control_candidate_id"])
-            primary = rewards.get(primary_id, {})
-            control = rewards.get(control_id, {})
+            expected_primary_id = str(contract.get("candidate_id") or "")
+            expected_control_id = str(contract.get("control_candidate_id") or "")
+            if not expected_primary_id or not expected_control_id:
+                raise ValueError(f"binding pair lacks exact member identities: {pair_id}")
+            if primary_id != expected_primary_id or control_id != expected_control_id:
+                raise ValueError(f"{backend_name}: pair member identity mismatch: {pair_id}")
+            primary_contract = member_contracts.get(primary_id)
+            control_contract = member_contracts.get(control_id)
+            if primary_contract is None or control_contract is None:
+                raise ValueError(f"binding pair refers to an absent candidate member: {pair_id}")
+            for member, expected_role in (
+                (primary_contract, "PRIMARY"),
+                (control_contract, "CONTROL"),
+            ):
+                if (
+                    str(member.get("pair_id") or "") != pair_id
+                    or str(member.get("pair_member_role") or "") != expected_role
+                    or str(member.get("clock_namespace") or "") != result_backend
+                ):
+                    raise ValueError(
+                        f"binding candidate member contract mismatch: {pair_id}:{expected_role}"
+                    )
+            expected_pair_receipt = str(contract.get("pair_receipt_hash") or "")
+            expected_primary_receipt = str(primary_contract.get("receipt_hash") or "")
+            expected_control_receipt = str(control_contract.get("receipt_hash") or "")
+            if not expected_pair_receipt or not expected_primary_receipt or not expected_control_receipt:
+                raise ValueError(f"binding receipt contract is incomplete: {pair_id}")
+            if (
+                str(row.get("pair_receipt_hash") or "") != expected_pair_receipt
+                or str(row.get("primary_receipt_hash") or "")
+                != expected_primary_receipt
+                or str(row.get("control_receipt_hash") or "")
+                != expected_control_receipt
+            ):
+                raise ValueError(f"{backend_name}: pair or member receipt mismatch: {pair_id}")
+            if primary_id not in rewards or control_id not in rewards:
+                raise ValueError(f"{backend_name}: pair candidate reward is missing: {pair_id}")
+            primary = rewards[primary_id]
+            control = rewards[control_id]
             primary_rank_ic = _finite(primary.get("train_rank_ic_mean"))
             control_rank_ic = _finite(control.get("train_rank_ic_mean"))
             rank_increment = (
@@ -188,10 +251,15 @@ def analyze_strict_wave(
                     "control_receipt_hash": str(
                         member_contracts.get(control_id, {}).get("receipt_hash") or ""
                     ),
+                    "pair_receipt_hash": expected_pair_receipt,
                 }
             )
 
-        backend_summaries[result_backend] = {
+        # Keep the execution partition name as the summary key.  A frozen wave may
+        # schedule disjoint partitions of one logical backend in separate heavy
+        # processes; keying by result_backend would silently overwrite evidence.
+        backend_summaries[backend_name] = {
+            "logical_backend": result_backend,
             "status": str(result.get("status") or ""),
             "pair_count": int(result.get("pair_count") or 0),
             "evaluated_pair_count": sum(
@@ -246,7 +314,7 @@ def analyze_strict_wave(
         )
     )
     resource_gate = all(
-        summary["parallelism_status"] != "PARALLELISM_NOT_ENGAGED"
+        summary["parallelism_status"] == "PARALLELISM_ENGAGED"
         for summary in backend_summaries.values()
     )
     overall = _route_summary(pair_rows)
@@ -255,7 +323,10 @@ def analyze_strict_wave(
         "schema_version": "cn_core_pack_strict_wave_analysis_v1",
         "status": (
             "CN_CORE_PACK_STRICT_WAVE_ANALYZED"
-            if infrastructure_gate and not any(access_reads.values()) and pit_contract_complete
+            if infrastructure_gate
+            and resource_gate
+            and not any(access_reads.values())
+            and pit_contract_complete
             else "CN_CORE_PACK_STRICT_WAVE_ANALYSIS_FAILED_CLOSED"
         ),
         "binding_hash": binding_hash,

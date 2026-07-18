@@ -23,6 +23,9 @@ from our_system_phase2.services.phase3cm_streaming_checkpoint import (
     load_checkpoint,
     write_checkpoint,
 )
+from our_system_phase2.services.phase3cm_streaming_capacity import (
+    enforce_block_row_limit,
+)
 from our_system_phase2.services.phase3cm_streaming_dag import SharedMultiCandidateDAGPlan
 from our_system_phase2.services.phase3cm_streaming_expression import StreamingExpressionExecutor
 from our_system_phase2.services.phase3cm_streaming_portfolio import BatchedPortfolioKernel
@@ -138,6 +141,11 @@ def _candidate_pairs(rows: Sequence[Mapping[str, Any]], *, pair_limit: int, cloc
     for raw in rows:
         row = dict(raw)
         pair_id = str(row.get("pair_id") or "")
+        if not pair_id:
+            raise RuntimeError("frozen candidate row is missing pair_id")
+        declared_clock = str(row.get("clock_namespace") or "")
+        if declared_clock and declared_clock != clock:
+            raise RuntimeError(f"frozen candidate clock namespace drift: {pair_id}")
         if pair_id not in by_pair:
             pair_order.append(pair_id)
             by_pair[pair_id] = []
@@ -155,6 +163,94 @@ def _candidate_pairs(rows: Sequence[Mapping[str, Any]], *, pair_limit: int, cloc
     if len(selected) != int(pair_limit) * 2:
         raise RuntimeError("requested pair count exceeds frozen route pack")
     return selected
+
+
+def _json_string_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    text = str(value or "").strip()
+    if not text:
+        return []
+    decoded = json.loads(text)
+    if not isinstance(decoded, list):
+        raise RuntimeError("frozen candidate field_ids is not a JSON list")
+    return [str(item) for item in decoded]
+
+
+def _verify_selected_candidate_semantics(
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    binding: Mapping[str, Any],
+    clock: str,
+) -> None:
+    """Prove that the CSV rows execute the exact members named by the binding."""
+
+    bound_member_rows = list(binding.get("candidate_members") or [])
+    bound_members = {
+        str(row.get("candidate_id") or ""): dict(row) for row in bound_member_rows
+    }
+    if "" in bound_members or len(bound_members) != len(bound_member_rows):
+        raise RuntimeError(
+            "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: duplicate bound members"
+        )
+    bound_pair_rows = list(binding.get("pairs") or [])
+    bound_pairs = {str(row.get("pair_id") or ""): dict(row) for row in bound_pair_rows}
+    if "" in bound_pairs or len(bound_pairs) != len(bound_pair_rows):
+        raise RuntimeError(
+            "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: duplicate bound pairs"
+        )
+
+    observed: dict[str, dict[str, Any]] = {}
+    by_pair: dict[str, dict[str, str]] = {}
+    for raw in candidates:
+        row = dict(raw)
+        candidate_id = str(row.get("candidate_id") or "")
+        if not candidate_id or candidate_id in observed:
+            raise RuntimeError(
+                "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: duplicate selected members"
+            )
+        expected = bound_members.get(candidate_id)
+        if expected is None or str(expected.get("clock_namespace") or "") != clock:
+            raise RuntimeError(
+                "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: selected members"
+            )
+        for key in (
+            "pair_id",
+            "pair_member_role",
+            "expression",
+            "canonical_expression",
+            "route_id",
+        ):
+            if str(row.get(key) or "") != str(expected.get(key) or ""):
+                raise RuntimeError(
+                    "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: "
+                    f"candidate semantic drift {candidate_id}:{key}"
+                )
+        if _json_string_list(row.get("field_ids")) != [
+            str(value) for value in expected.get("field_ids") or []
+        ]:
+            raise RuntimeError(
+                "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: "
+                f"candidate semantic drift {candidate_id}:field_ids"
+            )
+        pair_id = str(row["pair_id"])
+        role = str(row["pair_member_role"])
+        by_pair.setdefault(pair_id, {})[role] = candidate_id
+        observed[candidate_id] = row
+
+    for pair_id, roles in by_pair.items():
+        pair = bound_pairs.get(pair_id)
+        if pair is None or str(pair.get("clock_namespace") or "") != clock:
+            raise RuntimeError(
+                f"CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: selected pair {pair_id}"
+            )
+        if roles != {
+            "PRIMARY": str(pair.get("candidate_id") or ""),
+            "CONTROL": str(pair.get("control_candidate_id") or ""),
+        }:
+            raise RuntimeError(
+                f"CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: pair membership {pair_id}"
+            )
 
 
 def _raw_fields(candidates: Sequence[Mapping[str, Any]]) -> tuple[str, ...]:
@@ -367,6 +463,13 @@ def main() -> int:
     parser.add_argument("--top-quantile", type=float, default=0.2)
     parser.add_argument("--portfolio-mode", default="long_only_top")
     parser.add_argument("--checkpoint-every-blocks", type=int, default=1)
+    parser.add_argument(
+        "--max-block-rows",
+        type=int,
+        default=0,
+        help="Frozen Phase E cache-capacity bound; enforced on every materialized block.",
+    )
+    parser.add_argument("--capacity-receipt-hash", default="")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument(
         "--stop-after-blocks",
@@ -378,8 +481,19 @@ def main() -> int:
 
     if int(args.stop_after_blocks) < 0:
         raise ValueError("stop-after-blocks cannot be negative")
+    if int(args.max_block_rows) < 0:
+        raise ValueError("max-block-rows cannot be negative")
     if args.phase == "E" and int(args.stop_after_blocks):
         raise RuntimeError("Phase E forbids adaptive or controlled plan interruption")
+    if args.phase == "E":
+        if int(args.max_block_rows) <= 0:
+            raise RuntimeError("Phase E requires a positive preflight max-block-rows")
+        if re.fullmatch(r"[0-9a-f]{64}", str(args.capacity_receipt_hash)) is None:
+            raise RuntimeError("Phase E requires an exact capacity receipt hash")
+    elif args.capacity_receipt_hash and re.fullmatch(
+        r"[0-9a-f]{64}", str(args.capacity_receipt_hash)
+    ) is None:
+        raise ValueError("capacity-receipt-hash must be lowercase SHA-256")
 
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
@@ -390,14 +504,11 @@ def main() -> int:
         pair_limit=int(args.pair_count),
         clock=str(args.backend),
     )
-    selected_ids = {str(row["candidate_id"]) for row in candidates}
-    bound_ids = {
-        str(row["candidate_id"])
-        for row in binding["candidate_members"]
-        if str(row["clock_namespace"]) == str(args.backend)
-    }
-    if not selected_ids <= bound_ids:
-        raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: selected members")
+    _verify_selected_candidate_semantics(
+        candidates,
+        binding=binding,
+        clock=str(args.backend),
+    )
     pair_ids = tuple(str(candidates[index]["pair_id"]) for index in range(0, len(candidates), 2))
     field_paths = _sidecar_files(args.field_sidecar_root.resolve())
     label_paths = _sidecar_files(args.label_sidecar_root.resolve())
@@ -569,6 +680,7 @@ def main() -> int:
     expression_audits: list[dict[str, Any]] = []
     portfolio_audits: list[dict[str, Any]] = []
     prior_evaluator_wall_seconds = 0.0
+    max_observed_block_rows = 0
 
     if args.resume:
         manifest_path = checkpoint_root / "CN_STREAMING_CHECKPOINT_MANIFEST.json"
@@ -604,6 +716,9 @@ def main() -> int:
         prior_evaluator_wall_seconds = float(
             payload.execution_position.get("evaluator_wall_seconds") or 0.0
         )
+        max_observed_block_rows = int(
+            payload.execution_position.get("max_observed_block_rows") or 0
+        )
 
     runtime_position = {"block_ordinal": -1}
 
@@ -623,6 +738,7 @@ def main() -> int:
                     "checkpoint_ordinal": checkpoint_ordinal,
                     "reason": reason,
                     "rows_processed": int(total_rows),
+                    "max_observed_block_rows": int(max_observed_block_rows),
                     "evaluator_wall_seconds": prior_evaluator_wall_seconds
                     + (time.perf_counter() - run_started),
                     "expression_audits": list(expression_audits),
@@ -654,6 +770,13 @@ def main() -> int:
         runtime_position["block_ordinal"] = block_ordinal
         with telemetry.phase("global_trade_time_barrier", compute_heavy=False) as phase:
             block = reader.read_block(start_time=pd.Timestamp(start), end_time=pd.Timestamp(end))
+            if int(args.max_block_rows) > 0:
+                enforce_block_row_limit(
+                    block.row_count,
+                    max_block_rows=int(args.max_block_rows),
+                    block_ordinal=block_ordinal,
+                )
+            max_observed_block_rows = max(max_observed_block_rows, int(block.row_count))
             phase.add(
                 rows_read=block.row_count,
                 blocks_processed=1,
@@ -957,6 +1080,16 @@ def main() -> int:
         / max(1e-12, time.perf_counter() - run_started),
         "peak_rss_bytes": max((int(event.get("peak_rss_bytes") or 0) for event in events), default=0),
         "execution_plan_hash": plan.execution_plan_hash,
+        "capacity_receipt_hash": str(args.capacity_receipt_hash) or None,
+        "max_block_rows_contract": (
+            int(args.max_block_rows) if int(args.max_block_rows) > 0 else None
+        ),
+        "max_observed_block_rows": int(max_observed_block_rows),
+        "block_row_guard_status": (
+            "BLOCK_ROW_GUARD_PASS"
+            if int(args.max_block_rows) > 0
+            else "NOT_ENFORCED_NON_PHASE_E"
+        ),
         "input_binding_hash": binding["binding_hash"],
         "split_manifest_hash": binding["split_manifest_hash"],
         "eligible_train_date_count": len(train_dates),

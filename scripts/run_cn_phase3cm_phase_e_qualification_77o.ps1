@@ -1,6 +1,16 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$CombinedContract,
+    [Parameter(Mandatory = $true)]
+    [string]$ActiveCapacityReceipt,
+    [Parameter(Mandatory = $true)]
+    [string]$SessionCapacityReceipt,
+    [Parameter(Mandatory = $true)]
+    [string]$PredecessorEngineeringReceipt,
+    [Parameter(Mandatory = $true)]
+    [string]$PredecessorEngineeringReceiptSha256,
+    [Parameter(Mandatory = $true)]
+    [string]$SourceClosureManifest,
     [string]$OutputName = "phase_e_strict_wave_final",
     [double]$WallSecondsHardMax = 0.0,
     [switch]$Resume,
@@ -52,6 +62,122 @@ if (-not $ActiveFieldRoot) { $ActiveFieldRoot = Join-Path $RuntimeRoot "time_maj
 if (-not $ActiveLabelRoot) { $ActiveLabelRoot = Join-Path $RuntimeRoot "time_major_train_v3_labels" }
 if (-not $SessionFieldRoot) { $SessionFieldRoot = Join-Path $RuntimeRoot "session_time_major_train_v2" }
 if (-not $SessionLabelRoot) { $SessionLabelRoot = Join-Path $RuntimeRoot "session_time_major_train_v3_labels" }
+$ActiveCandidateTable = Join-Path $CandidateRoot "preflight_active_candidates.csv"
+$SessionCandidateTable = Join-Path $CandidateRoot "preflight_session_candidates.csv"
+$ActiveExecutionPlanPath = [string]$Contract.plans.active_bar.path
+$SessionExecutionPlanPath = [string]$Contract.plans.stock_session.path
+$ActivePlan = Get-Content -LiteralPath $ActiveExecutionPlanPath -Raw | ConvertFrom-Json
+$SessionPlan = Get-Content -LiteralPath $SessionExecutionPlanPath -Raw | ConvertFrom-Json
+
+$FrozenR6SuccessorReceiptSha256 = "dbcedff3c54a4799b75b81c71a1c94aa909de6123bd5959f3f82febf610dfcc4"
+if ($PredecessorEngineeringReceiptSha256 -notmatch '^[0-9a-f]{64}$' -or
+    $PredecessorEngineeringReceiptSha256 -ne $FrozenR6SuccessorReceiptSha256) {
+    throw "predecessor engineering receipt hash does not match the frozen R6 successor authority"
+}
+$ObservedPredecessorReceiptSha256 = (
+    Get-FileHash -Algorithm SHA256 -LiteralPath $PredecessorEngineeringReceipt
+).Hash.ToLowerInvariant()
+if ($ObservedPredecessorReceiptSha256 -ne $PredecessorEngineeringReceiptSha256) {
+    throw "predecessor engineering receipt SHA-256 drift"
+}
+$PredecessorReceipt = Get-Content -LiteralPath $PredecessorEngineeringReceipt -Raw | ConvertFrom-Json
+if ($PredecessorReceipt.schema_version -ne "cn_phase3cm_r6_successor_engineering_receipt_v1" -or
+    $PredecessorReceipt.status -ne "CN_PHASE3CM_R6_SUCCESSOR_ENGINEERING_PASS") {
+    throw "R6 successor predecessor engineering receipt is not PASS"
+}
+if ($PredecessorReceipt.data_role -ne "development_train_only" -or
+    $PredecessorReceipt.promotion -ne "FORBIDDEN" -or
+    [int]$PredecessorReceipt.access.validation_reads -ne 0 -or
+    [int]$PredecessorReceipt.access.holdout_reads -ne 0 -or
+    [int]$PredecessorReceipt.access.forward_2026_reads -ne 0) {
+    throw "R6 successor predecessor data-access contract drift"
+}
+if ([int]$PredecessorReceipt.pair_count -ne 64 -or
+    [int]$PredecessorReceipt.backend_pair_counts.active_bar -ne 36 -or
+    [int]$PredecessorReceipt.backend_pair_counts.stock_session -ne 28 -or
+    $PredecessorReceipt.research_parity.status -ne "BYTE_IDENTICAL_PAIR_ANALYSIS" -or
+    $PredecessorReceipt.research_parity.pair_csv_sha256 -ne "886aa3b9dcf16001cf1ca7b574d7193e1f96dc18f49d52d5c512d4ac8ba5d413") {
+    throw "R6 successor predecessor research-identity drift"
+}
+if ($PredecessorReceipt.active_backend.parallelism_status -ne "PARALLELISM_ENGAGED" -or
+    $PredecessorReceipt.stock_session_backend.parallelism_status -ne "PARALLELISM_ENGAGED" -or
+    [int]$PredecessorReceipt.stock_session_backend.compute_threads -ne 2) {
+    throw "R6 successor predecessor engineering gates drift"
+}
+if ($PredecessorReceipt.supersession.original_r6_status -ne "CN_PHASE3CM_PHASE_E_STRICT_WAVE_FAIL" -or
+    [bool]$PredecessorReceipt.supersession.research_rows_changed) {
+    throw "original R6 FAIL/successor supersession semantics drift"
+}
+
+function Confirm-CapacityReceipt {
+    param(
+        [string]$Receipt,
+        [string]$Backend,
+        [string]$CandidateTable,
+        [string]$ExecutionPlan,
+        [string]$FieldRoot,
+        [string]$LabelRoot
+    )
+    $Validator = Join-Path $RepoRoot "scripts\preflight_cn_phase3cm_dag_cache.py"
+    $Output = @(& $PythonExe $Validator `
+        --validate-receipt $Receipt `
+        --candidate-table $CandidateTable `
+        --execution-plan $ExecutionPlan `
+        --backend $Backend `
+        --field-sidecar-root $FieldRoot `
+        --label-sidecar-root $LabelRoot `
+        --repo-root $RepoRoot `
+        --source-closure-manifest $SourceClosureManifest `
+        --expected-repo-sha ([string]$Contract.repo_sha))
+    if ($LASTEXITCODE -ne 0) {
+        throw "Phase E capacity receipt validation failed for $Backend"
+    }
+    if ($Output.Count -eq 0) {
+        throw "Phase E capacity receipt validator returned no result for $Backend"
+    }
+    $Validation = $Output[-1] | ConvertFrom-Json
+    if ($Validation.status -ne "CN_PHASE3CM_DAG_CACHE_RECEIPT_VALIDATED_FOR_LAUNCH") {
+        throw "Phase E capacity receipt validator status drift for $Backend"
+    }
+    return $Validation
+}
+
+# This hard gate runs before any output directory or heavy process is created.
+$ActiveCapacityValidation = Confirm-CapacityReceipt `
+    -Receipt $ActiveCapacityReceipt `
+    -Backend "active_bar" `
+    -CandidateTable $ActiveCandidateTable `
+    -ExecutionPlan $ActiveExecutionPlanPath `
+    -FieldRoot $ActiveFieldRoot `
+    -LabelRoot $ActiveLabelRoot
+$SessionCapacityValidation = Confirm-CapacityReceipt `
+    -Receipt $SessionCapacityReceipt `
+    -Backend "stock_session" `
+    -CandidateTable $SessionCandidateTable `
+    -ExecutionPlan $SessionExecutionPlanPath `
+    -FieldRoot $SessionFieldRoot `
+    -LabelRoot $SessionLabelRoot
+$ActiveMaxBlockRows = [int64]$ActiveCapacityValidation.max_block_rows
+$SessionMaxBlockRows = [int64]$SessionCapacityValidation.max_block_rows
+$ActiveCapacityReceiptHash = [string]$ActiveCapacityValidation.receipt_hash
+$SessionCapacityReceiptHash = [string]$SessionCapacityValidation.receipt_hash
+if ([string]$ActiveCapacityValidation.source_closure_manifest_hash -ne
+    [string]$SessionCapacityValidation.source_closure_manifest_hash) {
+    throw "capacity receipts do not bind the same source closure manifest"
+}
+if ([string]$ActiveCapacityValidation.execution_plan_hash -ne [string]$Contract.plans.active_bar.execution_plan_hash) {
+    throw "active_bar capacity receipt plan hash drifts from combined contract"
+}
+if ([string]$SessionCapacityValidation.execution_plan_hash -ne [string]$Contract.plans.stock_session.execution_plan_hash) {
+    throw "stock_session capacity receipt plan hash drifts from combined contract"
+}
+if ((Get-FileHash -Algorithm SHA256 -LiteralPath $ActiveExecutionPlanPath).Hash.ToLowerInvariant() -ne [string]$Contract.plans.active_bar.sha256) {
+    throw "active_bar execution plan file hash drifts from combined contract"
+}
+if ((Get-FileHash -Algorithm SHA256 -LiteralPath $SessionExecutionPlanPath).Hash.ToLowerInvariant() -ne [string]$Contract.plans.stock_session.sha256) {
+    throw "stock_session execution plan file hash drifts from combined contract"
+}
+
 $RunRoot = Join-Path $RunParentRoot $OutputName
 if ((Test-Path $RunRoot) -and -not $Resume) {
     throw "Phase E output already exists; refuse to overwrite or adapt: $RunRoot"
@@ -72,7 +198,9 @@ function New-BackendArguments {
         [string]$ExecutionPlan,
         [int]$BlockSessions,
         [int]$PairBatchSize,
-        [int]$ComputeThreads
+        [int]$ComputeThreads,
+        [int64]$MaxBlockRows,
+        [string]$CapacityReceiptHash
     )
     $Arguments = @(
         "scripts\run_cn_phase3cm_streaming_qualification.py",
@@ -89,7 +217,9 @@ function New-BackendArguments {
         "--execution-plan", $ExecutionPlan,
         "--block-sessions", [string]$BlockSessions,
         "--pair-batch-size", [string]$PairBatchSize,
-        "--compute-threads", [string]$ComputeThreads
+        "--compute-threads", [string]$ComputeThreads,
+        "--max-block-rows", [string]$MaxBlockRows,
+        "--capacity-receipt-hash", $CapacityReceiptHash
     )
     if ($Resume) { $Arguments += "--resume" }
     return $Arguments
@@ -98,8 +228,6 @@ function New-BackendArguments {
 $ActiveRoot = Join-Path $RunRoot "active_bar"
 $SessionRoot = Join-Path $RunRoot "stock_session"
 New-Item -ItemType Directory -Force -Path $ActiveRoot,$SessionRoot | Out-Null
-$ActivePlan = Get-Content -LiteralPath ([string]$Contract.plans.active_bar.path) -Raw | ConvertFrom-Json
-$SessionPlan = Get-Content -LiteralPath ([string]$Contract.plans.stock_session.path) -Raw | ConvertFrom-Json
 $ActiveComputeThreads = [int]$ActivePlan.compute_threads
 $SessionComputeThreads = [int]$SessionPlan.compute_threads
 if ($ActiveComputeThreads + $SessionComputeThreads -ne [int]$Contract.global_active_native_compute_threads) {
@@ -110,25 +238,29 @@ $SessionPairBatchSize = [int](($SessionPlan.pair_batches | ForEach-Object { @($_
 $ActiveArgs = New-BackendArguments `
     -Backend "active_bar" `
     -PairCount $ActivePairCount `
-    -CandidateTable (Join-Path $CandidateRoot "preflight_active_candidates.csv") `
+    -CandidateTable $ActiveCandidateTable `
     -FieldRoot $ActiveFieldRoot `
     -LabelRoot $ActiveLabelRoot `
     -OutputRoot $ActiveRoot `
-    -ExecutionPlan ([string]$Contract.plans.active_bar.path) `
+    -ExecutionPlan $ActiveExecutionPlanPath `
     -BlockSessions ([int]$ActivePlan.block_size) `
     -PairBatchSize $ActivePairBatchSize `
-    -ComputeThreads $ActiveComputeThreads
+    -ComputeThreads $ActiveComputeThreads `
+    -MaxBlockRows $ActiveMaxBlockRows `
+    -CapacityReceiptHash $ActiveCapacityReceiptHash
 $SessionArgs = New-BackendArguments `
     -Backend "stock_session" `
     -PairCount $SessionPairCount `
-    -CandidateTable (Join-Path $CandidateRoot "preflight_session_candidates.csv") `
+    -CandidateTable $SessionCandidateTable `
     -FieldRoot $SessionFieldRoot `
     -LabelRoot $SessionLabelRoot `
     -OutputRoot $SessionRoot `
-    -ExecutionPlan ([string]$Contract.plans.stock_session.path) `
+    -ExecutionPlan $SessionExecutionPlanPath `
     -BlockSessions ([int]$SessionPlan.block_size) `
     -PairBatchSize $SessionPairBatchSize `
-    -ComputeThreads $SessionComputeThreads
+    -ComputeThreads $SessionComputeThreads `
+    -MaxBlockRows $SessionMaxBlockRows `
+    -CapacityReceiptHash $SessionCapacityReceiptHash
 
 $ActiveCommandPath = Join-Path $ActiveRoot "CN_BACKEND_COMMAND.json"
 $SessionCommandPath = Join-Path $SessionRoot "CN_BACKEND_COMMAND.json"
@@ -233,6 +365,14 @@ $Pass = (
     [int]$SessionResult.validation_reads -eq 0 -and
     [int]$SessionResult.holdout_reads -eq 0 -and
     [int]$SessionResult.forward_2026_reads -eq 0 -and
+    $ActiveResult.block_row_guard_status -eq "BLOCK_ROW_GUARD_PASS" -and
+    $SessionResult.block_row_guard_status -eq "BLOCK_ROW_GUARD_PASS" -and
+    [string]$ActiveResult.capacity_receipt_hash -eq $ActiveCapacityReceiptHash -and
+    [string]$SessionResult.capacity_receipt_hash -eq $SessionCapacityReceiptHash -and
+    [int64]$ActiveResult.max_block_rows_contract -eq $ActiveMaxBlockRows -and
+    [int64]$SessionResult.max_block_rows_contract -eq $SessionMaxBlockRows -and
+    [int64]$ActiveResult.max_observed_block_rows -le $ActiveMaxBlockRows -and
+    [int64]$SessionResult.max_observed_block_rows -le $SessionMaxBlockRows -and
     $WallGatePass -and
     $GlobalPeakRss -lt $GlobalHardRss
 )
@@ -263,6 +403,20 @@ $Receipt = [ordered]@{
     global_active_native_compute_threads = $ActiveComputeThreads + $SessionComputeThreads
     active_result = $ActiveResultPath
     session_result = $SessionResultPath
+    active_capacity_receipt = $ActiveCapacityReceipt
+    session_capacity_receipt = $SessionCapacityReceipt
+    active_capacity_receipt_hash = $ActiveCapacityReceiptHash
+    session_capacity_receipt_hash = $SessionCapacityReceiptHash
+    predecessor_engineering_receipt = $PredecessorEngineeringReceipt
+    predecessor_engineering_receipt_sha256 = $ObservedPredecessorReceiptSha256
+    predecessor_engineering_status = [string]$PredecessorReceipt.status
+    original_r6_status = [string]$PredecessorReceipt.supersession.original_r6_status
+    predecessor_research_pair_csv_sha256 = [string]$PredecessorReceipt.research_parity.pair_csv_sha256
+    source_closure_manifest = $SourceClosureManifest
+    source_closure_manifest_sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $SourceClosureManifest).Hash.ToLowerInvariant()
+    source_closure_manifest_hash = [string]$ActiveCapacityValidation.source_closure_manifest_hash
+    active_max_block_rows = $ActiveMaxBlockRows
+    session_max_block_rows = $SessionMaxBlockRows
     active_exit_receipt = $ActiveExitReceiptPath
     session_exit_receipt = $SessionExitReceiptPath
     validation_reads = 0
