@@ -26,6 +26,30 @@ class HardRSSGateError(MemoryError):
     """An immediate fail-closed hard RSS breach."""
 
 
+def balanced_pair_batches(
+    pair_ids: Sequence[str], maximum_batch_size: int
+) -> tuple[tuple[str, ...], ...]:
+    """Partition ordered pairs without leaving a chronically underfilled tail batch."""
+
+    limit = int(maximum_batch_size)
+    if limit <= 0:
+        raise ValueError("maximum batch size must be positive")
+    ordered = tuple(str(pair_id) for pair_id in pair_ids)
+    if not ordered:
+        return ()
+    batch_count = (len(ordered) + limit - 1) // limit
+    base_size, larger_batch_count = divmod(len(ordered), batch_count)
+    sizes = (base_size + 1,) * larger_batch_count + (base_size,) * (
+        batch_count - larger_batch_count
+    )
+    output: list[tuple[str, ...]] = []
+    cursor = 0
+    for size in sizes:
+        output.append(ordered[cursor : cursor + size])
+        cursor += size
+    return tuple(output)
+
+
 def _stable_hash(value: Any) -> str:
     return hashlib.sha256(
         json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")

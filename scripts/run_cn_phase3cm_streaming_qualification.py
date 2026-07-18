@@ -30,6 +30,7 @@ from our_system_phase2.services.phase3cm_streaming_reducer import StreamingPortf
 from our_system_phase2.services.phase3cm_streaming_resource_contract import (
     FrozenExecutionPlan,
     RSSGate,
+    balanced_pair_batches,
     validate_frozen_thread_environment,
 )
 from our_system_phase2.services.phase3cm_streaming_support import PairSupportAccumulator
@@ -202,10 +203,7 @@ def _block_boundaries(dates: Sequence[str], block_sessions: int) -> tuple[tuple[
 
 
 def _pair_batches(pair_ids: Sequence[str], batch_pairs: int) -> tuple[tuple[str, ...], ...]:
-    return tuple(
-        tuple(pair_ids[start : start + int(batch_pairs)])
-        for start in range(0, len(pair_ids), int(batch_pairs))
-    )
+    return balanced_pair_batches(pair_ids, int(batch_pairs))
 
 
 def _candidate_direction(candidate: Mapping[str, Any]) -> float:

@@ -7,7 +7,10 @@ import re
 from pathlib import Path
 from typing import Any
 
-from our_system_phase2.services.phase3cm_streaming_resource_contract import FrozenExecutionPlan
+from our_system_phase2.services.phase3cm_streaming_resource_contract import (
+    FrozenExecutionPlan,
+    balanced_pair_batches,
+)
 from our_system_phase2.services.phase3cm_streaming_expression import unsupported_streaming_operators
 
 
@@ -46,10 +49,7 @@ def _phase_e(
         phase="E",
         block_size=source.block_size,
         block_boundaries=source.block_boundaries,
-        pair_batches=tuple(
-            tuple(pair_ids[start : start + int(pair_batch_size)])
-            for start in range(0, len(pair_ids), int(pair_batch_size))
-        ),
+        pair_batches=balanced_pair_batches(pair_ids, int(pair_batch_size)),
         heavy_processes=int(heavy_processes),
         compute_threads=source.compute_threads,
         primary_thread_pool=source.primary_thread_pool,

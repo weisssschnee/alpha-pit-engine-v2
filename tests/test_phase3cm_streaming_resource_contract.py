@@ -10,6 +10,7 @@ from our_system_phase2.services.phase3cm_streaming_resource_contract import (
     HardRSSGateError,
     RSSGate,
     SoftRSSGateStop,
+    balanced_pair_batches,
     validate_frozen_thread_environment,
 )
 from our_system_phase2.services.phase3cm_streaming_telemetry import ResourceSnapshot
@@ -89,3 +90,13 @@ def test_periodic_checkpoint_occurs_before_rss_gate() -> None:
     )
     gate.periodic_checkpoint(block_ordinal=1, cadence=1)
     assert checkpoints == ["PERIODIC_BLOCK_000001"]
+
+
+def test_pair_batches_balance_tail_without_reordering() -> None:
+    pair_ids = tuple(f"p{index}" for index in range(36))
+    batches = balanced_pair_batches(pair_ids, 8)
+    assert tuple(map(len, batches)) == (8, 7, 7, 7, 7)
+    assert tuple(pair_id for batch in batches for pair_id in batch) == pair_ids
+    assert balanced_pair_batches((), 8) == ()
+    with pytest.raises(ValueError):
+        balanced_pair_batches(pair_ids, 0)
