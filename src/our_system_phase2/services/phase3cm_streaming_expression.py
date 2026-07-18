@@ -993,8 +993,12 @@ class StreamingExpressionExecutor:
         self.audit["last_evaluate_wall_seconds"] = wall
         self.audit["last_evaluate_cpu_seconds"] = cpu
         self.audit["last_evaluate_effective_cores"] = cpu / wall if wall > 0.0 else 0.0
-        self.audit["intra_batch_released_entries"] = released_entries
-        self.audit["intra_batch_released_bytes"] = released_bytes
+        self.audit["intra_batch_released_entries"] = int(
+            self.audit.get("intra_batch_released_entries") or 0
+        ) + released_entries
+        self.audit["intra_batch_released_bytes"] = int(
+            self.audit.get("intra_batch_released_bytes") or 0
+        ) + released_bytes
         self.audit["native_thread_environment"] = {
             key: os.environ.get(key)
             for key in (

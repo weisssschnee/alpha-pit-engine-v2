@@ -688,6 +688,8 @@ def main() -> int:
                     "mapping_node_evaluations",
                     "cache_hits",
                     "native_kernel_calls",
+                    "intra_batch_released_entries",
+                    "intra_batch_released_bytes",
                 )
             }
             with telemetry.phase("expression_value_dag", compute_heavy=True) as phase:
@@ -711,6 +713,10 @@ def main() -> int:
                     signals_materialized=len(members),
                     temporary_rows_allocated=block.row_count * len(members),
                     cache_peak_bytes=expression.audit.get("cache_peak_bytes", 0),
+                    intra_batch_released_entries=delta[
+                        "intra_batch_released_entries"
+                    ],
+                    intra_batch_released_bytes=delta["intra_batch_released_bytes"],
                     pair_batch_ordinal=batch_ordinal,
                     pair_ids=list(pair_batch_ids),
                     candidate_indices=list(candidate_indices),
