@@ -13,6 +13,12 @@ from our_system_phase2.services.phase3cm_streaming_resource_contract import (
     balanced_pair_batches,
 )
 
+ACCESS_EVIDENCE_FIELDS = (
+    "validation_reads",
+    "holdout_reads",
+    "forward_2026_reads",
+)
+
 
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -34,6 +40,31 @@ def _integer(value: Any, *, default: int) -> int:
     """Parse an integer without treating the valid value zero as missing."""
 
     return default if value is None or value == "" else int(value)
+
+
+def _require_zero_access_evidence(
+    payload: Mapping[str, Any],
+    *,
+    context: str,
+) -> dict[str, int]:
+    """Reject absent, coerced, boolean, or non-zero sealed-access evidence."""
+
+    missing = [name for name in ACCESS_EVIDENCE_FIELDS if name not in payload]
+    if missing:
+        raise ValueError(
+            f"{context} access evidence incomplete: missing {','.join(missing)}"
+        )
+    evidence: dict[str, int] = {}
+    for name in ACCESS_EVIDENCE_FIELDS:
+        value = payload[name]
+        if isinstance(value, bool) or type(value) is not int:
+            raise ValueError(
+                f"{context} access evidence must be an explicit integer: {name}"
+            )
+        if value != 0:
+            raise ValueError(f"{context} records forbidden reads: {name}={value}")
+        evidence[name] = value
+    return evidence
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -185,12 +216,13 @@ def freeze_backend_partitions(
         raise ValueError("predecessor engineering receipt repo SHA drift")
     if predecessor.get("data_role") != "development_train_only":
         raise ValueError("predecessor engineering receipt data role drift")
-    if predecessor.get("access") != {
-        "validation_reads": 0,
-        "holdout_reads": 0,
-        "forward_2026_reads": 0,
-    }:
-        raise ValueError("predecessor engineering receipt access drift")
+    predecessor_access = predecessor.get("access")
+    if not isinstance(predecessor_access, Mapping):
+        raise ValueError("predecessor engineering receipt access evidence incomplete")
+    _require_zero_access_evidence(
+        predecessor_access,
+        context="predecessor engineering receipt",
+    )
     if predecessor.get("promotion") != "FORBIDDEN":
         raise ValueError("predecessor engineering receipt promotion drift")
     if int(predecessor.get("pair_count") or 0) != 64 or predecessor.get(
@@ -292,8 +324,10 @@ def freeze_backend_partitions(
             raise ValueError("reused backend result did not pass its resource gate")
         if str(reused.get("input_binding_hash") or "") != str(binding["binding_hash"]):
             raise ValueError("reused backend result binding hash drift")
-        if any(int(reused.get(name) or 0) for name in ("validation_reads", "holdout_reads", "forward_2026_reads")):
-            raise ValueError("reused backend result records forbidden reads")
+        reused_access = _require_zero_access_evidence(
+            reused,
+            context="reused backend result",
+        )
         expected_reused_pairs = {
             str(row["pair_id"])
             for row in binding.get("pairs") or []
@@ -331,8 +365,10 @@ def freeze_backend_partitions(
             "strict_stage_a"
         ) != "NOT_AUTHORIZED":
             raise ValueError("reused backend source receipt research boundary drift")
-        if any(int(source_run.get(name) or 0) for name in ("validation_reads", "holdout_reads", "forward_2026_reads")):
-            raise ValueError("reused backend source receipt records forbidden reads")
+        source_run_access = _require_zero_access_evidence(
+            source_run,
+            context="reused backend source receipt",
+        )
         reused_result_record = {
             "logical_backend": reused_backend,
             "pair_count": len(expected_reused_pairs),
@@ -341,7 +377,8 @@ def freeze_backend_partitions(
             "status": str(reused["status"]),
             "parallelism_status": str(reused["parallelism_status"]),
             "input_binding_hash": str(reused["input_binding_hash"]),
-            "access": {name: int(reused.get(name) or 0) for name in ("validation_reads", "holdout_reads", "forward_2026_reads")},
+            "access_evidence_complete": True,
+            "access": reused_access,
             "reuse_basis": "IMMUTABLE_COMPLETED_BACKEND_PLUS_R6_BYTE_IDENTICAL_RESEARCH_PARITY",
             "source_execution_receipt": {
                 "path": str(reused_backend_execution_receipt.resolve()),
@@ -350,10 +387,8 @@ def freeze_backend_partitions(
                 "repo_sha": str(source_run["combined_contract_repo_sha"]),
                 "session_exit_code": 0,
                 "active_exit_code": _integer(source_run.get("active_exit_code"), default=-1),
-                "access": {
-                    name: _integer(source_run.get(name), default=0)
-                    for name in ("validation_reads", "holdout_reads", "forward_2026_reads")
-                },
+                "access_evidence_complete": True,
+                "access": source_run_access,
             },
         }
 
@@ -552,8 +587,14 @@ def validate_partition_contract(
             raise ValueError("reused backend result is no longer complete")
         if reused_payload.get("parallelism_status") != "PARALLELISM_ENGAGED":
             raise ValueError("reused backend result resource gate drift")
-        if any(int(reused_payload.get(name) or 0) for name in ("validation_reads", "holdout_reads", "forward_2026_reads")):
-            raise ValueError("reused backend result access drift")
+        reused_access = _require_zero_access_evidence(
+            reused_payload,
+            context="reused backend result",
+        )
+        if reused_record.get("access_evidence_complete") is not True or reused_access != dict(
+            reused_record.get("access") or {}
+        ):
+            raise ValueError("reused backend result access evidence drift")
         reused_pair_count = int(reused_payload.get("pair_count") or 0)
         if reused_pair_count != int(reused_record.get("pair_count") or -1):
             raise ValueError("reused backend result pair count drift")
@@ -591,11 +632,13 @@ def validate_partition_contract(
             source_record.get("active_exit_code"), default=-1
         ):
             raise ValueError("reused backend source receipt active exit drift")
-        source_access = {
-            name: _integer(source_payload.get(name), default=0)
-            for name in ("validation_reads", "holdout_reads", "forward_2026_reads")
-        }
-        if any(source_access.values()) or source_access != dict(source_record.get("access") or {}):
+        source_access = _require_zero_access_evidence(
+            source_payload,
+            context="reused backend source receipt",
+        )
+        if source_record.get("access_evidence_complete") is not True or source_access != dict(
+            source_record.get("access") or {}
+        ):
             raise ValueError("reused backend source receipt access drift")
     if len(all_pair_ids) + reused_pair_count != int(contract.get("total_bound_pair_count") or -1):
         raise ValueError("partition total bound pair count drift")
@@ -607,6 +650,7 @@ def validate_partition_contract(
         "pair_count": len(all_pair_ids),
         "reused_pair_count": reused_pair_count,
         "total_bound_pair_count": len(all_pair_ids) + reused_pair_count,
+        "access_evidence_complete": True,
     }
 
 

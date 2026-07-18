@@ -62,6 +62,22 @@ $env:NUMEXPR_MAX_THREADS = "1"
 $env:POLARS_MAX_THREADS = "1"
 . (Join-Path $RepoRoot "scripts\cn_phase3cm_process_tree_monitor.ps1")
 
+function Test-CnZeroAccessEvidence {
+    param([object]$Payload)
+    if ($null -eq $Payload) { return $false }
+    $IntegerTypes = @(
+        [byte], [sbyte], [int16], [uint16], [int32], [uint32], [int64], [uint64]
+    )
+    foreach ($Name in @("validation_reads", "holdout_reads", "forward_2026_reads")) {
+        $Property = $Payload.PSObject.Properties[$Name]
+        if ($null -eq $Property -or $null -eq $Property.Value) { return $false }
+        $Value = $Property.Value
+        if (-not ($IntegerTypes -contains $Value.GetType())) { return $false }
+        if ([int64]$Value -ne 0) { return $false }
+    }
+    return $true
+}
+
 $ContractValidator = Join-Path $RepoRoot "scripts\freeze_cn_phase3cm_backend_partitions.py"
 $ContractValidationOutput = @(& $PythonExe $ContractValidator `
     --validate-contract $PartitionContract `
@@ -305,7 +321,8 @@ for ($Index = 0; $Index -lt 2; $Index += 1) {
         Get-Content -LiteralPath $ResultPaths[$Index] -Raw | ConvertFrom-Json
     } else { $null }
     $Results += $Result
-    if ($null -eq $Result) {
+    $ResultAccessEvidenceComplete = Test-CnZeroAccessEvidence -Payload $Result
+    if (-not $ResultAccessEvidenceComplete) {
         $AccessEvidenceComplete = $false
     } else {
         $ValidationReads += [int]$Result.validation_reads
@@ -343,6 +360,7 @@ for ($Index = 0; $Index -lt 2; $Index += 1) {
         [int64]$Result.max_observed_block_rows -le [int64]$CapacityValidations[$Index].max_block_rows -and
         $Result.parallelism_status -eq "PARALLELISM_ENGAGED" -and
         [int]$Result.coordinate_rows_retained -eq 0 -and
+        $ResultAccessEvidenceComplete -and
         [int]$Result.validation_reads -eq 0 -and
         [int]$Result.holdout_reads -eq 0 -and
         [int]$Result.forward_2026_reads -eq 0 -and
@@ -359,6 +377,7 @@ for ($Index = 0; $Index -lt 2; $Index += 1) {
         command_sha256 = [string]$CommandHashes[$Index]
         pair_count = [int]$Partition.pair_count
         pair_identity_pass = $PairIdentityPass
+        access_evidence_complete = $ResultAccessEvidenceComplete
         peak_process_tree_rss_bytes = [int64]$PartitionPeaks[[string]$Partition.partition_id]
         capacity_receipt = $CapacityReceiptPaths[$Index]
         capacity_receipt_hash = [string]$CapacityValidations[$Index].receipt_hash
@@ -369,7 +388,9 @@ for ($Index = 0; $Index -lt 2; $Index += 1) {
     }
 }
 $WallGatePass = (-not $WallGateFailure -and ($WallSecondsHardMax -le 0.0 -or $Stopwatch.Elapsed.TotalSeconds -le $WallSecondsHardMax))
-if (-not $WallGatePass -or $GlobalPeakRss -ge $GlobalHardRss) { $Pass = $false }
+if (-not $WallGatePass -or $GlobalPeakRss -ge $GlobalHardRss -or -not $AccessEvidenceComplete) {
+    $Pass = $false
+}
 $Receipt = [ordered]@{
     schema_version = "cn_phase3cm_partitioned_backend_execution_receipt_v1"
     status = if ($Pass) {

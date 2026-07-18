@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from scripts.freeze_cn_phase3cm_backend_partitions import (
+    _require_zero_access_evidence,
     freeze_backend_partitions,
     validate_partition_contract,
 )
@@ -174,6 +175,68 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path]:
     return candidate_table, binding_path, plan_path, predecessor, source_manifest
 
 
+def _add_reused_backend_fixture(
+    tmp_path: Path,
+    binding_path: Path,
+) -> tuple[Path, Path]:
+    binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    binding["pairs"].append(
+        {
+            "pair_id": "session.p0",
+            "clock_namespace": "stock_session",
+            "candidate_id": "session.p0.primary",
+            "control_candidate_id": "session.p0.control",
+        }
+    )
+    binding_without_hash = dict(binding)
+    binding_without_hash.pop("binding_hash", None)
+    binding["binding_hash"] = hashlib.sha256(
+        json.dumps(
+            binding_without_hash,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    _write_json(binding_path, binding)
+    reused = tmp_path / "session_result.json"
+    _write_json(
+        reused,
+        {
+            "backend": "stock_session",
+            "status": "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED",
+            "parallelism_status": "PARALLELISM_ENGAGED",
+            "input_binding_hash": binding["binding_hash"],
+            "pair_count": 1,
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+            "pair_results": [{"pair_id": "session.p0"}],
+        },
+    )
+    source_receipt = tmp_path / "source_execution_receipt.json"
+    _write_json(
+        source_receipt,
+        {
+            "schema_version": "cn_phase3cm_phase_e_combined_execution_receipt_v1",
+            "status": "CN_PHASE3CM_PHASE_E_STRICT_WAVE_FAIL",
+            "combined_contract_repo_sha": "c" * 40,
+            "active_exit_code": 1,
+            "session_exit_code": 0,
+            "session_result": str(reused.resolve()),
+            "active_pair_count": 4,
+            "session_pair_count": 1,
+            "total_pair_count": 5,
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+            "promotion": "FORBIDDEN",
+            "strict_stage_a": "NOT_AUTHORIZED",
+        },
+    )
+    return reused, source_receipt
+
+
 def test_freeze_creates_disjoint_complete_deterministic_partitions(tmp_path: Path) -> None:
     candidate_table, binding, plan, predecessor, source_manifest = _fixture(tmp_path)
     contract = freeze_backend_partitions(
@@ -257,61 +320,7 @@ def test_freeze_fails_when_candidate_table_is_incomplete(tmp_path: Path) -> None
 
 def test_freeze_binds_a_complete_reused_backend_result(tmp_path: Path) -> None:
     candidate_table, binding_path, plan, predecessor, source_manifest = _fixture(tmp_path)
-    binding = json.loads(binding_path.read_text(encoding="utf-8"))
-    binding["pairs"].append(
-        {
-            "pair_id": "session.p0",
-            "clock_namespace": "stock_session",
-            "candidate_id": "session.p0.primary",
-            "control_candidate_id": "session.p0.control",
-        }
-    )
-    binding_without_hash = dict(binding)
-    binding_without_hash.pop("binding_hash", None)
-    binding["binding_hash"] = hashlib.sha256(
-        json.dumps(
-            binding_without_hash,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()
-    _write_json(binding_path, binding)
-    reused = tmp_path / "session_result.json"
-    _write_json(
-        reused,
-        {
-            "backend": "stock_session",
-            "status": "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED",
-            "parallelism_status": "PARALLELISM_ENGAGED",
-            "input_binding_hash": binding["binding_hash"],
-            "pair_count": 1,
-            "validation_reads": 0,
-            "holdout_reads": 0,
-            "forward_2026_reads": 0,
-            "pair_results": [{"pair_id": "session.p0"}],
-        },
-    )
-    source_receipt = tmp_path / "source_execution_receipt.json"
-    _write_json(
-        source_receipt,
-        {
-            "schema_version": "cn_phase3cm_phase_e_combined_execution_receipt_v1",
-            "status": "CN_PHASE3CM_PHASE_E_STRICT_WAVE_FAIL",
-            "combined_contract_repo_sha": "c" * 40,
-            "active_exit_code": 1,
-            "session_exit_code": 0,
-            "session_result": str(reused.resolve()),
-            "active_pair_count": 4,
-            "session_pair_count": 1,
-            "total_pair_count": 5,
-            "validation_reads": 0,
-            "holdout_reads": 0,
-            "forward_2026_reads": 0,
-            "promotion": "FORBIDDEN",
-            "strict_stage_a": "NOT_AUTHORIZED",
-        },
-    )
+    reused, source_receipt = _add_reused_backend_fixture(tmp_path, binding_path)
 
     contract = freeze_backend_partitions(
         candidate_table=candidate_table,
@@ -331,7 +340,65 @@ def test_freeze_binds_a_complete_reused_backend_result(tmp_path: Path) -> None:
 
     assert contract["reused_backend_result"]["logical_backend"] == "stock_session"
     assert contract["reused_backend_result"]["pair_count"] == 1
+    assert contract["reused_backend_result"]["access_evidence_complete"] is True
+    assert contract["reused_backend_result"]["source_execution_receipt"][
+        "access_evidence_complete"
+    ] is True
     assert contract["total_bound_pair_count"] == 5
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"holdout_reads": 0, "forward_2026_reads": 0},
+        {"validation_reads": "0", "holdout_reads": 0, "forward_2026_reads": 0},
+        {"validation_reads": False, "holdout_reads": 0, "forward_2026_reads": 0},
+    ],
+)
+def test_zero_access_evidence_rejects_missing_or_coerced_values(payload: dict) -> None:
+    with pytest.raises(ValueError, match="access evidence"):
+        _require_zero_access_evidence(payload, context="test receipt")
+
+
+@pytest.mark.parametrize(
+    ("target", "mutated_value"),
+    [
+        ("reused_missing", None),
+        ("reused_string", "0"),
+        ("source_boolean", False),
+    ],
+)
+def test_freeze_rejects_incomplete_or_non_integer_reused_access_evidence(
+    tmp_path: Path,
+    target: str,
+    mutated_value: object,
+) -> None:
+    candidate_table, binding, plan, predecessor, source_manifest = _fixture(tmp_path)
+    reused, source_receipt = _add_reused_backend_fixture(tmp_path, binding)
+    mutation_path = source_receipt if target.startswith("source_") else reused
+    payload = json.loads(mutation_path.read_text(encoding="utf-8"))
+    if target.endswith("missing"):
+        payload.pop("validation_reads")
+    else:
+        payload["validation_reads"] = mutated_value
+    _write_json(mutation_path, payload)
+
+    with pytest.raises(ValueError, match="access evidence"):
+        freeze_backend_partitions(
+            candidate_table=candidate_table,
+            binding_path=binding,
+            source_plan_path=plan,
+            output_root=tmp_path / "out",
+            repo_sha="a" * 40,
+            logical_backend="active_bar",
+            partition_count=2,
+            compute_threads_per_partition=3,
+            pair_batch_size=1,
+            predecessor_engineering_receipt=predecessor,
+            source_closure_manifest=source_manifest,
+            reused_backend_result=reused,
+            reused_backend_execution_receipt=source_receipt,
+        )
 
 
 def test_partition_contract_validation_rejects_table_tamper(tmp_path: Path) -> None:
@@ -411,6 +478,9 @@ def test_partition_launcher_gates_before_creating_output_or_heavy_processes() ->
     assert source_closure_gate < output_creation
     assert script.count("--source-closure-manifest") >= 2
     assert "[string]$SourceClosureManifest" in script
+    assert "function Test-CnZeroAccessEvidence" in script
+    assert '$Payload.PSObject.Properties[$Name]' in script
+    assert "access_evidence_complete = $ResultAccessEvidenceComplete" in script
     assert '"--max-block-rows"' in script
     assert '"--capacity-receipt-hash"' in script
     assert "Get-CnProcessTreeRssSnapshot" in script

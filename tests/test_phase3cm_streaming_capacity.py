@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import ast
 import csv
 import json
 import subprocess
@@ -277,22 +276,30 @@ def test_no_git_source_closure_requires_explicit_manifest(tmp_path, monkeypatch)
         )
 
 
-def test_source_closure_covers_runner_direct_project_imports_and_launch_helpers() -> None:
+def test_source_closure_recursively_covers_live_local_imports_and_launch_helpers() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    runner = repo_root / "scripts" / "run_cn_phase3cm_streaming_qualification.py"
-    tree = ast.parse(runner.read_text(encoding="utf-8-sig"))
-    direct_project_sources = {
-        "src/" + str(node.module).replace(".", "/") + ".py"
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom)
-        and str(node.module or "").startswith("our_system_phase2.")
-    }
     frozen_sources = set(SOURCE_CLOSURE_PATHS)
-    assert direct_project_sources <= frozen_sources
+    assert capacity_preflight.discover_source_closure_paths(repo_root) == (
+        SOURCE_CLOSURE_PATHS
+    )
+    for relative in SOURCE_CLOSURE_PATHS:
+        assert set(
+            capacity_preflight._direct_local_import_files(repo_root, relative)
+        ) <= frozen_sources
     assert {
         "scripts/invoke_cn_phase3cm_backend_with_exit_receipt.ps1",
         "scripts/cn_phase3cm_process_tree_monitor.ps1",
         "scripts/run_cn_phase3cm_partitioned_backend_77o.ps1",
+        "src/our_system_phase2/services/phase3cm_time_major_sidecar.py",
+        "src/our_system_phase2/services/candidate_schema.py",
+        "src/our_system_phase2/runtime/phase3bl_bk_priority_signal_materialization.py",
+        "src/our_system_phase2/services/candidate_submission_receipt.py",
+        "src/our_system_phase2/services/fixed_split_authority.py",
+        "src/our_system_phase2/services/legacy_field_aliases.py",
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "src/our_system_phase2/services/real_market_validation.py",
+        "src/our_system_phase2/services/signal_vector_semantics.py",
+        "src/our_system_phase2/services/unified_capability_registry.py",
     } <= frozen_sources
 
 

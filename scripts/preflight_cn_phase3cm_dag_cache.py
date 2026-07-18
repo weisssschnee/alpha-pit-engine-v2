@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import hashlib
 import inspect
@@ -21,7 +22,7 @@ from our_system_phase2.services.phase3cm_streaming_resource_contract import (
 )
 
 
-SOURCE_CLOSURE_PATHS = (
+SOURCE_CLOSURE_ENTRYPOINTS = (
     "scripts/analyze_cn_core_pack_strict_wave.py",
     "scripts/freeze_cn_phase3cm_backend_partitions.py",
     "scripts/invoke_cn_phase3cm_backend_with_exit_receipt.ps1",
@@ -30,19 +31,116 @@ SOURCE_CLOSURE_PATHS = (
     "scripts/run_cn_phase3cm_streaming_qualification.py",
     "scripts/run_cn_phase3cm_phase_e_qualification_77o.ps1",
     "scripts/run_cn_phase3cm_partitioned_backend_77o.ps1",
-    "src/our_system_phase2/services/expression_semantics.py",
-    "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
-    "src/our_system_phase2/services/phase3cm_streaming_block_reader.py",
-    "src/our_system_phase2/services/phase3cm_streaming_cache.py",
-    "src/our_system_phase2/services/phase3cm_streaming_capacity.py",
-    "src/our_system_phase2/services/phase3cm_streaming_checkpoint.py",
-    "src/our_system_phase2/services/phase3cm_streaming_dag.py",
-    "src/our_system_phase2/services/phase3cm_streaming_expression.py",
-    "src/our_system_phase2/services/phase3cm_streaming_portfolio.py",
-    "src/our_system_phase2/services/phase3cm_streaming_reducer.py",
-    "src/our_system_phase2/services/phase3cm_streaming_resource_contract.py",
-    "src/our_system_phase2/services/phase3cm_streaming_support.py",
-    "src/our_system_phase2/services/phase3cm_streaming_telemetry.py",
+)
+
+
+def _python_module_name(relative_path: str) -> str | None:
+    path = str(relative_path).replace("\\", "/")
+    if not path.endswith(".py"):
+        return None
+    if path.startswith("src/"):
+        path = path[4:]
+    elif not path.startswith("scripts/"):
+        return None
+    module = path[:-3].replace("/", ".")
+    return module.removesuffix(".__init__")
+
+
+def _local_module_files(repo_root: Path, module: str) -> tuple[str, ...]:
+    if module == "our_system_phase2" or module.startswith("our_system_phase2."):
+        prefix = "src/"
+    elif module == "scripts" or module.startswith("scripts."):
+        prefix = ""
+    else:
+        return ()
+    parts = module.split(".")
+    candidates: list[str] = []
+    for length in range(1, len(parts) + 1):
+        package = prefix + "/".join(parts[:length]) + "/__init__.py"
+        if (Path(repo_root) / package).is_file():
+            candidates.append(package)
+    module_file = prefix + "/".join(parts) + ".py"
+    if (Path(repo_root) / module_file).is_file():
+        candidates.append(module_file)
+    return tuple(candidates)
+
+
+def _absolute_import_module(
+    node: ast.ImportFrom,
+    *,
+    current_module: str,
+    current_is_package: bool,
+) -> str:
+    if int(node.level or 0) == 0:
+        return str(node.module or "")
+    package_parts = current_module.split(".")
+    if not current_is_package:
+        package_parts = package_parts[:-1]
+    keep = len(package_parts) - (int(node.level) - 1)
+    if keep < 0:
+        return ""
+    parts = package_parts[:keep]
+    if node.module:
+        parts.extend(str(node.module).split("."))
+    return ".".join(parts)
+
+
+def _direct_local_import_files(repo_root: Path, relative_path: str) -> tuple[str, ...]:
+    current_module = _python_module_name(relative_path)
+    if current_module is None:
+        return ()
+    source = Path(repo_root) / relative_path
+    tree = ast.parse(source.read_text(encoding="utf-8-sig"), filename=str(source))
+    modules: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            modules.update(str(alias.name) for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            base = _absolute_import_module(
+                node,
+                current_module=current_module,
+                current_is_package=str(relative_path).replace("\\", "/").endswith(
+                    "/__init__.py"
+                ),
+            )
+            if base:
+                modules.add(base)
+                modules.update(
+                    f"{base}.{alias.name}"
+                    for alias in node.names
+                    if alias.name != "*"
+                )
+    resolved = {
+        path
+        for module in modules
+        for path in _local_module_files(repo_root, module)
+    }
+    return tuple(sorted(resolved))
+
+
+def discover_source_closure_paths(repo_root: Path) -> tuple[str, ...]:
+    """Follow only reachable local Python imports from fixed launch entrypoints."""
+
+    root = Path(repo_root).resolve()
+    ordered = list(SOURCE_CLOSURE_ENTRYPOINTS)
+    seen = set(ordered)
+    for relative in ordered:
+        source = root / relative
+        if not source.is_file():
+            raise FileNotFoundError(f"source closure entry is missing: {source}")
+    cursor = 0
+    while cursor < len(ordered):
+        relative = ordered[cursor]
+        cursor += 1
+        for imported in _direct_local_import_files(root, relative):
+            if imported not in seen:
+                seen.add(imported)
+                ordered.append(imported)
+    return tuple(ordered)
+
+
+SOURCE_CLOSURE_PATHS = discover_source_closure_paths(
+    Path(__file__).resolve().parents[1]
 )
 FIELD_MANIFEST_NAME = "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
 LABEL_MANIFEST_NAME = "CN_FORWARD_LABEL_SIDECAR_MANIFEST.json"
