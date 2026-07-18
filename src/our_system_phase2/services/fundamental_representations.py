@@ -419,6 +419,43 @@ class CanonicalFundamentalMaterializer:
     def __init__(self, adapter: PITFundamentalFabricAdapter) -> None:
         self.adapter = adapter
 
+    def _staleness_sessions(
+        self,
+        session_time: pd.Series,
+        observable_time: pd.Series,
+    ) -> pd.Series:
+        """Count declared trading sessions since the value became observable.
+
+        The first observable session has age zero.  Calendar-day subtraction is
+        intentionally forbidden because a Friday disclosure would otherwise
+        age three units by Monday even though only one trading session passed.
+        Unknown clocks, coordinates outside the declared calendar, and clocks
+        later than their coordinate remain unknown.
+        """
+
+        calendar = pd.DatetimeIndex(
+            pd.to_datetime(list(self.adapter.sessions), errors="raise")
+        ).normalize()
+        if calendar.empty or calendar.has_duplicates or not calendar.is_monotonic_increasing:
+            raise ValueError("fundamental staleness needs a unique increasing session calendar")
+        coordinates = pd.to_datetime(session_time, errors="coerce")
+        clocks = pd.to_datetime(observable_time, errors="coerce")
+        coordinate_positions = calendar.get_indexer(coordinates.dt.normalize())
+        clock_positions = calendar.get_indexer(clocks.dt.normalize())
+        eligible = (
+            coordinates.notna().to_numpy()
+            & clocks.notna().to_numpy()
+            & (coordinate_positions >= 0)
+            & (clock_positions >= 0)
+            & (coordinate_positions >= clock_positions)
+            & clocks.le(coordinates).to_numpy()
+        )
+        result = pd.Series(np.nan, index=session_time.index, dtype="float64")
+        result.iloc[np.flatnonzero(eligible)] = (
+            coordinate_positions[eligible] - clock_positions[eligible]
+        ).astype(float)
+        return result
+
     @staticmethod
     def _request(source: Mapping[str, Any], *, route: str, transform: str = "latest") -> FundamentalFieldRequest:
         return FundamentalFieldRequest(
@@ -501,8 +538,11 @@ class CanonicalFundamentalMaterializer:
             base = np.log1p(values[0].where(values[0] >= 0.0))
             result = base.groupby(output["code"], sort=False).diff()
         elif operation == "staleness_sessions":
-            clocks = pd.to_datetime(output["observable_time_0"], errors="coerce")
-            result = (pd.to_datetime(output["session_time"]) - clocks).dt.days.astype(float)
+            clocks = output.get(
+                "observable_time_0",
+                pd.Series(pd.NaT, index=output.index, dtype="datetime64[ns]"),
+            )
+            result = self._staleness_sessions(output["session_time"], clocks)
         else:
             raise ValueError(f"unsupported canonical representation operation: {operation}")
         output[output_name] = result

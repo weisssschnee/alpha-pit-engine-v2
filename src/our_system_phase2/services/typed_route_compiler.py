@@ -21,6 +21,19 @@ from our_system_phase2.services.unified_capability_registry import (
 
 
 COMPILER_VERSION = "cn_typed_route_compiler_v2_primitive_allowlist"
+SUPPLEMENTAL_ROOT_SCOPE_ID = "cn_core_pack_supplemental_root_scope_v1"
+SUPPLEMENTAL_GENERATOR_VERSION = "cn_typed_compositional_supplemental_v1"
+SUPPLEMENTAL_AUTHORIZED_ROOT_IDS = frozenset(
+    {
+        "fund_disclosure_balance_age_sessions",
+        "fund_disclosure_profit_age_sessions",
+        "fund_disclosure_cashflow_age_sessions",
+        "fund_disclosure_holder_age_sessions",
+        "ctx_hfq_is_st",
+        "ctx_hfq_prev_is_limit_up",
+        "state_close_range_location_sign",
+    }
+)
 
 
 REJECTION_CODES = {
@@ -278,6 +291,29 @@ class TypedRouteCompiler:
                 maturity_rule=str(route["maturity_rule"]),
             )
 
+        supplemental_roots = set(field_ids) & set(SUPPLEMENTAL_AUTHORIZED_ROOT_IDS)
+        if supplemental_roots and (
+            candidate.get("supplemental_delta_only") is not True
+            or str(candidate.get("supplemental_authority_id") or "")
+            != SUPPLEMENTAL_ROOT_SCOPE_ID
+            or str(candidate.get("generator_version") or "")
+            != SUPPLEMENTAL_GENERATOR_VERSION
+            or str(candidate.get("proposal_origin") or "")
+            != "typed_compositional_supplemental_v1"
+        ):
+            return _reject(
+                route_id=route_id,
+                code="ROUTE_NOT_ALLOWED",
+                reason=(
+                    "supplemental root lacks the independent append-only authority "
+                    f"envelope: {sorted(supplemental_roots)}"
+                ),
+                expression=semantic.canonical_expression,
+                fields=resolved,
+                support_unit=str(route["support_unit"]),
+                maturity_rule=str(route["maturity_rule"]),
+            )
+
         operators = _operators(parsed)
         allowed_primitives = ROUTE_PRIMITIVE_ALLOWLIST.get(route_id, set())
         unauthorized_primitives = sorted(operators - allowed_primitives)
@@ -342,11 +378,108 @@ class TypedRouteCompiler:
                     support_unit=str(route["support_unit"]),
                     maturity_rule=str(route["maturity_rule"]),
                 )
-            if any(by_id[field_id].entity_scope not in {"MARKET", "INDUSTRY", "PLATE"} for field_id in condition_ids):
+            stock_context_ids = set(
+                str(value) for value in candidate.get("stock_context_field_ids", ())
+            )
+            declared_market_ids = set(
+                str(value) for value in candidate.get("market_condition_field_ids", ())
+            )
+            market_condition_ids = declared_market_ids or (
+                condition_ids - stock_context_ids
+            )
+            if (
+                not market_condition_ids
+                or not market_condition_ids.issubset(condition_ids)
+                or not stock_context_ids.issubset(condition_ids)
+                or condition_ids != market_condition_ids | stock_context_ids
+            ):
                 return _reject(
                     route_id=route_id,
                     code="ENTITY_SCOPE_MISMATCH",
-                    reason="regime condition field is not market/industry/plate scoped",
+                    reason="regime condition receipt does not partition market and stock contexts",
+                    expression=semantic.canonical_expression,
+                    fields=resolved,
+                    support_unit=str(route["support_unit"]),
+                    maturity_rule=str(route["maturity_rule"]),
+                )
+            if any(
+                by_id[field_id].entity_scope not in {"MARKET", "INDUSTRY", "PLATE"}
+                for field_id in market_condition_ids
+            ):
+                return _reject(
+                    route_id=route_id,
+                    code="ENTITY_SCOPE_MISMATCH",
+                    reason="regime market condition is not market/industry/plate scoped",
+                    expression=semantic.canonical_expression,
+                    fields=resolved,
+                    support_unit=str(route["support_unit"]),
+                    maturity_rule=str(route["maturity_rule"]),
+                )
+            if stock_context_ids:
+                expression_ids = set(expression_field_ids)
+                if not stock_context_ids.issubset(by_id) or not stock_context_ids.issubset(
+                    expression_ids
+                ):
+                    return _reject(
+                        route_id=route_id,
+                        code="ENTITY_SCOPE_MISMATCH",
+                        reason="stock regime context must be declared and consumed",
+                        expression=semantic.canonical_expression,
+                        fields=resolved,
+                        support_unit=str(route["support_unit"]),
+                        maturity_rule=str(route["maturity_rule"]),
+                    )
+                invalid_contexts = [
+                    field_id
+                    for field_id in stock_context_ids
+                    if by_id[field_id].entity_scope != "STOCK"
+                    or by_id[field_id].field_role not in {"condition-only", "state-only"}
+                    or by_id[field_id].temporal_semantics
+                    != "PREVIOUS_SESSION_STOCK_CONTEXT"
+                ]
+                if invalid_contexts:
+                    return _reject(
+                        route_id=route_id,
+                        code="ENTITY_SCOPE_MISMATCH",
+                        reason=(
+                            "invalid previous-session stock regime context: "
+                            f"{sorted(invalid_contexts)}"
+                        ),
+                        expression=semantic.canonical_expression,
+                        fields=resolved,
+                        support_unit=str(route["support_unit"]),
+                        maturity_rule=str(route["maturity_rule"]),
+                    )
+        elif route_id == "SLOW_CROSS_SECTIONAL_LEVEL" and condition_ids:
+            expression_ids = set(expression_field_ids)
+            if not condition_ids.issubset(by_id) or not condition_ids.issubset(
+                expression_ids
+            ):
+                return _reject(
+                    route_id=route_id,
+                    code="ENTITY_SCOPE_MISMATCH",
+                    reason="slow-level condition must be declared and consumed",
+                    expression=semantic.canonical_expression,
+                    fields=resolved,
+                    support_unit=str(route["support_unit"]),
+                    maturity_rule=str(route["maturity_rule"]),
+                )
+            invalid_conditions = [
+                field_id
+                for field_id in condition_ids
+                if by_id[field_id].entity_scope != "STOCK"
+                or by_id[field_id].field_role != "condition-only"
+                or by_id[field_id].source_family
+                != "canonical_fundamental_disclosure_timing_staleness"
+            ]
+            if invalid_conditions:
+                return _reject(
+                    route_id=route_id,
+                    code="ENTITY_SCOPE_MISMATCH",
+                    reason=(
+                        "invalid PIT disclosure-age condition: "
+                        f"{sorted(invalid_conditions)}"
+                    ),
                     expression=semantic.canonical_expression,
                     fields=resolved,
                     support_unit=str(route["support_unit"]),
@@ -392,6 +525,67 @@ class TypedRouteCompiler:
                     support_unit=str(route["support_unit"]),
                     maturity_rule=str(route["maturity_rule"]),
                 )
+            if bool(candidate.get("state_materialization_required", False)):
+                materialization_expression = str(
+                    candidate.get("state_materialization_expression") or ""
+                )
+                source_ids = tuple(
+                    str(value)
+                    for value in candidate.get("state_source_field_ids", ())
+                )
+                registered_expression = str(
+                    (by_id[claimed].metadata or {}).get("materialization_expression")
+                    or ""
+                )
+                registered_sources = tuple(
+                    str(value)
+                    for value in (by_id[claimed].metadata or {}).get(
+                        "source_fields", ()
+                    )
+                )
+                if (
+                    state_expression != f"${claimed}"
+                    or not materialization_expression
+                    or materialization_expression != registered_expression
+                    or not source_ids
+                    or source_ids != registered_sources
+                ):
+                    return _reject(
+                        route_id=route_id,
+                        code="STATE_FIELD_NOT_CONSUMED",
+                        reason="canonical materialized state lineage does not match registry",
+                        expression=semantic.canonical_expression,
+                        fields=resolved,
+                        support_unit=str(route["support_unit"]),
+                        maturity_rule=str(route["maturity_rule"]),
+                    )
+                try:
+                    source_fields = [self.registry.resolve(field_id) for field_id in source_ids]
+                except KeyError as exc:
+                    return _reject(
+                        route_id=route_id,
+                        code="STATE_FIELD_NOT_CONSUMED",
+                        reason=str(exc),
+                        expression=semantic.canonical_expression,
+                        fields=resolved,
+                        support_unit=str(route["support_unit"]),
+                        maturity_rule=str(route["maturity_rule"]),
+                    )
+                if any(
+                    not field.search_eligible
+                    or route_id not in field.allowed_routes
+                    or field.observable_clock != by_id[claimed].observable_clock
+                    for field in source_fields
+                ):
+                    return _reject(
+                        route_id=route_id,
+                        code="STATE_FIELD_NOT_CONSUMED",
+                        reason="canonical materialized state source lineage is not route/PIT compatible",
+                        expression=semantic.canonical_expression,
+                        fields=resolved,
+                        support_unit=str(route["support_unit"]),
+                        maturity_rule=str(route["maturity_rule"]),
+                    )
 
         if bool(candidate.get("requires_intrabar_order", False)):
             return _reject(

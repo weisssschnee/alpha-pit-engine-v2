@@ -1,0 +1,791 @@
+{
+  "authority_note": "campaign contract is stable; every executable epoch separately freezes a clean source closure and all input hashes",
+  "authorization": "CURRENT_USER_RESEARCH_DISCOVERY_PRIMARY_20260718",
+  "baseline_contract": {
+    "artifacts": [
+      {
+        "mode": "READ_ONLY_HASH_REQUIRED",
+        "path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/CN_GENERATION_ARTIFACT_MANIFEST.json",
+        "role": "generation_manifest",
+        "sha256": "5d03322b2ef71a0035faa4b4143e6c2b738101f8144c47687cdc38fd511f16f5"
+      },
+      {
+        "mode": "READ_ONLY_HASH_REQUIRED",
+        "path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/CN_GENERATION_EPOCH_SUMMARY.json",
+        "role": "generation_summary",
+        "sha256": "cefb5cc60abe03e1772cc3f4945390f3f43d81fb374a883a70b40e90c7a1684f"
+      },
+      {
+        "mode": "READ_ONLY_HASH_REQUIRED",
+        "path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/CN_PAIR_RECEIPTS.jsonl",
+        "role": "pair_receipts",
+        "sha256": "d332d501176258488ee26845a911a37f3dc7451f9e6c0b6bc23b504c572e10e9"
+      },
+      {
+        "mode": "READ_ONLY_HASH_REQUIRED",
+        "path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/CN_SIGNAL_SKETCH_DIAGNOSTIC.json",
+        "role": "signal_sketch_diagnostic",
+        "sha256": "8d40318d6820a467d14df7768c6a371d9f0326b20f9a536d727d1aea6ad7a3d7"
+      },
+      {
+        "mode": "READ_ONLY_HASH_REQUIRED",
+        "path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/CN_SIGNAL_CLUSTER_REGISTRY.csv",
+        "role": "signal_cluster_registry",
+        "sha256": "159b216da13b073db55153337a98f9d9eb0680bab5366e462f9639a07f73b83d"
+      },
+      {
+        "mode": "READ_ONLY_HASH_REQUIRED",
+        "path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/CN_BEHAVIOR_CLUSTERS.json",
+        "role": "behavior_cluster_summary",
+        "sha256": "74019646e5490350f4d70388f15452292727e402b7448f6174a5733a7e57b75e"
+      },
+      {
+        "mode": "READ_ONLY_HASH_REQUIRED",
+        "path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/CN_DIVERSITY_ADMISSION.csv",
+        "role": "diversity_admission",
+        "sha256": "1af56e467005e7bfe87a13d9c32d90b1ebeac31a73a264643c212df8eafb5bd0"
+      },
+      {
+        "mode": "READ_ONLY_HASH_REQUIRED",
+        "path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/strict_wave_00064_evaluation_r5_asymmetric/CN_PHASE_E_COMBINED_EXECUTION_RECEIPT.json",
+        "role": "strict_64_execution_receipt",
+        "sha256": "f8b467cc7f1296a35303a9d91da754fffb27b91606342d8a70318f8d34c61b60"
+      },
+      {
+        "mode": "READ_ONLY_HASH_REQUIRED",
+        "path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/strict_wave_00064_evaluation_r5_asymmetric/CN_STRICT_WAVE_00064_ANALYSIS.json",
+        "role": "strict_64_analysis",
+        "sha256": "decfb125f3acf0bd4997fee2c04c46776e127414f04dd16db9cb1600b5c1213e"
+      }
+    ],
+    "coverage_qualified_signals": 47836,
+    "full_pack_regeneration": "FORBIDDEN",
+    "legal_exact_unique_primaries": 69897,
+    "proposal_attempts": 1900544,
+    "repo_sha": "ac81237a8c0d0759c965cb3eddbc3645ce2c336f",
+    "reuse_mode": "READ_ONLY_NO_REWRITE",
+    "root_scope_blob_sha": "f73a40297a3927387d490bf9d2490f4693edfcb4",
+    "root_scope_hash": "5ff4e84f137ccffee31944f12be0045ae653573186915922c9583854600ae1a2",
+    "root_scope_path": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
+    "signal_clusters": 28325,
+    "strict_pairs_completed": 64
+  },
+  "challenger_contract": {
+    "admission_and_continuation_authority": "INDEPENDENT_CAMPAIGN_CONTROLLER",
+    "algorithm_level_matched_nonadaptive_control_required": true,
+    "all_reserved_budgets_nonzero": true,
+    "candidate_level_matched_unconditional_control_required": true,
+    "challengers": [
+      {
+        "activation_requirements": [
+          "UNIFIED_REGISTRY_AND_TYPED_GRAMMAR_ADAPTER",
+          "SOURCE_PATH_AND_SHA256_BOUND",
+          "DETERMINISTIC_PROPOSAL_TRANSCRIPT_REPLAY",
+          "PROPOSAL_DISTRIBUTION_DIFFERS_FROM_MATCHED_CONTROL",
+          "INDEPENDENT_CANDIDATE_SUBMISSION_VALIDATION",
+          "NO_FAKE_POLICY_LABELS"
+        ],
+        "activation_state": "PENDING_REAL_UNIFIED_ADAPTER_RECEIPT",
+        "adaptive": false,
+        "admission_budget_by_route": {
+          "DISCLOSURE_EVENT": 32,
+          "FIRSTN_PATH": 32,
+          "INTRADAY_STATE_TRANSITION": 32,
+          "MARKET_REGIME_CONDITION": 32,
+          "MINUTE_STATIC": 32,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+          "SLOW_TEMPORAL_CHANGE": 32
+        },
+        "archive_namespace": "cn_delta/challenger/typed_ast",
+        "challenger_id": "typed_ast",
+        "lineage_namespace": "cn_delta.typed_ast",
+        "matched_nonadaptive_control": {
+          "admission_budget_by_route": {
+            "DISCLOSURE_EVENT": 32,
+            "FIRSTN_PATH": 32,
+            "INTRADAY_STATE_TRANSITION": 32,
+            "MARKET_REGIME_CONDITION": 32,
+            "MINUTE_STATIC": 32,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+            "SLOW_TEMPORAL_CHANGE": 32
+          },
+          "archive_namespace": "cn_delta/control/typed_ast",
+          "lineage_namespace": "cn_delta.control.typed_ast",
+          "policy_id": "stratified_typed_random",
+          "proposal_budget_by_route": {
+            "DISCLOSURE_EVENT": 1024,
+            "FIRSTN_PATH": 1024,
+            "INTRADAY_STATE_TRANSITION": 1024,
+            "MARKET_REGIME_CONDITION": 1024,
+            "MINUTE_STATIC": 1024,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+            "SLOW_TEMPORAL_CHANGE": 1024
+          },
+          "seed_base": 20000003,
+          "strict_pair_budget_after_256": 16
+        },
+        "proposal_budget_by_route": {
+          "DISCLOSURE_EVENT": 1024,
+          "FIRSTN_PATH": 1024,
+          "INTRADAY_STATE_TRANSITION": 1024,
+          "MARKET_REGIME_CONDITION": 1024,
+          "MINUTE_STATIC": 1024,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+          "SLOW_TEMPORAL_CHANGE": 1024
+        },
+        "seed_base": 2000003,
+        "strict_pair_budget_after_256": 16
+      },
+      {
+        "activation_requirements": [
+          "UNIFIED_REGISTRY_AND_TYPED_GRAMMAR_ADAPTER",
+          "SOURCE_PATH_AND_SHA256_BOUND",
+          "DETERMINISTIC_PROPOSAL_TRANSCRIPT_REPLAY",
+          "PROPOSAL_DISTRIBUTION_DIFFERS_FROM_MATCHED_CONTROL",
+          "INDEPENDENT_CANDIDATE_SUBMISSION_VALIDATION",
+          "NO_FAKE_POLICY_LABELS"
+        ],
+        "activation_state": "PENDING_REAL_UNIFIED_ADAPTER_RECEIPT",
+        "adaptive": true,
+        "admission_budget_by_route": {
+          "DISCLOSURE_EVENT": 32,
+          "FIRSTN_PATH": 32,
+          "INTRADAY_STATE_TRANSITION": 32,
+          "MARKET_REGIME_CONDITION": 32,
+          "MINUTE_STATIC": 32,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+          "SLOW_TEMPORAL_CHANGE": 32
+        },
+        "archive_namespace": "cn_delta/challenger/cem",
+        "challenger_id": "cem",
+        "lineage_namespace": "cn_delta.cem",
+        "matched_nonadaptive_control": {
+          "admission_budget_by_route": {
+            "DISCLOSURE_EVENT": 32,
+            "FIRSTN_PATH": 32,
+            "INTRADAY_STATE_TRANSITION": 32,
+            "MARKET_REGIME_CONDITION": 32,
+            "MINUTE_STATIC": 32,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+            "SLOW_TEMPORAL_CHANGE": 32
+          },
+          "archive_namespace": "cn_delta/control/cem",
+          "lineage_namespace": "cn_delta.control.cem",
+          "policy_id": "stratified_typed_random",
+          "proposal_budget_by_route": {
+            "DISCLOSURE_EVENT": 1024,
+            "FIRSTN_PATH": 1024,
+            "INTRADAY_STATE_TRANSITION": 1024,
+            "MARKET_REGIME_CONDITION": 1024,
+            "MINUTE_STATIC": 1024,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+            "SLOW_TEMPORAL_CHANGE": 1024
+          },
+          "seed_base": 20104732,
+          "strict_pair_budget_after_256": 16
+        },
+        "proposal_budget_by_route": {
+          "DISCLOSURE_EVENT": 1024,
+          "FIRSTN_PATH": 1024,
+          "INTRADAY_STATE_TRANSITION": 1024,
+          "MARKET_REGIME_CONDITION": 1024,
+          "MINUTE_STATIC": 1024,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+          "SLOW_TEMPORAL_CHANGE": 1024
+        },
+        "seed_base": 2104732,
+        "strict_pair_budget_after_256": 16
+      },
+      {
+        "activation_requirements": [
+          "UNIFIED_REGISTRY_AND_TYPED_GRAMMAR_ADAPTER",
+          "SOURCE_PATH_AND_SHA256_BOUND",
+          "DETERMINISTIC_PROPOSAL_TRANSCRIPT_REPLAY",
+          "PROPOSAL_DISTRIBUTION_DIFFERS_FROM_MATCHED_CONTROL",
+          "INDEPENDENT_CANDIDATE_SUBMISSION_VALIDATION",
+          "NO_FAKE_POLICY_LABELS"
+        ],
+        "activation_state": "PENDING_REAL_UNIFIED_ADAPTER_RECEIPT",
+        "adaptive": true,
+        "admission_budget_by_route": {
+          "DISCLOSURE_EVENT": 32,
+          "FIRSTN_PATH": 32,
+          "INTRADAY_STATE_TRANSITION": 32,
+          "MARKET_REGIME_CONDITION": 32,
+          "MINUTE_STATIC": 32,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+          "SLOW_TEMPORAL_CHANGE": 32
+        },
+        "archive_namespace": "cn_delta/challenger/rx_ucb",
+        "challenger_id": "rx_ucb",
+        "lineage_namespace": "cn_delta.rx_ucb",
+        "matched_nonadaptive_control": {
+          "admission_budget_by_route": {
+            "DISCLOSURE_EVENT": 32,
+            "FIRSTN_PATH": 32,
+            "INTRADAY_STATE_TRANSITION": 32,
+            "MARKET_REGIME_CONDITION": 32,
+            "MINUTE_STATIC": 32,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+            "SLOW_TEMPORAL_CHANGE": 32
+          },
+          "archive_namespace": "cn_delta/control/rx_ucb",
+          "lineage_namespace": "cn_delta.control.rx_ucb",
+          "policy_id": "stratified_typed_random",
+          "proposal_budget_by_route": {
+            "DISCLOSURE_EVENT": 1024,
+            "FIRSTN_PATH": 1024,
+            "INTRADAY_STATE_TRANSITION": 1024,
+            "MARKET_REGIME_CONDITION": 1024,
+            "MINUTE_STATIC": 1024,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+            "SLOW_TEMPORAL_CHANGE": 1024
+          },
+          "seed_base": 20209461,
+          "strict_pair_budget_after_256": 16
+        },
+        "proposal_budget_by_route": {
+          "DISCLOSURE_EVENT": 1024,
+          "FIRSTN_PATH": 1024,
+          "INTRADAY_STATE_TRANSITION": 1024,
+          "MARKET_REGIME_CONDITION": 1024,
+          "MINUTE_STATIC": 1024,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+          "SLOW_TEMPORAL_CHANGE": 1024
+        },
+        "seed_base": 2209461,
+        "strict_pair_budget_after_256": 16
+      },
+      {
+        "activation_requirements": [
+          "UNIFIED_REGISTRY_AND_TYPED_GRAMMAR_ADAPTER",
+          "SOURCE_PATH_AND_SHA256_BOUND",
+          "DETERMINISTIC_PROPOSAL_TRANSCRIPT_REPLAY",
+          "PROPOSAL_DISTRIBUTION_DIFFERS_FROM_MATCHED_CONTROL",
+          "INDEPENDENT_CANDIDATE_SUBMISSION_VALIDATION",
+          "NO_FAKE_POLICY_LABELS"
+        ],
+        "activation_state": "PENDING_REAL_UNIFIED_ADAPTER_RECEIPT",
+        "adaptive": true,
+        "admission_budget_by_route": {
+          "DISCLOSURE_EVENT": 32,
+          "FIRSTN_PATH": 32,
+          "INTRADAY_STATE_TRANSITION": 32,
+          "MARKET_REGIME_CONDITION": 32,
+          "MINUTE_STATIC": 32,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+          "SLOW_TEMPORAL_CHANGE": 32
+        },
+        "archive_namespace": "cn_delta/challenger/uct_mcts",
+        "challenger_id": "uct_mcts",
+        "lineage_namespace": "cn_delta.uct_mcts",
+        "matched_nonadaptive_control": {
+          "admission_budget_by_route": {
+            "DISCLOSURE_EVENT": 32,
+            "FIRSTN_PATH": 32,
+            "INTRADAY_STATE_TRANSITION": 32,
+            "MARKET_REGIME_CONDITION": 32,
+            "MINUTE_STATIC": 32,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+            "SLOW_TEMPORAL_CHANGE": 32
+          },
+          "archive_namespace": "cn_delta/control/uct_mcts",
+          "lineage_namespace": "cn_delta.control.uct_mcts",
+          "policy_id": "stratified_typed_random",
+          "proposal_budget_by_route": {
+            "DISCLOSURE_EVENT": 1024,
+            "FIRSTN_PATH": 1024,
+            "INTRADAY_STATE_TRANSITION": 1024,
+            "MARKET_REGIME_CONDITION": 1024,
+            "MINUTE_STATIC": 1024,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+            "SLOW_TEMPORAL_CHANGE": 1024
+          },
+          "seed_base": 20314190,
+          "strict_pair_budget_after_256": 16
+        },
+        "proposal_budget_by_route": {
+          "DISCLOSURE_EVENT": 1024,
+          "FIRSTN_PATH": 1024,
+          "INTRADAY_STATE_TRANSITION": 1024,
+          "MARKET_REGIME_CONDITION": 1024,
+          "MINUTE_STATIC": 1024,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+          "SLOW_TEMPORAL_CHANGE": 1024
+        },
+        "seed_base": 2314190,
+        "strict_pair_budget_after_256": 16
+      },
+      {
+        "activation_requirements": [
+          "UNIFIED_REGISTRY_AND_TYPED_GRAMMAR_ADAPTER",
+          "SOURCE_PATH_AND_SHA256_BOUND",
+          "DETERMINISTIC_PROPOSAL_TRANSCRIPT_REPLAY",
+          "PROPOSAL_DISTRIBUTION_DIFFERS_FROM_MATCHED_CONTROL",
+          "INDEPENDENT_CANDIDATE_SUBMISSION_VALIDATION",
+          "NO_FAKE_POLICY_LABELS"
+        ],
+        "activation_state": "PENDING_REAL_UNIFIED_ADAPTER_RECEIPT",
+        "adaptive": true,
+        "admission_budget_by_route": {
+          "DISCLOSURE_EVENT": 32,
+          "FIRSTN_PATH": 32,
+          "INTRADAY_STATE_TRANSITION": 32,
+          "MARKET_REGIME_CONDITION": 32,
+          "MINUTE_STATIC": 32,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+          "SLOW_TEMPORAL_CHANGE": 32
+        },
+        "archive_namespace": "cn_delta/challenger/evolutionary",
+        "challenger_id": "evolutionary",
+        "lineage_namespace": "cn_delta.evolutionary",
+        "matched_nonadaptive_control": {
+          "admission_budget_by_route": {
+            "DISCLOSURE_EVENT": 32,
+            "FIRSTN_PATH": 32,
+            "INTRADAY_STATE_TRANSITION": 32,
+            "MARKET_REGIME_CONDITION": 32,
+            "MINUTE_STATIC": 32,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+            "SLOW_TEMPORAL_CHANGE": 32
+          },
+          "archive_namespace": "cn_delta/control/evolutionary",
+          "lineage_namespace": "cn_delta.control.evolutionary",
+          "policy_id": "stratified_typed_random",
+          "proposal_budget_by_route": {
+            "DISCLOSURE_EVENT": 1024,
+            "FIRSTN_PATH": 1024,
+            "INTRADAY_STATE_TRANSITION": 1024,
+            "MARKET_REGIME_CONDITION": 1024,
+            "MINUTE_STATIC": 1024,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+            "SLOW_TEMPORAL_CHANGE": 1024
+          },
+          "seed_base": 20418919,
+          "strict_pair_budget_after_256": 16
+        },
+        "proposal_budget_by_route": {
+          "DISCLOSURE_EVENT": 1024,
+          "FIRSTN_PATH": 1024,
+          "INTRADAY_STATE_TRANSITION": 1024,
+          "MARKET_REGIME_CONDITION": 1024,
+          "MINUTE_STATIC": 1024,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+          "SLOW_TEMPORAL_CHANGE": 1024
+        },
+        "seed_base": 2418919,
+        "strict_pair_budget_after_256": 16
+      },
+      {
+        "activation_requirements": [
+          "UNIFIED_REGISTRY_AND_TYPED_GRAMMAR_ADAPTER",
+          "SOURCE_PATH_AND_SHA256_BOUND",
+          "DETERMINISTIC_PROPOSAL_TRANSCRIPT_REPLAY",
+          "PROPOSAL_DISTRIBUTION_DIFFERS_FROM_MATCHED_CONTROL",
+          "INDEPENDENT_CANDIDATE_SUBMISSION_VALIDATION",
+          "NO_FAKE_POLICY_LABELS"
+        ],
+        "activation_state": "PENDING_REAL_UNIFIED_ADAPTER_RECEIPT",
+        "adaptive": true,
+        "admission_budget_by_route": {
+          "DISCLOSURE_EVENT": 32,
+          "FIRSTN_PATH": 32,
+          "INTRADAY_STATE_TRANSITION": 32,
+          "MARKET_REGIME_CONDITION": 32,
+          "MINUTE_STATIC": 32,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+          "SLOW_TEMPORAL_CHANGE": 32
+        },
+        "archive_namespace": "cn_delta/challenger/surrogate",
+        "challenger_id": "surrogate",
+        "lineage_namespace": "cn_delta.surrogate",
+        "matched_nonadaptive_control": {
+          "admission_budget_by_route": {
+            "DISCLOSURE_EVENT": 32,
+            "FIRSTN_PATH": 32,
+            "INTRADAY_STATE_TRANSITION": 32,
+            "MARKET_REGIME_CONDITION": 32,
+            "MINUTE_STATIC": 32,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+            "SLOW_TEMPORAL_CHANGE": 32
+          },
+          "archive_namespace": "cn_delta/control/surrogate",
+          "lineage_namespace": "cn_delta.control.surrogate",
+          "policy_id": "stratified_typed_random",
+          "proposal_budget_by_route": {
+            "DISCLOSURE_EVENT": 1024,
+            "FIRSTN_PATH": 1024,
+            "INTRADAY_STATE_TRANSITION": 1024,
+            "MARKET_REGIME_CONDITION": 1024,
+            "MINUTE_STATIC": 1024,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+            "SLOW_TEMPORAL_CHANGE": 1024
+          },
+          "seed_base": 20523648,
+          "strict_pair_budget_after_256": 16
+        },
+        "proposal_budget_by_route": {
+          "DISCLOSURE_EVENT": 1024,
+          "FIRSTN_PATH": 1024,
+          "INTRADAY_STATE_TRANSITION": 1024,
+          "MARKET_REGIME_CONDITION": 1024,
+          "MINUTE_STATIC": 1024,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+          "SLOW_TEMPORAL_CHANGE": 1024
+        },
+        "seed_base": 2523648,
+        "strict_pair_budget_after_256": 16
+      },
+      {
+        "activation_requirements": [
+          "UNIFIED_REGISTRY_AND_TYPED_GRAMMAR_ADAPTER",
+          "SOURCE_PATH_AND_SHA256_BOUND",
+          "DETERMINISTIC_PROPOSAL_TRANSCRIPT_REPLAY",
+          "PROPOSAL_DISTRIBUTION_DIFFERS_FROM_MATCHED_CONTROL",
+          "INDEPENDENT_CANDIDATE_SUBMISSION_VALIDATION",
+          "NO_FAKE_POLICY_LABELS"
+        ],
+        "activation_state": "PENDING_REAL_UNIFIED_ADAPTER_RECEIPT",
+        "adaptive": false,
+        "admission_budget_by_route": {
+          "DISCLOSURE_EVENT": 32,
+          "FIRSTN_PATH": 32,
+          "INTRADAY_STATE_TRANSITION": 32,
+          "MARKET_REGIME_CONDITION": 32,
+          "MINUTE_STATIC": 32,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+          "SLOW_TEMPORAL_CHANGE": 32
+        },
+        "archive_namespace": "cn_delta/challenger/llm_proposal_repair",
+        "challenger_id": "llm_proposal_repair",
+        "lineage_namespace": "cn_delta.llm_proposal_repair",
+        "matched_nonadaptive_control": {
+          "admission_budget_by_route": {
+            "DISCLOSURE_EVENT": 32,
+            "FIRSTN_PATH": 32,
+            "INTRADAY_STATE_TRANSITION": 32,
+            "MARKET_REGIME_CONDITION": 32,
+            "MINUTE_STATIC": 32,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+            "SLOW_TEMPORAL_CHANGE": 32
+          },
+          "archive_namespace": "cn_delta/control/llm_proposal_repair",
+          "lineage_namespace": "cn_delta.control.llm_proposal_repair",
+          "policy_id": "stratified_typed_random",
+          "proposal_budget_by_route": {
+            "DISCLOSURE_EVENT": 1024,
+            "FIRSTN_PATH": 1024,
+            "INTRADAY_STATE_TRANSITION": 1024,
+            "MARKET_REGIME_CONDITION": 1024,
+            "MINUTE_STATIC": 1024,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+            "SLOW_TEMPORAL_CHANGE": 1024
+          },
+          "seed_base": 20628377,
+          "strict_pair_budget_after_256": 16
+        },
+        "proposal_budget_by_route": {
+          "DISCLOSURE_EVENT": 1024,
+          "FIRSTN_PATH": 1024,
+          "INTRADAY_STATE_TRANSITION": 1024,
+          "MARKET_REGIME_CONDITION": 1024,
+          "MINUTE_STATIC": 1024,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+          "SLOW_TEMPORAL_CHANGE": 1024
+        },
+        "seed_base": 2628377,
+        "strict_pair_budget_after_256": 16
+      },
+      {
+        "activation_requirements": [
+          "UNIFIED_REGISTRY_AND_TYPED_GRAMMAR_ADAPTER",
+          "SOURCE_PATH_AND_SHA256_BOUND",
+          "DETERMINISTIC_PROPOSAL_TRANSCRIPT_REPLAY",
+          "PROPOSAL_DISTRIBUTION_DIFFERS_FROM_MATCHED_CONTROL",
+          "INDEPENDENT_CANDIDATE_SUBMISSION_VALIDATION",
+          "NO_FAKE_POLICY_LABELS"
+        ],
+        "activation_state": "PENDING_REAL_UNIFIED_ADAPTER_RECEIPT",
+        "adaptive": false,
+        "admission_budget_by_route": {
+          "DISCLOSURE_EVENT": 32,
+          "FIRSTN_PATH": 32,
+          "INTRADAY_STATE_TRANSITION": 32,
+          "MARKET_REGIME_CONDITION": 32,
+          "MINUTE_STATIC": 32,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+          "SLOW_TEMPORAL_CHANGE": 32
+        },
+        "archive_namespace": "cn_delta/challenger/benchmark_competitor",
+        "challenger_id": "benchmark_competitor",
+        "lineage_namespace": "cn_delta.benchmark_competitor",
+        "matched_nonadaptive_control": {
+          "admission_budget_by_route": {
+            "DISCLOSURE_EVENT": 32,
+            "FIRSTN_PATH": 32,
+            "INTRADAY_STATE_TRANSITION": 32,
+            "MARKET_REGIME_CONDITION": 32,
+            "MINUTE_STATIC": 32,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+            "SLOW_TEMPORAL_CHANGE": 32
+          },
+          "archive_namespace": "cn_delta/control/benchmark_competitor",
+          "lineage_namespace": "cn_delta.control.benchmark_competitor",
+          "policy_id": "stratified_typed_random",
+          "proposal_budget_by_route": {
+            "DISCLOSURE_EVENT": 1024,
+            "FIRSTN_PATH": 1024,
+            "INTRADAY_STATE_TRANSITION": 1024,
+            "MARKET_REGIME_CONDITION": 1024,
+            "MINUTE_STATIC": 1024,
+            "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+            "SLOW_TEMPORAL_CHANGE": 1024
+          },
+          "seed_base": 20733106,
+          "strict_pair_budget_after_256": 16
+        },
+        "proposal_budget_by_route": {
+          "DISCLOSURE_EVENT": 1024,
+          "FIRSTN_PATH": 1024,
+          "INTRADAY_STATE_TRANSITION": 1024,
+          "MARKET_REGIME_CONDITION": 1024,
+          "MINUTE_STATIC": 1024,
+          "SLOW_CROSS_SECTIONAL_LEVEL": 1024,
+          "SLOW_TEMPORAL_CHANGE": 1024
+        },
+        "seed_base": 2733106,
+        "strict_pair_budget_after_256": 16
+      }
+    ],
+    "generator_may_self_gate": false,
+    "pending_adapter_budget_execution": "FAIL_CLOSED",
+    "proposal_generator_authority": "PROPOSAL_TRANSCRIPT_ONLY",
+    "typed_random_baseline_role": "DEDICATED_NONADAPTIVE_MATCHED_CONTROL_ONLY"
+  },
+  "contract_hash": "59bf2c474b2dcc3b881b37191d1434c10f104327666d83597269acb7a095d6e3",
+  "contract_version": "cn_core_pack_delta_discovery_campaign_v1",
+  "data_access_contract": {
+    "development_2024_2025": "ALLOWED",
+    "forward_2026": "SEALED",
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "plate_industry": "DISABLED_PENDING_REAL_PIT_MINUTE_MEMBERSHIP",
+    "validation_reads": 0
+  },
+  "decision_boundaries": {
+    "candidate_promotion": "FORBIDDEN",
+    "cross_epoch_adaptive_memory": "FORBIDDEN",
+    "failed_or_underfilled_epochs": "RETAIN_WITH_REASON",
+    "positive_or_negative_permanent_memory": "FORBIDDEN",
+    "stage_a": "NOT_AUTHORIZED"
+  },
+  "epoch_freeze_contract": {
+    "adaptive_state_lifetime": "WITHIN_SINGLE_EPOCH_EPHEMERAL_ONLY",
+    "budget_reallocation_from_winners": "FORBIDDEN",
+    "cross_epoch_memory": "FORBIDDEN",
+    "cross_sprint_memory": "FORBIDDEN",
+    "immutable_within_epoch": [
+      "grammar",
+      "field_roles",
+      "reward",
+      "route_budgets",
+      "lane_budgets",
+      "seeds",
+      "admission_thresholds"
+    ],
+    "required_before_each_epoch": [
+      "repo_sha",
+      "tree_sha",
+      "data_release_hash",
+      "split_manifest_hash",
+      "field_registry_hash",
+      "unified_registry_hash",
+      "grammar_hash",
+      "field_roles_hash",
+      "reward_contract_hash",
+      "route_budgets",
+      "lane_budgets",
+      "seeds",
+      "admission_contract_hash",
+      "strict_contract_hash",
+      "active_adapter_source_hashes",
+      "supplemental_root_compile_and_exposure_receipt_hash"
+    ]
+  },
+  "execution_authorized": true,
+  "experiment_id": "20260718_cn_core_pack_delta_discovery_001",
+  "formal_search_unfrozen": false,
+  "objective": "reuse the completed Core Pack baseline and discover only new-root or real-challenger semantic deltas on development data",
+  "output_contract": {
+    "access_ledger_required": true,
+    "append_only_supplemental_epoch_manifests": true,
+    "baseline_artifacts_mutable": false,
+    "candidate_pack_role": "DEVELOPMENT_DISCOVERY_ONLY_NO_PROMOTION",
+    "global_exact_union_registry_required": true,
+    "global_signal_cluster_union_required": true
+  },
+  "root_delta_contract": {
+    "allowed_generation_reasons": [
+      "NEWLY_CONNECTED_CURRENT_QUALIFIED_ROOT",
+      "REAL_CHALLENGER_NOT_REPRESENTED_IN_BASELINE"
+    ],
+    "baseline_root_replay_for_yield": "FORBIDDEN",
+    "budgets_by_route": {
+      "DISCLOSURE_EVENT": {
+        "admission_budget": 0,
+        "new_root_count": 0,
+        "proposal_budget": 0
+      },
+      "FIRSTN_PATH": {
+        "admission_budget": 0,
+        "new_root_count": 0,
+        "proposal_budget": 0
+      },
+      "INTRADAY_STATE_TRANSITION": {
+        "admission_budget": 64,
+        "new_root_count": 1,
+        "proposal_budget": 8192
+      },
+      "MARKET_REGIME_CONDITION": {
+        "admission_budget": 64,
+        "new_root_count": 2,
+        "proposal_budget": 8192
+      },
+      "MINUTE_STATIC": {
+        "admission_budget": 0,
+        "new_root_count": 0,
+        "proposal_budget": 0
+      },
+      "SLOW_CROSS_SECTIONAL_LEVEL": {
+        "admission_budget": 128,
+        "new_root_count": 4,
+        "proposal_budget": 16384
+      },
+      "SLOW_TEMPORAL_CHANGE": {
+        "admission_budget": 0,
+        "new_root_count": 0,
+        "proposal_budget": 0
+      }
+    },
+    "newly_connected_roots_by_route": {
+      "DISCLOSURE_EVENT": [],
+      "FIRSTN_PATH": [],
+      "INTRADAY_STATE_TRANSITION": [
+        "state_close_range_location_sign"
+      ],
+      "MARKET_REGIME_CONDITION": [
+        "ctx_hfq_is_st",
+        "ctx_hfq_prev_is_limit_up"
+      ],
+      "MINUTE_STATIC": [],
+      "SLOW_CROSS_SECTIONAL_LEVEL": [
+        "fund_disclosure_balance_age_sessions",
+        "fund_disclosure_cashflow_age_sessions",
+        "fund_disclosure_holder_age_sessions",
+        "fund_disclosure_profit_age_sessions"
+      ],
+      "SLOW_TEMPORAL_CHANGE": []
+    },
+    "retired_or_blocked_baseline_roots_by_route": {
+      "DISCLOSURE_EVENT": [],
+      "FIRSTN_PATH": [],
+      "INTRADAY_STATE_TRANSITION": [],
+      "MARKET_REGIME_CONDITION": [],
+      "MINUTE_STATIC": [],
+      "SLOW_CROSS_SECTIONAL_LEVEL": [],
+      "SLOW_TEMPORAL_CHANGE": []
+    },
+    "retired_root_policy": "PRESERVE_HISTORICAL_RECEIPT_BUT_EXCLUDE_FROM_NEW_ADMISSION",
+    "supplemental_scope_path": "runtime/run_plans/cn_core_pack_supplemental_root_scope_v1.json",
+    "union_root_scope_hash": "49282396411028c64c10438e003a175b06cafb4548c49f1de95789d3b364b07f"
+  },
+  "semantic_saturation_contract": {
+    "authority": "INDEPENDENT_CAMPAIGN_CONTROLLER",
+    "consecutive_below_threshold_epochs_required": 3,
+    "epoch_budget_policy": "FIXED_RECOVERABLE_DELTA_WAVES_ONLY",
+    "generator_declared_saturation_accepted": false,
+    "metrics": {
+      "new_field_family_count_eq": 0,
+      "new_global_signal_cluster_rate_lt": 0.005,
+      "new_primitive_family_count_eq": 0,
+      "new_root_first_consumption_count_eq": 0,
+      "new_semantic_cell_rate_lt": 0.0025
+    },
+    "minimum_completed_epochs_per_activated_challenger": 2,
+    "new_real_adapter_or_root_reopens_supplemental_epochs": true,
+    "performance_or_reward_metrics_allowed": false,
+    "resource_gate_can_stop_run_but_declare_saturation": false,
+    "terminal_total_proposal_cap": null
+  },
+  "source_inputs": {
+    "baseline_scope_local_copy": {
+      "contract_hash": "c189ab4942e7864627e8f016c5be332f7ce993d55d43c298205c2b8f9a35fba3",
+      "mutation": "FORBIDDEN",
+      "path": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
+      "sha256": "c9f6a0f9bc3380ca731d71958a8b68a88b3805d665778a37c2a8564276e2f640"
+    },
+    "benchmark_registry_template": {
+      "path": "runtime/run_plans/nextgen_dark_benchmark_registry_v1.json",
+      "plan_hash": "c74540e2ef39901c310902a8138f814c40d851c5474c46fc75e25ede76ec6636",
+      "sha256": "46ed532c1a6e781200068029e39a62ff693f1ea36c4b8ea2a31e49de30b8cf8b"
+    },
+    "lane_registry_template": {
+      "path": "runtime/run_plans/nextgen_dark_hypothesis_lane_registry_v1.json",
+      "registry_hash": "c159e5ced019cdaf40ab0e469f4f1d9c7e318fbbec3390550360f536423725be",
+      "sha256": "282de3aa0058fbb3e040709b8c77b2f46b165fd7f992901274aebad74a6ea2dc"
+    },
+    "strict_base_plan": {
+      "path": "runtime/run_plans/cn_compositional_nline_bounded_search_epoch1_v1.json",
+      "sha256": "143f2109d28c951ef35bff3d27d26fea8966dce94a36c107e1919378ffb1f76e"
+    },
+    "supplemental_root_scope": {
+      "contract_hash": "6ae88fa8cf8fa97f4fd0466c7318227156c6daa5dedeb68b0488e8086ff6322a",
+      "path": "runtime/run_plans/cn_core_pack_supplemental_root_scope_v1.json",
+      "sha256": "e88c7fbd23621da4a6a8ca1628ff2df076bdc52ff1b64281a8cbe92c576bb51d"
+    },
+    "unified_registry": {
+      "path": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
+      "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+      "sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+    }
+  },
+  "status": "AUTHORIZED_SUPPLEMENTAL_ONLY_NOT_STARTED",
+  "strict_continuation_contract": {
+    "adaptive_challenger_minimum_completed_strict_pairs": 256,
+    "baseline_completed_pairs": 64,
+    "development_objective": "matched_train_primary_minus_control_composite_reward",
+    "frozen_256_selection_uses_baseline_admission_only": true,
+    "later_cumulative_gates": [
+      1024,
+      3072,
+      8192
+    ],
+    "next_cumulative_gate": 256,
+    "pre_256_engineering_gate": {
+      "dag_cache_peak_lte_frozen_cap": true,
+      "epoch_freeze_artifact_sha256_required": true,
+      "r5_r6_pair_results_exact": true,
+      "released_bytes_min_exclusive": 0,
+      "required_status": "R6_LIVENESS_PARITY_PASS",
+      "unknown_artifact_hash_policy": "FAIL_CLOSED_DO_NOT_START_256"
+    },
+    "selection_authority": "INDEPENDENT_GLOBAL_EXACT_AND_CLUSTER_ADMISSION",
+    "strict_stage_a": "NOT_AUTHORIZED",
+    "supplemental_candidates_enter_strict_after_256_only": true,
+    "wave64_reward_may_change_grammar_fields_or_route_budgets": false
+  },
+  "union_and_dedup_contract": {
+    "baseline_identity_owner_precedence": true,
+    "new_signal_sketch_coordinates_must_match_baseline": true,
+    "one_exact_identity_one_vote": true,
+    "order": [
+      "VERIFY_BASELINE_ARTIFACT_HASHES",
+      "VERIFY_SUPPLEMENTAL_EPOCH_RECEIPTS",
+      "GLOBAL_EXACT_IDENTITY_DEDUP",
+      "SKETCH_ONLY_NEW_EXACT_IDENTITIES_ON_FROZEN_A_B_COORDINATES",
+      "MERGE_SIGNAL_CLUSTERS_WITH_BASELINE_REGISTRY",
+      "INDEPENDENT_STRATIFIED_ADMISSION"
+    ],
+    "performance_used_for_exact_or_cluster_identity": false
+  }
+}

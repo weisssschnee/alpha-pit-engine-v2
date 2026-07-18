@@ -13,7 +13,10 @@ from our_system_phase2.services.matched_control_pairs import (
     COMPOSITIONAL_CONTROL_CONSTRUCTOR_MATRIX,
     attach_pair_contract,
 )
-from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
+from our_system_phase2.services.typed_route_compiler import (
+    SUPPLEMENTAL_ROOT_SCOPE_ID,
+    TypedRouteCompiler,
+)
 from our_system_phase2.services.unified_capability_registry import (
     ROUTE_IDS,
     CapabilityField,
@@ -23,6 +26,7 @@ from our_system_phase2.services.unified_capability_registry import (
 
 
 GRAMMAR_VERSION = "cn_typed_compositional_grammar_v2"
+SUPPLEMENTAL_GRAMMAR_VERSION = "cn_typed_compositional_supplemental_v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -178,6 +182,68 @@ def skeleton_registry() -> dict[str, tuple[SkeletonSpec, ...]]:
     return output
 
 
+def supplemental_skeleton_registry() -> dict[str, tuple[SkeletonSpec, ...]]:
+    """Return append-only constructors for registry gaps found after the base pack.
+
+    These skeletons are deliberately outside :func:`skeleton_registry` so adding
+    them cannot change the attempt-to-skeleton mapping or identities of an
+    already frozen base proposal pack.  They are generated only through
+    ``propose_supplemental`` and must pass global exact dedup before admission.
+    """
+
+    declarations = {
+        "SLOW_CROSS_SECTIONAL_LEVEL": (
+            (
+                "disclosure_age_condition",
+                "PIT disclosure staleness conditions the comparable fundamental level",
+                ("PRIMARY", "CONDITION_ONLY"),
+                "dimensionless-gated",
+                "remove_disclosure_age_keep_level",
+                4,
+            ),
+        ),
+        "MARKET_REGIME_CONDITION": (
+            (
+                "stock_context_regime_interaction",
+                "previous-session stock context changes response within the same market regime",
+                ("PRIMARY", "CONDITION_ONLY"),
+                "dimensionless-gated",
+                "remove_stock_context_keep_market_regime",
+                4,
+            ),
+        ),
+        "INTRADAY_STATE_TRANSITION": (
+            (
+                "materialized_compound_state_transition",
+                "a canonical materialized compound state changes the subsequent intraday response",
+                ("PRIMARY", "STATE_ONLY"),
+                "dimensionless-gated",
+                "remove_compound_state_keep_payload",
+                4,
+            ),
+        ),
+    }
+    output: dict[str, tuple[SkeletonSpec, ...]] = {}
+    for route_id, rows in declarations.items():
+        clock, maturity = _ROUTE_CLOCKS[route_id]
+        output[route_id] = tuple(
+            SkeletonSpec(
+                skeleton_id=f"cn.comp.supp.v1.{route_id.lower()}.{name}",
+                route_id=route_id,
+                financial_hypothesis=hypothesis,
+                input_roles=roles,
+                unit_signature=unit_signature,
+                clock_contract=clock,
+                maturity_contract=maturity,
+                control_ablation_rule=ablation,
+                maximum_depth=maximum_depth,
+                allowed_routes=(route_id,),
+            )
+            for name, hypothesis, roles, unit_signature, ablation, maximum_depth in rows
+        )
+    return output
+
+
 def _pick(rows: Sequence[CapabilityField], index: int, seed: int, salt: str) -> CapabilityField:
     if not rows:
         raise ValueError(f"CONTROL_CONSTRUCTION_UNRESOLVED: empty field pool for {salt}")
@@ -321,6 +387,7 @@ class CompositionalGrammarV2:
         condition_fields: Sequence[CapabilityField] = (),
         seed: int,
         is_control: bool,
+        generator_version: str = GRAMMAR_VERSION,
         extra: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         route = self.registry.route_contracts[route_id]
@@ -341,7 +408,7 @@ class CompositionalGrammarV2:
             "access_roles": ["development"],
             "uses_future_revision": False,
             "requires_intrabar_order": False,
-            "generator_version": GRAMMAR_VERSION,
+            "generator_version": str(generator_version),
             "skeleton_id": skeleton.skeleton_id,
             "financial_hypothesis": skeleton.financial_hypothesis,
             "input_roles": list(skeleton.input_roles),
@@ -369,12 +436,13 @@ class CompositionalGrammarV2:
         control_operator_family: str | None = None,
         fields: Sequence[CapabilityField],
         condition_fields: Sequence[CapabilityField] = (),
+        generator_version: str = GRAMMAR_VERSION,
         extra: dict[str, Any] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         unique_fields = tuple({field.field_id: field for field in fields}.values())
         digest = stable_hash(
             {
-                "grammar": GRAMMAR_VERSION,
+                "grammar": str(generator_version),
                 "route": skeleton.route_id,
                 "skeleton": skeleton.skeleton_id,
                 "seed": int(seed),
@@ -395,6 +463,7 @@ class CompositionalGrammarV2:
             condition_fields=condition_fields,
             seed=seed,
             is_control=False,
+            generator_version=generator_version,
             extra=extra,
         )
         control = self._base(
@@ -408,6 +477,7 @@ class CompositionalGrammarV2:
             condition_fields=condition_fields,
             seed=seed,
             is_control=True,
+            generator_version=generator_version,
             extra=extra,
         )
         constructor_id = COMPOSITIONAL_CONTROL_CONSTRUCTOR_MATRIX[skeleton.route_id][
@@ -827,6 +897,209 @@ class CompositionalGrammarV2:
             },
         )
 
+    def _slow_disclosure_age_supplemental_pair(
+        self,
+        skeleton: SkeletonSpec,
+        attempt_index: int,
+        seed: int,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        age_pool = self._route_pool(
+            "SLOW_CROSS_SECTIONAL_LEVEL",
+            source_family="canonical_fundamental_disclosure_timing_staleness",
+            temporal_semantics="ASOF_LEVEL",
+            entity_scope="STOCK",
+            field_roles=("condition-only",),
+        )
+        age = _pick(age_pool, attempt_index, seed, skeleton.skeleton_id + ":age")
+        linked_payloads = tuple(
+            row
+            for row in self._payload_pool("SLOW_CROSS_SECTIONAL_LEVEL")
+            if row.source_table == age.source_table
+        )
+        if not linked_payloads:
+            raise ValueError(
+                "FIELD_COVERAGE_BOTTLENECK: disclosure-age condition has no "
+                f"same-source payload: {age.field_id}"
+            )
+        payload = _pick(
+            linked_payloads,
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":payload",
+        )
+        payload_ref, age_ref = f"${payload.field_id}", f"${age.field_id}"
+        return self._make_pair(
+            skeleton=skeleton,
+            attempt_index=attempt_index,
+            seed=seed,
+            primary_expression=(
+                f"CSRank(Mul(ZScore({payload_ref}),SafeDiv(1,Add({age_ref},1),1)))"
+            ),
+            control_expression=(
+                f"CSRank(Add(ZScore({payload_ref}),Mul(0,{age_ref})))"
+            ),
+            operator_family="CSRank",
+            fields=(payload, age),
+            condition_fields=(age,),
+            generator_version=SUPPLEMENTAL_GRAMMAR_VERSION,
+            extra={
+                "proposal_origin": "typed_compositional_supplemental_v1",
+                "supplemental_authority_id": SUPPLEMENTAL_ROOT_SCOPE_ID,
+                "supplemental_gap_id": "SLOW_DISCLOSURE_AGE_CONDITIONS",
+                "supplemental_delta_only": True,
+                "existing_pack_rewrite_allowed": False,
+                "materialization_status": "NOT_MATERIALIZED",
+                "signal_sketch_allowed": False,
+                "strict_evaluation_allowed": False,
+                "required_materialization_receipt": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+                "required_support_receipt": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+            },
+        )
+
+    def _market_stock_context_supplemental_pair(
+        self,
+        skeleton: SkeletonSpec,
+        attempt_index: int,
+        seed: int,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        payload = _pick(
+            self._payload_pool("MARKET_REGIME_CONDITION"),
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":payload",
+        )
+        market_condition = _pick(
+            self._route_pool(
+                "MARKET_REGIME_CONDITION",
+                entity_scope="MARKET",
+                field_roles=("state-only", "condition-only", "primary"),
+            ),
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":market_condition",
+        )
+        stock_context = _pick(
+            self._route_pool(
+                "MARKET_REGIME_CONDITION",
+                temporal_semantics="PREVIOUS_SESSION_STOCK_CONTEXT",
+                entity_scope="STOCK",
+                field_roles=("state-only", "condition-only"),
+            ),
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":stock_context",
+        )
+        payload_ref = f"${payload.field_id}"
+        market_ref = f"${market_condition.field_id}"
+        context_ref = f"${stock_context.field_id}"
+        return self._make_pair(
+            skeleton=skeleton,
+            attempt_index=attempt_index,
+            seed=seed,
+            primary_expression=(
+                f"CSRank(Mul(ZScore({payload_ref}),Mul(Sign({market_ref}),Sign({context_ref}))))"
+            ),
+            control_expression=(
+                f"CSRank(Add(Mul(ZScore({payload_ref}),Sign({market_ref})),Mul(0,{context_ref})))"
+            ),
+            operator_family="RegimeInteraction",
+            fields=(payload, market_condition, stock_context),
+            condition_fields=(market_condition, stock_context),
+            generator_version=SUPPLEMENTAL_GRAMMAR_VERSION,
+            extra={
+                "proposal_origin": "typed_compositional_supplemental_v1",
+                "supplemental_authority_id": SUPPLEMENTAL_ROOT_SCOPE_ID,
+                "supplemental_gap_id": "PREVIOUS_SESSION_STOCK_REGIME_CONTEXTS",
+                "supplemental_delta_only": True,
+                "existing_pack_rewrite_allowed": False,
+                "market_condition_field_ids": [market_condition.field_id],
+                "stock_context_field_ids": [stock_context.field_id],
+                "entity_scope": "MARKET_AND_STOCK_CONTEXT_CONDITIONED_STOCK_PAYLOAD",
+                "cross_sectional_rank_allowed_for_condition": False,
+                "market_vote_policy": "ONE_MARKET_TIME_BLOCK_ONE_VOTE",
+            },
+        )
+
+    def _compound_state_supplemental_pair(
+        self,
+        skeleton: SkeletonSpec,
+        attempt_index: int,
+        seed: int,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        compound_states = tuple(
+            row
+            for row in self._route_pool(
+                "INTRADAY_STATE_TRANSITION",
+                temporal_semantics="INTRADAY_DERIVED_STATE",
+                entity_scope="STOCK",
+                field_roles=("state-only",),
+            )
+            if str(row.metadata.get("materialization_expression") or "").count("(") > 1
+        )
+        state = _pick(
+            compound_states,
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":compound_state",
+        )
+        source_ids = tuple(
+            str(value) for value in state.metadata.get("source_fields", ())
+        )
+        if not source_ids:
+            raise ValueError(
+                f"FIELD_COVERAGE_BOTTLENECK: compound state has no lineage: {state.field_id}"
+            )
+        payload = _pick_excluding(
+            self._route_pool(
+                "INTRADAY_STATE_TRANSITION",
+                source_family="raw_1min",
+                entity_scope="STOCK",
+                field_roles=("primary", "interaction-only"),
+            ),
+            source_ids,
+            attempt_index,
+            seed,
+            skeleton.skeleton_id + ":payload",
+        )
+        state_ref, payload_ref = f"${state.field_id}", f"${payload.field_id}"
+        materialization_expression = str(
+            state.metadata.get("materialization_expression") or ""
+        )
+        return self._make_pair(
+            skeleton=skeleton,
+            attempt_index=attempt_index,
+            seed=seed,
+            primary_expression=(
+                f"CSRank(Mul(Transition({state_ref},-1,1),Delta({payload_ref},5)))"
+            ),
+            control_expression=(
+                f"CSRank(Add(ZScore(Delta({payload_ref},5)),Mul(0,{state_ref})))"
+            ),
+            operator_family="Transition",
+            fields=(state, payload),
+            generator_version=SUPPLEMENTAL_GRAMMAR_VERSION,
+            extra={
+                "proposal_origin": "typed_compositional_supplemental_v1",
+                "supplemental_authority_id": SUPPLEMENTAL_ROOT_SCOPE_ID,
+                "supplemental_gap_id": "COMPOUND_INTRADAY_STATE_ROOT",
+                "supplemental_delta_only": True,
+                "existing_pack_rewrite_allowed": False,
+                "claimed_state_field_id": state.field_id,
+                "state_source_expression": state_ref,
+                "state_materialization_required": True,
+                "state_materialization_expression": materialization_expression,
+                "state_source_field_ids": list(source_ids),
+                "state_materialization_authority": "feature_state_fabric",
+                "state_leaf_contract": "CANONICAL_MATERIALIZED_REPRESENTATION_ONE_LEAF",
+                "state_support_unit": "stock-state episode",
+                "materialization_status": "NOT_MATERIALIZED",
+                "signal_sketch_allowed": False,
+                "strict_evaluation_allowed": False,
+                "required_materialization_receipt": "FEATURE_STATE_FABRIC_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+                "required_support_receipt": "FEATURE_STATE_FABRIC_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+            },
+        )
+
     def _intraday_state_pair(
         self,
         skeleton: SkeletonSpec,
@@ -986,6 +1259,50 @@ class CompositionalGrammarV2:
             primary, control = self._broad_event_reference_pair(skeleton, int(attempt_index), int(seed))
         else:
             raise NotImplementedError(f"route constructor is not implemented yet: {route_id}")
+        compiled_primary = {**primary, **self.compiler.compile(primary).to_dict()}
+        compiled_control = {**control, **self.compiler.compile(control).to_dict()}
+        return GeneratedCompositionalPair(
+            skeleton=skeleton,
+            primary=compiled_primary,
+            control=compiled_control,
+        )
+
+    def propose_supplemental(
+        self,
+        route_id: str,
+        *,
+        attempt_index: int,
+        seed: int,
+    ) -> GeneratedCompositionalPair:
+        """Generate only append-only gap candidates without remapping base attempts."""
+
+        supplemental = supplemental_skeleton_registry()
+        if route_id not in supplemental:
+            raise KeyError(f"route has no supplemental constructor: {route_id}")
+        skeletons = supplemental[route_id]
+        skeleton = skeletons[int(attempt_index) % len(skeletons)]
+        if route_id == "SLOW_CROSS_SECTIONAL_LEVEL":
+            primary, control = self._slow_disclosure_age_supplemental_pair(
+                skeleton,
+                int(attempt_index),
+                int(seed),
+            )
+        elif route_id == "MARKET_REGIME_CONDITION":
+            primary, control = self._market_stock_context_supplemental_pair(
+                skeleton,
+                int(attempt_index),
+                int(seed),
+            )
+        elif route_id == "INTRADAY_STATE_TRANSITION":
+            primary, control = self._compound_state_supplemental_pair(
+                skeleton,
+                int(attempt_index),
+                int(seed),
+            )
+        else:  # pragma: no cover - registry and constructors are kept exhaustive.
+            raise NotImplementedError(
+                f"supplemental route constructor is not implemented: {route_id}"
+            )
         compiled_primary = {**primary, **self.compiler.compile(primary).to_dict()}
         compiled_control = {**control, **self.compiler.compile(control).to_dict()}
         return GeneratedCompositionalPair(

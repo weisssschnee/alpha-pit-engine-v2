@@ -48,13 +48,35 @@ from our_system_phase2.services.atomic_checkpoint import (
     atomic_write_json,
     durable_flush,
 )
+from our_system_phase2.services.feature_state_fabric import (
+    REGISTERED_CLOSE_RANGE_STATE_FIELD,
+    materialize_registered_close_range_state,
+    registered_close_range_state_spec,
+)
+from our_system_phase2.services.materialization_support_receipt import (
+    build_materialization_support_receipt,
+    load_verified_full_development_receipts,
+    materialization_frame_fingerprints,
+    verify_full_development_receipt_artifacts,
+    verify_materialization_support_receipt,
+)
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
+from our_system_phase2.services.unified_capability_registry import (
+    UnifiedCapabilityRegistry,
+)
 
 
 COORDINATE_VERSION = "evalreset_development_coordinates_v1"
 PERIOD_TIMES = {
     "A": {"open": "09:35", "morning": "10:15", "afternoon": "13:15", "close": "14:30"},
     "B": {"open": "09:50", "morning": "10:45", "afternoon": "13:45", "close": "14:55"},
+}
+RECEIPT_GATED_FIELDS = {
+    REGISTERED_CLOSE_RANGE_STATE_FIELD,
+    "fund_disclosure_balance_age_sessions",
+    "fund_disclosure_cashflow_age_sessions",
+    "fund_disclosure_holder_age_sessions",
+    "fund_disclosure_profit_age_sessions",
 }
 
 
@@ -199,6 +221,20 @@ def prepare(args: argparse.Namespace) -> int:
                 if line.strip()
             }
         )
+    virtual_state_capability = None
+    parquet_fields = set(required_fields)
+    if REGISTERED_CLOSE_RANGE_STATE_FIELD in parquet_fields:
+        if args.capability_registry is None:
+            raise RuntimeError(
+                f"{REGISTERED_CLOSE_RANGE_STATE_FIELD} requires --capability-registry"
+            )
+        capability_registry = UnifiedCapabilityRegistry.read(args.capability_registry)
+        virtual_state_capability = capability_registry.resolve(
+            REGISTERED_CLOSE_RANGE_STATE_FIELD
+        )
+        state_spec = registered_close_range_state_spec(virtual_state_capability)
+        parquet_fields.remove(REGISTERED_CLOSE_RANGE_STATE_FIELD)
+        parquet_fields.update(state_spec.source_fields)
     max_window = max((_max_expression_window(expression) for expression in expressions), default=0)
     if max_window > args.max_window:
         raise RuntimeError(f"observed expression window {max_window} exceeds configured {args.max_window}")
@@ -246,7 +282,7 @@ def prepare(args: argparse.Namespace) -> int:
                     }
                 )
 
-    columns = ["code", "trade_time", "date", *required_fields]
+    columns = ["code", "trade_time", "date", *sorted(parquet_fields)]
     compact_parts: list[pd.DataFrame] = []
     selection_lookup = {row["code"]: row for row in selections}
     if len(selection_lookup) != len(selections):
@@ -283,6 +319,67 @@ def prepare(args: argparse.Namespace) -> int:
         .sort_values(["code", "trade_time"], kind="mergesort")
         .reset_index(drop=True)
     )
+    authority_catalog = (
+        load_verified_full_development_receipts(
+            tuple(getattr(args, "root_authority_receipt", ()) or ()),
+            registry=UnifiedCapabilityRegistry.read(args.capability_registry),
+        )
+        if virtual_state_capability is not None
+        else {}
+    )
+    state_fabric_manifest: dict[str, Any] | None = None
+    state_materialization_receipt: dict[str, Any] | None = None
+    if virtual_state_capability is not None:
+        if REGISTERED_CLOSE_RANGE_STATE_FIELD not in authority_catalog:
+            raise RuntimeError(
+                "registered state root needs verified full-development authority before "
+                "compact sketch materialization"
+            )
+        capability_registry = UnifiedCapabilityRegistry.read(args.capability_registry)
+        state_values, state_fabric_manifest = materialize_registered_close_range_state(
+            compact,
+            virtual_state_capability,
+            registry_hash=capability_registry.registry_hash,
+        )
+        compact = compact.merge(
+            state_values,
+            on=["code", "trade_time"],
+            how="left",
+            validate="one_to_one",
+            sort=False,
+        )
+        state_materialization_receipt = build_materialization_support_receipt(
+            state_values,
+            field_id=virtual_state_capability.field_id,
+            representation_id=virtual_state_capability.representation_id,
+            registry_hash=capability_registry.registry_hash,
+            receipt_type="FEATURE_STATE_FABRIC_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+            materializer_authority="FeatureStateFabric",
+            materializer_manifest=state_fabric_manifest,
+            support_unit=virtual_state_capability.support_unit,
+            observable_time_contract=virtual_state_capability.observable_clock,
+            maturity_contract=virtual_state_capability.maturity_rule,
+            row_keys=("code", "trade_time"),
+            partition_identity={
+                "coordinate_version": COORDINATE_VERSION,
+                "source_shard_count": len(panels),
+            },
+            source_binding={
+                "source_field_id": virtual_state_capability.source_field_id,
+                "pit_status": virtual_state_capability.pit_status,
+                "source_fields": list(state_fabric_manifest["registered_source_fields"]),
+                "materialization_expression": state_fabric_manifest[
+                    "registered_materialization_expression"
+                ],
+            },
+            evidence_contract={
+                "evidence_role": "STAGE_MATERIALIZATION",
+                "parent_authority_receipt_hash": authority_catalog[
+                    REGISTERED_CLOSE_RANGE_STATE_FIELD
+                ]["receipt_hash"],
+                "stage": "FROZEN_A_B_SIGNAL_SKETCH_PANEL",
+            },
+        )
     row_lookup = {(str(code), pd.Timestamp(trade_time)): index for index, (code, trade_time) in enumerate(zip(compact["code"], compact["trade_time"], strict=True))}
     coordinate_rows: list[dict[str, Any]] = []
     for coordinate_set in ("A", "B"):
@@ -320,6 +417,11 @@ def prepare(args: argparse.Namespace) -> int:
     compact.to_parquet(panel_path, index=False, compression="zstd")
     _write_csv(coordinate_path, coordinate_rows)
     _write_csv(selection_path, selections)
+    state_receipt_path = args.output_root / (
+        f"{REGISTERED_CLOSE_RANGE_STATE_FIELD}.materialization_support_receipt.json"
+    )
+    if state_materialization_receipt is not None:
+        _write_json(state_receipt_path, state_materialization_receipt)
     manifest = {
         "run_type": "evalreset_signal_sketch_prepare",
         "coordinate_version": COORDINATE_VERSION,
@@ -336,16 +438,35 @@ def prepare(args: argparse.Namespace) -> int:
         "compact_panel_rows": len(compact),
         "candidate_count": len(generation),
         "candidate_field_count": len(required_fields),
+        "registered_virtual_state_fields": (
+            [REGISTERED_CLOSE_RANGE_STATE_FIELD]
+            if state_materialization_receipt is not None
+            else []
+        ),
+        "state_fabric_manifest": state_fabric_manifest,
         "max_expression_window": max_window,
         "inputs": {
             "generation_csv": {"path": str(args.generation_csv), "sha256": _sha256(args.generation_csv)},
             "split_manifest": {"path": str(args.split_manifest), "sha256": _sha256(args.split_manifest)},
             "shard_root": str(args.shard_root),
+            "capability_registry": (
+                None
+                if args.capability_registry is None
+                else {
+                    "path": str(args.capability_registry),
+                    "sha256": _sha256(args.capability_registry),
+                }
+            ),
         },
         "artifacts": {
             "compact_panel": {"path": str(panel_path), "sha256": _sha256(panel_path)},
             "coordinate_manifest": {"path": str(coordinate_path), "sha256": _sha256(coordinate_path)},
             "stock_selection": {"path": str(selection_path), "sha256": _sha256(selection_path)},
+            "state_materialization_support_receipt": (
+                None
+                if state_materialization_receipt is None
+                else {"path": str(state_receipt_path), "sha256": _sha256(state_receipt_path)}
+            ),
         },
     }
     _write_json(args.output_root / "signal_sketch_prepare_manifest.json", manifest)
@@ -387,6 +508,89 @@ def _window_frame(
     return frame, lookup
 
 
+def _verify_gated_panel_receipts(
+    full_frame: pd.DataFrame,
+    candidates: list[dict[str, Any]],
+    *,
+    capability_registry_path: Path | None,
+    receipt_paths: list[Path],
+) -> dict[str, str]:
+    candidate_fields = {
+        field
+        for candidate in candidates
+        for field in _fields(str(candidate.get("expression") or ""))
+    }
+    receipt_required = sorted(candidate_fields & RECEIPT_GATED_FIELDS)
+    if not receipt_required:
+        return {}
+    if capability_registry_path is None:
+        raise RuntimeError(
+            "receipt-gated fields require --capability-registry in signal-sketch worker"
+        )
+    capability_registry = UnifiedCapabilityRegistry.read(capability_registry_path)
+    receipts: dict[str, dict[str, Any]] = {}
+    for path in receipt_paths:
+        receipt = verify_materialization_support_receipt(
+            json.loads(path.read_text(encoding="utf-8")),
+            expected_registry_hash=capability_registry.registry_hash,
+        )
+        field_id = str(receipt["field_id"])
+        if field_id in receipts:
+            raise ValueError(f"duplicate materialization receipt for {field_id}")
+        receipts[field_id] = receipt
+    missing_receipts = sorted(set(receipt_required) - set(receipts))
+    if missing_receipts:
+        raise RuntimeError(
+            f"signal-sketch worker lacks materialization receipts: {missing_receipts}"
+        )
+    bindings: dict[str, str] = {}
+    for field_id in receipt_required:
+        receipt = receipts[field_id]
+        fingerprints = materialization_frame_fingerprints(
+            full_frame,
+            field_id=field_id,
+            row_keys=("code", "trade_time"),
+        )
+        if (
+            receipt["coordinate_contract"]["coordinate_fingerprint"]
+            != fingerprints["coordinate_fingerprint"]
+            or receipt["materialization"]["value_fingerprint"]
+            != fingerprints["value_fingerprint"]
+        ):
+            raise ValueError(
+                f"signal-sketch panel differs from materialization receipt: {field_id}"
+            )
+        evidence = dict(receipt.get("evidence_contract") or {})
+        bindings[field_id] = str(
+            evidence.get("parent_authority_receipt_hash")
+            if evidence.get("evidence_role") == "STAGE_MATERIALIZATION"
+            else receipt["receipt_hash"]
+        )
+    for candidate in candidates:
+        fields = _fields(str(candidate.get("expression") or ""))
+        gated = sorted(set(fields) & RECEIPT_GATED_FIELDS)
+        if not gated:
+            continue
+        raw_bindings = candidate.get("materialization_support_receipt_hashes") or ""
+        try:
+            candidate_bindings = (
+                json.loads(raw_bindings)
+                if isinstance(raw_bindings, str)
+                else dict(raw_bindings)
+            )
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise RuntimeError(
+                "signal-sketch candidate has invalid materialization receipt binding"
+            ) from exc
+        expected = {field_id: bindings[field_id] for field_id in gated}
+        if candidate_bindings != expected:
+            raise RuntimeError(
+                "signal-sketch candidate receipt hash does not match verified panel "
+                f"receipt: {candidate.get('candidate_id')}"
+            )
+    return bindings
+
+
 def worker(args: argparse.Namespace) -> int:
     full_frame = pd.read_parquet(args.compact_panel).sort_values(["code", "trade_time"], kind="mergesort").reset_index(drop=True)
     full_frame["trade_time"] = pd.to_datetime(full_frame["trade_time"], errors="coerce")
@@ -397,6 +601,12 @@ def worker(args: argparse.Namespace) -> int:
         for name, rows in by_set.items()
     }
     candidates = _read_csv(args.generation_csv)
+    _verify_gated_panel_receipts(
+        full_frame,
+        candidates,
+        capability_registry_path=args.capability_registry,
+        receipt_paths=args.materialization_support_receipt,
+    )
     for candidate in candidates:
         candidate["_max_window"] = _max_expression_window(str(candidate.get("expression") or ""))
     candidates.sort(key=lambda row: (int(row["_max_window"]), str(row.get("family_id") or ""), str(row.get("motif_id") or ""), str(row.get("candidate_id") or "")))
@@ -850,6 +1060,149 @@ def cluster_and_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def materialize_state_authority(args: argparse.Namespace) -> int:
+    """Build the full-development authority that the compact sketch receipt cites.
+
+    This command intentionally reads the full active panel and therefore belongs
+    on 77o.  It is separate from ``prepare`` so a sampled sketch can never label
+    itself as full-development evidence.
+    """
+
+    release = json.loads(args.release_manifest.read_text(encoding="utf-8"))
+    release_hash = str(release.get("release_hash") or "")
+    if (
+        len(release_hash) != 64
+        or any(character not in "0123456789abcdef" for character in release_hash)
+    ):
+        raise ValueError("development release manifest lacks a valid release hash")
+    if release.get("forbidden_roles_present") or bool(
+        release.get("forward_2026_present")
+    ):
+        raise PermissionError("state authority source release is not development-only")
+
+    split_rows = _read_csv(args.split_manifest)
+    sessions = pd.DatetimeIndex(
+        sorted(
+            pd.Timestamp(row["trade_date"]).normalize()
+            for row in split_rows
+            if row.get("split") == "train"
+        )
+    )
+    if (
+        sessions.empty
+        or sessions.has_duplicates
+        or sessions.min() < pd.Timestamp("2024-01-01")
+        or sessions.max() >= pd.Timestamp("2026-01-01")
+    ):
+        raise PermissionError("state authority requires frozen 2024-2025 train sessions")
+    source = pd.read_parquet(
+        args.full_active_panel,
+        columns=["code", "trade_time", "close", "high", "low"],
+    )
+    source["trade_time"] = pd.to_datetime(source["trade_time"], errors="coerce")
+    if source["trade_time"].isna().any():
+        raise ValueError("full active panel contains invalid clocks")
+    observed = set(source["trade_time"].dt.normalize())
+    if observed != set(sessions):
+        raise PermissionError(
+            "full active panel sessions must exactly equal the frozen train split"
+        )
+    registry = UnifiedCapabilityRegistry.read(args.capability_registry)
+    capability = registry.resolve(REGISTERED_CLOSE_RANGE_STATE_FIELD)
+    state_values, fabric_manifest = materialize_registered_close_range_state(
+        source,
+        capability,
+        registry_hash=registry.registry_hash,
+    )
+    args.output_root.mkdir(parents=True, exist_ok=True)
+    coordinate_path = args.output_root / "full_active_development_coordinates.parquet"
+    materialized_path = (
+        args.output_root / f"{REGISTERED_CLOSE_RANGE_STATE_FIELD}.parquet"
+    )
+    receipt_path = args.output_root / (
+        f"{REGISTERED_CLOSE_RANGE_STATE_FIELD}.full_authority_receipt.json"
+    )
+    state_values[["code", "trade_time"]].to_parquet(
+        coordinate_path, index=False, compression="zstd"
+    )
+    state_values.to_parquet(materialized_path, index=False, compression="zstd")
+    maximum_observable_time = str(sessions.max() + pd.Timedelta(hours=23, minutes=59))
+    receipt = build_materialization_support_receipt(
+        state_values,
+        field_id=capability.field_id,
+        representation_id=capability.representation_id,
+        registry_hash=registry.registry_hash,
+        receipt_type="FEATURE_STATE_FABRIC_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+        materializer_authority="FeatureStateFabric/full-active-development",
+        materializer_manifest={
+            **fabric_manifest,
+            "development_release_hash": release_hash,
+            "release_manifest_sha256": _sha256(args.release_manifest),
+            "split_manifest_sha256": _sha256(args.split_manifest),
+            "source_active_panel_sha256": _sha256(args.full_active_panel),
+        },
+        support_unit=capability.support_unit,
+        observable_time_contract=capability.observable_clock,
+        maturity_contract=capability.maturity_rule,
+        row_keys=("code", "trade_time"),
+        partition_identity={"assembly": "FULL_DEVELOPMENT_ACTIVE_PANEL"},
+        source_binding={
+            "source_field_id": capability.source_field_id,
+            "pit_status": capability.pit_status,
+            "source_fields": ["close", "high", "low"],
+            "source_active_panel": str(args.full_active_panel.resolve()),
+            "source_active_panel_sha256": _sha256(args.full_active_panel),
+            "development_release_hash": release_hash,
+            "release_manifest_sha256": _sha256(args.release_manifest),
+            "split_manifest_sha256": _sha256(args.split_manifest),
+            "maximum_observable_time": maximum_observable_time,
+        },
+        evidence_contract={
+            "evidence_role": "FULL_DEVELOPMENT_ROOT_AUTHORITY",
+            "development_release": {
+                "path": str(args.release_manifest.resolve()),
+                "sha256": _sha256(args.release_manifest),
+                "release_hash": release_hash,
+            },
+            "split_manifest": {
+                "path": str(args.split_manifest.resolve()),
+                "sha256": _sha256(args.split_manifest),
+            },
+            "coordinate_authority": {
+                "path": str(coordinate_path.resolve()),
+                "sha256": _sha256(coordinate_path),
+            },
+            "materialized_artifact": {
+                "path": str(materialized_path.resolve()),
+                "sha256": _sha256(materialized_path),
+            },
+        },
+    )
+    _write_json(receipt_path, receipt)
+    verify_full_development_receipt_artifacts(
+        receipt,
+        expected_field_id=capability.field_id,
+        expected_registry_hash=registry.registry_hash,
+        expected_receipt_type="FEATURE_STATE_FABRIC_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+        expected_assembly="FULL_DEVELOPMENT_ACTIVE_PANEL",
+    )
+    summary = {
+        "status": "FULL_DEVELOPMENT_ACTIVE_STATE_AUTHORITY_READY",
+        "data_role": "development",
+        "validation_holdout_forward_read": False,
+        "panel_rows": len(state_values),
+        "train_session_count": len(sessions),
+        "receipt": {
+            "path": str(receipt_path),
+            "sha256": _sha256(receipt_path),
+            "receipt_hash": receipt["receipt_hash"],
+        },
+    }
+    _write_json(args.output_root / "state_authority_manifest.json", summary)
+    print(json.dumps(summary, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser()
     sub = root.add_subparsers(dest="command", required=True)
@@ -859,14 +1212,37 @@ def parser() -> argparse.ArgumentParser:
     prep.add_argument("--split-manifest", type=Path, required=True)
     prep.add_argument("--output-root", type=Path, required=True)
     prep.add_argument("--extra-fields-file", type=Path)
+    prep.add_argument("--capability-registry", type=Path)
+    prep.add_argument(
+        "--root-authority-receipt",
+        type=Path,
+        action="append",
+        default=[],
+        help="verified full-development root authority used by stage receipts",
+    )
     prep.add_argument("--codes-per-row-group", type=int, default=2)
     prep.add_argument("--max-window", type=int, default=120)
     prep.set_defaults(func=prepare)
+
+    state_authority = sub.add_parser("materialize-state-authority")
+    state_authority.add_argument("--full-active-panel", type=Path, required=True)
+    state_authority.add_argument("--release-manifest", type=Path, required=True)
+    state_authority.add_argument("--split-manifest", type=Path, required=True)
+    state_authority.add_argument("--capability-registry", type=Path, required=True)
+    state_authority.add_argument("--output-root", type=Path, required=True)
+    state_authority.set_defaults(func=materialize_state_authority)
 
     work = sub.add_parser("worker")
     work.add_argument("--compact-panel", type=Path, required=True)
     work.add_argument("--coordinate-manifest", type=Path, required=True)
     work.add_argument("--generation-csv", type=Path, required=True)
+    work.add_argument("--capability-registry", type=Path)
+    work.add_argument(
+        "--materialization-support-receipt",
+        type=Path,
+        action="append",
+        default=[],
+    )
     work.add_argument("--exact-candidate-csv", type=Path)
     work.add_argument("--partition-index", type=int, required=True)
     work.add_argument("--partition-count", type=int, required=True)

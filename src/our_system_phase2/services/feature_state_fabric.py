@@ -255,6 +255,130 @@ class DeterministicFeatureCache:
 Transform = Callable[[pd.DataFrame], pd.Series]
 
 
+REGISTERED_CLOSE_RANGE_STATE_FIELD = "state_close_range_location_sign"
+REGISTERED_CLOSE_RANGE_STATE_EXPRESSION = (
+    "Sign(Sub(Mul($close,2),Add($high,$low)))"
+)
+REGISTERED_CLOSE_RANGE_STATE_TRANSFORM = "registered_close_range_location_sign_v1"
+
+
+def _capability_payload(capability: Any) -> dict[str, Any]:
+    if isinstance(capability, Mapping):
+        return dict(capability)
+    to_dict = getattr(capability, "to_dict", None)
+    if callable(to_dict):
+        return dict(to_dict())
+    raise TypeError("registered state capability must be a mapping or CapabilityField")
+
+
+def registered_close_range_state_spec(capability: Any) -> FieldSpec:
+    """Translate the authoritative unified-registry state into a Fabric spec.
+
+    This deliberately recognizes one exact registered expression.  A renamed
+    field, different dependency list, or changed expression must first update
+    the unified capability authority and this audited adapter; silently
+    accepting registry drift would turn a virtual leaf into an unproven input.
+    """
+
+    row = _capability_payload(capability)
+    metadata = dict(row.get("metadata") or {})
+    observed = {
+        "field_id": str(row.get("field_id") or ""),
+        "source_family": str(row.get("source_family") or ""),
+        "entity_scope": str(row.get("entity_scope") or ""),
+        "temporal_semantics": str(row.get("temporal_semantics") or ""),
+        "observable_clock": str(row.get("observable_clock") or ""),
+        "maturity_rule": str(row.get("maturity_rule") or ""),
+        "pit_status": str(row.get("pit_status") or ""),
+        "field_role": str(row.get("field_role") or ""),
+        "source_lag": int(row.get("source_lag") or 0),
+        "source_lag_unit": str(row.get("source_lag_unit") or ""),
+        "materialization_expression": str(
+            metadata.get("materialization_expression") or ""
+        ),
+        "source_fields": tuple(str(value) for value in metadata.get("source_fields", ())),
+    }
+    expected = {
+        "field_id": REGISTERED_CLOSE_RANGE_STATE_FIELD,
+        "source_family": "intraday_derived_state",
+        "entity_scope": "STOCK",
+        "temporal_semantics": "INTRADAY_DERIVED_STATE",
+        "observable_clock": "bar_close",
+        "maturity_rule": "bar_close",
+        "pit_status": "PIT_VERSIONED_HISTORY",
+        "field_role": "state-only",
+        "source_lag": 0,
+        "source_lag_unit": "bars",
+        "materialization_expression": REGISTERED_CLOSE_RANGE_STATE_EXPRESSION,
+        "source_fields": ("close", "high", "low"),
+    }
+    if observed != expected:
+        differences = {
+            key: {"expected": expected[key], "observed": observed[key]}
+            for key in expected
+            if observed[key] != expected[key]
+        }
+        raise ValueError(f"registered state materialization contract drift: {differences}")
+    if row.get("search_eligible") is not True or "INTRADAY_STATE_TRANSITION" not in set(
+        row.get("allowed_routes") or ()
+    ):
+        raise PermissionError("registered close-range state is not route eligible")
+    return FieldSpec(
+        name=REGISTERED_CLOSE_RANGE_STATE_FIELD,
+        dtype="float64",
+        family="intraday_derived_state",
+        role=FieldRole.STATE_ONLY,
+        observable_clock=ObservableClock.BAR_CLOSE,
+        maturity=0,
+        maturity_unit="bars",
+        missing_policy=MissingPolicy.PROPAGATE,
+        source_fields=("close", "high", "low"),
+        transform=REGISTERED_CLOSE_RANGE_STATE_TRANSFORM,
+        source_lag=0,
+        source_lag_unit="bars",
+    )
+
+
+def _close_range_location_sign(frame: pd.DataFrame) -> pd.Series:
+    close = pd.to_numeric(frame["close"], errors="coerce")
+    high = pd.to_numeric(frame["high"], errors="coerce")
+    low = pd.to_numeric(frame["low"], errors="coerce")
+    return pd.Series(np.sign(2.0 * close - high - low), index=frame.index, dtype="float64")
+
+
+def materialize_registered_close_range_state(
+    frame: pd.DataFrame,
+    capability: Any,
+    *,
+    registry_hash: str,
+    cache: DeterministicFeatureCache | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Materialize the registered state leaf through the existing Fabric."""
+
+    if len(str(registry_hash)) != 64:
+        raise ValueError("unified capability registry hash must be a SHA-256 digest")
+    row = _capability_payload(capability)
+    spec = registered_close_range_state_spec(row)
+    registry = FieldRegistry(f"unified-capability:{registry_hash}", [spec])
+    output, manifest = FeatureStateFabric(
+        registry,
+        transforms={REGISTERED_CLOSE_RANGE_STATE_TRANSFORM: _close_range_location_sign},
+        cache=cache,
+        cache_namespace=f"unified-capability:{registry_hash}",
+    ).materialize(frame, [REGISTERED_CLOSE_RANGE_STATE_FIELD])
+    manifest.update(
+        {
+            "unified_registry_hash": str(registry_hash),
+            "unified_representation_id": str(row.get("representation_id") or ""),
+            "unified_source_field_id": str(row.get("source_field_id") or ""),
+            "registered_materialization_expression": REGISTERED_CLOSE_RANGE_STATE_EXPRESSION,
+            "registered_source_fields": ["close", "high", "low"],
+            "materialization_authority": "FeatureStateFabric",
+        }
+    )
+    return output, manifest
+
+
 class FeatureStateFabric:
     def __init__(
         self,

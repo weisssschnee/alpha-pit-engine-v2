@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 import numpy as np
@@ -7,10 +9,13 @@ import pandas as pd
 
 from our_system_phase2.services.compositional_grammar import (
     CompositionalGrammarV2,
+    SUPPLEMENTAL_GRAMMAR_VERSION,
     skeleton_registry,
+    supplemental_skeleton_registry,
 )
 from our_system_phase2.services.expression_semantics import parse_expression
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
+from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
 from our_system_phase2.services.unified_capability_registry import (
     ROUTE_IDS,
     UnifiedCapabilityRegistry,
@@ -45,6 +50,148 @@ def test_searchable_routes_expose_multiple_financially_declared_skeletons() -> N
         assert all(row.control_ablation_rule for row in rows)
         assert all(row.allowed_routes == (route_id,) for row in rows)
         assert all(1 <= row.maximum_depth <= 4 for row in rows)
+
+
+def test_supplemental_gap_generation_is_append_only_and_covers_seven_roots() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    grammar = CompositionalGrammarV2(registry)
+    base_rows: list[list[object]] = []
+    base_exact: set[str] = set()
+    for route_id in ROUTE_IDS:
+        for index in range(len(skeleton_registry()[route_id])):
+            pair = grammar.propose(route_id, attempt_index=index, seed=20260718)
+            base_rows.append(
+                [
+                    route_id,
+                    index,
+                    pair.primary["candidate_id"],
+                    pair.primary["exact_identity"],
+                    pair.control["exact_identity"],
+                ]
+            )
+            base_exact.update(
+                (pair.primary["exact_identity"], pair.control["exact_identity"])
+            )
+    base_digest = hashlib.sha256(
+        json.dumps(
+            base_rows,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    assert base_digest == "8fb0d9cc7d9f9fa6d255596da4145e6b33caf1ea792648ff2fc6989f964c3b4c"
+
+    targets = {
+        "fund_disclosure_balance_age_sessions",
+        "fund_disclosure_profit_age_sessions",
+        "fund_disclosure_cashflow_age_sessions",
+        "fund_disclosure_holder_age_sessions",
+        "ctx_hfq_is_st",
+        "ctx_hfq_prev_is_limit_up",
+        "state_close_range_location_sign",
+    }
+    observed: set[str] = set()
+    supplemental_exact: set[str] = set()
+    assert set(supplemental_skeleton_registry()) == {
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "MARKET_REGIME_CONDITION",
+        "INTRADAY_STATE_TRANSITION",
+    }
+    for route_id in supplemental_skeleton_registry():
+        for index in range(64):
+            pair = grammar.propose_supplemental(
+                route_id,
+                attempt_index=index,
+                seed=20260718,
+            )
+            repeated = grammar.propose_supplemental(
+                route_id,
+                attempt_index=index,
+                seed=20260718,
+            )
+            assert pair.primary["candidate_id"] == repeated.primary["candidate_id"]
+            assert pair.primary["exact_identity"] == repeated.primary["exact_identity"]
+            for candidate in (pair.primary, pair.control):
+                assert candidate["legal"] is True
+                assert candidate["generator_version"] == SUPPLEMENTAL_GRAMMAR_VERSION
+                assert candidate["supplemental_delta_only"] is True
+                assert candidate["existing_pack_rewrite_allowed"] is False
+                assert _call_depth(candidate["canonical_expression"]) <= 4
+                assert 1 <= len(candidate["declared_field_ids"]) <= 3
+            supplemental_exact.update(
+                (pair.primary["exact_identity"], pair.control["exact_identity"])
+            )
+            observed.update(set(pair.primary["declared_field_ids"]) & targets)
+            if route_id == "MARKET_REGIME_CONDITION":
+                assert set(pair.primary["condition_field_ids"]) == (
+                    set(pair.primary["market_condition_field_ids"])
+                    | set(pair.primary["stock_context_field_ids"])
+                )
+            if route_id == "INTRADAY_STATE_TRANSITION":
+                assert pair.primary["state_materialization_required"] is True
+                assert pair.primary["state_source_field_ids"] == ["close", "high", "low"]
+                assert pair.primary["claimed_state_field_id"] == (
+                    "state_close_range_location_sign"
+                )
+
+    assert observed == targets
+    assert not base_exact.intersection(supplemental_exact)
+
+
+def test_supplemental_roots_require_exact_independent_authority_envelope() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    grammar = CompositionalGrammarV2(registry)
+    compiler = TypedRouteCompiler(registry)
+    pair = grammar.propose_supplemental(
+        "MARKET_REGIME_CONDITION",
+        attempt_index=0,
+        seed=20260718,
+    )
+    forged = dict(pair.primary, supplemental_authority_id="forged-authority")
+
+    verdict = compiler.compile(forged)
+
+    assert verdict.legal is False
+    assert verdict.rejection_code == "ROUTE_NOT_ALLOWED"
+    assert "append-only authority envelope" in verdict.reason
+
+
+def test_supplemental_market_receipt_rejects_forged_context_partition() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    grammar = CompositionalGrammarV2(registry)
+    compiler = TypedRouteCompiler(registry)
+    pair = grammar.propose_supplemental(
+        "MARKET_REGIME_CONDITION",
+        attempt_index=0,
+        seed=20260718,
+    )
+    forged = dict(pair.primary)
+    forged["condition_field_ids"] = list(forged["market_condition_field_ids"])
+
+    verdict = compiler.compile(forged)
+
+    assert verdict.legal is False
+    assert verdict.rejection_code == "ENTITY_SCOPE_MISMATCH"
+    assert "partition market and stock contexts" in verdict.reason
+
+
+def test_supplemental_state_receipt_rejects_forged_materialization_lineage() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    grammar = CompositionalGrammarV2(registry)
+    compiler = TypedRouteCompiler(registry)
+    pair = grammar.propose_supplemental(
+        "INTRADAY_STATE_TRANSITION",
+        attempt_index=0,
+        seed=20260718,
+    )
+    forged = dict(pair.primary, state_source_field_ids=["close", "low", "high"])
+
+    verdict = compiler.compile(forged)
+
+    assert verdict.legal is False
+    assert verdict.rejection_code == "STATE_FIELD_NOT_CONSUMED"
+    assert "lineage does not match registry" in verdict.reason
 
 
 def test_minute_compositions_compile_with_same_field_matched_controls() -> None:

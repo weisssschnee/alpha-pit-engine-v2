@@ -39,6 +39,11 @@ from our_system_phase2.services.chip_sidecar import (  # noqa: E402
 from our_system_phase2.services.fundamental_representations import (  # noqa: E402
     CanonicalFundamentalMaterializer,
 )
+from our_system_phase2.services.materialization_support_receipt import (  # noqa: E402
+    build_materialization_support_receipt,
+    materialization_frame_fingerprints,
+    verify_materialization_support_receipt,
+)
 from our_system_phase2.services.pit_fundamental_fabric import (  # noqa: E402
     PITFundamentalFabricAdapter,
     normalize_cn_code,
@@ -262,33 +267,124 @@ def materialize(args: argparse.Namespace) -> int:
     failures: list[dict[str, str]] = []
     for field_id in fields:
         path = args.cache_root / f"{field_id}.parquet"
+        receipt_path = args.cache_root / f"{field_id}.materialization_support_receipt.json"
         try:
-            if path.exists() and field_id in pq.ParquetFile(path).schema_arrow.names:
-                frame = pd.read_parquet(path, columns=[field_id])
+            capability = registry.resolve(field_id)
+            spec = dict((capability.metadata or {}).get("canonical_representation") or {})
+            if not spec or not bool(spec.get("search_eligible")):
+                raise PermissionError("canonical representation is not search eligible")
+            partition_identity = {
+                "panel_version": SESSION_PANEL_VERSION,
+                "partition_index": int(args.partition_index),
+                "partition_count": int(args.partition_count),
+                "field_partition": int(field_partition(field_id, args.partition_count)),
+            }
+            if (
+                path.exists()
+                and receipt_path.exists()
+                and field_id in pq.ParquetFile(path).schema_arrow.names
+            ):
+                frame = pd.read_parquet(
+                    path, columns=["code", "session_time", field_id]
+                )
+                receipt = verify_materialization_support_receipt(
+                    json.loads(receipt_path.read_text(encoding="utf-8")),
+                    expected_field_id=field_id,
+                    expected_registry_hash=registry.registry_hash,
+                    expected_partition_identity=partition_identity,
+                    required_receipt_type=(
+                        "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+                    ),
+                )
+                fingerprints = materialization_frame_fingerprints(
+                    frame, field_id=field_id, row_keys=("code", "session_time")
+                )
+                if (
+                    receipt["coordinate_contract"]["coordinate_fingerprint"]
+                    != fingerprints["coordinate_fingerprint"]
+                    or receipt["materialization"]["value_fingerprint"]
+                    != fingerprints["value_fingerprint"]
+                ):
+                    raise ValueError("cached fundamental field differs from its receipt")
                 rows.append(
                     {
                         "field_id": field_id,
                         "status": "RESUMED",
                         "coverage": round(float(frame[field_id].notna().mean()), 8),
                         "sha256": _sha256(path),
+                        "materialization_support_receipt_hash": receipt["receipt_hash"],
+                        "materialization_support_receipt_sha256": _sha256(receipt_path),
                     }
                 )
                 continue
-            capability = registry.resolve(field_id)
-            spec = dict((capability.metadata or {}).get("canonical_representation") or {})
-            if not spec or not bool(spec.get("search_eligible")):
-                raise PermissionError("canonical representation is not search eligible")
             frame = materializer.materialize(spec, coordinates)
             keep = frame[["code", "session_time", field_id]].copy()
+            materializer_manifest = {
+                "materializer": "CanonicalFundamentalMaterializer",
+                "pit_adapter": "PITFundamentalFabricAdapter",
+                "canonical_representation": spec,
+                "development_maximum_observable_time": str(
+                    args.maximum_observable_time
+                ),
+                "session_calendar_sha256": hashlib.sha256(
+                    "|".join(pd.DatetimeIndex(sessions).astype(str)).encode("utf-8")
+                ).hexdigest(),
+                "split_manifest_sha256": _sha256(args.split_manifest),
+                "fundamental_manifest_sha256": _sha256(args.fundamental_manifest),
+            }
+            receipt = build_materialization_support_receipt(
+                keep,
+                field_id=field_id,
+                representation_id=capability.representation_id,
+                registry_hash=registry.registry_hash,
+                receipt_type=(
+                    "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+                ),
+                materializer_authority=(
+                    "CanonicalFundamentalMaterializer/PITFundamentalFabricAdapter"
+                ),
+                materializer_manifest=materializer_manifest,
+                support_unit=capability.support_unit,
+                observable_time_contract=capability.observable_clock,
+                maturity_contract=capability.maturity_rule,
+                row_keys=("code", "session_time"),
+                partition_identity=partition_identity,
+                source_binding={
+                    "source_field_id": capability.source_field_id,
+                    "source_table": capability.source_table,
+                    "source_field": capability.source_field,
+                    "pit_status": capability.pit_status,
+                    "fundamental_manifest": str(args.fundamental_manifest),
+                    "fundamental_manifest_sha256": _sha256(
+                        args.fundamental_manifest
+                    ),
+                    "split_manifest_sha256": _sha256(args.split_manifest),
+                    "maximum_observable_time": str(args.maximum_observable_time),
+                },
+            )
+            verify_materialization_support_receipt(
+                receipt,
+                expected_field_id=field_id,
+                expected_registry_hash=registry.registry_hash,
+                expected_partition_identity=partition_identity,
+                required_receipt_type=(
+                    "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+                ),
+            )
             temp = path.with_suffix(".tmp.parquet")
+            temp_receipt = receipt_path.with_suffix(".tmp.json")
             keep.to_parquet(temp, index=False, compression="zstd")
+            _write_json(temp_receipt, receipt)
             os.replace(temp, path)
+            os.replace(temp_receipt, receipt_path)
             rows.append(
                 {
                     "field_id": field_id,
                     "status": "MATERIALIZED",
                     "coverage": round(float(keep[field_id].notna().mean()), 8),
                     "sha256": _sha256(path),
+                    "materialization_support_receipt_hash": receipt["receipt_hash"],
+                    "materialization_support_receipt_sha256": _sha256(receipt_path),
                 }
             )
         except Exception as exc:  # field failures are isolated and reported fail-closed.
@@ -322,29 +418,134 @@ def assemble(args: argparse.Namespace) -> int:
     key = pd.MultiIndex.from_frame(base[["_normal_code", "session_time"]])
     missing: list[str] = []
     materialized_columns: dict[str, np.ndarray] = {}
+    receipt_bindings: dict[str, dict[str, str]] = {}
+    cache_receipts: dict[str, dict[str, Any]] = {}
+    registry_hash = str(input_manifest.get("registry_hash") or "")
+    if len(registry_hash) != 64:
+        raise ValueError("session input manifest lacks a bound unified registry hash")
+    fundamental_manifest_sha256 = _sha256(args.fundamental_manifest)
     for field_id in fields:
         path = args.cache_root / f"{field_id}.parquet"
-        if not path.exists():
+        receipt_path = args.cache_root / f"{field_id}.materialization_support_receipt.json"
+        if not path.exists() or not receipt_path.exists():
             missing.append(field_id)
             continue
         frame = pd.read_parquet(path, columns=["code", "session_time", field_id])
         series = frame.set_index(["code", "session_time"])[field_id]
         if series.index.has_duplicates:
             raise ValueError(f"duplicate fundamental materialization coordinates: {field_id}")
+        if len(series) != len(key) or not series.index.sort_values().equals(key.sort_values()):
+            raise ValueError(f"fundamental materialization coordinate mismatch: {field_id}")
+        receipt = verify_materialization_support_receipt(
+            json.loads(receipt_path.read_text(encoding="utf-8")),
+            expected_field_id=field_id,
+            expected_registry_hash=registry_hash,
+            required_receipt_type=(
+                "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+            ),
+        )
+        if receipt["source_binding"].get(
+            "fundamental_manifest_sha256"
+        ) != fundamental_manifest_sha256:
+            raise ValueError(f"fundamental source manifest mismatch: {field_id}")
+        fingerprints = materialization_frame_fingerprints(
+            frame, field_id=field_id, row_keys=("code", "session_time")
+        )
+        if (
+            receipt["coordinate_contract"]["coordinate_fingerprint"]
+            != fingerprints["coordinate_fingerprint"]
+            or receipt["materialization"]["value_fingerprint"]
+            != fingerprints["value_fingerprint"]
+        ):
+            raise ValueError(f"fundamental receipt/value mismatch: {field_id}")
+        receipt_bindings[field_id] = {
+            "receipt_hash": str(receipt["receipt_hash"]),
+            "receipt_sha256": _sha256(receipt_path),
+        }
+        cache_receipts[field_id] = receipt
         materialized_columns[field_id] = series.reindex(key).to_numpy()
     if missing:
         raise RuntimeError(f"missing fundamental materializations: {missing[:8]}")
     base = pd.concat(
         [base, pd.DataFrame(materialized_columns, index=base.index)], axis=1
     )
+    args.output_root.mkdir(parents=True, exist_ok=True)
+    output_panel = args.output_root / "signal_sketch_compact_panel.parquet"
+    output_coordinates = args.output_root / "signal_sketch_coordinate_manifest.csv"
     base = base.drop(columns=["_normal_code", "session_time"])
+    base.to_parquet(output_panel, index=False, compression="zstd")
+    panel_receipt_bindings: dict[str, dict[str, str]] = {}
+    for field_id in fields:
+        upstream = cache_receipts[field_id]
+        panel_values = base[["code", "trade_time", field_id]].copy()
+        panel_receipt = build_materialization_support_receipt(
+            panel_values,
+            field_id=field_id,
+            representation_id=str(upstream["representation_id"]),
+            registry_hash=registry_hash,
+            receipt_type="PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+            materializer_authority="CompositionalSessionSignalPanelAssembler",
+            materializer_manifest={
+                "panel_version": SESSION_PANEL_VERSION,
+                "upstream_receipt_hash": upstream["receipt_hash"],
+                "base_panel_sha256": _sha256(args.base_panel),
+                "fundamental_manifest_sha256": fundamental_manifest_sha256,
+            },
+            support_unit=str(upstream["support"]["support_unit"]),
+            observable_time_contract=str(upstream["observable_time_contract"]),
+            maturity_contract=str(upstream["maturity_contract"]),
+            row_keys=("code", "trade_time"),
+            partition_identity={
+                "panel_version": SESSION_PANEL_VERSION,
+                "assembly": "FULL_DEVELOPMENT_SESSION_PANEL",
+            },
+            source_binding={
+                **dict(upstream.get("source_binding") or {}),
+                "upstream_receipt_hash": upstream["receipt_hash"],
+                "split_manifest_sha256": _sha256(args.split_manifest),
+                "maximum_observable_time": str(args.maximum_observable_time),
+            },
+            evidence_contract={
+                "evidence_role": "FULL_DEVELOPMENT_ROOT_AUTHORITY",
+                "split_manifest": {
+                    "path": str(args.split_manifest.resolve()),
+                    "sha256": _sha256(args.split_manifest),
+                },
+                "coordinate_authority": {
+                    "path": str(args.base_panel.resolve()),
+                    "sha256": _sha256(args.base_panel),
+                },
+                "materialized_artifact": {
+                    "path": str(output_panel.resolve()),
+                    "sha256": _sha256(output_panel),
+                },
+            },
+        )
+        verify_materialization_support_receipt(
+            panel_receipt,
+            expected_field_id=field_id,
+            expected_registry_hash=registry_hash,
+            expected_partition_identity={
+                "panel_version": SESSION_PANEL_VERSION,
+                "assembly": "FULL_DEVELOPMENT_SESSION_PANEL",
+            },
+            required_receipt_type=(
+                "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+            ),
+        )
+        panel_receipt_path = (
+            args.output_root / f"{field_id}.materialization_support_receipt.json"
+        )
+        _write_json(panel_receipt_path, panel_receipt)
+        panel_receipt_bindings[field_id] = {
+            "receipt_hash": str(panel_receipt["receipt_hash"]),
+            "receipt_sha256": _sha256(panel_receipt_path),
+            "path": str(panel_receipt_path),
+            "upstream_receipt_hash": str(upstream["receipt_hash"]),
+        }
     coordinate_rows = attach_coordinate_row_indices(
         _read_csv(args.coordinate_manifest), base
     )
-    output_panel = args.output_root / "signal_sketch_compact_panel.parquet"
-    output_coordinates = args.output_root / "signal_sketch_coordinate_manifest.csv"
-    args.output_root.mkdir(parents=True, exist_ok=True)
-    base.to_parquet(output_panel, index=False, compression="zstd")
     _write_csv(output_coordinates, coordinate_rows)
     summary_paths = sorted(args.cache_root.glob("worker_*.summary.json"))
     summary = {
@@ -357,6 +558,9 @@ def assemble(args: argparse.Namespace) -> int:
         "panel_rows": len(base),
         "panel_columns": len(base.columns),
         "canonical_fundamental_field_count": len(fields),
+        "materialization_support_receipt_count": len(receipt_bindings),
+        "cache_materialization_support_receipts": receipt_bindings,
+        "materialization_support_receipts": panel_receipt_bindings,
         "coordinate_count": len(coordinate_rows),
         "materialized_coordinate_count_by_set": dict(
             Counter(
@@ -410,6 +614,7 @@ def parser() -> argparse.ArgumentParser:
     material.add_argument("--registry", type=Path, required=True)
     material.add_argument("--input-manifest", type=Path, required=True)
     material.add_argument("--fundamental-root", type=Path, required=True)
+    material.add_argument("--fundamental-manifest", type=Path, required=True)
     material.add_argument("--maximum-observable-time", required=True)
     material.add_argument("--cache-root", type=Path, required=True)
     material.add_argument("--partition-index", type=int, required=True)
@@ -424,6 +629,8 @@ def parser() -> argparse.ArgumentParser:
     assemble_parser.add_argument("--output-root", type=Path, required=True)
     assemble_parser.add_argument("--source-release", type=Path, required=True)
     assemble_parser.add_argument("--fundamental-root", type=Path, required=True)
+    assemble_parser.add_argument("--fundamental-manifest", type=Path, required=True)
+    assemble_parser.add_argument("--split-manifest", type=Path, required=True)
     assemble_parser.add_argument("--maximum-observable-time", required=True)
     assemble_parser.set_defaults(func=assemble)
     return root

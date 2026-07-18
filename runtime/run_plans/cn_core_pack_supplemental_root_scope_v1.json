@@ -1,0 +1,153 @@
+{
+  "append_only": true,
+  "baseline_scope": {
+    "git_blob_sha": "f73a40297a3927387d490bf9d2490f4693edfcb4",
+    "mutation": "FORBIDDEN",
+    "path": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
+    "repo_sha": "ac81237a8c0d0759c965cb3eddbc3645ce2c336f",
+    "root_scope_hash": "5ff4e84f137ccffee31944f12be0045ae653573186915922c9583854600ae1a2"
+  },
+  "contract_hash": "6ae88fa8cf8fa97f4fd0466c7318227156c6daa5dedeb68b0488e8086ff6322a",
+  "contract_version": "cn_core_pack_supplemental_root_scope_v1",
+  "plate_industry_roots": [],
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "reward_or_performance_used": false,
+  "root_count": 7,
+  "roots": [
+    {
+      "entity_scope": "STOCK",
+      "field_id": "ctx_hfq_is_st",
+      "field_role": "condition-only",
+      "gap_reason": "NOT_IN_CURRENT_DISCOVERY_SCOPE",
+      "generator_exposure_status": "PENDING_CURRENT_SOURCE_COMPILE_PROOF",
+      "information_qualified": false,
+      "pit_status": "PIT_VERSIONED_HISTORY",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "entity_scope": "STOCK",
+      "field_id": "ctx_hfq_prev_is_limit_up",
+      "field_role": "state-only",
+      "gap_reason": "NOT_IN_CURRENT_DISCOVERY_SCOPE",
+      "generator_exposure_status": "PENDING_CURRENT_SOURCE_COMPILE_PROOF",
+      "information_qualified": false,
+      "pit_status": "PIT_VERSIONED_HISTORY",
+      "route_id": "MARKET_REGIME_CONDITION"
+    },
+    {
+      "entity_scope": "STOCK",
+      "field_id": "fund_disclosure_balance_age_sessions",
+      "field_role": "condition-only",
+      "gap_reason": "NOT_IN_CURRENT_DISCOVERY_SCOPE",
+      "generator_exposure_status": "PENDING_CURRENT_SOURCE_COMPILE_PROOF",
+      "information_qualified": true,
+      "materialization_status": "NOT_MATERIALIZED",
+      "pit_status": "PIT_SAFE_CURRENT_SNAPSHOT_ONLY",
+      "required_receipt": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "runtime_activation": "CANONICAL_FULL_DEVELOPMENT_RECEIPT_REQUIRED_PER_ROOT",
+      "runtime_ready": false,
+      "signal_sketch_allowed": false,
+      "strict_evaluation_allowed": false
+    },
+    {
+      "entity_scope": "STOCK",
+      "field_id": "fund_disclosure_cashflow_age_sessions",
+      "field_role": "condition-only",
+      "gap_reason": "NOT_IN_CURRENT_DISCOVERY_SCOPE",
+      "generator_exposure_status": "PENDING_CURRENT_SOURCE_COMPILE_PROOF",
+      "information_qualified": true,
+      "materialization_status": "NOT_MATERIALIZED",
+      "pit_status": "PIT_SAFE_CURRENT_SNAPSHOT_ONLY",
+      "required_receipt": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "runtime_activation": "CANONICAL_FULL_DEVELOPMENT_RECEIPT_REQUIRED_PER_ROOT",
+      "runtime_ready": false,
+      "signal_sketch_allowed": false,
+      "strict_evaluation_allowed": false
+    },
+    {
+      "entity_scope": "STOCK",
+      "field_id": "fund_disclosure_holder_age_sessions",
+      "field_role": "condition-only",
+      "gap_reason": "NOT_IN_CURRENT_DISCOVERY_SCOPE",
+      "generator_exposure_status": "PENDING_CURRENT_SOURCE_COMPILE_PROOF",
+      "information_qualified": true,
+      "materialization_status": "NOT_MATERIALIZED",
+      "pit_status": "PIT_SAFE_CURRENT_SNAPSHOT_ONLY",
+      "required_receipt": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "runtime_activation": "CANONICAL_FULL_DEVELOPMENT_RECEIPT_REQUIRED_PER_ROOT",
+      "runtime_ready": false,
+      "signal_sketch_allowed": false,
+      "strict_evaluation_allowed": false
+    },
+    {
+      "entity_scope": "STOCK",
+      "field_id": "fund_disclosure_profit_age_sessions",
+      "field_role": "condition-only",
+      "gap_reason": "NOT_IN_CURRENT_DISCOVERY_SCOPE",
+      "generator_exposure_status": "PENDING_CURRENT_SOURCE_COMPILE_PROOF",
+      "information_qualified": true,
+      "materialization_status": "NOT_MATERIALIZED",
+      "pit_status": "PIT_SAFE_CURRENT_SNAPSHOT_ONLY",
+      "required_receipt": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "runtime_activation": "CANONICAL_FULL_DEVELOPMENT_RECEIPT_REQUIRED_PER_ROOT",
+      "runtime_ready": false,
+      "signal_sketch_allowed": false,
+      "strict_evaluation_allowed": false
+    },
+    {
+      "entity_scope": "STOCK",
+      "field_id": "state_close_range_location_sign",
+      "field_role": "state-only",
+      "gap_reason": "REGISTERED_CORE_ROOT_NOT_CONSUMED_BY_CURRENT_GENERATOR",
+      "generator_exposure_status": "PENDING_CURRENT_SOURCE_COMPILE_PROOF",
+      "information_qualified": true,
+      "materialization_status": "NOT_MATERIALIZED",
+      "pit_status": "PIT_VERSIONED_HISTORY",
+      "required_receipt": "FEATURE_STATE_FABRIC_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "runtime_activation": "CANONICAL_FULL_DEVELOPMENT_RECEIPT_REQUIRED_PER_ROOT",
+      "runtime_ready": false,
+      "signal_sketch_allowed": false,
+      "strict_evaluation_allowed": false
+    }
+  ],
+  "route_count": 3,
+  "runtime_activation_contract": {
+    "activation_unit": "ONE_ROOT_ONE_VERIFIED_RECEIPT",
+    "candidate_receipt_hash_injection_required": true,
+    "default": "FROZEN",
+    "requirements_by_field": {
+      "fund_disclosure_balance_age_sessions": {
+        "full_development_assembly": "FULL_DEVELOPMENT_SESSION_PANEL",
+        "receipt_type": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+      },
+      "fund_disclosure_cashflow_age_sessions": {
+        "full_development_assembly": "FULL_DEVELOPMENT_SESSION_PANEL",
+        "receipt_type": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+      },
+      "fund_disclosure_holder_age_sessions": {
+        "full_development_assembly": "FULL_DEVELOPMENT_SESSION_PANEL",
+        "receipt_type": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+      },
+      "fund_disclosure_profit_age_sessions": {
+        "full_development_assembly": "FULL_DEVELOPMENT_SESSION_PANEL",
+        "receipt_type": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+      },
+      "state_close_range_location_sign": {
+        "full_development_assembly": "FULL_DEVELOPMENT_ACTIVE_PANEL",
+        "receipt_type": "FEATURE_STATE_FABRIC_MATERIALIZATION_AND_SUPPORT_RECEIPT"
+      }
+    },
+    "scope_mutation_allowed": false
+  },
+  "source_gap_audit": {
+    "claim": "NON_PERFORMANCE_GENERATOR_EXPOSURE_GAPS_ONLY",
+    "path": "runtime/cn_core_pack_generator_capacity_v1_20260718/field_root_review.json",
+    "sha256": "43981dfb2a1cbc18100e23661bf50876f681add34824e8650915c85e305f4c99"
+  },
+  "status": "AUTHORIZED_APPEND_ONLY_SUPPLEMENTAL_SCOPE"
+}

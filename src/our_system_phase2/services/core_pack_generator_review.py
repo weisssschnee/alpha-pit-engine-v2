@@ -13,7 +13,9 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from our_system_phase2.services.compositional_grammar import (
     CompositionalGrammarV2,
+    SUPPLEMENTAL_GRAMMAR_VERSION,
     skeleton_registry,
+    supplemental_skeleton_registry,
 )
 from our_system_phase2.services.unified_capability_registry import (
     ROUTE_IDS,
@@ -49,6 +51,40 @@ def _state_root_is_constructible(field: CapabilityField) -> bool:
         return True
     expression = str((field.metadata or {}).get("materialization_expression") or "")
     return bool(expression) and expression.count("(") <= 1
+
+
+def _compound_state_root_is_supplementally_constructible(
+    field: CapabilityField,
+) -> bool:
+    if (
+        field.source_family != "intraday_derived_state"
+        or field.field_role != "state-only"
+        or field.entity_scope != "STOCK"
+        or field.temporal_semantics != "INTRADAY_DERIVED_STATE"
+    ):
+        return False
+    metadata = field.metadata or {}
+    expression = str(metadata.get("materialization_expression") or "")
+    source_fields = tuple(str(value) for value in metadata.get("source_fields", ()))
+    return bool(expression) and expression.count("(") > 1 and bool(source_fields)
+
+
+def _is_slow_disclosure_age_condition(field: CapabilityField) -> bool:
+    return (
+        field.field_role == "condition-only"
+        and field.entity_scope == "STOCK"
+        and field.source_family
+        == "canonical_fundamental_disclosure_timing_staleness"
+        and field.temporal_semantics == "ASOF_LEVEL"
+    )
+
+
+def _is_previous_session_stock_regime_context(field: CapabilityField) -> bool:
+    return (
+        field.entity_scope == "STOCK"
+        and field.field_role in {"condition-only", "state-only"}
+        and field.temporal_semantics == "PREVIOUS_SESSION_STOCK_CONTEXT"
+    )
 
 
 def _root_is_constructible_on_route(
@@ -267,6 +303,109 @@ def audit_generator_capacity(
         "forward_2026_accessed": False,
         "behavior_identity_status": "NOT_EVALUATED",
         "claim_ceiling": "STRUCTURAL_CAPACITY_IS_NOT_ALPHA_EVIDENCE",
+    }
+
+
+def audit_supplemental_generator_delta(
+    registry: UnifiedCapabilityRegistry,
+    *,
+    attempts_per_route: int = 64,
+    seeds: Sequence[int] = (20260718,),
+    route_root_allowlist: Mapping[str, Iterable[str]] | None = None,
+) -> dict[str, Any]:
+    """Audit only append-only gap constructors without replaying the base pack."""
+
+    if attempts_per_route <= 0:
+        raise ValueError("supplemental attempts must be positive")
+    if not seeds:
+        raise ValueError("at least one supplemental seed is required")
+    grammar = CompositionalGrammarV2(
+        registry,
+        route_root_allowlist=route_root_allowlist,
+    )
+    routes: dict[str, Any] = {}
+    for route_id in supplemental_skeleton_registry():
+        eligible = registry.fields_for_route(route_id)
+        if route_id == "SLOW_CROSS_SECTIONAL_LEVEL":
+            expected = {
+                field.field_id
+                for field in eligible
+                if _is_slow_disclosure_age_condition(field)
+            }
+        elif route_id == "MARKET_REGIME_CONDITION":
+            expected = {
+                field.field_id
+                for field in eligible
+                if _is_previous_session_stock_regime_context(field)
+            }
+        else:
+            expected = {
+                field.field_id
+                for field in eligible
+                if _compound_state_root_is_supplementally_constructible(field)
+            }
+        allowed = (
+            set(str(value) for value in route_root_allowlist.get(route_id, ()))
+            if route_root_allowlist is not None
+            else None
+        )
+        if allowed is not None:
+            expected &= allowed
+        observed: set[str] = set()
+        exact_ids: set[str] = set()
+        canonical_ids: set[str] = set()
+        failures: Counter[str] = Counter()
+        valid_pairs = 0
+        for seed in seeds:
+            for attempt_index in range(int(attempts_per_route)):
+                try:
+                    pair = grammar.propose_supplemental(
+                        route_id,
+                        attempt_index=attempt_index,
+                        seed=int(seed),
+                    )
+                except Exception as exc:  # structural failure is the audit result
+                    failures[type(exc).__name__ + ":" + str(exc)] += 1
+                    continue
+                if bool(pair.primary.get("legal")) and bool(pair.control.get("legal")):
+                    valid_pairs += 1
+                    exact_ids.add(str(pair.primary["exact_identity"]))
+                    canonical_ids.add(str(pair.primary["canonical_identity"]))
+                    observed.update(
+                        str(field_id)
+                        for field_id in pair.primary.get("declared_field_ids", ())
+                        if str(field_id) in expected
+                    )
+        total = int(attempts_per_route) * len(seeds)
+        routes[route_id] = {
+            "supplemental_skeleton_ids": [
+                row.skeleton_id for row in supplemental_skeleton_registry()[route_id]
+            ],
+            "attempts": total,
+            "valid_pair_count": valid_pairs,
+            "valid_pair_rate": valid_pairs / total if total else 0.0,
+            "construction_failures": dict(sorted(failures.items())),
+            "exact_identity_count": len(exact_ids),
+            "canonical_identity_count": len(canonical_ids),
+            "expected_gap_root_ids": sorted(expected),
+            "observed_gap_root_ids": sorted(observed),
+            "unobserved_gap_root_ids": sorted(expected - observed),
+            "all_expected_gap_roots_observed": expected == observed,
+        }
+    return {
+        "generator_version": SUPPLEMENTAL_GRAMMAR_VERSION,
+        "scope": "APPEND_ONLY_STRUCTURAL_DELTA_NO_BASE_PACK_REPLAY",
+        "attempts_per_route": int(attempts_per_route),
+        "seeds": [int(value) for value in seeds],
+        "routes": routes,
+        "existing_pack_rewrite_required": False,
+        "global_exact_dedup_required_before_admission": True,
+        "performance_or_reward_used": False,
+        "data_roles_accessed": [],
+        "validation_accessed": False,
+        "holdout_accessed": False,
+        "forward_2026_accessed": False,
+        "claim_ceiling": "STRUCTURAL_DELTA_CAPACITY_IS_NOT_ALPHA_EVIDENCE",
     }
 
 

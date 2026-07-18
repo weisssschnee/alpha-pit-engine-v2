@@ -5,6 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
+from our_system_phase2.services.materialization_support_receipt import (
+    assert_candidate_materialization_receipts,
+)
+
 
 SESSION_ROUTES = {
     "SLOW_CROSS_SECTIONAL_LEVEL",
@@ -41,6 +45,19 @@ def classify_signal_sketch_receipts(
             raise ValueError(f"duplicate exact receipt: {exact_identity}")
         seen.add(exact_identity)
         row = dict(raw)
+        assert_candidate_materialization_receipts(
+            row,
+            eligibility_field="signal_sketch_allowed",
+            stage_name="signal sketch",
+        )
+        if (
+            row.get("materialization_status") == "NOT_MATERIALIZED"
+            or row.get("signal_sketch_allowed") is False
+        ):
+            raise ValueError(
+                "supplemental candidate lacks materialization/support receipt and "
+                f"cannot enter signal sketch: {exact_identity}"
+            )
         route_id = str(row.get("route_id") or "")
         if route_id == "BROAD_EVENT_FROZEN_ENTRY":
             raise ValueError("frozen Broad Event reference cannot enter new signal-sketch admission")

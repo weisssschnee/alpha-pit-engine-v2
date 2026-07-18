@@ -75,6 +75,13 @@ def _candidate_row(receipt: Mapping[str, Any]) -> dict[str, Any]:
         "motif_id": str(receipt["route_id"]),
         "route_id": str(receipt["route_id"]),
         "seed": int(receipt["seed"]),
+        "runtime_ready": bool(receipt.get("runtime_ready", True)),
+        "materialization_support_receipt_hashes": json.dumps(
+            dict(receipt.get("materialization_support_receipt_hashes") or {}),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
         "admission_reward_accessed": False,
     }
 

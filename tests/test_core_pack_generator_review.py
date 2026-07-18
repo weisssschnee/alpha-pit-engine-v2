@@ -5,6 +5,7 @@ from pathlib import Path
 
 from our_system_phase2.services.core_pack_generator_review import (
     audit_generator_capacity,
+    audit_supplemental_generator_delta,
     build_field_root_review,
     build_frozen_discovery_contract,
     summarize_field_review,
@@ -31,7 +32,7 @@ def _inputs() -> tuple[UnifiedCapabilityRegistry, dict, dict, list[dict]]:
     return registry, master, core, metrics
 
 
-def test_capacity_review_is_structural_and_records_registered_depth_gap() -> None:
+def test_capacity_review_separates_base_observation_from_supplemental_reachability() -> None:
     registry, _, core, _ = _inputs()
     review = audit_generator_capacity(
         registry,
@@ -45,15 +46,41 @@ def test_capacity_review_is_structural_and_records_registered_depth_gap() -> Non
     assert review["data_roles_accessed"] == []
     assert review["behavior_identity_status"] == "NOT_EVALUATED"
     assert set(review["routes"]) == set(ROUTE_IDS)
-    assert "state_close_range_location_sign" in review["routes"][
-        "INTRADAY_STATE_TRANSITION"
-    ]["structurally_unconstructible_root_ids"]
-    assert "fund_disclosure_balance_age_sessions" in review["routes"][
-        "SLOW_CROSS_SECTIONAL_LEVEL"
-    ]["structurally_unconstructible_root_ids"]
-    assert "ctx_hfq_is_st" in review["routes"]["MARKET_REGIME_CONDITION"][
-        "structurally_unconstructible_root_ids"
-    ]
+    for route_id, field_id in (
+        ("INTRADAY_STATE_TRANSITION", "state_close_range_location_sign"),
+        ("SLOW_CROSS_SECTIONAL_LEVEL", "fund_disclosure_balance_age_sessions"),
+        ("MARKET_REGIME_CONDITION", "ctx_hfq_is_st"),
+    ):
+        route = review["routes"][route_id]
+        assert field_id in route["structurally_unconstructible_root_ids"]
+
+    delta = audit_supplemental_generator_delta(
+        registry,
+        attempts_per_route=64,
+        seeds=(20260718,),
+    )
+    assert delta["existing_pack_rewrite_required"] is False
+    assert delta["global_exact_dedup_required_before_admission"] is True
+    assert delta["data_roles_accessed"] == []
+    assert all(
+        row["all_expected_gap_roots_observed"]
+        and row["valid_pair_count"] == row["attempts"]
+        for row in delta["routes"].values()
+    )
+    observed = {
+        field_id
+        for row in delta["routes"].values()
+        for field_id in row["observed_gap_root_ids"]
+    }
+    assert observed == {
+        "state_close_range_location_sign",
+        "fund_disclosure_balance_age_sessions",
+        "fund_disclosure_profit_age_sessions",
+        "fund_disclosure_cashflow_age_sessions",
+        "fund_disclosure_holder_age_sessions",
+        "ctx_hfq_is_st",
+        "ctx_hfq_prev_is_limit_up",
+    }
 
 
 def test_frozen_contract_uses_core_plus_support_and_authorizes_nothing() -> None:

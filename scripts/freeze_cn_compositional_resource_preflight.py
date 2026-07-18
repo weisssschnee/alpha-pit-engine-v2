@@ -21,7 +21,14 @@ from our_system_phase2.services.candidate_submission_receipt import (
     ReceiptContext,
     write_receipt_table,
 )
-from our_system_phase2.services.compositional_grammar import CompositionalGrammarV2
+from our_system_phase2.services.materialization_support_receipt import (
+    assert_candidate_materialization_receipts,
+    load_verified_full_development_receipts,
+)
+from our_system_phase2.services.compositional_grammar import (
+    CompositionalGrammarV2,
+    SUPPLEMENTAL_GRAMMAR_VERSION,
+)
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
 from our_system_phase2.services.matched_control_pairs import (
     CandidatePairAuthority,
@@ -67,6 +74,28 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(dict(payload), ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def assert_strict_materialization_ready(
+    receipt: Mapping[str, Any],
+    *,
+    verified_receipt_hashes: Mapping[str, str] | None = None,
+) -> None:
+    assert_candidate_materialization_receipts(
+        receipt,
+        eligibility_field="strict_evaluation_allowed",
+        stage_name="strict evaluation",
+        verified_receipt_hashes=verified_receipt_hashes,
+        require_verified_catalog=True,
+    )
+    if (
+        receipt.get("materialization_status") == "NOT_MATERIALIZED"
+        or receipt.get("strict_evaluation_allowed") is False
+    ):
+        raise RuntimeError(
+            "supplemental candidate lacks materialization/support receipt and "
+            f"cannot enter strict evaluation: {receipt.get('candidate_id')}"
+        )
 
 
 def _csv_value(value: Any) -> Any:
@@ -152,6 +181,7 @@ def _candidate_rows(
     *,
     compact_by_id: Mapping[str, Mapping[str, Any]],
     grammar: CompositionalGrammarV2,
+    verified_receipt_hashes: Mapping[str, str] | None = None,
     round_id: str = "RESOURCE_PREFLIGHT_32",
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     candidates: list[dict[str, Any]] = []
@@ -159,7 +189,16 @@ def _candidate_rows(
     for ordinal, admission in enumerate(selected, 1):
         candidate_id = str(admission["candidate_id"])
         receipt = dict(compact_by_id[candidate_id])
-        pair = grammar.propose(
+        assert_strict_materialization_ready(
+            receipt, verified_receipt_hashes=verified_receipt_hashes
+        )
+        proposer = (
+            grammar.propose_supplemental
+            if str(receipt.get("generator_version") or "")
+            == SUPPLEMENTAL_GRAMMAR_VERSION
+            else grammar.propose
+        )
+        pair = proposer(
             str(receipt["route_id"]),
             attempt_index=int(receipt["route_attempt_index"]),
             seed=int(receipt["seed"]),
@@ -172,6 +211,14 @@ def _candidate_rows(
             raise RuntimeError(f"typed control reconstruction drift: {candidate_id}")
         for member in (pair.primary, pair.control):
             row = dict(member)
+            for key in (
+                "runtime_ready",
+                "materialization_status",
+                "strict_evaluation_allowed",
+                "materialization_support_receipt_hashes",
+            ):
+                if key in receipt:
+                    row[key] = receipt[key]
             # Formal evaluator identity is candidate-specific even when several
             # pairs reuse an identical neutral control.  Expression evaluation
             # remains shared by the expression-string cache, so this preserves
@@ -212,6 +259,13 @@ def main() -> int:
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
     parser.add_argument("--release-manifest", type=Path, required=True)
+    parser.add_argument(
+        "--materialization-support-receipt",
+        type=Path,
+        action="append",
+        default=[],
+        help="canonical full-development root receipt; repeat per gated root",
+    )
     parser.add_argument("--pair-count", type=int)
     parser.add_argument("--round-id")
     args = parser.parse_args()
@@ -244,6 +298,12 @@ def main() -> int:
     quotas = representative_route_quotas(route_weights, int(configured_count))
     selected = select_representative_pairs(admissions, route_quotas=quotas)
     registry = UnifiedCapabilityRegistry.read(args.registry)
+    verified_receipts = load_verified_full_development_receipts(
+        tuple(args.materialization_support_receipt), registry=registry
+    )
+    verified_receipt_hashes = {
+        field_id: row["receipt_hash"] for field_id, row in verified_receipts.items()
+    }
     candidates, pack = _candidate_rows(
         selected,
         compact_by_id=compact_by_id,
@@ -251,6 +311,7 @@ def main() -> int:
             registry,
             route_root_allowlist=plan.get("route_root_allowlists"),
         ),
+        verified_receipt_hashes=verified_receipt_hashes,
         round_id=str(args.round_id or plan.get("evaluation_round_id") or "RESOURCE_PREFLIGHT_32"),
     )
 
