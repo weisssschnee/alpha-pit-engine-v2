@@ -335,7 +335,7 @@ for ($Index = 0; $Index -lt 2; $Index += 1) {
     } else { @() }
     $PairIdentityPass = (
         $ExpectedPairIds.Count -eq $ObservedPairIds.Count -and
-        (Compare-Object $ExpectedPairIds $ObservedPairIds).Count -eq 0
+        @(Compare-Object $ExpectedPairIds $ObservedPairIds).Count -eq 0
     )
     $ExitReceiptPass = (
         $null -ne $ExitReceipt -and

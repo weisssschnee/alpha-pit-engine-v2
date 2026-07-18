@@ -489,6 +489,7 @@ def test_partition_launcher_gates_before_creating_output_or_heavy_processes() ->
     assert "Remove-Item -LiteralPath $StaleArtifact -Force" in script
     assert "$Processes[$Index].ExitCode" in script
     assert "CN_PHASE3CM_BACKEND_PROCESS_COMPLETED" in script
+    assert "@(Compare-Object $ExpectedPairIds $ObservedPairIds).Count -eq 0" in script
     assert "argument_file_sha256" in script
     assert "execution_plan_hash" in script
     assert "block_row_guard_status" in script
