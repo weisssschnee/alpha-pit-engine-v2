@@ -11,7 +11,7 @@
       "category": "STALE",
       "code": "RAW_GRAPH_REPO_SHA_MISSING",
       "evidence": {
-        "repo_head": "ce2c18042d43a5c30dde9673b29ef9fbc6bebba9"
+        "repo_head": "7aa6ba434122af3fc077d5e65d5f6e6120678e66"
       },
       "message": "Raw graph does not identify the repository SHA it was built from",
       "severity": "WARN"
@@ -1221,7 +1221,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-18T13:48:49.301756+00:00",
+  "generated_at": "2026-07-18T20:32:26.199643+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1277,7 +1277,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -1340,7 +1340,7 @@
       "required": false,
       "semantic_role": "split_authority",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -1406,7 +1406,7 @@
       "required": true,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
@@ -1492,7 +1492,7 @@
       "required": true,
       "semantic_role": "field_route_authority",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
         "evidence_sha256": "4855AE00D975C5E05066CF21F73C6FA3DC08A15280DD9AD145D5EA5F30B1CF7F",
         "level": "STATIC_VERIFIED",
@@ -1546,7 +1546,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -1656,7 +1656,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "tests/test_field_information_census.py",
         "evidence_sha256": "837FE2F72EAAFDE1703B699031850EDB1E3770A4C0602AE018FE93FE1F46B87D",
         "level": "STATIC_VERIFIED",
@@ -1720,7 +1720,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -1809,7 +1809,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/run_manifest.json",
         "evidence_sha256": "09C12C713CABE838DAE5A27DBC53709C7F6D277C2E8ADA810E64D855B10E0891",
         "level": "STATIC_VERIFIED",
@@ -1898,7 +1898,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
         "evidence_sha256": "A986BB2D38D8C4716E85F8561ACC3551622AEA06EC27FF6326E1EE19FA132B27",
         "level": "STATIC_VERIFIED",
@@ -1982,7 +1982,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2070,7 +2070,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2138,7 +2138,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2302,7 +2302,7 @@
       "required": false,
       "semantic_role": "pit_fundamental_observable_episode_authority",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "tests/test_pit_fundamental_fabric.py",
         "evidence_sha256": "20617E5E750049057A210DDE3451559B55388D7AD869605D0E9839E461A24769",
         "level": "STATIC_VERIFIED",
@@ -2348,7 +2348,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2417,7 +2417,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2480,7 +2480,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
         "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
         "level": "STATIC_VERIFIED",
@@ -2557,7 +2557,7 @@
       "required": false,
       "semantic_role": "candidate_identity_authority",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json",
         "evidence_sha256": "115218107C43C1B7CB9FB3E0039DA8261CB45E07CF4177915B21172DDA69632D",
         "level": "STATIC_VERIFIED",
@@ -2635,7 +2635,7 @@
       "required": false,
       "semantic_role": "matched_pair_authority",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
         "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
@@ -2783,7 +2783,7 @@
       "required": false,
       "semantic_role": "formal_evaluation_authority",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
         "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
@@ -2806,7 +2806,7 @@
         "256 DEVELOPMENT PAIRS",
         "245 EVALUATED",
         "EVALUATOR 7DF57CE",
-        "PORTFOLIO KERNEL BOTTLENECK",
+        "KERNEL OPT PARTIAL 1.903X",
         "NO OOS",
         "NO PROMOTION"
       ],
@@ -2855,7 +2855,8 @@
         "src/our_system_phase2/services/phase3cm_streaming_checkpoint.py",
         "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_DECISION.json",
         "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_PARTITIONED_BACKEND_EXECUTION_RECEIPT.json",
-        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json"
+        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
+        "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "promotion_requirements": [
         "separate strict Stage A authorization",
@@ -2863,6 +2864,7 @@
         "unchanged development-only data boundary"
       ],
       "raw_node_ids": [
+        "reports_cn_matched_control_candidate_parallel_20260715_cn_matched_control_run_manifest_json",
         "scripts_run_cn_phase3cm_streaming_qualification",
         "scripts_run_cn_phase3cm_streaming_qualification_block_boundaries",
         "scripts_run_cn_phase3cm_streaming_qualification_candidate_direction",
@@ -2965,7 +2967,7 @@
       "required": false,
       "semantic_role": "qualified_experimental_evaluation_path",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_REPORT.md",
         "evidence_sha256": "33BD2B100BF6FC48EC66C1B03ED6531B6CD1E1B54C1ABCEF143431E333A64A11",
         "level": "STATIC_VERIFIED",
@@ -3037,7 +3039,7 @@
       "required": false,
       "semantic_role": "train_feedback_authority",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_TEST_RESULTS.json",
         "evidence_sha256": "FC996215C353588E01A4537EBED4B86B85A9AB6E556B223CB54EF92CDB4D17D9",
         "level": "STATIC_VERIFIED",
@@ -3098,7 +3100,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -3167,7 +3169,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -3236,7 +3238,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -3277,7 +3279,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -3344,7 +3346,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -3385,7 +3387,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -3426,7 +3428,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T13:48:49.301756+00:00",
+        "checked_at": "2026-07-18T20:32:26.199643+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -3440,7 +3442,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "6E750DE7194A87091BDCBD20D50706D8E212614C658756BDCB8817EB2FB33A14"
+    "sha256": "D0E01B6DD84DF7AAEC621B0459170A21A72E84FBBD9A2FC383BE77173F3DE249"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -3457,7 +3459,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "DA76EE790EAD88F495EAC77AD0CCFE8C8F02BF987FA95806346F8C82D5327604"
   },
-  "repo_head": "ce2c18042d43a5c30dde9673b29ef9fbc6bebba9",
+  "repo_head": "7aa6ba434122af3fc077d5e65d5f6e6120678e66",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,

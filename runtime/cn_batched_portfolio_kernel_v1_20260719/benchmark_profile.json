@@ -1,0 +1,387 @@
+{
+  "boundaries": {
+    "candidate_promotion": "FORBIDDEN",
+    "data_role": "development_train_only",
+    "forward_2026": "SEALED",
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "strict_stage_a": "NOT_AUTHORIZED",
+    "validation_reads": 0,
+    "wave_1024": "REQUIRES_SEPARATE_USER_AUTHORIZATION"
+  },
+  "full_256_current_kernel_benchmark": "NOT_EXECUTED_BY_CURRENT_KERNEL",
+  "historical_golden": {
+    "artifact_index_sha256": "bbfb889932dcc7b47368164242ef8b806f2f60e628c1625c8a200610bc9c5d67",
+    "full_pack_execution": "HISTORICAL_7DF57CE_EVIDENCE_ONLY",
+    "hot_path_bottleneck": "BATCHED_PORTFOLIO_KERNEL_BOTTLENECK",
+    "status": "UNCHANGED"
+  },
+  "same_input_subset": {
+    "attempts": [
+      {
+        "attempt_id": "fb25a91",
+        "checkpoint_parity": {
+          "exact_pass": true,
+          "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\checkpoint_parity_fb25.json",
+          "sha256": "8adebf45de9f18439b20a313a49589cba11e089264c25b2c4ab96474c639be45",
+          "status": "CN_PHASE3CM_SCALING_PROBE_PARITY_PASS"
+        },
+        "eligible_for_separate_146_replay": false,
+        "portfolio_sha256": "948e1ea15a82371c94ae696518fecea65c8b86144a94ddd2cb2b86cf83d85f46",
+        "qualification": {
+          "artifact_hash_match": {
+            "CN_FROZEN_EXECUTION_PLAN.json": true,
+            "CN_SHARED_DAG_PLAN.json": true,
+            "CN_STREAMING_REDUCER_CONTRACT.json": true,
+            "CN_STREAMING_REWARD_ATOMS.csv": true
+          },
+          "candidate_artifacts_bound": true,
+          "candidate_root_bound": true,
+          "comparable": true,
+          "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\subset_qualification_fb25.json",
+          "performance": {
+            "allocated_compute_threads": 11,
+            "candidate_compute_wall_seconds": 160.76763279992156,
+            "candidate_mapping_effective_cores": 10.467105919178026,
+            "candidate_mapping_wall_seconds": 128.23207870102488,
+            "candidate_peak_rss_bytes": 6612959232.0,
+            "candidate_wall_seconds": 308.8124071001075,
+            "compute_speedup": 1.6442294353384264,
+            "mapping_parallelism_engaged": true,
+            "mapping_speedup": 1.805143072975867,
+            "minimum_effective_cores": 5.5,
+            "peak_rss_delta_bytes": -1499136.0,
+            "reference_compute_wall_seconds": 264.3388740993105,
+            "reference_mapping_wall_seconds": 231.47724860045128,
+            "reference_peak_rss_bytes": 6614458368.0,
+            "reference_wall_seconds": 402.7258762998972,
+            "wall_speedup": 1.3041117100238329
+          },
+          "recomputed_qualification_digest": "f675c6e3334d598b5ce1f96e0c7060b3f18110eee152eeedbd6a294787ee354b",
+          "reference_root_bound": true,
+          "semantic_parity_exact": true,
+          "sha256": "ef4daf08254a9120126646a48858c007b06761f4e620c299cd6bdac509fe3a7e",
+          "status": "CN_BATCHED_PORTFOLIO_KERNEL_PARTIALLY_QUALIFIED"
+        },
+        "result": {
+          "access": {
+            "forward_2026_reads": 0,
+            "holdout_reads": 0,
+            "validation_reads": 0
+          },
+          "backend": "active_bar",
+          "candidate_count": 8,
+          "command_evidence": {
+            "arguments": [
+              "scripts\\run_cn_phase3cm_streaming_qualification.py",
+              "--backend",
+              "active_bar",
+              "--phase",
+              "D",
+              "--pair-count",
+              "4",
+              "--candidate-table",
+              "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\preflight_active_candidates.csv",
+              "--binding",
+              "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\CN_STRICT_WAVE_00256_R4_ASYMMETRIC_INPUT_BINDING.json",
+              "--split-manifest",
+              "D:\\ChengboRemote\\workspace\\cn_aggressive_discovery_7df57ce\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+              "--artifact-root",
+              "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs",
+              "--field-sidecar-root",
+              "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\active_time_major_train_v1",
+              "--label-sidecar-root",
+              "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v3_labels",
+              "--output-root",
+              "D:\\ChengboRemote\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\subset_ab\\optimized_a4ad356\\run",
+              "--block-sessions",
+              "10",
+              "--pair-batch-size",
+              "4",
+              "--compute-threads",
+              "11"
+            ],
+            "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\optimized_a4ad356\\command.json",
+            "python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+            "sha256": "e97e393253524b418c4a1cb7515597689f4860d7204554bf33bbe11774429e5f",
+            "source_label": "a4ad356_with_fb25_portfolio",
+            "source_label_token_verified": "fb25",
+            "thread_environment": {
+              "ARROW_NUM_THREADS": "1",
+              "MKL_NUM_THREADS": "1",
+              "NUMBA_NUM_THREADS": "11",
+              "NUMEXPR_MAX_THREADS": "1",
+              "OMP_NUM_THREADS": "1",
+              "OPENBLAS_NUM_THREADS": "1",
+              "POLARS_MAX_THREADS": "1"
+            }
+          },
+          "execution_plan": {
+            "compute_threads": 11,
+            "execution_plan_hash": "b2815df647723cc168f01329dc925a3d03a828eceb71dc4c7f8bda01cc547a4e",
+            "pair_batch_count": 1,
+            "pair_batch_size": 4,
+            "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\optimized_a4ad356\\run\\CN_FROZEN_EXECUTION_PLAN.json",
+            "primary_thread_pool": "numba",
+            "sha256": "cf8a7a59f666a69b118714695edda6adbe489a722d468cef42f22df6a8146114",
+            "thread_environment": {
+              "ARROW_NUM_THREADS": "1",
+              "MKL_NUM_THREADS": "1",
+              "NUMBA_NUM_THREADS": "11",
+              "NUMEXPR_MAX_THREADS": "1",
+              "OMP_NUM_THREADS": "1",
+              "OPENBLAS_NUM_THREADS": "1",
+              "POLARS_MAX_THREADS": "1"
+            }
+          },
+          "input_binding_hash": "bf80b78517483426b3f69751e997719bdc437b1002dd44751ced0642ec439333",
+          "pair_count": 4,
+          "parallelism_status": "PARALLELISM_ENGAGED",
+          "peak_rss_bytes": 6612959232,
+          "phase": "D",
+          "phase_wall_seconds": {
+            "checkpoint": 0.8223612990695983,
+            "cross_sectional_rank_mapping": 128.23207870102488,
+            "expression_value_dag": 31.26706009893678,
+            "streaming_reducer": 0.04485549917444587,
+            "turnover_and_cost": 1.268493999959901
+          },
+          "result_sha256": "01153a4e0fe5b073f811eec32c6023cc2bc45d7c52158cc728886991f2b43428",
+          "root": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\optimized_a4ad356\\run",
+          "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+          "status": "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED",
+          "wall_seconds": 308.8124071001075
+        }
+      },
+      {
+        "attempt_id": "iteration2",
+        "checkpoint_parity": {
+          "exact_pass": true,
+          "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_iteration2\\checkpoint_parity_order_reuse.json",
+          "sha256": "ad8963a42fc29471b8c86888d878658cd2e87cf256228a917ddfdc46c7a56790",
+          "status": "CN_PHASE3CM_SCALING_PROBE_PARITY_PASS"
+        },
+        "eligible_for_separate_146_replay": false,
+        "portfolio_sha256": "5b665d33d74eb4b5f451f06b4ad7e4b352f779c3e2e4836bb2d76950c413d110",
+        "qualification": {
+          "artifact_hash_match": {
+            "CN_FROZEN_EXECUTION_PLAN.json": true,
+            "CN_SHARED_DAG_PLAN.json": true,
+            "CN_STREAMING_REDUCER_CONTRACT.json": true,
+            "CN_STREAMING_REWARD_ATOMS.csv": true
+          },
+          "candidate_artifacts_bound": true,
+          "candidate_root_bound": true,
+          "comparable": true,
+          "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_iteration2\\subset_qualification_order_reuse.json",
+          "performance": {
+            "allocated_compute_threads": 11,
+            "candidate_compute_wall_seconds": 69.24733600229956,
+            "candidate_mapping_effective_cores": 10.69677607518216,
+            "candidate_mapping_wall_seconds": 36.59835190046579,
+            "candidate_peak_rss_bytes": 6690283520.0,
+            "candidate_wall_seconds": 211.66810599993914,
+            "compute_speedup": 3.817314706381374,
+            "mapping_parallelism_engaged": true,
+            "mapping_speedup": 6.324799795083266,
+            "minimum_effective_cores": 5.5,
+            "peak_rss_delta_bytes": 75825152.0,
+            "reference_compute_wall_seconds": 264.3388740993105,
+            "reference_mapping_wall_seconds": 231.47724860045128,
+            "reference_peak_rss_bytes": 6614458368.0,
+            "reference_wall_seconds": 402.7258762998972,
+            "wall_speedup": 1.9026289973984696
+          },
+          "recomputed_qualification_digest": "a85a20b20a6ecfbced4c4c016b0053fade70824316d554d54b7b784726740451",
+          "reference_root_bound": true,
+          "semantic_parity_exact": true,
+          "sha256": "28ffe2d8154a3f152fc5776778487e66e957df09ccaae739c3cb903a62c93610",
+          "status": "CN_BATCHED_PORTFOLIO_KERNEL_PARTIALLY_QUALIFIED"
+        },
+        "result": {
+          "access": {
+            "forward_2026_reads": 0,
+            "holdout_reads": 0,
+            "validation_reads": 0
+          },
+          "backend": "active_bar",
+          "candidate_count": 8,
+          "command_evidence": {
+            "arguments": [
+              "scripts\\run_cn_phase3cm_streaming_qualification.py",
+              "--backend",
+              "active_bar",
+              "--phase",
+              "D",
+              "--pair-count",
+              "4",
+              "--candidate-table",
+              "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\preflight_active_candidates.csv",
+              "--binding",
+              "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\CN_STRICT_WAVE_00256_R4_ASYMMETRIC_INPUT_BINDING.json",
+              "--split-manifest",
+              "D:\\ChengboRemote\\workspace\\cn_aggressive_discovery_7df57ce\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+              "--artifact-root",
+              "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs",
+              "--field-sidecar-root",
+              "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\active_time_major_train_v1",
+              "--label-sidecar-root",
+              "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v3_labels",
+              "--output-root",
+              "D:\\ChengboRemote\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\subset_iteration2_order_reuse\\candidate_order_reuse\\run",
+              "--block-sessions",
+              "10",
+              "--pair-batch-size",
+              "4",
+              "--compute-threads",
+              "11"
+            ],
+            "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_iteration2\\candidate_order_reuse\\command.json",
+            "python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+            "sha256": "e243ab069de7b51ecd6dd09d6769e7e36230652372cf327dc74f71fc9ca1916a",
+            "source_label": "a4ad356_plus_order_reuse_worktree",
+            "source_label_token_verified": "order_reuse",
+            "thread_environment": {
+              "ARROW_NUM_THREADS": "1",
+              "MKL_NUM_THREADS": "1",
+              "NUMBA_NUM_THREADS": "11",
+              "NUMEXPR_MAX_THREADS": "1",
+              "OMP_NUM_THREADS": "1",
+              "OPENBLAS_NUM_THREADS": "1",
+              "POLARS_MAX_THREADS": "1"
+            }
+          },
+          "execution_plan": {
+            "compute_threads": 11,
+            "execution_plan_hash": "b2815df647723cc168f01329dc925a3d03a828eceb71dc4c7f8bda01cc547a4e",
+            "pair_batch_count": 1,
+            "pair_batch_size": 4,
+            "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_iteration2\\candidate_order_reuse\\run\\CN_FROZEN_EXECUTION_PLAN.json",
+            "primary_thread_pool": "numba",
+            "sha256": "cf8a7a59f666a69b118714695edda6adbe489a722d468cef42f22df6a8146114",
+            "thread_environment": {
+              "ARROW_NUM_THREADS": "1",
+              "MKL_NUM_THREADS": "1",
+              "NUMBA_NUM_THREADS": "11",
+              "NUMEXPR_MAX_THREADS": "1",
+              "OMP_NUM_THREADS": "1",
+              "OPENBLAS_NUM_THREADS": "1",
+              "POLARS_MAX_THREADS": "1"
+            }
+          },
+          "input_binding_hash": "bf80b78517483426b3f69751e997719bdc437b1002dd44751ced0642ec439333",
+          "pair_count": 4,
+          "parallelism_status": "PARALLELISM_ENGAGED",
+          "peak_rss_bytes": 6690283520,
+          "phase": "D",
+          "phase_wall_seconds": {
+            "checkpoint": 0.8340483999345452,
+            "cross_sectional_rank_mapping": 36.59835190046579,
+            "expression_value_dag": 31.377400600584224,
+            "streaming_reducer": 0.0449689005035907,
+            "turnover_and_cost": 1.2715835012495518
+          },
+          "result_sha256": "378f680ecb0a21f02445f9d3cc24d5f7d347fd642d033e5df0583db7376534f7",
+          "root": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_iteration2\\candidate_order_reuse\\run",
+          "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+          "status": "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED",
+          "wall_seconds": 211.66810599993914
+        }
+      }
+    ],
+    "baseline": {
+      "access": {
+        "forward_2026_reads": 0,
+        "holdout_reads": 0,
+        "validation_reads": 0
+      },
+      "backend": "active_bar",
+      "candidate_count": 8,
+      "command_evidence": {
+        "arguments": [
+          "scripts\\run_cn_phase3cm_streaming_qualification.py",
+          "--backend",
+          "active_bar",
+          "--phase",
+          "D",
+          "--pair-count",
+          "4",
+          "--candidate-table",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\preflight_active_candidates.csv",
+          "--binding",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\CN_STRICT_WAVE_00256_R4_ASYMMETRIC_INPUT_BINDING.json",
+          "--split-manifest",
+          "D:\\ChengboRemote\\workspace\\cn_aggressive_discovery_7df57ce\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+          "--artifact-root",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs",
+          "--field-sidecar-root",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\active_time_major_train_v1",
+          "--label-sidecar-root",
+          "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v3_labels",
+          "--output-root",
+          "D:\\ChengboRemote\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\subset_ab\\baseline_7df57ce\\run",
+          "--block-sessions",
+          "10",
+          "--pair-batch-size",
+          "4",
+          "--compute-threads",
+          "11"
+        ],
+        "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\baseline_7df57ce\\command.json",
+        "python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+        "sha256": "f8aa3f9c27d509a4456b5fc98e584c8d82cdb8c061941ed65e2aa09faf57c220",
+        "source_label": "golden_7df57ce",
+        "source_label_token_verified": "7df57ce",
+        "thread_environment": {
+          "ARROW_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "NUMBA_NUM_THREADS": "11",
+          "NUMEXPR_MAX_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "POLARS_MAX_THREADS": "1"
+        }
+      },
+      "execution_plan": {
+        "compute_threads": 11,
+        "execution_plan_hash": "b2815df647723cc168f01329dc925a3d03a828eceb71dc4c7f8bda01cc547a4e",
+        "pair_batch_count": 1,
+        "pair_batch_size": 4,
+        "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\baseline_7df57ce\\run\\CN_FROZEN_EXECUTION_PLAN.json",
+        "primary_thread_pool": "numba",
+        "sha256": "cf8a7a59f666a69b118714695edda6adbe489a722d468cef42f22df6a8146114",
+        "thread_environment": {
+          "ARROW_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "NUMBA_NUM_THREADS": "11",
+          "NUMEXPR_MAX_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "POLARS_MAX_THREADS": "1"
+        }
+      },
+      "input_binding_hash": "bf80b78517483426b3f69751e997719bdc437b1002dd44751ced0642ec439333",
+      "pair_count": 4,
+      "parallelism_status": "PARALLELISM_ENGAGED",
+      "peak_rss_bytes": 6614458368,
+      "phase": "D",
+      "phase_wall_seconds": {
+        "checkpoint": 0.8525556996464729,
+        "cross_sectional_rank_mapping": 231.47724860045128,
+        "expression_value_dag": 31.599742899183184,
+        "streaming_reducer": 0.0480960994027555,
+        "turnover_and_cost": 1.261882599676028
+      },
+      "result_sha256": "181b98b3290c1cba4fcd367e28b72fe7abc5b64d1141dc7dbc3e29add8838a4f",
+      "root": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\baseline_7df57ce\\run",
+      "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+      "status": "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED",
+      "wall_seconds": 402.7258762998972
+    },
+    "replay_candidate_attempt_id": null,
+    "retained_engineering_attempt_id": "iteration2"
+  },
+  "schema_version": "cn_batched_portfolio_kernel_benchmark_profile_v1",
+  "selection_basis": "engineering parity, access boundaries, checkpoint parity, and runtime only; reward not used",
+  "status": "CN_BATCHED_PORTFOLIO_KERNEL_PARTIALLY_QUALIFIED"
+}

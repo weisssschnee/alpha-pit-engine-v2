@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-18
+Updated: 2026-07-19
 
-Current state: `CN_PHASE3CM_256_DIAGNOSTIC_COMPLETED_SUPPLEMENTAL_ROOTS_READY_SEARCH_FROZEN`
+Current state: `CN_PHASE3CM_256_DIAGNOSTIC_COMPLETED_PORTFOLIO_KERNEL_PARTIALLY_QUALIFIED_SEARCH_FROZEN`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -30,10 +30,13 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   temporal change was weak. These are development diagnostics only, without
   independent seed/time-block stability evidence, and cannot authorize
   promotion or Strict Stage A.
-- Both active-bar partitions engaged parallel compute. Their dominant compute
-  path is `BATCHED_PORTFOLIO_KERNEL_BOTTLENECK`; future acceleration should
-  prioritize cross-sectional rank, mapping and portfolio kernels rather than
-  further Value-DAG work.
+- The experimental streaming portfolio kernel retained exact result and
+  checkpoint parity on the frozen four-pair full-coordinate A/B. Versus the
+  7df57ce golden evaluator, mapping improved 6.325x, compute improved 3.817x
+  and end-to-end wall time improved 1.903x, while peak RSS increased by about
+  72.3 MiB. The frozen 2x end-to-end gate was not met, so the kernel is
+  `PARTIALLY_QUALIFIED`; no current-kernel 146/256 replay ran and the historical
+  256-pair evidence remains unchanged.
 - The complete CN field master contains 1,683 records:
   - 1,227 PIT fundamental source fields;
   - 420 registered capability fields;
@@ -117,14 +120,16 @@ disclosure materializations are now explicit. They do not provide independent
 stability or OOS evidence, so formal discovery remains blocked by the absence
 of a separate development-only authorization and nonzero frozen budgets.
 Plate remains independently blocked by missing real PIT minute materialization;
-the compound intraday state root remains a localized materialization gap.
+the compound intraday state root remains a localized materialization gap. The
+only permitted second portfolio-kernel optimization still finished below the
+2x end-to-end gate, so the contract stops before any current-kernel 146/256
+replay; a 1024 wave is not authorized.
 
 ## Next action
 
-The next formal decision is whether to authorize a separately frozen
-development discovery or first repair the localized FirstN/control degeneracies
-and batched portfolio bottleneck. The four receipt-ready disclosure roots may
-enter a future frozen proposal contract but are not automatically admitted.
-Plate resumes only when real PIT minute materialization is present on 77o. Do
-not start Stage A, candidate promotion, adaptive memory, validation/holdout
-access, or 2026 access without new explicit authority.
+The next formal decision is whether to retain the exact-parity partial kernel
+for a future separately authorized run or redesign the reader/global-barrier
+path before another qualification. Do not automatically continue into a
+146/256 replay, Stage A, a 1024 wave, candidate promotion, adaptive memory,
+validation/holdout access, or 2026 access. Plate resumes only when real PIT
+minute materialization is present on 77o.

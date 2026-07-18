@@ -1,0 +1,46 @@
+{
+  "boundaries": {
+    "candidate_promotion": "FORBIDDEN",
+    "data_role": "development_train_only",
+    "forward_2026": "SEALED",
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "strict_stage_a": "NOT_AUTHORIZED",
+    "validation_reads": 0,
+    "wave_1024": "REQUIRES_SEPARATE_USER_AUTHORIZATION"
+  },
+  "full_256": {
+    "claim": "No current-kernel 146-pair or 256-pair parity claim is made.",
+    "current_active_bar_pairs_replayed": 0,
+    "current_stock_session_pairs_replayed": 0,
+    "historical_composition": "146 active_bar + 110 immutable stock_session = 256",
+    "historical_golden_unchanged": true,
+    "status": "NOT_EXECUTED_BY_CURRENT_KERNEL"
+  },
+  "next_decision": "STOP_BEFORE_146_REPLAY",
+  "retained_engineering_attempt_id": "iteration2",
+  "schema_version": "cn_batched_portfolio_kernel_parity_receipt_v1",
+  "status": "CN_BATCHED_PORTFOLIO_KERNEL_PARTIALLY_QUALIFIED",
+  "subset_attempts": [
+    {
+      "attempt_id": "fb25a91",
+      "candidate_artifacts_bound": true,
+      "checkpoint_parity_exact": true,
+      "checkpoint_parity_status": "CN_PHASE3CM_SCALING_PROBE_PARITY_PASS",
+      "comparable": true,
+      "eligible_for_separate_146_replay": false,
+      "qualification_status": "CN_BATCHED_PORTFOLIO_KERNEL_PARTIALLY_QUALIFIED",
+      "semantic_parity_exact": true
+    },
+    {
+      "attempt_id": "iteration2",
+      "candidate_artifacts_bound": true,
+      "checkpoint_parity_exact": true,
+      "checkpoint_parity_status": "CN_PHASE3CM_SCALING_PROBE_PARITY_PASS",
+      "comparable": true,
+      "eligible_for_separate_146_replay": false,
+      "qualification_status": "CN_BATCHED_PORTFOLIO_KERNEL_PARTIALLY_QUALIFIED",
+      "semantic_parity_exact": true
+    }
+  ]
+}

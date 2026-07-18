@@ -1,0 +1,251 @@
+{
+  "boundaries": {
+    "candidate_promotion": "FORBIDDEN",
+    "data_role": "development_train_only",
+    "forward_2026": "SEALED",
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "strict_stage_a": "NOT_AUTHORIZED",
+    "validation_reads": 0,
+    "wave_1024": "REQUIRES_SEPARATE_USER_AUTHORIZATION"
+  },
+  "decision": {
+    "full_256_current_kernel": "NOT_EXECUTED_BY_CURRENT_KERNEL",
+    "historical_golden": "UNCHANGED",
+    "next_decision": "STOP_BEFORE_146_REPLAY",
+    "replay_candidate_attempt_id": null,
+    "retained_engineering_attempt_id": "iteration2"
+  },
+  "execution_evidence": {
+    "baseline_execution_plan": {
+      "compute_threads": 11,
+      "execution_plan_hash": "b2815df647723cc168f01329dc925a3d03a828eceb71dc4c7f8bda01cc547a4e",
+      "pair_batch_count": 1,
+      "pair_batch_size": 4,
+      "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\baseline_7df57ce\\run\\CN_FROZEN_EXECUTION_PLAN.json",
+      "primary_thread_pool": "numba",
+      "sha256": "cf8a7a59f666a69b118714695edda6adbe489a722d468cef42f22df6a8146114",
+      "thread_environment": {
+        "ARROW_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "NUMBA_NUM_THREADS": "11",
+        "NUMEXPR_MAX_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "POLARS_MAX_THREADS": "1"
+      }
+    },
+    "remote_machine": "DESKTOP-77OPJ6F",
+    "resource_accounting": {
+      "basis": "observed_peak_rss",
+      "mapping_temporary_bytes": "NOT_USED_FOR_QUALIFICATION",
+      "note": "Executed mapping_temporary_bytes telemetry excludes label-order scratch; resource qualification therefore relies on observed peak RSS.",
+      "peak_rss_delta_bytes": 75825152.0
+    },
+    "retained_command": {
+      "arguments": [
+        "scripts\\run_cn_phase3cm_streaming_qualification.py",
+        "--backend",
+        "active_bar",
+        "--phase",
+        "D",
+        "--pair-count",
+        "4",
+        "--candidate-table",
+        "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\preflight_active_candidates.csv",
+        "--binding",
+        "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\CN_STRICT_WAVE_00256_R4_ASYMMETRIC_INPUT_BINDING.json",
+        "--split-manifest",
+        "D:\\ChengboRemote\\workspace\\cn_aggressive_discovery_7df57ce\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+        "--artifact-root",
+        "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs",
+        "--field-sidecar-root",
+        "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\active_time_major_train_v1",
+        "--label-sidecar-root",
+        "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v3_labels",
+        "--output-root",
+        "D:\\ChengboRemote\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\subset_iteration2_order_reuse\\candidate_order_reuse\\run",
+        "--block-sessions",
+        "10",
+        "--pair-batch-size",
+        "4",
+        "--compute-threads",
+        "11"
+      ],
+      "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_iteration2\\candidate_order_reuse\\command.json",
+      "python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+      "sha256": "e243ab069de7b51ecd6dd09d6769e7e36230652372cf327dc74f71fc9ca1916a",
+      "source_label": "a4ad356_plus_order_reuse_worktree",
+      "source_label_token_verified": "order_reuse",
+      "thread_environment": {
+        "ARROW_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "NUMBA_NUM_THREADS": "11",
+        "NUMEXPR_MAX_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "POLARS_MAX_THREADS": "1"
+      }
+    },
+    "retained_execution_plan": {
+      "compute_threads": 11,
+      "execution_plan_hash": "b2815df647723cc168f01329dc925a3d03a828eceb71dc4c7f8bda01cc547a4e",
+      "pair_batch_count": 1,
+      "pair_batch_size": 4,
+      "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_iteration2\\candidate_order_reuse\\run\\CN_FROZEN_EXECUTION_PLAN.json",
+      "primary_thread_pool": "numba",
+      "sha256": "cf8a7a59f666a69b118714695edda6adbe489a722d468cef42f22df6a8146114",
+      "thread_environment": {
+        "ARROW_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "NUMBA_NUM_THREADS": "11",
+        "NUMEXPR_MAX_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "POLARS_MAX_THREADS": "1"
+      }
+    },
+    "tests": [
+      "local qualification/finalizer: 27 passed (18+9)",
+      "local streaming synthetic: 45 passed on executed source SHA",
+      "77o portfolio warmup: 11 passed",
+      "77o full-coordinate subset: exact result and checkpoint parity"
+    ]
+  },
+  "inputs": {
+    "attempt_evidence": [
+      {
+        "attempt_id": "fb25a91",
+        "checkpoint_parity_sha256": "8adebf45de9f18439b20a313a49589cba11e089264c25b2c4ab96474c639be45",
+        "qualification_sha256": "ef4daf08254a9120126646a48858c007b06761f4e620c299cd6bdac509fe3a7e",
+        "result_sha256": "01153a4e0fe5b073f811eec32c6023cc2bc45d7c52158cc728886991f2b43428"
+      },
+      {
+        "attempt_id": "iteration2",
+        "checkpoint_parity_sha256": "ad8963a42fc29471b8c86888d878658cd2e87cf256228a917ddfdc46c7a56790",
+        "qualification_sha256": "28ffe2d8154a3f152fc5776778487e66e957df09ccaae739c3cb903a62c93610",
+        "result_sha256": "378f680ecb0a21f02445f9d3cc24d5f7d347fd642d033e5df0583db7376534f7"
+      }
+    ],
+    "baseline_result": {
+      "access": {
+        "forward_2026_reads": 0,
+        "holdout_reads": 0,
+        "validation_reads": 0
+      },
+      "backend": "active_bar",
+      "candidate_count": 8,
+      "command_evidence": {
+        "arguments": [
+          "scripts\\run_cn_phase3cm_streaming_qualification.py",
+          "--backend",
+          "active_bar",
+          "--phase",
+          "D",
+          "--pair-count",
+          "4",
+          "--candidate-table",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\preflight_active_candidates.csv",
+          "--binding",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs\\CN_STRICT_WAVE_00256_R4_ASYMMETRIC_INPUT_BINDING.json",
+          "--split-manifest",
+          "D:\\ChengboRemote\\workspace\\cn_aggressive_discovery_7df57ce\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+          "--artifact-root",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_inputs",
+          "--field-sidecar-root",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\active_time_major_train_v1",
+          "--label-sidecar-root",
+          "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v3_labels",
+          "--output-root",
+          "D:\\ChengboRemote\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\subset_ab\\baseline_7df57ce\\run",
+          "--block-sessions",
+          "10",
+          "--pair-batch-size",
+          "4",
+          "--compute-threads",
+          "11"
+        ],
+        "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\baseline_7df57ce\\command.json",
+        "python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+        "sha256": "f8aa3f9c27d509a4456b5fc98e584c8d82cdb8c061941ed65e2aa09faf57c220",
+        "source_label": "golden_7df57ce",
+        "source_label_token_verified": "7df57ce",
+        "thread_environment": {
+          "ARROW_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "NUMBA_NUM_THREADS": "11",
+          "NUMEXPR_MAX_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "POLARS_MAX_THREADS": "1"
+        }
+      },
+      "execution_plan": {
+        "compute_threads": 11,
+        "execution_plan_hash": "b2815df647723cc168f01329dc925a3d03a828eceb71dc4c7f8bda01cc547a4e",
+        "pair_batch_count": 1,
+        "pair_batch_size": 4,
+        "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\baseline_7df57ce\\run\\CN_FROZEN_EXECUTION_PLAN.json",
+        "primary_thread_pool": "numba",
+        "sha256": "cf8a7a59f666a69b118714695edda6adbe489a722d468cef42f22df6a8146114",
+        "thread_environment": {
+          "ARROW_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "NUMBA_NUM_THREADS": "11",
+          "NUMEXPR_MAX_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "POLARS_MAX_THREADS": "1"
+        }
+      },
+      "input_binding_hash": "bf80b78517483426b3f69751e997719bdc437b1002dd44751ced0642ec439333",
+      "pair_count": 4,
+      "parallelism_status": "PARALLELISM_ENGAGED",
+      "peak_rss_bytes": 6614458368,
+      "phase": "D",
+      "phase_wall_seconds": {
+        "checkpoint": 0.8525556996464729,
+        "cross_sectional_rank_mapping": 231.47724860045128,
+        "expression_value_dag": 31.599742899183184,
+        "streaming_reducer": 0.0480960994027555,
+        "turnover_and_cost": 1.261882599676028
+      },
+      "result_sha256": "181b98b3290c1cba4fcd367e28b72fe7abc5b64d1141dc7dbc3e29add8838a4f",
+      "root": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\remote_subset_ab\\baseline_7df57ce\\run",
+      "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+      "status": "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED",
+      "wall_seconds": 402.7258762998972
+    },
+    "frozen_binding": {
+      "binding_content_verified": true,
+      "binding_hash": "bf80b78517483426b3f69751e997719bdc437b1002dd44751ced0642ec439333",
+      "data_role": "development_train_only",
+      "metadata_sha256": "a38aa18d03abf51c4b75432ebb78898c3d65a0a9280c9df014186e1fbce0d797",
+      "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\inputs\\CN_STRICT_WAVE_00256_R4_ASYMMETRIC_INPUT_BINDING.json",
+      "sha256": "a38aa18d03abf51c4b75432ebb78898c3d65a0a9280c9df014186e1fbce0d797",
+      "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+      "status": "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND"
+    },
+    "golden_artifact_index": {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\reports\\cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718\\artifact_index.json",
+      "sha256": "bbfb889932dcc7b47368164242ef8b806f2f60e628c1625c8a200610bc9c5d67"
+    }
+  },
+  "outputs": {
+    "benchmark_profile.json": {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\benchmark_profile.json",
+      "sha256": "b2dcdef99e1da303bb11bf9d2c13ed39e6ac53171822da5c5e015d185c8c8098"
+    },
+    "frozen_contract.json": {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\frozen_contract.json",
+      "sha256": "f10d66d233302e3b68ea242d0f923b9815ee3bdd386e4ef10853be4762e5b93e"
+    },
+    "parity_receipt.json": {
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\parity_receipt.json",
+      "sha256": "43949698bb6f4c7c47c5a68a07a8940a3635ab38ecd0bbd5582e7f8f3d50c05d"
+    }
+  },
+  "repo_sha": "7aa6ba434122af3fc077d5e65d5f6e6120678e66",
+  "schema_version": "cn_batched_portfolio_kernel_run_manifest_v1",
+  "status": "CN_BATCHED_PORTFOLIO_KERNEL_PARTIALLY_QUALIFIED"
+}

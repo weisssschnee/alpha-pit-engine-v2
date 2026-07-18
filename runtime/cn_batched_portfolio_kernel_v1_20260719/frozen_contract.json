@@ -1,0 +1,73 @@
+{
+  "boundaries": {
+    "candidate_promotion": "FORBIDDEN",
+    "data_role": "development_train_only",
+    "forward_2026": "SEALED",
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "strict_stage_a": "NOT_AUTHORIZED",
+    "validation_reads": 0,
+    "wave_1024": "REQUIRES_SEPARATE_USER_AUTHORIZATION"
+  },
+  "frozen_input_binding": {
+    "binding_content_verified": true,
+    "binding_hash": "bf80b78517483426b3f69751e997719bdc437b1002dd44751ced0642ec439333",
+    "data_role": "development_train_only",
+    "metadata_sha256": "a38aa18d03abf51c4b75432ebb78898c3d65a0a9280c9df014186e1fbce0d797",
+    "path": "G:\\Chengbo\\runtime\\cn_batched_portfolio_kernel_v1_20260719\\inputs\\CN_STRICT_WAVE_00256_R4_ASYMMETRIC_INPUT_BINDING.json",
+    "sha256": "a38aa18d03abf51c4b75432ebb78898c3d65a0a9280c9df014186e1fbce0d797",
+    "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "status": "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND"
+  },
+  "golden_evidence": {
+    "artifact_index_sha256": "bbfb889932dcc7b47368164242ef8b806f2f60e628c1625c8a200610bc9c5d67",
+    "historical_golden_unchanged": true,
+    "verified_artifact_count": 17,
+    "verified_artifact_digest": "2b6cfeb1896d577053bc0c3bb4dfa1eccc7d93f30b89e076a4556548081f57a4"
+  },
+  "portfolio_semantics": {
+    "cost_formula": "net_return = raw_return - one_way_cost * turnover",
+    "semantic_change_authorized": false,
+    "turnover": "one_way_overlap_turnover"
+  },
+  "qualification_thresholds": {
+    "checkpoint_parity_required": true,
+    "exact_semantic_parity_required": true,
+    "parallelism_gate_required": true,
+    "partially_qualified_wall_speedup_gte": 1.3,
+    "qualified_wall_speedup_gte": 2.0
+  },
+  "repo_sha": "7aa6ba434122af3fc077d5e65d5f6e6120678e66",
+  "schema_version": "cn_batched_portfolio_kernel_frozen_contract_v1",
+  "source_identity": {
+    "baseline": {
+      "checkout_eol": "CRLF",
+      "commit": "7df57ce17860fe05a3d1e7a5149662a9da0c147e",
+      "git_blob": "88875f268c8edcf31035a01f137641d4d5fb3ffa",
+      "portfolio_sha256": "11a5457074f30390a383d4246cca7e11dc86efd933c3db035d4136a14c1f1294"
+    },
+    "current_repo_sha": "7aa6ba434122af3fc077d5e65d5f6e6120678e66",
+    "fb25": {
+      "checkout_eol": "LF",
+      "commit": "fb25a918814d76c3249e20da111b941d014d6f18",
+      "git_blob": "599477c751edd56147562177998e617c92b98111",
+      "portfolio_sha256": "948e1ea15a82371c94ae696518fecea65c8b86144a94ddd2cb2b86cf83d85f46"
+    },
+    "historical_golden_repo_sha": "7df57ce17860fe05a3d1e7a5149662a9da0c147e",
+    "iteration2": {
+      "bound_to_current_worktree": true,
+      "path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\src\\our_system_phase2\\services\\phase3cm_streaming_portfolio.py",
+      "sha256": "5b665d33d74eb4b5f451f06b4ad7e4b352f779c3e2e4836bb2d76950c413d110"
+    }
+  },
+  "status": "CN_BATCHED_PORTFOLIO_KERNEL_PARTIALLY_QUALIFIED",
+  "workload": {
+    "current_kernel_full_pack_execution": "NOT_EXECUTED",
+    "historical_full_pack": {
+      "active_bar_pairs": 146,
+      "immutable_stock_session_pairs": 110,
+      "total_pairs": 256
+    },
+    "qualification_scope": "same-input engineering subset only"
+  }
+}

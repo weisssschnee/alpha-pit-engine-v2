@@ -496,13 +496,14 @@
         "src/our_system_phase2/services/phase3cm_streaming_checkpoint.py",
         "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_DECISION.json",
         "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_PARTITIONED_BACKEND_EXECUTION_RECEIPT.json",
-        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json"
+        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
+        "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "claim_badges": [
         "256 DEVELOPMENT PAIRS",
         "245 EVALUATED",
         "EVALUATOR 7DF57CE",
-        "PORTFOLIO KERNEL BOTTLENECK",
+        "KERNEL OPT PARTIAL 1.903X",
         "NO OOS",
         "NO PROMOTION"
       ],
