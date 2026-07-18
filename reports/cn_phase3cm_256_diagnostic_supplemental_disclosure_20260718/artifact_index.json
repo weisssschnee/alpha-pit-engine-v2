@@ -1,0 +1,161 @@
+{
+  "schema_version": "cn_phase3cm_256_diagnostic_supplemental_disclosure_artifact_index_v1",
+  "status": "CN_PHASE3CM_256_DIAGNOSTIC_AND_SUPPLEMENTAL_DISCLOSURE_ARCHIVED",
+  "data_role": "development_train_only",
+  "repo_heads": {
+    "phase3cm_evaluator_sha": "7df57ce17860fe05a3d1e7a5149662a9da0c147e",
+    "supplemental_materializer_sha": "11116340c6842092606797d67482dec40912d9d5",
+    "supplemental_materializer_tree_sha": "f355ed1d609fc76dea48c7fcc7ce417b01ce2c99",
+    "receipt_wrapper_fix_sha": "7586f114e8270815c2c160c9864711b901bd0f41"
+  },
+  "boundaries": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "performance_or_reward_used_by_supplemental_materialization": false,
+    "candidate_promotion": "FORBIDDEN",
+    "strict_stage_a": "NOT_AUTHORIZED",
+    "cross_sprint_memory": "FORBIDDEN",
+    "forward_2026": "SEALED"
+  },
+  "phase3cm_summary": {
+    "status": "CN_CORE_PACK_STRICT_WAVE_ANALYZED",
+    "bound_pair_count": 256,
+    "evaluated_pair_count": 245,
+    "blocked_pair_count": 11,
+    "positive_matched_reward_count": 147,
+    "positive_matched_reward_rate": 0.6,
+    "mean_matched_train_increment": 0.0909464233877551,
+    "median_matched_train_increment": 0.01268991,
+    "positive_matched_rank_ic_count": 169,
+    "positive_matched_rank_ic_rate": 0.689795918367347,
+    "hot_path_bottleneck": "BATCHED_PORTFOLIO_KERNEL_BOTTLENECK",
+    "claim_ceiling": "DEVELOPMENT_DIAGNOSTIC_ONLY"
+  },
+  "supplemental_summary": {
+    "status": "CN_SUPPLEMENTAL_DISCLOSURE_MATERIALIZATION_COMPLETED",
+    "panel_rows": 1852463,
+    "materialized_root_count": 4,
+    "materialization_status": "MATERIALIZED_DEVELOPMENT_ONLY",
+    "pit_status": "PIT_SAFE_CURRENT_SNAPSHOT_ONLY",
+    "revision_replay_claim": "FORBIDDEN",
+    "generated_pair_attempts": 384,
+    "retained_exact_unique_pairs": 122,
+    "runtime_ready_pair_count": 116,
+    "runtime_frozen_pair_count": 6,
+    "campaign_budget_consumed": 0,
+    "claim_ceiling": "MATERIALIZATION_RECEIPT_READY_AND_STRUCTURAL_SMOKE_ONLY"
+  },
+  "source_closure_repair": {
+    "status": "RESTORED_EXACT_TRACKED_EVIDENCE",
+    "reason": "The selective 1111634 transport package omitted one hash-bound tracked audit artifact; the generator failed closed before generation.",
+    "path": "runtime/cn_core_pack_generator_capacity_v1_20260718/field_root_review.json",
+    "sha256": "43981dfb2a1cbc18100e23661bf50876f681add34824e8650915c85e305f4c99",
+    "verified_against_repo_sha": "11116340c6842092606797d67482dec40912d9d5",
+    "semantic_or_performance_contract_changed": false
+  },
+  "artifacts": [
+    {
+      "path": "phase3cm/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
+      "bytes": 24468,
+      "sha256": "09766205b42367f7d3090e0083116b6b3a83876fd172b25068630e017bd24f7f",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/strict_wave_00256_analysis_r7_merged_7df57ce/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json"
+    },
+    {
+      "path": "phase3cm/CN_CORE_PACK_STRICT_WAVE_PAIRS.csv",
+      "bytes": 175318,
+      "sha256": "b541f6b969951126dcb8fdd8c8e775fd4eda102e4b38c6394198c6036ec1e6f5",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/strict_wave_00256_analysis_r7_merged_7df57ce/CN_CORE_PACK_STRICT_WAVE_PAIRS.csv"
+    },
+    {
+      "path": "phase3cm/CN_PARTITIONED_BACKEND_EXECUTION_RECEIPT.json",
+      "bytes": 7599,
+      "sha256": "2392bc0bbc554b4ef966012fb581674d6e624a2ca2efdda8752a30affbb3d15b",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/strict_wave_00256_evaluation_r7_partitioned_7df57ce/CN_PARTITIONED_BACKEND_EXECUTION_RECEIPT.json"
+    },
+    {
+      "path": "phase3cm/partition_00/CN_BACKEND_EXIT_RECEIPT.json",
+      "bytes": 694,
+      "sha256": "9addfe6e4f44a7a17b2019d9b997bdb9c4ec8f6ccb8f9d02a7386dc7636deed7",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/strict_wave_00256_evaluation_r7_partitioned_7df57ce/partition_00/CN_BACKEND_EXIT_RECEIPT.json"
+    },
+    {
+      "path": "phase3cm/partition_00/CN_STREAMING_BACKEND_RESULT.json",
+      "bytes": 3544121,
+      "sha256": "d0e9e24132ff2b28c5e6b3124b8f2eae4085f79edcdf23455155b017cf9562dd",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/strict_wave_00256_evaluation_r7_partitioned_7df57ce/partition_00/CN_STREAMING_BACKEND_RESULT.json"
+    },
+    {
+      "path": "phase3cm/partition_01/CN_BACKEND_EXIT_RECEIPT.json",
+      "bytes": 694,
+      "sha256": "9a59e114aca2378ecd793890a806e720a9388beffe55482aeb3b22d32f4db254",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/strict_wave_00256_evaluation_r7_partitioned_7df57ce/partition_01/CN_BACKEND_EXIT_RECEIPT.json"
+    },
+    {
+      "path": "phase3cm/partition_01/CN_STREAMING_BACKEND_RESULT.json",
+      "bytes": 3542627,
+      "sha256": "1983c795bd4775b28fc30b57d2e9773fe4aee90b2be2af22149c774c25bc797f",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/strict_wave_00256_evaluation_r7_partitioned_7df57ce/partition_01/CN_STREAMING_BACKEND_RESULT.json"
+    },
+    {
+      "path": "supplemental/assembled/development_only_access_ledger.json",
+      "bytes": 620,
+      "sha256": "0a10ba6d807e707e09049943fc165925b746ca59b5947b43acc2ddda5e60af95",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/assembled/development_only_access_ledger.json"
+    },
+    {
+      "path": "supplemental/assembled/fund_disclosure_balance_age_sessions.materialization_support_receipt.json",
+      "bytes": 4697,
+      "sha256": "563b3b82f7b6d9a203195b071b12bb8e8c820ad51183dd1bb005188567d2015d",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/assembled/fund_disclosure_balance_age_sessions.materialization_support_receipt.json"
+    },
+    {
+      "path": "supplemental/assembled/fund_disclosure_cashflow_age_sessions.materialization_support_receipt.json",
+      "bytes": 4703,
+      "sha256": "8110e67f9b103ce7a168315c550a5a2f9a98716375fe8e1953513f454bd7cc48",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/assembled/fund_disclosure_cashflow_age_sessions.materialization_support_receipt.json"
+    },
+    {
+      "path": "supplemental/assembled/fund_disclosure_holder_age_sessions.materialization_support_receipt.json",
+      "bytes": 4694,
+      "sha256": "de0033a643126d81e6bed6c9748023479cc789ec60303570ac3abb302409bb92",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/assembled/fund_disclosure_holder_age_sessions.materialization_support_receipt.json"
+    },
+    {
+      "path": "supplemental/assembled/fund_disclosure_profit_age_sessions.materialization_support_receipt.json",
+      "bytes": 4697,
+      "sha256": "adc04455891ad40371451a5d58e9d72ddeb0c9733710a947c846595813a62913",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/assembled/fund_disclosure_profit_age_sessions.materialization_support_receipt.json"
+    },
+    {
+      "path": "supplemental/assembled/session_signal_panel_manifest.json",
+      "bytes": 6272,
+      "sha256": "b962c97f7e063a18f1aca9d87c861fe81c3c51031abe6339cf3a16fb72f2ebbb",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/assembled/session_signal_panel_manifest.json"
+    },
+    {
+      "path": "supplemental/CN_SUPPLEMENTAL_DISCLOSURE_MATERIALIZATION_COMPLETION.json",
+      "bytes": 2038,
+      "sha256": "fc5f3dc01a9ed89018b0aea11cb8230ed973b6c07b8aa8930ed6f25757d9c319",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/CN_SUPPLEMENTAL_DISCLOSURE_MATERIALIZATION_COMPLETION.json"
+    },
+    {
+      "path": "supplemental/generation/CN_SUPPLEMENTAL_GENERATION_MANIFEST.json",
+      "bytes": 5726,
+      "sha256": "da6cc0b06ac4711193c9ddd01965117e812dbf657a8077820d746ac22f8e425c",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/supplemental_generation/CN_SUPPLEMENTAL_GENERATION_MANIFEST.json"
+    },
+    {
+      "path": "supplemental/generation/CN_SUPPLEMENTAL_PAIR_RECEIPTS.jsonl",
+      "bytes": 265530,
+      "sha256": "f3eef46c3a66624b4e55c563b51a3c969cd1bc02dddebd7c75a0e48b5087bd20",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/supplemental_generation/CN_SUPPLEMENTAL_PAIR_RECEIPTS.jsonl"
+    },
+    {
+      "path": "supplemental/generation/CN_SUPPLEMENTAL_ROOT_COVERAGE.json",
+      "bytes": 2118,
+      "sha256": "70b70f490214f91d7feaf809bc1f575bee8fc622b3d226366963536d888a491c",
+      "remote_source_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/supplemental_disclosure_materialization_1111634/supplemental_generation/CN_SUPPLEMENTAL_ROOT_COVERAGE.json"
+    }
+  ]
+}

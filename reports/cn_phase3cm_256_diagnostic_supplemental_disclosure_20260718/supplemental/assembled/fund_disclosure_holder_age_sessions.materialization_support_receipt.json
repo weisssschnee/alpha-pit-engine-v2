@@ -1,0 +1,82 @@
+{
+  "access_ledger": {
+    "data_role": "development",
+    "forward_2026_rows_read": 0,
+    "holdout_rows_read": 0,
+    "labels_or_returns_read": false,
+    "reward_or_performance_used": false,
+    "validation_rows_read": 0
+  },
+  "coordinate_contract": {
+    "coordinate_fingerprint": "cc8b567e50ec6e098fda7d1afbe207fc5942f1e0af3449405f7ffc5572034a72",
+    "partition_identity": {
+      "assembly": "FULL_DEVELOPMENT_SESSION_PANEL",
+      "panel_version": "cn_compositional_session_signal_panel_v1"
+    },
+    "row_count": 1852463,
+    "row_keys": [
+      "code",
+      "trade_time"
+    ]
+  },
+  "evidence_contract": {
+    "coordinate_authority": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\base\\session_signal_base_panel.parquet",
+      "sha256": "c67f4d25c89b66b8c99073438e55abbf7fe669ccc440cade71ae451d2719a558"
+    },
+    "evidence_role": "FULL_DEVELOPMENT_ROOT_AUTHORITY",
+    "materialized_artifact": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\signal_sketch_compact_panel.parquet",
+      "sha256": "fd5dbd9a352ffe89f34cc5ba253765792be06991a4adae646d14a7e952212690"
+    },
+    "split_manifest": {
+      "path": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+      "sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+    }
+  },
+  "field_id": "fund_disclosure_holder_age_sessions",
+  "materialization": {
+    "coverage": 0.991051373225808,
+    "finite_count": 1835886,
+    "null_or_nonfinite_count": 16577,
+    "unique_count": 168,
+    "value_fingerprint": "112a456d33d5f97057b5f6fbe8d340248faa34e45ff4bf106c1775ad3bcf8304"
+  },
+  "materialization_status": "MATERIALIZED_DEVELOPMENT_ONLY",
+  "materializer_authority": "CompositionalSessionSignalPanelAssembler",
+  "materializer_manifest_hash": "1ee9270eeab90fdbfc019dcd0b12c697ccc66403fb87f077ec4c8b38f081440c",
+  "maturity_contract": "max_dependency_observable_time",
+  "observable_time_contract": "next_session_after_source_disclosure",
+  "receipt_hash": "acceb1398cb3d2d318f36591bdfc28806ac2e8f2232ad5eb505b35bba30e7d34",
+  "receipt_schema": "cn_materialization_and_support_receipt_v1",
+  "receipt_type": "PIT_SESSION_ASOF_MATERIALIZATION_AND_SUPPORT_RECEIPT",
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "representation_id": "cn.rep.e9e5e4110c874e688145e0e652cedffa",
+  "source_binding": {
+    "base_manifest": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\base\\session_signal_base_manifest.json",
+    "base_manifest_sha256": "fc578d924ab0dfcf2fb2be2fa8eafbb9bf54f2f7b43c51422f6b74021f7fee69",
+    "base_panel": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\base\\session_signal_base_panel.parquet",
+    "base_panel_rows": 1852463,
+    "base_panel_sha256": "c67f4d25c89b66b8c99073438e55abbf7fe669ccc440cade71ae451d2719a558",
+    "fundamental_manifest": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\runtime\\cn_pit_fundamental_fabric_v1\\pit_sidecar_manifest.json",
+    "fundamental_manifest_sha256": "aacadab2b29e6f3147070cd6f50f119c1706a2dced4f69254dd066f29423ad58",
+    "fundamental_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned",
+    "maximum_observable_time": "2025-07-07T15:00:00",
+    "pit_status": "PIT_SAFE_CURRENT_SNAPSHOT_ONLY",
+    "session_sidecar_manifest": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\session_time_major_train_v1\\CN_SESSION_SIDECAR_AUGMENTATION_MANIFEST.json",
+    "session_sidecar_manifest_sha256": "a9f7729a21adae24d5dbc2a9e7e64446e5d48fbea20bebd09d61f34d839fbbce",
+    "source_field": "股东总数",
+    "source_field_id": "cn.sf.c85042cbf88a455c9d57707708d9f212",
+    "source_table": "main_stock_holder_sina",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "upstream_receipt_hash": "810c060635c2c5bff713b011468cd801e0f17fecb82e60a403b515e6f6167259"
+  },
+  "support": {
+    "code_count": 5106,
+    "episode_count": 1835886,
+    "session_count": 364,
+    "support_count": 1835886,
+    "support_unit": "stock-session cross-section"
+  },
+  "support_status": "NONZERO_SUPPORT_OBSERVED"
+}

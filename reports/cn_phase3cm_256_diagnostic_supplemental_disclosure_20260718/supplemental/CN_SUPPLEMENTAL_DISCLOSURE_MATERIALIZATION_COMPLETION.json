@@ -1,0 +1,33 @@
+{
+    "status":  "CN_SUPPLEMENTAL_DISCLOSURE_MATERIALIZATION_COMPLETED",
+    "completed_at":  "2026-07-18T13:15:06.2212523Z",
+    "repo_sha":  "11116340c6842092606797d67482dec40912d9d5",
+    "tree_sha":  "f355ed1d609fc76dea48c7fcc7ce417b01ce2c99",
+    "source_package_sha256":  "8950be1906ed9aea800ec3b09f8652a6edecc834899e5fea77e88ac84ba68f6c",
+    "data_role":  "development_train_only",
+    "fields":  [
+                   "fund_disclosure_balance_age_sessions",
+                   "fund_disclosure_profit_age_sessions",
+                   "fund_disclosure_cashflow_age_sessions",
+                   "fund_disclosure_holder_age_sessions"
+               ],
+    "partition_count":  8,
+    "executed_partitions":  [
+                                0,
+                                3,
+                                5,
+                                7
+                            ],
+    "panel_rows":  1852463,
+    "panel_manifest":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\session_signal_panel_manifest.json",
+    "panel_manifest_sha256":  "b962c97f7e063a18f1aca9d87c861fe81c3c51031abe6339cf3a16fb72f2ebbb",
+    "access_ledger":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\development_only_access_ledger.json",
+    "access_ledger_sha256":  "0a10ba6d807e707e09049943fc165925b746ca59b5947b43acc2ddda5e60af95",
+    "generation_manifest":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\supplemental_generation\\CN_SUPPLEMENTAL_GENERATION_MANIFEST.json",
+    "generation_manifest_sha256":  "da6cc0b06ac4711193c9ddd01965117e812dbf657a8077820d746ac22f8e425c",
+    "validation_reads":  0,
+    "holdout_reads":  0,
+    "forward_2026_reads":  0,
+    "performance_or_reward_used":  false,
+    "candidate_promotion":  "FORBIDDEN"
+}

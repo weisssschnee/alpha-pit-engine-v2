@@ -1,0 +1,81 @@
+{
+  "artifact_set_hash": "bf5ee5fdae00eb5580c20de1a2fa25fabda7630422e8da10a094fff95692ba26",
+  "artifacts": {
+    "CN_SUPPLEMENTAL_PAIR_RECEIPTS.jsonl": "f3eef46c3a66624b4e55c563b51a3c969cd1bc02dddebd7c75a0e48b5087bd20",
+    "CN_SUPPLEMENTAL_ROOT_COVERAGE.json": "70b70f490214f91d7feaf809bc1f575bee8fc622b3d226366963536d888a491c"
+  },
+  "baseline_receipts_path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\CN_PAIR_RECEIPTS.jsonl",
+  "baseline_receipts_sha256": "d332d501176258488ee26845a911a37f3dc7451f9e6c0b6bc23b504c572e10e9",
+  "campaign_budget_consumed": 0,
+  "campaign_contract_hash": "59bf2c474b2dcc3b881b37191d1434c10f104327666d83597269acb7a095d6e3",
+  "campaign_contract_path": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\runtime\\run_plans\\cn_core_pack_delta_discovery_campaign_v1.json",
+  "campaign_contract_sha256": "d4b3efe8a30cfa2ddf9fe4df40316ccc325d375a5ef3b73e5897ea9e09a2ea30",
+  "candidate_promotion": false,
+  "expected_baseline_receipts_path": "D:/ChengboRemote/runtime/cn_core_pack_aggressive_discovery_20260718_595c5fc/CN_PAIR_RECEIPTS.jsonl",
+  "expected_baseline_receipts_sha256": "d332d501176258488ee26845a911a37f3dc7451f9e6c0b6bc23b504c572e10e9",
+  "fixed_attempts_per_route": 64,
+  "fixed_routes": [
+    "SLOW_CROSS_SECTIONAL_LEVEL",
+    "MARKET_REGIME_CONDITION",
+    "INTRADAY_STATE_TRANSITION"
+  ],
+  "fixed_seeds": [
+    20260718,
+    20260719
+  ],
+  "forward_2026_accessed": false,
+  "generator_version": "cn_typed_compositional_supplemental_v1",
+  "global_baseline_exact_dedup_status": "APPLIED",
+  "historical_base_contract_hash": "c189ab4942e7864627e8f016c5be332f7ce993d55d43c298205c2b8f9a35fba3",
+  "historical_base_scope_path": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\runtime\\run_plans\\cn_core_pack_development_discovery_v1.json",
+  "historical_base_scope_sha256": "c9f6a0f9bc3380ca731d71958a8b68a88b3805d665778a37c2a8564276e2f640",
+  "holdout_accessed": false,
+  "performance_or_reward_used": false,
+  "registry_content_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "registry_path": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+  "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+  "repo_sha": "11116340c6842092606797d67482dec40912d9d5",
+  "run_role": "STRUCTURAL_SMOKE_NOT_CAMPAIGN_BUDGET_CONSUMPTION",
+  "runtime_receipt_bindings": {
+    "fund_disclosure_balance_age_sessions": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\fund_disclosure_balance_age_sessions.materialization_support_receipt.json",
+      "receipt_hash": "b1a4368ccf47b7bc33f5726c005c7a9f2c5a8f8459c6c970b1ee35529d49197f",
+      "receipt_sha256": "563b3b82f7b6d9a203195b071b12bb8e8c820ad51183dd1bb005188567d2015d"
+    },
+    "fund_disclosure_cashflow_age_sessions": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\fund_disclosure_cashflow_age_sessions.materialization_support_receipt.json",
+      "receipt_hash": "21c2a82c618d6fc494a197c0f7456c8ea705f8a47c1d09864d5bf1924b10abbe",
+      "receipt_sha256": "8110e67f9b103ce7a168315c550a5a2f9a98716375fe8e1953513f454bd7cc48"
+    },
+    "fund_disclosure_holder_age_sessions": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\fund_disclosure_holder_age_sessions.materialization_support_receipt.json",
+      "receipt_hash": "acceb1398cb3d2d318f36591bdfc28806ac2e8f2232ad5eb505b35bba30e7d34",
+      "receipt_sha256": "de0033a643126d81e6bed6c9748023479cc789ec60303570ac3abb302409bb92"
+    },
+    "fund_disclosure_profit_age_sessions": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\fund_disclosure_profit_age_sessions.materialization_support_receipt.json",
+      "receipt_hash": "9f8c6bdbc2953bd38c94de38f75ad913d0553606032f076e837cf6ad447c8af0",
+      "receipt_sha256": "adc04455891ad40371451a5d58e9d72ddeb0c9733710a947c846595813a62913"
+    }
+  },
+  "source_hashes": {
+    "compiler": {
+      "path": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\src\\our_system_phase2\\services\\typed_route_compiler.py",
+      "sha256": "15b0b785722cbc713ae2841b5f9a55cfba730dee59ccb04ddc96466183916b47"
+    },
+    "grammar": {
+      "path": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\src\\our_system_phase2\\services\\compositional_grammar.py",
+      "sha256": "25b030e11306daac347a15ca28c36fc448378068142beed055ce1c6ce502de7f"
+    },
+    "runner": {
+      "path": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\scripts\\run_cn_core_pack_supplemental_generation.py",
+      "sha256": "af15f4ef5bced430f5167f572a84b10727d3d5fbed4641b2db73382170d3b394"
+    }
+  },
+  "status": "SUPPLEMENTAL_STRUCTURAL_SMOKE_NOT_CAMPAIGN_BUDGET_CONSUMPTION",
+  "supplemental_scope_contract_hash": "6ae88fa8cf8fa97f4fd0466c7318227156c6daa5dedeb68b0488e8086ff6322a",
+  "supplemental_scope_path": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\runtime\\run_plans\\cn_core_pack_supplemental_root_scope_v1.json",
+  "supplemental_scope_sha256": "e88c7fbd23621da4a6a8ca1628ff2df076bdc52ff1b64281a8cbe92c576bb51d",
+  "tree_sha": "f355ed1d609fc76dea48c7fcc7ce417b01ce2c99",
+  "validation_accessed": false
+}

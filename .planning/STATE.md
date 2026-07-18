@@ -2,7 +2,7 @@
 
 Updated: 2026-07-18
 
-Current state: `CN_CORE_PACK_GENERATOR_CAPACITY_REVIEW_COMPLETED_DISCOVERY_NOT_AUTHORIZED`
+Current state: `CN_PHASE3CM_256_DIAGNOSTIC_COMPLETED_SUPPLEMENTAL_ROOTS_READY_SEARCH_FROZEN`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -17,9 +17,23 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 ## Current accepted capabilities
 
 - Phase A EVALRESET and NEXTGEN-DARK infrastructure remain accepted.
-- Phase3CM streaming evaluator qualification completed on the frozen 32-pair
-  full-coordinate contract. The dominant compute path is the batched portfolio
-  kernel; this is engineering readiness, not search authorization.
+- Phase3CM completed one frozen 256-pair development diagnostic: 146 active-bar
+  pairs were evaluated by the partitioned 7df57ce evaluator and 110 immutable
+  stock-session results were reused under an exact binding. All pair identities
+  were observed, 245 pairs were evaluable, and 11 were blocked by local
+  empty/constant/identity-control semantics rather than infrastructure failure.
+  Validation, holdout and 2026 reads were all zero.
+- Across the 245 evaluable pairs, 147 had positive matched development reward
+  increment and 169 had positive matched Rank-IC increment. Intraday state
+  transition and slow cross-sectional level were the broadest positive
+  observations; FirstN was hurt primarily by turnover/mapping cost and slow
+  temporal change was weak. These are development diagnostics only, without
+  independent seed/time-block stability evidence, and cannot authorize
+  promotion or Strict Stage A.
+- Both active-bar partitions engaged parallel compute. Their dominant compute
+  path is `BATCHED_PORTFOLIO_KERNEL_BOTTLENECK`; future acceleration should
+  prioritize cross-sectional rank, mapping and portfolio kernels rather than
+  further Value-DAG work.
 - The complete CN field master contains 1,683 records:
   - 1,227 PIT fundamental source fields;
   - 420 registered capability fields;
@@ -68,10 +82,17 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   `state_close_range_location_sign`, is registered and information-qualified
   but held because expanding its compound state expression exceeds the current
   depth/leaf contract.
-- Six additional non-Core fields are route-eligible but not consumed by their
-  current constructors: four slow-level disclosure-age conditions and two
-  stock-scope regime contexts. They remain visible as generator gaps and are
-  not represented as active support roots.
+- Four disclosure-age roots are now materialized over the complete 1,852,463-row
+  development stock-session panel with nonzero support and 98.89%-99.11%
+  coverage. Each has a PIT session as-of materialization/support receipt. Their
+  claim remains conservative `PIT_SAFE_CURRENT_SNAPSHOT_ONLY`; they do not
+  reconstruct superseded revisions or original disclosure-age history.
+- The supplemental typed structural smoke retained 122 exact-unique pairs from
+  384 fixed attempts: 19 slow-level disclosure pairs and 97 market-regime pairs
+  are runtime-ready, while six intraday-state pairs remain frozen pending the
+  compound state materialization. Campaign budget consumption was zero and no
+  performance, reward, candidate promotion, validation, holdout or 2026 access
+  occurred.
 - `cn_core_pack_development_discovery_v1` freezes reachable Core roots plus only
   the support roots actually required by present constructors. It has zero
   active proposal, admission, and strict-evaluation budget and is not search
@@ -91,18 +112,19 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-Core Pack root capacity and constructor reachability are now explicit. Formal
-discovery remains blocked only by the absence of a separate development-only
-search authorization and nonzero frozen budgets. Plate remains independently
-blocked by missing real PIT minute materialization; one compound intraday state
-root and six condition roots remain held as localized constructor gaps.
+Core Pack capacity, 256-pair development behavior and four supplemental
+disclosure materializations are now explicit. They do not provide independent
+stability or OOS evidence, so formal discovery remains blocked by the absence
+of a separate development-only authorization and nonzero frozen budgets.
+Plate remains independently blocked by missing real PIT minute materialization;
+the compound intraday state root remains a localized materialization gap.
 
 ## Next action
 
-If bounded development discovery is desired, separately authorize and freeze
-nonzero route budgets against
-`runtime/run_plans/cn_core_pack_development_discovery_v1.json`; do not silently
-expand the root allowlists. Plate resumes only when real PIT minute
-materialization is present on 77o. Do not start Stage A, candidate promotion,
-adaptive memory, validation/holdout access, or 2026 access without new explicit
-authority.
+The next formal decision is whether to authorize a separately frozen
+development discovery or first repair the localized FirstN/control degeneracies
+and batched portfolio bottleneck. The four receipt-ready disclosure roots may
+enter a future frozen proposal contract but are not automatically admitted.
+Plate resumes only when real PIT minute materialization is present on 77o. Do
+not start Stage A, candidate promotion, adaptive memory, validation/holdout
+access, or 2026 access without new explicit authority.

@@ -1,0 +1,11 @@
+{
+  "forward_2026_rows_read": 0,
+  "fundamental_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned",
+  "holdout_rows_read": 0,
+  "labels_or_returns_read": false,
+  "ledger_version": "cn_compositional_session_sketch_access_v1",
+  "maximum_observable_time": "2025-07-07T15:00:00",
+  "requested_role": "development",
+  "source_release": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\session_time_major_train_v1\\CN_SESSION_SIDECAR_AUGMENTATION_MANIFEST.json",
+  "validation_rows_read": 0
+}

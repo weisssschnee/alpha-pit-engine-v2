@@ -1,0 +1,88 @@
+{
+  "artifacts": {
+    "compact_panel": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\signal_sketch_compact_panel.parquet",
+      "sha256": "fd5dbd9a352ffe89f34cc5ba253765792be06991a4adae646d14a7e952212690"
+    }
+  },
+  "cache_materialization_support_receipts": {
+    "fund_disclosure_balance_age_sessions": {
+      "receipt_hash": "200ed6b1c07dd7af623e9a5dd9a1eb4c70cc00485c2c02def4b93007a35b00ea",
+      "receipt_sha256": "0c1bc4f935793ac392579b6f506f09e2a7148a2a143f1da6a482381044e17243"
+    },
+    "fund_disclosure_cashflow_age_sessions": {
+      "receipt_hash": "c6b0ac11ad856e874aacb06fcb2cfd36d9ba8f9e0e79e905b1b764b7a0e8b539",
+      "receipt_sha256": "b17c18602c0001ad5adf5227f98fd854e4e2b311f98398afbcb294fbad241955"
+    },
+    "fund_disclosure_holder_age_sessions": {
+      "receipt_hash": "810c060635c2c5bff713b011468cd801e0f17fecb82e60a403b515e6f6167259",
+      "receipt_sha256": "ead87d8539cfca4ea4660dcf54273209b3f59d570c3413efcb008e2cdb2dd8f0"
+    },
+    "fund_disclosure_profit_age_sessions": {
+      "receipt_hash": "95d38f2651839cd5f12fa2b8da2bec7d5c3d246a00485b28138bf8374c719592",
+      "receipt_sha256": "f71a22c8dd866f36b0b863013a5c28793810f13aa3a4fe4d0ed7d63319367e48"
+    }
+  },
+  "canonical_fundamental_field_count": 4,
+  "coordinate_count": 0,
+  "coordinate_projection_status": "NOT_REQUESTED",
+  "created_at": "2026-07-18T13:14:58.571428+00:00",
+  "data_role": "development",
+  "full_development_base": {
+    "base_manifest": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\base\\session_signal_base_manifest.json",
+    "base_manifest_sha256": "fc578d924ab0dfcf2fb2be2fa8eafbb9bf54f2f7b43c51422f6b74021f7fee69",
+    "base_panel": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\base\\session_signal_base_panel.parquet",
+    "base_panel_rows": 1852463,
+    "base_panel_sha256": "c67f4d25c89b66b8c99073438e55abbf7fe669ccc440cade71ae451d2719a558",
+    "session_sidecar_manifest": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\session_time_major_train_v1\\CN_SESSION_SIDECAR_AUGMENTATION_MANIFEST.json",
+    "session_sidecar_manifest_sha256": "a9f7729a21adae24d5dbc2a9e7e64446e5d48fbea20bebd09d61f34d839fbbce",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+  },
+  "fundamental_source": {
+    "fundamental_manifest": "D:\\ChengboRemote\\workspace\\cn_supplemental_1111634\\runtime\\cn_pit_fundamental_fabric_v1\\pit_sidecar_manifest.json",
+    "fundamental_manifest_sha256": "aacadab2b29e6f3147070cd6f50f119c1706a2dced4f69254dd066f29423ad58",
+    "fundamental_root": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603\\silver_partitioned",
+    "maximum_observable_time": "2025-07-07T15:00:00",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241"
+  },
+  "labels_or_returns_read": false,
+  "materialization_support_receipt_count": 4,
+  "materialization_support_receipts": {
+    "fund_disclosure_balance_age_sessions": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\fund_disclosure_balance_age_sessions.materialization_support_receipt.json",
+      "receipt_hash": "b1a4368ccf47b7bc33f5726c005c7a9f2c5a8f8459c6c970b1ee35529d49197f",
+      "receipt_sha256": "563b3b82f7b6d9a203195b071b12bb8e8c820ad51183dd1bb005188567d2015d",
+      "upstream_receipt_hash": "200ed6b1c07dd7af623e9a5dd9a1eb4c70cc00485c2c02def4b93007a35b00ea"
+    },
+    "fund_disclosure_cashflow_age_sessions": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\fund_disclosure_cashflow_age_sessions.materialization_support_receipt.json",
+      "receipt_hash": "21c2a82c618d6fc494a197c0f7456c8ea705f8a47c1d09864d5bf1924b10abbe",
+      "receipt_sha256": "8110e67f9b103ce7a168315c550a5a2f9a98716375fe8e1953513f454bd7cc48",
+      "upstream_receipt_hash": "c6b0ac11ad856e874aacb06fcb2cfd36d9ba8f9e0e79e905b1b764b7a0e8b539"
+    },
+    "fund_disclosure_holder_age_sessions": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\fund_disclosure_holder_age_sessions.materialization_support_receipt.json",
+      "receipt_hash": "acceb1398cb3d2d318f36591bdfc28806ac2e8f2232ad5eb505b35bba30e7d34",
+      "receipt_sha256": "de0033a643126d81e6bed6c9748023479cc789ec60303570ac3abb302409bb92",
+      "upstream_receipt_hash": "810c060635c2c5bff713b011468cd801e0f17fecb82e60a403b515e6f6167259"
+    },
+    "fund_disclosure_profit_age_sessions": {
+      "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\supplemental_disclosure_materialization_1111634\\assembled\\fund_disclosure_profit_age_sessions.materialization_support_receipt.json",
+      "receipt_hash": "9f8c6bdbc2953bd38c94de38f75ad913d0553606032f076e837cf6ad447c8af0",
+      "receipt_sha256": "adc04455891ad40371451a5d58e9d72ddeb0c9733710a947c846595813a62913",
+      "upstream_receipt_hash": "95d38f2651839cd5f12fa2b8da2bec7d5c3d246a00485b28138bf8374c719592"
+    }
+  },
+  "materialized_coordinate_count_by_set": {},
+  "panel_columns": 7,
+  "panel_rows": 1852463,
+  "panel_version": "cn_compositional_session_signal_panel_v1",
+  "status": "SESSION_SIGNAL_PANEL_ASSEMBLED",
+  "validation_holdout_forward_read": false,
+  "worker_summary_sha256": {
+    "worker_0.summary.json": "286dec49bb6c611458892b8c2e4c87e0261fca823deb737413e7bb8043be9651",
+    "worker_3.summary.json": "4da0de58494af7945756de0755d98a7867bb9d36dd7a4a8db5f798627ffcbf69",
+    "worker_5.summary.json": "69898ddf9be7bacfe21cc816828a88ac9f9d913b95af6992ae774cd1aad5f68b",
+    "worker_7.summary.json": "7493f8c442040e8dad530d67a2199d4c939732dc4c97cee96b77852bc0651d57"
+  }
+}

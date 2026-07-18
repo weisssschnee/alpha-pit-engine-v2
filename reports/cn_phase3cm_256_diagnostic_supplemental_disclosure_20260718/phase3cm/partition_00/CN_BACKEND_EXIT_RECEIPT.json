@@ -1,0 +1,12 @@
+﻿{
+    "schema_version":  "cn_phase3cm_backend_exit_receipt_v1",
+    "status":  "CN_PHASE3CM_BACKEND_PROCESS_COMPLETED",
+    "exit_code":  0,
+    "wrapper_process_id":  57544,
+    "python_executable":  "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+    "argument_file":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_evaluation_r7_partitioned_7df57ce\\partition_00\\CN_BACKEND_COMMAND.json",
+    "argument_file_sha256":  "72745d6a78339c837ced059641961f63b0da2de92ba3b873101b856e863ead71",
+    "started_at":  "2026-07-18T12:46:38.8787069Z",
+    "finished_at":  "2026-07-18T12:46:48.5787975Z",
+    "failure":  null
+}

@@ -292,7 +292,17 @@
       "paths": [
         "src/our_system_phase2/services/pit_fundamental_fabric.py",
         "src/our_system_phase2/services/fundamental_representations.py",
-        "runtime/cn_pit_fundamental_fabric_v1/pit_sidecar_manifest.json"
+        "runtime/cn_pit_fundamental_fabric_v1/pit_sidecar_manifest.json",
+        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/supplemental/CN_SUPPLEMENTAL_DISCLOSURE_MATERIALIZATION_COMPLETION.json",
+        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/supplemental/assembled/session_signal_panel_manifest.json"
+      ],
+      "claim_badges": [
+        "4 DISCLOSURE ROOT RECEIPTS",
+        "1,852,463 DEVELOPMENT STOCK-SESSIONS",
+        "CURRENT-SNAPSHOT AS-OF ONLY",
+        "NO REVISION REPLAY",
+        "NO PERFORMANCE",
+        "NO OOS"
       ],
       "critical": true,
       "active_authority": true,
@@ -484,7 +494,17 @@
         "src/our_system_phase2/services/phase3cm_streaming_dag.py",
         "src/our_system_phase2/services/phase3cm_streaming_portfolio.py",
         "src/our_system_phase2/services/phase3cm_streaming_checkpoint.py",
-        "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_DECISION.json"
+        "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_DECISION.json",
+        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_PARTITIONED_BACKEND_EXECUTION_RECEIPT.json",
+        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json"
+      ],
+      "claim_badges": [
+        "256 DEVELOPMENT PAIRS",
+        "245 EVALUATED",
+        "EVALUATOR 7DF57CE",
+        "PORTFOLIO KERNEL BOTTLENECK",
+        "NO OOS",
+        "NO PROMOTION"
       ],
       "critical": true,
       "active_authority": false,

@@ -1,0 +1,64 @@
+{
+  "baseline_collision_pairs": 0,
+  "baseline_exact_identity_count": 130634,
+  "baseline_global_exact_dedup_applied": true,
+  "campaign_budget_consumed": 0,
+  "existing_pack_rewritten": false,
+  "forward_2026_accessed": false,
+  "generated_pair_attempts": 384,
+  "generator_version": "cn_typed_compositional_supplemental_v1",
+  "holdout_accessed": false,
+  "internal_duplicate_pairs": 262,
+  "performance_or_reward_used": false,
+  "retained_exact_unique_pairs": 122,
+  "routes": {
+    "INTRADAY_STATE_TRANSITION": {
+      "all_target_roots_observed": true,
+      "observed_root_ids": [
+        "state_close_range_location_sign"
+      ],
+      "target_root_ids": [
+        "state_close_range_location_sign"
+      ]
+    },
+    "MARKET_REGIME_CONDITION": {
+      "all_target_roots_observed": true,
+      "observed_root_ids": [
+        "ctx_hfq_is_st",
+        "ctx_hfq_prev_is_limit_up"
+      ],
+      "target_root_ids": [
+        "ctx_hfq_is_st",
+        "ctx_hfq_prev_is_limit_up"
+      ]
+    },
+    "SLOW_CROSS_SECTIONAL_LEVEL": {
+      "all_target_roots_observed": true,
+      "observed_root_ids": [
+        "fund_disclosure_balance_age_sessions",
+        "fund_disclosure_cashflow_age_sessions",
+        "fund_disclosure_holder_age_sessions",
+        "fund_disclosure_profit_age_sessions"
+      ],
+      "target_root_ids": [
+        "fund_disclosure_balance_age_sessions",
+        "fund_disclosure_profit_age_sessions",
+        "fund_disclosure_cashflow_age_sessions",
+        "fund_disclosure_holder_age_sessions"
+      ]
+    }
+  },
+  "runtime_frozen_gated_pair_count": 6,
+  "runtime_frozen_pair_count": 6,
+  "runtime_ready_gated_pair_count": 19,
+  "runtime_ready_pair_count": 116,
+  "runtime_receipt_bound_root_count": 4,
+  "runtime_receipt_bound_root_ids": [
+    "fund_disclosure_balance_age_sessions",
+    "fund_disclosure_cashflow_age_sessions",
+    "fund_disclosure_holder_age_sessions",
+    "fund_disclosure_profit_age_sessions"
+  ],
+  "status": "SUPPLEMENTAL_STRUCTURAL_SMOKE_NOT_CAMPAIGN_BUDGET_CONSUMPTION",
+  "validation_accessed": false
+}
