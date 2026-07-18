@@ -81,8 +81,7 @@ if njit is not None:
 
 
     @njit(cache=True)
-    def _linear_quantile(values: np.ndarray, quantile: float) -> float:
-        ordered = np.sort(values)
+    def _linear_quantile_from_ordered(ordered: np.ndarray, quantile: float) -> float:
         if ordered.shape[0] == 1:
             return ordered[0]
         position = (ordered.shape[0] - 1) * quantile
@@ -97,6 +96,20 @@ if njit is not None:
             return ordered[lower]
         weight = position - lower
         return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
+
+
+    @njit(cache=True)
+    def _linear_quantile(values: np.ndarray, quantile: float) -> float:
+        return _linear_quantile_from_ordered(np.sort(values), quantile)
+
+
+    @njit(cache=True)
+    def _linear_quantile_pair(values: np.ndarray, quantile: float) -> tuple[float, float]:
+        ordered = np.sort(values)
+        return (
+            _linear_quantile_from_ordered(ordered, quantile),
+            _linear_quantile_from_ordered(ordered, 1.0 - quantile),
+        )
 
 
     @njit(cache=True)
@@ -139,72 +152,74 @@ if njit is not None:
         horizon_count = labels.shape[0]
         selected = np.zeros((candidate_count, horizon_count, signals.shape[1]), dtype=np.bool_)
         metrics = np.full((candidate_count, horizon_count, starts.shape[0], 7), np.nan, dtype=np.float64)
-        for candidate in prange(candidate_count):
+        group_count = starts.shape[0]
+        work_count = candidate_count * group_count
+        for work_index in prange(work_count):
+            candidate = work_index // group_count
+            group = work_index - candidate * group_count
             direction = directions[candidate]
-            for group in range(starts.shape[0]):
-                start = starts[group]
-                end = ends[group]
-                signal_part = signals[candidate, start:end]
-                signal_rank = _rank_average(signal_part)
-                for horizon in range(horizon_count):
-                    ret_part = labels[horizon, start:end]
-                    valid_count = 0
-                    for local in range(end - start):
-                        if np.isfinite(signal_rank[local]) and np.isfinite(ret_part[local]):
-                            valid_count += 1
-                    if valid_count < min_obs:
-                        continue
-                    ranks = np.empty(valid_count, dtype=np.float64)
-                    returns = np.empty(valid_count, dtype=np.float64)
-                    local_positions = np.empty(valid_count, dtype=np.int64)
-                    cursor = 0
-                    for local in range(end - start):
-                        if np.isfinite(signal_rank[local]) and np.isfinite(ret_part[local]):
-                            ranks[cursor] = signal_rank[local]
-                            returns[cursor] = ret_part[local]
-                            local_positions[cursor] = local
-                            cursor += 1
-                    low = _linear_quantile(ranks, top_quantile)
-                    high = _linear_quantile(ranks, 1.0 - top_quantile)
-                    selected_count = 0
-                    selected_return_sum = 0.0
-                    market_sum = 0.0
-                    top_sum = 0.0
-                    top_count = 0
-                    bottom_sum = 0.0
-                    bottom_count = 0
-                    top_signal_sum = 0.0
-                    bottom_signal_sum = 0.0
-                    for index in range(valid_count):
-                        market_sum += returns[index]
-                        if ranks[index] >= high:
-                            top_sum += returns[index]
-                            top_signal_sum += signal_part[local_positions[index]]
-                            top_count += 1
-                        if ranks[index] <= low:
-                            bottom_sum += returns[index]
-                            bottom_signal_sum += signal_part[local_positions[index]]
-                            bottom_count += 1
-                        chosen = ranks[index] >= high if direction > 0.0 else ranks[index] <= low
-                        if chosen:
-                            selected[candidate, horizon, start + local_positions[index]] = True
-                            selected_count += 1
-                            selected_return_sum += returns[index]
-                    if selected_count == 0 or top_count == 0 or bottom_count == 0:
-                        continue
-                    market_mean = market_sum / valid_count
-                    selected_mean = selected_return_sum / selected_count
-                    raw_return = selected_mean - market_mean if excess_market else selected_mean
-                    return_rank = _rank_average(returns)
-                    rank_ic_raw = _pearson(ranks, return_rank)
-                    rank_ic = rank_ic_raw * direction if np.isfinite(rank_ic_raw) else np.nan
-                    metrics[candidate, horizon, group, 0] = 1.0
-                    metrics[candidate, horizon, group, 1] = raw_return
-                    metrics[candidate, horizon, group, 2] = market_mean
-                    metrics[candidate, horizon, group, 3] = rank_ic
-                    metrics[candidate, horizon, group, 4] = valid_count
-                    metrics[candidate, horizon, group, 5] = selected_count
-                    metrics[candidate, horizon, group, 6] = abs(top_signal_sum / top_count - bottom_signal_sum / bottom_count)
+            start = starts[group]
+            end = ends[group]
+            signal_part = signals[candidate, start:end]
+            signal_rank = _rank_average(signal_part)
+            for horizon in range(horizon_count):
+                ret_part = labels[horizon, start:end]
+                valid_count = 0
+                for local in range(end - start):
+                    if np.isfinite(signal_rank[local]) and np.isfinite(ret_part[local]):
+                        valid_count += 1
+                if valid_count < min_obs:
+                    continue
+                ranks = np.empty(valid_count, dtype=np.float64)
+                returns = np.empty(valid_count, dtype=np.float64)
+                local_positions = np.empty(valid_count, dtype=np.int64)
+                cursor = 0
+                for local in range(end - start):
+                    if np.isfinite(signal_rank[local]) and np.isfinite(ret_part[local]):
+                        ranks[cursor] = signal_rank[local]
+                        returns[cursor] = ret_part[local]
+                        local_positions[cursor] = local
+                        cursor += 1
+                low, high = _linear_quantile_pair(ranks, top_quantile)
+                selected_count = 0
+                selected_return_sum = 0.0
+                market_sum = 0.0
+                top_sum = 0.0
+                top_count = 0
+                bottom_sum = 0.0
+                bottom_count = 0
+                top_signal_sum = 0.0
+                bottom_signal_sum = 0.0
+                for index in range(valid_count):
+                    market_sum += returns[index]
+                    if ranks[index] >= high:
+                        top_sum += returns[index]
+                        top_signal_sum += signal_part[local_positions[index]]
+                        top_count += 1
+                    if ranks[index] <= low:
+                        bottom_sum += returns[index]
+                        bottom_signal_sum += signal_part[local_positions[index]]
+                        bottom_count += 1
+                    chosen = ranks[index] >= high if direction > 0.0 else ranks[index] <= low
+                    if chosen:
+                        selected[candidate, horizon, start + local_positions[index]] = True
+                        selected_count += 1
+                        selected_return_sum += returns[index]
+                if selected_count == 0 or top_count == 0 or bottom_count == 0:
+                    continue
+                market_mean = market_sum / valid_count
+                selected_mean = selected_return_sum / selected_count
+                raw_return = selected_mean - market_mean if excess_market else selected_mean
+                return_rank = _rank_average(returns)
+                rank_ic_raw = _pearson(ranks, return_rank)
+                rank_ic = rank_ic_raw * direction if np.isfinite(rank_ic_raw) else np.nan
+                metrics[candidate, horizon, group, 0] = 1.0
+                metrics[candidate, horizon, group, 1] = raw_return
+                metrics[candidate, horizon, group, 2] = market_mean
+                metrics[candidate, horizon, group, 3] = rank_ic
+                metrics[candidate, horizon, group, 4] = valid_count
+                metrics[candidate, horizon, group, 5] = selected_count
+                metrics[candidate, horizon, group, 6] = abs(top_signal_sum / top_count - bottom_signal_sum / bottom_count)
         return selected, metrics
 
 

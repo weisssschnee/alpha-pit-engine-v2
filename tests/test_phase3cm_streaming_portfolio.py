@@ -11,6 +11,7 @@ from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit imp
 from our_system_phase2.services.phase3cm_streaming_portfolio import (
     BatchedPortfolioKernel,
     _linear_quantile,
+    _linear_quantile_pair,
     _pearson,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
@@ -138,6 +139,49 @@ def test_linear_quantile_does_not_move_an_equal_cutoff_tie_by_one_ulp() -> None:
 
     assert cutoff == tied_value
     assert int((values >= cutoff).sum()) == 2
+
+
+def _legacy_linear_quantile(values: np.ndarray, quantile: float) -> np.float64:
+    ordered = np.sort(values)
+    if ordered.shape[0] == 1:
+        return ordered[0]
+    position = (ordered.shape[0] - 1) * quantile
+    lower = int(np.floor(position))
+    upper = int(np.ceil(position))
+    if lower == upper or ordered[lower] == ordered[upper]:
+        return ordered[lower]
+    weight = position - lower
+    return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
+
+
+def _float64_bits(value: float) -> np.uint64:
+    return np.asarray(value, dtype=np.float64).view(np.uint64).item()
+
+
+def test_linear_quantile_pair_is_bit_and_selection_mask_exact() -> None:
+    tied_value = np.float64(0.8659217877094972)
+    adjacent = np.nextafter(tied_value, np.inf)
+    cases = (
+        (np.array([0.25], dtype=np.float64), 0.0),
+        (np.array([1.0, -1.0], dtype=np.float64), 0.25),
+        (np.array([3.0, 1.0, 2.0], dtype=np.float64), 0.2),
+        (np.array([4.0, 1.0, 3.0, 2.0], dtype=np.float64), 0.2),
+        (np.array([0.1, 0.2, tied_value, tied_value], dtype=np.float64), 0.2),
+        (np.array([0.0, -0.0], dtype=np.float64), 0.0),
+        (np.array([0.1, tied_value, adjacent, 0.9], dtype=np.float64), 0.8),
+        (np.array([-2.0, 0.0, 3.0], dtype=np.float64), 0.0),
+        (np.array([-2.0, 0.0, 3.0], dtype=np.float64), 1.0),
+    )
+
+    for values, quantile in cases:
+        expected_low = _legacy_linear_quantile(values, quantile)
+        expected_high = _legacy_linear_quantile(values, 1.0 - quantile)
+        observed_low, observed_high = _linear_quantile_pair(values, quantile)
+
+        assert _float64_bits(observed_low) == _float64_bits(expected_low)
+        assert _float64_bits(observed_high) == _float64_bits(expected_high)
+        np.testing.assert_array_equal(values <= observed_low, values <= expected_low)
+        np.testing.assert_array_equal(values >= observed_high, values >= expected_high)
 
 
 def test_native_pearson_returns_nan_for_constant_rank_vector() -> None:
