@@ -169,6 +169,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, sys.argv[4])
+sys.path.insert(0, str(Path(sys.argv[4]) / "src"))
 from scripts.preflight_cn_phase3cm_dag_cache import validate_source_closure_manifest
 
 payload = validate_source_closure_manifest(
