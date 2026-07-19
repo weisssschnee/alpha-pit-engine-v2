@@ -59,8 +59,7 @@ def test_146_replay_launcher_supports_verified_no_git_source_archive() -> None:
     assert '[string]$SourceClosureManifest = ""' in script
     assert '[string]$ExpectedSourceClosureManifestSha256 = ""' in script
     assert "no-Git launch requires an exact source closure manifest and SHA-256" in script
-    assert "validate_source_closure_manifest" in script
-    assert 'Path(sys.argv[4]) / "src"' in script
+    assert "validate_cn_phase3cm_source_closure.py" in script
     assert 'mode = "EXPLICIT_SOURCE_CLOSURE_MANIFEST_VERIFIED"' in script
 
 

@@ -163,21 +163,11 @@ else {
     $SourceClosureManifest = Resolve-CnPath -Path $SourceClosureManifest -Base $RepoRoot
     $ObservedManifestSha = Get-CnSha256 -Path $SourceClosureManifest
     if ($ObservedManifestSha -ne $ExpectedSourceClosureManifestSha256) { throw "source closure manifest SHA-256 drift" }
-    $ValidationCode = @'
-import json
-import sys
-from pathlib import Path
-
-sys.path.insert(0, sys.argv[4])
-sys.path.insert(0, str(Path(sys.argv[4]) / "src"))
-from scripts.preflight_cn_phase3cm_dag_cache import validate_source_closure_manifest
-
-payload = validate_source_closure_manifest(
-    Path(sys.argv[1]), repo_root=Path(sys.argv[2]), expected_repo_sha=sys.argv[3]
-)
-print(json.dumps(payload, sort_keys=True))
-'@
-    $SourceClosureJson = (& $PythonExe -c $ValidationCode $SourceClosureManifest $RepoRoot $ExpectedRepoSha $RepoRoot | Select-Object -Last 1)
+    $SourceClosureValidator = Resolve-CnPath -Path "scripts\validate_cn_phase3cm_source_closure.py" -Base $RepoRoot
+    $SourceClosureJson = (& $PythonExe $SourceClosureValidator `
+        --manifest $SourceClosureManifest `
+        --repo-root $RepoRoot `
+        --expected-repo-sha $ExpectedRepoSha | Select-Object -Last 1)
     if ($LASTEXITCODE -ne 0 -or -not $SourceClosureJson) { throw "source closure manifest content validation failed" }
     $SourceClosure = $SourceClosureJson | ConvertFrom-Json
     $SourceClosureReceipt = [ordered]@{
@@ -187,7 +177,7 @@ print(json.dumps(payload, sort_keys=True))
         manifest_sha256 = $ObservedManifestSha
         manifest_hash = [string]$SourceClosure.manifest_hash
         source_closure_hash = [string]$SourceClosure.source_closure_hash
-        source_count = @($SourceClosure.sources).Count
+        source_count = [int]$SourceClosure.source_count
     }
 }
 $PortfolioSource = Resolve-CnPath -Path ([string]$Contract.source_binding.portfolio_source_path) -Base $RepoRoot
