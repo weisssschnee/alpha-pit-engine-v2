@@ -138,6 +138,8 @@ if ($Contract.schema_version -ne "cn_phase3cm_current_kernel_146_parity_replay_v
     throw "146 replay contract is not authorized"
 }
 if ($ExpectedRepoSha -notmatch '^[0-9a-f]{40}$') { throw "ExpectedRepoSha must be exact lowercase Git SHA" }
+if (-not $PythonExe) { $PythonExe = [string]$Contract.execution_contract.python_executable }
+$PythonExe = Resolve-CnPath -Path $PythonExe -Base $RepoRoot
 if ([string]$Contract.source_binding.frozen_kernel_base_repo_sha -ne $FrozenKernelBaseSha) {
     throw "frozen kernel base SHA drift"
 }
@@ -161,19 +163,22 @@ else {
     $SourceClosureManifest = Resolve-CnPath -Path $SourceClosureManifest -Base $RepoRoot
     $ObservedManifestSha = Get-CnSha256 -Path $SourceClosureManifest
     if ($ObservedManifestSha -ne $ExpectedSourceClosureManifestSha256) { throw "source closure manifest SHA-256 drift" }
-    $SourceClosure = Get-Content -LiteralPath $SourceClosureManifest -Raw | ConvertFrom-Json
-    if ($SourceClosure.schema_version -ne "cn_phase3cm_source_closure_manifest_v1" -or
-        $SourceClosure.status -ne "CN_PHASE3CM_SOURCE_CLOSURE_MANIFEST_READY" -or
-        [string]$SourceClosure.repo_sha -ne $ExpectedRepoSha -or
-        @($SourceClosure.sources).Count -lt 1) {
-        throw "source closure manifest contract drift"
-    }
-    foreach ($Source in @($SourceClosure.sources)) {
-        $SourcePath = Resolve-CnPath -Path ([string]$Source.path) -Base $RepoRoot
-        if ((Get-CnSha256 -Path $SourcePath) -ne [string]$Source.sha256) {
-            throw "source closure file drift: $($Source.path)"
-        }
-    }
+    $ValidationCode = @'
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, sys.argv[4])
+from scripts.preflight_cn_phase3cm_dag_cache import validate_source_closure_manifest
+
+payload = validate_source_closure_manifest(
+    Path(sys.argv[1]), repo_root=Path(sys.argv[2]), expected_repo_sha=sys.argv[3]
+)
+print(json.dumps(payload, sort_keys=True))
+'@
+    $SourceClosureJson = (& $PythonExe -c $ValidationCode $SourceClosureManifest $RepoRoot $ExpectedRepoSha $RepoRoot | Select-Object -Last 1)
+    if ($LASTEXITCODE -ne 0 -or -not $SourceClosureJson) { throw "source closure manifest content validation failed" }
+    $SourceClosure = $SourceClosureJson | ConvertFrom-Json
     $SourceClosureReceipt = [ordered]@{
         mode = "EXPLICIT_SOURCE_CLOSURE_MANIFEST_VERIFIED"
         repo_sha = $ExpectedRepoSha
@@ -222,8 +227,6 @@ if ($Contract.data_access_contract.validation -ne "FORBIDDEN_ZERO_READS_REQUIRED
     throw "data access contract drift"
 }
 
-if (-not $PythonExe) { $PythonExe = [string]$Execution.python_executable }
-$PythonExe = Resolve-CnPath -Path $PythonExe -Base $RepoRoot
 $Wrapper = Resolve-CnPath -Path "scripts\invoke_cn_phase3cm_backend_with_exit_receipt.ps1" -Base $RepoRoot
 $Runner = Resolve-CnPath -Path "scripts\run_cn_phase3cm_streaming_qualification.py" -Base $RepoRoot
 $Qualifier = Resolve-CnPath -Path "scripts\qualify_cn_batched_portfolio_kernel.py" -Base $RepoRoot
