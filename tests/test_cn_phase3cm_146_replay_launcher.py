@@ -53,6 +53,17 @@ def test_146_replay_launcher_freezes_topology_and_authority() -> None:
         assert variable in script
 
 
+def test_146_replay_launcher_supports_verified_no_git_source_archive() -> None:
+    script = LAUNCHER.read_text(encoding="utf-8-sig")
+
+    assert '[string]$SourceClosureManifest = ""' in script
+    assert '[string]$ExpectedSourceClosureManifestSha256 = ""' in script
+    assert "no-Git launch requires an exact source closure manifest and SHA-256" in script
+    assert "CN_PHASE3CM_SOURCE_CLOSURE_MANIFEST_READY" in script
+    assert "source closure file drift" in script
+    assert 'mode = "EXPLICIT_SOURCE_CLOSURE_MANIFEST_VERIFIED"' in script
+
+
 def test_146_replay_launcher_is_resumable_and_fail_closed_without_speed_gate() -> None:
     script = LAUNCHER.read_text(encoding="utf-8-sig")
 
@@ -69,4 +80,3 @@ def test_146_replay_launcher_is_resumable_and_fail_closed_without_speed_gate() -
     assert "wall_speedup -ge 2" not in script
     assert "Remove-Item -LiteralPath $StaleArtifact -Force" in script
     assert "historical_reference_root" in script
-

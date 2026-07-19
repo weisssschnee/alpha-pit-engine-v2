@@ -2,6 +2,8 @@ param(
     [Parameter(Mandatory = $true)][string]$ReplayContract,
     [Parameter(Mandatory = $true)][string]$ExpectedRepoSha,
     [Parameter(Mandatory = $true)][string]$RepoRoot,
+    [string]$SourceClosureManifest = "",
+    [string]$ExpectedSourceClosureManifestSha256 = "",
     [switch]$Resume,
     [string]$PythonExe = ""
 )
@@ -136,15 +138,52 @@ if ($Contract.schema_version -ne "cn_phase3cm_current_kernel_146_parity_replay_v
     throw "146 replay contract is not authorized"
 }
 if ($ExpectedRepoSha -notmatch '^[0-9a-f]{40}$') { throw "ExpectedRepoSha must be exact lowercase Git SHA" }
-$ObservedRepoSha = ((& git -C $RepoRoot rev-parse HEAD) | Select-Object -Last 1).Trim().ToLowerInvariant()
-if ($LASTEXITCODE -ne 0 -or $ObservedRepoSha -ne $ExpectedRepoSha) { throw "launch workspace does not match ExpectedRepoSha" }
-$Dirty = @(& git -C $RepoRoot status --porcelain)
-if ($LASTEXITCODE -ne 0 -or $Dirty.Count -ne 0) { throw "launch workspace must be clean" }
 if ([string]$Contract.source_binding.frozen_kernel_base_repo_sha -ne $FrozenKernelBaseSha) {
     throw "frozen kernel base SHA drift"
 }
-& git -C $RepoRoot merge-base --is-ancestor $FrozenKernelBaseSha $ExpectedRepoSha
-if ($LASTEXITCODE -ne 0) { throw "launch commit is not a descendant of the frozen kernel base" }
+$GitCommand = Get-Command git -ErrorAction SilentlyContinue
+$GitMetadata = Join-Path $RepoRoot ".git"
+$ObservedRepoSha = $ExpectedRepoSha
+$SourceClosureReceipt = $null
+if ($null -ne $GitCommand -and (Test-Path -LiteralPath $GitMetadata)) {
+    $ObservedRepoSha = ((& $GitCommand.Source -C $RepoRoot rev-parse HEAD) | Select-Object -Last 1).Trim().ToLowerInvariant()
+    if ($LASTEXITCODE -ne 0 -or $ObservedRepoSha -ne $ExpectedRepoSha) { throw "launch workspace does not match ExpectedRepoSha" }
+    $Dirty = @(& $GitCommand.Source -C $RepoRoot status --porcelain)
+    if ($LASTEXITCODE -ne 0 -or $Dirty.Count -ne 0) { throw "launch workspace must be clean" }
+    & $GitCommand.Source -C $RepoRoot merge-base --is-ancestor $FrozenKernelBaseSha $ExpectedRepoSha
+    if ($LASTEXITCODE -ne 0) { throw "launch commit is not a descendant of the frozen kernel base" }
+    $SourceClosureReceipt = [ordered]@{ mode = "CLEAN_GIT"; repo_sha = $ObservedRepoSha }
+}
+else {
+    if (-not $SourceClosureManifest -or $ExpectedSourceClosureManifestSha256 -notmatch '^[0-9a-f]{64}$') {
+        throw "no-Git launch requires an exact source closure manifest and SHA-256"
+    }
+    $SourceClosureManifest = Resolve-CnPath -Path $SourceClosureManifest -Base $RepoRoot
+    $ObservedManifestSha = Get-CnSha256 -Path $SourceClosureManifest
+    if ($ObservedManifestSha -ne $ExpectedSourceClosureManifestSha256) { throw "source closure manifest SHA-256 drift" }
+    $SourceClosure = Get-Content -LiteralPath $SourceClosureManifest -Raw | ConvertFrom-Json
+    if ($SourceClosure.schema_version -ne "cn_phase3cm_source_closure_manifest_v1" -or
+        $SourceClosure.status -ne "CN_PHASE3CM_SOURCE_CLOSURE_MANIFEST_READY" -or
+        [string]$SourceClosure.repo_sha -ne $ExpectedRepoSha -or
+        @($SourceClosure.sources).Count -lt 1) {
+        throw "source closure manifest contract drift"
+    }
+    foreach ($Source in @($SourceClosure.sources)) {
+        $SourcePath = Resolve-CnPath -Path ([string]$Source.path) -Base $RepoRoot
+        if ((Get-CnSha256 -Path $SourcePath) -ne [string]$Source.sha256) {
+            throw "source closure file drift: $($Source.path)"
+        }
+    }
+    $SourceClosureReceipt = [ordered]@{
+        mode = "EXPLICIT_SOURCE_CLOSURE_MANIFEST_VERIFIED"
+        repo_sha = $ExpectedRepoSha
+        manifest = $SourceClosureManifest
+        manifest_sha256 = $ObservedManifestSha
+        manifest_hash = [string]$SourceClosure.manifest_hash
+        source_closure_hash = [string]$SourceClosure.source_closure_hash
+        source_count = @($SourceClosure.sources).Count
+    }
+}
 $PortfolioSource = Resolve-CnPath -Path ([string]$Contract.source_binding.portfolio_source_path) -Base $RepoRoot
 if ([string]$Contract.source_binding.portfolio_source_sha256 -ne $FrozenPortfolioSourceSha256 -or
     (Get-CnSha256 -Path $PortfolioSource) -ne $FrozenPortfolioSourceSha256) {
@@ -518,6 +557,7 @@ $Receipt = [ordered]@{
     contract_sha256 = Get-CnSha256 -Path $ReplayContract
     expected_repo_sha = $ExpectedRepoSha
     observed_repo_sha = $ObservedRepoSha
+    source_closure = $SourceClosureReceipt
     portfolio_source_sha256 = Get-CnSha256 -Path $PortfolioSource
     resumed = [bool]$Resume
     wall_seconds = $Stopwatch.Elapsed.TotalSeconds
