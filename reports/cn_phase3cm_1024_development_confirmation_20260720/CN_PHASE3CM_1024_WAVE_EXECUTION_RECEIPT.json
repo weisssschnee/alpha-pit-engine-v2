@@ -1,0 +1,120 @@
+﻿{
+    "schema_version":  "cn_phase3cm_1024_wave_execution_receipt_v1",
+    "status":  "CN_PHASE3CM_1024_WAVE_PASS",
+    "repo_sha":  "74797c332b3576402a1c629ac6fa34cb2a9693fc",
+    "frozen_binding":  {
+                           "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\CN_PHASE3CM_1024_FROZEN_BINDING.json",
+                           "sha256":  "e7bfa55a232e8b7c15cd6134e6277701477e9cecb0010f115df73247852e6000",
+                           "binding_hash":  "e6fd19de03486b52510e0d826a2fd1b9cf308b5ec16283d09a190b9d2e10f595"
+                       },
+    "combined_contract":  {
+                              "sha256":  "2fab2ef81e9517b42147bdd909197b255525d310ceb8610e99158ce3d48146ed",
+                              "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\execution_plans\\CN_PHASE_E_COMBINED_EXECUTION_CONTRACT.json"
+                          },
+    "sidecar_closure":  {
+                            "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_sidecars_3509d0c\\CN_PHASE3CM_1024_SIDECAR_CLOSURE.json",
+                            "sha256":  "d59798903fdc4557fcd8ffcde10745fa72d85ba0759f99a5a33d239a35496598",
+                            "closure_hash":  "e1149a79c9539c6cdba97ec235016517633028513c8834dc963faf0105ecafdc"
+                        },
+    "resource_contract":  {
+                              "sha256":  "a275c0d6ddcab689f49f908af3d8def129ff2e0dd8993ba899d65ab5c050805d",
+                              "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\CN_PHASE3CM_1024_RESOURCE_CONTRACT.json"
+                          },
+    "historical_subset_receipt":  {
+                                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_inputs_3509d0c\\CN_HISTORICAL_256_SEMANTIC_SUBSET.json",
+                                      "sha256":  "6cea57e41f015ce5c9a223fae23c3e89cc41c83f8eecc34704d62288f21dc784",
+                                      "status":  "CN_PHASE3CM_HISTORICAL_256_SEMANTIC_SUBSET_PASS"
+                                  },
+    "readjudication_manifest":  {
+                                    "path":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\CN_PHASE3CM_CURRENT_KERNEL_146_READJUDICATION_MANIFEST_286F813.json",
+                                    "sha256":  "d0e857c40599bc1d624c774613cf722781854661f4de15e40f141d9af5ba7e73",
+                                    "status":  "CN_PHASE3CM_CURRENT_KERNEL_146_PARITY_READJUDICATED_PASS"
+                                },
+    "source_closure":  {
+                           "source_closure_hash":  "277d99aceb2d1f9fce7fa8fd8d0da442558e1a475ad6f879d065c38f5f44d34f",
+                           "path":  "D:\\ChengboRemote\\incoming\\CN_PHASE3CM_1024_SOURCE_CLOSURE_74797C3.json",
+                           "sha256":  "556b344f1726576908a997d097dd5f4eb0b4e7b0b38e0f784a70f90b25bbe2de",
+                           "manifest_hash":  "28e72e917ae458789f14c32280a613a05e80e9d55ccfa5b9579abf9000e624dd"
+                       },
+    "pair_counts":  {
+                        "active_bar":  584,
+                        "stock_session":  440,
+                        "total":  1024
+                    },
+    "candidate_member_count":  2048,
+    "heavy_processes":  2,
+    "compute_threads_by_backend":  {
+                                       "stock_session":  2,
+                                       "active_bar":  11
+                                   },
+    "global_active_native_compute_threads":  13,
+    "wall_seconds":  6640.9181101999993,
+    "wall_seconds_hard_max":  43200,
+    "wall_gate_pass":  true,
+    "host_hours_actual":  1.8446994750555554,
+    "host_hours_hard_max":  12,
+    "global_peak_rss_bytes":  20764135424,
+    "global_rss_hard_bytes":  64424509440,
+    "global_rss_gate_pass":  true,
+    "active_peak_process_tree_rss_bytes":  20764135424,
+    "session_peak_process_tree_rss_bytes":  2235580416,
+    "active_rss_hard_bytes":  25769803776,
+    "session_rss_hard_bytes":  25769803776,
+    "active_rss_gate_pass":  true,
+    "session_rss_gate_pass":  true,
+    "rss_sample_count":  3188,
+    "rss_timeline":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\CN_GLOBAL_PROCESS_TREE_RSS_TIMELINE.csv",
+    "rss_timeline_sha256":  "a45aa3c9cd39ba8c5de6f2b4e9812c9cb2e9689c84c19959959a604e3fa85b07",
+    "launch_failure":  null,
+    "resume":  true,
+    "periodic_checkpoint_resume":  "FROZEN_PLAN_CADENCE_AND_COMPLETE_PAYLOAD",
+    "active_backend":  {
+                           "backend":  "active_bar",
+                           "pass":  true,
+                           "actual_exit_code":  0,
+                           "exit_receipt":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\active_bar\\CN_BACKEND_EXIT_RECEIPT.json",
+                           "exit_receipt_sha256":  "2779121dfb17a629d53789a3cf7d4450ed73e028caad0a05fde21f9355b08dbc",
+                           "backend_result":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\active_bar\\CN_STREAMING_BACKEND_RESULT.json",
+                           "backend_result_sha256":  "1cd82516640c5e438619e4cd67519f8cba6981460642d15fd6cc82631849386c",
+                           "pair_count":  584,
+                           "pair_identity_pass":  true,
+                           "checkpoint_manifest":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\active_bar\\checkpoints\\active_bar\\CN_STREAMING_CHECKPOINT_MANIFEST.json",
+                           "checkpoint_manifest_sha256":  "efad01c7c8b6015176bfed1ebd06ef625b33a0a47c050f31abdf2c596b88abd4",
+                           "execution_plan_hash":  "458594590928c8474201b2806f94f8b5ae3b35db6bd9f3e16db116641efc7795",
+                           "dag_plan_hash":  "ade147513226ad1ee7ee35000a6077f04739c890e1d1b45806990da3dbf611a8",
+                           "capacity_receipt_hash":  "8d2a06b0b312d4b70301377071263a8a937dbf7eced0b436c59baf72f0068093",
+                           "peak_rss_bytes":  20776857600,
+                           "rss_hard_bytes":  25769803776,
+                           "access_evidence_complete":  true
+                       },
+    "stock_session_backend":  {
+                                  "backend":  "stock_session",
+                                  "pass":  true,
+                                  "actual_exit_code":  0,
+                                  "exit_receipt":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\stock_session\\CN_BACKEND_EXIT_RECEIPT.json",
+                                  "exit_receipt_sha256":  "516f0cd4cd183f520e367753c72598463669d5f2d283149bf39d9a5285051e0b",
+                                  "backend_result":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\stock_session\\CN_STREAMING_BACKEND_RESULT.json",
+                                  "backend_result_sha256":  "97ba203c62133a50eef26c925cfc40ae4bef0e600596a2f7b6eaa883c2299fd9",
+                                  "pair_count":  440,
+                                  "pair_identity_pass":  true,
+                                  "checkpoint_manifest":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\stock_session\\checkpoints\\stock_session\\CN_STREAMING_CHECKPOINT_MANIFEST.json",
+                                  "checkpoint_manifest_sha256":  "99e7107a00e35c7ac130a01201315b2ce0b15ccfd3cae7a490561024944d93c4",
+                                  "execution_plan_hash":  "a0bde108bba4f3328235378ea6ddb4dac89c926a520509957f1ab96beadcd7d2",
+                                  "dag_plan_hash":  "527a92cb3c0c33be859702117a4d16d4e7e817102d9c8f20d73e9010336fb649",
+                                  "capacity_receipt_hash":  "d7692165c4216fc90893df395141f2d994781845f84399408e2c91532115350d",
+                                  "peak_rss_bytes":  2993901568,
+                                  "rss_hard_bytes":  25769803776,
+                                  "access_evidence_complete":  true
+                              },
+    "validation_reads":  0,
+    "holdout_reads":  0,
+    "forward_2026_reads":  0,
+    "promotion":  "FORBIDDEN",
+    "strict_stage_a":  "NOT_AUTHORIZED",
+    "formal_evaluator_authority":  "UNCHANGED",
+    "streaming_backend_authority":  "EXPERIMENTAL_BACKEND",
+    "kernel_state":  "PARTIALLY_QUALIFIED",
+    "cross_epoch_adaptive_memory":  "FORBIDDEN",
+    "speedup_threshold":  "NONE",
+    "performance_threshold_gate":  "NOT_USED"
+}

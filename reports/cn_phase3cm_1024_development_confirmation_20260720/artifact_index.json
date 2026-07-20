@@ -1,0 +1,85 @@
+{
+  "schema_version": "cn_phase3cm_1024_development_confirmation_artifact_index_v1",
+  "status": "CN_PHASE3CM_1024_DEVELOPMENT_CONFIRMATION_INDEXED",
+  "source_repo_sha": "74797c332b3576402a1c629ac6fa34cb2a9693fc",
+  "execution_status": "CN_PHASE3CM_1024_WAVE_PASS",
+  "analysis_status": "CN_CORE_PACK_STRICT_WAVE_ANALYZED",
+  "boundaries": {
+    "data_role": "development",
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "promotion": "FORBIDDEN",
+    "strict_stage_a": "NOT_AUTHORIZED",
+    "cross_sprint_memory": "FORBIDDEN",
+    "formal_evaluator_authority": "UNCHANGED",
+    "streaming_backend_authority": "EXPERIMENTAL_BACKEND",
+    "kernel_state": "PARTIALLY_QUALIFIED"
+  },
+  "execution_cost": {
+    "attempt_001_launcher_wall_seconds": 7650.0,
+    "resume_launcher_wall_seconds": 6640.918110199999,
+    "cumulative_launcher_wall_seconds": 14290.9181102,
+    "cumulative_launcher_host_hours": 3.9696994750555556,
+    "active_backend_cumulative_wall_seconds": 13706.139296799898,
+    "stock_session_backend_cumulative_wall_seconds": 247.12968489946797,
+    "active_peak_rss_bytes": 20776857600,
+    "stock_session_peak_rss_bytes": 2993901568,
+    "attempt_001_last_complete_active_block": 17,
+    "final_active_blocks": 37,
+    "final_stock_session_blocks": 37
+  },
+  "analysis_summary": {
+    "pair_count": 1024,
+    "evaluated_pair_count": 989,
+    "blocked_pair_count": 35,
+    "infrastructure_failed_pair_count": 0,
+    "positive_matched_reward_count": 572,
+    "positive_matched_reward_rate": 0.5783619817997978,
+    "positive_matched_rank_ic_count": 707,
+    "positive_matched_rank_ic_rate": 0.7148634984833164,
+    "mean_matched_train_increment": 0.08451099790697675,
+    "median_matched_train_increment": 0.012894240000000057,
+    "mean_matched_rank_ic_increment": 0.019033150576339735,
+    "median_matched_rank_ic_increment": 0.005592939999999999
+  },
+  "route_summary": {
+    "DISCLOSURE_EVENT": {"pairs": 146, "evaluated": 139, "blocked": 7, "mean_reward_increment": 0.03493432935251799, "median_reward_increment": 0.04937495000000003, "positive_reward_rate": 0.6402877697841727, "mean_rank_ic_increment": -0.0033472311510791366, "positive_rank_ic_rate": 0.5899280575539568},
+    "FIRSTN_PATH": {"pairs": 146, "evaluated": 134, "blocked": 12, "mean_reward_increment": -0.054993441791044775, "median_reward_increment": -0.054030159999999994, "positive_reward_rate": 0.3208955223880597, "mean_rank_ic_increment": 0.029273206641791043, "positive_rank_ic_rate": 0.835820895522388},
+    "INTRADAY_STATE_TRANSITION": {"pairs": 146, "evaluated": 146, "blocked": 0, "mean_reward_increment": 0.28066578979452056, "median_reward_increment": 0.207338835, "positive_reward_rate": 0.7876712328767124, "mean_rank_ic_increment": 0.02938357910958904, "positive_rank_ic_rate": 0.7054794520547946},
+    "MARKET_REGIME_CONDITION": {"pairs": 146, "evaluated": 138, "blocked": 8, "mean_reward_increment": -0.007645561666666664, "median_reward_increment": -0.0004452900000000426, "positive_reward_rate": 0.4927536231884058, "mean_rank_ic_increment": 0.008381738550724637, "positive_rank_ic_rate": 0.6811594202898551},
+    "MINUTE_STATIC": {"pairs": 146, "evaluated": 145, "blocked": 1, "mean_reward_increment": 0.15710157744827585, "median_reward_increment": 0.010704339999999979, "positive_reward_rate": 0.5448275862068965, "mean_rank_ic_increment": 0.04876498813793103, "positive_rank_ic_rate": 0.9241379310344827},
+    "SLOW_CROSS_SECTIONAL_LEVEL": {"pairs": 147, "evaluated": 143, "blocked": 4, "mean_reward_increment": 0.1451244279020979, "median_reward_increment": 0.035724719999999995, "positive_reward_rate": 0.6923076923076923, "mean_rank_ic_increment": 0.016665256433566433, "positive_rank_ic_rate": 0.6783216783216783},
+    "SLOW_TEMPORAL_CHANGE": {"pairs": 147, "evaluated": 144, "blocked": 3, "mean_reward_increment": 0.01833324048611111, "median_reward_increment": 0.004277034999999985, "positive_reward_rate": 0.5486111111111112, "mean_rank_ic_increment": 0.0032340551388888887, "positive_rank_ic_rate": 0.5902777777777778}
+  },
+  "hot_path": {
+    "classification": "MIXED_COMPUTE_BOTTLENECK",
+    "active_compute_heavy_wall_seconds": 9564.724818512332,
+    "active_rank_mapping_share": 0.5722565023203994,
+    "active_value_dag_share": 0.4052597245887125,
+    "active_turnover_cost_share": 0.022483773090888184,
+    "active_pair_common_support_wall_seconds": 2766.7148109884,
+    "active_pair_common_support_total_wall_share": 0.20185952813381747,
+    "parallelism_status": "PARALLELISM_ENGAGED"
+  },
+  "local_compact_artifacts": [
+    {"path": "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json", "bytes": 64559, "sha256": "9f0319ceb237b8d7577d17224d7962b0bbab68b332934de0ac9aa0e7eb4bee19"},
+    {"path": "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_PAIRS.csv", "bytes": 700551, "sha256": "3fd172c9c2ed54a748e8f8237809e8ba2bb8370c7f94099ed2dc3a20376894ec"},
+    {"path": "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_PHASE3CM_1024_ATTEMPT_001_ROOT_CAUSE.json", "bytes": 1626, "sha256": "ba1b25ecb14096b0354d1afc31deb0097f359d6a1e58a50ebeee2feadf5675dc"},
+    {"path": "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_PHASE3CM_1024_ATTEMPT_RECORD.json", "bytes": 5366, "sha256": "2379ba1741bf4e0bb5dc115a444007016f46f9a7bd9ca533fdc400fd0e1df3bc"},
+    {"path": "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_PHASE3CM_1024_WAVE_EXECUTION_RECEIPT.json", "bytes": 9467, "sha256": "e30decba63e9e22c8489bfc37c633e5e38b366a8dbe8621926355ae486628bc9"}
+  ],
+  "remote_bound_artifacts": [
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\active_bar\\CN_STREAMING_BACKEND_RESULT.json", "bytes": 27900633, "sha256": "1cd82516640c5e438619e4cd67519f8cba6981460642d15fd6cc82631849386c"},
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\active_bar\\CN_BACKEND_EXIT_RECEIPT.json", "bytes": 707, "sha256": "2779121dfb17a629d53789a3cf7d4450ed73e028caad0a05fde21f9355b08dbc"},
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\active_bar\\checkpoints\\active_bar\\CN_STREAMING_CHECKPOINT_MANIFEST.json", "bytes": 901, "sha256": "efad01c7c8b6015176bfed1ebd06ef625b33a0a47c050f31abdf2c596b88abd4"},
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\stock_session\\CN_STREAMING_BACKEND_RESULT.json", "bytes": 20793522, "sha256": "97ba203c62133a50eef26c925cfc40ae4bef0e600596a2f7b6eaa883c2299fd9"},
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\stock_session\\CN_BACKEND_EXIT_RECEIPT.json", "bytes": 710, "sha256": "516f0cd4cd183f520e367753c72598463669d5f2d283149bf39d9a5285051e0b"},
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\stock_session\\checkpoints\\stock_session\\CN_STREAMING_CHECKPOINT_MANIFEST.json", "bytes": 907, "sha256": "99e7107a00e35c7ac130a01201315b2ce0b15ccfd3cae7a490561024944d93c4"},
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\CN_PHASE3CM_1024_FROZEN_BINDING.json", "bytes": 3472539, "sha256": "e7bfa55a232e8b7c15cd6134e6277701477e9cecb0010f115df73247852e6000"},
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\execution_plans\\CN_PHASE_E_COMBINED_EXECUTION_CONTRACT.json", "bytes": 289663, "sha256": "2fab2ef81e9517b42147bdd909197b255525d310ceb8610e99158ce3d48146ed"},
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\CN_PHASE3CM_1024_RESOURCE_CONTRACT.json", "bytes": 8607, "sha256": "a275c0d6ddcab689f49f908af3d8def129ff2e0dd8993ba899d65ab5c050805d"},
+    {"path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_sidecars_3509d0c\\CN_PHASE3CM_1024_SIDECAR_CLOSURE.json", "bytes": 48876, "sha256": "d59798903fdc4557fcd8ffcde10745fa72d85ba0759f99a5a33d239a35496598"},
+    {"path": "D:\\ChengboRemote\\incoming\\CN_PHASE3CM_1024_SOURCE_CLOSURE_74797C3.json", "bytes": 17656, "sha256": "556b344f1726576908a997d097dd5f4eb0b4e7b0b38e0f784a70f90b25bbe2de"}
+  ]
+}

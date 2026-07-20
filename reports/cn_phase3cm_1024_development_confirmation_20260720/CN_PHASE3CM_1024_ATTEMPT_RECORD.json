@@ -1,0 +1,71 @@
+﻿{
+    "schema_version":  "cn_phase3cm_1024_attempt_record_v1",
+    "status":  "CN_PHASE3CM_1024_ATTEMPT_INTERRUPTED",
+    "task_id":  "lanjob_20260720_152257_785dd7",
+    "started_at":  "2026-07-20T15:23:20+08:00",
+    "ended_at":  "2026-07-20T17:30:50+08:00",
+    "exit_code":  1,
+    "active_completed_blocks":  17,
+    "session_completed_blocks":  37,
+    "active_checkpoint_status":  "COMPLETE_RECOVERABLE_PAYLOAD",
+    "session_checkpoint_status":  "COMPLETE_RECOVERABLE_PAYLOAD",
+    "active_max_rss_bytes":  20072042496,
+    "global_max_rss_bytes":  20072042496,
+    "active_rss_hard_bytes":  25769803776,
+    "global_rss_hard_bytes":  64424509440,
+    "rss_hard_gate_observed":  false,
+    "observed_failure":  "ACTIVE_WRAPPER_ENDED_WITHOUT_EXIT_RECEIPT; FINAL_EVIDENCE_NULL_COUNT_MASKED_ORIGINAL_CAUSE",
+    "resume_contract":  "UNCHANGED_PLAN_FROM_LATEST_COMPLETE_CHECKPOINT",
+    "files":  [
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\CN_GLOBAL_PROCESS_TREE_RSS_TIMELINE.csv",
+                      "bytes":  258387,
+                      "sha256":  "f3da0ac8dcb0cf51057761d55dd42ff1ac3f65620ee60cc51d3f7fd3753d6c2d"
+                  },
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\active_CN_BACKEND_COMMAND.json",
+                      "bytes":  3062,
+                      "sha256":  "8dc5c3a50a526c2b9eb966aff6f436f46fada6432b9ed3b70d6895f6f140309e"
+                  },
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\active_CN_PHASE3CM_PHASE_TIMING.jsonl",
+                      "bytes":  7582025,
+                      "sha256":  "205f6e9be04d9859659b3c8db3a95f3aa0a60105b90d2231a664c6982d8799ed"
+                  },
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\active_CN_STREAMING_CHECKPOINT_MANIFEST.json",
+                      "bytes":  901,
+                      "sha256":  "c17ef7694968216cc6a21b1f76bc4b5f86dccac1289461b55ed2813e83d17f1a"
+                  },
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\session_CN_BACKEND_COMMAND.json",
+                      "bytes":  3079,
+                      "sha256":  "c72e17a4736dffe96c88baf7ef0c346acc08b1f2d77ddad7f2dbbaa5a6cfbc6c"
+                  },
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\session_CN_BACKEND_EXIT_RECEIPT.json",
+                      "bytes":  710,
+                      "sha256":  "703752fe675c6aca253b4716e451b3b5f0df8caa0417064ab670c7aaabc99bbb"
+                  },
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\session_CN_STREAMING_BACKEND_RESULT.json",
+                      "bytes":  20793514,
+                      "sha256":  "f1c5ae758a784f287c8c644331c494714e448975c7d23e45e92a65ba1702a6e7"
+                  },
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\session_CN_STREAMING_CHECKPOINT_MANIFEST.json",
+                      "bytes":  907,
+                      "sha256":  "99e7107a00e35c7ac130a01201315b2ce0b15ccfd3cae7a490561024944d93c4"
+                  },
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\outer_task.log",
+                      "bytes":  177,
+                      "sha256":  "e0deeb1d37fa1adf9a68c986ac1f5ae32716fa614b5a931a51071c42a0d974e3"
+                  },
+                  {
+                      "path":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_execution_74797c3\\cn_phase3cm_1024_wave_74797c3\\attempt_001_interrupted_20260720T173050\\outer_task.status.json",
+                      "bytes":  317,
+                      "sha256":  "b03c214168fd4612bd9f359a197115100b27d3bde51eb7273f73706c2bf09bb5"
+                  }
+              ]
+}

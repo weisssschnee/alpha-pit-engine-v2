@@ -2,7 +2,7 @@
 
 Updated: 2026-07-20
 
-Current state: `CN_CURRENT_KERNEL_146_PARITY_REPLAY_AUTHORIZED_SEARCH_FROZEN`
+Current state: `CN_PHASE3CM_1024_DEVELOPMENT_CONFIRMATION_COMPLETED_SEARCH_FROZEN`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -17,29 +17,37 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 ## Current accepted capabilities
 
 - Phase A EVALRESET and NEXTGEN-DARK infrastructure remain accepted.
-- Phase3CM completed one frozen 256-pair development diagnostic: 146 active-bar
-  pairs were evaluated by the partitioned 7df57ce evaluator and 110 immutable
-  stock-session results were reused under an exact binding. All pair identities
-  were observed, 245 pairs were evaluable, and 11 were blocked by local
-  empty/constant/identity-control semantics rather than infrastructure failure.
-  Validation, holdout and 2026 reads were all zero.
-- Across the 245 evaluable pairs, 147 had positive matched development reward
-  increment and 169 had positive matched Rank-IC increment. Intraday state
-  transition and slow cross-sectional level were the broadest positive
-  observations; FirstN was hurt primarily by turnover/mapping cost and slow
-  temporal change was weak. These are development diagnostics only, without
-  independent seed/time-block stability evidence, and cannot authorize
-  promotion or Strict Stage A.
-- The experimental streaming portfolio kernel retained exact result and
-  checkpoint parity on the frozen four-pair full-coordinate A/B. Versus the
-  7df57ce golden evaluator, mapping improved 6.325x, compute improved 3.817x
-  and end-to-end wall time improved 1.903x, while peak RSS increased by about
-  72.3 MiB. The kernel is frozen as `PARTIALLY_QUALIFIED` and remains an
-  `EXPERIMENTAL_BACKEND`; the formal evaluator authority is unchanged. The
-  former 2.000x target is retained as telemetry, not as a semantic truth gate.
-  A current-kernel replay of the 146 frozen active-bar pairs is now authorized
-  solely to expand exact-parity coverage. Historical 256-pair evidence remains
-  immutable and is not overwritten by this replay.
+- The frozen current kernel passed exact semantic parity on all 146 active-bar
+  pairs and 292 candidate members. The cumulative development confirmation then
+  completed 1,024 matched pairs: 584 active-bar and 440 stock-session. All pair
+  identities were observed, 989 pairs were evaluable, and 35 were blocked by
+  local empty/constant/identity-control semantics. No pair failed because of
+  infrastructure, and validation, holdout and 2026 reads were all zero.
+- Across the 989 evaluable pairs, 572 had positive matched development reward
+  increment and 707 had positive matched Rank-IC increment. Mean/median matched
+  reward increments were +0.08451/+0.01289; mean/median Rank-IC increments were
+  +0.01903/+0.00559. Intraday state transition was the clearest reward-positive
+  route (+0.28067 mean, +0.20734 median, 78.8% positive). Slow cross-sectional
+  level was also broadly positive (+0.14512 mean, 69.2% positive). Minute static
+  had the strongest Rank-IC breadth (92.4% positive) but a much smaller median
+  reward increment than its mean. FirstN had positive Rank-IC breadth but negative
+  net reward, market-regime conditioning had no reward increment, disclosure was
+  mixed, and slow temporal change was weakly positive.
+- The experimental streaming backend remained within the frozen resource
+  contract: active-bar processed 446,443,583 rows, stock-session 1,852,463 rows,
+  both reported `PARALLELISM_ENGAGED`, and peak active RSS was 20,776,857,600
+  bytes below the 24 GiB hard gate. Active cumulative evaluator wall time was
+  13,706.14 seconds. The official hot-path result is
+  `MIXED_COMPUTE_BOTTLENECK`: rank/mapping was 57.2% and Value DAG 40.5% of the
+  three compute-heavy phases, so neither crossed the frozen 60% classification
+  threshold. The kernel remains `PARTIALLY_QUALIFIED` and an
+  `EXPERIMENTAL_BACKEND`; the formal evaluator authority is unchanged.
+- Attempt 1 was interrupted after active block 17 by two orphaned diagnostic
+  PowerShell inspectors that consumed about 77.9 GB combined working set. They
+  were identity-checked and removed, restoring free memory from 1.17 GB to
+  77.97 GB. The unchanged execution plan resumed from the complete checkpoint
+  and passed all 37 blocks. The interrupted-attempt evidence is retained without
+  rewriting the final execution receipt or historical 256-pair evidence.
 - The complete CN field master contains 1,683 records:
   - 1,227 PIT fundamental source fields;
   - 420 registered capability fields;
@@ -118,27 +126,24 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-Core Pack capacity, 256-pair development behavior and four supplemental
-disclosure materializations are now explicit. They do not provide independent
-stability or OOS evidence, so formal discovery remains blocked by the absence
-of a separate development-only authorization and nonzero frozen budgets.
-Plate remains independently blocked by missing real PIT minute materialization;
-the compound intraday state root remains a localized materialization gap. The
-portfolio kernel is now frozen, so no further kernel optimization is in scope.
-The immediate gate is exact semantic parity on all 146 frozen active-bar pairs,
-including support, behavior/rank-to-weight digest, turnover, cost, reward,
-RankIC, blockers and checkpoint continuation. The three stock-session routes
-remain covered only by the immutable historical 110-pair evidence. A cumulative
-1,024-pair wave is conditional on the 146 exact-parity pass plus a new
-machine-hour/RSS projection frozen from that replay; it is not gated by an
-arbitrary 2.000x speedup.
+The 146 exact-parity gate and cumulative 1,024-pair development confirmation are
+complete. They establish broad route-asymmetric development evidence but do not
+provide independent seed/time-block stability, validation, holdout or OOS
+evidence. Formal discovery therefore remains blocked by a separate explicit
+authorization and a newly frozen formally evaluable route pack. Plate remains
+independently blocked by missing real PIT minute materialization; the compound
+intraday state root remains a localized materialization gap. FirstN and
+market-regime conditioning require targeted objective/cost or support diagnosis,
+not a blind rerun of all 1,024 pairs. No further kernel optimization or replay is
+in scope.
 
 ## Next action
 
-Run the frozen 146-pair active-bar parity replay on 77o without changing the
-kernel. If and only if exact parity passes and the measured resource projection
-fits the frozen machine-hour/RSS limits, freeze the cumulative 1,024-pair input
-pack (768 new pairs beyond the historical 256) and its route-asymmetric
-execution plan. Strict Stage A, candidate promotion, adaptive memory,
-validation/holdout access and 2026 access remain forbidden. Plate resumes only
-when real PIT minute materialization is present on 77o.
+Do not repeat the 1,024 wave. The next formal decision is whether to prepare a
+new frozen, development-only route pack centered on the routes with coherent
+matched reward and Rank-IC evidence, while keeping FirstN, market regime,
+disclosure and slow temporal routes diagnostic until their route-specific issues
+are resolved. That preparation is not Strict Stage A authorization. Strict Stage
+A, candidate promotion, adaptive memory, validation/holdout access and 2026
+access remain forbidden. Plate resumes only when real PIT minute materialization
+is present on 77o.

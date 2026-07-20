@@ -1,0 +1,39 @@
+{
+  "schema_version": "cn_phase3cm_1024_attempt_root_cause_v1",
+  "status": "ORPHAN_INSPECTOR_RESOURCE_EXHAUSTION_CONFIRMED",
+  "attempt_record": "CN_PHASE3CM_1024_ATTEMPT_RECORD.json",
+  "failed_task_id": "lanjob_20260720_152257_785dd7",
+  "failed_task_exit_code": 1,
+  "last_complete_active_block": 17,
+  "session_blocks_complete": 37,
+  "rss_hard_gate_observed": false,
+  "orphan_processes": [
+    {
+      "pid": 13840,
+      "command_line": "powershell -NoProfile -ExecutionPolicy Bypass -File D:\\ChengboRemote\\incoming\\inspect_747_run.ps1",
+      "started_at": "2026-07-20T15:28:11+08:00",
+      "working_set_bytes_at_detection": 53685469184,
+      "private_memory_bytes_at_detection": 102966444032
+    },
+    {
+      "pid": 52388,
+      "command_line": "powershell -NoProfile -ExecutionPolicy Bypass -File D:\\ChengboRemote\\incoming\\inspect_747_run.ps1",
+      "started_at": "2026-07-20T15:33:10+08:00",
+      "working_set_bytes_at_detection": 24210415616,
+      "private_memory_bytes_at_detection": 101560303616
+    }
+  ],
+  "free_physical_memory_bytes_before_cleanup": 1174364160,
+  "free_physical_memory_bytes_after_cleanup": 77971505152,
+  "cleanup_status": "CN_77O_ORPHAN_INSPECTORS_CLEANED",
+  "cleanup_identity_guard": "PID_AND_EXACT_SCRIPT_COMMAND_LINE",
+  "causal_assessment": "STRONGLY_SUPPORTED_BY_RESOURCE_RECOVERY_AND_UNCHANGED_CHECKPOINT_RESUME",
+  "recovery": {
+    "task_id": "lanjob_20260720_175450_b2947e",
+    "mode": "FROZEN_PLAN_RESUME",
+    "parameter_changes": 0,
+    "active_blocks_complete": 37,
+    "session_blocks_complete": 37,
+    "execution_status": "CN_PHASE3CM_1024_WAVE_PASS"
+  }
+}
