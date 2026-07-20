@@ -28,8 +28,11 @@ SOURCE_CLOSURE_ENTRYPOINTS = (
     "scripts/invoke_cn_phase3cm_backend_with_exit_receipt.ps1",
     "scripts/cn_phase3cm_process_tree_monitor.ps1",
     "scripts/preflight_cn_phase3cm_dag_cache.py",
+    "scripts/validate_cn_phase3cm_source_closure.py",
+    "scripts/freeze_cn_phase3cm_1024_resource_contract.py",
     "scripts/run_cn_phase3cm_streaming_qualification.py",
     "scripts/run_cn_phase3cm_phase_e_qualification_77o.ps1",
+    "scripts/run_cn_phase3cm_1024_wave_77o.ps1",
     "scripts/run_cn_phase3cm_partitioned_backend_77o.ps1",
 )
 
