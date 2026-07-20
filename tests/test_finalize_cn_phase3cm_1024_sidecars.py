@@ -16,7 +16,10 @@ from scripts.finalize_cn_phase3cm_1024_sidecars import (
     SESSION_MANIFEST_NAME,
     SESSION_V2_MANIFEST_NAME,
     STABLE_KEY,
+    REUSE_CONTRACT,
+    REUSE_RECEIPT_NAME,
     EvidenceError,
+    _candidate_contract,
     _stable_hash,
     finalize_sidecars,
 )
@@ -55,6 +58,21 @@ def _candidate_rows(*, backend: str, field: str, pair_count: int) -> list[dict[s
                 }
             )
     return rows
+
+
+def test_candidate_contract_separates_implicit_close_from_expression_fields(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "candidates.csv"
+    rows = _candidate_rows(backend="stock_session", field="fund_x", pair_count=1)
+    for row in rows:
+        row["expression"] = "Add($fund_x,1)"
+    _write_csv(path, rows)
+
+    contract = _candidate_contract(path, backend="stock_session", expected_pair_count=1)
+
+    assert contract["expression_raw_fields"] == ["fund_x"]
+    assert contract["required_raw_fields"] == ["close", "fund_x"]
 
 
 def _parity(shard_index: int) -> dict[str, Any]:
@@ -391,6 +409,91 @@ def test_finalize_writes_capacity_compatible_manifests_and_self_hashed_closure(
         "holdout_reads": 0,
         "forward_2026_reads": 0,
     }
+
+
+def _convert_session_base_to_hash_exact_reuse(evidence: dict[str, Any]) -> Path:
+    path = Path(evidence["session_base_manifest_path"])
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    source_base = path.parent / "source_base_manifest.json"
+    source_augmentation = path.parent / "source_augmentation_manifest.json"
+    _write_json(source_base, {"status": "TIME_MAJOR_LAYOUT_PARITY_PASS"})
+    _write_json(
+        source_augmentation,
+        {"status": "SESSION_SIDECAR_AUGMENTATION_PARITY_PASS"},
+    )
+    manifest["reuse_contract"] = REUSE_CONTRACT
+    manifest["source_base_manifest"] = str(source_base.resolve())
+    manifest["source_base_manifest_sha256"] = _sha256(source_base)
+    manifest["source_augmentation_manifest"] = str(source_augmentation.resolve())
+    manifest["source_augmentation_manifest_sha256"] = _sha256(source_augmentation)
+    manifest["parity"] = [
+        {
+            "source_shard": int(row["source_shard"]),
+            "status": "SIDECAR_REUSE_EXACT_HASH_PASS",
+            "source_sha256": str(row["output_sha256"]),
+            "output_sha256": str(row["output_sha256"]),
+            "rows": int(row["rows"]),
+        }
+        for row in manifest["shards"]
+    ]
+    _write_json(path, manifest)
+    receipt = {
+        "schema_version": "cn_phase3cm_session_reuse_source_receipt_v1",
+        "status": "CN_PHASE3CM_SESSION_REUSE_SOURCE_READY",
+        "output_root": str(path.parent.resolve()),
+        "layout_manifest": str(path.resolve()),
+        "layout_manifest_sha256": _sha256(path),
+        "shard_count": 16,
+        "row_count": sum(int(row["rows"]) for row in manifest["shards"]),
+        "field_count": len(manifest["fields"]),
+        "reuse_contract": REUSE_CONTRACT,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    receipt["receipt_hash"] = _stable_hash(receipt)
+    receipt_path = path.parent / REUSE_RECEIPT_NAME
+    _write_json(receipt_path, receipt)
+    return receipt_path
+
+
+def test_hash_exact_reuse_manifest_is_accepted_without_faking_standard_parity(
+    evidence: dict[str, Any],
+) -> None:
+    _convert_session_base_to_hash_exact_reuse(evidence)
+
+    closure = finalize_sidecars(**evidence)
+
+    assert closure["status"] == "CN_PHASE3CM_1024_SIDECAR_CLOSURE_PASS"
+    assert closure["session_sidecar"]["shard_count"] == 16
+
+
+def test_hash_exact_reuse_receipt_tamper_fails_closed(evidence: dict[str, Any]) -> None:
+    receipt_path = _convert_session_base_to_hash_exact_reuse(evidence)
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    receipt["row_count"] += 1
+    _write_json(receipt_path, receipt)
+
+    with pytest.raises(EvidenceError, match="reuse receipt self-hash drift"):
+        finalize_sidecars(**evidence)
+
+
+def test_hash_exact_reuse_parity_hash_drift_fails_closed(evidence: dict[str, Any]) -> None:
+    _convert_session_base_to_hash_exact_reuse(evidence)
+    path = Path(evidence["session_base_manifest_path"])
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["parity"][0]["output_sha256"] = "0" * 64
+    _write_json(path, manifest)
+    receipt_path = path.parent / REUSE_RECEIPT_NAME
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    receipt["layout_manifest_sha256"] = _sha256(path)
+    receipt["receipt_hash"] = _stable_hash(
+        {key: value for key, value in receipt.items() if key != "receipt_hash"}
+    )
+    _write_json(receipt_path, receipt)
+
+    with pytest.raises(EvidenceError, match="reuse parity shard 0 hash drift"):
+        finalize_sidecars(**evidence)
 
 
 def test_output_hash_drift_fails_before_authority_publish(evidence: dict[str, Any]) -> None:

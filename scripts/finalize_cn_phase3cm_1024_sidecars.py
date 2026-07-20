@@ -42,6 +42,8 @@ V2_STATUS = "TIME_MAJOR_LAYOUT_PARITY_PASS"
 SESSION_MANIFEST_NAME = "CN_SESSION_SIDECAR_AUGMENTATION_MANIFEST.json"
 SESSION_V2_MANIFEST_NAME = "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
 OVERALL_CLOSURE_NAME = "CN_PHASE3CM_1024_SIDECAR_CLOSURE.json"
+REUSE_RECEIPT_NAME = "CN_SESSION_REUSE_SOURCE_RECEIPT.json"
+REUSE_CONTRACT = "HASH_EXACT_IMMUTABLE_AUGMENTED_256_SOURCE"
 
 
 class EvidenceError(ValueError):
@@ -158,15 +160,18 @@ def _resolve_artifact(raw: Any, *, anchor: Path, label: str) -> Path:
     return path.resolve()
 
 
-def _required_fields(rows: Iterable[Mapping[str, Any]]) -> list[str]:
+def _expression_fields(rows: Iterable[Mapping[str, Any]]) -> list[str]:
     return sorted(
         {
             field
             for row in rows
             for field in FIELD_PATTERN.findall(str(row.get("expression") or ""))
         }
-        | {"close"}
     )
+
+
+def _required_fields(rows: Iterable[Mapping[str, Any]]) -> list[str]:
+    return sorted(set(_expression_fields(rows)) | {"close"})
 
 
 def _candidate_contract(
@@ -202,12 +207,14 @@ def _candidate_contract(
             raise EvidenceError(
                 f"{backend} pair must contain one PRIMARY and one CONTROL: {pair_id}"
             )
+    expression_fields = _expression_fields(rows)
     return {
         "path": str(Path(path).resolve()),
         "sha256": _sha256(path),
         "pair_count": len(by_pair),
         "candidate_member_count": len(rows),
         "required_raw_fields": _required_fields(rows),
+        "expression_raw_fields": expression_fields,
     }
 
 
@@ -266,20 +273,116 @@ def _v2_manifest(
         by_index[shard_index] = record
     if set(by_index) != set(range(SHARD_COUNT)):
         raise EvidenceError(f"{label} shard indices are incomplete")
+
+    reuse_mode = payload.get("reuse_contract") == REUSE_CONTRACT
+    if reuse_mode:
+        receipt_path = Path(path).resolve().parent / REUSE_RECEIPT_NAME
+        receipt = _read_json(receipt_path, f"{label} reuse receipt")
+        if receipt.get("schema_version") != "cn_phase3cm_session_reuse_source_receipt_v1":
+            raise EvidenceError(f"{label} reuse receipt schema version drift")
+        if receipt.get("status") != "CN_PHASE3CM_SESSION_REUSE_SOURCE_READY":
+            raise EvidenceError(f"{label} reuse receipt is not READY")
+        _zero_access(receipt, f"{label} reuse receipt")
+        if receipt.get("reuse_contract") != REUSE_CONTRACT:
+            raise EvidenceError(f"{label} reuse receipt contract drift")
+        claimed_receipt_hash = _hash(
+            receipt.get("receipt_hash"), f"{label} reuse receipt.receipt_hash"
+        )
+        receipt_body = dict(receipt)
+        receipt_body.pop("receipt_hash", None)
+        if _stable_hash(receipt_body) != claimed_receipt_hash:
+            raise EvidenceError(f"{label} reuse receipt self-hash drift")
+        receipt_root = _resolve_artifact(
+            receipt.get("output_root"),
+            anchor=receipt_path.parent,
+            label=f"{label} reuse receipt.output_root",
+        )
+        if receipt_root != Path(path).resolve().parent:
+            raise EvidenceError(f"{label} reuse receipt output-root drift")
+        layout_path = _resolve_artifact(
+            receipt.get("layout_manifest"),
+            anchor=receipt_path.parent,
+            label=f"{label} reuse receipt.layout_manifest",
+        )
+        if layout_path != Path(path).resolve():
+            raise EvidenceError(f"{label} reuse receipt layout-manifest path drift")
+        if _hash(
+            receipt.get("layout_manifest_sha256"),
+            f"{label} reuse receipt.layout_manifest_sha256",
+        ) != _sha256(path):
+            raise EvidenceError(f"{label} reuse receipt layout-manifest hash drift")
+        if _integer(
+            receipt.get("shard_count"), f"{label} reuse receipt.shard_count"
+        ) != SHARD_COUNT:
+            raise EvidenceError(f"{label} reuse receipt shard-count drift")
+        expected_rows = sum(
+            _integer(row.get("rows"), f"{label}.shard.rows", minimum=1)
+            for row in by_index.values()
+        )
+        if _integer(
+            receipt.get("row_count"), f"{label} reuse receipt.row_count", minimum=1
+        ) != expected_rows:
+            raise EvidenceError(f"{label} reuse receipt row-count drift")
+        if _integer(
+            receipt.get("field_count"), f"{label} reuse receipt.field_count", minimum=1
+        ) != len(fields):
+            raise EvidenceError(f"{label} reuse receipt field-count drift")
+        for source_label in ("source_base_manifest", "source_augmentation_manifest"):
+            source_path = _resolve_artifact(
+                payload.get(source_label),
+                anchor=Path(path).resolve().parent,
+                label=f"{label}.{source_label}",
+            )
+            if not source_path.is_file():
+                raise EvidenceError(f"{label} {source_label} is missing")
+            claimed_source_hash = _hash(
+                payload.get(f"{source_label}_sha256"),
+                f"{label}.{source_label}_sha256",
+            )
+            if _sha256(source_path) != claimed_source_hash:
+                raise EvidenceError(f"{label} {source_label} hash drift")
+
     parity = [dict(_object(row, f"{label}.parity")) for row in _array(payload.get("parity"), f"{label}.parity")]
     if len(parity) != SHARD_COUNT:
         raise EvidenceError(f"{label} must contain exactly {SHARD_COUNT} parity receipts")
     parity_indices: set[int] = set()
     for ordinal, receipt in enumerate(parity):
-        if receipt.get("status") != "SIDECAR_PARITY_PASS":
-            raise EvidenceError(f"{label} parity receipt {ordinal} is not PASS")
         shard_index = int(receipt.get("source_shard", ordinal))
         if shard_index in parity_indices or shard_index not in by_index:
             raise EvidenceError(f"{label} parity shard identity drift")
         parity_indices.add(shard_index)
-        for check in PARITY_CHECKS:
-            if receipt.get(check) is not True:
-                raise EvidenceError(f"{label} parity shard {shard_index} failed {check}")
+        if reuse_mode:
+            if receipt.get("status") != "SIDECAR_REUSE_EXACT_HASH_PASS":
+                raise EvidenceError(f"{label} reuse parity receipt {ordinal} is not PASS")
+            shard = by_index[shard_index]
+            source_hash = _hash(
+                receipt.get("source_sha256"),
+                f"{label} reuse parity shard {shard_index}.source_sha256",
+            )
+            output_hash = _hash(
+                receipt.get("output_sha256"),
+                f"{label} reuse parity shard {shard_index}.output_sha256",
+            )
+            shard_hash = _hash(
+                shard.get("output_sha256"),
+                f"{label} shard {shard_index}.output_sha256",
+            )
+            if len({source_hash, output_hash, shard_hash}) != 1:
+                raise EvidenceError(f"{label} reuse parity shard {shard_index} hash drift")
+            if _integer(
+                receipt.get("rows"),
+                f"{label} reuse parity shard {shard_index}.rows",
+                minimum=1,
+            ) != _integer(
+                shard.get("rows"), f"{label} shard {shard_index}.rows", minimum=1
+            ):
+                raise EvidenceError(f"{label} reuse parity shard {shard_index} row drift")
+        else:
+            if receipt.get("status") != "SIDECAR_PARITY_PASS":
+                raise EvidenceError(f"{label} parity receipt {ordinal} is not PASS")
+            for check in PARITY_CHECKS:
+                if receipt.get(check) is not True:
+                    raise EvidenceError(f"{label} parity shard {shard_index} failed {check}")
     if parity_indices != set(range(SHARD_COUNT)):
         raise EvidenceError(f"{label} parity coverage is incomplete")
     return payload, [by_index[index] for index in range(SHARD_COUNT)]
@@ -783,7 +886,7 @@ def finalize_sidecars(
         session_root=session_root,
         split_sha256=split_sha256,
         train_date_count=train_date_count,
-        required_fields=session_candidate["required_raw_fields"],
+        required_fields=session_candidate["expression_raw_fields"],
         fundamental=fundamental,
     )
 
