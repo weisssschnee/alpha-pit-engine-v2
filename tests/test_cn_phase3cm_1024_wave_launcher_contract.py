@@ -112,6 +112,8 @@ def test_1024_launcher_does_not_reintroduce_r6_or_speed_gate() -> None:
 
 def test_1024_launcher_keeps_research_boundaries_and_authority() -> None:
     script = _script()
+    assert '[string]$Binding.data_role -ne "development"' in script
+    assert '[string]$Contract.data_role -ne "development_train_only"' in script
     assert 'validation_reads = 0' in script
     assert 'holdout_reads = 0' in script
     assert 'forward_2026_reads = 0' in script

@@ -164,7 +164,7 @@ $FrozenBinding = $BindingEvidence.path
 $Binding = $BindingEvidence.payload
 if ($Binding.status -ne "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND" -or
     [string]$Binding.source_closure_sha -ne $ExpectedRepoSha -or
-    [string]$Binding.data_role -ne "development_train_only" -or
+    [string]$Binding.data_role -ne "development" -or
     [int]$Binding.pair_count -ne $ExpectedTotalPairs -or
     [int]$Binding.candidate_member_count -ne $ExpectedCandidateMembers -or
     [int]$Binding.clock_counts.active_bar -ne $ExpectedActivePairs -or
