@@ -6,6 +6,7 @@ import argparse
 import csv
 import hashlib
 import json
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,20 @@ from our_system_phase2.services.unified_capability_registry import UnifiedCapabi
 
 
 STABLE_KEY = ("trade_time", "code", "source_shard", "source_row_identity", "duplicate_ordinal")
+
+
+def _progress(path: Path | None, event: str, *, started: float, **payload: Any) -> None:
+    if path is None:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "event": event,
+        "elapsed_seconds": round(time.perf_counter() - started, 6),
+        "recorded_at": datetime.now(timezone.utc).isoformat(),
+        **payload,
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
 
 
 def _sha256(path: Path) -> str:
@@ -131,6 +146,34 @@ def _materialize_lagged_daily_context(
     }
 
 
+def _materialize_incremental_chip_context(
+    frame: pd.DataFrame,
+    chip: pd.DataFrame,
+    *,
+    fields: list[str],
+) -> pd.DataFrame:
+    """Add chip fields without rewriting an existing PIT source-session column."""
+    if "chip_source_session" not in frame.columns:
+        return point_in_time_chip_context(frame, chip, fields=fields, data_role="development")
+    existing_source_session = frame["chip_source_session"].copy().reset_index(drop=True)
+    joined = point_in_time_chip_context(
+        frame.drop(columns=["chip_source_session"]),
+        chip,
+        fields=fields,
+        data_role="development",
+    )
+    generated_source_session = joined["chip_source_session"].reset_index(drop=True)
+    existing_normalized = pd.to_datetime(existing_source_session, errors="coerce")
+    generated_normalized = pd.to_datetime(generated_source_session, errors="coerce")
+    equal = existing_normalized.eq(generated_normalized) | (
+        existing_normalized.isna() & generated_normalized.isna()
+    )
+    if not bool(equal.all()):
+        raise RuntimeError("incremental chip PIT source-session drift")
+    joined["chip_source_session"] = existing_source_session.to_numpy()
+    return joined
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, required=True)
@@ -143,7 +186,13 @@ def main() -> int:
     parser.add_argument("--bar-source-root", type=Path)
     parser.add_argument("--maximum-observable-time", required=True)
     parser.add_argument("--shard-index", type=int, required=True)
+    parser.add_argument("--progress-log", type=Path)
     args = parser.parse_args()
+    started = time.perf_counter()
+    if args.progress_log is not None:
+        args.progress_log.parent.mkdir(parents=True, exist_ok=True)
+        args.progress_log.write_text("", encoding="utf-8")
+    _progress(args.progress_log, "START", started=started, shard_index=int(args.shard_index))
 
     if not 0 <= int(args.shard_index) < 16:
         raise ValueError("session sidecar shard index must be in [0, 15]")
@@ -153,9 +202,17 @@ def main() -> int:
         raise PermissionError("source session sidecar is not development/train-only")
     if any(int(source_manifest.get(key) or 0) for key in ("validation_reads", "holdout_reads", "forward_2026_reads")):
         raise PermissionError("source session sidecar records forbidden data access")
+    _progress(args.progress_log, "SOURCE_CONTRACT_VALIDATED", started=started)
 
     source = args.source_root / f"shard_{int(args.shard_index):02d}.parquet"
     frame = pd.read_parquet(source)
+    _progress(
+        args.progress_log,
+        "SOURCE_FRAME_LOADED",
+        started=started,
+        rows=len(frame),
+        columns=len(frame.columns),
+    )
     missing_key = sorted(set(STABLE_KEY) - set(frame.columns))
     if missing_key:
         raise ValueError(f"source session sidecar stable key is incomplete: {missing_key}")
@@ -173,6 +230,13 @@ def main() -> int:
     chip_fields = sorted(set(missing_fields) & set(CHIP_FIELDS.values()))
     if chip_fields and args.chip_root is None:
         raise PermissionError("chip fields require --chip-root")
+    _progress(
+        args.progress_log,
+        "FIELDS_CLASSIFIED",
+        started=started,
+        required_field_count=len(required_fields),
+        missing_field_count=len(missing_fields),
+    )
 
     original_columns = list(frame.columns)
     original_key_digest = _frame_digest(frame, list(STABLE_KEY))
@@ -192,6 +256,14 @@ def main() -> int:
             fundamental_fields.append(field_id)
     if bar_context_fields and args.bar_source_root is None:
         raise PermissionError("lagged daily context fields require --bar-source-root")
+    _progress(
+        args.progress_log,
+        "ROUTES_CLASSIFIED",
+        started=started,
+        fundamental_field_count=len(fundamental_fields),
+        chip_field_count=len(chip_fields),
+        bar_context_field_count=len(bar_context_fields),
+    )
 
     specs: dict[str, dict[str, Any]] = {}
     prefetch_fields: dict[str, set[str]] = {}
@@ -218,6 +290,7 @@ def main() -> int:
     coverage: dict[str, float] = {}
     bar_context_input: dict[str, Any] = {}
     if bar_context_fields:
+        _progress(args.progress_log, "BAR_CONTEXT_START", started=started)
         frame, bar_context_input = _materialize_lagged_daily_context(
             frame,
             fields=bar_context_fields,
@@ -226,8 +299,17 @@ def main() -> int:
         )
         for field_id in bar_context_fields:
             coverage[field_id] = round(float(frame[field_id].notna().mean()), 8)
+        _progress(args.progress_log, "BAR_CONTEXT_END", started=started)
 
-    for field_id in fundamental_fields:
+    for ordinal, field_id in enumerate(fundamental_fields, start=1):
+        _progress(
+            args.progress_log,
+            "FUNDAMENTAL_FIELD_START",
+            started=started,
+            field_id=field_id,
+            field_ordinal=ordinal,
+            field_count=len(fundamental_fields),
+        )
         spec = specs[field_id]
         materialized = materializer.materialize(spec, coordinates)
         values = materialized.set_index(["code", "session_time"])[field_id]
@@ -235,36 +317,55 @@ def main() -> int:
             raise ValueError(f"duplicate PIT materialization coordinates: {field_id}")
         frame[field_id] = values.reindex(coordinate_index).to_numpy()
         coverage[field_id] = round(float(frame[field_id].notna().mean()), 8)
+        _progress(
+            args.progress_log,
+            "FUNDAMENTAL_FIELD_END",
+            started=started,
+            field_id=field_id,
+            field_ordinal=ordinal,
+            coverage=coverage[field_id],
+        )
 
     chip_input: dict[str, Any] | None = None
     if chip_fields:
+        _progress(args.progress_log, "CHIP_START", started=started)
         chip, chip_input = load_chip_context(
             args.chip_root,
             allowed_codes=set(frame["code"].astype(str)),
             fields=chip_fields,
             maximum_observable_time=args.maximum_observable_time,
         )
-        frame = point_in_time_chip_context(
+        frame = _materialize_incremental_chip_context(
             frame,
             chip,
             fields=chip_fields,
-            data_role="development",
         )
         for field_id in chip_fields:
             coverage[field_id] = round(float(frame[field_id].notna().mean()), 8)
+        _progress(args.progress_log, "CHIP_END", started=started)
 
     if len(frame) != int(source_manifest["shards"][int(args.shard_index)]["rows"]):
         raise RuntimeError("session augmentation row count drift")
-    if _frame_digest(frame, list(STABLE_KEY)) != original_key_digest:
+    _progress(args.progress_log, "ROW_COUNT_VALIDATED", started=started, rows=len(frame))
+    _progress(args.progress_log, "STABLE_KEY_DIGEST_START", started=started)
+    current_key_digest = _frame_digest(frame, list(STABLE_KEY))
+    if current_key_digest != original_key_digest:
         raise RuntimeError("session augmentation stable-key digest drift")
-    if _frame_digest(frame, original_columns) != original_payload_digest:
+    _progress(args.progress_log, "STABLE_KEY_DIGEST_END", started=started)
+    _progress(args.progress_log, "SOURCE_PAYLOAD_DIGEST_START", started=started)
+    current_payload_digest = _frame_digest(frame, original_columns)
+    if current_payload_digest != original_payload_digest:
         raise RuntimeError("session augmentation changed source payload columns")
+    _progress(args.progress_log, "SOURCE_PAYLOAD_DIGEST_END", started=started)
+    _progress(args.progress_log, "PARITY_VALIDATED", started=started)
 
     args.output_root.mkdir(parents=True, exist_ok=True)
     target = args.output_root / f"shard_{int(args.shard_index):02d}.parquet"
     temporary = target.with_suffix(".tmp.parquet")
+    _progress(args.progress_log, "OUTPUT_WRITE_START", started=started)
     frame.to_parquet(temporary, index=False, compression="zstd")
     temporary.replace(target)
+    _progress(args.progress_log, "OUTPUT_WRITE_END", started=started, output_bytes=target.stat().st_size)
     summary = {
         "schema_version": "cn_phase3cm_session_sidecar_augmentation_v1",
         "status": "SESSION_SIDECAR_AUGMENTATION_PARITY_PASS",
@@ -289,6 +390,7 @@ def main() -> int:
     }
     summary_path = args.output_root / f"shard_{int(args.shard_index):02d}.augmentation.json"
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _progress(args.progress_log, "COMPLETED", started=started, receipt=str(summary_path))
     print(json.dumps(summary, ensure_ascii=False, sort_keys=True))
     return 0
 

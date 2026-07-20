@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from scripts.augment_cn_phase3cm_session_time_major_sidecar import (
+    _materialize_incremental_chip_context,
     _materialize_lagged_daily_context,
 )
 
@@ -61,4 +62,58 @@ def test_lagged_daily_context_fails_when_value_changes_inside_session(tmp_path) 
             fields=["ctx_hfq_pe_ttm"],
             bar_source_root=_bar_root(tmp_path, [12.5, 13.0]),
             shard_index=0,
+        )
+
+
+def test_incremental_chip_context_preserves_existing_source_session() -> None:
+    frame = pd.DataFrame(
+        {
+            "code": ["000001.SZ"],
+            "trade_time": pd.to_datetime(["2024-01-03 15:00"]),
+            "chip_source_session": pd.to_datetime(["2024-01-02"]),
+            "chip_cost_p50": [10.0],
+        }
+    )
+    chip = pd.DataFrame(
+        {
+            "code": ["000001.SZ"],
+            "source_session": pd.to_datetime(["2024-01-02"]),
+            "chip_cost_p95": [12.0],
+        }
+    )
+
+    output = _materialize_incremental_chip_context(
+        frame,
+        chip,
+        fields=["chip_cost_p95"],
+    )
+
+    pd.testing.assert_series_equal(
+        output["chip_source_session"], frame["chip_source_session"], check_names=False
+    )
+    assert output["chip_cost_p50"].tolist() == [10.0]
+    assert output["chip_cost_p95"].tolist() == [12.0]
+
+
+def test_incremental_chip_context_fails_on_source_session_drift() -> None:
+    frame = pd.DataFrame(
+        {
+            "code": ["000001.SZ"],
+            "trade_time": pd.to_datetime(["2024-01-04 15:00"]),
+            "chip_source_session": pd.to_datetime(["2024-01-01"]),
+        }
+    )
+    chip = pd.DataFrame(
+        {
+            "code": ["000001.SZ"],
+            "source_session": pd.to_datetime(["2024-01-02"]),
+            "chip_cost_p95": [12.0],
+        }
+    )
+
+    with pytest.raises(RuntimeError, match="source-session drift"):
+        _materialize_incremental_chip_context(
+            frame,
+            chip,
+            fields=["chip_cost_p95"],
         )
