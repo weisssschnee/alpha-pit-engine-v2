@@ -30,6 +30,7 @@ $ExpectedActivePairs = 584
 $ExpectedSessionPairs = 440
 $ExpectedTotalPairs = 1024
 $ExpectedCandidateMembers = 2048
+$FrozenPortfolioSourceRelativePath = "src/our_system_phase2/services/phase3cm_streaming_portfolio.py"
 $FrozenPortfolioSourceSha256 = "5b665d33d74eb4b5f451f06b4ad7e4b352f779c3e2e4836bb2d76950c413d110"
 
 function Get-CnSha256 {
@@ -427,9 +428,13 @@ $SourceClosureValidation = $SourceClosureOutput[-1] | ConvertFrom-Json
 if ([string]$SourceClosureValidation.repo_sha -ne $ExpectedRepoSha) {
     throw "1024 source closure repo SHA drift"
 }
-$PortfolioSource = Resolve-CnPath `
-    -Path "src\our_system_phase2\services\phase3cm_streaming_portfolio.py" -Base $RepoRoot
-if ((Get-CnSha256 -Path $PortfolioSource) -ne $FrozenPortfolioSourceSha256) {
+$PortfolioSource = Resolve-CnPath -Path $FrozenPortfolioSourceRelativePath -Base $RepoRoot
+$PortfolioSourceRecords = @($SourceClosureEvidence.payload.sources | Where-Object {
+    [string]$_.path -eq $FrozenPortfolioSourceRelativePath
+})
+if ($PortfolioSourceRecords.Count -ne 1 -or
+    [string]$PortfolioSourceRecords[0].sha256 -ne $FrozenPortfolioSourceSha256 -or
+    [string]$PortfolioSourceRecords[0].normalization -ne "TEXT_CRLF_TO_LF") {
     throw "frozen PARTIALLY_QUALIFIED portfolio kernel source drift"
 }
 

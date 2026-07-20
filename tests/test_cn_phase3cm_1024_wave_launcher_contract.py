@@ -57,6 +57,8 @@ def test_1024_launcher_hard_gates_the_frozen_wave_inputs() -> None:
     assert "$ExpectedCandidateMembers = 2048" in script
     assert "ExpectedSourceClosureManifestSha256" in script
     assert "ExpectedFrozenBindingSha256" in script
+    assert "$SourceClosureEvidence.payload.sources" in script
+    assert 'normalization -ne "TEXT_CRLF_TO_LF"' in script
     assert "ActiveCapacityValidation.dag_plan_hash" in script
     assert "SessionCapacityValidation.dag_plan_hash" in script
     assert "ExpectedDagPlanHash" in script
