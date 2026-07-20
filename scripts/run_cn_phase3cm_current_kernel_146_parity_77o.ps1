@@ -79,6 +79,31 @@ function Test-CnZeroAccessEvidence {
     return $true
 }
 
+function Test-CnCheckpointExact {
+    param(
+        [object]$Payload,
+        [Parameter(Mandatory = $true)][string]$Backend
+    )
+    if ($null -eq $Payload -or [string]$Payload.backend -ne $Backend -or
+        -not (Test-CnZeroAccessEvidence -Payload $Payload)) {
+        return $false
+    }
+    $ParityProperty = $Payload.PSObject.Properties["parity"]
+    if ($null -eq $ParityProperty -or $null -eq $ParityProperty.Value) { return $false }
+    foreach ($Name in @("temporal", "state", "support", "portfolio", "reducer")) {
+        $RowProperty = $ParityProperty.Value.PSObject.Properties[$Name]
+        if ($null -eq $RowProperty -or $null -eq $RowProperty.Value) { return $false }
+        $ExactProperty = $RowProperty.Value.PSObject.Properties["exact"]
+        $MismatchesProperty = $RowProperty.Value.PSObject.Properties["mismatches"]
+        if ($null -eq $ExactProperty -or $ExactProperty.Value -ne $true -or
+            $null -eq $MismatchesProperty -or
+            @($MismatchesProperty.Value).Count -ne 0) {
+            return $false
+        }
+    }
+    return $true
+}
+
 function Get-CnDirectoryBytes {
     param([Parameter(Mandatory = $true)][string]$Path)
     if (-not (Test-Path -LiteralPath $Path)) { return [int64]0 }
@@ -507,7 +532,11 @@ for ($Index = 0; $Index -lt 2; $Index += 1) {
         $QualificationPass = ($null -ne $Qualification -and $Qualification.comparable -eq $true -and $Qualification.semantic_parity_exact -eq $true)
         & $PythonExe $CheckpointComparator --reference-root $PartitionEvidence[$Index].reference_root --candidate-root $OutputRoot --backend active_bar --output $CheckpointPath
         $Checkpoint = if (Test-Path $CheckpointPath) { Get-Content $CheckpointPath -Raw | ConvertFrom-Json } else { $null }
-        $CheckpointPass = ($null -ne $Checkpoint -and $Checkpoint.status -eq "CN_PHASE3CM_SCALING_PROBE_PARITY_PASS")
+        # The generic scaling comparator's top-level status also includes a
+        # CPU-engagement gate.  The 146 replay freezes exact continuation
+        # semantics only; performance remains diagnostic for the partial
+        # experimental backend.
+        $CheckpointPass = Test-CnCheckpointExact -Payload $Checkpoint -Backend "active_bar"
     }
     if (-not ($ExecutionPass -and $QualificationPass -and $CheckpointPass)) { $Pass = $false }
     $QualificationPaths += $QualificationPath

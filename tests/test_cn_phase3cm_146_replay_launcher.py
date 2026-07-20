@@ -74,7 +74,10 @@ def test_146_replay_launcher_is_resumable_and_fail_closed_without_speed_gate() -
     assert "OUTPUT_HARD_GATE" in script
     assert "Stop-CnProcessTrees -Roots $Roots" in script
     assert "$Qualification.semantic_parity_exact -eq $true" in script
-    assert "CN_PHASE3CM_SCALING_PROBE_PARITY_PASS" in script
+    assert "Test-CnCheckpointExact -Payload $Checkpoint" in script
+    assert 'foreach ($Name in @("temporal", "state", "support", "portfolio", "reducer"))' in script
+    assert '$RowProperty.Value.PSObject.Properties["exact"]' in script
+    assert '$RowProperty.Value.PSObject.Properties["mismatches"]' in script
     assert 'speedup_threshold_gate = "NOT_USED"' in script
     assert "wall_speedup -ge 2" not in script
     assert "Remove-Item -LiteralPath $StaleArtifact -Force" in script

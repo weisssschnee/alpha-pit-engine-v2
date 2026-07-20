@@ -281,6 +281,33 @@ def test_exact_146_pair_replay_passes_without_two_x_gate(tmp_path: Path) -> None
     )
 
 
+def test_exact_checkpoint_payload_is_not_rejected_by_scaling_diagnostic(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    for path in fixture["checkpoints"].values():
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+        receipt["status"] = "CN_PHASE3CM_SCALING_PROBE_FAIL_CLOSED"
+        receipt["candidate"] = {"parallelism_not_engaged_events": 3}
+        _write_json(path, receipt)
+
+    result = _finalize(fixture)
+
+    assert result["status"] == "CN_PHASE3CM_CURRENT_KERNEL_146_PARITY_PASS"
+    assert all(
+        row["checkpoint"]["scaling_status_observed_not_gated"]
+        == "CN_PHASE3CM_SCALING_PROBE_FAIL_CLOSED"
+        for row in result["partitions"]
+    )
+    assert all(
+        row["checkpoint"]["performance_observed_not_gated"][
+            "parallelism_not_engaged_events"
+        ]
+        == 3
+        for row in result["partitions"]
+    )
+
+
 def test_partition_identity_drift_fails_closed(tmp_path: Path) -> None:
     fixture = _fixture(tmp_path)
     path = fixture["qualifications"]["active_bar_p1"]
@@ -308,6 +335,24 @@ def test_missing_checkpoint_continuation_category_fails_closed(tmp_path: Path) -
 
     assert result["status"] == "CN_PHASE3CM_CURRENT_KERNEL_146_PARITY_FAIL_CLOSED"
     assert any("reducer" in error for error in result["errors"])
+
+
+def test_checkpoint_mismatch_fails_closed_even_when_scaling_status_passes(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    path = fixture["checkpoints"]["active_bar_p0"]
+    receipt = json.loads(path.read_text(encoding="utf-8"))
+    receipt["parity"]["portfolio"] = {
+        "exact": False,
+        "mismatches": ["portfolio.weights"],
+    }
+    _write_json(path, receipt)
+
+    result = _finalize(fixture)
+
+    assert result["status"] == "CN_PHASE3CM_CURRENT_KERNEL_146_PARITY_FAIL_CLOSED"
+    assert any("portfolio" in error for error in result["errors"])
 
 
 def test_promotion_boundary_drift_fails_closed(tmp_path: Path) -> None:
