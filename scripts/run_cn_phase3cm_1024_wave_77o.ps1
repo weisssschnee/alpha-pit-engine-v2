@@ -154,6 +154,7 @@ function Confirm-CnCapacityReceipt {
 $RepoRoot = Resolve-CnPath -Path $RepoRoot -Base (Get-Location).Path -Directory
 $RunParentRoot = Resolve-CnPath -Path $RunParentRoot -Base $RepoRoot -Directory
 $PythonExe = Resolve-CnPath -Path $PythonExe -Base $RepoRoot
+$env:PYTHONPATH = Join-Path $RepoRoot "src"
 if ($ExpectedRepoSha -notmatch '^[0-9a-f]{40}$') {
     throw "ExpectedRepoSha must be an exact lowercase 40-character Git SHA"
 }
@@ -462,7 +463,6 @@ if ([string]$ActiveCapacityValidation.execution_plan_hash -ne [string]$ActivePla
 }
 
 # No output directory or heavy process is created before every frozen gate above passes.
-$env:PYTHONPATH = Join-Path $RepoRoot "src"
 $env:NUMBA_NUM_THREADS = "1"
 $env:ARROW_NUM_THREADS = "1"
 $env:OMP_NUM_THREADS = "1"

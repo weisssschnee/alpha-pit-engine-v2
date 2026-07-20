@@ -62,6 +62,13 @@ def test_1024_launcher_hard_gates_the_frozen_wave_inputs() -> None:
     assert "ActiveCapacityValidation.dag_plan_hash" in script
     assert "SessionCapacityValidation.dag_plan_hash" in script
     assert "ExpectedDagPlanHash" in script
+    pythonpath = '$env:PYTHONPATH = Join-Path $RepoRoot "src"'
+    assert script.count(pythonpath) == 1
+    assert script.index("$PythonExe = Resolve-CnPath") < script.index(pythonpath)
+    assert script.index(pythonpath) < script.index("$SourceClosureOutput = @(& $PythonExe")
+    assert script.index(pythonpath) < script.index(
+        "$ActiveCapacityValidation = Confirm-CnCapacityReceipt"
+    )
 
 
 def test_1024_launcher_freezes_topology_resources_and_resume() -> None:
