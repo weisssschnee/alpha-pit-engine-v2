@@ -160,11 +160,17 @@ def _dag_cache_greedy_order(
     clock_namespace: str,
     maximum_batch_size: int,
 ) -> dict[str, Any]:
-    """Freeze a deterministic structural order without consulting outcomes.
+    """Propose a deterministic pair-lifetime order without consulting outcomes.
 
     The input rows are the same runtime-normalized candidate-table rows consumed
     by the evaluator and DAG-cache preflight.  SharedMultiCandidateDAGPlan owns
     the semantic projection, so unrelated diagnostics cannot affect this order.
+
+    The pair-union lifetime model is only an ordering proposal.  It deliberately
+    counts a node once per matched pair and releases the pair union atomically;
+    the runtime instead evaluates PRIMARY then CONTROL and releases after each
+    singleton candidate.  Therefore only ``predict_dag_cache_peak`` below is the
+    exact capacity authority and the heuristic peak is never promoted as exact.
     """
 
     limit = int(maximum_batch_size)
@@ -260,62 +266,51 @@ def _dag_cache_greedy_order(
         structural_nodes[pair_id] = frozenset(nodes)
         structure_hashes[pair_id] = _stable_hash(sorted(nodes))
 
-    remaining_uses: dict[str, int] = {}
-    for nodes in member_owned_nodes.values():
+    remaining_pair_uses: dict[str, int] = {}
+    for nodes in structural_nodes.values():
         for node_id in nodes:
-            remaining_uses[node_id] = remaining_uses.get(node_id, 0) + 1
+            remaining_pair_uses[node_id] = remaining_pair_uses.get(node_id, 0) + 1
     live_nodes: set[str] = set()
     remaining = set(pair_by_id)
     ordered_pair_ids: list[str] = []
-    simulated_peak_owned_nodes = 0
-
-    def simulate_pair(pair_id: str) -> tuple[int, set[str], int]:
-        primary_id, control_id = pair_member_ids[pair_id]
-        state = set(live_nodes)
-        local_remaining = {
-            node_id: remaining_uses[node_id]
-            for node_id in structural_nodes[pair_id]
-        }
-        peak = len(state)
-        closed: set[str] = set()
-        for candidate_id in (primary_id, control_id):
-            nodes = member_owned_nodes[candidate_id]
-            state.update(nodes)
-            peak = max(peak, len(state))
-            for node_id in nodes:
-                local_remaining[node_id] -= 1
-                if local_remaining[node_id] == 0:
-                    state.discard(node_id)
-                    closed.add(node_id)
-        return peak, state, len(closed)
+    heuristic_peak_owned_nodes = 0
 
     while remaining:
-        simulations = {
-            pair_id: simulate_pair(pair_id) for pair_id in remaining
-        }
+        proposal_states: dict[str, tuple[set[str], set[str]]] = {}
+        for pair_id in remaining:
+            materialized = live_nodes | set(structural_nodes[pair_id])
+            closing = {
+                node_id
+                for node_id in structural_nodes[pair_id]
+                if remaining_pair_uses[node_id] == 1
+            }
+            proposal_states[pair_id] = (materialized, materialized - closing)
         selected = min(
             remaining,
             key=lambda pair_id: (
-                simulations[pair_id][0],
-                len(simulations[pair_id][1]),
-                -simulations[pair_id][2],
+                len(proposal_states[pair_id][0]),
+                len(proposal_states[pair_id][1]),
+                -sum(
+                    1
+                    for node_id in structural_nodes[pair_id]
+                    if remaining_pair_uses[node_id] == 1
+                ),
                 len(structural_nodes[pair_id]),
                 pair_id,
             ),
         )
-        materialize_peak, post_release_live, _ = simulations[selected]
-        simulated_peak_owned_nodes = max(
-            simulated_peak_owned_nodes,
-            materialize_peak,
+        materialized, post_release_live = proposal_states[selected]
+        heuristic_peak_owned_nodes = max(
+            heuristic_peak_owned_nodes,
+            len(materialized),
         )
         live_nodes = post_release_live
-        for candidate_id in pair_member_ids[selected]:
-            for node_id in member_owned_nodes[candidate_id]:
-                remaining_uses[node_id] -= 1
+        for node_id in structural_nodes[selected]:
+            remaining_pair_uses[node_id] -= 1
         ordered_pair_ids.append(selected)
         remaining.remove(selected)
-    if live_nodes or any(remaining_uses.values()):
-        raise AssertionError("DAG-cache greedy simulation did not release all owned nodes")
+    if live_nodes or any(remaining_pair_uses.values()):
+        raise AssertionError("pair-union lifetime heuristic did not release all owned nodes")
 
     ordered_pair_ids_tuple = tuple(ordered_pair_ids)
     batches = balanced_pair_batches(ordered_pair_ids_tuple, limit)
@@ -335,13 +330,13 @@ def _dag_cache_greedy_order(
         dag_block_cache_bytes=max(8, 16 * max(1, len(dag.nodes))),
         dag_block_cache_entries=max(1, 2 * len(dag.nodes)),
     )
-    if exact_preflight.predicted_peak_owned_arrays != simulated_peak_owned_nodes:
-        raise AssertionError(
-            "DAG-cache greedy simulation drifts from exact capacity predictor"
-        )
     ordering_payload = {
-        "strategy": "dag_cache_greedy",
-        "objective": "runtime_owned_node_materialize_peak_then_post_release_live",
+        "strategy": "pair_union_lifetime_greedy_exact_adjudicated",
+        "objective": "pair_union_lifetime_peak_then_post_release_live_proposal",
+        "proposal_model": "matched_pair_union_atomic_release",
+        "exact_adjudication_authority": (
+            "predict_dag_cache_peak_primary_then_control_singleton_release"
+        ),
         "clock_namespace": str(clock_namespace),
         "pair_batch_size_max": limit,
         "pair_batches": batches,
@@ -349,10 +344,11 @@ def _dag_cache_greedy_order(
         "pair_member_order": member_order,
         "dag_plan_hash": dag.plan_hash,
         "capacity_candidate_order_hash": exact_preflight.candidate_order_hash,
-        "simulated_peak_runtime_owned_nodes": simulated_peak_owned_nodes,
+        "exact_candidate_order_hash": exact_preflight.candidate_order_hash,
+        "heuristic_pair_union_peak_owned_nodes": heuristic_peak_owned_nodes,
         "exact_predicted_peak_owned_arrays": exact_preflight.predicted_peak_owned_arrays,
         "exact_capacity_preflight_hash_at_one_row": exact_preflight.preflight_hash,
-        "runtime_owned_node_count": len(remaining_uses),
+        "runtime_owned_node_count": len(remaining_pair_uses),
         "pair_structure_manifest_hash": _stable_hash(
             sorted(structure_hashes.items())
         ),
@@ -519,7 +515,7 @@ def main() -> int:
         "repo_sha": str(args.repo_sha),
         "input_binding_hash": str(binding["binding_hash"]),
         "input_binding_sha256": _sha256(binding_path),
-        "ordering_strategy": "dag_cache_greedy",
+        "ordering_strategy": "pair_union_lifetime_greedy_exact_adjudicated",
         "pair_member_execution_order": ["PRIMARY", "CONTROL"],
         "ordering_contracts": {
             "active_bar": active_ordering,
@@ -584,8 +580,11 @@ def main() -> int:
                 "capacity_candidate_order_hash": active_ordering[
                     "capacity_candidate_order_hash"
                 ],
-                "simulated_peak_runtime_owned_nodes": active_ordering[
-                    "simulated_peak_runtime_owned_nodes"
+                "heuristic_pair_union_peak_owned_nodes": active_ordering[
+                    "heuristic_pair_union_peak_owned_nodes"
+                ],
+                "exact_candidate_order_hash": active_ordering[
+                    "exact_candidate_order_hash"
                 ],
                 "exact_predicted_peak_owned_arrays": active_ordering[
                     "exact_predicted_peak_owned_arrays"
@@ -626,8 +625,11 @@ def main() -> int:
                 "capacity_candidate_order_hash": session_ordering[
                     "capacity_candidate_order_hash"
                 ],
-                "simulated_peak_runtime_owned_nodes": session_ordering[
-                    "simulated_peak_runtime_owned_nodes"
+                "heuristic_pair_union_peak_owned_nodes": session_ordering[
+                    "heuristic_pair_union_peak_owned_nodes"
+                ],
+                "exact_candidate_order_hash": session_ordering[
+                    "exact_candidate_order_hash"
                 ],
                 "exact_predicted_peak_owned_arrays": session_ordering[
                     "exact_predicted_peak_owned_arrays"

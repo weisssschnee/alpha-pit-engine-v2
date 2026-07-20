@@ -5,6 +5,7 @@ import hashlib
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -101,7 +102,7 @@ def _binding() -> dict[str, object]:
     return binding
 
 
-def test_dag_cache_greedy_order_is_deterministic_and_ignores_diagnostics() -> None:
+def test_pair_union_lifetime_order_is_deterministic_exactly_adjudicated_and_ignores_diagnostics() -> None:
     binding = _binding()
     first = freezer._dag_cache_greedy_order(
         pairs=binding["pairs"],
@@ -120,9 +121,15 @@ def test_dag_cache_greedy_order_is_deterministic_and_ignores_diagnostics() -> No
         clock_namespace="active_bar",
         maximum_batch_size=2,
     )
-    assert first["strategy"] == "dag_cache_greedy"
-    assert first["simulated_peak_runtime_owned_nodes"] == first[
-        "exact_predicted_peak_owned_arrays"
+    assert first["strategy"] == "pair_union_lifetime_greedy_exact_adjudicated"
+    assert first["proposal_model"] == "matched_pair_union_atomic_release"
+    assert first["exact_adjudication_authority"] == (
+        "predict_dag_cache_peak_primary_then_control_singleton_release"
+    )
+    assert first["heuristic_pair_union_peak_owned_nodes"] > 0
+    assert first["exact_predicted_peak_owned_arrays"] > 0
+    assert first["exact_candidate_order_hash"] == first[
+        "capacity_candidate_order_hash"
     ]
     assert len(first["exact_capacity_preflight_hash_at_one_row"]) == 64
     assert len(first["capacity_candidate_order_hash"]) == 64
@@ -156,6 +163,35 @@ def test_dag_cache_greedy_order_rejects_pair_identity_drift() -> None:
             clock_namespace="active_bar",
             maximum_batch_size=2,
         )
+
+
+def test_pair_union_heuristic_peak_is_not_treated_as_exact_authority(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    binding = _binding()
+    observed_candidate_order: list[tuple[str, ...]] = []
+
+    def exact_adjudicator(_dag, *, ordered_candidate_ids, **_kwargs):
+        observed_candidate_order.append(tuple(ordered_candidate_ids))
+        return SimpleNamespace(
+            candidate_order_hash="c" * 64,
+            predicted_peak_owned_arrays=97,
+            preflight_hash="d" * 64,
+        )
+
+    monkeypatch.setattr(freezer, "predict_dag_cache_peak", exact_adjudicator)
+    result = freezer._dag_cache_greedy_order(
+        pairs=binding["pairs"],
+        candidate_rows=binding["candidate_members"],
+        clock_namespace="active_bar",
+        maximum_batch_size=2,
+    )
+
+    assert len(observed_candidate_order) == 1
+    assert result["heuristic_pair_union_peak_owned_nodes"] != 97
+    assert result["exact_predicted_peak_owned_arrays"] == 97
+    assert result["exact_candidate_order_hash"] == "c" * 64
+    assert result["exact_capacity_preflight_hash_at_one_row"] == "d" * 64
 
 
 def test_phase_e_template_accepts_phase_d_or_e_and_preserves_11_2_threads() -> None:
@@ -282,7 +318,9 @@ def test_source_plan_aliases_write_hashed_dag_order_contract(
             encoding="utf-8"
         )
     )
-    assert contract["ordering_strategy"] == "dag_cache_greedy"
+    assert contract["ordering_strategy"] == (
+        "pair_union_lifetime_greedy_exact_adjudicated"
+    )
     assert contract["pair_member_execution_order"] == ["PRIMARY", "CONTROL"]
     assert contract["compute_threads_by_backend"] == {
         "active_bar": 11,
@@ -296,3 +334,6 @@ def test_source_plan_aliases_write_hashed_dag_order_contract(
         assert len(row["input_pair_order_hash"]) == 64
         assert len(row["execution_pair_order_hash"]) == 64
         assert len(row["ordering_contract_hash"]) == 64
+        assert len(row["exact_candidate_order_hash"]) == 64
+        assert row["heuristic_pair_union_peak_owned_nodes"] > 0
+        assert row["exact_predicted_peak_owned_arrays"] > 0
