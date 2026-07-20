@@ -9,6 +9,8 @@ import pytest
 
 from scripts.freeze_cn_phase3cm_1024_resource_contract import (
     FAIL_STATUS,
+    FREEZE_ARTIFACT_NAMES,
+    FREEZE_ROUTE_QUOTAS,
     PASS_STATUS,
     contract_hash,
     freeze_resource_contract,
@@ -60,7 +62,7 @@ def _boundaries() -> dict:
 
 
 def _fixture(tmp_path: Path) -> dict[str, Path]:
-    freeze = tmp_path / "freeze.json"
+    freeze = tmp_path / "CN_RESOURCE_PREFLIGHT_FREEZE.json"
     subset = tmp_path / "historical_subset.json"
     parity = tmp_path / "readjudicated_parity.json"
     readjudication = tmp_path / "readjudication_manifest.json"
@@ -71,13 +73,46 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
     source = tmp_path / "source_closure.json"
     output = tmp_path / "CN_PHASE3CM_1024_RESOURCE_CONTRACT.json"
 
+    freeze_artifacts: list[dict[str, object]] = []
+    for ordinal, name in enumerate(FREEZE_ARTIFACT_NAMES):
+        artifact_path = tmp_path / name
+        artifact_path.write_bytes(f"fixture-{ordinal}-{name}\n".encode("utf-8"))
+        freeze_artifacts.append(
+            {
+                "path": name,
+                "sha256": _sha(artifact_path),
+                "bytes": artifact_path.stat().st_size,
+            }
+        )
     _write(
         freeze,
         {
-            "schema_version": "cn_phase3cm_1024_pack_freeze_v1",
-            "status": "CN_PHASE3CM_1024_PACK_FREEZE_AND_SUBSET_PASS",
+            # The authoritative producer does not emit a schema_version.
+            "status": "CN_COMPOSITIONAL_RESOURCE_PREFLIGHT_PACK_FROZEN",
+            "selection_used_performance": False,
+            "data_role": "development",
+            "validation_holdout_forward_read": False,
             "pair_count": 1024,
+            "evaluation_round_id": "STRICT_WAVE_01024",
+            "evaluator_call_count": 2048,
+            "route_quotas": dict(FREEZE_ROUTE_QUOTAS),
+            "policy_counts": {
+                f"typed_random_partition_{ordinal:02d}": 128
+                for ordinal in range(8)
+            },
+            "seed_counts": {
+                str(seed): 128
+                for seed in (1729, 2718, 31415, 65537, 104729, 130363, 155921, 196613)
+            },
             "clock_counts": {"active_bar": 584, "stock_session": 440},
+            "release_hash": "1" * 64,
+            "release_rows": 446_443_583,
+            "source_rows_before_role_filter": 598_061_503,
+            "split_manifest_hash": "2" * 64,
+            "registry_hash": "3" * 64,
+            "pack_identity": "4" * 64,
+            "source_runtime_root": str(tmp_path),
+            "artifacts": freeze_artifacts,
         },
     )
     _write(
@@ -222,8 +257,8 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
             "session_pair_count": 110,
             "total_pair_count": 256,
             "heavy_processes": 2,
-            "compute_threads_by_backend": {"active_bar": 11, "stock_session": 2},
-            "global_active_native_compute_threads": 13,
+            "compute_threads_by_backend": {"active_bar": 11, "stock_session": 3},
+            "global_active_native_compute_threads": 14,
             "session_result": str(historical_result.resolve()),
             "validation_reads": 0,
             "holdout_reads": 0,
@@ -385,8 +420,20 @@ def test_freezes_resource_contract_from_superseded_146_evidence(tmp_path: Path) 
     assert projection["active_bar"]["projected_wall_seconds"] == pytest.approx(
         1.25 * 4 * 2179.0138645
     )
-    assert projection["stock_session"]["conservative_measured_seconds_per_pair"] == pytest.approx(
+    assert projection["stock_session"]["historical_native_threads"] == 3
+    assert projection["stock_session"]["target_native_threads"] == 2
+    assert projection["stock_session"]["thread_normalization_multiplier"] == 1.5
+    assert projection["stock_session"]["raw_measured_seconds_per_pair"] == pytest.approx(
         1.4299636
+    )
+    assert projection["stock_session"]["thread_normalized_seconds_per_pair"] == pytest.approx(
+        1.4299636 * 1.5
+    )
+    assert projection["stock_session"]["conservative_measured_seconds_per_pair"] == pytest.approx(
+        1.4299636 * 1.5
+    )
+    assert projection["stock_session"]["projected_wall_seconds"] == pytest.approx(
+        110 * 1.4299636 * 1.5 * 4
     )
     assert contract["host_hours_projected_raw"] == pytest.approx(
         (
@@ -395,10 +442,74 @@ def test_freezes_resource_contract_from_superseded_146_evidence(tmp_path: Path) 
         )
         / 3600
     )
-    assert contract["host_hours_projected"] == 3.25
+    assert contract["host_hours_projected"] == 3.5
     assert projection["host_hour_rounding"] == "CEILING_TO_0.25_HOUR"
     assert contract["evidence"]["execution_receipt"]["superseded_status"] == (
         "CN_PHASE3CM_CURRENT_KERNEL_146_REPLAY_FAIL_CLOSED"
+    )
+    assert contract["evidence"]["freeze"]["schema_version"] == ""
+    assert contract["evidence"]["freeze"]["artifact_count"] == 7
+    assert len(contract["evidence"]["freeze"]["artifact_manifest_hash"]) == 64
+    historical_execution = contract["evidence"]["historical_session_execution"]
+    historical_result = contract["evidence"]["historical_session_result"]
+    assert historical_execution["historical_stock_session_native_threads"] == 3
+    assert historical_execution["target_stock_session_native_threads"] == 2
+    assert historical_execution["thread_normalization_multiplier"] == 1.5
+    assert historical_result["raw_measured_seconds_per_pair"] == pytest.approx(
+        1.4299636
+    )
+    assert historical_result["thread_normalized_seconds_per_pair"] == pytest.approx(
+        1.4299636 * 1.5
+    )
+
+
+def test_freeze_performance_selection_fails_closed(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    payload = json.loads(paths["freeze"].read_text(encoding="utf-8"))
+    payload["selection_used_performance"] = True
+    _write(paths["freeze"], payload)
+
+    contract = _freeze(paths)
+
+    assert contract["status"] == FAIL_STATUS
+    assert any("used performance" in error for error in contract["errors"])
+
+
+def test_freeze_forbidden_data_read_fails_closed(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    payload = json.loads(paths["freeze"].read_text(encoding="utf-8"))
+    payload["validation_holdout_forward_read"] = True
+    _write(paths["freeze"], payload)
+
+    contract = _freeze(paths)
+
+    assert contract["status"] == FAIL_STATUS
+    assert any("remained unread" in error for error in contract["errors"])
+
+
+def test_freeze_evaluator_call_count_drift_fails_closed(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    payload = json.loads(paths["freeze"].read_text(encoding="utf-8"))
+    payload["evaluator_call_count"] = 2047
+    _write(paths["freeze"], payload)
+
+    contract = _freeze(paths)
+
+    assert contract["status"] == FAIL_STATUS
+    assert any("evaluator call count" in error for error in contract["errors"])
+
+
+def test_freeze_artifact_content_drift_fails_closed(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    artifact = tmp_path / "preflight_active_candidates.csv"
+    artifact.write_bytes(artifact.read_bytes() + b"drift\n")
+
+    contract = _freeze(paths)
+
+    assert contract["status"] == FAIL_STATUS
+    assert any(
+        "artifact byte count drift" in error or "artifact SHA-256 drift" in error
+        for error in contract["errors"]
     )
 
 
@@ -502,6 +613,21 @@ def test_thread_shape_drift_fails_closed(tmp_path: Path) -> None:
 
     assert contract["status"] == FAIL_STATUS
     assert any("route-asymmetric thread shape" in error for error in contract["errors"])
+
+
+def test_historical_session_thread_fact_drift_fails_closed(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    payload = json.loads(paths["historical_execution"].read_text(encoding="utf-8"))
+    payload["compute_threads_by_backend"]["stock_session"] = 2
+    _write(paths["historical_execution"], payload)
+
+    contract = _freeze(paths)
+
+    assert contract["status"] == FAIL_STATUS
+    assert any(
+        "historical execution route-asymmetric thread shape drift" in error
+        for error in contract["errors"]
+    )
 
 
 def test_promotion_boundary_drift_fails_closed(tmp_path: Path) -> None:

@@ -29,6 +29,11 @@ ACTIVE_PAIR_COUNT = 584
 SESSION_PAIR_COUNT = 440
 REPLAY_PAIR_COUNT = 146
 HISTORICAL_SESSION_PAIR_COUNT = 110
+HISTORICAL_ACTIVE_NATIVE_THREADS = 11
+HISTORICAL_SESSION_NATIVE_THREADS = 3
+HISTORICAL_GLOBAL_NATIVE_THREADS = (
+    HISTORICAL_ACTIVE_NATIVE_THREADS + HISTORICAL_SESSION_NATIVE_THREADS
+)
 
 ACTIVE_PROJECTION_MULTIPLIER = 1.25
 ACTIVE_REPLAY_MULTIPLE = ACTIVE_PAIR_COUNT / REPLAY_PAIR_COUNT
@@ -41,6 +46,9 @@ ACTIVE_NATIVE_THREADS = 11
 SESSION_NATIVE_THREADS = 2
 GLOBAL_NATIVE_THREADS = ACTIVE_NATIVE_THREADS + SESSION_NATIVE_THREADS
 GLOBAL_NATIVE_THREADS_HARD_MAX = 24
+SESSION_THREAD_NORMALIZATION_MULTIPLIER = (
+    HISTORICAL_SESSION_NATIVE_THREADS / SESSION_NATIVE_THREADS
+)
 
 GIB = 1024**3
 WORKER_RSS_SOFT_BYTES = 20 * GIB
@@ -53,6 +61,26 @@ CHECKPOINT_CATEGORIES = ("temporal", "state", "support", "portfolio", "reducer")
 ACCESS_FIELDS = ("validation_reads", "holdout_reads", "forward_2026_reads")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 GIT_SHA_RE = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
+FREEZE_STATUS = "CN_COMPOSITIONAL_RESOURCE_PREFLIGHT_PACK_FROZEN"
+FREEZE_EVALUATION_ROUND = "STRICT_WAVE_01024"
+FREEZE_ARTIFACT_NAMES = (
+    "CN_RESOURCE_PREFLIGHT_PACK.csv",
+    "preflight_active_candidates.csv",
+    "preflight_active_candidate_receipts.jsonl",
+    "preflight_active_pair_receipts.jsonl",
+    "preflight_session_candidates.csv",
+    "preflight_session_candidate_receipts.jsonl",
+    "preflight_session_pair_receipts.jsonl",
+)
+FREEZE_ROUTE_QUOTAS = {
+    "DISCLOSURE_EVENT": 146,
+    "FIRSTN_PATH": 146,
+    "INTRADAY_STATE_TRANSITION": 146,
+    "MARKET_REGIME_CONDITION": 146,
+    "MINUTE_STATIC": 146,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 147,
+    "SLOW_TEMPORAL_CHANGE": 147,
+}
 
 
 class EvidenceError(ValueError):
@@ -222,21 +250,128 @@ def _record(
 
 def _freeze_pack(path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     payload = _read_json(path, "1024 freeze")
-    _require(bool(str(payload.get("schema_version") or "")), "1024 freeze schema_version is missing")
     _require(
-        payload.get("status") == "CN_PHASE3CM_1024_PACK_FREEZE_AND_SUBSET_PASS",
-        "1024 freeze status is not PASS",
+        payload.get("status") == FREEZE_STATUS,
+        "1024 freeze is not the authoritative compositional resource preflight",
     )
-    _require(_integer(payload.get("pair_count"), "1024 freeze.pair_count") == TOTAL_PAIR_COUNT, "1024 freeze pair count is not 1024")
+    _require(
+        payload.get("evaluation_round_id") == FREEZE_EVALUATION_ROUND,
+        "1024 freeze evaluation round drift",
+    )
+    _require(
+        payload.get("data_role") == "development",
+        "1024 freeze data role is not development",
+    )
+    _require(
+        payload.get("selection_used_performance") is False,
+        "1024 freeze used performance for selection",
+    )
+    _require(
+        payload.get("validation_holdout_forward_read") is False,
+        "1024 freeze does not prove validation/holdout/forward remained unread",
+    )
+    _require(
+        _integer(payload.get("pair_count"), "1024 freeze.pair_count")
+        == TOTAL_PAIR_COUNT,
+        "1024 freeze pair count is not 1024",
+    )
+    _require(
+        _integer(
+            payload.get("evaluator_call_count"),
+            "1024 freeze.evaluator_call_count",
+        )
+        == 2 * TOTAL_PAIR_COUNT,
+        "1024 freeze evaluator call count is not 2048",
+    )
     clocks = _mapping(payload.get("clock_counts"), "1024 freeze.clock_counts")
     _require(
         dict(clocks) == {"active_bar": ACTIVE_PAIR_COUNT, "stock_session": SESSION_PAIR_COUNT},
         "1024 freeze clock counts are not active_bar=584/stock_session=440",
     )
-    if "boundaries" in payload:
-        _access(payload, "1024 freeze", nested=True, require_role=True)
+    route_quotas = _mapping(payload.get("route_quotas"), "1024 freeze.route_quotas")
+    _require(
+        dict(route_quotas) == FREEZE_ROUTE_QUOTAS,
+        "1024 freeze route quotas drift",
+    )
+    for field in ("policy_counts", "seed_counts"):
+        counts = _mapping(payload.get(field), f"1024 freeze.{field}")
+        _require(bool(counts), f"1024 freeze {field} is empty")
+        total = 0
+        for key, value in counts.items():
+            total += _integer(value, f"1024 freeze.{field}.{key}")
+        _require(total == TOTAL_PAIR_COUNT, f"1024 freeze {field} total is not 1024")
+    for field in (
+        "pack_identity",
+        "release_hash",
+        "split_manifest_hash",
+        "registry_hash",
+    ):
+        _sha_text(payload.get(field), f"1024 freeze.{field}")
+    release_rows = _integer(payload.get("release_rows"), "1024 freeze.release_rows")
+    source_rows = _integer(
+        payload.get("source_rows_before_role_filter"),
+        "1024 freeze.source_rows_before_role_filter",
+    )
+    _require(
+        0 < release_rows <= source_rows,
+        "1024 freeze release/source row counts are invalid",
+    )
+
+    artifacts = _list(payload.get("artifacts"), "1024 freeze.artifacts")
+    _require(
+        len(artifacts) == len(FREEZE_ARTIFACT_NAMES),
+        "1024 freeze artifact count is not 7",
+    )
+    artifact_records: dict[str, dict[str, Any]] = {}
+    root = Path(path).resolve().parent
+    for ordinal, raw in enumerate(artifacts):
+        row = _mapping(raw, f"1024 freeze.artifacts[{ordinal}]")
+        name = str(row.get("path") or "")
+        _require(
+            name in FREEZE_ARTIFACT_NAMES and name not in artifact_records,
+            f"1024 freeze artifact identity drift: {name}",
+        )
+        claimed_sha = _sha_text(
+            row.get("sha256"), f"1024 freeze artifact {name}.sha256"
+        )
+        claimed_bytes = _integer(
+            row.get("bytes"), f"1024 freeze artifact {name}.bytes"
+        )
+        artifact_path = (root / name).resolve()
+        _require(
+            artifact_path.parent == root and artifact_path.is_file(),
+            f"1024 freeze artifact is missing or escapes its root: {name}",
+        )
+        _require(
+            claimed_bytes > 0 and artifact_path.stat().st_size == claimed_bytes,
+            f"1024 freeze artifact byte count drift: {name}",
+        )
+        _require(
+            _sha256(artifact_path) == claimed_sha,
+            f"1024 freeze artifact SHA-256 drift: {name}",
+        )
+        artifact_records[name] = {
+            "path": name,
+            "sha256": claimed_sha,
+            "bytes": claimed_bytes,
+        }
+    _require(
+        set(artifact_records) == set(FREEZE_ARTIFACT_NAMES),
+        "1024 freeze artifact set drift",
+    )
     _verify_optional_self_hashes(payload, "1024 freeze")
-    return payload, _record(path, payload)
+    return payload, _record(
+        path,
+        payload,
+        extra={
+            "artifact_count": len(artifact_records),
+            "artifact_manifest_hash": _stable_hash(
+                [artifact_records[name] for name in sorted(artifact_records)]
+            ),
+            "selection_used_performance": False,
+            "validation_holdout_forward_read": False,
+        },
+    )
 
 
 def _historical_subset(path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -476,7 +611,14 @@ def _execution_receipt(path: Path) -> tuple[dict[str, Any], dict[str, Any], floa
 def _historical_session(
     execution_path: Path,
     result_path: Path,
-) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], float]:
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    float,
+    float,
+]:
     result = _read_json(result_path, "historical stock-session result")
     _require(result.get("schema_version") == "cn_phase3cm_streaming_backend_result_v1", "historical stock-session result schema drift")
     _require(result.get("status") == "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED", "historical stock-session result is not complete")
@@ -512,9 +654,26 @@ def _historical_session(
         _require(_integer(execution.get(field), f"historical execution.{field}") == expected, f"historical execution {field} drift")
     _require(_integer(execution.get("heavy_processes"), "historical execution.heavy_processes") == HEAVY_PROCESSES, "historical execution heavy process count drift")
     threads = _mapping(execution.get("compute_threads_by_backend"), "historical execution.compute_threads_by_backend")
-    _require(dict(threads) == {"active_bar": ACTIVE_NATIVE_THREADS, "stock_session": SESSION_NATIVE_THREADS}, "historical execution route-asymmetric thread shape drift")
-    _require(_integer(execution.get("global_active_native_compute_threads"), "historical execution.global_active_native_compute_threads") == GLOBAL_NATIVE_THREADS, "historical execution global native thread count drift")
-    _require(GLOBAL_NATIVE_THREADS <= GLOBAL_NATIVE_THREADS_HARD_MAX, "historical execution global native thread hard cap exceeded")
+    _require(
+        dict(threads)
+        == {
+            "active_bar": HISTORICAL_ACTIVE_NATIVE_THREADS,
+            "stock_session": HISTORICAL_SESSION_NATIVE_THREADS,
+        },
+        "historical execution route-asymmetric thread shape drift",
+    )
+    _require(
+        _integer(
+            execution.get("global_active_native_compute_threads"),
+            "historical execution.global_active_native_compute_threads",
+        )
+        == HISTORICAL_GLOBAL_NATIVE_THREADS,
+        "historical execution global native thread count drift",
+    )
+    _require(
+        HISTORICAL_GLOBAL_NATIVE_THREADS <= GLOBAL_NATIVE_THREADS_HARD_MAX,
+        "historical execution global native thread hard cap exceeded",
+    )
     _access(execution, "historical stock-session execution receipt", nested=False, require_role=False)
 
     claimed_result = Path(str(execution.get("session_result") or "")).resolve()
@@ -534,20 +693,32 @@ def _historical_session(
         _require(0 <= session_peak < WORKER_RSS_HARD_BYTES, "historical execution stock-session worker exceeded its RSS hard cap")
     _verify_optional_self_hashes(execution, "historical stock-session execution receipt")
 
-    seconds_per_pair = wall_seconds / HISTORICAL_SESSION_PAIR_COUNT
+    raw_seconds_per_pair = wall_seconds / HISTORICAL_SESSION_PAIR_COUNT
+    adjusted_seconds_per_pair = (
+        raw_seconds_per_pair * SESSION_THREAD_NORMALIZATION_MULTIPLIER
+    )
+    normalization_evidence = {
+        "historical_stock_session_native_threads": HISTORICAL_SESSION_NATIVE_THREADS,
+        "target_stock_session_native_threads": SESSION_NATIVE_THREADS,
+        "thread_normalization_multiplier": SESSION_THREAD_NORMALIZATION_MULTIPLIER,
+    }
     return (
         execution,
-        _record(execution_path, execution),
+        _record(execution_path, execution, extra=normalization_evidence),
         result,
         _record(
             result_path,
             result,
             extra={
                 "measured_wall_seconds": wall_seconds,
-                "conservative_measured_seconds_per_pair": seconds_per_pair,
+                "raw_measured_seconds_per_pair": raw_seconds_per_pair,
+                "thread_normalized_seconds_per_pair": adjusted_seconds_per_pair,
+                "conservative_measured_seconds_per_pair": adjusted_seconds_per_pair,
+                **normalization_evidence,
             },
         ),
-        seconds_per_pair,
+        raw_seconds_per_pair,
+        adjusted_seconds_per_pair,
     )
 
 
@@ -632,7 +803,8 @@ def freeze_resource_contract(
     evidence: dict[str, Any] = {}
     errors: list[str] = []
     active_wall_seconds: float | None = None
-    session_seconds_per_pair: float | None = None
+    session_raw_seconds_per_pair: float | None = None
+    session_adjusted_seconds_per_pair: float | None = None
     active_projected_seconds: float | None = None
     session_projected_seconds: float | None = None
     host_hours_projected_raw: float | None = None
@@ -673,7 +845,8 @@ def freeze_resource_contract(
             evidence["historical_session_execution"],
             _,
             evidence["historical_session_result"],
-            session_seconds_per_pair,
+            session_raw_seconds_per_pair,
+            session_adjusted_seconds_per_pair,
         ) = _historical_session(
             historical_session_execution_path,
             historical_session_result_path,
@@ -689,7 +862,9 @@ def freeze_resource_contract(
             * ACTIVE_REPLAY_MULTIPLE
             * ACTIVE_PROJECTION_MULTIPLIER
         )
-        session_projected_seconds = session_seconds_per_pair * SESSION_PAIR_COUNT
+        session_projected_seconds = (
+            session_adjusted_seconds_per_pair * SESSION_PAIR_COUNT
+        )
         host_hours_projected_raw = (
             active_projected_seconds + session_projected_seconds
         ) / 3600.0
@@ -767,7 +942,18 @@ def freeze_resource_contract(
             "stock_session": {
                 "evidence_pair_count": HISTORICAL_SESSION_PAIR_COUNT,
                 "target_pair_count": SESSION_PAIR_COUNT,
-                "conservative_measured_seconds_per_pair": session_seconds_per_pair,
+                "historical_native_threads": HISTORICAL_SESSION_NATIVE_THREADS,
+                "target_native_threads": SESSION_NATIVE_THREADS,
+                "thread_normalization_multiplier": (
+                    SESSION_THREAD_NORMALIZATION_MULTIPLIER
+                ),
+                "raw_measured_seconds_per_pair": session_raw_seconds_per_pair,
+                "thread_normalized_seconds_per_pair": (
+                    session_adjusted_seconds_per_pair
+                ),
+                "conservative_measured_seconds_per_pair": (
+                    session_adjusted_seconds_per_pair
+                ),
                 "projected_wall_seconds": session_projected_seconds,
             },
             "accounting": "SUM_OF_CONSERVATIVE_BACKEND_WALL_PROJECTIONS",
