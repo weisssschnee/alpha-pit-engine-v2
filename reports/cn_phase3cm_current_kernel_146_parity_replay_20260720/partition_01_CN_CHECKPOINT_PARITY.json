@@ -1,0 +1,48 @@
+{
+  "backend": "active_bar",
+  "candidate": {
+    "compute_threads": 11,
+    "compute_wall_seconds": 1508.8641930930316,
+    "mapping_wall_seconds": 740.7339415005408,
+    "pair_batch_size": 8,
+    "parallelism_not_engaged_events": 3,
+    "peak_rss_bytes": 15852339200
+  },
+  "compute_speedup": 3.6235842528628925,
+  "data_role": "development_train_only",
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "mapping_speedup": 6.438422223013306,
+  "parity": {
+    "portfolio": {
+      "exact": true,
+      "mismatches": []
+    },
+    "reducer": {
+      "exact": true,
+      "mismatches": []
+    },
+    "state": {
+      "exact": true,
+      "mismatches": []
+    },
+    "support": {
+      "exact": true,
+      "mismatches": []
+    },
+    "temporal": {
+      "exact": true,
+      "mismatches": []
+    }
+  },
+  "recommended_for_phase_e_freeze": false,
+  "reference": {
+    "compute_threads": 11,
+    "compute_wall_seconds": 5467.4965298005845,
+    "mapping_wall_seconds": 4769.15787029732,
+    "pair_batch_size": 8,
+    "peak_rss_bytes": 15373074432
+  },
+  "status": "CN_PHASE3CM_SCALING_PROBE_FAIL_CLOSED",
+  "validation_reads": 0
+}

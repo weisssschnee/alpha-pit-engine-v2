@@ -1,0 +1,77 @@
+﻿{
+    "schema_version":  "cn_phase3cm_current_kernel_146_replay_execution_receipt_v1",
+    "status":  "CN_PHASE3CM_CURRENT_KERNEL_146_REPLAY_FAIL_CLOSED",
+    "authority_scope":  "PARITY_REPLAY_ONLY_NOT_FORMAL_EVALUATOR",
+    "contract":  "D:\\ChengboRemote\\workspace\\cn_phase3cm_146_parity_790b9b2\\runtime\\run_plans\\cn_phase3cm_current_kernel_146_parity_replay_v1.json",
+    "contract_sha256":  "3491cc724fcb7a886066b2726659d42d5f68611066659a54f3de9112ba5892d9",
+    "expected_repo_sha":  "790b9b29fd289d570f8cb3ccb09aeba25d622c23",
+    "observed_repo_sha":  "790b9b29fd289d570f8cb3ccb09aeba25d622c23",
+    "source_closure":  {
+                           "mode":  "EXPLICIT_SOURCE_CLOSURE_MANIFEST_VERIFIED",
+                           "repo_sha":  "790b9b29fd289d570f8cb3ccb09aeba25d622c23",
+                           "manifest":  "D:\\ChengboRemote\\workspace\\cn_phase3cm_146_parity_790b9b2\\CN_PHASE3CM_SOURCE_CLOSURE_MANIFEST.json",
+                           "manifest_sha256":  "c90a3f709fa613591c7842142bd371f4f723a90db1bdb891dab88d73af0000c9",
+                           "manifest_hash":  "9bbea3c91252a267aa8ea2b22a5a80f2c1329f6cd8ecdf2edd3284090adee5b8",
+                           "source_closure_hash":  "c69677a55e76e04f5340390c29349f7da76fe8352aad26bae16d1218af484e15",
+                           "source_count":  42
+                       },
+    "portfolio_source_sha256":  "5b665d33d74eb4b5f451f06b4ad7e4b352f779c3e2e4836bb2d76950c413d110",
+    "resumed":  false,
+    "wall_seconds":  2179.0138644999997,
+    "wall_seconds_hard":  21600,
+    "global_peak_rss_bytes":  29656395776,
+    "global_rss_hard_bytes":  64424509440,
+    "output_peak_bytes":  435602403,
+    "output_final_bytes":  435618229,
+    "output_bytes_hard":  68719476736,
+    "gate_failure":  null,
+    "launch_failure":  null,
+    "rss_sample_count":  1024,
+    "rss_timeline":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\CN_GLOBAL_PROCESS_TREE_RSS_TIMELINE.csv",
+    "field_sidecar_closure":  {
+                                  "root":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\active_time_major_train_v1",
+                                  "manifest":  "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_00256_sidecars\\active_time_major_train_v1\\CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json",
+                                  "manifest_sha256":  "63df2dfe4bb62fba864b8e742d1919e26cdb75ed2d7f8747ccb5b571f107cafc",
+                                  "verified_parquet_count":  16,
+                                  "verified_parquet_bytes":  7292931295
+                              },
+    "label_sidecar_closure":  {
+                                  "root":  "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v3_labels",
+                                  "manifest":  "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v3_labels\\CN_FORWARD_LABEL_SIDECAR_MANIFEST.json",
+                                  "manifest_sha256":  "3179cb203e8c1692d7817e42230d47cfb9d45fc465f267ee4198b2b9f7377f34",
+                                  "verified_parquet_count":  16,
+                                  "verified_parquet_bytes":  4635478294
+                              },
+    "partitions":  [
+                       {
+                           "partition_id":  "active_bar_p0",
+                           "execution_pass":  true,
+                           "qualification_exact_pass":  true,
+                           "checkpoint_exact_pass":  false,
+                           "process_exit_code":  0,
+                           "peak_process_tree_rss_bytes":  13848854528,
+                           "backend_result":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\partition_00\\CN_STREAMING_BACKEND_RESULT.json",
+                           "qualification_receipt":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\partition_00\\CN_KERNEL_PARITY_QUALIFICATION.json",
+                           "checkpoint_receipt":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\partition_00\\CN_CHECKPOINT_PARITY.json"
+                       },
+                       {
+                           "partition_id":  "active_bar_p1",
+                           "execution_pass":  true,
+                           "qualification_exact_pass":  true,
+                           "checkpoint_exact_pass":  false,
+                           "process_exit_code":  0,
+                           "peak_process_tree_rss_bytes":  15855566848,
+                           "backend_result":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\partition_01\\CN_STREAMING_BACKEND_RESULT.json",
+                           "qualification_receipt":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\partition_01\\CN_KERNEL_PARITY_QUALIFICATION.json",
+                           "checkpoint_receipt":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\partition_01\\CN_CHECKPOINT_PARITY.json"
+                       }
+                   ],
+    "final_parity_receipt":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\CN_PHASE3CM_CURRENT_KERNEL_146_PARITY_RECEIPT.json",
+    "final_parity_pass":  false,
+    "validation_reads":  0,
+    "holdout_reads":  0,
+    "forward_2026_reads":  0,
+    "promotion":  "FORBIDDEN",
+    "strict_stage_a":  "NOT_AUTHORIZED",
+    "speedup_threshold_gate":  "NOT_USED"
+}

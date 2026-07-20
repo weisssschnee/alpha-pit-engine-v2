@@ -1,0 +1,41 @@
+﻿{
+    "schema_version":  "cn_phase3cm_current_kernel_146_readjudication_manifest_v1",
+    "status":  "CN_PHASE3CM_CURRENT_KERNEL_146_PARITY_READJUDICATED_PASS",
+    "reason":  "CHECKPOINT_EXACTNESS_WAS_CONFLATED_WITH_SCALING_PARALLELISM_DIAGNOSTIC",
+    "repo_sha":  "286f813625751f07721a31a69745a6cae6c8f283",
+    "source_archive":  "D:\\ChengboRemote\\runtime\\CN_PHASE3CM_146_SOURCE_286F813.zip",
+    "source_archive_sha256":  "aeb2abb079ca86e12c143fee977bbef010de39cff2632a3b28c7f8b4b25ddac5",
+    "source_closure_manifest":  "D:\\ChengboRemote\\runtime\\CN_PHASE3CM_146_SOURCE_CLOSURE_286F813.json",
+    "source_closure_manifest_sha256":  "6b4a94bc750e9ee2741edd91e8bea8de00e9c257b2718b414cd59da855841c3c",
+    "original_execution_receipt":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\CN_CURRENT_KERNEL_146_REPLAY_EXECUTION_RECEIPT.json",
+    "original_execution_receipt_sha256":  "321c86be6861ad811ff55125cab113422e816b5a0b571b92870c6f4f3d001d37",
+    "original_fail_parity_receipt":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\CN_PHASE3CM_CURRENT_KERNEL_146_PARITY_RECEIPT.json",
+    "original_fail_parity_receipt_sha256":  "2b5884ed1caf6307d7bad9e2599848c5c900a67e7641a32121e0001d3e777e28",
+    "readjudicated_parity_receipt":  "D:\\ChengboRemote\\runtime\\cn_phase3cm_current_kernel_146_parity_replay_v1\\CN_PHASE3CM_CURRENT_KERNEL_146_PARITY_READJUDICATED_286F813.json",
+    "readjudicated_parity_receipt_sha256":  "41061b72b11377060b8a213a11b7cad7efa697e413c17e6fb96de17bf489aa76",
+    "identity_coverage_exact":  true,
+    "checkpoint_categories":  [
+                                  "temporal",
+                                  "state",
+                                  "support",
+                                  "portfolio",
+                                  "reducer"
+                              ],
+    "scaling_status_observed_not_gated":  [
+                                              "CN_PHASE3CM_SCALING_PROBE_FAIL_CLOSED",
+                                              "CN_PHASE3CM_SCALING_PROBE_FAIL_CLOSED"
+                                          ],
+    "parallelism_not_engaged_events_observed_not_gated":  [
+                                                              3,
+                                                              3
+                                                          ],
+    "boundaries":  {
+                       "data_role":  "development_train_only",
+                       "validation_reads":  0,
+                       "holdout_reads":  0,
+                       "forward_2026_reads":  0,
+                       "promotion":  "FORBIDDEN",
+                       "strict_stage_a":  "NOT_AUTHORIZED"
+                   },
+    "next_decision":  "FREEZE_1024_RESOURCE_AND_EXECUTION_CONTRACT"
+}

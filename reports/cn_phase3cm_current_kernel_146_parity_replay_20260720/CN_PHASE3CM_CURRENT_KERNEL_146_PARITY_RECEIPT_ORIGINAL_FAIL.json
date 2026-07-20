@@ -1,0 +1,62 @@
+{
+  "backend_authority": "EXPERIMENTAL_BACKEND",
+  "boundaries": {
+    "data_role": "development_train_only",
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "promotion": "FORBIDDEN",
+    "strict_stage_a": "NOT_AUTHORIZED",
+    "validation_reads": 0
+  },
+  "contract": "D:\\ChengboRemote\\workspace\\cn_phase3cm_146_parity_790b9b2\\runtime\\run_plans\\cn_phase3cm_current_kernel_146_parity_replay_v1.json",
+  "contract_sha256": "3491cc724fcb7a886066b2726659d42d5f68611066659a54f3de9112ba5892d9",
+  "errors": [
+    "active_bar_p0: checkpoint receipt is not a parity pass",
+    "active_bar_p1: checkpoint receipt is not a parity pass"
+  ],
+  "formal_evaluator_authority": "UNCHANGED",
+  "identity_coverage": {
+    "candidate_union_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "expected_candidate_count": 292,
+    "expected_pair_count": 146,
+    "observed_candidate_count": 0,
+    "observed_pair_count": 0,
+    "pair_union_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "identity_coverage_exact": false,
+  "kernel_state": "PARTIALLY_QUALIFIED",
+  "next_decision": "STOP_BEFORE_1024_ROUTE_ASYMMETRIC_CONFIRMATION",
+  "partitions": [
+    {
+      "error": "checkpoint receipt is not a parity pass",
+      "partition_id": "active_bar_p0",
+      "status": "FAIL_CLOSED"
+    },
+    {
+      "error": "checkpoint receipt is not a parity pass",
+      "partition_id": "active_bar_p1",
+      "status": "FAIL_CLOSED"
+    }
+  ],
+  "performance_threshold_gate": "NOT_USED",
+  "schema_version": "cn_phase3cm_current_kernel_146_parity_final_v1",
+  "semantic_evidence_coverage": {
+    "blockers": "exact pair blocker/status/reward digest",
+    "candidate_identity": "frozen IDs and pair membership digest",
+    "checkpoint": {
+      "continuation_categories": [
+        "temporal",
+        "state",
+        "support",
+        "portfolio",
+        "reducer"
+      ],
+      "contract_fields": []
+    },
+    "rank_and_weights": "block_composable_v1 selected-bitmap and mapping-metrics behavior digest; no raw coordinates retained",
+    "support": "support identity/count/overlap digest plus exact reward atoms",
+    "turnover_cost_reward_rankic": "byte-exact reward atoms plus exact candidate/pair result fields"
+  },
+  "status": "CN_PHASE3CM_CURRENT_KERNEL_146_PARITY_FAIL_CLOSED",
+  "two_x_speedup_required": false
+}
