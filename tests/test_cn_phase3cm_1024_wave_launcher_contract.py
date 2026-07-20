@@ -57,6 +57,9 @@ def test_1024_launcher_hard_gates_the_frozen_wave_inputs() -> None:
     assert "$ExpectedCandidateMembers = 2048" in script
     assert "ExpectedSourceClosureManifestSha256" in script
     assert "ExpectedFrozenBindingSha256" in script
+    assert "ActiveCapacityValidation.dag_plan_hash" in script
+    assert "SessionCapacityValidation.dag_plan_hash" in script
+    assert "ExpectedDagPlanHash" in script
 
 
 def test_1024_launcher_freezes_topology_resources_and_resume() -> None:

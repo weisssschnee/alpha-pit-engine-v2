@@ -51,6 +51,20 @@ def _stable_hash(value: Any) -> str:
     ).hexdigest()
 
 
+def _candidate_finalization_seed_map(
+    candidates: Sequence[Mapping[str, Any]],
+) -> dict[str, int]:
+    """Preserve the historically qualified table-order seed for each identity."""
+
+    result: dict[str, int] = {}
+    for candidate_index, candidate in enumerate(candidates):
+        candidate_id = str(candidate.get("candidate_id") or "")
+        if not candidate_id or candidate_id in result:
+            raise ValueError("candidate finalization seed map requires unique candidate_id")
+        result[candidate_id] = 20260623 + candidate_index
+    return result
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:
@@ -135,7 +149,13 @@ def _verify_binding(binding_path: Path, artifact_root: Path) -> dict[str, Any]:
     return binding
 
 
-def _candidate_pairs(rows: Sequence[Mapping[str, Any]], *, pair_limit: int, clock: str) -> list[dict[str, Any]]:
+def _candidate_pairs(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    pair_limit: int,
+    clock: str,
+    require_exact_count: bool = False,
+) -> list[dict[str, Any]]:
     pair_order: list[str] = []
     by_pair: dict[str, list[dict[str, Any]]] = {}
     for raw in rows:
@@ -151,6 +171,10 @@ def _candidate_pairs(rows: Sequence[Mapping[str, Any]], *, pair_limit: int, cloc
             by_pair[pair_id] = []
         row["clock_namespace"] = clock
         by_pair[pair_id].append(row)
+    if require_exact_count and len(pair_order) != int(pair_limit):
+        raise RuntimeError(
+            "Phase E candidate table pair count does not match the frozen plan scope"
+        )
     selected: list[dict[str, Any]] = []
     for pair_id in pair_order[: int(pair_limit)]:
         members = by_pair[pair_id]
@@ -163,6 +187,74 @@ def _candidate_pairs(rows: Sequence[Mapping[str, Any]], *, pair_limit: int, cloc
     if len(selected) != int(pair_limit) * 2:
         raise RuntimeError("requested pair count exceeds frozen route pack")
     return selected
+
+
+def _phase_e_plan_pair_order(
+    *,
+    pair_batches: Sequence[Sequence[str]],
+    candidate_pair_ids: Sequence[str],
+    maximum_batch_size: int,
+) -> tuple[str, ...]:
+    """Validate and return the immutable Phase E pair order.
+
+    Phase E treats the pre-frozen plan as the ordering authority.  Membership
+    remains an exact-set gate against the candidate table, so ordering cannot
+    add, drop, duplicate, or split matched pairs.
+    """
+
+    limit = int(maximum_batch_size)
+    if limit <= 0:
+        raise ValueError("pair batch size must be positive")
+    normalized_batches = tuple(
+        tuple(str(pair_id) for pair_id in batch) for batch in pair_batches
+    )
+    if not normalized_batches or any(not batch for batch in normalized_batches):
+        raise RuntimeError("Phase E execution plan contains an empty pair batch")
+    if any(len(batch) > limit for batch in normalized_batches):
+        raise RuntimeError("Phase E execution plan exceeds the frozen pair batch size")
+    ordered = tuple(pair_id for batch in normalized_batches for pair_id in batch)
+    if len(ordered) != len(set(ordered)):
+        raise RuntimeError("Phase E execution plan contains duplicate pair identities")
+    available = tuple(str(pair_id) for pair_id in candidate_pair_ids)
+    if len(available) != len(set(available)):
+        raise RuntimeError("Phase E candidate table contains duplicate pair identities")
+    if set(ordered) != set(available):
+        raise RuntimeError(
+            "Phase E execution plan and candidate table pair identities differ"
+        )
+    return ordered
+
+
+def _order_candidate_pairs(
+    candidates: Sequence[Mapping[str, Any]],
+    ordered_pair_ids: Sequence[str],
+) -> list[dict[str, Any]]:
+    """Reorder whole matched pairs while preserving PRIMARY then CONTROL."""
+
+    by_pair: dict[str, list[dict[str, Any]]] = {}
+    for raw in candidates:
+        pair_id = str(raw.get("pair_id") or "")
+        by_pair.setdefault(pair_id, []).append(dict(raw))
+    output: list[dict[str, Any]] = []
+    for pair_id in ordered_pair_ids:
+        members = by_pair.get(str(pair_id)) or []
+        members.sort(
+            key=lambda row: (
+                0 if str(row.get("pair_member_role") or "") == "PRIMARY" else 1,
+                str(row.get("candidate_id") or ""),
+            )
+        )
+        if [str(row.get("pair_member_role") or "") for row in members] != [
+            "PRIMARY",
+            "CONTROL",
+        ]:
+            raise RuntimeError(
+                f"Phase E frozen pair role identity drift: {pair_id}"
+            )
+        output.extend(members)
+    if len(output) != len(candidates):
+        raise RuntimeError("Phase E frozen pair ordering changed candidate membership")
+    return output
 
 
 def _json_string_list(value: Any) -> list[str]:
@@ -503,27 +595,40 @@ def main() -> int:
         _read_csv(args.candidate_table.resolve()),
         pair_limit=int(args.pair_count),
         clock=str(args.backend),
+        require_exact_count=args.phase == "E",
     )
     _verify_selected_candidate_semantics(
         candidates,
         binding=binding,
         clock=str(args.backend),
     )
+    finalization_seed_by_candidate_id = _candidate_finalization_seed_map(candidates)
     pair_ids = tuple(str(candidates[index]["pair_id"]) for index in range(0, len(candidates), 2))
     field_paths = _sidecar_files(args.field_sidecar_root.resolve())
     label_paths = _sidecar_files(args.label_sidecar_root.resolve())
     symbols = _symbol_registry(field_paths)
     discovered_boundaries = _block_boundaries(train_dates, int(args.block_sessions))
-    batches = _pair_batches(pair_ids, int(args.pair_batch_size))
     if args.phase == "E":
         if args.execution_plan is None:
             raise ValueError("Phase E requires a pre-frozen execution plan")
         plan = _load_plan(args.execution_plan.resolve())
         if plan.phase != "E":
             raise RuntimeError("Phase E execution plan has the wrong phase")
-        if plan.block_boundaries != discovered_boundaries or plan.pair_batches != batches:
-            raise RuntimeError("Phase E block or pair-batch boundaries drift")
+        if plan.block_boundaries != discovered_boundaries:
+            raise RuntimeError("Phase E calendar block boundaries drift")
+        pair_ids = _phase_e_plan_pair_order(
+            pair_batches=plan.pair_batches,
+            candidate_pair_ids=pair_ids,
+            maximum_batch_size=int(args.pair_batch_size),
+        )
+        candidates = _order_candidate_pairs(candidates, pair_ids)
+        _verify_selected_candidate_semantics(
+            candidates,
+            binding=binding,
+            clock=str(args.backend),
+        )
     else:
+        batches = _pair_batches(pair_ids, int(args.pair_batch_size))
         plan = FrozenExecutionPlan.create(
             phase=args.phase,
             block_size=int(args.block_sessions),
@@ -987,7 +1092,7 @@ def main() -> int:
         atom_rows = reducer.reward_atoms()
         reward_rows = []
         split_rows = []
-        for candidate_index, candidate in enumerate(candidates):
+        for candidate in candidates:
             candidate_atoms = [
                 row for row in atom_rows if str(row.get("candidate_id")) == str(candidate["candidate_id"])
             ]
@@ -995,7 +1100,9 @@ def main() -> int:
                 dict(candidate),
                 candidate_atoms,
                 horizons,
-                seed=20260623 + candidate_index,
+                seed=finalization_seed_by_candidate_id[
+                    str(candidate.get("candidate_id") or "")
+                ],
                 rank_ic_loss_weight=6.0,
                 rank_ic_component_cap=0.35,
                 regime_stability_weight=0.08,

@@ -447,6 +447,8 @@ $SessionCapacityValidation = Confirm-CnCapacityReceipt `
     -Repo $RepoRoot -Closure $SourceClosureManifest -RepoSha $ExpectedRepoSha -Python $PythonExe
 if ([string]$ActiveCapacityValidation.execution_plan_hash -ne [string]$ActivePlan.execution_plan_hash -or
     [string]$SessionCapacityValidation.execution_plan_hash -ne [string]$SessionPlan.execution_plan_hash -or
+    [string]$ActiveCapacityValidation.dag_plan_hash -ne [string]$Contract.plans.active_bar.dag_plan_hash -or
+    [string]$SessionCapacityValidation.dag_plan_hash -ne [string]$Contract.plans.stock_session.dag_plan_hash -or
     [string]$ActiveCapacityValidation.source_closure_manifest_sha256 -ne $SourceClosureEvidence.sha256 -or
     [string]$SessionCapacityValidation.source_closure_manifest_sha256 -ne $SourceClosureEvidence.sha256 -or
     [string]$ActiveCapacityValidation.source_closure_manifest_hash -ne
@@ -676,6 +678,7 @@ function Get-CnBackendEvidence {
         [Parameter(Mandatory = $true)][string]$CommandSha256,
         [Parameter(Mandatory = $true)][object]$Plan,
         [Parameter(Mandatory = $true)][object]$CapacityValidation,
+        [Parameter(Mandatory = $true)][string]$ExpectedDagPlanHash,
         [Parameter(Mandatory = $true)][int64]$RssHardBytes,
         [Parameter(Mandatory = $true)][object[]]$ExpectedPairIds,
         [object]$Process
@@ -715,6 +718,8 @@ function Get-CnBackendEvidence {
         [int]$Result.pair_count -eq $PairCount -and
         [int]$Result.candidate_count -eq (2 * $PairCount) -and
         [string]$Result.execution_plan_hash -eq [string]$Plan.execution_plan_hash -and
+        [string]$Result.dag_plan_hash -eq $ExpectedDagPlanHash -and
+        [string]$CapacityValidation.dag_plan_hash -eq $ExpectedDagPlanHash -and
         [string]$Result.capacity_receipt_hash -eq [string]$CapacityValidation.receipt_hash -and
         [string]$Result.input_binding_hash -eq [string]$Binding.binding_hash -and
         [string]$Result.split_manifest_hash -eq [string]$Binding.split_manifest_hash -and
@@ -747,6 +752,7 @@ function Get-CnBackendEvidence {
             Get-CnSha256 -Path $CheckpointManifest
         } else { $null }
         execution_plan_hash = [string]$Plan.execution_plan_hash
+        dag_plan_hash = $ExpectedDagPlanHash
         capacity_receipt_hash = [string]$CapacityValidation.receipt_hash
         peak_rss_bytes = if ($null -ne $Result) { [int64]$Result.peak_rss_bytes } else { $null }
         rss_hard_bytes = $RssHardBytes
@@ -762,13 +768,17 @@ $ActiveEvidence = Get-CnBackendEvidence `
     -Backend "active_bar" -PairCount $ExpectedActivePairs `
     -ExitReceiptPath $ActiveExitReceiptPath -ResultPath $ActiveResultPath `
     -CommandSha256 $ActiveCommandSha256 -Plan $ActivePlan `
-    -CapacityValidation $ActiveCapacityValidation -RssHardBytes $ActiveHardRss `
+    -CapacityValidation $ActiveCapacityValidation `
+    -ExpectedDagPlanHash ([string]$Contract.plans.active_bar.dag_plan_hash) `
+    -RssHardBytes $ActiveHardRss `
     -ExpectedPairIds $ActivePairIds -Process $ActiveProcess
 $SessionEvidence = Get-CnBackendEvidence `
     -Backend "stock_session" -PairCount $ExpectedSessionPairs `
     -ExitReceiptPath $SessionExitReceiptPath -ResultPath $SessionResultPath `
     -CommandSha256 $SessionCommandSha256 -Plan $SessionPlan `
-    -CapacityValidation $SessionCapacityValidation -RssHardBytes $SessionHardRss `
+    -CapacityValidation $SessionCapacityValidation `
+    -ExpectedDagPlanHash ([string]$Contract.plans.stock_session.dag_plan_hash) `
+    -RssHardBytes $SessionHardRss `
     -ExpectedPairIds $SessionPairIds -Process $SessionProcess
 $WallGatePass = (-not $WallGateFailure -and $Stopwatch.Elapsed.TotalSeconds -le $WallSecondsHardMax)
 $Pass = (

@@ -431,6 +431,7 @@ def test_receipt_binds_inputs_manifests_source_closure_and_launch_validation(
         "forward_2026": 0,
     }
     assert receipt["changes_to_frozen_execution_plan"] == 0
+    assert len(receipt["dag_plan_hash"]) == 64
     assert receipt["preflight_source_contract"]["repo_sha"] == repo_sha
     assert receipt["preflight_source_contract"]["contract_hash"]
     assert {
@@ -469,6 +470,7 @@ def test_receipt_binds_inputs_manifests_source_closure_and_launch_validation(
         "status": "CN_PHASE3CM_DAG_CACHE_RECEIPT_VALIDATED_FOR_LAUNCH",
         "backend": "active_bar",
         "receipt_hash": receipt["receipt_hash"],
+        "dag_plan_hash": receipt["dag_plan_hash"],
         "execution_plan_hash": execution_plan.execution_plan_hash,
         "max_block_rows": 11,
         "source_closure_hash": receipt["preflight_source_contract"][

@@ -30,6 +30,7 @@ SOURCE_CLOSURE_ENTRYPOINTS = (
     "scripts/preflight_cn_phase3cm_dag_cache.py",
     "scripts/validate_cn_phase3cm_source_closure.py",
     "scripts/freeze_cn_phase3cm_1024_resource_contract.py",
+    "scripts/freeze_cn_phase3cm_phase_e_plans.py",
     "scripts/run_cn_phase3cm_streaming_qualification.py",
     "scripts/run_cn_phase3cm_phase_e_qualification_77o.ps1",
     "scripts/run_cn_phase3cm_1024_wave_77o.ps1",
@@ -572,6 +573,7 @@ def build_receipt(
     receipt = {
         **preflight.to_dict(),
         "backend": str(backend),
+        "dag_plan_hash": dag_plan.plan_hash,
         "data_role": "development",
         "execution_plan_hash": plan.execution_plan_hash,
         "execution_plan_path": str(Path(execution_plan).resolve()),
@@ -663,6 +665,7 @@ def validate_receipt_for_launch(
         "status": "CN_PHASE3CM_DAG_CACHE_RECEIPT_VALIDATED_FOR_LAUNCH",
         "backend": str(backend),
         "receipt_hash": claimed_receipt_hash,
+        "dag_plan_hash": str(receipt["dag_plan_hash"]),
         "execution_plan_hash": str(receipt["execution_plan_hash"]),
         "max_block_rows": int(block_evidence["max_block_rows"]),
         "source_closure_hash": str(source_contract["source_closure_hash"]),
