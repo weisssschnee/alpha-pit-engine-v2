@@ -6,15 +6,6 @@
       "evidence": {},
       "message": "Current view is advisory; formal runtime evidence was not supplied",
       "severity": "INFO"
-    },
-    {
-      "category": "STALE",
-      "code": "RAW_GRAPH_REPO_SHA_MISSING",
-      "evidence": {
-        "repo_head": "7aa6ba434122af3fc077d5e65d5f6e6120678e66"
-      },
-      "message": "Raw graph does not identify the repository SHA it was built from",
-      "severity": "WARN"
     }
   ],
   "edges": [
@@ -1221,7 +1212,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-18T20:32:26.199643+00:00",
+  "generated_at": "2026-07-20T12:38:05.400234+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1246,7 +1237,6 @@
         "sha256": "F7C0B441C0AAF4FA4A2F5B3FE45474A961463B9728ABAC282419FB33789675D6",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1277,7 +1267,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -1296,7 +1286,6 @@
         "sha256": "2E26054A33ADD857A18FF7952D46BD3A4D2D9A407832DB380A4C08971F9FAACB",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1340,7 +1329,7 @@
       "required": false,
       "semantic_role": "split_authority",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -1359,7 +1348,6 @@
         "sha256": "D34B6FCCC721A9F9866B067418C0740F2CF5CEB00C003A7B57D279008AE32258",
         "verified_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       },
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1406,7 +1394,7 @@
       "required": true,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
@@ -1425,7 +1413,6 @@
         "sha256": "6E3F74C26FC6BBEBEF8E38808D219418C4F05079474CCC8163330C7D817B60A0",
         "verified_sha": "947a2988b720a42ed319fdcfc0eddbfdde9be496"
       },
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1492,7 +1479,7 @@
       "required": true,
       "semantic_role": "field_route_authority",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
         "evidence_sha256": "4855AE00D975C5E05066CF21F73C6FA3DC08A15280DD9AD145D5EA5F30B1CF7F",
         "level": "STATIC_VERIFIED",
@@ -1506,12 +1493,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [
-        "1,683 FIELD UNIVERSE",
-        "450 TYPED CAPABILITIES",
-        "NO PERFORMANCE",
-        "NO OOS"
-      ],
       "color": "#f9a825",
       "contracts": [],
       "critical": false,
@@ -1546,7 +1527,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -1560,14 +1541,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [
-        "421 CAPABILITY METRICS",
-        "284 FUNDAMENTAL REPRESENTATIONS",
-        "4,931 WITHIN-CONTEXT NMI PAIRS",
-        "PLATE NOT EVALUATED",
-        "NO PERFORMANCE",
-        "NO OOS"
-      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -1656,7 +1629,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "tests/test_field_information_census.py",
         "evidence_sha256": "837FE2F72EAAFDE1703B699031850EDB1E3770A4C0602AE018FE93FE1F46B87D",
         "level": "STATIC_VERIFIED",
@@ -1670,14 +1643,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [
-        "272 REPRESENTATIVES",
-        "62 TRUE1MIN",
-        "204 FUNDAMENTAL",
-        "6 CHIP",
-        "EXPLORATORY",
-        "NOT SEARCH AUTHORITY"
-      ],
       "color": "#f9a825",
       "contracts": [],
       "critical": false,
@@ -1720,7 +1685,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -1734,14 +1699,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [
-        "466,944 STRUCTURAL ATTEMPTS",
-        "42,189 ROUTE-LEVEL EXACT IDENTITIES",
-        "264/272 CORE ROOTS",
-        "8 HELD",
-        "NO PERFORMANCE",
-        "NO OOS"
-      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -1809,7 +1766,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/run_manifest.json",
         "evidence_sha256": "09C12C713CABE838DAE5A27DBC53709C7F6D277C2E8ADA810E64D855B10E0891",
         "level": "STATIC_VERIFIED",
@@ -1823,13 +1780,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [
-        "FROZEN ROOT SCOPE",
-        "ZERO ACTIVE BUDGET",
-        "PLATE DISABLED",
-        "2026 SEALED",
-        "NOT SEARCH AUTHORITY"
-      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -1898,7 +1848,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
         "evidence_sha256": "A986BB2D38D8C4716E85F8561ACC3551622AEA06EC27FF6326E1EE19FA132B27",
         "level": "STATIC_VERIFIED",
@@ -1912,7 +1862,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -1982,7 +1931,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -1996,7 +1945,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2070,7 +2018,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2084,7 +2032,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2138,7 +2085,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2157,14 +2104,6 @@
         "sha256": "DCBEA382D2B2875FB5D93837B23EECE67576410F8B98CE69E6DCA0CAFEADD16C",
         "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       },
-      "claim_badges": [
-        "4 DISCLOSURE ROOT RECEIPTS",
-        "1,852,463 DEVELOPMENT STOCK-SESSIONS",
-        "CURRENT-SNAPSHOT AS-OF ONLY",
-        "NO REVISION REPLAY",
-        "NO PERFORMANCE",
-        "NO OOS"
-      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2302,7 +2241,7 @@
       "required": false,
       "semantic_role": "pit_fundamental_observable_episode_authority",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "tests/test_pit_fundamental_fabric.py",
         "evidence_sha256": "20617E5E750049057A210DDE3451559B55388D7AD869605D0E9839E461A24769",
         "level": "STATIC_VERIFIED",
@@ -2316,7 +2255,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2348,7 +2286,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2362,7 +2300,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#f9a825",
       "contracts": [],
       "critical": false,
@@ -2417,7 +2354,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2431,7 +2368,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#f9a825",
       "contracts": [
         {
@@ -2480,7 +2416,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
         "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
         "level": "STATIC_VERIFIED",
@@ -2499,7 +2435,6 @@
         "sha256": "A8BD94F43A2A7C58705C925FDF6FF8269C07042E58110CE296CB37BB85D9C02C",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2557,7 +2492,7 @@
       "required": false,
       "semantic_role": "candidate_identity_authority",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json",
         "evidence_sha256": "115218107C43C1B7CB9FB3E0039DA8261CB45E07CF4177915B21172DDA69632D",
         "level": "STATIC_VERIFIED",
@@ -2576,7 +2511,6 @@
         "sha256": "E652D586A518A7512B9A5C30D81898C4F4A77598CD8FF5808D1CECB4BAC9EF1F",
         "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2635,7 +2569,7 @@
       "required": false,
       "semantic_role": "matched_pair_authority",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
         "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
@@ -2654,7 +2588,6 @@
         "sha256": "F2D55DD23FF220141333F0424DCD8E46CF336EB6F4D14FE7ACB0194F57506F70",
         "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2783,7 +2716,7 @@
       "required": false,
       "semantic_role": "formal_evaluation_authority",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
         "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
@@ -2799,17 +2732,9 @@
       "authority": {
         "path": "scripts/run_cn_phase3cm_streaming_qualification.py",
         "repo_ref": "",
-        "sha256": "755807C3C79ECA10BC76D2F9604E7940FD1B062CA650796380FDA8FFF4958DF5",
-        "verified_sha": "71828442e0b566bdec27a7a091e1b24c16b88b7b"
+        "sha256": "F7ABE32459F6FC9B0DDE447B7619CE6FEC60AB4B68F154B453A59623BDFCC7EB",
+        "verified_sha": "c25541b12dc4acda2927db95843cc027616e0fb6"
       },
-      "claim_badges": [
-        "256 DEVELOPMENT PAIRS",
-        "245 EVALUATED",
-        "EVALUATOR 7DF57CE",
-        "KERNEL OPT PARTIAL 1.903X",
-        "NO OOS",
-        "NO PROMOTION"
-      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -2854,8 +2779,9 @@
         "src/our_system_phase2/services/phase3cm_streaming_portfolio.py",
         "src/our_system_phase2/services/phase3cm_streaming_checkpoint.py",
         "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_DECISION.json",
-        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_PARTITIONED_BACKEND_EXECUTION_RECEIPT.json",
-        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
+        "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_PHASE3CM_1024_WAVE_EXECUTION_RECEIPT.json",
+        "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
+        "reports/cn_phase3cm_1024_development_confirmation_20260720/artifact_index.json",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "promotion_requirements": [
@@ -2868,15 +2794,21 @@
         "scripts_run_cn_phase3cm_streaming_qualification",
         "scripts_run_cn_phase3cm_streaming_qualification_block_boundaries",
         "scripts_run_cn_phase3cm_streaming_qualification_candidate_direction",
+        "scripts_run_cn_phase3cm_streaming_qualification_candidate_finalization_seed_map",
         "scripts_run_cn_phase3cm_streaming_qualification_candidate_pairs",
         "scripts_run_cn_phase3cm_streaming_qualification_finalize_pairs",
         "scripts_run_cn_phase3cm_streaming_qualification_finite_float",
         "scripts_run_cn_phase3cm_streaming_qualification_json_string_list",
         "scripts_run_cn_phase3cm_streaming_qualification_load_plan",
         "scripts_run_cn_phase3cm_streaming_qualification_main",
+        "scripts_run_cn_phase3cm_streaming_qualification_order_candidate_pairs",
         "scripts_run_cn_phase3cm_streaming_qualification_pair_batches",
+        "scripts_run_cn_phase3cm_streaming_qualification_phase_e_plan_pair_order",
         "scripts_run_cn_phase3cm_streaming_qualification_portfolio_continuation_payload",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_186",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_198",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_232",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_278",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_57",
         "scripts_run_cn_phase3cm_streaming_qualification_raw_fields",
         "scripts_run_cn_phase3cm_streaming_qualification_read_csv",
         "scripts_run_cn_phase3cm_streaming_qualification_restore_portfolio_continuation_payload",
@@ -2927,15 +2859,23 @@
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_batchedportfoliokernel_init",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_batchedportfoliokernel_restore_continuation_payload",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_boundaries",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_filtered_rank_quantile_pair",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_linear_quantile",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_linear_quantile_from_ordered",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_linear_quantile_pair",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_mapping_kernel",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_pearson",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_portfolioblockresult",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_prepare_label_orders",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_quantile_from_order_stats",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rank_average",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rank_average_with_order",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rank_filtered_returns_from_order",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_1",
-        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_386",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_146",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_197",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_241",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_557",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_turnover_cost_kernel",
         "tests_test_phase3cm_streaming_checkpoint",
         "tests_test_phase3cm_streaming_checkpoint_payload",
@@ -2955,26 +2895,31 @@
         "tests_test_phase3cm_streaming_portfolio_fixture",
         "tests_test_phase3cm_streaming_portfolio_float64_bits",
         "tests_test_phase3cm_streaming_portfolio_legacy_linear_quantile",
+        "tests_test_phase3cm_streaming_portfolio_legacy_rank_average",
         "tests_test_phase3cm_streaming_portfolio_legacy_rows",
         "tests_test_phase3cm_streaming_portfolio_test_batched_native_portfolio_matches_merged_legacy_reference",
         "tests_test_phase3cm_streaming_portfolio_test_full_market_barrier_differs_from_shard_local_mapping",
         "tests_test_phase3cm_streaming_portfolio_test_independent_pair_batch_kernels_match_one_full_candidate_kernel",
         "tests_test_phase3cm_streaming_portfolio_test_linear_quantile_does_not_move_an_equal_cutoff_tie_by_one_ulp",
         "tests_test_phase3cm_streaming_portfolio_test_linear_quantile_pair_is_bit_and_selection_mask_exact",
+        "tests_test_phase3cm_streaming_portfolio_test_mapping_fails_closed_when_finite_support_is_below_minimum",
+        "tests_test_phase3cm_streaming_portfolio_test_mapping_reuses_orders_without_changing_randomized_legacy_results",
         "tests_test_phase3cm_streaming_portfolio_test_native_pearson_returns_nan_for_constant_rank_vector",
-        "tests_test_phase3cm_streaming_portfolio_test_portfolio_turnover_state_matches_across_block_boundary"
+        "tests_test_phase3cm_streaming_portfolio_test_portfolio_turnover_state_matches_across_block_boundary",
+        "tests_test_phase3cm_streaming_portfolio_test_reused_orders_match_legacy_ranking_and_quantiles_with_nonfinite_values",
+        "tests_test_phase3cm_streaming_portfolio_test_shared_label_order_rebuilds_candidate_specific_return_rank_exactly"
       ],
       "required": false,
       "semantic_role": "qualified_experimental_evaluation_path",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
-        "evidence_ref": "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_REPORT.md",
-        "evidence_sha256": "33BD2B100BF6FC48EC66C1B03ED6531B6CD1E1B54C1ABCEF143431E333A64A11",
+        "checked_at": "2026-07-20T12:38:05.400234+00:00",
+        "evidence_ref": "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
+        "evidence_sha256": "EE33C690CD0E83BF0C325F3CD17FFA592E0BD85270B116E462DC39940294BCCC",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a59c3956e078cd7c7861a57ec3d1d78b724c13c1"
+        "verified_at_sha": "c25541b12dc4acda2927db95843cc027616e0fb6"
       },
       "visible_by_default": true
     },
@@ -2986,7 +2931,6 @@
         "sha256": "40C65CB37E6E5F8239AFE446269216345CBE234E17202A58DF4E54751962519A",
         "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
-      "claim_badges": [],
       "color": "#f9a825",
       "contracts": [
         {
@@ -3039,7 +2983,7 @@
       "required": false,
       "semantic_role": "train_feedback_authority",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_TEST_RESULTS.json",
         "evidence_sha256": "FC996215C353588E01A4537EBED4B86B85A9AB6E556B223CB54EF92CDB4D17D9",
         "level": "STATIC_VERIFIED",
@@ -3053,7 +2997,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [],
       "critical": false,
@@ -3100,7 +3043,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -3114,7 +3057,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3169,7 +3111,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -3183,7 +3125,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3238,7 +3179,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -3252,7 +3193,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3279,7 +3219,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -3293,7 +3233,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3346,7 +3285,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -3360,7 +3299,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#757575",
       "contracts": [
         {
@@ -3387,7 +3325,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -3401,7 +3339,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3428,7 +3365,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-18T20:32:26.199643+00:00",
+        "checked_at": "2026-07-20T12:27:17.055814+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -3442,7 +3379,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "D0E01B6DD84DF7AAEC621B0459170A21A72E84FBBD9A2FC383BE77173F3DE249"
+    "sha256": "E25BFA1A81C5A5902FACA82A975E84BF128834BB15F2C83D60BABF2E627D74B5"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -3453,13 +3390,13 @@
     }
   ],
   "raw": {
-    "built_at_commit": null,
-    "edge_count": 14432,
-    "node_count": 4903,
+    "built_at_commit": "c25541b12dc4acda2927db95843cc027616e0fb6",
+    "edge_count": 12948,
+    "node_count": 5270,
     "path": ".planning/graphs/graph.json",
-    "sha256": "DA76EE790EAD88F495EAC77AD0CCFE8C8F02BF987FA95806346F8C82D5327604"
+    "sha256": "7459E2A5A0BF381DFC91B1E1B2077B43A9654E409DECF3260C0BF23E69B9CA56"
   },
-  "repo_head": "7aa6ba434122af3fc077d5e65d5f6e6120678e66",
+  "repo_head": "c25541b12dc4acda2927db95843cc027616e0fb6",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
@@ -3470,7 +3407,7 @@
     "errors": 0,
     "runtime_edges": 0,
     "runtime_nodes": 0,
-    "warnings": 1
+    "warnings": 0
   },
   "trace": {
     "path": null,

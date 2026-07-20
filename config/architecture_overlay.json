@@ -495,15 +495,16 @@
         "src/our_system_phase2/services/phase3cm_streaming_portfolio.py",
         "src/our_system_phase2/services/phase3cm_streaming_checkpoint.py",
         "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_DECISION.json",
-        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_PARTITIONED_BACKEND_EXECUTION_RECEIPT.json",
-        "reports/cn_phase3cm_256_diagnostic_supplemental_disclosure_20260718/phase3cm/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
+        "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_PHASE3CM_1024_WAVE_EXECUTION_RECEIPT.json",
+        "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
+        "reports/cn_phase3cm_1024_development_confirmation_20260720/artifact_index.json",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "claim_badges": [
-        "256 DEVELOPMENT PAIRS",
-        "245 EVALUATED",
-        "EVALUATOR 7DF57CE",
-        "KERNEL OPT PARTIAL 1.903X",
+        "1024 DEVELOPMENT PAIRS",
+        "989 EVALUATED",
+        "35 SEMANTIC BLOCKERS",
+        "PARALLELISM ENGAGED",
         "NO OOS",
         "NO PROMOTION"
       ],
@@ -512,7 +513,7 @@
       "semantic_role": "qualified_experimental_evaluation_path",
       "authority": {
         "path": "scripts/run_cn_phase3cm_streaming_qualification.py",
-        "verified_sha": "71828442e0b566bdec27a7a091e1b24c16b88b7b"
+        "verified_sha": "c25541b12dc4acda2927db95843cc027616e0fb6"
       },
       "contracts": [
         {
@@ -543,8 +544,8 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_REPORT.md",
-        "verified_at_sha": "a59c3956e078cd7c7861a57ec3d1d78b724c13c1"
+        "evidence_ref": "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
+        "verified_at_sha": "c25541b12dc4acda2927db95843cc027616e0fb6"
       },
       "promotion_requirements": [
         "separate strict Stage A authorization",
