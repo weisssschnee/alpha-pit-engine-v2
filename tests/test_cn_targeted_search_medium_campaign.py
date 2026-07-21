@@ -11,6 +11,7 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
     _load_historical_dedupe,
     _block_compute_rows,
+    _git_sha,
     _registry_binding,
     build_seed_attempt_manifest,
 )
@@ -135,3 +136,9 @@ def test_runtime_gate_counts_only_completed_compute_blocks() -> None:
 
     assert len(rows) == 3
     assert all(row["normalized_cpu_utilization"] == pytest.approx(0.75) for row in rows)
+
+
+def test_deployment_commit_sha_supports_gitless_77o_workspace(monkeypatch) -> None:
+    expected = "7" * 40
+    monkeypatch.setenv("CN_CAMPAIGN_REPO_SHA", expected)
+    assert _git_sha() == expected

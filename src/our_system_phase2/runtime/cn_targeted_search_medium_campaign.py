@@ -108,6 +108,11 @@ def _source_hash(path: Path) -> str:
 
 
 def _git_sha() -> str:
+    deployment_sha = str(os.environ.get("CN_CAMPAIGN_REPO_SHA") or "").lower()
+    if len(deployment_sha) == 40 and all(
+        character in "0123456789abcdef" for character in deployment_sha
+    ):
+        return deployment_sha
     completed = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=REPO,
