@@ -264,6 +264,119 @@ def _group_rows(rows: list[dict[str, Any]], key: str) -> dict[str, list[dict[str
     return groups
 
 
+def build_iterative_feedback_views(
+    rows: list[dict[str, Any]],
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
+    """Project matched-pair outcomes into V1 feedback and run-health views.
+
+    Infrastructure failures are intentionally excluded from financial route
+    health.  Negative development evidence remains campaign-local; this view
+    never emits a permanent freeze decision.
+    """
+
+    ledger: list[dict[str, Any]] = []
+    positive: list[dict[str, Any]] = []
+    negative: list[dict[str, Any]] = []
+    run_health: list[dict[str, Any]] = []
+    for source in rows:
+        status = str(source.get("pair_evaluation_status") or "")
+        pair_id = str(source.get("pair_id") or "")
+        route_id = str(source.get("route_id") or source.get("generator_route") or "")
+        if status not in {"PAIR_EVALUATED", "PAIR_EVALUATION_BLOCKED"}:
+            run_health.append(
+                {
+                    "pair_id": pair_id,
+                    "route_id": route_id,
+                    "run_health_status": status or "UNKNOWN_INFRASTRUCTURE_STATUS",
+                    "failure_reason": str(source.get("failure_reason") or source.get("error") or ""),
+                    "feedback_data_role": "development",
+                    "evaluation_access_guard": str(source.get("evaluation_access_guard") or GUARD_VERSION),
+                }
+            )
+            continue
+
+        gross = safe_float(source.get("matched_gross_increment"), float("nan"))
+        net = safe_float(source.get("matched_net_increment"), float("nan"))
+        if not math.isfinite(net):
+            net = safe_float(source.get("matched_train_increment"), float("nan"))
+        cost_difference = safe_float(source.get("matched_trading_cost_difference"), float("nan"))
+        turnover = safe_float(source.get("pair_turnover_metric"), float("nan"))
+        blockers = str(source.get("pair_train_reward_blockers") or "")
+        blockers = "|".join(
+            value for value in (blockers, str(source.get("pair_evaluation_blockers") or "")) if value
+        )
+        labels: list[str] = []
+        if math.isfinite(gross) and gross > 0.0:
+            labels.append("GROSS_POSITIVE")
+        elif math.isfinite(gross) and gross < 0.0:
+            labels.append("GROSS_NEGATIVE")
+        if math.isfinite(net) and net > 0.0:
+            labels.append("NET_POSITIVE")
+        elif math.isfinite(net) and net < 0.0:
+            labels.append("NET_NEGATIVE")
+        cost_killed = (
+            math.isfinite(gross)
+            and math.isfinite(net)
+            and math.isfinite(cost_difference)
+            and gross > 0.0
+            and net <= 0.0
+            and cost_difference > 0.0
+        )
+        if cost_killed:
+            labels = [label for label in labels if label not in {"NET_NEGATIVE"}]
+            labels.append("COST_KILLED")
+        lower_blockers = blockers.lower()
+        if "turnover" in lower_blockers:
+            labels.append("TURNOVER_KILLED")
+        if any(token in lower_blockers for token in ("wrong_lag", "future_signal", "illegal_semantic", "high_corr")):
+            labels.append("SEMANTIC_BLOCKED")
+        if "empty_pair_support" in lower_blockers or "support" in lower_blockers:
+            labels.append("SUPPORT_BLOCKED")
+        if "control" in lower_blockers and any(
+            token in lower_blockers for token in ("constant", "empty", "degenerate", "behavior_identity")
+        ):
+            labels.append("CONTROL_DEGENERATE")
+        if "behavior_identity_equals" in lower_blockers:
+            labels.append("BEHAVIOR_DUPLICATE")
+        if "instability" in lower_blockers:
+            labels.append("INSTABILITY")
+        if not labels and status == "PAIR_EVALUATION_BLOCKED":
+            labels.append("NO_INCREMENT")
+
+        item = {
+            "pair_id": pair_id,
+            "route_id": route_id,
+            "matched_gross_increment": _round(gross),
+            "matched_net_increment": _round(net),
+            "matched_trading_cost_difference": _round(cost_difference),
+            "pair_turnover_metric": _round(turnover),
+            "outcome_labels": labels,
+            "feedback_scope": "CAMPAIGN_LOCAL_DEVELOPMENT",
+            "feedback_data_role": str(source.get("feedback_data_role") or "development"),
+            "evaluation_access_guard": str(source.get("evaluation_access_guard") or GUARD_VERSION),
+        }
+        ledger.append(item)
+        negative_labels = [
+            label
+            for label in labels
+            if label in {
+                "GROSS_NEGATIVE", "NET_NEGATIVE", "COST_KILLED", "TURNOVER_KILLED",
+                "SEMANTIC_BLOCKED", "SUPPORT_BLOCKED", "CONTROL_DEGENERATE",
+                "BEHAVIOR_DUPLICATE", "INSTABILITY", "NO_INCREMENT",
+            }
+        ]
+        if negative_labels:
+            negative.append({**item, "negative_labels": negative_labels, "recommended_action": "REPAIR" if any(label in negative_labels for label in ("COST_KILLED", "TURNOVER_KILLED")) else "DOWNWEIGHT"})
+        elif "GROSS_POSITIVE" in labels and "NET_POSITIVE" in labels:
+            positive.append({**item, "positive_labels": ["GROSS_POSITIVE", "NET_POSITIVE"]})
+    return ledger, positive, negative, run_health
+
+
 def _family_tables(
     rows: list[dict[str, Any]],
     *,

@@ -254,16 +254,37 @@ class RegistryDrivenGenerator:
         candidate, control = attach_pair_contract(candidate, control)
         return GeneratedPair(candidate, control)
 
-    def generate_route(self, route_id: str, *, proposal_budget: int, seed: int) -> list[dict[str, Any]]:
+    def generate_route_attempts(
+        self,
+        route_id: str,
+        *,
+        scheduled_pairs: int,
+        seed: int,
+        attempt_start: int = 0,
+        attempt_limit: int | None = None,
+        existing_exact_identities: set[str] | None = None,
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        """Consume a deterministic registry-route attempt stream.
+
+        The attempt index, not an adaptive arm, defines the stream.  A
+        feedback-on/off comparison can therefore share this exact output and
+        differ only in which route budgets consume it.
+        """
+
         if route_id not in ROUTE_IDS:
             raise KeyError(f"unknown route: {route_id}")
-        if proposal_budget <= 0 or proposal_budget % 2:
-            raise ValueError("route proposal budget must be a positive even number including controls")
+        if scheduled_pairs <= 0:
+            raise ValueError("scheduled_pairs must be positive")
         output: list[dict[str, Any]] = []
-        exact_seen: set[str] = set()
-        index = 0
-        max_attempts = max(1000, proposal_budget * 100)
-        while len(output) < proposal_budget and index < max_attempts:
+        exact_seen: set[str] = set(existing_exact_identities or ())
+        start = max(0, int(attempt_start))
+        index = start
+        max_attempts = int(attempt_limit) if attempt_limit is not None else max(1000, scheduled_pairs * 100)
+        legal_pairs = 0
+        exact_unique_pairs = 0
+        illegal_pairs = 0
+        exact_duplicate_pairs = 0
+        while len(output) // 2 < scheduled_pairs and index < start + max_attempts:
             pair = self._pair(route_id, index, seed)
             compiled_rows: list[dict[str, Any]] = []
             pair_ids: set[str] = set()
@@ -273,13 +294,55 @@ class RegistryDrivenGenerator:
                 compiled_rows.append(enriched)
                 if verdict.legal:
                     pair_ids.add(verdict.exact_identity)
-            if all(bool(row["legal"]) for row in compiled_rows) and len(pair_ids) == 2 and not exact_seen.intersection(pair_ids):
+            legal = all(bool(row["legal"]) for row in compiled_rows) and len(pair_ids) == 2
+            if legal:
+                legal_pairs += 1
+            else:
+                illegal_pairs += 1
+            unique = legal and not exact_seen.intersection(pair_ids)
+            if unique:
+                exact_unique_pairs += 1
+                for row in compiled_rows:
+                    row["generation_attempt_index"] = int(index)
+                    row["generation_stream_id"] = stable_hash(
+                        {"generator_version": GENERATOR_VERSION, "route_id": route_id, "seed": int(seed)}
+                    )
                 output.extend(compiled_rows)
                 exact_seen.update(pair_ids)
+            elif legal:
+                exact_duplicate_pairs += 1
             index += 1
+        generated_pairs = len(output) // 2
+        funnel = {
+            "route_id": route_id,
+            "scheduled_pairs": int(scheduled_pairs),
+            "generation_attempts": int(index - start),
+            "legal_pairs": int(legal_pairs),
+            "exact_unique_pairs": int(exact_unique_pairs),
+            "behavior_unique_pairs": 0,
+            "admitted_pairs": 0,
+            "illegal_pairs": int(illegal_pairs),
+            "exact_duplicate_pairs": int(exact_duplicate_pairs),
+            "attempt_start": int(start),
+            "attempt_stop": int(index),
+            "seed": int(seed),
+            "underfill_reason": "" if generated_pairs == scheduled_pairs else "GENERATION_ATTEMPT_LIMIT",
+            "spillover_reason": "",
+        }
+        return output, funnel
+
+    def generate_route(self, route_id: str, *, proposal_budget: int, seed: int) -> list[dict[str, Any]]:
+        if proposal_budget <= 0 or proposal_budget % 2:
+            raise ValueError("route proposal budget must be a positive even number including controls")
+        output, funnel = self.generate_route_attempts(
+            route_id,
+            scheduled_pairs=proposal_budget // 2,
+            seed=seed,
+        )
         if len(output) != proposal_budget:
             raise RuntimeError(
-                f"natural underfill after exact pre-budget dedup on {route_id}: {len(output)} != {proposal_budget}"
+                f"natural underfill after exact pre-budget dedup on {route_id}: {len(output)} != {proposal_budget}; "
+                f"reason={funnel['underfill_reason']}"
             )
         return output
 

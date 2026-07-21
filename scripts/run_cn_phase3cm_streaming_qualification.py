@@ -29,6 +29,11 @@ from our_system_phase2.services.phase3cm_streaming_capacity import (
 from our_system_phase2.services.phase3cm_streaming_dag import SharedMultiCandidateDAGPlan
 from our_system_phase2.services.phase3cm_streaming_expression import StreamingExpressionExecutor
 from our_system_phase2.services.phase3cm_streaming_portfolio import BatchedPortfolioKernel
+from our_system_phase2.services.portfolio_behavior_archive import (
+    PortfolioBehaviorArchive,
+    StreamingLabelFreeBehavior,
+    pair_behavior_record,
+)
 from our_system_phase2.services.phase3cm_streaming_reducer import StreamingPortfolioReducer
 from our_system_phase2.services.phase3cm_streaming_resource_contract import (
     FrozenExecutionPlan,
@@ -412,6 +417,11 @@ def _portfolio_continuation_payload(batches: Sequence[Mapping[str, Any]]) -> dic
                 "pair_indices": list(batch["pair_indices"]),
                 "candidate_indices": list(batch["candidate_indices"]),
                 "payload": batch["kernel"].continuation_payload(),
+                "label_free_behavior_payload": (
+                    batch["label_free_behavior"].continuation_payload()
+                    if batch.get("label_free_behavior") is not None
+                    else None
+                ),
             }
             for batch in batches
         ],
@@ -437,6 +447,11 @@ def _restore_portfolio_continuation_payload(
         ):
             raise ValueError("portfolio continuation candidate index drift")
         expected["kernel"].restore_continuation_payload(observed["payload"])
+        behavior_payload = observed.get("label_free_behavior_payload")
+        if behavior_payload is not None:
+            if expected.get("label_free_behavior") is None:
+                raise ValueError("checkpoint contains unexpected label-free behavior state")
+            expected["label_free_behavior"].restore_continuation_payload(behavior_payload)
 
 
 def _load_plan(path: Path) -> FrozenExecutionPlan:
@@ -471,6 +486,7 @@ def _finalize_pairs(
     reducer: StreamingPortfolioReducer,
     support: PairSupportAccumulator,
     binding: Mapping[str, Any],
+    label_free_behavior_by_candidate: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     reward_by_id = {str(row.get("candidate_id")): dict(row) for row in reward_rows}
     member_binding = {str(row["candidate_id"]): dict(row) for row in binding["candidate_members"]}
@@ -491,7 +507,25 @@ def _finalize_pairs(
             blockers.append("empty_pair_support")
         primary_behavior = reducer.behavior_identity(2 * pair_index)
         control_behavior = reducer.behavior_identity(2 * pair_index + 1)
-        if primary_behavior == control_behavior and not _truthy(primary.get("allow_behavior_equivalence")):
+        if label_free_behavior_by_candidate is not None:
+            primary_exact_behavior = str(
+                label_free_behavior_by_candidate.get(str(primary["candidate_id"]), {}).get(
+                    "portfolio_behavior_signature_id"
+                )
+                or ""
+            )
+            control_exact_behavior = str(
+                label_free_behavior_by_candidate.get(str(control["candidate_id"]), {}).get(
+                    "portfolio_behavior_signature_id"
+                )
+                or ""
+            )
+            exact_behavior_duplicate = bool(primary_exact_behavior) and (
+                primary_exact_behavior == control_exact_behavior
+            )
+        else:
+            exact_behavior_duplicate = primary_behavior == control_behavior
+        if exact_behavior_duplicate and not _truthy(primary.get("allow_behavior_equivalence")):
             blockers.append("control_behavior_identity_equals_primary")
         primary_spread = float(np.max(reducer.stats[2 * pair_index, :, -1]))
         control_spread = float(np.max(reducer.stats[2 * pair_index + 1, :, -1]))
@@ -545,6 +579,7 @@ def main() -> int:
     parser.add_argument("--field-sidecar-root", type=Path, required=True)
     parser.add_argument("--label-sidecar-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--iterative-batch-id", default="")
     parser.add_argument("--execution-plan", type=Path)
     parser.add_argument("--block-sessions", type=int, default=5)
     parser.add_argument("--pair-batch-size", type=int, default=4)
@@ -719,6 +754,20 @@ def main() -> int:
                 "directions": np.asarray(
                     [_candidate_direction(row) for row in members],
                     dtype=np.float64,
+                ),
+                "label_free_behavior": StreamingLabelFreeBehavior(
+                    candidate_ids=tuple(str(row["candidate_id"]) for row in members),
+                    code_count=len(symbols),
+                    coordinate_binding=_stable_hash(
+                        {
+                            "input_binding_hash": binding["binding_hash"],
+                            "execution_plan_hash": plan.execution_plan_hash,
+                            "behavior_scope": "full-coordinate-development",
+                        }
+                    ),
+                    scope="full",
+                    min_obs=int(args.min_obs),
+                    top_quantile=float(args.top_quantile),
                 ),
                 "kernel": BatchedPortfolioKernel(
                     candidate_count=len(members),
@@ -990,6 +1039,13 @@ def main() -> int:
                     pair_batch_ordinal=batch_ordinal,
                 )
                 del common_masks
+            portfolio_batch["label_free_behavior"].update_block(
+                signals=signals,
+                time_ids=block.time_ids,
+                code_ids=block.code_ids,
+                trade_times_ns=block.trade_times_ns,
+                directions=portfolio_batch["directions"],
+            )
             result = portfolio_batch["kernel"].evaluate_block(
                 signals=signals,
                 labels=block.labels,
@@ -1110,14 +1166,68 @@ def main() -> int:
             )
             split_rows.extend(per_split)
             reward_rows.append(reward)
+        behavior_by_candidate: dict[str, dict[str, Any]] = {}
+        for portfolio_batch in portfolio_batches:
+            for behavior_row in portfolio_batch["label_free_behavior"].rows():
+                candidate_id = str(behavior_row.get("candidate_id") or "")
+                if candidate_id in behavior_by_candidate:
+                    raise RuntimeError(f"duplicate full behavior identity row: {candidate_id}")
+                behavior_by_candidate[candidate_id] = behavior_row
         pair_rows = _finalize_pairs(
             candidates=candidates,
             reward_rows=reward_rows,
             reducer=reducer,
             support=support,
             binding=binding,
+            label_free_behavior_by_candidate=behavior_by_candidate,
         )
+        candidate_by_id = {str(row["candidate_id"]): row for row in candidates}
+        behavior_archive = PortfolioBehaviorArchive()
+        behavior_by_pair: dict[str, dict[str, Any]] = {}
+        for pair_row in pair_rows:
+            primary_id = str(pair_row["primary_candidate_id"])
+            control_id = str(pair_row["control_candidate_id"])
+            primary_candidate = candidate_by_id[primary_id]
+            record = pair_behavior_record(
+                batch_id=str(args.iterative_batch_id or output_root.name),
+                pair_id=str(pair_row["pair_id"]),
+                route_id=str(primary_candidate.get("route_id") or ""),
+                primary_candidate_id=primary_id,
+                control_candidate_id=control_id,
+                structural_family_id=str(
+                    primary_candidate.get("structural_family_id")
+                    or primary_candidate.get("family_id")
+                    or ""
+                ),
+                signal_cluster_id=str(primary_candidate.get("signal_cluster_id") or ""),
+                primary_behavior=behavior_by_candidate[primary_id],
+                control_behavior=behavior_by_candidate[control_id],
+            )
+            behavior_archive.add(record)
+            behavior_by_pair[str(pair_row["pair_id"])] = record
+        for pair_row in pair_rows:
+            authoritative = behavior_by_pair[str(pair_row["pair_id"])]
+            pair_row.update(
+                {
+                    "route_id": authoritative["route_id"],
+                    "structural_family_id": authoritative["structural_family_id"],
+                    "signal_cluster_id": authoritative["signal_cluster_id"],
+                    "portfolio_behavior_signature_id": authoritative[
+                        "portfolio_behavior_signature_id"
+                    ],
+                    "portfolio_behavior_family_id": authoritative[
+                        "portfolio_behavior_family_id"
+                    ],
+                    "behavior_status": authoritative["behavior_status"],
+                    "v1_behavior_identity_authority": "LABEL_FREE_FULL_COORDINATE",
+                    "legacy_primary_behavior_identity_role": "COMPATIBILITY_ONLY",
+                    "legacy_control_behavior_identity_role": "COMPATIBILITY_ONLY",
+                }
+            )
         phase.add(candidate_count=len(candidates), pair_count=len(pair_rows))
+
+    behavior_archive_path = output_root / "CN_PORTFOLIO_BEHAVIOR_FULL.parquet"
+    behavior_archive.write_parquet(behavior_archive_path)
 
     reward_atom_artifact = _write_csv(
         output_root / "CN_STREAMING_REWARD_ATOMS.csv",
@@ -1218,6 +1328,12 @@ def main() -> int:
         "support_identities": support.identities(),
         "candidate_rewards": reward_rows,
         "pair_results": pair_rows,
+        "portfolio_behavior_archive": {
+            "path": str(behavior_archive_path),
+            "sha256": _sha256(behavior_archive_path),
+            "row_count": len(behavior_archive.rows),
+            "identity_authority": "LABEL_FREE_FULL_COORDINATE",
+        },
         "reward_atoms": reward_atom_artifact,
         "split_rows": split_rows,
         "expression_audits": expression_audits,

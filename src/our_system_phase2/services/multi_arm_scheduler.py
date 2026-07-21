@@ -15,6 +15,7 @@ from typing import Any
 from our_system_phase2.services.evaluation_access_guard import GUARD_VERSION, assert_train_only_feedback_rows
 
 from our_system_phase2.services.candidate_schema import safe_float
+from our_system_phase2.services.unified_capability_registry import ROUTE_IDS
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,208 @@ DEFAULT_ARM_PROFILES = [
     ArmProfile("cem_exploit", "phase3bs-adaptive-ucb-cem-practice", "guarded exploit around proven clean families", 0.14, 0.00, 0.22, "exploit"),
     ArmProfile("random_orthogonal", "control-random-orthogonal", "control and novelty baseline", 0.08, 0.04, 0.14, "control"),
 ]
+
+
+def _bounded_integer_allocation(
+    weighted_rows: list[dict[str, Any]],
+    *,
+    total: int,
+    minimum: int = 0,
+    maximum: int | None = None,
+) -> list[int]:
+    """Allocate an exact integer total with deterministic floors and caps."""
+
+    if total < 0:
+        raise ValueError("allocation total cannot be negative")
+    count = len(weighted_rows)
+    if count == 0:
+        if total:
+            raise ValueError("cannot allocate a non-zero total to no rows")
+        return []
+    cap = int(maximum) if maximum is not None else total
+    floor = max(0, int(minimum))
+    if floor * count > total or cap * count < total or floor > cap:
+        raise ValueError("allocation floors/caps cannot satisfy total")
+    budgets = [floor] * count
+    remaining = total - floor * count
+    weights = [max(0.0, safe_float(row.get("_allocation_weight"), 0.0)) for row in weighted_rows]
+    while remaining:
+        available = [index for index, budget in enumerate(budgets) if budget < cap]
+        if not available:
+            raise ValueError("allocation cap exhausted before total was reached")
+        denominator = sum(weights[index] for index in available)
+        exact = {
+            index: (remaining * weights[index] / denominator if denominator > 0 else remaining / len(available))
+            for index in available
+        }
+        granted = 0
+        for index in available:
+            addition = min(cap - budgets[index], int(math.floor(exact[index])))
+            budgets[index] += addition
+            granted += addition
+        remaining -= granted
+        if not remaining:
+            break
+        ranked = sorted(
+            available,
+            key=lambda index: (exact[index] - math.floor(exact[index]), weights[index], -index),
+            reverse=True,
+        )
+        for index in ranked:
+            if remaining <= 0:
+                break
+            if budgets[index] < cap:
+                budgets[index] += 1
+                remaining -= 1
+    return budgets
+
+
+def build_route_schedule(
+    route_rows: list[dict[str, Any]],
+    *,
+    total_pairs: int,
+    admission_pairs: int,
+    per_route_pair_cap: int = 12,
+    fresh_floor_pairs: int = 2,
+    min_actionable_support: int = 2,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Build the V1 schedule whose only top-level key is registry ``route_id``.
+
+    ``generation_mode`` is an attached label.  The legacy arm profiles above
+    remain callable for old campaigns, but they are not an authority input to
+    this schedule.
+    """
+
+    if total_pairs <= 0 or admission_pairs <= 0 or admission_pairs > total_pairs:
+        raise ValueError("route schedule requires 0 < admission_pairs <= total_pairs")
+    unknown = sorted({str(row.get("route_id") or "") for row in route_rows} - set(ROUTE_IDS))
+    if unknown:
+        raise ValueError(f"unknown unified registry routes: {unknown}")
+    by_route = {str(row.get("route_id") or ""): dict(row) for row in route_rows}
+    scheduled: list[dict[str, Any]] = []
+    actionable_positive = 0
+    actionable_negative = 0
+    clamped = 0
+    for route_id in ROUTE_IDS:
+        feedback = by_route.get(route_id, {})
+        support = max(0, int(safe_float(feedback.get("actionable_support"), 0.0)))
+        positive_density = safe_float(feedback.get("positive_matched_density"), 0.0)
+        median_reward = safe_float(feedback.get("median_matched_reward"), 0.0)
+        signal_novelty = safe_float(feedback.get("new_signal_cluster_rate"), 0.0)
+        behavior_novelty = safe_float(feedback.get("new_portfolio_behavior_rate"), 0.0)
+        cost_killed = safe_float(feedback.get("cost_conversion_rate"), 0.0)
+        turnover_killed = safe_float(feedback.get("turnover_killed_rate"), 0.0)
+        behavior_duplicates = safe_float(feedback.get("behavior_duplicate_rate"), 0.0)
+        exact_behavior_duplicates = safe_float(feedback.get("exact_behavior_duplicate_rate"), 0.0)
+        illegal_semantics = safe_float(feedback.get("illegal_semantic_rate"), 0.0)
+        wrong_lag = safe_float(feedback.get("semantic_wrong_lag_high_corr_rate"), 0.0)
+
+        action = "MAINTAIN"
+        generation_mode = "fresh"
+        weight = max(0.1, safe_float(feedback.get("initial_prior_weight"), 1.0))
+        route_concentration = safe_float(feedback.get("route_concentration"), 0.0)
+        if route_concentration > 0.25:
+            weight *= max(0.25, 1.0 - (route_concentration - 0.25) * 2.0)
+        reason = "registry-route prior with fresh floor"
+        actionable = support >= min_actionable_support
+        positive = (
+            actionable
+            and positive_density >= 0.60
+            and median_reward > 0.0
+            and max(signal_novelty, behavior_novelty) >= 0.50
+        )
+        negative = actionable and (
+            cost_killed >= 0.50
+            or turnover_killed >= 0.50
+            or behavior_duplicates >= 0.60
+            or (positive_density <= 0.20 and median_reward < 0.0)
+        )
+        if actionable and (wrong_lag > 0.0 or illegal_semantics > 0.0 or exact_behavior_duplicates > 0.0):
+            action = "FREEZE"
+            generation_mode = "fresh"
+            weight = 0.05
+            reason = "explicit PIT/wrong-lag/illegal-semantic or exact behavior duplicate evidence"
+            actionable_negative += 1
+        elif positive:
+            if route_id == "FIRSTN_PATH":
+                action = "REPAIR"
+                generation_mode = "repair"
+                weight = 0.75
+                reason = "FirstN remains turnover/mapping repair-only in V1"
+                actionable_negative += 1
+            else:
+                action = "EXPAND"
+                generation_mode = "exploit"
+                weight = 1.8
+                reason = "actionable matched positive density with signal/behavior novelty"
+                actionable_positive += 1
+        elif negative:
+            action = "REPAIR" if (cost_killed >= 0.50 or turnover_killed >= 0.50) else "DOWNWEIGHT"
+            generation_mode = "repair" if action == "REPAIR" else "fresh"
+            weight = 0.45
+            reason = "campaign-local negative matched response"
+            actionable_negative += 1
+        scheduled.append(
+            {
+                "route_id": route_id,
+                "generation_mode": generation_mode,
+                "generation_mode_constructor_status": "LABEL_ONLY",
+                "scheduler_action": action,
+                "scheduler_reason": reason,
+                "actionable_support": support,
+                "_allocation_weight": weight,
+            }
+        )
+
+    pair_budgets = _bounded_integer_allocation(
+        scheduled,
+        total=int(total_pairs),
+        minimum=max(0, int(fresh_floor_pairs)),
+        maximum=int(per_route_pair_cap),
+    )
+    for row, budget in zip(scheduled, pair_budgets):
+        row["scheduled_pairs"] = int(budget)
+        if row["scheduler_action"] == "EXPAND" and budget >= per_route_pair_cap:
+            row["feedback_application_status"] = "ACTIONABLE_FEEDBACK_CLAMPED"
+            clamped += 1
+        elif int(row["actionable_support"]) < min_actionable_support:
+            row["feedback_application_status"] = "NO_ACTIONABLE_FEEDBACK"
+        else:
+            row["feedback_application_status"] = "APPLIED"
+
+    admission_rows = [dict(row, _allocation_weight=float(row["scheduled_pairs"])) for row in scheduled]
+    admission_budgets = _bounded_integer_allocation(
+        admission_rows,
+        total=int(admission_pairs),
+        minimum=0,
+        maximum=int(per_route_pair_cap),
+    )
+    for row, budget in zip(scheduled, admission_budgets):
+        row["admission_pair_budget"] = int(budget)
+        row.pop("_allocation_weight", None)
+
+    summary = {
+        "top_level_scheduling_key": "unified_registry_route_id",
+        "generation_mode_role": "route_attached_action_label",
+        "legacy_default_arm_profiles": "COMPATIBILITY_ONLY",
+        "total_pairs": int(total_pairs),
+        "allocated_pairs": sum(int(row["scheduled_pairs"]) for row in scheduled),
+        "admission_pairs": int(admission_pairs),
+        "allocated_admission_pairs": sum(int(row["admission_pair_budget"]) for row in scheduled),
+        "per_route_pair_cap": int(per_route_pair_cap),
+        "actionable_positive_route_count": actionable_positive,
+        "actionable_negative_route_count": actionable_negative,
+        "actionable_feedback_clamped_route_count": clamped,
+        "positive_feedback_status": (
+            "APPLIED" if actionable_positive else "NO_ACTIONABLE_POSITIVE_FEEDBACK"
+        ),
+        "negative_feedback_status": (
+            "APPLIED" if actionable_negative else "NO_ACTIONABLE_NEGATIVE_FEEDBACK"
+        ),
+        "feedback_data_role": "development",
+        "evaluation_access_guard": GUARD_VERSION,
+    }
+    return scheduled, summary
 
 
 def read_csv_rows(path: Path | None) -> list[dict[str, Any]]:
