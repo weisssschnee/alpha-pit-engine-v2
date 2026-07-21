@@ -66,6 +66,42 @@ def test_compositional_profile_repairs_disclosure_exact_supply_without_second_au
     )
 
 
+def test_registry_attempt_stream_can_require_current_materialized_fields() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    generator = RegistryDrivenGenerator(
+        registry, constructor_profile=COMPOSITIONAL_V2_PROFILE
+    )
+    baseline, _ = generator.generate_route_attempts(
+        "DISCLOSURE_EVENT",
+        scheduled_pairs=12,
+        seed=2026072201,
+        attempt_limit=256,
+    )
+    first_pair_fields = {
+        str(field)
+        for row in baseline[:2]
+        for field in (row.get("declared_field_ids") or ())
+    }
+    available = {
+        row.field_id for row in registry.fields_for_route("DISCLOSURE_EVENT")
+    } - first_pair_fields
+
+    rows, funnel = generator.generate_route_attempts(
+        "DISCLOSURE_EVENT",
+        scheduled_pairs=8,
+        seed=2026072201,
+        attempt_limit=512,
+        available_field_ids=available,
+    )
+
+    assert len(rows) == 16
+    assert funnel["materialization_missing_field_pairs"] > 0
+    assert all(
+        set(map(str, row.get("declared_field_ids") or ())).issubset(available)
+        for row in rows
+    )
+
+
 def test_supply_diagnosis_excludes_frozen_broad_event_and_requires_headroom() -> None:
     registry = UnifiedCapabilityRegistry.read(REGISTRY)
     report = diagnose_exact_supply(

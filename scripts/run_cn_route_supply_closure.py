@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import pandas as pd
+import pyarrow.parquet as pq
 
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
     AUTHORIZED_HOST,
@@ -108,16 +109,19 @@ def _route_probe(
     output_root: Path,
     compute_threads: int,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    paths = tuple(sorted(Path(field_root).glob("shard_*.parquet")))
+    if not paths:
+        raise FileNotFoundError(f"no Phase3CM field sidecars under {field_root}")
+    available_field_ids = set(pq.ParquetFile(paths[0]).schema_arrow.names)
     candidates, funnel = generator.generate_route_attempts(
         route_id,
         scheduled_pairs=PROBE_PAIRS_PER_ROUTE,
         seed=seed,
         attempt_limit=512,
         existing_exact_identities=set(historical_exact),
+        available_field_ids=available_field_ids,
     )
-    paths = tuple(sorted(Path(field_root).glob("shard_*.parquet")))
-    if not paths:
-        raise FileNotFoundError(f"no Phase3CM field sidecars under {field_root}")
+    funnel["materialized_field_count"] = len(available_field_ids)
     probe_rows, audit = bounded_label_free_behavior_probe(
         candidates=candidates,
         field_sidecars=paths,
@@ -127,7 +131,7 @@ def _route_probe(
         ).hexdigest(),
         batch_id="route_supply_closure",
         compute_threads=compute_threads,
-        max_trade_dates=4,
+        max_trade_dates=12 if route_id == "DISCLOSURE_EVENT" else 4,
         max_trade_times=1 if route_id == "DISCLOSURE_EVENT" else 8,
         date_selection=(
             "condition_activation"

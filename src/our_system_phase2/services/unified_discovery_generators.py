@@ -309,6 +309,7 @@ class RegistryDrivenGenerator:
         attempt_start: int = 0,
         attempt_limit: int | None = None,
         existing_exact_identities: set[str] | None = None,
+        available_field_ids: set[str] | None = None,
     ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         """Consume a deterministic registry-route attempt stream.
 
@@ -331,6 +332,12 @@ class RegistryDrivenGenerator:
         illegal_pairs = 0
         exact_duplicate_pairs = 0
         materialization_unsupported_pairs = 0
+        materialization_missing_field_pairs = 0
+        available_fields = (
+            None
+            if available_field_ids is None
+            else set(map(str, available_field_ids))
+        )
         while len(output) // 2 < scheduled_pairs and index < start + max_attempts:
             pair = self._pair(route_id, index, seed)
             if self.constructor_profile == COMPOSITIONAL_V2_PROFILE:
@@ -339,6 +346,16 @@ class RegistryDrivenGenerator:
                 )
                 if unsupported:
                     materialization_unsupported_pairs += 1
+                    index += 1
+                    continue
+            if available_fields is not None:
+                declared_fields = {
+                    str(field)
+                    for member in (pair.candidate, pair.control)
+                    for field in (member.get("declared_field_ids") or ())
+                }
+                if not declared_fields.issubset(available_fields):
+                    materialization_missing_field_pairs += 1
                     index += 1
                     continue
             compiled_rows: list[dict[str, Any]] = []
@@ -384,6 +401,9 @@ class RegistryDrivenGenerator:
             "illegal_pairs": int(illegal_pairs),
             "exact_duplicate_pairs": int(exact_duplicate_pairs),
             "materialization_unsupported_pairs": int(materialization_unsupported_pairs),
+            "materialization_missing_field_pairs": int(
+                materialization_missing_field_pairs
+            ),
             "attempt_start": int(start),
             "attempt_stop": int(index),
             "seed": int(seed),
