@@ -280,6 +280,111 @@ def _pick_excluding(
     return _pick(eligible, index, seed, salt)
 
 
+def _pick_compatible_pair(
+    rows: Sequence[CapabilityField],
+    predicate: Any,
+    index: int,
+    seed: int,
+    salt: str,
+) -> tuple[CapabilityField, CapabilityField]:
+    compatible = tuple(
+        (left, right)
+        for left in rows
+        for right in rows
+        if left.field_id != right.field_id and predicate(left, right)
+    )
+    if not compatible:
+        raise ValueError(
+            f"ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: no compatible field pair for {salt}"
+        )
+    return _pick(compatible, index, seed, salt)
+
+
+def _canonical_representation(field: CapabilityField) -> Mapping[str, Any]:
+    value = field.metadata.get("canonical_representation") or {}
+    return value if isinstance(value, Mapping) else {}
+
+
+def _representation_family(field: CapabilityField) -> str:
+    representation = _canonical_representation(field)
+    semantic = str(representation.get("semantic_family") or "")
+    kind = str(representation.get("representation_type") or "")
+    return "|".join(value for value in (field.source_family, semantic, kind) if value)
+
+
+def _minute_leg_role(field: CapabilityField) -> str:
+    source = str(field.source_field or "").lower()
+    if any(token in source for token in ("amount", "volume", "liquidity")):
+        return "volume_amount_or_liquidity"
+    if any(token in source for token in ("return", "ret", "pct_chg", "range")):
+        return "volatility_range_or_return"
+    if source in {"open", "high", "low", "close", "vwap"}:
+        return "price_or_return"
+    return "unresolved"
+
+
+def _is_price_or_return(field: CapabilityField) -> bool:
+    return _minute_leg_role(field) in {
+        "price_or_return",
+        "volatility_range_or_return",
+    }
+
+
+def _is_volatility_range_or_return(field: CapabilityField) -> bool:
+    role = _minute_leg_role(field)
+    source = str(field.source_field or "").lower()
+    return role == "volatility_range_or_return" or source in {"high", "low"}
+
+
+def _declared_size(field: CapabilityField) -> bool:
+    representation = _canonical_representation(field)
+    metadata_tokens = "|".join(
+        (
+            str(field.source_field or ""),
+            str(field.source_family or ""),
+            str(representation.get("semantic_family") or ""),
+            str(representation.get("representation_type") or ""),
+        )
+    ).lower()
+    return "market_cap" in metadata_tokens or "market-cap" in metadata_tokens or "size" in metadata_tokens
+
+
+def _unit_comparable_or_normalized(
+    left: CapabilityField,
+    right: CapabilityField,
+) -> bool:
+    left_rep = _canonical_representation(left)
+    right_rep = _canonical_representation(right)
+    left_kind = str(left_rep.get("representation_type") or "").lower()
+    right_kind = str(right_rep.get("representation_type") or "").lower()
+    normalized = ("ratio" in left_kind or "normalized" in left_kind) and (
+        "ratio" in right_kind or "normalized" in right_kind
+    )
+    same_registered_family = (
+        bool(left.source_family)
+        and left.source_family == right.source_family
+        and left.unit_status == right.unit_status
+    )
+    return normalized or same_registered_family
+
+
+def _declared_temporal_evolution(field: CapabilityField) -> bool:
+    representation = _canonical_representation(field)
+    kind = str(representation.get("representation_type") or "").lower()
+    return field.temporal_semantics == "SLOW_CHANGE" and any(
+        token in kind
+        for token in ("change", "delta", "slope", "acceleration", "persistence", "yoy", "qoq", "ttm")
+    )
+
+
+def _declared_reported_change(field: CapabilityField) -> bool:
+    representation = _canonical_representation(field)
+    kind = str(representation.get("representation_type") or "").lower()
+    return field.temporal_semantics == "SLOW_CHANGE" and any(
+        token in kind for token in ("reported", "yoy", "qoq", "ttm")
+    )
+
+
 class CompositionalGrammarV2:
     """Deterministic compositional proposal interface.
 
@@ -292,6 +397,7 @@ class CompositionalGrammarV2:
         registry: UnifiedCapabilityRegistry,
         *,
         route_root_allowlist: Mapping[str, Iterable[str]] | None = None,
+        enforce_route_compatibility: bool = False,
     ) -> None:
         self.registry = registry
         self.compiler = TypedRouteCompiler(registry)
@@ -299,6 +405,7 @@ class CompositionalGrammarV2:
         self._route_root_allowlist = self._validate_route_root_allowlist(
             route_root_allowlist
         )
+        self._enforce_route_compatibility = bool(enforce_route_compatibility)
 
     def _validate_route_root_allowlist(
         self,
@@ -496,17 +603,59 @@ class CompositionalGrammarV2:
         seed: int,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         pool = self._payload_pool("MINUTE_STATIC")
-        left = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":left")
-        right = _pick_excluding(
-            pool,
-            (left.field_id,),
-            attempt_index,
-            seed,
-            skeleton.skeleton_id + ":right",
-        )
+        name = skeleton.skeleton_id.rsplit(".", 1)[-1]
+        extra: dict[str, Any] = {}
+        if self._enforce_route_compatibility and name == "price_volume_interaction":
+            left, right = _pick_compatible_pair(
+                pool,
+                lambda price, volume: _is_price_or_return(price)
+                and _minute_leg_role(volume) == "volume_amount_or_liquidity",
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":compatible",
+            )
+            extra["compatibility_leg_roles"] = [
+                "price_or_return",
+                "volume_amount_or_liquidity",
+            ]
+        elif self._enforce_route_compatibility and name == "liquidity_volatility_interaction":
+            left, right = _pick_compatible_pair(
+                pool,
+                lambda liquidity, volatility: _minute_leg_role(liquidity)
+                == "volume_amount_or_liquidity"
+                and _is_volatility_range_or_return(volatility),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":compatible",
+            )
+            extra["compatibility_leg_roles"] = [
+                "volume_amount_or_liquidity",
+                "volatility_range_or_return",
+            ]
+        elif self._enforce_route_compatibility and name == "cross_sectional_residual":
+            left, right = _pick_compatible_pair(
+                pool,
+                lambda first, second: _representation_family(first)
+                != _representation_family(second),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":compatible",
+            )
+            extra["compatibility_leg_roles"] = [
+                "distinct_representation_family",
+                "distinct_representation_family",
+            ]
+        else:
+            left = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":left")
+            right = _pick_excluding(
+                pool,
+                (left.field_id,),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":right",
+            )
         left_ref = f"${left.field_id}"
         right_ref = f"${right.field_id}"
-        name = skeleton.skeleton_id.rsplit(".", 1)[-1]
         fields: tuple[CapabilityField, ...]
         if name == "normalized_level":
             primary_expression = f"CSRank(ZScore({left_ref}))"
@@ -543,6 +692,7 @@ class CompositionalGrammarV2:
             control_expression=control_expression,
             operator_family=operator_family,
             fields=fields,
+            extra=extra,
         )
 
     def _firstn_pair(
@@ -605,11 +755,63 @@ class CompositionalGrammarV2:
         seed: int,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         pool = self._payload_pool("SLOW_CROSS_SECTIONAL_LEVEL")
-        left = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":left")
-        size_pool = tuple(row for row in pool if "market_cap" in row.field_id.lower())
+        size_pool = tuple(
+            row
+            for row in pool
+            if (
+                _declared_size(row)
+                if self._enforce_route_compatibility
+                else "market_cap" in row.field_id.lower()
+            )
+        )
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
-        if name in {"fundamental_cap_condition", "size_residual_level"} and any(
-            row.field_id == left.field_id for row in size_pool
+        extra: dict[str, Any] = {}
+        if self._enforce_route_compatibility and name == "fundamental_ratio":
+            left, right = _pick_compatible_pair(
+                pool,
+                _unit_comparable_or_normalized,
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":comparable_units",
+            )
+            extra["compatibility_leg_roles"] = ["unit_comparable", "unit_comparable"]
+        elif self._enforce_route_compatibility and name == "cross_family_interaction":
+            left, right = _pick_compatible_pair(
+                pool,
+                lambda first, second: _representation_family(first)
+                != _representation_family(second),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":cross_family",
+            )
+            extra["compatibility_leg_roles"] = [
+                "distinct_source_or_representation_family",
+                "distinct_source_or_representation_family",
+            ]
+        else:
+            left = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":left")
+            right = _pick_excluding(
+                pool,
+                (left.field_id,),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":right",
+            )
+        if self._enforce_route_compatibility and name in {
+            "fundamental_cap_condition",
+            "size_residual_level",
+        }:
+            non_size = tuple(row for row in pool if not _declared_size(row))
+            if not size_pool or not non_size:
+                raise ValueError(
+                    f"ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: explicit size leg unavailable for {skeleton.skeleton_id}"
+                )
+            left = _pick(non_size, attempt_index, seed, skeleton.skeleton_id + ":non_size_left")
+            extra["compatibility_leg_roles"] = ["non_size_payload", "declared_size"]
+        elif (
+            not self._enforce_route_compatibility
+            and name in {"fundamental_cap_condition", "size_residual_level"}
+            and any(row.field_id == left.field_id for row in size_pool)
         ):
             left = _pick_excluding(
                 pool,
@@ -618,14 +820,7 @@ class CompositionalGrammarV2:
                 seed,
                 skeleton.skeleton_id + ":non_size_left",
             )
-        right = _pick_excluding(
-            pool,
-            (left.field_id,),
-            attempt_index,
-            seed,
-            skeleton.skeleton_id + ":right",
-        )
-        size = _pick(size_pool, attempt_index, seed, skeleton.skeleton_id + ":size")
+        size = _pick(size_pool, attempt_index, seed, skeleton.skeleton_id + ":size") if size_pool else left
         left_ref, right_ref, size_ref = f"${left.field_id}", f"${right.field_id}", f"${size.field_id}"
         fields: tuple[CapabilityField, ...]
         if name == "fundamental_level":
@@ -678,6 +873,7 @@ class CompositionalGrammarV2:
             control_expression=control_expression,
             operator_family=family,
             fields=fields,
+            extra=extra,
         )
 
     def _slow_change_pair(
@@ -687,17 +883,55 @@ class CompositionalGrammarV2:
         seed: int,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         pool = self._payload_pool("SLOW_TEMPORAL_CHANGE")
-        left = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":left")
-        right = _pick_excluding(
-            pool,
-            (left.field_id,),
-            attempt_index,
-            seed,
-            skeleton.skeleton_id + ":right",
-        )
+        name = skeleton.skeleton_id.rsplit(".", 1)[-1]
+        extra: dict[str, Any] = {}
+        if self._enforce_route_compatibility and name in {
+            "slope",
+            "acceleration",
+            "change_persistence",
+        }:
+            evolving = tuple(row for row in pool if _declared_temporal_evolution(row))
+            if not evolving:
+                raise ValueError(
+                    f"ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: temporal-evolution metadata unavailable for {skeleton.skeleton_id}"
+                )
+            left = _pick(evolving, attempt_index, seed, skeleton.skeleton_id + ":evolving")
+            right = _pick_excluding(pool, (left.field_id,), attempt_index, seed, skeleton.skeleton_id + ":right")
+            extra["compatibility_leg_roles"] = ["declared_temporal_evolution"]
+        elif self._enforce_route_compatibility and name == "reported_change":
+            reported = tuple(row for row in pool if _declared_reported_change(row))
+            if not reported:
+                raise ValueError(
+                    f"ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: reported-change metadata unavailable for {skeleton.skeleton_id}"
+                )
+            left = _pick(reported, attempt_index, seed, skeleton.skeleton_id + ":reported")
+            right = _pick_excluding(pool, (left.field_id,), attempt_index, seed, skeleton.skeleton_id + ":right")
+            extra["compatibility_leg_roles"] = ["declared_reported_change"]
+        elif self._enforce_route_compatibility and name == "cross_change_interaction":
+            evolving = tuple(row for row in pool if _declared_temporal_evolution(row))
+            left, right = _pick_compatible_pair(
+                evolving,
+                lambda first, second: _representation_family(first)
+                != _representation_family(second),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":cross_change_family",
+            )
+            extra["compatibility_leg_roles"] = [
+                "distinct_change_representation_family",
+                "distinct_change_representation_family",
+            ]
+        else:
+            left = _pick(pool, attempt_index, seed, skeleton.skeleton_id + ":left")
+            right = _pick_excluding(
+                pool,
+                (left.field_id,),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":right",
+            )
         left_ref, right_ref = f"${left.field_id}", f"${right.field_id}"
         window = _pick_value((2, 3, 5, 10), attempt_index, seed, skeleton.skeleton_id + ":window")
-        name = skeleton.skeleton_id.rsplit(".", 1)[-1]
         fields: tuple[CapabilityField, ...] = (left,)
         if name == "delta":
             primary_expression = f"CSRank(Delta({left_ref},{window}))"
@@ -743,6 +977,7 @@ class CompositionalGrammarV2:
             control_expression=control_expression,
             operator_family=family,
             fields=fields,
+            extra=extra,
         )
 
     def _disclosure_pair(

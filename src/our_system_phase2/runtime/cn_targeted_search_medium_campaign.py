@@ -1,0 +1,1037 @@
+"""Six-checkpoint, development-only CN targeted search campaign.
+
+This extends the existing iterative-search capability with a bounded campaign;
+it does not introduce another registry, compiler, evaluator, or search platform.
+"""
+
+from __future__ import annotations
+
+import argparse
+import importlib
+import json
+import math
+import os
+import platform
+import statistics
+import subprocess
+import sys
+import time
+from collections import defaultdict
+from pathlib import Path
+from typing import Any, Mapping, Sequence
+
+import pandas as pd
+import pyarrow.parquet as pq
+
+from our_system_phase2.runtime.cn_iterative_search_v1 import (
+    AUTHORIZED_HOST,
+    REPO,
+    _artifact,
+    _batch_manifest,
+    _clock_for_route,
+    _context_and_binding,
+    _join_full_behavior_identities,
+    _outcome_rows,
+    _probe_pack,
+    _route_health,
+    _sha256,
+    _stable_hash,
+    _train_dates,
+    _write_csv,
+    _write_json,
+    _write_parquet,
+)
+from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import (
+    build_iterative_feedback_views,
+)
+from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
+from our_system_phase2.services.multi_arm_scheduler import (
+    build_medium_campaign_schedule,
+)
+from our_system_phase2.services.portfolio_behavior_archive import (
+    PortfolioBehaviorArchive,
+)
+from our_system_phase2.services.split_boundary_label_purity import (
+    audit_split_boundary_label_purity,
+)
+from our_system_phase2.services.unified_capability_registry import (
+    ROUTE_IDS,
+    UnifiedCapabilityRegistry,
+)
+from our_system_phase2.services.unified_discovery_generators import (
+    COMPOSITIONAL_V2_PROFILE,
+    RegistryDrivenGenerator,
+)
+
+
+CAMPAIGN_ID = "CN_TARGETED_FIX_AND_MEDIUM_DEVELOPMENT_CAMPAIGN"
+CHECKPOINT_COUNT = 6
+CHECKPOINT_SCHEDULED_PAIRS = 256
+TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET = 1536
+MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS = 1536
+MAX_RAW_ATTEMPTS = 100_000
+MAX_WALL_SECONDS = 12 * 60 * 60
+ROUTE_ATTEMPT_CAP = 2_300
+GLOBAL_WORKER_LIMIT = 24
+SEARCH_ROUTES = tuple(
+    route for route in ROUTE_IDS if route != "BROAD_EVENT_FROZEN_ENTRY"
+)
+MODIFIED_COMPATIBILITY_ROUTES = (
+    "MINUTE_STATIC",
+    "SLOW_CROSS_SECTIONAL_LEVEL",
+    "SLOW_TEMPORAL_CHANGE",
+    "DISCLOSURE_EVENT",
+)
+
+
+CHECKPOINT_BASE_TARGETS = (
+    {"INTRADAY_STATE_TRANSITION": 48, "SLOW_CROSS_SECTIONAL_LEVEL": 43, "MINUTE_STATIC": 37, "SLOW_TEMPORAL_CHANGE": 37, "FIRSTN_PATH": 32, "MARKET_REGIME_CONDITION": 32, "DISCLOSURE_EVENT": 27},
+    {"INTRADAY_STATE_TRANSITION": 48, "SLOW_CROSS_SECTIONAL_LEVEL": 43, "MINUTE_STATIC": 38, "SLOW_TEMPORAL_CHANGE": 37, "FIRSTN_PATH": 32, "MARKET_REGIME_CONDITION": 32, "DISCLOSURE_EVENT": 26},
+    {"INTRADAY_STATE_TRANSITION": 48, "SLOW_CROSS_SECTIONAL_LEVEL": 43, "MINUTE_STATIC": 37, "SLOW_TEMPORAL_CHANGE": 38, "FIRSTN_PATH": 32, "MARKET_REGIME_CONDITION": 32, "DISCLOSURE_EVENT": 26},
+    {"INTRADAY_STATE_TRANSITION": 48, "SLOW_CROSS_SECTIONAL_LEVEL": 43, "MINUTE_STATIC": 37, "SLOW_TEMPORAL_CHANGE": 37, "FIRSTN_PATH": 32, "MARKET_REGIME_CONDITION": 32, "DISCLOSURE_EVENT": 27},
+    {"INTRADAY_STATE_TRANSITION": 48, "SLOW_CROSS_SECTIONAL_LEVEL": 42, "MINUTE_STATIC": 38, "SLOW_TEMPORAL_CHANGE": 37, "FIRSTN_PATH": 32, "MARKET_REGIME_CONDITION": 32, "DISCLOSURE_EVENT": 27},
+    {"INTRADAY_STATE_TRANSITION": 48, "SLOW_CROSS_SECTIONAL_LEVEL": 42, "MINUTE_STATIC": 37, "SLOW_TEMPORAL_CHANGE": 38, "FIRSTN_PATH": 32, "MARKET_REGIME_CONDITION": 32, "DISCLOSURE_EVENT": 27},
+)
+
+
+def _source_hash(path: Path) -> str:
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    return _sha256(path)
+
+
+def _git_sha() -> str:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return completed.stdout.strip()
+
+
+def build_seed_attempt_manifest(
+    *,
+    registry_hash: str,
+    schema_hash_by_backend: Mapping[str, str],
+    grammar_hash: str,
+    seed_base: int,
+) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+    for checkpoint_index in range(CHECKPOINT_COUNT):
+        for route_index, route_id in enumerate(SEARCH_ROUTES):
+            attempt_start = checkpoint_index * ROUTE_ATTEMPT_CAP
+            rows.append(
+                {
+                    "checkpoint": f"checkpoint_{checkpoint_index + 1:03d}",
+                    "route_id": route_id,
+                    "seed": int(seed_base + checkpoint_index * 100_003 + route_index * 1_009),
+                    "attempt_start": attempt_start,
+                    "attempt_stop": attempt_start + ROUTE_ATTEMPT_CAP,
+                    "raw_attempt_cap": ROUTE_ATTEMPT_CAP,
+                    "base_scheduled_matched_pair_target": int(
+                        CHECKPOINT_BASE_TARGETS[checkpoint_index][route_id]
+                    ),
+                    "constructor_profile": COMPOSITIONAL_V2_PROFILE,
+                    "registry_hash": registry_hash,
+                    "materialized_schema_hash": schema_hash_by_backend[
+                        _clock_for_route(route_id)
+                    ],
+                    "grammar_hash": grammar_hash,
+                }
+            )
+    total_cap = sum(int(row["raw_attempt_cap"]) for row in rows)
+    if total_cap > MAX_RAW_ATTEMPTS:
+        raise RuntimeError("frozen attempt ranges exceed the campaign raw-attempt cap")
+    return {
+        "schema_version": "cn_medium_campaign_seed_attempt_manifest_v1",
+        "attempt_stream_policy": "DISJOINT_ROUTE_LOCAL_RANGES_NO_EXTENSION",
+        "maximum_raw_attempts": MAX_RAW_ATTEMPTS,
+        "frozen_route_attempt_capacity": total_cap,
+        "rows": rows,
+    }
+
+
+def _schema_names(root: Path) -> tuple[str, ...]:
+    paths = tuple(sorted(Path(root).glob("shard_*.parquet")))
+    if not paths:
+        raise FileNotFoundError(f"no materialized field shards: {root}")
+    intersection: set[str] | None = None
+    for path in paths:
+        names = set(pq.ParquetFile(path).schema_arrow.names)
+        intersection = names if intersection is None else intersection & names
+    return tuple(sorted(intersection or ()))
+
+
+def _column_has_positive_activation(paths: Sequence[Path], field_id: str) -> bool:
+    for path in paths:
+        parquet = pq.ParquetFile(path)
+        names = parquet.schema_arrow.names
+        if field_id not in names:
+            continue
+        column_index = names.index(field_id)
+        metadata_proved = False
+        for group_index in range(parquet.metadata.num_row_groups):
+            statistics = parquet.metadata.row_group(group_index).column(column_index).statistics
+            if statistics is not None and statistics.has_min_max:
+                metadata_proved = True
+                maximum = statistics.max
+                if maximum is not None and float(maximum) > 0.0:
+                    return True
+        if not metadata_proved:
+            series = pq.read_table(path, columns=[field_id]).column(0).to_pandas()
+            if bool((pd.to_numeric(series, errors="coerce") > 0).any()):
+                return True
+    return False
+
+
+def materialized_schema_binding(
+    *,
+    field_roots: Mapping[str, Path],
+    registry: UnifiedCapabilityRegistry,
+) -> tuple[dict[str, Any], dict[str, set[str]]]:
+    schemas: dict[str, set[str]] = {}
+    records: dict[str, Any] = {}
+    disclosure_conditions = {
+        field.field_id
+        for field in registry.fields_for_route(
+            "DISCLOSURE_EVENT", field_roles=("condition-only",)
+        )
+    }
+    for backend in ("active_bar", "stock_session"):
+        root = Path(field_roots[backend]).resolve()
+        names = _schema_names(root)
+        schemas[backend] = set(names)
+        paths = tuple(sorted(root.glob("shard_*.parquet")))
+        active_conditions = sorted(
+            field_id
+            for field_id in disclosure_conditions & set(names)
+            if _column_has_positive_activation(paths, field_id)
+        ) if backend == "stock_session" else []
+        if backend == "stock_session":
+            schemas[backend] -= disclosure_conditions - set(active_conditions)
+        records[backend] = {
+            "root": str(root),
+            "materialized_field_ids": sorted(schemas[backend]),
+            "materialized_field_count": len(schemas[backend]),
+            "materialized_schema_hash": _stable_hash(sorted(schemas[backend])),
+            "train_condition_activation_field_ids": active_conditions,
+            "shard_count": len(paths),
+        }
+    return {
+        "schema_version": "cn_medium_campaign_materialized_schema_binding_v1",
+        "status": "SCHEMA_FIRST_COMPATIBLE_POOLS_BOUND",
+        "backends": records,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }, schemas
+
+
+def _registry_binding(registry_path: Path, registry: UnifiedCapabilityRegistry) -> dict[str, Any]:
+    sources = {
+        "generator": REPO / "src/our_system_phase2/services/unified_discovery_generators.py",
+        "grammar": REPO / "src/our_system_phase2/services/compositional_grammar.py",
+        "compiler": REPO / "src/our_system_phase2/services/typed_route_compiler.py",
+    }
+    canonical_fundamental_roots = {
+        field.field_id
+        for field in registry.fields
+        if field.source_family.startswith("canonical_fundamental_")
+    }
+    return {
+        "schema_version": "cn_medium_campaign_registry_binding_v1",
+        "status": "CURRENT_V3_REGISTRY_AUTHORITY_BOUND",
+        "registry_path": str(registry_path),
+        "registry_file_sha256": _sha256(registry_path),
+        "internal_registry_hash": registry.registry_hash,
+        "field_count": len(registry.fields),
+        "canonical_fundamental_root_count": len(canonical_fundamental_roots),
+        "generator_hash": _source_hash(sources["generator"]),
+        "grammar_hash": _source_hash(sources["grammar"]),
+        "compiler_hash": _source_hash(sources["compiler"]),
+        "repo_sha": _git_sha(),
+    }
+
+
+def _structural_comparison(
+    *,
+    registry: UnifiedCapabilityRegistry,
+    schema_by_backend: Mapping[str, set[str]],
+    seed: int,
+) -> dict[str, Any]:
+    before = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+        enforce_route_compatibility=False,
+    )
+    after = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+        enforce_route_compatibility=True,
+    )
+    rows = []
+    for ordinal, route_id in enumerate(MODIFIED_COMPATIBILITY_ROUTES):
+        route_seed = seed + ordinal * 1_009
+        _, before_funnel = before.generate_route_attempts(
+            route_id,
+            scheduled_pairs=32,
+            seed=route_seed,
+            attempt_limit=256,
+        )
+        _, after_funnel = after.generate_route_attempts(
+            route_id,
+            scheduled_pairs=32,
+            seed=route_seed,
+            attempt_limit=256,
+            available_field_ids=schema_by_backend[_clock_for_route(route_id)],
+        )
+        rows.append(
+            {
+                "route_id": route_id,
+                "seed": route_seed,
+                "attempt_cap": 256,
+                "before": before_funnel,
+                "after": after_funnel,
+                "phase3cm_evaluation": "NOT_RUN",
+            }
+        )
+    return {
+        "schema_version": "cn_medium_campaign_structural_generation_comparison_v1",
+        "routes": rows,
+        "comparison_scope": "MODIFIED_ROUTES_ONE_SEED_GENERATION_ONLY",
+    }
+
+
+def _package_matrix() -> dict[str, str]:
+    packages = (
+        "numpy", "pandas", "pyarrow", "numba", "bottleneck",
+        "numexpr", "polars", "joblib", "sklearn",
+    )
+    versions = {}
+    for name in packages:
+        try:
+            module = importlib.import_module(name)
+            versions[name] = str(getattr(module, "__version__", "UNKNOWN"))
+        except Exception as exc:
+            versions[name] = f"UNAVAILABLE:{type(exc).__name__}"
+    return versions
+
+
+def _runtime_envelope(active_threads: int, session_threads: int) -> dict[str, Any]:
+    try:
+        import psutil
+
+        memory = psutil.virtual_memory()
+        heavy = []
+        for process in psutil.process_iter(["pid", "name", "cmdline"]):
+            command = " ".join(process.info.get("cmdline") or ())
+            if "run_cn_phase3cm_streaming_qualification.py" in command:
+                heavy.append({"pid": process.info["pid"], "command": command})
+        host = {
+            "logical_cpu_count": psutil.cpu_count(logical=True),
+            "physical_cpu_count": psutil.cpu_count(logical=False),
+            "total_memory_bytes": int(memory.total),
+            "available_memory_bytes": int(memory.available),
+            "system_cpu_percent": float(psutil.cpu_percent(interval=1.0)),
+        }
+    except Exception as exc:
+        raise RuntimeError("psutil is required for the real runtime utilization gate") from exc
+    return {
+        "schema_version": "cn_medium_campaign_runtime_envelope_v1",
+        "host": platform.node(),
+        "python_executable": sys.executable,
+        "python_version": platform.python_version(),
+        "package_matrix": _package_matrix(),
+        "actual_hot_path": "Phase3CM TimeMajorBlockReader -> SharedMultiCandidateDAG -> Numba portfolio kernel -> streaming reducer",
+        "acceleration_status": {
+            "numba": "ENABLED_AND_REQUIRED_BY_PORTFOLIO_HOT_PATH",
+            "vectorized_numpy": "ENABLED_IN_EXPRESSION_AND_PORTFOLIO_HOT_PATH",
+            "pyarrow": "ENABLED_FOR_PARQUET_SIDECAR_IO",
+            "polars": "ENABLED_FOR_SIDECAR_MATERIALIZATION_NOT_EVALUATOR_INNER_LOOP",
+            "evaluation_cache": "ENABLED_SHARED_DAG_BLOCK_CACHE",
+            "evaluation_cache_key": "execution_plan_hash+dag_plan_hash+block_boundary+candidate_value_cohort",
+            "use_fast_context": "NOT_APPLICABLE_NO_SEPARATE_FAST_CONTEXT_SWITCH",
+            "successive_halving": "DISABLED_BY_CAMPAIGN_CONTRACT",
+        },
+        "thread_contract": {
+            "active_bar": active_threads,
+            "stock_session": session_threads,
+            "global_worker_limit": GLOBAL_WORKER_LIMIT,
+            "heavy_processes": 1,
+        },
+        "host_state": host,
+        "existing_heavy_workers": heavy,
+        "checkpoint_recovery": "EXISTING_PHASE3CM_CHECKPOINT_ONLY",
+        "status": "PASS" if not heavy else "FAIL_ORPHAN_HEAVY_WORKER",
+    }
+
+
+def _admit_behavior_unique(
+    *,
+    candidate_rows: Sequence[Mapping[str, Any]],
+    probe_rows: Sequence[Mapping[str, Any]],
+    historical_archive: PortfolioBehaviorArchive,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    seen_probe_ids: set[str] = set()
+    admitted_ids: set[str] = set()
+    decisions = []
+    for source in probe_rows:
+        row = dict(source)
+        probe_id = str(row.get("behavior_probe_id") or "")
+        member_duplicate = bool(row.get("primary_behavior_probe_id")) and (
+            row.get("primary_behavior_probe_id") == row.get("control_behavior_probe_id")
+        )
+        if str(row.get("behavior_status") or "") != "RESOLVED":
+            decision, reason = "REJECT", "BEHAVIOR_UNRESOLVED"
+        elif member_duplicate or historical_archive.contains_probe(probe_id) or probe_id in seen_probe_ids:
+            decision, reason = "REJECT", "EXACT_BEHAVIOR_DUPLICATE"
+        else:
+            decision, reason = "ADMIT", "LABEL_FREE_BEHAVIOR_UNIQUE"
+            seen_probe_ids.add(probe_id)
+            admitted_ids.add(str(row["pair_id"]))
+        decisions.append({**row, "admission_decision": decision, "admission_reason": reason})
+    admitted = [
+        dict(row)
+        for row in candidate_rows
+        if str(row.get("pair_id") or "") in admitted_ids
+    ]
+    return admitted, decisions
+
+
+def _bind_purity(binding_path: Path, purity_path: Path) -> None:
+    binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    binding.pop("binding_hash", None)
+    binding["split_boundary_purity"] = _artifact(purity_path)
+    binding["retained_label_crossing_count"] = 0
+    binding["binding_hash"] = _stable_hash(binding)
+    _write_json(binding_path, binding)
+
+
+def _monitor_process(process: subprocess.Popen[str], deadline_epoch: float) -> list[dict[str, Any]]:
+    import psutil
+
+    samples: list[dict[str, Any]] = []
+    psutil.cpu_percent(interval=None)
+    disk_before = psutil.disk_io_counters()
+    started = time.time()
+    while process.poll() is None:
+        if time.time() >= deadline_epoch:
+            process.terminate()
+            try:
+                process.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                process.kill()
+            raise RuntimeError("CAMPAIGN_WALL_TIME_CAP_REACHED")
+        root = psutil.Process(process.pid)
+        descendants = [root, *root.children(recursive=True)]
+        rss = 0
+        threads = 0
+        alive = 0
+        for child in descendants:
+            try:
+                rss += int(child.memory_info().rss)
+                threads += int(child.num_threads())
+                alive += 1
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_io_counters()
+        samples.append(
+            {
+                "elapsed_seconds": time.time() - started,
+                "system_cpu_percent": float(psutil.cpu_percent(interval=2.0)),
+                "process_tree_count": alive,
+                "process_tree_threads": threads,
+                "process_tree_rss_bytes": rss,
+                "available_memory_bytes": int(memory.available),
+                "system_read_bytes": int(disk.read_bytes - disk_before.read_bytes),
+                "system_write_bytes": int(disk.write_bytes - disk_before.write_bytes),
+            }
+        )
+    return samples
+
+
+def _run_phase3cm_monitored(
+    *,
+    checkpoint_id: str,
+    checkpoint_root: Path,
+    binding_path: Path,
+    table_paths: Mapping[str, Path],
+    split_manifest: Path,
+    field_roots: Mapping[str, Path],
+    label_roots: Mapping[str, Path],
+    compute_threads: Mapping[str, int],
+    deadline_epoch: float,
+) -> list[dict[str, Any]]:
+    receipts = []
+    for backend in ("active_bar", "stock_session"):
+        candidate_table = table_paths.get(backend)
+        if candidate_table is None:
+            continue
+        pair_count = pd.read_csv(candidate_table)["pair_id"].nunique()
+        output_root = checkpoint_root / "phase3cm" / backend
+        output_root.mkdir(parents=True, exist_ok=True)
+        result_path = output_root / "CN_STREAMING_BACKEND_RESULT.json"
+        if result_path.is_file():
+            result = json.loads(result_path.read_text(encoding="utf-8"))
+            binding = json.loads(binding_path.read_text(encoding="utf-8"))
+            if (
+                result.get("status") != "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
+                or result.get("input_binding_hash") != binding.get("binding_hash")
+                or int(result.get("pair_count") or 0) != int(pair_count)
+            ):
+                raise RuntimeError(f"completed Phase3CM result drift on {backend}")
+            receipts.append({"backend": backend, "status": "COMPLETED_REUSED", "result_path": str(result_path), "result_sha256": _sha256(result_path)})
+            continue
+        command = [
+            sys.executable,
+            str(REPO / "scripts/run_cn_phase3cm_streaming_qualification.py"),
+            "--backend", backend,
+            "--phase", "D",
+            "--pair-count", str(pair_count),
+            "--candidate-table", str(candidate_table),
+            "--binding", str(binding_path),
+            "--split-manifest", str(split_manifest),
+            "--artifact-root", str(checkpoint_root),
+            "--field-sidecar-root", str(field_roots[backend]),
+            "--label-sidecar-root", str(label_roots[backend]),
+            "--output-root", str(output_root),
+            "--block-sessions", "10",
+            "--pair-batch-size", "8",
+            "--compute-threads", str(compute_threads[backend]),
+            "--iterative-batch-id", checkpoint_id,
+        ]
+        checkpoint_path = output_root / "CN_STREAMING_CHECKPOINT.json"
+        if checkpoint_path.is_file():
+            command.append("--resume")
+        environment = dict(os.environ)
+        environment.update(
+            {
+                "PYTHONPATH": str(REPO / "src"),
+                "NUMBA_NUM_THREADS": str(compute_threads[backend]),
+                "ARROW_NUM_THREADS": "1",
+                "OMP_NUM_THREADS": "1",
+                "MKL_NUM_THREADS": "1",
+                "OPENBLAS_NUM_THREADS": "1",
+                "NUMEXPR_MAX_THREADS": "1",
+                "POLARS_MAX_THREADS": "1",
+            }
+        )
+        started = pd.Timestamp.now("UTC")
+        process = subprocess.Popen(
+            command,
+            cwd=REPO,
+            env=environment,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        samples = _monitor_process(process, deadline_epoch)
+        stdout, stderr = process.communicate()
+        (output_root / "stdout.log").write_text(stdout or "", encoding="utf-8")
+        (output_root / "stderr.log").write_text(stderr or "", encoding="utf-8")
+        _write_json(output_root / "runtime_samples.json", samples)
+        receipt = {
+            "backend": backend,
+            "command": command,
+            "returncode": process.returncode,
+            "started_at": started.isoformat(),
+            "completed_at": pd.Timestamp.now("UTC").isoformat(),
+            "result_path": str(result_path),
+            "result_sha256": _sha256(result_path) if result_path.is_file() else "",
+            "runtime_samples_path": str(output_root / "runtime_samples.json"),
+            "status": "COMPLETED" if process.returncode == 0 and result_path.is_file() else "INFRASTRUCTURE_FAILURE",
+        }
+        receipts.append(receipt)
+        if receipt["status"] != "COMPLETED":
+            raise RuntimeError(f"Phase3CM infrastructure failure on {backend}: {output_root}")
+    return receipts
+
+
+def _runtime_gate(checkpoint_root: Path, compute_threads: Mapping[str, int]) -> dict[str, Any]:
+    backends = {}
+    overall = True
+    for backend in ("active_bar", "stock_session"):
+        result_path = checkpoint_root / "phase3cm" / backend / "CN_STREAMING_BACKEND_RESULT.json"
+        if not result_path.is_file():
+            continue
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        timing_path = checkpoint_root / "phase3cm" / backend / "CN_PHASE3CM_PHASE_TIMING.jsonl"
+        events = [json.loads(line) for line in timing_path.read_text(encoding="utf-8").splitlines() if line]
+        compute = [
+            row for row in events
+            if row.get("phase") in {"expression_value_dag", "cross_sectional_rank_mapping", "turnover_and_cost"}
+        ]
+        compute_wall = sum(float(row.get("wall_seconds") or 0.0) for row in compute)
+        compute_cpu = sum(float(row.get("cpu_seconds") or 0.0) for row in compute)
+        normalized = compute_cpu / max(1e-12, compute_wall * compute_threads[backend])
+        sample_path = checkpoint_root / "phase3cm" / backend / "runtime_samples.json"
+        samples = json.loads(sample_path.read_text(encoding="utf-8")) if sample_path.is_file() else []
+        duration = max((float(row.get("elapsed_seconds") or 0.0) for row in samples), default=float(result.get("wall_seconds") or 0.0))
+        last = samples[-1] if samples else {}
+        first = samples[0] if samples else {}
+        read_bytes = max(0, int(last.get("system_read_bytes") or 0) - int(first.get("system_read_bytes") or 0))
+        write_bytes = max(0, int(last.get("system_write_bytes") or 0) - int(first.get("system_write_bytes") or 0))
+        threshold = 0.55 if backend == "active_bar" else 0.50
+        parallel = result.get("parallelism_status") == "PARALLELISM_ENGAGED"
+        utilization_pass = normalized >= threshold
+        resource_pass = (
+            int(result.get("peak_rss_bytes") or 0) <= 24 * 1024**3
+            and min((int(row.get("available_memory_bytes") or 0) for row in samples), default=1) > 0
+        )
+        backend_pass = parallel and utilization_pass and resource_pass
+        overall = overall and backend_pass
+        backends[backend] = {
+            "allocated_compute_threads": compute_threads[backend],
+            "process_cpu_seconds": compute_cpu,
+            "compute_wall_seconds": compute_wall,
+            "normalized_cpu_utilization": normalized,
+            "required_normalized_cpu_utilization": threshold,
+            "parallelism_engaged": parallel,
+            "system_cpu_percent_mean": statistics.mean(
+                [float(row.get("system_cpu_percent") or 0.0) for row in samples]
+            ) if samples else None,
+            "active_threads_max": max((int(row.get("process_tree_threads") or 0) for row in samples), default=0),
+            "heavy_worker_count_max": max((int(row.get("process_tree_count") or 0) for row in samples), default=0),
+            "peak_rss_bytes": int(result.get("peak_rss_bytes") or 0),
+            "minimum_free_memory_bytes": min((int(row.get("available_memory_bytes") or 0) for row in samples), default=0),
+            "read_throughput_bytes_per_second": read_bytes / max(duration, 1.0),
+            "write_throughput_bytes_per_second": write_bytes / max(duration, 1.0),
+            "rows_per_second": int(result.get("rows_processed") or 0) / max(float(result.get("wall_seconds") or 0.0), 1.0),
+            "matched_pairs_per_hour": int(result.get("pair_count") or 0) * 3600 / max(float(result.get("wall_seconds") or 0.0), 1.0),
+            "matched_pairs_per_cpu_hour": int(result.get("pair_count") or 0) * 3600 / max(compute_cpu, 1.0),
+            "phase_wall_time_breakdown": result.get("phase_totals"),
+            "hot_path_bottleneck": result.get("hot_path_bottleneck"),
+            "checkpoint_status": "PASS" if "checkpoint" in (result.get("phase_totals") or {}) else "FAIL",
+            "status": "PASS" if backend_pass else "FAIL",
+        }
+    return {
+        "schema_version": "cn_medium_campaign_runtime_utilization_gate_v1",
+        "status": "PASS" if overall and len(backends) == 2 else "RUNTIME_ACCELERATION_GATE_FAILED",
+        "backends": backends,
+        "bounded_concurrency_adjustment_count": 0,
+        "second_failure_policy": "RUN_INVALID",
+    }
+
+
+def _initial_feedback() -> list[dict[str, Any]]:
+    return [{"route_id": route, "actionable_support": 0} for route in ROUTE_IDS]
+
+
+def _annotate_generation_metadata(
+    rows: Sequence[Mapping[str, Any]], registry: UnifiedCapabilityRegistry
+) -> list[dict[str, Any]]:
+    output = []
+    for source in rows:
+        row = dict(source)
+        fields = [
+            registry.resolve(str(field_id))
+            for field_id in row.get("declared_field_ids") or ()
+            if str(field_id) in {field.field_id for field in registry.fields}
+        ]
+        row["campaign_source_family"] = "|".join(sorted({field.source_family for field in fields}))
+        row["campaign_representation_family"] = "|".join(
+            sorted(
+                {
+                    str((field.metadata.get("canonical_representation") or {}).get("semantic_family") or field.source_family)
+                    for field in fields
+                }
+            )
+        )
+        row["campaign_field_pair_family"] = _stable_hash(
+            sorted(field.representation_id for field in fields)
+        )[:20]
+        output.append(row)
+    return output
+
+
+def _metrics_rows(
+    *,
+    checkpoint_id: str,
+    schedule: Sequence[Mapping[str, Any]],
+    funnel: Sequence[Mapping[str, Any]],
+    admitted: Sequence[Mapping[str, Any]],
+    outcomes: Sequence[Mapping[str, Any]],
+    full_behavior: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    outcome_by_pair = {str(row["pair_id"]): row for row in outcomes}
+    behavior_by_pair = {str(row["pair_id"]): row for row in full_behavior}
+    primary = [row for row in admitted if str(row.get("pair_member_role")) == "PRIMARY"]
+    schedule_by_route = {str(row["route_id"]): row for row in schedule}
+    funnel_by_route = {str(row["route_id"]): row for row in funnel}
+    rows = []
+    dimensions = {
+        "checkpoint": lambda row: checkpoint_id,
+        "route": lambda row: str(row.get("route_id") or ""),
+        "skeleton": lambda row: str(row.get("skeleton_id") or ""),
+        "source_family": lambda row: str(row.get("campaign_source_family") or ""),
+        "representation_family": lambda row: str(row.get("campaign_representation_family") or ""),
+        "operator_family": lambda row: str(row.get("operator_family") or ""),
+        "field_pair_family": lambda row: str(row.get("campaign_field_pair_family") or ""),
+    }
+    for level, key_fn in dimensions.items():
+        grouped: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
+        for row in primary:
+            grouped[key_fn(row)].append(row)
+        for key, members in grouped.items():
+            pair_ids = [str(row["pair_id"]) for row in members]
+            outcome_rows = [outcome_by_pair[pair_id] for pair_id in pair_ids if pair_id in outcome_by_pair]
+            rewards = [float(row.get("matched_net_increment") or 0.0) for row in outcome_rows]
+            families = {
+                str(behavior_by_pair[pair_id].get("portfolio_behavior_family_id") or "")
+                for pair_id in pair_ids if pair_id in behavior_by_pair
+            } - {""}
+            route_id = key if level == "route" else ""
+            funnel_row = funnel_by_route.get(route_id, {})
+            attempts = int(funnel_row.get("generation_attempts") or 0)
+            rows.append(
+                {
+                    "checkpoint": checkpoint_id,
+                    "aggregation_level": level,
+                    "aggregation_key": key,
+                    "scheduled_pairs": int(schedule_by_route.get(route_id, {}).get("scheduled_pairs") or 0),
+                    "raw_attempts": attempts,
+                    "exact_unique_per_1000_attempts": 1000 * int(funnel_row.get("exact_unique_pairs") or 0) / max(1, attempts),
+                    "materialization_valid_per_1000_attempts": 1000 * (attempts - int(funnel_row.get("materialization_missing_field_pairs") or 0)) / max(1, attempts),
+                    "full_coordinate_development_matched_pairs": len(outcome_rows),
+                    "new_behavior_families": len(families),
+                    "positive_matched_increments": sum(value > 0 for value in rewards),
+                    "mean_matched_net_increment": statistics.mean(rewards) if rewards else None,
+                    "median_matched_net_increment": statistics.median(rewards) if rewards else None,
+                    "top_decile_matched_net_increment": float(pd.Series(rewards).quantile(0.9)) if rewards else None,
+                    "unsupported_operator_rate": int(funnel_row.get("materialization_unsupported_pairs") or 0) / max(1, attempts),
+                    "materialization_missing_rate": int(funnel_row.get("materialization_missing_field_pairs") or 0) / max(1, attempts),
+                }
+            )
+    return rows
+
+
+def _productivity_status(metrics: Sequence[Mapping[str, Any]], routes: set[str]) -> str:
+    rows = [
+        row for row in metrics
+        if row.get("aggregation_level") == "route" and row.get("aggregation_key") in routes
+    ]
+    support = sum(int(row.get("full_coordinate_development_matched_pairs") or 0) for row in rows)
+    productive_checkpoints = len(
+        {
+            str(row["checkpoint"])
+            for row in rows
+            if (row.get("median_matched_net_increment") is not None and float(row["median_matched_net_increment"]) > 0)
+        }
+    )
+    medians = [float(row["median_matched_net_increment"]) for row in rows if row.get("median_matched_net_increment") is not None]
+    if support >= 64 and productive_checkpoints >= 2 and medians and statistics.median(medians) > 0:
+        return "QUALIFIED"
+    if support >= 32:
+        return "MIXED"
+    return "NOT_QUALIFIED"
+
+
+def run(args: argparse.Namespace) -> dict[str, Any]:
+    if platform.node().upper() != AUTHORIZED_HOST:
+        raise RuntimeError(
+            f"full materialization and Phase3CM are authorized only on 77o ({AUTHORIZED_HOST})"
+        )
+    output_root = args.output_root.resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
+    registry_path = args.registry.resolve()
+    registry = UnifiedCapabilityRegistry.read(registry_path)
+    split = FixedSplitAuthority.read(args.split_manifest.resolve())
+    field_roots = {"active_bar": args.active_field_root.resolve(), "stock_session": args.session_field_root.resolve()}
+    label_roots = {"active_bar": args.active_label_root.resolve(), "stock_session": args.session_label_root.resolve()}
+    compute_threads = {"active_bar": int(args.active_threads), "stock_session": int(args.session_threads)}
+    registry_binding = _registry_binding(registry_path, registry)
+    registry_binding_path = _write_json(output_root / "registry_binding.json", registry_binding)
+    schema_binding, schema_by_backend = materialized_schema_binding(field_roots=field_roots, registry=registry)
+    schema_binding_path = _write_json(output_root / "materialized_schema_binding.json", schema_binding)
+    purity = audit_split_boundary_label_purity(split=split, registry=registry, label_roots=label_roots)
+    purity_path = _write_json(output_root / "split_boundary_purity.json", purity)
+    if purity["status"] != "PASS":
+        raise RuntimeError("SPLIT_BOUNDARY_LABEL_PURITY_FAILED")
+    comparison_path = _write_json(
+        output_root / "prelaunch_structural_comparison.json",
+        _structural_comparison(registry=registry, schema_by_backend=schema_by_backend, seed=args.seed_base),
+    )
+    runtime_envelope = _runtime_envelope(compute_threads["active_bar"], compute_threads["stock_session"])
+    runtime_envelope_path = _write_json(output_root / "runtime_envelope.json", runtime_envelope)
+    if runtime_envelope["status"] != "PASS":
+        raise RuntimeError(runtime_envelope["status"])
+
+    seed_manifest = build_seed_attempt_manifest(
+        registry_hash=registry.registry_hash,
+        schema_hash_by_backend={
+            backend: str(schema_binding["backends"][backend]["materialized_schema_hash"])
+            for backend in ("active_bar", "stock_session")
+        },
+        grammar_hash=registry_binding["grammar_hash"],
+        seed_base=args.seed_base,
+    )
+    seed_manifest_path = _write_json(output_root / "seed_attempt_manifest.json", seed_manifest)
+    started_epoch = time.time()
+    contract = {
+        "schema_version": "cn_targeted_search_medium_campaign_contract_v1",
+        "campaign_id": CAMPAIGN_ID,
+        "started_epoch": started_epoch,
+        "checkpoint_count": CHECKPOINT_COUNT,
+        "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
+        "maximum_completed_development_matched_pairs": MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
+        "scheduled_target_is_fill_requirement": False,
+        "maximum_raw_attempts": MAX_RAW_ATTEMPTS,
+        "maximum_wall_seconds": MAX_WALL_SECONDS,
+        "constructor_profile": COMPOSITIONAL_V2_PROFILE,
+        "broad_event": {"status": "FROZEN_REFERENCE_ONLY", "search_budget": 0},
+        "numeric_definitions": {
+            "actionable_support_pairs_per_route": 2,
+            "sustained_checkpoint_count": 2,
+            "qualified_group_min_evaluated_pairs": 64,
+            "mixed_group_min_evaluated_pairs": 32,
+            "runtime_low_utilization_consecutive_blocks": 3,
+        },
+        "natural_underfill_retained": True,
+        "cross_route_spillover": "FORBIDDEN",
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "promotion": "FORBIDDEN",
+        "strict_stage_a": "NOT_AUTHORIZED",
+        "evaluation_name": "full-coordinate development Phase3CM pair evaluation",
+        "input_bindings": {
+            "registry": _artifact(registry_binding_path, root=output_root),
+            "schema": _artifact(schema_binding_path, root=output_root),
+            "split_purity": _artifact(purity_path, root=output_root),
+            "seed_attempt": _artifact(seed_manifest_path, root=output_root),
+        },
+    }
+    frozen_contract_path = _write_json(output_root / "frozen_contract.json", contract)
+    _write_json(output_root / "archive_snapshot.json", {"status": "CAMPAIGN_GENESIS_EMPTY", "exact_identities": [], "behavior_identities": []})
+
+    generator = RegistryDrivenGenerator(registry, constructor_profile=COMPOSITIONAL_V2_PROFILE, enforce_route_compatibility=True)
+    historical_exact: set[str] = set()
+    behavior_archive = PortfolioBehaviorArchive()
+    previous_feedback = _initial_feedback()
+    previous_manifest: Path | None = None
+    cumulative_candidates: list[dict[str, Any]] = []
+    cumulative_outcomes: list[dict[str, Any]] = []
+    cumulative_metrics: list[dict[str, Any]] = []
+    cumulative_ledger: list[dict[str, Any]] = []
+    cumulative_positive: list[dict[str, Any]] = []
+    cumulative_negative: list[dict[str, Any]] = []
+    cumulative_run_health: list[dict[str, Any]] = []
+    completed_pairs = 0
+    raw_attempts = 0
+    checkpoint_summaries = []
+    runtime_gate_path: Path | None = None
+    seed_rows = {(row["checkpoint"], row["route_id"]): row for row in seed_manifest["rows"]}
+    deadline_epoch = started_epoch + MAX_WALL_SECONDS
+
+    for checkpoint_index in range(CHECKPOINT_COUNT):
+        if completed_pairs >= MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS or raw_attempts >= MAX_RAW_ATTEMPTS or time.time() >= deadline_epoch:
+            break
+        checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
+        checkpoint_root = output_root / "checkpoints" / checkpoint_id
+        checkpoint_root.mkdir(parents=True, exist_ok=True)
+        schedule, schedule_summary = build_medium_campaign_schedule(
+            previous_feedback,
+            base_targets=CHECKPOINT_BASE_TARGETS[checkpoint_index],
+            total_pairs=CHECKPOINT_SCHEDULED_PAIRS,
+        )
+        for row in schedule:
+            row["checkpoint"] = checkpoint_id
+        schedule_path = _write_parquet(checkpoint_root / "schedule.parquet", schedule)
+        schedule_summary_path = _write_json(checkpoint_root / "schedule_summary.json", schedule_summary)
+        generated: list[dict[str, Any]] = []
+        funnels = []
+        for schedule_row in schedule:
+            route_id = str(schedule_row["route_id"])
+            spec = seed_rows[(checkpoint_id, route_id)]
+            rows, funnel = generator.generate_route_attempts(
+                route_id,
+                scheduled_pairs=int(schedule_row["scheduled_pairs"]),
+                seed=int(spec["seed"]),
+                attempt_start=int(spec["attempt_start"]),
+                attempt_limit=int(spec["raw_attempt_cap"]),
+                existing_exact_identities=set(historical_exact),
+                available_field_ids=schema_by_backend[_clock_for_route(route_id)],
+            )
+            generated.extend(rows)
+            funnels.append({"checkpoint": checkpoint_id, **funnel})
+            raw_attempts += int(funnel["generation_attempts"])
+        generated = _annotate_generation_metadata(generated, registry)
+        candidate_attempt_path = _write_parquet(checkpoint_root / "candidate_attempts.parquet", generated)
+        funnel_path = _write_parquet(checkpoint_root / "route_funnel.parquet", funnels)
+        probe_binding = _stable_hash({"checkpoint": checkpoint_id, "seed_manifest": _sha256(seed_manifest_path), "split": split.manifest_hash, "schema": _sha256(schema_binding_path), "probe_trade_times": 30})
+        probe_rows, probe_audit = _probe_pack(
+            candidate_rows=generated,
+            field_roots=field_roots,
+            train_dates=_train_dates(split),
+            coordinate_binding=probe_binding,
+            batch_id=checkpoint_id,
+            compute_threads=compute_threads,
+        )
+        admitted, decisions = _admit_behavior_unique(candidate_rows=generated, probe_rows=probe_rows, historical_archive=PortfolioBehaviorArchive(behavior_archive.rows))
+        probe_path = _write_parquet(checkpoint_root / "behavior_probe.parquet", probe_rows)
+        decisions_path = _write_parquet(checkpoint_root / "admission_decisions.parquet", decisions)
+        if not admitted:
+            raise RuntimeError(f"{checkpoint_id}: no behavior-unique matched pairs")
+        binding_path, table_paths = _context_and_binding(
+            batch_root=checkpoint_root,
+            candidates=admitted,
+            registry=registry,
+            split=split,
+            data_release_hash=_sha256(args.sidecar_closure.resolve()),
+        )
+        _bind_purity(binding_path, purity_path)
+        access_receipts = _run_phase3cm_monitored(
+            checkpoint_id=checkpoint_id,
+            checkpoint_root=checkpoint_root,
+            binding_path=binding_path,
+            table_paths=table_paths,
+            split_manifest=args.split_manifest.resolve(),
+            field_roots=field_roots,
+            label_roots=label_roots,
+            compute_threads=compute_threads,
+            deadline_epoch=deadline_epoch,
+        )
+        if checkpoint_index == 0:
+            gate = _runtime_gate(checkpoint_root, compute_threads)
+            runtime_gate_path = _write_json(output_root / "runtime_utilization_gate.json", gate)
+            if gate["status"] != "PASS":
+                raise RuntimeError("RUNTIME_ACCELERATION_GATE_FAILED")
+        outcomes, full_behavior = _outcome_rows(checkpoint_root)
+        full_behavior = _join_full_behavior_identities(full_behavior, probe_rows)
+        ledger, positive, negative, run_health = build_iterative_feedback_views(outcomes)
+        health = _route_health(outcomes=outcomes, ledger=ledger, positive=positive, negative=negative, admission_rows=decisions, full_behavior_rows=full_behavior)
+        previous_feedback = health
+        for row in generated:
+            if row.get("exact_identity"):
+                historical_exact.add(str(row["exact_identity"]))
+        for row in probe_rows:
+            behavior_archive.add(dict(row))
+        for row in full_behavior:
+            behavior_archive.add(dict(row))
+        completed_pairs += len(outcomes)
+        cumulative_candidates.extend({"checkpoint": checkpoint_id, **row} for row in admitted)
+        cumulative_outcomes.extend({"checkpoint": checkpoint_id, **row} for row in outcomes)
+        cumulative_ledger.extend({"checkpoint": checkpoint_id, **row} for row in ledger)
+        cumulative_positive.extend({"checkpoint": checkpoint_id, **row} for row in positive)
+        cumulative_negative.extend({"checkpoint": checkpoint_id, **row} for row in negative)
+        cumulative_run_health.extend({"checkpoint": checkpoint_id, **row} for row in run_health)
+        metric_rows = _metrics_rows(checkpoint_id=checkpoint_id, schedule=schedule, funnel=funnels, admitted=admitted, outcomes=outcomes, full_behavior=full_behavior)
+        cumulative_metrics.extend(metric_rows)
+        health_path = _write_parquet(checkpoint_root / "route_health.parquet", health)
+        outcome_path = _write_parquet(checkpoint_root / "observation_ledger.parquet", outcomes)
+        full_behavior_path = _write_parquet(checkpoint_root / "full_behavior.parquet", full_behavior)
+        archive_path = checkpoint_root / "behavior_archive.parquet"
+        behavior_archive.write_parquet(archive_path)
+        metrics_path = _write_parquet(checkpoint_root / "campaign_metrics.parquet", metric_rows)
+        input_hashes = {
+            "frozen_contract": _sha256(frozen_contract_path),
+            "seed_attempt_manifest": _sha256(seed_manifest_path),
+            "prior_checkpoint_manifest": _sha256(previous_manifest) if previous_manifest else "GENESIS",
+            "adaptive_schedule_source": _sha256(previous_manifest) if previous_manifest else "FROZEN_INITIAL_PRIOR",
+        }
+        previous_manifest = _batch_manifest(
+            batch_root=checkpoint_root,
+            batch_id=checkpoint_id,
+            input_hashes=input_hashes,
+            paths=[schedule_path, schedule_summary_path, candidate_attempt_path, funnel_path, probe_path, decisions_path, binding_path, health_path, outcome_path, full_behavior_path, archive_path, metrics_path, *[Path(str(row["result_path"])) for row in access_receipts]],
+            access_receipts=access_receipts,
+        )
+        checkpoint_summaries.append({"checkpoint": checkpoint_id, "scheduled_pairs": sum(int(row["scheduled_pairs"]) for row in schedule), "generated_pairs": len(generated) // 2, "admitted_pairs": len(admitted) // 2, "evaluated_pairs": len(outcomes), "raw_attempts": sum(int(row["generation_attempts"]) for row in funnels), "positive_matched_increments": sum(float(row.get("matched_net_increment") or 0.0) > 0 for row in outcomes), "manifest_sha256": _sha256(previous_manifest)})
+
+    candidate_ledger_path = _write_parquet(output_root / "candidate_ledger.parquet", cumulative_candidates)
+    observation_ledger_path = _write_parquet(output_root / "observation_ledger.parquet", cumulative_outcomes)
+    behavior_archive_path = output_root / "behavior_archive.parquet"
+    behavior_archive.write_parquet(behavior_archive_path)
+    metrics_path = _write_parquet(output_root / "campaign_metrics.parquet", cumulative_metrics)
+    _write_parquet(output_root / "positive_policy_view.parquet", cumulative_positive)
+    _write_parquet(output_root / "negative_scheduler_view.parquet", cumulative_negative)
+    _write_parquet(output_root / "run_health.parquet", cumulative_run_health)
+    temporal_status = _productivity_status(cumulative_metrics, {"FIRSTN_PATH", "SLOW_TEMPORAL_CHANGE", "DISCLOSURE_EVENT", "MARKET_REGIME_CONDITION", "INTRADAY_STATE_TRANSITION"})
+    cross_status = _productivity_status(cumulative_metrics, {"MINUTE_STATIC", "SLOW_CROSS_SECTIONAL_LEVEL"})
+    materialization_missing = sum(int(row.get("materialization_missing_field_pairs") or 0) for path in (output_root / "checkpoints").glob("checkpoint_*/route_funnel.parquet") for row in pd.read_parquet(path).to_dict(orient="records"))
+    field_status = "PASS" if materialization_missing == 0 else "PASS_WITH_LOCAL_BOTTLENECKS"
+    qualified = bool(checkpoint_summaries) and purity["status"] == "PASS" and runtime_gate_path is not None
+    if not qualified:
+        next_step = "INVALID"
+    elif temporal_status == cross_status == "NOT_QUALIFIED":
+        next_step = "PIVOT_INFORMATION_OR_MECHANISM"
+    elif "NOT_QUALIFIED" in {temporal_status, cross_status}:
+        next_step = "TARGETED_ROUTE_REPAIR_THEN_REPEAT"
+    else:
+        next_step = "KEEP_MEDIUM_SCALE_AND_ADD_SKELETON_POLICY"
+    decision = {
+        "status": "CAMPAIGN_CLOSED" if qualified else "RUN_INVALID",
+        "stop_reason": "CHECKPOINT_LIMIT" if len(checkpoint_summaries) == CHECKPOINT_COUNT else "HARD_CAP_OR_GATE",
+        "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
+        "maximum_completed_development_matched_pairs": MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
+        "completed_development_matched_pairs": completed_pairs,
+        "raw_generation_attempts": raw_attempts,
+        "checkpoint_summaries": checkpoint_summaries,
+        "FIELD_MATERIALIZATION_FUNNEL": field_status,
+        "SPLIT_BOUNDARY_LABEL_PURITY": purity["status"],
+        "CAMPAIGN_LOCAL_TEMPORAL_EVENT_ROUTE_PRODUCTIVITY": temporal_status,
+        "CAMPAIGN_LOCAL_CROSS_SECTIONAL_ROUTE_PRODUCTIVITY": cross_status,
+        "REGISTRY_COMPOSITIONAL_V2": "CAMPAIGN_QUALIFIED" if qualified else "CAMPAIGN_NOT_QUALIFIED",
+        "CN_SEARCH_NEXT_STEP": next_step,
+        "all_route_conclusions": "CAMPAIGN_LOCAL",
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "promotion": "FORBIDDEN",
+    }
+    decision_path = _write_json(output_root / "final_decision.json", decision)
+    report_path = REPO / "reports/CN_TARGETED_SEARCH_MEDIUM_CAMPAIGN_20260721.md"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(
+        "# CN Targeted Search Medium Campaign\n\n"
+        f"- Status: `{decision['status']}`\n"
+        f"- Full-coordinate development matched pairs: `{completed_pairs}` / cap `{MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS}`\n"
+        f"- Raw attempts: `{raw_attempts}` / cap `{MAX_RAW_ATTEMPTS}`\n"
+        f"- Field materialization funnel: `{field_status}`\n"
+        f"- Split-boundary label purity: `{purity['status']}`\n"
+        f"- Temporal/event productivity (CAMPAIGN_LOCAL): `{temporal_status}`\n"
+        f"- Cross-sectional productivity (CAMPAIGN_LOCAL): `{cross_status}`\n"
+        f"- Next step: `{next_step}`\n\n"
+        "Validation, holdout, forward-2026, promotion, and Formal Strict Stage A remained forbidden and unread.\n",
+        encoding="utf-8",
+    )
+    run_manifest = {
+        "status": decision["status"],
+        "campaign_id": CAMPAIGN_ID,
+        "host": platform.node(),
+        "python": sys.executable,
+        "artifacts": [_artifact(path, root=output_root) for path in (frozen_contract_path, registry_binding_path, schema_binding_path, purity_path, seed_manifest_path, runtime_envelope_path, comparison_path, candidate_ledger_path, observation_ledger_path, behavior_archive_path, metrics_path, decision_path) if path.is_file()],
+        "report": _artifact(report_path),
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "promotion": "FORBIDDEN",
+    }
+    _write_json(output_root / "run_manifest.json", run_manifest)
+    return decision
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--registry", type=Path, required=True)
+    parser.add_argument("--split-manifest", type=Path, required=True)
+    parser.add_argument("--sidecar-closure", type=Path, required=True)
+    parser.add_argument("--active-field-root", type=Path, required=True)
+    parser.add_argument("--active-label-root", type=Path, required=True)
+    parser.add_argument("--session-field-root", type=Path, required=True)
+    parser.add_argument("--session-label-root", type=Path, required=True)
+    parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--seed-base", type=int, default=2026072101)
+    parser.add_argument("--active-threads", type=int, default=11)
+    parser.add_argument("--session-threads", type=int, default=2)
+    args = parser.parse_args(argv)
+    result = run(args)
+    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    return 0 if result["status"] == "CAMPAIGN_CLOSED" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

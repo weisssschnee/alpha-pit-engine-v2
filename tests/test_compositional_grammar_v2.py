@@ -442,14 +442,19 @@ def test_route_root_allowlist_is_enforced_without_changing_registry_authority() 
     registry = UnifiedCapabilityRegistry.read(REGISTRY)
     grammar = CompositionalGrammarV2(
         registry,
-        route_root_allowlist={"MINUTE_STATIC": ["amount", "close"]},
+        route_root_allowlist={
+            "MINUTE_STATIC": ["amount", "close", "ret_1m", "plate_peer_return_mean"]
+        },
+        enforce_route_compatibility=True,
     )
 
     for index in range(32):
         pair = grammar.propose("MINUTE_STATIC", attempt_index=index, seed=20260718)
         assert pair.primary["legal"] is True
         assert pair.control["legal"] is True
-        assert set(pair.primary["declared_field_ids"]) <= {"amount", "close"}
+        assert set(pair.primary["declared_field_ids"]) <= {
+            "amount", "close", "ret_1m", "plate_peer_return_mean"
+        }
 
     try:
         CompositionalGrammarV2(

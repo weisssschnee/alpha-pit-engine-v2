@@ -6,7 +6,10 @@ from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _causal_route_comparison,
     main as iterative_main,
 )
-from our_system_phase2.services.multi_arm_scheduler import build_route_schedule
+from our_system_phase2.services.multi_arm_scheduler import (
+    build_medium_campaign_schedule,
+    build_route_schedule,
+)
 from our_system_phase2.services.unified_capability_registry import ROUTE_IDS
 
 
@@ -41,12 +44,43 @@ def test_route_scheduler_uses_registry_route_as_top_level_key() -> None:
     assert summary["legacy_default_arm_profiles"] == "COMPATIBILITY_ONLY"
 
 
+def test_medium_campaign_scheduler_holds_route_diversity_bounds() -> None:
+    base = {
+        "INTRADAY_STATE_TRANSITION": 48,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 43,
+        "MINUTE_STATIC": 38,
+        "SLOW_TEMPORAL_CHANGE": 38,
+        "FIRSTN_PATH": 32,
+        "MARKET_REGIME_CONDITION": 32,
+        "DISCLOSURE_EVENT": 25,
+    }
+    rows, summary = build_medium_campaign_schedule(
+        [_row(route_id, actionable_support=0) for route_id in ROUTE_IDS],
+        base_targets=base,
+        total_pairs=256,
+    )
+    budgets = {str(row["route_id"]): int(row["scheduled_pairs"]) for row in rows}
+
+    assert sum(budgets.values()) == 256
+    assert budgets["INTRADAY_STATE_TRANSITION"] >= 36
+    assert budgets["SLOW_TEMPORAL_CHANGE"] >= 26
+    assert budgets["FIRSTN_PATH"] >= 21
+    assert budgets["MARKET_REGIME_CONDITION"] >= 21
+    assert budgets["DISCLOSURE_EVENT"] >= 16
+    assert max(budgets.values()) <= 64
+    assert budgets["MINUTE_STATIC"] + budgets["SLOW_CROSS_SECTIONAL_LEVEL"] <= 128
+    assert summary["temporal_event_share"] >= 0.5
+
+
 def test_iterative_canary_is_exposed_through_narrow_app_route(capsys) -> None:
     assert app.ROUTES["cn-iterative-search-v1-canary"] == (
         "our_system_phase2.runtime.cn_iterative_search_v1"
     )
     assert iterative_main(["--synthetic-rules-only"]) == 0
     assert '"status": "PASS"' in capsys.readouterr().out
+    assert app.ROUTES["cn-targeted-search-medium-campaign"] == (
+        "our_system_phase2.runtime.cn_targeted_search_medium_campaign"
+    )
 
 
 def test_causal_gate_requires_actual_route_distribution_to_follow_schedule() -> None:

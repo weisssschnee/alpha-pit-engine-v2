@@ -46,19 +46,24 @@ class RegistryDrivenGenerator:
         registry: UnifiedCapabilityRegistry,
         *,
         constructor_profile: str = LEGACY_V1_PROFILE,
+        enforce_route_compatibility: bool = True,
     ) -> None:
         if constructor_profile not in CONSTRUCTOR_PROFILES:
             raise ValueError(f"unknown registry constructor profile: {constructor_profile}")
         self.registry = registry
         self.compiler = TypedRouteCompiler(registry)
         self.constructor_profile = str(constructor_profile)
+        self.enforce_route_compatibility = bool(enforce_route_compatibility)
         self.generator_version = (
             COMPOSITIONAL_GENERATOR_VERSION
             if self.constructor_profile == COMPOSITIONAL_V2_PROFILE
             else GENERATOR_VERSION
         )
         self._compositional = (
-            CompositionalGrammarV2(registry)
+            CompositionalGrammarV2(
+                registry,
+                enforce_route_compatibility=self.enforce_route_compatibility,
+            )
             if self.constructor_profile == COMPOSITIONAL_V2_PROFILE
             else None
         )
@@ -108,9 +113,17 @@ class RegistryDrivenGenerator:
         row.update(dict(extra or {}))
         return row
 
-    def _pair(self, route_id: str, index: int, seed: int) -> GeneratedPair:
-        if self._compositional is not None:
-            pair = self._compositional.propose(
+    def _pair(
+        self,
+        route_id: str,
+        index: int,
+        seed: int,
+        *,
+        compositional: CompositionalGrammarV2 | None = None,
+    ) -> GeneratedPair:
+        grammar = compositional or self._compositional
+        if grammar is not None:
+            pair = grammar.propose(
                 route_id,
                 attempt_index=int(index),
                 seed=int(seed),
@@ -339,8 +352,52 @@ class RegistryDrivenGenerator:
             if available_field_ids is None
             else set(map(str, available_field_ids))
         )
+        schema_first_usable: tuple[str, ...] = ()
+        schema_first_rejected = 0
+        compositional = self._compositional
+        if available_fields is not None and self.constructor_profile == COMPOSITIONAL_V2_PROFILE:
+            route_fields = tuple(self.registry.fields_for_route(route_id))
+            usable: list[str] = []
+            for field in route_fields:
+                materialization_expression = str(
+                    field.metadata.get("materialization_expression") or ""
+                )
+                physical_leaves = (
+                    expression_fields(materialization_expression)
+                    if materialization_expression
+                    else {field.field_id}
+                )
+                if set(map(str, physical_leaves)).issubset(available_fields):
+                    usable.append(field.field_id)
+            schema_first_usable = tuple(sorted(set(usable)))
+            schema_first_rejected = len(route_fields) - len(schema_first_usable)
+            if schema_first_usable:
+                compositional = CompositionalGrammarV2(
+                    self.registry,
+                    route_root_allowlist={route_id: schema_first_usable},
+                    enforce_route_compatibility=self.enforce_route_compatibility,
+                )
+            else:
+                max_attempts = 0
+        skeleton_compatibility_rejects = 0
         while len(output) // 2 < scheduled_pairs and index < start + max_attempts:
-            pair = self._pair(route_id, index, seed)
+            try:
+                pair = self._pair(
+                    route_id,
+                    index,
+                    seed,
+                    compositional=compositional,
+                )
+            except ValueError as exc:
+                message = str(exc)
+                if (
+                    "ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED" in message
+                    or "FIELD_COVERAGE_BOTTLENECK" in message
+                ):
+                    skeleton_compatibility_rejects += 1
+                    index += 1
+                    continue
+                raise
             if self.constructor_profile == COMPOSITIONAL_V2_PROFILE:
                 unsupported = unsupported_streaming_operators(
                     (pair.candidate["expression"], pair.control["expression"])
@@ -405,6 +462,9 @@ class RegistryDrivenGenerator:
             "materialization_missing_field_pairs": int(
                 materialization_missing_field_pairs
             ),
+            "schema_first_usable_field_count": int(len(schema_first_usable)),
+            "schema_first_rejected_field_count": int(schema_first_rejected),
+            "skeleton_compatibility_rejects": int(skeleton_compatibility_rejects),
             "attempt_start": int(start),
             "attempt_stop": int(index),
             "seed": int(seed),
@@ -412,7 +472,13 @@ class RegistryDrivenGenerator:
             "generator_authority": "RegistryDrivenGenerator",
             "constructor_profile": self.constructor_profile,
             "generator_version": self.generator_version,
-            "underfill_reason": "" if generated_pairs == scheduled_pairs else "GENERATION_ATTEMPT_LIMIT",
+            "route_compatibility_enforced": self.enforce_route_compatibility,
+            "underfill_reason": "" if generated_pairs == scheduled_pairs else (
+                "ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED"
+                if skeleton_compatibility_rejects
+                or (available_fields is not None and not schema_first_usable)
+                else "GENERATION_ATTEMPT_LIMIT"
+            ),
             "spillover_reason": "",
         }
         return output, funnel

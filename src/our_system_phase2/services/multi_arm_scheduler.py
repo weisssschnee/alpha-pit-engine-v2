@@ -10,7 +10,7 @@ import csv
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from our_system_phase2.services.evaluation_access_guard import GUARD_VERSION, assert_train_only_feedback_rows
 
@@ -37,6 +37,18 @@ DEFAULT_ARM_PROFILES = [
     ArmProfile("cem_exploit", "phase3bs-adaptive-ucb-cem-practice", "guarded exploit around proven clean families", 0.14, 0.00, 0.22, "exploit"),
     ArmProfile("random_orthogonal", "control-random-orthogonal", "control and novelty baseline", 0.08, 0.04, 0.14, "control"),
 ]
+
+MEDIUM_CAMPAIGN_ROUTE_FLOOR_SHARE = {
+    "INTRADAY_STATE_TRANSITION": 0.14,
+    "SLOW_TEMPORAL_CHANGE": 0.10,
+    "FIRSTN_PATH": 0.08,
+    "MARKET_REGIME_CONDITION": 0.08,
+    "DISCLOSURE_EVENT": 0.06,
+}
+MEDIUM_CAMPAIGN_ROUTE_CAP_SHARE = 0.25
+MEDIUM_CAMPAIGN_STATIC_ROUTES = frozenset(
+    {"MINUTE_STATIC", "SLOW_CROSS_SECTIONAL_LEVEL"}
+)
 
 
 def _bounded_integer_allocation(
@@ -237,6 +249,159 @@ def build_route_schedule(
         ),
         "feedback_data_role": "development",
         "evaluation_access_guard": GUARD_VERSION,
+    }
+    return scheduled, summary
+
+
+def build_medium_campaign_schedule(
+    route_rows: list[dict[str, Any]],
+    *,
+    base_targets: Mapping[str, int],
+    total_pairs: int = 256,
+    min_actionable_support: int = 2,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Apply campaign-local route feedback inside fixed diversity bounds."""
+
+    search_routes = set(ROUTE_IDS) - {"BROAD_EVENT_FROZEN_ENTRY"}
+    if set(base_targets) != search_routes:
+        raise ValueError("medium campaign base targets must bind the seven search routes")
+    if sum(int(value) for value in base_targets.values()) != int(total_pairs):
+        raise ValueError("medium campaign base targets must sum to total_pairs")
+    feedback_rows, feedback_summary = build_route_schedule(
+        route_rows,
+        total_pairs=len(ROUTE_IDS),
+        admission_pairs=len(ROUTE_IDS),
+        per_route_pair_cap=len(ROUTE_IDS),
+        fresh_floor_pairs=1,
+        min_actionable_support=min_actionable_support,
+    )
+    actions = {str(row["route_id"]): dict(row) for row in feedback_rows}
+    multipliers = {
+        "EXPAND": 1.25,
+        "MAINTAIN": 1.0,
+        "REPAIR": 0.85,
+        "DOWNWEIGHT": 0.75,
+        "FREEZE": 0.0,
+    }
+    routes = tuple(route for route in ROUTE_IDS if route != "BROAD_EVENT_FROZEN_ENTRY")
+    floors = {
+        route: int(
+            math.ceil(
+                total_pairs * MEDIUM_CAMPAIGN_ROUTE_FLOOR_SHARE.get(route, 0.0)
+            )
+        )
+        for route in routes
+    }
+    cap = int(math.floor(total_pairs * MEDIUM_CAMPAIGN_ROUTE_CAP_SHARE))
+    budgets = dict(floors)
+    remaining = total_pairs - sum(budgets.values())
+    weights = {
+        route: max(
+            0.0,
+            float(base_targets[route])
+            * multipliers[str(actions[route]["scheduler_action"])],
+        )
+        for route in routes
+    }
+    no_actionable_feedback = all(
+        int(actions[route]["actionable_support"]) < min_actionable_support
+        for route in routes
+    )
+    if no_actionable_feedback:
+        budgets = {route: int(base_targets[route]) for route in routes}
+        remaining = 0
+    while remaining:
+        available = [route for route in routes if budgets[route] < cap]
+        if not available:
+            raise RuntimeError("medium campaign route caps exhausted")
+        denominator = sum(weights[route] for route in available)
+        exact = {
+            route: (
+                remaining * weights[route] / denominator
+                if denominator
+                else remaining / len(available)
+            )
+            for route in available
+        }
+        granted = 0
+        for route in available:
+            addition = min(cap - budgets[route], int(math.floor(exact[route])))
+            budgets[route] += addition
+            granted += addition
+        remaining -= granted
+        if not remaining:
+            break
+        ranked = sorted(
+            available,
+            key=lambda route: (
+                exact[route] - math.floor(exact[route]),
+                weights[route],
+                base_targets[route],
+                route,
+            ),
+            reverse=True,
+        )
+        for route in ranked:
+            if remaining <= 0:
+                break
+            budgets[route] += 1
+            remaining -= 1
+    static_total = sum(budgets[route] for route in MEDIUM_CAMPAIGN_STATIC_ROUTES)
+    if static_total > total_pairs // 2:
+        excess = static_total - total_pairs // 2
+        receivers = [
+            route
+            for route in routes
+            if route not in MEDIUM_CAMPAIGN_STATIC_ROUTES and budgets[route] < cap
+        ]
+        donors = sorted(
+            MEDIUM_CAMPAIGN_STATIC_ROUTES,
+            key=lambda route: (budgets[route] - floors[route], route),
+            reverse=True,
+        )
+        for offset in range(excess):
+            donor = donors[offset % len(donors)]
+            receiver = receivers[offset % len(receivers)]
+            if budgets[donor] <= floors[donor]:
+                raise RuntimeError("static share cannot be reduced within route floors")
+            budgets[donor] -= 1
+            budgets[receiver] += 1
+
+    scheduled = []
+    for route in routes:
+        action = actions[route]
+        scheduled.append(
+            {
+                "route_id": route,
+                "scheduled_pairs": budgets[route],
+                "generation_mode": action["generation_mode"],
+                "generation_mode_constructor_status": "LABEL_ONLY",
+                "scheduler_action": action["scheduler_action"],
+                "scheduler_reason": action["scheduler_reason"],
+                "feedback_application_status": action[
+                    "feedback_application_status"
+                ],
+                "actionable_support": action["actionable_support"],
+            }
+        )
+    summary = {
+        "top_level_scheduling_key": "unified_registry_route_id",
+        "generation_mode_role": "route_attached_action_label",
+        "total_scheduled_matched_pair_budget": total_pairs,
+        "allocated_pairs": sum(budgets.values()),
+        "per_route_cap_pairs": cap,
+        "route_floor_pairs": floors,
+        "temporal_event_share": sum(
+            budgets[route]
+            for route in routes
+            if route not in MEDIUM_CAMPAIGN_STATIC_ROUTES
+        )
+        / total_pairs,
+        "static_cross_sectional_share": sum(
+            budgets[route] for route in MEDIUM_CAMPAIGN_STATIC_ROUTES
+        )
+        / total_pairs,
+        "feedback_rule_summary": feedback_summary,
     }
     return scheduled, summary
 

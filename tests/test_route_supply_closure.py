@@ -104,7 +104,9 @@ def test_registry_attempt_stream_can_require_current_materialized_fields() -> No
     )
 
     assert len(rows) == 16
-    assert funnel["materialization_missing_field_pairs"] > 0
+    assert funnel["schema_first_rejected_field_count"] > 0
+    assert funnel["materialization_missing_field_pairs"] == 0
+    assert funnel["schema_first_usable_field_count"] == len(available)
     assert all(
         set(map(str, row.get("declared_field_ids") or ())).issubset(available)
         for row in rows
@@ -144,6 +146,52 @@ def test_materialized_state_expression_does_not_require_synthetic_state_column()
 
     assert len(rows) == 2
     assert funnel["materialization_missing_field_pairs"] == 0
+
+
+def test_route_local_skeleton_compatibility_uses_registered_field_semantics() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    generator = RegistryDrivenGenerator(
+        registry, constructor_profile=COMPOSITIONAL_V2_PROFILE
+    )
+
+    minute_rows, minute_funnel = generator.generate_route_attempts(
+        "MINUTE_STATIC",
+        scheduled_pairs=16,
+        seed=2026072217,
+        attempt_limit=256,
+        available_field_ids={
+            row.field_id for row in registry.fields_for_route("MINUTE_STATIC")
+        },
+    )
+    by_skeleton = {
+        str(row["skeleton_id"]): row
+        for row in minute_rows
+        if row["pair_member_role"] == "PRIMARY"
+    }
+    price_volume = next(
+        row for skeleton, row in by_skeleton.items()
+        if skeleton.endswith("price_volume_interaction")
+    )
+    assert {str(value) for value in price_volume["compatibility_leg_roles"]} == {
+        "price_or_return",
+        "volume_amount_or_liquidity",
+    }
+    assert minute_funnel["skeleton_compatibility_rejects"] >= 0
+
+    temporal_rows, _ = generator.generate_route_attempts(
+        "SLOW_TEMPORAL_CHANGE",
+        scheduled_pairs=16,
+        seed=2026072219,
+        attempt_limit=256,
+        available_field_ids={
+            row.field_id for row in registry.fields_for_route("SLOW_TEMPORAL_CHANGE")
+        },
+    )
+    for row in temporal_rows:
+        if str(row["skeleton_id"]).endswith(("slope", "acceleration", "change_persistence")):
+            for field_id in row["declared_field_ids"]:
+                field = registry.resolve(str(field_id))
+                assert field.temporal_semantics == "SLOW_CHANGE"
 
 
 def test_supply_diagnosis_excludes_frozen_broad_event_and_requires_headroom() -> None:
