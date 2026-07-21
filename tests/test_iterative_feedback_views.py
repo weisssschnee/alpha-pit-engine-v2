@@ -52,3 +52,19 @@ def test_infrastructure_failure_only_enters_run_health() -> None:
     assert negative == []
     assert run_health[0]["run_health_status"] == "INFRASTRUCTURE_FAILURE"
 
+
+def test_evaluated_zero_matched_increment_is_auditable_no_increment() -> None:
+    ledger, positive, negative, run_health = build_iterative_feedback_views(
+        [
+            _row(
+                matched_gross_increment=0.0,
+                matched_net_increment=0.0,
+                matched_trading_cost_difference=0.0,
+                matched_train_increment=0.0,
+            )
+        ]
+    )
+    assert ledger[0]["outcome_labels"] == ["NO_INCREMENT"]
+    assert positive == []
+    assert negative[0]["negative_labels"] == ["NO_INCREMENT"]
+    assert run_health == []

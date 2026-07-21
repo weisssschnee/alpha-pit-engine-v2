@@ -284,6 +284,77 @@ def _select_proposal_pack(
     return flat, funnel
 
 
+def _legal_canonical_pair_distribution(
+    rows: Sequence[Mapping[str, Any]],
+) -> dict[str, int]:
+    """Count actual legal/canonical matched pairs selected per registry route."""
+
+    members_by_pair: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
+    for row in rows:
+        members_by_pair[str(row.get("pair_id") or "")].append(row)
+    counts = {route_id: 0 for route_id in ROUTE_IDS}
+    for pair_id, members in members_by_pair.items():
+        if not pair_id or len(members) != 2:
+            raise RuntimeError(f"invalid selected matched pair membership: {pair_id!r}")
+        routes = {str(member.get("route_id") or "") for member in members}
+        if len(routes) != 1:
+            raise RuntimeError(f"selected matched pair route drift: {pair_id}")
+        legal = all(
+            member.get("legal") is True
+            or str(member.get("legal") or "").strip().lower() == "true"
+            for member in members
+        )
+        canonical = all(str(member.get("canonical_identity") or "") for member in members)
+        if legal and canonical:
+            counts[next(iter(routes))] += 1
+    return counts
+
+
+def _causal_route_comparison(
+    *,
+    feedback_on_budgets: Mapping[str, int],
+    feedback_off_budgets: Mapping[str, int],
+    feedback_on_actual: Mapping[str, int],
+    feedback_off_actual: Mapping[str, int],
+) -> tuple[dict[str, dict[str, Any]], dict[str, bool]]:
+    comparison: dict[str, dict[str, Any]] = {}
+    matching_direction_routes: list[str] = []
+    contradictory_routes: list[str] = []
+    for route_id in ROUTE_IDS:
+        budget_delta = int(feedback_on_budgets.get(route_id, 0)) - int(
+            feedback_off_budgets.get(route_id, 0)
+        )
+        actual_delta = int(feedback_on_actual.get(route_id, 0)) - int(
+            feedback_off_actual.get(route_id, 0)
+        )
+        direction_matches: bool | None = None
+        if budget_delta and actual_delta:
+            direction_matches = (budget_delta > 0) == (actual_delta > 0)
+            (matching_direction_routes if direction_matches else contradictory_routes).append(route_id)
+        comparison[route_id] = {
+            "feedback_on_scheduled_pairs": int(feedback_on_budgets.get(route_id, 0)),
+            "feedback_off_scheduled_pairs": int(feedback_off_budgets.get(route_id, 0)),
+            "scheduled_pair_delta": budget_delta,
+            "feedback_on_actual_legal_canonical_pairs": int(feedback_on_actual.get(route_id, 0)),
+            "feedback_off_actual_legal_canonical_pairs": int(feedback_off_actual.get(route_id, 0)),
+            "actual_pair_delta": actual_delta,
+            "direction_matches_when_observable": direction_matches,
+        }
+    gates = {
+        "scheduled_route_distribution_changed": any(
+            row["scheduled_pair_delta"] != 0 for row in comparison.values()
+        ),
+        "actual_legal_canonical_route_distribution_changed": any(
+            row["actual_pair_delta"] != 0 for row in comparison.values()
+        ),
+        "at_least_one_actual_change_matches_scheduled_direction": bool(
+            matching_direction_routes
+        ),
+        "no_actual_change_contradicts_scheduled_direction": not contradictory_routes,
+    }
+    return comparison, gates
+
+
 def _probe_pack(
     *,
     candidate_rows: Sequence[Mapping[str, Any]],
@@ -621,6 +692,47 @@ def _outcome_rows(batch_root: Path) -> tuple[list[dict[str, Any]], list[dict[str
     return outcomes, full_behavior_rows
 
 
+def _join_full_behavior_identities(
+    full_behavior_rows: Sequence[Mapping[str, Any]],
+    probe_rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Close all four identities on the immutable post-Phase3CM behavior row."""
+
+    probe_by_pair = {str(row.get("pair_id") or ""): row for row in probe_rows}
+    joined: list[dict[str, Any]] = []
+    for source in full_behavior_rows:
+        row = dict(source)
+        pair_id = str(row.get("pair_id") or "")
+        probe = probe_by_pair.get(pair_id)
+        if probe is None:
+            raise RuntimeError(f"full behavior row has no bounded probe binding: {pair_id}")
+        for identity_key in ("structural_family_id", "signal_cluster_id"):
+            probe_value = str(probe.get(identity_key) or "")
+            full_value = str(row.get(identity_key) or "")
+            if full_value and probe_value and full_value != probe_value:
+                raise RuntimeError(
+                    f"full/probe {identity_key} drift for {pair_id}: "
+                    f"{full_value} != {probe_value}"
+                )
+            row[identity_key] = full_value or probe_value
+        if str(row.get("behavior_status") or "") == "RESOLVED":
+            required = (
+                "structural_family_id",
+                "signal_cluster_id",
+                "portfolio_behavior_signature_id",
+                "portfolio_behavior_family_id",
+            )
+            missing = [key for key in required if not str(row.get(key) or "")]
+            if missing:
+                raise RuntimeError(
+                    f"resolved full behavior row missing four-identity closure for "
+                    f"{pair_id}: {missing}"
+                )
+        row["identity_join_authority"] = "PAIR_ID_BOUND_BOUNDED_PROBE_TO_FULL_PHASE3CM"
+        joined.append(row)
+    return joined
+
+
 def _route_health(
     *,
     outcomes: Sequence[Mapping[str, Any]],
@@ -840,6 +952,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             schedule=schedule,
             historical_archive=archive_before,
         )
+        control_contract = {
+            "seed": seeds[batch_index],
+            "master_stream_hash": master_stream_identity,
+            "total_pair_budget": PAIR_PROPOSAL_BUDGET,
+            "historical_exact_identity_hash": _stable_hash(sorted(historical_exact)),
+            "historical_behavior_archive_hash": _stable_hash(archive_before.rows),
+            "exact_dedupe_policy": "MASTER_STREAM_EXACT_IDENTITY_V1",
+            "behavior_dedupe_policy": "LABEL_FREE_EXACT_PROBE_ID_V1",
+            "registry_hash": registry.registry_hash,
+            "compiler_authority": "TypedRouteCompiler",
+            "generator_authority": "RegistryDrivenGenerator",
+            "probe_coordinate_binding": probe_binding,
+        }
         for row in probe_rows:
             behavior_archive.add(dict(row))
         probe_path = _write_parquet(batch_root / "behavior_probe.parquet", probe_rows)
@@ -882,11 +1007,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "candidate_attempt_stream": "SAME_MASTER_STREAM_AS_FEEDBACK_ON",
                 "master_stream_hash": master_stream_identity,
                 "historical_behavior_archive_hash": _stable_hash(archive_before.rows),
+                "historical_exact_identity_hash": _stable_hash(sorted(historical_exact)),
                 "exact_behavior_dedupe": "SAME_AS_FEEDBACK_ON",
+                "control_contract": control_contract,
                 "phase3cm_evaluation": "NOT_RUN_BY_CONTRACT",
                 "memory_update": "FORBIDDEN",
                 "proposal_pairs": len(off_proposals) // 2,
                 "behavior_unique_admission_pairs": len(off_admitted) // 2,
+                "actual_legal_canonical_route_pairs": _legal_canonical_pair_distribution(
+                    off_proposals
+                ),
+                "route_budgets": {
+                    str(row["route_id"]): int(row["scheduled_pairs"])
+                    for row in off_schedule
+                },
                 "probe_audit": off_probe_audit,
                 "schedule_summary": off_summary,
                 "validation_reads": 0,
@@ -897,7 +1031,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             feedback_off_summary = {
                 **off_manifest,
                 "manifest_sha256": _sha256(feedback_off_path),
-                "route_budgets": {str(row["route_id"]): int(row["scheduled_pairs"]) for row in off_schedule},
             }
 
         if not admitted:
@@ -932,6 +1065,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             compute_threads=compute_threads,
         )
         outcomes, full_behavior_rows = _outcome_rows(batch_root)
+        full_behavior_rows = _join_full_behavior_identities(full_behavior_rows, probe_rows)
         for row in full_behavior_rows:
             behavior_archive.add(dict(row))
         ledger, positive, negative, run_health = build_iterative_feedback_views(outcomes)
@@ -1032,6 +1166,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "master_stream_hash": master_stream_identity,
                 "archive_sha256": _sha256(archive_snapshot_path),
                 "route_budgets": {str(row["route_id"]): int(row["scheduled_pairs"]) for row in schedule},
+                "actual_legal_canonical_route_pairs": _legal_canonical_pair_distribution(
+                    proposal_rows
+                ),
+                "control_contract": control_contract,
+                "full_behavior_four_identities_closed": all(
+                    str(row.get("behavior_status") or "") != "RESOLVED"
+                    or all(
+                        str(row.get(key) or "")
+                        for key in (
+                            "structural_family_id",
+                            "signal_cluster_id",
+                            "portfolio_behavior_signature_id",
+                            "portfolio_behavior_family_id",
+                        )
+                    )
+                    for row in full_behavior_rows
+                ),
                 "feedback_status": {
                     "positive": schedule_summary["positive_feedback_status"],
                     "negative": schedule_summary["negative_feedback_status"],
@@ -1060,13 +1211,38 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         str(feedback_off_summary.get("master_stream_hash") or "")
         == str(batch_summaries[1]["master_stream_hash"])
     )
+    feedback_on_contract = dict(batch_summaries[1]["control_contract"])
+    feedback_off_contract = dict(feedback_off_summary.get("control_contract") or {})
+    shared_contract_checks = {
+        key: feedback_on_contract.get(key) == feedback_off_contract.get(key)
+        for key in feedback_on_contract
+    }
+    shared_on_off_contract = bool(shared_contract_checks) and all(
+        shared_contract_checks.values()
+    )
+    feedback_off_kept_initial_budget = (
+        feedback_off_summary.get("route_budgets") == batch_summaries[0]["route_budgets"]
+    )
+    route_comparison, route_causal_gates = _causal_route_comparison(
+        feedback_on_budgets=batch_summaries[1]["route_budgets"],
+        feedback_off_budgets=feedback_off_summary.get("route_budgets", {}),
+        feedback_on_actual=batch_summaries[1]["actual_legal_canonical_route_pairs"],
+        feedback_off_actual=feedback_off_summary.get(
+            "actual_legal_canonical_route_pairs", {}
+        ),
+    )
+    actual_route_causality = all(route_causal_gates.values())
     causal = {
         "batch_1_binds_batch_0_manifest": batch_1_binds_batch_0,
         "batch_2_binds_batch_1_manifest": batch_2_binds_batch_1,
-        "feedback_on_off_shared_seed_attempt_stream_budget_archive_dedupe_registry_compiler": shared_on_off_stream,
+        "feedback_on_off_shared_seed_attempt_stream_budget_archive_dedupe_registry_compiler": shared_on_off_contract,
+        "feedback_on_off_shared_contract_checks": shared_contract_checks,
         "batch_1_feedback_on_master_stream_hash": batch_summaries[1]["master_stream_hash"],
         "batch_1_feedback_off_master_stream_hash": feedback_off_summary.get("master_stream_hash"),
         "feedback_on_off_route_budget_changed": batch1_changed,
+        "feedback_off_kept_initial_route_budget": feedback_off_kept_initial_budget,
+        "feedback_on_off_route_comparison": route_comparison,
+        "feedback_on_off_route_causal_gates": route_causal_gates,
         "synthetic_feedback_rules": synthetic_proof,
         "real_positive_direction_status": batch_summaries[2]["feedback_status"]["positive"],
         "real_negative_direction_status": batch_summaries[2]["feedback_status"]["negative"],
@@ -1087,6 +1263,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "feedback_off_control_completed": feedback_off_summary.get("status")
         == "BATCH_1_FEEDBACK_OFF_PROPOSAL_CONTROL_COMPLETED",
         "feedback_on_off_master_attempt_stream_hash_equal": shared_on_off_stream,
+        "feedback_on_off_shared_contract_exact": shared_on_off_contract,
+        "feedback_off_kept_initial_route_budget": feedback_off_kept_initial_budget,
+        "feedback_on_off_actual_route_causality_verified": actual_route_causality,
+        "full_behavior_four_identities_closed": all(
+            bool(summary["full_behavior_four_identities_closed"])
+            for summary in batch_summaries
+        ),
         "cross_batch_manifest_bindings_exact": batch_1_binds_batch_0 and batch_2_binds_batch_1,
         "batch_1_feedback_changes_route_budget": batch1_changed,
         "access_counts_zero": access_zero,
@@ -1123,7 +1306,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     return decision
 
 
-def main() -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--synthetic-rules-only", action="store_true")
     parser.add_argument("--registry", type=Path)
@@ -1137,7 +1320,7 @@ def main() -> int:
     parser.add_argument("--seed-base", type=int, default=2026072101)
     parser.add_argument("--active-threads", type=int, default=11)
     parser.add_argument("--session-threads", type=int, default=2)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.synthetic_rules_only:
         proof = _synthetic_feedback_proof()
         print(json.dumps(proof, ensure_ascii=False, sort_keys=True))

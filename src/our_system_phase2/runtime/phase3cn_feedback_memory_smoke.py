@@ -345,6 +345,13 @@ def build_iterative_feedback_views(
             labels.append("BEHAVIOR_DUPLICATE")
         if "instability" in lower_blockers:
             labels.append("INSTABILITY")
+        if (
+            math.isfinite(gross)
+            and math.isfinite(net)
+            and gross == 0.0
+            and net == 0.0
+        ):
+            labels.append("NO_INCREMENT")
         if not labels and status == "PAIR_EVALUATION_BLOCKED":
             labels.append("NO_INCREMENT")
 

@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+import app
+
+from our_system_phase2.runtime.cn_iterative_search_v1 import (
+    _causal_route_comparison,
+    main as iterative_main,
+)
 from our_system_phase2.services.multi_arm_scheduler import build_route_schedule
 from our_system_phase2.services.unified_capability_registry import ROUTE_IDS
 
@@ -33,6 +39,31 @@ def test_route_scheduler_uses_registry_route_as_top_level_key() -> None:
     assert max(int(row["scheduled_pairs"]) for row in rows) <= 12
     assert summary["top_level_scheduling_key"] == "unified_registry_route_id"
     assert summary["legacy_default_arm_profiles"] == "COMPATIBILITY_ONLY"
+
+
+def test_iterative_canary_is_exposed_through_narrow_app_route(capsys) -> None:
+    assert app.ROUTES["cn-iterative-search-v1-canary"] == (
+        "our_system_phase2.runtime.cn_iterative_search_v1"
+    )
+    assert iterative_main(["--synthetic-rules-only"]) == 0
+    assert '"status": "PASS"' in capsys.readouterr().out
+
+
+def test_causal_gate_requires_actual_route_distribution_to_follow_schedule() -> None:
+    on_budget = {route_id: 6 for route_id in ROUTE_IDS}
+    off_budget = dict(on_budget)
+    on_actual = {route_id: 6 for route_id in ROUTE_IDS}
+    off_actual = dict(on_actual)
+    on_budget["MINUTE_STATIC"] = 8
+    on_actual["MINUTE_STATIC"] = 8
+    comparison, gates = _causal_route_comparison(
+        feedback_on_budgets=on_budget,
+        feedback_off_budgets=off_budget,
+        feedback_on_actual=on_actual,
+        feedback_off_actual=off_actual,
+    )
+    assert all(gates.values())
+    assert comparison["MINUTE_STATIC"]["direction_matches_when_observable"] is True
 
 
 def test_positive_and_negative_rules_expand_and_contract_synthetically() -> None:
@@ -89,4 +120,3 @@ def test_freeze_requires_semantic_or_exact_behavior_evidence() -> None:
     scheduled, _ = build_route_schedule(rows, total_pairs=48, admission_pairs=24)
     minute = next(row for row in scheduled if row["route_id"] == "MINUTE_STATIC")
     assert minute["scheduler_action"] != "FREEZE"
-

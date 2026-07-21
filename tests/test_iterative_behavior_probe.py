@@ -3,6 +3,9 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from our_system_phase2.runtime.cn_iterative_search_v1 import (
+    _join_full_behavior_identities,
+)
 from our_system_phase2.services.portfolio_behavior_archive import (
     bounded_label_free_behavior_probe,
 )
@@ -57,3 +60,29 @@ def test_bounded_probe_reads_fields_without_label_sidecars(tmp_path) -> None:
     assert rows[0]["signal_cluster_id"]
     assert audit["label_sidecar_paths_accepted"] == 0
     assert audit["validation_reads"] == 0
+
+
+def test_full_behavior_row_closes_all_four_identities_by_pair() -> None:
+    joined = _join_full_behavior_identities(
+        [
+            {
+                "pair_id": "pair-a",
+                "behavior_status": "RESOLVED",
+                "structural_family_id": "",
+                "signal_cluster_id": "",
+                "portfolio_behavior_signature_id": "exact-a",
+                "portfolio_behavior_family_id": "family-a",
+            }
+        ],
+        [
+            {
+                "pair_id": "pair-a",
+                "structural_family_id": "structural-a",
+                "signal_cluster_id": "signal-a",
+            }
+        ],
+    )
+    assert joined[0]["structural_family_id"] == "structural-a"
+    assert joined[0]["signal_cluster_id"] == "signal-a"
+    assert joined[0]["portfolio_behavior_signature_id"] == "exact-a"
+    assert joined[0]["portfolio_behavior_family_id"] == "family-a"
