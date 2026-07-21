@@ -145,14 +145,14 @@
       "source": "unified_capability_registry",
       "target": "compositional_nline_bounded_search",
       "validation": {
-        "checked_at": "2026-07-21T03:58:16.796459+00:00",
+        "checked_at": "2026-07-21T05:08:52.591060+00:00",
         "evidence_ref": "tests/test_iterative_route_scheduler.py",
-        "evidence_sha256": "21E2005EBD1AD4AE239889AC33F7455F93E98FEAE89D94FC366189F0596FB30B",
+        "evidence_sha256": "85F9FE84DD58B8648B37D021412CA1DA749E35D9ADB721E118CE3FC7F24AAB9F",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "b0d078ba65b148d460f42b9cb577e1000f4091f1"
+        "verified_at_sha": "c2311584225fb321310764dead1cdf76fd6eb325"
       }
     },
     {
@@ -639,16 +639,16 @@
       "source": "compositional_nline_bounded_search",
       "target": "candidate_submission_receipt",
       "validation": {
-        "checked_at": "2026-07-21T04:23:37.212149+00:00",
+        "checked_at": "2026-07-21T05:08:52.591060+00:00",
         "evidence_ref": "runtime/cn_iterative_search_v1_20260721/run_manifest.json",
-        "evidence_sha256": "55BCC4D5159F6ABD527ADDDE866C9D3F10636955104178B3A3E37ADE57F0029D",
+        "evidence_sha256": "0845290F39CA8756B06419C776A013082CE033AF3610E781A820777E4F7A0C00",
         "level": "PARTIAL",
         "notes": [
           "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
         "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "93c187598df44527055429149e7831c03af45b7d"
+        "verified_at_sha": "ff1935aed8160218e9c26b475e8d73610bd9ecbc"
       }
     },
     {
@@ -811,16 +811,16 @@
       "source": "compositional_nline_bounded_search",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-07-21T04:03:12.144123+00:00",
+        "checked_at": "2026-07-21T05:08:52.591060+00:00",
         "evidence_ref": "runtime/cn_iterative_search_v1_20260721/causal_attribution.json",
-        "evidence_sha256": "50F6DB8532DC49DED07A65CD9FF5755273F74BD581E219C80A693347D1DF822F",
+        "evidence_sha256": "86F2FA7924173C6961E02BB04495146F5FC8D9E51E39F69C511D4C2B78C78A95",
         "level": "PARTIAL",
         "notes": [
           "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
         "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "93c187598df44527055429149e7831c03af45b7d"
+        "verified_at_sha": "ff1935aed8160218e9c26b475e8d73610bd9ecbc"
       }
     },
     {
@@ -1224,7 +1224,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-21T04:23:37.212149+00:00",
+  "generated_at": "2026-07-21T05:08:52.591060+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -2314,8 +2314,8 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
         "repo_ref": "",
-        "sha256": "B7DEC7B85412DB197AF1BB4A592890DAF3A978B4BC5F1A8B378F69FF7119DB0E",
-        "verified_sha": "b0d078ba65b148d460f42b9cb577e1000f4091f1"
+        "sha256": "B85FB24188E2F88A4003135BE0675208112B57DC3DBD2319F1FDF3B3C1B3153C",
+        "verified_sha": "c2311584225fb321310764dead1cdf76fd6eb325"
       },
       "color": "#f9a825",
       "contracts": [
@@ -2333,7 +2333,7 @@
           "enforced_by": "PortfolioBehaviorArchive",
           "evidence_ref": "",
           "id": "iterative_behavior_aware_admission",
-          "rule": "Pre-admission uses a bounded label-free behavior probe for exact behavior dedupe; unresolved behavior fails closed and never falls back to structural family. Full-coordinate Phase3CM output assigns the final behavior signature and approximate family.",
+          "rule": "Pre-admission uses a bounded label-free behavior probe for exact behavior dedupe; unresolved behavior fails closed and never falls back to structural family. Each final full-coordinate behavior row retains structural family, signal cluster, exact portfolio behavior signature and approximate behavior family as four separate identities.",
           "severity": "HARD",
           "type": "ADMISSION"
         },
@@ -2342,7 +2342,7 @@
           "enforced_by": "cn_iterative_search_v1 causal attribution",
           "evidence_ref": "",
           "id": "iterative_feedback_causal_boundary",
-          "rule": "Feedback-on and feedback-off share seed, master attempt stream, budget, historical archive, dedupe, registry and compiler; only feedback consumption and its adaptive route schedule may differ.",
+          "rule": "Feedback-on and feedback-off share seed, master attempt stream, budget, historical archives, dedupe, registry and compiler; only feedback consumption and its adaptive route schedule may differ. PASS also requires actual legal/canonical route counts to change consistently with the scheduled direction.",
           "severity": "HARD",
           "type": "EVIDENCE"
         },
@@ -2387,15 +2387,20 @@
         "src_our_system_phase2_runtime_cn_iterative_search_v1_admit_pairs",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_artifact",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_batch_manifest",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_causal_route_comparison",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_clock_for_route",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_context_and_binding",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_generate_master_stream",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_initial_prior_rows",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_join_full_behavior_identities",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_json_value",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_legal_canonical_pair_distribution",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_main",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_outcome_rows",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_probe_pack",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_1",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_290",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_699",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_read_csv",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_route_health",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_run",
@@ -2496,16 +2501,16 @@
       "required": true,
       "semantic_role": "bounded_development_iterative_search_capability",
       "validation": {
-        "checked_at": "2026-07-21T04:23:37.212149+00:00",
+        "checked_at": "2026-07-21T05:08:52.591060+00:00",
         "evidence_ref": "runtime/cn_iterative_search_v1_20260721/final_decision.json",
-        "evidence_sha256": "87B9E547556CBD399B4DFA50A798CF8FB71D6E236631A8DEE71C922BE5F99CEA",
+        "evidence_sha256": "21F51A39D64CAA6BEEACC1506B748457A106ACA45C9DC42982314AAC8734040C",
         "level": "PARTIAL",
         "notes": [
           "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
         "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "93c187598df44527055429149e7831c03af45b7d"
+        "verified_at_sha": "ff1935aed8160218e9c26b475e8d73610bd9ecbc"
       },
       "visible_by_default": true
     },
@@ -3525,7 +3530,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "AAE30F4DB830EAF24F357334D131C2847A47C52DEA3F954CF484CE40A880B088"
+    "sha256": "8A2B99DDC4E62ECF4C783C9A3A80EEC0649AD44F4B1DDB2688A08E434EFA8E70"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -3536,13 +3541,13 @@
     }
   ],
   "raw": {
-    "built_at_commit": "93c187598df44527055429149e7831c03af45b7d",
-    "edge_count": 13192,
-    "node_count": 5367,
+    "built_at_commit": "ff1935aed8160218e9c26b475e8d73610bd9ecbc",
+    "edge_count": 13212,
+    "node_count": 5376,
     "path": ".planning/graphs/graph.json",
-    "sha256": "024E931AD20AFE0B4AFCC1762C4169322B36531DAB6FF17D721D38F1A1123E05"
+    "sha256": "42E7B536BB09775991B36C9FBDCB0335ECCE3C57A4C431A3C2C7EB8EFB1375C5"
   },
-  "repo_head": "93c187598df44527055429149e7831c03af45b7d",
+  "repo_head": "ff1935aed8160218e9c26b475e8d73610bd9ecbc",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
