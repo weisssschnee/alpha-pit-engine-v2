@@ -1,0 +1,20 @@
+{
+  "batch_id": "batch_001",
+  "compiler_authority": "TypedRouteCompiler",
+  "generator_authority": "RegistryDrivenGenerator",
+  "historical_exact_identity_hash": "e4dd44a0aa753ca7d616a6a30860e71ae6c98004c76bfb11ef035394a01b0f5b",
+  "master_stream_hash": "de2e42ca812e1f86f5ba05289e55e42aa969e1ccbc9553a901c6ed439224b2f8",
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "route_member_counts": {
+    "BROAD_EVENT_FROZEN_ENTRY": 12,
+    "DISCLOSURE_EVENT": 0,
+    "FIRSTN_PATH": 24,
+    "INTRADAY_STATE_TRANSITION": 4,
+    "MARKET_REGIME_CONDITION": 24,
+    "MINUTE_STATIC": 8,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 24,
+    "SLOW_TEMPORAL_CHANGE": 24
+  },
+  "schema_version": "cn_iterative_search_v1_master_attempt_stream_v1",
+  "seed": 2026172104
+}

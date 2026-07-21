@@ -1,0 +1,17 @@
+{
+  "actionable_feedback_clamped_route_count": 0,
+  "actionable_negative_route_count": 0,
+  "actionable_positive_route_count": 0,
+  "admission_pairs": 24,
+  "allocated_admission_pairs": 24,
+  "allocated_pairs": 48,
+  "evaluation_access_guard": "evalreset_feedback_guard_v1",
+  "feedback_data_role": "development",
+  "generation_mode_role": "route_attached_action_label",
+  "legacy_default_arm_profiles": "COMPATIBILITY_ONLY",
+  "negative_feedback_status": "NO_ACTIONABLE_NEGATIVE_FEEDBACK",
+  "per_route_pair_cap": 12,
+  "positive_feedback_status": "NO_ACTIONABLE_POSITIVE_FEEDBACK",
+  "top_level_scheduling_key": "unified_registry_route_id",
+  "total_pairs": 48
+}

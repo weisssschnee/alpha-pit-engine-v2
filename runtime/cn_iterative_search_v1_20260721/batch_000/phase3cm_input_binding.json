@@ -1,0 +1,746 @@
+{
+  "artifacts": [
+    {
+      "bytes": 29207,
+      "path": "phase3cm_active_bar_candidates.csv",
+      "sha256": "5a1e12ebe6b11007dc67544ea633f95f78c93e36e78b7e2f21aa08c74adf0b93"
+    },
+    {
+      "bytes": 26440,
+      "path": "phase3cm_stock_session_candidates.csv",
+      "sha256": "db7e650648e527da643ea4ff65d5ee98b8160f53ef939f77a633ee03aed77b18"
+    },
+    {
+      "bytes": 156441,
+      "path": "candidate_receipts.jsonl",
+      "sha256": "b14041bd1942ad83e2b129940ff1d30d9e4ee7185642d81b599f6b3d28cf9eac"
+    },
+    {
+      "bytes": 60144,
+      "path": "pair_receipts.jsonl",
+      "sha256": "e4978c1ce675aa7cfc3cdda0faec226a333af6340c5fa05730cd1686c510bc3d"
+    }
+  ],
+  "binding_hash": "983216d0d190e35d9a744844255df789a81263909958f6c816add8eaa07cf52e",
+  "candidate_member_count": 40,
+  "candidate_members": [
+    {
+      "candidate_id": "uc_minute_static_2026072101_00000",
+      "canonical_expression": "CSRank(Add(ZScore($amount),ZScore($intraday_ret_from_open)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($amount),ZScore($intraday_ret_from_open)))",
+      "field_ids": [
+        "amount",
+        "intraday_ret_from_open"
+      ],
+      "pair_id": "cn.pair.c0fe9530c72e186e669cf20d6175c874",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "1161f7754e9e6ea9e75b5af8d5f11799bd93e8279df9e465a0191569004eaa10",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00000_control",
+      "canonical_expression": "CSRank(Sign($amount))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Sign($amount))",
+      "field_ids": [
+        "amount"
+      ],
+      "pair_id": "cn.pair.c0fe9530c72e186e669cf20d6175c874",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "c7f0233c70c67dadccad6ef262a611b3ce17aad391b56c4a3d17a592f5fe6a2b",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00003",
+      "canonical_expression": "CSRank(Add(ZScore($close),ZScore($open)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($close),ZScore($open)))",
+      "field_ids": [
+        "close",
+        "open"
+      ],
+      "pair_id": "cn.pair.5320d57560695f47809b85c9ac4e337a",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "1ed7c08ad3b7dd72d879f3d06ed4530eaa3d16d9cfbc1b964510800115dc031c",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00003_control",
+      "canonical_expression": "CSRank(Sign($close))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Sign($close))",
+      "field_ids": [
+        "close"
+      ],
+      "pair_id": "cn.pair.5320d57560695f47809b85c9ac4e337a",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "89e1ceda764fd6d5d9f09a734ba866d3a46a70e0fe5d0fbdb26860ff5600e73a",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00005",
+      "canonical_expression": "CSRank(Add(ZScore($pct_chg),ZScore($amount)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($pct_chg),ZScore($amount)))",
+      "field_ids": [
+        "amount",
+        "pct_chg"
+      ],
+      "pair_id": "cn.pair.1dd97b0b8b0fa089eef7e24a6802fbba",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "4c48058f6c0791a2ecb8a7925ace45ae30bee00a03cabb59f083f303cb667013",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00005_control",
+      "canonical_expression": "CSRank(Sign($pct_chg))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Sign($pct_chg))",
+      "field_ids": [
+        "pct_chg"
+      ],
+      "pair_id": "cn.pair.1dd97b0b8b0fa089eef7e24a6802fbba",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "2feee144f849b354cf2436219df45c2fd55a2dbbd9ad8b6852fe95f4b7191789",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00006",
+      "canonical_expression": "CSRank(Add(ZScore($intraday_ret_from_open),ZScore($ret_1m)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($intraday_ret_from_open),ZScore($ret_1m)))",
+      "field_ids": [
+        "intraday_ret_from_open",
+        "ret_1m"
+      ],
+      "pair_id": "cn.pair.ce9f76860b80cbb66fd3aee0414d04b2",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "3f034e2258702387c8c1e36f4987e335f219630110cb536b5af676d5cd3fe5c5",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00006_control",
+      "canonical_expression": "CSRank(Sign($intraday_ret_from_open))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Sign($intraday_ret_from_open))",
+      "field_ids": [
+        "intraday_ret_from_open"
+      ],
+      "pair_id": "cn.pair.ce9f76860b80cbb66fd3aee0414d04b2",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "120826c25fc5c542d35db6c18e1410fb50fb5a3f2e6450aba7e2c68e97bbf30a",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026073110_00000",
+      "canonical_expression": "CSRank(Add($m1_first5_vwap_return_vs_open,Sign(Delta($vwap,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add($m1_first5_vwap_return_vs_open,Sign(Delta($vwap,5))))",
+      "field_ids": [
+        "m1_first5_vwap_return_vs_open",
+        "vwap"
+      ],
+      "pair_id": "cn.pair.c3290bc7f9d10ddc71fd8d2a1a8500ed",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "299cc716eaad8615d37bacf52ad4289d0e7494830e907b0a9a80264391b5ab9e",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026073110_00000_control",
+      "canonical_expression": "CSRank(Add($m1_first5_vwap_return_vs_open,Mul(0,Delta($vwap,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add($m1_first5_vwap_return_vs_open,Mul(0,Delta($vwap,5))))",
+      "field_ids": [
+        "m1_first5_vwap_return_vs_open",
+        "vwap"
+      ],
+      "pair_id": "cn.pair.c3290bc7f9d10ddc71fd8d2a1a8500ed",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "3b2bdce321a574b0db1305daf4c76b320201b2de7f4fd04fd960f5b89201602a",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00003",
+      "canonical_expression": "CSRank($fund_liquidity_cash_current_liab)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_liquidity_cash_current_liab)",
+      "field_ids": [
+        "fund_liquidity_cash_current_liab"
+      ],
+      "pair_id": "cn.pair.affa27b53d1923b40c0cca1088c8353d",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "319d0621e7f6b84c336b47716287b452a4187fb14b5b2f047b141021273fdf24",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00003_control",
+      "canonical_expression": "CSRank(Sign($fund_liquidity_cash_current_liab))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_liquidity_cash_current_liab))",
+      "field_ids": [
+        "fund_liquidity_cash_current_liab"
+      ],
+      "pair_id": "cn.pair.affa27b53d1923b40c0cca1088c8353d",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "bb2809ae90e3c36cd9ee03a756edf01c4d6c20f35eccaa429ee6f734eca7e115",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00004",
+      "canonical_expression": "CSRank($fund_efficiency_fixed_asset_intensity)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_efficiency_fixed_asset_intensity)",
+      "field_ids": [
+        "fund_efficiency_fixed_asset_intensity"
+      ],
+      "pair_id": "cn.pair.71b9b84b7dbe035158a69af724583a09",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "a27e488f2d1508c95d5a43906543235093f0a48fbd923fbc9cbb6a67352a89bb",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00004_control",
+      "canonical_expression": "CSRank(Sign($fund_efficiency_fixed_asset_intensity))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_efficiency_fixed_asset_intensity))",
+      "field_ids": [
+        "fund_efficiency_fixed_asset_intensity"
+      ],
+      "pair_id": "cn.pair.71b9b84b7dbe035158a69af724583a09",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "11608b157aec440d4cf300142da76575d551513f15fe37f49bfaf3e7d1bcc887",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00005",
+      "canonical_expression": "CSRank($fund_profit_gross_margin)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_profit_gross_margin)",
+      "field_ids": [
+        "fund_profit_gross_margin"
+      ],
+      "pair_id": "cn.pair.544844ca7de314921265a9b73d712779",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "b5e88d72f85d12b720031ba6898d24b52ccd2ea6e1b621c38d7f0cc31f5ee526",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00005_control",
+      "canonical_expression": "CSRank(Sign($fund_profit_gross_margin))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_profit_gross_margin))",
+      "field_ids": [
+        "fund_profit_gross_margin"
+      ],
+      "pair_id": "cn.pair.544844ca7de314921265a9b73d712779",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "bd3aef831407aec95085a520736256aad6979b4288a8edbc65ed01ee8731e2f6",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00006",
+      "canonical_expression": "CSRank($fund_profit_parent_margin)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_profit_parent_margin)",
+      "field_ids": [
+        "fund_profit_parent_margin"
+      ],
+      "pair_id": "cn.pair.8df914a31e1e6bc97f1bc9a0d0b7a085",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "9d043f4d18b4451aef54ac32327c54114bcc417cb554f93ea2eff8acd0a7a4da",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00006_control",
+      "canonical_expression": "CSRank(Sign($fund_profit_parent_margin))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_profit_parent_margin))",
+      "field_ids": [
+        "fund_profit_parent_margin"
+      ],
+      "pair_id": "cn.pair.8df914a31e1e6bc97f1bc9a0d0b7a085",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "37774a93e7b8010c23f4a4bff053d47344987fb6938e80c3274ee29c72c35339",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00007",
+      "canonical_expression": "CSRank($fund_holder_count_log)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_holder_count_log)",
+      "field_ids": [
+        "fund_holder_count_log"
+      ],
+      "pair_id": "cn.pair.be8757553f6c93ee06f70b7fa88f3eae",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "0add59bee031eb9ef1c5e1c5d1fe4c5ee2d1e7372afa354ea0bc8360c38881fd",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00007_control",
+      "canonical_expression": "CSRank(Sign($fund_holder_count_log))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_holder_count_log))",
+      "field_ids": [
+        "fund_holder_count_log"
+      ],
+      "pair_id": "cn.pair.be8757553f6c93ee06f70b7fa88f3eae",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "94d5e570ed470b52ea64d7283d44e812421800799cefdec0a7c069e0371a6666",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00008",
+      "canonical_expression": "CSRank($fund_holder_top10_shares_log)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_holder_top10_shares_log)",
+      "field_ids": [
+        "fund_holder_top10_shares_log"
+      ],
+      "pair_id": "cn.pair.d573dfad203e450b08af6257366c6083",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "fc782d803c77b12e8cc7ed1f736e53912e71503d6b60868744d40a94349b7640",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00008_control",
+      "canonical_expression": "CSRank(Sign($fund_holder_top10_shares_log))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_holder_top10_shares_log))",
+      "field_ids": [
+        "fund_holder_top10_shares_log"
+      ],
+      "pair_id": "cn.pair.d573dfad203e450b08af6257366c6083",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "e3c66f75554f495fb3e56fcb7ab429a04991a29aeb510a7272ad718afc71971a",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00002",
+      "canonical_expression": "CSRank($fund_ba_accounts_rece_acceleration)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_ba_accounts_rece_acceleration)",
+      "field_ids": [
+        "fund_ba_accounts_rece_acceleration"
+      ],
+      "pair_id": "cn.pair.392c8973710a0b83652026ca33b9469e",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "3e5efd5ac8830aaae09c636d6dd2db96f0084f235d692728b5e1aa07b738d870",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00002_control",
+      "canonical_expression": "CSRank(Sign($fund_ba_accounts_rece_acceleration))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_ba_accounts_rece_acceleration))",
+      "field_ids": [
+        "fund_ba_accounts_rece_acceleration"
+      ],
+      "pair_id": "cn.pair.392c8973710a0b83652026ca33b9469e",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "fd1653abc57472754d590c1e292e203985ddf87ebc5d928882614197857fa050",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00003",
+      "canonical_expression": "CSRank($fund_pr_operate_profit_acceleration)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_pr_operate_profit_acceleration)",
+      "field_ids": [
+        "fund_pr_operate_profit_acceleration"
+      ],
+      "pair_id": "cn.pair.28dc5a777724c8816f23e3fdec87a8e1",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "342d93877e5cb2cd6623acffb4205d3af5ce1f0fca741736dc35315c2f03ddf8",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00003_control",
+      "canonical_expression": "CSRank(Sign($fund_pr_operate_profit_acceleration))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_pr_operate_profit_acceleration))",
+      "field_ids": [
+        "fund_pr_operate_profit_acceleration"
+      ],
+      "pair_id": "cn.pair.28dc5a777724c8816f23e3fdec87a8e1",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "7a3f873fcb295db2b191cff0e2f29a90de657b95a03671177aea081cdc45d704",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00004",
+      "canonical_expression": "CSRank($fund_ba_total_current_assets_acceleration)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_ba_total_current_assets_acceleration)",
+      "field_ids": [
+        "fund_ba_total_current_assets_acceleration"
+      ],
+      "pair_id": "cn.pair.34ad1215f0c20e58df25707b64357d03",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "b28e5f695fa9bc83c7e797168b2578c93a280618ce08bf2069c0bc44944bd61f",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00004_control",
+      "canonical_expression": "CSRank(Sign($fund_ba_total_current_assets_acceleration))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_ba_total_current_assets_acceleration))",
+      "field_ids": [
+        "fund_ba_total_current_assets_acceleration"
+      ],
+      "pair_id": "cn.pair.34ad1215f0c20e58df25707b64357d03",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "15bd81174a2c240d7760c568656b19c04b32451c9e4338dee3bb6860b8338507",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00005",
+      "canonical_expression": "CSRank($fund_pr_operate_cost_source_yoy)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_pr_operate_cost_source_yoy)",
+      "field_ids": [
+        "fund_pr_operate_cost_source_yoy"
+      ],
+      "pair_id": "cn.pair.5adc558399df06760ea99b8b83909663",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "caa27577b556ab36ae016d019f14693598a0910a22066d509b5c8488f4955aa2",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00005_control",
+      "canonical_expression": "CSRank(Sign($fund_pr_operate_cost_source_yoy))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_pr_operate_cost_source_yoy))",
+      "field_ids": [
+        "fund_pr_operate_cost_source_yoy"
+      ],
+      "pair_id": "cn.pair.5adc558399df06760ea99b8b83909663",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "60f321bd97985c8673f81e05e92920d931da7bff383375f6697e59622f942251",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00004",
+      "canonical_expression": "CSRank(Mul(Transition(Sign($ret_1m),-1,1),Delta($amount,5)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Transition(Sign($ret_1m),-1,1),Delta($amount,5)))",
+      "field_ids": [
+        "amount",
+        "ret_1m",
+        "state_bar_return_sign"
+      ],
+      "pair_id": "cn.pair.5f1000ed88815517d1eaeb326b23543b",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "c33f4747e080788b52f4693ef5d32c34b0abbc9b2943cf2bbb09ccd98188deb1",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00004_control",
+      "canonical_expression": "CSRank(Delta($amount,5))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Delta($amount,5))",
+      "field_ids": [
+        "amount"
+      ],
+      "pair_id": "cn.pair.5f1000ed88815517d1eaeb326b23543b",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "75b5422a2600d971bfcbb659d853dd22a548ad0d17129d534fc54222e8206322",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00007",
+      "canonical_expression": "CSRank(Mul(Transition(Sign($ret_1m),-1,1),Delta($close,5)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Transition(Sign($ret_1m),-1,1),Delta($close,5)))",
+      "field_ids": [
+        "close",
+        "ret_1m",
+        "state_bar_return_sign"
+      ],
+      "pair_id": "cn.pair.145f32db1373e5c0ef84098bf30fc00d",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "2ca6c1f0967c727c708e58616cd8218e54f68b608e30de3df9a46cf7a56caf0b",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00007_control",
+      "canonical_expression": "CSRank(Delta($close,5))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Delta($close,5))",
+      "field_ids": [
+        "close"
+      ],
+      "pair_id": "cn.pair.145f32db1373e5c0ef84098bf30fc00d",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "4f4ecd5f711d53b8a95e75fb2be010246a0ed1f168955cf8ee25cfc32d6b1a8a",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00009",
+      "canonical_expression": "CSRank(Mul(Transition(Sign($intraday_ret_from_open),-1,1),Delta($pct_chg,5)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Transition(Sign($intraday_ret_from_open),-1,1),Delta($pct_chg,5)))",
+      "field_ids": [
+        "intraday_ret_from_open",
+        "pct_chg",
+        "state_intraday_return_sign"
+      ],
+      "pair_id": "cn.pair.5a8b57ffe9b91c96fbcb2b40f85eeb06",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "8fc345c6a13e126a5b59817d46462ca3fecb289151dbcc099b14d8b76b536a75",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00009_control",
+      "canonical_expression": "CSRank(Delta($pct_chg,5))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Delta($pct_chg,5))",
+      "field_ids": [
+        "pct_chg"
+      ],
+      "pair_id": "cn.pair.5a8b57ffe9b91c96fbcb2b40f85eeb06",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "411aa794ec5c32cccdd59cd7c0b2197bd38f6e20545ba58682a3614efc00e5ae",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00010",
+      "canonical_expression": "CSRank(Mul(Transition(Sign($ret_1m),-1,1),Delta($intraday_ret_from_open,5)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Transition(Sign($ret_1m),-1,1),Delta($intraday_ret_from_open,5)))",
+      "field_ids": [
+        "intraday_ret_from_open",
+        "ret_1m",
+        "state_bar_return_sign"
+      ],
+      "pair_id": "cn.pair.1535f40d170c58b906d98b6dbb345669",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "462eda1a849a128b514a5a4d54d58a3a60f86a2ba695b05cf19bbe560ff40bd1",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00010_control",
+      "canonical_expression": "CSRank(Delta($intraday_ret_from_open,5))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Delta($intraday_ret_from_open,5))",
+      "field_ids": [
+        "intraday_ret_from_open"
+      ],
+      "pair_id": "cn.pair.1535f40d170c58b906d98b6dbb345669",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "57a9c15ef0b793c85bfa01079e982f98a66429ead1a2637cc849b7e21aa0c78b",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00013",
+      "canonical_expression": "CSRank(Mul(Transition(Sign($ret_1m),-1,1),Delta($open,5)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Transition(Sign($ret_1m),-1,1),Delta($open,5)))",
+      "field_ids": [
+        "open",
+        "ret_1m",
+        "state_bar_return_sign"
+      ],
+      "pair_id": "cn.pair.872a528b3c948c518e2f629dca2d4b6e",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "008f2bef5d6af4a4235bc616480cf28f133978517b6981fbb6c12278f14074ba",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00013_control",
+      "canonical_expression": "CSRank(Delta($open,5))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Delta($open,5))",
+      "field_ids": [
+        "open"
+      ],
+      "pair_id": "cn.pair.872a528b3c948c518e2f629dca2d4b6e",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "ced89ad54909ba318bcee215f846e1516f4877a5e69f8a69121b4da37c7feeec",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    }
+  ],
+  "clock_counts": {
+    "active_bar": 10,
+    "stock_session": 10
+  },
+  "cross_sprint_memory": "FORBIDDEN",
+  "data_role": "development",
+  "development_release_hash": "d59798903fdc4557fcd8ffcde10745fa72d85ba0759f99a5a33d239a35496598",
+  "evaluation_name": "full-coordinate development Phase3CM pair evaluation",
+  "pair_count": 20,
+  "pairs": [
+    {
+      "candidate_id": "uc_minute_static_2026072101_00000",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_minute_static_2026072101_00000_control",
+      "pair_id": "cn.pair.c0fe9530c72e186e669cf20d6175c874",
+      "pair_receipt_hash": "2ce75d8c50ced6f9671e96b889d82b0d36c0eac3d3771d68d1eb2e12d0c13c2f",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00003",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_minute_static_2026072101_00003_control",
+      "pair_id": "cn.pair.5320d57560695f47809b85c9ac4e337a",
+      "pair_receipt_hash": "31955bd35ed3e5e194519fb815344ef4dc8287a5640fce3013b5338056457bd9",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00005",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_minute_static_2026072101_00005_control",
+      "pair_id": "cn.pair.1dd97b0b8b0fa089eef7e24a6802fbba",
+      "pair_receipt_hash": "6e4cdf939e57ac83f6c0662016946cc4c45a432d21089fbf080d5d1401870377",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026072101_00006",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_minute_static_2026072101_00006_control",
+      "pair_id": "cn.pair.ce9f76860b80cbb66fd3aee0414d04b2",
+      "pair_receipt_hash": "397ed41d427775e4106116c45c27a0b13499a6426642903fc1b856c5938e7adf",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026073110_00000",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_firstn_path_2026073110_00000_control",
+      "pair_id": "cn.pair.c3290bc7f9d10ddc71fd8d2a1a8500ed",
+      "pair_receipt_hash": "ee246d5c6d504e8ecdb898efeaacc8d34dbfbab93d48dc80265cd0b6d532bd6e",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00003",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_cross_sectional_level_2026074119_00003_control",
+      "pair_id": "cn.pair.affa27b53d1923b40c0cca1088c8353d",
+      "pair_receipt_hash": "69435930aff15c84514fe02377525fffe3bd4977743dbba3f57941101a5b27b3",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00004",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_cross_sectional_level_2026074119_00004_control",
+      "pair_id": "cn.pair.71b9b84b7dbe035158a69af724583a09",
+      "pair_receipt_hash": "b45eeb239a66423ac6ea634af9ba2d44f74c07087f2c1a47867e7d232ee23b16",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00005",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_cross_sectional_level_2026074119_00005_control",
+      "pair_id": "cn.pair.544844ca7de314921265a9b73d712779",
+      "pair_receipt_hash": "85c153830686d703a965f8f986c5b060a5be688e5316fd5acb0bcb2944d1af32",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00006",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_cross_sectional_level_2026074119_00006_control",
+      "pair_id": "cn.pair.8df914a31e1e6bc97f1bc9a0d0b7a085",
+      "pair_receipt_hash": "f78455389c408b53a0d25fedfcbf4f6272019598ba29d5a924dd0d67964bb4bd",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00007",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_cross_sectional_level_2026074119_00007_control",
+      "pair_id": "cn.pair.be8757553f6c93ee06f70b7fa88f3eae",
+      "pair_receipt_hash": "9ca912f9e402581c8c63fb44ef4fa198dbdb0eeee735e2e5f7cf5b428798d08a",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026074119_00008",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_cross_sectional_level_2026074119_00008_control",
+      "pair_id": "cn.pair.d573dfad203e450b08af6257366c6083",
+      "pair_receipt_hash": "4a90cc606db69bd4f557746be202f88c4e9651c21d54a7240101a3bcbee0ff45",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00002",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_temporal_change_2026075128_00002_control",
+      "pair_id": "cn.pair.392c8973710a0b83652026ca33b9469e",
+      "pair_receipt_hash": "06cd66f776cd60e781144482c9ca10cec5e83ca63453df59f7d45a917c31a806",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00003",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_temporal_change_2026075128_00003_control",
+      "pair_id": "cn.pair.28dc5a777724c8816f23e3fdec87a8e1",
+      "pair_receipt_hash": "6a73d9e1d8d9bd08bec40f945d3488a9b1e94a0bbd299b1d1c4792a436d7fb54",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00004",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_temporal_change_2026075128_00004_control",
+      "pair_id": "cn.pair.34ad1215f0c20e58df25707b64357d03",
+      "pair_receipt_hash": "42768c1d44563f33fe8579e80e1393503a311499530090db6fafe3c020e7386a",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026075128_00005",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_temporal_change_2026075128_00005_control",
+      "pair_id": "cn.pair.5adc558399df06760ea99b8b83909663",
+      "pair_receipt_hash": "ba652a962b0ab4d98385934866dc71b8425e54e185ad21a13c2deb840bacdaea",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00004",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_intraday_state_transition_2026078155_00004_control",
+      "pair_id": "cn.pair.5f1000ed88815517d1eaeb326b23543b",
+      "pair_receipt_hash": "a491068e2d0ce477babe5745bd4d78e869b239c6199a21a3bb07325495997a00",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00007",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_intraday_state_transition_2026078155_00007_control",
+      "pair_id": "cn.pair.145f32db1373e5c0ef84098bf30fc00d",
+      "pair_receipt_hash": "873473333a31a3efe2e8aab1acd18359c6646f8265cf2d68984d8f8089bda4d9",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00009",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_intraday_state_transition_2026078155_00009_control",
+      "pair_id": "cn.pair.5a8b57ffe9b91c96fbcb2b40f85eeb06",
+      "pair_receipt_hash": "432678715f1f31083d138be7ff89b0a3cadf0fea767c8bf87da77f488afbcd28",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00010",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_intraday_state_transition_2026078155_00010_control",
+      "pair_id": "cn.pair.1535f40d170c58b906d98b6dbb345669",
+      "pair_receipt_hash": "ade01678f1f063de4401e0f0509df35ba7d285e6d05ea6044ac4ca86d94071b8",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026078155_00013",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_intraday_state_transition_2026078155_00013_control",
+      "pair_id": "cn.pair.872a528b3c948c518e2f629dca2d4b6e",
+      "pair_receipt_hash": "fce8d9bd3417e59ad72ae84567b4cec0526efbd1c2d122621aeea1cbd1f5d6f1",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    }
+  ],
+  "promotion": "FORBIDDEN",
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "sealed_reads": {
+    "forward_2026": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "source_closure_sha": "d59798903fdc4557fcd8ffcde10745fa72d85ba0759f99a5a33d239a35496598",
+  "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "status": "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND",
+  "strict_stage_a": "NOT_AUTHORIZED"
+}

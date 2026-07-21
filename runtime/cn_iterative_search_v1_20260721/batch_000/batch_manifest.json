@@ -1,0 +1,134 @@
+{
+  "access_receipts": [
+    {
+      "backend": "active_bar",
+      "command": "REUSED_COMPLETED_IDENTICAL_RESULT",
+      "completed_at": "REUSED",
+      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\batch_000\\phase3cm\\active_bar\\CN_STREAMING_BACKEND_RESULT.json",
+      "result_sha256": "d41f9b64260ad4b50692fb7738148c7bb019442b5a95f6e6390ff13f495e52ee",
+      "returncode": 0,
+      "started_at": "REUSED",
+      "status": "COMPLETED_REUSED"
+    },
+    {
+      "backend": "stock_session",
+      "command": "REUSED_COMPLETED_IDENTICAL_RESULT",
+      "completed_at": "REUSED",
+      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\batch_000\\phase3cm\\stock_session\\CN_STREAMING_BACKEND_RESULT.json",
+      "result_sha256": "4cc271284a839f49b1e722874ede1dd0fcc5678668a59d804f053dd12d485cb0",
+      "returncode": 0,
+      "started_at": "REUSED",
+      "status": "COMPLETED_REUSED"
+    }
+  ],
+  "artifacts": [
+    {
+      "bytes": 7264,
+      "path": "schedule.parquet",
+      "sha256": "f04c7812503d1a74649a5fe693c3ef4f6f12427ff6dca030e2a6f33b30ed068b"
+    },
+    {
+      "bytes": 682,
+      "path": "schedule_summary.json",
+      "sha256": "950d7101c0c67df9611c9727dbc19d80b16934faaa709279d19e5faf4dc5cff3"
+    },
+    {
+      "bytes": 808,
+      "path": "generation_master_stream_receipt.json",
+      "sha256": "9d5d2e70fbd340a3a6aa3fc7af96bc96ef2a2dde5022492c1feb6f55a3499630"
+    },
+    {
+      "bytes": 131174,
+      "path": "candidate_attempt_stream.csv",
+      "sha256": "d593f14c9ccc26cfb53900db1d3871c9688b4637f252f78b2eac022b44921e6c"
+    },
+    {
+      "bytes": 20940,
+      "path": "behavior_probe.parquet",
+      "sha256": "e4d019d6dbdcf2e63a79aa27aad4d9a0ccb04c1a26165281e03fec662d00bf55"
+    },
+    {
+      "bytes": 22300,
+      "path": "admission_decisions.parquet",
+      "sha256": "887d4968bcff3f49b6638760706da3340bb2394dfeaf47110a4b47e7167bd961"
+    },
+    {
+      "bytes": 825,
+      "path": "behavior_probe_audit.json",
+      "sha256": "eaa4113372241cfe735883c5ca9f2557f2f71a274db616f596e3a6f81f894b29"
+    },
+    {
+      "bytes": 33349,
+      "path": "phase3cm_input_binding.json",
+      "sha256": "18d3189843727c0472e96c9ba9c184ef920f4c5a9c4d0e7a1519fe40f4af063d"
+    },
+    {
+      "bytes": 54455,
+      "path": "admitted_candidate_pack.csv",
+      "sha256": "2076b8fc96b68f714642eec23002c6b7e17c1c68c1599fbcd727607189054066"
+    },
+    {
+      "bytes": 6607,
+      "path": "route_funnel.parquet",
+      "sha256": "3a832952fbb72ed72c972600dd8241329bca62a058fa73bb8bdf79c4189f0b01"
+    },
+    {
+      "bytes": 9126,
+      "path": "route_health.parquet",
+      "sha256": "f8a6e47fed0cb3a2004a29495b27a69115e986fea91c0601cdf5f1a86658b38d"
+    },
+    {
+      "bytes": 8665,
+      "path": "observation_ledger.parquet",
+      "sha256": "10dc5c2ccadcc6c07d290e3de1ef285bb94e5866209f56cfb53788da76053848"
+    },
+    {
+      "bytes": 8201,
+      "path": "positive_policy_view.parquet",
+      "sha256": "9845f21ba3777a4d22d396ec70af09e080bb9696f33c660541f89c4e42a8edc0"
+    },
+    {
+      "bytes": 9733,
+      "path": "negative_scheduler_view.parquet",
+      "sha256": "2fbf529a41b7928bdb81621c8d805b92eed4cf8de57a402045b4aba77d3c10a5"
+    },
+    {
+      "bytes": 636,
+      "path": "run_health.parquet",
+      "sha256": "8b6e33d47f4e1df33f587d9b1d420f756a6c705b8496e0912c223c5d83371df9"
+    },
+    {
+      "bytes": 16893,
+      "path": "full_behavior.parquet",
+      "sha256": "e2c2d5e73af550e3c2eb20885205905200ba10031143552ba424b78b1522d71b"
+    },
+    {
+      "bytes": 23516,
+      "path": "behavior_archive.parquet",
+      "sha256": "4a29ba203878a25e78d5f3280357a6e0aab6566de276f2527c8b0d758a1a88ac"
+    },
+    {
+      "bytes": 536179,
+      "path": "phase3cm/active_bar/CN_STREAMING_BACKEND_RESULT.json",
+      "sha256": "d41f9b64260ad4b50692fb7738148c7bb019442b5a95f6e6390ff13f495e52ee"
+    },
+    {
+      "bytes": 530014,
+      "path": "phase3cm/stock_session/CN_STREAMING_BACKEND_RESULT.json",
+      "sha256": "4cc271284a839f49b1e722874ede1dd0fcc5678668a59d804f053dd12d485cb0"
+    }
+  ],
+  "batch_id": "batch_000",
+  "evaluation_name": "full-coordinate development Phase3CM pair evaluation",
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "input_hashes": {
+    "frozen_contract": "10f988d3dbc3d4e5d036f4dc3f30feb00be45861f4c6f95f91dbbc96386f7410",
+    "prior_batch_manifest": "GENESIS"
+  },
+  "manifest_payload_hash": "612d4cd1e34e6f3a948b8b4560ce07834f7cac3780d36f0c4577ecd57d1de64a",
+  "promotion": "FORBIDDEN",
+  "schema_version": "cn_iterative_search_v1_batch_manifest_v1",
+  "status": "BATCH_CLOSED_IMMUTABLE",
+  "validation_reads": 0
+}

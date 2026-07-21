@@ -1,0 +1,27 @@
+{
+  "batch_count": 3,
+  "batch_seeds": [
+    2026072101,
+    2026172104,
+    2026272107
+  ],
+  "compiler_authority": "TypedRouteCompiler via CandidateSubmissionAuthority",
+  "cross_sprint_memory": "FORBIDDEN",
+  "data_release_hash": "d59798903fdc4557fcd8ffcde10745fa72d85ba0759f99a5a33d239a35496598",
+  "evaluation_name": "full-coordinate development Phase3CM pair evaluation",
+  "forward_2026_reads": 0,
+  "full_materialization_host": "DESKTOP-77OPJ6F",
+  "generator_authority": "RegistryDrivenGenerator",
+  "holdout_reads": 0,
+  "legacy_default_arm_profiles": "COMPATIBILITY_ONLY",
+  "phase3cm_pairs_per_batch_max": 24,
+  "promotion": "FORBIDDEN",
+  "proposal_pairs_per_batch_max": 48,
+  "proposal_rows_per_batch_max": 96,
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_iterative_v1_b0d078b\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+  "scheduler_top_level_key": "unified registry route_id",
+  "schema_version": "cn_iterative_search_v1_frozen_contract_v1",
+  "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "validation_reads": 0
+}

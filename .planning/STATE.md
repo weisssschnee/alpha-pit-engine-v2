@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-20
+Updated: 2026-07-21
 
-Current state: `CN_PHASE3CM_1024_DEVELOPMENT_CONFIRMATION_COMPLETED_SEARCH_FROZEN`
+Current state: `CN_ITERATIVE_SEARCH_V1_CANARY_COMPLETED_SEARCH_FROZEN`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -17,6 +17,28 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 ## Current accepted capabilities
 
 - Phase A EVALRESET and NEXTGEN-DARK infrastructure remain accepted.
+- `CN_ITERATIVE_SEARCH_V1` is now closed as a bounded, development-only
+  experimental capability. Three immutable batches scheduled 48 registry-route
+  proposal pairs each, admitted and completed full-coordinate development
+  Phase3CM pair evaluation for 20, 12, and 17 pairs, and retained natural
+  underfill instead of manufacturing a 24-pair quota. Batch 1 and Batch 2
+  consumed only the immediately preceding immutable feedback snapshot.
+- The V1 scheduler uses unified registry `route_id` as its only top-level key;
+  generation modes are route-local action labels and legacy arm profiles are
+  compatibility only. Pre-admission uses label-free bounded behavior probes,
+  unresolved behavior fails closed without structural-family fallback, and
+  final exact behavior signatures plus approximate behavior families are
+  assigned only from full-coordinate portfolio behavior.
+- The feedback-on/off control shared seed, master attempt stream, total budget,
+  historical behavior archive, exact/behavior dedupe, registry, and compiler.
+  Its master stream hash matched the feedback-on Batch 1 hash exactly while
+  route budgets changed. Synthetic positive and negative rules passed; the real
+  canary applied both supported positive expansion and negative downweighting.
+  Infrastructure remained separate from financial route health.
+- The 77o canary evaluated 49 matched pairs with nine positive-policy and 40
+  negative-scheduler observations. Run-health failures and validation, holdout,
+  and 2026 reads were all zero; promotion remained forbidden. These are
+  campaign mechanics and development evidence, not alpha or economic proof.
 - The frozen current kernel passed exact semantic parity on all 146 active-bar
   pairs and 292 candidate members. The cumulative development confirmation then
   completed 1,024 matched pairs: 584 active-bar and 440 stock-session. All pair
@@ -126,24 +148,24 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The 146 exact-parity gate and cumulative 1,024-pair development confirmation are
-complete. They establish broad route-asymmetric development evidence but do not
-provide independent seed/time-block stability, validation, holdout or OOS
-evidence. Formal discovery therefore remains blocked by a separate explicit
-authorization and a newly frozen formally evaluable route pack. Plate remains
-independently blocked by missing real PIT minute materialization; the compound
-intraday state root remains a localized materialization gap. FirstN and
-market-regime conditioning require targeted objective/cost or support diagnosis,
-not a blind rerun of all 1,024 pairs. No further kernel optimization or replay is
-in scope.
+The three-batch V1 canary is complete, but 93 of 193 cumulative behavior-archive
+rows remain `BEHAVIOR_UNRESOLVED`. Broad Event has no streaming bounded-probe
+materialization, disclosure exhausted its small exact stream after Batch 0, and
+market-regime behavior remained unresolved or duplicate. These are explicit
+route supply/materialization gaps, not permission to fall back to structural
+families or to manufacture admissions. The campaign supplies no independent
+seed/time-block stability, validation, holdout, OOS, promotion, or economic
+proof. Plate remains independently blocked by missing real PIT minute
+materialization; the compound intraday state root remains a localized
+materialization gap.
 
 ## Next action
 
-Do not repeat the 1,024 wave. The next formal decision is whether to prepare a
-new frozen, development-only route pack centered on the routes with coherent
-matched reward and Rank-IC evidence, while keeping FirstN, market regime,
-disclosure and slow temporal routes diagnostic until their route-specific issues
-are resolved. That preparation is not Strict Stage A authorization. Strict Stage
-A, candidate promotion, adaptive memory, validation/holdout access and 2026
-access remain forbidden. Plate resumes only when real PIT minute materialization
-is present on 77o.
+Do not repeat either the 1,024 wave or this canary. The next decision is whether
+to repair bounded behavior materialization and finite exact supply for Broad
+Event, disclosure, and market regime before proposing another separately frozen
+development campaign. `exploit`, `repair`, and `orthogonal` remain labels unless
+a real registry-backed constructor is added and tested. Strict Stage A,
+candidate promotion, cross-campaign adaptive memory, validation/holdout access,
+and 2026 access remain forbidden. Plate resumes only when real PIT minute
+materialization is present on 77o.

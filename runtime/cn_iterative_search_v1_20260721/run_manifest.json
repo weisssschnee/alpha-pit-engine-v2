@@ -1,0 +1,73 @@
+{
+  "batch_manifests": [
+    {
+      "bytes": 4794,
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\batch_000\\batch_manifest.json",
+      "sha256": "c2a83c75ada10a13f8e694126bb7cf565126cd08622cf7efb42bddb4d0c2c6db"
+    },
+    {
+      "bytes": 4851,
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\batch_001\\batch_manifest.json",
+      "sha256": "653644fa82b3b6d0a92aae0b1d22fb9efab3981acd55550f7eac2e671f1f5d29"
+    },
+    {
+      "bytes": 4851,
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\batch_002\\batch_manifest.json",
+      "sha256": "dcbc596ee9eadf40ea5caec660fca79de1b7b4969b7c78ad9f2c4b3666c7c17d"
+    }
+  ],
+  "causal_attribution": {
+    "bytes": 847,
+    "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\causal_attribution.json",
+    "sha256": "4d5d3ab63670221f9c35a6c5669fd638c44026c470d2c9b5398bfce243a6279a"
+  },
+  "final_decision": {
+    "bytes": 3700,
+    "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\final_decision.json",
+    "sha256": "812f12444bec9ad648229648414dfd1ad5654b161ff360510b510c1b5f7952bf"
+  },
+  "final_projections": [
+    {
+      "bytes": 11055,
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\observation_ledger.parquet",
+      "sha256": "5659dee77724e0147c4fe739ab8c31047e852bb45a2cae824b104fb93b07e0cc"
+    },
+    {
+      "bytes": 9125,
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\positive_policy_view.parquet",
+      "sha256": "95cba29d0409a97a9051bada3d8dfcb573abb5d82b3859b4f0ef22ead476d95f"
+    },
+    {
+      "bytes": 11838,
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\negative_scheduler_view.parquet",
+      "sha256": "fc3dd214ce292735d8578f757d59bea409075ac8f5bc234bc415bfbfb9ded07f"
+    },
+    {
+      "bytes": 636,
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\run_health.parquet",
+      "sha256": "8b6e33d47f4e1df33f587d9b1d420f756a6c705b8496e0912c223c5d83371df9"
+    },
+    {
+      "bytes": 36252,
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\behavior_archive.parquet",
+      "sha256": "38861b367245366324418752c00c1706a026845b022248d976ac831243b8730a"
+    },
+    {
+      "bytes": 7556,
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\schedule_history.parquet",
+      "sha256": "077199fd87dc6a22e9ddc1c87c19730ff0129bc74e41aadc019d4e1885d0f01a"
+    }
+  ],
+  "forward_2026_reads": 0,
+  "frozen_contract": {
+    "bytes": 1276,
+    "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\frozen_contract.json",
+    "sha256": "10f988d3dbc3d4e5d036f4dc3f30feb00be45861f4c6f95f91dbbc96386f7410"
+  },
+  "holdout_reads": 0,
+  "host": "DESKTOP-77OPJ6F",
+  "promotion": "FORBIDDEN",
+  "python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+  "status": "CN_ITERATIVE_SEARCH_V1_CANARY_PASS",
+  "validation_reads": 0
+}

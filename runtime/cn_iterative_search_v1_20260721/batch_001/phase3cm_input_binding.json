@@ -1,0 +1,469 @@
+{
+  "artifacts": [
+    {
+      "bytes": 18206,
+      "path": "phase3cm_active_bar_candidates.csv",
+      "sha256": "27349cc19fdcd7149846366432c11968ac7130e6297827a4cd91392df98f8122"
+    },
+    {
+      "bytes": 16184,
+      "path": "phase3cm_stock_session_candidates.csv",
+      "sha256": "b1cdc345903424db3a5c1aedabe3897133fad28f12c1cac6c452da1df8efa519"
+    },
+    {
+      "bytes": 94511,
+      "path": "candidate_receipts.jsonl",
+      "sha256": "1cf245f31f7700f387453187b0402f950356a9fa1eb54f5329821766626bd07a"
+    },
+    {
+      "bytes": 36688,
+      "path": "pair_receipts.jsonl",
+      "sha256": "49507be25bc9ab3ccc11782b97a18209943ba1f7ac212924060d6146450f4a51"
+    }
+  ],
+  "binding_hash": "ba1d569cde7c1a73efcf324d5f7e7418af715b6345b20f09bb53e3f17af5c79c",
+  "candidate_member_count": 24,
+  "candidate_members": [
+    {
+      "candidate_id": "uc_minute_static_2026172104_00009",
+      "canonical_expression": "CSRank(Add(ZScore($open),ZScore($close)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add(ZScore($open),ZScore($close)))",
+      "field_ids": [
+        "close",
+        "open"
+      ],
+      "pair_id": "cn.pair.c63ea72e47f50c0521fe8c7b86d09543",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "2adfb2b6a8c9f333c15d32406dc0cd8ea218ae13df5a276f4b9ce9ab0020385e",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_minute_static_2026172104_00009_control",
+      "canonical_expression": "CSRank(Sign($open))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Sign($open))",
+      "field_ids": [
+        "open"
+      ],
+      "pair_id": "cn.pair.c63ea72e47f50c0521fe8c7b86d09543",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "919cf1b0a028d5f46ac95d2274f14fd2d41ce855fa64f0be64952360641a2ee6",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026173113_00001",
+      "canonical_expression": "CSRank(Add($m1_first5_last_return_vs_open,Sign(Delta($close,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add($m1_first5_last_return_vs_open,Sign(Delta($close,5))))",
+      "field_ids": [
+        "close",
+        "m1_first5_last_return_vs_open"
+      ],
+      "pair_id": "cn.pair.9b7409c4d1dc32230499a2fcadc544be",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "93ae10437baed8a1395a483b8eec2ddf9e75e997fb025d0e55cded0e1088aeb5",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026173113_00001_control",
+      "canonical_expression": "CSRank(Add($m1_first5_last_return_vs_open,Mul(0,Delta($close,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add($m1_first5_last_return_vs_open,Mul(0,Delta($close,5))))",
+      "field_ids": [
+        "close",
+        "m1_first5_last_return_vs_open"
+      ],
+      "pair_id": "cn.pair.9b7409c4d1dc32230499a2fcadc544be",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "5ceb0039ef9e5989f19286eff344186aa8bb88f8f5e5f786e9fcf0b4c90e7a24",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026173113_00002",
+      "canonical_expression": "CSRank(Add($m1_first30_last_close,Sign(Delta($vwap,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add($m1_first30_last_close,Sign(Delta($vwap,5))))",
+      "field_ids": [
+        "m1_first30_last_close",
+        "vwap"
+      ],
+      "pair_id": "cn.pair.e581d4d1b0ec71d2c7fe22f5b427d52b",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "45ef7a4f5a5307e5ae9892ebfef9a931fd8115cda6dc749fa78b3195b4fe74a8",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026173113_00002_control",
+      "canonical_expression": "CSRank(Add($m1_first30_last_close,Mul(0,Delta($vwap,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add($m1_first30_last_close,Mul(0,Delta($vwap,5))))",
+      "field_ids": [
+        "m1_first30_last_close",
+        "vwap"
+      ],
+      "pair_id": "cn.pair.e581d4d1b0ec71d2c7fe22f5b427d52b",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "b85b2d8bf6867b98a16b4faa418322dd46aec73dd55bd624671a7deb2d7ed239",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026175131_00000",
+      "canonical_expression": "CSRank($fund_ba_monetaryfunds_source_yoy)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_ba_monetaryfunds_source_yoy)",
+      "field_ids": [
+        "fund_ba_monetaryfunds_source_yoy"
+      ],
+      "pair_id": "cn.pair.7241a42455fb6d2a8e7ad58756995daa",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "a8e4f95210b911a9cac465c19f5e2292d47714f8f07271ce3f60528cc492e8cf",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026175131_00000_control",
+      "canonical_expression": "CSRank(Sign($fund_ba_monetaryfunds_source_yoy))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_ba_monetaryfunds_source_yoy))",
+      "field_ids": [
+        "fund_ba_monetaryfunds_source_yoy"
+      ],
+      "pair_id": "cn.pair.7241a42455fb6d2a8e7ad58756995daa",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "5a3873e7385addb908de9af8c517322d6a0522ffcc42b101ba2b459170ad8a1c",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026175131_00001",
+      "canonical_expression": "CSRank($fund_ca_netcash_finance_acceleration)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_ca_netcash_finance_acceleration)",
+      "field_ids": [
+        "fund_ca_netcash_finance_acceleration"
+      ],
+      "pair_id": "cn.pair.3d57e1c5c74d9f21de175fa94f2887d2",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "13006303e07fe59218ebf852328d2bdc5c2898ac2005a8a43eab9e1350c4721f",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026175131_00001_control",
+      "canonical_expression": "CSRank(Sign($fund_ca_netcash_finance_acceleration))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_ca_netcash_finance_acceleration))",
+      "field_ids": [
+        "fund_ca_netcash_finance_acceleration"
+      ],
+      "pair_id": "cn.pair.3d57e1c5c74d9f21de175fa94f2887d2",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "d71187e4c3f035ce9ac2e2b28c6df45522849ff261e8e8f25eef8efb232c745d",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026175131_00003",
+      "canonical_expression": "CSRank($fund_ba_inventory_delta)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_ba_inventory_delta)",
+      "field_ids": [
+        "fund_ba_inventory_delta"
+      ],
+      "pair_id": "cn.pair.41d82541b278cf701c05287d5cffd7a9",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "b803801a88140bbebf7ffefb666def464121b08e65454c244eef407d4d551287",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026175131_00003_control",
+      "canonical_expression": "CSRank(Sign($fund_ba_inventory_delta))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_ba_inventory_delta))",
+      "field_ids": [
+        "fund_ba_inventory_delta"
+      ],
+      "pair_id": "cn.pair.41d82541b278cf701c05287d5cffd7a9",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "694108f51b5929b1a627b95bd599fc1b8c5a57b4a36085896930d238406014ab",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026178158_00004",
+      "canonical_expression": "CSRank(Mul(Transition(Sign($intraday_ret_from_open),-1,1),Delta($ret_1m,5)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Transition(Sign($intraday_ret_from_open),-1,1),Delta($ret_1m,5)))",
+      "field_ids": [
+        "intraday_ret_from_open",
+        "ret_1m",
+        "state_intraday_return_sign"
+      ],
+      "pair_id": "cn.pair.c6eaf38b195393a8bff0b2761195e192",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "aa1f649c6bd8a82d5e71d9c0a63952e1ee7d9a456d2aa321508798c42f78f867",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026178158_00004_control",
+      "canonical_expression": "CSRank(Delta($ret_1m,5))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Delta($ret_1m,5))",
+      "field_ids": [
+        "ret_1m"
+      ],
+      "pair_id": "cn.pair.c6eaf38b195393a8bff0b2761195e192",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "597ac24fdfefb72b4f92ae88324c8303fe975ad632b1c6390c38dd1f043c2bed",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026178158_00007",
+      "canonical_expression": "CSRank(Mul(Transition(Sign($intraday_ret_from_open),-1,1),Delta($vwap,5)))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Mul(Transition(Sign($intraday_ret_from_open),-1,1),Delta($vwap,5)))",
+      "field_ids": [
+        "intraday_ret_from_open",
+        "state_intraday_return_sign",
+        "vwap"
+      ],
+      "pair_id": "cn.pair.8ca6ace45361a4dcd0b470ebef7f85ba",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "80f16b06cf794fa68c9c4b166494cf8a6a5d499a641fb9aa05156b63957d436e",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026178158_00007_control",
+      "canonical_expression": "CSRank(Delta($vwap,5))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Delta($vwap,5))",
+      "field_ids": [
+        "vwap"
+      ],
+      "pair_id": "cn.pair.8ca6ace45361a4dcd0b470ebef7f85ba",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "815db1acc3b3a26850794f9bc156690cfd75c923aa015f4f0b4c9578c6c72be5",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026173113_00009",
+      "canonical_expression": "CSRank(Add($m1_first5_range,Sign(Delta($amount,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add($m1_first5_range,Sign(Delta($amount,5))))",
+      "field_ids": [
+        "amount",
+        "m1_first5_range"
+      ],
+      "pair_id": "cn.pair.6321052864b97ef44912cd376e4ed56b",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "33fa58bb06e17af1f94025a6f7067cbbe4ca8d2a470fe55e524b586e67e63e62",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026173113_00009_control",
+      "canonical_expression": "CSRank(Add($m1_first5_range,Mul(0,Delta($amount,5))))",
+      "clock_namespace": "active_bar",
+      "expression": "CSRank(Add($m1_first5_range,Mul(0,Delta($amount,5))))",
+      "field_ids": [
+        "amount",
+        "m1_first5_range"
+      ],
+      "pair_id": "cn.pair.6321052864b97ef44912cd376e4ed56b",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "59b822420dfd33c88b3770071dabd1672c81fda9ecc206a31ff38f5e9d1c4b56",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026174122_00005",
+      "canonical_expression": "CSRank($fund_accruals_profit_minus_cfo_assets)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_accruals_profit_minus_cfo_assets)",
+      "field_ids": [
+        "fund_accruals_profit_minus_cfo_assets"
+      ],
+      "pair_id": "cn.pair.c8a2f154b881cca09746bfc3f8bcc75f",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "600e23309e31845e4b859288b3359144f7d3945877e06527bd5753b50bc43618",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026174122_00005_control",
+      "canonical_expression": "CSRank(Sign($fund_accruals_profit_minus_cfo_assets))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_accruals_profit_minus_cfo_assets))",
+      "field_ids": [
+        "fund_accruals_profit_minus_cfo_assets"
+      ],
+      "pair_id": "cn.pair.c8a2f154b881cca09746bfc3f8bcc75f",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "9bc4cbae470a46d4568205819c958e3d1cd97bdec4a5bf366f97331cd86edb96",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026174122_00006",
+      "canonical_expression": "CSRank($fund_cashflow_cfo_profit)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_cashflow_cfo_profit)",
+      "field_ids": [
+        "fund_cashflow_cfo_profit"
+      ],
+      "pair_id": "cn.pair.28f34ddab87e7c8bab123f28c66b63ec",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "3d8957f377f6506b90c2f7cab6777703efd15488ad0c341fa208abab7f0f288e",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026174122_00006_control",
+      "canonical_expression": "CSRank(Sign($fund_cashflow_cfo_profit))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_cashflow_cfo_profit))",
+      "field_ids": [
+        "fund_cashflow_cfo_profit"
+      ],
+      "pair_id": "cn.pair.28f34ddab87e7c8bab123f28c66b63ec",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "1a09bf5fa453e52c4ee9b7a00bdaa92c38587a7e4099ab9e25dfd5cad2d24bc3",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026174122_00016",
+      "canonical_expression": "CSRank($fund_working_capital_payables_assets)",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank($fund_working_capital_payables_assets)",
+      "field_ids": [
+        "fund_working_capital_payables_assets"
+      ],
+      "pair_id": "cn.pair.c1ce655ef87700da8d8f503ee1d5f181",
+      "pair_member_role": "PRIMARY",
+      "receipt_hash": "47ba6c2a2da003cd2d64050886ab09c25f520498f7139cfe002a851c2d7e4d4e",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026174122_00016_control",
+      "canonical_expression": "CSRank(Sign($fund_working_capital_payables_assets))",
+      "clock_namespace": "stock_session",
+      "expression": "CSRank(Sign($fund_working_capital_payables_assets))",
+      "field_ids": [
+        "fund_working_capital_payables_assets"
+      ],
+      "pair_id": "cn.pair.c1ce655ef87700da8d8f503ee1d5f181",
+      "pair_member_role": "CONTROL",
+      "receipt_hash": "ec88e4bba4da38a13ec6eb19e5c01f1e6a67a268a53558cdc48aef496ca1aafc",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    }
+  ],
+  "clock_counts": {
+    "active_bar": 6,
+    "stock_session": 6
+  },
+  "cross_sprint_memory": "FORBIDDEN",
+  "data_role": "development",
+  "development_release_hash": "d59798903fdc4557fcd8ffcde10745fa72d85ba0759f99a5a33d239a35496598",
+  "evaluation_name": "full-coordinate development Phase3CM pair evaluation",
+  "pair_count": 12,
+  "pairs": [
+    {
+      "candidate_id": "uc_minute_static_2026172104_00009",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_minute_static_2026172104_00009_control",
+      "pair_id": "cn.pair.c63ea72e47f50c0521fe8c7b86d09543",
+      "pair_receipt_hash": "0025eeabf06a40ead9115ae9bd4958157f2719c8823f1db414359dcfcd0567c5",
+      "route_id": "MINUTE_STATIC"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026173113_00001",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_firstn_path_2026173113_00001_control",
+      "pair_id": "cn.pair.9b7409c4d1dc32230499a2fcadc544be",
+      "pair_receipt_hash": "109c80a704af1442a30f8766c532265be4cb97fc90255b784aa539c58aa81a14",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026173113_00002",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_firstn_path_2026173113_00002_control",
+      "pair_id": "cn.pair.e581d4d1b0ec71d2c7fe22f5b427d52b",
+      "pair_receipt_hash": "7e4d69026ba51a2f267fdf62a70b0eb755aa3dfc95c7dbb8975e9dfaaea4418a",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026175131_00000",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_temporal_change_2026175131_00000_control",
+      "pair_id": "cn.pair.7241a42455fb6d2a8e7ad58756995daa",
+      "pair_receipt_hash": "7be36c869f4950b38c7a1b8dbbeb86ec7cb95862c098328d2fb198d9ebb04785",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026175131_00001",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_temporal_change_2026175131_00001_control",
+      "pair_id": "cn.pair.3d57e1c5c74d9f21de175fa94f2887d2",
+      "pair_receipt_hash": "00738eb6b2124d4705d6508208889e0f44c4a204905aa84863e8bebe027d255c",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_slow_temporal_change_2026175131_00003",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_temporal_change_2026175131_00003_control",
+      "pair_id": "cn.pair.41d82541b278cf701c05287d5cffd7a9",
+      "pair_receipt_hash": "e400e7a5f243c6f44bda71574a1b052715df8ddb5bfe8804285df5d5e098d582",
+      "route_id": "SLOW_TEMPORAL_CHANGE"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026178158_00004",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_intraday_state_transition_2026178158_00004_control",
+      "pair_id": "cn.pair.c6eaf38b195393a8bff0b2761195e192",
+      "pair_receipt_hash": "a838540585b370309a0b5c5b54d0f88ec38676b377dff5a822b08e2ec646ac31",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_intraday_state_transition_2026178158_00007",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_intraday_state_transition_2026178158_00007_control",
+      "pair_id": "cn.pair.8ca6ace45361a4dcd0b470ebef7f85ba",
+      "pair_receipt_hash": "0ac8ff3261617cb43e5e9324d11a5bdd74fc1242a8063aa47e64328f0b33c192",
+      "route_id": "INTRADAY_STATE_TRANSITION"
+    },
+    {
+      "candidate_id": "uc_firstn_path_2026173113_00009",
+      "clock_namespace": "active_bar",
+      "control_candidate_id": "uc_firstn_path_2026173113_00009_control",
+      "pair_id": "cn.pair.6321052864b97ef44912cd376e4ed56b",
+      "pair_receipt_hash": "8e07e3dc19700e2e9e10d5fceee5bf8a930955aea7aa1676f00ac6d78a502fd7",
+      "route_id": "FIRSTN_PATH"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026174122_00005",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_cross_sectional_level_2026174122_00005_control",
+      "pair_id": "cn.pair.c8a2f154b881cca09746bfc3f8bcc75f",
+      "pair_receipt_hash": "fffbe62280b5cee7c5ac23d9bddee5078592cb16c3fafa275007aa3217816e41",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026174122_00006",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_cross_sectional_level_2026174122_00006_control",
+      "pair_id": "cn.pair.28f34ddab87e7c8bab123f28c66b63ec",
+      "pair_receipt_hash": "66eb951b3838b6e9976ebbdb251da657282657631876aa5cfa97891ef1713c48",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    },
+    {
+      "candidate_id": "uc_slow_cross_sectional_level_2026174122_00016",
+      "clock_namespace": "stock_session",
+      "control_candidate_id": "uc_slow_cross_sectional_level_2026174122_00016_control",
+      "pair_id": "cn.pair.c1ce655ef87700da8d8f503ee1d5f181",
+      "pair_receipt_hash": "1d17a9ddc4d55ec590c24b601eaeae508e7c51acf2c1cff92bdc60b1943706ce",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL"
+    }
+  ],
+  "promotion": "FORBIDDEN",
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "sealed_reads": {
+    "forward_2026": 0,
+    "holdout": 0,
+    "validation": 0
+  },
+  "source_closure_sha": "d59798903fdc4557fcd8ffcde10745fa72d85ba0759f99a5a33d239a35496598",
+  "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "status": "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND",
+  "strict_stage_a": "NOT_AUTHORIZED"
+}

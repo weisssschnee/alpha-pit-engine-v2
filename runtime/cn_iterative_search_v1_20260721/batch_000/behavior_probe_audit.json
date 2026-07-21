@@ -1,0 +1,30 @@
+[
+  {
+    "backend": "active_bar",
+    "candidate_pair_count": 26,
+    "coordinate_rows": 150990,
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "label_sidecar_paths_accepted": 0,
+    "materialized_pair_count": 14,
+    "probe_date": "2024-01-02",
+    "probe_scope": "LABEL_FREE_BOUNDED_MAPPING",
+    "trade_time_count": 30,
+    "unresolved_pair_count": 15,
+    "validation_reads": 0
+  },
+  {
+    "backend": "stock_session",
+    "candidate_pair_count": 22,
+    "coordinate_rows": 5033,
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "label_sidecar_paths_accepted": 0,
+    "materialized_pair_count": 15,
+    "probe_date": "2024-01-02",
+    "probe_scope": "LABEL_FREE_BOUNDED_MAPPING",
+    "trade_time_count": 1,
+    "unresolved_pair_count": 12,
+    "validation_reads": 0
+  }
+]

@@ -1,0 +1,100 @@
+{
+  "batch_summaries": [
+    {
+      "admitted_pairs": 20,
+      "archive_sha256": "4a29ba203878a25e78d5f3280357a6e0aab6566de276f2527c8b0d758a1a88ac",
+      "batch_id": "batch_000",
+      "evaluated_pairs": 20,
+      "feedback_status": {
+        "negative": "NO_ACTIONABLE_NEGATIVE_FEEDBACK",
+        "positive": "NO_ACTIONABLE_POSITIVE_FEEDBACK"
+      },
+      "manifest_sha256": "c2a83c75ada10a13f8e694126bb7cf565126cd08622cf7efb42bddb4d0c2c6db",
+      "master_stream_hash": "98485f480660b70f0862bfda1e3d41e9e3f1cfa9521926a60a72da69c13e7cc6",
+      "negative_pairs": 16,
+      "positive_pairs": 4,
+      "proposal_pairs": 48,
+      "route_budgets": {
+        "BROAD_EVENT_FROZEN_ENTRY": 5,
+        "DISCLOSURE_EVENT": 6,
+        "FIRSTN_PATH": 5,
+        "INTRADAY_STATE_TRANSITION": 7,
+        "MARKET_REGIME_CONDITION": 5,
+        "MINUTE_STATIC": 7,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 7,
+        "SLOW_TEMPORAL_CHANGE": 6
+      },
+      "run_health_failures": 0,
+      "schedule_sha256": "f04c7812503d1a74649a5fe693c3ef4f6f12427ff6dca030e2a6f33b30ed068b"
+    },
+    {
+      "admitted_pairs": 12,
+      "archive_sha256": "ee46d2b8afa2c1860a52c5cea81a156eef6b9a0e9103d48f7ccfeaed3cfa3f65",
+      "batch_id": "batch_001",
+      "evaluated_pairs": 12,
+      "feedback_status": {
+        "negative": "APPLIED",
+        "positive": "APPLIED"
+      },
+      "manifest_sha256": "653644fa82b3b6d0a92aae0b1d22fb9efab3981acd55550f7eac2e671f1f5d29",
+      "master_stream_hash": "de2e42ca812e1f86f5ba05289e55e42aa969e1ccbc9553a901c6ed439224b2f8",
+      "negative_pairs": 9,
+      "positive_pairs": 3,
+      "proposal_pairs": 48,
+      "route_budgets": {
+        "BROAD_EVENT_FROZEN_ENTRY": 6,
+        "DISCLOSURE_EVENT": 7,
+        "FIRSTN_PATH": 7,
+        "INTRADAY_STATE_TRANSITION": 10,
+        "MARKET_REGIME_CONDITION": 6,
+        "MINUTE_STATIC": 4,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 4,
+        "SLOW_TEMPORAL_CHANGE": 4
+      },
+      "run_health_failures": 0,
+      "schedule_sha256": "28738de6de9045c350a5e5a1a357a0371c1fdbc59569a63fa645bdff88f45399"
+    },
+    {
+      "admitted_pairs": 17,
+      "archive_sha256": "38861b367245366324418752c00c1706a026845b022248d976ac831243b8730a",
+      "batch_id": "batch_002",
+      "evaluated_pairs": 17,
+      "feedback_status": {
+        "negative": "APPLIED",
+        "positive": "APPLIED"
+      },
+      "manifest_sha256": "dcbc596ee9eadf40ea5caec660fca79de1b7b4969b7c78ad9f2c4b3666c7c17d",
+      "master_stream_hash": "faea7ee4016ec046dc8af04e80b4cd9d040bc7a219978470cbff9e77cb89428c",
+      "negative_pairs": 15,
+      "positive_pairs": 2,
+      "proposal_pairs": 48,
+      "route_budgets": {
+        "BROAD_EVENT_FROZEN_ENTRY": 6,
+        "DISCLOSURE_EVENT": 6,
+        "FIRSTN_PATH": 4,
+        "INTRADAY_STATE_TRANSITION": 10,
+        "MARKET_REGIME_CONDITION": 6,
+        "MINUTE_STATIC": 6,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 6,
+        "SLOW_TEMPORAL_CHANGE": 4
+      },
+      "run_health_failures": 0,
+      "schedule_sha256": "05ce235c416f031f201d35093b715eae6f8fc09e278e3d2208c18a45f964fe72"
+    }
+  ],
+  "forward_2026_reads": 0,
+  "gates": {
+    "access_counts_zero": true,
+    "batch_1_feedback_changes_route_budget": true,
+    "cross_batch_manifest_bindings_exact": true,
+    "feedback_off_control_completed": true,
+    "feedback_on_off_master_attempt_stream_hash_equal": true,
+    "promotion_forbidden": true,
+    "synthetic_positive_and_negative_rules_pass": true,
+    "three_batches_closed": true
+  },
+  "holdout_reads": 0,
+  "promotion": "FORBIDDEN",
+  "status": "CN_ITERATIVE_SEARCH_V1_CANARY_PASS",
+  "validation_reads": 0
+}
