@@ -7,6 +7,7 @@ import pandas as pd
 from our_system_phase2.services.phase3cm_streaming_expression import (
     unsupported_streaming_operators,
 )
+from our_system_phase2.services.typed_primitive_gate import expression_fields
 from our_system_phase2.services.portfolio_behavior_archive import (
     bounded_label_free_behavior_probe,
 )
@@ -108,6 +109,41 @@ def test_registry_attempt_stream_can_require_current_materialized_fields() -> No
         set(map(str, row.get("declared_field_ids") or ())).issubset(available)
         for row in rows
     )
+
+
+def test_materialized_state_expression_does_not_require_synthetic_state_column() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    generator = RegistryDrivenGenerator(
+        registry, constructor_profile=COMPOSITIONAL_V2_PROFILE
+    )
+    baseline, _ = generator.generate_route_attempts(
+        "INTRADAY_STATE_TRANSITION",
+        scheduled_pairs=1,
+        seed=2026074219,
+        attempt_limit=32,
+    )
+    materialized_expression_fields = {
+        field
+        for row in baseline
+        for field in expression_fields(str(row["expression"]))
+    }
+    declared_fields = {
+        str(field)
+        for row in baseline
+        for field in (row.get("declared_field_ids") or ())
+    }
+    assert declared_fields - materialized_expression_fields
+
+    rows, funnel = generator.generate_route_attempts(
+        "INTRADAY_STATE_TRANSITION",
+        scheduled_pairs=1,
+        seed=2026074219,
+        attempt_limit=32,
+        available_field_ids=materialized_expression_fields,
+    )
+
+    assert len(rows) == 2
+    assert funnel["materialization_missing_field_pairs"] == 0
 
 
 def test_supply_diagnosis_excludes_frozen_broad_event_and_requires_headroom() -> None:

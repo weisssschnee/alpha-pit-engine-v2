@@ -11,6 +11,7 @@ from our_system_phase2.services.matched_control_pairs import attach_pair_contrac
 from our_system_phase2.services.phase3cm_streaming_expression import (
     unsupported_streaming_operators,
 )
+from our_system_phase2.services.typed_primitive_gate import expression_fields
 from our_system_phase2.services.unified_capability_registry import (
     CapabilityField,
     ROUTE_IDS,
@@ -349,12 +350,12 @@ class RegistryDrivenGenerator:
                     index += 1
                     continue
             if available_fields is not None:
-                declared_fields = {
+                required_materialized_fields = {
                     str(field)
                     for member in (pair.candidate, pair.control)
-                    for field in (member.get("declared_field_ids") or ())
+                    for field in expression_fields(str(member.get("expression") or ""))
                 }
-                if not declared_fields.issubset(available_fields):
+                if not required_materialized_fields.issubset(available_fields):
                     materialization_missing_field_pairs += 1
                     index += 1
                     continue
