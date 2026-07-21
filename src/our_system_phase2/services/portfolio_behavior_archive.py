@@ -22,10 +22,108 @@ import polars as pl
 
 from our_system_phase2.services.phase3cm_time_major_sidecar import STABLE_KEY
 
+try:
+    from numba import njit, prange, set_num_threads
+except Exception:  # pragma: no cover - production/77o carries Numba
+    njit = prange = set_num_threads = None
+
 
 BEHAVIOR_VERSION = "cn_portfolio_behavior_v1"
 BEHAVIOR_UNRESOLVED = "BEHAVIOR_UNRESOLVED"
 _FIELD_PATTERN = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)")
+
+
+if njit is not None:
+
+    @njit(cache=True, parallel=True)
+    def _label_free_mapping_kernel(
+        signals: np.ndarray,
+        starts: np.ndarray,
+        ends: np.ndarray,
+        code_ids: np.ndarray,
+        directions: np.ndarray,
+        min_obs: int,
+        top_quantile: float,
+        previous_weights: np.ndarray,
+        selected_frequency: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        candidate_count, row_count = signals.shape
+        time_count = len(starts)
+        selected = np.zeros((candidate_count, row_count), dtype=np.bool_)
+        support = np.zeros((candidate_count, time_count), dtype=np.float64)
+        turnover = np.zeros((candidate_count, time_count), dtype=np.float64)
+        selected_counts = np.zeros((candidate_count, time_count), dtype=np.int32)
+        for candidate in prange(candidate_count):
+            chosen_codes = np.zeros(previous_weights.shape[1], dtype=np.bool_)
+            for time_index in range(time_count):
+                start = starts[time_index]
+                end = ends[time_index]
+                size = end - start
+                finite_count = 0
+                for row_index in range(start, end):
+                    if np.isfinite(signals[candidate, row_index]):
+                        finite_count += 1
+                support[candidate, time_index] = finite_count / max(1, size)
+                chosen_codes[:] = False
+                if finite_count >= min_obs:
+                    scores = np.empty(finite_count, dtype=np.float64)
+                    finite_rows = np.empty(finite_count, dtype=np.int64)
+                    cursor = 0
+                    direction = 1.0 if directions[candidate] >= 0.0 else -1.0
+                    for row_index in range(start, end):
+                        value = signals[candidate, row_index]
+                        if np.isfinite(value):
+                            scores[cursor] = value * direction
+                            finite_rows[cursor] = row_index
+                            cursor += 1
+                    take = max(1, int(math.ceil(finite_count * top_quantile)))
+                    threshold = np.sort(scores)[finite_count - take]
+                    chosen = 0
+                    for item in range(finite_count):
+                        if scores[item] > threshold:
+                            row_index = finite_rows[item]
+                            selected[candidate, row_index] = True
+                            chosen_codes[code_ids[row_index]] = True
+                            chosen += 1
+                    remaining = take - chosen
+                    if remaining > 0:
+                        tied_count = 0
+                        for item in range(finite_count):
+                            if scores[item] == threshold:
+                                tied_count += 1
+                        tied_rows = np.empty(tied_count, dtype=np.int64)
+                        tied_codes = np.empty(tied_count, dtype=np.int32)
+                        cursor = 0
+                        for item in range(finite_count):
+                            if scores[item] == threshold:
+                                row_index = finite_rows[item]
+                                tied_rows[cursor] = row_index
+                                tied_codes[cursor] = code_ids[row_index]
+                                cursor += 1
+                        tie_order = np.argsort(tied_codes)
+                        for tie_index in range(min(remaining, tied_count)):
+                            row_index = tied_rows[tie_order[tie_index]]
+                            selected[candidate, row_index] = True
+                            chosen_codes[code_ids[row_index]] = True
+                            chosen += 1
+                    selected_counts[candidate, time_index] = chosen
+                selected_code_count = 0
+                for code in range(previous_weights.shape[1]):
+                    if chosen_codes[code]:
+                        selected_code_count += 1
+                equal_weight = 1.0 / selected_code_count if selected_code_count else 0.0
+                absolute_change = 0.0
+                for code in range(previous_weights.shape[1]):
+                    new_weight = equal_weight if chosen_codes[code] else 0.0
+                    absolute_change += abs(new_weight - previous_weights[candidate, code])
+                    previous_weights[candidate, code] = new_weight
+                    if chosen_codes[code]:
+                        selected_frequency[candidate, code] += 1
+                turnover[candidate, time_index] = 0.5 * absolute_change
+        return selected, support, turnover, selected_counts
+
+else:  # pragma: no cover
+    _label_free_mapping_kernel = None
 
 
 def _stable_json(value: Any) -> str:
@@ -54,8 +152,8 @@ class _CandidateBehaviorState:
     support_sum: float = 0.0
     turnover_sum: float = 0.0
     turnover_observations: int = 0
-    selected_frequency: dict[int, int] = field(default_factory=dict)
-    previous_weights: dict[int, float] = field(default_factory=dict)
+    selected_frequency: np.ndarray | None = None
+    previous_weights: np.ndarray | None = None
 
 
 class StreamingLabelFreeBehavior:
@@ -83,7 +181,13 @@ class StreamingLabelFreeBehavior:
         self.scope = scope
         self.min_obs = max(1, int(min_obs))
         self.top_quantile = float(top_quantile)
-        self._states = [_CandidateBehaviorState() for _ in self.candidate_ids]
+        self._states = [
+            _CandidateBehaviorState(
+                selected_frequency=np.zeros(self.code_count, dtype=np.int64),
+                previous_weights=np.zeros(self.code_count, dtype=np.float64),
+            )
+            for _ in self.candidate_ids
+        ]
         self._time_count = 0
 
     def update_block(
@@ -114,61 +218,59 @@ class StreamingLabelFreeBehavior:
         if direction_values.shape != (len(self.candidate_ids),):
             raise ValueError("directions must have one value per candidate")
 
-        ordered_times = np.unique(times)
-        self._time_count += int(len(ordered_times))
-        block_digests = [hashlib.sha256() for _ in self.candidate_ids]
-        for time_id in ordered_times:
-            mask = times == time_id
-            block_codes = codes[mask]
-            block_trade_times = trade_times[mask]
-            if block_codes.size == 0:
-                continue
-            order = np.lexsort((block_codes, block_trade_times))
-            block_codes = block_codes[order]
-            block_trade_times = block_trade_times[order]
-            for candidate_index, state in enumerate(self._states):
-                values = matrix[candidate_index, mask][order]
-                finite = np.isfinite(values)
-                finite_count = int(finite.sum())
-                state.coordinate_count += int(values.size)
-                state.observation_count += finite_count
-                support = finite_count / max(1, int(values.size))
-                state.support_sum += support
-                selected_codes: list[int] = []
-                weights: dict[int, float] = {}
-                if finite_count:
-                    finite_codes = block_codes[finite]
-                    finite_values = values[finite] * (1.0 if direction_values[candidate_index] >= 0 else -1.0)
-                    take = max(1, int(math.ceil(finite_count * self.top_quantile)))
-                    ranked = sorted(
-                        zip(finite_values.tolist(), finite_codes.tolist()),
-                        key=lambda item: (-float(item[0]), int(item[1])),
-                    )
-                    selected_codes = sorted(int(code) for _, code in ranked[:take])
-                    equal_weight = round(1.0 / len(selected_codes), 12)
-                    weights = {code: equal_weight for code in selected_codes}
-                all_weight_codes = set(state.previous_weights) | set(weights)
-                turnover = 0.5 * sum(
-                    abs(weights.get(code, 0.0) - state.previous_weights.get(code, 0.0))
-                    for code in all_weight_codes
-                )
-                state.turnover_sum += turnover
-                state.turnover_observations += 1
-                state.previous_weights = weights
-                state.selected_count += len(selected_codes)
-                for code in selected_codes:
-                    state.selected_frequency[code] = state.selected_frequency.get(code, 0) + 1
-                response = {
-                    "time_id": int(time_id),
-                    "trade_time_ns": int(block_trade_times[0]),
-                    "support": round(support, 12),
-                    "selected_codes": selected_codes,
-                    "weights": [[code, weights[code]] for code in selected_codes],
-                    "turnover": round(turnover, 12),
-                }
-                block_digests[candidate_index].update((_stable_json(response) + "\n").encode("utf-8"))
-        for state, block_digest in zip(self._states, block_digests):
+        if len(times) and bool(np.any(times[1:] < times[:-1])):
+            raise ValueError("behavior coordinates must be time-major")
+        boundaries = np.flatnonzero(np.r_[True, times[1:] != times[:-1], True])
+        starts = boundaries[:-1].astype(np.int64)
+        ends = boundaries[1:].astype(np.int64)
+        self._time_count += int(len(starts))
+        if _label_free_mapping_kernel is None:
+            raise RuntimeError("Numba is required for label-free behavior mapping")
+        previous_weights = np.vstack(
+            [
+                state.previous_weights
+                if state.previous_weights is not None
+                else np.zeros(self.code_count, dtype=np.float64)
+                for state in self._states
+            ]
+        )
+        selected_frequency = np.vstack(
+            [
+                state.selected_frequency
+                if state.selected_frequency is not None
+                else np.zeros(self.code_count, dtype=np.int64)
+                for state in self._states
+            ]
+        )
+        selected, support, turnover, selected_counts = _label_free_mapping_kernel(
+            matrix,
+            starts,
+            ends,
+            codes.astype(np.int32, copy=False),
+            direction_values,
+            self.min_obs,
+            self.top_quantile,
+            previous_weights,
+            selected_frequency,
+        )
+        time_identity = np.column_stack((times[starts], trade_times[starts])).astype(
+            np.int64, copy=False
+        )
+        for candidate_index, state in enumerate(self._states):
+            block_digest = hashlib.sha256()
+            block_digest.update(time_identity.tobytes())
+            block_digest.update(support[candidate_index].tobytes())
+            block_digest.update(np.packbits(selected[candidate_index], bitorder="little").tobytes())
+            block_digest.update(turnover[candidate_index].tobytes())
             state.block_digests.append(block_digest.hexdigest())
+            state.coordinate_count += count
+            state.observation_count += int(np.isfinite(matrix[candidate_index]).sum())
+            state.selected_count += int(selected_counts[candidate_index].sum())
+            state.support_sum += float(support[candidate_index].sum())
+            state.turnover_sum += float(turnover[candidate_index].sum())
+            state.turnover_observations += int(len(starts))
+            state.previous_weights = previous_weights[candidate_index].copy()
+            state.selected_frequency = selected_frequency[candidate_index].copy()
 
     def rows(self) -> list[dict[str, Any]]:
         output: list[dict[str, Any]] = []
@@ -196,11 +298,18 @@ class StreamingLabelFreeBehavior:
                 "version": BEHAVIOR_VERSION,
                 "scope": self.scope,
                 "coordinate_binding": self.coordinate_binding,
+                "min_obs": self.min_obs,
+                "top_quantile": self.top_quantile,
                 "candidate_response_block_digests": list(state.block_digests),
             }
             exact_digest = _identity("cn.behavior", exact_payload)
             family_vector = [
-                round(state.selected_frequency.get(code, 0) / time_count, 1)
+                round(
+                    int(state.selected_frequency[code]) / time_count
+                    if state.selected_frequency is not None
+                    else 0.0,
+                    1,
+                )
                 for code in range(self.code_count)
             ]
             family_payload = {
@@ -249,8 +358,16 @@ class StreamingLabelFreeBehavior:
                     "support_sum": state.support_sum,
                     "turnover_sum": state.turnover_sum,
                     "turnover_observations": state.turnover_observations,
-                    "selected_frequency": {str(key): value for key, value in state.selected_frequency.items()},
-                    "previous_weights": {str(key): value for key, value in state.previous_weights.items()},
+                    "selected_frequency": (
+                        state.selected_frequency.tolist()
+                        if state.selected_frequency is not None
+                        else []
+                    ),
+                    "previous_weights": (
+                        state.previous_weights.tolist()
+                        if state.previous_weights is not None
+                        else []
+                    ),
                 }
                 for state in self._states
             ],
@@ -277,8 +394,12 @@ class StreamingLabelFreeBehavior:
             state.support_sum = float(row.get("support_sum") or 0.0)
             state.turnover_sum = float(row.get("turnover_sum") or 0.0)
             state.turnover_observations = int(row.get("turnover_observations") or 0)
-            state.selected_frequency = {int(key): int(value) for key, value in dict(row.get("selected_frequency") or {}).items()}
-            state.previous_weights = {int(key): float(value) for key, value in dict(row.get("previous_weights") or {}).items()}
+            frequencies = np.asarray(row.get("selected_frequency") or (), dtype=np.int64)
+            previous = np.asarray(row.get("previous_weights") or (), dtype=np.float64)
+            if frequencies.shape != (self.code_count,) or previous.shape != (self.code_count,):
+                raise ValueError("label-free behavior dense state shape drift")
+            state.selected_frequency = frequencies.copy()
+            state.previous_weights = previous.copy()
 
 
 def pair_behavior_record(
