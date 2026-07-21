@@ -4,7 +4,7 @@
       "backend": "active_bar",
       "command": "REUSED_COMPLETED_IDENTICAL_RESULT",
       "completed_at": "REUSED",
-      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\batch_000\\phase3cm\\active_bar\\CN_STREAMING_BACKEND_RESULT.json",
+      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\batch_000\\phase3cm\\active_bar\\CN_STREAMING_BACKEND_RESULT.json",
       "result_sha256": "d41f9b64260ad4b50692fb7738148c7bb019442b5a95f6e6390ff13f495e52ee",
       "returncode": 0,
       "started_at": "REUSED",
@@ -14,7 +14,7 @@
       "backend": "stock_session",
       "command": "REUSED_COMPLETED_IDENTICAL_RESULT",
       "completed_at": "REUSED",
-      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_b0d078b\\batch_000\\phase3cm\\stock_session\\CN_STREAMING_BACKEND_RESULT.json",
+      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\batch_000\\phase3cm\\stock_session\\CN_STREAMING_BACKEND_RESULT.json",
       "result_sha256": "4cc271284a839f49b1e722874ede1dd0fcc5678668a59d804f053dd12d485cb0",
       "returncode": 0,
       "started_at": "REUSED",
@@ -98,14 +98,14 @@
       "sha256": "8b6e33d47f4e1df33f587d9b1d420f756a6c705b8496e0912c223c5d83371df9"
     },
     {
-      "bytes": 16893,
+      "bytes": 18421,
       "path": "full_behavior.parquet",
-      "sha256": "e2c2d5e73af550e3c2eb20885205905200ba10031143552ba424b78b1522d71b"
+      "sha256": "0fc26ce47b64e3204353ce0aafdc5be07c3016aa400ff7ab8eaa3c9c67864f45"
     },
     {
-      "bytes": 23516,
+      "bytes": 24366,
       "path": "behavior_archive.parquet",
-      "sha256": "4a29ba203878a25e78d5f3280357a6e0aab6566de276f2527c8b0d758a1a88ac"
+      "sha256": "a83b4a74fac67c05d759537230d292f6bb92a78344223f1e197e78b32f19ddd4"
     },
     {
       "bytes": 536179,
@@ -123,10 +123,10 @@
   "forward_2026_reads": 0,
   "holdout_reads": 0,
   "input_hashes": {
-    "frozen_contract": "10f988d3dbc3d4e5d036f4dc3f30feb00be45861f4c6f95f91dbbc96386f7410",
+    "frozen_contract": "292724ae7310758062c626e375c16cf6493ee3f1456182c0c64d1af730bc57e4",
     "prior_batch_manifest": "GENESIS"
   },
-  "manifest_payload_hash": "612d4cd1e34e6f3a948b8b4560ce07834f7cac3780d36f0c4577ecd57d1de64a",
+  "manifest_payload_hash": "bc62d266ebeec7dfe69e3e0cb8525b301930d73e9c81d5ada1c411cbea36e9a6",
   "promotion": "FORBIDDEN",
   "schema_version": "cn_iterative_search_v1_batch_manifest_v1",
   "status": "BATCH_CLOSED_IMMUTABLE",

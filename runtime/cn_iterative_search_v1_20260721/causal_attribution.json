@@ -3,7 +3,101 @@
   "batch_1_feedback_off_master_stream_hash": "de2e42ca812e1f86f5ba05289e55e42aa969e1ccbc9553a901c6ed439224b2f8",
   "batch_1_feedback_on_master_stream_hash": "de2e42ca812e1f86f5ba05289e55e42aa969e1ccbc9553a901c6ed439224b2f8",
   "batch_2_binds_batch_1_manifest": true,
+  "feedback_off_kept_initial_route_budget": true,
   "feedback_on_off_route_budget_changed": true,
+  "feedback_on_off_route_causal_gates": {
+    "actual_legal_canonical_route_distribution_changed": true,
+    "at_least_one_actual_change_matches_scheduled_direction": true,
+    "no_actual_change_contradicts_scheduled_direction": true,
+    "scheduled_route_distribution_changed": true
+  },
+  "feedback_on_off_route_comparison": {
+    "BROAD_EVENT_FROZEN_ENTRY": {
+      "actual_pair_delta": 0,
+      "direction_matches_when_observable": null,
+      "feedback_off_actual_legal_canonical_pairs": 6,
+      "feedback_off_scheduled_pairs": 5,
+      "feedback_on_actual_legal_canonical_pairs": 6,
+      "feedback_on_scheduled_pairs": 6,
+      "scheduled_pair_delta": 1
+    },
+    "DISCLOSURE_EVENT": {
+      "actual_pair_delta": 0,
+      "direction_matches_when_observable": null,
+      "feedback_off_actual_legal_canonical_pairs": 0,
+      "feedback_off_scheduled_pairs": 6,
+      "feedback_on_actual_legal_canonical_pairs": 0,
+      "feedback_on_scheduled_pairs": 7,
+      "scheduled_pair_delta": 1
+    },
+    "FIRSTN_PATH": {
+      "actual_pair_delta": 5,
+      "direction_matches_when_observable": true,
+      "feedback_off_actual_legal_canonical_pairs": 7,
+      "feedback_off_scheduled_pairs": 5,
+      "feedback_on_actual_legal_canonical_pairs": 12,
+      "feedback_on_scheduled_pairs": 7,
+      "scheduled_pair_delta": 2
+    },
+    "INTRADAY_STATE_TRANSITION": {
+      "actual_pair_delta": 0,
+      "direction_matches_when_observable": null,
+      "feedback_off_actual_legal_canonical_pairs": 2,
+      "feedback_off_scheduled_pairs": 7,
+      "feedback_on_actual_legal_canonical_pairs": 2,
+      "feedback_on_scheduled_pairs": 10,
+      "scheduled_pair_delta": 3
+    },
+    "MARKET_REGIME_CONDITION": {
+      "actual_pair_delta": 7,
+      "direction_matches_when_observable": true,
+      "feedback_off_actual_legal_canonical_pairs": 5,
+      "feedback_off_scheduled_pairs": 5,
+      "feedback_on_actual_legal_canonical_pairs": 12,
+      "feedback_on_scheduled_pairs": 6,
+      "scheduled_pair_delta": 1
+    },
+    "MINUTE_STATIC": {
+      "actual_pair_delta": 0,
+      "direction_matches_when_observable": null,
+      "feedback_off_actual_legal_canonical_pairs": 4,
+      "feedback_off_scheduled_pairs": 7,
+      "feedback_on_actual_legal_canonical_pairs": 4,
+      "feedback_on_scheduled_pairs": 4,
+      "scheduled_pair_delta": -3
+    },
+    "SLOW_CROSS_SECTIONAL_LEVEL": {
+      "actual_pair_delta": -4,
+      "direction_matches_when_observable": true,
+      "feedback_off_actual_legal_canonical_pairs": 12,
+      "feedback_off_scheduled_pairs": 7,
+      "feedback_on_actual_legal_canonical_pairs": 8,
+      "feedback_on_scheduled_pairs": 4,
+      "scheduled_pair_delta": -3
+    },
+    "SLOW_TEMPORAL_CHANGE": {
+      "actual_pair_delta": -8,
+      "direction_matches_when_observable": true,
+      "feedback_off_actual_legal_canonical_pairs": 12,
+      "feedback_off_scheduled_pairs": 6,
+      "feedback_on_actual_legal_canonical_pairs": 4,
+      "feedback_on_scheduled_pairs": 4,
+      "scheduled_pair_delta": -2
+    }
+  },
+  "feedback_on_off_shared_contract_checks": {
+    "behavior_dedupe_policy": true,
+    "compiler_authority": true,
+    "exact_dedupe_policy": true,
+    "generator_authority": true,
+    "historical_behavior_archive_hash": true,
+    "historical_exact_identity_hash": true,
+    "master_stream_hash": true,
+    "probe_coordinate_binding": true,
+    "registry_hash": true,
+    "seed": true,
+    "total_pair_budget": true
+  },
   "feedback_on_off_shared_seed_attempt_stream_budget_archive_dedupe_registry_compiler": true,
   "real_negative_direction_status": "APPLIED",
   "real_positive_direction_status": "APPLIED",

@@ -32,9 +32,13 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 - The feedback-on/off control shared seed, master attempt stream, total budget,
   historical behavior archive, exact/behavior dedupe, registry, and compiler.
   Its master stream hash matched the feedback-on Batch 1 hash exactly while
-  route budgets changed. Synthetic positive and negative rules passed; the real
-  canary applied both supported positive expansion and negative downweighting.
-  Infrastructure remained separate from financial route health.
+  route budgets changed. The closure also compared actual legal/canonical pair
+  counts route by route: every observable change followed the scheduled
+  direction, no route contradicted it, and feedback-off kept the Batch 0 prior.
+  All 49 full behavior rows retain all four identities. Synthetic positive and
+  negative rules passed; the real canary applied both supported positive
+  expansion and negative downweighting. Infrastructure remained separate from
+  financial route health.
 - The 77o canary evaluated 49 matched pairs with nine positive-policy and 40
   negative-scheduler observations. Run-health failures and validation, holdout,
   and 2026 reads were all zero; promotion remained forbidden. These are

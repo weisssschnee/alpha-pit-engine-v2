@@ -62,13 +62,21 @@ schedule 对 `MINUTE_STATIC`、`SLOW_CROSS_SECTIONAL_LEVEL`、
 `SLOW_TEMPORAL_CHANGE` 执行 `DOWNWEIGHT`，并继续对
 `INTRADAY_STATE_TRANSITION` 执行 `EXPAND`。
 
+最终 closure 逐项核验了 seed、master stream、48-pair 总预算、历史 exact
+archive、历史 behavior archive、exact/behavior dedupe policy、registry、compiler、
+generator 与 probe coordinate binding。Batch 1 feedback-on/off 的实际
+legal/canonical pair 分布分别为：`FIRSTN 12/7`、`MARKET 12/5`、`SLOW_XS 8/12`、
+`SLOW_TEMP 4/12`、`MINUTE 4/4`、`STATE 2/2`、`BROAD 6/6`、`DISCLOSURE 0/0`。
+所有可观察变化均与 schedule delta 同向，无反向 route；feedback-off route budget
+保持 Batch 0 初始 prior。三批 20/12/17 条 full behavior rows 均同时保留四种身份。
+
 ## Immutable evidence
 
 | Batch | Batch manifest SHA256 | Archive snapshot SHA256 | Master stream SHA256 |
 |---|---|---|---|
-| 000 | `c2a83c75ada10a13f8e694126bb7cf565126cd08622cf7efb42bddb4d0c2c6db` | `4a29ba203878a25e78d5f3280357a6e0aab6566de276f2527c8b0d758a1a88ac` | `98485f480660b70f0862bfda1e3d41e9e3f1cfa9521926a60a72da69c13e7cc6` |
-| 001 | `653644fa82b3b6d0a92aae0b1d22fb9efab3981acd55550f7eac2e671f1f5d29` | `ee46d2b8afa2c1860a52c5cea81a156eef6b9a0e9103d48f7ccfeaed3cfa3f65` | `de2e42ca812e1f86f5ba05289e55e42aa969e1ccbc9553a901c6ed439224b2f8` |
-| 002 | `dcbc596ee9eadf40ea5caec660fca79de1b7b4969b7c78ad9f2c4b3666c7c17d` | `38861b367245366324418752c00c1706a026845b022248d976ac831243b8730a` | `faea7ee4016ec046dc8af04e80b4cd9d040bc7a219978470cbff9e77cb89428c` |
+| 000 | `67ef2bb5775822b669f94bd358f906b369969d397c27c5aa5c366070b20b5ac7` | `a83b4a74fac67c05d759537230d292f6bb92a78344223f1e197e78b32f19ddd4` | `98485f480660b70f0862bfda1e3d41e9e3f1cfa9521926a60a72da69c13e7cc6` |
+| 001 | `bd087b07a63d8ffe2a3abec9b76f36dee9a619644b3cba9fabc68022f216a2e1` | `d76b730ab65ae66182531e96d7a3523d0d955aef12df0da9dc9019612a65cc8a` | `de2e42ca812e1f86f5ba05289e55e42aa969e1ccbc9553a901c6ed439224b2f8` |
+| 002 | `9c868c7bb5149bdf885583ce667e7b888fff0bad902d33170c2f7f9e65849376` | `2b3194c6fd53ad9b2cad892d4d80130e165339018b2173be96d3b85ca44f2c50` | `faea7ee4016ec046dc8af04e80b4cd9d040bc7a219978470cbff9e77cb89428c` |
 
 本机完整证据镜像：`runtime/cn_iterative_search_v1_20260721/`。最终访问计数为
 `validation_reads=0`、`holdout_reads=0`、`forward_2026_reads=0`，promotion 为
@@ -80,11 +88,12 @@ schedule 对 `MINUTE_STATIC`、`SLOW_CROSS_SECTIONAL_LEVEL`、
 `D:\ChengboRemote\runtime\cn_iterative_search_v1_20260721_1f67203_attempt1_slow`。
 向量化后完成真实评估；随后修复 mixed-Parquet batch close 与 resume identity
 binding。完整 Phase3CM 结果由 evaluator source `b7d605ca` 产生，最终因果 receipt、
-master-stream binding 与 immutable manifests 由 source `b0d078ba` 重新闭合；已完成
+实际 route-distribution gate、四身份 join、master-stream binding 与 immutable
+manifests 由 source `c2311584` 重新闭合；已完成
 结果仅在输入 identity 完全一致时复用，没有伪装成重新评估。
 
 最终 77o 根目录：
-`D:\ChengboRemote\runtime\cn_iterative_search_v1_20260721_final_b0d078b`。
+`D:\ChengboRemote\runtime\cn_iterative_search_v1_20260721_final_c231158`。
 
 ## Remaining gaps
 
