@@ -493,7 +493,22 @@ class PortfolioBehaviorArchive:
     def write_parquet(self, path: Path) -> None:
         destination = Path(path)
         destination.parent.mkdir(parents=True, exist_ok=True)
-        pd.DataFrame(self.rows).fillna("").to_parquet(destination, index=False)
+        frame = pd.DataFrame(self.rows)
+        for column in frame.columns:
+            values = [value for value in frame[column].tolist() if value not in (None, "")]
+            if values and all(
+                isinstance(value, (int, float, np.integer, np.floating))
+                and not isinstance(value, (bool, np.bool_))
+                for value in values
+            ):
+                frame[column] = pd.to_numeric(frame[column], errors="coerce")
+            else:
+                frame[column] = frame[column].fillna("").map(
+                    lambda value: _stable_json(value)
+                    if isinstance(value, (dict, list, tuple, set))
+                    else value
+                )
+        frame.to_parquet(destination, index=False)
 
     @classmethod
     def read_parquet(cls, path: Path) -> "PortfolioBehaviorArchive":

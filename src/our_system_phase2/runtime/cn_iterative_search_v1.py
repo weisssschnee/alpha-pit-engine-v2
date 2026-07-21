@@ -502,6 +502,29 @@ def _run_phase3cm(
             continue
         pair_count = len({row["pair_id"] for row in _read_csv(candidate_table)})
         output_root = batch_root / "phase3cm" / backend
+        result_path = output_root / "CN_STREAMING_BACKEND_RESULT.json"
+        if result_path.exists():
+            reused = json.loads(result_path.read_text(encoding="utf-8"))
+            binding = json.loads(binding_path.read_text(encoding="utf-8"))
+            if (
+                str(reused.get("status")) != "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
+                or str(reused.get("input_binding_hash")) != str(binding.get("binding_hash"))
+                or int(reused.get("pair_count") or 0) != pair_count
+            ):
+                raise RuntimeError(f"existing Phase3CM result identity drift on {backend}")
+            receipt = {
+                "backend": backend,
+                "command": "REUSED_COMPLETED_IDENTICAL_RESULT",
+                "returncode": 0,
+                "started_at": "REUSED",
+                "completed_at": "REUSED",
+                "result_path": str(result_path),
+                "result_sha256": _sha256(result_path),
+                "status": "COMPLETED_REUSED",
+            }
+            _write_json(output_root / "ITERATIVE_ACCESS_RECEIPT.json", receipt)
+            receipts.append(receipt)
+            continue
         command = [
             sys.executable,
             str(REPO / "scripts" / "run_cn_phase3cm_streaming_qualification.py"),
@@ -533,18 +556,17 @@ def _run_phase3cm(
                 "POLARS_MAX_THREADS": "1",
             }
         )
-        started = pd.Timestamp.utcnow()
+        started = pd.Timestamp.now("UTC")
         process = subprocess.run(command, cwd=REPO, env=environment, text=True, capture_output=True)
         output_root.mkdir(parents=True, exist_ok=True)
         (output_root / "stdout.log").write_text(process.stdout or "", encoding="utf-8")
         (output_root / "stderr.log").write_text(process.stderr or "", encoding="utf-8")
-        result_path = output_root / "CN_STREAMING_BACKEND_RESULT.json"
         receipt = {
             "backend": backend,
             "command": command,
             "returncode": process.returncode,
             "started_at": started.isoformat(),
-            "completed_at": pd.Timestamp.utcnow().isoformat(),
+            "completed_at": pd.Timestamp.now("UTC").isoformat(),
             "result_path": str(result_path),
             "result_sha256": _sha256(result_path) if result_path.exists() else "",
             "status": "COMPLETED" if process.returncode == 0 and result_path.exists() else "INFRASTRUCTURE_FAILURE",
