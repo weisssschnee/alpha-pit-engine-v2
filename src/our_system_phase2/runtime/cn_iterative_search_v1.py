@@ -865,13 +865,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
         if not admitted:
             raise RuntimeError(f"{batch_id} had no behavior-unique pairs for Phase3CM")
-        binding_path, table_paths = _context_and_binding(
-            batch_root=batch_root,
-            candidates=admitted,
-            registry=registry,
-            split=split,
-            data_release_hash=data_release_hash,
-        )
+        existing_binding = batch_root / "phase3cm_input_binding.json"
+        existing_tables = {
+            backend: batch_root / f"phase3cm_{backend}_candidates.csv"
+            for backend in ("active_bar", "stock_session")
+            if (batch_root / f"phase3cm_{backend}_candidates.csv").exists()
+        }
+        if existing_binding.exists() and existing_tables:
+            bound = json.loads(existing_binding.read_text(encoding="utf-8"))
+            if int(bound.get("pair_count") or 0) != len(admitted) // 2:
+                raise RuntimeError(f"{batch_id} existing binding pair count drift")
+            binding_path, table_paths = existing_binding, existing_tables
+        else:
+            binding_path, table_paths = _context_and_binding(
+                batch_root=batch_root,
+                candidates=admitted,
+                registry=registry,
+                split=split,
+                data_release_hash=data_release_hash,
+            )
         access_receipts = _run_phase3cm(
             batch_id=batch_id,
             batch_root=batch_root,
