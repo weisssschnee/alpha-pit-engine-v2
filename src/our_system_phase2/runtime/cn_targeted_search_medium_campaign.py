@@ -390,7 +390,7 @@ def _structural_comparison(
 def _package_matrix() -> dict[str, str]:
     packages = (
         "numpy", "pandas", "pyarrow", "numba", "bottleneck",
-        "numexpr", "polars", "joblib", "sklearn",
+        "numexpr", "polars", "joblib", "sklearn", "psutil",
     )
     versions = {}
     for name in packages:
