@@ -24,6 +24,7 @@ from our_system_phase2.services.unified_discovery_generators import (
     LEGACY_V1_PROFILE,
     RegistryDrivenGenerator,
 )
+from scripts.run_cn_route_supply_closure import TARGET_BEHAVIOR_ROUTES
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -32,6 +33,13 @@ REGISTRY = (
     / "runtime/field_registry/cn_unified_capability_registry_v3_20260717"
     / "unified_capability_registry.json"
 )
+
+
+def test_bounded_behavior_qualification_covers_prior_clamped_routes() -> None:
+    assert {
+        "INTRADAY_STATE_TRANSITION",
+        "MINUTE_STATIC",
+    }.issubset(TARGET_BEHAVIOR_ROUTES)
 
 
 def test_compositional_profile_repairs_disclosure_exact_supply_without_second_authority() -> None:

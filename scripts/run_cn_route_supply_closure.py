@@ -46,7 +46,12 @@ from our_system_phase2.services.unified_discovery_generators import (
 
 
 REPO = Path(__file__).resolve().parents[1]
-TARGET_BEHAVIOR_ROUTES = ("DISCLOSURE_EVENT", "MARKET_REGIME_CONDITION")
+TARGET_BEHAVIOR_ROUTES = (
+    "DISCLOSURE_EVENT",
+    "MARKET_REGIME_CONDITION",
+    "INTRADAY_STATE_TRANSITION",
+    "MINUTE_STATIC",
+)
 PROBE_PAIRS_PER_ROUTE = 12
 FULL_PAIRS_PER_ROUTE = 4
 
@@ -70,6 +75,14 @@ def _write_json(path: Path, payload: Any) -> Path:
     )
     temporary.replace(destination)
     return destination
+
+
+def _artifact_row(path: Path, output_root: Path) -> dict[str, Any]:
+    return {
+        "path": str(path.relative_to(output_root)).replace("\\", "/"),
+        "sha256": _sha256(path),
+        "bytes": path.stat().st_size,
+    }
 
 
 def _historical_exact(prior_root: Path) -> set[str]:
@@ -203,7 +216,7 @@ def _behavior_and_full_coordinate_qualification(
     selected: list[dict[str, Any]] = []
     route_summaries: dict[str, dict[str, Any]] = {}
     for ordinal, route_id in enumerate(TARGET_BEHAVIOR_ROUTES):
-        backend = "active_bar" if route_id == "MARKET_REGIME_CONDITION" else "stock_session"
+        backend = "stock_session" if route_id == "DISCLOSURE_EVENT" else "active_bar"
         candidates, probe_rows, audit = _route_probe(
             route_id=route_id,
             generator=generator,
@@ -459,29 +472,67 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "promotion": "FORBIDDEN",
     }
     decision_path = _write_json(output_root / "final_decision.json", decision)
+    compact_evidence_paths = [
+        contract_path,
+        legacy_path,
+        upgraded_path,
+        clamp_path,
+        broad_path,
+        behavior_path,
+        decision_path,
+    ]
+    for route_id in TARGET_BEHAVIOR_ROUTES:
+        route_root = output_root / route_id.lower()
+        compact_evidence_paths.extend(
+            path
+            for path in (
+                route_root / "candidate_attempt_stream.csv",
+                route_root / "behavior_probe.parquet",
+                route_root / "behavior_probe_audit.json",
+                route_root / "generation_funnel.json",
+            )
+            if path.exists()
+        )
+    full_root = output_root / "full_coordinate_development_qualification"
+    compact_evidence_paths.extend(
+        path
+        for path in (
+            full_root / "phase3cm_input_binding.json",
+            full_root / "candidate_receipts.jsonl",
+            full_root / "pair_receipts.jsonl",
+            full_root / "full_behavior_four_identities.parquet",
+            full_root / "pair_outcomes.parquet",
+        )
+        if path.exists()
+    )
+    for backend in ("active_bar", "stock_session"):
+        backend_root = full_root / "phase3cm" / backend
+        compact_evidence_paths.extend(
+            path
+            for path in (
+                backend_root / "CN_STREAMING_BACKEND_RESULT.json",
+                backend_root / "ITERATIVE_ACCESS_RECEIPT.json",
+                backend_root / "CN_PORTFOLIO_BEHAVIOR_FULL.parquet",
+            )
+            if path.exists()
+        )
     _write_json(
         output_root / "run_manifest.json",
         {
             "status": status,
             "repo_sha": args.repo_sha,
             "host": platform.node(),
+            "evidence_origin": {
+                "purpose": "CURRENT_BOUNDED_77O_ROUTE_SUPPLY_EVIDENCE_MIRROR",
+                "source_runtime_root": str(output_root),
+                "host": platform.node(),
+                "repo_sha": args.repo_sha,
+            },
             "registry_hash": registry.registry_hash,
             "historical_exact_identity_count": len(historical_exact),
             "artifacts": [
-                {
-                    "path": str(path.relative_to(output_root)).replace("\\", "/"),
-                    "sha256": _sha256(path),
-                    "bytes": path.stat().st_size,
-                }
-                for path in (
-                    contract_path,
-                    legacy_path,
-                    upgraded_path,
-                    clamp_path,
-                    broad_path,
-                    behavior_path,
-                    decision_path,
-                )
+                _artifact_row(path, output_root)
+                for path in compact_evidence_paths
             ],
             "validation_reads": 0,
             "holdout_reads": 0,
