@@ -128,7 +128,7 @@
         "enforced_by": "build_route_schedule and RegistryDrivenGenerator",
         "evidence_ref": "",
         "id": "registry_driven_generator_capacity",
-        "rule": "The scheduler and generator consume the versioned registry route_id as the only top-level search key. Route-local generation modes cannot become a second scheduling authority.",
+        "rule": "The scheduler and generator consume the versioned registry route_id as the only top-level search key. Route-local constructor profiles and generation modes cannot become a second scheduling authority.",
         "severity": "HARD",
         "type": "AUTHORITY"
       },
@@ -145,14 +145,14 @@
       "source": "unified_capability_registry",
       "target": "compositional_nline_bounded_search",
       "validation": {
-        "checked_at": "2026-07-21T05:38:17.170885+00:00",
-        "evidence_ref": "tests/test_iterative_route_scheduler.py",
-        "evidence_sha256": "89405CF505D3BBE54F6F8E1A5A8632CD17AD95C1963E8861F226C5B5407CEC86",
+        "checked_at": "2026-07-21T10:07:49.472748+00:00",
+        "evidence_ref": "tests/test_route_supply_closure.py",
+        "evidence_sha256": "26F762A1D2D13CE24C2694EACAE9F51E67471425E8F52F255BE74BD90DEFDB53",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "8c09bf250f5b26b927fb84caeb14638f5f358238"
+        "verified_at_sha": "ddda189940eecb8beeca96262ed1d32b4df49412"
       }
     },
     {
@@ -629,26 +629,26 @@
       "critical": true,
       "declared": true,
       "declared_evidence_type": "",
-      "evidence": "STATIC",
+      "evidence": "DECLARED",
       "forbidden": false,
       "id": "compositional_to_receipt",
       "lifecycle": "EXPERIMENTAL",
-      "line_style": "dashed",
+      "line_style": "dotted",
       "relation": "submits_registry_bound_development_candidates",
       "required": false,
       "source": "compositional_nline_bounded_search",
       "target": "candidate_submission_receipt",
       "validation": {
-        "checked_at": "2026-07-21T05:38:17.170885+00:00",
-        "evidence_ref": "runtime/cn_iterative_search_v1_20260721/run_manifest.json",
-        "evidence_sha256": "458F3FBA26984C67AEFF5BF7337D873926BD5221C8D92E58BE3668629BFFB69B",
+        "checked_at": "2026-07-21T10:07:49.472748+00:00",
+        "evidence_ref": "runtime/cn_route_supply_closure_20260721_c939edf_4route/full_coordinate_development_qualification/candidate_receipts.jsonl",
+        "evidence_sha256": "BD2ADE00F3CB6C658BE1BA28596422102718394798D47D820F27D56EF4945E7E",
         "level": "PARTIAL",
         "notes": [
           "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
         "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "4f62b1fa168f4d2e56c7b0db89f0106f6b35b425"
+        "verified_at_sha": "ddda189940eecb8beeca96262ed1d32b4df49412"
       }
     },
     {
@@ -811,16 +811,16 @@
       "source": "compositional_nline_bounded_search",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-07-21T05:38:17.170885+00:00",
-        "evidence_ref": "runtime/cn_iterative_search_v1_20260721/causal_attribution.json",
-        "evidence_sha256": "FE6C182AC2D9625198FFD1E5F49CBA929806E1A339E1AD6F0B27DDB2E600A87A",
+        "checked_at": "2026-07-21T10:07:49.472748+00:00",
+        "evidence_ref": "runtime/cn_route_supply_closure_20260721_c939edf_4route/behavior_qualification.json",
+        "evidence_sha256": "C8415407DADDAB1C85D3D2E745F9DCBB1DA62ED36508B82B71690D50E75B1913",
         "level": "PARTIAL",
         "notes": [
           "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
         "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "4f62b1fa168f4d2e56c7b0db89f0106f6b35b425"
+        "verified_at_sha": "ddda189940eecb8beeca96262ed1d32b4df49412"
       }
     },
     {
@@ -1224,7 +1224,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-21T05:38:17.170885+00:00",
+  "generated_at": "2026-07-21T10:07:49.472748+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -2315,7 +2315,7 @@
         "path": "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
         "repo_ref": "",
         "sha256": "3B2A22A93652336A58F7BBFB99BAB9BD237D5BA55D54C83BB57C1CBC716C6448",
-        "verified_sha": "8c09bf250f5b26b927fb84caeb14638f5f358238"
+        "verified_sha": "ddda189940eecb8beeca96262ed1d32b4df49412"
       },
       "color": "#f9a825",
       "contracts": [
@@ -2333,7 +2333,7 @@
           "enforced_by": "PortfolioBehaviorArchive",
           "evidence_ref": "",
           "id": "iterative_behavior_aware_admission",
-          "rule": "Pre-admission uses a bounded label-free behavior probe for exact behavior dedupe; unresolved behavior fails closed and never falls back to structural family. Each final full-coordinate behavior row retains structural family, signal cluster, exact portfolio behavior signature and approximate behavior family as four separate identities.",
+          "rule": "Pre-admission requires every field actually referenced by the expression to exist in the bound materialized sidecar schema while retaining lineage-only synthetic registry declarations for compiler validation. It uses a bounded label-free behavior probe for exact behavior dedupe; unresolved behavior fails closed and never falls back to structural family. Each final full-coordinate behavior row retains structural family, signal cluster, exact portfolio behavior signature and approximate behavior family as four separate identities.",
           "severity": "HARD",
           "type": "ADMISSION"
         },
@@ -2367,22 +2367,40 @@
       "paths": [
         "runtime/run_plans/cn_compositional_nline_bounded_search_epoch1_v1.json",
         "src/our_system_phase2/services/compositional_grammar.py",
+        "src/our_system_phase2/services/unified_discovery_generators.py",
+        "src/our_system_phase2/services/route_supply_closure.py",
         "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
+        "scripts/run_cn_route_supply_closure.py",
         "src/our_system_phase2/services/multi_arm_scheduler.py",
         "src/our_system_phase2/services/portfolio_behavior_archive.py",
         "runtime/cn_iterative_search_v1_20260721/final_decision.json",
-        "reports/CN_ITERATIVE_SEARCH_V1_20260721.md"
+        "runtime/cn_route_supply_closure_20260721_c939edf_4route/final_decision.json",
+        "reports/CN_ITERATIVE_SEARCH_V1_20260721.md",
+        "reports/CN_ROUTE_SUPPLY_CLOSURE_20260721.md"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
+        "behavior_unresolved",
+        "broad_event_frozen_entry",
+        "exploit_action_label",
+        "orthogonal_action_label",
+        "phase3cm",
+        "repair_action_label",
         "reports_cn_iterative_search_v1_20260721",
-        "reports_cn_iterative_search_v1_20260721_cn_iterative_search_v1_77o_canary_closure",
-        "reports_cn_iterative_search_v1_20260721_contract_closure",
-        "reports_cn_iterative_search_v1_20260721_decision",
-        "reports_cn_iterative_search_v1_20260721_execution_and_recovery_notes",
-        "reports_cn_iterative_search_v1_20260721_immutable_evidence",
-        "reports_cn_iterative_search_v1_20260721_remaining_gaps",
-        "reports_cn_iterative_search_v1_20260721_three_batch_result",
+        "reports_cn_route_supply_closure_20260721",
+        "scripts_run_cn_route_supply_closure",
+        "scripts_run_cn_route_supply_closure_artifact_row",
+        "scripts_run_cn_route_supply_closure_behavior_and_full_coordinate_qualification",
+        "scripts_run_cn_route_supply_closure_historical_exact",
+        "scripts_run_cn_route_supply_closure_main",
+        "scripts_run_cn_route_supply_closure_prior_route_comparison",
+        "scripts_run_cn_route_supply_closure_rationale_1",
+        "scripts_run_cn_route_supply_closure_route_probe",
+        "scripts_run_cn_route_supply_closure_run",
+        "scripts_run_cn_route_supply_closure_selected_full_coordinate_members",
+        "scripts_run_cn_route_supply_closure_sha256",
+        "scripts_run_cn_route_supply_closure_train_dates",
+        "scripts_run_cn_route_supply_closure_write_json",
         "src_our_system_phase2_runtime_cn_iterative_search_v1",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_admit_pairs",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_artifact",
@@ -2465,6 +2483,7 @@
         "src_our_system_phase2_services_portfolio_behavior_archive",
         "src_our_system_phase2_services_portfolio_behavior_archive_bounded_label_free_behavior_probe",
         "src_our_system_phase2_services_portfolio_behavior_archive_candidatebehaviorstate",
+        "src_our_system_phase2_services_portfolio_behavior_archive_condition_activation_dates",
         "src_our_system_phase2_services_portfolio_behavior_archive_finite_float",
         "src_our_system_phase2_services_portfolio_behavior_archive_identity",
         "src_our_system_phase2_services_portfolio_behavior_archive_label_free_mapping_kernel",
@@ -2481,9 +2500,10 @@
         "src_our_system_phase2_services_portfolio_behavior_archive_rationale_341",
         "src_our_system_phase2_services_portfolio_behavior_archive_rationale_417",
         "src_our_system_phase2_services_portfolio_behavior_archive_rationale_475",
-        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_582",
+        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_624",
         "src_our_system_phase2_services_portfolio_behavior_archive_signal_cluster_id",
         "src_our_system_phase2_services_portfolio_behavior_archive_stable_json",
+        "src_our_system_phase2_services_portfolio_behavior_archive_stratified_dates",
         "src_our_system_phase2_services_portfolio_behavior_archive_streaminglabelfreebehavior",
         "src_our_system_phase2_services_portfolio_behavior_archive_streaminglabelfreebehavior_continuation_payload",
         "src_our_system_phase2_services_portfolio_behavior_archive_streaminglabelfreebehavior_init",
@@ -2491,26 +2511,57 @@
         "src_our_system_phase2_services_portfolio_behavior_archive_streaminglabelfreebehavior_rows",
         "src_our_system_phase2_services_portfolio_behavior_archive_streaminglabelfreebehavior_update_block",
         "src_our_system_phase2_services_portfolio_behavior_archive_structural_family_id",
+        "src_our_system_phase2_services_route_supply_closure",
+        "src_our_system_phase2_services_route_supply_closure_classification",
+        "src_our_system_phase2_services_route_supply_closure_classify_clamped_route",
+        "src_our_system_phase2_services_route_supply_closure_compare_clamped_routes",
+        "src_our_system_phase2_services_route_supply_closure_diagnose_exact_supply",
+        "src_our_system_phase2_services_route_supply_closure_rationale_1",
+        "src_our_system_phase2_services_route_supply_closure_rationale_162",
+        "src_our_system_phase2_services_route_supply_closure_rationale_52",
+        "src_our_system_phase2_services_unified_discovery_generators",
+        "src_our_system_phase2_services_unified_discovery_generators_generatedpair",
+        "src_our_system_phase2_services_unified_discovery_generators_pick",
+        "src_our_system_phase2_services_unified_discovery_generators_rationale_1",
+        "src_our_system_phase2_services_unified_discovery_generators_rationale_315",
+        "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator",
+        "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator_base",
+        "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator_dry_generate",
+        "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator_generate_route",
+        "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator_generate_route_attempts",
+        "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator_init",
+        "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator_pair",
+        "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator_pool",
         "tests_test_portfolio_behavior_archive",
         "tests_test_portfolio_behavior_archive_behavior",
         "tests_test_portfolio_behavior_archive_test_archive_dedupes_probe_and_full_signature_separately",
         "tests_test_portfolio_behavior_archive_test_behavior_identity_changes_with_selection_not_outcome",
         "tests_test_portfolio_behavior_archive_test_behavior_probe_is_label_free_and_exact",
-        "tests_test_portfolio_behavior_archive_test_unresolved_behavior_never_falls_back_to_structure"
+        "tests_test_portfolio_behavior_archive_test_unresolved_behavior_never_falls_back_to_structure",
+        "tests_test_route_supply_closure",
+        "tests_test_route_supply_closure_pair",
+        "tests_test_route_supply_closure_test_behavior_probe_can_select_label_free_condition_activation_date",
+        "tests_test_route_supply_closure_test_behavior_probe_uses_multiple_stratified_development_dates",
+        "tests_test_route_supply_closure_test_bounded_behavior_qualification_covers_prior_clamped_routes",
+        "tests_test_route_supply_closure_test_clamp_classification_does_not_turn_repaired_legacy_cycle_into_phase_blocker",
+        "tests_test_route_supply_closure_test_compositional_profile_repairs_disclosure_exact_supply_without_second_authority",
+        "tests_test_route_supply_closure_test_materialized_state_expression_does_not_require_synthetic_state_column",
+        "tests_test_route_supply_closure_test_registry_attempt_stream_can_require_current_materialized_fields",
+        "tests_test_route_supply_closure_test_supply_diagnosis_excludes_frozen_broad_event_and_requires_headroom"
       ],
       "required": true,
       "semantic_role": "bounded_development_iterative_search_capability",
       "validation": {
-        "checked_at": "2026-07-21T05:38:17.170885+00:00",
-        "evidence_ref": "runtime/cn_iterative_search_v1_20260721/final_decision.json",
-        "evidence_sha256": "4BDEE045FC9D6021CB859CC14A3890C22807BB2A1278192BF052F54FB851CD2D",
+        "checked_at": "2026-07-21T10:07:49.472748+00:00",
+        "evidence_ref": "runtime/cn_route_supply_closure_20260721_c939edf_4route/final_decision.json",
+        "evidence_sha256": "BD7F3A00136E39890D8E00E1C69A7D0A9161597F367AAE343BDC8B9416CF9010",
         "level": "PARTIAL",
         "notes": [
           "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
         "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "4f62b1fa168f4d2e56c7b0db89f0106f6b35b425"
+        "verified_at_sha": "ddda189940eecb8beeca96262ed1d32b4df49412"
       },
       "visible_by_default": true
     },
@@ -3530,7 +3581,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "707F34B792BF7883D87A4867DE09B82D8210B3A6BB47615ED5613D942A0BC25A"
+    "sha256": "D045C33475E385B28A32033A22D3D8510F2E35E9376848C0F0D3502AFA324C7B"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -3541,13 +3592,13 @@
     }
   ],
   "raw": {
-    "built_at_commit": "4f62b1fa168f4d2e56c7b0db89f0106f6b35b425",
-    "edge_count": 13214,
-    "node_count": 5377,
+    "built_at_commit": "ddda189940eecb8beeca96262ed1d32b4df49412",
+    "edge_count": 13127,
+    "node_count": 5437,
     "path": ".planning/graphs/graph.json",
-    "sha256": "1B59869D2DA8F991BCC9997F106448490886EE0442929BC98A77D456B1E711C1"
+    "sha256": "ECF215243557F56682DF9C3EE19EFF72D95BFDFE24438C94DFCB1D428A25036A"
   },
-  "repo_head": "4f62b1fa168f4d2e56c7b0db89f0106f6b35b425",
+  "repo_head": "ddda189940eecb8beeca96262ed1d32b4df49412",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
