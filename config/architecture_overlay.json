@@ -345,14 +345,74 @@
     },
     {
       "id": "compositional_nline_bounded_search",
-      "label": "Compositional N-line Bounded Search",
+      "label": "CN iterative search V1 (bounded development-only)",
       "kind": "experimental-search",
       "lifecycle": "EXPERIMENTAL",
       "paths": [
         "runtime/run_plans/cn_compositional_nline_bounded_search_epoch1_v1.json",
         "src/our_system_phase2/services/compositional_grammar.py",
-        "reports/cn_compositional_nline_large_search_20260715/CN_COMPOSITIONAL_SEARCH_DECISION.json"
-      ]
+        "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
+        "src/our_system_phase2/services/multi_arm_scheduler.py",
+        "src/our_system_phase2/services/portfolio_behavior_archive.py",
+        "runtime/cn_iterative_search_v1_20260721/final_decision.json",
+        "reports/CN_ITERATIVE_SEARCH_V1_20260721.md"
+      ],
+      "claim_badges": [
+        "3 IMMUTABLE BATCHES",
+        "49 DEVELOPMENT PAIRS",
+        "REGISTRY ROUTE AUTHORITY",
+        "BEHAVIOR-AWARE ADMISSION",
+        "FEEDBACK CAUSAL CONTROL",
+        "NO OOS",
+        "NO PROMOTION"
+      ],
+      "critical": true,
+      "active_authority": false,
+      "semantic_role": "bounded_development_iterative_search_capability",
+      "authority": {
+        "path": "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
+        "verified_sha": "b0d078ba65b148d460f42b9cb577e1000f4091f1"
+      },
+      "contracts": [
+        {
+          "id": "iterative_registry_route_scheduler_authority",
+          "type": "AUTHORITY",
+          "rule": "The top-level scheduling key is the unified registry route_id; generation_mode is a route-local action and legacy DEFAULT_ARM_PROFILES are compatibility only.",
+          "severity": "HARD",
+          "enforced_by": "build_route_schedule and RegistryDrivenGenerator",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "iterative_behavior_aware_admission",
+          "type": "ADMISSION",
+          "rule": "Pre-admission uses a bounded label-free behavior probe for exact behavior dedupe; unresolved behavior fails closed and never falls back to structural family. Full-coordinate Phase3CM output assigns the final behavior signature and approximate family.",
+          "severity": "HARD",
+          "enforced_by": "PortfolioBehaviorArchive",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "iterative_feedback_causal_boundary",
+          "type": "EVIDENCE",
+          "rule": "Feedback-on and feedback-off share seed, master attempt stream, budget, historical archive, dedupe, registry and compiler; only feedback consumption and its adaptive route schedule may differ.",
+          "severity": "HARD",
+          "enforced_by": "cn_iterative_search_v1 causal attribution",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "iterative_development_only",
+          "type": "BOUNDARY",
+          "rule": "Full materialization and full-coordinate development Phase3CM pair evaluation run only on 77o. Validation, holdout, 2026, Strict Stage A and promotion access are forbidden.",
+          "severity": "HARD",
+          "enforced_by": "frozen_contract and access_receipt",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "RUNTIME_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/cn_iterative_search_v1_20260721/final_decision.json",
+        "verified_at_sha": "93c187598df44527055429149e7831c03af45b7d"
+      }
     },
     {
       "id": "compositional_stage_a_route_eligibility",
@@ -750,11 +810,11 @@
       "id": "registry_to_compositional_generator",
       "source": "unified_capability_registry",
       "target": "compositional_nline_bounded_search",
-      "relation": "authorizes_typed_generator_inputs",
+      "relation": "authorizes_top_level_route_ids_and_typed_generator_inputs",
       "lifecycle": "ACTIVE",
       "critical": true,
-      "contract": {"id": "registry_driven_generator_capacity", "type": "AUTHORITY", "rule": "The generator consumes the versioned registry, including distinct disclosure pulse and qualified disclosure payload roles; historical narrow packs are evidence snapshots, not field authority.", "severity": "HARD", "enforced_by": "CompositionalGrammarV2", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_compositional_grammar_v2.py", "verified_at_sha": "947a2988b720a42ed319fdcfc0eddbfdde9be496"}
+      "contract": {"id": "registry_driven_generator_capacity", "type": "AUTHORITY", "rule": "The scheduler and generator consume the versioned registry route_id as the only top-level search key. Route-local generation modes cannot become a second scheduling authority.", "severity": "HARD", "enforced_by": "build_route_schedule and RegistryDrivenGenerator", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_iterative_route_scheduler.py", "verified_at_sha": "b0d078ba65b148d460f42b9cb577e1000f4091f1"}
     },
     {"id": "temporal_to_lanes", "source": "typed_temporal_program", "target": "hypothesis_lanes", "relation": "types_temporal_lane", "lifecycle": "ACTIVE"},
     {"id": "event_to_lanes", "source": "broad_event_system", "target": "hypothesis_lanes", "relation": "types_event_lane", "lifecycle": "ACTIVE"},
@@ -867,7 +927,16 @@
       "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}
     },
     {"id": "lanes_to_receipt", "source": "hypothesis_lanes", "target": "candidate_submission_receipt", "relation": "submits_candidates", "lifecycle": "ACTIVE"},
-    {"id": "compositional_to_receipt", "source": "compositional_nline_bounded_search", "target": "candidate_submission_receipt", "relation": "EXPERIMENTAL_CURRENT_NON_FORMAL", "lifecycle": "EXPERIMENTAL"},
+    {
+      "id": "compositional_to_receipt",
+      "source": "compositional_nline_bounded_search",
+      "target": "candidate_submission_receipt",
+      "relation": "submits_registry_bound_development_candidates",
+      "lifecycle": "EXPERIMENTAL",
+      "critical": true,
+      "contract": {"id": "iterative_candidate_receipt_required", "type": "ADMISSION", "rule": "Every generated primary and route-matched control must pass the existing immutable candidate and pair receipt gates before behavior admission.", "severity": "HARD", "enforced_by": "candidate_submission_receipt_gate and attach_pair_contract", "bypass_forbidden": true},
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_iterative_search_v1_20260721/run_manifest.json", "verified_at_sha": "93c187598df44527055429149e7831c03af45b7d"}
+    },
     {
       "id": "compositional_to_stage_a_route_eligibility",
       "source": "compositional_nline_bounded_search",
@@ -912,11 +981,11 @@
       "id": "compositional_to_streaming_evaluator",
       "source": "compositional_nline_bounded_search",
       "target": "phase3cm_streaming_multicandidate_evaluator",
-      "relation": "resource_qualified_for_separate_authorization",
+      "relation": "submits_behavior_unique_pairs_for_full_coordinate_development_evaluation",
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
-      "contract": {"id": "stage_a_requires_separate_authorization", "type": "BOUNDARY", "rule": "Resource readiness permits a later frozen Stage A proposal only after separate explicit authorization; it does not start search.", "severity": "HARD", "enforced_by": "formal_search_freeze", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STAGE_A_READINESS_REPORT.md", "verified_at_sha": "a59c3956e078cd7c7861a57ec3d1d78b724c13c1"}
+      "contract": {"id": "iterative_phase3cm_development_only", "type": "BOUNDARY", "rule": "The V1 campaign may invoke only full-coordinate development Phase3CM pair evaluation on 77o; this is not Strict Stage A and grants no promotion or sealed-data access.", "severity": "HARD", "enforced_by": "cn_iterative_search_v1 frozen_contract", "bypass_forbidden": true},
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_iterative_search_v1_20260721/causal_attribution.json", "verified_at_sha": "93c187598df44527055429149e7831c03af45b7d"}
     },
     {
       "id": "stage_a_route_eligibility_to_streaming_evaluator",

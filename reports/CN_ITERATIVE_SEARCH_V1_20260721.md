@@ -1,6 +1,6 @@
 # CN Iterative Search V1 — 77o CANARY Closure
 
-Date: 2026-07-21  
+Date: 2026-07-21
 Status: `CN_ITERATIVE_SEARCH_V1_CANARY_PASS`
 
 ## Decision

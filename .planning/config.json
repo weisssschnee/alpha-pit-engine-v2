@@ -4,6 +4,6 @@
   "graphify": {
     "enabled": true,
     "build_timeout": 600,
-    "audit_timeout": 120
+    "audit_timeout": 300
   }
 }
