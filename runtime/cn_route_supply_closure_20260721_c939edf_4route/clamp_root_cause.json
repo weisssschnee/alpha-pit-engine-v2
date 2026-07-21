@@ -1,0 +1,20 @@
+[
+  {
+    "blocks_next_development_phase": false,
+    "legacy_classification": "STABLE_EXACT_SUPPLY_BOTTLENECK",
+    "prior_feedback_status": "ACTIONABLE_FEEDBACK_CLAMPED",
+    "repair_status": "REPAIRED_BY_REGISTRY_COMPOSITIONAL_PROFILE",
+    "root_cause": "LEGACY_CONSTRUCTOR_CYCLE_EXHAUSTION",
+    "route_id": "INTRADAY_STATE_TRANSITION",
+    "upgraded_classification": "SEARCHABLE_SUPPLY_READY_WITH_HEADROOM"
+  },
+  {
+    "blocks_next_development_phase": false,
+    "legacy_classification": "STABLE_EXACT_SUPPLY_BOTTLENECK",
+    "prior_feedback_status": "ACTIONABLE_FEEDBACK_CLAMPED",
+    "repair_status": "REPAIRED_BY_REGISTRY_COMPOSITIONAL_PROFILE",
+    "root_cause": "LEGACY_CONSTRUCTOR_CYCLE_EXHAUSTION",
+    "route_id": "MINUTE_STATIC",
+    "upgraded_classification": "SEARCHABLE_SUPPLY_READY_WITH_HEADROOM"
+  }
+]

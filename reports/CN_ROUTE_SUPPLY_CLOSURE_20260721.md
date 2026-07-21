@@ -17,6 +17,14 @@ constructor cycle，不属于 unified registry route authority。
 至少 2 倍 12-pair 门槛的 exact headroom。该修复没有建立第二 scheduler、
 第二 compiler 或新搜索平台。
 
+materialized 供给又暴露了第二个、范围更窄的稳定瓶颈：State expression 已展开到
+sidecar 中真实存在的 source leaves，但 admission filter 曾把只用于 registry lineage
+的 synthetic state ID 误当成必须已有的物理列，造成 512/512 attempts 被错误拒绝。
+filter 现只检查表达式实际引用的 `$field`；registry 声明和 compiler 校验仍完整保留。
+因此本次 clamp 既不是单次小预算偶然，也不是 RegistryDrivenGenerator 的 route
+authority 失效，而是“旧 constructor cycle 耗尽 + State materialization filter 假瓶颈”
+两项局部、可修复问题。
+
 ```text
 LEGACY_CONSTRUCTOR_CYCLE_EXHAUSTION
 REPAIRED_BY_REGISTRY_COMPOSITIONAL_PROFILE
@@ -51,12 +59,18 @@ stock-session sidecar 没有的字段，其余少量 pair 又受 4-date 坐标�
 这证明仅有 registry-level exact headroom 不等于当前 materialized searchable
 supply。
 
-修复仅增加两项 route-local admission 约束：
+修复仅增加三项 route-local admission 约束：
 
 - generation attempt stream 按当前 field-sidecar schema 拒绝缺失字段，但不改变
   registry/compiler/scheduler authority；
+- materialization availability 按表达式真实引用的 source leaves 判断，不再要求
+  lineage-only synthetic state ID 已预先成为 sidecar 列；
 - Disclosure 的 label-free condition-activation probe 最多使用 12 个开发日期，
-  Market 仍使用 4 个 calendar-stratified 开发日期。
+  其余目标 route 仍使用 4 个 calendar-stratified 开发日期。
+
+第一次四-route run 使这个 State filter 问题显性化：State 生成 0 pair，而 Minute
+已得到 12/12 probe behavior-unique。该 partial run 没有启动 Phase3CM，也没有被
+包装成通过；修复后以新的 immutable output root 重跑。
 
 最终 bounded run 仍只生成每条目标 route 12 个 probe pair，并只选择 4 个 pair
 进入 full-coordinate evaluation：
@@ -65,8 +79,11 @@ supply。
 |---|---:|---:|---:|---:|---:|
 | Disclosure Event | 221 | 16 | 83 | 5 | 4 / 4 |
 | Market Regime Condition | 16 | 4 | 0 | 10 | 4 / 4 |
+| Intraday State Transition | 16 | 3 | 0 | 12 | 4 / 4 |
+| Minute Static | 61 | 44 | 0 | 12 | 4 / 4 |
 
-8 个 full-coordinate rows 全部为 `RESOLVED`，且每行同时保留非空的：
+16 个 full-coordinate rows 全部为 `RESOLVED`；每条 route 的 4 个 exact behavior
+signature 均唯一，且每行同时保留非空的：
 
 - `structural_family_id`
 - `signal_cluster_id`
@@ -79,11 +96,11 @@ Evaluation name: `full-coordinate development Phase3CM pair evaluation`
 
 | Backend | Pairs | Status | Wall seconds | Result SHA256 |
 |---|---:|---|---:|---|
-| active_bar | 4 | completed | 277.85 | `cfec05b157c1bbff3e3ffa16692307fdc32b4c78f40edfb3e528c1c37c8eacc7` |
-| stock_session | 4 | completed | 12.49 | `f13f904f7cd9090e3736565631a5db9d373c193fe2f808ee76640bb43ce3185c` |
+| active_bar | 12 | completed | 538.62 | `8cd09bb760e4b8b90dead9b9f4e16d7f50a834e6c065e7fbba4f85cedd41e28f` |
+| stock_session | 4 | completed | 8.63 | `f4fac37fd4319c03cc52e603dd5fdec4df83a24cef1f428b4b954df94541183f` |
 
 Both backends completed 37 recoverable blocks. The run used source commit
-`0c18916eceda45e33676c53f7efeccc010c131ca` on `DESKTOP-77OPJ6F`.
+`c939edfd041ed30a1529ebaf3a2cbccd0bc0d1f5` on `DESKTOP-77OPJ6F`.
 
 ## Boundaries and evidence
 
@@ -95,19 +112,21 @@ Both backends completed 37 recoverable blocks. The run used source commit
 - no alpha, economic-validity, OOS, or promotion conclusion
 
 Authoritative local evidence mirror:
-`runtime/cn_route_supply_closure_20260721_0c18916/`.
+`runtime/cn_route_supply_closure_20260721_c939edf_4route/`.
 
-The seven top-level manifest hashes and both backend result hashes were
-recomputed after copying from 77o and matched exactly. Key closure hashes:
+All 34 compact-manifest artifacts and both backend receipt-bound result hashes
+were recomputed after copying from 77o and matched exactly. The manifest binds
+the source runtime root, host, and source commit. Key closure hashes:
 
-- `final_decision.json`: `e0a0205972b03dceee216d15ab613fd6fb821d99b70b02ccac6fb05cb3740baa`
-- `behavior_qualification.json`: `9c154d5bfdaeb134340c86c1c90720e814cf018e9f602cb9831aca853002f89a`
+- `final_decision.json`: `39a85ab5deb7606eb8169b28ca2aedd5877e729578d5cf40f4e12b87cf100f5b`
+- `behavior_qualification.json`: `fae8b5b65304b83e257c9099fa3a32de65aeedfb7576b2a8aefbf16a5e7f322b`
 - `clamp_root_cause.json`: `474bbaf9d81c576ede67b9b07463cbad6fb6a1efcaf3dd55077c81723163bce0`
 
-The partial first attempt remains on 77o at
-`D:\ChengboRemote\runtime\cn_route_supply_closure_20260721_8e6e8cc`; the passing
-run is
-`D:\ChengboRemote\runtime\cn_route_supply_closure_20260721_0c18916`.
+Partial attempts remain on 77o at
+`D:\ChengboRemote\runtime\cn_route_supply_closure_20260721_8e6e8cc` and
+`D:\ChengboRemote\runtime\cn_route_supply_closure_20260721_1922842_4route`.
+The authoritative passing run is
+`D:\ChengboRemote\runtime\cn_route_supply_closure_20260721_c939edf_4route`.
 
 ## Next phase
 
@@ -115,5 +134,8 @@ Route supply no longer blocks the next system iteration. The next step is to
 freeze a separate development campaign contract, fixed budgets, seeds, archive
 snapshot, and feedback-on/off control before starting a larger development
 search. That authorization is deliberately not inferred from this qualification.
+The `registry_compositional_v2` constructor profile remains experimental and must
+be explicitly accepted in that next campaign freeze; this closure does not promote
+it to formal search authority.
 Plate PIT minute materialization and compound-state expansion remain independent
 localized gaps, not reasons to reopen the search platform.

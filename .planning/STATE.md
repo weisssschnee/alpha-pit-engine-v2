@@ -29,13 +29,20 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   12 exact pairs referenced fields absent from the current stock-session
   sidecar. Generation is now constrained by the active sidecar schema, and the
   label-free Disclosure probe may use up to 12 condition-activation development
-  dates. The final bounded run generated 12 materializable pairs per target
-  route and selected only four Disclosure plus four Market pairs for
-  full-coordinate development Phase3CM evaluation. All eight were resolved,
-  behavior-unique within route, and retained all four identities. Both 37-block
-  backends completed on 77o with zero validation, holdout, or 2026 reads and
-  promotion forbidden. This closes the route-supply prerequisite but does not
-  authorize formal or large-scale search.
+  dates. The first four-route run then exposed a State-specific false bottleneck:
+  512/512 attempts were rejected because a lineage-only synthetic state ID was
+  treated as a required physical sidecar column even though the expression was
+  already expanded to materialized source leaves. Availability filtering now
+  checks the expression's actual `$field` leaves while retaining the full
+  registry declaration and compiler checks. The final bounded run generated 12
+  materializable pairs for each of Disclosure, Market, Intraday State, and
+  Minute, then selected only four per route for full-coordinate development
+  Phase3CM evaluation. All 16 were resolved, exact behavior-unique within route,
+  and retained all four identities. Both 37-block backends completed on 77o with
+  zero validation, holdout, or 2026 reads and promotion forbidden. This closes
+  the route-supply prerequisite but does not authorize formal or large-scale
+  search; `registry_compositional_v2` remains an experimental constructor profile
+  requiring explicit acceptance in the next campaign freeze.
 - `CN_ITERATIVE_SEARCH_V1` is now closed as a bounded, development-only
   experimental capability. Three immutable batches scheduled 48 registry-route
   proposal pairs each, admitted and completed full-coordinate development
@@ -175,13 +182,14 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 There is no remaining global route-supply blocker to the next separately frozen
 development campaign. The 93 unresolved rows in the historical V1 archive remain
 immutable evidence of that campaign and are not retroactively rewritten; they
-do not invalidate the new exact-supply ladder or the eight-pair materialized
+do not invalidate the new exact-supply ladder or the 16-pair materialized
 qualification. A larger development search still lacks its own frozen budgets,
 seed/attempt stream, archive snapshot, runtime envelope, and explicit execution
 authorization. The completed campaigns supply no independent seed/time-block
 stability, validation, holdout, OOS, promotion, or economic proof. Plate remains
-independently blocked by missing real PIT minute materialization; compound-state
-expansion remains a localized materialization gap.
+independently blocked by missing real PIT minute materialization; additional
+compound-state expansion beyond the tested expanded source-leaf forms remains a
+localized materialization gap.
 
 ## Next action
 
@@ -190,7 +198,9 @@ qualification. Prepare one separately frozen development campaign contract for
 the next system iteration: fixed nonzero route budgets, seeds and attempt stream,
 immutable archive snapshot, behavior-aware admission, matched feedback-on/off
 control, 77o runtime envelope, stop conditions, and explicit no-promotion
-boundary. `exploit`, `repair`, and `orthogonal` remain labels unless a real
+boundary. Explicitly accept or reject the experimental
+`registry_compositional_v2` route-local constructor profile in that freeze.
+`exploit`, `repair`, and `orthogonal` remain labels unless a real
 registry-backed constructor is added and tested. Broad Event remains a
 zero-budget frozen reference. Strict Stage A, candidate promotion,
 cross-campaign adaptive memory, validation/holdout access, and 2026 access remain

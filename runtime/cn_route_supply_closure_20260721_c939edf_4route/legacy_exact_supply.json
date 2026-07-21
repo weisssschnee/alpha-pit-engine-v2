@@ -1,0 +1,553 @@
+{
+  "attempt_caps": [
+    64,
+    256,
+    1024
+  ],
+  "constructor_profile": "legacy_registry_v1",
+  "forward_2026_reads": 0,
+  "generator_authority": "RegistryDrivenGenerator",
+  "generator_version": "cn_unified_registry_driven_generator_v1",
+  "historical_exact_identity_count": 288,
+  "holdout_reads": 0,
+  "promotion": "FORBIDDEN",
+  "required_headroom_pairs": 24,
+  "required_pairs": 12,
+  "routes": {
+    "BROAD_EVENT_FROZEN_ENTRY": {
+      "blocks_next_development_phase": false,
+      "classification": "FROZEN_REFERENCE_ONLY_NOT_SEARCH_SUPPLY",
+      "minimum_final_exact_unique_pairs": 0,
+      "required_headroom_pairs": 24,
+      "required_pairs": 12,
+      "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+      "search_role": "FROZEN_REFERENCE_ONLY",
+      "seed_ladders": []
+    },
+    "DISCLOSURE_EVENT": {
+      "all_seeds_saturated_at_final_cap": true,
+      "blocks_next_development_phase": true,
+      "classification": "STABLE_EXACT_SUPPLY_BOTTLENECK",
+      "minimum_final_exact_unique_pairs": 0,
+      "required_headroom_pairs": 24,
+      "required_pairs": 12,
+      "route_id": "DISCLOSURE_EVENT",
+      "search_role": "PRIMARY_SEARCH",
+      "seed_ladders": [
+        {
+          "final_exact_unique_pairs": 0,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 64,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 256,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 1024,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 1729
+        },
+        {
+          "final_exact_unique_pairs": 0,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 64,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 256,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 1024,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 2718
+        }
+      ]
+    },
+    "FIRSTN_PATH": {
+      "all_seeds_saturated_at_final_cap": false,
+      "blocks_next_development_phase": false,
+      "classification": "SEARCHABLE_SUPPLY_READY_WITH_HEADROOM",
+      "minimum_final_exact_unique_pairs": 301,
+      "required_headroom_pairs": 24,
+      "required_pairs": 12,
+      "route_id": "FIRSTN_PATH",
+      "search_role": "PRIMARY_SEARCH",
+      "seed_ladders": [
+        {
+          "final_exact_unique_pairs": 301,
+          "last_step_increment": 74,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 9,
+              "exact_unique_pairs": 55,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 29,
+              "exact_unique_pairs": 227,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 723,
+              "exact_unique_pairs": 301,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 1729
+        },
+        {
+          "final_exact_unique_pairs": 301,
+          "last_step_increment": 50,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 0,
+              "exact_unique_pairs": 64,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 5,
+              "exact_unique_pairs": 251,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 723,
+              "exact_unique_pairs": 301,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 2718
+        }
+      ]
+    },
+    "INTRADAY_STATE_TRANSITION": {
+      "all_seeds_saturated_at_final_cap": true,
+      "blocks_next_development_phase": true,
+      "classification": "STABLE_EXACT_SUPPLY_BOTTLENECK",
+      "minimum_final_exact_unique_pairs": 0,
+      "required_headroom_pairs": 24,
+      "required_pairs": 12,
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "search_role": "PRIMARY_SEARCH",
+      "seed_ladders": [
+        {
+          "final_exact_unique_pairs": 0,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 42,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 64,
+              "legal_pairs": 42,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 170,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 256,
+              "legal_pairs": 170,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 682,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 1024,
+              "legal_pairs": 682,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 1729
+        },
+        {
+          "final_exact_unique_pairs": 0,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 43,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 64,
+              "legal_pairs": 43,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 171,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 256,
+              "legal_pairs": 171,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 683,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 1024,
+              "legal_pairs": 683,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 2718
+        }
+      ]
+    },
+    "MARKET_REGIME_CONDITION": {
+      "all_seeds_saturated_at_final_cap": true,
+      "blocks_next_development_phase": false,
+      "classification": "SEARCHABLE_SUPPLY_READY_WITH_HEADROOM",
+      "minimum_final_exact_unique_pairs": 147,
+      "required_headroom_pairs": 24,
+      "required_pairs": 12,
+      "route_id": "MARKET_REGIME_CONDITION",
+      "search_role": "PRIMARY_SEARCH",
+      "seed_ladders": [
+        {
+          "final_exact_unique_pairs": 147,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 17,
+              "exact_unique_pairs": 47,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 109,
+              "exact_unique_pairs": 147,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 877,
+              "exact_unique_pairs": 147,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 1729
+        },
+        {
+          "final_exact_unique_pairs": 147,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 14,
+              "exact_unique_pairs": 50,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 109,
+              "exact_unique_pairs": 147,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 877,
+              "exact_unique_pairs": 147,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 2718
+        }
+      ]
+    },
+    "MINUTE_STATIC": {
+      "all_seeds_saturated_at_final_cap": true,
+      "blocks_next_development_phase": true,
+      "classification": "STABLE_EXACT_SUPPLY_BOTTLENECK",
+      "minimum_final_exact_unique_pairs": 0,
+      "required_headroom_pairs": 24,
+      "required_pairs": 12,
+      "route_id": "MINUTE_STATIC",
+      "search_role": "PRIMARY_SEARCH",
+      "seed_ladders": [
+        {
+          "final_exact_unique_pairs": 0,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 64,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 256,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 1024,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 1729
+        },
+        {
+          "final_exact_unique_pairs": 0,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 64,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 256,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 1024,
+              "exact_unique_pairs": 0,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 2718
+        }
+      ]
+    },
+    "SLOW_CROSS_SECTIONAL_LEVEL": {
+      "all_seeds_saturated_at_final_cap": true,
+      "blocks_next_development_phase": false,
+      "classification": "SEARCHABLE_SUPPLY_MINIMUM_ONLY",
+      "minimum_final_exact_unique_pairs": 22,
+      "required_headroom_pairs": 24,
+      "required_pairs": 12,
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "search_role": "PRIMARY_SEARCH",
+      "seed_ladders": [
+        {
+          "final_exact_unique_pairs": 22,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 36,
+              "exact_unique_pairs": 22,
+              "generation_attempts": 64,
+              "legal_pairs": 58,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 214,
+              "exact_unique_pairs": 22,
+              "generation_attempts": 256,
+              "legal_pairs": 236,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 924,
+              "exact_unique_pairs": 22,
+              "generation_attempts": 1024,
+              "legal_pairs": 946,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 1729
+        },
+        {
+          "final_exact_unique_pairs": 22,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 36,
+              "exact_unique_pairs": 22,
+              "generation_attempts": 64,
+              "legal_pairs": 58,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 214,
+              "exact_unique_pairs": 22,
+              "generation_attempts": 256,
+              "legal_pairs": 236,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 924,
+              "exact_unique_pairs": 22,
+              "generation_attempts": 1024,
+              "legal_pairs": 946,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 2718
+        }
+      ]
+    },
+    "SLOW_TEMPORAL_CHANGE": {
+      "all_seeds_saturated_at_final_cap": true,
+      "blocks_next_development_phase": false,
+      "classification": "SEARCHABLE_SUPPLY_READY_WITH_HEADROOM",
+      "minimum_final_exact_unique_pairs": 125,
+      "required_headroom_pairs": 24,
+      "required_pairs": 12,
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "search_role": "PRIMARY_SEARCH",
+      "seed_ladders": [
+        {
+          "final_exact_unique_pairs": 125,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 6,
+              "exact_unique_pairs": 58,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 131,
+              "exact_unique_pairs": 125,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 899,
+              "exact_unique_pairs": 125,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 1729
+        },
+        {
+          "final_exact_unique_pairs": 125,
+          "last_step_increment": 0,
+          "levels": [
+            {
+              "attempt_cap": 64,
+              "exact_duplicate_pairs": 6,
+              "exact_unique_pairs": 58,
+              "generation_attempts": 64,
+              "legal_pairs": 64,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 256,
+              "exact_duplicate_pairs": 131,
+              "exact_unique_pairs": 125,
+              "generation_attempts": 256,
+              "legal_pairs": 256,
+              "materialization_unsupported_pairs": 0
+            },
+            {
+              "attempt_cap": 1024,
+              "exact_duplicate_pairs": 899,
+              "exact_unique_pairs": 125,
+              "generation_attempts": 1024,
+              "legal_pairs": 1024,
+              "materialization_unsupported_pairs": 0
+            }
+          ],
+          "seed": 2718
+        }
+      ]
+    }
+  },
+  "schema_version": "cn_route_exact_supply_diagnosis_v1",
+  "seeds": [
+    1729,
+    2718
+  ],
+  "top_level_scheduling_key": "unified_registry_route_id",
+  "validation_reads": 0
+}

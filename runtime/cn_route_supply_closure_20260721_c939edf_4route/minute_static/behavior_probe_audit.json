@@ -1,0 +1,20 @@
+{
+  "candidate_pair_count": 12,
+  "coordinate_rows": 162744,
+  "date_selection": "calendar_stratified",
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "label_sidecar_paths_accepted": 0,
+  "materialized_pair_count": 12,
+  "probe_date": "2024-01-02",
+  "probe_dates": [
+    "2024-01-02",
+    "2024-07-05",
+    "2025-01-02",
+    "2025-07-07"
+  ],
+  "probe_scope": "LABEL_FREE_BOUNDED_MAPPING",
+  "trade_time_count": 32,
+  "unresolved_pair_count": 0,
+  "validation_reads": 0
+}

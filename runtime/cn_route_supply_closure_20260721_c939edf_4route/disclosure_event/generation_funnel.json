@@ -1,0 +1,23 @@
+{
+  "admitted_pairs": 0,
+  "attempt_start": 0,
+  "attempt_stop": 221,
+  "behavior_unique_pairs": 0,
+  "constructor_profile": "registry_compositional_v2",
+  "exact_duplicate_pairs": 110,
+  "exact_unique_pairs": 12,
+  "generation_attempts": 221,
+  "generator_authority": "RegistryDrivenGenerator",
+  "generator_version": "cn_unified_registry_driven_compositional_v2",
+  "illegal_pairs": 0,
+  "legal_pairs": 122,
+  "materialization_missing_field_pairs": 16,
+  "materialization_unsupported_pairs": 83,
+  "materialized_field_count": 204,
+  "route_id": "DISCLOSURE_EVENT",
+  "scheduled_pairs": 12,
+  "seed": 2026072201,
+  "spillover_reason": "",
+  "top_level_scheduling_key": "unified_registry_route_id",
+  "underfill_reason": ""
+}
