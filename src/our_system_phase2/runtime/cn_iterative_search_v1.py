@@ -316,10 +316,16 @@ def _causal_route_comparison(
     feedback_off_budgets: Mapping[str, int],
     feedback_on_actual: Mapping[str, int],
     feedback_off_actual: Mapping[str, int],
-) -> tuple[dict[str, dict[str, Any]], dict[str, bool]]:
+    feedback_on_actions: Mapping[str, str],
+    feedback_on_funnel: Mapping[str, Mapping[str, Any]],
+    feedback_off_funnel: Mapping[str, Mapping[str, Any]],
+) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
     comparison: dict[str, dict[str, Any]] = {}
-    matching_direction_routes: list[str] = []
-    contradictory_routes: list[str] = []
+    applied_routes: list[str] = []
+    clamped_routes: list[str] = []
+    wrong_direction_routes: list[str] = []
+    positive_statuses: list[str] = []
+    negative_statuses: list[str] = []
     for route_id in ROUTE_IDS:
         budget_delta = int(feedback_on_budgets.get(route_id, 0)) - int(
             feedback_off_budgets.get(route_id, 0)
@@ -327,31 +333,95 @@ def _causal_route_comparison(
         actual_delta = int(feedback_on_actual.get(route_id, 0)) - int(
             feedback_off_actual.get(route_id, 0)
         )
-        direction_matches: bool | None = None
-        if budget_delta and actual_delta:
-            direction_matches = (budget_delta > 0) == (actual_delta > 0)
-            (matching_direction_routes if direction_matches else contradictory_routes).append(route_id)
+        action = str(feedback_on_actions.get(route_id) or "MAINTAIN")
+        expected_direction = 1 if action == "EXPAND" else -1 if action == "DOWNWEIGHT" else 0
+        on_funnel = dict(feedback_on_funnel.get(route_id) or {})
+        off_funnel = dict(feedback_off_funnel.get(route_id) or {})
+        supply_clamped = bool(
+            on_funnel.get("underfill_reason")
+            or off_funnel.get("underfill_reason")
+            or int(feedback_on_actual.get(route_id, 0))
+            < int(feedback_on_budgets.get(route_id, 0))
+            or int(feedback_off_actual.get(route_id, 0))
+            < int(feedback_off_budgets.get(route_id, 0))
+        )
+        if expected_direction == 0:
+            exposure_status = (
+                "SPILLOVER_ONLY_NOT_FEEDBACK" if actual_delta else "NO_FEEDBACK_ACTION"
+            )
+        elif actual_delta and (actual_delta > 0) == (expected_direction > 0):
+            exposure_status = "APPLIED"
+            applied_routes.append(route_id)
+        elif actual_delta == 0 and supply_clamped:
+            exposure_status = "ACTIONABLE_FEEDBACK_CLAMPED"
+            clamped_routes.append(route_id)
+        elif actual_delta == 0:
+            exposure_status = "ACTIONABLE_FEEDBACK_NOT_EFFECTIVE"
+            wrong_direction_routes.append(route_id)
+        else:
+            exposure_status = "ACTIONABLE_FEEDBACK_WRONG_DIRECTION"
+            wrong_direction_routes.append(route_id)
+        if expected_direction > 0:
+            positive_statuses.append(exposure_status)
+        elif expected_direction < 0:
+            negative_statuses.append(exposure_status)
         comparison[route_id] = {
+            "scheduler_action": action,
             "feedback_on_scheduled_pairs": int(feedback_on_budgets.get(route_id, 0)),
             "feedback_off_scheduled_pairs": int(feedback_off_budgets.get(route_id, 0)),
             "scheduled_pair_delta": budget_delta,
             "feedback_on_actual_legal_canonical_pairs": int(feedback_on_actual.get(route_id, 0)),
             "feedback_off_actual_legal_canonical_pairs": int(feedback_off_actual.get(route_id, 0)),
             "actual_pair_delta": actual_delta,
-            "direction_matches_when_observable": direction_matches,
+            "feedback_exposure_status": exposure_status,
+            "supply_clamped": supply_clamped,
+            "feedback_on_underfill_reason": str(on_funnel.get("underfill_reason") or ""),
+            "feedback_off_underfill_reason": str(off_funnel.get("underfill_reason") or ""),
+            "feedback_on_spillover_reason": str(on_funnel.get("spillover_reason") or ""),
+            "feedback_off_spillover_reason": str(off_funnel.get("spillover_reason") or ""),
         }
-    gates = {
+    positive_direction_status = (
+        "APPLIED"
+        if "APPLIED" in positive_statuses
+        else "ACTIONABLE_FEEDBACK_CLAMPED"
+        if positive_statuses
+        and all(status == "ACTIONABLE_FEEDBACK_CLAMPED" for status in positive_statuses)
+        else "NO_ACTIONABLE_POSITIVE_FEEDBACK"
+        if not positive_statuses
+        else "ACTIONABLE_FEEDBACK_INVALID"
+    )
+    negative_direction_status = (
+        "APPLIED"
+        if "APPLIED" in negative_statuses
+        else "ACTIONABLE_FEEDBACK_CLAMPED"
+        if negative_statuses
+        and all(status == "ACTIONABLE_FEEDBACK_CLAMPED" for status in negative_statuses)
+        else "NO_ACTIONABLE_NEGATIVE_FEEDBACK"
+        if not negative_statuses
+        else "ACTIONABLE_FEEDBACK_INVALID"
+    )
+    gates: dict[str, Any] = {
         "scheduled_route_distribution_changed": any(
             row["scheduled_pair_delta"] != 0 for row in comparison.values()
         ),
         "actual_legal_canonical_route_distribution_changed": any(
             row["actual_pair_delta"] != 0 for row in comparison.values()
         ),
-        "at_least_one_actual_change_matches_scheduled_direction": bool(
-            matching_direction_routes
+        "at_least_one_actionable_feedback_changes_actual_exposure": bool(applied_routes),
+        "no_actionable_feedback_has_wrong_or_unexplained_direction": not wrong_direction_routes,
+        "positive_direction_applied_or_clamped": positive_direction_status
+        in {"APPLIED", "ACTIONABLE_FEEDBACK_CLAMPED", "NO_ACTIONABLE_POSITIVE_FEEDBACK"},
+        "negative_direction_applied_or_clamped": negative_direction_status
+        in {"APPLIED", "ACTIONABLE_FEEDBACK_CLAMPED", "NO_ACTIONABLE_NEGATIVE_FEEDBACK"},
+        "maintain_spillover_excluded_from_feedback": all(
+            row["scheduler_action"] != "MAINTAIN"
+            or row["feedback_exposure_status"]
+            in {"NO_FEEDBACK_ACTION", "SPILLOVER_ONLY_NOT_FEEDBACK"}
+            for row in comparison.values()
         ),
-        "no_actual_change_contradicts_scheduled_direction": not contradictory_routes,
     }
+    gates["real_positive_direction_status"] = positive_direction_status
+    gates["real_negative_direction_status"] = negative_direction_status
     return comparison, gates
 
 
@@ -979,7 +1049,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 total_pairs=PAIR_PROPOSAL_BUDGET,
                 admission_pairs=PAIR_ADMISSION_BUDGET,
             )
-            off_proposals, _ = _select_proposal_pack(master_stream, off_schedule)
+            off_proposals, off_selection_funnel = _select_proposal_pack(
+                master_stream, off_schedule
+            )
             off_probe, off_probe_audit = _probe_pack(
                 candidate_rows=off_proposals,
                 field_roots=field_roots,
@@ -1021,6 +1093,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     str(row["route_id"]): int(row["scheduled_pairs"])
                     for row in off_schedule
                 },
+                "route_actions": {
+                    str(row["route_id"]): str(row["scheduler_action"])
+                    for row in off_schedule
+                },
+                "route_selection_funnel": off_selection_funnel,
                 "probe_audit": off_probe_audit,
                 "schedule_summary": off_summary,
                 "validation_reads": 0,
@@ -1170,6 +1247,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     proposal_rows
                 ),
                 "control_contract": control_contract,
+                "route_actions": {
+                    str(row["route_id"]): str(row["scheduler_action"])
+                    for row in schedule
+                },
+                "route_selection_funnel": selection_funnel,
                 "full_behavior_four_identities_closed": all(
                     str(row.get("behavior_status") or "") != "RESOLVED"
                     or all(
@@ -1230,8 +1312,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         feedback_off_actual=feedback_off_summary.get(
             "actual_legal_canonical_route_pairs", {}
         ),
+        feedback_on_actions=batch_summaries[1]["route_actions"],
+        feedback_on_funnel=batch_summaries[1]["route_selection_funnel"],
+        feedback_off_funnel=feedback_off_summary.get("route_selection_funnel", {}),
     )
-    actual_route_causality = all(route_causal_gates.values())
+    real_positive_direction_status = str(
+        route_causal_gates.pop("real_positive_direction_status")
+    )
+    real_negative_direction_status = str(
+        route_causal_gates.pop("real_negative_direction_status")
+    )
+    actual_route_causality = all(bool(value) for value in route_causal_gates.values())
     causal = {
         "batch_1_binds_batch_0_manifest": batch_1_binds_batch_0,
         "batch_2_binds_batch_1_manifest": batch_2_binds_batch_1,
@@ -1244,8 +1335,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "feedback_on_off_route_comparison": route_comparison,
         "feedback_on_off_route_causal_gates": route_causal_gates,
         "synthetic_feedback_rules": synthetic_proof,
-        "real_positive_direction_status": batch_summaries[2]["feedback_status"]["positive"],
-        "real_negative_direction_status": batch_summaries[2]["feedback_status"]["negative"],
+        "real_positive_direction_status": real_positive_direction_status,
+        "real_negative_direction_status": real_negative_direction_status,
         "shortfall_and_dedupe_not_counted_as_feedback": True,
     }
     causal_path = _write_json(output_root / "causal_attribution.json", causal)

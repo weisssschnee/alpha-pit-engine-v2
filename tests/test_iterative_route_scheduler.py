@@ -56,14 +56,64 @@ def test_causal_gate_requires_actual_route_distribution_to_follow_schedule() -> 
     off_actual = dict(on_actual)
     on_budget["MINUTE_STATIC"] = 8
     on_actual["MINUTE_STATIC"] = 8
+    actions = {route_id: "MAINTAIN" for route_id in ROUTE_IDS}
+    actions["MINUTE_STATIC"] = "EXPAND"
     comparison, gates = _causal_route_comparison(
         feedback_on_budgets=on_budget,
         feedback_off_budgets=off_budget,
         feedback_on_actual=on_actual,
         feedback_off_actual=off_actual,
+        feedback_on_actions=actions,
+        feedback_on_funnel={},
+        feedback_off_funnel={},
     )
-    assert all(gates.values())
-    assert comparison["MINUTE_STATIC"]["direction_matches_when_observable"] is True
+    assert all(value is True for key, value in gates.items() if key not in {
+        "real_positive_direction_status", "real_negative_direction_status"
+    })
+    assert comparison["MINUTE_STATIC"]["feedback_exposure_status"] == "APPLIED"
+
+
+def test_causal_gate_excludes_maintain_spillover_and_records_supply_clamp() -> None:
+    on_budget = {route_id: 6 for route_id in ROUTE_IDS}
+    off_budget = dict(on_budget)
+    on_actual = {route_id: 6 for route_id in ROUTE_IDS}
+    off_actual = dict(on_actual)
+    actions = {route_id: "MAINTAIN" for route_id in ROUTE_IDS}
+    actions["INTRADAY_STATE_TRANSITION"] = "EXPAND"
+    actions["SLOW_CROSS_SECTIONAL_LEVEL"] = "DOWNWEIGHT"
+    on_budget["INTRADAY_STATE_TRANSITION"] = 10
+    on_actual["INTRADAY_STATE_TRANSITION"] = 2
+    off_actual["INTRADAY_STATE_TRANSITION"] = 2
+    on_budget["SLOW_CROSS_SECTIONAL_LEVEL"] = 4
+    on_actual["SLOW_CROSS_SECTIONAL_LEVEL"] = 8
+    off_actual["SLOW_CROSS_SECTIONAL_LEVEL"] = 12
+    on_actual["FIRSTN_PATH"] = 12
+    off_actual["FIRSTN_PATH"] = 7
+    comparison, gates = _causal_route_comparison(
+        feedback_on_budgets=on_budget,
+        feedback_off_budgets=off_budget,
+        feedback_on_actual=on_actual,
+        feedback_off_actual=off_actual,
+        feedback_on_actions=actions,
+        feedback_on_funnel={
+            "INTRADAY_STATE_TRANSITION": {
+                "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+            }
+        },
+        feedback_off_funnel={},
+    )
+    assert comparison["INTRADAY_STATE_TRANSITION"]["feedback_exposure_status"] == (
+        "ACTIONABLE_FEEDBACK_CLAMPED"
+    )
+    assert comparison["SLOW_CROSS_SECTIONAL_LEVEL"]["feedback_exposure_status"] == (
+        "APPLIED"
+    )
+    assert comparison["FIRSTN_PATH"]["feedback_exposure_status"] == (
+        "SPILLOVER_ONLY_NOT_FEEDBACK"
+    )
+    assert gates["real_positive_direction_status"] == "ACTIONABLE_FEEDBACK_CLAMPED"
+    assert gates["real_negative_direction_status"] == "APPLIED"
+    assert gates["maintain_spillover_excluded_from_feedback"] is True
 
 
 def test_positive_and_negative_rules_expand_and_contract_synthetically() -> None:
