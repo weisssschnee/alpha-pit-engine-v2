@@ -372,7 +372,7 @@
       "semantic_role": "bounded_development_iterative_search_capability",
       "authority": {
         "path": "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
-        "verified_sha": "c2311584225fb321310764dead1cdf76fd6eb325"
+        "verified_sha": "8c09bf250f5b26b927fb84caeb14638f5f358238"
       },
       "contracts": [
         {
@@ -394,7 +394,7 @@
         {
           "id": "iterative_feedback_causal_boundary",
           "type": "EVIDENCE",
-          "rule": "Feedback-on and feedback-off share seed, master attempt stream, budget, historical archives, dedupe, registry and compiler; only feedback consumption and its adaptive route schedule may differ. PASS also requires actual legal/canonical route counts to change consistently with the scheduled direction.",
+          "rule": "Feedback-on and feedback-off share seed, master attempt stream, budget, historical archives, dedupe, registry and compiler; only feedback consumption and its adaptive route schedule may differ. PASS binds actual legal/canonical route counts to actionable schedule direction, records supply limits as ACTIONABLE_FEEDBACK_CLAMPED, and excludes MAINTAIN spillover from feedback causality.",
           "severity": "HARD",
           "enforced_by": "cn_iterative_search_v1 causal attribution",
           "bypass_forbidden": true
@@ -412,7 +412,7 @@
         "level": "RUNTIME_VERIFIED",
         "result": "PASS",
         "evidence_ref": "runtime/cn_iterative_search_v1_20260721/final_decision.json",
-        "verified_at_sha": "ff1935aed8160218e9c26b475e8d73610bd9ecbc"
+        "verified_at_sha": "4f62b1fa168f4d2e56c7b0db89f0106f6b35b425"
       }
     },
     {
@@ -815,7 +815,7 @@
       "lifecycle": "ACTIVE",
       "critical": true,
       "contract": {"id": "registry_driven_generator_capacity", "type": "AUTHORITY", "rule": "The scheduler and generator consume the versioned registry route_id as the only top-level search key. Route-local generation modes cannot become a second scheduling authority.", "severity": "HARD", "enforced_by": "build_route_schedule and RegistryDrivenGenerator", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_iterative_route_scheduler.py", "verified_at_sha": "c2311584225fb321310764dead1cdf76fd6eb325"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_iterative_route_scheduler.py", "verified_at_sha": "8c09bf250f5b26b927fb84caeb14638f5f358238"}
     },
     {"id": "temporal_to_lanes", "source": "typed_temporal_program", "target": "hypothesis_lanes", "relation": "types_temporal_lane", "lifecycle": "ACTIVE"},
     {"id": "event_to_lanes", "source": "broad_event_system", "target": "hypothesis_lanes", "relation": "types_event_lane", "lifecycle": "ACTIVE"},
@@ -936,7 +936,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "iterative_candidate_receipt_required", "type": "ADMISSION", "rule": "Every generated primary and route-matched control must pass the existing immutable candidate and pair receipt gates before behavior admission.", "severity": "HARD", "enforced_by": "candidate_submission_receipt_gate and attach_pair_contract", "bypass_forbidden": true},
-      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_iterative_search_v1_20260721/run_manifest.json", "verified_at_sha": "ff1935aed8160218e9c26b475e8d73610bd9ecbc"}
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_iterative_search_v1_20260721/run_manifest.json", "verified_at_sha": "4f62b1fa168f4d2e56c7b0db89f0106f6b35b425"}
     },
     {
       "id": "compositional_to_stage_a_route_eligibility",
@@ -986,7 +986,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "iterative_phase3cm_development_only", "type": "BOUNDARY", "rule": "The V1 campaign may invoke only full-coordinate development Phase3CM pair evaluation on 77o; this is not Strict Stage A and grants no promotion or sealed-data access.", "severity": "HARD", "enforced_by": "cn_iterative_search_v1 frozen_contract", "bypass_forbidden": true},
-      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_iterative_search_v1_20260721/causal_attribution.json", "verified_at_sha": "ff1935aed8160218e9c26b475e8d73610bd9ecbc"}
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_iterative_search_v1_20260721/causal_attribution.json", "verified_at_sha": "4f62b1fa168f4d2e56c7b0db89f0106f6b35b425"}
     },
     {
       "id": "stage_a_route_eligibility_to_streaming_evaluator",
