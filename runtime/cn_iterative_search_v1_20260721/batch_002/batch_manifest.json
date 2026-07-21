@@ -4,7 +4,7 @@
       "backend": "active_bar",
       "command": "REUSED_COMPLETED_IDENTICAL_RESULT",
       "completed_at": "REUSED",
-      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\batch_002\\phase3cm\\active_bar\\CN_STREAMING_BACKEND_RESULT.json",
+      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\batch_002\\phase3cm\\active_bar\\CN_STREAMING_BACKEND_RESULT.json",
       "result_sha256": "ad2213f448d18ecabe6ae0de77368f456727eb8b46ccfcbf6517d608d1694911",
       "returncode": 0,
       "started_at": "REUSED",
@@ -14,7 +14,7 @@
       "backend": "stock_session",
       "command": "REUSED_COMPLETED_IDENTICAL_RESULT",
       "completed_at": "REUSED",
-      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\batch_002\\phase3cm\\stock_session\\CN_STREAMING_BACKEND_RESULT.json",
+      "result_path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\batch_002\\phase3cm\\stock_session\\CN_STREAMING_BACKEND_RESULT.json",
       "result_sha256": "0e6f6a475aa4432bade52322af3204b47fb8de2395acb146676d524e0e07fb93",
       "returncode": 0,
       "started_at": "REUSED",
@@ -123,10 +123,10 @@
   "forward_2026_reads": 0,
   "holdout_reads": 0,
   "input_hashes": {
-    "frozen_contract": "292724ae7310758062c626e375c16cf6493ee3f1456182c0c64d1af730bc57e4",
-    "prior_batch_manifest": "bd087b07a63d8ffe2a3abec9b76f36dee9a619644b3cba9fabc68022f216a2e1"
+    "frozen_contract": "11f7c4644cbb02a00f74dcb495af6b9f0cf0126e72eba88f858ecf998fc620b2",
+    "prior_batch_manifest": "60378bea30b4565aa3b21b6e10c9c1e98310e4d14fce9d6ed7bb986670755b54"
   },
-  "manifest_payload_hash": "17cd31b797a0767d1efbad292a0f0dcb022511fcf5a264c6a5de32a8df42c5af",
+  "manifest_payload_hash": "1c90b6b6edd3ba60e5b087b579ddc351a2d4c4bc1959187e887f77580bca4cb5",
   "promotion": "FORBIDDEN",
   "schema_version": "cn_iterative_search_v1_batch_manifest_v1",
   "status": "BATCH_CLOSED_IMMUTABLE",

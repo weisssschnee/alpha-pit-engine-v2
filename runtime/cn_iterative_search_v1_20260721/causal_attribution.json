@@ -7,82 +7,133 @@
   "feedback_on_off_route_budget_changed": true,
   "feedback_on_off_route_causal_gates": {
     "actual_legal_canonical_route_distribution_changed": true,
-    "at_least_one_actual_change_matches_scheduled_direction": true,
-    "no_actual_change_contradicts_scheduled_direction": true,
+    "at_least_one_actionable_feedback_changes_actual_exposure": true,
+    "maintain_spillover_excluded_from_feedback": true,
+    "negative_direction_applied_or_clamped": true,
+    "no_actionable_feedback_has_wrong_or_unexplained_direction": true,
+    "positive_direction_applied_or_clamped": true,
     "scheduled_route_distribution_changed": true
   },
   "feedback_on_off_route_comparison": {
     "BROAD_EVENT_FROZEN_ENTRY": {
       "actual_pair_delta": 0,
-      "direction_matches_when_observable": null,
+      "feedback_exposure_status": "NO_FEEDBACK_ACTION",
       "feedback_off_actual_legal_canonical_pairs": 6,
       "feedback_off_scheduled_pairs": 5,
+      "feedback_off_spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "feedback_off_underfill_reason": "",
       "feedback_on_actual_legal_canonical_pairs": 6,
       "feedback_on_scheduled_pairs": 6,
-      "scheduled_pair_delta": 1
+      "feedback_on_spillover_reason": "",
+      "feedback_on_underfill_reason": "",
+      "scheduled_pair_delta": 1,
+      "scheduler_action": "MAINTAIN",
+      "supply_clamped": false
     },
     "DISCLOSURE_EVENT": {
       "actual_pair_delta": 0,
-      "direction_matches_when_observable": null,
+      "feedback_exposure_status": "NO_FEEDBACK_ACTION",
       "feedback_off_actual_legal_canonical_pairs": 0,
       "feedback_off_scheduled_pairs": 6,
+      "feedback_off_spillover_reason": "",
+      "feedback_off_underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL",
       "feedback_on_actual_legal_canonical_pairs": 0,
       "feedback_on_scheduled_pairs": 7,
-      "scheduled_pair_delta": 1
+      "feedback_on_spillover_reason": "",
+      "feedback_on_underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL",
+      "scheduled_pair_delta": 1,
+      "scheduler_action": "MAINTAIN",
+      "supply_clamped": true
     },
     "FIRSTN_PATH": {
       "actual_pair_delta": 5,
-      "direction_matches_when_observable": true,
+      "feedback_exposure_status": "SPILLOVER_ONLY_NOT_FEEDBACK",
       "feedback_off_actual_legal_canonical_pairs": 7,
       "feedback_off_scheduled_pairs": 5,
+      "feedback_off_spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "feedback_off_underfill_reason": "",
       "feedback_on_actual_legal_canonical_pairs": 12,
       "feedback_on_scheduled_pairs": 7,
-      "scheduled_pair_delta": 2
+      "feedback_on_spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "feedback_on_underfill_reason": "",
+      "scheduled_pair_delta": 2,
+      "scheduler_action": "MAINTAIN",
+      "supply_clamped": false
     },
     "INTRADAY_STATE_TRANSITION": {
       "actual_pair_delta": 0,
-      "direction_matches_when_observable": null,
+      "feedback_exposure_status": "ACTIONABLE_FEEDBACK_CLAMPED",
       "feedback_off_actual_legal_canonical_pairs": 2,
       "feedback_off_scheduled_pairs": 7,
+      "feedback_off_spillover_reason": "",
+      "feedback_off_underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL",
       "feedback_on_actual_legal_canonical_pairs": 2,
       "feedback_on_scheduled_pairs": 10,
-      "scheduled_pair_delta": 3
+      "feedback_on_spillover_reason": "",
+      "feedback_on_underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL",
+      "scheduled_pair_delta": 3,
+      "scheduler_action": "EXPAND",
+      "supply_clamped": true
     },
     "MARKET_REGIME_CONDITION": {
       "actual_pair_delta": 7,
-      "direction_matches_when_observable": true,
+      "feedback_exposure_status": "SPILLOVER_ONLY_NOT_FEEDBACK",
       "feedback_off_actual_legal_canonical_pairs": 5,
       "feedback_off_scheduled_pairs": 5,
+      "feedback_off_spillover_reason": "",
+      "feedback_off_underfill_reason": "",
       "feedback_on_actual_legal_canonical_pairs": 12,
       "feedback_on_scheduled_pairs": 6,
-      "scheduled_pair_delta": 1
+      "feedback_on_spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "feedback_on_underfill_reason": "",
+      "scheduled_pair_delta": 1,
+      "scheduler_action": "MAINTAIN",
+      "supply_clamped": false
     },
     "MINUTE_STATIC": {
       "actual_pair_delta": 0,
-      "direction_matches_when_observable": null,
+      "feedback_exposure_status": "ACTIONABLE_FEEDBACK_CLAMPED",
       "feedback_off_actual_legal_canonical_pairs": 4,
       "feedback_off_scheduled_pairs": 7,
+      "feedback_off_spillover_reason": "",
+      "feedback_off_underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL",
       "feedback_on_actual_legal_canonical_pairs": 4,
       "feedback_on_scheduled_pairs": 4,
-      "scheduled_pair_delta": -3
+      "feedback_on_spillover_reason": "",
+      "feedback_on_underfill_reason": "",
+      "scheduled_pair_delta": -3,
+      "scheduler_action": "DOWNWEIGHT",
+      "supply_clamped": true
     },
     "SLOW_CROSS_SECTIONAL_LEVEL": {
       "actual_pair_delta": -4,
-      "direction_matches_when_observable": true,
+      "feedback_exposure_status": "APPLIED",
       "feedback_off_actual_legal_canonical_pairs": 12,
       "feedback_off_scheduled_pairs": 7,
+      "feedback_off_spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "feedback_off_underfill_reason": "",
       "feedback_on_actual_legal_canonical_pairs": 8,
       "feedback_on_scheduled_pairs": 4,
-      "scheduled_pair_delta": -3
+      "feedback_on_spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "feedback_on_underfill_reason": "",
+      "scheduled_pair_delta": -3,
+      "scheduler_action": "DOWNWEIGHT",
+      "supply_clamped": false
     },
     "SLOW_TEMPORAL_CHANGE": {
       "actual_pair_delta": -8,
-      "direction_matches_when_observable": true,
+      "feedback_exposure_status": "APPLIED",
       "feedback_off_actual_legal_canonical_pairs": 12,
       "feedback_off_scheduled_pairs": 6,
+      "feedback_off_spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "feedback_off_underfill_reason": "",
       "feedback_on_actual_legal_canonical_pairs": 4,
       "feedback_on_scheduled_pairs": 4,
-      "scheduled_pair_delta": -2
+      "feedback_on_spillover_reason": "",
+      "feedback_on_underfill_reason": "",
+      "scheduled_pair_delta": -2,
+      "scheduler_action": "DOWNWEIGHT",
+      "supply_clamped": false
     }
   },
   "feedback_on_off_shared_contract_checks": {
@@ -100,7 +151,7 @@
   },
   "feedback_on_off_shared_seed_attempt_stream_budget_archive_dedupe_registry_compiler": true,
   "real_negative_direction_status": "APPLIED",
-  "real_positive_direction_status": "APPLIED",
+  "real_positive_direction_status": "ACTIONABLE_FEEDBACK_CLAMPED",
   "shortfall_and_dedupe_not_counted_as_feedback": true,
   "synthetic_feedback_rules": {
     "infrastructure_excluded_from_financial_route_health": true,

@@ -33,11 +33,21 @@
         "positive": "NO_ACTIONABLE_POSITIVE_FEEDBACK"
       },
       "full_behavior_four_identities_closed": true,
-      "manifest_sha256": "67ef2bb5775822b669f94bd358f906b369969d397c27c5aa5c366070b20b5ac7",
+      "manifest_sha256": "59b42725d65cd6fe0486163a63431889779007d87fa1f1f509368450ce4a809f",
       "master_stream_hash": "98485f480660b70f0862bfda1e3d41e9e3f1cfa9521926a60a72da69c13e7cc6",
       "negative_pairs": 16,
       "positive_pairs": 4,
       "proposal_pairs": 48,
+      "route_actions": {
+        "BROAD_EVENT_FROZEN_ENTRY": "MAINTAIN",
+        "DISCLOSURE_EVENT": "MAINTAIN",
+        "FIRSTN_PATH": "MAINTAIN",
+        "INTRADAY_STATE_TRANSITION": "MAINTAIN",
+        "MARKET_REGIME_CONDITION": "MAINTAIN",
+        "MINUTE_STATIC": "MAINTAIN",
+        "SLOW_CROSS_SECTIONAL_LEVEL": "MAINTAIN",
+        "SLOW_TEMPORAL_CHANGE": "MAINTAIN"
+      },
       "route_budgets": {
         "BROAD_EVENT_FROZEN_ENTRY": 5,
         "DISCLOSURE_EVENT": 6,
@@ -47,6 +57,64 @@
         "MINUTE_STATIC": 7,
         "SLOW_CROSS_SECTIONAL_LEVEL": 7,
         "SLOW_TEMPORAL_CHANGE": 6
+      },
+      "route_selection_funnel": {
+        "BROAD_EVENT_FROZEN_ENTRY": {
+          "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+          "scheduled_pairs": 5,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": ""
+        },
+        "DISCLOSURE_EVENT": {
+          "route_id": "DISCLOSURE_EVENT",
+          "scheduled_pairs": 6,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+        },
+        "FIRSTN_PATH": {
+          "route_id": "FIRSTN_PATH",
+          "scheduled_pairs": 5,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": ""
+        },
+        "INTRADAY_STATE_TRANSITION": {
+          "route_id": "INTRADAY_STATE_TRANSITION",
+          "scheduled_pairs": 7,
+          "spillover_pairs": 2,
+          "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+          "underfill_reason": ""
+        },
+        "MARKET_REGIME_CONDITION": {
+          "route_id": "MARKET_REGIME_CONDITION",
+          "scheduled_pairs": 5,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": ""
+        },
+        "MINUTE_STATIC": {
+          "route_id": "MINUTE_STATIC",
+          "scheduled_pairs": 7,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": ""
+        },
+        "SLOW_CROSS_SECTIONAL_LEVEL": {
+          "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+          "scheduled_pairs": 7,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": ""
+        },
+        "SLOW_TEMPORAL_CHANGE": {
+          "route_id": "SLOW_TEMPORAL_CHANGE",
+          "scheduled_pairs": 6,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": ""
+        }
       },
       "run_health_failures": 0,
       "schedule_sha256": "f04c7812503d1a74649a5fe693c3ef4f6f12427ff6dca030e2a6f33b30ed068b"
@@ -84,11 +152,21 @@
         "positive": "APPLIED"
       },
       "full_behavior_four_identities_closed": true,
-      "manifest_sha256": "bd087b07a63d8ffe2a3abec9b76f36dee9a619644b3cba9fabc68022f216a2e1",
+      "manifest_sha256": "60378bea30b4565aa3b21b6e10c9c1e98310e4d14fce9d6ed7bb986670755b54",
       "master_stream_hash": "de2e42ca812e1f86f5ba05289e55e42aa969e1ccbc9553a901c6ed439224b2f8",
       "negative_pairs": 9,
       "positive_pairs": 3,
       "proposal_pairs": 48,
+      "route_actions": {
+        "BROAD_EVENT_FROZEN_ENTRY": "MAINTAIN",
+        "DISCLOSURE_EVENT": "MAINTAIN",
+        "FIRSTN_PATH": "MAINTAIN",
+        "INTRADAY_STATE_TRANSITION": "EXPAND",
+        "MARKET_REGIME_CONDITION": "MAINTAIN",
+        "MINUTE_STATIC": "DOWNWEIGHT",
+        "SLOW_CROSS_SECTIONAL_LEVEL": "DOWNWEIGHT",
+        "SLOW_TEMPORAL_CHANGE": "DOWNWEIGHT"
+      },
       "route_budgets": {
         "BROAD_EVENT_FROZEN_ENTRY": 6,
         "DISCLOSURE_EVENT": 7,
@@ -98,6 +176,64 @@
         "MINUTE_STATIC": 4,
         "SLOW_CROSS_SECTIONAL_LEVEL": 4,
         "SLOW_TEMPORAL_CHANGE": 4
+      },
+      "route_selection_funnel": {
+        "BROAD_EVENT_FROZEN_ENTRY": {
+          "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+          "scheduled_pairs": 6,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": ""
+        },
+        "DISCLOSURE_EVENT": {
+          "route_id": "DISCLOSURE_EVENT",
+          "scheduled_pairs": 7,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+        },
+        "FIRSTN_PATH": {
+          "route_id": "FIRSTN_PATH",
+          "scheduled_pairs": 7,
+          "spillover_pairs": 5,
+          "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+          "underfill_reason": ""
+        },
+        "INTRADAY_STATE_TRANSITION": {
+          "route_id": "INTRADAY_STATE_TRANSITION",
+          "scheduled_pairs": 10,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+        },
+        "MARKET_REGIME_CONDITION": {
+          "route_id": "MARKET_REGIME_CONDITION",
+          "scheduled_pairs": 6,
+          "spillover_pairs": 6,
+          "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+          "underfill_reason": ""
+        },
+        "MINUTE_STATIC": {
+          "route_id": "MINUTE_STATIC",
+          "scheduled_pairs": 4,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": ""
+        },
+        "SLOW_CROSS_SECTIONAL_LEVEL": {
+          "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+          "scheduled_pairs": 4,
+          "spillover_pairs": 4,
+          "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+          "underfill_reason": ""
+        },
+        "SLOW_TEMPORAL_CHANGE": {
+          "route_id": "SLOW_TEMPORAL_CHANGE",
+          "scheduled_pairs": 4,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": ""
+        }
       },
       "run_health_failures": 0,
       "schedule_sha256": "28738de6de9045c350a5e5a1a357a0371c1fdbc59569a63fa645bdff88f45399"
@@ -135,11 +271,21 @@
         "positive": "APPLIED"
       },
       "full_behavior_four_identities_closed": true,
-      "manifest_sha256": "9c868c7bb5149bdf885583ce667e7b888fff0bad902d33170c2f7f9e65849376",
+      "manifest_sha256": "ec22f70bca059b75f2009f3c88fe34e9b1ea7e8ebbd3c782d25b93c634d34b68",
       "master_stream_hash": "faea7ee4016ec046dc8af04e80b4cd9d040bc7a219978470cbff9e77cb89428c",
       "negative_pairs": 15,
       "positive_pairs": 2,
       "proposal_pairs": 48,
+      "route_actions": {
+        "BROAD_EVENT_FROZEN_ENTRY": "MAINTAIN",
+        "DISCLOSURE_EVENT": "MAINTAIN",
+        "FIRSTN_PATH": "DOWNWEIGHT",
+        "INTRADAY_STATE_TRANSITION": "EXPAND",
+        "MARKET_REGIME_CONDITION": "MAINTAIN",
+        "MINUTE_STATIC": "MAINTAIN",
+        "SLOW_CROSS_SECTIONAL_LEVEL": "MAINTAIN",
+        "SLOW_TEMPORAL_CHANGE": "DOWNWEIGHT"
+      },
       "route_budgets": {
         "BROAD_EVENT_FROZEN_ENTRY": 6,
         "DISCLOSURE_EVENT": 6,
@@ -149,6 +295,64 @@
         "MINUTE_STATIC": 6,
         "SLOW_CROSS_SECTIONAL_LEVEL": 6,
         "SLOW_TEMPORAL_CHANGE": 4
+      },
+      "route_selection_funnel": {
+        "BROAD_EVENT_FROZEN_ENTRY": {
+          "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+          "scheduled_pairs": 6,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+        },
+        "DISCLOSURE_EVENT": {
+          "route_id": "DISCLOSURE_EVENT",
+          "scheduled_pairs": 6,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+        },
+        "FIRSTN_PATH": {
+          "route_id": "FIRSTN_PATH",
+          "scheduled_pairs": 4,
+          "spillover_pairs": 8,
+          "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+          "underfill_reason": ""
+        },
+        "INTRADAY_STATE_TRANSITION": {
+          "route_id": "INTRADAY_STATE_TRANSITION",
+          "scheduled_pairs": 10,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+        },
+        "MARKET_REGIME_CONDITION": {
+          "route_id": "MARKET_REGIME_CONDITION",
+          "scheduled_pairs": 6,
+          "spillover_pairs": 6,
+          "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+          "underfill_reason": ""
+        },
+        "MINUTE_STATIC": {
+          "route_id": "MINUTE_STATIC",
+          "scheduled_pairs": 6,
+          "spillover_pairs": 0,
+          "spillover_reason": "",
+          "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+        },
+        "SLOW_CROSS_SECTIONAL_LEVEL": {
+          "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+          "scheduled_pairs": 6,
+          "spillover_pairs": 6,
+          "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+          "underfill_reason": ""
+        },
+        "SLOW_TEMPORAL_CHANGE": {
+          "route_id": "SLOW_TEMPORAL_CHANGE",
+          "scheduled_pairs": 4,
+          "spillover_pairs": 8,
+          "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+          "underfill_reason": ""
+        }
       },
       "run_health_failures": 0,
       "schedule_sha256": "05ce235c416f031f201d35093b715eae6f8fc09e278e3d2208c18a45f964fe72"

@@ -33,12 +33,13 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   historical behavior archive, exact/behavior dedupe, registry, and compiler.
   Its master stream hash matched the feedback-on Batch 1 hash exactly while
   route budgets changed. The closure also compared actual legal/canonical pair
-  counts route by route: every observable change followed the scheduled
-  direction, no route contradicted it, and feedback-off kept the Batch 0 prior.
-  All 49 full behavior rows retain all four identities. Synthetic positive and
-  negative rules passed; the real canary applied both supported positive
-  expansion and negative downweighting. Infrastructure remained separate from
-  financial route health.
+  counts route by route. Slow XS and Slow Temporal actual exposure decreased in
+  the scheduled negative direction. State expansion and Minute downweight were
+  supply-clamped and are recorded as `ACTIONABLE_FEEDBACK_CLAMPED`; FirstN and
+  Market increases came from spillover and are explicitly excluded from
+  feedback causality. Feedback-off kept the Batch 0 prior. All 49 full behavior
+  rows retain all four identities. Synthetic positive and negative rules
+  passed. Infrastructure remained separate from financial route health.
 - The 77o canary evaluated 49 matched pairs with nine positive-policy and 40
   negative-scheduler observations. Run-health failures and validation, holdout,
   and 2026 reads were all zero; promotion remained forbidden. These are

@@ -42,7 +42,7 @@ V1 已按“route 预算适配 + behavior-aware admission”的边界落地并�
 | Batch | Proposals | Admitted / evaluated | Positive | Negative | Feedback | Run-health failures |
 |---|---:|---:|---:|---:|---|---:|
 | 000 | 48 | 20 | 4 | 16 | no preceding actionable sample | 0 |
-| 001 | 48 | 12 | 3 | 9 | positive + negative applied | 0 |
+| 001 | 48 | 12 | 3 | 9 | schedule: +/- applied; actual: + clamped / - applied | 0 |
 | 002 | 48 | 17 | 2 | 15 | positive + negative applied | 0 |
 
 累计完成 49 个 matched pairs；最终投影为 49 条 observation、9 条 positive-policy、
@@ -67,16 +67,19 @@ archive、历史 behavior archive、exact/behavior dedupe policy、registry、co
 generator 与 probe coordinate binding。Batch 1 feedback-on/off 的实际
 legal/canonical pair 分布分别为：`FIRSTN 12/7`、`MARKET 12/5`、`SLOW_XS 8/12`、
 `SLOW_TEMP 4/12`、`MINUTE 4/4`、`STATE 2/2`、`BROAD 6/6`、`DISCLOSURE 0/0`。
-所有可观察变化均与 schedule delta 同向，无反向 route；feedback-off route budget
+actionable route 中，`SLOW_XS 12→8`、`SLOW_TEMP 12→4` 与负向 schedule 同向；
+`STATE 2→2` 和 `MINUTE 4→4` 因 exact supply 上限分别记为
+`ACTIONABLE_FEEDBACK_CLAMPED`。FIRSTN/MARKET 的增加明确标记为
+`SPILLOVER_ONLY_NOT_FEEDBACK`，不进入反馈因果结论。feedback-off route budget
 保持 Batch 0 初始 prior。三批 20/12/17 条 full behavior rows 均同时保留四种身份。
 
 ## Immutable evidence
 
 | Batch | Batch manifest SHA256 | Archive snapshot SHA256 | Master stream SHA256 |
 |---|---|---|---|
-| 000 | `67ef2bb5775822b669f94bd358f906b369969d397c27c5aa5c366070b20b5ac7` | `a83b4a74fac67c05d759537230d292f6bb92a78344223f1e197e78b32f19ddd4` | `98485f480660b70f0862bfda1e3d41e9e3f1cfa9521926a60a72da69c13e7cc6` |
-| 001 | `bd087b07a63d8ffe2a3abec9b76f36dee9a619644b3cba9fabc68022f216a2e1` | `d76b730ab65ae66182531e96d7a3523d0d955aef12df0da9dc9019612a65cc8a` | `de2e42ca812e1f86f5ba05289e55e42aa969e1ccbc9553a901c6ed439224b2f8` |
-| 002 | `9c868c7bb5149bdf885583ce667e7b888fff0bad902d33170c2f7f9e65849376` | `2b3194c6fd53ad9b2cad892d4d80130e165339018b2173be96d3b85ca44f2c50` | `faea7ee4016ec046dc8af04e80b4cd9d040bc7a219978470cbff9e77cb89428c` |
+| 000 | `59b42725d65cd6fe0486163a63431889779007d87fa1f1f509368450ce4a809f` | `a83b4a74fac67c05d759537230d292f6bb92a78344223f1e197e78b32f19ddd4` | `98485f480660b70f0862bfda1e3d41e9e3f1cfa9521926a60a72da69c13e7cc6` |
+| 001 | `60378bea30b4565aa3b21b6e10c9c1e98310e4d14fce9d6ed7bb986670755b54` | `d76b730ab65ae66182531e96d7a3523d0d955aef12df0da9dc9019612a65cc8a` | `de2e42ca812e1f86f5ba05289e55e42aa969e1ccbc9553a901c6ed439224b2f8` |
+| 002 | `ec22f70bca059b75f2009f3c88fe34e9b1ea7e8ebbd3c782d25b93c634d34b68` | `2b3194c6fd53ad9b2cad892d4d80130e165339018b2173be96d3b85ca44f2c50` | `faea7ee4016ec046dc8af04e80b4cd9d040bc7a219978470cbff9e77cb89428c` |
 
 本机完整证据镜像：`runtime/cn_iterative_search_v1_20260721/`。最终访问计数为
 `validation_reads=0`、`holdout_reads=0`、`forward_2026_reads=0`，promotion 为
@@ -89,11 +92,11 @@ legal/canonical pair 分布分别为：`FIRSTN 12/7`、`MARKET 12/5`、`SLOW_XS 
 向量化后完成真实评估；随后修复 mixed-Parquet batch close 与 resume identity
 binding。完整 Phase3CM 结果由 evaluator source `b7d605ca` 产生，最终因果 receipt、
 实际 route-distribution gate、四身份 join、master-stream binding 与 immutable
-manifests 由 source `c2311584` 重新闭合；已完成
+manifests 由 source `8c09bf25` 重新闭合；已完成
 结果仅在输入 identity 完全一致时复用，没有伪装成重新评估。
 
 最终 77o 根目录：
-`D:\ChengboRemote\runtime\cn_iterative_search_v1_20260721_final_c231158`。
+`D:\ChengboRemote\runtime\cn_iterative_search_v1_20260721_final_8c09bf2`。
 
 ## Remaining gaps
 

@@ -19,7 +19,7 @@
   "proposal_pairs_per_batch_max": 48,
   "proposal_rows_per_batch_max": 96,
   "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
-  "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_iterative_v1_c231158\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+  "registry_path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_iterative_v1_8c09bf2\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
   "scheduler_top_level_key": "unified registry route_id",
   "schema_version": "cn_iterative_search_v1_frozen_contract_v1",
   "split_manifest_hash": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",

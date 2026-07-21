@@ -2,67 +2,67 @@
   "batch_manifests": [
     {
       "bytes": 4794,
-      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\batch_000\\batch_manifest.json",
-      "sha256": "67ef2bb5775822b669f94bd358f906b369969d397c27c5aa5c366070b20b5ac7"
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\batch_000\\batch_manifest.json",
+      "sha256": "59b42725d65cd6fe0486163a63431889779007d87fa1f1f509368450ce4a809f"
     },
     {
       "bytes": 4851,
-      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\batch_001\\batch_manifest.json",
-      "sha256": "bd087b07a63d8ffe2a3abec9b76f36dee9a619644b3cba9fabc68022f216a2e1"
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\batch_001\\batch_manifest.json",
+      "sha256": "60378bea30b4565aa3b21b6e10c9c1e98310e4d14fce9d6ed7bb986670755b54"
     },
     {
       "bytes": 4851,
-      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\batch_002\\batch_manifest.json",
-      "sha256": "9c868c7bb5149bdf885583ce667e7b888fff0bad902d33170c2f7f9e65849376"
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\batch_002\\batch_manifest.json",
+      "sha256": "ec22f70bca059b75f2009f3c88fe34e9b1ea7e8ebbd3c782d25b93c634d34b68"
     }
   ],
   "causal_attribution": {
-    "bytes": 4440,
-    "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\causal_attribution.json",
-    "sha256": "f6af524369f5402bdfec6984dc138708b61d3acc884982aff0f61cba9eabc19e"
+    "bytes": 7080,
+    "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\causal_attribution.json",
+    "sha256": "e46065997ae64e7a794fed20d15a277e9ba889baddeffadadc0bb4ec62b8d155"
   },
   "final_decision": {
-    "bytes": 7716,
-    "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\final_decision.json",
-    "sha256": "3e9d26e01ec71a9df58401e03d18f4e60f26e6c14ca9f79145dc0774bfbef212"
+    "bytes": 15034,
+    "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\final_decision.json",
+    "sha256": "76317110e6219291d74bb13e4d1191a94bbf5388d2307db7697cf18a23d0c4cd"
   },
   "final_projections": [
     {
       "bytes": 11055,
-      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\observation_ledger.parquet",
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\observation_ledger.parquet",
       "sha256": "5659dee77724e0147c4fe739ab8c31047e852bb45a2cae824b104fb93b07e0cc"
     },
     {
       "bytes": 9125,
-      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\positive_policy_view.parquet",
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\positive_policy_view.parquet",
       "sha256": "95cba29d0409a97a9051bada3d8dfcb573abb5d82b3859b4f0ef22ead476d95f"
     },
     {
       "bytes": 11838,
-      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\negative_scheduler_view.parquet",
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\negative_scheduler_view.parquet",
       "sha256": "fc3dd214ce292735d8578f757d59bea409075ac8f5bc234bc415bfbfb9ded07f"
     },
     {
       "bytes": 636,
-      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\run_health.parquet",
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\run_health.parquet",
       "sha256": "8b6e33d47f4e1df33f587d9b1d420f756a6c705b8496e0912c223c5d83371df9"
     },
     {
       "bytes": 37116,
-      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\behavior_archive.parquet",
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\behavior_archive.parquet",
       "sha256": "2b3194c6fd53ad9b2cad892d4d80130e165339018b2173be96d3b85ca44f2c50"
     },
     {
       "bytes": 7556,
-      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\schedule_history.parquet",
+      "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\schedule_history.parquet",
       "sha256": "077199fd87dc6a22e9ddc1c87c19730ff0129bc74e41aadc019d4e1885d0f01a"
     }
   ],
   "forward_2026_reads": 0,
   "frozen_contract": {
     "bytes": 1276,
-    "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_c231158\\frozen_contract.json",
-    "sha256": "292724ae7310758062c626e375c16cf6493ee3f1456182c0c64d1af730bc57e4"
+    "path": "D:\\ChengboRemote\\runtime\\cn_iterative_search_v1_20260721_final_8c09bf2\\frozen_contract.json",
+    "sha256": "11f7c4644cbb02a00f74dcb495af6b9f0cf0126e72eba88f858ecf998fc620b2"
   },
   "holdout_reads": 0,
   "host": "DESKTOP-77OPJ6F",

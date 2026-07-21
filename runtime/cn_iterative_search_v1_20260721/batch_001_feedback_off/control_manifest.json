@@ -65,6 +65,16 @@
   ],
   "proposal_pairs": 48,
   "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "route_actions": {
+    "BROAD_EVENT_FROZEN_ENTRY": "MAINTAIN",
+    "DISCLOSURE_EVENT": "MAINTAIN",
+    "FIRSTN_PATH": "MAINTAIN",
+    "INTRADAY_STATE_TRANSITION": "MAINTAIN",
+    "MARKET_REGIME_CONDITION": "MAINTAIN",
+    "MINUTE_STATIC": "MAINTAIN",
+    "SLOW_CROSS_SECTIONAL_LEVEL": "MAINTAIN",
+    "SLOW_TEMPORAL_CHANGE": "MAINTAIN"
+  },
   "route_budgets": {
     "BROAD_EVENT_FROZEN_ENTRY": 5,
     "DISCLOSURE_EVENT": 6,
@@ -74,6 +84,64 @@
     "MINUTE_STATIC": 7,
     "SLOW_CROSS_SECTIONAL_LEVEL": 7,
     "SLOW_TEMPORAL_CHANGE": 6
+  },
+  "route_selection_funnel": {
+    "BROAD_EVENT_FROZEN_ENTRY": {
+      "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+      "scheduled_pairs": 5,
+      "spillover_pairs": 1,
+      "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "underfill_reason": ""
+    },
+    "DISCLOSURE_EVENT": {
+      "route_id": "DISCLOSURE_EVENT",
+      "scheduled_pairs": 6,
+      "spillover_pairs": 0,
+      "spillover_reason": "",
+      "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+    },
+    "FIRSTN_PATH": {
+      "route_id": "FIRSTN_PATH",
+      "scheduled_pairs": 5,
+      "spillover_pairs": 2,
+      "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "underfill_reason": ""
+    },
+    "INTRADAY_STATE_TRANSITION": {
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "scheduled_pairs": 7,
+      "spillover_pairs": 0,
+      "spillover_reason": "",
+      "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+    },
+    "MARKET_REGIME_CONDITION": {
+      "route_id": "MARKET_REGIME_CONDITION",
+      "scheduled_pairs": 5,
+      "spillover_pairs": 0,
+      "spillover_reason": "",
+      "underfill_reason": ""
+    },
+    "MINUTE_STATIC": {
+      "route_id": "MINUTE_STATIC",
+      "scheduled_pairs": 7,
+      "spillover_pairs": 0,
+      "spillover_reason": "",
+      "underfill_reason": "EXACT_UNIQUE_STREAM_UNDERFILL"
+    },
+    "SLOW_CROSS_SECTIONAL_LEVEL": {
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "scheduled_pairs": 7,
+      "spillover_pairs": 5,
+      "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "underfill_reason": ""
+    },
+    "SLOW_TEMPORAL_CHANGE": {
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "scheduled_pairs": 6,
+      "spillover_pairs": 6,
+      "spillover_reason": "CROSS_ROUTE_EXACT_UNIQUE_SHORTFALL_FILL",
+      "underfill_reason": ""
+    }
   },
   "schedule_summary": {
     "actionable_feedback_clamped_route_count": 0,
