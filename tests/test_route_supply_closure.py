@@ -168,15 +168,11 @@ def test_route_local_skeleton_compatibility_uses_registered_field_semantics() ->
         for row in minute_rows
         if row["pair_member_role"] == "PRIMARY"
     }
-    price_volume = next(
-        row for skeleton, row in by_skeleton.items()
-        if skeleton.endswith("price_volume_interaction")
+    assert not any(
+        skeleton.endswith(("price_volume_interaction", "liquidity_volatility_interaction"))
+        for skeleton in by_skeleton
     )
-    assert {str(value) for value in price_volume["compatibility_leg_roles"]} == {
-        "price_or_return",
-        "volume_amount_or_liquidity",
-    }
-    assert minute_funnel["skeleton_compatibility_rejects"] >= 0
+    assert minute_funnel["skeleton_compatibility_rejects"] > 0
 
     temporal_rows, _ = generator.generate_route_attempts(
         "SLOW_TEMPORAL_CHANGE",

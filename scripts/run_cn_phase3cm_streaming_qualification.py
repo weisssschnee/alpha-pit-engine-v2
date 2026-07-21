@@ -154,6 +154,37 @@ def _verify_binding(binding_path: Path, artifact_root: Path) -> dict[str, Any]:
     return binding
 
 
+def _verify_split_boundary_purity(
+    purity_path: Path,
+    *,
+    binding: Mapping[str, Any],
+) -> dict[str, Any]:
+    record = dict(binding.get("split_boundary_purity") or {})
+    if not record:
+        raise RuntimeError(
+            "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: split purity binding"
+        )
+    source = Path(purity_path).resolve()
+    if not source.is_file() or _sha256(source) != str(record.get("sha256") or ""):
+        raise RuntimeError(
+            "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: split purity hash"
+        )
+    purity = json.loads(source.read_text(encoding="utf-8"))
+    if (
+        purity.get("status") != "PASS"
+        or purity.get("split_manifest_hash") != binding.get("split_manifest_hash")
+        or purity.get("enforcement_contract")
+        != "FINITE_SIGNAL_AND_LABEL_INTERSECTION_IN_BATCHED_PORTFOLIO_KERNEL"
+        or int(binding.get("retained_label_crossing_count") or 0) != 0
+        or not purity.get("routes")
+        or any(int(row.get("retained_crossing_count") or 0) != 0 for row in purity["routes"])
+    ):
+        raise RuntimeError(
+            "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: split purity contract"
+        )
+    return purity
+
+
 def _candidate_pairs(
     rows: Sequence[Mapping[str, Any]],
     *,
@@ -574,6 +605,7 @@ def main() -> int:
     parser.add_argument("--pair-count", type=int, required=True)
     parser.add_argument("--candidate-table", type=Path, required=True)
     parser.add_argument("--binding", type=Path, required=True)
+    parser.add_argument("--split-boundary-purity", type=Path)
     parser.add_argument("--split-manifest", type=Path, required=True)
     parser.add_argument("--artifact-root", type=Path, required=True)
     parser.add_argument("--field-sidecar-root", type=Path, required=True)
@@ -625,6 +657,18 @@ def main() -> int:
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     binding = _verify_binding(args.binding.resolve(), args.artifact_root.resolve())
+    if binding.get("split_boundary_purity"):
+        if args.split_boundary_purity is None:
+            raise RuntimeError(
+                "CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: split purity argument"
+            )
+        split_boundary_purity = _verify_split_boundary_purity(
+            args.split_boundary_purity.resolve(), binding=binding
+        )
+        split_boundary_purity_hash = _sha256(args.split_boundary_purity.resolve())
+    else:
+        split_boundary_purity = None
+        split_boundary_purity_hash = None
     train_dates = _train_calendar(args.split_manifest.resolve(), binding)
     candidates = _candidate_pairs(
         _read_csv(args.candidate_table.resolve()),
@@ -1309,6 +1353,15 @@ def main() -> int:
         ),
         "input_binding_hash": binding["binding_hash"],
         "split_manifest_hash": binding["split_manifest_hash"],
+        "split_boundary_purity_hash": split_boundary_purity_hash,
+        "split_boundary_purity_status": (
+            split_boundary_purity["status"] if split_boundary_purity else "NOT_BOUND"
+        ),
+        "label_purge_enforcement": (
+            split_boundary_purity["enforcement_contract"]
+            if split_boundary_purity
+            else "LEGACY_BINDING_NOT_APPLICABLE"
+        ),
         "eligible_train_date_count": len(train_dates),
         "dag_plan_hash": dag_plan.plan_hash,
         "coordinate_rows_retained": reducer.coordinate_rows_retained,

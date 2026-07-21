@@ -445,7 +445,6 @@ def test_route_root_allowlist_is_enforced_without_changing_registry_authority() 
         route_root_allowlist={
             "MINUTE_STATIC": ["amount", "close", "ret_1m", "plate_peer_return_mean"]
         },
-        enforce_route_compatibility=True,
     )
 
     for index in range(32):

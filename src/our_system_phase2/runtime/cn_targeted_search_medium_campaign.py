@@ -73,6 +73,13 @@ MAX_RAW_ATTEMPTS = 100_000
 MAX_WALL_SECONDS = 12 * 60 * 60
 ROUTE_ATTEMPT_CAP = 2_300
 GLOBAL_WORKER_LIMIT = 24
+EXPECTED_REGISTRY_RELATIVE_PATH = Path(
+    "runtime/field_registry/cn_unified_capability_registry_v3_20260717/"
+    "unified_capability_registry.json"
+)
+EXPECTED_REGISTRY_FILE_SHA256 = "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7"
+EXPECTED_REGISTRY_INTERNAL_HASH = "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3"
+EXPECTED_REGISTRY_FIELD_COUNT = 450
 SEARCH_ROUTES = tuple(
     route for route in ROUTE_IDS if route != "BROAD_EVENT_FROZEN_ENTRY"
 )
@@ -230,6 +237,14 @@ def materialized_schema_binding(
 
 
 def _registry_binding(registry_path: Path, registry: UnifiedCapabilityRegistry) -> dict[str, Any]:
+    expected_path = (REPO / EXPECTED_REGISTRY_RELATIVE_PATH).resolve()
+    if (
+        registry_path.resolve() != expected_path
+        or _sha256(registry_path) != EXPECTED_REGISTRY_FILE_SHA256
+        or registry.registry_hash != EXPECTED_REGISTRY_INTERNAL_HASH
+        or len(registry.fields) != EXPECTED_REGISTRY_FIELD_COUNT
+    ):
+        raise RuntimeError("CURRENT_REGISTRY_AUTHORITY_MISMATCH")
     sources = {
         "generator": REPO / "src/our_system_phase2/services/unified_discovery_generators.py",
         "grammar": REPO / "src/our_system_phase2/services/compositional_grammar.py",
@@ -253,6 +268,69 @@ def _registry_binding(registry_path: Path, registry: UnifiedCapabilityRegistry) 
         "compiler_hash": _source_hash(sources["compiler"]),
         "repo_sha": _git_sha(),
     }
+
+
+def _read_table_rows(path: Path) -> list[dict[str, Any]]:
+    source = Path(path).resolve()
+    if not source.is_file():
+        raise FileNotFoundError(source)
+    if source.suffix.lower() == ".parquet":
+        return pd.read_parquet(source).fillna("").to_dict(orient="records")
+    if source.suffix.lower() == ".csv":
+        return pd.read_csv(source).fillna("").to_dict(orient="records")
+    if source.suffix.lower() == ".jsonl":
+        return [
+            json.loads(line)
+            for line in source.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+    raise ValueError(f"historical archive must be parquet, csv, or jsonl: {source}")
+
+
+def _load_historical_dedupe(
+    *,
+    candidate_archive_path: Path,
+    behavior_archive_path: Path,
+) -> tuple[set[str], PortfolioBehaviorArchive, dict[str, Any]]:
+    candidate_rows = _read_table_rows(candidate_archive_path)
+    exact_identities = {
+        str(row.get("exact_identity") or "")
+        for row in candidate_rows
+        if str(row.get("exact_identity") or "")
+    }
+    if not exact_identities:
+        raise RuntimeError("historical candidate archive contains no exact identities")
+    source_behavior = PortfolioBehaviorArchive.read_parquet(behavior_archive_path)
+    allowed_fields = {
+        "pair_id", "route_id", "structural_family_id", "signal_cluster_id",
+        "behavior_probe_id", "primary_behavior_probe_id", "control_behavior_probe_id",
+        "portfolio_behavior_signature_id", "portfolio_behavior_family_id",
+        "behavior_status", "primary_support_rate", "control_support_rate",
+        "primary_mean_turnover", "control_mean_turnover", "coordinate_binding",
+    }
+    behavior_rows = [
+        {key: value for key, value in row.items() if key in allowed_fields}
+        for row in source_behavior.rows
+    ]
+    behavior_archive = PortfolioBehaviorArchive(behavior_rows)
+    if not any(
+        str(row.get("behavior_probe_id") or row.get("portfolio_behavior_signature_id") or "")
+        for row in behavior_rows
+    ):
+        raise RuntimeError("historical behavior archive contains no dedupe identities")
+    snapshot = {
+        "schema_version": "cn_medium_campaign_historical_dedupe_snapshot_v1",
+        "candidate_archive": _artifact(candidate_archive_path),
+        "behavior_archive": _artifact(behavior_archive_path),
+        "exact_identity_count": len(exact_identities),
+        "exact_identity_digest": _stable_hash(sorted(exact_identities)),
+        "behavior_identity_row_count": len(behavior_rows),
+        "behavior_identity_digest": _stable_hash(behavior_rows),
+        "reward_columns_imported": [],
+        "scheduler_state_imported": False,
+        "status": "FROZEN_HISTORICAL_EXACT_AND_BEHAVIOR_DEDUPE_BOUND",
+    }
+    return exact_identities, behavior_archive, snapshot
 
 
 def _structural_comparison(
@@ -405,6 +483,9 @@ def _bind_purity(binding_path: Path, purity_path: Path) -> None:
     binding.pop("binding_hash", None)
     binding["split_boundary_purity"] = _artifact(purity_path)
     binding["retained_label_crossing_count"] = 0
+    binding["label_purge_enforcement"] = (
+        "FINITE_SIGNAL_AND_LABEL_INTERSECTION_IN_BATCHED_PORTFOLIO_KERNEL"
+    )
     binding["binding_hash"] = _stable_hash(binding)
     _write_json(binding_path, binding)
 
@@ -462,16 +543,19 @@ def _run_phase3cm_monitored(
     split_manifest: Path,
     field_roots: Mapping[str, Path],
     label_roots: Mapping[str, Path],
+    purity_path: Path,
     compute_threads: Mapping[str, int],
     deadline_epoch: float,
+    output_namespace: str = "phase3cm",
+    selected_backends: Sequence[str] = ("active_bar", "stock_session"),
 ) -> list[dict[str, Any]]:
     receipts = []
-    for backend in ("active_bar", "stock_session"):
+    for backend in selected_backends:
         candidate_table = table_paths.get(backend)
         if candidate_table is None:
             continue
         pair_count = pd.read_csv(candidate_table)["pair_id"].nunique()
-        output_root = checkpoint_root / "phase3cm" / backend
+        output_root = checkpoint_root / output_namespace / backend
         output_root.mkdir(parents=True, exist_ok=True)
         result_path = output_root / "CN_STREAMING_BACKEND_RESULT.json"
         if result_path.is_file():
@@ -493,6 +577,7 @@ def _run_phase3cm_monitored(
             "--pair-count", str(pair_count),
             "--candidate-table", str(candidate_table),
             "--binding", str(binding_path),
+            "--split-boundary-purity", str(purity_path),
             "--split-manifest", str(split_manifest),
             "--artifact-root", str(checkpoint_root),
             "--field-sidecar-root", str(field_roots[backend]),
@@ -550,15 +635,77 @@ def _run_phase3cm_monitored(
     return receipts
 
 
-def _runtime_gate(checkpoint_root: Path, compute_threads: Mapping[str, int]) -> dict[str, Any]:
+def _block_compute_rows(
+    events: Sequence[Mapping[str, Any]], allocated_threads: int
+) -> list[dict[str, Any]]:
+    compute_phases = {
+        "expression_value_dag",
+        "cross_sectional_rank_mapping",
+        "turnover_and_cost",
+    }
+    blocks: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    for event in events:
+        phase = str(event.get("phase") or "")
+        if phase == "global_trade_time_barrier" and int(event.get("blocks_processed") or 0) == 1:
+            if current is not None:
+                blocks.append(current)
+            current = {
+                "block_ordinal": len(blocks),
+                "compute_wall_seconds": 0.0,
+                "compute_cpu_seconds": 0.0,
+                "complete": False,
+            }
+        elif current is not None and phase in compute_phases:
+            current["compute_wall_seconds"] += float(event.get("wall_seconds") or 0.0)
+            current["compute_cpu_seconds"] += float(event.get("cpu_seconds") or 0.0)
+        elif current is not None and phase == "checkpoint" and int(event.get("blocks_processed") or 0) == 1:
+            current["complete"] = True
+    if current is not None:
+        blocks.append(current)
+    for row in blocks:
+        row["normalized_cpu_utilization"] = float(row["compute_cpu_seconds"]) / max(
+            1e-12, float(row["compute_wall_seconds"]) * int(allocated_threads)
+        )
+    return [row for row in blocks if row["complete"]]
+
+
+def _longest_consecutive(values: Sequence[bool]) -> int:
+    longest = current = 0
+    for value in values:
+        current = current + 1 if value else 0
+        longest = max(longest, current)
+    return longest
+
+
+def _phase3cm_semantic_digest(result_path: Path) -> str:
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    return _stable_hash(
+        {
+            "backend": result.get("backend"),
+            "pair_count": result.get("pair_count"),
+            "candidate_rewards": result.get("candidate_rewards"),
+            "pair_results": result.get("pair_results"),
+            "support_identities": result.get("support_identities"),
+        }
+    )
+
+
+def _runtime_gate(
+    checkpoint_root: Path,
+    compute_threads: Mapping[str, int],
+    *,
+    output_namespace: str = "phase3cm",
+) -> dict[str, Any]:
     backends = {}
     overall = True
     for backend in ("active_bar", "stock_session"):
-        result_path = checkpoint_root / "phase3cm" / backend / "CN_STREAMING_BACKEND_RESULT.json"
+        backend_root = checkpoint_root / output_namespace / backend
+        result_path = backend_root / "CN_STREAMING_BACKEND_RESULT.json"
         if not result_path.is_file():
             continue
         result = json.loads(result_path.read_text(encoding="utf-8"))
-        timing_path = checkpoint_root / "phase3cm" / backend / "CN_PHASE3CM_PHASE_TIMING.jsonl"
+        timing_path = backend_root / "CN_PHASE3CM_PHASE_TIMING.jsonl"
         events = [json.loads(line) for line in timing_path.read_text(encoding="utf-8").splitlines() if line]
         compute = [
             row for row in events
@@ -567,21 +714,64 @@ def _runtime_gate(checkpoint_root: Path, compute_threads: Mapping[str, int]) -> 
         compute_wall = sum(float(row.get("wall_seconds") or 0.0) for row in compute)
         compute_cpu = sum(float(row.get("cpu_seconds") or 0.0) for row in compute)
         normalized = compute_cpu / max(1e-12, compute_wall * compute_threads[backend])
-        sample_path = checkpoint_root / "phase3cm" / backend / "runtime_samples.json"
+        blocks = _block_compute_rows(events, compute_threads[backend])
+        threshold = 0.55 if backend == "active_bar" else 0.50
+        sustained_blocks = _longest_consecutive(
+            [float(row["normalized_cpu_utilization"]) >= threshold for row in blocks]
+        )
+        sample_path = backend_root / "runtime_samples.json"
         samples = json.loads(sample_path.read_text(encoding="utf-8")) if sample_path.is_file() else []
         duration = max((float(row.get("elapsed_seconds") or 0.0) for row in samples), default=float(result.get("wall_seconds") or 0.0))
         last = samples[-1] if samples else {}
         first = samples[0] if samples else {}
         read_bytes = max(0, int(last.get("system_read_bytes") or 0) - int(first.get("system_read_bytes") or 0))
         write_bytes = max(0, int(last.get("system_write_bytes") or 0) - int(first.get("system_write_bytes") or 0))
-        threshold = 0.55 if backend == "active_bar" else 0.50
         parallel = result.get("parallelism_status") == "PARALLELISM_ENGAGED"
-        utilization_pass = normalized >= threshold
-        resource_pass = (
-            int(result.get("peak_rss_bytes") or 0) <= 24 * 1024**3
-            and min((int(row.get("available_memory_bytes") or 0) for row in samples), default=1) > 0
+        phase_totals = dict(result.get("phase_totals") or {})
+        io_wall = float((phase_totals.get("global_trade_time_barrier") or {}).get("wall_seconds") or 0.0)
+        total_wall = max(float(result.get("wall_seconds") or 0.0), 1e-12)
+        read_throughput = read_bytes / max(duration, 1.0)
+        minimum_free = min(
+            (int(row.get("available_memory_bytes") or 0) for row in samples),
+            default=0,
         )
-        backend_pass = parallel and utilization_pass and resource_pass
+        peak_rss = int(result.get("peak_rss_bytes") or 0)
+        if normalized >= threshold and sustained_blocks >= 3:
+            bottleneck_class = "CPU_COMPUTE_SATURATED"
+            alternative_pass = False
+        elif io_wall / total_wall >= 0.40 and read_throughput >= 100 * 1024**2:
+            bottleneck_class = "IO_BOUND_PROVEN"
+            alternative_pass = True
+        elif peak_rss >= 20 * 1024**3 or (0 < minimum_free <= 8 * 1024**3):
+            bottleneck_class = "MEMORY_BOUND_PROVEN"
+            alternative_pass = True
+        elif max((int(row.get("process_tree_count") or 0) for row in samples), default=0) > 1:
+            bottleneck_class = "SCHEDULER_FRAGMENTATION"
+            alternative_pass = False
+        else:
+            bottleneck_class = "LOW_UTILIZATION_UNEXPLAINED"
+            alternative_pass = False
+        utilization_pass = (
+            len(blocks) >= 3
+            and ((normalized >= threshold and sustained_blocks >= 3) or alternative_pass)
+        )
+        resource_pass = (
+            peak_rss <= 24 * 1024**3
+            and minimum_free >= 2 * 1024**3
+        )
+        expression_audits = list(result.get("expression_audits") or [])
+        cache_hits = sum(int(row.get("cache_hits") or 0) for row in expression_audits)
+        cache_misses = sum(
+            int(row.get("value_node_evaluations") or 0)
+            + int(row.get("mapping_node_evaluations") or 0)
+            for row in expression_audits
+        )
+        pair_results = list(result.get("pair_results") or [])
+        pair_ids = [str(row.get("pair_id") or "") for row in pair_results]
+        duplicate_pair_evaluations = len(pair_ids) - len(set(pair_ids))
+        cache_pass = cache_hits + cache_misses > 0
+        exact_once_pass = duplicate_pair_evaluations == 0
+        backend_pass = parallel and utilization_pass and resource_pass and cache_pass and exact_once_pass
         overall = overall and backend_pass
         backends[backend] = {
             "allocated_compute_threads": compute_threads[backend],
@@ -589,21 +779,31 @@ def _runtime_gate(checkpoint_root: Path, compute_threads: Mapping[str, int]) -> 
             "compute_wall_seconds": compute_wall,
             "normalized_cpu_utilization": normalized,
             "required_normalized_cpu_utilization": threshold,
+            "complete_compute_block_count": len(blocks),
+            "sustained_blocks_meeting_threshold": sustained_blocks,
+            "per_block_compute": blocks,
             "parallelism_engaged": parallel,
             "system_cpu_percent_mean": statistics.mean(
                 [float(row.get("system_cpu_percent") or 0.0) for row in samples]
             ) if samples else None,
             "active_threads_max": max((int(row.get("process_tree_threads") or 0) for row in samples), default=0),
             "heavy_worker_count_max": max((int(row.get("process_tree_count") or 0) for row in samples), default=0),
-            "peak_rss_bytes": int(result.get("peak_rss_bytes") or 0),
-            "minimum_free_memory_bytes": min((int(row.get("available_memory_bytes") or 0) for row in samples), default=0),
-            "read_throughput_bytes_per_second": read_bytes / max(duration, 1.0),
+            "peak_rss_bytes": peak_rss,
+            "minimum_free_memory_bytes": minimum_free,
+            "read_throughput_bytes_per_second": read_throughput,
             "write_throughput_bytes_per_second": write_bytes / max(duration, 1.0),
             "rows_per_second": int(result.get("rows_processed") or 0) / max(float(result.get("wall_seconds") or 0.0), 1.0),
             "matched_pairs_per_hour": int(result.get("pair_count") or 0) * 3600 / max(float(result.get("wall_seconds") or 0.0), 1.0),
             "matched_pairs_per_cpu_hour": int(result.get("pair_count") or 0) * 3600 / max(compute_cpu, 1.0),
-            "phase_wall_time_breakdown": result.get("phase_totals"),
-            "hot_path_bottleneck": result.get("hot_path_bottleneck"),
+            "phase_wall_time_breakdown": phase_totals,
+            "hot_path_bottleneck": bottleneck_class,
+            "evaluator_reported_bottleneck": result.get("hot_path_bottleneck"),
+            "cache_hits": cache_hits,
+            "cache_misses": cache_misses,
+            "cache_hit_rate": cache_hits / max(1, cache_hits + cache_misses),
+            "evaluation_cache_key_status": "BOUND_IN_FROZEN_EXECUTION_AND_DAG_PLAN",
+            "duplicate_exact_pair_evaluations": duplicate_pair_evaluations,
+            "exact_pair_evaluated_once": exact_once_pass,
             "checkpoint_status": "PASS" if "checkpoint" in (result.get("phase_totals") or {}) else "FAIL",
             "status": "PASS" if backend_pass else "FAIL",
         }
@@ -614,6 +814,87 @@ def _runtime_gate(checkpoint_root: Path, compute_threads: Mapping[str, int]) -> 
         "bounded_concurrency_adjustment_count": 0,
         "second_failure_policy": "RUN_INVALID",
     }
+
+
+def _bounded_runtime_adjustment(
+    *,
+    initial_gate: Mapping[str, Any],
+    checkpoint_id: str,
+    checkpoint_root: Path,
+    binding_path: Path,
+    table_paths: Mapping[str, Path],
+    split_manifest: Path,
+    field_roots: Mapping[str, Path],
+    label_roots: Mapping[str, Path],
+    purity_path: Path,
+    compute_threads: Mapping[str, int],
+    deadline_epoch: float,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    failed = [
+        backend
+        for backend, row in dict(initial_gate.get("backends") or {}).items()
+        if row.get("status") != "PASS"
+        and row.get("hot_path_bottleneck") == "LOW_UTILIZATION_UNEXPLAINED"
+    ]
+    if not failed:
+        return dict(initial_gate), []
+    adjusted_threads = dict(compute_threads)
+    if "active_bar" in failed:
+        adjusted_threads["active_bar"] = min(16, max(12, int(compute_threads["active_bar"]) + 1))
+    if "stock_session" in failed:
+        adjusted_threads["stock_session"] = min(4, max(3, int(compute_threads["stock_session"]) + 1))
+    receipts = _run_phase3cm_monitored(
+        checkpoint_id=checkpoint_id,
+        checkpoint_root=checkpoint_root,
+        binding_path=binding_path,
+        table_paths=table_paths,
+        split_manifest=split_manifest,
+        field_roots=field_roots,
+        label_roots=label_roots,
+        purity_path=purity_path,
+        compute_threads=adjusted_threads,
+        deadline_epoch=deadline_epoch,
+        output_namespace="phase3cm_adjustment_1",
+        selected_backends=failed,
+    )
+    adjusted_gate = _runtime_gate(
+        checkpoint_root,
+        adjusted_threads,
+        output_namespace="phase3cm_adjustment_1",
+    )
+    combined = json.loads(json.dumps(initial_gate))
+    parity: dict[str, bool] = {}
+    for backend in failed:
+        original_path = checkpoint_root / "phase3cm" / backend / "CN_STREAMING_BACKEND_RESULT.json"
+        adjusted_path = (
+            checkpoint_root
+            / "phase3cm_adjustment_1"
+            / backend
+            / "CN_STREAMING_BACKEND_RESULT.json"
+        )
+        parity[backend] = (
+            _phase3cm_semantic_digest(original_path)
+            == _phase3cm_semantic_digest(adjusted_path)
+        )
+        adjusted_row = dict((adjusted_gate.get("backends") or {}).get(backend) or {})
+        adjusted_row["semantic_parity_with_initial_run"] = parity[backend]
+        combined["backends"][backend] = adjusted_row
+    combined["bounded_concurrency_adjustment_count"] = 1
+    combined["bounded_concurrency_adjustment"] = {
+        "reason": "LOW_UTILIZATION_UNEXPLAINED",
+        "backends": failed,
+        "initial_threads": dict(compute_threads),
+        "adjusted_threads": adjusted_threads,
+        "semantic_parity": parity,
+        "sweep_performed": False,
+    }
+    combined["status"] = (
+        "PASS"
+        if all(row.get("status") == "PASS" for row in combined["backends"].values())
+        and all(parity.values())
+        else "RUN_INVALID_AFTER_SINGLE_BOUNDED_ADJUSTMENT"
+    )
+    return combined, receipts
 
 
 def _initial_feedback() -> list[dict[str, Any]]:
@@ -647,6 +928,87 @@ def _annotate_generation_metadata(
     return output
 
 
+def _close_route_funnels(
+    *,
+    funnels: Sequence[Mapping[str, Any]],
+    decisions: Sequence[Mapping[str, Any]],
+    outcomes: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    closed: list[dict[str, Any]] = []
+    for source in funnels:
+        row = dict(source)
+        route_id = str(row["route_id"])
+        route_decisions = [
+            item for item in decisions if str(item.get("route_id") or "") == route_id
+        ]
+        route_outcomes = [
+            item for item in outcomes if str(item.get("route_id") or "") == route_id
+        ]
+        row.update(
+            {
+                "skeleton_compatible_pairs": max(
+                    0,
+                    int(row.get("generation_attempts") or 0)
+                    - int(row.get("skeleton_compatibility_rejects") or 0),
+                ),
+                "behavior_resolved_pairs": sum(
+                    str(item.get("behavior_status") or "") == "RESOLVED"
+                    for item in route_decisions
+                ),
+                "behavior_unique_pairs": sum(
+                    str(item.get("admission_reason") or "")
+                    == "LABEL_FREE_BEHAVIOR_UNIQUE"
+                    for item in route_decisions
+                ),
+                "admitted_pairs": sum(
+                    str(item.get("admission_decision") or "") == "ADMIT"
+                    for item in route_decisions
+                ),
+                "full_coordinate_development_matched_evaluated_pairs": len(
+                    route_outcomes
+                ),
+                "positive_matched_increment_pairs": sum(
+                    float(item.get("matched_net_increment") or 0.0) > 0.0
+                    for item in route_outcomes
+                ),
+                "cycle_exhausted": str(row.get("underfill_reason") or "")
+                == "GENERATION_ATTEMPT_LIMIT",
+            }
+        )
+        closed.append(row)
+    return closed
+
+
+def _backend_cpu_cost(checkpoint_root: Path) -> dict[str, dict[str, float]]:
+    output: dict[str, dict[str, float]] = {}
+    compute_phases = {
+        "expression_value_dag",
+        "cross_sectional_rank_mapping",
+        "turnover_and_cost",
+    }
+    for backend in ("active_bar", "stock_session"):
+        root = checkpoint_root / "phase3cm" / backend
+        result_path = root / "CN_STREAMING_BACKEND_RESULT.json"
+        timing_path = root / "CN_PHASE3CM_PHASE_TIMING.jsonl"
+        if not result_path.is_file() or not timing_path.is_file():
+            continue
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        events = [
+            json.loads(line)
+            for line in timing_path.read_text(encoding="utf-8").splitlines()
+            if line
+        ]
+        output[backend] = {
+            "pair_count": float(result.get("pair_count") or 0),
+            "cpu_seconds": sum(
+                float(row.get("cpu_seconds") or 0.0)
+                for row in events
+                if row.get("phase") in compute_phases
+            ),
+        }
+    return output
+
+
 def _metrics_rows(
     *,
     checkpoint_id: str,
@@ -655,12 +1017,24 @@ def _metrics_rows(
     admitted: Sequence[Mapping[str, Any]],
     outcomes: Sequence[Mapping[str, Any]],
     full_behavior: Sequence[Mapping[str, Any]],
+    decisions: Sequence[Mapping[str, Any]],
+    negative: Sequence[Mapping[str, Any]],
+    checkpoint_root: Path,
+    known_behavior_families: set[str],
 ) -> list[dict[str, Any]]:
     outcome_by_pair = {str(row["pair_id"]): row for row in outcomes}
     behavior_by_pair = {str(row["pair_id"]): row for row in full_behavior}
     primary = [row for row in admitted if str(row.get("pair_member_role")) == "PRIMARY"]
     schedule_by_route = {str(row["route_id"]): row for row in schedule}
     funnel_by_route = {str(row["route_id"]): row for row in funnel}
+    backend_cost = _backend_cpu_cost(checkpoint_root)
+    negative_by_pair = {
+        str(row.get("pair_id") or ""): set(row.get("negative_labels") or ())
+        for row in negative
+    }
+    decision_by_pair = {
+        str(row.get("pair_id") or ""): row for row in decisions
+    }
     rows = []
     dimensions = {
         "checkpoint": lambda row: checkpoint_id,
@@ -683,26 +1057,93 @@ def _metrics_rows(
                 str(behavior_by_pair[pair_id].get("portfolio_behavior_family_id") or "")
                 for pair_id in pair_ids if pair_id in behavior_by_pair
             } - {""}
+            new_families = families - known_behavior_families
             route_id = key if level == "route" else ""
-            funnel_row = funnel_by_route.get(route_id, {})
+            if level == "checkpoint":
+                funnel_row = {
+                    name: sum(int(row.get(name) or 0) for row in funnel)
+                    for name in (
+                        "generation_attempts",
+                        "exact_unique_pairs",
+                        "materialization_missing_field_pairs",
+                        "materialization_unsupported_pairs",
+                        "behavior_resolved_pairs",
+                        "behavior_unique_pairs",
+                        "admitted_pairs",
+                        "skeleton_compatibility_rejects",
+                    )
+                }
+            else:
+                funnel_row = funnel_by_route.get(route_id, {})
             attempts = int(funnel_row.get("generation_attempts") or 0)
+            if level == "route":
+                member_decisions = [
+                    row
+                    for row in decisions
+                    if str(row.get("route_id") or "") == route_id
+                ]
+            elif level == "checkpoint":
+                member_decisions = list(decisions)
+            else:
+                member_decisions = [
+                    decision_by_pair[pair_id]
+                    for pair_id in pair_ids
+                    if pair_id in decision_by_pair
+                ]
+            labels = [
+                label
+                for pair_id in pair_ids
+                for label in negative_by_pair.get(pair_id, set())
+            ]
+            estimated_cpu_seconds = 0.0
+            for backend, cost in backend_cost.items():
+                backend_pairs = sum(
+                    _clock_for_route(str(row.get("route_id") or "")) == backend
+                    for row in members
+                )
+                estimated_cpu_seconds += backend_pairs * float(cost["cpu_seconds"]) / max(
+                    1.0, float(cost["pair_count"])
+                )
             rows.append(
                 {
                     "checkpoint": checkpoint_id,
                     "aggregation_level": level,
                     "aggregation_key": key,
-                    "scheduled_pairs": int(schedule_by_route.get(route_id, {}).get("scheduled_pairs") or 0),
+                    "scheduled_pairs": (
+                        sum(int(row.get("scheduled_pairs") or 0) for row in schedule)
+                        if level == "checkpoint"
+                        else int(schedule_by_route.get(route_id, {}).get("scheduled_pairs") or 0)
+                    ),
                     "raw_attempts": attempts,
                     "exact_unique_per_1000_attempts": 1000 * int(funnel_row.get("exact_unique_pairs") or 0) / max(1, attempts),
                     "materialization_valid_per_1000_attempts": 1000 * (attempts - int(funnel_row.get("materialization_missing_field_pairs") or 0)) / max(1, attempts),
+                    "behavior_resolved_per_1000_attempts": 1000 * int(funnel_row.get("behavior_resolved_pairs") or 0) / max(1, attempts),
+                    "behavior_unique_per_1000_attempts": 1000 * int(funnel_row.get("behavior_unique_pairs") or 0) / max(1, attempts),
+                    "admitted_pairs": len(pair_ids),
                     "full_coordinate_development_matched_pairs": len(outcome_rows),
-                    "new_behavior_families": len(families),
+                    "pairs_per_cpu_hour": len(outcome_rows) * 3600 / max(1.0, estimated_cpu_seconds),
+                    "new_behavior_families": len(new_families),
+                    "new_behavior_families_per_100_evaluated": 100 * len(new_families) / max(1, len(outcome_rows)),
                     "positive_matched_increments": sum(value > 0 for value in rewards),
+                    "positive_matched_increments_per_100_evaluated": 100 * sum(value > 0 for value in rewards) / max(1, len(outcome_rows)),
                     "mean_matched_net_increment": statistics.mean(rewards) if rewards else None,
                     "median_matched_net_increment": statistics.median(rewards) if rewards else None,
                     "top_decile_matched_net_increment": float(pd.Series(rewards).quantile(0.9)) if rewards else None,
                     "unsupported_operator_rate": int(funnel_row.get("materialization_unsupported_pairs") or 0) / max(1, attempts),
                     "materialization_missing_rate": int(funnel_row.get("materialization_missing_field_pairs") or 0) / max(1, attempts),
+                    "cost_killed_rate": labels.count("COST_KILLED") / max(1, len(outcome_rows)),
+                    "turnover_killed_rate": labels.count("TURNOVER_KILLED") / max(1, len(outcome_rows)),
+                    "behavior_duplicate_rate": sum(
+                        str(row.get("admission_reason") or "") == "EXACT_BEHAVIOR_DUPLICATE"
+                        for row in member_decisions
+                    ) / max(1, len(member_decisions)),
+                    "cycle_exhaustion_rate": (
+                        sum(bool(row.get("cycle_exhausted")) for row in funnel)
+                        / max(1, len(funnel))
+                        if level == "checkpoint"
+                        else float(bool(funnel_row.get("cycle_exhausted")))
+                    ),
+                    "marginal_discovery_rate": len(new_families) / max(1, len(outcome_rows)),
                 }
             )
     return rows
@@ -742,6 +1183,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     field_roots = {"active_bar": args.active_field_root.resolve(), "stock_session": args.session_field_root.resolve()}
     label_roots = {"active_bar": args.active_label_root.resolve(), "stock_session": args.session_label_root.resolve()}
     compute_threads = {"active_bar": int(args.active_threads), "stock_session": int(args.session_threads)}
+    historical_exact, behavior_archive, archive_snapshot = _load_historical_dedupe(
+        candidate_archive_path=args.historical_candidate_archive.resolve(),
+        behavior_archive_path=args.historical_behavior_archive.resolve(),
+    )
     registry_binding = _registry_binding(registry_path, registry)
     registry_binding_path = _write_json(output_root / "registry_binding.json", registry_binding)
     schema_binding, schema_by_backend = materialized_schema_binding(field_roots=field_roots, registry=registry)
@@ -802,14 +1247,30 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "schema": _artifact(schema_binding_path, root=output_root),
             "split_purity": _artifact(purity_path, root=output_root),
             "seed_attempt": _artifact(seed_manifest_path, root=output_root),
+            "historical_candidate_exact_archive": _artifact(
+                args.historical_candidate_archive.resolve()
+            ),
+            "historical_behavior_archive": _artifact(
+                args.historical_behavior_archive.resolve()
+            ),
+            "historical_dedupe_snapshot": {
+                "exact_identity_count": archive_snapshot["exact_identity_count"],
+                "exact_identity_digest": archive_snapshot["exact_identity_digest"],
+                "behavior_identity_row_count": archive_snapshot[
+                    "behavior_identity_row_count"
+                ],
+                "behavior_identity_digest": archive_snapshot[
+                    "behavior_identity_digest"
+                ],
+                "reward_columns_imported": [],
+                "scheduler_state_imported": False,
+            },
         },
     }
     frozen_contract_path = _write_json(output_root / "frozen_contract.json", contract)
-    _write_json(output_root / "archive_snapshot.json", {"status": "CAMPAIGN_GENESIS_EMPTY", "exact_identities": [], "behavior_identities": []})
+    archive_snapshot_path = _write_json(output_root / "archive_snapshot.json", archive_snapshot)
 
     generator = RegistryDrivenGenerator(registry, constructor_profile=COMPOSITIONAL_V2_PROFILE, enforce_route_compatibility=True)
-    historical_exact: set[str] = set()
-    behavior_archive = PortfolioBehaviorArchive()
     previous_feedback = _initial_feedback()
     previous_manifest: Path | None = None
     cumulative_candidates: list[dict[str, Any]] = []
@@ -832,6 +1293,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
         checkpoint_root = output_root / "checkpoints" / checkpoint_id
         checkpoint_root.mkdir(parents=True, exist_ok=True)
+        checkpoint_runtime_gate_path: Path | None = None
         schedule, schedule_summary = build_medium_campaign_schedule(
             previous_feedback,
             base_targets=CHECKPOINT_BASE_TARGETS[checkpoint_index],
@@ -891,17 +1353,47 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             split_manifest=args.split_manifest.resolve(),
             field_roots=field_roots,
             label_roots=label_roots,
+            purity_path=purity_path,
             compute_threads=compute_threads,
             deadline_epoch=deadline_epoch,
         )
         if checkpoint_index == 0:
             gate = _runtime_gate(checkpoint_root, compute_threads)
-            runtime_gate_path = _write_json(output_root / "runtime_utilization_gate.json", gate)
             if gate["status"] != "PASS":
-                raise RuntimeError("RUNTIME_ACCELERATION_GATE_FAILED")
+                gate, adjustment_receipts = _bounded_runtime_adjustment(
+                    initial_gate=gate,
+                    checkpoint_id=checkpoint_id,
+                    checkpoint_root=checkpoint_root,
+                    binding_path=binding_path,
+                    table_paths=table_paths,
+                    split_manifest=args.split_manifest.resolve(),
+                    field_roots=field_roots,
+                    label_roots=label_roots,
+                    purity_path=purity_path,
+                    compute_threads=compute_threads,
+                    deadline_epoch=deadline_epoch,
+                )
+                access_receipts.extend(adjustment_receipts)
+            runtime_gate_path = _write_json(output_root / "runtime_utilization_gate.json", gate)
+            checkpoint_runtime_gate_path = _write_json(
+                checkpoint_root / "runtime_utilization_gate.json", gate
+            )
+            if gate["status"] != "PASS":
+                raise RuntimeError(str(gate["status"]))
         outcomes, full_behavior = _outcome_rows(checkpoint_root)
         full_behavior = _join_full_behavior_identities(full_behavior, probe_rows)
+        known_behavior_families = {
+            str(row.get("portfolio_behavior_family_id") or "")
+            for row in behavior_archive.rows
+            if str(row.get("portfolio_behavior_family_id") or "")
+        }
         ledger, positive, negative, run_health = build_iterative_feedback_views(outcomes)
+        funnels = _close_route_funnels(
+            funnels=funnels,
+            decisions=decisions,
+            outcomes=outcomes,
+        )
+        funnel_path = _write_parquet(checkpoint_root / "route_funnel.parquet", funnels)
         health = _route_health(outcomes=outcomes, ledger=ledger, positive=positive, negative=negative, admission_rows=decisions, full_behavior_rows=full_behavior)
         previous_feedback = health
         for row in generated:
@@ -918,7 +1410,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         cumulative_positive.extend({"checkpoint": checkpoint_id, **row} for row in positive)
         cumulative_negative.extend({"checkpoint": checkpoint_id, **row} for row in negative)
         cumulative_run_health.extend({"checkpoint": checkpoint_id, **row} for row in run_health)
-        metric_rows = _metrics_rows(checkpoint_id=checkpoint_id, schedule=schedule, funnel=funnels, admitted=admitted, outcomes=outcomes, full_behavior=full_behavior)
+        metric_rows = _metrics_rows(
+            checkpoint_id=checkpoint_id,
+            schedule=schedule,
+            funnel=funnels,
+            admitted=admitted,
+            outcomes=outcomes,
+            full_behavior=full_behavior,
+            decisions=decisions,
+            negative=negative,
+            checkpoint_root=checkpoint_root,
+            known_behavior_families=known_behavior_families,
+        )
         cumulative_metrics.extend(metric_rows)
         health_path = _write_parquet(checkpoint_root / "route_health.parquet", health)
         outcome_path = _write_parquet(checkpoint_root / "observation_ledger.parquet", outcomes)
@@ -936,7 +1439,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             batch_root=checkpoint_root,
             batch_id=checkpoint_id,
             input_hashes=input_hashes,
-            paths=[schedule_path, schedule_summary_path, candidate_attempt_path, funnel_path, probe_path, decisions_path, binding_path, health_path, outcome_path, full_behavior_path, archive_path, metrics_path, *[Path(str(row["result_path"])) for row in access_receipts]],
+            paths=[schedule_path, schedule_summary_path, candidate_attempt_path, funnel_path, probe_path, decisions_path, binding_path, health_path, outcome_path, full_behavior_path, archive_path, metrics_path, *([checkpoint_runtime_gate_path] if checkpoint_runtime_gate_path else []), *[Path(str(row["result_path"])) for row in access_receipts]],
             access_receipts=access_receipts,
         )
         checkpoint_summaries.append({"checkpoint": checkpoint_id, "scheduled_pairs": sum(int(row["scheduled_pairs"]) for row in schedule), "generated_pairs": len(generated) // 2, "admitted_pairs": len(admitted) // 2, "evaluated_pairs": len(outcomes), "raw_attempts": sum(int(row["generation_attempts"]) for row in funnels), "positive_matched_increments": sum(float(row.get("matched_net_increment") or 0.0) > 0 for row in outcomes), "manifest_sha256": _sha256(previous_manifest)})
@@ -1003,7 +1506,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "campaign_id": CAMPAIGN_ID,
         "host": platform.node(),
         "python": sys.executable,
-        "artifacts": [_artifact(path, root=output_root) for path in (frozen_contract_path, registry_binding_path, schema_binding_path, purity_path, seed_manifest_path, runtime_envelope_path, comparison_path, candidate_ledger_path, observation_ledger_path, behavior_archive_path, metrics_path, decision_path) if path.is_file()],
+        "artifacts": [_artifact(path, root=output_root) for path in (frozen_contract_path, registry_binding_path, schema_binding_path, purity_path, seed_manifest_path, runtime_envelope_path, comparison_path, archive_snapshot_path, candidate_ledger_path, observation_ledger_path, behavior_archive_path, metrics_path, decision_path) if path.is_file()],
         "report": _artifact(report_path),
         "validation_reads": 0,
         "holdout_reads": 0,
@@ -1023,6 +1526,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--active-label-root", type=Path, required=True)
     parser.add_argument("--session-field-root", type=Path, required=True)
     parser.add_argument("--session-label-root", type=Path, required=True)
+    parser.add_argument("--historical-candidate-archive", type=Path, required=True)
+    parser.add_argument("--historical-behavior-archive", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--seed-base", type=int, default=2026072101)
     parser.add_argument("--active-threads", type=int, default=11)

@@ -1,13 +1,18 @@
+import hashlib
 import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
 from our_system_phase2.services.split_boundary_label_purity import (
     audit_split_boundary_label_purity,
 )
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
+from scripts.run_cn_phase3cm_streaming_qualification import (
+    _verify_split_boundary_purity,
+)
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -71,9 +76,31 @@ def test_train_only_terminal_nulls_are_bound_as_purged_crossings(tmp_path: Path)
         for row in result["routes"]
     )
     assert all(row["retained_crossing_count"] == 0 for row in result["routes"])
+    assert result["enforcement_contract"] == (
+        "FINITE_SIGNAL_AND_LABEL_INTERSECTION_IN_BATCHED_PORTFOLIO_KERNEL"
+    )
+    assert all(
+        row["primary_control_source_maturity_future_extension"] == 0
+        for row in result["routes"]
+    )
     assert (
         result["validation_reads"]
         == result["holdout_reads"]
         == result["forward_2026_reads"]
         == 0
     )
+
+    purity_path = tmp_path / "split_boundary_purity.json"
+    payload = json.dumps(result, sort_keys=True)
+    purity_path.write_text(payload, encoding="utf-8")
+    binding = {
+        "split_manifest_hash": split.manifest_hash,
+        "retained_label_crossing_count": 0,
+        "split_boundary_purity": {
+            "sha256": hashlib.sha256(purity_path.read_bytes()).hexdigest()
+        },
+    }
+    assert _verify_split_boundary_purity(purity_path, binding=binding)["status"] == "PASS"
+    purity_path.write_text(payload.replace('"status": "PASS"', '"status": "FAIL"'), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="split purity hash"):
+        _verify_split_boundary_purity(purity_path, binding=binding)

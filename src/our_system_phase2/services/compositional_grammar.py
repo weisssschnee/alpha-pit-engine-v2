@@ -309,44 +309,17 @@ def _representation_family(field: CapabilityField) -> str:
     representation = _canonical_representation(field)
     semantic = str(representation.get("semantic_family") or "")
     kind = str(representation.get("representation_type") or "")
-    return "|".join(value for value in (field.source_family, semantic, kind) if value)
-
-
-def _minute_leg_role(field: CapabilityField) -> str:
-    source = str(field.source_field or "").lower()
-    if any(token in source for token in ("amount", "volume", "liquidity")):
-        return "volume_amount_or_liquidity"
-    if any(token in source for token in ("return", "ret", "pct_chg", "range")):
-        return "volatility_range_or_return"
-    if source in {"open", "high", "low", "close", "vwap"}:
-        return "price_or_return"
-    return "unresolved"
-
-
-def _is_price_or_return(field: CapabilityField) -> bool:
-    return _minute_leg_role(field) in {
-        "price_or_return",
-        "volatility_range_or_return",
-    }
-
-
-def _is_volatility_range_or_return(field: CapabilityField) -> bool:
-    role = _minute_leg_role(field)
-    source = str(field.source_field or "").lower()
-    return role == "volatility_range_or_return" or source in {"high", "low"}
+    if semantic or kind:
+        return "canonical|" + "|".join(value for value in (semantic, kind) if value)
+    return f"source_family|{field.source_family}"
 
 
 def _declared_size(field: CapabilityField) -> bool:
     representation = _canonical_representation(field)
-    metadata_tokens = "|".join(
-        (
-            str(field.source_field or ""),
-            str(field.source_family or ""),
-            str(representation.get("semantic_family") or ""),
-            str(representation.get("representation_type") or ""),
-        )
-    ).lower()
-    return "market_cap" in metadata_tokens or "market-cap" in metadata_tokens or "size" in metadata_tokens
+    return (
+        str(representation.get("semantic_family") or "").lower() == "size"
+        or str(field.source_family).lower() == "canonical_fundamental_size"
+    )
 
 
 def _unit_comparable_or_normalized(
@@ -360,12 +333,7 @@ def _unit_comparable_or_normalized(
     normalized = ("ratio" in left_kind or "normalized" in left_kind) and (
         "ratio" in right_kind or "normalized" in right_kind
     )
-    same_registered_family = (
-        bool(left.source_family)
-        and left.source_family == right.source_family
-        and left.unit_status == right.unit_status
-    )
-    return normalized or same_registered_family
+    return normalized
 
 
 def _declared_temporal_evolution(field: CapabilityField) -> bool:
@@ -605,33 +573,14 @@ class CompositionalGrammarV2:
         pool = self._payload_pool("MINUTE_STATIC")
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
         extra: dict[str, Any] = {}
-        if self._enforce_route_compatibility and name == "price_volume_interaction":
-            left, right = _pick_compatible_pair(
-                pool,
-                lambda price, volume: _is_price_or_return(price)
-                and _minute_leg_role(volume) == "volume_amount_or_liquidity",
-                attempt_index,
-                seed,
-                skeleton.skeleton_id + ":compatible",
+        if self._enforce_route_compatibility and name in {
+            "price_volume_interaction",
+            "liquidity_volatility_interaction",
+        }:
+            raise ValueError(
+                "ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: registered minute metadata "
+                f"does not distinguish required legs for {skeleton.skeleton_id}"
             )
-            extra["compatibility_leg_roles"] = [
-                "price_or_return",
-                "volume_amount_or_liquidity",
-            ]
-        elif self._enforce_route_compatibility and name == "liquidity_volatility_interaction":
-            left, right = _pick_compatible_pair(
-                pool,
-                lambda liquidity, volatility: _minute_leg_role(liquidity)
-                == "volume_amount_or_liquidity"
-                and _is_volatility_range_or_return(volatility),
-                attempt_index,
-                seed,
-                skeleton.skeleton_id + ":compatible",
-            )
-            extra["compatibility_leg_roles"] = [
-                "volume_amount_or_liquidity",
-                "volatility_range_or_return",
-            ]
         elif self._enforce_route_compatibility and name == "cross_sectional_residual":
             left, right = _pick_compatible_pair(
                 pool,
