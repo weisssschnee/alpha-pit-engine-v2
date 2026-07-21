@@ -777,6 +777,42 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             seed=seeds[batch_index],
             historical_exact=historical_exact,
         )
+        master_stream_identity = _stable_hash(
+            {
+                "seed": seeds[batch_index],
+                "registry_hash": registry.registry_hash,
+                "historical_exact_identity_hash": _stable_hash(sorted(historical_exact)),
+                "routes": {
+                    route_id: [
+                        {
+                            "candidate_id": str(row.get("candidate_id") or ""),
+                            "pair_id": str(row.get("pair_id") or ""),
+                            "pair_member_role": str(row.get("pair_member_role") or ""),
+                            "generation_attempt_index": int(row.get("generation_attempt_index") or 0),
+                            "exact_identity": str(row.get("exact_identity") or ""),
+                        }
+                        for row in master_stream[route_id]
+                    ]
+                    for route_id in ROUTE_IDS
+                },
+            }
+        )
+        master_stream_receipt_path = _write_json(
+            batch_root / "generation_master_stream_receipt.json",
+            {
+                "schema_version": "cn_iterative_search_v1_master_attempt_stream_v1",
+                "batch_id": batch_id,
+                "seed": seeds[batch_index],
+                "master_stream_hash": master_stream_identity,
+                "historical_exact_identity_hash": _stable_hash(sorted(historical_exact)),
+                "registry_hash": registry.registry_hash,
+                "compiler_authority": "TypedRouteCompiler",
+                "generator_authority": "RegistryDrivenGenerator",
+                "route_member_counts": {
+                    route_id: len(master_stream[route_id]) for route_id in ROUTE_IDS
+                },
+            },
+        )
         proposal_rows, selection_funnel = _select_proposal_pack(master_stream, schedule)
         proposal_path = _write_csv(batch_root / "candidate_attempt_stream.csv", proposal_rows)
         archive_before = PortfolioBehaviorArchive(behavior_archive.rows)
@@ -844,6 +880,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "registry_hash": registry.registry_hash,
                 "compiler_authority": "SAME_AS_FEEDBACK_ON",
                 "candidate_attempt_stream": "SAME_MASTER_STREAM_AS_FEEDBACK_ON",
+                "master_stream_hash": master_stream_identity,
                 "historical_behavior_archive_hash": _stable_hash(archive_before.rows),
                 "exact_behavior_dedupe": "SAME_AS_FEEDBACK_ON",
                 "phase3cm_evaluation": "NOT_RUN_BY_CONTRACT",
@@ -949,6 +986,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         artifact_paths = [
             schedule_path,
             schedule_summary_path,
+            master_stream_receipt_path,
             proposal_path,
             probe_path,
             admission_path,
@@ -991,6 +1029,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "run_health_failures": len(run_health),
                 "manifest_sha256": _sha256(previous_manifest),
                 "schedule_sha256": _sha256(schedule_path),
+                "master_stream_hash": master_stream_identity,
                 "archive_sha256": _sha256(archive_snapshot_path),
                 "route_budgets": {str(row["route_id"]): int(row["scheduled_pairs"]) for row in schedule},
                 "feedback_status": {
@@ -1008,10 +1047,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     behavior_archive.write_parquet(root_archive)
     root_schedule = _write_parquet(output_root / "schedule_history.parquet", schedule_history)
     batch1_changed = batch_summaries[1]["route_budgets"] != feedback_off_summary.get("route_budgets", {})
+    closed_manifests = [json.loads(path.read_text(encoding="utf-8")) for path in batch_manifests]
+    batch_1_binds_batch_0 = (
+        str(closed_manifests[1]["input_hashes"]["prior_batch_manifest"])
+        == _sha256(batch_manifests[0])
+    )
+    batch_2_binds_batch_1 = (
+        str(closed_manifests[2]["input_hashes"]["prior_batch_manifest"])
+        == _sha256(batch_manifests[1])
+    )
+    shared_on_off_stream = (
+        str(feedback_off_summary.get("master_stream_hash") or "")
+        == str(batch_summaries[1]["master_stream_hash"])
+    )
     causal = {
-        "batch_1_binds_batch_0_manifest": bool(batch_summaries[1]["manifest_sha256"] and batch_manifests[0]),
-        "batch_2_binds_batch_1_manifest": bool(batch_summaries[2]["manifest_sha256"] and batch_manifests[1]),
-        "feedback_on_off_shared_seed_attempt_stream_budget_archive_dedupe_registry_compiler": True,
+        "batch_1_binds_batch_0_manifest": batch_1_binds_batch_0,
+        "batch_2_binds_batch_1_manifest": batch_2_binds_batch_1,
+        "feedback_on_off_shared_seed_attempt_stream_budget_archive_dedupe_registry_compiler": shared_on_off_stream,
+        "batch_1_feedback_on_master_stream_hash": batch_summaries[1]["master_stream_hash"],
+        "batch_1_feedback_off_master_stream_hash": feedback_off_summary.get("master_stream_hash"),
         "feedback_on_off_route_budget_changed": batch1_changed,
         "synthetic_feedback_rules": synthetic_proof,
         "real_positive_direction_status": batch_summaries[2]["feedback_status"]["positive"],
@@ -1032,6 +1086,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "synthetic_positive_and_negative_rules_pass": synthetic_proof["status"] == "PASS",
         "feedback_off_control_completed": feedback_off_summary.get("status")
         == "BATCH_1_FEEDBACK_OFF_PROPOSAL_CONTROL_COMPLETED",
+        "feedback_on_off_master_attempt_stream_hash_equal": shared_on_off_stream,
+        "cross_batch_manifest_bindings_exact": batch_1_binds_batch_0 and batch_2_binds_batch_1,
         "batch_1_feedback_changes_route_budget": batch1_changed,
         "access_counts_zero": access_zero,
         "promotion_forbidden": True,
