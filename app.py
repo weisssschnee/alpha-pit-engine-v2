@@ -54,6 +54,7 @@ ROUTES: dict[str, str] = {
     "cn-broad-event-frozen-replay": "our_system_phase2.runtime.cn_broad_event_frozen_replay",
     "cn-unified-capability-discovery": "our_system_phase2.runtime.cn_unified_capability_discovery",
     "cn-iterative-search-v1-canary": "our_system_phase2.runtime.cn_iterative_search_v1",
+    "cn-route-supply-closure": "scripts.run_cn_route_supply_closure",
     "build-development-only-true1min-release": "our_system_phase2.runtime.build_development_only_true1min_release",
 }
 

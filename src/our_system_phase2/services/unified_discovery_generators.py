@@ -5,8 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from our_system_phase2.services.compositional_grammar import CompositionalGrammarV2
 from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
 from our_system_phase2.services.matched_control_pairs import attach_pair_contract
+from our_system_phase2.services.phase3cm_streaming_expression import (
+    unsupported_streaming_operators,
+)
 from our_system_phase2.services.unified_capability_registry import (
     CapabilityField,
     ROUTE_IDS,
@@ -16,6 +20,10 @@ from our_system_phase2.services.unified_capability_registry import (
 
 
 GENERATOR_VERSION = "cn_unified_registry_driven_generator_v1"
+COMPOSITIONAL_GENERATOR_VERSION = "cn_unified_registry_driven_compositional_v2"
+LEGACY_V1_PROFILE = "legacy_registry_v1"
+COMPOSITIONAL_V2_PROFILE = "registry_compositional_v2"
+CONSTRUCTOR_PROFILES = (LEGACY_V1_PROFILE, COMPOSITIONAL_V2_PROFILE)
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,9 +40,27 @@ def _pick(rows: Sequence[CapabilityField], index: int, seed: int, salt: str) -> 
 
 
 class RegistryDrivenGenerator:
-    def __init__(self, registry: UnifiedCapabilityRegistry) -> None:
+    def __init__(
+        self,
+        registry: UnifiedCapabilityRegistry,
+        *,
+        constructor_profile: str = LEGACY_V1_PROFILE,
+    ) -> None:
+        if constructor_profile not in CONSTRUCTOR_PROFILES:
+            raise ValueError(f"unknown registry constructor profile: {constructor_profile}")
         self.registry = registry
         self.compiler = TypedRouteCompiler(registry)
+        self.constructor_profile = str(constructor_profile)
+        self.generator_version = (
+            COMPOSITIONAL_GENERATOR_VERSION
+            if self.constructor_profile == COMPOSITIONAL_V2_PROFILE
+            else GENERATOR_VERSION
+        )
+        self._compositional = (
+            CompositionalGrammarV2(registry)
+            if self.constructor_profile == COMPOSITIONAL_V2_PROFILE
+            else None
+        )
 
     def _pool(self, route_id: str, predicate: Any | None = None) -> tuple[CapabilityField, ...]:
         rows = self.registry.fields_for_route(route_id)
@@ -82,6 +108,26 @@ class RegistryDrivenGenerator:
         return row
 
     def _pair(self, route_id: str, index: int, seed: int) -> GeneratedPair:
+        if self._compositional is not None:
+            pair = self._compositional.propose(
+                route_id,
+                attempt_index=int(index),
+                seed=int(seed),
+            )
+            primary = {
+                **pair.primary,
+                "generator_authority": "RegistryDrivenGenerator",
+                "generator_version": self.generator_version,
+                "constructor_profile": self.constructor_profile,
+            }
+            control = {
+                **pair.control,
+                "generator_authority": "RegistryDrivenGenerator",
+                "generator_version": self.generator_version,
+                "constructor_profile": self.constructor_profile,
+            }
+            return GeneratedPair(primary, control)
+
         tag = route_id.lower()
         candidate_id = f"uc_{tag}_{seed}_{index:05d}"
         control_id = candidate_id + "_control"
@@ -284,8 +330,17 @@ class RegistryDrivenGenerator:
         exact_unique_pairs = 0
         illegal_pairs = 0
         exact_duplicate_pairs = 0
+        materialization_unsupported_pairs = 0
         while len(output) // 2 < scheduled_pairs and index < start + max_attempts:
             pair = self._pair(route_id, index, seed)
+            if self.constructor_profile == COMPOSITIONAL_V2_PROFILE:
+                unsupported = unsupported_streaming_operators(
+                    (pair.candidate["expression"], pair.control["expression"])
+                )
+                if unsupported:
+                    materialization_unsupported_pairs += 1
+                    index += 1
+                    continue
             compiled_rows: list[dict[str, Any]] = []
             pair_ids: set[str] = set()
             for row in (pair.candidate, pair.control):
@@ -305,7 +360,12 @@ class RegistryDrivenGenerator:
                 for row in compiled_rows:
                     row["generation_attempt_index"] = int(index)
                     row["generation_stream_id"] = stable_hash(
-                        {"generator_version": GENERATOR_VERSION, "route_id": route_id, "seed": int(seed)}
+                        {
+                            "generator_version": self.generator_version,
+                            "constructor_profile": self.constructor_profile,
+                            "route_id": route_id,
+                            "seed": int(seed),
+                        }
                     )
                 output.extend(compiled_rows)
                 exact_seen.update(pair_ids)
@@ -323,9 +383,14 @@ class RegistryDrivenGenerator:
             "admitted_pairs": 0,
             "illegal_pairs": int(illegal_pairs),
             "exact_duplicate_pairs": int(exact_duplicate_pairs),
+            "materialization_unsupported_pairs": int(materialization_unsupported_pairs),
             "attempt_start": int(start),
             "attempt_stop": int(index),
             "seed": int(seed),
+            "top_level_scheduling_key": "unified_registry_route_id",
+            "generator_authority": "RegistryDrivenGenerator",
+            "constructor_profile": self.constructor_profile,
+            "generator_version": self.generator_version,
             "underfill_reason": "" if generated_pairs == scheduled_pairs else "GENERATION_ATTEMPT_LIMIT",
             "spillover_reason": "",
         }

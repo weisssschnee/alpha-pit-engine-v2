@@ -566,6 +566,46 @@ def _signal_cluster_id(values: np.ndarray, time_ids: np.ndarray) -> str:
     )
 
 
+def _stratified_dates(values: Sequence[str], maximum: int) -> list[str]:
+    ordered = sorted(set(map(str, values)))
+    limit = max(1, int(maximum))
+    if len(ordered) <= limit:
+        return ordered
+    if limit == 1:
+        return [ordered[len(ordered) // 2]]
+    indices = [round(index * (len(ordered) - 1) / (limit - 1)) for index in range(limit)]
+    return [ordered[index] for index in dict.fromkeys(indices)]
+
+
+def _condition_activation_dates(
+    *,
+    paths: Sequence[Path],
+    eligible_trade_dates: Sequence[str],
+    condition_fields: Sequence[str],
+) -> list[str]:
+    fields = tuple(sorted(set(map(str, condition_fields))))
+    if not fields:
+        return []
+    date_expression = pl.col("trade_time").dt.strftime("%Y-%m-%d")
+    activation = None
+    for field in fields:
+        active = pl.col(field).cast(pl.Float64, strict=False).fill_null(0.0).abs() > 1e-12
+        activation = active if activation is None else activation | active
+    eligible = list(sorted(set(map(str, eligible_trade_dates))))
+    frame = pl.concat(
+        [
+            pl.scan_parquet(path, rechunk=False, low_memory=True)
+            .filter(date_expression.is_in(eligible))
+            .filter(activation)
+            .select(date_expression.alias("trade_date"))
+            for path in paths
+        ],
+        how="vertical_relaxed",
+        rechunk=False,
+    ).select(pl.col("trade_date").unique().sort())
+    return list(map(str, frame.collect(engine="streaming")["trade_date"].to_list()))
+
+
 def bounded_label_free_behavior_probe(
     *,
     candidates: Sequence[dict[str, Any]],
@@ -575,6 +615,8 @@ def bounded_label_free_behavior_probe(
     batch_id: str,
     compute_threads: int = 8,
     max_trade_times: int = 30,
+    max_trade_dates: int = 1,
+    date_selection: str = "calendar_stratified",
     pair_batch_size: int = 8,
     min_obs: int = 20,
     top_quantile: float = 0.2,
@@ -639,26 +681,60 @@ def bounded_label_free_behavior_probe(
         required_fields.update(fields)
         supported_pairs.append((primary, control))
 
-    probe_date = str(sorted(map(str, eligible_trade_dates))[0])
-    start = np.datetime64(probe_date)
-    end = start + np.timedelta64(1, "D")
-    condition = (pl.col("trade_time") >= pl.lit(start)) & (pl.col("trade_time") < pl.lit(end))
-    time_frame = pl.concat(
-        [
-            pl.scan_parquet(path, rechunk=False, low_memory=True)
-            .filter(condition)
-            .select("trade_time")
-            for path in paths
-        ],
-        how="vertical_relaxed",
-        rechunk=False,
-    ).select(pl.col("trade_time").unique().sort().head(max(1, int(max_trade_times))))
-    probe_times = time_frame.collect(engine="streaming")["trade_time"].to_list()
+    if date_selection not in {"calendar_stratified", "condition_activation"}:
+        raise ValueError(f"unknown behavior probe date selection: {date_selection}")
+    condition_fields = sorted(
+        {
+            str(field)
+            for primary, control in supported_pairs
+            for member in (primary, control)
+            for field in (member.get("condition_field_ids") or ())
+            if str(field) in schema
+        }
+    )
+    candidate_dates = list(map(str, eligible_trade_dates))
+    if date_selection == "condition_activation":
+        activated = _condition_activation_dates(
+            paths=paths,
+            eligible_trade_dates=eligible_trade_dates,
+            condition_fields=condition_fields,
+        )
+        if activated:
+            candidate_dates = activated
+    probe_dates = _stratified_dates(candidate_dates, max_trade_dates)
+    probe_times: list[Any] = []
+    for probe_date in probe_dates:
+        start = np.datetime64(probe_date)
+        end = start + np.timedelta64(1, "D")
+        condition = (pl.col("trade_time") >= pl.lit(start)) & (
+            pl.col("trade_time") < pl.lit(end)
+        )
+        time_frame = pl.concat(
+            [
+                pl.scan_parquet(path, rechunk=False, low_memory=True)
+                .filter(condition)
+                .select("trade_time")
+                for path in paths
+            ],
+            how="vertical_relaxed",
+            rechunk=False,
+        ).select(
+            pl.col("trade_time")
+            .unique()
+            .sort()
+            .head(max(1, int(max_trade_times)))
+        )
+        probe_times.extend(
+            time_frame.collect(engine="streaming")["trade_time"].to_list()
+        )
+    probe_times = sorted(set(probe_times))
     if not probe_times:
         raise RuntimeError("bounded behavior probe found no development coordinates")
-    probe_condition = (pl.col("trade_time") >= pl.lit(probe_times[0])) & (
-        pl.col("trade_time") <= pl.lit(probe_times[-1])
-    )
+    probe_condition = pl.lit(False)
+    for probe_time in probe_times:
+        probe_condition = probe_condition | (
+            pl.col("trade_time") == pl.lit(probe_time)
+        )
     frame = pl.concat(
         [
             pl.scan_parquet(path, rechunk=False, low_memory=True)
@@ -735,7 +811,9 @@ def bounded_label_free_behavior_probe(
     output.sort(key=lambda row: order[str(row["pair_id"])])
     audit = {
         "probe_scope": "LABEL_FREE_BOUNDED_MAPPING",
-        "probe_date": probe_date,
+        "probe_date": probe_dates[0],
+        "probe_dates": probe_dates,
+        "date_selection": date_selection,
         "trade_time_count": len(probe_times),
         "coordinate_rows": frame.height,
         "candidate_pair_count": len(rows) // 2,
