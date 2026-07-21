@@ -2,10 +2,10 @@ $ErrorActionPreference = 'Stop'
 
 $workspace = 'D:\ChengboRemote\workspace\alpha_pit_true1min_route_supply_8e6e8cce06a4'
 $python = 'D:\ChengboRemote\venvs\alpha311\Scripts\python.exe'
-$output = 'D:\ChengboRemote\runtime\cn_route_supply_closure_20260721_8e6e8cc'
-$stdout = 'D:\ChengboRemote\runtime\jobs\cn_route_supply_closure_20260721_8e6e8cc.stdout.log'
-$stderr = 'D:\ChengboRemote\runtime\jobs\cn_route_supply_closure_20260721_8e6e8cc.stderr.log'
-$status = 'D:\ChengboRemote\runtime\jobs\cn_route_supply_closure_20260721_8e6e8cc.status.json'
+$output = 'D:\ChengboRemote\runtime\cn_route_supply_closure_20260721_0c18916'
+$stdout = 'D:\ChengboRemote\runtime\jobs\cn_route_supply_closure_20260721_0c18916.stdout.log'
+$stderr = 'D:\ChengboRemote\runtime\jobs\cn_route_supply_closure_20260721_0c18916.stderr.log'
+$status = 'D:\ChengboRemote\runtime\jobs\cn_route_supply_closure_20260721_0c18916.status.json'
 
 $env:PYTHONPATH = Join-Path $workspace 'src'
 $env:PYTHONUNBUFFERED = '1'
@@ -19,7 +19,7 @@ $arguments = @(
     '--prior-run-root', 'D:\ChengboRemote\runtime\cn_iterative_search_v1_20260721_final_8c09bf2',
     '--broad-event-entry-pack', (Join-Path $workspace 'reports\cn_broad_event_recovery_20260713\DISCOVERY_ENTRY_PACK.json'),
     '--output-root', $output,
-    '--repo-sha', '8e6e8cce06a4714d8343f3c62b7797c4e2e73e4d',
+    '--repo-sha', '0c18916eceda45e33676c53f7efeccc010c131ca',
     '--seeds', '1729,2718',
     '--attempt-caps', '64,256,1024',
     '--required-pairs', '12',
@@ -46,7 +46,7 @@ catch {
 $ended = Get-Date
 
 [ordered]@{
-    task_name = 'CNRouteSupplyClosure_20260721_8e6e8cc'
+    task_name = 'CNRouteSupplyClosure_20260721_0c18916'
     started_at = $started.ToString('o')
     ended_at = $ended.ToString('o')
     exit_code = $exitCode

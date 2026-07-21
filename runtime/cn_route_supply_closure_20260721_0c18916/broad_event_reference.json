@@ -1,0 +1,8 @@
+{
+  "entry_pack_path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_route_supply_8e6e8cce06a4\\reports\\cn_broad_event_recovery_20260713\\DISCOVERY_ENTRY_PACK.json",
+  "entry_pack_sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8",
+  "mechanism_count": 11,
+  "search_budget": 0,
+  "search_role": "FROZEN_REFERENCE_ONLY",
+  "status": "FROZEN_REFERENCE_EVIDENCE_BOUND"
+}

@@ -1,0 +1,38 @@
+{
+  "bounded_payloads": [
+    "global sufficient statistics",
+    "daily aggregate vector",
+    "monthly aggregate vector",
+    "portfolio continuation state"
+  ],
+  "candidate_identity": "f46010a9857103c24229e8d8b492890f37f952c712c14b4e3929ec4a883bf482",
+  "data_role": "development",
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "horizons": [
+    1,
+    5,
+    15,
+    30
+  ],
+  "minute_coordinate_rows_retained": 0,
+  "schema_version": "cn_phase3cm_streaming_reducer_contract_v1",
+  "stat_fields": [
+    "curve_count",
+    "net_return_sum",
+    "raw_return_sum",
+    "net_positive_count",
+    "downside_square_sum",
+    "market_mean_return_sum",
+    "market_mean_return_count",
+    "turnover_sum",
+    "turnover_count",
+    "rank_ic_sum",
+    "rank_ic_count",
+    "rank_ic_positive_count",
+    "support_count",
+    "selected_count",
+    "signal_spread_max"
+  ],
+  "validation_reads": 0
+}

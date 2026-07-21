@@ -1,0 +1,26 @@
+{
+  "attempt_caps": [
+    64,
+    256,
+    1024
+  ],
+  "authorization": "BOUNDED_DEVELOPMENT_ROUTE_SUPPLY_QUALIFICATION",
+  "broad_event": "FROZEN_REFERENCE_ONLY_ZERO_SEARCH_BUDGET",
+  "forward_2026_reads": 0,
+  "full_coordinate_pairs_per_target_route": 4,
+  "generator_authority": "RegistryDrivenGenerator",
+  "holdout_reads": 0,
+  "legacy_profile": "legacy_registry_v1",
+  "probe_pairs_per_target_route": 12,
+  "promotion": "FORBIDDEN",
+  "required_headroom_multiplier": 2,
+  "required_pairs_per_route": 12,
+  "schema_version": "cn_route_supply_closure_contract_v1",
+  "seeds": [
+    1729,
+    2718
+  ],
+  "top_level_scheduling_key": "unified_registry_route_id",
+  "upgraded_profile": "registry_compositional_v2",
+  "validation_reads": 0
+}

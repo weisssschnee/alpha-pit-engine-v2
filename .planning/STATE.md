@@ -2,7 +2,7 @@
 
 Updated: 2026-07-21
 
-Current state: `CN_ITERATIVE_SEARCH_V1_CANARY_COMPLETED_SEARCH_FROZEN`
+Current state: `CN_ROUTE_SUPPLY_CLOSURE_PASS_NEXT_DEVELOPMENT_CAMPAIGN_READY_SEARCH_FROZEN`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -17,6 +17,25 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 ## Current accepted capabilities
 
 - Phase A EVALRESET and NEXTGEN-DARK infrastructure remain accepted.
+- The bounded route-supply closure passed on 77o. Across two fixed seeds and
+  attempt caps 64/256/1024, the legacy constructor showed stable post-archive
+  exact-supply exhaustion for Disclosure, Intraday State, and Minute Static;
+  this was diagnosed as `LEGACY_CONSTRUCTOR_CYCLE_EXHAUSTION`, not a registry
+  route-authority failure. The route-local `registry_compositional_v2` profile
+  preserved `RegistryDrivenGenerator` and registry `route_id` authority while
+  restoring all seven primary search routes to at least 2x the 12-pair exact
+  threshold. Broad Event remained a zero-budget frozen reference.
+- A first materialized probe exposed a narrower Disclosure supply gap: eight of
+  12 exact pairs referenced fields absent from the current stock-session
+  sidecar. Generation is now constrained by the active sidecar schema, and the
+  label-free Disclosure probe may use up to 12 condition-activation development
+  dates. The final bounded run generated 12 materializable pairs per target
+  route and selected only four Disclosure plus four Market pairs for
+  full-coordinate development Phase3CM evaluation. All eight were resolved,
+  behavior-unique within route, and retained all four identities. Both 37-block
+  backends completed on 77o with zero validation, holdout, or 2026 reads and
+  promotion forbidden. This closes the route-supply prerequisite but does not
+  authorize formal or large-scale search.
 - `CN_ITERATIVE_SEARCH_V1` is now closed as a bounded, development-only
   experimental capability. Three immutable batches scheduled 48 registry-route
   proposal pairs each, admitted and completed full-coordinate development
@@ -153,24 +172,27 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The three-batch V1 canary is complete, but 93 of 193 cumulative behavior-archive
-rows remain `BEHAVIOR_UNRESOLVED`. Broad Event has no streaming bounded-probe
-materialization, disclosure exhausted its small exact stream after Batch 0, and
-market-regime behavior remained unresolved or duplicate. These are explicit
-route supply/materialization gaps, not permission to fall back to structural
-families or to manufacture admissions. The campaign supplies no independent
-seed/time-block stability, validation, holdout, OOS, promotion, or economic
-proof. Plate remains independently blocked by missing real PIT minute
-materialization; the compound intraday state root remains a localized
-materialization gap.
+There is no remaining global route-supply blocker to the next separately frozen
+development campaign. The 93 unresolved rows in the historical V1 archive remain
+immutable evidence of that campaign and are not retroactively rewritten; they
+do not invalidate the new exact-supply ladder or the eight-pair materialized
+qualification. A larger development search still lacks its own frozen budgets,
+seed/attempt stream, archive snapshot, runtime envelope, and explicit execution
+authorization. The completed campaigns supply no independent seed/time-block
+stability, validation, holdout, OOS, promotion, or economic proof. Plate remains
+independently blocked by missing real PIT minute materialization; compound-state
+expansion remains a localized materialization gap.
 
 ## Next action
 
-Do not repeat either the 1,024 wave or this canary. The next decision is whether
-to repair bounded behavior materialization and finite exact supply for Broad
-Event, disclosure, and market regime before proposing another separately frozen
-development campaign. `exploit`, `repair`, and `orthogonal` remain labels unless
-a real registry-backed constructor is added and tested. Strict Stage A,
-candidate promotion, cross-campaign adaptive memory, validation/holdout access,
-and 2026 access remain forbidden. Plate resumes only when real PIT minute
-materialization is present on 77o.
+Do not repeat the 1,024 wave, the three-batch V1 canary, or the route-supply
+qualification. Prepare one separately frozen development campaign contract for
+the next system iteration: fixed nonzero route budgets, seeds and attempt stream,
+immutable archive snapshot, behavior-aware admission, matched feedback-on/off
+control, 77o runtime envelope, stop conditions, and explicit no-promotion
+boundary. `exploit`, `repair`, and `orthogonal` remain labels unless a real
+registry-backed constructor is added and tested. Broad Event remains a
+zero-budget frozen reference. Strict Stage A, candidate promotion,
+cross-campaign adaptive memory, validation/holdout access, and 2026 access remain
+forbidden. Plate resumes only when real PIT minute materialization is present on
+77o.

@@ -1,0 +1,1156 @@
+{
+  "candidate_roots": [
+    {
+      "candidate_id": "cn.comp.58d4c2c26ea1520068d2",
+      "expression": "Mul(EventCount($fund_disclosure_holder_pulse,1),Sign($fund_ba_accounts_rece_slope_at_disclosure))",
+      "mapping_subcohort_id": "mapping.d1c0dd5c4c6538081af3",
+      "pair_id": "cn.pair.7dee173d477dfd79203617658c3da306",
+      "pair_member_role": "PRIMARY",
+      "root_node_id": "value_node.98a1a100536ee94c9f8a55ae",
+      "value_cohort_id": "value.1e983e61a4276ab5e2f1"
+    },
+    {
+      "candidate_id": "cn.comp.58d4c2c26ea1520068d2.control",
+      "expression": "Add($fund_ba_accounts_rece_slope_at_disclosure,Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+      "mapping_subcohort_id": "mapping.aa8537aadbeb24062570",
+      "pair_id": "cn.pair.7dee173d477dfd79203617658c3da306",
+      "pair_member_role": "CONTROL",
+      "root_node_id": "value_node.5e21599642ebaf10c81c90aa",
+      "value_cohort_id": "value.6c9277e9d05ae4ca64bf"
+    },
+    {
+      "candidate_id": "cn.comp.9fe5aca9985903f10f63",
+      "expression": "Mul(EventCount($fund_disclosure_balance_pulse,1),Sign($fund_ba_total_current_assets_yoy_at_disclosure))",
+      "mapping_subcohort_id": "mapping.6d347e5cae0e0c7cd1b2",
+      "pair_id": "cn.pair.6f8cb7ecd450b3b757a807d092ebdbef",
+      "pair_member_role": "PRIMARY",
+      "root_node_id": "value_node.f132465642ef653e717d2715",
+      "value_cohort_id": "value.7d0982fb375b616d7ccd"
+    },
+    {
+      "candidate_id": "cn.comp.9fe5aca9985903f10f63.control",
+      "expression": "Add($fund_ba_total_current_assets_yoy_at_disclosure,Mul(0,TimeSince($fund_disclosure_balance_pulse)))",
+      "mapping_subcohort_id": "mapping.7bc561cea843c8339c0f",
+      "pair_id": "cn.pair.6f8cb7ecd450b3b757a807d092ebdbef",
+      "pair_member_role": "CONTROL",
+      "root_node_id": "value_node.e587c29110c01e75a2ec1ecf",
+      "value_cohort_id": "value.b679b42c7d280a6fd553"
+    },
+    {
+      "candidate_id": "cn.comp.b022551a984c89b1e738",
+      "expression": "Mul(EventCount($fund_disclosure_holder_pulse,1),Sign($fund_ba_inventory_acceleration_at_disclosure))",
+      "mapping_subcohort_id": "mapping.3f1a14f2daea649cc671",
+      "pair_id": "cn.pair.50522d7e8be5c1721b18890ee6776233",
+      "pair_member_role": "PRIMARY",
+      "root_node_id": "value_node.9719a5296bbc8caa61b9718b",
+      "value_cohort_id": "value.7a0b1ad606334412979f"
+    },
+    {
+      "candidate_id": "cn.comp.b022551a984c89b1e738.control",
+      "expression": "Add($fund_ba_inventory_acceleration_at_disclosure,Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+      "mapping_subcohort_id": "mapping.f7dc2b795b36e042db2d",
+      "pair_id": "cn.pair.50522d7e8be5c1721b18890ee6776233",
+      "pair_member_role": "CONTROL",
+      "root_node_id": "value_node.22f99b82f53e8341f8ff7390",
+      "value_cohort_id": "value.31a89e10df95eca612d3"
+    },
+    {
+      "candidate_id": "cn.comp.fed975e62a4f01707ea9",
+      "expression": "Mul(EventCount($fund_disclosure_holder_pulse,1),Sign($fund_ba_accounts_rece_source_yoy_at_disclosure))",
+      "mapping_subcohort_id": "mapping.dde099adf56a07b74134",
+      "pair_id": "cn.pair.b1bdf7cd4aea0e2eb7b39dd98039ceb8",
+      "pair_member_role": "PRIMARY",
+      "root_node_id": "value_node.97faeaa8296155c2692fe5dd",
+      "value_cohort_id": "value.2e43d3478268eb2cb3b2"
+    },
+    {
+      "candidate_id": "cn.comp.fed975e62a4f01707ea9.control",
+      "expression": "Add($fund_ba_accounts_rece_source_yoy_at_disclosure,Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+      "mapping_subcohort_id": "mapping.038b0e6632e2e6c8ba2b",
+      "pair_id": "cn.pair.b1bdf7cd4aea0e2eb7b39dd98039ceb8",
+      "pair_member_role": "CONTROL",
+      "root_node_id": "value_node.052ad4ffa2f415c48e548497",
+      "value_cohort_id": "value.4d9dbc19a9586c40698d"
+    }
+  ],
+  "mapping_subcohorts": [
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.038b0e6632e2e6c8ba2b",
+      "support_contract": "unique disclosure episode",
+      "value_cohort_id": "value.4d9dbc19a9586c40698d"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.3f1a14f2daea649cc671",
+      "support_contract": "unique disclosure episode",
+      "value_cohort_id": "value.7a0b1ad606334412979f"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.6d347e5cae0e0c7cd1b2",
+      "support_contract": "unique disclosure episode",
+      "value_cohort_id": "value.7d0982fb375b616d7ccd"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.7bc561cea843c8339c0f",
+      "support_contract": "unique disclosure episode",
+      "value_cohort_id": "value.b679b42c7d280a6fd553"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.aa8537aadbeb24062570",
+      "support_contract": "unique disclosure episode",
+      "value_cohort_id": "value.6c9277e9d05ae4ca64bf"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.d1c0dd5c4c6538081af3",
+      "support_contract": "unique disclosure episode",
+      "value_cohort_id": "value.1e983e61a4276ab5e2f1"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.dde099adf56a07b74134",
+      "support_contract": "unique disclosure episode",
+      "value_cohort_id": "value.2e43d3478268eb2cb3b2"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.f7dc2b795b36e042db2d",
+      "support_contract": "unique disclosure episode",
+      "value_cohort_id": "value.31a89e10df95eca612d3"
+    }
+  ],
+  "nodes": [
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Add($fund_ba_accounts_rece_source_yoy_at_disclosure,Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+      "cohort_id": "value.4d9dbc19a9586c40698d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.4d1a46298d0f03c591299c51",
+        "value_node.ea3bf35d4c70dd69e45032d8"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.052ad4ffa2f415c48e548497",
+      "operator": "Add",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_source_yoy_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "cohort_id": "value.4d9dbc19a9586c40698d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.7af065c9556533d41e012f42"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.06ceb6cd2d79cc118d833105",
+      "operator": "TimeSince",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_ba_inventory_acceleration_at_disclosure",
+      "cohort_id": "value.31a89e10df95eca612d3",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.0db7f0cf876b08c2fabbed5e",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_inventory_acceleration_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "0",
+      "cohort_id": "value.b679b42c7d280a6fd553",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.0e60d6e6a7ddadb48b4d28b5",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "0",
+      "cohort_id": "value.4d9dbc19a9586c40698d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.0f8fb52231367263fde52145",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_disclosure_balance_pulse",
+      "cohort_id": "value.7d0982fb375b616d7ccd",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.165614685fe3e748f85a3ad4",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_balance_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_ba_accounts_rece_slope_at_disclosure",
+      "cohort_id": "value.1e983e61a4276ab5e2f1",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.178c7d9dd3bd287477942e83",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_slope_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "cohort_id": "value.6c9277e9d05ae4ca64bf",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.3c912297ce32f0dbdcbd59af"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.2079c428327ba78868b81781",
+      "operator": "TimeSince",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Add($fund_ba_inventory_acceleration_at_disclosure,Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+      "cohort_id": "value.31a89e10df95eca612d3",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.0db7f0cf876b08c2fabbed5e",
+        "value_node.596bf18b3bc42d73bc24999c"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.22f99b82f53e8341f8ff7390",
+      "operator": "Add",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_inventory_acceleration_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "1",
+      "cohort_id": "value.7a0b1ad606334412979f",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.2447abdea2ccc9a9c16a23c9",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "TimeSince($fund_disclosure_balance_pulse)",
+      "cohort_id": "value.b679b42c7d280a6fd553",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.7bb18f986a62b3ca4c401bdb"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.370675266fb7972f55740201",
+      "operator": "TimeSince",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_balance_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "EventCount($fund_disclosure_holder_pulse,1)",
+      "cohort_id": "value.1e983e61a4276ab5e2f1",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.4efc4d0a2fa887a02b83d23b",
+        "value_node.51f82d901a1b0e9ca07a500d"
+      ],
+      "layer": "VALUE",
+      "lookback": 1,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.3a8b473bb8df95de97a6f0ad",
+      "operator": "EventCount",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "EventCount($fund_disclosure_holder_pulse,1)",
+      "cohort_id": "value.7a0b1ad606334412979f",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.ab60cd991e7e8787d78bee0d",
+        "value_node.2447abdea2ccc9a9c16a23c9"
+      ],
+      "layer": "VALUE",
+      "lookback": 1,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.3b65b237d0c7fb8ab6fcee19",
+      "operator": "EventCount",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_disclosure_holder_pulse",
+      "cohort_id": "value.6c9277e9d05ae4ca64bf",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.3c912297ce32f0dbdcbd59af",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "EventCount($fund_disclosure_balance_pulse,1)",
+      "cohort_id": "value.7d0982fb375b616d7ccd",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.165614685fe3e748f85a3ad4",
+        "value_node.a6ac46f915c96f2091ce6764"
+      ],
+      "layer": "VALUE",
+      "lookback": 1,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.426f787e692c06cc13a86cd6",
+      "operator": "EventCount",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_balance_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_ba_accounts_rece_source_yoy_at_disclosure",
+      "cohort_id": "value.4d9dbc19a9586c40698d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.4d1a46298d0f03c591299c51",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_source_yoy_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "0",
+      "cohort_id": "value.31a89e10df95eca612d3",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.4e34fab6b197779b10471bbe",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_disclosure_holder_pulse",
+      "cohort_id": "value.1e983e61a4276ab5e2f1",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.4efc4d0a2fa887a02b83d23b",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "1",
+      "cohort_id": "value.1e983e61a4276ab5e2f1",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.51f82d901a1b0e9ca07a500d",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "0",
+      "cohort_id": "value.6c9277e9d05ae4ca64bf",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.5803b847d943890a84756690",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(0,TimeSince($fund_disclosure_holder_pulse))",
+      "cohort_id": "value.31a89e10df95eca612d3",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.4e34fab6b197779b10471bbe",
+        "value_node.7685645c83a1780a02e001fa"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.596bf18b3bc42d73bc24999c",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Add($fund_ba_accounts_rece_slope_at_disclosure,Mul(0,TimeSince($fund_disclosure_holder_pulse)))",
+      "cohort_id": "value.6c9277e9d05ae4ca64bf",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.82c90cf93fccd9b3166659d7",
+        "value_node.88787a5a4e28d68751f59309"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.5e21599642ebaf10c81c90aa",
+      "operator": "Add",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_slope_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "TimeSince($fund_disclosure_holder_pulse)",
+      "cohort_id": "value.31a89e10df95eca612d3",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.c822f767278b0a468df530e6"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.7685645c83a1780a02e001fa",
+      "operator": "TimeSince",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_ba_accounts_rece_source_yoy_at_disclosure",
+      "cohort_id": "value.2e43d3478268eb2cb3b2",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.7767e6773125b64c5afa4ba0",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_source_yoy_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_disclosure_holder_pulse",
+      "cohort_id": "value.4d9dbc19a9586c40698d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.7af065c9556533d41e012f42",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_disclosure_balance_pulse",
+      "cohort_id": "value.b679b42c7d280a6fd553",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.7bb18f986a62b3ca4c401bdb",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_balance_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_ba_accounts_rece_slope_at_disclosure",
+      "cohort_id": "value.6c9277e9d05ae4ca64bf",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.82c90cf93fccd9b3166659d7",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_slope_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(0,TimeSince($fund_disclosure_holder_pulse))",
+      "cohort_id": "value.6c9277e9d05ae4ca64bf",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.5803b847d943890a84756690",
+        "value_node.2079c428327ba78868b81781"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.88787a5a4e28d68751f59309",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "EventCount($fund_disclosure_holder_pulse,1)",
+      "cohort_id": "value.2e43d3478268eb2cb3b2",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.b37fb6ba0238dbabe0c4838f",
+        "value_node.d6ec6731b61f03904dd5611e"
+      ],
+      "layer": "VALUE",
+      "lookback": 1,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.8a11ab3fb8002ba5e8876d1d",
+      "operator": "EventCount",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(0,TimeSince($fund_disclosure_balance_pulse))",
+      "cohort_id": "value.b679b42c7d280a6fd553",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.0e60d6e6a7ddadb48b4d28b5",
+        "value_node.370675266fb7972f55740201"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.8e36788161f6064a077e1978",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_balance_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(EventCount($fund_disclosure_holder_pulse,1),Sign($fund_ba_inventory_acceleration_at_disclosure))",
+      "cohort_id": "value.7a0b1ad606334412979f",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.3b65b237d0c7fb8ab6fcee19",
+        "value_node.deaa1899fcf190a509550f86"
+      ],
+      "layer": "VALUE",
+      "lookback": 1,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.9719a5296bbc8caa61b9718b",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_inventory_acceleration_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(EventCount($fund_disclosure_holder_pulse,1),Sign($fund_ba_accounts_rece_source_yoy_at_disclosure))",
+      "cohort_id": "value.2e43d3478268eb2cb3b2",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.8a11ab3fb8002ba5e8876d1d",
+        "value_node.e8b51757fb5b2e431c8c4b19"
+      ],
+      "layer": "VALUE",
+      "lookback": 1,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.97faeaa8296155c2692fe5dd",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_source_yoy_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(EventCount($fund_disclosure_holder_pulse,1),Sign($fund_ba_accounts_rece_slope_at_disclosure))",
+      "cohort_id": "value.1e983e61a4276ab5e2f1",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.3a8b473bb8df95de97a6f0ad",
+        "value_node.d78cb56504a631013b615621"
+      ],
+      "layer": "VALUE",
+      "lookback": 1,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.98a1a100536ee94c9f8a55ae",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_slope_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "1",
+      "cohort_id": "value.7d0982fb375b616d7ccd",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.a6ac46f915c96f2091ce6764",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_ba_total_current_assets_yoy_at_disclosure",
+      "cohort_id": "value.7d0982fb375b616d7ccd",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.a8ad131fe1faba81ce918eee",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_total_current_assets_yoy_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_disclosure_holder_pulse",
+      "cohort_id": "value.7a0b1ad606334412979f",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.ab60cd991e7e8787d78bee0d",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_disclosure_holder_pulse",
+      "cohort_id": "value.2e43d3478268eb2cb3b2",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.b37fb6ba0238dbabe0c4838f",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_disclosure_holder_pulse",
+      "cohort_id": "value.31a89e10df95eca612d3",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.c822f767278b0a468df530e6",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "1",
+      "cohort_id": "value.2e43d3478268eb2cb3b2",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.d6ec6731b61f03904dd5611e",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sign($fund_ba_accounts_rece_slope_at_disclosure)",
+      "cohort_id": "value.1e983e61a4276ab5e2f1",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.178c7d9dd3bd287477942e83"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.d78cb56504a631013b615621",
+      "operator": "Sign",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_slope_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sign($fund_ba_inventory_acceleration_at_disclosure)",
+      "cohort_id": "value.7a0b1ad606334412979f",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.e808cc0a5255c8b608098563"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.deaa1899fcf190a509550f86",
+      "operator": "Sign",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_inventory_acceleration_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Add($fund_ba_total_current_assets_yoy_at_disclosure,Mul(0,TimeSince($fund_disclosure_balance_pulse)))",
+      "cohort_id": "value.b679b42c7d280a6fd553",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.ea30c79bc94ff79fad53b266",
+        "value_node.8e36788161f6064a077e1978"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.e587c29110c01e75a2ec1ecf",
+      "operator": "Add",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_total_current_assets_yoy_at_disclosure",
+        "fund_disclosure_balance_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_ba_inventory_acceleration_at_disclosure",
+      "cohort_id": "value.7a0b1ad606334412979f",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.e808cc0a5255c8b608098563",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_inventory_acceleration_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sign($fund_ba_accounts_rece_source_yoy_at_disclosure)",
+      "cohort_id": "value.2e43d3478268eb2cb3b2",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.7767e6773125b64c5afa4ba0"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.e8b51757fb5b2e431c8c4b19",
+      "operator": "Sign",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_accounts_rece_source_yoy_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$fund_ba_total_current_assets_yoy_at_disclosure",
+      "cohort_id": "value.b679b42c7d280a6fd553",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.ea30c79bc94ff79fad53b266",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_total_current_assets_yoy_at_disclosure"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(0,TimeSince($fund_disclosure_holder_pulse))",
+      "cohort_id": "value.4d9dbc19a9586c40698d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.0f8fb52231367263fde52145",
+        "value_node.06ceb6cd2d79cc118d833105"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.ea3bf35d4c70dd69e45032d8",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_disclosure_holder_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(EventCount($fund_disclosure_balance_pulse,1),Sign($fund_ba_total_current_assets_yoy_at_disclosure))",
+      "cohort_id": "value.7d0982fb375b616d7ccd",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.426f787e692c06cc13a86cd6",
+        "value_node.f3a9f24725113e88dd13b614"
+      ],
+      "layer": "VALUE",
+      "lookback": 1,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.f132465642ef653e717d2715",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_total_current_assets_yoy_at_disclosure",
+        "fund_disclosure_balance_pulse"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sign($fund_ba_total_current_assets_yoy_at_disclosure)",
+      "cohort_id": "value.7d0982fb375b616d7ccd",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.a8ad131fe1faba81ce918eee"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.f3a9f24725113e88dd13b614",
+      "operator": "Sign",
+      "output_type": "numeric",
+      "raw_fields": [
+        "fund_ba_total_current_assets_yoy_at_disclosure"
+      ],
+      "reuse_count": 0
+    }
+  ],
+  "plan_hash": "22126ee57e243f74ec060924fadf7bbecaa31cd7788a3089ba4bc737d54a84aa",
+  "schema_version": "cn_shared_multicandidate_dag_plan_v1",
+  "value_cohorts": [
+    {
+      "backend": "session_pit",
+      "cohort_id": "value.1e983e61a4276ab5e2f1",
+      "observable_clock_maturity": "episode maturity plus registered action delay",
+      "raw_field_surface": [
+        "fund_ba_accounts_rece_slope_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "window_profile": [
+        1
+      ]
+    },
+    {
+      "backend": "session_pit",
+      "cohort_id": "value.2e43d3478268eb2cb3b2",
+      "observable_clock_maturity": "episode maturity plus registered action delay",
+      "raw_field_surface": [
+        "fund_ba_accounts_rece_source_yoy_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "window_profile": [
+        1
+      ]
+    },
+    {
+      "backend": "session_pit",
+      "cohort_id": "value.31a89e10df95eca612d3",
+      "observable_clock_maturity": "episode maturity plus registered action delay",
+      "raw_field_surface": [
+        "fund_ba_inventory_acceleration_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "window_profile": []
+    },
+    {
+      "backend": "session_pit",
+      "cohort_id": "value.4d9dbc19a9586c40698d",
+      "observable_clock_maturity": "episode maturity plus registered action delay",
+      "raw_field_surface": [
+        "fund_ba_accounts_rece_source_yoy_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "window_profile": []
+    },
+    {
+      "backend": "session_pit",
+      "cohort_id": "value.6c9277e9d05ae4ca64bf",
+      "observable_clock_maturity": "episode maturity plus registered action delay",
+      "raw_field_surface": [
+        "fund_ba_accounts_rece_slope_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "window_profile": []
+    },
+    {
+      "backend": "session_pit",
+      "cohort_id": "value.7a0b1ad606334412979f",
+      "observable_clock_maturity": "episode maturity plus registered action delay",
+      "raw_field_surface": [
+        "fund_ba_inventory_acceleration_at_disclosure",
+        "fund_disclosure_holder_pulse"
+      ],
+      "window_profile": [
+        1
+      ]
+    },
+    {
+      "backend": "session_pit",
+      "cohort_id": "value.7d0982fb375b616d7ccd",
+      "observable_clock_maturity": "episode maturity plus registered action delay",
+      "raw_field_surface": [
+        "fund_ba_total_current_assets_yoy_at_disclosure",
+        "fund_disclosure_balance_pulse"
+      ],
+      "window_profile": [
+        1
+      ]
+    },
+    {
+      "backend": "session_pit",
+      "cohort_id": "value.b679b42c7d280a6fd553",
+      "observable_clock_maturity": "episode maturity plus registered action delay",
+      "raw_field_surface": [
+        "fund_ba_total_current_assets_yoy_at_disclosure",
+        "fund_disclosure_balance_pulse"
+      ],
+      "window_profile": []
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "behavior_qualification": {
+    "forward_2026_reads": 0,
+    "full_coordinate_phase3cm": "COMPLETED",
+    "holdout_reads": 0,
+    "outcome_pair_count": 8,
+    "phase3cm_access_receipts": [
+      {
+        "backend": "active_bar",
+        "command": [
+          "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+          "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_route_supply_8e6e8cce06a4\\scripts\\run_cn_phase3cm_streaming_qualification.py",
+          "--backend",
+          "active_bar",
+          "--phase",
+          "D",
+          "--pair-count",
+          "4",
+          "--candidate-table",
+          "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification\\phase3cm_active_bar_candidates.csv",
+          "--binding",
+          "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification\\phase3cm_input_binding.json",
+          "--split-manifest",
+          "D:\\ChengboRemote\\workspace\\cn_phase3cm_1024_sidecar_closure_0aba8c5\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+          "--artifact-root",
+          "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification",
+          "--field-sidecar-root",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_sidecars_3509d0c\\active_time_major_train_v1",
+          "--label-sidecar-root",
+          "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\time_major_train_v3_labels",
+          "--output-root",
+          "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification\\phase3cm\\active_bar",
+          "--block-sessions",
+          "10",
+          "--pair-batch-size",
+          "8",
+          "--compute-threads",
+          "11",
+          "--iterative-batch-id",
+          "route_supply_closure"
+        ],
+        "completed_at": "2026-07-21T08:05:57.623403+00:00",
+        "result_path": "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification\\phase3cm\\active_bar\\CN_STREAMING_BACKEND_RESULT.json",
+        "result_sha256": "cfec05b157c1bbff3e3ffa16692307fdc32b4c78f40edfb3e528c1c37c8eacc7",
+        "returncode": 0,
+        "started_at": "2026-07-21T08:01:15.659176+00:00",
+        "status": "COMPLETED"
+      },
+      {
+        "backend": "stock_session",
+        "command": [
+          "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+          "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_route_supply_8e6e8cce06a4\\scripts\\run_cn_phase3cm_streaming_qualification.py",
+          "--backend",
+          "stock_session",
+          "--phase",
+          "D",
+          "--pair-count",
+          "4",
+          "--candidate-table",
+          "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification\\phase3cm_stock_session_candidates.csv",
+          "--binding",
+          "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification\\phase3cm_input_binding.json",
+          "--split-manifest",
+          "D:\\ChengboRemote\\workspace\\cn_phase3cm_1024_sidecar_closure_0aba8c5\\runtime\\run_plans\\phase3ga_true1min_2024_2025_global_split_manifest.csv",
+          "--artifact-root",
+          "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification",
+          "--field-sidecar-root",
+          "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_sidecars_3509d0c\\session_time_major_train_v1",
+          "--label-sidecar-root",
+          "D:\\ChengboRemote\\workspace\\alpha_pit_compositional_667c82f_git\\runtime\\cn_phase3cm_streaming_repair_20260716\\session_time_major_train_v3_labels",
+          "--output-root",
+          "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification\\phase3cm\\stock_session",
+          "--block-sessions",
+          "10",
+          "--pair-batch-size",
+          "8",
+          "--compute-threads",
+          "2",
+          "--iterative-batch-id",
+          "route_supply_closure"
+        ],
+        "completed_at": "2026-07-21T08:06:10.811984+00:00",
+        "result_path": "D:\\ChengboRemote\\runtime\\cn_route_supply_closure_20260721_0c18916\\full_coordinate_development_qualification\\phase3cm\\stock_session\\CN_STREAMING_BACKEND_RESULT.json",
+        "result_sha256": "f13f904f7cd9090e3736565631a5db9d373c193fe2f808ee76640bb43ce3185c",
+        "returncode": 0,
+        "started_at": "2026-07-21T08:05:57.630910+00:00",
+        "status": "COMPLETED"
+      }
+    ],
+    "promotion": "FORBIDDEN",
+    "route_gates": {
+      "DISCLOSURE_EVENT": true,
+      "MARKET_REGIME_CONDITION": true
+    },
+    "routes": {
+      "DISCLOSURE_EVENT": {
+        "date_selection": "condition_activation",
+        "four_identities_closed": true,
+        "full_coordinate_behavior_unique_pairs": 4,
+        "full_coordinate_pairs": 4,
+        "full_coordinate_resolved_pairs": 4,
+        "generated_pairs": 12,
+        "probe_behavior_unique_pairs": 5,
+        "probe_dates": [
+          "2024-01-03",
+          "2024-02-27",
+          "2024-04-15",
+          "2024-06-05",
+          "2024-07-23",
+          "2024-09-06",
+          "2024-10-31",
+          "2024-12-18",
+          "2025-02-12",
+          "2025-03-31",
+          "2025-05-20",
+          "2025-07-07"
+        ],
+        "probe_resolved_pairs": 5,
+        "probe_unresolved_pairs": 7,
+        "selected_full_coordinate_pairs": 4
+      },
+      "MARKET_REGIME_CONDITION": {
+        "date_selection": "calendar_stratified",
+        "four_identities_closed": true,
+        "full_coordinate_behavior_unique_pairs": 4,
+        "full_coordinate_pairs": 4,
+        "full_coordinate_resolved_pairs": 4,
+        "generated_pairs": 12,
+        "probe_behavior_unique_pairs": 10,
+        "probe_dates": [
+          "2024-01-02",
+          "2024-07-05",
+          "2025-01-02",
+          "2025-07-07"
+        ],
+        "probe_resolved_pairs": 11,
+        "probe_unresolved_pairs": 1,
+        "selected_full_coordinate_pairs": 4
+      }
+    },
+    "status": "ROUTE_BEHAVIOR_AND_FULL_COORDINATE_QUALIFICATION_PASS",
+    "validation_reads": 0
+  },
+  "broad_event": {
+    "entry_pack_path": "D:\\ChengboRemote\\workspace\\alpha_pit_true1min_route_supply_8e6e8cce06a4\\reports\\cn_broad_event_recovery_20260713\\DISCOVERY_ENTRY_PACK.json",
+    "entry_pack_sha256": "2f5174427525635bb917f613e1215c4fb3dc7793daf07b3dc5a2bb34106333f8",
+    "mechanism_count": 11,
+    "search_budget": 0,
+    "search_role": "FROZEN_REFERENCE_ONLY",
+    "status": "FROZEN_REFERENCE_EVIDENCE_BOUND"
+  },
+  "clamped_routes": [
+    {
+      "blocks_next_development_phase": false,
+      "legacy_classification": "STABLE_EXACT_SUPPLY_BOTTLENECK",
+      "prior_feedback_status": "ACTIONABLE_FEEDBACK_CLAMPED",
+      "repair_status": "REPAIRED_BY_REGISTRY_COMPOSITIONAL_PROFILE",
+      "root_cause": "LEGACY_CONSTRUCTOR_CYCLE_EXHAUSTION",
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "upgraded_classification": "SEARCHABLE_SUPPLY_READY_WITH_HEADROOM"
+    },
+    {
+      "blocks_next_development_phase": false,
+      "legacy_classification": "STABLE_EXACT_SUPPLY_BOTTLENECK",
+      "prior_feedback_status": "ACTIONABLE_FEEDBACK_CLAMPED",
+      "repair_status": "REPAIRED_BY_REGISTRY_COMPOSITIONAL_PROFILE",
+      "root_cause": "LEGACY_CONSTRUCTOR_CYCLE_EXHAUSTION",
+      "route_id": "MINUTE_STATIC",
+      "upgraded_classification": "SEARCHABLE_SUPPLY_READY_WITH_HEADROOM"
+    }
+  ],
+  "formal_search": "FROZEN",
+  "forward_2026_reads": 0,
+  "gates": {
+    "all_primary_routes_have_exact_supply_headroom": true,
+    "behavior_and_full_coordinate_target_routes_pass": true,
+    "broad_event_remains_zero_budget_frozen_reference": true,
+    "prior_actionable_clamps_classified_nonblocking": true,
+    "promotion_forbidden": true,
+    "validation_holdout_2026_reads_zero": true
+  },
+  "holdout_reads": 0,
+  "next_phase": "READY_FOR_SEPARATELY_FROZEN_DEVELOPMENT_CAMPAIGN",
+  "promotion": "FORBIDDEN",
+  "status": "CN_ROUTE_SUPPLY_CLOSURE_PASS",
+  "strict_stage_a": "NOT_AUTHORIZED",
+  "validation_reads": 0
+}

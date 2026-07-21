@@ -1,0 +1,28 @@
+{
+  "candidate_pair_count": 12,
+  "coordinate_rows": 61081,
+  "date_selection": "condition_activation",
+  "forward_2026_reads": 0,
+  "holdout_reads": 0,
+  "label_sidecar_paths_accepted": 0,
+  "materialized_pair_count": 12,
+  "probe_date": "2024-01-03",
+  "probe_dates": [
+    "2024-01-03",
+    "2024-02-27",
+    "2024-04-15",
+    "2024-06-05",
+    "2024-07-23",
+    "2024-09-06",
+    "2024-10-31",
+    "2024-12-18",
+    "2025-02-12",
+    "2025-03-31",
+    "2025-05-20",
+    "2025-07-07"
+  ],
+  "probe_scope": "LABEL_FREE_BOUNDED_MAPPING",
+  "trade_time_count": 12,
+  "unresolved_pair_count": 7,
+  "validation_reads": 0
+}

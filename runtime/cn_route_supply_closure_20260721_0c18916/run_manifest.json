@@ -1,0 +1,48 @@
+{
+  "artifacts": [
+    {
+      "bytes": 768,
+      "path": "frozen_contract.json",
+      "sha256": "86bb30fe02458cb2c320e08b7c7abfb59a31de1842d7935aeb11a1f919117ee5"
+    },
+    {
+      "bytes": 18168,
+      "path": "legacy_exact_supply.json",
+      "sha256": "81b78396d5e760acf316e9be51c72ad245813f8df2d447e65e342e352c79fff0"
+    },
+    {
+      "bytes": 18277,
+      "path": "upgraded_exact_supply.json",
+      "sha256": "e6ffd3557c81d73359c8fc016d9c7e21ca09b9b3819f0d59142c457ee33f69eb"
+    },
+    {
+      "bytes": 843,
+      "path": "clamp_root_cause.json",
+      "sha256": "474bbaf9d81c576ede67b9b07463cbad6fb6a1efcaf3dd55077c81723163bce0"
+    },
+    {
+      "bytes": 407,
+      "path": "broad_event_reference.json",
+      "sha256": "afbbd1d7d6e0e039ff3a290b08461e0fdc1d049e6e6434e8a9fcb223f850d3e2"
+    },
+    {
+      "bytes": 6356,
+      "path": "behavior_qualification.json",
+      "sha256": "9c154d5bfdaeb134340c86c1c90720e814cf018e9f602cb9831aca853002f89a"
+    },
+    {
+      "bytes": 8652,
+      "path": "final_decision.json",
+      "sha256": "e0a0205972b03dceee216d15ab613fd6fb821d99b70b02ccac6fb05cb3740baa"
+    }
+  ],
+  "forward_2026_reads": 0,
+  "historical_exact_identity_count": 288,
+  "holdout_reads": 0,
+  "host": "DESKTOP-77OPJ6F",
+  "promotion": "FORBIDDEN",
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "repo_sha": "0c18916eceda45e33676c53f7efeccc010c131ca",
+  "status": "CN_ROUTE_SUPPLY_CLOSURE_PASS",
+  "validation_reads": 0
+}

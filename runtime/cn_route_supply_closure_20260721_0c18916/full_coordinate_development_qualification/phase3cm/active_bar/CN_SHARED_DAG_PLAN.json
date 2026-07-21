@@ -1,0 +1,1220 @@
+{
+  "candidate_roots": [
+    {
+      "candidate_id": "cn.comp.13408cc667eaed430fd6",
+      "expression": "CSRank(Mul(MultiScaleRelation($close,$ctx_sent_mian_num,5,20),Sign($ctx_sent_mian_num)))",
+      "mapping_subcohort_id": "mapping.a73e45660af2ba4a7021",
+      "pair_id": "cn.pair.7877d0200b0a7cfa094c8bfa9726929a",
+      "pair_member_role": "PRIMARY",
+      "root_node_id": "mapping_node.132259bb1b7ac3ce28a71404",
+      "value_cohort_id": "value.976af65a71d44b2b2e2d"
+    },
+    {
+      "candidate_id": "cn.comp.13408cc667eaed430fd6.control",
+      "expression": "CSRank(Add(ZScore($close),Mul(0,$ctx_sent_mian_num)))",
+      "mapping_subcohort_id": "mapping.fe2560a87adee1216702",
+      "pair_id": "cn.pair.7877d0200b0a7cfa094c8bfa9726929a",
+      "pair_member_role": "CONTROL",
+      "root_node_id": "mapping_node.d043e18dbbeac669f01f9322",
+      "value_cohort_id": "value.58545699021386e98298"
+    },
+    {
+      "candidate_id": "cn.comp.3eb0bf1b63a4cc8dab94",
+      "expression": "CSRank(Sub(ZScore($pct_chg),Mul(Sign($pct_chg),Sign($ctx_sent_zb_num))))",
+      "mapping_subcohort_id": "mapping.7a9fb188659a8811cdf2",
+      "pair_id": "cn.pair.c2a4999891e324150b9ddf3d9d06bcb7",
+      "pair_member_role": "PRIMARY",
+      "root_node_id": "mapping_node.6f0e5adaaab5aaa261aabbea",
+      "value_cohort_id": "value.73de841fc25eb5b88bc7"
+    },
+    {
+      "candidate_id": "cn.comp.3eb0bf1b63a4cc8dab94.control",
+      "expression": "CSRank(Add(ZScore($pct_chg),Mul(0,$ctx_sent_zb_num)))",
+      "mapping_subcohort_id": "mapping.7a9fb188659a8811cdf2",
+      "pair_id": "cn.pair.c2a4999891e324150b9ddf3d9d06bcb7",
+      "pair_member_role": "CONTROL",
+      "root_node_id": "mapping_node.55655768fe24f6a70d0d1571",
+      "value_cohort_id": "value.73de841fc25eb5b88bc7"
+    },
+    {
+      "candidate_id": "cn.comp.8ade1b1886c51d52bfb5",
+      "expression": "CSRank(Mul(Sign($pct_chg),Persistence(Positive($ctx_sent_gt5_num),10)))",
+      "mapping_subcohort_id": "mapping.28a17423eb066722b88b",
+      "pair_id": "cn.pair.86891edcc25c80f795014730bc270254",
+      "pair_member_role": "PRIMARY",
+      "root_node_id": "mapping_node.cef0052f2356bfe4750bca1c",
+      "value_cohort_id": "value.0e59772e3b1aeaec0842"
+    },
+    {
+      "candidate_id": "cn.comp.8ade1b1886c51d52bfb5.control",
+      "expression": "CSRank(Add(ZScore($pct_chg),Mul(0,$ctx_sent_gt5_num)))",
+      "mapping_subcohort_id": "mapping.559c266a7033a9c2f959",
+      "pair_id": "cn.pair.86891edcc25c80f795014730bc270254",
+      "pair_member_role": "CONTROL",
+      "root_node_id": "mapping_node.f0a41df08fdbed02c0809308",
+      "value_cohort_id": "value.081588b044f4723faf97"
+    },
+    {
+      "candidate_id": "cn.comp.d27769a4c1983aa22d0e",
+      "expression": "CSRank(Mul(ZScore($vwap),Sign($ctx_sent_lb_2_num)))",
+      "mapping_subcohort_id": "mapping.3798584a43f9e20d7877",
+      "pair_id": "cn.pair.e4f76648464888eea0676d2204f565d8",
+      "pair_member_role": "PRIMARY",
+      "root_node_id": "mapping_node.81189895b5ee614f45da856e",
+      "value_cohort_id": "value.b490c4abe5f9b0e42668"
+    },
+    {
+      "candidate_id": "cn.comp.d27769a4c1983aa22d0e.control",
+      "expression": "CSRank(Add(ZScore($vwap),Mul(0,$ctx_sent_lb_2_num)))",
+      "mapping_subcohort_id": "mapping.3798584a43f9e20d7877",
+      "pair_id": "cn.pair.e4f76648464888eea0676d2204f565d8",
+      "pair_member_role": "CONTROL",
+      "root_node_id": "mapping_node.8cc3d9db3401c7a031ba40a0",
+      "value_cohort_id": "value.b490c4abe5f9b0e42668"
+    }
+  ],
+  "mapping_subcohorts": [
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.28a17423eb066722b88b",
+      "support_contract": "market-time block",
+      "value_cohort_id": "value.0e59772e3b1aeaec0842"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.3798584a43f9e20d7877",
+      "support_contract": "market-time block",
+      "value_cohort_id": "value.b490c4abe5f9b0e42668"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.559c266a7033a9c2f959",
+      "support_contract": "market-time block",
+      "value_cohort_id": "value.081588b044f4723faf97"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.7a9fb188659a8811cdf2",
+      "support_contract": "market-time block",
+      "value_cohort_id": "value.73de841fc25eb5b88bc7"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.a73e45660af2ba4a7021",
+      "support_contract": "market-time block",
+      "value_cohort_id": "value.976af65a71d44b2b2e2d"
+    },
+    {
+      "eligibility_contract": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "mapping_family": "cross_sectional",
+      "portfolio_mode": "long_only_top",
+      "subcohort_id": "mapping.fe2560a87adee1216702",
+      "support_contract": "market-time block",
+      "value_cohort_id": "value.58545699021386e98298"
+    }
+  ],
+  "nodes": [
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "CSRank(Mul(MultiScaleRelation($close,$ctx_sent_mian_num,5,20),Sign($ctx_sent_mian_num)))",
+      "cohort_id": "value.976af65a71d44b2b2e2d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.d2fa102cfbff4726a6d7efce"
+      ],
+      "layer": "MAPPING",
+      "lookback": 20,
+      "mapping_subcohort_id": "mapping.a73e45660af2ba4a7021",
+      "node_id": "mapping_node.132259bb1b7ac3ce28a71404",
+      "operator": "CSRank",
+      "output_type": "numeric",
+      "raw_fields": [
+        "close",
+        "ctx_sent_mian_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "ZScore($vwap)",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 2,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.2194a097b32bede648e5d5fe"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.3798584a43f9e20d7877",
+      "node_id": "mapping_node.1cb6a0c3162bd42a109f40e2",
+      "operator": "ZScore",
+      "output_type": "numeric",
+      "raw_fields": [
+        "vwap"
+      ],
+      "reuse_count": 1
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Add(ZScore($pct_chg),Mul(0,$ctx_sent_zb_num))",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.3ab409ed3cdf904456d5edf0",
+        "value_node.3a15e50e99f8698cd4863f14"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.7a9fb188659a8811cdf2",
+      "node_id": "mapping_node.30589cbc2638832e90260541",
+      "operator": "Add",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_zb_num",
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "ZScore($pct_chg)",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 2,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.e5dc69cf555ca647a51ed4d8"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.7a9fb188659a8811cdf2",
+      "node_id": "mapping_node.3ab409ed3cdf904456d5edf0",
+      "operator": "ZScore",
+      "output_type": "numeric",
+      "raw_fields": [
+        "pct_chg"
+      ],
+      "reuse_count": 1
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "ZScore($pct_chg)",
+      "cohort_id": "value.081588b044f4723faf97",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.486e8fdf19e268e9563aade1"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.559c266a7033a9c2f959",
+      "node_id": "mapping_node.4b5e33873a239a553fba3052",
+      "operator": "ZScore",
+      "output_type": "numeric",
+      "raw_fields": [
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Add(ZScore($pct_chg),Mul(0,$ctx_sent_gt5_num))",
+      "cohort_id": "value.081588b044f4723faf97",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.4b5e33873a239a553fba3052",
+        "value_node.4f6576465e14fffd089ee664"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.559c266a7033a9c2f959",
+      "node_id": "mapping_node.4d81b4cb7d86f93b9defbeb8",
+      "operator": "Add",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_gt5_num",
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "CSRank(Add(ZScore($pct_chg),Mul(0,$ctx_sent_zb_num)))",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.30589cbc2638832e90260541"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.7a9fb188659a8811cdf2",
+      "node_id": "mapping_node.55655768fe24f6a70d0d1571",
+      "operator": "CSRank",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_zb_num",
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(ZScore($vwap),Sign($ctx_sent_lb_2_num))",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.1cb6a0c3162bd42a109f40e2",
+        "value_node.cca7aa35a822d220d409b28c"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.3798584a43f9e20d7877",
+      "node_id": "mapping_node.57ed395993102c7288ba204d",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_lb_2_num",
+        "vwap"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "CSRank(Sub(ZScore($pct_chg),Mul(Sign($pct_chg),Sign($ctx_sent_zb_num))))",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.8aa74c8f0ffab0a66a8700bb"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.7a9fb188659a8811cdf2",
+      "node_id": "mapping_node.6f0e5adaaab5aaa261aabbea",
+      "operator": "CSRank",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_zb_num",
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Add(ZScore($close),Mul(0,$ctx_sent_mian_num))",
+      "cohort_id": "value.58545699021386e98298",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.e26e727dae6257c6d0648659",
+        "value_node.0402db353a83408031aa890a"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.fe2560a87adee1216702",
+      "node_id": "mapping_node.6f398ead26b1df05f2c74149",
+      "operator": "Add",
+      "output_type": "numeric",
+      "raw_fields": [
+        "close",
+        "ctx_sent_mian_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "CSRank(Mul(ZScore($vwap),Sign($ctx_sent_lb_2_num)))",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.57ed395993102c7288ba204d"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.3798584a43f9e20d7877",
+      "node_id": "mapping_node.81189895b5ee614f45da856e",
+      "operator": "CSRank",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_lb_2_num",
+        "vwap"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sub(ZScore($pct_chg),Mul(Sign($pct_chg),Sign($ctx_sent_zb_num)))",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.3ab409ed3cdf904456d5edf0",
+        "value_node.518f3815276fd232fb231f5a"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.7a9fb188659a8811cdf2",
+      "node_id": "mapping_node.8aa74c8f0ffab0a66a8700bb",
+      "operator": "Sub",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_zb_num",
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "CSRank(Add(ZScore($vwap),Mul(0,$ctx_sent_lb_2_num)))",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.b77f2d6b1b0f6178728c809e"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.3798584a43f9e20d7877",
+      "node_id": "mapping_node.8cc3d9db3401c7a031ba40a0",
+      "operator": "CSRank",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_lb_2_num",
+        "vwap"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Add(ZScore($vwap),Mul(0,$ctx_sent_lb_2_num))",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.1cb6a0c3162bd42a109f40e2",
+        "value_node.1928f18f48fc1deaa92e5428"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.3798584a43f9e20d7877",
+      "node_id": "mapping_node.b77f2d6b1b0f6178728c809e",
+      "operator": "Add",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_lb_2_num",
+        "vwap"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "CSRank(Mul(Sign($pct_chg),Persistence(Positive($ctx_sent_gt5_num),10)))",
+      "cohort_id": "value.0e59772e3b1aeaec0842",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.1b2841ae7b6ad10985951d58"
+      ],
+      "layer": "MAPPING",
+      "lookback": 10,
+      "mapping_subcohort_id": "mapping.28a17423eb066722b88b",
+      "node_id": "mapping_node.cef0052f2356bfe4750bca1c",
+      "operator": "CSRank",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_gt5_num",
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "CSRank(Add(ZScore($close),Mul(0,$ctx_sent_mian_num)))",
+      "cohort_id": "value.58545699021386e98298",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.6f398ead26b1df05f2c74149"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.fe2560a87adee1216702",
+      "node_id": "mapping_node.d043e18dbbeac669f01f9322",
+      "operator": "CSRank",
+      "output_type": "numeric",
+      "raw_fields": [
+        "close",
+        "ctx_sent_mian_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "ZScore($close)",
+      "cohort_id": "value.58545699021386e98298",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.a2d3d9c271347a89e9300f03"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.fe2560a87adee1216702",
+      "node_id": "mapping_node.e26e727dae6257c6d0648659",
+      "operator": "ZScore",
+      "output_type": "numeric",
+      "raw_fields": [
+        "close"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "CSRank(Add(ZScore($pct_chg),Mul(0,$ctx_sent_gt5_num)))",
+      "cohort_id": "value.081588b044f4723faf97",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "mapping_node.4d81b4cb7d86f93b9defbeb8"
+      ],
+      "layer": "MAPPING",
+      "lookback": 0,
+      "mapping_subcohort_id": "mapping.559c266a7033a9c2f959",
+      "node_id": "mapping_node.f0a41df08fdbed02c0809308",
+      "operator": "CSRank",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_gt5_num",
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(0,$ctx_sent_mian_num)",
+      "cohort_id": "value.58545699021386e98298",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.b9a3376c501ab0cab33ef189",
+        "value_node.c5994c820b1a6584659ab812"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.0402db353a83408031aa890a",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_mian_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(0,$ctx_sent_lb_2_num)",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.a3aab521b31d3c4fbac7239a",
+        "value_node.c03924048d6ff6280b7b62e5"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.1928f18f48fc1deaa92e5428",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_lb_2_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(Sign($pct_chg),Persistence(Positive($ctx_sent_gt5_num),10))",
+      "cohort_id": "value.0e59772e3b1aeaec0842",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.b87affa36237e8b8e03b4931",
+        "value_node.1b78975d11a5d2bc338c4bbe"
+      ],
+      "layer": "VALUE",
+      "lookback": 10,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.1b2841ae7b6ad10985951d58",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_gt5_num",
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Persistence(Positive($ctx_sent_gt5_num),10)",
+      "cohort_id": "value.0e59772e3b1aeaec0842",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.af059dceddff5b92e1334f54",
+        "value_node.4736973fc2b2e6982ccac809"
+      ],
+      "layer": "VALUE",
+      "lookback": 10,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.1b78975d11a5d2bc338c4bbe",
+      "operator": "Persistence",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_gt5_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "0",
+      "cohort_id": "value.081588b044f4723faf97",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.2077bcdb979979b236c8d533",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$vwap",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 2,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.2194a097b32bede648e5d5fe",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "vwap"
+      ],
+      "reuse_count": 1
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "0",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.27aca6c4308e62cb161ba1ea",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$ctx_sent_zb_num",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 2,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.2b56983642444b81d848461d",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_zb_num"
+      ],
+      "reuse_count": 1
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(0,$ctx_sent_zb_num)",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.27aca6c4308e62cb161ba1ea",
+        "value_node.2b56983642444b81d848461d"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.3a15e50e99f8698cd4863f14",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_zb_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sign($ctx_sent_zb_num)",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.2b56983642444b81d848461d"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.461b57820f67604391314190",
+      "operator": "Sign",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_zb_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "10",
+      "cohort_id": "value.0e59772e3b1aeaec0842",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.4736973fc2b2e6982ccac809",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$pct_chg",
+      "cohort_id": "value.081588b044f4723faf97",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.486e8fdf19e268e9563aade1",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(0,$ctx_sent_gt5_num)",
+      "cohort_id": "value.081588b044f4723faf97",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.2077bcdb979979b236c8d533",
+        "value_node.9069d1d9ced9b061829694e4"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.4f6576465e14fffd089ee664",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_gt5_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(Sign($pct_chg),Sign($ctx_sent_zb_num))",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.9251d85058d68867d9b38e82",
+        "value_node.461b57820f67604391314190"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.518f3815276fd232fb231f5a",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_zb_num",
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$pct_chg",
+      "cohort_id": "value.0e59772e3b1aeaec0842",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.7481d9078fca70c7ceaac926",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sign($ctx_sent_mian_num)",
+      "cohort_id": "value.976af65a71d44b2b2e2d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.8490936be587ebc26bc64039"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.7fa6c73d302c6f35b1b4e5d0",
+      "operator": "Sign",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_mian_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$ctx_sent_mian_num",
+      "cohort_id": "value.976af65a71d44b2b2e2d",
+      "consumer_count": 2,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.8490936be587ebc26bc64039",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_mian_num"
+      ],
+      "reuse_count": 1
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$ctx_sent_gt5_num",
+      "cohort_id": "value.081588b044f4723faf97",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.9069d1d9ced9b061829694e4",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_gt5_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sign($pct_chg)",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.e5dc69cf555ca647a51ed4d8"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.9251d85058d68867d9b38e82",
+      "operator": "Sign",
+      "output_type": "numeric",
+      "raw_fields": [
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$close",
+      "cohort_id": "value.58545699021386e98298",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.a2d3d9c271347a89e9300f03",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "close"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "0",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.a3aab521b31d3c4fbac7239a",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "MultiScaleRelation($close,$ctx_sent_mian_num,5,20)",
+      "cohort_id": "value.976af65a71d44b2b2e2d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.c93b10c8c045f907537a8681",
+        "value_node.8490936be587ebc26bc64039",
+        "value_node.a8f33979f5b4e2b5733355be",
+        "value_node.be93e3239d32121d07749968"
+      ],
+      "layer": "VALUE",
+      "lookback": 20,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.a4728fb92769fb28db735885",
+      "operator": "MultiScaleRelation",
+      "output_type": "numeric",
+      "raw_fields": [
+        "close",
+        "ctx_sent_mian_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "5",
+      "cohort_id": "value.976af65a71d44b2b2e2d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.a8f33979f5b4e2b5733355be",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Positive($ctx_sent_gt5_num)",
+      "cohort_id": "value.0e59772e3b1aeaec0842",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.bf6c230bf373289f31efcd8e"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.af059dceddff5b92e1334f54",
+      "operator": "Positive",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_gt5_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sign($pct_chg)",
+      "cohort_id": "value.0e59772e3b1aeaec0842",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.7481d9078fca70c7ceaac926"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.b87affa36237e8b8e03b4931",
+      "operator": "Sign",
+      "output_type": "numeric",
+      "raw_fields": [
+        "pct_chg"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "0",
+      "cohort_id": "value.58545699021386e98298",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.b9a3376c501ab0cab33ef189",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "20",
+      "cohort_id": "value.976af65a71d44b2b2e2d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.be93e3239d32121d07749968",
+      "operator": "constant",
+      "output_type": "numeric",
+      "raw_fields": [],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$ctx_sent_gt5_num",
+      "cohort_id": "value.0e59772e3b1aeaec0842",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.bf6c230bf373289f31efcd8e",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_gt5_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$ctx_sent_lb_2_num",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 2,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.c03924048d6ff6280b7b62e5",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_lb_2_num"
+      ],
+      "reuse_count": 1
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$ctx_sent_mian_num",
+      "cohort_id": "value.58545699021386e98298",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.c5994c820b1a6584659ab812",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_mian_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$close",
+      "cohort_id": "value.976af65a71d44b2b2e2d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.c93b10c8c045f907537a8681",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "close"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Sign($ctx_sent_lb_2_num)",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.c03924048d6ff6280b7b62e5"
+      ],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.cca7aa35a822d220d409b28c",
+      "operator": "Sign",
+      "output_type": "numeric",
+      "raw_fields": [
+        "ctx_sent_lb_2_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "Mul(MultiScaleRelation($close,$ctx_sent_mian_num,5,20),Sign($ctx_sent_mian_num))",
+      "cohort_id": "value.976af65a71d44b2b2e2d",
+      "consumer_count": 1,
+      "estimated_bytes": 0,
+      "input_node_ids": [
+        "value_node.a4728fb92769fb28db735885",
+        "value_node.7fa6c73d302c6f35b1b4e5d0"
+      ],
+      "layer": "VALUE",
+      "lookback": 20,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.d2fa102cfbff4726a6d7efce",
+      "operator": "Mul",
+      "output_type": "numeric",
+      "raw_fields": [
+        "close",
+        "ctx_sent_mian_num"
+      ],
+      "reuse_count": 0
+    },
+    {
+      "actual_evaluation_count": 0,
+      "canonical_expression": "$pct_chg",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "consumer_count": 3,
+      "estimated_bytes": 0,
+      "input_node_ids": [],
+      "layer": "VALUE",
+      "lookback": 0,
+      "mapping_subcohort_id": null,
+      "node_id": "value_node.e5dc69cf555ca647a51ed4d8",
+      "operator": "raw_field",
+      "output_type": "numeric",
+      "raw_fields": [
+        "pct_chg"
+      ],
+      "reuse_count": 2
+    }
+  ],
+  "plan_hash": "9b769af2748ba6108cf49a4f9a48cb44ffbfe2db34268a56731f5204ff8bc734",
+  "schema_version": "cn_shared_multicandidate_dag_plan_v1",
+  "value_cohorts": [
+    {
+      "backend": "minute_active",
+      "cohort_id": "value.081588b044f4723faf97",
+      "observable_clock_maturity": "joint payload and regime maturity",
+      "raw_field_surface": [
+        "ctx_sent_gt5_num",
+        "pct_chg"
+      ],
+      "window_profile": []
+    },
+    {
+      "backend": "minute_active",
+      "cohort_id": "value.0e59772e3b1aeaec0842",
+      "observable_clock_maturity": "joint payload and regime maturity",
+      "raw_field_surface": [
+        "ctx_sent_gt5_num",
+        "pct_chg"
+      ],
+      "window_profile": [
+        10
+      ]
+    },
+    {
+      "backend": "minute_active",
+      "cohort_id": "value.58545699021386e98298",
+      "observable_clock_maturity": "joint payload and regime maturity",
+      "raw_field_surface": [
+        "close",
+        "ctx_sent_mian_num"
+      ],
+      "window_profile": []
+    },
+    {
+      "backend": "minute_active",
+      "cohort_id": "value.73de841fc25eb5b88bc7",
+      "observable_clock_maturity": "joint payload and regime maturity",
+      "raw_field_surface": [
+        "ctx_sent_zb_num",
+        "pct_chg"
+      ],
+      "window_profile": []
+    },
+    {
+      "backend": "minute_active",
+      "cohort_id": "value.976af65a71d44b2b2e2d",
+      "observable_clock_maturity": "joint payload and regime maturity",
+      "raw_field_surface": [
+        "close",
+        "ctx_sent_mian_num"
+      ],
+      "window_profile": [
+        5,
+        20
+      ]
+    },
+    {
+      "backend": "minute_active",
+      "cohort_id": "value.b490c4abe5f9b0e42668",
+      "observable_clock_maturity": "joint payload and regime maturity",
+      "raw_field_surface": [
+        "ctx_sent_lb_2_num",
+        "vwap"
+      ],
+      "window_profile": []
+    }
+  ]
+}
