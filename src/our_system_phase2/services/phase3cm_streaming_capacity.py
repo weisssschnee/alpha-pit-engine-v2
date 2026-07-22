@@ -167,7 +167,13 @@ def predict_dag_cache_peak(
     runtime_nodes: set[str] = set()
     skipped_parameter_nodes: set[str] = set()
 
-    def visit(node_id: str, *, candidate_ordinal: int, candidate_id: str) -> None:
+    def visit(
+        node_id: str,
+        *,
+        candidate_ordinal: int,
+        candidate_id: str,
+        cache_result: bool = True,
+    ) -> None:
         nonlocal current_bytes, peak_bytes, peak_entries
         nonlocal peak_candidate_ordinal, peak_candidate_id
         if node_id in cached:
@@ -182,8 +188,10 @@ def predict_dag_cache_peak(
                 candidate_id=candidate_id,
             )
 
-        cached.add(node_id)
         runtime_nodes.add(node_id)
+        if not cache_result:
+            return
+        cached.add(node_id)
         allocated_nodes.add(node_id)
         if node.operator != "raw_field":
             current_bytes += bytes_per_owned_node
@@ -197,10 +205,12 @@ def predict_dag_cache_peak(
     for ordinal, (candidate_id, release_node_ids) in enumerate(
         zip(candidate_order, release_schedule)
     ):
+        root_node_id = root_by_candidate[candidate_id].root_node_id
         visit(
-            root_by_candidate[candidate_id].root_node_id,
+            root_node_id,
             candidate_ordinal=ordinal,
             candidate_id=candidate_id,
+            cache_result=root_node_id not in release_node_ids,
         )
         for node_id in release_node_ids:
             if node_id not in cached:
@@ -238,6 +248,7 @@ def predict_dag_cache_peak(
         "raw_field_cache_entries_borrow_block_reader_arrays_and_own_zero_bytes",
         "rolling_numeric_parameter_atoms_are_not_materialized",
         "release_occurs_after_each_candidate_last_consumer",
+        "last_use_candidate_roots_write_directly_to_the_output_matrix_without_cache_ownership",
         "temporary_arrays_and_signal_matrix_are_governed_by_rss_not_dag_cache_cap",
     )
     body = {

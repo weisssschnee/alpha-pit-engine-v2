@@ -622,6 +622,9 @@ class StreamingExpressionExecutor:
         self.audit["cache_current_bytes"] = self._cache_bytes
         self.audit["cache_peak_bytes"] = max(int(self.audit.get("cache_peak_bytes") or 0), self._cache_bytes)
         self.audit["cache_entry_count"] = len(self._cache)
+        self.audit["cache_peak_entries"] = max(
+            int(self.audit.get("cache_peak_entries") or 0), len(self._cache)
+        )
         return array
 
     @staticmethod
@@ -764,6 +767,8 @@ class StreamingExpressionExecutor:
         node: ExpressionNode,
         value_namespace: str,
         mapping_namespace: str,
+        *,
+        cache_result: bool = True,
     ) -> np.ndarray:
         canonical = node.render()
         key = self.cache_key(
@@ -784,7 +789,11 @@ class StreamingExpressionExecutor:
             else:
                 result = np.full(len(self.code_ids), float(node.token), dtype=np.float64)
             self.audit["value_node_evaluations"] += 1
-            return self._store_cache(key, result, owned=not node.token.startswith("$"))
+            return (
+                self._store_cache(key, result, owned=not node.token.startswith("$"))
+                if cache_result
+                else np.asarray(result, dtype=np.float64)
+            )
 
         name = node.token.lower()
         args = [
@@ -882,7 +891,15 @@ class StreamingExpressionExecutor:
             self.audit["mapping_node_evaluations"] += 1
         else:
             self.audit["value_node_evaluations"] += 1
-        return self._store_cache(key, result, owned=True)
+        if cache_result:
+            return self._store_cache(key, result, owned=True)
+        self.audit["root_cache_bypass_count"] = int(
+            self.audit.get("root_cache_bypass_count") or 0
+        ) + 1
+        self.audit["root_cache_bypass_bytes"] = int(
+            self.audit.get("root_cache_bypass_bytes") or 0
+        ) + int(np.asarray(result).nbytes)
+        return np.asarray(result, dtype=np.float64)
 
     def evaluate_ordered(
         self,
@@ -977,10 +994,19 @@ class StreamingExpressionExecutor:
         for index, (expression, value_namespace, mapping_namespace, release_keys) in enumerate(
             zip(expression_rows, value_rows, mapping_rows, release_rows)
         ):
+            root_node = parse_expression(parse_expression(expression).render())
+            root_key = self.cache_key(
+                root_node.render(),
+                value_namespace=value_namespace,
+                mapping_namespace=(
+                    mapping_namespace if _contains_mapping(root_node) else None
+                ),
+            )
             values = self._evaluate(
-                parse_expression(parse_expression(expression).render()),
+                root_node,
                 value_namespace,
                 mapping_namespace,
+                cache_result=root_key not in release_keys,
             )
             result[index] = values
             released = self.release_cache_keys(release_keys)

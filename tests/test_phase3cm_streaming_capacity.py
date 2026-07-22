@@ -193,9 +193,9 @@ def test_prediction_matches_executor_cache_accounting_and_last_consumer_release(
     )
 
     assert predicted.status == "CN_PHASE3CM_DAG_CACHE_PREFLIGHT_PASS"
-    assert predicted.predicted_peak_owned_arrays == 4
+    assert predicted.predicted_peak_owned_arrays == 3
     assert predicted.predicted_peak_bytes == executor.audit["cache_peak_bytes"]
-    assert predicted.predicted_peak_entries == 5
+    assert predicted.predicted_peak_entries == executor.audit["cache_peak_entries"]
     assert executor.audit["cache_current_bytes"] == predicted.final_cache_bytes == 0
     assert executor.audit["cache_entry_count"] == predicted.final_cache_entries == 0
 
@@ -218,8 +218,8 @@ def test_rolling_parameter_atoms_are_not_predicted_as_cache_arrays() -> None:
         dag_block_cache_bytes=800,
     )
 
-    assert predicted.predicted_peak_owned_arrays == 1
-    assert predicted.predicted_peak_bytes == 800
+    assert predicted.predicted_peak_owned_arrays == 0
+    assert predicted.predicted_peak_bytes == 0
     assert predicted.skipped_parameter_node_count == 1
     assert predicted.status == "CN_PHASE3CM_DAG_CACHE_PREFLIGHT_PASS"
 
@@ -230,7 +230,7 @@ def test_preflight_fails_closed_without_changing_the_cap() -> None:
         plan,
         ordered_candidate_ids=("candidate.a", "candidate.b"),
         max_block_rows=11,
-        dag_block_cache_bytes=(4 * 11 * 8) - 1,
+        dag_block_cache_bytes=(3 * 11 * 8) - 1,
     )
 
     assert predicted.status == "CN_PHASE3CM_DAG_CACHE_PREFLIGHT_FAIL_CLOSED"
