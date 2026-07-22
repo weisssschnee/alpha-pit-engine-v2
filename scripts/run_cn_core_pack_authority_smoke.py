@@ -50,6 +50,7 @@ SMOKE_ROUTES = (
 )
 PAIR_BUDGET_PER_ROUTE = 4
 SUPPLY_PROBE_PAIRS_PER_ROUTE = 12
+SESSION_COMPUTE_THREADS = 2
 
 
 def _restore_candidate_rows(path: Path) -> list[dict]:
@@ -136,7 +137,10 @@ def prepare(args: argparse.Namespace) -> dict:
         train_dates=_train_dates(split),
         coordinate_binding=authority["contract_hash"],
         batch_id="core_pack_authority_smoke",
-        compute_threads={"active_bar": int(args.compute_threads), "stock_session": 1},
+        compute_threads={
+            "active_bar": int(args.compute_threads),
+            "stock_session": SESSION_COMPUTE_THREADS,
+        },
     )
     admitted, decisions = _admit_behavior_unique(
         candidate_rows=generated,
@@ -211,7 +215,10 @@ def execute(args: argparse.Namespace) -> dict:
         split_manifest=args.split_manifest.resolve(),
         field_roots={"active_bar": args.train_active_field_root.resolve(), "stock_session": args.train_session_field_root.resolve()},
         label_roots={"active_bar": args.train_active_label_root.resolve(), "stock_session": args.train_session_label_root.resolve()},
-        compute_threads={"active_bar": int(args.compute_threads), "stock_session": 1},
+        compute_threads={
+            "active_bar": int(args.compute_threads),
+            "stock_session": SESSION_COMPUTE_THREADS,
+        },
         evaluation_role="train",
     )
     outcomes, full_behavior = _outcome_rows(output_root / "train")
