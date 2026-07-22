@@ -18,8 +18,10 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     _block_compute_rows,
     _git_sha,
     _registry_binding,
+    _runtime_gate,
     build_seed_attempt_manifest,
 )
+import our_system_phase2.runtime.cn_targeted_search_medium_campaign as campaign_module
 from scripts.build_cn_campaign_history_snapshot import build_snapshot
 from our_system_phase2.services.portfolio_behavior_archive import (
     PortfolioBehaviorArchive,
@@ -157,6 +159,74 @@ def test_runtime_gate_counts_only_completed_compute_blocks() -> None:
 
     assert len(rows) == 3
     assert all(row["normalized_cpu_utilization"] == pytest.approx(0.75) for row in rows)
+
+
+@pytest.mark.parametrize(
+    ("cpu_seconds", "expected_status", "expected_bottleneck"),
+    [
+        (9.0, "FAIL", "HOST_COMPUTE_UNDERALLOCATED"),
+        (12.0, "PASS", "CPU_COMPUTE_SATURATED"),
+    ],
+)
+def test_runtime_gate_requires_primary_host_occupancy(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    cpu_seconds: float,
+    expected_status: str,
+    expected_bottleneck: str,
+) -> None:
+    backend_root = tmp_path / "phase3cm" / "active_bar"
+    backend_root.mkdir(parents=True)
+    result = {
+        "parallelism_status": "PARALLELISM_ENGAGED",
+        "wall_seconds": 4.0,
+        "rows_processed": 100,
+        "pair_count": 1,
+        "peak_rss_bytes": 1024,
+        "phase_totals": {"checkpoint": {"wall_seconds": 0.1}},
+        "expression_audits": [{"cache_hits": 1}],
+        "pair_results": [{"pair_id": "pair.1"}],
+    }
+    (backend_root / "CN_STREAMING_BACKEND_RESULT.json").write_text(
+        json.dumps(result), encoding="utf-8"
+    )
+    events = []
+    for _ in range(3):
+        events.extend(
+            [
+                {"phase": "global_trade_time_barrier", "blocks_processed": 1},
+                {
+                    "phase": "expression_value_dag",
+                    "wall_seconds": 1.0,
+                    "cpu_seconds": cpu_seconds,
+                },
+                {"phase": "checkpoint", "blocks_processed": 1},
+            ]
+        )
+    (backend_root / "CN_PHASE3CM_PHASE_TIMING.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in events), encoding="utf-8"
+    )
+    (backend_root / "runtime_samples.json").write_text(
+        json.dumps(
+            [
+                {
+                    "elapsed_seconds": 4.0,
+                    "available_memory_bytes": 64 * 1024**3,
+                    "system_read_bytes": 0,
+                    "system_write_bytes": 0,
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(campaign_module, "_physical_cpu_count", lambda: 16)
+
+    gate = _runtime_gate(tmp_path, {"active_bar": 15, "stock_session": 2})
+    active = gate["backends"]["active_bar"]
+
+    assert active["status"] == expected_status
+    assert active["hot_path_bottleneck"] == expected_bottleneck
+    assert active["host_physical_core_occupancy"] == pytest.approx(cpu_seconds / 16.0)
 
 
 def test_deployment_commit_sha_supports_gitless_77o_workspace(monkeypatch) -> None:

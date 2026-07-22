@@ -75,6 +75,7 @@ MAX_RAW_ATTEMPTS = 100_000
 MAX_WALL_SECONDS = 12 * 60 * 60
 ROUTE_ATTEMPT_CAP = 2_300
 GLOBAL_WORKER_LIMIT = 24
+MIN_PRIMARY_HOST_PHYSICAL_OCCUPANCY = 0.70
 EXPECTED_REGISTRY_RELATIVE_PATH = Path(
     "runtime/field_registry/cn_unified_capability_registry_v3_20260717/"
     "unified_capability_registry.json"
@@ -559,6 +560,15 @@ def _runtime_envelope(active_threads: int, session_threads: int) -> dict[str, An
     }
 
 
+def _physical_cpu_count() -> int:
+    try:
+        import psutil
+
+        return int(psutil.cpu_count(logical=False) or 1)
+    except Exception as exc:
+        raise RuntimeError("psutil is required for host-level compute allocation") from exc
+
+
 def _admit_behavior_unique(
     *,
     candidate_rows: Sequence[Mapping[str, Any]],
@@ -827,6 +837,13 @@ def _runtime_gate(
         compute_wall = sum(float(row.get("wall_seconds") or 0.0) for row in compute)
         compute_cpu = sum(float(row.get("cpu_seconds") or 0.0) for row in compute)
         normalized = compute_cpu / max(1e-12, compute_wall * compute_threads[backend])
+        effective_cores = compute_cpu / max(1e-12, compute_wall)
+        physical_cpu_count = _physical_cpu_count()
+        host_physical_occupancy = effective_cores / max(1, physical_cpu_count)
+        primary_host_occupancy_pass = (
+            backend != "active_bar"
+            or host_physical_occupancy >= MIN_PRIMARY_HOST_PHYSICAL_OCCUPANCY
+        )
         blocks = _block_compute_rows(events, compute_threads[backend])
         threshold = 0.55 if backend == "active_bar" else 0.50
         sustained_blocks = _longest_consecutive(
@@ -849,7 +866,14 @@ def _runtime_gate(
             default=0,
         )
         peak_rss = int(result.get("peak_rss_bytes") or 0)
-        if normalized >= threshold and sustained_blocks >= 3:
+        if (
+            normalized >= threshold
+            and sustained_blocks >= 3
+            and not primary_host_occupancy_pass
+        ):
+            bottleneck_class = "HOST_COMPUTE_UNDERALLOCATED"
+            alternative_pass = False
+        elif normalized >= threshold and sustained_blocks >= 3:
             bottleneck_class = "CPU_COMPUTE_SATURATED"
             alternative_pass = False
         elif io_wall / total_wall >= 0.40 and read_throughput >= 100 * 1024**2:
@@ -864,9 +888,10 @@ def _runtime_gate(
         else:
             bottleneck_class = "LOW_UTILIZATION_UNEXPLAINED"
             alternative_pass = False
-        utilization_pass = (
-            len(blocks) >= 3
-            and ((normalized >= threshold and sustained_blocks >= 3) or alternative_pass)
+        allocated_pool_compute_pass = normalized >= threshold and sustained_blocks >= 3
+        utilization_pass = len(blocks) >= 3 and (
+            (allocated_pool_compute_pass and primary_host_occupancy_pass)
+            or alternative_pass
         )
         resource_pass = (
             peak_rss <= 24 * 1024**3
@@ -890,6 +915,13 @@ def _runtime_gate(
             "allocated_compute_threads": compute_threads[backend],
             "process_cpu_seconds": compute_cpu,
             "compute_wall_seconds": compute_wall,
+            "effective_compute_cores": effective_cores,
+            "host_physical_cpu_count": physical_cpu_count,
+            "host_physical_core_occupancy": host_physical_occupancy,
+            "required_primary_host_physical_core_occupancy": (
+                MIN_PRIMARY_HOST_PHYSICAL_OCCUPANCY if backend == "active_bar" else None
+            ),
+            "primary_host_occupancy_pass": primary_host_occupancy_pass,
             "normalized_cpu_utilization": normalized,
             "required_normalized_cpu_utilization": threshold,
             "complete_compute_block_count": len(blocks),
@@ -921,7 +953,7 @@ def _runtime_gate(
             "status": "PASS" if backend_pass else "FAIL",
         }
     return {
-        "schema_version": "cn_medium_campaign_runtime_utilization_gate_v1",
+        "schema_version": "cn_medium_campaign_runtime_utilization_gate_v2",
         "status": "PASS" if overall and len(backends) == 2 else "RUNTIME_ACCELERATION_GATE_FAILED",
         "backends": backends,
         "bounded_concurrency_adjustment_count": 0,
@@ -947,13 +979,18 @@ def _bounded_runtime_adjustment(
         backend
         for backend, row in dict(initial_gate.get("backends") or {}).items()
         if row.get("status") != "PASS"
-        and row.get("hot_path_bottleneck") == "LOW_UTILIZATION_UNEXPLAINED"
+        and row.get("hot_path_bottleneck")
+        in {"LOW_UTILIZATION_UNEXPLAINED", "HOST_COMPUTE_UNDERALLOCATED"}
     ]
     if not failed:
         return dict(initial_gate), []
     adjusted_threads = dict(compute_threads)
     if "active_bar" in failed:
-        adjusted_threads["active_bar"] = min(16, max(12, int(compute_threads["active_bar"]) + 1))
+        physical_cpu_count = _physical_cpu_count()
+        adjusted_threads["active_bar"] = min(
+            16,
+            max(12, int(compute_threads["active_bar"]) + 1, physical_cpu_count - 1),
+        )
     if "stock_session" in failed:
         adjusted_threads["stock_session"] = min(4, max(3, int(compute_threads["stock_session"]) + 1))
     receipts = _run_phase3cm_monitored(
@@ -994,7 +1031,7 @@ def _bounded_runtime_adjustment(
         combined["backends"][backend] = adjusted_row
     combined["bounded_concurrency_adjustment_count"] = 1
     combined["bounded_concurrency_adjustment"] = {
-        "reason": "LOW_UTILIZATION_UNEXPLAINED",
+        "reason": "HOST_OR_ALLOCATED_POOL_UNDERUTILIZATION",
         "backends": failed,
         "initial_threads": dict(compute_threads),
         "adjusted_threads": adjusted_threads,
@@ -1778,7 +1815,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--report-path", type=Path)
     parser.add_argument("--seed-base", type=int, default=2026072101)
-    parser.add_argument("--active-threads", type=int, default=11)
+    parser.add_argument("--active-threads", type=int, default=15)
     parser.add_argument("--session-threads", type=int, default=2)
     args = parser.parse_args(argv)
     result = run(args)
