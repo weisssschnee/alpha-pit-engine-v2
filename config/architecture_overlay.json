@@ -371,18 +371,17 @@
         "scripts/run_cn_core_pack_authority_smoke.py",
         "tests/test_post_train_validation.py",
         "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
+        "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
         "runtime/cn_iterative_search_v1_20260721/final_decision.json",
         "runtime/cn_route_supply_closure_20260721_c939edf_4route/final_decision.json",
         "reports/CN_ITERATIVE_SEARCH_V1_20260721.md",
         "reports/CN_ROUTE_SUPPLY_CLOSURE_20260721.md"
       ],
       "claim_badges": [
-        "3 IMMUTABLE BATCHES",
-        "REGISTRY ROUTE AUTHORITY",
-        "4 ROUTE MATERIALIZATION CLOSED",
-        "16 FULL-COORDINATE PAIRS",
-        "V2 PROFILE EXPERIMENTAL",
-        "AUTO POST-TRAIN VALIDATION",
+        "6 IMMUTABLE CHECKPOINTS",
+        "872 DEVELOPMENT PAIRS",
+        "750 NEW BEHAVIOR FAMILIES",
+        "AUTO REPORT-ONLY VALIDATION",
         "NO OOS",
         "NO PROMOTION"
       ],
@@ -430,8 +429,8 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
-        "verified_at_sha": "81f481a"
+        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
+        "verified_at_sha": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728"
       }
     },
     {
@@ -578,12 +577,13 @@
         "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_PHASE3CM_1024_WAVE_EXECUTION_RECEIPT.json",
         "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
         "reports/cn_phase3cm_1024_development_confirmation_20260720/artifact_index.json",
+        "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "claim_badges": [
         "1024 DEVELOPMENT PAIRS",
-        "989 EVALUATED",
-        "35 SEMANTIC BLOCKERS",
+        "872 LARGE-CAMPAIGN PAIRS",
+        "AUTO REPORT-ONLY VALIDATION",
         "PARALLELISM ENGAGED",
         "NO OOS",
         "NO PROMOTION"
@@ -599,9 +599,9 @@
         {
           "id": "streaming_development_only",
           "type": "BOUNDARY",
-          "rule": "The qualified streaming path may read only the frozen 2024-2025 development release; validation, holdout and 2026 reads remain forbidden.",
+          "rule": "The train role may read only the frozen 2024-2025 development release. A separately bound evaluation_role=validation may run only after immutable TRAIN_COMPLETE and remains report-only with no feedback, scheduler, archive or promotion write. Holdout and 2026 reads remain forbidden in both roles.",
           "severity": "HARD",
-          "enforced_by": "phase3cm_streaming_access_contract",
+          "enforced_by": "phase3cm streaming access contracts and post_train_validation sequential gate",
           "bypass_forbidden": true
         },
         {
@@ -624,8 +624,8 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
-        "verified_at_sha": "c25541b12dc4acda2927db95843cc027616e0fb6"
+        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
+        "verified_at_sha": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728"
       },
       "promotion_requirements": [
         "separate strict Stage A authorization",
@@ -1004,8 +1004,8 @@
       "relation": "submits_behavior_unique_pairs_for_full_coordinate_development_evaluation",
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
-      "contract": {"id": "iterative_phase3cm_development_only", "type": "BOUNDARY", "rule": "The V1 campaign may invoke only full-coordinate development Phase3CM pair evaluation on 77o; this is not Strict Stage A and grants no promotion or sealed-data access.", "severity": "HARD", "enforced_by": "cn_iterative_search_v1 frozen_contract", "bypass_forbidden": true},
-      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_route_supply_closure_20260721_c939edf_4route/behavior_qualification.json", "verified_at_sha": "ddda189940eecb8beeca96262ed1d32b4df49412"}
+      "contract": {"id": "iterative_phase3cm_development_only", "type": "BOUNDARY", "rule": "The campaign may invoke full-coordinate development Phase3CM pair evaluation on 77o. Only after immutable train completion may the same frozen pairs enter the separate automatic report-only validation role, which cannot feed search. Neither role is Strict Stage A or grants promotion or sealed-data access.", "severity": "HARD", "enforced_by": "cn_iterative_search_v1 frozen contract and post_train_validation sequential gate", "bypass_forbidden": true},
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json", "verified_at_sha": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728"}
     },
     {
       "id": "stage_a_route_eligibility_to_streaming_evaluator",

@@ -791,10 +791,10 @@
       "color": "#f9a825",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "cn_iterative_search_v1 frozen_contract",
+        "enforced_by": "cn_iterative_search_v1 frozen contract and post_train_validation sequential gate",
         "evidence_ref": "",
         "id": "iterative_phase3cm_development_only",
-        "rule": "The V1 campaign may invoke only full-coordinate development Phase3CM pair evaluation on 77o; this is not Strict Stage A and grants no promotion or sealed-data access.",
+        "rule": "The campaign may invoke full-coordinate development Phase3CM pair evaluation on 77o. Only after immutable train completion may the same frozen pairs enter the separate automatic report-only validation role, which cannot feed search. Neither role is Strict Stage A or grants promotion or sealed-data access.",
         "severity": "HARD",
         "type": "BOUNDARY"
       },
@@ -811,16 +811,16 @@
       "source": "compositional_nline_bounded_search",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-07-21T10:07:49.472748+00:00",
-        "evidence_ref": "runtime/cn_route_supply_closure_20260721_c939edf_4route/behavior_qualification.json",
-        "evidence_sha256": "C8415407DADDAB1C85D3D2E745F9DCBB1DA62ED36508B82B71690D50E75B1913",
+        "checked_at": "2026-07-22T23:34:06.287112+00:00",
+        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
+        "evidence_sha256": "61AC0E0DE1FD7BE6F4654842D7BF76724714BF162471DB4613A09E0A3DCA03AE",
         "level": "PARTIAL",
         "notes": [
           "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
         "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "ddda189940eecb8beeca96262ed1d32b4df49412"
+        "verified_at_sha": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728"
       }
     },
     {
@@ -1224,7 +1224,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-22T05:29:38.971695+00:00",
+  "generated_at": "2026-07-22T23:39:46.042319+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1396,6 +1396,7 @@
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
+        "planning_state_runtime_field_registry",
         "runtime_field_registry_cn_field_master_registry_v1",
         "scripts_build_cn_field_master_registry",
         "scripts_build_cn_field_master_registry_build",
@@ -1406,7 +1407,7 @@
       "required": true,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-22T23:39:46.042319+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
@@ -2425,6 +2426,7 @@
         "scripts/run_cn_core_pack_authority_smoke.py",
         "tests/test_post_train_validation.py",
         "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
+        "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
         "runtime/cn_iterative_search_v1_20260721/final_decision.json",
         "runtime/cn_route_supply_closure_20260721_c939edf_4route/final_decision.json",
         "reports/CN_ITERATIVE_SEARCH_V1_20260721.md",
@@ -2490,9 +2492,9 @@
         "src_our_system_phase2_runtime_cn_iterative_search_v1_outcome_rows",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_probe_pack",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_1",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_293",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_784",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_897",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_313",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_804",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_917",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_read_csv",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_route_health",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_run",
@@ -2653,14 +2655,14 @@
       "required": true,
       "semantic_role": "bounded_development_iterative_search_capability",
       "validation": {
-        "checked_at": "2026-07-22T05:29:38.971695+00:00",
-        "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
-        "evidence_sha256": "80D89B1C5AFD4438F0BCAC4D994DBFD73D26E24A74A5A60B52D3B39F2F612FA9",
+        "checked_at": "2026-07-22T23:39:46.042319+00:00",
+        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
+        "evidence_sha256": "61AC0E0DE1FD7BE6F4654842D7BF76724714BF162471DB4613A09E0A3DCA03AE",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "81f481a6b7120498e06a8e7adeaf9291411d4adc"
+        "verified_at_sha": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728"
       },
       "visible_by_default": true
     },
@@ -3038,10 +3040,10 @@
       "contracts": [
         {
           "bypass_forbidden": true,
-          "enforced_by": "phase3cm_streaming_access_contract",
+          "enforced_by": "phase3cm streaming access contracts and post_train_validation sequential gate",
           "evidence_ref": "",
           "id": "streaming_development_only",
-          "rule": "The qualified streaming path may read only the frozen 2024-2025 development release; validation, holdout and 2026 reads remain forbidden.",
+          "rule": "The train role may read only the frozen 2024-2025 development release. A separately bound evaluation_role=validation may run only after immutable TRAIN_COMPLETE and remains report-only with no feedback, scheduler, archive or promotion write. Holdout and 2026 reads remain forbidden in both roles.",
           "severity": "HARD",
           "type": "BOUNDARY"
         },
@@ -3081,6 +3083,7 @@
         "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_PHASE3CM_1024_WAVE_EXECUTION_RECEIPT.json",
         "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
         "reports/cn_phase3cm_1024_development_confirmation_20260720/artifact_index.json",
+        "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "promotion_requirements": [
@@ -3105,10 +3108,10 @@
         "scripts_run_cn_phase3cm_streaming_qualification_pair_batches",
         "scripts_run_cn_phase3cm_streaming_qualification_phase_e_plan_pair_order",
         "scripts_run_cn_phase3cm_streaming_qualification_portfolio_continuation_payload",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_265",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_299",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_345",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_62",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_268",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_302",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_348",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_65",
         "scripts_run_cn_phase3cm_streaming_qualification_raw_fields",
         "scripts_run_cn_phase3cm_streaming_qualification_read_csv",
         "scripts_run_cn_phase3cm_streaming_qualification_restore_portfolio_continuation_payload",
@@ -3168,6 +3171,8 @@
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_pearson",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_portfolioblockresult",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_prepare_label_orders",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_prepare_portfolio_block",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_preparedportfolioblock",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_quantile_from_order_stats",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rank_average",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rank_average_with_order",
@@ -3176,7 +3181,7 @@
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_146",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_197",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_241",
-        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_557",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_603",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_turnover_cost_kernel",
         "tests_test_phase3cm_streaming_checkpoint",
         "tests_test_phase3cm_streaming_checkpoint_payload",
@@ -3206,21 +3211,23 @@
         "tests_test_phase3cm_streaming_portfolio_test_mapping_fails_closed_when_finite_support_is_below_minimum",
         "tests_test_phase3cm_streaming_portfolio_test_mapping_reuses_orders_without_changing_randomized_legacy_results",
         "tests_test_phase3cm_streaming_portfolio_test_native_pearson_returns_nan_for_constant_rank_vector",
+        "tests_test_phase3cm_streaming_portfolio_test_portfolio_kernel_accepts_full_host_pool_and_rejects_oversubscription",
         "tests_test_phase3cm_streaming_portfolio_test_portfolio_turnover_state_matches_across_block_boundary",
+        "tests_test_phase3cm_streaming_portfolio_test_prepared_label_orders_preserve_exact_portfolio_results",
         "tests_test_phase3cm_streaming_portfolio_test_reused_orders_match_legacy_ranking_and_quantiles_with_nonfinite_values",
         "tests_test_phase3cm_streaming_portfolio_test_shared_label_order_rebuilds_candidate_specific_return_rank_exactly"
       ],
       "required": false,
       "semantic_role": "qualified_experimental_evaluation_path",
       "validation": {
-        "checked_at": "2026-07-22T05:27:49.151846+00:00",
-        "evidence_ref": "reports/cn_phase3cm_1024_development_confirmation_20260720/CN_CORE_PACK_STRICT_WAVE_ANALYSIS.json",
-        "evidence_sha256": "EE33C690CD0E83BF0C325F3CD17FFA592E0BD85270B116E462DC39940294BCCC",
+        "checked_at": "2026-07-22T23:39:46.042319+00:00",
+        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
+        "evidence_sha256": "61AC0E0DE1FD7BE6F4654842D7BF76724714BF162471DB4613A09E0A3DCA03AE",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "c25541b12dc4acda2927db95843cc027616e0fb6"
+        "verified_at_sha": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728"
       },
       "visible_by_default": true
     },
@@ -3682,7 +3689,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "7E1DF92C68BEB6B5681589E65BA3DAB3A7FE59B8E471F3F0EE0E790079FB1C02"
+    "sha256": "4A0850A5BBC29D786600AAAE0E56FCD3AE12E179009CFF819435416A9D888862"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -3693,13 +3700,13 @@
     }
   ],
   "raw": {
-    "built_at_commit": "81f481a6b7120498e06a8e7adeaf9291411d4adc",
-    "edge_count": 13655,
-    "node_count": 5539,
+    "built_at_commit": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728",
+    "edge_count": 13781,
+    "node_count": 5591,
     "path": ".planning/graphs/graph.json",
-    "sha256": "192AD4E2EF07B792ED2E11C100BC36751358BBB6DED7DADA1287796632BF119B"
+    "sha256": "4AC9642B7E8D240EC60873210370F3F0158D94959A5D7C96224E162AC0C540EB"
   },
-  "repo_head": "81f481a6b7120498e06a8e7adeaf9291411d4adc",
+  "repo_head": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728",
   "schema_version": 1,
   "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
