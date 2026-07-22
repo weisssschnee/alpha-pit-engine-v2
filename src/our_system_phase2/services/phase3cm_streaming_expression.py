@@ -533,8 +533,8 @@ class StreamingExpressionExecutor:
     ) -> None:
         if code_count <= 0:
             raise ValueError("code_count must be positive")
-        if compute_threads <= 0 or compute_threads > 24:
-            raise ValueError("compute_threads must be between 1 and 24")
+        if compute_threads <= 0 or compute_threads > 32:
+            raise ValueError("compute_threads must be between 1 and 32")
         self.code_count = int(code_count)
         self.compute_threads = int(compute_threads)
         self.cache_max_bytes = int(cache_max_bytes)

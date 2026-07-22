@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from our_system_phase2.services.phase3cm_streaming_expression import (
     StreamingExpressionExecutor,
@@ -43,6 +44,13 @@ def _executor(frame: pd.DataFrame) -> StreamingExpressionExecutor:
         code_ids=code_ids,
         time_ids=time_ids,
     )
+
+
+def test_streaming_executor_accepts_full_host_pool_and_rejects_oversubscription() -> None:
+    executor = StreamingExpressionExecutor(code_count=3, compute_threads=30)
+    assert executor.compute_threads == 30
+    with pytest.raises(ValueError, match="between 1 and 32"):
+        StreamingExpressionExecutor(code_count=3, compute_threads=33)
 
 
 def test_streaming_expression_matches_reference_for_frozen_operator_surface() -> None:
