@@ -308,7 +308,7 @@ def test_last_use_root_bypasses_cache_without_changing_values() -> None:
     assert executor.audit["cache_current_bytes"] == 0
 
 
-def test_cache_pressure_bypasses_only_recomputable_last_use_nodes() -> None:
+def test_cache_pressure_bypasses_recomputable_last_use_nodes() -> None:
     frame = _frame()
     code_values = sorted(frame["code"].unique())
     code_map = {code: index for index, code in enumerate(code_values)}
@@ -359,6 +359,45 @@ def test_cache_pressure_bypasses_only_recomputable_last_use_nodes() -> None:
     assert executor.audit["cache_pressure_bypass_bytes"] >= array_bytes
     assert executor.audit["cache_peak_bytes"] <= array_bytes
     assert executor.audit["cache_current_bytes"] == 0
+
+
+def test_cache_pressure_bypasses_recomputable_non_last_use_nodes() -> None:
+    frame = _frame()
+    code_values = sorted(frame["code"].unique())
+    code_map = {code: index for index, code in enumerate(code_values)}
+    array_bytes = len(frame) * np.dtype(np.float64).itemsize
+    executor = StreamingExpressionExecutor(
+        code_count=len(code_values),
+        compute_threads=2,
+        cache_max_bytes=array_bytes,
+    ).bind_block(
+        raw_fields={
+            "x": frame["x"].to_numpy(dtype=np.float64),
+            "y": frame["y"].to_numpy(dtype=np.float64),
+        },
+        code_ids=frame["code"].map(code_map).to_numpy(dtype=np.int32),
+        time_ids=pd.factorize(frame["trade_time"], sort=False)[0].astype(np.int64),
+    )
+    executor._store_cache(
+        "stateful:retained",
+        np.zeros(len(frame), dtype=np.float64),
+        owned=True,
+        recomputable=False,
+    )
+    expression = "Mul(Add($x,1),Add($y,2))"
+
+    observed = executor.evaluate_ordered_into(
+        (expression,),
+        release_keys_after_each=((),),
+    )
+    expected = evaluate_panel_expression(
+        frame, expression, data_role="development"
+    ).to_numpy(dtype=float)
+
+    np.testing.assert_allclose(observed[0], expected, rtol=0.0, atol=0.0, equal_nan=True)
+    assert executor.audit["cache_pressure_non_last_use_bypass_count"] >= 1
+    assert executor.audit["cache_pressure_non_last_use_bypass_bytes"] >= array_bytes
+    assert executor.audit["cache_peak_bytes"] <= array_bytes
 
 
 def test_new_streaming_operators_resume_from_serialized_continuation() -> None:

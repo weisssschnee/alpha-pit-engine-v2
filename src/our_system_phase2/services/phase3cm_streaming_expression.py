@@ -627,14 +627,15 @@ class StreamingExpressionExecutor:
         ):
             candidates = tuple(
                 key
-                for key in self._pressure_release_keys
-                if key in self._cache and self._cache_recomputable.get(key, False)
+                for key in self._cache
+                if self._cache_recomputable.get(key, False)
             )
             if not candidates:
                 return
             key = min(
                 candidates,
                 key=lambda candidate: (
+                    candidate not in self._pressure_release_keys,
                     -int(self._cache_owned_bytes.get(candidate, 0)),
                     candidate,
                 ),
@@ -662,13 +663,20 @@ class StreamingExpressionExecutor:
         self._evict_recomputable_pressure_entries(incremental_bytes=incremental)
         over_entry_cap = len(self._cache) + 1 > self.cache_max_entries
         over_byte_cap = self._cache_bytes + incremental > self.cache_max_bytes
-        if (over_entry_cap or over_byte_cap) and recomputable and key in self._pressure_release_keys:
+        if (over_entry_cap or over_byte_cap) and recomputable:
             self.audit["cache_pressure_bypass_count"] = int(
                 self.audit.get("cache_pressure_bypass_count") or 0
             ) + 1
             self.audit["cache_pressure_bypass_bytes"] = int(
                 self.audit.get("cache_pressure_bypass_bytes") or 0
             ) + incremental
+            if key not in self._pressure_release_keys:
+                self.audit["cache_pressure_non_last_use_bypass_count"] = int(
+                    self.audit.get("cache_pressure_non_last_use_bypass_count") or 0
+                ) + 1
+                self.audit["cache_pressure_non_last_use_bypass_bytes"] = int(
+                    self.audit.get("cache_pressure_non_last_use_bypass_bytes") or 0
+                ) + incremental
             return array
         if over_entry_cap:
             raise CacheBudgetError("DAG block cache entry cap reached")
