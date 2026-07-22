@@ -247,8 +247,14 @@ def execute(args: argparse.Namespace) -> dict:
         split=split,
         validation_data_release_hash=_sha256(args.validation_sidecar_closure.resolve()),
         split_manifest=args.split_manifest.resolve(),
-        validation_field_roots={"active_bar": args.validation_active_field_root.resolve(), "stock_session": args.validation_active_field_root.resolve()},
-        validation_label_roots={"active_bar": args.validation_active_label_root.resolve(), "stock_session": args.validation_active_label_root.resolve()},
+        validation_field_roots={
+            "active_bar": args.validation_active_field_root.resolve(),
+            "stock_session": args.validation_session_field_root.resolve(),
+        },
+        validation_label_roots={
+            "active_bar": args.validation_active_label_root.resolve(),
+            "stock_session": args.validation_session_label_root.resolve(),
+        },
         compute_threads={"active_bar": int(args.compute_threads), "stock_session": 1},
     )
     result = {
@@ -283,14 +289,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--validation-sidecar-closure", type=Path)
     parser.add_argument("--validation-active-field-root", type=Path)
     parser.add_argument("--validation-active-label-root", type=Path)
+    parser.add_argument("--validation-session-field-root", type=Path)
+    parser.add_argument("--validation-session-label-root", type=Path)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=2026072201)
     parser.add_argument("--compute-threads", type=int, default=11)
     args = parser.parse_args(argv)
     if args.mode == "execute" and not all(
-        (args.validation_sidecar_closure, args.validation_active_field_root, args.validation_active_label_root)
+        (
+            args.validation_sidecar_closure,
+            args.validation_active_field_root,
+            args.validation_active_label_root,
+            args.validation_session_field_root,
+            args.validation_session_label_root,
+        )
     ):
-        parser.error("execute requires validation sidecar closure and active roots")
+        parser.error("execute requires validation sidecar closure and active/session roots")
     result = prepare(args) if args.mode == "prepare" else execute(args)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0
