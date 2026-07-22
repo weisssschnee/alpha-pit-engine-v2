@@ -1,0 +1,284 @@
+from __future__ import annotations
+
+import argparse
+import csv
+import hashlib
+import json
+import re
+import time
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import polars as pl
+import pyarrow.parquet as pq
+
+from our_system_phase2.services.chip_sidecar import (
+    CHIP_FIELDS,
+    load_chip_context,
+    point_in_time_chip_context,
+)
+from our_system_phase2.services.fundamental_representations import (
+    CanonicalFundamentalMaterializer,
+)
+from our_system_phase2.services.pit_fundamental_fabric import (
+    PITFundamentalFabricAdapter,
+    normalize_cn_code,
+)
+from our_system_phase2.services.unified_capability_registry import (
+    UnifiedCapabilityRegistry,
+)
+
+
+STABLE_KEY = (
+    "trade_time",
+    "code",
+    "source_shard",
+    "source_row_identity",
+    "duplicate_ordinal",
+)
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(4 * 1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _required_fields(path: Path) -> tuple[str, ...]:
+    fields: set[str] = set()
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            fields.update(
+                re.findall(
+                    r"\$([A-Za-z_][A-Za-z0-9_]*)",
+                    str(row.get("expression") or ""),
+                )
+            )
+    return tuple(sorted(fields))
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--source-root", type=Path, required=True)
+    parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--candidate-table", type=Path, required=True)
+    parser.add_argument("--registry", type=Path, required=True)
+    parser.add_argument("--split-manifest", type=Path, required=True)
+    parser.add_argument("--split-manifest-hash", required=True)
+    parser.add_argument("--fundamental-root", type=Path, required=True)
+    parser.add_argument("--chip-root", type=Path, required=True)
+    parser.add_argument("--max-shards", type=int, default=16)
+    args = parser.parse_args()
+
+    split_manifest = args.split_manifest.resolve()
+    if _sha256(split_manifest) != args.split_manifest_hash:
+        raise RuntimeError("split manifest hash drift")
+    split = pd.read_csv(split_manifest, dtype=str)
+    validation_rows = split.loc[split["split"] == "validation"]
+    validation_dates = tuple(sorted(validation_rows["trade_date"].tolist()))
+    if not validation_dates or not validation_rows["optimizer_usage"].eq(
+        "report_only"
+    ).all():
+        raise RuntimeError("validation calendar is not report-only")
+    sessions = pd.DatetimeIndex(pd.to_datetime(validation_dates))
+    maximum_observable_time = str(sessions.max() + pd.Timedelta(hours=15))
+
+    required_fields = _required_fields(args.candidate_table.resolve())
+    chip_fields = tuple(
+        sorted(set(required_fields) & set(CHIP_FIELDS.values()))
+    )
+    registry = UnifiedCapabilityRegistry.read(args.registry.resolve())
+    specs: dict[str, dict] = {}
+    prefetch: dict[str, set[str]] = {}
+    for field_id in required_fields:
+        capability = registry.resolve(field_id)
+        spec = dict((capability.metadata or {}).get("canonical_representation") or {})
+        if not spec:
+            continue
+        if not bool(spec.get("search_eligible")):
+            raise PermissionError(f"field is not PIT search eligible: {field_id}")
+        specs[field_id] = spec
+        for source in spec.get("source_fields") or []:
+            prefetch.setdefault(str(source["source_table"]), set()).add(
+                str(source["source_field"])
+            )
+
+    adapter = PITFundamentalFabricAdapter(
+        source_root=args.fundamental_root.resolve(),
+        sessions=sessions,
+        maximum_observable_time=maximum_observable_time,
+        prefetch_source_fields_by_table=prefetch,
+    )
+    materializer = CanonicalFundamentalMaterializer(adapter)
+    sources = sorted(args.source_root.resolve().rglob("*.parquet"))[
+        : int(args.max_shards)
+    ]
+    if len(sources) != int(args.max_shards):
+        raise FileNotFoundError(
+            f"expected exactly {args.max_shards} source shards"
+        )
+
+    allowed_codes = set(
+        pl.concat(
+            [
+                pl.scan_parquet(source, low_memory=True)
+                .filter(pl.col("trade_time").dt.date().is_in(tuple(sessions.date)))
+                .select("code")
+                for source in sources
+            ]
+        )
+        .unique()
+        .collect(engine="streaming")["code"]
+        .to_list()
+    )
+    chip_context, chip_receipt = load_chip_context(
+        args.chip_root.resolve(),
+        allowed_codes={normalize_cn_code(value) for value in allowed_codes},
+        fields=chip_fields,
+        maximum_observable_time=maximum_observable_time,
+    )
+
+    output_root = args.output_root.resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
+    records = []
+    started = time.perf_counter()
+    for shard, source in enumerate(sources):
+        source_schema = set(pq.ParquetFile(source).schema_arrow.names)
+        direct_fields = sorted(
+            (set(required_fields) - set(chip_fields)) & source_schema
+        )
+        missing = sorted(
+            set(required_fields)
+            - set(direct_fields)
+            - set(specs)
+            - set(chip_fields)
+        )
+        if missing:
+            raise RuntimeError(f"unmaterializable session fields: {missing}")
+        variation_exprs = [
+            pl.col(field).drop_nulls().n_unique().alias(f"__nunique_{field}")
+            for field in direct_fields
+        ]
+        value_exprs = [
+            pl.col(field).sort_by("trade_time").last().alias(field)
+            for field in ("close", *direct_fields)
+        ]
+        lazy = (
+            pl.scan_parquet(source, low_memory=True)
+            .filter(pl.col("trade_time").dt.date().is_in(tuple(sessions.date)))
+            .select("code", "trade_time", "close", *direct_fields)
+            .with_columns(pl.col("trade_time").dt.date().alias("__trade_date"))
+            .group_by("code", "__trade_date")
+            .agg(pl.col("trade_time").max(), *value_exprs, *variation_exprs)
+            .sort("trade_time", "code")
+        )
+        frame = lazy.collect(engine="streaming").to_pandas()
+        for field in direct_fields:
+            if int(frame[f"__nunique_{field}"].max() or 0) > 1:
+                raise RuntimeError(f"daily context varies intraday: {field}")
+            frame.drop(columns=f"__nunique_{field}", inplace=True)
+        frame.drop(columns="__trade_date", inplace=True)
+        frame["code"] = frame["code"].map(normalize_cn_code)
+        coordinates = frame[["code", "trade_time"]].rename(
+            columns={"trade_time": "session_time"}
+        )
+        coordinate_index = pd.MultiIndex.from_frame(coordinates)
+        coverage: dict[str, float] = {}
+        for field_id, spec in specs.items():
+            values = materializer.materialize(spec, coordinates).set_index(
+                ["code", "session_time"]
+            )[field_id]
+            if values.index.has_duplicates:
+                raise RuntimeError(f"duplicate PIT coordinates: {field_id}")
+            frame[field_id] = values.reindex(coordinate_index).to_numpy()
+            coverage[field_id] = round(float(frame[field_id].notna().mean()), 8)
+        if chip_fields:
+            joined = point_in_time_chip_context(
+                frame[["code", "trade_time"]],
+                chip_context,
+                fields=chip_fields,
+                data_role="development",
+            )
+            frame["chip_source_session"] = joined[
+                "chip_source_session"
+            ].to_numpy()
+            for field_id in chip_fields:
+                frame[field_id] = joined[field_id].to_numpy()
+                coverage[field_id] = round(
+                    float(frame[field_id].notna().mean()), 8
+                )
+        frame["source_shard"] = np.uint16(shard)
+        frame["source_row_identity"] = np.arange(len(frame), dtype=np.uint64)
+        frame["duplicate_ordinal"] = np.uint32(0)
+        output_fields = list(
+            dict.fromkeys(
+                [
+                    *STABLE_KEY,
+                    "close",
+                    *required_fields,
+                    *(["chip_source_session"] if chip_fields else []),
+                ]
+            )
+        )
+        frame = frame[output_fields]
+        if frame.duplicated(list(STABLE_KEY)).any():
+            raise RuntimeError(f"duplicate stable keys in shard {shard}")
+        target = output_root / f"shard_{shard:02d}.parquet"
+        temporary = target.with_suffix(".tmp.parquet")
+        frame.to_parquet(temporary, index=False, compression="zstd")
+        temporary.replace(target)
+        records.append(
+            {
+                "source_shard": shard,
+                "source_path": str(source),
+                "source_sha256": _sha256(source),
+                "output_path": str(target),
+                "output_sha256": _sha256(target),
+                "output_bytes": target.stat().st_size,
+                "rows": len(frame),
+                "fields": output_fields,
+                "pit_coverage": coverage,
+                "status": "SESSION_VALIDATION_PIT_MATERIALIZATION_PASS",
+            }
+        )
+        print(json.dumps({"shard": shard, "rows": len(frame), "status": "PASS"}))
+
+    manifest = {
+        "schema_version": "cn_core_pack_validation_session_sidecar_v1",
+        "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
+        "data_role": "validation_report_only",
+        "evaluation_role": "validation",
+        "split_manifest_hash": args.split_manifest_hash,
+        "eligible_trade_date_count": len(validation_dates),
+        "eligible_train_date_count": 0,
+        "eligible_validation_date_count": len(validation_dates),
+        "fields": records[0]["fields"],
+        "source_shard_count": len(records),
+        "source_rows": sum(int(row["rows"]) for row in records),
+        "sidecar_rows": sum(int(row["rows"]) for row in records),
+        "sidecar_bytes": sum(int(row["output_bytes"]) for row in records),
+        "build_wall_seconds": time.perf_counter() - started,
+        "shards": records,
+        "chip_receipt": chip_receipt,
+        "validation_reads": sum(int(row["rows"]) for row in records),
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "feedback_write": "FORBIDDEN",
+        "scheduler_write": "FORBIDDEN",
+        "archive_write": "FORBIDDEN",
+        "promotion": "FORBIDDEN",
+    }
+    manifest_path = output_root / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps({"status": manifest["status"], "rows": manifest["sidecar_rows"]}))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
