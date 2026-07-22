@@ -75,7 +75,9 @@ MAX_RAW_ATTEMPTS = 100_000
 MAX_WALL_SECONDS = 12 * 60 * 60
 ROUTE_ATTEMPT_CAP = 2_300
 GLOBAL_WORKER_LIMIT = 24
-MIN_PRIMARY_HOST_PHYSICAL_OCCUPANCY = 0.70
+MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY = 0.75
+PEAK_RSS_LIMIT_BYTES = 48 * 1024**3
+MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 EXPECTED_REGISTRY_RELATIVE_PATH = Path(
     "runtime/field_registry/cn_unified_capability_registry_v3_20260717/"
     "unified_capability_registry.json"
@@ -157,7 +159,7 @@ def _campaign_authorization_binding(
         "constructor_profile": COMPOSITIONAL_V2_PROFILE,
         "scheduler_authority": "UNIFIED_REGISTRY_ROUTE_ID",
         "required_parallelism_status": "PARALLELISM_ENGAGED",
-        "peak_rss_limit_bytes": 24 * 1024**3,
+        "peak_rss_limit_bytes": PEAK_RSS_LIMIT_BYTES,
         "checkpoint_recovery": "EXISTING_PHASE3CM_ONLY",
         "validation_mode": "AUTOMATIC_POST_TRAIN_REPORT_ONLY",
         "promotion": "FORBIDDEN",
@@ -569,6 +571,15 @@ def _physical_cpu_count() -> int:
         raise RuntimeError("psutil is required for host-level compute allocation") from exc
 
 
+def _logical_cpu_count() -> int:
+    try:
+        import psutil
+
+        return int(psutil.cpu_count(logical=True) or 1)
+    except Exception as exc:
+        raise RuntimeError("psutil is required for host-level compute allocation") from exc
+
+
 def _admit_behavior_unique(
     *,
     candidate_rows: Sequence[Mapping[str, Any]],
@@ -839,10 +850,11 @@ def _runtime_gate(
         normalized = compute_cpu / max(1e-12, compute_wall * compute_threads[backend])
         effective_cores = compute_cpu / max(1e-12, compute_wall)
         physical_cpu_count = _physical_cpu_count()
-        host_physical_occupancy = effective_cores / max(1, physical_cpu_count)
+        logical_cpu_count = _logical_cpu_count()
+        host_logical_occupancy = effective_cores / max(1, logical_cpu_count)
         primary_host_occupancy_pass = (
             backend != "active_bar"
-            or host_physical_occupancy >= MIN_PRIMARY_HOST_PHYSICAL_OCCUPANCY
+            or host_logical_occupancy >= MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY
         )
         blocks = _block_compute_rows(events, compute_threads[backend])
         threshold = 0.55 if backend == "active_bar" else 0.50
@@ -879,7 +891,7 @@ def _runtime_gate(
         elif io_wall / total_wall >= 0.40 and read_throughput >= 100 * 1024**2:
             bottleneck_class = "IO_BOUND_PROVEN"
             alternative_pass = True
-        elif peak_rss >= 20 * 1024**3 or (0 < minimum_free <= 8 * 1024**3):
+        elif peak_rss >= 40 * 1024**3 or (0 < minimum_free <= 16 * 1024**3):
             bottleneck_class = "MEMORY_BOUND_PROVEN"
             alternative_pass = True
         elif max((int(row.get("process_tree_count") or 0) for row in samples), default=0) > 1:
@@ -894,8 +906,8 @@ def _runtime_gate(
             or alternative_pass
         )
         resource_pass = (
-            peak_rss <= 24 * 1024**3
-            and minimum_free >= 2 * 1024**3
+            peak_rss <= PEAK_RSS_LIMIT_BYTES
+            and minimum_free >= MINIMUM_FREE_MEMORY_BYTES
         )
         expression_audits = list(result.get("expression_audits") or [])
         cache_hits = sum(int(row.get("cache_hits") or 0) for row in expression_audits)
@@ -917,9 +929,10 @@ def _runtime_gate(
             "compute_wall_seconds": compute_wall,
             "effective_compute_cores": effective_cores,
             "host_physical_cpu_count": physical_cpu_count,
-            "host_physical_core_occupancy": host_physical_occupancy,
-            "required_primary_host_physical_core_occupancy": (
-                MIN_PRIMARY_HOST_PHYSICAL_OCCUPANCY if backend == "active_bar" else None
+            "host_logical_cpu_count": logical_cpu_count,
+            "host_logical_cpu_occupancy": host_logical_occupancy,
+            "required_primary_host_logical_cpu_occupancy": (
+                MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY if backend == "active_bar" else None
             ),
             "primary_host_occupancy_pass": primary_host_occupancy_pass,
             "normalized_cpu_utilization": normalized,
@@ -953,7 +966,7 @@ def _runtime_gate(
             "status": "PASS" if backend_pass else "FAIL",
         }
     return {
-        "schema_version": "cn_medium_campaign_runtime_utilization_gate_v2",
+        "schema_version": "cn_medium_campaign_runtime_utilization_gate_v3",
         "status": "PASS" if overall and len(backends) == 2 else "RUNTIME_ACCELERATION_GATE_FAILED",
         "backends": backends,
         "bounded_concurrency_adjustment_count": 0,
@@ -986,10 +999,10 @@ def _bounded_runtime_adjustment(
         return dict(initial_gate), []
     adjusted_threads = dict(compute_threads)
     if "active_bar" in failed:
-        physical_cpu_count = _physical_cpu_count()
+        logical_cpu_count = _logical_cpu_count()
         adjusted_threads["active_bar"] = min(
-            16,
-            max(12, int(compute_threads["active_bar"]) + 1, physical_cpu_count - 1),
+            max(1, logical_cpu_count - 2),
+            max(12, int(compute_threads["active_bar"]) + 4),
         )
     if "stock_session" in failed:
         adjusted_threads["stock_session"] = min(4, max(3, int(compute_threads["stock_session"]) + 1))
@@ -1815,7 +1828,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--report-path", type=Path)
     parser.add_argument("--seed-base", type=int, default=2026072101)
-    parser.add_argument("--active-threads", type=int, default=15)
+    parser.add_argument("--active-threads", type=int, default=30)
     parser.add_argument("--session-threads", type=int, default=2)
     args = parser.parse_args(argv)
     result = run(args)

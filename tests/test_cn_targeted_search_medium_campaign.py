@@ -164,8 +164,8 @@ def test_runtime_gate_counts_only_completed_compute_blocks() -> None:
 @pytest.mark.parametrize(
     ("cpu_seconds", "expected_status", "expected_bottleneck"),
     [
-        (9.0, "FAIL", "HOST_COMPUTE_UNDERALLOCATED"),
-        (12.0, "PASS", "CPU_COMPUTE_SATURATED"),
+        (18.0, "FAIL", "HOST_COMPUTE_UNDERALLOCATED"),
+        (26.0, "PASS", "CPU_COMPUTE_SATURATED"),
     ],
 )
 def test_runtime_gate_requires_primary_host_occupancy(
@@ -220,13 +220,14 @@ def test_runtime_gate_requires_primary_host_occupancy(
         encoding="utf-8",
     )
     monkeypatch.setattr(campaign_module, "_physical_cpu_count", lambda: 16)
+    monkeypatch.setattr(campaign_module, "_logical_cpu_count", lambda: 32)
 
-    gate = _runtime_gate(tmp_path, {"active_bar": 15, "stock_session": 2})
+    gate = _runtime_gate(tmp_path, {"active_bar": 30, "stock_session": 2})
     active = gate["backends"]["active_bar"]
 
     assert active["status"] == expected_status
     assert active["hot_path_bottleneck"] == expected_bottleneck
-    assert active["host_physical_core_occupancy"] == pytest.approx(cpu_seconds / 16.0)
+    assert active["host_logical_cpu_occupancy"] == pytest.approx(cpu_seconds / 32.0)
 
 
 def test_deployment_commit_sha_supports_gitless_77o_workspace(monkeypatch) -> None:
@@ -311,7 +312,7 @@ def test_large_campaign_history_and_authorization_are_identity_only(
         "constructor_profile": "registry_compositional_v2",
         "scheduler_authority": "UNIFIED_REGISTRY_ROUTE_ID",
         "required_parallelism_status": "PARALLELISM_ENGAGED",
-        "peak_rss_limit_bytes": 24 * 1024**3,
+        "peak_rss_limit_bytes": 48 * 1024**3,
         "checkpoint_recovery": "EXISTING_PHASE3CM_ONLY",
         "validation_mode": "AUTOMATIC_POST_TRAIN_REPORT_ONLY",
         "promotion": "FORBIDDEN",
