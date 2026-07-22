@@ -59,3 +59,23 @@ def test_pair_support_batches_match_single_full_pair_update() -> None:
     batched.update(common_masks=mask[1:], pair_indices=(1,), **coordinates)
 
     assert batched.identities() == whole.identities()
+
+
+def test_prepared_support_tokens_preserve_exact_identities() -> None:
+    time = np.repeat(np.arange(4, dtype=np.int64), 3)
+    code = np.tile(np.arange(3, dtype=np.int32), 4)
+    coordinates = dict(
+        trade_times_ns=time,
+        code_ids=code,
+        source_shards=(code % 2).astype(np.uint16),
+        source_row_identity=np.arange(len(time), dtype=np.uint64),
+        duplicate_ordinal=np.zeros(len(time), dtype=np.uint32),
+    )
+    mask = np.vstack((np.arange(len(time)) % 2 == 0, np.arange(len(time)) % 3 != 0))
+    direct = PairSupportAccumulator(pair_ids=("p0", "p1"))
+    direct.update(common_masks=mask, **coordinates)
+    reused = PairSupportAccumulator(pair_ids=("p0", "p1"))
+    tokens = reused.prepare_block_tokens(**coordinates)
+    reused.update(common_masks=mask[:1], pair_indices=(0,), block_tokens=tokens)
+    reused.update(common_masks=mask[1:], pair_indices=(1,), block_tokens=tokens)
+    assert reused.identities() == direct.identities()

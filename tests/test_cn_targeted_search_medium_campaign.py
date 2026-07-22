@@ -10,12 +10,14 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
     MAX_RAW_ATTEMPTS,
     MAX_WALL_SECONDS,
+    PAIR_BATCH_SIZE_BY_BACKEND,
     SEARCH_ROUTES,
     TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
     _campaign_authorization_binding,
     _load_historical_dedupe,
     _add_resolved_behavior_rows,
     _block_compute_rows,
+    _bounded_runtime_adjustment,
     _git_sha,
     _registry_binding,
     _runtime_gate,
@@ -164,7 +166,8 @@ def test_runtime_gate_counts_only_completed_compute_blocks() -> None:
 @pytest.mark.parametrize(
     ("cpu_seconds", "expected_status", "expected_bottleneck"),
     [
-        (18.0, "FAIL", "HOST_COMPUTE_UNDERALLOCATED"),
+        (17.0, "FAIL", "HOST_COMPUTE_UNDERALLOCATED"),
+        (18.0, "PASS", "FULL_HOST_NATIVE_KERNEL_SMT_CEILING_PROVEN"),
         (26.0, "PASS", "CPU_COMPUTE_SATURATED"),
     ],
 )
@@ -228,6 +231,42 @@ def test_runtime_gate_requires_primary_host_occupancy(
     assert active["status"] == expected_status
     assert active["hot_path_bottleneck"] == expected_bottleneck
     assert active["host_logical_cpu_occupancy"] == pytest.approx(cpu_seconds / 32.0)
+
+
+def test_bounded_adjustment_never_repeats_an_unchanged_full_host_pool(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(campaign_module, "_logical_cpu_count", lambda: 32)
+    monkeypatch.setattr(
+        campaign_module,
+        "_run_phase3cm_monitored",
+        lambda **_: pytest.fail("unchanged thread allocation must not relaunch Phase3CM"),
+    )
+    gate, receipts = _bounded_runtime_adjustment(
+        initial_gate={
+            "status": "RUNTIME_ACCELERATION_GATE_FAILED",
+            "backends": {
+                "active_bar": {
+                    "status": "FAIL",
+                    "hot_path_bottleneck": "HOST_COMPUTE_UNDERALLOCATED",
+                }
+            },
+        },
+        checkpoint_id="checkpoint_001",
+        checkpoint_root=tmp_path,
+        binding_path=tmp_path / "binding.json",
+        table_paths={},
+        split_manifest=tmp_path / "split.csv",
+        field_roots={},
+        label_roots={},
+        purity_path=tmp_path / "purity.json",
+        compute_threads={"active_bar": 30, "stock_session": 2},
+        deadline_epoch=0.0,
+    )
+    assert receipts == []
+    assert gate["status"] == "RUN_INVALID_NO_ACTIONABLE_CONCURRENCY_ADJUSTMENT"
+    assert gate["bounded_concurrency_adjustment_count"] == 0
 
 
 def test_deployment_commit_sha_supports_gitless_77o_workspace(monkeypatch) -> None:
@@ -308,6 +347,8 @@ def test_large_campaign_history_and_authorization_are_identity_only(
         "seed_base": 1729,
         "active_threads": 11,
         "session_threads": 2,
+        "active_pair_batch_size": PAIR_BATCH_SIZE_BY_BACKEND["active_bar"],
+        "session_pair_batch_size": PAIR_BATCH_SIZE_BY_BACKEND["stock_session"],
         "global_worker_limit": 24,
         "constructor_profile": "registry_compositional_v2",
         "scheduler_authority": "UNIFIED_REGISTRY_ROUTE_ID",

@@ -553,6 +553,52 @@ class PortfolioBlockResult:
     audit_coordinate_metrics: np.ndarray | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class PreparedPortfolioBlock:
+    horizons: tuple[int, ...]
+    row_count: int
+    label_array: np.ndarray
+    starts: np.ndarray
+    ends: np.ndarray
+    label_orders: np.ndarray
+    label_order_counts: np.ndarray
+
+
+def prepare_portfolio_block(
+    *,
+    labels: Mapping[int, np.ndarray],
+    horizons: Sequence[int],
+    time_ids: np.ndarray,
+    compute_threads: int,
+) -> PreparedPortfolioBlock:
+    frozen_horizons = tuple(int(value) for value in horizons)
+    time_array = np.asarray(time_ids, dtype=np.int64)
+    if not frozen_horizons:
+        raise ValueError("at least one horizon is required")
+    if len(time_array) and bool(np.any(time_array[1:] < time_array[:-1])):
+        raise ValueError("portfolio block must contain a complete time-major global barrier")
+    label_array = np.vstack(
+        [np.asarray(labels[horizon], dtype=np.float64) for horizon in frozen_horizons]
+    )
+    if label_array.shape != (len(frozen_horizons), len(time_array)):
+        raise ValueError("label block shape mismatch")
+    starts, ends = _boundaries(time_array)
+    if set_num_threads is not None:
+        set_num_threads(int(compute_threads))
+    if _prepare_label_orders is None:
+        raise RuntimeError("Numba is required for the batched portfolio hot path")
+    label_orders, label_order_counts = _prepare_label_orders(label_array, starts, ends)
+    return PreparedPortfolioBlock(
+        horizons=frozen_horizons,
+        row_count=len(time_array),
+        label_array=label_array,
+        starts=starts,
+        ends=ends,
+        label_orders=label_orders,
+        label_order_counts=label_order_counts,
+    )
+
+
 class BatchedPortfolioKernel:
     """One native call maps a complete block for all candidate members."""
 
@@ -601,6 +647,7 @@ class BatchedPortfolioKernel:
         directions: np.ndarray,
         day_count: int,
         audit_coordinate_arrays: bool = False,
+        prepared_block: PreparedPortfolioBlock | None = None,
     ) -> PortfolioBlockResult:
         if _mapping_kernel is None or _prepare_label_orders is None or _turnover_cost_kernel is None:
             raise RuntimeError("Numba is required for the batched portfolio hot path")
@@ -619,17 +666,29 @@ class BatchedPortfolioKernel:
             raise ValueError("portfolio block must contain a complete time-major global barrier")
         if len(code_ids) and (int(code_ids.min()) < 0 or int(code_ids.max()) >= self.code_count):
             raise ValueError("code id outside frozen symbol universe")
-        label_array = np.vstack(
-            [np.asarray(labels[horizon], dtype=np.float64) for horizon in self.horizons]
-        )
-        if label_array.shape != (len(self.horizons), len(time_ids)):
-            raise ValueError("label block shape mismatch")
-        starts, ends = _boundaries(time_ids)
         if set_num_threads is not None:
             set_num_threads(self.compute_threads)
         mapping_wall_start = time.perf_counter()
         mapping_cpu_start = time.process_time()
-        label_orders, label_order_counts = _prepare_label_orders(label_array, starts, ends)
+        if prepared_block is None:
+            prepared_block = prepare_portfolio_block(
+                labels=labels,
+                horizons=self.horizons,
+                time_ids=time_ids,
+                compute_threads=self.compute_threads,
+            )
+            shared_label_orders_reused = False
+        else:
+            if prepared_block.horizons != self.horizons:
+                raise ValueError("prepared portfolio horizon drift")
+            if prepared_block.row_count != len(time_ids):
+                raise ValueError("prepared portfolio row count drift")
+            shared_label_orders_reused = True
+        label_array = prepared_block.label_array
+        starts = prepared_block.starts
+        ends = prepared_block.ends
+        label_orders = prepared_block.label_orders
+        label_order_counts = prepared_block.label_order_counts
         selected, metrics = _mapping_kernel(
             signal_array,
             label_array,
@@ -690,6 +749,7 @@ class BatchedPortfolioKernel:
             "mapping_wall_seconds": mapping_wall,
             "mapping_cpu_seconds": mapping_cpu,
             "mapping_effective_cores": mapping_effective,
+            "shared_label_orders_reused": shared_label_orders_reused,
             "mapping_parallelism_status": (
                 "PARALLELISM_ENGAGED"
                 if mapping_effective >= 0.5 * self.compute_threads

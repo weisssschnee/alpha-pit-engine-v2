@@ -16,6 +16,7 @@ from our_system_phase2.services.phase3cm_streaming_portfolio import (
     _linear_quantile_pair,
     _pearson,
     _prepare_label_orders,
+    prepare_portfolio_block,
     _rank_average_with_order,
     _rank_filtered_returns_from_order,
 )
@@ -568,3 +569,47 @@ def test_independent_pair_batch_kernels_match_one_full_candidate_kernel() -> Non
         np.concatenate([kernel.epoch_counter for kernel in batch_kernels], axis=0),
         full_kernel.epoch_counter,
     )
+
+
+def test_prepared_label_orders_preserve_exact_portfolio_results() -> None:
+    frame, signals, labels = _fixture()
+    time_ids = pd.factorize(frame["trade_time"], sort=False)[0].astype(np.int64)
+    code_ids = pd.factorize(frame["code"], sort=True)[0].astype(np.int32)
+    kwargs = dict(
+        candidate_count=2,
+        code_count=6,
+        horizons=(1, 5),
+        compute_threads=2,
+        min_obs=5,
+        top_quantile=0.2,
+        cost_bps=5.0,
+        portfolio_mode="long_only_top",
+    )
+    call = dict(
+        signals=signals,
+        labels=labels,
+        time_ids=time_ids,
+        code_ids=code_ids,
+        day_ids=np.zeros(len(frame), dtype=np.int32),
+        directions=np.array([1.0, -1.0]),
+        day_count=1,
+        audit_coordinate_arrays=True,
+    )
+    direct = BatchedPortfolioKernel(**kwargs).evaluate_block(**call)
+    prepared = prepare_portfolio_block(
+        labels=labels,
+        horizons=(1, 5),
+        time_ids=time_ids,
+        compute_threads=2,
+    )
+    reused = BatchedPortfolioKernel(**kwargs).evaluate_block(
+        **call,
+        prepared_block=prepared,
+    )
+    np.testing.assert_array_equal(reused.stats, direct.stats)
+    np.testing.assert_array_equal(reused.daily, direct.daily)
+    np.testing.assert_array_equal(reused.audit_selected, direct.audit_selected)
+    np.testing.assert_array_equal(reused.audit_mapping_metrics, direct.audit_mapping_metrics)
+    np.testing.assert_array_equal(reused.audit_coordinate_metrics, direct.audit_coordinate_metrics)
+    assert reused.behavior_block_digests == direct.behavior_block_digests
+    assert reused.audit["shared_label_orders_reused"] is True

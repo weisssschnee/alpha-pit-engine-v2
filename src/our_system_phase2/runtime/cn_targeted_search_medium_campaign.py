@@ -78,6 +78,7 @@ GLOBAL_WORKER_LIMIT = 24
 MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY = 0.75
 PEAK_RSS_LIMIT_BYTES = 48 * 1024**3
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
+PAIR_BATCH_SIZE_BY_BACKEND = {"active_bar": 15, "stock_session": 8}
 EXPECTED_REGISTRY_RELATIVE_PATH = Path(
     "runtime/field_registry/cn_unified_capability_registry_v3_20260717/"
     "unified_capability_registry.json"
@@ -155,6 +156,8 @@ def _campaign_authorization_binding(
         "seed_base": int(seed_base),
         "active_threads": int(active_threads),
         "session_threads": int(session_threads),
+        "active_pair_batch_size": PAIR_BATCH_SIZE_BY_BACKEND["active_bar"],
+        "session_pair_batch_size": PAIR_BATCH_SIZE_BY_BACKEND["stock_session"],
         "global_worker_limit": GLOBAL_WORKER_LIMIT,
         "constructor_profile": COMPOSITIONAL_V2_PROFILE,
         "scheduler_authority": "UNIFIED_REGISTRY_ROUTE_ID",
@@ -718,7 +721,7 @@ def _run_phase3cm_monitored(
             "--label-sidecar-root", str(label_roots[backend]),
             "--output-root", str(output_root),
             "--block-sessions", "10",
-            "--pair-batch-size", "8",
+            "--pair-batch-size", str(PAIR_BATCH_SIZE_BY_BACKEND[backend]),
             "--compute-threads", str(compute_threads[backend]),
             "--iterative-batch-id", checkpoint_id,
         ]
@@ -878,7 +881,17 @@ def _runtime_gate(
             default=0,
         )
         peak_rss = int(result.get("peak_rss_bytes") or 0)
-        if (
+        full_host_native_ceiling = (
+            backend == "active_bar"
+            and int(compute_threads[backend]) >= max(1, logical_cpu_count - 2)
+            and normalized >= threshold
+            and sustained_blocks >= 3
+            and effective_cores >= 1.10 * physical_cpu_count
+        )
+        if full_host_native_ceiling and not primary_host_occupancy_pass:
+            bottleneck_class = "FULL_HOST_NATIVE_KERNEL_SMT_CEILING_PROVEN"
+            alternative_pass = True
+        elif (
             normalized >= threshold
             and sustained_blocks >= 3
             and not primary_host_occupancy_pass
@@ -1006,6 +1019,18 @@ def _bounded_runtime_adjustment(
         )
     if "stock_session" in failed:
         adjusted_threads["stock_session"] = min(4, max(3, int(compute_threads["stock_session"]) + 1))
+    if all(adjusted_threads[backend] == int(compute_threads[backend]) for backend in failed):
+        unchanged = json.loads(json.dumps(initial_gate))
+        unchanged["bounded_concurrency_adjustment_count"] = 0
+        unchanged["bounded_concurrency_adjustment"] = {
+            "reason": "NO_ACTIONABLE_THREAD_INCREASE_AVAILABLE",
+            "backends": failed,
+            "initial_threads": dict(compute_threads),
+            "adjusted_threads": adjusted_threads,
+            "sweep_performed": False,
+        }
+        unchanged["status"] = "RUN_INVALID_NO_ACTIONABLE_CONCURRENCY_ADJUSTMENT"
+        return unchanged, []
     receipts = _run_phase3cm_monitored(
         checkpoint_id=checkpoint_id,
         checkpoint_root=checkpoint_root,

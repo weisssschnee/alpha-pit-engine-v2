@@ -4,9 +4,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 import numpy as np
+
+
+@dataclass(frozen=True, slots=True)
+class PairSupportBlockTokens:
+    token1: np.ndarray
+    token2: np.ndarray
 
 
 class PairSupportAccumulator:
@@ -27,12 +34,13 @@ class PairSupportAccumulator:
         self,
         *,
         common_masks: np.ndarray,
-        trade_times_ns: np.ndarray,
-        code_ids: np.ndarray,
-        source_shards: np.ndarray,
-        source_row_identity: np.ndarray,
-        duplicate_ordinal: np.ndarray,
+        trade_times_ns: np.ndarray | None = None,
+        code_ids: np.ndarray | None = None,
+        source_shards: np.ndarray | None = None,
+        source_row_identity: np.ndarray | None = None,
+        duplicate_ordinal: np.ndarray | None = None,
         pair_indices: Sequence[int] | None = None,
+        block_tokens: PairSupportBlockTokens | None = None,
     ) -> None:
         masks = np.asarray(common_masks, dtype=np.bool_)
         indices = tuple(range(len(self.pair_ids))) if pair_indices is None else tuple(int(value) for value in pair_indices)
@@ -40,6 +48,56 @@ class PairSupportAccumulator:
             raise ValueError("pair indices must be non-empty and unique")
         if min(indices) < 0 or max(indices) >= len(self.pair_ids):
             raise ValueError("pair index outside frozen support accumulator")
+        if block_tokens is None:
+            if any(
+                value is None
+                for value in (
+                    trade_times_ns,
+                    code_ids,
+                    source_shards,
+                    source_row_identity,
+                    duplicate_ordinal,
+                )
+            ):
+                raise ValueError("support coordinates are required when block tokens are absent")
+            block_tokens = self.prepare_block_tokens(
+                trade_times_ns=np.asarray(trade_times_ns),
+                code_ids=np.asarray(code_ids),
+                source_shards=np.asarray(source_shards),
+                source_row_identity=np.asarray(source_row_identity),
+                duplicate_ordinal=np.asarray(duplicate_ordinal),
+            )
+        token1 = np.asarray(block_tokens.token1, dtype=np.uint64)
+        token2 = np.asarray(block_tokens.token2, dtype=np.uint64)
+        row_count = len(token1)
+        if masks.shape != (len(indices), row_count):
+            raise ValueError("common support mask shape drift")
+        if len(token2) != row_count:
+            raise ValueError("support token shape drift")
+        for local_index, pair_index in enumerate(indices):
+            active = masks[local_index]
+            first = token1[active]
+            second = token2[active]
+            self.counts[pair_index] += np.uint64(len(first))
+            if len(first):
+                self.sum1[pair_index] = np.uint64(
+                    (int(self.sum1[pair_index]) + int(np.sum(first, dtype=np.uint64))) & ((1 << 64) - 1)
+                )
+                self.xor1[pair_index] ^= np.bitwise_xor.reduce(first)
+                self.sum2[pair_index] = np.uint64(
+                    (int(self.sum2[pair_index]) + int(np.sum(second, dtype=np.uint64))) & ((1 << 64) - 1)
+                )
+                self.xor2[pair_index] ^= np.bitwise_xor.reduce(second)
+
+    @staticmethod
+    def prepare_block_tokens(
+        *,
+        trade_times_ns: np.ndarray,
+        code_ids: np.ndarray,
+        source_shards: np.ndarray,
+        source_row_identity: np.ndarray,
+        duplicate_ordinal: np.ndarray,
+    ) -> PairSupportBlockTokens:
         coordinates = tuple(
             np.asarray(value)
             for value in (
@@ -51,8 +109,6 @@ class PairSupportAccumulator:
             )
         )
         row_count = len(coordinates[0])
-        if masks.shape != (len(indices), row_count):
-            raise ValueError("common support mask shape drift")
         if any(len(value) != row_count for value in coordinates):
             raise ValueError("support coordinate shape drift")
         time = coordinates[0].astype(np.uint64, copy=False)
@@ -74,20 +130,7 @@ class PairSupportAccumulator:
             ^ row * np.uint64(0x9E6C63D0676A9A99)
             ^ duplicate * np.uint64(0xC6BC279692B5CC83)
         )
-        for local_index, pair_index in enumerate(indices):
-            active = masks[local_index]
-            first = token1[active]
-            second = token2[active]
-            self.counts[pair_index] += np.uint64(len(first))
-            if len(first):
-                self.sum1[pair_index] = np.uint64(
-                    (int(self.sum1[pair_index]) + int(np.sum(first, dtype=np.uint64))) & ((1 << 64) - 1)
-                )
-                self.xor1[pair_index] ^= np.bitwise_xor.reduce(first)
-                self.sum2[pair_index] = np.uint64(
-                    (int(self.sum2[pair_index]) + int(np.sum(second, dtype=np.uint64))) & ((1 << 64) - 1)
-                )
-                self.xor2[pair_index] ^= np.bitwise_xor.reduce(second)
+        return PairSupportBlockTokens(token1=token1, token2=token2)
 
     def identities(self) -> dict[str, dict[str, Any]]:
         output: dict[str, dict[str, Any]] = {}

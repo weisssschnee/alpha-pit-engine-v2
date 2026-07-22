@@ -28,7 +28,10 @@ from our_system_phase2.services.phase3cm_streaming_capacity import (
 )
 from our_system_phase2.services.phase3cm_streaming_dag import SharedMultiCandidateDAGPlan
 from our_system_phase2.services.phase3cm_streaming_expression import StreamingExpressionExecutor
-from our_system_phase2.services.phase3cm_streaming_portfolio import BatchedPortfolioKernel
+from our_system_phase2.services.phase3cm_streaming_portfolio import (
+    BatchedPortfolioKernel,
+    prepare_portfolio_block,
+)
 from our_system_phase2.services.portfolio_behavior_archive import (
     PortfolioBehaviorArchive,
     StreamingLabelFreeBehavior,
@@ -761,6 +764,7 @@ def main() -> int:
         )
     else:
         batches = _pair_batches(pair_ids, int(args.pair_batch_size))
+        high_capacity_host = int(args.compute_threads) >= 30
         plan = FrozenExecutionPlan.create(
             phase=args.phase,
             block_size=int(args.block_sessions),
@@ -775,9 +779,9 @@ def main() -> int:
                 "temporary_array_bytes": 6 * 1024**3,
             },
             checkpoint_every_blocks=int(args.checkpoint_every_blocks),
-            rss_soft_bytes=20 * 1024**3,
-            rss_hard_bytes=24 * 1024**3,
-            global_rss_hard_bytes=60 * 1024**3,
+            rss_soft_bytes=(40 if high_capacity_host else 20) * 1024**3,
+            rss_hard_bytes=(48 if high_capacity_host else 24) * 1024**3,
+            global_rss_hard_bytes=(72 if high_capacity_host else 60) * 1024**3,
         )
     validate_frozen_thread_environment(plan)
     _write_json(output_root / "CN_FROZEN_EXECUTION_PLAN.json", plan.to_dict())
@@ -1049,6 +1053,30 @@ def main() -> int:
                 cache_peak_bytes=expression.audit.get("cache_peak_bytes", 0),
                 block_bind=True,
             )
+        with telemetry.phase("portfolio_label_order_prepare", compute_heavy=True) as phase:
+            prepared_portfolio_block = prepare_portfolio_block(
+                labels=block.labels,
+                horizons=horizons,
+                time_ids=block.time_ids,
+                compute_threads=plan.compute_threads,
+            )
+            phase.add(
+                label_order_rows=block.row_count * len(horizons),
+                global_trade_time_count=len(prepared_portfolio_block.starts),
+                shared_across_pair_batches=len(portfolio_batches),
+            )
+        with telemetry.phase("pair_support_coordinate_prepare", compute_heavy=False) as phase:
+            support_block_tokens = support.prepare_block_tokens(
+                trade_times_ns=block.trade_times_ns,
+                code_ids=block.code_ids,
+                source_shards=block.source_shards,
+                source_row_identity=block.source_row_identity,
+                duplicate_ordinal=block.duplicate_ordinal,
+            )
+            phase.add(
+                token_rows=block.row_count,
+                shared_across_pair_batches=len(portfolio_batches),
+            )
         for portfolio_batch in portfolio_batches:
             batch_ordinal = int(portfolio_batch["batch_ordinal"])
             members = tuple(portfolio_batch["members"])
@@ -1123,12 +1151,8 @@ def main() -> int:
                 common_masks = _support_masks(signals)
                 support.update(
                     common_masks=common_masks,
-                    trade_times_ns=block.trade_times_ns,
-                    code_ids=block.code_ids,
-                    source_shards=block.source_shards,
-                    source_row_identity=block.source_row_identity,
-                    duplicate_ordinal=block.duplicate_ordinal,
                     pair_indices=pair_indices,
+                    block_tokens=support_block_tokens,
                 )
                 phase.add(
                     pair_count=len(pair_batch_ids),
@@ -1136,13 +1160,19 @@ def main() -> int:
                     pair_batch_ordinal=batch_ordinal,
                 )
                 del common_masks
-            portfolio_batch["label_free_behavior"].update_block(
-                signals=signals,
-                time_ids=block.time_ids,
-                code_ids=block.code_ids,
-                trade_times_ns=block.trade_times_ns,
-                directions=portfolio_batch["directions"],
-            )
+            with telemetry.phase("label_free_behavior", compute_heavy=True) as phase:
+                portfolio_batch["label_free_behavior"].update_block(
+                    signals=signals,
+                    time_ids=block.time_ids,
+                    code_ids=block.code_ids,
+                    trade_times_ns=block.trade_times_ns,
+                    directions=portfolio_batch["directions"],
+                )
+                phase.add(
+                    candidate_count=len(members),
+                    pair_batch_ordinal=batch_ordinal,
+                    portfolio_coordinates_processed=block.row_count * len(members),
+                )
             result = portfolio_batch["kernel"].evaluate_block(
                 signals=signals,
                 labels=block.labels,
@@ -1151,6 +1181,7 @@ def main() -> int:
                 day_ids=block.day_ids,
                 directions=portfolio_batch["directions"],
                 day_count=len(block.day_labels),
+                prepared_block=prepared_portfolio_block,
             )
             del signals
             snapshot = _process_snapshot()
@@ -1382,8 +1413,11 @@ def main() -> int:
     evaluator_wall = prior_evaluator_wall_seconds + (time.perf_counter() - run_started)
     required_timing_phases = {
         "global_trade_time_barrier",
+        "portfolio_label_order_prepare",
         "expression_value_dag",
         "pair_common_support",
+        "pair_support_coordinate_prepare",
+        "label_free_behavior",
         "cross_sectional_rank_mapping",
         "turnover_and_cost",
         "streaming_reducer",
@@ -1393,8 +1427,9 @@ def main() -> int:
     timing_coverage = len(required_timing_phases & set(phase_totals)) / len(required_timing_phases)
     phase_c_gates = {
         "wall_time_lte_3600": evaluator_wall <= 3600.0,
-        "peak_rss_lte_24gb": max((int(event.get("peak_rss_bytes") or 0) for event in events), default=0)
-        <= 24 * 1024**3,
+        "peak_rss_lte_plan_hard_limit": max(
+            (int(event.get("peak_rss_bytes") or 0) for event in events), default=0
+        ) <= plan.rss_hard_bytes,
         "coordinate_rows_retained_zero": reducer.coordinate_rows_retained == 0,
         "phase_timing_coverage_100pct": timing_coverage == 1.0,
         "sealed_reads_zero": True,
