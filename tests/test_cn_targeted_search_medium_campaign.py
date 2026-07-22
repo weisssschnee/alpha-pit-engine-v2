@@ -14,6 +14,8 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     SEARCH_ROUTES,
     TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
     _campaign_authorization_binding,
+    _rehydrate_closed_checkpoint,
+    _verify_closed_checkpoint_manifest,
     _load_historical_dedupe,
     _add_resolved_behavior_rows,
     _block_compute_rows,
@@ -354,6 +356,157 @@ def test_deployment_commit_sha_supports_gitless_77o_workspace(monkeypatch) -> No
 
 def test_campaign_continuation_uses_cache_conservative_pair_batches() -> None:
     assert PAIR_BATCH_SIZE_BY_BACKEND == {"active_bar": 4, "stock_session": 8}
+
+
+def test_closed_checkpoint_is_verified_before_reuse_without_writes(
+    tmp_path: Path,
+) -> None:
+    checkpoint = tmp_path / "checkpoint_001"
+    result_path = checkpoint / "phase3cm" / "active_bar" / "CN_STREAMING_BACKEND_RESULT.json"
+    result_path.parent.mkdir(parents=True)
+    binding_path = checkpoint / "phase3cm_input_binding.json"
+    binding_path.write_text(
+        json.dumps({"binding_hash": "binding.1", "pair_count": 1}),
+        encoding="utf-8",
+    )
+    result_path.write_text(
+        json.dumps(
+            {
+                "status": "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED",
+                "input_binding_hash": "binding.1",
+                "pair_count": 1,
+            }
+        ),
+        encoding="utf-8",
+    )
+    result_sha = campaign_module._sha256(result_path)
+    manifest_path = campaign_module._batch_manifest(
+        batch_root=checkpoint,
+        batch_id="checkpoint_001",
+        input_hashes={
+            "frozen_contract": "f" * 64,
+            "seed_attempt_manifest": "s" * 64,
+            "prior_checkpoint_manifest": "GENESIS",
+            "adaptive_schedule_source": "FROZEN_INITIAL_PRIOR",
+        },
+        paths=[binding_path, result_path],
+        access_receipts=[
+            {
+                "backend": "active_bar",
+                "result_path": str(result_path.resolve()),
+                "result_sha256": result_sha,
+            }
+        ],
+    )
+    before = {
+        path.relative_to(checkpoint).as_posix(): path.read_bytes()
+        for path in checkpoint.rglob("*")
+        if path.is_file()
+    }
+
+    verified = _verify_closed_checkpoint_manifest(
+        checkpoint_root=checkpoint,
+        checkpoint_id="checkpoint_001",
+        previous_manifest=None,
+    )
+
+    assert verified is not None
+    assert verified[0] == manifest_path
+    assert before == {
+        path.relative_to(checkpoint).as_posix(): path.read_bytes()
+        for path in checkpoint.rglob("*")
+        if path.is_file()
+    }
+    binding_path.write_text("{}", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="immutable artifact"):
+        _verify_closed_checkpoint_manifest(
+            checkpoint_root=checkpoint,
+            checkpoint_id="checkpoint_001",
+            previous_manifest=None,
+        )
+
+
+def test_closed_checkpoint_rehydration_restores_campaign_state_read_only(
+    tmp_path: Path,
+) -> None:
+    import pandas as pd
+
+    checkpoint = tmp_path / "checkpoint_001"
+    checkpoint.mkdir()
+    tables = {
+        "schedule.parquet": [{"route_id": "MINUTE_STATIC", "scheduled_pairs": 1}],
+        "candidate_attempts.parquet": [
+            {
+                "pair_id": "pair.1",
+                "pair_member_role": "PRIMARY",
+                "exact_identity": "exact.primary",
+            },
+            {
+                "pair_id": "pair.1",
+                "pair_member_role": "CONTROL",
+                "exact_identity": "exact.control",
+            },
+        ],
+        "route_funnel.parquet": [
+            {"route_id": "MINUTE_STATIC", "generation_attempts": 3}
+        ],
+        "behavior_probe.parquet": [
+            {"pair_id": "pair.1", "behavior_status": "RESOLVED"}
+        ],
+        "admission_decisions.parquet": [
+            {
+                "pair_id": "pair.1",
+                "admission_decision": "ADMIT",
+                "route_id": "MINUTE_STATIC",
+            }
+        ],
+        "route_health.parquet": [
+            {"route_id": "MINUTE_STATIC", "actionable_support": 1}
+        ],
+        "observation_ledger.parquet": [
+            {
+                "pair_id": "pair.1",
+                "route_id": "MINUTE_STATIC",
+                "pair_evaluation_status": "PAIR_EVALUATED",
+                "matched_gross_increment": 0.2,
+                "matched_net_increment": 0.1,
+                "matched_trading_cost_difference": 0.1,
+                "pair_turnover_metric": 0.2,
+                "pair_train_reward_blockers": "",
+            }
+        ],
+        "full_behavior.parquet": [
+            {"pair_id": "pair.1", "behavior_status": "RESOLVED"}
+        ],
+        "campaign_metrics.parquet": [
+            {"checkpoint": "checkpoint_001", "aggregation_level": "checkpoint"}
+        ],
+    }
+    for name, rows in tables.items():
+        pd.DataFrame(rows).to_parquet(checkpoint / name, index=False)
+    PortfolioBehaviorArchive(
+        [{"pair_id": "pair.1", "behavior_probe_id": "probe.1"}]
+    ).write_parquet(checkpoint / "behavior_archive.parquet")
+    manifest_path = checkpoint / "batch_manifest.json"
+    manifest_path.write_text("{}", encoding="utf-8")
+    before = {
+        path.name: path.read_bytes() for path in checkpoint.iterdir() if path.is_file()
+    }
+
+    restored = _rehydrate_closed_checkpoint(
+        checkpoint_root=checkpoint,
+        checkpoint_id="checkpoint_001",
+        manifest_path=manifest_path,
+    )
+
+    assert restored["summary"]["resume_action"] == "REUSED_VERIFIED_CLOSED_CHECKPOINT"
+    assert restored["summary"]["admitted_pairs"] == 1
+    assert restored["summary"]["evaluated_pairs"] == 1
+    assert restored["raw_attempts"] == 3
+    assert restored["behavior_archive"].contains_probe("probe.1")
+    assert before == {
+        path.name: path.read_bytes() for path in checkpoint.iterdir() if path.is_file()
+    }
 
 
 def test_large_campaign_history_and_authorization_are_identity_only(

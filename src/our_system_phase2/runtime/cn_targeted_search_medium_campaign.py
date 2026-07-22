@@ -1194,6 +1194,145 @@ def _close_route_funnels(
     return closed
 
 
+def _verify_closed_checkpoint_manifest(
+    *,
+    checkpoint_root: Path,
+    checkpoint_id: str,
+    previous_manifest: Path | None,
+) -> tuple[Path, dict[str, Any]] | None:
+    """Verify a closed checkpoint before any campaign code may write into it."""
+
+    manifest_path = checkpoint_root / "batch_manifest.json"
+    if not manifest_path.is_file():
+        return None
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    if str(manifest.get("schema_version") or "") != "cn_iterative_search_v1_batch_manifest_v1":
+        raise RuntimeError(f"{checkpoint_id}: unsupported closed checkpoint manifest schema")
+    if str(manifest.get("batch_id") or "") != checkpoint_id:
+        raise RuntimeError(f"{checkpoint_id}: closed checkpoint manifest batch drift")
+    if str(manifest.get("status") or "") != "BATCH_CLOSED_IMMUTABLE":
+        raise RuntimeError(f"{checkpoint_id}: checkpoint manifest is not immutable-closed")
+    payload = dict(manifest)
+    recorded_payload_hash = str(payload.pop("manifest_payload_hash", ""))
+    if not recorded_payload_hash or _stable_hash(payload) != recorded_payload_hash:
+        raise RuntimeError(f"{checkpoint_id}: immutable manifest self-hash mismatch")
+    if any(int(manifest.get(key) or 0) != 0 for key in ("validation_reads", "holdout_reads", "forward_2026_reads")):
+        raise RuntimeError(f"{checkpoint_id}: closed development checkpoint contains sealed reads")
+    if str(manifest.get("promotion") or "") != "FORBIDDEN":
+        raise RuntimeError(f"{checkpoint_id}: closed development checkpoint promotion drift")
+
+    expected_prior = _sha256(previous_manifest) if previous_manifest else "GENESIS"
+    input_hashes = dict(manifest.get("input_hashes") or {})
+    if str(input_hashes.get("prior_checkpoint_manifest") or "") != expected_prior:
+        raise RuntimeError(f"{checkpoint_id}: prior checkpoint manifest chain mismatch")
+    expected_schedule_source = (
+        _sha256(previous_manifest) if previous_manifest else "FROZEN_INITIAL_PRIOR"
+    )
+    if str(input_hashes.get("adaptive_schedule_source") or "") != expected_schedule_source:
+        raise RuntimeError(f"{checkpoint_id}: adaptive schedule source chain mismatch")
+
+    root = checkpoint_root.resolve()
+    artifact_paths: set[Path] = set()
+    for artifact in manifest.get("artifacts") or ():
+        relative = Path(str(artifact.get("path") or ""))
+        path = (root / relative).resolve()
+        if not path.is_relative_to(root):
+            raise RuntimeError(f"{checkpoint_id}: manifest artifact escapes checkpoint root")
+        if not path.is_file():
+            raise RuntimeError(f"{checkpoint_id}: immutable artifact missing: {relative}")
+        if path.stat().st_size != int(artifact.get("bytes") or -1):
+            raise RuntimeError(f"{checkpoint_id}: immutable artifact byte drift: {relative}")
+        if _sha256(path) != str(artifact.get("sha256") or ""):
+            raise RuntimeError(f"{checkpoint_id}: immutable artifact hash drift: {relative}")
+        artifact_paths.add(path)
+
+    for receipt in manifest.get("access_receipts") or ():
+        result_path = Path(str(receipt.get("result_path") or "")).resolve()
+        if result_path not in artifact_paths:
+            raise RuntimeError(f"{checkpoint_id}: result receipt is not manifest-bound")
+        if _sha256(result_path) != str(receipt.get("result_sha256") or ""):
+            raise RuntimeError(f"{checkpoint_id}: result receipt hash drift")
+
+    binding_path = checkpoint_root / "phase3cm_input_binding.json"
+    binding = json.loads(binding_path.read_text(encoding="utf-8-sig"))
+    result_pair_count = 0
+    result_binding_hashes: set[str] = set()
+    for backend in ("active_bar", "stock_session"):
+        result_path = checkpoint_root / "phase3cm" / backend / "CN_STREAMING_BACKEND_RESULT.json"
+        if not result_path.is_file():
+            continue
+        result = json.loads(result_path.read_text(encoding="utf-8-sig"))
+        if str(result.get("status") or "") != "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED":
+            raise RuntimeError(f"{checkpoint_id}: incomplete closed Phase3CM result on {backend}")
+        result_pair_count += int(result.get("pair_count") or 0)
+        result_binding_hashes.add(str(result.get("input_binding_hash") or ""))
+    if result_binding_hashes != {str(binding.get("binding_hash") or "")}:
+        raise RuntimeError(f"{checkpoint_id}: closed Phase3CM binding identity drift")
+    if result_pair_count != int(binding.get("pair_count") or 0):
+        raise RuntimeError(f"{checkpoint_id}: closed Phase3CM pair-count drift")
+    return manifest_path, manifest
+
+
+def _rehydrate_closed_checkpoint(
+    *, checkpoint_root: Path, checkpoint_id: str, manifest_path: Path
+) -> dict[str, Any]:
+    """Load campaign state from immutable artifacts without writing the checkpoint."""
+
+    schedule = pd.read_parquet(checkpoint_root / "schedule.parquet").fillna("").to_dict(orient="records")
+    generated = pd.read_parquet(checkpoint_root / "candidate_attempts.parquet").fillna("").to_dict(orient="records")
+    funnels = pd.read_parquet(checkpoint_root / "route_funnel.parquet").fillna("").to_dict(orient="records")
+    probe_rows = pd.read_parquet(checkpoint_root / "behavior_probe.parquet").fillna("").to_dict(orient="records")
+    decisions = pd.read_parquet(checkpoint_root / "admission_decisions.parquet").fillna("").to_dict(orient="records")
+    health = pd.read_parquet(checkpoint_root / "route_health.parquet").fillna("").to_dict(orient="records")
+    outcomes = pd.read_parquet(checkpoint_root / "observation_ledger.parquet").fillna("").to_dict(orient="records")
+    full_behavior = pd.read_parquet(checkpoint_root / "full_behavior.parquet").fillna("").to_dict(orient="records")
+    metrics = pd.read_parquet(checkpoint_root / "campaign_metrics.parquet").fillna("").to_dict(orient="records")
+    admitted_ids = {
+        str(row.get("pair_id") or "")
+        for row in decisions
+        if str(row.get("admission_decision") or "") == "ADMIT"
+    }
+    admitted = [
+        row for row in generated if str(row.get("pair_id") or "") in admitted_ids
+    ]
+    ledger, positive, negative, run_health = build_iterative_feedback_views(outcomes)
+    manifest_sha256 = _sha256(manifest_path)
+    return {
+        "schedule": schedule,
+        "generated": generated,
+        "funnels": funnels,
+        "probe_rows": probe_rows,
+        "decisions": decisions,
+        "health": health,
+        "outcomes": outcomes,
+        "full_behavior": full_behavior,
+        "metrics": metrics,
+        "admitted": admitted,
+        "ledger": ledger,
+        "positive": positive,
+        "negative": negative,
+        "run_health": run_health,
+        "behavior_archive": PortfolioBehaviorArchive.read_parquet(
+            checkpoint_root / "behavior_archive.parquet"
+        ),
+        "raw_attempts": sum(int(row.get("generation_attempts") or 0) for row in funnels),
+        "summary": {
+            "checkpoint": checkpoint_id,
+            "scheduled_pairs": sum(int(row.get("scheduled_pairs") or 0) for row in schedule),
+            "generated_pairs": len(generated) // 2,
+            "admitted_pairs": len(admitted) // 2,
+            "evaluated_pairs": len(outcomes),
+            "raw_attempts": sum(int(row.get("generation_attempts") or 0) for row in funnels),
+            "positive_matched_increments": sum(
+                float(row.get("matched_net_increment") or 0.0) > 0.0
+                for row in outcomes
+            ),
+            "manifest_sha256": manifest_sha256,
+            "resume_action": "REUSED_VERIFIED_CLOSED_CHECKPOINT",
+        },
+    }
+
+
 def _backend_cpu_cost(checkpoint_root: Path) -> dict[str, dict[str, float]]:
     output: dict[str, dict[str, float]] = {}
     compute_phases = {
@@ -1569,10 +1708,60 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     deadline_epoch = started_epoch + MAX_WALL_SECONDS
 
     for checkpoint_index in range(CHECKPOINT_COUNT):
-        if completed_pairs >= MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS or raw_attempts >= MAX_RAW_ATTEMPTS or time.time() >= deadline_epoch:
-            break
         checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
         checkpoint_root = output_root / "checkpoints" / checkpoint_id
+        closed_checkpoint = _verify_closed_checkpoint_manifest(
+            checkpoint_root=checkpoint_root,
+            checkpoint_id=checkpoint_id,
+            previous_manifest=previous_manifest,
+        )
+        if closed_checkpoint is not None:
+            manifest_path, _ = closed_checkpoint
+            restored = _rehydrate_closed_checkpoint(
+                checkpoint_root=checkpoint_root,
+                checkpoint_id=checkpoint_id,
+                manifest_path=manifest_path,
+            )
+            previous_manifest = manifest_path
+            previous_feedback = restored["health"]
+            behavior_archive = restored["behavior_archive"]
+            for row in restored["admitted"]:
+                if row.get("exact_identity"):
+                    historical_exact.add(str(row["exact_identity"]))
+            completed_pairs += len(restored["outcomes"])
+            raw_attempts += int(restored["raw_attempts"])
+            cumulative_candidates.extend(
+                {"checkpoint": checkpoint_id, **row} for row in restored["admitted"]
+            )
+            cumulative_outcomes.extend(
+                {"checkpoint": checkpoint_id, **row} for row in restored["outcomes"]
+            )
+            cumulative_metrics.extend(restored["metrics"])
+            cumulative_ledger.extend(
+                {"checkpoint": checkpoint_id, **row} for row in restored["ledger"]
+            )
+            cumulative_positive.extend(
+                {"checkpoint": checkpoint_id, **row} for row in restored["positive"]
+            )
+            cumulative_negative.extend(
+                {"checkpoint": checkpoint_id, **row} for row in restored["negative"]
+            )
+            cumulative_run_health.extend(
+                {"checkpoint": checkpoint_id, **row}
+                for row in restored["run_health"]
+            )
+            checkpoint_summaries.append(restored["summary"])
+            if checkpoint_index == 0:
+                runtime_gate_path = checkpoint_root / "runtime_utilization_gate.json"
+                gate = json.loads(runtime_gate_path.read_text(encoding="utf-8-sig"))
+                runtime_gate_status = str(gate.get("status") or "NOT_EVALUATED")
+            continue
+        if (
+            completed_pairs >= MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS
+            or raw_attempts >= MAX_RAW_ATTEMPTS
+            or time.time() >= deadline_epoch
+        ):
+            break
         checkpoint_root.mkdir(parents=True, exist_ok=True)
         checkpoint_runtime_gate_path: Path | None = None
         schedule, schedule_summary = build_medium_campaign_schedule(
