@@ -262,7 +262,10 @@ def execute(args: argparse.Namespace) -> dict:
             "active_bar": args.validation_active_label_root.resolve(),
             "stock_session": args.validation_session_label_root.resolve(),
         },
-        compute_threads={"active_bar": int(args.compute_threads), "stock_session": 1},
+        compute_threads={
+            "active_bar": int(args.compute_threads),
+            "stock_session": SESSION_COMPUTE_THREADS,
+        },
     )
     result = {
         "status": "SMOKE_COMPLETE",
