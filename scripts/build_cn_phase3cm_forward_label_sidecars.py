@@ -23,20 +23,41 @@ REQUIRED_SERIAL_ENV = {
 }
 
 
-def _train_dates(path: Path, expected_sha256: str) -> tuple[str, ...]:
+def _split_dates(
+    path: Path,
+    expected_sha256: str,
+    *,
+    evaluation_role: str,
+) -> tuple[str, ...]:
+    if evaluation_role not in {"train", "validation"}:
+        raise ValueError(f"unsupported evaluation role: {evaluation_role}")
     if hashlib.sha256(path.read_bytes()).hexdigest() != str(expected_sha256):
         raise RuntimeError("split manifest hash drift")
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         rows = [dict(row) for row in csv.DictReader(handle)]
-    dates = tuple(str(row["trade_date"]) for row in rows if str(row.get("split")) == "train")
+    dates = tuple(
+        str(row["trade_date"])
+        for row in rows
+        if str(row.get("split")) == evaluation_role
+    )
     if not dates or len(dates) != len(set(dates)):
-        raise RuntimeError("split manifest train calendar is empty or duplicated")
+        raise RuntimeError(
+            f"split manifest {evaluation_role} calendar is empty or duplicated"
+        )
+    expected_usage = "allowed" if evaluation_role == "train" else "report_only"
+    if any(
+        str(row.get("optimizer_usage") or "") != expected_usage
+        for row in rows
+        if str(row.get("split")) == evaluation_role
+    ):
+        raise RuntimeError(f"split manifest {evaluation_role} usage drift")
     return dates
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, required=True)
+    parser.add_argument("--evaluation-role", choices=("train", "validation"), default="train")
     parser.add_argument("--pattern", default="*.parquet")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
@@ -53,7 +74,11 @@ def main() -> int:
     if int(args.polars_threads) < 1 or int(args.polars_threads) > 24:
         raise ValueError("POLARS_MAX_THREADS must be between 1 and 24")
     horizons = tuple(int(value) for value in str(args.horizons).split(",") if value)
-    train_dates = _train_dates(args.split_manifest.resolve(), args.split_manifest_hash)
+    eligible_dates = _split_dates(
+        args.split_manifest.resolve(),
+        args.split_manifest_hash,
+        evaluation_role=args.evaluation_role,
+    )
     source_root = args.source_root.resolve()
     sources = sorted(source_root.glob(str(args.pattern)))[: int(args.max_shards)]
     if len(sources) != int(args.max_shards):
@@ -66,8 +91,10 @@ def main() -> int:
         raise RuntimeError("field sidecar parity is not qualified")
     if str(field_manifest.get("split_manifest_hash")) != str(args.split_manifest_hash):
         raise RuntimeError("field sidecar split hash drift")
-    if int(field_manifest.get("eligible_train_date_count") or 0) != len(train_dates):
-        raise RuntimeError("field sidecar train calendar count drift")
+    if str(field_manifest.get("evaluation_role") or "train") != args.evaluation_role:
+        raise RuntimeError("field sidecar evaluation role drift")
+    if int(field_manifest.get("eligible_trade_date_count") or field_manifest.get("eligible_train_date_count") or 0) != len(eligible_dates):
+        raise RuntimeError("field sidecar calendar count drift")
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     before_all = _process_snapshot()
@@ -83,7 +110,20 @@ def main() -> int:
         **build,
         "schema_version": "cn_phase3cm_forward_label_sidecar_manifest_v3_global_symbol_continuity",
         "status": "GLOBAL_SYMBOL_CONTINUITY_LABEL_SIDECARS_READY",
-        "eligible_train_date_count": len(train_dates),
+        "evaluation_role": args.evaluation_role,
+        "data_role": (
+            "development_train_only"
+            if args.evaluation_role == "train"
+            else "validation_report_only"
+        ),
+        "eligible_trade_date_count": len(eligible_dates),
+        "eligible_train_date_count": len(eligible_dates) if args.evaluation_role == "train" else 0,
+        "eligible_validation_date_count": len(eligible_dates) if args.evaluation_role == "validation" else 0,
+        "validation_reads": (
+            int(build.get("source_rows") or 0)
+            if args.evaluation_role == "validation"
+            else 0
+        ),
         "build_wall_seconds": max(0.0, after_all.wall_seconds - before_all.wall_seconds),
         "build_cpu_seconds": max(0.0, after_all.cpu_seconds - before_all.cpu_seconds),
         "peak_rss_bytes": max(before_all.peak_rss_bytes, after_all.peak_rss_bytes),

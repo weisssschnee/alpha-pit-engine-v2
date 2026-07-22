@@ -11,12 +11,50 @@ from our_system_phase2.services.split_boundary_label_purity import (
 )
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
 from scripts.run_cn_phase3cm_streaming_qualification import (
+    _evaluation_calendar,
     _verify_split_boundary_purity,
+)
+from scripts.build_cn_phase3cm_forward_label_sidecars import (
+    _split_dates as _label_split_dates,
+)
+from scripts.build_cn_phase3cm_time_major_sidecar import (
+    _split_dates as _field_split_dates,
 )
 
 
 REPO = Path(__file__).resolve().parents[1]
 REGISTRY = REPO / "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json"
+
+
+def test_streaming_calendar_supports_sequential_report_only_validation(tmp_path: Path) -> None:
+    split_path = tmp_path / "split.csv"
+    split_path.write_text(
+        "trade_date,split,optimizer_usage\n"
+        "2025-01-02,train,allowed\n"
+        "2025-07-08,validation,report_only\n"
+        "2025-10-20,holdout,report_only\n",
+        encoding="utf-8",
+    )
+    binding = {"split_manifest_hash": hashlib.sha256(split_path.read_bytes()).hexdigest()}
+
+    assert _evaluation_calendar(split_path, binding, evaluation_role="train") == (
+        "2025-01-02",
+    )
+    assert _evaluation_calendar(split_path, binding, evaluation_role="validation") == (
+        "2025-07-08",
+    )
+    assert _field_split_dates(
+        split_path,
+        binding["split_manifest_hash"],
+        evaluation_role="validation",
+    ) == ("2025-07-08",)
+    assert _label_split_dates(
+        split_path,
+        binding["split_manifest_hash"],
+        evaluation_role="validation",
+    ) == ("2025-07-08",)
+    with pytest.raises(ValueError, match="evaluation role"):
+        _evaluation_calendar(split_path, binding, evaluation_role="holdout")
 
 
 def test_train_only_terminal_nulls_are_bound_as_purged_crossings(tmp_path: Path) -> None:

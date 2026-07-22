@@ -34,6 +34,7 @@ from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _outcome_rows,
     _probe_pack,
     _route_health,
+    _run_automatic_validation_after_train,
     _sha256,
     _stable_hash,
     _train_dates,
@@ -61,6 +62,7 @@ from our_system_phase2.services.unified_capability_registry import (
 from our_system_phase2.services.unified_discovery_generators import (
     COMPOSITIONAL_V2_PROFILE,
     RegistryDrivenGenerator,
+    load_development_discovery_root_authority,
 )
 
 
@@ -316,6 +318,7 @@ def _load_historical_dedupe(
     behavior_rows = [
         {key: value for key, value in row.items() if key in allowed_fields}
         for row in source_behavior.rows
+        if str(row.get("behavior_status") or "RESOLVED") == "RESOLVED"
     ]
     behavior_archive = PortfolioBehaviorArchive(behavior_rows)
     if not any(
@@ -338,21 +341,40 @@ def _load_historical_dedupe(
     return exact_identities, behavior_archive, snapshot
 
 
+def _add_resolved_behavior_rows(
+    archive: PortfolioBehaviorArchive,
+    rows: Sequence[Mapping[str, Any]],
+) -> int:
+    """Persist only resolved identities; unresolved probes remain run-local evidence."""
+
+    added = 0
+    for raw in rows:
+        row = dict(raw)
+        if str(row.get("behavior_status") or "") != "RESOLVED":
+            continue
+        archive.add(row)
+        added += 1
+    return added
+
+
 def _structural_comparison(
     *,
     registry: UnifiedCapabilityRegistry,
     schema_by_backend: Mapping[str, set[str]],
+    route_root_allowlists: Mapping[str, Sequence[str]],
     seed: int,
 ) -> dict[str, Any]:
     before = RegistryDrivenGenerator(
         registry,
         constructor_profile=COMPOSITIONAL_V2_PROFILE,
         enforce_route_compatibility=False,
+        route_root_allowlist=route_root_allowlists,
     )
     after = RegistryDrivenGenerator(
         registry,
         constructor_profile=COMPOSITIONAL_V2_PROFILE,
         enforce_route_compatibility=True,
+        route_root_allowlist=route_root_allowlists,
     )
     rows = []
     for ordinal, route_id in enumerate(MODIFIED_COMPATIBILITY_ROUTES):
@@ -1194,6 +1216,38 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     registry_binding = _registry_binding(registry_path, registry)
     registry_binding_path = _write_json(output_root / "registry_binding.json", registry_binding)
+    discovery_authority = load_development_discovery_root_authority(
+        args.discovery_contract.resolve(),
+        registry=registry,
+    )
+    authorization = json.loads(
+        args.discovery_authorization.resolve().read_text(encoding="utf-8")
+    )
+    if not bool(authorization.get("execution_authorized")):
+        raise RuntimeError("DEVELOPMENT_DISCOVERY_EXECUTION_NOT_AUTHORIZED")
+    if str(authorization.get("root_contract_hash") or "") != discovery_authority["contract_hash"]:
+        raise RuntimeError("DEVELOPMENT_DISCOVERY_AUTHORIZATION_HASH_MISMATCH")
+    if str(authorization.get("validation_mode") or "") != "AUTOMATIC_POST_TRAIN_REPORT_ONLY":
+        raise RuntimeError("POST_TRAIN_VALIDATION_AUTHORIZATION_MISMATCH")
+    discovery_authority_path = _write_json(
+        output_root / "development_discovery_authority_binding.json",
+        {
+            **{
+                key: value
+                for key, value in discovery_authority.items()
+                if key != "route_root_allowlists"
+            },
+            "route_root_counts": {
+                route_id: len(values)
+                for route_id, values in discovery_authority["route_root_allowlists"].items()
+            },
+            "authorization_path": str(args.discovery_authorization.resolve()),
+            "authorization_id": str(authorization.get("authorization_id") or ""),
+            "execution_authorized": True,
+            "validation_mode": "AUTOMATIC_POST_TRAIN_REPORT_ONLY",
+            "status": "ONTOLOGY_ROOT_AUTHORITY_BOUND",
+        },
+    )
     schema_binding, schema_by_backend = materialized_schema_binding(field_roots=field_roots, registry=registry)
     schema_binding_path = _write_json(output_root / "materialized_schema_binding.json", schema_binding)
     purity = audit_split_boundary_label_purity(split=split, registry=registry, label_roots=label_roots)
@@ -1202,7 +1256,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("SPLIT_BOUNDARY_LABEL_PURITY_FAILED")
     comparison_path = _write_json(
         output_root / "prelaunch_structural_comparison.json",
-        _structural_comparison(registry=registry, schema_by_backend=schema_by_backend, seed=args.seed_base),
+        _structural_comparison(
+            registry=registry,
+            schema_by_backend=schema_by_backend,
+            route_root_allowlists=discovery_authority["route_root_allowlists"],
+            seed=args.seed_base,
+        ),
     )
     runtime_envelope = _runtime_envelope(compute_threads["active_bar"], compute_threads["stock_session"])
     runtime_envelope_path = _write_json(output_root / "runtime_envelope.json", runtime_envelope)
@@ -1247,8 +1306,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "promotion": "FORBIDDEN",
         "strict_stage_a": "NOT_AUTHORIZED",
         "evaluation_name": "full-coordinate development Phase3CM pair evaluation",
+        "discovery_root_contract_hash": discovery_authority["contract_hash"],
+        "root_scope_authority": "FROZEN_DEVELOPMENT_DISCOVERY_CONTRACT",
+        "validation_mode": "AUTOMATIC_POST_TRAIN_REPORT_ONLY",
         "input_bindings": {
             "registry": _artifact(registry_binding_path, root=output_root),
+            "development_discovery_authority": _artifact(
+                discovery_authority_path, root=output_root
+            ),
             "schema": _artifact(schema_binding_path, root=output_root),
             "split_purity": _artifact(purity_path, root=output_root),
             "seed_attempt": _artifact(seed_manifest_path, root=output_root),
@@ -1275,7 +1340,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     frozen_contract_path = _write_json(output_root / "frozen_contract.json", contract)
     archive_snapshot_path = _write_json(output_root / "archive_snapshot.json", archive_snapshot)
 
-    generator = RegistryDrivenGenerator(registry, constructor_profile=COMPOSITIONAL_V2_PROFILE, enforce_route_compatibility=True)
+    generator = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+        enforce_route_compatibility=True,
+        route_root_allowlist=discovery_authority["route_root_allowlists"],
+    )
     previous_feedback = _initial_feedback()
     previous_manifest: Path | None = None
     cumulative_candidates: list[dict[str, Any]] = []
@@ -1401,13 +1471,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         funnel_path = _write_parquet(checkpoint_root / "route_funnel.parquet", funnels)
         health = _route_health(outcomes=outcomes, ledger=ledger, positive=positive, negative=negative, admission_rows=decisions, full_behavior_rows=full_behavior)
         previous_feedback = health
-        for row in generated:
+        for row in admitted:
             if row.get("exact_identity"):
                 historical_exact.add(str(row["exact_identity"]))
-        for row in probe_rows:
-            behavior_archive.add(dict(row))
-        for row in full_behavior:
-            behavior_archive.add(dict(row))
+        _add_resolved_behavior_rows(behavior_archive, probe_rows)
+        _add_resolved_behavior_rows(behavior_archive, full_behavior)
         completed_pairs += len(outcomes)
         cumulative_candidates.extend({"checkpoint": checkpoint_id, **row} for row in admitted)
         cumulative_outcomes.extend({"checkpoint": checkpoint_id, **row} for row in outcomes)
@@ -1470,6 +1538,54 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         next_step = "TARGETED_ROUTE_REPAIR_THEN_REPEAT"
     else:
         next_step = "KEEP_MEDIUM_SCALE_AND_ADD_SKELETON_POLICY"
+    train_manifest_path = _write_json(
+        output_root / "train_complete_manifest.json",
+        {
+            "schema_version": "cn_targeted_search_train_complete_v1",
+            "status": "TRAIN_COMPLETE" if qualified else "TRAIN_INVALID",
+            "campaign_id": CAMPAIGN_ID,
+            "completed_development_matched_pairs": completed_pairs,
+            "candidate_ledger": _artifact(candidate_ledger_path, root=output_root),
+            "observation_ledger": _artifact(observation_ledger_path, root=output_root),
+            "behavior_archive": _artifact(behavior_archive_path, root=output_root),
+            "campaign_metrics": _artifact(metrics_path, root=output_root),
+            "validation_trigger": "AUTOMATIC_AFTER_IMMUTABLE_TRAIN_COMPLETE",
+            "promotion": "FORBIDDEN",
+        },
+    )
+    validation_receipt = None
+    if qualified:
+        validation_receipt = _run_automatic_validation_after_train(
+            train_manifest_path=train_manifest_path,
+            protected_train_artifacts=(
+                candidate_ledger_path,
+                observation_ledger_path,
+                behavior_archive_path,
+                metrics_path,
+            ),
+            validation_root=output_root / "post_train_validation",
+            candidates=cumulative_candidates,
+            registry=registry,
+            split=split,
+            validation_data_release_hash=_sha256(
+                args.validation_sidecar_closure.resolve()
+            ),
+            split_manifest=args.split_manifest.resolve(),
+            validation_field_roots={
+                "active_bar": args.validation_active_field_root.resolve(),
+                "stock_session": args.validation_session_field_root.resolve(),
+            },
+            validation_label_roots={
+                "active_bar": args.validation_active_label_root.resolve(),
+                "stock_session": args.validation_session_label_root.resolve(),
+            },
+            compute_threads=compute_threads,
+        )
+    validation_reads = int(
+        ((validation_receipt or {}).get("validation_result") or {}).get(
+            "validation_reads", 0
+        )
+    )
     decision = {
         "status": "CAMPAIGN_CLOSED" if qualified else "RUN_INVALID",
         "stop_reason": "CHECKPOINT_LIMIT" if len(checkpoint_summaries) == CHECKPOINT_COUNT else "HARD_CAP_OR_GATE",
@@ -1485,7 +1601,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "REGISTRY_COMPOSITIONAL_V2": "CAMPAIGN_QUALIFIED" if qualified else "CAMPAIGN_NOT_QUALIFIED",
         "CN_SEARCH_NEXT_STEP": next_step,
         "all_route_conclusions": "CAMPAIGN_LOCAL",
-        "validation_reads": 0,
+        "validation_reads": validation_reads,
+        "validation_status": (
+            "AUTOMATIC_POST_TRAIN_VALIDATION_COMPLETE"
+            if validation_receipt
+            else "NOT_RUN_TRAIN_INVALID"
+        ),
+        "validation_usage": "report_only",
+        "validation_feedback": "FORBIDDEN",
         "holdout_reads": 0,
         "forward_2026_reads": 0,
         "promotion": "FORBIDDEN",
@@ -1503,7 +1626,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         f"- Temporal/event productivity (CAMPAIGN_LOCAL): `{temporal_status}`\n"
         f"- Cross-sectional productivity (CAMPAIGN_LOCAL): `{cross_status}`\n"
         f"- Next step: `{next_step}`\n\n"
-        "Validation, holdout, forward-2026, promotion, and Formal Strict Stage A remained forbidden and unread.\n",
+        f"Post-train validation: `{decision['validation_status']}` (report-only; no feedback). "
+        "Holdout, forward-2026, promotion, and Formal Strict Stage A remained forbidden and unread.\n",
         encoding="utf-8",
     )
     run_manifest = {
@@ -1511,9 +1635,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "campaign_id": CAMPAIGN_ID,
         "host": platform.node(),
         "python": sys.executable,
-        "artifacts": [_artifact(path, root=output_root) for path in (frozen_contract_path, registry_binding_path, schema_binding_path, purity_path, seed_manifest_path, runtime_envelope_path, comparison_path, archive_snapshot_path, candidate_ledger_path, observation_ledger_path, behavior_archive_path, metrics_path, decision_path) if path.is_file()],
+        "artifacts": [_artifact(path, root=output_root) for path in (frozen_contract_path, registry_binding_path, discovery_authority_path, schema_binding_path, purity_path, seed_manifest_path, runtime_envelope_path, comparison_path, archive_snapshot_path, candidate_ledger_path, observation_ledger_path, behavior_archive_path, metrics_path, train_manifest_path, decision_path, output_root / "post_train_validation/automatic_post_train_validation_receipt.json") if path.is_file()],
         "report": _artifact(report_path),
-        "validation_reads": 0,
+        "validation_reads": validation_reads,
+        "validation_usage": "report_only",
+        "validation_feedback": "FORBIDDEN",
         "holdout_reads": 0,
         "forward_2026_reads": 0,
         "promotion": "FORBIDDEN",
@@ -1525,12 +1651,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--registry", type=Path, required=True)
+    parser.add_argument("--discovery-contract", type=Path, required=True)
+    parser.add_argument("--discovery-authorization", type=Path, required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
     parser.add_argument("--sidecar-closure", type=Path, required=True)
     parser.add_argument("--active-field-root", type=Path, required=True)
     parser.add_argument("--active-label-root", type=Path, required=True)
     parser.add_argument("--session-field-root", type=Path, required=True)
     parser.add_argument("--session-label-root", type=Path, required=True)
+    parser.add_argument("--validation-sidecar-closure", type=Path, required=True)
+    parser.add_argument("--validation-active-field-root", type=Path, required=True)
+    parser.add_argument("--validation-active-label-root", type=Path, required=True)
+    parser.add_argument("--validation-session-field-root", type=Path, required=True)
+    parser.add_argument("--validation-session-label-root", type=Path, required=True)
     parser.add_argument("--historical-candidate-archive", type=Path, required=True)
     parser.add_argument("--historical-behavior-archive", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)

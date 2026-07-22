@@ -34,21 +34,42 @@ def _candidate_fields(paths: list[Path]) -> tuple[str, ...]:
     return tuple(sorted(fields))
 
 
-def _train_dates(path: Path, expected_sha256: str) -> tuple[str, ...]:
+def _split_dates(
+    path: Path,
+    expected_sha256: str,
+    *,
+    evaluation_role: str,
+) -> tuple[str, ...]:
+    if evaluation_role not in {"train", "validation"}:
+        raise ValueError(f"unsupported evaluation role: {evaluation_role}")
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     if digest != str(expected_sha256):
         raise RuntimeError("split manifest hash drift")
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         rows = [dict(row) for row in csv.DictReader(handle)]
-    dates = tuple(str(row["trade_date"]) for row in rows if str(row.get("split")) == "train")
+    dates = tuple(
+        str(row["trade_date"])
+        for row in rows
+        if str(row.get("split")) == evaluation_role
+    )
     if not dates or len(dates) != len(set(dates)):
-        raise RuntimeError("split manifest train calendar is empty or duplicated")
+        raise RuntimeError(
+            f"split manifest {evaluation_role} calendar is empty or duplicated"
+        )
+    expected_usage = "allowed" if evaluation_role == "train" else "report_only"
+    if any(
+        str(row.get("optimizer_usage") or "") != expected_usage
+        for row in rows
+        if str(row.get("split")) == evaluation_role
+    ):
+        raise RuntimeError(f"split manifest {evaluation_role} usage drift")
     return dates
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, required=True)
+    parser.add_argument("--evaluation-role", choices=("train", "validation"), default="train")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--candidate-table", type=Path, action="append", required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
@@ -69,7 +90,11 @@ def main() -> int:
     if not source_files:
         raise FileNotFoundError("no source parquet shards found")
     fields = _candidate_fields([path.resolve() for path in args.candidate_table])
-    train_dates = _train_dates(args.split_manifest.resolve(), args.split_manifest_hash)
+    eligible_dates = _split_dates(
+        args.split_manifest.resolve(),
+        args.split_manifest_hash,
+        evaluation_role=args.evaluation_role,
+    )
     root = args.output_root.resolve()
     root.mkdir(parents=True, exist_ok=True)
     records = []
@@ -83,7 +108,7 @@ def main() -> int:
             source_shard=source_shard,
             fields=fields,
             row_group_size=int(args.row_group_size),
-            eligible_trade_dates=train_dates,
+            eligible_trade_dates=eligible_dates,
             split_manifest_hash=args.split_manifest_hash,
         )
         after = _process_snapshot()
@@ -107,20 +132,27 @@ def main() -> int:
                     sidecar_path=output,
                     source_shard=source_shard,
                     fields=fields,
-                    eligible_trade_dates=train_dates,
+                    eligible_trade_dates=eligible_dates,
                     split_manifest_hash=args.split_manifest_hash,
                 )
             )
     manifest = {
-        "schema_version": "cn_development_time_major_execution_layout_manifest_v2_train_only",
+        "schema_version": "cn_development_time_major_execution_layout_manifest_v3_split_role",
         "status": (
             "TIME_MAJOR_LAYOUT_PARITY_PASS"
             if args.parity and all(row["status"] == "SIDECAR_PARITY_PASS" for row in parity_records)
             else "TIME_MAJOR_LAYOUT_READY_PARITY_PENDING"
         ),
-        "data_role": "development_train_only",
+        "data_role": (
+            "development_train_only"
+            if args.evaluation_role == "train"
+            else "validation_report_only"
+        ),
+        "evaluation_role": args.evaluation_role,
         "split_manifest_hash": args.split_manifest_hash,
-        "eligible_train_date_count": len(train_dates),
+        "eligible_trade_date_count": len(eligible_dates),
+        "eligible_train_date_count": len(eligible_dates) if args.evaluation_role == "train" else 0,
+        "eligible_validation_date_count": len(eligible_dates) if args.evaluation_role == "validation" else 0,
         "fields": list(fields),
         "source_shard_count": len(records),
         "source_rows": sum(int(row["source_rows"]) for row in records),
@@ -131,7 +163,11 @@ def main() -> int:
         "thread_environment": expected,
         "shards": records,
         "parity": parity_records,
-        "validation_reads": 0,
+        "validation_reads": (
+            sum(int(row["rows"]) for row in records)
+            if args.evaluation_role == "validation"
+            else 0
+        ),
         "holdout_reads": 0,
         "forward_2026_reads": 0,
     }

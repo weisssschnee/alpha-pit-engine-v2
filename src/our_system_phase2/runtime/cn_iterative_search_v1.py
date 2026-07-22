@@ -38,6 +38,9 @@ from our_system_phase2.services.portfolio_behavior_archive import (
     PortfolioBehaviorArchive,
     bounded_label_free_behavior_probe,
 )
+from our_system_phase2.services.post_train_validation import (
+    run_automatic_post_train_validation,
+)
 from our_system_phase2.services.unified_capability_registry import (
     ROUTE_IDS,
     UnifiedCapabilityRegistry,
@@ -436,29 +439,44 @@ def _probe_pack(
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     records: list[dict[str, Any]] = []
     audits: list[dict[str, Any]] = []
-    for backend in ("active_bar", "stock_session"):
+    for route_id in ROUTE_IDS:
+        backend = _clock_for_route(route_id)
         members = [
             dict(row)
             for row in candidate_rows
-            if _clock_for_route(str(row.get("route_id") or "")) == backend
+            if str(row.get("route_id") or "") == route_id
         ]
         if not members:
             continue
+        if route_id == "DISCLOSURE_EVENT":
+            max_trade_dates = 12
+            max_trade_times = 1
+            date_selection = "condition_activation"
+        else:
+            max_trade_dates = 4
+            max_trade_times = 8
+            date_selection = "calendar_stratified"
         field_sidecars = tuple(sorted(Path(field_roots[backend]).glob("shard_*.parquet")))
         backend_records, audit = bounded_label_free_behavior_probe(
             candidates=members,
             field_sidecars=field_sidecars,
             eligible_trade_dates=train_dates,
             coordinate_binding=_stable_hash(
-                {"coordinate_binding": coordinate_binding, "backend": backend}
+                {
+                    "coordinate_binding": coordinate_binding,
+                    "backend": backend,
+                    "route_id": route_id,
+                }
             ),
             batch_id=batch_id,
             compute_threads=int(compute_threads[backend]),
-            max_trade_times=30,
+            max_trade_dates=max_trade_dates,
+            max_trade_times=max_trade_times,
+            date_selection=date_selection,
             pair_batch_size=8,
         )
         records.extend(backend_records)
-        audits.append({"backend": backend, **audit})
+        audits.append({"backend": backend, "route_id": route_id, **audit})
     order = {
         str(candidate_rows[index]["pair_id"]): index // 2
         for index in range(0, len(candidate_rows), 2)
@@ -531,7 +549,10 @@ def _context_and_binding(
     registry: UnifiedCapabilityRegistry,
     split: FixedSplitAuthority,
     data_release_hash: str,
+    evaluation_role: str = "train",
 ) -> tuple[Path, dict[str, Path]]:
+    if evaluation_role not in {"train", "validation"}:
+        raise ValueError(f"unsupported evaluation role: {evaluation_role}")
     evaluator_paths = (
         REPO / "scripts" / "run_cn_phase3cm_streaming_qualification.py",
         REPO / "src" / "our_system_phase2" / "services" / "phase3cm_streaming_portfolio.py",
@@ -600,7 +621,10 @@ def _context_and_binding(
         )
     binding: dict[str, Any] = {
         "status": "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND",
-        "data_role": "development",
+        "data_role": (
+            "development" if evaluation_role == "train" else "validation_report_only"
+        ),
+        "evaluation_role": evaluation_role,
         "source_closure_sha": data_release_hash,
         "development_release_hash": data_release_hash,
         "split_manifest_hash": split.manifest_hash,
@@ -614,14 +638,33 @@ def _context_and_binding(
         "artifacts": artifacts,
         "pairs": pairs,
         "candidate_members": members,
-        "sealed_reads": {"validation": 0, "holdout": 0, "forward_2026": 0},
+        "sealed_reads": (
+            {"validation": 0, "holdout": 0, "forward_2026": 0}
+            if evaluation_role == "train"
+            else {"holdout": 0, "forward_2026": 0}
+        ),
         "promotion": "FORBIDDEN",
         "cross_sprint_memory": "FORBIDDEN",
         "strict_stage_a": "NOT_AUTHORIZED",
-        "evaluation_name": "full-coordinate development Phase3CM pair evaluation",
+        "evaluation_name": (
+            "full-coordinate development Phase3CM pair evaluation"
+            if evaluation_role == "train"
+            else "automatic post-train report-only validation"
+        ),
+        "feedback_write": "FORBIDDEN" if evaluation_role == "validation" else "TRAIN_ONLY",
+        "scheduler_write": "FORBIDDEN" if evaluation_role == "validation" else "CAMPAIGN_LOCAL",
+        "archive_write": "FORBIDDEN" if evaluation_role == "validation" else "TRAIN_ONLY",
     }
     binding["binding_hash"] = _stable_hash(binding)
-    binding_path = _write_json(batch_root / "phase3cm_input_binding.json", binding)
+    binding_path = _write_json(
+        batch_root
+        / (
+            "phase3cm_input_binding.json"
+            if evaluation_role == "train"
+            else "phase3cm_validation_input_binding.json"
+        ),
+        binding,
+    )
     return binding_path, table_paths
 
 
@@ -635,6 +678,7 @@ def _run_phase3cm(
     field_roots: Mapping[str, Path],
     label_roots: Mapping[str, Path],
     compute_threads: Mapping[str, int],
+    evaluation_role: str = "train",
 ) -> list[dict[str, Any]]:
     receipts: list[dict[str, Any]] = []
     for backend in ("active_bar", "stock_session"):
@@ -642,7 +686,9 @@ def _run_phase3cm(
         if candidate_table is None:
             continue
         pair_count = len({row["pair_id"] for row in _read_csv(candidate_table)})
-        output_root = batch_root / "phase3cm" / backend
+        output_root = batch_root / (
+            "phase3cm" if evaluation_role == "train" else "phase3cm_validation"
+        ) / backend
         result_path = output_root / "CN_STREAMING_BACKEND_RESULT.json"
         if result_path.exists():
             reused = json.loads(result_path.read_text(encoding="utf-8"))
@@ -651,6 +697,7 @@ def _run_phase3cm(
                 str(reused.get("status")) != "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
                 or str(reused.get("input_binding_hash")) != str(binding.get("binding_hash"))
                 or int(reused.get("pair_count") or 0) != pair_count
+                or str(reused.get("evaluation_role") or "train") != evaluation_role
             ):
                 raise RuntimeError(f"existing Phase3CM result identity drift on {backend}")
             receipt = {
@@ -670,6 +717,7 @@ def _run_phase3cm(
             sys.executable,
             str(REPO / "scripts" / "run_cn_phase3cm_streaming_qualification.py"),
             "--backend", backend,
+            "--evaluation-role", evaluation_role,
             "--phase", "D",
             "--pair-count", str(pair_count),
             "--candidate-table", str(candidate_table),
@@ -717,6 +765,86 @@ def _run_phase3cm(
         if receipt["status"] != "COMPLETED":
             raise RuntimeError(f"Phase3CM infrastructure failure on {backend}; see {output_root}")
     return receipts
+
+
+def _run_automatic_validation_after_train(
+    *,
+    train_manifest_path: Path,
+    protected_train_artifacts: Sequence[Path],
+    validation_root: Path,
+    candidates: Sequence[Mapping[str, Any]],
+    registry: UnifiedCapabilityRegistry,
+    split: FixedSplitAuthority,
+    validation_data_release_hash: str,
+    split_manifest: Path,
+    validation_field_roots: Mapping[str, Path],
+    validation_label_roots: Mapping[str, Path],
+    compute_threads: Mapping[str, int],
+) -> dict[str, Any]:
+    """Launch validation immediately after the immutable train closure."""
+
+    validation_root = Path(validation_root).resolve()
+
+    def runner() -> dict[str, Any]:
+        binding_path, table_paths = _context_and_binding(
+            batch_root=validation_root,
+            candidates=candidates,
+            registry=registry,
+            split=split,
+            data_release_hash=validation_data_release_hash,
+            evaluation_role="validation",
+        )
+        receipts = _run_phase3cm(
+            batch_id="post_train_validation",
+            batch_root=validation_root,
+            binding_path=binding_path,
+            table_paths=table_paths,
+            split_manifest=split_manifest,
+            field_roots=validation_field_roots,
+            label_roots=validation_label_roots,
+            compute_threads=compute_threads,
+            evaluation_role="validation",
+        )
+        results = []
+        for backend in ("active_bar", "stock_session"):
+            path = validation_root / "phase3cm_validation" / backend / "CN_STREAMING_BACKEND_RESULT.json"
+            if path.is_file():
+                results.append(json.loads(path.read_text(encoding="utf-8")))
+        if not results:
+            raise RuntimeError("AUTOMATIC_VALIDATION_PRODUCED_NO_BACKEND_RESULT")
+        return {
+            "status": "VALIDATION_COMPLETE",
+            "evaluation_role": "validation",
+            "validation_usage": "report_only",
+            "validation_reads": sum(int(row.get("validation_reads") or 0) for row in results),
+            "holdout_reads": sum(int(row.get("holdout_reads") or 0) for row in results),
+            "forward_2026_reads": sum(int(row.get("forward_2026_reads") or 0) for row in results),
+            "feedback_write": "FORBIDDEN",
+            "scheduler_write": "FORBIDDEN",
+            "archive_write": "FORBIDDEN",
+            "promotion": "FORBIDDEN",
+            "backend_results": [
+                {
+                    "backend": str(row.get("backend") or ""),
+                    "pair_count": int(row.get("pair_count") or 0),
+                    "result_path": str(
+                        validation_root
+                        / "phase3cm_validation"
+                        / str(row.get("backend") or "")
+                        / "CN_STREAMING_BACKEND_RESULT.json"
+                    ),
+                }
+                for row in results
+            ],
+            "access_receipts": receipts,
+        }
+
+    return run_automatic_post_train_validation(
+        train_manifest_path=train_manifest_path,
+        validation_output_root=validation_root,
+        protected_train_artifacts=protected_train_artifacts,
+        validation_runner=runner,
+    )
 
 
 def _outcome_rows(batch_root: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -1036,7 +1164,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "probe_coordinate_binding": probe_binding,
         }
         for row in probe_rows:
-            behavior_archive.add(dict(row))
+            if str(row.get("behavior_status") or "") == "RESOLVED":
+                behavior_archive.add(dict(row))
         probe_path = _write_parquet(batch_root / "behavior_probe.parquet", probe_rows)
         admission_path = _write_parquet(batch_root / "admission_decisions.parquet", admission_rows)
         probe_audit_path = _write_json(batch_root / "behavior_probe_audit.json", probe_audits)
@@ -1144,7 +1273,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         outcomes, full_behavior_rows = _outcome_rows(batch_root)
         full_behavior_rows = _join_full_behavior_identities(full_behavior_rows, probe_rows)
         for row in full_behavior_rows:
-            behavior_archive.add(dict(row))
+            if str(row.get("behavior_status") or "") == "RESOLVED":
+                behavior_archive.add(dict(row))
         ledger, positive, negative, run_health = build_iterative_feedback_views(outcomes)
         cumulative_ledger.extend({"batch_id": batch_id, **row} for row in ledger)
         cumulative_positive.extend({"batch_id": batch_id, **row} for row in positive)
@@ -1225,7 +1355,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             access_receipts=access_receipts,
         )
         batch_manifests.append(previous_manifest)
-        for row in proposal_rows:
+        for row in admitted:
             exact = str(row.get("exact_identity") or "")
             if exact:
                 historical_exact.add(exact)

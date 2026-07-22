@@ -115,24 +115,47 @@ def _finite_float(value: Any) -> float | None:
     return converted if math.isfinite(converted) else None
 
 
-def _train_calendar(split_manifest: Path, binding: Mapping[str, Any]) -> tuple[str, ...]:
+def _evaluation_calendar(
+    split_manifest: Path,
+    binding: Mapping[str, Any],
+    *,
+    evaluation_role: str,
+) -> tuple[str, ...]:
+    if evaluation_role not in {"train", "validation"}:
+        raise ValueError(f"unsupported evaluation role: {evaluation_role}")
     path = Path(split_manifest)
     if not path.is_file() or _sha256(path) != str(binding.get("split_manifest_hash") or ""):
         raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: split manifest")
     rows = _read_csv(path)
-    train_dates = tuple(
+    dates = tuple(
         str(row["trade_date"])
         for row in rows
-        if str(row.get("split") or "").strip().lower() == "train"
+        if str(row.get("split") or "").strip().lower() == evaluation_role
     )
-    if not train_dates or len(set(train_dates)) != len(train_dates):
-        raise RuntimeError("frozen train calendar is empty or duplicated")
-    if any(str(row.get("optimizer_usage") or "") != "allowed" for row in rows if row["trade_date"] in train_dates):
-        raise RuntimeError("frozen train calendar contains a disallowed optimizer date")
-    return train_dates
+    if not dates or len(set(dates)) != len(dates):
+        raise RuntimeError(f"frozen {evaluation_role} calendar is empty or duplicated")
+    expected_usage = "allowed" if evaluation_role == "train" else "report_only"
+    if any(
+        str(row.get("optimizer_usage") or "") != expected_usage
+        for row in rows
+        if row["trade_date"] in dates
+    ):
+        raise RuntimeError(
+            f"frozen {evaluation_role} calendar has wrong optimizer usage"
+        )
+    return dates
 
 
-def _verify_binding(binding_path: Path, artifact_root: Path) -> dict[str, Any]:
+def _train_calendar(split_manifest: Path, binding: Mapping[str, Any]) -> tuple[str, ...]:
+    return _evaluation_calendar(split_manifest, binding, evaluation_role="train")
+
+
+def _verify_binding(
+    binding_path: Path,
+    artifact_root: Path,
+    *,
+    evaluation_role: str = "train",
+) -> dict[str, Any]:
     binding = json.loads(Path(binding_path).read_text(encoding="utf-8"))
     claimed = str(binding.get("binding_hash") or "")
     body = dict(binding)
@@ -141,9 +164,17 @@ def _verify_binding(binding_path: Path, artifact_root: Path) -> dict[str, Any]:
         raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: binding hash")
     if str(binding.get("status")) != "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND":
         raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: binding status")
-    if str(binding.get("data_role")) != "development":
+    expected_data_role = (
+        "development" if evaluation_role == "train" else "validation_report_only"
+    )
+    if str(binding.get("data_role")) != expected_data_role:
         raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: data role")
-    if binding.get("sealed_reads") != {"validation": 0, "holdout": 0, "forward_2026": 0}:
+    expected_sealed = (
+        {"validation": 0, "holdout": 0, "forward_2026": 0}
+        if evaluation_role == "train"
+        else {"holdout": 0, "forward_2026": 0}
+    )
+    if binding.get("sealed_reads") != expected_sealed:
         raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: sealed reads")
     for record in binding.get("artifacts") or []:
         path = Path(artifact_root) / str(record["path"])
@@ -517,6 +548,7 @@ def _finalize_pairs(
     reducer: StreamingPortfolioReducer,
     support: PairSupportAccumulator,
     binding: Mapping[str, Any],
+    evaluation_role: str = "train",
     label_free_behavior_by_candidate: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     reward_by_id = {str(row.get("candidate_id")): dict(row) for row in reward_rows}
@@ -570,6 +602,22 @@ def _finalize_pairs(
             blockers.append("control_not_evaluated")
         matched = None if blockers else float(primary_value) - float(control_value)
         bound_pair = pair_binding[pair_id]
+        metrics = (
+            {
+                "pair_train_reward": matched,
+                "primary_train_reward": primary_value,
+                "control_train_reward": control_value,
+                "optimizer_reward": matched,
+                "optimizer_reward_split": "train",
+            }
+            if evaluation_role == "train"
+            else {
+                "pair_validation_report_metric": matched,
+                "primary_validation_report_metric": primary_value,
+                "control_validation_report_metric": control_value,
+                "validation_usage": "report_only",
+            }
+        )
         rows.append(
             {
                 "pair_id": pair_id,
@@ -580,9 +628,6 @@ def _finalize_pairs(
                 "pair_receipt_hash": bound_pair["pair_receipt_hash"],
                 "pair_evaluation_status": "PAIR_EVALUATED" if not blockers else "PAIR_EVALUATION_BLOCKED",
                 "pair_evaluation_blockers": "|".join(sorted(blockers)),
-                "pair_train_reward": matched,
-                "primary_train_reward": primary_value,
-                "control_train_reward": control_value,
                 "pair_support_count": support_row["count"],
                 "pair_support_identity": support_row["support_identity"],
                 "pair_support_overlap": 1.0 if int(support_row["count"]) else 0.0,
@@ -590,9 +635,8 @@ def _finalize_pairs(
                 "control_behavior_identity": control_behavior,
                 "primary_signal_spread_max": primary_spread,
                 "control_signal_spread_max": control_spread,
-                "optimizer_reward": matched,
-                "optimizer_reward_split": "train",
                 "streaming_identity_schema": "block_composable_v1",
+                **metrics,
             }
         )
     return rows
@@ -601,6 +645,7 @@ def _finalize_pairs(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--backend", choices=("active_bar", "stock_session"), required=True)
+    parser.add_argument("--evaluation-role", choices=("train", "validation"), default="train")
     parser.add_argument("--phase", choices=("C", "D", "E"), required=True)
     parser.add_argument("--pair-count", type=int, required=True)
     parser.add_argument("--candidate-table", type=Path, required=True)
@@ -656,7 +701,11 @@ def main() -> int:
 
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
-    binding = _verify_binding(args.binding.resolve(), args.artifact_root.resolve())
+    binding = _verify_binding(
+        args.binding.resolve(),
+        args.artifact_root.resolve(),
+        evaluation_role=args.evaluation_role,
+    )
     if binding.get("split_boundary_purity"):
         if args.split_boundary_purity is None:
             raise RuntimeError(
@@ -669,7 +718,11 @@ def main() -> int:
     else:
         split_boundary_purity = None
         split_boundary_purity_hash = None
-    train_dates = _train_calendar(args.split_manifest.resolve(), binding)
+    evaluation_dates = _evaluation_calendar(
+        args.split_manifest.resolve(),
+        binding,
+        evaluation_role=args.evaluation_role,
+    )
     candidates = _candidate_pairs(
         _read_csv(args.candidate_table.resolve()),
         pair_limit=int(args.pair_count),
@@ -686,7 +739,7 @@ def main() -> int:
     field_paths = _sidecar_files(args.field_sidecar_root.resolve())
     label_paths = _sidecar_files(args.label_sidecar_root.resolve())
     symbols = _symbol_registry(field_paths)
-    discovered_boundaries = _block_boundaries(train_dates, int(args.block_sessions))
+    discovered_boundaries = _block_boundaries(evaluation_dates, int(args.block_sessions))
     if args.phase == "E":
         if args.execution_plan is None:
             raise ValueError("Phase E requires a pre-frozen execution plan")
@@ -763,7 +816,7 @@ def main() -> int:
         raw_fields=_raw_fields(candidates),
         horizons=horizons,
         symbol_registry=symbols,
-        eligible_trade_dates=train_dates,
+        eligible_trade_dates=evaluation_dates,
     )
     expression = StreamingExpressionExecutor(
         code_count=len(symbols),
@@ -1178,7 +1231,9 @@ def main() -> int:
                 "checkpoint_ordinal": int(checkpoint_ordinal),
                 "execution_plan_hash": plan.execution_plan_hash,
                 "input_binding_hash": binding["binding_hash"],
-                "validation_reads": 0,
+                "validation_reads": (
+                    int(total_rows) if args.evaluation_role == "validation" else 0
+                ),
                 "holdout_reads": 0,
                 "forward_2026_reads": 0,
                 "promotion": "FORBIDDEN",
@@ -1223,8 +1278,23 @@ def main() -> int:
             reducer=reducer,
             support=support,
             binding=binding,
+            evaluation_role=args.evaluation_role,
             label_free_behavior_by_candidate=behavior_by_candidate,
         )
+        if args.evaluation_role == "validation":
+            for reward in reward_rows:
+                reward["validation_report_metric"] = reward.get("optimizer_reward")
+                reward["validation_usage"] = "report_only"
+                for key in tuple(reward):
+                    if key.startswith("optimizer_") or key == "train_reward":
+                        reward.pop(key, None)
+            for row in split_rows:
+                row["split"] = "validation"
+                row["evaluation_role"] = "validation"
+                row["validation_usage"] = "report_only"
+            for atom in atom_rows:
+                atom["split"] = "validation"
+                atom["evaluation_role"] = "validation"
         candidate_by_id = {str(row["candidate_id"]): row for row in candidates}
         behavior_archive = PortfolioBehaviorArchive()
         behavior_by_pair: dict[str, dict[str, Any]] = {}
@@ -1362,7 +1432,14 @@ def main() -> int:
             if split_boundary_purity
             else "LEGACY_BINDING_NOT_APPLICABLE"
         ),
-        "eligible_train_date_count": len(train_dates),
+        "evaluation_role": args.evaluation_role,
+        "validation_usage": (
+            "report_only" if args.evaluation_role == "validation" else "not_accessed"
+        ),
+        "eligible_date_count": len(evaluation_dates),
+        "eligible_train_date_count": (
+            len(evaluation_dates) if args.evaluation_role == "train" else 0
+        ),
         "dag_plan_hash": dag_plan.plan_hash,
         "coordinate_rows_retained": reducer.coordinate_rows_retained,
         "parallelism_status": parallelism_status,
@@ -1391,9 +1468,14 @@ def main() -> int:
         "split_rows": split_rows,
         "expression_audits": expression_audits,
         "portfolio_audits": portfolio_audits,
-        "validation_reads": 0,
+        "validation_reads": (
+            int(total_rows) if args.evaluation_role == "validation" else 0
+        ),
         "holdout_reads": 0,
         "forward_2026_reads": 0,
+        "feedback_write": "FORBIDDEN" if args.evaluation_role == "validation" else "TRAIN_ONLY",
+        "scheduler_write": "FORBIDDEN" if args.evaluation_role == "validation" else "CAMPAIGN_LOCAL",
+        "archive_write": "FORBIDDEN" if args.evaluation_role == "validation" else "TRAIN_ONLY",
         "promotion": "FORBIDDEN",
         "strict_stage_a": "NOT_AUTHORIZED",
     }

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from pathlib import Path
+from typing import Any, Iterable, Mapping, Sequence
 
 from our_system_phase2.services.compositional_grammar import CompositionalGrammarV2
 from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
@@ -25,6 +27,7 @@ COMPOSITIONAL_GENERATOR_VERSION = "cn_unified_registry_driven_compositional_v2"
 LEGACY_V1_PROFILE = "legacy_registry_v1"
 COMPOSITIONAL_V2_PROFILE = "registry_compositional_v2"
 CONSTRUCTOR_PROFILES = (LEGACY_V1_PROFILE, COMPOSITIONAL_V2_PROFILE)
+DEVELOPMENT_DISCOVERY_CONTRACT_VERSION = "cn_core_pack_development_discovery_contract_v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,6 +43,46 @@ def _pick(rows: Sequence[CapabilityField], index: int, seed: int, salt: str) -> 
     return rows[(offset + int(index) * 1009) % len(rows)]
 
 
+def load_development_discovery_root_authority(
+    path: Path,
+    *,
+    registry: UnifiedCapabilityRegistry,
+) -> dict[str, Any]:
+    """Load the frozen ontology root scope; it grants no execution budget."""
+
+    source = Path(path).resolve()
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    unsigned = {key: value for key, value in payload.items() if key != "contract_hash"}
+    if payload.get("contract_hash") != stable_hash(unsigned):
+        raise RuntimeError("DEVELOPMENT_DISCOVERY_CONTRACT_HASH_MISMATCH")
+    if payload.get("contract_version") != DEVELOPMENT_DISCOVERY_CONTRACT_VERSION:
+        raise RuntimeError("DEVELOPMENT_DISCOVERY_CONTRACT_VERSION_MISMATCH")
+    if str(payload.get("registry_hash") or "") != registry.registry_hash:
+        raise RuntimeError("DEVELOPMENT_DISCOVERY_REGISTRY_HASH_MISMATCH")
+    allowlists = {
+        str(route_id): tuple(map(str, field_ids))
+        for route_id, field_ids in dict(payload.get("route_root_allowlists") or {}).items()
+    }
+    if set(allowlists) != set(ROUTE_IDS):
+        raise RuntimeError("DEVELOPMENT_DISCOVERY_ROUTE_SCOPE_INCOMPLETE")
+    # CompositionalGrammarV2 performs the definitive route/field eligibility
+    # validation. Constructing it here makes malformed ontology contracts fail
+    # before a campaign can consume a budget.
+    CompositionalGrammarV2(
+        registry,
+        route_root_allowlist=allowlists,
+        enforce_route_compatibility=True,
+    )
+    return {
+        "path": str(source),
+        "contract_hash": str(payload["contract_hash"]),
+        "status": str(payload.get("status") or ""),
+        "execution_authorized": bool(payload.get("execution_authorized")),
+        "route_root_allowlists": allowlists,
+        "claim_ceiling": str(payload.get("claim_ceiling") or ""),
+    }
+
+
 class RegistryDrivenGenerator:
     def __init__(
         self,
@@ -47,6 +90,7 @@ class RegistryDrivenGenerator:
         *,
         constructor_profile: str = LEGACY_V1_PROFILE,
         enforce_route_compatibility: bool = True,
+        route_root_allowlist: Mapping[str, Iterable[str]] | None = None,
     ) -> None:
         if constructor_profile not in CONSTRUCTOR_PROFILES:
             raise ValueError(f"unknown registry constructor profile: {constructor_profile}")
@@ -54,6 +98,14 @@ class RegistryDrivenGenerator:
         self.compiler = TypedRouteCompiler(registry)
         self.constructor_profile = str(constructor_profile)
         self.enforce_route_compatibility = bool(enforce_route_compatibility)
+        self.route_root_allowlist = (
+            None
+            if route_root_allowlist is None
+            else {
+                str(route_id): tuple(map(str, field_ids))
+                for route_id, field_ids in route_root_allowlist.items()
+            }
+        )
         self.generator_version = (
             COMPOSITIONAL_GENERATOR_VERSION
             if self.constructor_profile == COMPOSITIONAL_V2_PROFILE
@@ -62,6 +114,7 @@ class RegistryDrivenGenerator:
         self._compositional = (
             CompositionalGrammarV2(
                 registry,
+                route_root_allowlist=self.route_root_allowlist,
                 enforce_route_compatibility=self.enforce_route_compatibility,
             )
             if self.constructor_profile == COMPOSITIONAL_V2_PROFILE
@@ -337,7 +390,12 @@ class RegistryDrivenGenerator:
         if scheduled_pairs <= 0:
             raise ValueError("scheduled_pairs must be positive")
         output: list[dict[str, Any]] = []
-        exact_seen: set[str] = set(existing_exact_identities or ())
+        exact_seen: set[str] = {
+            value for value in set(existing_exact_identities or ()) if not value.startswith("pair:")
+        }
+        pair_seen: set[str] = {
+            value for value in set(existing_exact_identities or ()) if value.startswith("pair:")
+        }
         start = max(0, int(attempt_start))
         index = start
         max_attempts = int(attempt_limit) if attempt_limit is not None else max(1000, scheduled_pairs * 100)
@@ -355,10 +413,18 @@ class RegistryDrivenGenerator:
         schema_first_usable: tuple[str, ...] = ()
         schema_first_rejected = 0
         compositional = self._compositional
+        route_fields = tuple(self.registry.fields_for_route(route_id))
+        authorized_fields = (
+            tuple(sorted(self.route_root_allowlist.get(route_id, ())))
+            if self.route_root_allowlist is not None
+            else tuple(field.field_id for field in route_fields)
+        )
         if available_fields is not None and self.constructor_profile == COMPOSITIONAL_V2_PROFILE:
-            route_fields = tuple(self.registry.fields_for_route(route_id))
+            authorized_set = set(authorized_fields)
             usable: list[str] = []
             for field in route_fields:
+                if field.field_id not in authorized_set:
+                    continue
                 materialization_expression = str(
                     field.metadata.get("materialization_expression") or ""
                 )
@@ -370,14 +436,14 @@ class RegistryDrivenGenerator:
                 if set(map(str, physical_leaves)).issubset(available_fields):
                     usable.append(field.field_id)
             schema_first_usable = tuple(sorted(set(usable)))
-            schema_first_rejected = len(route_fields) - len(schema_first_usable)
-            if schema_first_usable:
+            schema_first_rejected = len(authorized_fields) - len(schema_first_usable)
+            if schema_first_usable and self.route_root_allowlist is None:
                 compositional = CompositionalGrammarV2(
                     self.registry,
                     route_root_allowlist={route_id: schema_first_usable},
                     enforce_route_compatibility=self.enforce_route_compatibility,
                 )
-            else:
+            elif not schema_first_usable:
                 max_attempts = 0
         skeleton_compatibility_rejects = 0
         while len(output) // 2 < scheduled_pairs and index < start + max_attempts:
@@ -417,19 +483,30 @@ class RegistryDrivenGenerator:
                     index += 1
                     continue
             compiled_rows: list[dict[str, Any]] = []
-            pair_ids: set[str] = set()
+            pair_ids: list[str] = []
             for row in (pair.candidate, pair.control):
                 verdict = self.compiler.compile(row)
                 enriched = {**row, **verdict.to_dict()}
                 compiled_rows.append(enriched)
                 if verdict.legal:
-                    pair_ids.add(verdict.exact_identity)
-            legal = all(bool(row["legal"]) for row in compiled_rows) and len(pair_ids) == 2
+                    pair_ids.append(verdict.exact_identity)
+            legal = all(bool(row["legal"]) for row in compiled_rows) and len(set(pair_ids)) == 2
             if legal:
                 legal_pairs += 1
             else:
                 illegal_pairs += 1
-            unique = legal and not exact_seen.intersection(pair_ids)
+            pair_token = "pair:" + stable_hash(
+                {
+                    "route_id": route_id,
+                    "primary_exact_identity": pair_ids[0] if pair_ids else "",
+                    "control_exact_identity": pair_ids[1] if len(pair_ids) > 1 else "",
+                }
+            )
+            # A control may intentionally be reused by distinct primaries. The
+            # primary and the ordered pair are the exact-search identities;
+            # all member identities are still retained so a later primary
+            # cannot masquerade as a previously observed control.
+            unique = legal and pair_ids[0] not in exact_seen and pair_token not in pair_seen
             if unique:
                 exact_unique_pairs += 1
                 for row in compiled_rows:
@@ -444,6 +521,7 @@ class RegistryDrivenGenerator:
                     )
                 output.extend(compiled_rows)
                 exact_seen.update(pair_ids)
+                pair_seen.add(pair_token)
             elif legal:
                 exact_duplicate_pairs += 1
             index += 1
@@ -464,6 +542,13 @@ class RegistryDrivenGenerator:
             ),
             "schema_first_usable_field_count": int(len(schema_first_usable)),
             "schema_first_rejected_field_count": int(schema_first_rejected),
+            "route_authorized_field_count": int(len(authorized_fields)),
+            "execution_compatible_authorized_field_count": int(len(schema_first_usable)),
+            "root_scope_authority": (
+                "FROZEN_DEVELOPMENT_DISCOVERY_CONTRACT"
+                if self.route_root_allowlist is not None
+                else "UNIFIED_REGISTRY_ROUTE_DEFAULT"
+            ),
             "skeleton_compatibility_rejects": int(skeleton_compatibility_rejects),
             "attempt_start": int(start),
             "attempt_stop": int(index),

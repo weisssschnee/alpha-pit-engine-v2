@@ -24,6 +24,7 @@ from our_system_phase2.services.unified_discovery_generators import (
     COMPOSITIONAL_V2_PROFILE,
     LEGACY_V1_PROFILE,
     RegistryDrivenGenerator,
+    load_development_discovery_root_authority,
 )
 from scripts.run_cn_route_supply_closure import TARGET_BEHAVIOR_ROUTES
 
@@ -34,6 +35,105 @@ REGISTRY = (
     / "runtime/field_registry/cn_unified_capability_registry_v3_20260717"
     / "unified_capability_registry.json"
 )
+DISCOVERY_CONTRACT = REPO / "runtime/run_plans/cn_core_pack_development_discovery_v1.json"
+
+
+def test_frozen_development_discovery_contract_is_the_generator_root_authority() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    authority = load_development_discovery_root_authority(
+        DISCOVERY_CONTRACT,
+        registry=registry,
+    )
+    generator = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+        route_root_allowlist=authority["route_root_allowlists"],
+    )
+
+    rows, funnel = generator.generate_route_attempts(
+        "MINUTE_STATIC",
+        scheduled_pairs=4,
+        seed=2026072209,
+        attempt_limit=128,
+        available_field_ids={"amount", "intraday_ret_from_open", "open", "pct_chg", "ret_1m", "vwap"},
+    )
+
+    assert len(rows) == 8
+    assert funnel["root_scope_authority"] == "FROZEN_DEVELOPMENT_DISCOVERY_CONTRACT"
+    assert funnel["route_authorized_field_count"] == 6
+    assert all(
+        set(map(str, row.get("declared_field_ids") or ())).issubset(
+            set(authority["route_root_allowlists"]["MINUTE_STATIC"])
+        )
+        for row in rows
+    )
+
+
+def test_materialized_schema_is_execution_compatibility_not_root_authority() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    authority = load_development_discovery_root_authority(
+        DISCOVERY_CONTRACT,
+        registry=registry,
+    )
+    allowlist = authority["route_root_allowlists"]
+    available = set(allowlist["DISCLOSURE_EVENT"][:8])
+    generator = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+        route_root_allowlist=allowlist,
+    )
+
+    _, funnel = generator.generate_route_attempts(
+        "DISCLOSURE_EVENT",
+        scheduled_pairs=2,
+        seed=2026072211,
+        attempt_limit=64,
+        available_field_ids=available,
+    )
+
+    assert funnel["route_authorized_field_count"] == len(allowlist["DISCLOSURE_EVENT"])
+    assert funnel["execution_compatible_authorized_field_count"] == len(available)
+    assert funnel["root_scope_authority"] == "FROZEN_DEVELOPMENT_DISCOVERY_CONTRACT"
+
+
+def test_reused_control_does_not_block_a_new_exact_primary() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    generator = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+    )
+    selected = None
+    seen_controls: dict[str, tuple[int, str]] = {}
+    for index in range(512):
+        try:
+            pair = generator._pair("MINUTE_STATIC", index, 2026072213, compositional=generator._compositional)
+        except ValueError as exc:
+            assert "ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED" in str(exc)
+            continue
+        primary = generator.compiler.compile(pair.candidate)
+        control = generator.compiler.compile(pair.control)
+        if not (primary.legal and control.legal):
+            continue
+        prior = seen_controls.get(control.exact_identity)
+        if prior and prior[1] != primary.exact_identity:
+            selected = (index, control.exact_identity, primary.exact_identity)
+            break
+        seen_controls[control.exact_identity] = (index, primary.exact_identity)
+    assert selected is not None
+    attempt_index, reused_control, new_primary = selected
+
+    rows, funnel = generator.generate_route_attempts(
+        "MINUTE_STATIC",
+        scheduled_pairs=1,
+        seed=2026072213,
+        attempt_start=attempt_index,
+        attempt_limit=1,
+        existing_exact_identities={reused_control},
+    )
+
+    assert len(rows) == 2
+    assert rows[0]["exact_identity"] == new_primary
+    assert funnel["exact_unique_pairs"] == 1
 
 
 def test_bounded_behavior_qualification_covers_prior_clamped_routes() -> None:

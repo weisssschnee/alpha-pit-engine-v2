@@ -10,6 +10,7 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     SEARCH_ROUTES,
     TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
     _load_historical_dedupe,
+    _add_resolved_behavior_rows,
     _block_compute_rows,
     _git_sha,
     _registry_binding,
@@ -109,6 +110,21 @@ def test_historical_dedupe_imports_identities_without_reward_or_scheduler(
     assert "scheduler_state" not in behavior.rows[0]
     assert snapshot["reward_columns_imported"] == []
     assert snapshot["scheduler_state_imported"] is False
+
+
+def test_unresolved_probe_rows_never_enter_durable_behavior_archive() -> None:
+    archive = PortfolioBehaviorArchive()
+    added = _add_resolved_behavior_rows(
+        archive,
+        [
+            {"pair_id": "resolved", "behavior_status": "RESOLVED", "behavior_probe_id": "probe.ok"},
+            {"pair_id": "unresolved", "behavior_status": "BEHAVIOR_UNRESOLVED", "behavior_probe_id": "probe.bad"},
+        ],
+    )
+
+    assert added == 1
+    assert archive.contains_probe("probe.ok")
+    assert not archive.contains_probe("probe.bad")
 
 
 def test_runtime_gate_counts_only_completed_compute_blocks() -> None:

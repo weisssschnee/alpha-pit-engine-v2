@@ -5,6 +5,7 @@ import pandas as pd
 
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _join_full_behavior_identities,
+    _probe_pack,
 )
 from our_system_phase2.services.portfolio_behavior_archive import (
     bounded_label_free_behavior_probe,
@@ -86,3 +87,62 @@ def test_full_behavior_row_closes_all_four_identities_by_pair() -> None:
     assert joined[0]["signal_cluster_id"] == "signal-a"
     assert joined[0]["portfolio_behavior_signature_id"] == "exact-a"
     assert joined[0]["portfolio_behavior_family_id"] == "family-a"
+
+
+def test_probe_pack_uses_route_aware_coordinates(monkeypatch, tmp_path) -> None:
+    calls = []
+
+    def fake_probe(**kwargs):
+        route_id = kwargs["candidates"][0]["route_id"]
+        calls.append(
+            {
+                "route_id": route_id,
+                "max_trade_dates": kwargs["max_trade_dates"],
+                "max_trade_times": kwargs["max_trade_times"],
+                "date_selection": kwargs["date_selection"],
+            }
+        )
+        pair_id = kwargs["candidates"][0]["pair_id"]
+        return ([{"pair_id": pair_id, "route_id": route_id, "behavior_status": "RESOLVED"}], {})
+
+    monkeypatch.setattr(
+        "our_system_phase2.runtime.cn_iterative_search_v1.bounded_label_free_behavior_probe",
+        fake_probe,
+    )
+    rows = []
+    for route_id in ("DISCLOSURE_EVENT", "MINUTE_STATIC"):
+        for role in ("PRIMARY", "CONTROL"):
+            rows.append(
+                {
+                    "pair_id": f"pair.{route_id}",
+                    "candidate_id": f"{route_id}.{role}",
+                    "pair_member_role": role,
+                    "route_id": route_id,
+                    "expression": "CSRank($x)",
+                }
+            )
+
+    records, _ = _probe_pack(
+        candidate_rows=rows,
+        field_roots={"active_bar": tmp_path, "stock_session": tmp_path},
+        train_dates=[f"2024-01-{day:02d}" for day in range(2, 20)],
+        coordinate_binding="binding",
+        batch_id="batch",
+        compute_threads={"active_bar": 1, "stock_session": 1},
+    )
+
+    assert len(records) == 2
+    assert sorted(calls, key=lambda row: row["route_id"]) == [
+        {
+            "route_id": "DISCLOSURE_EVENT",
+            "max_trade_dates": 12,
+            "max_trade_times": 1,
+            "date_selection": "condition_activation",
+        },
+        {
+            "route_id": "MINUTE_STATIC",
+            "max_trade_dates": 4,
+            "max_trade_times": 8,
+            "date_selection": "calendar_stratified",
+        },
+    ]
