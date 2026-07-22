@@ -1340,7 +1340,11 @@ def main() -> int:
             )
         phase.add(candidate_count=len(candidates), pair_count=len(pair_rows))
 
-    behavior_archive_path = output_root / "CN_PORTFOLIO_BEHAVIOR_FULL.parquet"
+    behavior_archive_path = output_root / (
+        "CN_PORTFOLIO_BEHAVIOR_FULL.parquet"
+        if args.evaluation_role == "train"
+        else "CN_PORTFOLIO_BEHAVIOR_VALIDATION_REPORT.parquet"
+    )
     behavior_archive.write_parquet(behavior_archive_path)
 
     reward_atom_artifact = _write_csv(
@@ -1458,11 +1462,20 @@ def main() -> int:
         "support_identities": support.identities(),
         "candidate_rewards": reward_rows,
         "pair_results": pair_rows,
-        "portfolio_behavior_archive": {
+        (
+            "portfolio_behavior_archive"
+            if args.evaluation_role == "train"
+            else "portfolio_behavior_report"
+        ): {
             "path": str(behavior_archive_path),
             "sha256": _sha256(behavior_archive_path),
             "row_count": len(behavior_archive.rows),
             "identity_authority": "LABEL_FREE_FULL_COORDINATE",
+            "state_role": (
+                "TRAIN_ARCHIVE"
+                if args.evaluation_role == "train"
+                else "VALIDATION_REPORT_ONLY_NOT_ARCHIVE_STATE"
+            ),
         },
         "reward_atoms": reward_atom_artifact,
         "split_rows": split_rows,

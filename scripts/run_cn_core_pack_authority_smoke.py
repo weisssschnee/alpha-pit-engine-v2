@@ -12,6 +12,7 @@ import pandas as pd
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
     AUTHORIZED_HOST,
     _context_and_binding,
+    _clock_for_route,
     _outcome_rows,
     _probe_pack,
     _run_automatic_validation_after_train,
@@ -41,10 +42,14 @@ from our_system_phase2.services.unified_discovery_generators import (
 SMOKE_ROUTES = (
     "MINUTE_STATIC",
     "FIRSTN_PATH",
+    "SLOW_CROSS_SECTIONAL_LEVEL",
+    "SLOW_TEMPORAL_CHANGE",
+    "DISCLOSURE_EVENT",
     "MARKET_REGIME_CONDITION",
     "INTRADAY_STATE_TRANSITION",
 )
-PAIR_BUDGET_PER_ROUTE = 6
+PAIR_BUDGET_PER_ROUTE = 4
+SUPPLY_PROBE_PAIRS_PER_ROUTE = 12
 
 
 def _restore_candidate_rows(path: Path) -> list[dict]:
@@ -105,17 +110,21 @@ def prepare(args: argparse.Namespace) -> dict:
         route_root_allowlist=authority["route_root_allowlists"],
     )
     generated = []
+    supply_probe_rows = []
     funnels = []
     for ordinal, route_id in enumerate(SMOKE_ROUTES):
         rows, funnel = generator.generate_route_attempts(
             route_id,
-            scheduled_pairs=PAIR_BUDGET_PER_ROUTE,
+            scheduled_pairs=SUPPLY_PROBE_PAIRS_PER_ROUTE,
             seed=int(args.seed + ordinal * 1009),
             attempt_limit=1024,
             existing_exact_identities=set(historical_exact),
-            available_field_ids=schema_by_backend["active_bar"],
+            available_field_ids=schema_by_backend[_clock_for_route(route_id)],
         )
-        generated.extend(rows)
+        supply_probe_rows.extend(rows)
+        generated.extend(rows[: 2 * PAIR_BUDGET_PER_ROUTE])
+        funnel["execution_pair_budget"] = PAIR_BUDGET_PER_ROUTE
+        funnel["supply_probe_pair_target"] = SUPPLY_PROBE_PAIRS_PER_ROUTE
         funnels.append(funnel)
     split = FixedSplitAuthority.read(args.split_manifest.resolve())
     probe_rows, probe_audit = _probe_pack(
@@ -140,6 +149,9 @@ def prepare(args: argparse.Namespace) -> dict:
         )
     paths = {
         "candidate_attempts": _write_csv(output_root / "candidate_attempts.csv", generated),
+        "supply_probe_candidates": _write_csv(
+            output_root / "supply_probe_candidates.csv", supply_probe_rows
+        ),
         "behavior_probe": _write_parquet(output_root / "behavior_probe.parquet", probe_rows),
         "admission_decisions": _write_parquet(output_root / "admission_decisions.parquet", decisions),
         "admitted_candidates": _write_csv(output_root / "admitted_candidates.csv", admitted),
@@ -154,6 +166,8 @@ def prepare(args: argparse.Namespace) -> dict:
         "status": "SMOKE_PREPARED",
         "scheduled_pairs": len(SMOKE_ROUTES) * PAIR_BUDGET_PER_ROUTE,
         "generated_pairs": len(generated) // 2,
+        "supply_probe_target_pairs_per_route": SUPPLY_PROBE_PAIRS_PER_ROUTE,
+        "supply_probe_generated_pairs": len(supply_probe_rows) // 2,
         "admitted_pairs": len(admitted) // 2,
         "root_contract_hash": authority["contract_hash"],
         "root_scope_authority": "FROZEN_DEVELOPMENT_DISCOVERY_CONTRACT",
@@ -252,7 +266,7 @@ def execute(args: argparse.Namespace) -> dict:
     return result
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("prepare", "execute"))
     parser.add_argument("--registry", type=Path, required=True)
@@ -272,7 +286,7 @@ def main() -> int:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=2026072201)
     parser.add_argument("--compute-threads", type=int, default=11)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.mode == "execute" and not all(
         (args.validation_sidecar_closure, args.validation_active_field_root, args.validation_active_label_root)
     ):

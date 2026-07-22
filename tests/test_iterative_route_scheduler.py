@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import app
 
+from scripts.run_cn_core_pack_authority_smoke import (
+    PAIR_BUDGET_PER_ROUTE,
+    SMOKE_ROUTES,
+    SUPPLY_PROBE_PAIRS_PER_ROUTE,
+)
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _causal_route_comparison,
     main as iterative_main,
@@ -81,6 +86,12 @@ def test_iterative_canary_is_exposed_through_narrow_app_route(capsys) -> None:
     assert app.ROUTES["cn-targeted-search-medium-campaign"] == (
         "our_system_phase2.runtime.cn_targeted_search_medium_campaign"
     )
+    assert app.ROUTES["cn-core-pack-authority-smoke"] == (
+        "scripts.run_cn_core_pack_authority_smoke"
+    )
+    assert set(SMOKE_ROUTES) == set(ROUTE_IDS) - {"BROAD_EVENT_FROZEN_ENTRY"}
+    assert len(SMOKE_ROUTES) * PAIR_BUDGET_PER_ROUTE == 28
+    assert SUPPLY_PROBE_PAIRS_PER_ROUTE == 12
 
 
 def test_causal_gate_requires_actual_route_distribution_to_follow_schedule() -> None:
