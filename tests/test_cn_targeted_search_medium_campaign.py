@@ -6,9 +6,13 @@ import pytest
 from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     CHECKPOINT_BASE_TARGETS,
     CHECKPOINT_COUNT,
+    CHECKPOINT_SCHEDULED_PAIRS,
+    MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
     MAX_RAW_ATTEMPTS,
+    MAX_WALL_SECONDS,
     SEARCH_ROUTES,
     TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
+    _campaign_authorization_binding,
     _load_historical_dedupe,
     _add_resolved_behavior_rows,
     _block_compute_rows,
@@ -16,6 +20,7 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     _registry_binding,
     build_seed_attempt_manifest,
 )
+from scripts.build_cn_campaign_history_snapshot import build_snapshot
 from our_system_phase2.services.portfolio_behavior_archive import (
     PortfolioBehaviorArchive,
 )
@@ -158,3 +163,115 @@ def test_deployment_commit_sha_supports_gitless_77o_workspace(monkeypatch) -> No
     expected = "7" * 40
     monkeypatch.setenv("CN_CAMPAIGN_REPO_SHA", expected)
     assert _git_sha() == expected
+
+
+def test_large_campaign_history_and_authorization_are_identity_only(
+    tmp_path: Path,
+) -> None:
+    candidate_one = tmp_path / "candidate_one.jsonl"
+    candidate_one.write_text(
+        json.dumps({"exact_identity": "exact.1", "optimizer_reward": 9.0}) + "\n",
+        encoding="utf-8",
+    )
+    candidate_two = tmp_path / "candidate_two.parquet"
+    pd_rows = [
+        {"exact_identity": "exact.1", "scheduler_state": "old"},
+        {"exact_identity": "exact.2", "scheduler_state": "old"},
+    ]
+    import pandas as pd
+
+    pd.DataFrame(pd_rows).to_parquet(candidate_two, index=False)
+    behavior_one = tmp_path / "behavior_one.parquet"
+    behavior_two = tmp_path / "behavior_two.parquet"
+    PortfolioBehaviorArchive(
+        [
+            {
+                "pair_id": "pair.1",
+                "behavior_status": "RESOLVED",
+                "behavior_probe_id": "probe.1",
+                "optimizer_reward": 99.0,
+            }
+        ]
+    ).write_parquet(behavior_one)
+    PortfolioBehaviorArchive(
+        [
+            {
+                "pair_id": "pair.2",
+                "behavior_status": "RESOLVED",
+                "portfolio_behavior_signature_id": "signature.2",
+                "scheduler_state": "old",
+            }
+        ]
+    ).write_parquet(behavior_two)
+    candidate_output = tmp_path / "candidate_exact.parquet"
+    behavior_output = tmp_path / "behavior.parquet"
+    manifest_output = tmp_path / "manifest.json"
+    manifest = build_snapshot(
+        candidate_sources=[candidate_one, candidate_two],
+        behavior_sources=[behavior_one, behavior_two],
+        candidate_output=candidate_output,
+        behavior_output=behavior_output,
+        manifest_output=manifest_output,
+    )
+
+    assert manifest["exact_identity_count"] == 2
+    assert set(pd.read_parquet(candidate_output)["exact_identity"]) == {
+        "exact.1",
+        "exact.2",
+    }
+    rows = PortfolioBehaviorArchive.read_parquet(behavior_output).rows
+    assert len(rows) == 2
+    assert all("optimizer_reward" not in row for row in rows)
+    assert all("scheduler_state" not in row for row in rows)
+
+    authorization_path = tmp_path / "authorization.json"
+    authorization = {
+        "campaign_id": "TEST_FRESH_CAMPAIGN",
+        "execution_authorized": True,
+        "checkpoint_count": CHECKPOINT_COUNT,
+        "checkpoint_scheduled_pairs": CHECKPOINT_SCHEDULED_PAIRS,
+        "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
+        "maximum_completed_development_matched_pairs": MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
+        "maximum_raw_attempts": MAX_RAW_ATTEMPTS,
+        "maximum_wall_seconds": MAX_WALL_SECONDS,
+        "seed_base": 1729,
+        "active_threads": 11,
+        "session_threads": 2,
+        "global_worker_limit": 24,
+        "constructor_profile": "registry_compositional_v2",
+        "scheduler_authority": "UNIFIED_REGISTRY_ROUTE_ID",
+        "required_parallelism_status": "PARALLELISM_ENGAGED",
+        "peak_rss_limit_bytes": 24 * 1024**3,
+        "checkpoint_recovery": "EXISTING_PHASE3CM_ONLY",
+        "validation_mode": "AUTOMATIC_POST_TRAIN_REPORT_ONLY",
+        "promotion": "FORBIDDEN",
+        "strict_stage_a": "NOT_AUTHORIZED",
+        "holdout": "SEALED",
+        "forward_2026": "SEALED",
+        "historical_source_sha256": [
+            row["sha256"] for row in manifest["sources"]
+        ],
+    }
+    authorization_path.write_text(
+        json.dumps(authorization), encoding="utf-8"
+    )
+    binding = _campaign_authorization_binding(
+        authorization_path=authorization_path,
+        history_manifest_path=manifest_output,
+        candidate_archive_path=candidate_output,
+        behavior_archive_path=behavior_output,
+        seed_base=1729,
+        active_threads=11,
+        session_threads=2,
+    )
+    assert binding["status"] == "CAMPAIGN_EXECUTION_AUTHORIZED"
+    with pytest.raises(RuntimeError, match="seed_base"):
+        _campaign_authorization_binding(
+            authorization_path=authorization_path,
+            history_manifest_path=manifest_output,
+            candidate_archive_path=candidate_output,
+            behavior_archive_path=behavior_output,
+            seed_base=1730,
+            active_threads=11,
+            session_threads=2,
+        )

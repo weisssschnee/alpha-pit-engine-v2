@@ -125,6 +125,92 @@ def _git_sha() -> str:
     return completed.stdout.strip()
 
 
+def _campaign_authorization_binding(
+    *,
+    authorization_path: Path,
+    history_manifest_path: Path,
+    candidate_archive_path: Path,
+    behavior_archive_path: Path,
+    seed_base: int,
+    active_threads: int,
+    session_threads: int,
+) -> dict[str, Any]:
+    authorization_path = Path(authorization_path).resolve()
+    history_manifest_path = Path(history_manifest_path).resolve()
+    candidate_archive_path = Path(candidate_archive_path).resolve()
+    behavior_archive_path = Path(behavior_archive_path).resolve()
+    authorization = json.loads(authorization_path.read_text(encoding="utf-8"))
+    history = json.loads(history_manifest_path.read_text(encoding="utf-8"))
+    expected = {
+        "execution_authorized": True,
+        "checkpoint_count": CHECKPOINT_COUNT,
+        "checkpoint_scheduled_pairs": CHECKPOINT_SCHEDULED_PAIRS,
+        "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
+        "maximum_completed_development_matched_pairs": MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
+        "maximum_raw_attempts": MAX_RAW_ATTEMPTS,
+        "maximum_wall_seconds": MAX_WALL_SECONDS,
+        "seed_base": int(seed_base),
+        "active_threads": int(active_threads),
+        "session_threads": int(session_threads),
+        "global_worker_limit": GLOBAL_WORKER_LIMIT,
+        "constructor_profile": COMPOSITIONAL_V2_PROFILE,
+        "scheduler_authority": "UNIFIED_REGISTRY_ROUTE_ID",
+        "required_parallelism_status": "PARALLELISM_ENGAGED",
+        "peak_rss_limit_bytes": 24 * 1024**3,
+        "checkpoint_recovery": "EXISTING_PHASE3CM_ONLY",
+        "validation_mode": "AUTOMATIC_POST_TRAIN_REPORT_ONLY",
+        "promotion": "FORBIDDEN",
+        "strict_stage_a": "NOT_AUTHORIZED",
+        "holdout": "SEALED",
+        "forward_2026": "SEALED",
+    }
+    drift = [
+        key
+        for key, value in expected.items()
+        if authorization.get(key) != value
+    ]
+    campaign_id = str(authorization.get("campaign_id") or "")
+    if not campaign_id:
+        drift.append("campaign_id")
+    if str(history.get("status") or "") != "PASS":
+        drift.append("history_manifest_status")
+    candidate_artifact = dict(history.get("candidate_exact_archive") or {})
+    behavior_artifact = dict(history.get("behavior_archive") or {})
+    if str(candidate_artifact.get("sha256") or "").lower() != _sha256(
+        candidate_archive_path
+    ).lower():
+        drift.append("candidate_exact_archive_sha256")
+    if str(behavior_artifact.get("sha256") or "").lower() != _sha256(
+        behavior_archive_path
+    ).lower():
+        drift.append("behavior_archive_sha256")
+    actual_sources = sorted(
+        str(row.get("sha256") or "").lower()
+        for row in list(history.get("sources") or [])
+    )
+    expected_sources = sorted(
+        str(value).lower()
+        for value in list(authorization.get("historical_source_sha256") or [])
+    )
+    if actual_sources != expected_sources:
+        drift.append("historical_source_sha256")
+    if drift:
+        raise RuntimeError(
+            "CAMPAIGN_AUTHORIZATION_MISMATCH:" + ",".join(sorted(set(drift)))
+        )
+    return {
+        "schema_version": "cn_campaign_authorization_binding_v1",
+        "status": "CAMPAIGN_EXECUTION_AUTHORIZED",
+        "campaign_id": campaign_id,
+        "authorization": _artifact(authorization_path),
+        "historical_archive_manifest": _artifact(history_manifest_path),
+        "historical_candidate_exact_archive": _artifact(candidate_archive_path),
+        "historical_behavior_archive": _artifact(behavior_archive_path),
+        "frozen_parameters": expected,
+        "historical_source_sha256": expected_sources,
+    }
+
+
 def build_seed_attempt_manifest(
     *,
     registry_hash: str,
@@ -1210,6 +1296,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     field_roots = {"active_bar": args.active_field_root.resolve(), "stock_session": args.session_field_root.resolve()}
     label_roots = {"active_bar": args.active_label_root.resolve(), "stock_session": args.session_label_root.resolve()}
     compute_threads = {"active_bar": int(args.active_threads), "stock_session": int(args.session_threads)}
+    campaign_authorization = _campaign_authorization_binding(
+        authorization_path=args.campaign_authorization,
+        history_manifest_path=args.historical_archive_manifest,
+        candidate_archive_path=args.historical_candidate_archive,
+        behavior_archive_path=args.historical_behavior_archive,
+        seed_base=args.seed_base,
+        active_threads=compute_threads["active_bar"],
+        session_threads=compute_threads["stock_session"],
+    )
+    campaign_id = str(campaign_authorization["campaign_id"])
+    campaign_authorization_path = _write_json(
+        output_root / "campaign_authorization_binding.json",
+        campaign_authorization,
+    )
     historical_exact, behavior_archive, archive_snapshot = _load_historical_dedupe(
         candidate_archive_path=args.historical_candidate_archive.resolve(),
         behavior_archive_path=args.historical_behavior_archive.resolve(),
@@ -1281,7 +1381,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     started_epoch = time.time()
     contract = {
         "schema_version": "cn_targeted_search_medium_campaign_contract_v1",
-        "campaign_id": CAMPAIGN_ID,
+        "campaign_id": campaign_id,
         "started_epoch": started_epoch,
         "checkpoint_count": CHECKPOINT_COUNT,
         "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
@@ -1310,6 +1410,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "root_scope_authority": "FROZEN_DEVELOPMENT_DISCOVERY_CONTRACT",
         "validation_mode": "AUTOMATIC_POST_TRAIN_REPORT_ONLY",
         "input_bindings": {
+            "campaign_authorization": _artifact(
+                campaign_authorization_path, root=output_root
+            ),
             "registry": _artifact(registry_binding_path, root=output_root),
             "development_discovery_authority": _artifact(
                 discovery_authority_path, root=output_root
@@ -1543,7 +1646,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         {
             "schema_version": "cn_targeted_search_train_complete_v1",
             "status": "TRAIN_COMPLETE" if qualified else "TRAIN_INVALID",
-            "campaign_id": CAMPAIGN_ID,
+            "campaign_id": campaign_id,
             "completed_development_matched_pairs": completed_pairs,
             "candidate_ledger": _artifact(candidate_ledger_path, root=output_root),
             "observation_ledger": _artifact(observation_ledger_path, root=output_root),
@@ -1614,10 +1717,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "promotion": "FORBIDDEN",
     }
     decision_path = _write_json(output_root / "final_decision.json", decision)
-    report_path = REPO / "reports/CN_TARGETED_SEARCH_MEDIUM_CAMPAIGN_20260721.md"
+    report_path = (
+        args.report_path.resolve()
+        if args.report_path is not None
+        else output_root / "campaign_report.md"
+    )
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(
-        "# CN Targeted Search Medium Campaign\n\n"
+        f"# {campaign_id}\n\n"
         f"- Status: `{decision['status']}`\n"
         f"- Full-coordinate development matched pairs: `{completed_pairs}` / cap `{MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS}`\n"
         f"- Raw attempts: `{raw_attempts}` / cap `{MAX_RAW_ATTEMPTS}`\n"
@@ -1632,10 +1739,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     run_manifest = {
         "status": decision["status"],
-        "campaign_id": CAMPAIGN_ID,
+        "campaign_id": campaign_id,
         "host": platform.node(),
         "python": sys.executable,
-        "artifacts": [_artifact(path, root=output_root) for path in (frozen_contract_path, registry_binding_path, discovery_authority_path, schema_binding_path, purity_path, seed_manifest_path, runtime_envelope_path, comparison_path, archive_snapshot_path, candidate_ledger_path, observation_ledger_path, behavior_archive_path, metrics_path, train_manifest_path, decision_path, output_root / "post_train_validation/automatic_post_train_validation_receipt.json") if path.is_file()],
+        "artifacts": [_artifact(path, root=output_root) for path in (campaign_authorization_path, frozen_contract_path, registry_binding_path, discovery_authority_path, schema_binding_path, purity_path, seed_manifest_path, runtime_envelope_path, comparison_path, archive_snapshot_path, candidate_ledger_path, observation_ledger_path, behavior_archive_path, metrics_path, train_manifest_path, decision_path, output_root / "post_train_validation/automatic_post_train_validation_receipt.json") if path.is_file()],
         "report": _artifact(report_path),
         "validation_reads": validation_reads,
         "validation_usage": "report_only",
@@ -1650,6 +1757,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--campaign-authorization", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--discovery-contract", type=Path, required=True)
     parser.add_argument("--discovery-authorization", type=Path, required=True)
@@ -1666,7 +1774,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--validation-session-label-root", type=Path, required=True)
     parser.add_argument("--historical-candidate-archive", type=Path, required=True)
     parser.add_argument("--historical-behavior-archive", type=Path, required=True)
+    parser.add_argument("--historical-archive-manifest", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--report-path", type=Path)
     parser.add_argument("--seed-base", type=int, default=2026072101)
     parser.add_argument("--active-threads", type=int, default=11)
     parser.add_argument("--session-threads", type=int, default=2)
