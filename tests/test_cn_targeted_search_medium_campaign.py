@@ -352,6 +352,10 @@ def test_deployment_commit_sha_supports_gitless_77o_workspace(monkeypatch) -> No
     assert _git_sha() == expected
 
 
+def test_campaign_continuation_uses_cache_conservative_pair_batches() -> None:
+    assert PAIR_BATCH_SIZE_BY_BACKEND == {"active_bar": 8, "stock_session": 8}
+
+
 def test_large_campaign_history_and_authorization_are_identity_only(
     tmp_path: Path,
 ) -> None:
