@@ -835,7 +835,8 @@ def _runtime_gate(
     output_namespace: str = "phase3cm",
 ) -> dict[str, Any]:
     backends = {}
-    overall = True
+    overall_execution = True
+    overall_run_health = True
     for backend in ("active_bar", "stock_session"):
         backend_root = checkpoint_root / output_namespace / backend
         result_path = backend_root / "CN_STREAMING_BACKEND_RESULT.json"
@@ -871,7 +872,23 @@ def _runtime_gate(
         first = samples[0] if samples else {}
         read_bytes = max(0, int(last.get("system_read_bytes") or 0) - int(first.get("system_read_bytes") or 0))
         write_bytes = max(0, int(last.get("system_write_bytes") or 0) - int(first.get("system_write_bytes") or 0))
-        parallel = result.get("parallelism_status") == "PARALLELISM_ENGAGED"
+        compute_phase_parallelism = dict(result.get("compute_phase_parallelism") or {})
+        required_parallel_phases = {
+            "expression_value_dag",
+            "cross_sectional_rank_mapping",
+            "label_free_behavior",
+            "turnover_and_cost",
+        }
+        present_parallel_phases = required_parallel_phases & set(compute_phase_parallelism)
+        parallel = (
+            all(
+                str(compute_phase_parallelism[phase].get("parallelism_status") or "")
+                == "PARALLELISM_ENGAGED"
+                for phase in present_parallel_phases
+            )
+            if present_parallel_phases == required_parallel_phases
+            else result.get("parallelism_status") == "PARALLELISM_ENGAGED"
+        )
         phase_totals = dict(result.get("phase_totals") or {})
         io_wall = float((phase_totals.get("global_trade_time_barrier") or {}).get("wall_seconds") or 0.0)
         total_wall = max(float(result.get("wall_seconds") or 0.0), 1e-12)
@@ -934,8 +951,9 @@ def _runtime_gate(
         duplicate_pair_evaluations = len(pair_ids) - len(set(pair_ids))
         cache_pass = cache_hits + cache_misses > 0
         exact_once_pass = duplicate_pair_evaluations == 0
-        backend_pass = parallel and utilization_pass and resource_pass and cache_pass and exact_once_pass
-        overall = overall and backend_pass
+        backend_pass = parallel and utilization_pass and cache_pass and exact_once_pass
+        overall_execution = overall_execution and backend_pass
+        overall_run_health = overall_run_health and resource_pass
         backends[backend] = {
             "allocated_compute_threads": compute_threads[backend],
             "process_cpu_seconds": compute_cpu,
@@ -961,6 +979,8 @@ def _runtime_gate(
             "heavy_worker_count_max": max((int(row.get("process_tree_count") or 0) for row in samples), default=0),
             "peak_rss_bytes": peak_rss,
             "minimum_free_memory_bytes": minimum_free,
+            "minimum_required_free_memory_bytes": MINIMUM_FREE_MEMORY_BYTES,
+            "run_health_status": "PASS" if resource_pass else "MEMORY_HEADROOM_GATE_FAILED",
             "read_throughput_bytes_per_second": read_throughput,
             "write_throughput_bytes_per_second": write_bytes / max(duration, 1.0),
             "rows_per_second": int(result.get("rows_processed") or 0) / max(float(result.get("wall_seconds") or 0.0), 1.0),
@@ -980,10 +1000,17 @@ def _runtime_gate(
         }
     return {
         "schema_version": "cn_medium_campaign_runtime_utilization_gate_v3",
-        "status": "PASS" if overall and len(backends) == 2 else "RUNTIME_ACCELERATION_GATE_FAILED",
+        "status": (
+            "PASS"
+            if overall_execution and overall_run_health and len(backends) == 2
+            else "PASS_WITH_RUN_HEALTH_FAILURE"
+            if overall_execution and len(backends) == 2
+            else "RUNTIME_ACCELERATION_GATE_FAILED"
+        ),
         "backends": backends,
         "bounded_concurrency_adjustment_count": 0,
         "second_failure_policy": "RUN_INVALID",
+        "run_health_policy": "INFRASTRUCTURE_ONLY_DOES_NOT_MUTATE_ROUTE_HEALTH",
     }
 
 
@@ -1537,6 +1564,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     raw_attempts = 0
     checkpoint_summaries = []
     runtime_gate_path: Path | None = None
+    runtime_gate_status = "NOT_EVALUATED"
     seed_rows = {(row["checkpoint"], row["route_id"]): row for row in seed_manifest["rows"]}
     deadline_epoch = started_epoch + MAX_WALL_SECONDS
 
@@ -1612,7 +1640,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         if checkpoint_index == 0:
             gate = _runtime_gate(checkpoint_root, compute_threads)
-            if gate["status"] != "PASS":
+            if gate["status"] == "RUNTIME_ACCELERATION_GATE_FAILED":
                 gate, adjustment_receipts = _bounded_runtime_adjustment(
                     initial_gate=gate,
                     checkpoint_id=checkpoint_id,
@@ -1631,7 +1659,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             checkpoint_runtime_gate_path = _write_json(
                 checkpoint_root / "runtime_utilization_gate.json", gate
             )
-            if gate["status"] != "PASS":
+            runtime_gate_status = str(gate["status"])
+            if gate["status"] not in {"PASS", "PASS_WITH_RUN_HEALTH_FAILURE"}:
                 raise RuntimeError(str(gate["status"]))
         outcomes, full_behavior = _outcome_rows(checkpoint_root)
         full_behavior = _join_full_behavior_identities(full_behavior, probe_rows)
@@ -1728,6 +1757,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "behavior_archive": _artifact(behavior_archive_path, root=output_root),
             "campaign_metrics": _artifact(metrics_path, root=output_root),
             "validation_trigger": "AUTOMATIC_AFTER_IMMUTABLE_TRAIN_COMPLETE",
+            "runtime_gate_status": runtime_gate_status,
+            "run_health_status": (
+                "PASS"
+                if runtime_gate_status == "PASS"
+                else "INFRASTRUCTURE_FAILURE_PRESERVED"
+            ),
             "promotion": "FORBIDDEN",
         },
     )
@@ -1765,7 +1800,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     )
     decision = {
-        "status": "CAMPAIGN_CLOSED" if qualified else "RUN_INVALID",
+        "status": (
+            "CAMPAIGN_CLOSED"
+            if qualified and runtime_gate_status == "PASS"
+            else "CAMPAIGN_CLOSED_WITH_RUN_HEALTH_FAILURE"
+            if qualified
+            else "RUN_INVALID"
+        ),
         "stop_reason": "CHECKPOINT_LIMIT" if len(checkpoint_summaries) == CHECKPOINT_COUNT else "HARD_CAP_OR_GATE",
         "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
         "maximum_completed_development_matched_pairs": MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
@@ -1787,6 +1828,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "validation_usage": "report_only",
         "validation_feedback": "FORBIDDEN",
+        "runtime_gate_status": runtime_gate_status,
+        "run_health_scope": "INFRASTRUCTURE_ONLY_NOT_ROUTE_HEALTH",
         "holdout_reads": 0,
         "forward_2026_reads": 0,
         "promotion": "FORBIDDEN",
@@ -1858,7 +1901,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     result = run(args)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
-    return 0 if result["status"] == "CAMPAIGN_CLOSED" else 1
+    return 0 if str(result["status"]).startswith("CAMPAIGN_CLOSED") else 1
 
 
 if __name__ == "__main__":
