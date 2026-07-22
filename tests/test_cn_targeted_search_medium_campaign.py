@@ -58,6 +58,37 @@ def test_checkpoint_base_targets_close_exact_campaign_schedule() -> None:
     assert sum(totals.values()) == TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET
 
 
+def test_parquet_projection_normalizes_mixed_scalar_columns(tmp_path: Path) -> None:
+    import pandas as pd
+
+    destination = tmp_path / "candidate_ledger.parquet"
+    campaign_module._write_parquet(
+        destination,
+        [
+            {
+                "cross_sectional_rank_allowed_for_condition": "CONDITION_ONLY",
+                "homogeneous_bool": True,
+            },
+            {
+                "cross_sectional_rank_allowed_for_condition": True,
+                "homogeneous_bool": False,
+            },
+            {
+                "cross_sectional_rank_allowed_for_condition": False,
+                "homogeneous_bool": True,
+            },
+        ],
+    )
+
+    restored = pd.read_parquet(destination)
+    assert restored["cross_sectional_rank_allowed_for_condition"].tolist() == [
+        "CONDITION_ONLY",
+        "true",
+        "false",
+    ]
+    assert restored["homogeneous_bool"].tolist() == [True, False, True]
+
+
 def test_seed_attempt_ranges_are_disjoint_and_bounded() -> None:
     manifest = build_seed_attempt_manifest(
         registry_hash="r" * 64,

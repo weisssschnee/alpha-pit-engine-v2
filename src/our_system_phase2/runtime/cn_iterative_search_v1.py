@@ -124,7 +124,27 @@ def _write_parquet(path: Path, rows: Sequence[Mapping[str, Any]]) -> Path:
         {key: _json_value(value) for key, value in dict(row).items()}
         for row in rows
     ]
-    pd.DataFrame(normalized).to_parquet(destination, index=False)
+    frame = pd.DataFrame(normalized)
+    for column in frame.select_dtypes(include=["object"]):
+        inferred = pd.api.types.infer_dtype(frame[column], skipna=True)
+        if not inferred.startswith("mixed"):
+            continue
+        frame[column] = frame[column].map(
+            lambda value: (
+                None
+                if value is None or bool(pd.isna(value))
+                else value
+                if isinstance(value, str)
+                else json.dumps(
+                    value,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    default=str,
+                )
+            )
+        )
+    frame.to_parquet(destination, index=False)
     return destination
 
 
