@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-22
+Updated: 2026-07-23
 
-Current state: `CN_CORE_PACK_ONTOLOGY_AUTHORITY_ACTIVE_AUTO_VALIDATION_READY_FORMAL_SEARCH_FROZEN`
+Current state: `CN_CORE_PACK_LARGE_DEVELOPMENT_COMPLETE_REPORT_ONLY_VALIDATION_COMPLETE_FORMAL_SEARCH_FROZEN`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -23,6 +23,35 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   cannot redefine ontology scope. The separate active authorization permits
   bounded development execution, but every campaign must still freeze its own
   nonzero budget, seeds, archive snapshot and no-promotion boundary.
+- The separately frozen six-checkpoint Core-Pack large development campaign is
+  complete on 77o. It scheduled 1,536 pairs, made 16,850 deterministic
+  generation attempts, admitted and completed full-coordinate development
+  evaluation for 872 matched pairs (1,744 candidate members), and assigned 750
+  new behavior families. All seven primary registry routes were represented;
+  578 of 872 pairs had positive matched development net increments. These are
+  development observations only and do not authorize promotion or an economic
+  claim. The compact immutable receipt is
+  `runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json`.
+- Every train checkpoint is `BATCH_CLOSED_IMMUTABLE`. Post-validation
+  verification matched 85/85 artifacts: checkpoint 001 retained 15/15 and
+  checkpoints 002-006 retained 14/14 each. The four cumulative train artifacts
+  and `train_complete_manifest.json` also matched their frozen hashes. Closed
+  Phase3CM results were reused through the existing checkpoint path and were
+  never recomputed during recovery.
+- Immutable train completion automatically launched the existing report-only
+  validation path. It evaluated the same 872 pairs (538 active-bar and 334
+  stock-session) over 92,359,058 validation reads. Both backend results closed
+  with return code zero; holdout and 2026 reads were zero, feedback/scheduler/
+  archive writes and automatic promotion were forbidden, and all train hashes
+  remained unchanged.
+- Large-run acceleration was exercised on real work. The frozen checkpoint-001
+  gate allocated 30 active-bar compute threads, measured 19.28 effective cores,
+  60.25% logical-CPU occupancy, 58.54% Task-Manager-equivalent mean host CPU and
+  20,019,281,920-byte peak RSS. It recorded
+  `FULL_HOST_NATIVE_KERNEL_SMT_CEILING_PROVEN` as the alternative bottleneck to
+  the 75% host-occupancy target. Stock-session retained its two-thread native
+  contract. Cache pressure, memory-headroom and host-connectivity failures are
+  preserved as run-health evidence; they never mutated financial route health.
 - The 77o authority smoke closed end to end. A 28-pair execution pack was drawn
   from a separate 84-pair supply probe; every one of the seven primary routes
   produced 12 exact-unique pairs within 12-29 attempts under the 1,024-attempt
@@ -212,31 +241,32 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-There is no remaining global route-supply, ontology-authority, train-to-validation
-or acceleration-readiness blocker to the next separately frozen development
-campaign. The 93 unresolved rows in the historical V1 archive remain immutable
-evidence of that campaign and are not retroactively rewritten. A larger
-development search still requires its own frozen budgets, seed/attempt stream,
-archive snapshot, runtime envelope and explicit campaign execution receipt; the
-active ontology authorization is not a standing unlimited budget. The completed
-campaigns and authority smoke supply no OOS, promotion or economic proof. Plate
-remains independently blocked by missing real PIT minute materialization;
-additional compound-state expansion beyond the tested expanded source-leaf
-forms remains a localized materialization gap.
+There is no remaining global route-supply, ontology-authority,
+train-to-validation or acceleration-readiness blocker in the completed campaign.
+Its preserved cache, memory-headroom and monitor-path incidents are run-health
+facts, not financial route failures. The 93 unresolved rows in the historical V1
+archive remain immutable and are not retroactively rewritten. Formal search,
+candidate promotion, holdout access, 2026 access and economic claims remain
+blocked by their existing authorization and evidence boundaries. Plate remains
+independently blocked by missing real PIT minute materialization; additional
+compound-state expansion beyond tested expanded source-leaf forms remains a
+localized materialization gap.
 
 ## Next action
 
-Do not repeat the 1,024 wave, three-batch V1 canary, field qualification,
-route-supply qualification or authority smoke. Freeze and launch one materially
-larger development campaign using the active Core-Pack proposal-root ontology:
-fixed nonzero registry-route budgets, seeds and attempt stream, immutable archive
-snapshot, behavior-aware admission, matched feedback-on/off control, 77o runtime
-envelope, stop conditions and explicit no-promotion boundary. Train completion
-must automatically trigger the existing report-only validation path. Before and
-during the larger run, retain the now-proven acceleration gates: actual
-`PARALLELISM_ENGAGED`, effective-core telemetry, peak-RSS gate and hot-path
-classification. `exploit`, `repair`, and `orthogonal` remain labels unless a real
-registry-backed constructor is added and tested. Broad Event remains a
-zero-budget frozen reference. Strict Stage A, candidate promotion,
-cross-campaign adaptive memory, holdout access and 2026 access remain forbidden.
-Plate resumes only when real PIT minute materialization is present on 77o.
+Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
+qualification, authority smoke, or the just-completed six-checkpoint large
+campaign. Analyze its immutable ledgers once: checkpoint-by-checkpoint marginal
+behavior discovery, route/skeleton/family concentration, exact and behavior
+dedupe pressure, materialization and operator failures, cost/turnover kills,
+matched feedback-on/off attribution, and development-to-report-only-validation
+stability. Use that compact analysis to freeze the next bounded campaign or stop
+unproductive routes; do not turn small-sample negative development outcomes into
+permanent `FREEZE`. Preserve the proven runtime envelope and the fixed 8 GiB
+cache cap while treating the 60% host occupancy plus recorded native-kernel SMT
+ceiling as an optimization target, not a reason to rerun completed evidence.
+`exploit`, `repair`, and `orthogonal` remain labels unless a real registry-backed
+constructor is added and tested. Broad Event remains a zero-budget frozen
+reference. Strict Stage A, candidate promotion, cross-campaign adaptive memory,
+holdout access and 2026 access remain forbidden. Plate resumes only when real PIT
+minute materialization is present on 77o.

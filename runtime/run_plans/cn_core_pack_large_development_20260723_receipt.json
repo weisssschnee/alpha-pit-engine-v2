@@ -1,0 +1,168 @@
+{
+  "schema_version": "cn_core_pack_large_development_receipt_v1",
+  "status": "CAMPAIGN_AND_REPORT_ONLY_VALIDATION_COMPLETE",
+  "completed_at": "2026-07-23",
+  "host": "DESKTOP-77OPJ6F",
+  "campaign_id": "CN_CORE_PACK_LARGE_DEVELOPMENT_V1_20260722_R5",
+  "research_role": "development_only",
+  "remote_artifact_root": "D:\\ChengboRemote\\runtime\\cn_core_pack_large_development_20260722_9f3a5f2_30t_r5",
+  "deployment": {
+    "train_workspace_sha": "9f3a5f25fe16ad0c03b52d6ac3a36db365023664",
+    "root_projection_fix_sha": "ccbfd459dc38215e1b8a143872e915e76728e4d5",
+    "candidate_bound_validation_sha": "2dff602fc913b48aa30ed6b13bccd805183d6dde",
+    "train_task_id": "lanjob_20260722_220638_264633",
+    "validation_task_id": "lanjob_20260723_054718_e6d73c"
+  },
+  "campaign": {
+    "checkpoint_count": 6,
+    "scheduled_pairs": 1536,
+    "generation_attempts": 16850,
+    "admitted_pairs": 872,
+    "full_coordinate_development_matched_pairs": 872,
+    "candidate_members": 1744,
+    "new_behavior_families": 750,
+    "positive_matched_net_increments": 578,
+    "train_status": "TRAIN_COMPLETE",
+    "validation_trigger": "AUTOMATIC_AFTER_IMMUTABLE_TRAIN_COMPLETE",
+    "promotion": "FORBIDDEN",
+    "run_health_status": "INFRASTRUCTURE_FAILURE_PRESERVED",
+    "runtime_gate_status": "PASS_WITH_RUN_HEALTH_FAILURE"
+  },
+  "checkpoints": [
+    {
+      "checkpoint": "checkpoint_001",
+      "scheduled_pairs": 256,
+      "generation_attempts": 462,
+      "admitted_pairs": 190,
+      "new_behavior_families": 177,
+      "positive_matched_net_increments": 122,
+      "manifest_sha256": "15f19325b0b805bda81c8acf886e875cdadd9e484f06f682926ce09e6cfbca93",
+      "artifacts_verified": "15/15"
+    },
+    {
+      "checkpoint": "checkpoint_002",
+      "scheduled_pairs": 256,
+      "generation_attempts": 626,
+      "admitted_pairs": 180,
+      "new_behavior_families": 159,
+      "positive_matched_net_increments": 121,
+      "manifest_sha256": "393d19aa85d3f69f3eb8b22e4ad4d87dd64819689a311e01e4714dcc8c35d2cb",
+      "artifacts_verified": "14/14"
+    },
+    {
+      "checkpoint": "checkpoint_003",
+      "scheduled_pairs": 256,
+      "generation_attempts": 778,
+      "admitted_pairs": 167,
+      "new_behavior_families": 142,
+      "positive_matched_net_increments": 105,
+      "manifest_sha256": "c9259f59ea3fcd3ecee84854c7c64e2b475aa57b4175e2c28db70a988cf8cfd5",
+      "artifacts_verified": "14/14"
+    },
+    {
+      "checkpoint": "checkpoint_004",
+      "scheduled_pairs": 256,
+      "generation_attempts": 4966,
+      "admitted_pairs": 156,
+      "new_behavior_families": 125,
+      "positive_matched_net_increments": 108,
+      "manifest_sha256": "a4a4bcb4d031e86d92b6696c809ae326d68cc45a13ec9dee3910b228de9d2a5c",
+      "artifacts_verified": "14/14"
+    },
+    {
+      "checkpoint": "checkpoint_005",
+      "scheduled_pairs": 256,
+      "generation_attempts": 5025,
+      "admitted_pairs": 90,
+      "new_behavior_families": 72,
+      "positive_matched_net_increments": 63,
+      "manifest_sha256": "0dca70dcd525fc14187c7953fc3f6e7342e1c04c9cc8b1eae62b9fb3715f37c2",
+      "artifacts_verified": "14/14"
+    },
+    {
+      "checkpoint": "checkpoint_006",
+      "scheduled_pairs": 256,
+      "generation_attempts": 4993,
+      "admitted_pairs": 89,
+      "new_behavior_families": 75,
+      "positive_matched_net_increments": 59,
+      "manifest_sha256": "df09d2a7ccca8732939dc05e327af564b18b509039d8521ed6c317f72e93f41a",
+      "artifacts_verified": "14/14"
+    }
+  ],
+  "route_funnel": {
+    "accounting_note": "Route rows are the realized primary-route funnel; campaign-level scheduled pairs retain separate underfill and spillover accounting.",
+    "routes": {
+      "DISCLOSURE_EVENT": {"scheduled_pairs": 182, "generation_attempts": 1042, "admitted_pairs": 55, "new_behavior_families": 55, "positive_matched_net_increments": 41},
+      "FIRSTN_PATH": {"scheduled_pairs": 205, "generation_attempts": 214, "admitted_pairs": 48, "new_behavior_families": 48, "positive_matched_net_increments": 11},
+      "INTRADAY_STATE_TRANSITION": {"scheduled_pairs": 303, "generation_attempts": 5046, "admitted_pairs": 226, "new_behavior_families": 186, "positive_matched_net_increments": 183},
+      "MARKET_REGIME_CONDITION": {"scheduled_pairs": 231, "generation_attempts": 260, "admitted_pairs": 176, "new_behavior_families": 114, "positive_matched_net_increments": 122},
+      "MINUTE_STATIC": {"scheduled_pairs": 95, "generation_attempts": 2708, "admitted_pairs": 88, "new_behavior_families": 88, "positive_matched_net_increments": 49},
+      "SLOW_CROSS_SECTIONAL_LEVEL": {"scheduled_pairs": 153, "generation_attempts": 311, "admitted_pairs": 148, "new_behavior_families": 129, "positive_matched_net_increments": 75},
+      "SLOW_TEMPORAL_CHANGE": {"scheduled_pairs": 268, "generation_attempts": 369, "admitted_pairs": 131, "new_behavior_families": 130, "positive_matched_net_increments": 97}
+    }
+  },
+  "automatic_validation": {
+    "status": "AUTOMATIC_POST_TRAIN_VALIDATION_COMPLETE",
+    "evaluation_role": "validation",
+    "usage": "report_only",
+    "active_bar_pairs": 538,
+    "stock_session_pairs": 334,
+    "validation_reads": 92359058,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "archive_write": "FORBIDDEN",
+    "automatic_promotion": "FORBIDDEN",
+    "train_artifacts_immutable": true,
+    "active_bar_result_sha256": "67fa5da4bf36bf67d9a1b2efba93f7e1294529888b5da2c9ddc7fc40ef2a6c98",
+    "stock_session_result_sha256": "42611386f358d40994ab564b68cf53b4c6d83b14b4a022a9eb29019121e52513",
+    "receipt_sha256": "c2d3f750fc2a4b99d1c0120c87712d371ee46e5814ac353bca1b2b558dba242f"
+  },
+  "candidate_bound_sidecars": {
+    "status": "VALIDATION_REPORT_ONLY_SIDECARS_READY",
+    "active_rows": 91977409,
+    "stock_session_rows": 381649,
+    "closure_sha256": "2d5c5564f9bf68b4e87be37f89457d6b7989232a0578713efbea096be60e3c76"
+  },
+  "acceleration_and_resources": {
+    "gate_scope": "checkpoint_001 frozen runtime utilization gate",
+    "status": "PASS_WITH_RUN_HEALTH_FAILURE",
+    "active_bar": {
+      "allocated_compute_threads": 30,
+      "effective_compute_cores": 19.280918559822002,
+      "host_logical_cpu_occupancy": 0.6025287049944376,
+      "system_cpu_percent_mean": 58.54042769857434,
+      "peak_rss_bytes": 20019281920,
+      "parallelism": "PARALLELISM_ENGAGED",
+      "hot_path_bottleneck": "FULL_HOST_NATIVE_KERNEL_SMT_CEILING_PROVEN",
+      "complete_compute_blocks": 37
+    },
+    "stock_session": {
+      "allocated_compute_threads": 2,
+      "effective_compute_cores": 2.003142973188524,
+      "peak_rss_bytes": 643657728,
+      "parallelism": "PARALLELISM_ENGAGED",
+      "complete_compute_blocks": 37
+    },
+    "run_health": {
+      "status": "MEMORY_HEADROOM_GATE_FAILED_AND_PRESERVED",
+      "cache_policy_after_recovery": "PURE_RECOMPUTABLE_CACHE_BYPASS_WITH_FIXED_8_GIB_CAP",
+      "route_health_mutation": "FORBIDDEN",
+      "completion_free_memory_bytes": 86516355072
+    }
+  },
+  "immutable_train_verification": {
+    "checkpoint_artifacts_verified": 85,
+    "checkpoint_artifact_mismatches": 0,
+    "train_manifest_sha256": "1d964d6e99d7a18e871b33ca111880046bbdd06f76c0abd8812801fb7990266d",
+    "root_train_artifact_hashes": {
+      "behavior_archive.parquet": "d0501fa34a3ff2dfda8a8d375e039c1cc80281054f3c9556b3f2a9d93adf557e",
+      "campaign_metrics.parquet": "71c86721fe652b47a3af2ffb073bfce1177af74bffe649e934b61f0538e94b9a",
+      "candidate_ledger.parquet": "927eadf6afcd5de7111f2be933920dbcaec2ffd5bcdffac0d9f453d9fe2d4fa5",
+      "observation_ledger.parquet": "4af35a3b3588722ec94a20eec3126cf40f1f556798cccc528f19ec68e980f28e"
+    }
+  },
+  "claim_boundary": "This is large-scale development search, campaign-mechanics, acceleration and report-only validation evidence. It is not Alpha, OOS, economic, Strict Stage A or promotion proof. Preserved infrastructure failures do not mutate financial route health."
+}
