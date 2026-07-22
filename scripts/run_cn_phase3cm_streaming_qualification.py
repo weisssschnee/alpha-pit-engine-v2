@@ -1092,6 +1092,12 @@ def main() -> int:
                     "native_kernel_calls",
                     "intra_batch_released_entries",
                     "intra_batch_released_bytes",
+                    "root_cache_bypass_count",
+                    "root_cache_bypass_bytes",
+                    "cache_pressure_evicted_entries",
+                    "cache_pressure_evicted_bytes",
+                    "cache_pressure_bypass_count",
+                    "cache_pressure_bypass_bytes",
                 )
             }
             with telemetry.phase("expression_value_dag", compute_heavy=True) as phase:
@@ -1119,6 +1125,20 @@ def main() -> int:
                         "intra_batch_released_entries"
                     ],
                     intra_batch_released_bytes=delta["intra_batch_released_bytes"],
+                    root_cache_bypass_count=delta["root_cache_bypass_count"],
+                    root_cache_bypass_bytes=delta["root_cache_bypass_bytes"],
+                    cache_pressure_evicted_entries=delta[
+                        "cache_pressure_evicted_entries"
+                    ],
+                    cache_pressure_evicted_bytes=delta[
+                        "cache_pressure_evicted_bytes"
+                    ],
+                    cache_pressure_bypass_count=delta[
+                        "cache_pressure_bypass_count"
+                    ],
+                    cache_pressure_bypass_bytes=delta[
+                        "cache_pressure_bypass_bytes"
+                    ],
                     pair_batch_ordinal=batch_ordinal,
                     pair_ids=list(pair_batch_ids),
                     candidate_indices=list(candidate_indices),

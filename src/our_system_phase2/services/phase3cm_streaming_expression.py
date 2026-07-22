@@ -41,6 +41,13 @@ ROLLING_OPERATORS = {
     "slope",
     "transition",
 }
+STATEFUL_OPERATORS = ROLLING_OPERATORS | {
+    "duration",
+    "eventage",
+    "sincelastevent",
+    "stateage",
+    "timesince",
+}
 STREAMING_OPERATOR_SURFACE = frozenset(
     {
         "abs", "acceleration", "add", "csrank", "csresidual", "delta", "div",
@@ -555,6 +562,8 @@ class StreamingExpressionExecutor:
         self._time_ends = np.empty(0, dtype=np.int64)
         self._cache: dict[str, np.ndarray] = {}
         self._cache_owned_bytes: dict[str, int] = {}
+        self._cache_recomputable: dict[str, bool] = {}
+        self._pressure_release_keys: frozenset[str] = frozenset()
         self._cache_bytes = 0
         self.audit: dict[str, Any] = {}
 
@@ -588,6 +597,8 @@ class StreamingExpressionExecutor:
         self._time_starts, self._time_ends = _boundaries(time_ids)
         self._cache = {}
         self._cache_owned_bytes = {}
+        self._cache_recomputable = {}
+        self._pressure_release_keys = frozenset()
         self._cache_bytes = 0
         self.audit = {
             "rows": int(len(code_ids)),
@@ -605,19 +616,69 @@ class StreamingExpressionExecutor:
             set_num_threads(self.compute_threads)
         return self
 
-    def _store_cache(self, key: str, value: np.ndarray, *, owned: bool) -> np.ndarray:
+    def _evict_recomputable_pressure_entries(
+        self,
+        *,
+        incremental_bytes: int,
+    ) -> None:
+        while (
+            len(self._cache) + 1 > self.cache_max_entries
+            or self._cache_bytes + incremental_bytes > self.cache_max_bytes
+        ):
+            candidates = tuple(
+                key
+                for key in self._pressure_release_keys
+                if key in self._cache and self._cache_recomputable.get(key, False)
+            )
+            if not candidates:
+                return
+            key = min(
+                candidates,
+                key=lambda candidate: (
+                    -int(self._cache_owned_bytes.get(candidate, 0)),
+                    candidate,
+                ),
+            )
+            released = self.release_cache_keys((key,))
+            self.audit["cache_pressure_evicted_entries"] = int(
+                self.audit.get("cache_pressure_evicted_entries") or 0
+            ) + int(released["released_entries"])
+            self.audit["cache_pressure_evicted_bytes"] = int(
+                self.audit.get("cache_pressure_evicted_bytes") or 0
+            ) + int(released["released_bytes"])
+
+    def _store_cache(
+        self,
+        key: str,
+        value: np.ndarray,
+        *,
+        owned: bool,
+        recomputable: bool,
+    ) -> np.ndarray:
         array = np.asarray(value, dtype=np.float64)
         if key in self._cache:
             return self._cache[key]
         incremental = int(array.nbytes) if owned else 0
-        if len(self._cache) + 1 > self.cache_max_entries:
+        self._evict_recomputable_pressure_entries(incremental_bytes=incremental)
+        over_entry_cap = len(self._cache) + 1 > self.cache_max_entries
+        over_byte_cap = self._cache_bytes + incremental > self.cache_max_bytes
+        if (over_entry_cap or over_byte_cap) and recomputable and key in self._pressure_release_keys:
+            self.audit["cache_pressure_bypass_count"] = int(
+                self.audit.get("cache_pressure_bypass_count") or 0
+            ) + 1
+            self.audit["cache_pressure_bypass_bytes"] = int(
+                self.audit.get("cache_pressure_bypass_bytes") or 0
+            ) + incremental
+            return array
+        if over_entry_cap:
             raise CacheBudgetError("DAG block cache entry cap reached")
-        if self._cache_bytes + incremental > self.cache_max_bytes:
+        if over_byte_cap:
             raise CacheBudgetError(
                 f"DAG block cache byte cap reached: {self._cache_bytes + incremental} > {self.cache_max_bytes}"
             )
         self._cache[key] = array
         self._cache_owned_bytes[key] = incremental
+        self._cache_recomputable[key] = bool(recomputable)
         self._cache_bytes += incremental
         self.audit["cache_current_bytes"] = self._cache_bytes
         self.audit["cache_peak_bytes"] = max(int(self.audit.get("cache_peak_bytes") or 0), self._cache_bytes)
@@ -650,6 +711,7 @@ class StreamingExpressionExecutor:
                 continue
             self._cache.pop(key)
             released_bytes += int(self._cache_owned_bytes.pop(key, 0))
+            self._cache_recomputable.pop(key, None)
             released_entries += 1
         self._cache_bytes -= released_bytes
         if self._cache_bytes < 0:
@@ -790,7 +852,12 @@ class StreamingExpressionExecutor:
                 result = np.full(len(self.code_ids), float(node.token), dtype=np.float64)
             self.audit["value_node_evaluations"] += 1
             return (
-                self._store_cache(key, result, owned=not node.token.startswith("$"))
+                self._store_cache(
+                    key,
+                    result,
+                    owned=not node.token.startswith("$"),
+                    recomputable=True,
+                )
                 if cache_result
                 else np.asarray(result, dtype=np.float64)
             )
@@ -892,7 +959,12 @@ class StreamingExpressionExecutor:
         else:
             self.audit["value_node_evaluations"] += 1
         if cache_result:
-            return self._store_cache(key, result, owned=True)
+            return self._store_cache(
+                key,
+                result,
+                owned=True,
+                recomputable=name not in STATEFUL_OPERATORS,
+            )
         self.audit["root_cache_bypass_count"] = int(
             self.audit.get("root_cache_bypass_count") or 0
         ) + 1
@@ -1002,12 +1074,16 @@ class StreamingExpressionExecutor:
                     mapping_namespace if _contains_mapping(root_node) else None
                 ),
             )
-            values = self._evaluate(
-                root_node,
-                value_namespace,
-                mapping_namespace,
-                cache_result=root_key not in release_keys,
-            )
+            self._pressure_release_keys = frozenset(release_keys)
+            try:
+                values = self._evaluate(
+                    root_node,
+                    value_namespace,
+                    mapping_namespace,
+                    cache_result=root_key not in release_keys,
+                )
+            finally:
+                self._pressure_release_keys = frozenset()
             result[index] = values
             released = self.release_cache_keys(release_keys)
             released_entries += int(released["released_entries"])

@@ -1,6 +1,6 @@
 {
   "schema_version": "cn_bounded_development_campaign_authorization_v1",
-  "authorization_revision": 7,
+  "authorization_revision": 8,
   "campaign_id": "CN_CORE_PACK_LARGE_DEVELOPMENT_V1_20260722_R5",
   "authorized_at": "2026-07-22",
   "authority_source": "CURRENT_USER_INSTRUCTION",
@@ -38,6 +38,8 @@
   "session_pair_batch_size": 8,
   "checkpoint_001_completed_active_pair_batch_size": 12,
   "continuation_pair_batch_amendment": "USER_DIRECTED_CACHE_CONSERVATION_AFTER_CHECKPOINT_002_BATCH_8_CACHE_CAP_INCIDENT",
+  "continuation_cache_amendment": "RECOMPUTABLE_LAST_USE_INTERMEDIATE_PRESSURE_BYPASS_AFTER_CHECKPOINT_002_BATCH_4_CACHE_CAP_INCIDENT",
+  "cache_cap_policy": "FIXED_8_GIB_DO_NOT_RAISE",
   "global_worker_limit": 24,
   "resource_allocation_basis": "77O_32_LOGICAL_PROCESSORS_SINGLE_PRIMARY_POOL_LEAVING_TWO_LOGICAL_PROCESSORS_FOR_OS_IO",
   "minimum_primary_host_logical_cpu_occupancy": 0.75,
