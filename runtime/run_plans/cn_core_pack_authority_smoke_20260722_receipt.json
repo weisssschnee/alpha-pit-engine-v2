@@ -1,0 +1,163 @@
+{
+  "schema_version": "cn_core_pack_authority_smoke_receipt_v1",
+  "status": "PASS",
+  "executed_at": "2026-07-22",
+  "host": "DESKTOP-77OPJ6F",
+  "purpose": "Bind the Core-Pack development-discovery contract as proposal-root ontology authority and prove automatic report-only validation after immutable train completion.",
+  "authority": {
+    "proposal_root_contract": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
+    "proposal_root_contract_file_sha256": "c9f6a0f9bc3380ca731d71958a8b68a88b3805d665778a37c2a8564276e2f640",
+    "proposal_root_contract_hash": "c189ab4942e7864627e8f016c5be332f7ce993d55d43c298205c2b8f9a35fba3",
+    "execution_authorization": "runtime/run_plans/cn_core_pack_development_discovery_v1_authorization.json",
+    "top_level_scheduler_authority": "unified_registry_route_id",
+    "schema_role": "EXECUTION_COMPATIBILITY_ONLY",
+    "campaign_budget_required": true,
+    "promotion": "FORBIDDEN"
+  },
+  "deployment": {
+    "base_bundle_commit": "d1c3256",
+    "patch_commits": [
+      "e90064b",
+      "ada31fc",
+      "96eca9c"
+    ],
+    "final_workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_core_pack_authority_96eca9c",
+    "smoke_script_sha256": "970B01E58CA92F623C69DC56BA722053B8767B7AA7EA1FB7FDE0B78BC83977F1",
+    "final_task_id": "lanjob_20260722_131429_791ab9"
+  },
+  "remote_artifact_root": "D:\\ChengboRemote\\runtime\\cn_core_pack_authority_smoke_20260722_d1c3256",
+  "route_supply_probe": {
+    "scope": "one frozen seed per route, 12 exact-unique pairs per route, attempt cap 1024",
+    "scheduled_execution_pairs": 28,
+    "generated_execution_pairs": 28,
+    "exact_unique_probe_pairs": 84,
+    "target_probe_pairs": 84,
+    "all_primary_routes_met_target": true,
+    "routes": {
+      "MINUTE_STATIC": {
+        "generation_attempts": 26,
+        "legal_pairs": 17,
+        "exact_unique_pairs": 12,
+        "underfill_reason": ""
+      },
+      "FIRSTN_PATH": {
+        "generation_attempts": 13,
+        "legal_pairs": 13,
+        "exact_unique_pairs": 12,
+        "underfill_reason": ""
+      },
+      "SLOW_CROSS_SECTIONAL_LEVEL": {
+        "generation_attempts": 15,
+        "legal_pairs": 12,
+        "exact_unique_pairs": 12,
+        "underfill_reason": ""
+      },
+      "SLOW_TEMPORAL_CHANGE": {
+        "generation_attempts": 17,
+        "legal_pairs": 13,
+        "exact_unique_pairs": 12,
+        "underfill_reason": ""
+      },
+      "DISCLOSURE_EVENT": {
+        "generation_attempts": 29,
+        "legal_pairs": 18,
+        "exact_unique_pairs": 12,
+        "underfill_reason": ""
+      },
+      "MARKET_REGIME_CONDITION": {
+        "generation_attempts": 12,
+        "legal_pairs": 12,
+        "exact_unique_pairs": 12,
+        "underfill_reason": ""
+      },
+      "INTRADAY_STATE_TRANSITION": {
+        "generation_attempts": 19,
+        "legal_pairs": 19,
+        "exact_unique_pairs": 12,
+        "underfill_reason": ""
+      }
+    },
+    "bounded_conclusion": "The earlier ACTIONABLE_FEEDBACK_CLAMPED exact-supply condition is not a stable RegistryDrivenGenerator route bottleneck at this tested scale. This does not claim unlimited supply beyond 12 exact-unique pairs per route or beyond these frozen seeds and archive snapshot."
+  },
+  "behavior_admission": {
+    "admitted_pairs": 20,
+    "minimum_required_pairs": 14,
+    "all_primary_routes_represented": true,
+    "pairs_by_route": {
+      "DISCLOSURE_EVENT": 2,
+      "FIRSTN_PATH": 1,
+      "INTRADAY_STATE_TRANSITION": 4,
+      "MARKET_REGIME_CONDITION": 2,
+      "MINUTE_STATIC": 4,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 4,
+      "SLOW_TEMPORAL_CHANGE": 3
+    }
+  },
+  "train": {
+    "status": "TRAIN_COMPLETE",
+    "pair_count": 20,
+    "active_bar_pairs": 11,
+    "stock_session_pairs": 9,
+    "validation_trigger": "AUTOMATIC",
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "promotion": "FORBIDDEN",
+    "train_manifest_sha256": "bca12cca7bd1692bd05487dee56f7b7deba2381ceca0aebc7e02cad3db43f421",
+    "active_bar_result_sha256": "298cfcdc2342cbb2fc6481dd5839de77dfd21780c19357311fcf808cb44f4b06",
+    "stock_session_result_sha256": "92322f66a6483aa5ffd5fa43735944f611ff706e4012115fd223815ee01f14ec"
+  },
+  "automatic_validation": {
+    "status": "AUTOMATIC_POST_TRAIN_VALIDATION_COMPLETE",
+    "evaluation_role": "validation",
+    "usage": "report_only",
+    "active_bar_pairs": 11,
+    "stock_session_pairs": 9,
+    "validation_reads": 92359058,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "train_artifacts_immutable": true,
+    "feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "archive_write": "FORBIDDEN",
+    "automatic_promotion": "FORBIDDEN",
+    "behavior_output_role": "portfolio_behavior_report",
+    "active_bar_result_sha256": "b0e03dfd24acfec2c3fa9148e595eb97c8fdf4678db9ad34b9decc1f38c27ee8",
+    "stock_session_result_sha256": "e4226c285ccabd4bd027e23c3ee9b5375d248bda111bdb4713dd0070eb03702b",
+    "receipt_sha256": "7bd73541ce9dc585308b13be26973b8c1262a37226521e6b7b4ecdb1b7d71881"
+  },
+  "acceleration_and_resources": {
+    "active_bar": {
+      "allocated_compute_threads": 11,
+      "parallelism_status": "PARALLELISM_ENGAGED",
+      "cross_sectional_rank_mapping_effective_cores": 10.017095056525473,
+      "expression_value_dag_effective_cores": 10.427452981195398,
+      "turnover_and_cost_effective_cores": 7.092607453196736,
+      "peak_rss_bytes": 8663023616,
+      "peak_rss_lte_24gb": true,
+      "wall_seconds": 458.2847413998097,
+      "hot_path_bottleneck": "MIXED_COMPUTE_BOTTLENECK"
+    },
+    "stock_session": {
+      "allocated_compute_threads": 2,
+      "peak_rss_bytes": 321818624,
+      "wall_seconds": 12.66096410015598
+    }
+  },
+  "recovery": {
+    "checkpoint_system": "EXISTING_PHASE3CM_ONLY",
+    "train_active_result_reused_without_recomputation": true,
+    "train_results_reused_for_final_validation_retry": true,
+    "infrastructure_only_failures_before_final_pass": [
+      "stock_session train native thread contract mismatch",
+      "stock_session validation native thread contract mismatch"
+    ]
+  },
+  "artifact_hashes": {
+    "prepare_manifest": "a29159da3355766138e5aa49e1866e83f90dfa168e25bebd2ac1a663399adb26",
+    "route_funnel": "80f353e29b4425e1f6e07e929b40a044100e5f7aa0c23c691ec6c24e54f2f648",
+    "admitted_candidates": "92a989326af771bffe971179df60f54f5d5f88d242000ceef4b4df966afc21d6",
+    "validation_sidecar_closure": "eef86aa2e8f003be62ca19e756bec38933229289a8fa95d115e5145e6af517bf",
+    "final_decision": "203c976faebfb989b3e192a893da2d2048c5c3661ac782aaddb8aa180c61c9d6"
+  },
+  "claim_boundary": "This is development-only authority and runtime-mechanics evidence. It is not Alpha, OOS, economic, Strict Stage A, promotion, or large-scale search evidence."
+}

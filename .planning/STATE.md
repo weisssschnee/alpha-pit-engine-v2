@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-21
+Updated: 2026-07-22
 
-Current state: `CN_ROUTE_SUPPLY_CLOSURE_PASS_NEXT_DEVELOPMENT_CAMPAIGN_READY_SEARCH_FROZEN`
+Current state: `CN_CORE_PACK_ONTOLOGY_AUTHORITY_ACTIVE_AUTO_VALIDATION_READY_FORMAL_SEARCH_FROZEN`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,6 +16,38 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
+- `cn_core_pack_development_discovery_v1` is now the active proposal-root
+  ontology authority for bounded development discovery. It remains subordinate
+  to the unified registry `route_id` authority for route eligibility and
+  top-level scheduling. Sidecar schemas filter execution compatibility only and
+  cannot redefine ontology scope. The separate active authorization permits
+  bounded development execution, but every campaign must still freeze its own
+  nonzero budget, seeds, archive snapshot and no-promotion boundary.
+- The 77o authority smoke closed end to end. A 28-pair execution pack was drawn
+  from a separate 84-pair supply probe; every one of the seven primary routes
+  produced 12 exact-unique pairs within 12-29 attempts under the 1,024-attempt
+  cap. Behavior-aware admission retained 20 pairs with all seven routes
+  represented. Full-coordinate development Phase3CM train completed 11
+  active-bar plus nine stock-session pairs and wrote immutable
+  `TRAIN_COMPLETE`. Validation then started automatically in the same workflow,
+  evaluated the same 20 pairs over 92,359,058 validation rows, and completed as
+  report-only with train hashes unchanged. Validation feedback, scheduler write,
+  behavior-archive write, promotion, holdout and 2026 access were all forbidden
+  or zero. The immutable compact receipt is
+  `runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json`.
+- The earlier `ACTIONABLE_FEEDBACK_CLAMPED` exact-supply result is therefore not
+  a stable `RegistryDrivenGenerator` route bottleneck at the tested 12-pair,
+  frozen-seed scale. This is deliberately bounded: it does not claim unlimited
+  supply or extrapolate beyond the tested seeds and historical archive snapshot.
+  The smoke used the existing Phase3CM recovery path; infrastructure-only native
+  thread contract mismatches were fixed without recomputing completed train
+  results.
+- Acceleration was exercised rather than inferred. The active-bar train backend
+  allocated 11 compute threads and reported `PARALLELISM_ENGAGED`; effective
+  cores were 10.02 for rank/mapping, 10.43 for the Value DAG and 7.09 for
+  turnover/cost. Peak RSS was 8,663,023,616 bytes, below the 24 GiB gate. The
+  observed hot path remained `MIXED_COMPUTE_BOTTLENECK`. Stock-session used the
+  existing two-thread native-pool contract.
 - Phase A EVALRESET and NEXTGEN-DARK infrastructure remain accepted.
 - The bounded route-supply closure passed on 77o. Across two fixed seeds and
   attempt caps 64/256/1024, the legacy constructor showed stable post-archive
@@ -161,9 +193,10 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   performance, reward, candidate promotion, validation, holdout or 2026 access
   occurred.
 - `cn_core_pack_development_discovery_v1` freezes reachable Core roots plus only
-  the support roots actually required by present constructors. It has zero
-  active proposal, admission, and strict-evaluation budget and is not search
-  authorization. Plate-minute roots remain excluded.
+  the support roots actually required by present constructors. Its proposal-root
+  ontology and separate bounded-development authorization are active; this does
+  not create a standing campaign budget or authorize Strict Stage A. Plate-minute
+  roots remain excluded.
 
 ## Hard boundaries
 
@@ -179,30 +212,31 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-There is no remaining global route-supply blocker to the next separately frozen
-development campaign. The 93 unresolved rows in the historical V1 archive remain
-immutable evidence of that campaign and are not retroactively rewritten; they
-do not invalidate the new exact-supply ladder or the 16-pair materialized
-qualification. A larger development search still lacks its own frozen budgets,
-seed/attempt stream, archive snapshot, runtime envelope, and explicit execution
-authorization. The completed campaigns supply no independent seed/time-block
-stability, validation, holdout, OOS, promotion, or economic proof. Plate remains
-independently blocked by missing real PIT minute materialization; additional
-compound-state expansion beyond the tested expanded source-leaf forms remains a
-localized materialization gap.
+There is no remaining global route-supply, ontology-authority, train-to-validation
+or acceleration-readiness blocker to the next separately frozen development
+campaign. The 93 unresolved rows in the historical V1 archive remain immutable
+evidence of that campaign and are not retroactively rewritten. A larger
+development search still requires its own frozen budgets, seed/attempt stream,
+archive snapshot, runtime envelope and explicit campaign execution receipt; the
+active ontology authorization is not a standing unlimited budget. The completed
+campaigns and authority smoke supply no OOS, promotion or economic proof. Plate
+remains independently blocked by missing real PIT minute materialization;
+additional compound-state expansion beyond the tested expanded source-leaf
+forms remains a localized materialization gap.
 
 ## Next action
 
-Do not repeat the 1,024 wave, the three-batch V1 canary, or the route-supply
-qualification. Prepare one separately frozen development campaign contract for
-the next system iteration: fixed nonzero route budgets, seeds and attempt stream,
-immutable archive snapshot, behavior-aware admission, matched feedback-on/off
-control, 77o runtime envelope, stop conditions, and explicit no-promotion
-boundary. Explicitly accept or reject the experimental
-`registry_compositional_v2` route-local constructor profile in that freeze.
-`exploit`, `repair`, and `orthogonal` remain labels unless a real
+Do not repeat the 1,024 wave, three-batch V1 canary, field qualification,
+route-supply qualification or authority smoke. Freeze and launch one materially
+larger development campaign using the active Core-Pack proposal-root ontology:
+fixed nonzero registry-route budgets, seeds and attempt stream, immutable archive
+snapshot, behavior-aware admission, matched feedback-on/off control, 77o runtime
+envelope, stop conditions and explicit no-promotion boundary. Train completion
+must automatically trigger the existing report-only validation path. Before and
+during the larger run, retain the now-proven acceleration gates: actual
+`PARALLELISM_ENGAGED`, effective-core telemetry, peak-RSS gate and hot-path
+classification. `exploit`, `repair`, and `orthogonal` remain labels unless a real
 registry-backed constructor is added and tested. Broad Event remains a
 zero-budget frozen reference. Strict Stage A, candidate promotion,
-cross-campaign adaptive memory, validation/holdout access, and 2026 access remain
-forbidden. Plate resumes only when real PIT minute materialization is present on
-77o.
+cross-campaign adaptive memory, holdout access and 2026 access remain forbidden.
+Plate resumes only when real PIT minute materialization is present on 77o.
