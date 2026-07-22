@@ -235,30 +235,40 @@
       "id": "core_pack_development_discovery_contract",
       "label": "Core Pack development discovery contract",
       "kind": "contract",
-      "lifecycle": "EXPERIMENTAL",
+      "lifecycle": "ACTIVE",
+      "active_authority": true,
+      "semantic_role": "development_discovery_proposal_root_ontology_authority",
       "paths": [
         "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
+        "runtime/run_plans/cn_core_pack_development_discovery_v1_authorization.json",
+        "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "src/our_system_phase2/services/compositional_grammar.py",
-        "tests/test_core_pack_generator_review.py"
+        "src/our_system_phase2/services/unified_discovery_generators.py",
+        "scripts/run_cn_core_pack_authority_smoke.py",
+        "tests/test_route_supply_closure.py"
       ],
       "critical": true,
+      "authority": {
+        "path": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
+        "verified_sha": "81f481a"
+      },
       "contracts": [
         {
-          "id": "discovery_contract_zero_active_budget",
-          "type": "BOUNDARY",
-          "rule": "The frozen root scope has zero active proposal, admission and strict-evaluation budget and does not authorize execution, promotion, adaptive reward or cross-epoch memory.",
+          "id": "discovery_contract_ontology_root_authority",
+          "type": "AUTHORITY",
+          "rule": "The immutable prepared contract is the ontology proposal-root authority. Its separate active authorization permits bounded development campaigns, while each campaign must still freeze a nonzero budget; schema availability is execution compatibility only and cannot redefine the root scope.",
           "severity": "HARD",
-          "enforced_by": "CompositionalGrammarV2 route_root_allowlist and contract execution_authorized flag",
+          "enforced_by": "load_development_discovery_root_authority and CompositionalGrammarV2 route_root_allowlist",
           "bypass_forbidden": true
         }
       ],
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
-        "verified_at_sha": "ece83b3b4d49f0f5c6b85e9916c0df9a43e8c1e8"
+        "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
+        "verified_at_sha": "81f481a"
       },
-      "claim_badges": ["FROZEN ROOT SCOPE", "ZERO ACTIVE BUDGET", "PLATE DISABLED", "2026 SEALED", "NOT SEARCH AUTHORITY"]
+      "claim_badges": ["ACTIVE ONTOLOGY ROOT AUTHORITY", "CAMPAIGN BUDGET REQUIRED", "PLATE DISABLED", "POST-TRAIN VALIDATION REPORT-ONLY", "2026 SEALED", "NO PROMOTION"]
     },
     {
       "id": "feature_state_fabric",
@@ -357,6 +367,10 @@
         "scripts/run_cn_route_supply_closure.py",
         "src/our_system_phase2/services/multi_arm_scheduler.py",
         "src/our_system_phase2/services/portfolio_behavior_archive.py",
+        "src/our_system_phase2/services/post_train_validation.py",
+        "scripts/run_cn_core_pack_authority_smoke.py",
+        "tests/test_post_train_validation.py",
+        "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "runtime/cn_iterative_search_v1_20260721/final_decision.json",
         "runtime/cn_route_supply_closure_20260721_c939edf_4route/final_decision.json",
         "reports/CN_ITERATIVE_SEARCH_V1_20260721.md",
@@ -368,6 +382,7 @@
         "4 ROUTE MATERIALIZATION CLOSED",
         "16 FULL-COORDINATE PAIRS",
         "V2 PROFILE EXPERIMENTAL",
+        "AUTO POST-TRAIN VALIDATION",
         "NO OOS",
         "NO PROMOTION"
       ],
@@ -406,17 +421,17 @@
         {
           "id": "iterative_development_only",
           "type": "BOUNDARY",
-          "rule": "Full materialization and full-coordinate development Phase3CM pair evaluation run only on 77o. Validation, holdout, 2026, Strict Stage A and promotion access are forbidden.",
+          "rule": "Full materialization and train evaluation run only on 77o. After an immutable TRAIN_COMPLETE manifest, validation starts automatically in a separate report-only channel and cannot write feedback, scheduler state or the train behavior archive. Holdout, 2026, Strict Stage A, automatic promotion and validation-to-search feedback remain forbidden.",
           "severity": "HARD",
-          "enforced_by": "frozen_contract and access_receipt",
+          "enforced_by": "post_train_validation sequential gate, immutable hashes and access receipts",
           "bypass_forbidden": true
         }
       ],
       "validation": {
-        "level": "RUNTIME_VERIFIED",
+        "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "runtime/cn_route_supply_closure_20260721_c939edf_4route/final_decision.json",
-        "verified_at_sha": "ddda189940eecb8beeca96262ed1d32b4df49412"
+        "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
+        "verified_at_sha": "81f481a"
       }
     },
     {
@@ -905,11 +920,11 @@
       "id": "prepared_contract_does_not_authorize_search",
       "source": "core_pack_development_discovery_contract",
       "target": "compositional_nline_bounded_search",
-      "relation": "scopes_future_proposals_without_execution_authority",
-      "lifecycle": "EXPERIMENTAL",
+      "relation": "authorizes_bounded_development_proposal_scope",
+      "lifecycle": "ACTIVE",
       "critical": true,
-      "contract": {"id": "separate_search_authorization_required", "type": "BOUNDARY", "rule": "A prepared root contract with zero active budgets cannot start search; a separate development-only authorization and newly frozen nonzero budgets are required.", "severity": "HARD", "enforced_by": "execution_authorized and active budget gates", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_core_pack_development_discovery_v1.json", "verified_at_sha": "ece83b3b4d49f0f5c6b85e9916c0df9a43e8c1e8"}
+      "contract": {"id": "separate_search_authorization_required", "type": "BOUNDARY", "rule": "The root contract is active ontology authority and its separate authorization permits bounded development execution; every campaign still requires an immutable nonzero budget and grants no promotion or sealed-data access.", "severity": "HARD", "enforced_by": "development discovery authorization and campaign budget gates", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json", "verified_at_sha": "81f481a"}
     },
     {
       "id": "registry_to_receipt",
@@ -1047,6 +1062,7 @@
     {"semantic_role": "split_authority", "authoritative_component": "fixed_split_authority"},
     {"semantic_role": "complete_field_universe_authority", "authoritative_component": "cn_field_master_registry"},
     {"semantic_role": "field_route_authority", "authoritative_component": "unified_capability_registry"},
+    {"semantic_role": "development_discovery_proposal_root_ontology_authority", "authoritative_component": "core_pack_development_discovery_contract"},
     {"semantic_role": "pit_fundamental_observable_episode_authority", "authoritative_component": "pit_fundamental_fabric"},
     {"semantic_role": "candidate_identity_authority", "authoritative_component": "candidate_submission_receipt"},
     {"semantic_role": "matched_pair_authority", "authoritative_component": "matched_control_pair_authority"},
