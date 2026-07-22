@@ -17,9 +17,20 @@ def test_thread_budget_rejects_global_native_oversubscription() -> None:
     with pytest.raises(ThreadBudgetError, match="global native thread budget exceeded"):
         freeze_thread_budget(
             heavy_processes=2,
-            compute_threads_per_process=13,
+            compute_threads_per_process=17,
             primary_pool="numba",
         )
+
+
+def test_thread_budget_accepts_30_thread_single_primary_pool() -> None:
+    budget = freeze_thread_budget(
+        heavy_processes=1,
+        compute_threads_per_process=30,
+        primary_pool="numba",
+    )
+    assert budget["global_active_native_compute_threads"] == 30
+    assert budget["global_native_compute_threads_max"] == 32
+    assert budget["environment"]["NUMBA_NUM_THREADS"] == "30"
 
 
 def test_compute_phase_records_effective_cores_and_parallelism_failure() -> None:

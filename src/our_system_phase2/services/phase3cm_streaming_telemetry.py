@@ -23,7 +23,7 @@ THREAD_ENV_BY_POOL = {
     "numexpr": "NUMEXPR_MAX_THREADS",
     "polars": "POLARS_MAX_THREADS",
 }
-GLOBAL_NATIVE_THREAD_MAX = 24
+GLOBAL_NATIVE_THREAD_MAX = 32
 
 
 class ThreadBudgetError(ValueError):
