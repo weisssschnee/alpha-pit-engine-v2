@@ -1,7 +1,7 @@
 {
   "schema_version": "cn_bounded_development_campaign_authorization_v1",
-  "authorization_revision": 4,
-  "campaign_id": "CN_CORE_PACK_LARGE_DEVELOPMENT_V1_20260722_R4",
+  "authorization_revision": 5,
+  "campaign_id": "CN_CORE_PACK_LARGE_DEVELOPMENT_V1_20260722_R5",
   "authorized_at": "2026-07-22",
   "authority_source": "CURRENT_USER_INSTRUCTION",
   "execution_authorized": true,
@@ -34,7 +34,7 @@
   "validation_archive_write": "FORBIDDEN",
   "active_threads": 30,
   "session_threads": 2,
-  "active_pair_batch_size": 15,
+  "active_pair_batch_size": 12,
   "session_pair_batch_size": 8,
   "global_worker_limit": 24,
   "resource_allocation_basis": "77O_32_LOGICAL_PROCESSORS_SINGLE_PRIMARY_POOL_LEAVING_TWO_LOGICAL_PROCESSORS_FOR_OS_IO",

@@ -78,7 +78,7 @@ GLOBAL_WORKER_LIMIT = 24
 MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY = 0.75
 PEAK_RSS_LIMIT_BYTES = 48 * 1024**3
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
-PAIR_BATCH_SIZE_BY_BACKEND = {"active_bar": 15, "stock_session": 8}
+PAIR_BATCH_SIZE_BY_BACKEND = {"active_bar": 12, "stock_session": 8}
 EXPECTED_REGISTRY_RELATIVE_PATH = Path(
     "runtime/field_registry/cn_unified_capability_registry_v3_20260717/"
     "unified_capability_registry.json"

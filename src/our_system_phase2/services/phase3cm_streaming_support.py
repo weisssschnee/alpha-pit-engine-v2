@@ -9,6 +9,70 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
+try:  # pragma: no cover - native path is exercised on 77o.
+    from numba import njit, prange
+except Exception:  # pragma: no cover
+    njit = None
+    prange = range
+
+
+if njit is not None:
+
+    @njit(cache=True, parallel=True)
+    def _digest_mask_chunks(
+        masks: np.ndarray,
+        token1: np.ndarray,
+        token2: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        pair_count, row_count = masks.shape
+        chunk_size = 262_144
+        chunk_count = max(1, min(32, (row_count + chunk_size - 1) // chunk_size))
+        counts = np.zeros((pair_count, chunk_count), dtype=np.uint64)
+        sum1 = np.zeros((pair_count, chunk_count), dtype=np.uint64)
+        xor1 = np.zeros((pair_count, chunk_count), dtype=np.uint64)
+        sum2 = np.zeros((pair_count, chunk_count), dtype=np.uint64)
+        xor2 = np.zeros((pair_count, chunk_count), dtype=np.uint64)
+        for work_index in prange(pair_count * chunk_count):
+            pair_index = work_index // chunk_count
+            chunk_index = work_index - pair_index * chunk_count
+            start = chunk_index * row_count // chunk_count
+            end = (chunk_index + 1) * row_count // chunk_count
+            local_count = np.uint64(0)
+            local_sum1 = np.uint64(0)
+            local_xor1 = np.uint64(0)
+            local_sum2 = np.uint64(0)
+            local_xor2 = np.uint64(0)
+            for row_index in range(start, end):
+                if masks[pair_index, row_index]:
+                    first = token1[row_index]
+                    second = token2[row_index]
+                    local_count += np.uint64(1)
+                    local_sum1 += first
+                    local_xor1 ^= first
+                    local_sum2 += second
+                    local_xor2 ^= second
+            counts[pair_index, chunk_index] = local_count
+            sum1[pair_index, chunk_index] = local_sum1
+            xor1[pair_index, chunk_index] = local_xor1
+            sum2[pair_index, chunk_index] = local_sum2
+            xor2[pair_index, chunk_index] = local_xor2
+        output_count = np.zeros(pair_count, dtype=np.uint64)
+        output_sum1 = np.zeros(pair_count, dtype=np.uint64)
+        output_xor1 = np.zeros(pair_count, dtype=np.uint64)
+        output_sum2 = np.zeros(pair_count, dtype=np.uint64)
+        output_xor2 = np.zeros(pair_count, dtype=np.uint64)
+        for pair_index in range(pair_count):
+            for chunk_index in range(chunk_count):
+                output_count[pair_index] += counts[pair_index, chunk_index]
+                output_sum1[pair_index] += sum1[pair_index, chunk_index]
+                output_xor1[pair_index] ^= xor1[pair_index, chunk_index]
+                output_sum2[pair_index] += sum2[pair_index, chunk_index]
+                output_xor2[pair_index] ^= xor2[pair_index, chunk_index]
+        return output_count, output_sum1, output_xor1, output_sum2, output_xor2
+
+else:  # pragma: no cover
+    _digest_mask_chunks = None
+
 
 @dataclass(frozen=True, slots=True)
 class PairSupportBlockTokens:
@@ -74,20 +138,19 @@ class PairSupportAccumulator:
             raise ValueError("common support mask shape drift")
         if len(token2) != row_count:
             raise ValueError("support token shape drift")
+        if _digest_mask_chunks is None:
+            raise RuntimeError("Numba is required for native pair support digests")
+        counts, sum1, xor1, sum2, xor2 = _digest_mask_chunks(masks, token1, token2)
         for local_index, pair_index in enumerate(indices):
-            active = masks[local_index]
-            first = token1[active]
-            second = token2[active]
-            self.counts[pair_index] += np.uint64(len(first))
-            if len(first):
-                self.sum1[pair_index] = np.uint64(
-                    (int(self.sum1[pair_index]) + int(np.sum(first, dtype=np.uint64))) & ((1 << 64) - 1)
-                )
-                self.xor1[pair_index] ^= np.bitwise_xor.reduce(first)
-                self.sum2[pair_index] = np.uint64(
-                    (int(self.sum2[pair_index]) + int(np.sum(second, dtype=np.uint64))) & ((1 << 64) - 1)
-                )
-                self.xor2[pair_index] ^= np.bitwise_xor.reduce(second)
+            self.counts[pair_index] += counts[local_index]
+            self.sum1[pair_index] = np.uint64(
+                (int(self.sum1[pair_index]) + int(sum1[local_index])) & ((1 << 64) - 1)
+            )
+            self.xor1[pair_index] ^= xor1[local_index]
+            self.sum2[pair_index] = np.uint64(
+                (int(self.sum2[pair_index]) + int(sum2[local_index])) & ((1 << 64) - 1)
+            )
+            self.xor2[pair_index] ^= xor2[local_index]
 
     @staticmethod
     def prepare_block_tokens(
