@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
     _build_eval_time_index,
@@ -19,6 +20,22 @@ from our_system_phase2.services.phase3cm_streaming_portfolio import (
     _rank_filtered_returns_from_order,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
+
+
+def test_portfolio_kernel_accepts_full_host_pool_and_rejects_oversubscription() -> None:
+    kwargs = {
+        "candidate_count": 1,
+        "code_count": 3,
+        "horizons": (1,),
+        "min_obs": 1,
+        "top_quantile": 0.2,
+        "cost_bps": 0.0,
+        "portfolio_mode": "long_only_top",
+    }
+    kernel = BatchedPortfolioKernel(compute_threads=30, **kwargs)
+    assert kernel.compute_threads == 30
+    with pytest.raises(ValueError, match="between 1 and 32"):
+        BatchedPortfolioKernel(compute_threads=33, **kwargs)
 
 
 def _fixture() -> tuple[pd.DataFrame, np.ndarray, dict[int, np.ndarray]]:

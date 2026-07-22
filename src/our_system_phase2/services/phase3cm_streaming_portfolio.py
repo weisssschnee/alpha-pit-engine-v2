@@ -570,8 +570,8 @@ class BatchedPortfolioKernel:
     ) -> None:
         if candidate_count <= 0 or code_count <= 0:
             raise ValueError("candidate_count and code_count must be positive")
-        if compute_threads <= 0 or compute_threads > 24:
-            raise ValueError("compute_threads must be between 1 and 24")
+        if compute_threads <= 0 or compute_threads > 32:
+            raise ValueError("compute_threads must be between 1 and 32")
         if not horizons:
             raise ValueError("at least one horizon is required")
         if portfolio_mode not in {"long_only_top", "long_only_excess_market"}:
