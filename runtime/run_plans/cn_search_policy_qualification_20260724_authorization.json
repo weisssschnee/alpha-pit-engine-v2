@@ -40,7 +40,7 @@
   "cache_cap_bytes": 8589934592,
   "minimum_free_memory_bytes": 25769803776,
   "source_receipt_path": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
-  "source_receipt_sha256": "61ac0e0de1fd7be6f4654842d7bf76724714bf162471db4613a09e0a3dca03ae",
+  "source_receipt_payload_hash": "b67d16c0608b223963d3d685556b221f942fcd8ff8a89d96f1f14dfa4da672be",
   "source_campaign_id": "CN_CORE_PACK_LARGE_DEVELOPMENT_V1_20260722_R5",
   "shared_historical_exact_and_behavior_archive": true,
   "private_post_genesis_arm_archives": true,

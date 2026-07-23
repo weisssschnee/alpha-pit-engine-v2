@@ -168,10 +168,13 @@ def _qualification_authority(
     ]
     if _sha256(cmaes_wheel_path).lower() != CATCMA_WHEEL_SHA256:
         drift.append("optimizer_wheel_file_sha256")
-    if str(payload.get("source_receipt_sha256") or "").lower() != _sha256(
-        source_receipt_path
-    ).lower():
-        drift.append("source_receipt_sha256")
+    source_receipt = json.loads(
+        source_receipt_path.read_text(encoding="utf-8-sig")
+    )
+    if str(payload.get("source_receipt_payload_hash") or "") != _stable_hash(
+        source_receipt
+    ):
+        drift.append("source_receipt_payload_hash")
     if drift:
         raise RuntimeError(
             "SEARCH_POLICY_QUALIFICATION_AUTHORITY_MISMATCH:"
