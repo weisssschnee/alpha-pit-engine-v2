@@ -2,7 +2,7 @@
 
 Updated: 2026-07-23
 
-Current state: `CN_CORE_PACK_LARGE_DEVELOPMENT_COMPLETE_REPORT_ONLY_VALIDATION_COMPLETE_FORMAL_SEARCH_FROZEN`
+Current state: `CN_CORE_PACK_LARGE_DEVELOPMENT_COMPLETE_REPORT_ONLY_VALIDATION_COMPLETE_CANDIDATE_DECISION_PENDING`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -44,6 +44,37 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   with return code zero; holdout and 2026 reads were zero, feedback/scheduler/
   archive writes and automatic promotion were forbidden, and all train hashes
   remained unchanged.
+- The post-close result interpretation is now bound to the immutable result
+  hashes in
+  `runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json`.
+  Of 872 submitted primary pairs, 533 were validation-evaluable and 339 were
+  blocked by empty/constant signal or empty common-support semantics. The 333
+  positive `pair_validation_report_metric` rows mean that the primary
+  validation composite score exceeded its matched control; they do not mean
+  333 standalone positive-Sortino or profitable candidates.
+- Phase3CM Sortino is stored unannualized (`annualizer=1.0`). The raw train
+  maximum was 1.1374896, but that candidate had a negative worst-horizon
+  Sortino and its validation pair was blocked. A high-coverage active-bar
+  reference, `cn.comp.f9ea7251e72ce711baa4`, retained positive train and
+  validation day/worst-horizon Sortino, positive matched-control validation
+  increment and 91,578,361 validation support rows. A compact joint-positive
+  screen retained 12 analysis candidates, but it is not a global tournament,
+  admission decision, OOS result or promotion list.
+- Validation reward rows retain recomputed validation Sortino under legacy
+  train-prefixed field names while their split rows are correctly tagged
+  `validation`; the explicit `validation_day_sortino` reward field is blank.
+  This reporting-semantic gap does not mutate immutable train artifacts and
+  must not feed search. Candidate interpretation therefore uses the bound
+  validation result and records the mapping explicitly rather than presenting
+  `pair_validation_report_metric` as BestSortino.
+- The completed train and validation results are unequivocally long-only:
+  all 3,488 candidate reward row instances use
+  `portfolio_mode=long_only_top`, all have `short_allowed=false`, and the
+  long-only portfolio branch writes zero short positions. This proves that
+  shorting was disabled for this campaign. It does not yet prove complete
+  enforcement of every A-share execution rule such as T+1, limit-lock
+  fillability and suspension handling; those remain outside the present
+  economic claim.
 - Large-run acceleration was exercised on real work. The frozen checkpoint-001
   gate allocated 30 active-bar compute threads, measured 19.28 effective cores,
   60.25% logical-CPU occupancy, 58.54% Task-Manager-equivalent mean host CPU and
@@ -250,23 +281,34 @@ candidate promotion, holdout access, 2026 access and economic claims remain
 blocked by their existing authorization and evidence boundaries. Plate remains
 independently blocked by missing real PIT minute materialization; additional
 compound-state expansion beyond tested expanded source-leaf forms remains a
-localized materialization gap.
+localized materialization gap. The immediate research blocker is now a bounded
+candidate decision, not another whole-batch qualification: either deepen the
+current candidate mechanisms before another validation/OOS sequence, or freeze
+the current candidates and test them on untouched OOS first. Validation already
+used for candidate interpretation is spent and cannot be relabeled as OOS.
 
 ## Next action
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the just-completed six-checkpoint large
-campaign. Analyze its immutable ledgers once: checkpoint-by-checkpoint marginal
-behavior discovery, route/skeleton/family concentration, exact and behavior
-dedupe pressure, materialization and operator failures, cost/turnover kills,
-matched feedback-on/off attribution, and development-to-report-only-validation
-stability. Use that compact analysis to freeze the next bounded campaign or stop
-unproductive routes; do not turn small-sample negative development outcomes into
-permanent `FREEZE`. Preserve the proven runtime envelope and the fixed 8 GiB
-cache cap while treating the 60% host occupancy plus recorded native-kernel SMT
-ceiling as an optimization target, not a reason to rerun completed evidence.
-`exploit`, `repair`, and `orthogonal` remain labels unless a real registry-backed
-constructor is added and tested. Broad Event remains a zero-budget frozen
-reference. Strict Stage A, candidate promotion, cross-campaign adaptive memory,
-holdout access and 2026 access remain forbidden. Plate resumes only when real PIT
-minute materialization is present on 77o.
+campaign. Do not rank event, state, slow fundamental/chip and active-bar
+candidates as one global race. The only next research decision is:
+
+1. expand development search around the current candidate mechanisms and
+   behavior families, then repeat report-only validation and obtain additional
+   untouched OOS evidence; or
+2. recommended default: freeze the current behavior-distinct candidates,
+   require non-collapse on explicitly authorized untouched OOS, classify the
+   survivors by economic mechanism, intended regime/event/state and portfolio
+   role, then expand search only for materially uncovered regimes.
+
+Both options preserve matched controls, long-only execution, immutable evidence
+and the existing registry/evaluator authority. Batch-average or route-average
+weakness cannot reject a best candidate, while a best candidate cannot claim
+coverage of regimes it was not designed to serve. Preserve the fixed 8 GiB cache
+cap and proven runtime envelope. `exploit`, `repair`, and `orthogonal` remain
+labels unless a real registry-backed constructor is added and tested. Broad
+Event remains a zero-budget frozen reference. Strict Stage A, candidate
+promotion, cross-campaign adaptive memory, holdout access and 2026 access remain
+forbidden until separately authorized. Plate resumes only when real PIT minute
+materialization is present on 77o.

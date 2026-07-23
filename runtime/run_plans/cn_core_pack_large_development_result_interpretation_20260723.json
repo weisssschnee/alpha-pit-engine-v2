@@ -1,0 +1,121 @@
+{
+  "schema_version": "cn_core_pack_large_development_result_interpretation_v1",
+  "campaign_id": "CN_CORE_PACK_LARGE_DEVELOPMENT_V1_20260722_R5",
+  "research_role": "development_and_report_only_validation_interpretation",
+  "source_receipt": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
+  "source_remote_root": "D:\\ChengboRemote\\runtime\\cn_core_pack_large_development_20260722_9f3a5f2_30t_r5",
+  "source_result_hashes": {
+    "active_bar_validation_sha256": "67fa5da4bf36bf67d9a1b2efba93f7e1294529888b5da2c9ddc7fc40ef2a6c98",
+    "stock_session_validation_sha256": "42611386f358d40994ab564b68cf53b4c6d83b14b4a022a9eb29019121e52513",
+    "observation_ledger_sha256": "4af35a3b3588722ec94a20eec3126cf40f1f556798cccc528f19ec68e980f28e"
+  },
+  "metric_semantics": {
+    "sortino_annualizer": 1.0,
+    "sortino_reporting_unit": "unannualized",
+    "annualized_equivalent_formula": "reported_sortino * sqrt(252)",
+    "pair_validation_report_metric": "primary_validation_composite_reward_minus_control_validation_composite_reward",
+    "pair_metric_is_not": [
+      "standalone_positive_sortino",
+      "standalone_positive_return",
+      "OOS qualification"
+    ],
+    "validation_sortino_schema_note": "The report-only validation computation stores its recomputed day and horizon Sortino values under legacy train-prefixed reward-row fields while split_rows are retagged as validation. validation_day_sortino is blank in the candidate reward rows. Interpret the recomputed values from the validation result only; do not merge them into train authority or feedback."
+  },
+  "validation_coverage": {
+    "submitted_primary_pairs": 872,
+    "pair_evaluated": 533,
+    "pair_evaluation_blocked": 339,
+    "positive_pair_validation_report_metric": 333,
+    "positive_pair_metric_interpretation": "primary composite score exceeded its matched control among validation-evaluable pairs"
+  },
+  "no_short_audit": {
+    "candidate_reward_row_instances_checked": 3488,
+    "train_candidate_members": 1744,
+    "validation_candidate_members": 1744,
+    "portfolio_modes": {
+      "long_only_top": 3488
+    },
+    "short_allowed_true": 0,
+    "short_allowed_false": 3488,
+    "conclusion": "SHORTING_DISABLED_FOR_THIS_CAMPAIGN",
+    "claim_boundary": "This proves that the completed train and report-only validation used long-only top portfolios with no short leg. It does not prove that every A-share execution constraint, including T+1, limit-lock fillability and suspension handling, was fully enforced by this Phase3CM path."
+  },
+  "candidate_observations": {
+    "raw_train_day_sortino_max": {
+      "candidate_id": "cn.comp.713b1de10158cdb6060d",
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "train_day_sortino": 1.1374896,
+      "annualized_equivalent": 18.057087603134022,
+      "train_worst_horizon_day_sortino": -0.05221037,
+      "validation_status": "PAIR_EVALUATION_BLOCKED",
+      "interpretation": "raw train maximum is not a validated winner"
+    },
+    "raw_validation_day_sortino_max": {
+      "candidate_id": "cn.comp.ec4b071ee9953802022c",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "validation_day_sortino": 5.17620951,
+      "annualized_equivalent": 82.16977858456501,
+      "pair_validation_report_metric": -0.50857474,
+      "interpretation": "high standalone validation Sortino but worse composite score than its matched control"
+    },
+    "high_coverage_active_bar_reference": {
+      "candidate_id": "cn.comp.f9ea7251e72ce711baa4",
+      "expression": "CSRank(Sub(ZScore($intraday_ret_from_open),ZScore($ret_1m)))",
+      "route_id": "MINUTE_STATIC",
+      "train_day_sortino": 0.31248964,
+      "train_worst_horizon_day_sortino": 0.1641088,
+      "validation_day_sortino": 0.46352851,
+      "validation_worst_horizon_day_sortino": 0.37841752,
+      "pair_validation_report_metric": 1.25285199,
+      "validation_support": 91578361,
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.69e3ed36e49c5a319a4151244ba32bf0"
+    },
+    "stock_session_specialist_reference": {
+      "candidate_id": "cn.comp.1e45d04f4ce65c4784bf",
+      "expression": "CSRank(Delta($chip_cost_p95,2))",
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "train_day_sortino": 0.36828599,
+      "train_worst_horizon_day_sortino": 0.03253015,
+      "validation_day_sortino": 3.5415834,
+      "validation_worst_horizon_day_sortino": 0.32154294,
+      "pair_validation_report_metric": 0.66800735,
+      "validation_support": 361546,
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.933892635e783d5a257244dac923ddde"
+    },
+    "joint_positive_screen": {
+      "count": 12,
+      "criteria": [
+        "PAIR_EVALUATED",
+        "train_day_sortino > 0",
+        "train_worst_horizon_day_sortino > 0",
+        "train_reward > 0",
+        "validation_day_sortino > 0",
+        "validation_worst_horizon_day_sortino > 0",
+        "validation_composite_reward > 0",
+        "pair_validation_report_metric > 0"
+      ],
+      "usage": "analysis_only_not_global_tournament_not_promotion"
+    }
+  },
+  "interpretation_policy": {
+    "global_candidate_tournament": "FORBIDDEN",
+    "required_grouping_before_coverage_claim": [
+      "economic_mechanism",
+      "intended_market_regime",
+      "event_or_state_role",
+      "portfolio_role",
+      "behavior_family"
+    ],
+    "batch_aggregate_cannot_reject_best_candidate": true,
+    "best_candidate_cannot_claim_uncovered_regimes": true
+  },
+  "next_decision": {
+    "option_a": "Expand development search around the existing candidate mechanisms and behavior families, then repeat report-only validation and obtain additional untouched OOS evidence.",
+    "option_b": "Freeze and further validate the existing candidates first, require non-collapse on untouched OOS, classify survivors by economic meaning and intended regime, then expand search only for materially uncovered regimes.",
+    "recommended_default": "option_b",
+    "common_boundary": "Any OOS or holdout access requires its existing explicit authorization. Validation already used for interpretation is spent and cannot be relabeled as independent OOS."
+  },
+  "promotion": "FORBIDDEN",
+  "holdout_reads": 0,
+  "forward_2026_reads": 0
+}
