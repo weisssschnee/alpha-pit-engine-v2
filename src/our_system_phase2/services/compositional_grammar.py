@@ -27,6 +27,17 @@ from our_system_phase2.services.unified_capability_registry import (
 
 GRAMMAR_VERSION = "cn_typed_compositional_grammar_v2"
 SUPPLEMENTAL_GRAMMAR_VERSION = "cn_typed_compositional_supplemental_v1"
+CATCMA_GENE_ROUTES = (
+    "INTRADAY_STATE_TRANSITION",
+    "DISCLOSURE_EVENT",
+    "SLOW_TEMPORAL_CHANGE",
+)
+_DISCLOSURE_PAYLOAD_SKELETON_NAMES = (
+    "pre_event_path",
+    "post_maturity_state",
+    "event_prior_condition",
+    "event_window",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -449,6 +460,171 @@ class CompositionalGrammarV2:
             )
         return rows
 
+    @staticmethod
+    def _gene_field(
+        genes: Mapping[str, str],
+        slot_name: str,
+        pool: Sequence[CapabilityField],
+    ) -> CapabilityField:
+        selected = str(genes.get(slot_name) or "")
+        by_id = {row.field_id: row for row in pool}
+        if selected not in by_id:
+            raise ValueError(
+                f"INVALID_CATEGORICAL_GENE:{slot_name}:{selected}"
+            )
+        return by_id[selected]
+
+    @staticmethod
+    def _gene_value(
+        genes: Mapping[str, str],
+        slot_name: str,
+        allowed: Sequence[str],
+    ) -> str:
+        selected = str(genes.get(slot_name) or "")
+        if selected not in set(map(str, allowed)):
+            raise ValueError(
+                f"INVALID_CATEGORICAL_GENE:{slot_name}:{selected}"
+            )
+        return selected
+
+    def categorical_gene_space(self, route_id: str) -> dict[str, Any]:
+        """Expose exact ordered CatCMA slots backed by existing constructors."""
+
+        if route_id not in CATCMA_GENE_ROUTES:
+            raise ValueError(f"CATCMA_GENE_ROUTE_NOT_AUTHORIZED:{route_id}")
+        skeletons = self._skeletons[route_id]
+        if route_id == "DISCLOSURE_EVENT":
+            skeletons = tuple(
+                row
+                for row in skeletons
+                if row.skeleton_id.rsplit(".", 1)[-1]
+                in _DISCLOSURE_PAYLOAD_SKELETON_NAMES
+            )
+            event_pool = self._route_pool(
+                route_id,
+                temporal_semantics="DISCLOSURE_PULSE",
+                entity_scope="STOCK",
+                field_roles=("condition-only",),
+            )
+            payload_pool = tuple(
+                row
+                for row in self._payload_pool(route_id)
+                if row.temporal_semantics
+                in {"DISCLOSURE_LEVEL_PAYLOAD", "DISCLOSURE_CHANGE_PAYLOAD"}
+            )
+            categories = {
+                "skeleton_id": [row.skeleton_id for row in skeletons],
+                "event_field_id": [row.field_id for row in event_pool],
+                "payload_field_id": [row.field_id for row in payload_pool],
+            }
+            none_semantics = {
+                slot: "NONE_NOT_PRESENT_SLOT_REQUIRED_FOR_EVERY_AUTHORIZED_SKELETON"
+                for slot in categories
+            }
+            compatibility = {
+                row.skeleton_id: {
+                    "required_slots": list(categories),
+                    "inactive_slots": [],
+                    "constraint": "DISCLOSURE_PULSE_EVENT_PLUS_DISCLOSURE_PAYLOAD",
+                }
+                for row in skeletons
+            }
+        elif route_id == "INTRADAY_STATE_TRANSITION":
+            state_pool = tuple(
+                row
+                for row in self._route_pool(
+                    route_id,
+                    temporal_semantics="INTRADAY_DERIVED_STATE",
+                    entity_scope="STOCK",
+                    field_roles=("state-only",),
+                )
+                if str(
+                    row.metadata.get("materialization_expression") or ""
+                ).count("(")
+                <= 1
+            )
+            payload_pool = self._route_pool(
+                route_id,
+                source_family="raw_1min",
+                entity_scope="STOCK",
+                field_roles=("primary", "interaction-only"),
+            )
+            categories = {
+                "skeleton_id": [row.skeleton_id for row in skeletons],
+                "state_field_id": [row.field_id for row in state_pool],
+                "payload_field_id": [row.field_id for row in payload_pool],
+                "window_id": ["3", "5", "10", "20"],
+            }
+            none_semantics = {
+                slot: "NONE_NOT_PRESENT_SLOT_REQUIRED_FOR_EVERY_AUTHORIZED_SKELETON"
+                for slot in categories
+            }
+            compatibility = {
+                row.skeleton_id: {
+                    "required_slots": list(categories),
+                    "inactive_slots": [],
+                    "constraint": (
+                        "PAYLOAD_MUST_NOT_BE_A_PHYSICAL_SOURCE_OF_SELECTED_STATE"
+                    ),
+                }
+                for row in skeletons
+            }
+        else:
+            pool = self._payload_pool(route_id)
+            categories = {
+                "skeleton_id": [row.skeleton_id for row in skeletons],
+                "primary_field_id": [row.field_id for row in pool],
+                "secondary_offset_id": [str(value) for value in range(1, 8)],
+                "window_id": ["2", "3", "5", "10"],
+            }
+            none_semantics = {
+                "skeleton_id": (
+                    "NONE_NOT_PRESENT_SLOT_REQUIRED_FOR_EVERY_AUTHORIZED_SKELETON"
+                ),
+                "primary_field_id": (
+                    "NONE_NOT_PRESENT_SLOT_REQUIRED_FOR_EVERY_AUTHORIZED_SKELETON"
+                ),
+                "secondary_offset_id": (
+                    "NO_NONE_CATEGORY;DETERMINISTIC_OFFSET_IS_INACTIVE_FOR_SINGLE_LEG_SKELETONS"
+                ),
+                "window_id": (
+                    "NO_NONE_CATEGORY;WINDOW_IS_INACTIVE_FOR_REPORTED_CHANGE_AND_SHORT_LONG_CHANGE"
+                ),
+            }
+            compatibility = {}
+            for skeleton in skeletons:
+                name = skeleton.skeleton_id.rsplit(".", 1)[-1]
+                inactive = []
+                if name not in {
+                    "change_level_interaction",
+                    "cross_change_interaction",
+                }:
+                    inactive.append("secondary_offset_id")
+                if name in {"reported_change", "short_long_change"}:
+                    inactive.append("window_id")
+                compatibility[skeleton.skeleton_id] = {
+                    "required_slots": [
+                        slot for slot in categories if slot not in inactive
+                    ],
+                    "inactive_slots": inactive,
+                    "constraint": (
+                        "SLOPE_ACCELERATION_PERSISTENCE_REQUIRE_DECLARED_EVOLUTION;"
+                        "REPORTED_CHANGE_REQUIRES_REPORTED_CHANGE_METADATA;"
+                        "CROSS_CHANGE_REQUIRES_DISTINCT_EVOLVING_REPRESENTATION_FAMILIES"
+                    ),
+                }
+        if any(len(values) < 2 for values in categories.values()):
+            sizes = {slot: len(values) for slot, values in categories.items()}
+            raise ValueError(
+                f"CATCMA_GENE_SPACE_UNDERFILLED:{route_id}:{sizes}"
+            )
+        return {
+            "route_id": route_id,
+            "ordered_categories_by_slot": categories,
+            "none_semantics": none_semantics,
+            "skeleton_compatibility": compatibility,
+        }
+
     def _base(
         self,
         *,
@@ -830,11 +1006,76 @@ class CompositionalGrammarV2:
         skeleton: SkeletonSpec,
         attempt_index: int,
         seed: int,
+        categorical_genes: Mapping[str, str] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         pool = self._payload_pool("SLOW_TEMPORAL_CHANGE")
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
         extra: dict[str, Any] = {}
-        if self._enforce_route_compatibility and name in {
+        if categorical_genes is not None:
+            left = self._gene_field(
+                categorical_genes, "primary_field_id", pool
+            )
+            offset = int(
+                self._gene_value(
+                    categorical_genes,
+                    "secondary_offset_id",
+                    tuple(str(value) for value in range(1, 8)),
+                )
+            )
+            if self._enforce_route_compatibility and name in {
+                "slope",
+                "acceleration",
+                "change_persistence",
+            }:
+                if not _declared_temporal_evolution(left):
+                    raise ValueError(
+                        "ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: selected "
+                        f"field lacks temporal-evolution metadata for {skeleton.skeleton_id}"
+                    )
+                extra["compatibility_leg_roles"] = [
+                    "declared_temporal_evolution"
+                ]
+            elif self._enforce_route_compatibility and name == "reported_change":
+                if not _declared_reported_change(left):
+                    raise ValueError(
+                        "ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: selected "
+                        f"field lacks reported-change metadata for {skeleton.skeleton_id}"
+                    )
+                extra["compatibility_leg_roles"] = [
+                    "declared_reported_change"
+                ]
+            if (
+                self._enforce_route_compatibility
+                and name == "cross_change_interaction"
+            ):
+                if not _declared_temporal_evolution(left):
+                    raise ValueError(
+                        "ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: cross-change "
+                        "primary lacks temporal-evolution metadata"
+                    )
+                right_pool = tuple(
+                    row
+                    for row in pool
+                    if row.field_id != left.field_id
+                    and _declared_temporal_evolution(row)
+                    and _representation_family(row)
+                    != _representation_family(left)
+                )
+                extra["compatibility_leg_roles"] = [
+                    "distinct_change_representation_family",
+                    "distinct_change_representation_family",
+                ]
+            else:
+                right_pool = tuple(
+                    row for row in pool if row.field_id != left.field_id
+                )
+            if not right_pool:
+                raise ValueError(
+                    "ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: no compatible "
+                    f"secondary field for {skeleton.skeleton_id}"
+                )
+            right = right_pool[(offset - 1) % len(right_pool)]
+        elif self._enforce_route_compatibility and name in {
             "slope",
             "acceleration",
             "change_persistence",
@@ -880,7 +1121,22 @@ class CompositionalGrammarV2:
                 skeleton.skeleton_id + ":right",
             )
         left_ref, right_ref = f"${left.field_id}", f"${right.field_id}"
-        window = _pick_value((2, 3, 5, 10), attempt_index, seed, skeleton.skeleton_id + ":window")
+        window = (
+            int(
+                self._gene_value(
+                    categorical_genes,
+                    "window_id",
+                    ("2", "3", "5", "10"),
+                )
+            )
+            if categorical_genes is not None
+            else _pick_value(
+                (2, 3, 5, 10),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":window",
+            )
+        )
         fields: tuple[CapabilityField, ...] = (left,)
         if name == "delta":
             primary_expression = f"CSRank(Delta({left_ref},{window}))"
@@ -934,6 +1190,7 @@ class CompositionalGrammarV2:
         skeleton: SkeletonSpec,
         attempt_index: int,
         seed: int,
+        categorical_genes: Mapping[str, str] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         event_pool = self._route_pool(
             "DISCLOSURE_EVENT",
@@ -949,13 +1206,23 @@ class CompositionalGrammarV2:
         )
         if not payload_pool:
             raise ValueError("FIELD_COVERAGE_BOTTLENECK: no disclosure payload fields")
-        event = _pick(event_pool, attempt_index, seed, skeleton.skeleton_id + ":event")
-        payload = _pick(
-            payload_pool,
-            attempt_index,
-            seed,
-            skeleton.skeleton_id + ":payload",
-        )
+        if categorical_genes is not None:
+            event = self._gene_field(
+                categorical_genes, "event_field_id", event_pool
+            )
+            payload = self._gene_field(
+                categorical_genes, "payload_field_id", payload_pool
+            )
+        else:
+            event = _pick(
+                event_pool, attempt_index, seed, skeleton.skeleton_id + ":event"
+            )
+            payload = _pick(
+                payload_pool,
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":payload",
+            )
         event_ref, payload_ref = f"${event.field_id}", f"${payload.field_id}"
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
         fields: tuple[CapabilityField, ...] = (event,)
@@ -1289,6 +1556,7 @@ class CompositionalGrammarV2:
         skeleton: SkeletonSpec,
         attempt_index: int,
         seed: int,
+        categorical_genes: Mapping[str, str] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         state_pool = self._route_pool(
             "INTRADAY_STATE_TRANSITION",
@@ -1310,19 +1578,53 @@ class CompositionalGrammarV2:
             entity_scope="STOCK",
             field_roles=("primary", "interaction-only"),
         )
-        state = _pick(state_pool, attempt_index, seed, skeleton.skeleton_id + ":state")
+        state = (
+            self._gene_field(categorical_genes, "state_field_id", state_pool)
+            if categorical_genes is not None
+            else _pick(
+                state_pool,
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":state",
+            )
+        )
         state_expression = str(state.metadata.get("materialization_expression") or "")
         source_ids = tuple(str(value) for value in state.metadata.get("source_fields", ()))
         source_fields = tuple(self.registry.resolve(field_id) for field_id in source_ids)
-        payload = _pick_excluding(
-            payload_pool,
-            source_ids,
-            attempt_index,
-            seed,
-            skeleton.skeleton_id + ":payload",
-        )
+        if categorical_genes is not None:
+            payload = self._gene_field(
+                categorical_genes, "payload_field_id", payload_pool
+            )
+            if payload.field_id in source_ids:
+                raise ValueError(
+                    "ROUTE_LOCAL_COMPATIBILITY_UNRESOLVED: selected payload "
+                    "is a physical source of the selected state"
+                )
+        else:
+            payload = _pick_excluding(
+                payload_pool,
+                source_ids,
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":payload",
+            )
         payload_ref = f"${payload.field_id}"
-        window = _pick_value((3, 5, 10, 20), attempt_index, seed, skeleton.skeleton_id + ":window")
+        window = (
+            int(
+                self._gene_value(
+                    categorical_genes,
+                    "window_id",
+                    ("3", "5", "10", "20"),
+                )
+            )
+            if categorical_genes is not None
+            else _pick_value(
+                (3, 5, 10, 20),
+                attempt_index,
+                seed,
+                skeleton.skeleton_id + ":window",
+            )
+        )
         short, long = (3, 10) if window <= 5 else (5, 20)
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
         control_expression = (
@@ -1412,6 +1714,93 @@ class CompositionalGrammarV2:
                 "candidate_promotion": False,
                 "cross_sprint_memory": False,
             },
+        )
+
+    def propose_from_categorical_genes(
+        self,
+        route_id: str,
+        *,
+        genes: Mapping[str, str],
+    ) -> GeneratedCompositionalPair:
+        """Construct one pair through the existing Grammar from exact genes."""
+
+        gene_space = self.categorical_gene_space(route_id)
+        categories = dict(gene_space["ordered_categories_by_slot"])
+        expected_slots = tuple(categories)
+        supplied_slots = tuple(map(str, genes))
+        if set(supplied_slots) != set(expected_slots):
+            raise ValueError(
+                "CATEGORICAL_GENE_SLOT_MISMATCH:"
+                f"expected={expected_slots}:actual={supplied_slots}"
+            )
+        normalized = {
+            slot: self._gene_value(genes, slot, categories[slot])
+            for slot in expected_slots
+        }
+        skeleton_id = normalized["skeleton_id"]
+        compatible = set(
+            map(str, gene_space["skeleton_compatibility"])
+        )
+        if skeleton_id not in compatible:
+            raise ValueError(
+                f"INVALID_CATEGORICAL_GENE:skeleton_id:{skeleton_id}"
+            )
+        skeleton = next(
+            row
+            for row in self._skeletons[route_id]
+            if row.skeleton_id == skeleton_id
+        )
+        gene_hash = stable_hash(
+            {
+                "grammar": GRAMMAR_VERSION,
+                "route_id": route_id,
+                "genes": normalized,
+            }
+        )
+        attempt_index = int(gene_hash[:12], 16)
+        seed = int(gene_hash[12:24], 16)
+        if route_id == "SLOW_TEMPORAL_CHANGE":
+            primary, control = self._slow_change_pair(
+                skeleton,
+                attempt_index,
+                seed,
+                categorical_genes=normalized,
+            )
+        elif route_id == "DISCLOSURE_EVENT":
+            primary, control = self._disclosure_pair(
+                skeleton,
+                attempt_index,
+                seed,
+                categorical_genes=normalized,
+            )
+        elif route_id == "INTRADAY_STATE_TRANSITION":
+            primary, control = self._intraday_state_pair(
+                skeleton,
+                attempt_index,
+                seed,
+                categorical_genes=normalized,
+            )
+        else:  # guarded by categorical_gene_space
+            raise ValueError(f"CATCMA_GENE_ROUTE_NOT_AUTHORIZED:{route_id}")
+        gene_binding = {
+            "categorical_gene_construction": "AUTHORITATIVE_GRAMMAR_V2",
+            "categorical_genes": normalized,
+            "categorical_gene_hash": gene_hash,
+        }
+        primary = {**primary, **gene_binding}
+        control = {**control, **gene_binding}
+        compiled_primary = {
+            **primary,
+            **self.compiler.compile(primary).to_dict(),
+        }
+        compiled_control = {
+            **control,
+            **self.compiler.compile(control).to_dict(),
+        }
+        return GeneratedCompositionalPair(
+            skeleton=skeleton,
+            primary=compiled_primary,
+            control=compiled_control,
         )
 
     def propose(

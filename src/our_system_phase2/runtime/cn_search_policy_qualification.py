@@ -1,9 +1,9 @@
 """Bounded CatCMA search-policy qualification on the existing CN search fabric.
 
-This launcher compares the deterministic RegistryDrivenGenerator order with
-official CatCMAwM selection over the same frozen, registry-authorized proposal
-pool.  It owns no field, route, compiler, admission, evaluator, or promotion
-authority.
+This launcher compares scheduled attempts from the deterministic
+RegistryDrivenGenerator stream with official CatCMAwM selection over frozen,
+registry-authorized Grammar gene slots. It owns no field, formula constructor,
+route, compiler, admission, evaluator, or promotion authority.
 """
 
 from __future__ import annotations
@@ -51,7 +51,6 @@ from our_system_phase2.services.catcma_search_adapter import (
     SUPPORT_BLOCKED,
     CatCMASearchAdapter,
     ExactGeneSemantics,
-    ProposalCategory,
 )
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
 from our_system_phase2.services.portfolio_behavior_archive import (
@@ -63,6 +62,10 @@ from our_system_phase2.services.split_boundary_label_purity import (
 from our_system_phase2.services.unified_capability_registry import (
     UnifiedCapabilityRegistry,
 )
+from our_system_phase2.services.phase3cm_streaming_expression import (
+    unsupported_streaming_operators,
+)
+from our_system_phase2.services.typed_primitive_gate import expression_fields
 from our_system_phase2.services.unified_discovery_generators import (
     COMPOSITIONAL_V2_PROFILE,
     RegistryDrivenGenerator,
@@ -80,7 +83,6 @@ ROUTES = (
 ARMS = ("registry_baseline", "official_catcma")
 CHECKPOINT_COUNT = 4
 POPULATION_SIZE = 16
-POOL_SIZE_PER_ROUTE = 96
 TOTAL_SCHEDULED_PAIR_BUDGET = (
     len(ARMS) * len(ROUTES) * CHECKPOINT_COUNT * POPULATION_SIZE
 )
@@ -146,7 +148,6 @@ def _qualification_authority(
         "arms": list(ARMS),
         "checkpoint_count": CHECKPOINT_COUNT,
         "population_size": POPULATION_SIZE,
-        "pool_size_per_route": POOL_SIZE_PER_ROUTE,
         "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_PAIR_BUDGET,
         "optimizer": "official_cmaes.CatCMAwM",
         "optimizer_package_version": "0.13.0",
@@ -271,149 +272,116 @@ def _source_campaign_binding(
     }
 
 
-def _category_payload(category: ProposalCategory) -> dict[str, Any]:
-    return {
-        **category.semantic_receipt(),
-        "primary": dict(category.primary),
-        "control": dict(category.control),
-    }
+def _materialized_route_root_allowlists(
+    *,
+    registry: UnifiedCapabilityRegistry,
+    discovery_allowlists: Mapping[str, Sequence[str]],
+    schema_by_backend: Mapping[str, set[str]],
+) -> dict[str, tuple[str, ...]]:
+    output: dict[str, tuple[str, ...]] = {}
+    for route_id in ROUTES:
+        available = schema_by_backend[_clock_for_route(route_id)]
+        usable = []
+        for field_id in discovery_allowlists[route_id]:
+            field = registry.resolve(str(field_id))
+            materialization = str(
+                field.metadata.get("materialization_expression") or ""
+            )
+            physical_leaves = (
+                expression_fields(materialization)
+                if materialization
+                else {field.field_id}
+            )
+            if set(map(str, physical_leaves)).issubset(available):
+                usable.append(field.field_id)
+        if not usable:
+            raise RuntimeError(
+                f"MATERIALIZED_ROUTE_ROOTS_EMPTY:{route_id}"
+            )
+        output[route_id] = tuple(sorted(set(usable)))
+    return output
 
 
-def _category_from_payload(row: Mapping[str, Any]) -> ProposalCategory:
-    return ProposalCategory(
-        category_id=str(row["category_id"]),
-        route_id=str(row["route_id"]),
-        skeleton_id=str(row["skeleton_id"]),
-        pair_id=str(row["pair_id"]),
-        exact_identity=str(row["exact_identity"]),
-        primary=dict(row["primary"]),
-        control=dict(row["control"]),
-    )
-
-
-def _freeze_proposal_pool(
+def _freeze_gene_spaces(
     *,
     output_root: Path,
     generator: RegistryDrivenGenerator,
-    historical_exact: set[str],
-    schema_by_backend: Mapping[str, set[str]],
     registry_hash: str,
     root_contract_hash: str,
     grammar_hash: str,
-    seed_base: int,
     input_hashes: Mapping[str, str],
 ) -> tuple[
-    dict[str, tuple[ProposalCategory, ...]],
     dict[str, ExactGeneSemantics],
     Path,
+    Path,
 ]:
-    pool_path = output_root / "frozen_proposal_pool.json"
-    manifest_path = output_root / "frozen_proposal_pool_manifest.json"
+    space_path = output_root / "categorical_gene_spaces.json"
+    semantics_path = output_root / "exact_gene_semantics.json"
+    manifest_path = output_root / "categorical_gene_spaces_manifest.json"
     if manifest_path.is_file():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
         if dict(manifest.get("input_hashes") or {}) != dict(input_hashes):
-            raise RuntimeError("FROZEN_PROPOSAL_POOL_INPUT_DRIFT")
+            raise RuntimeError("CATEGORICAL_GENE_SPACE_INPUT_DRIFT")
         _verify_artifacts(output_root, manifest)
-        payload = json.loads(pool_path.read_text(encoding="utf-8-sig"))
+        payload = json.loads(space_path.read_text(encoding="utf-8-sig"))
     else:
-        routes: dict[str, list[dict[str, Any]]] = {}
-        funnels = []
-        for route_index, route_id in enumerate(ROUTES):
-            rows, funnel = generator.generate_route_attempts(
-                route_id,
-                scheduled_pairs=POOL_SIZE_PER_ROUTE,
-                seed=seed_base + route_index * 1009,
-                attempt_start=0,
-                attempt_limit=50_000,
-                existing_exact_identities=set(historical_exact),
-                available_field_ids=schema_by_backend[_clock_for_route(route_id)],
-            )
-            if len(rows) != POOL_SIZE_PER_ROUTE * 2:
-                raise RuntimeError(
-                    f"FROZEN_PROPOSAL_POOL_UNDERFILLED:{route_id}:"
-                    f"{len(rows) // 2}/{POOL_SIZE_PER_ROUTE}"
-                )
-            route_categories = []
-            for index in range(0, len(rows), 2):
-                primary, control = dict(rows[index]), dict(rows[index + 1])
-                category = ProposalCategory(
-                    category_id=(
-                        "cn.cat."
-                        + _stable_hash(
-                            {
-                                "route_id": route_id,
-                                "primary_exact_identity": primary["exact_identity"],
-                                "control_exact_identity": control["exact_identity"],
-                                "pair_id": primary["pair_id"],
-                            }
-                        )[:24]
-                    ),
-                    route_id=route_id,
-                    skeleton_id=str(primary.get("skeleton_id") or ""),
-                    pair_id=str(primary["pair_id"]),
-                    exact_identity=str(primary["exact_identity"]),
-                    primary=primary,
-                    control=control,
-                )
-                route_categories.append(_category_payload(category))
-            routes[route_id] = route_categories
-            funnels.append(funnel)
         payload = {
-            "schema_version": "cn_search_policy_frozen_proposal_pool_v1",
-            "routes": routes,
-            "generation_funnels": funnels,
+            "schema_version": "cn_search_policy_categorical_gene_spaces_v1",
+            "routes": {
+                route_id: generator.categorical_gene_space(route_id)
+                for route_id in ROUTES
+            },
         }
-        _write_json(pool_path, payload)
-        manifest = {
-            "schema_version": "cn_search_policy_frozen_proposal_pool_manifest_v1",
-            "status": "FROZEN_IMMUTABLE",
-            "input_hashes": dict(input_hashes),
-            "artifacts": [_artifact(pool_path, root=output_root)],
-            "validation_reads": 0,
-            "holdout_reads": 0,
-            "forward_2026_reads": 0,
-        }
-        manifest["manifest_payload_hash"] = _stable_hash(manifest)
-        _write_json(manifest_path, manifest)
-
-    categories = {
-        route_id: tuple(
-            _category_from_payload(row)
-            for row in list((payload.get("routes") or {}).get(route_id) or ())
-        )
-        for route_id in ROUTES
-    }
-    if any(len(rows) != POOL_SIZE_PER_ROUTE for rows in categories.values()):
-        raise RuntimeError("FROZEN_PROPOSAL_POOL_CARDINALITY_DRIFT")
+        _write_json(space_path, payload)
     semantics = {
         route_id: ExactGeneSemantics.freeze(
             route_id=route_id,
-            categories=categories[route_id],
+            ordered_categories_by_slot=dict(
+                payload["routes"][route_id]["ordered_categories_by_slot"]
+            ),
+            none_semantics=dict(
+                payload["routes"][route_id]["none_semantics"]
+            ),
+            skeleton_compatibility=dict(
+                payload["routes"][route_id]["skeleton_compatibility"]
+            ),
             registry_hash=registry_hash,
             root_contract_hash=root_contract_hash,
             grammar_hash=grammar_hash,
         )
         for route_id in ROUTES
     }
-    semantics_path = _write_json(
-        output_root / "exact_gene_semantics.json",
+    _write_json(
+        semantics_path,
         {route_id: value.to_dict() for route_id, value in semantics.items()},
     )
-    return categories, semantics, semantics_path
+    if not manifest_path.is_file():
+        manifest = {
+            "schema_version": "cn_search_policy_gene_space_manifest_v1",
+            "status": "FROZEN_IMMUTABLE",
+            "input_hashes": dict(input_hashes),
+            "artifacts": [
+                _artifact(space_path, root=output_root),
+                _artifact(semantics_path, root=output_root),
+            ],
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+        }
+        manifest["manifest_payload_hash"] = _stable_hash(manifest)
+        _write_json(manifest_path, manifest)
+    return semantics, semantics_path, manifest_path
 
 
 def build_baseline_population(
     *,
-    categories: Sequence[ProposalCategory],
     route_id: str,
     checkpoint_index: int,
+    seed: int,
 ) -> list[dict[str, Any]]:
-    """Select the next deterministic RegistryDrivenGenerator pool segment."""
+    """Schedule attempts without searching past duplicate or invalid supply."""
 
     start = checkpoint_index * POPULATION_SIZE
-    selected = list(categories[start : start + POPULATION_SIZE])
-    if len(selected) != POPULATION_SIZE:
-        raise RuntimeError("BASELINE_POOL_EXHAUSTED")
     return [
         {
             "proposal_id": _stable_hash(
@@ -422,24 +390,110 @@ def build_baseline_population(
                     "route_id": route_id,
                     "checkpoint_index": checkpoint_index,
                     "ask_ordinal": ordinal,
-                    "category_id": category.category_id,
+                    "attempt_index": start + ordinal,
+                    "seed": int(seed),
                 }
             )[:24],
             "checkpoint_id": f"checkpoint_{checkpoint_index + 1:03d}",
             "generation": checkpoint_index,
             "ask_ordinal": ordinal,
             "route_id": route_id,
-            "category_index": start + ordinal,
-            "category_id": category.category_id,
-            "pair_id": category.pair_id,
-            "exact_identity": category.exact_identity,
-            "skeleton_id": category.skeleton_id,
+            "generation_attempt_index": start + ordinal,
+            "generation_seed": int(seed),
+            "category_id": f"baseline_attempt_{start + ordinal:05d}",
             "duplicate_in_population": False,
-            "primary": copy.deepcopy(dict(category.primary)),
-            "control": copy.deepcopy(dict(category.control)),
         }
-        for ordinal, category in enumerate(selected)
+        for ordinal in range(POPULATION_SIZE)
     ]
+
+
+def _materialize_population(
+    *,
+    asked: Sequence[Mapping[str, Any]],
+    generator: RegistryDrivenGenerator,
+    schema_by_backend: Mapping[str, set[str]],
+) -> list[dict[str, Any]]:
+    output = []
+    for source in asked:
+        row = copy.deepcopy(dict(source))
+        route_id = str(row["route_id"])
+        try:
+            if "genes" in row:
+                pair = generator.propose_categorical_genes(
+                    route_id, genes=dict(row["genes"])
+                )
+            else:
+                pair = generator.propose_attempt(
+                    route_id,
+                    attempt_index=int(row["generation_attempt_index"]),
+                    seed=int(row["generation_seed"]),
+                )
+            primary, control = dict(pair.candidate), dict(pair.control)
+            unsupported = unsupported_streaming_operators(
+                (primary["expression"], control["expression"])
+            )
+            if unsupported:
+                raise ValueError(
+                    "MATERIALIZATION_UNSUPPORTED_OPERATOR:"
+                    + ",".join(unsupported)
+                )
+            available = schema_by_backend[_clock_for_route(route_id)]
+            required = {
+                str(field)
+                for member in (primary, control)
+                for field in expression_fields(str(member["expression"]))
+            }
+            if not required.issubset(available):
+                raise ValueError(
+                    "MATERIALIZATION_MISSING_FIELDS:"
+                    + ",".join(sorted(required - available))
+                )
+            identities = (
+                str(primary.get("exact_identity") or ""),
+                str(control.get("exact_identity") or ""),
+            )
+            if (
+                not bool(primary.get("legal"))
+                or not bool(control.get("legal"))
+                or not all(identities)
+                or len(set(identities)) != 2
+            ):
+                raise ValueError("TYPED_COMPILER_REJECTED_PAIR")
+            row.update(
+                {
+                    "construction_status": "LEGAL",
+                    "pair_id": str(primary["pair_id"]),
+                    "exact_identity": identities[0],
+                    "control_exact_identity": identities[1],
+                    "skeleton_id": str(primary.get("skeleton_id") or ""),
+                    "primary": primary,
+                    "control": control,
+                }
+            )
+        except (KeyError, ValueError) as exc:
+            invalid_identity = "invalid:" + _stable_hash(
+                {
+                    "route_id": route_id,
+                    "category_id": row["category_id"],
+                    "genes": row.get("genes"),
+                    "attempt_index": row.get("generation_attempt_index"),
+                    "error": str(exc),
+                }
+            )
+            row.update(
+                {
+                    "construction_status": DETERMINISTIC_INVALID,
+                    "construction_error": str(exc),
+                    "pair_id": invalid_identity,
+                    "exact_identity": invalid_identity,
+                    "control_exact_identity": "",
+                    "skeleton_id": str(
+                        (row.get("genes") or {}).get("skeleton_id") or ""
+                    ),
+                }
+            )
+        output.append(row)
+    return output
 
 
 def _phase3cm_wall_seconds(checkpoint_root: Path) -> float:
@@ -575,9 +629,10 @@ def _execute_arm_checkpoint(
     arm: str,
     checkpoint_index: int,
     output_root: Path,
-    categories: Mapping[str, Sequence[ProposalCategory]],
-    semantics: Mapping[str, ExactGeneSemantics],
     adapters: Mapping[str, CatCMASearchAdapter],
+    generator: RegistryDrivenGenerator,
+    schema_by_backend: Mapping[str, set[str]],
+    seed_base: int,
     exact_seen: set[str],
     behavior_archive: PortfolioBehaviorArchive,
     registry: UnifiedCapabilityRegistry,
@@ -589,7 +644,7 @@ def _execute_arm_checkpoint(
     compute_threads: Mapping[str, int],
     deadline_epoch: float,
     frozen_contract_path: Path,
-    pool_manifest_path: Path,
+    gene_space_manifest_path: Path,
 ) -> dict[str, Any]:
     checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
     checkpoint_root = output_root / "arms" / arm / checkpoint_id
@@ -605,21 +660,21 @@ def _execute_arm_checkpoint(
     asked: list[dict[str, Any]] = []
     ask_started = time.perf_counter()
     if arm == "registry_baseline":
-        for route_id in ROUTES:
+        for route_index, route_id in enumerate(ROUTES):
             asked.extend(
                 build_baseline_population(
-                    categories=categories[route_id],
                     route_id=route_id,
                     checkpoint_index=checkpoint_index,
+                    seed=seed_base + route_index * 1009,
                 )
             )
     else:
-        expected_by_route: dict[str, list[str]] = {}
+        expected_by_route: dict[str, list[dict[str, str]]] = {}
         if ask_path.is_file():
             previous = json.loads(ask_path.read_text(encoding="utf-8-sig"))
             for route_id in ROUTES:
                 expected_by_route[route_id] = [
-                    str(row["category_id"])
+                    dict(row["genes"])
                     for row in previous
                     if str(row["route_id"]) == route_id
                 ]
@@ -627,10 +682,15 @@ def _execute_arm_checkpoint(
             asked.extend(
                 adapters[route_id].ask_population(
                     checkpoint_id=checkpoint_id,
-                    expected_category_ids=expected_by_route.get(route_id),
+                    expected_genes=expected_by_route.get(route_id),
                 )
             )
     ask_seconds = time.perf_counter() - ask_started
+    asked = _materialize_population(
+        asked=asked,
+        generator=generator,
+        schema_by_backend=schema_by_backend,
+    )
     _write_json(ask_path, asked)
     if len(asked) != len(ROUTES) * POPULATION_SIZE:
         raise RuntimeError("INCOMPLETE_ARM_POPULATION")
@@ -640,7 +700,21 @@ def _execute_arm_checkpoint(
     generation_exact: set[str] = set()
     for row in asked:
         identity = str(row["exact_identity"])
-        if identity in exact_seen or identity in generation_exact:
+        if str(row.get("construction_status") or "") != "LEGAL":
+            observations[str(row["proposal_id"])] = {
+                "proposal_id": str(row["proposal_id"]),
+                "route_id": str(row["route_id"]),
+                "pair_id": str(row["pair_id"]),
+                "category_id": str(row["category_id"]),
+                "exact_identity": identity,
+                "skeleton_id": str(row.get("skeleton_id") or ""),
+                "outcome_class": DETERMINISTIC_INVALID,
+                "outcome_reason": str(
+                    row.get("construction_error")
+                    or "DETERMINISTIC_CONSTRUCTION_INVALID"
+                ),
+            }
+        elif identity in exact_seen or identity in generation_exact:
             observations[str(row["proposal_id"])] = {
                 "proposal_id": str(row["proposal_id"]),
                 "route_id": str(row["route_id"]),
@@ -693,7 +767,7 @@ def _execute_arm_checkpoint(
                     "arm": arm,
                     "checkpoint": checkpoint_id,
                     "frozen_contract": _sha256(frozen_contract_path),
-                    "pool": _sha256(pool_manifest_path),
+                    "gene_space": _sha256(gene_space_manifest_path),
                     "split": split.manifest_hash,
                 }
             ),
@@ -930,7 +1004,9 @@ def _execute_arm_checkpoint(
         access_receipts=access_receipts,
         input_hashes={
             "frozen_contract": _sha256(frozen_contract_path),
-            "frozen_proposal_pool_manifest": _sha256(pool_manifest_path),
+            "categorical_gene_spaces_manifest": _sha256(
+                gene_space_manifest_path
+            ),
             "prior_arm_checkpoint": (
                 _sha256(
                     checkpoint_root.parent
@@ -1274,6 +1350,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     runtime_path = output_root / "runtime_envelope.json"
     if not runtime_path.is_file():
         _write_json(runtime_path, observed_runtime)
+    materialized_root_allowlists = _materialized_route_root_allowlists(
+        registry=registry,
+        discovery_allowlists=discovery["route_root_allowlists"],
+        schema_by_backend=schema_by_backend,
+    )
 
     contract = {
         "schema_version": "cn_search_policy_qualification_contract_v1",
@@ -1283,7 +1364,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "arms": list(ARMS),
         "checkpoint_count": CHECKPOINT_COUNT,
         "population_size": POPULATION_SIZE,
-        "pool_size_per_route": POOL_SIZE_PER_ROUTE,
         "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_PAIR_BUDGET,
         "arm_order_by_checkpoint": {
             "checkpoint_001": list(ARMS),
@@ -1292,9 +1372,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "checkpoint_004": list(reversed(ARMS)),
         },
         "top_level_scheduling_key": "UNIFIED_REGISTRY_ROUTE_ID",
-        "baseline": "RegistryDrivenGenerator frozen deterministic order",
+        "baseline": (
+            "RegistryDrivenGenerator deterministic scheduled attempt stream; "
+            "no search-past-invalid or search-past-exact-duplicate"
+        ),
         "optimizer": "official_cmaes.CatCMAwM",
-        "optimizer_role": "ROUTE_LOCAL_SELECTION_POLICY_ONLY",
+        "optimizer_role": (
+            "ROUTE_LOCAL_CATEGORICAL_GENE_SELECTION_POLICY_ONLY"
+        ),
+        "formula_constructor_authority": "CompositionalGrammarV2",
+        "materialized_route_root_allowlists": {
+            route_id: list(field_ids)
+            for route_id, field_ids in materialized_root_allowlists.items()
+        },
         "ask_tell": "FULL_POPULATION_ONLY",
         "restore": "GENESIS_PLUS_ASK_TRANSCRIPT_PLUS_TELL_LOSSES",
         "reward_order": (
@@ -1331,26 +1421,22 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         registry,
         constructor_profile=COMPOSITIONAL_V2_PROFILE,
         enforce_route_compatibility=True,
-        route_root_allowlist=discovery["route_root_allowlists"],
+        route_root_allowlist=materialized_root_allowlists,
     )
-    pool_input_hashes = {
+    gene_input_hashes = {
         "frozen_contract": _sha256(frozen_contract_path),
         "source_campaign_binding": _sha256(source_binding_path),
         "registry_binding": _sha256(registry_binding_path),
         "materialized_schema_binding": _sha256(schema_path),
     }
-    categories, semantics, semantics_path = _freeze_proposal_pool(
+    semantics, semantics_path, gene_space_manifest_path = _freeze_gene_spaces(
         output_root=output_root,
         generator=generator,
-        historical_exact=initial_exact,
-        schema_by_backend=schema_by_backend,
         registry_hash=registry.registry_hash,
         root_contract_hash=str(discovery["contract_hash"]),
         grammar_hash=str(registry_binding["grammar_hash"]),
-        seed_base=args.seed_base,
-        input_hashes=pool_input_hashes,
+        input_hashes=gene_input_hashes,
     )
-    pool_manifest_path = output_root / "frozen_proposal_pool_manifest.json"
     deadline_epoch = time.time() + int(args.maximum_wall_seconds)
 
     arm_state: dict[str, dict[str, Any]] = {}
@@ -1370,7 +1456,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     adapters = {
         route_id: CatCMASearchAdapter.replay(
             semantics=semantics[route_id],
-            categories=categories[route_id],
             seed=args.seed_base + 50_000 + route_index * 1009,
             population_size=POPULATION_SIZE,
             generations=arm_state["official_catcma"]["histories"][route_id],
@@ -1405,9 +1490,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     arm=arm,
                     checkpoint_index=checkpoint_index,
                     output_root=output_root,
-                    categories=categories,
-                    semantics=semantics,
                     adapters=adapters,
+                    generator=generator,
+                    schema_by_backend=schema_by_backend,
+                    seed_base=args.seed_base,
                     exact_seen=arm_state[arm]["exact"],
                     behavior_archive=arm_state[arm]["behavior"],
                     registry=registry,
@@ -1419,7 +1505,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     compute_threads=compute_threads,
                     deadline_epoch=deadline_epoch,
                     frozen_contract_path=frozen_contract_path,
-                    pool_manifest_path=pool_manifest_path,
+                    gene_space_manifest_path=gene_space_manifest_path,
                 )
             )
 
@@ -1466,7 +1552,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 purity_path,
                 runtime_path,
                 frozen_contract_path,
-                pool_manifest_path,
+                gene_space_manifest_path,
                 semantics_path,
                 environment_path,
                 metrics_path,

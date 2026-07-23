@@ -1,9 +1,9 @@
-"""Minimal CatCMAwM adapter over a frozen registry-authorized proposal pool.
+"""Minimal official CatCMAwM adapter over frozen categorical gene semantics.
 
-The optimizer selects category IDs only.  It never constructs expressions,
-changes route authority, or owns evaluation.  Registry, grammar, compiler,
-matched-control, behavior admission and development-evaluation authorities
-remain outside this module.
+The optimizer selects route-local semantic category IDs only. It never
+constructs expressions, changes route authority, or owns evaluation. The
+authoritative Grammar, compiler, matched-control evaluator, behavior admission,
+and development-only access gates remain outside this module.
 """
 
 from __future__ import annotations
@@ -67,34 +67,14 @@ def _load_catcmawm() -> tuple[type[Any], str, str]:
 
 
 @dataclass(frozen=True, slots=True)
-class ProposalCategory:
-    category_id: str
-    route_id: str
-    skeleton_id: str
-    pair_id: str
-    exact_identity: str
-    primary: Mapping[str, Any]
-    control: Mapping[str, Any]
-
-    def semantic_receipt(self) -> dict[str, Any]:
-        return {
-            "category_id": self.category_id,
-            "route_id": self.route_id,
-            "skeleton_id": self.skeleton_id,
-            "pair_id": self.pair_id,
-            "exact_identity": self.exact_identity,
-            "primary_expression": str(self.primary.get("canonical_expression") or self.primary.get("expression") or ""),
-            "control_expression": str(self.control.get("canonical_expression") or self.control.get("expression") or ""),
-        }
-
-
-@dataclass(frozen=True, slots=True)
 class ExactGeneSemantics:
+    """Immutable meaning and category order of every CatCMA categorical row."""
+
     route_id: str
     ordered_gene_slot_names: tuple[str, ...]
-    ordered_category_ids: tuple[str, ...]
+    ordered_category_ids_by_slot: tuple[tuple[str, ...], ...]
     none_semantics: Mapping[str, str]
-    skeleton_compatibility: Mapping[str, str]
+    skeleton_compatibility: Mapping[str, Any]
     registry_hash: str
     root_contract_hash: str
     grammar_hash: str
@@ -105,54 +85,86 @@ class ExactGeneSemantics:
         cls,
         *,
         route_id: str,
-        categories: Sequence[ProposalCategory],
+        ordered_categories_by_slot: Mapping[str, Sequence[str]],
+        none_semantics: Mapping[str, str],
+        skeleton_compatibility: Mapping[str, Any],
         registry_hash: str,
         root_contract_hash: str,
         grammar_hash: str,
     ) -> "ExactGeneSemantics":
-        if len(categories) < 2:
-            raise ValueError("CatCMA requires at least two frozen proposal categories")
-        ordered_ids = tuple(category.category_id for category in categories)
-        if len(set(ordered_ids)) != len(ordered_ids):
-            raise ValueError("proposal category IDs must be unique and ordered")
-        if any(category.route_id != route_id for category in categories):
-            raise ValueError("one optimizer group cannot span registry routes")
-        skeletons = {
-            category.category_id: category.skeleton_id for category in categories
-        }
+        slot_names = tuple(map(str, ordered_categories_by_slot))
+        if not slot_names:
+            raise ValueError("CatCMA requires at least one categorical gene slot")
+        if len(set(slot_names)) != len(slot_names):
+            raise ValueError("gene slot names must be unique and ordered")
+        categories = tuple(
+            tuple(map(str, ordered_categories_by_slot[slot]))
+            for slot in slot_names
+        )
+        for slot, category_ids in zip(slot_names, categories):
+            if len(category_ids) < 2:
+                raise ValueError(
+                    f"CatCMA gene slot requires at least two categories: {slot}"
+                )
+            if len(set(category_ids)) != len(category_ids):
+                raise ValueError(
+                    f"category IDs must be unique and ordered within slot: {slot}"
+                )
+        if set(map(str, none_semantics)) != set(slot_names):
+            raise ValueError("NONE semantics must cover every gene slot exactly")
         payload = {
-            "route_id": route_id,
-            "ordered_gene_slot_names": ["proposal_category_id"],
-            "ordered_category_ids": list(ordered_ids),
-            "none_semantics": {
-                "proposal_category_id": "NONE_NOT_PRESENT_ALL_CATEGORIES_ARE_EXACT_PROPOSALS"
+            "route_id": str(route_id),
+            "ordered_gene_slot_names": list(slot_names),
+            "ordered_category_ids_by_slot": {
+                slot: list(category_ids)
+                for slot, category_ids in zip(slot_names, categories)
             },
-            "skeleton_compatibility": skeletons,
-            "registry_hash": registry_hash,
-            "root_contract_hash": root_contract_hash,
-            "grammar_hash": grammar_hash,
+            "none_semantics": {
+                slot: str(none_semantics[slot]) for slot in slot_names
+            },
+            "skeleton_compatibility": dict(skeleton_compatibility),
+            "registry_hash": str(registry_hash),
+            "root_contract_hash": str(root_contract_hash),
+            "grammar_hash": str(grammar_hash),
         }
         return cls(
-            route_id=route_id,
-            ordered_gene_slot_names=("proposal_category_id",),
-            ordered_category_ids=ordered_ids,
+            route_id=str(route_id),
+            ordered_gene_slot_names=slot_names,
+            ordered_category_ids_by_slot=categories,
             none_semantics={
-                "proposal_category_id": "NONE_NOT_PRESENT_ALL_CATEGORIES_ARE_EXACT_PROPOSALS"
+                slot: str(none_semantics[slot]) for slot in slot_names
             },
-            skeleton_compatibility=skeletons,
-            registry_hash=registry_hash,
-            root_contract_hash=root_contract_hash,
-            grammar_hash=grammar_hash,
+            skeleton_compatibility=copy.deepcopy(
+                dict(skeleton_compatibility)
+            ),
+            registry_hash=str(registry_hash),
+            root_contract_hash=str(root_contract_hash),
+            grammar_hash=str(grammar_hash),
             exact_gene_semantics_hash=_stable_hash(payload),
         )
+
+    def categories_for_slot(self, slot_name: str) -> tuple[str, ...]:
+        try:
+            index = self.ordered_gene_slot_names.index(str(slot_name))
+        except ValueError as exc:
+            raise KeyError(f"unknown gene slot: {slot_name}") from exc
+        return self.ordered_category_ids_by_slot[index]
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "route_id": self.route_id,
             "ordered_gene_slot_names": list(self.ordered_gene_slot_names),
-            "ordered_category_ids": list(self.ordered_category_ids),
+            "ordered_category_ids_by_slot": {
+                slot: list(category_ids)
+                for slot, category_ids in zip(
+                    self.ordered_gene_slot_names,
+                    self.ordered_category_ids_by_slot,
+                )
+            },
             "none_semantics": dict(self.none_semantics),
-            "skeleton_compatibility": dict(self.skeleton_compatibility),
+            "skeleton_compatibility": copy.deepcopy(
+                dict(self.skeleton_compatibility)
+            ),
             "registry_hash": self.registry_hash,
             "root_contract_hash": self.root_contract_hash,
             "grammar_hash": self.grammar_hash,
@@ -177,7 +189,9 @@ def rank_population_observations(
             try:
                 increment = float(row["signed_matched_increment"])
             except (KeyError, TypeError, ValueError) as exc:
-                raise ValueError("evaluated observation requires signed_matched_increment") from exc
+                raise ValueError(
+                    "evaluated observation requires signed_matched_increment"
+                ) from exc
             if not np.isfinite(increment):
                 raise ValueError("signed_matched_increment must be finite")
             tier = 0
@@ -188,7 +202,9 @@ def rank_population_observations(
         else:
             tier = 2
             objective_key = 0.0
-        exact_identity = str(row.get("exact_identity") or row.get("proposal_id") or "")
+        exact_identity = str(
+            row.get("exact_identity") or row.get("proposal_id") or ""
+        )
         normalized.append(
             {
                 **row,
@@ -216,31 +232,28 @@ def rank_population_observations(
 
 
 class CatCMASearchAdapter:
-    """One route-local CatCMA optimizer over exact frozen proposal semantics."""
+    """One route-local official CatCMA optimizer over exact gene semantics."""
 
     def __init__(
         self,
         *,
         semantics: ExactGeneSemantics,
-        categories: Sequence[ProposalCategory],
         seed: int,
         population_size: int,
     ) -> None:
         if population_size < 2:
             raise ValueError("population_size must be at least two")
-        by_id = {category.category_id: category for category in categories}
-        if tuple(by_id) != semantics.ordered_category_ids:
-            raise ValueError("category order does not match exact gene semantics")
         CatCMAwM, version, package_path = _load_catcmawm()
         self.semantics = semantics
-        self.categories = tuple(categories)
-        self._category_by_id = by_id
         self.seed = int(seed)
         self.population_size = int(population_size)
         self.package_version = version
         self.package_path = package_path
         self._optimizer = CatCMAwM(
-            c_space=[len(self.categories)],
+            c_space=[
+                len(category_ids)
+                for category_ids in semantics.ordered_category_ids_by_slot
+            ],
             population_size=self.population_size,
             seed=self.seed,
         )
@@ -257,6 +270,9 @@ class CatCMASearchAdapter:
             "package_path": self.package_path,
             "seed": self.seed,
             "population_size": self.population_size,
+            "categorical_gene_slot_count": len(
+                self.semantics.ordered_gene_slot_names
+            ),
             "restore_authority": "GENESIS_PLUS_ASK_TRANSCRIPT_PLUS_TELL_LOSSES",
             "pickle_usage": "DIAGNOSTIC_STATE_HASH_ONLY",
         }
@@ -273,30 +289,47 @@ class CatCMASearchAdapter:
         self,
         *,
         checkpoint_id: str,
-        expected_category_ids: Sequence[str] | None = None,
+        expected_genes: Sequence[Mapping[str, str]] | None = None,
     ) -> list[dict[str, Any]]:
         if self._pending:
             raise RuntimeError("ASK_BEFORE_PENDING_POPULATION_TELL")
         state_hash_before = _optimizer_state_hash(self._optimizer)
         rows: list[dict[str, Any]] = []
-        seen_categories: set[str] = set()
+        seen_gene_signatures: set[str] = set()
         for ordinal in range(self.population_size):
             solution = self._optimizer.ask()
             categorical = np.asarray(solution.c)
-            if categorical.ndim != 2 or categorical.shape[0] != 1:
+            slot_count = len(self.semantics.ordered_gene_slot_names)
+            if categorical.ndim != 2 or categorical.shape[0] != slot_count:
                 raise RuntimeError(
                     f"unexpected CatCMA categorical shape: {categorical.shape}"
                 )
-            category_index = int(np.argmax(categorical[0]))
-            category_id = self.semantics.ordered_category_ids[category_index]
-            category = self._category_by_id[category_id]
+            genes: dict[str, str] = {}
+            category_indices: dict[str, int] = {}
+            for slot_index, (slot_name, category_ids) in enumerate(
+                zip(
+                    self.semantics.ordered_gene_slot_names,
+                    self.semantics.ordered_category_ids_by_slot,
+                )
+            ):
+                category_index = int(
+                    np.argmax(categorical[slot_index, : len(category_ids)])
+                )
+                category_indices[slot_name] = category_index
+                genes[slot_name] = category_ids[category_index]
+            gene_signature = _stable_hash(
+                {
+                    "semantics": self.semantics.exact_gene_semantics_hash,
+                    "genes": genes,
+                }
+            )
             proposal_id = _stable_hash(
                 {
                     "semantics": self.semantics.exact_gene_semantics_hash,
                     "seed": self.seed,
                     "generation": self.generation,
                     "ask_ordinal": ordinal,
-                    "category_id": category_id,
+                    "genes": genes,
                 }
             )[:24]
             row = {
@@ -305,29 +338,29 @@ class CatCMASearchAdapter:
                 "generation": self.generation,
                 "ask_ordinal": ordinal,
                 "route_id": self.semantics.route_id,
-                "category_index": category_index,
-                "category_id": category_id,
-                "exact_gene_semantics_hash": self.semantics.exact_gene_semantics_hash,
-                "pair_id": category.pair_id,
-                "exact_identity": category.exact_identity,
-                "skeleton_id": category.skeleton_id,
-                "duplicate_in_population": category_id in seen_categories,
+                "genes": genes,
+                "gene_category_indices": category_indices,
+                "gene_signature": gene_signature,
+                # Compatibility alias for common concentration accounting.
+                "category_id": gene_signature,
+                "exact_gene_semantics_hash": (
+                    self.semantics.exact_gene_semantics_hash
+                ),
+                "duplicate_in_population": (
+                    gene_signature in seen_gene_signatures
+                ),
                 "optimizer_state_hash_before_ask": state_hash_before,
-                "primary": copy.deepcopy(dict(category.primary)),
-                "control": copy.deepcopy(dict(category.control)),
             }
-            seen_categories.add(category_id)
+            seen_gene_signatures.add(gene_signature)
             rows.append(row)
             self._pending[proposal_id] = {
                 "solution": solution,
-                "transcript": {
-                    key: value
-                    for key, value in row.items()
-                    if key not in {"primary", "control"}
-                },
+                "transcript": copy.deepcopy(row),
             }
-        actual = [str(row["category_id"]) for row in rows]
-        if expected_category_ids is not None and actual != list(expected_category_ids):
+        actual = [dict(row["genes"]) for row in rows]
+        if expected_genes is not None and actual != [
+            dict(row) for row in expected_genes
+        ]:
             self._pending.clear()
             raise RuntimeError("CHECKPOINT_REPLAY_NEXT_ASK_DIVERGED")
         return rows
@@ -340,7 +373,9 @@ class CatCMASearchAdapter:
             raise RuntimeError("TELL_WITHOUT_COMPLETE_PENDING_POPULATION")
         if len(observations) != self.population_size:
             raise ValueError("tell requires exactly one observation per asked solution")
-        observation_ids = [str(row.get("proposal_id") or "") for row in observations]
+        observation_ids = [
+            str(row.get("proposal_id") or "") for row in observations
+        ]
         if len(set(observation_ids)) != len(observation_ids):
             raise ValueError("tell observations contain duplicate proposal IDs")
         if set(observation_ids) != set(self._pending):
@@ -379,7 +414,7 @@ class CatCMASearchAdapter:
 
     def history_receipt(self) -> dict[str, Any]:
         return {
-            "schema_version": "catcma_genesis_replay_v1",
+            "schema_version": "catcma_genesis_replay_v2",
             "semantics": self.semantics.to_dict(),
             "environment": self.environment_receipt(),
             "generation_count": len(self._history),
@@ -392,23 +427,24 @@ class CatCMASearchAdapter:
         cls,
         *,
         semantics: ExactGeneSemantics,
-        categories: Sequence[ProposalCategory],
         seed: int,
         population_size: int,
         generations: Sequence[Mapping[str, Any]],
     ) -> "CatCMASearchAdapter":
         adapter = cls(
             semantics=semantics,
-            categories=categories,
             seed=seed,
             population_size=population_size,
         )
         for expected in generations:
             transcript = list(expected.get("proposal_transcript") or ())
-            expected_categories = [str(row["category_id"]) for row in transcript]
+            if len(transcript) != population_size:
+                raise RuntimeError("CHECKPOINT_REPLAY_TRANSCRIPT_CARDINALITY_DRIFT")
             asked = adapter.ask_population(
                 checkpoint_id=str(transcript[0]["checkpoint_id"]),
-                expected_category_ids=expected_categories,
+                expected_genes=[
+                    dict(row.get("genes") or {}) for row in transcript
+                ],
             )
             if [str(row["proposal_id"]) for row in asked] != [
                 str(row["proposal_id"]) for row in transcript
@@ -418,7 +454,8 @@ class CatCMASearchAdapter:
                 list(expected.get("observations") or ())
             )
             expected_losses = [
-                float(row["loss"]) for row in expected.get("observations") or ()
+                float(row["loss"])
+                for row in expected.get("observations") or ()
             ]
             actual_losses = [
                 float(row["loss"]) for row in receipt["observations"]
@@ -427,13 +464,14 @@ class CatCMASearchAdapter:
                 raise RuntimeError("CHECKPOINT_REPLAY_LOSS_DIVERGED")
         return adapter
 
-    def next_ask_preview(self, *, checkpoint_id: str) -> list[str]:
+    def next_ask_preview(
+        self, *, checkpoint_id: str
+    ) -> list[dict[str, str]]:
         replayed = self.replay(
             semantics=self.semantics,
-            categories=self.categories,
             seed=self.seed,
             population_size=self.population_size,
             generations=self._history,
         )
         asked = replayed.ask_population(checkpoint_id=checkpoint_id)
-        return [str(row["category_id"]) for row in asked]
+        return [dict(row["genes"]) for row in asked]

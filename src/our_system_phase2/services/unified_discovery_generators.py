@@ -121,6 +121,47 @@ class RegistryDrivenGenerator:
             else None
         )
 
+    def categorical_gene_space(self, route_id: str) -> dict[str, Any]:
+        if self._compositional is None:
+            raise RuntimeError(
+                "categorical genes require the compositional-v2 profile"
+            )
+        return self._compositional.categorical_gene_space(route_id)
+
+    def propose_categorical_genes(
+        self,
+        route_id: str,
+        *,
+        genes: Mapping[str, str],
+    ) -> GeneratedPair:
+        if self._compositional is None:
+            raise RuntimeError(
+                "categorical genes require the compositional-v2 profile"
+            )
+        pair = self._compositional.propose_from_categorical_genes(
+            route_id, genes=genes
+        )
+        shared = {
+            "generator_authority": "RegistryDrivenGenerator",
+            "generator_version": self.generator_version,
+            "constructor_profile": self.constructor_profile,
+        }
+        return GeneratedPair(
+            {**pair.primary, **shared},
+            {**pair.control, **shared},
+        )
+
+    def propose_attempt(
+        self,
+        route_id: str,
+        *,
+        attempt_index: int,
+        seed: int,
+    ) -> GeneratedPair:
+        """Expose one scheduled attempt without searching past invalid supply."""
+
+        return self._pair(route_id, int(attempt_index), int(seed))
+
     def _pool(self, route_id: str, predicate: Any | None = None) -> tuple[CapabilityField, ...]:
         rows = self.registry.fields_for_route(route_id)
         if predicate is not None:

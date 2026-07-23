@@ -1,11 +1,17 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from collections import OrderedDict
+from pathlib import Path
 
 import pytest
 
 pytest.importorskip("cmaes")
 
+from our_system_phase2.runtime.cn_search_policy_qualification import (
+    POPULATION_SIZE,
+    build_baseline_population,
+    build_final_verdict,
+)
 from our_system_phase2.services.catcma_search_adapter import (
     BEHAVIOR_BLOCKED,
     CONTROL_BLOCKED,
@@ -15,52 +21,59 @@ from our_system_phase2.services.catcma_search_adapter import (
     SUPPORT_BLOCKED,
     CatCMASearchAdapter,
     ExactGeneSemantics,
-    ProposalCategory,
     rank_population_observations,
 )
-from our_system_phase2.runtime.cn_search_policy_qualification import (
-    POPULATION_SIZE,
-    build_baseline_population,
-    build_final_verdict,
+from our_system_phase2.services.compositional_grammar import (
+    CompositionalGrammarV2,
+)
+from our_system_phase2.services.unified_capability_registry import (
+    UnifiedCapabilityRegistry,
 )
 
 
-def _categories(count: int = 12) -> tuple[ProposalCategory, ...]:
-    return tuple(
-        ProposalCategory(
-            category_id=f"category_{index:03d}",
-            route_id="DISCLOSURE_EVENT",
-            skeleton_id=f"disclosure.skeleton.{index % 3}",
-            pair_id=f"pair_{index:03d}",
-            exact_identity=f"exact_{index:03d}",
-            primary={
-                "candidate_id": f"candidate_{index:03d}",
-                "pair_id": f"pair_{index:03d}",
-                "expression": f"EventCount($field_{index:03d},5)",
-            },
-            control={
-                "candidate_id": f"candidate_{index:03d}.control",
-                "pair_id": f"pair_{index:03d}",
-                "expression": f"TimeSince($field_{index:03d})",
-            },
-        )
-        for index in range(count)
-    )
+REPO = Path(__file__).resolve().parents[1]
+REGISTRY = (
+    REPO
+    / "runtime/field_registry/cn_unified_capability_registry_v3_20260717"
+    / "unified_capability_registry.json"
+)
 
 
 def _semantics(
-    categories: tuple[ProposalCategory, ...] | None = None,
+    *,
+    categories: OrderedDict[str, tuple[str, ...]] | None = None,
+    compatibility: dict[str, object] | None = None,
 ) -> ExactGeneSemantics:
+    ordered = categories or OrderedDict(
+        (
+            ("skeleton_id", ("skeleton_a", "skeleton_b", "skeleton_c")),
+            ("field_id", ("field_a", "field_b", "field_c", "field_d")),
+            ("window_id", ("3", "5", "10", "20")),
+        )
+    )
     return ExactGeneSemantics.freeze(
         route_id="DISCLOSURE_EVENT",
-        categories=categories or _categories(),
+        ordered_categories_by_slot=ordered,
+        none_semantics={
+            slot: "NONE_NOT_PRESENT_SLOT_REQUIRED" for slot in ordered
+        },
+        skeleton_compatibility=compatibility
+        or {
+            skeleton: {
+                "required_slots": list(ordered),
+                "inactive_slots": [],
+            }
+            for skeleton in ordered["skeleton_id"]
+        },
         registry_hash="registry-hash",
         root_contract_hash="root-contract-hash",
         grammar_hash="grammar-hash",
     )
 
 
-def _observations(asked: list[dict[str, object]]) -> list[dict[str, object]]:
+def _observations(
+    asked: list[dict[str, object]],
+) -> list[dict[str, object]]:
     outcomes = (
         EVALUATED,
         EVALUATED,
@@ -74,7 +87,7 @@ def _observations(asked: list[dict[str, object]]) -> list[dict[str, object]]:
         outcome = outcomes[index % len(outcomes)]
         row: dict[str, object] = {
             "proposal_id": proposal["proposal_id"],
-            "exact_identity": proposal["exact_identity"],
+            "exact_identity": proposal["proposal_id"],
             "outcome_class": outcome,
         }
         if outcome == EVALUATED:
@@ -83,33 +96,48 @@ def _observations(asked: list[dict[str, object]]) -> list[dict[str, object]]:
     return rows
 
 
-def test_exact_gene_semantics_binds_order_and_meaning() -> None:
-    categories = _categories()
-    original = _semantics(categories)
-    reordered = _semantics(tuple(reversed(categories)))
-    changed_skeleton = list(categories)
-    changed_skeleton[0] = replace(
-        changed_skeleton[0],
-        skeleton_id="different.skeleton",
+def test_exact_gene_semantics_binds_slot_category_order_and_compatibility() -> None:
+    original = _semantics()
+    reordered_categories = OrderedDict(
+        (
+            ("skeleton_id", ("skeleton_c", "skeleton_b", "skeleton_a")),
+            ("field_id", ("field_a", "field_b", "field_c", "field_d")),
+            ("window_id", ("3", "5", "10", "20")),
+        )
     )
-    changed = _semantics(tuple(changed_skeleton))
+    reordered = _semantics(categories=reordered_categories)
+    changed = _semantics(
+        compatibility={
+            "skeleton_a": {"required_slots": ["skeleton_id"]},
+            "skeleton_b": {"required_slots": ["skeleton_id"]},
+            "skeleton_c": {"required_slots": ["skeleton_id"]},
+        }
+    )
 
-    assert original.exact_gene_semantics_hash != reordered.exact_gene_semantics_hash
+    assert original.exact_gene_semantics_hash != (
+        reordered.exact_gene_semantics_hash
+    )
     assert original.exact_gene_semantics_hash != changed.exact_gene_semantics_hash
-    assert original.ordered_gene_slot_names == ("proposal_category_id",)
+    assert original.ordered_gene_slot_names == (
+        "skeleton_id",
+        "field_id",
+        "window_id",
+    )
 
 
-def test_population_is_complete_and_state_changes_after_tell() -> None:
-    categories = _categories()
+def test_population_is_complete_and_decodes_every_gene_slot() -> None:
     adapter = CatCMASearchAdapter(
-        semantics=_semantics(categories),
-        categories=categories,
+        semantics=_semantics(),
         seed=17,
         population_size=6,
     )
     asked = adapter.ask_population(checkpoint_id="checkpoint_001")
 
     assert len(asked) == 6
+    assert all(
+        tuple(row["genes"]) == adapter.semantics.ordered_gene_slot_names
+        for row in asked
+    )
     with pytest.raises(RuntimeError, match="ASK_BEFORE_PENDING"):
         adapter.ask_population(checkpoint_id="checkpoint_001")
     with pytest.raises(ValueError, match="exactly one observation"):
@@ -123,10 +151,8 @@ def test_population_is_complete_and_state_changes_after_tell() -> None:
 
 
 def test_infrastructure_failure_invalidates_whole_population() -> None:
-    categories = _categories()
     adapter = CatCMASearchAdapter(
-        semantics=_semantics(categories),
-        categories=categories,
+        semantics=_semantics(),
         seed=19,
         population_size=6,
     )
@@ -170,7 +196,9 @@ def test_loss_ranking_keeps_financial_objective_separate_from_novelty() -> None:
             "outcome_class": DETERMINISTIC_INVALID,
         },
     ]
-    ranked = {row["proposal_id"]: row for row in rank_population_observations(rows)}
+    ranked = {
+        row["proposal_id"]: row for row in rank_population_observations(rows)
+    }
 
     assert ranked["positive"]["loss"] == 0.0
     assert ranked["negative"]["loss"] == 1.0
@@ -179,11 +207,9 @@ def test_loss_ranking_keeps_financial_objective_separate_from_novelty() -> None:
 
 
 def test_genesis_replay_reproduces_next_population_exactly() -> None:
-    categories = _categories()
-    semantics = _semantics(categories)
+    semantics = _semantics()
     adapter = CatCMASearchAdapter(
         semantics=semantics,
-        categories=categories,
         seed=23,
         population_size=6,
     )
@@ -193,21 +219,18 @@ def test_genesis_replay_reproduces_next_population_exactly() -> None:
 
     replayed = CatCMASearchAdapter.replay(
         semantics=semantics,
-        categories=categories,
         seed=23,
         population_size=6,
         generations=adapter.history,
     )
     actual = replayed.ask_population(checkpoint_id="checkpoint_002")
 
-    assert [row["category_id"] for row in actual] == expected
+    assert [row["genes"] for row in actual] == expected
 
 
 def test_tell_rejects_unasked_proposals() -> None:
-    categories = _categories()
     adapter = CatCMASearchAdapter(
-        semantics=_semantics(categories),
-        categories=categories,
+        semantics=_semantics(),
         seed=29,
         population_size=6,
     )
@@ -219,26 +242,80 @@ def test_tell_rejects_unasked_proposals() -> None:
         adapter.tell_population(observations)
 
 
-def test_registry_baseline_consumes_disjoint_frozen_segments() -> None:
-    categories = _categories(POPULATION_SIZE * 2)
+def test_registry_baseline_schedules_attempts_without_searching_past_them() -> None:
     first = build_baseline_population(
-        categories=categories,
         route_id="DISCLOSURE_EVENT",
         checkpoint_index=0,
+        seed=101,
     )
     second = build_baseline_population(
-        categories=categories,
         route_id="DISCLOSURE_EVENT",
         checkpoint_index=1,
+        seed=101,
     )
 
     assert len(first) == len(second) == POPULATION_SIZE
-    assert {row["category_id"] for row in first}.isdisjoint(
-        {row["category_id"] for row in second}
+    assert {row["generation_attempt_index"] for row in first}.isdisjoint(
+        {row["generation_attempt_index"] for row in second}
     )
-    assert [row["category_id"] for row in first] == [
-        category.category_id for category in categories[:POPULATION_SIZE]
-    ]
+    assert [row["generation_attempt_index"] for row in first] == list(
+        range(POPULATION_SIZE)
+    )
+
+
+def test_authoritative_grammar_materializes_exact_categorical_genes() -> None:
+    grammar = CompositionalGrammarV2(
+        UnifiedCapabilityRegistry.read(REGISTRY),
+        enforce_route_compatibility=True,
+    )
+    for route_id in (
+        "INTRADAY_STATE_TRANSITION",
+        "DISCLOSURE_EVENT",
+        "SLOW_TEMPORAL_CHANGE",
+    ):
+        space = grammar.categorical_gene_space(route_id)
+        categories = space["ordered_categories_by_slot"]
+        candidate_genes = {
+            slot: values[0] for slot, values in categories.items()
+        }
+        pair = None
+        # State payload/source and slow metadata constraints may reject an
+        # individual combination. The frozen space intentionally includes
+        # those deterministic-invalid outcomes for CatCMA to learn.
+        for primary in categories[
+            "state_field_id"
+            if route_id == "INTRADAY_STATE_TRANSITION"
+            else (
+                "primary_field_id"
+                if route_id == "SLOW_TEMPORAL_CHANGE"
+                else "event_field_id"
+            )
+        ]:
+            candidate_genes[
+                "state_field_id"
+                if route_id == "INTRADAY_STATE_TRANSITION"
+                else (
+                    "primary_field_id"
+                    if route_id == "SLOW_TEMPORAL_CHANGE"
+                    else "event_field_id"
+                )
+            ] = primary
+            try:
+                pair = grammar.propose_from_categorical_genes(
+                    route_id, genes=candidate_genes
+                )
+                break
+            except ValueError:
+                continue
+        assert pair is not None
+        assert pair.primary["legal"] is True
+        assert pair.control["legal"] is True
+        assert pair.primary["categorical_genes"] == candidate_genes
+        again = grammar.propose_from_categorical_genes(
+            route_id, genes=candidate_genes
+        )
+        assert again.primary["exact_identity"] == pair.primary["exact_identity"]
+        assert again.primary["pair_id"] == pair.primary["pair_id"]
 
 
 def _arm_metrics(
