@@ -1107,6 +1107,16 @@ def _arm_metrics(
         "tell_observations_by_route": dict(
             Counter(str(row["route_id"]) for row in observations)
         ),
+        "evaluated_pairs_by_route": dict(
+            Counter(str(row["route_id"]) for row in evaluated)
+        ),
+        "deterministic_invalid_pairs_by_route": dict(
+            Counter(
+                str(row["route_id"])
+                for row in observations
+                if row["outcome_class"] == DETERMINISTIC_INVALID
+            )
+        ),
         "evaluated_pairs": len(evaluated),
         "positive_matched_pairs": sum(value > 0.0 for value in increments),
         "active_wall_seconds": wall_seconds,
@@ -1523,14 +1533,29 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         failed_routes = [
             str(row["route_id"])
             for row in catcma_rows
-            if int(row["historically_exact_novel_pairs"]) == 0
+            if int(row["legal_pairs"]) == 0
+        ]
+        supply_exhausted_routes = [
+            str(row["route_id"])
+            for row in catcma_rows
+            if int(row["legal_pairs"]) > 0
+            and int(row["historically_exact_novel_pairs"]) == 0
         ]
         receipt = {
             "schema_version": "cn_search_policy_preflight_materialization_v1",
-            "status": "PASS" if not failed_routes else "FAIL",
+            "status": (
+                "FAIL"
+                if failed_routes
+                else (
+                    "PASS_WITH_EXACT_SUPPLY_EXHAUSTION"
+                    if supply_exhausted_routes
+                    else "PASS"
+                )
+            ),
             "budget_consumed": 0,
             "phase3cm_started": False,
             "failed_routes": failed_routes,
+            "exact_supply_exhausted_routes": supply_exhausted_routes,
             "routes": route_rows,
             "gene_space_manifest": _artifact(
                 gene_space_manifest_path, root=output_root
@@ -1544,7 +1569,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         if failed_routes:
             raise RuntimeError(
-                "CATCMA_FIRST_POPULATION_HAS_NO_NOVEL_SUPPLY:"
+                "CATCMA_FIRST_POPULATION_HAS_NO_LEGAL_SUPPLY:"
                 + ",".join(failed_routes)
             )
         return receipt
@@ -1636,6 +1661,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 environment_path,
                 metrics_path,
                 verdict_path,
+                *(
+                    (output_root / "preflight_materialization.json",)
+                    if (
+                        output_root / "preflight_materialization.json"
+                    ).is_file()
+                    else ()
+                ),
                 *(
                     output_root
                     / "arms"
