@@ -362,8 +362,10 @@
         "runtime/run_plans/cn_compositional_nline_bounded_search_epoch1_v1.json",
         "src/our_system_phase2/services/compositional_grammar.py",
         "src/our_system_phase2/services/unified_discovery_generators.py",
+        "src/our_system_phase2/services/catcma_search_adapter.py",
         "src/our_system_phase2/services/route_supply_closure.py",
         "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
+        "src/our_system_phase2/runtime/cn_search_policy_qualification.py",
         "scripts/run_cn_route_supply_closure.py",
         "src/our_system_phase2/services/multi_arm_scheduler.py",
         "src/our_system_phase2/services/portfolio_behavior_archive.py",
@@ -373,21 +375,22 @@
         "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
         "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
+        "runtime/run_plans/cn_search_policy_qualification_20260724_authorization.json",
+        "runtime/run_plans/cn_search_policy_qualification_20260724_receipt.json",
         "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
         "runtime/run_plans/cn_active_search_chain_gap_audit_20260723.json",
         "runtime/cn_iterative_search_v1_20260721/final_decision.json",
         "runtime/cn_route_supply_closure_20260721_c939edf_4route/final_decision.json",
         "reports/CN_ITERATIVE_SEARCH_V1_20260721.md",
-        "reports/CN_ROUTE_SUPPLY_CLOSURE_20260721.md"
+        "reports/CN_ROUTE_SUPPLY_CLOSURE_20260721.md",
+        "tests/test_catcma_search_adapter.py"
       ],
       "claim_badges": [
-        "6 IMMUTABLE CHECKPOINTS",
-        "872 DEVELOPMENT PAIRS",
-        "533 VALIDATION-EVALUABLE PAIRS",
-        "12 FIXED SPENT-HOLDOUT PAIRS",
-        "6 STRICT NONCOLLAPSE",
+        "CATCMA QUALITY FAIL",
+        "SCALE READINESS FAIL",
+        "STATE EXACT SPACE EXHAUSTED",
+        "DEVELOPMENT ONLY",
         "LONG-ONLY TOP",
-        "WEAK NOT SEALED OOS",
         "NO PROMOTION"
       ],
       "critical": true,
@@ -434,8 +437,8 @@
       "validation": {
         "level": "PARTIAL",
         "result": "WARN",
-        "evidence_ref": "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
-        "verified_at_sha": "81b53dba81b2d710b19a74f32f50556f4dc4cba3"
+        "evidence_ref": "runtime/run_plans/cn_search_policy_qualification_20260724_receipt.json",
+        "verified_at_sha": "88854bc8216b24fa66645555c5b90067f562ce1a"
       }
     },
     {
