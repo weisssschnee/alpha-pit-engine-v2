@@ -1,0 +1,138 @@
+{
+  "schema_version": "cn_search_policy_qualification_receipt_v1",
+  "status": "QUALIFICATION_COMPLETE_POLICY_AND_SCALE_FAIL",
+  "completed_at": "2026-07-24",
+  "host": "DESKTOP-77OPJ6F",
+  "research_role": "development_only",
+  "task_id": "lanjob_20260724_053809_76a45c",
+  "deployment_repo_sha": "6ae7706acc84b62f44a6b8dc7955e9fd1a6115e8",
+  "remote_artifact_root": "D:\\ChengboRemote\\runtime\\cn_search_policy_qualification_20260724_6ae7706_384p_r4",
+  "optimizer": {
+    "implementation": "official_cmaes.CatCMAwM",
+    "package_version": "0.13.0",
+    "wheel_sha256": "ccf61c73d5792cf44b50672b63f28c590082d1c1f5ab5155e2dd6e5305427cad",
+    "adapter": "src/our_system_phase2/services/catcma_search_adapter.py",
+    "formula_constructor_authority": "CompositionalGrammarV2",
+    "restore_authority": "GENESIS_PLUS_ASK_TRANSCRIPT_PLUS_TELL_LOSSES",
+    "full_population_ask_tell": true
+  },
+  "budget": {
+    "arms": ["registry_baseline", "official_catcma"],
+    "routes": [
+      "INTRADAY_STATE_TRANSITION",
+      "DISCLOSURE_EVENT",
+      "SLOW_TEMPORAL_CHANGE"
+    ],
+    "checkpoint_count": 4,
+    "population_size_per_route": 16,
+    "scheduled_pairs_per_arm": 192,
+    "scheduled_pairs_total": 384,
+    "tell_observations_per_arm": 192,
+    "immutable_arm_checkpoint_count": 8
+  },
+  "verdict": {
+    "SEARCH_POLICY_QUALITY": "FAIL",
+    "LARGE_SEARCH_SCALE_READINESS": "FAIL",
+    "catcma_current_configuration_decision": "NOT_QUALIFIED",
+    "old_rx_ucb_cem_optimizer_decision": "REMAINS_REJECTED",
+    "authority_promotion": "FORBIDDEN"
+  },
+  "metrics": {
+    "registry_baseline": {
+      "evaluated_pairs": 34,
+      "positive_matched_pairs": 29,
+      "positive_matched_pairs_per_wall_hour": 1728.2424955153344,
+      "median_signed_matched_increment": 3.082691420264333,
+      "behavior_family_count": 35,
+      "behavior_discovery_per_evaluated_pair": 1.0294117647058822,
+      "evaluated_pairs_by_route": {
+        "DISCLOSURE_EVENT": 2,
+        "SLOW_TEMPORAL_CHANGE": 32
+      }
+    },
+    "official_catcma": {
+      "evaluated_pairs": 44,
+      "positive_matched_pairs": 33,
+      "positive_matched_pairs_per_wall_hour": 2025.8116886418738,
+      "median_signed_matched_increment": 1.4934912177392299,
+      "behavior_family_count": 45,
+      "behavior_discovery_per_evaluated_pair": 1.0227272727272727,
+      "evaluated_pairs_by_route": {
+        "DISCLOSURE_EVENT": 8,
+        "SLOW_TEMPORAL_CHANGE": 36
+      }
+    },
+    "quality_check_results": {
+      "positive_matched_pairs_per_wall_hour_improved": true,
+      "median_signed_matched_increment_not_worse": false,
+      "behavior_discovery_at_least_90_percent_of_baseline": true,
+      "route_concentration_not_materially_worse": true,
+      "skeleton_concentration_not_materially_worse": true,
+      "no_single_category_collapse": true
+    }
+  },
+  "state_exact_supply_exhaustion": {
+    "status": "EXACT_SUPPLY_EXHAUSTED",
+    "route_id": "INTRADAY_STATE_TRANSITION",
+    "combination_count": 384,
+    "legal_combinations": 320,
+    "invalid_combinations": 64,
+    "distinct_legal_exact_identities": 270,
+    "historically_novel_exact_identities": 0,
+    "consequence": "The route supplied feasibility observations only; it was not an active-bar financial positive control in this qualification.",
+    "evidence_sha256": "4d82cc47cdda3a76924afe684e8f899d3c76ae072e81898f779cc1b307dfe404",
+    "manifest_sha256": "339dddc13744536e62d373053a7ec1da9f2ddbb7fdcaffe9a9eb24b8e1cf2e13"
+  },
+  "scale_evidence": {
+    "active_bar_financial_pairs": 0,
+    "cpu_gate_a_or_b": false,
+    "reason": "No historically novel Intraday State exact identity remained, so active-bar throughput was not exercised and scale readiness is unproved.",
+    "stock_session_thread_contract": 2,
+    "pair_batch_size_max": 4,
+    "maximum_observed_cache_bytes_catcma": 2056280,
+    "minimum_free_memory_bytes_catcma": 85594484736,
+    "memory_gate_24_gib": "PASS",
+    "cache_cap_8_gib": "PASS"
+  },
+  "access_boundary": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "promotion": "FORBIDDEN",
+    "strict_stage_a": "NOT_AUTHORIZED"
+  },
+  "artifacts": {
+    "run_manifest": {
+      "bytes": 10955,
+      "sha256": "182ffafb636e1f900a25e4001fe216619da730fd447e39e2a8e5889940eda681"
+    },
+    "qualification_metrics": {
+      "bytes": 2677,
+      "sha256": "2db8cd2837581374dc44e36be64def4ab57eb7045c1de8ce0262548772bdf720"
+    },
+    "qualification_verdict": {
+      "bytes": 1438,
+      "sha256": "0c115204c6e95067eb90e89068c987ee88ecd0b43ad4b4f37425ac333526e87e"
+    },
+    "preflight_materialization": {
+      "bytes": 2306,
+      "sha256": "0dbf7f3da826aa0bf363a090b18c46acc049f8c3cc3a1b93bcaab95b604e4804"
+    },
+    "campaign_process_exit": {
+      "bytes": 177,
+      "sha256": "529c30270e1611af6203f556c4dc3bc9da23f2c4314f3e7af210c05f3c27e771"
+    },
+    "job_log_sha256": "5ae194b1a69dda49cffd61b35cee302d1ce8656fea026ea49d614eb75294be72"
+  },
+  "immutable_batch_manifest_sha256": {
+    "official_catcma.checkpoint_001": "12701449054412c67163691a781ca5ddd1f81e20b7b108bbeb68e19122ffdbe4",
+    "official_catcma.checkpoint_002": "55dc66c817a89499d5abeb5c79e6a9db9cade7a05fdf88dca8e34392f927c300",
+    "official_catcma.checkpoint_003": "32b1222827dccd5ffa87efe28391ec50da6a1e47b94cbd852cd9a5f011e0275c",
+    "official_catcma.checkpoint_004": "ed37e716c83d13f2709be6872bfd08294b2e26f9e499418233263f4799ef5a0c",
+    "registry_baseline.checkpoint_001": "9dcef678b8fcd062bc1651e7496e2341c26b592a8999ff675f2de6a253909cc6",
+    "registry_baseline.checkpoint_002": "e0c4631080cbc4deff0d7f5ed232d2e1581814747ed6c6042edf0b1fdab7dd80",
+    "registry_baseline.checkpoint_003": "4b5c810690627b683f27863621a64045637ab0456019868208bbee30e81722b3",
+    "registry_baseline.checkpoint_004": "d9141c3ab83a3e9f30eaff099b162ddf6d0b84b48d688605f83b95d3a749dc97"
+  },
+  "claim_boundary": "Development-only optimizer qualification. CatCMA improved positive-pair throughput and evaluated breadth but failed the frozen median-quality gate. State exact supply exhaustion prevented an active-bar scale test. No validation, holdout, 2026, Alpha, promotion, or active-authority claim is made."
+}

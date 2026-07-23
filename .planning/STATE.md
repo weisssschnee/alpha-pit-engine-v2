@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-23
+Updated: 2026-07-24
 
-Current state: `CN_CORE_PACK_LARGE_DEVELOPMENT_COMPLETE_REPORT_ONLY_VALIDATION_COMPLETE_CANDIDATE_DECISION_PENDING`
+Current state: `CN_CORE_PACK_RESULTS_RETAINED_SEARCH_POLICY_QUALIFICATION_FAILED_NO_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,6 +16,26 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
+- The bounded official CatCMAwM search-policy qualification completed on 77o
+  with eight immutable arm-checkpoints and 384 scheduled matched-pair asks.
+  CatCMA improved positive matched pairs per wall-hour from 1,728.24 to
+  2,025.81, evaluated 44 rather than 34 pairs, and retained the behavior-
+  diversity and concentration gates. Its median signed matched increment was
+  only 1.49349 versus the baseline's 3.08269, so the frozen composite verdict
+  is `SEARCH_POLICY_QUALITY=FAIL`. The current CatCMA configuration is not
+  qualified and neither it nor the rejected legacy RX/UCB/CEM optimizers become
+  search authority.
+- `INTRADAY_STATE_TRANSITION` was not a financial positive control in that
+  qualification. A zero-budget exhaustive check covered all 384 frozen
+  categorical combinations: 320 were legal, 64 were deterministic source/
+  state conflicts, the legal set collapsed to 270 exact identities, and all
+  270 already existed in the historical exact archive. Disclosure and Slow
+  Temporal supplied the actual development evaluations. Because no novel
+  active-bar pair remained, the CPU/throughput gate was not exercised and
+  `LARGE_SEARCH_SCALE_READINESS=FAIL`; this is missing evidence rather than a
+  financial route-health failure. Validation, holdout and 2026 reads were zero,
+  and promotion remained forbidden. The compact bound receipt is
+  `runtime/run_plans/cn_search_policy_qualification_20260724_receipt.json`.
 - `cn_core_pack_development_discovery_v1` is now the active proposal-root
   ontology authority for bounded development discovery. It remains subordinate
   to the unified registry `route_id` authority for route eligibility and
