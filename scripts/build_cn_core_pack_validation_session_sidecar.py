@@ -66,6 +66,11 @@ def main() -> int:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--candidate-table", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)
+    parser.add_argument(
+        "--evaluation-role",
+        choices=("validation", "holdout"),
+        default="validation",
+    )
     parser.add_argument("--split-manifest", type=Path, required=True)
     parser.add_argument("--split-manifest-hash", required=True)
     parser.add_argument("--fundamental-root", type=Path, required=True)
@@ -77,13 +82,13 @@ def main() -> int:
     if _sha256(split_manifest) != args.split_manifest_hash:
         raise RuntimeError("split manifest hash drift")
     split = pd.read_csv(split_manifest, dtype=str)
-    validation_rows = split.loc[split["split"] == "validation"]
-    validation_dates = tuple(sorted(validation_rows["trade_date"].tolist()))
-    if not validation_dates or not validation_rows["optimizer_usage"].eq(
+    role_rows = split.loc[split["split"] == args.evaluation_role]
+    eligible_dates = tuple(sorted(role_rows["trade_date"].tolist()))
+    if not eligible_dates or not role_rows["optimizer_usage"].eq(
         "report_only"
     ).all():
-        raise RuntimeError("validation calendar is not report-only")
-    sessions = pd.DatetimeIndex(pd.to_datetime(validation_dates))
+        raise RuntimeError(f"{args.evaluation_role} calendar is not report-only")
+    sessions = pd.DatetimeIndex(pd.to_datetime(eligible_dates))
     maximum_observable_time = str(sessions.max() + pd.Timedelta(hours=15))
 
     required_fields = _required_fields(args.candidate_table.resolve())
@@ -241,20 +246,27 @@ def main() -> int:
                 "rows": len(frame),
                 "fields": output_fields,
                 "pit_coverage": coverage,
-                "status": "SESSION_VALIDATION_PIT_MATERIALIZATION_PASS",
+                "status": (
+                    f"SESSION_{args.evaluation_role.upper()}_PIT_MATERIALIZATION_PASS"
+                ),
             }
         )
         print(json.dumps({"shard": shard, "rows": len(frame), "status": "PASS"}))
 
     manifest = {
-        "schema_version": "cn_core_pack_validation_session_sidecar_v1",
+        "schema_version": "cn_core_pack_report_only_session_sidecar_v2",
         "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
-        "data_role": "validation_report_only",
-        "evaluation_role": "validation",
+        "data_role": f"{args.evaluation_role}_report_only",
+        "evaluation_role": args.evaluation_role,
         "split_manifest_hash": args.split_manifest_hash,
-        "eligible_trade_date_count": len(validation_dates),
+        "eligible_trade_date_count": len(eligible_dates),
         "eligible_train_date_count": 0,
-        "eligible_validation_date_count": len(validation_dates),
+        "eligible_validation_date_count": (
+            len(eligible_dates) if args.evaluation_role == "validation" else 0
+        ),
+        "eligible_holdout_date_count": (
+            len(eligible_dates) if args.evaluation_role == "holdout" else 0
+        ),
         "fields": records[0]["fields"],
         "source_shard_count": len(records),
         "source_rows": sum(int(row["rows"]) for row in records),
@@ -263,8 +275,16 @@ def main() -> int:
         "build_wall_seconds": time.perf_counter() - started,
         "shards": records,
         "chip_receipt": chip_receipt,
-        "validation_reads": sum(int(row["rows"]) for row in records),
-        "holdout_reads": 0,
+        "validation_reads": (
+            sum(int(row["rows"]) for row in records)
+            if args.evaluation_role == "validation"
+            else 0
+        ),
+        "holdout_reads": (
+            sum(int(row["rows"]) for row in records)
+            if args.evaluation_role == "holdout"
+            else 0
+        ),
         "forward_2026_reads": 0,
         "feedback_write": "FORBIDDEN",
         "scheduler_write": "FORBIDDEN",

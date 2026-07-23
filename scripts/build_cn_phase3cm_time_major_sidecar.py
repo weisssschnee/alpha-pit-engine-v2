@@ -40,7 +40,7 @@ def _split_dates(
     *,
     evaluation_role: str,
 ) -> tuple[str, ...]:
-    if evaluation_role not in {"train", "validation"}:
+    if evaluation_role not in {"train", "validation", "holdout"}:
         raise ValueError(f"unsupported evaluation role: {evaluation_role}")
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     if digest != str(expected_sha256):
@@ -69,7 +69,11 @@ def _split_dates(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, required=True)
-    parser.add_argument("--evaluation-role", choices=("train", "validation"), default="train")
+    parser.add_argument(
+        "--evaluation-role",
+        choices=("train", "validation", "holdout"),
+        default="train",
+    )
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--candidate-table", type=Path, action="append", required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
@@ -146,13 +150,14 @@ def main() -> int:
         "data_role": (
             "development_train_only"
             if args.evaluation_role == "train"
-            else "validation_report_only"
+            else f"{args.evaluation_role}_report_only"
         ),
         "evaluation_role": args.evaluation_role,
         "split_manifest_hash": args.split_manifest_hash,
         "eligible_trade_date_count": len(eligible_dates),
         "eligible_train_date_count": len(eligible_dates) if args.evaluation_role == "train" else 0,
         "eligible_validation_date_count": len(eligible_dates) if args.evaluation_role == "validation" else 0,
+        "eligible_holdout_date_count": len(eligible_dates) if args.evaluation_role == "holdout" else 0,
         "fields": list(fields),
         "source_shard_count": len(records),
         "source_rows": sum(int(row["source_rows"]) for row in records),
@@ -168,7 +173,11 @@ def main() -> int:
             if args.evaluation_role == "validation"
             else 0
         ),
-        "holdout_reads": 0,
+        "holdout_reads": (
+            sum(int(row["rows"]) for row in records)
+            if args.evaluation_role == "holdout"
+            else 0
+        ),
         "forward_2026_reads": 0,
     }
     (root / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json").write_text(

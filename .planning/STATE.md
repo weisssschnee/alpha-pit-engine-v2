@@ -276,39 +276,64 @@ There is no remaining global route-supply, ontology-authority,
 train-to-validation or acceleration-readiness blocker in the completed campaign.
 Its preserved cache, memory-headroom and monitor-path incidents are run-health
 facts, not financial route failures. The 93 unresolved rows in the historical V1
-archive remain immutable and are not retroactively rewritten. Formal search,
-candidate promotion, holdout access, 2026 access and economic claims remain
-blocked by their existing authorization and evidence boundaries. Plate remains
-independently blocked by missing real PIT minute materialization; additional
-compound-state expansion beyond tested expanded source-leaf forms remains a
-localized materialization gap. The immediate research blocker is now a bounded
-candidate decision, not another whole-batch qualification: either deepen the
-current candidate mechanisms before another validation/OOS sequence, or freeze
-the current candidates and test them on untouched OOS first. Validation already
-used for candidate interpretation is spent and cannot be relabeled as OOS.
+archive remain immutable and are not retroactively rewritten. On 2026-07-23 the
+user separately authorized one fixed 48-session untouched-holdout evaluation of
+the already frozen 12 behavior-exact candidate pairs. That authorization is
+report-only, long-only, no-2026, and forbids feedback, scheduler, archive and
+promotion writes. It does not authorize formal search, candidate promotion or
+economic claims. The freeze is bound in
+`runtime/run_plans/cn_core_pack_fixed_holdout_candidate_freeze_20260723.json`.
+The executable path is prepared and locally verified, but 77o is currently
+unreachable over its canonical LAN SSH route, so no holdout row has yet been
+read and no duplicate task has been launched. Plate remains independently
+blocked by missing real PIT minute materialization; additional compound-state
+expansion beyond tested expanded source-leaf forms remains a localized
+materialization gap.
+
+The active-chain audit is frozen in
+`runtime/run_plans/cn_active_search_chain_gap_audit_20260723.json`. The current
+authority is a bounded typed compositional enumerator with behavior-aware
+admission and route-budget feedback, not an active MCTS or evolutionary AST
+engine. It has partial admitted-candidate memory, deterministic typed skeleton
+coverage and immutable checkpoint ledgers, but it does not yet retain every
+legal attempted formula, continue elite ASTs, perform typed subtree crossover,
+apply mutation, or carry regime-partitioned top-K elites across search
+generations. The observed late-checkpoint supply collapse is therefore a search
+policy limitation, not a field-materialization failure. These gaps do not block
+the fixed holdout; they bound the design of any later expanded search. The
+repository's previously exercised Phase3BP RX/UCB, CEM, hybrid and orthogonal
+search core remains present, together with the EVALRESET train-only feedback
+guard and expression/skeleton memory keys, but the current
+`RegistryDrivenGenerator` campaign bypassed that core. A later search repair
+must reuse it through a thin registry-route adapter; it must not handcraft a new
+MCTS, crossover, mutation or replacement search engine.
 
 ## Next action
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
-qualification, authority smoke, or the just-completed six-checkpoint large
-campaign. Do not rank event, state, slow fundamental/chip and active-bar
-candidates as one global race. The only next research decision is:
+qualification, authority smoke, or the completed six-checkpoint large campaign.
+When 77o becomes reachable, first confirm that no matching process is running,
+reuse the frozen train and candidate-bound sidecar authorities, and run exactly
+one fixed 48-session holdout task through
+`scripts/run_cn_core_pack_fixed_holdout_77o.ps1`. Verify positive holdout reads,
+zero validation and 2026 reads, zero feedback/scheduler/archive writes,
+long-only portfolio mode, unchanged train hashes, and at least 24 GiB free
+memory. A pass is still weak OOS evidence because 48 daily observations cannot
+support promotion; a failure is candidate evidence, not route-health evidence.
 
-1. expand development search around the current candidate mechanisms and
-   behavior families, then repeat report-only validation and obtain additional
-   untouched OOS evidence; or
-2. recommended default: freeze the current behavior-distinct candidates,
-   require non-collapse on explicitly authorized untouched OOS, classify the
-   survivors by economic mechanism, intended regime/event/state and portfolio
-   role, then expand search only for materially uncovered regimes.
-
-Both options preserve matched controls, long-only execution, immutable evidence
-and the existing registry/evaluator authority. Batch-average or route-average
-weakness cannot reject a best candidate, while a best candidate cannot claim
-coverage of regimes it was not designed to serve. Preserve the fixed 8 GiB cache
-cap and proven runtime envelope. `exploit`, `repair`, and `orthogonal` remain
-labels unless a real registry-backed constructor is added and tested. Broad
-Event remains a zero-budget frozen reference. Strict Stage A, candidate
-promotion, cross-campaign adaptive memory, holdout access and 2026 access remain
-forbidden until separately authorized. Plate resumes only when real PIT minute
-materialization is present on 77o.
+After that result closes, classify non-collapsing candidates by economic
+mechanism, intended regime/event/state and portfolio role, then expand search
+only for materially uncovered regimes. The later search-policy repair is
+limited to reusing the existing Phase3BP RX/UCB-CEM-hybrid/orthogonal core as
+route-local generation actions beneath the unified registry `route_id`. Reuse
+the existing expression/skeleton identity keys for every legal attempt and the
+existing round top-decision output contract, projected by route and
+behavior/economic role. Do not promote legacy scheduler arm names into a second
+top-level authority, import old reward-bearing search memory, assign invented
+fresh/crossover/mutation percentages, or build MCTS/crossover/mutation
+machinery. Preserve the fixed 8 GiB evaluator cache cap and existing
+registry/compiler/Phase3CM authority. Broad Event remains a zero-budget frozen
+reference. Strict Stage A, candidate promotion, any additional holdout access,
+2026 access and cross-campaign reward memory remain forbidden until separately
+authorized. Plate resumes only when real PIT minute materialization is present
+on 77o.

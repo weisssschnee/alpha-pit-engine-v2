@@ -571,7 +571,7 @@ def _context_and_binding(
     data_release_hash: str,
     evaluation_role: str = "train",
 ) -> tuple[Path, dict[str, Path]]:
-    if evaluation_role not in {"train", "validation"}:
+    if evaluation_role not in {"train", "validation", "holdout"}:
         raise ValueError(f"unsupported evaluation role: {evaluation_role}")
     evaluator_paths = (
         REPO / "scripts" / "run_cn_phase3cm_streaming_qualification.py",
@@ -642,7 +642,7 @@ def _context_and_binding(
     binding: dict[str, Any] = {
         "status": "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND",
         "data_role": (
-            "development" if evaluation_role == "train" else "validation_report_only"
+            "development" if evaluation_role == "train" else f"{evaluation_role}_report_only"
         ),
         "evaluation_role": evaluation_role,
         "source_closure_sha": data_release_hash,
@@ -658,22 +658,22 @@ def _context_and_binding(
         "artifacts": artifacts,
         "pairs": pairs,
         "candidate_members": members,
-        "sealed_reads": (
-            {"validation": 0, "holdout": 0, "forward_2026": 0}
-            if evaluation_role == "train"
-            else {"holdout": 0, "forward_2026": 0}
-        ),
+        "sealed_reads": {
+            "train": {"validation": 0, "holdout": 0, "forward_2026": 0},
+            "validation": {"holdout": 0, "forward_2026": 0},
+            "holdout": {"forward_2026": 0},
+        }[evaluation_role],
         "promotion": "FORBIDDEN",
         "cross_sprint_memory": "FORBIDDEN",
         "strict_stage_a": "NOT_AUTHORIZED",
         "evaluation_name": (
             "full-coordinate development Phase3CM pair evaluation"
             if evaluation_role == "train"
-            else "automatic post-train report-only validation"
+            else f"frozen-candidate report-only {evaluation_role}"
         ),
-        "feedback_write": "FORBIDDEN" if evaluation_role == "validation" else "TRAIN_ONLY",
-        "scheduler_write": "FORBIDDEN" if evaluation_role == "validation" else "CAMPAIGN_LOCAL",
-        "archive_write": "FORBIDDEN" if evaluation_role == "validation" else "TRAIN_ONLY",
+        "feedback_write": "FORBIDDEN" if evaluation_role != "train" else "TRAIN_ONLY",
+        "scheduler_write": "FORBIDDEN" if evaluation_role != "train" else "CAMPAIGN_LOCAL",
+        "archive_write": "FORBIDDEN" if evaluation_role != "train" else "TRAIN_ONLY",
     }
     binding["binding_hash"] = _stable_hash(binding)
     binding_path = _write_json(
@@ -681,7 +681,7 @@ def _context_and_binding(
         / (
             "phase3cm_input_binding.json"
             if evaluation_role == "train"
-            else "phase3cm_validation_input_binding.json"
+            else f"phase3cm_{evaluation_role}_input_binding.json"
         ),
         binding,
     )
@@ -706,9 +706,12 @@ def _run_phase3cm(
         if candidate_table is None:
             continue
         pair_count = len({row["pair_id"] for row in _read_csv(candidate_table)})
-        output_root = batch_root / (
-            "phase3cm" if evaluation_role == "train" else "phase3cm_validation"
-        ) / backend
+        output_namespace = (
+            "phase3cm"
+            if evaluation_role == "train"
+            else f"phase3cm_{evaluation_role}"
+        )
+        output_root = batch_root / output_namespace / backend
         result_path = output_root / "CN_STREAMING_BACKEND_RESULT.json"
         if result_path.exists():
             reused = json.loads(result_path.read_text(encoding="utf-8"))
@@ -752,6 +755,8 @@ def _run_phase3cm(
             "--compute-threads", str(compute_threads[backend]),
             "--iterative-batch-id", batch_id,
         ]
+        if (output_root / "CN_STREAMING_CHECKPOINT.json").is_file():
+            command.append("--resume")
         environment = dict(os.environ)
         environment.update(
             {

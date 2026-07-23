@@ -1,0 +1,203 @@
+{
+  "schema_version": "cn_active_search_chain_gap_audit_v2",
+  "status": "AUDIT_COMPLETE_TARGETED_GAPS_FOUND",
+  "scope": "CURRENT registry_compositional_v2 medium/large campaign path only",
+  "non_authoritative_code_excluded": [
+    "legacy DEFAULT_ARM_PROFILES",
+    "cn_b1s_development_canary uct_mcts/evolutionary labels",
+    "legacy search-memory payloads carrying validation, holdout or replay reward"
+  ],
+  "active_chain": [
+    "unified registry route_id",
+    "RegistryDrivenGenerator registry_compositional_v2",
+    "CompositionalGrammarV2 fixed typed skeleton",
+    "TypedRouteCompiler exact identity",
+    "label-free behavior probe admission",
+    "Phase3CM full-coordinate development evaluation",
+    "campaign-local route budget feedback"
+  ],
+  "previously_validated_search_core_reuse": {
+    "verdict": "EXISTING_CORE_PRESENT_BUT_BYPASSED_BY_CURRENT_GENERATOR",
+    "algorithm_implementation_authority": [
+      "src/our_system_phase2/runtime/phase3bp_true1min_search_algorithm_smoke.py::_generate_rx_ucb_candidates",
+      "src/our_system_phase2/runtime/phase3bp_true1min_search_algorithm_smoke.py::_generate_cem_elite_candidates",
+      "src/our_system_phase2/runtime/phase3bp_true1min_search_algorithm_smoke.py::_generate_hybrid_candidates",
+      "src/our_system_phase2/runtime/phase3bp_true1min_search_algorithm_smoke.py::_generate_orthogonal_candidates"
+    ],
+    "feedback_and_memory_boundary": [
+      "src/our_system_phase2/services/search_feedback.py",
+      "src/our_system_phase2/services/evaluation_access_guard.py",
+      "src/our_system_phase2/services/search_memory.py::expression_memory_key",
+      "src/our_system_phase2/services/search_memory.py::skeleton_memory_key"
+    ],
+    "runtime_evidence": [
+      "reports/phase3ct_augmented_hybrid_bp_r3b_20260625/phase3bp_true1min_search_algorithm_summary.json",
+      "reports/phase3cp_real_cm_balanced_topq30_loop_20260623/phase3cp_real_cm_small_loop_summary.json",
+      "runtime/run_plans/phase3co_multi_arm_scheduler_20260623.json"
+    ],
+    "authority_boundary": [
+      "unified registry route_id remains the only top-level scheduling key",
+      "existing RX/UCB, CEM, hybrid and orthogonal modes may only be route-local generation actions",
+      "TypedRouteCompiler and matched-control pair authority remain mandatory after generation",
+      "old scheduler arm names cannot become a second route authority",
+      "old persisted feedback and replay-enriched search memory cannot be imported",
+      "no new MCTS, generic crossover, mutation engine or replacement search platform is authorized"
+    ],
+    "required_integration": "Use a thin adapter from each registry route to the existing Phase3BP generation modes, then pass every proposal through current registry eligibility, compiler, matched-control, exact-memory and behavior-admission gates. Refactor or call existing implementation; do not reimplement its algorithms."
+  },
+  "observed_campaign_evidence": {
+    "campaign_id": "CN_CORE_PACK_LARGE_DEVELOPMENT_V1_20260722_R5",
+    "scheduled_pairs": 1536,
+    "generation_attempts": 16850,
+    "admitted_pairs": 872,
+    "candidate_members": 1744,
+    "new_behavior_families": 750,
+    "checkpoint_generation_attempts": [462, 626, 778, 4966, 5025, 4993],
+    "checkpoint_admitted_pairs": [190, 180, 167, 156, 90, 89],
+    "admitted_pairs_per_1000_attempts": [
+      411.2554,
+      287.5399,
+      214.65296,
+      31.41361,
+      17.91045,
+      17.82596
+    ],
+    "frozen_search_root_count_distinct": 269,
+    "admitted_candidate_root_count_distinct": 188,
+    "admitted_candidate_root_coverage": 0.69888476,
+    "materialization_missing_field_pairs": 0,
+    "candidate_reward_rows_with_mutation_type": 0,
+    "candidate_reward_rows_with_parent_id": 0
+  },
+  "findings": [
+    {
+      "id": "SEARCH_MEMORY",
+      "verdict": "PARTIAL",
+      "present": [
+        "historical candidate exact identities are imported",
+        "historical exact/approximate behavior identities are imported",
+        "reward columns and scheduler state are not imported",
+        "checkpoint attempt ranges are disjoint"
+      ],
+      "gap": "Within the active campaign, only admitted exact identities are added to historical_exact. Rejected legal formulas may be generated again and are stopped only later by behavior probing. LocalSearchMemory is not wired into this campaign.",
+      "evidence": [
+        "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py:389",
+        "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py:421",
+        "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py:1781",
+        "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py:1870",
+        "src/our_system_phase2/services/search_memory.py:172"
+      ],
+      "required_change": "Wire the existing expression_memory_key and skeleton_memory_key primitives into the active campaign for every legal attempt, with registry/grammar/root-contract/dataset-role namespacing enforced by the current campaign manifest. Reuse the EVALRESET train-only feedback guard; do not create a second memory implementation or import legacy reward-bearing memory."
+    },
+    {
+      "id": "OPERATOR_CONTINUATION",
+      "verdict": "PARTIAL",
+      "present": [
+        "route, unit, maturity and field-role compatibility are compiler checked",
+        "fixed skeleton depth is bounded",
+        "candidate/control ablation contracts are paired"
+      ],
+      "gap": "The generator selects a fixed skeleton by attempt_index modulo skeleton count and fills its slots deterministically. It does not continue a good AST by adding or replacing a typed operator subtree.",
+      "evidence": [
+        "src/our_system_phase2/services/compositional_grammar.py:84",
+        "src/our_system_phase2/services/compositional_grammar.py:247",
+        "src/our_system_phase2/services/compositional_grammar.py:1417"
+      ],
+      "required_change": "Do not add a new hand-written continuation constructor. Route the existing Phase3BP RX/UCB and CEM/hybrid generation actions through a thin registry adapter and measure the continuation they actually provide. If that core cannot continue a typed parent under the current registry/compiler contract, retain this as an explicit capability gap."
+    },
+    {
+      "id": "EARLY_CONVERGENCE_AND_FIELD_COVERAGE",
+      "verdict": "RISK_CONFIRMED_NOT_FIELD_MATERIALIZATION_FAILURE",
+      "present": [
+        "schema-first available_field_ids gate",
+        "zero observed materialization-missing pairs",
+        "269 distinct frozen roots across the seven search routes",
+        "fresh route floors and route caps"
+      ],
+      "gap": "Supply density collapsed after checkpoint 3: attempts rose from 778 to about 5000 while admissions fell from 167 to about 90. The admitted ledger touched 188 of 269 distinct roots, but fixed-template/exact/behavior collisions dominate before field exhaustion can be ruled out per route.",
+      "evidence": [
+        "src/our_system_phase2/services/unified_discovery_generators.py:422",
+        "src/our_system_phase2/services/unified_discovery_generators.py:449",
+        "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json"
+      ],
+      "required_change": "Before the next large search, use the existing search core through the registry adapter for a small label-free supply diagnostic and report route x generation-mode x skeleton x root coverage. Do not repeat full-coordinate evaluation and do not invent another generator."
+    },
+    {
+      "id": "AST_SUBTREE_CROSSOVER",
+      "verdict": "MISSING_IN_ACTIVE_CHAIN",
+      "present": [
+        "expressions are parsed and compiled as typed ASTs",
+        "legacy canary code contains evolutionary labels"
+      ],
+      "gap": "No active candidate records a parent, and no active constructor performs typed subtree crossover. Current combination is field-slot filling inside a fixed skeleton.",
+      "evidence": [
+        "src/our_system_phase2/services/compositional_grammar.py:502",
+        "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py:1687"
+      ],
+      "required_change": "The existing Phase3BP CEM core already recombines ranked event/state atoms into product, spread, residual and elite-resample expressions, but it is not generic typed subtree crossover. Reuse that existing behavior as-is through registry/compiler gates; do not claim generic crossover and do not handcraft one."
+    },
+    {
+      "id": "LOW_RATE_MUTATION",
+      "verdict": "MISSING_IN_ACTIVE_CHAIN",
+      "present": [],
+      "gap": "All 1744 observed train candidate reward rows have empty mutation_type and parent_id.",
+      "evidence": [
+        "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
+        "src/our_system_phase2/services/compositional_grammar.py:452"
+      ],
+      "required_change": "Do not add a mutation percentage or new mutation engine. The old B1S evolutionary lane is not current authority. Record mutation as unavailable unless the previously validated search core exposes a compatible operation that passes the registry/compiler/matched-control gates."
+    },
+    {
+      "id": "EPOCH_BEST_RETENTION",
+      "verdict": "PARTIAL_RECORDING_NO_ELITE_CARRYOVER",
+      "present": [
+        "immutable checkpoint manifests",
+        "candidate and observation ledgers",
+        "route/family feedback summaries"
+      ],
+      "gap": "The active chain does not emit an epoch best-formula ledger or carry elite ASTs into the next checkpoint. Adaptation changes route budgets only.",
+      "evidence": [
+        "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py:1767",
+        "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py:1907",
+        "src/our_system_phase2/services/multi_arm_scheduler.py:370"
+      ],
+      "required_change": "Reuse the existing Phase3BP/BT/BU round top-decision output contract and current immutable checkpoint manifests, but project top decisions per registry route and behavior/economic role rather than as one global race. Only guarded train feedback may populate it."
+    },
+    {
+      "id": "DIVERSITY_AND_DECEPTIVE_LANDSCAPE",
+      "verdict": "PARTIAL_DIVERSITY_DEFENSE_MCTS_NOT_ACTIVE",
+      "present": [
+        "route floors and caps",
+        "exact identity dedupe",
+        "exact behavior probe admission",
+        "approximate behavior family reporting",
+        "fresh proposal floor"
+      ],
+      "gap": "There is no active tree-search state, novelty archive over AST topology, progressive widening, rollout, backpropagation, root noise or random restart policy. The old uct_mcts canary ranks a flat pool from one aggregate UCT score over motif and window bucket; it is not sufficient defense against deceptive landscapes.",
+      "evidence": [
+        "src/our_system_phase2/services/multi_arm_scheduler.py:205",
+        "src/our_system_phase2/runtime/cn_b1s_development_canary.py:744",
+        "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py:1687"
+      ],
+      "required_change": "Do not build or claim MCTS. Reuse the existing fresh-preserving RX/UCB plus CEM/hybrid core and its lane/fieldset caps through registry routes, while current exact and behavior admission remain authoritative. Any stronger deceptive-landscape defense requires a separately validated existing core, not a new local implementation."
+    }
+  ],
+  "next_large_search_reuse_policy": {
+    "top_level_scheduling_key": "unified_registry_route_id",
+    "route_local_generation_actions": [
+      "phase3bp_true1min_rx_ucb_native",
+      "phase3bp_true1min_cem_elite",
+      "phase3bp_true1min_hybrid_rx_cem",
+      "phase3bp_true1min_orthogonal"
+    ],
+    "adapter_scope": "thin_registry_route_and_candidate_schema_adapter_only",
+    "algorithm_reimplementation": "FORBIDDEN",
+    "new_mcts": "FORBIDDEN",
+    "new_crossover_or_mutation_engine": "FORBIDDEN",
+    "best_retention_scope": "registry_route_x_economic_or_regime_role_x_behavior_family",
+    "label_free_seen_identity_memory": "REUSE_EXISTING_KEYS_AND_WIRE_TO_ALL_LEGAL_ATTEMPTS",
+    "validation_feedback": "FORBIDDEN",
+    "holdout_feedback": "FORBIDDEN"
+  },
+  "claim": "The current chain is a bounded typed compositional enumerator with behavior-aware admission and route-budget feedback. It bypasses the repository's previously exercised Phase3BP RX/UCB-CEM-hybrid search core. The repair is a thin registry-bound reuse adapter, not a new search algorithm, MCTS implementation, crossover engine or mutation platform."
+}

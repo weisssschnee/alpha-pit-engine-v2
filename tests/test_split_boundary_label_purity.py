@@ -53,8 +53,21 @@ def test_streaming_calendar_supports_sequential_report_only_validation(tmp_path:
         binding["split_manifest_hash"],
         evaluation_role="validation",
     ) == ("2025-07-08",)
-    with pytest.raises(ValueError, match="evaluation role"):
-        _evaluation_calendar(split_path, binding, evaluation_role="holdout")
+    assert _evaluation_calendar(
+        split_path,
+        binding,
+        evaluation_role="holdout",
+    ) == ("2025-10-20",)
+    assert _field_split_dates(
+        split_path,
+        binding["split_manifest_hash"],
+        evaluation_role="holdout",
+    ) == ("2025-10-20",)
+    assert _label_split_dates(
+        split_path,
+        binding["split_manifest_hash"],
+        evaluation_role="holdout",
+    ) == ("2025-10-20",)
 
 
 def test_train_only_terminal_nulls_are_bound_as_purged_crossings(tmp_path: Path) -> None:

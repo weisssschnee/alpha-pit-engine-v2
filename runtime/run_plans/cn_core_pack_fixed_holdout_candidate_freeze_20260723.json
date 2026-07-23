@@ -1,0 +1,180 @@
+{
+  "schema_version": "cn_core_pack_fixed_holdout_candidate_freeze_v1",
+  "status": "FROZEN_BEFORE_HOLDOUT_ACCESS",
+  "frozen_at": "2026-07-23",
+  "campaign_id": "CN_CORE_PACK_LARGE_DEVELOPMENT_V1_20260722_R5",
+  "campaign_root": "D:\\ChengboRemote\\runtime\\cn_core_pack_large_development_20260722_9f3a5f2_30t_r5",
+  "selection_role": "train_plus_spent_validation_candidate_freeze_only",
+  "selection_rule": {
+    "pair_train_status": "PAIR_EVALUATED",
+    "pair_validation_status": "PAIR_EVALUATED",
+    "train_day_sortino": ">0",
+    "train_worst_horizon_day_sortino": ">0",
+    "train_reward": ">0",
+    "validation_day_sortino": ">0",
+    "validation_worst_horizon_day_sortino": ">0",
+    "validation_report_metric": ">0",
+    "pair_validation_report_metric": ">0"
+  },
+  "selection_reopening_after_holdout": "FORBIDDEN",
+  "frozen_pair_count": 12,
+  "frozen_candidate_member_count": 24,
+  "exact_behavior_signature_count": 12,
+  "approximate_behavior_family_count": 11,
+  "approximate_family_collision_policy": "RETAIN_BOTH_EXACT_SIGNATURES_NO_POST_HOC_PRUNING",
+  "holdout_contract": {
+    "fixed_trade_date_count": 48,
+    "evaluation_role": "holdout",
+    "usage": "report_only",
+    "feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "archive_write": "FORBIDDEN",
+    "automatic_promotion": "FORBIDDEN",
+    "forward_2026_reads": 0
+  },
+  "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "protected_train_artifact_hashes": {
+    "behavior_archive.parquet": "d0501fa34a3ff2dfda8a8d375e039c1cc80281054f3c9556b3f2a9d93adf557e",
+    "campaign_metrics.parquet": "71c86721fe652b47a3af2ffb073bfce1177af74bffe649e934b61f0538e94b9a",
+    "candidate_ledger.parquet": "927eadf6afcd5de7111f2be933920dbcaec2ffd5bcdffac0d9f453d9fe2d4fa5",
+    "observation_ledger.parquet": "4af35a3b3588722ec94a20eec3126cf40f1f556798cccc528f19ec68e980f28e"
+  },
+  "spent_validation_result_hashes": {
+    "active_bar": "67fa5da4bf36bf67d9a1b2efba93f7e1294529888b5da2c9ddc7fc40ef2a6c98",
+    "stock_session": "42611386f358d40994ab564b68cf53b4c6d83b14b4a022a9eb29019121e52513"
+  },
+  "candidates": [
+    {
+      "candidate_id": "cn.comp.115c4e8789160782155b",
+      "control_candidate_id": "cn.comp.115c4e8789160782155b.control",
+      "pair_id": "cn.pair.d74b66a5e508f83856c7ceed8e153297",
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "expression": "CSRank(Mul(Transition(Sign($ret_1m),0,1),ZScore($open)))",
+      "primary_exact_identity": "4bafdf82fe937364eefff2aa5cb7c64da75da516f730e577eae9f96610d521e6",
+      "control_exact_identity": "dcd0e728149e76eeec3ff212e60059de7165961b8935195953fc04fbbec42c17",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.b74296a32bdb6112f9cd9463a1bfdc19",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.0a07f47133be712c5d17ebf444926d38"
+    },
+    {
+      "candidate_id": "cn.comp.1e45d04f4ce65c4784bf",
+      "control_candidate_id": "cn.comp.1e45d04f4ce65c4784bf.control",
+      "pair_id": "cn.pair.360396313c4bf553f499a4decd439240",
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "expression": "CSRank(Delta($chip_cost_p95,2))",
+      "primary_exact_identity": "19af37b9760feb2cf89bacaccb2284fd0e54e8f12fe7739e18663e30efd2e725",
+      "control_exact_identity": "4f4f6136142e17365ddf2768d606e871c4efe50dd4f01484f86f771649b829f1",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.222b3072cbf5a711962069577630ed43",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.933892635e783d5a257244dac923ddde"
+    },
+    {
+      "candidate_id": "cn.comp.664ca15c429704d39542",
+      "control_candidate_id": "cn.comp.664ca15c429704d39542.control",
+      "pair_id": "cn.pair.85a105a331ef138038bf9f0a32f87dad",
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "expression": "CSRank(Mul(Transition(Sign($intraday_ret_from_open),0,1),ZScore($open)))",
+      "primary_exact_identity": "3f90664e848023a167c825bddc8a53f9ce3f5ad5524b8cd60b4c0279e8b6386c",
+      "control_exact_identity": "a8bd22cca081ac4ef8ffb0790eb9545d5a45bfc7a2e2b9166710358fb4428c23",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.86eb77d09fe454cecefbb02cd17f401c",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.5c77f7f86883a3e473f9dfc7bc478af7"
+    },
+    {
+      "candidate_id": "cn.comp.68aceb097da3cbdf6e41",
+      "control_candidate_id": "cn.comp.68aceb097da3cbdf6e41.control",
+      "pair_id": "cn.pair.34155696aa15e0c5c5b207c5f095987f",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "expression": "MaskedZScore($ctx_hfq_pe_ttm,20,0.8)",
+      "primary_exact_identity": "5d65e2193f482623a706ecf078d1ccb204d5662376a56f8930dd759004736d29",
+      "control_exact_identity": "c1d83bbe66ff4178079e5a169242c4a05312859c306242e4eaad3a19bf234e4d",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.6a550ee8cd3bf9adbcbd6154d326efa3",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.8db314ab32dcbe7602cc54323efd55a2"
+    },
+    {
+      "candidate_id": "cn.comp.6be14594fb47a987ae29",
+      "control_candidate_id": "cn.comp.6be14594fb47a987ae29.control",
+      "pair_id": "cn.pair.9fd6e715d6826caf6f74b9eb9daf8b2c",
+      "route_id": "MARKET_REGIME_CONDITION",
+      "expression": "CSRank(Mul(ZScore(Delta($intraday_ret_from_open,3)),Transition($ctx_sent_mian_num,0,1)))",
+      "primary_exact_identity": "70f2eb259d0cc80433c86cdc7f1c33ae5544e4b0bee4664662cfbd643c7f8cd5",
+      "control_exact_identity": "7d9ffa8ce87eec6ca1124ca0beebab82a323570fe043ffa0a617c809c854ad6e",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.e23f12bc932598de1caa3e220c51f5e2",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.dbf111b0be4c93b11c45378c7595ef10"
+    },
+    {
+      "candidate_id": "cn.comp.78466624f82bd37ab593",
+      "control_candidate_id": "cn.comp.78466624f82bd37ab593.control",
+      "pair_id": "cn.pair.a34ed3b6d65b10775d2e64eed8d7949c",
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "expression": "CSRank(Mul(Transition(Sign($intraday_ret_from_open),0,1),ZScore($amount)))",
+      "primary_exact_identity": "7afd13a229f6701bdc81644a7d502206bcf68c86bff5ea050c8024a8130b2ad7",
+      "control_exact_identity": "c57be82be008e38a33309e8d7ae1596020c9ff42073d1c3abd76da6c7999fe13",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.fb5799f58e3044db3e6abb03c8d5c6ea",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.0c112eb4e76cffa89c953cbc64234ff6"
+    },
+    {
+      "candidate_id": "cn.comp.9d334488a5149b504c62",
+      "control_candidate_id": "cn.comp.9d334488a5149b504c62.control",
+      "pair_id": "cn.pair.71e43bb8a2ba0be80b2395a2dec35453",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "expression": "CSRank(Mul(ZScore($ctx_hfq_turnover_ratio),ZScore($chip_cost_p05)))",
+      "primary_exact_identity": "da3ecbf8d1181525172330137a11f1690e94e73de849d19498d162f9c260cd8f",
+      "control_exact_identity": "30bf45767bfaea202f9e2fafaee72d42a15398c93e98f91f13834e390e0e3cf4",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.017eca9776c764e6dd4c7f6b3fee5382",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.fa1ac60bc4718400c51629831071dd39"
+    },
+    {
+      "candidate_id": "cn.comp.b3acff2c60fb4799bac0",
+      "control_candidate_id": "cn.comp.b3acff2c60fb4799bac0.control",
+      "pair_id": "cn.pair.1d123456746a7451664b6f03f38acbfb",
+      "route_id": "MARKET_REGIME_CONDITION",
+      "expression": "CSRank(Mul(ZScore(Delta($intraday_ret_from_open,3)),Transition($ctx_sent_tiandi_num,0,1)))",
+      "primary_exact_identity": "bd6403279b07f0c7fdbf6bea6a8d6080f4a76a18b782814f92d5ce9cb5aa0557",
+      "control_exact_identity": "9ff836769d0162832f057053062410478c759b2077a68a8e0b91acedd6b0077d",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.b8903fccf416a1cfadccfc403bb91375",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.dbf111b0be4c93b11c45378c7595ef10"
+    },
+    {
+      "candidate_id": "cn.comp.b55362be65005b6d75b9",
+      "control_candidate_id": "cn.comp.b55362be65005b6d75b9.control",
+      "pair_id": "cn.pair.c7fee4b7b30c5222637e43c26f74fd5f",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "expression": "CSResidual(ZScore($ctx_hfq_pe_ttm),ZScore($ctx_hfq_volume_ratio))",
+      "primary_exact_identity": "6a749c023db22a20f188fdfbbc324c3a82e315ade08450a3b50efbf3ee3dc9d3",
+      "control_exact_identity": "2d898d7eb2e34226772aee3652b58b17d6e6501f0b06d7f4b5eb12b805498dbd",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.4c83b480bc423562a3d6d87e508deb32",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.0ecfb15f474b5a875c84975634fbd5e4"
+    },
+    {
+      "candidate_id": "cn.comp.e690399646d947c7119a",
+      "control_candidate_id": "cn.comp.e690399646d947c7119a.control",
+      "pair_id": "cn.pair.34e309166319237030b571302dab404d",
+      "route_id": "MINUTE_STATIC",
+      "expression": "CSRank(Sub(ZScore($intraday_ret_from_open),ZScore($pct_chg)))",
+      "primary_exact_identity": "4514b147234c81f4c99911ee3a7249988fb91869a01aa5589f63d3750e7f8978",
+      "control_exact_identity": "ac0fb782cbbaaba7e964f43f5a593d769456f4917a57f74215c419f3936269b8",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.a982d43cda34d5c02a3260ea55a631c8",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.007c36a73ed0d690a1da174ff527776d"
+    },
+    {
+      "candidate_id": "cn.comp.f627108ac6d94f2593cb",
+      "control_candidate_id": "cn.comp.f627108ac6d94f2593cb.control",
+      "pair_id": "cn.pair.76154d092d83ca89c83b185a54316309",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "expression": "CSResidual(ZScore($ctx_hfq_market_cap_yuan),ZScore($ctx_rzrq_rzyezb))",
+      "primary_exact_identity": "2b70476f4107304c6bd5c71664020d6ab4edc8d0f5f92c7984390bb1aad0a7fd",
+      "control_exact_identity": "dd7d725ad9b5c67712741ae4b5c5849cfcc52fd4619771e10e193312df84ff8c",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.667887c135afc553bd45c237d6e4869c",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.9cab2a5beeb086532e420c13216e9305"
+    },
+    {
+      "candidate_id": "cn.comp.f9ea7251e72ce711baa4",
+      "control_candidate_id": "cn.comp.f9ea7251e72ce711baa4.control",
+      "pair_id": "cn.pair.656287bdeab1aaa55ba7886e8f195a36",
+      "route_id": "MINUTE_STATIC",
+      "expression": "CSRank(Sub(ZScore($intraday_ret_from_open),ZScore($ret_1m)))",
+      "primary_exact_identity": "0a98331454409b61d1c1f469d246a6769c58b648fb1bbf07bc690844fb5c39c6",
+      "control_exact_identity": "5daaf12e760f7dd166ed55a5064f277391b23e0eb3a33d025cf7c28bc766109e",
+      "portfolio_behavior_signature_id": "cn.pair_behavior.a7b69de33ac60019d8e3efb0ad865e85",
+      "portfolio_behavior_family_id": "cn.pair_behavior_family.69e3ed36e49c5a319a4151244ba32bf0"
+    }
+  ]
+}

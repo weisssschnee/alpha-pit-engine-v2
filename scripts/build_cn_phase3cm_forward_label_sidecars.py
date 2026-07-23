@@ -29,7 +29,7 @@ def _split_dates(
     *,
     evaluation_role: str,
 ) -> tuple[str, ...]:
-    if evaluation_role not in {"train", "validation"}:
+    if evaluation_role not in {"train", "validation", "holdout"}:
         raise ValueError(f"unsupported evaluation role: {evaluation_role}")
     if hashlib.sha256(path.read_bytes()).hexdigest() != str(expected_sha256):
         raise RuntimeError("split manifest hash drift")
@@ -57,7 +57,11 @@ def _split_dates(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, required=True)
-    parser.add_argument("--evaluation-role", choices=("train", "validation"), default="train")
+    parser.add_argument(
+        "--evaluation-role",
+        choices=("train", "validation", "holdout"),
+        default="train",
+    )
     parser.add_argument("--pattern", default="*.parquet")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
@@ -114,16 +118,23 @@ def main() -> int:
         "data_role": (
             "development_train_only"
             if args.evaluation_role == "train"
-            else "validation_report_only"
+            else f"{args.evaluation_role}_report_only"
         ),
         "eligible_trade_date_count": len(eligible_dates),
         "eligible_train_date_count": len(eligible_dates) if args.evaluation_role == "train" else 0,
         "eligible_validation_date_count": len(eligible_dates) if args.evaluation_role == "validation" else 0,
+        "eligible_holdout_date_count": len(eligible_dates) if args.evaluation_role == "holdout" else 0,
         "validation_reads": (
             int(build.get("source_rows") or 0)
             if args.evaluation_role == "validation"
             else 0
         ),
+        "holdout_reads": (
+            int(build.get("source_rows") or 0)
+            if args.evaluation_role == "holdout"
+            else 0
+        ),
+        "forward_2026_reads": 0,
         "build_wall_seconds": max(0.0, after_all.wall_seconds - before_all.wall_seconds),
         "build_cpu_seconds": max(0.0, after_all.cpu_seconds - before_all.cpu_seconds),
         "peak_rss_bytes": max(before_all.peak_rss_bytes, after_all.peak_rss_bytes),

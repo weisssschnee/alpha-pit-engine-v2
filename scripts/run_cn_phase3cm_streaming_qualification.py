@@ -52,6 +52,9 @@ from our_system_phase2.services.phase3cm_streaming_telemetry import (
     build_phase_event,
 )
 
+EVALUATION_ROLES = frozenset({"train", "validation", "holdout"})
+REPORT_ONLY_EVALUATION_ROLES = frozenset({"validation", "holdout"})
+
 
 def _stable_hash(value: Any) -> str:
     return hashlib.sha256(
@@ -124,7 +127,7 @@ def _evaluation_calendar(
     *,
     evaluation_role: str,
 ) -> tuple[str, ...]:
-    if evaluation_role not in {"train", "validation"}:
+    if evaluation_role not in EVALUATION_ROLES:
         raise ValueError(f"unsupported evaluation role: {evaluation_role}")
     path = Path(split_manifest)
     if not path.is_file() or _sha256(path) != str(binding.get("split_manifest_hash") or ""):
@@ -168,15 +171,15 @@ def _verify_binding(
     if str(binding.get("status")) != "CN_STREAMING_REPAIR_FROZEN_INPUT_BOUND":
         raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: binding status")
     expected_data_role = (
-        "development" if evaluation_role == "train" else "validation_report_only"
+        "development" if evaluation_role == "train" else f"{evaluation_role}_report_only"
     )
     if str(binding.get("data_role")) != expected_data_role:
         raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: data role")
-    expected_sealed = (
-        {"validation": 0, "holdout": 0, "forward_2026": 0}
-        if evaluation_role == "train"
-        else {"holdout": 0, "forward_2026": 0}
-    )
+    expected_sealed = {
+        "train": {"validation": 0, "holdout": 0, "forward_2026": 0},
+        "validation": {"holdout": 0, "forward_2026": 0},
+        "holdout": {"forward_2026": 0},
+    }[evaluation_role]
     if binding.get("sealed_reads") != expected_sealed:
         raise RuntimeError("CN_PHASE3CM_STREAMING_REPAIR_INVALID_INPUT_DRIFT: sealed reads")
     for record in binding.get("artifacts") or []:
@@ -615,10 +618,10 @@ def _finalize_pairs(
             }
             if evaluation_role == "train"
             else {
-                "pair_validation_report_metric": matched,
-                "primary_validation_report_metric": primary_value,
-                "control_validation_report_metric": control_value,
-                "validation_usage": "report_only",
+                f"pair_{evaluation_role}_report_metric": matched,
+                f"primary_{evaluation_role}_report_metric": primary_value,
+                f"control_{evaluation_role}_report_metric": control_value,
+                f"{evaluation_role}_usage": "report_only",
             }
         )
         rows.append(
@@ -648,7 +651,11 @@ def _finalize_pairs(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--backend", choices=("active_bar", "stock_session"), required=True)
-    parser.add_argument("--evaluation-role", choices=("train", "validation"), default="train")
+    parser.add_argument(
+        "--evaluation-role",
+        choices=("train", "validation", "holdout"),
+        default="train",
+    )
     parser.add_argument("--phase", choices=("C", "D", "E"), required=True)
     parser.add_argument("--pair-count", type=int, required=True)
     parser.add_argument("--candidate-table", type=Path, required=True)
@@ -1285,7 +1292,9 @@ def main() -> int:
                 "validation_reads": (
                     int(total_rows) if args.evaluation_role == "validation" else 0
                 ),
-                "holdout_reads": 0,
+                "holdout_reads": (
+                    int(total_rows) if args.evaluation_role == "holdout" else 0
+                ),
                 "forward_2026_reads": 0,
                 "promotion": "FORBIDDEN",
                 "strict_stage_a": "NOT_AUTHORIZED",
@@ -1332,20 +1341,22 @@ def main() -> int:
             evaluation_role=args.evaluation_role,
             label_free_behavior_by_candidate=behavior_by_candidate,
         )
-        if args.evaluation_role == "validation":
+        if args.evaluation_role in REPORT_ONLY_EVALUATION_ROLES:
             for reward in reward_rows:
-                reward["validation_report_metric"] = reward.get("optimizer_reward")
-                reward["validation_usage"] = "report_only"
+                reward[f"{args.evaluation_role}_report_metric"] = reward.get(
+                    "optimizer_reward"
+                )
+                reward[f"{args.evaluation_role}_usage"] = "report_only"
                 for key in tuple(reward):
                     if key.startswith("optimizer_") or key == "train_reward":
                         reward.pop(key, None)
             for row in split_rows:
-                row["split"] = "validation"
-                row["evaluation_role"] = "validation"
-                row["validation_usage"] = "report_only"
+                row["split"] = args.evaluation_role
+                row["evaluation_role"] = args.evaluation_role
+                row[f"{args.evaluation_role}_usage"] = "report_only"
             for atom in atom_rows:
-                atom["split"] = "validation"
-                atom["evaluation_role"] = "validation"
+                atom["split"] = args.evaluation_role
+                atom["evaluation_role"] = args.evaluation_role
         candidate_by_id = {str(row["candidate_id"]): row for row in candidates}
         behavior_archive = PortfolioBehaviorArchive()
         behavior_by_pair: dict[str, dict[str, Any]] = {}
@@ -1394,7 +1405,7 @@ def main() -> int:
     behavior_archive_path = output_root / (
         "CN_PORTFOLIO_BEHAVIOR_FULL.parquet"
         if args.evaluation_role == "train"
-        else "CN_PORTFOLIO_BEHAVIOR_VALIDATION_REPORT.parquet"
+        else f"CN_PORTFOLIO_BEHAVIOR_{args.evaluation_role.upper()}_REPORT.parquet"
     )
     behavior_archive.write_parquet(behavior_archive_path)
 
@@ -1495,6 +1506,9 @@ def main() -> int:
         "validation_usage": (
             "report_only" if args.evaluation_role == "validation" else "not_accessed"
         ),
+        "holdout_usage": (
+            "report_only" if args.evaluation_role == "holdout" else "not_accessed"
+        ),
         "eligible_date_count": len(evaluation_dates),
         "eligible_train_date_count": (
             len(evaluation_dates) if args.evaluation_role == "train" else 0
@@ -1529,7 +1543,7 @@ def main() -> int:
             "state_role": (
                 "TRAIN_ARCHIVE"
                 if args.evaluation_role == "train"
-                else "VALIDATION_REPORT_ONLY_NOT_ARCHIVE_STATE"
+                else f"{args.evaluation_role.upper()}_REPORT_ONLY_NOT_ARCHIVE_STATE"
             ),
         },
         "reward_atoms": reward_atom_artifact,
@@ -1539,11 +1553,25 @@ def main() -> int:
         "validation_reads": (
             int(total_rows) if args.evaluation_role == "validation" else 0
         ),
-        "holdout_reads": 0,
+        "holdout_reads": (
+            int(total_rows) if args.evaluation_role == "holdout" else 0
+        ),
         "forward_2026_reads": 0,
-        "feedback_write": "FORBIDDEN" if args.evaluation_role == "validation" else "TRAIN_ONLY",
-        "scheduler_write": "FORBIDDEN" if args.evaluation_role == "validation" else "CAMPAIGN_LOCAL",
-        "archive_write": "FORBIDDEN" if args.evaluation_role == "validation" else "TRAIN_ONLY",
+        "feedback_write": (
+            "FORBIDDEN"
+            if args.evaluation_role in REPORT_ONLY_EVALUATION_ROLES
+            else "TRAIN_ONLY"
+        ),
+        "scheduler_write": (
+            "FORBIDDEN"
+            if args.evaluation_role in REPORT_ONLY_EVALUATION_ROLES
+            else "CAMPAIGN_LOCAL"
+        ),
+        "archive_write": (
+            "FORBIDDEN"
+            if args.evaluation_role in REPORT_ONLY_EVALUATION_ROLES
+            else "TRAIN_ONLY"
+        ),
         "promotion": "FORBIDDEN",
         "strict_stage_a": "NOT_AUTHORIZED",
     }
