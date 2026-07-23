@@ -1520,18 +1520,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             for row in route_rows
             if row["arm"] == "official_catcma"
         ]
-        if any(
-            int(row["historically_exact_novel_pairs"]) == 0
+        failed_routes = [
+            str(row["route_id"])
             for row in catcma_rows
-        ):
-            raise RuntimeError(
-                "CATCMA_FIRST_POPULATION_HAS_NO_NOVEL_SUPPLY_ON_A_ROUTE"
-            )
+            if int(row["historically_exact_novel_pairs"]) == 0
+        ]
         receipt = {
             "schema_version": "cn_search_policy_preflight_materialization_v1",
-            "status": "PASS",
+            "status": "PASS" if not failed_routes else "FAIL",
             "budget_consumed": 0,
             "phase3cm_started": False,
+            "failed_routes": failed_routes,
             "routes": route_rows,
             "gene_space_manifest": _artifact(
                 gene_space_manifest_path, root=output_root
@@ -1543,6 +1542,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         _write_json(
             output_root / "preflight_materialization.json", receipt
         )
+        if failed_routes:
+            raise RuntimeError(
+                "CATCMA_FIRST_POPULATION_HAS_NO_NOVEL_SUPPLY:"
+                + ",".join(failed_routes)
+            )
         return receipt
 
     summaries = []
