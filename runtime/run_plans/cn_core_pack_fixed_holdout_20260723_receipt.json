@@ -1,0 +1,104 @@
+{
+  "schema_version": "cn_core_pack_fixed_holdout_repository_receipt_v1",
+  "status": "HOLDOUT_COMPLETE_IMMUTABLE",
+  "campaign_id": "CN_CORE_PACK_LARGE_DEVELOPMENT_V1_20260722_R5",
+  "task_id": "lanjob_20260723_203145_fixed48",
+  "execution_repo_sha": "54ce73e59e486c186fa8b6b5a4ad0a944d1f5f9c",
+  "remote_campaign_root": "D:\\ChengboRemote\\runtime\\cn_core_pack_large_development_20260722_9f3a5f2_30t_r5",
+  "remote_output_root": "D:\\ChengboRemote\\runtime\\cn_core_pack_large_development_20260722_9f3a5f2_30t_r5\\fixed_holdout_48d",
+  "source_authorities": {
+    "minute_full_period": "D:\\ChengboRemote\\data\\phase3dz_true1min_sidecar_augmented_full16_20260702",
+    "fundamental_pit": "D:\\ChengboRemote\\data\\cn_fundamental_akshare_fullA_partitioned_pit_v1_20260603",
+    "chip_pit": "D:\\ChengboRemote\\data\\chip_pit_v1_20260713"
+  },
+  "frozen_candidate_contract": {
+    "manifest": "runtime/run_plans/cn_core_pack_fixed_holdout_candidate_freeze_20260723.json",
+    "manifest_sha256": "46d5f13cee5d492f118696a5587a09c34b8c60f233701294bd00d3a14dbe30ac",
+    "pair_count": 12,
+    "candidate_member_count": 24,
+    "exact_behavior_signature_count": 12,
+    "active_bar_pair_count": 7,
+    "stock_session_pair_count": 5,
+    "candidate_selection_reopened": false
+  },
+  "execution_closure": {
+    "holdout_trade_date_count": 48,
+    "holdout_reads": 59887982,
+    "validation_reads": 0,
+    "forward_2026_reads": 0,
+    "all_pairs_evaluated": true,
+    "portfolio_mode": "long_only_top",
+    "short_allowed": false,
+    "feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "archive_write": "FORBIDDEN",
+    "automatic_promotion": "FORBIDDEN",
+    "protected_train_hashes_unchanged": true,
+    "free_memory_gib_after_completion": 69.91
+  },
+  "artifact_hashes": {
+    "fixed_holdout_result.json": "aa737168a5ee49c2b702dd46c27ae1461c5ec6bead3260a41f11515a369791a2",
+    "HOLDOUT_COMPLETE.json": "c4db3849cb4aedec367ee4fed823b2e0a0588591b665036dc983962de1b11c82",
+    "phase3cm_active_bar_result.json": "a0a3c05c74e9675983cdec1eff664baf69fe22e155ee2865c33fa279b345be9f",
+    "phase3cm_stock_session_result.json": "adb7539035108187914361335aa47e9ba54f822c3a4ccd9e67b5a58ec43b61d5"
+  },
+  "protected_train_artifact_hashes": {
+    "behavior_archive.parquet": "d0501fa34a3ff2dfda8a8d375e039c1cc80281054f3c9556b3f2a9d93adf557e",
+    "campaign_metrics.parquet": "71c86721fe652b47a3af2ffb073bfce1177af74bffe649e934b61f0538e94b9a",
+    "candidate_ledger.parquet": "927eadf6afcd5de7111f2be933920dbcaec2ffd5bcdffac0d9f453d9fe2d4fa5",
+    "observation_ledger.parquet": "4af35a3b3588722ec94a20eec3126cf40f1f556798cccc528f19ec68e980f28e"
+  },
+  "result_summary": {
+    "positive_holdout_day_sortino_count": 10,
+    "positive_pair_holdout_metric_count": 10,
+    "strict_noncollapse_count": 6,
+    "strict_noncollapse_rule": "holdout_day_sortino > 0 AND holdout_worst_horizon_day_sortino > 0 AND holdout_report_metric > 0 AND pair_holdout_report_metric > 0",
+    "strict_noncollapse_candidate_ids": [
+      "cn.comp.115c4e8789160782155b",
+      "cn.comp.664ca15c429704d39542",
+      "cn.comp.6be14594fb47a987ae29",
+      "cn.comp.78466624f82bd37ab593",
+      "cn.comp.e690399646d947c7119a",
+      "cn.comp.f9ea7251e72ce711baa4"
+    ],
+    "highest_holdout_day_sortino": {
+      "candidate_id": "cn.comp.68aceb097da3cbdf6e41",
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "holdout_day_sortino": 0.44725468,
+      "holdout_worst_horizon_day_sortino": -0.1218971,
+      "pair_holdout_report_metric": 0.33782359,
+      "interpretation": "positive aggregate but not strict noncollapse because worst-horizon Sortino is negative"
+    },
+    "highest_strict_noncollapse_holdout_day_sortino": {
+      "candidate_id": "cn.comp.f9ea7251e72ce711baa4",
+      "route_id": "MINUTE_STATIC",
+      "holdout_day_sortino": 0.30441339,
+      "holdout_worst_horizon_day_sortino": 0.23989787,
+      "holdout_report_metric": 0.56038497,
+      "pair_holdout_report_metric": 1.19407212,
+      "mean_one_way_turnover": 0.54436523
+    }
+  },
+  "candidate_results": [
+    {"candidate_id": "cn.comp.115c4e8789160782155b", "route_id": "INTRADAY_STATE_TRANSITION", "holdout_day_sortino": 0.08241094, "worst_horizon_sortino": 0.0615726, "holdout_report_metric": 0.34006605, "pair_metric": 1.31532827, "turnover": 0.07217542, "strict_noncollapse": true},
+    {"candidate_id": "cn.comp.1e45d04f4ce65c4784bf", "route_id": "SLOW_TEMPORAL_CHANGE", "holdout_day_sortino": -0.10614353, "worst_horizon_sortino": -0.80291003, "holdout_report_metric": -0.47476921, "pair_metric": -0.72847464, "turnover": 0.11075953, "strict_noncollapse": false},
+    {"candidate_id": "cn.comp.664ca15c429704d39542", "route_id": "INTRADAY_STATE_TRANSITION", "holdout_day_sortino": 0.07530998, "worst_horizon_sortino": 0.07272445, "holdout_report_metric": 0.13628088, "pair_metric": 0.97458499, "turnover": 0.00869567, "strict_noncollapse": true},
+    {"candidate_id": "cn.comp.68aceb097da3cbdf6e41", "route_id": "SLOW_CROSS_SECTIONAL_LEVEL", "holdout_day_sortino": 0.44725468, "worst_horizon_sortino": -0.1218971, "holdout_report_metric": 0.29504889, "pair_metric": 0.33782359, "turnover": 0.03561145, "strict_noncollapse": false},
+    {"candidate_id": "cn.comp.6be14594fb47a987ae29", "route_id": "MARKET_REGIME_CONDITION", "holdout_day_sortino": 0.06785293, "worst_horizon_sortino": 0.06438406, "holdout_report_metric": 0.10868844, "pair_metric": 0.74863813, "turnover": 0.00008847, "strict_noncollapse": true},
+    {"candidate_id": "cn.comp.78466624f82bd37ab593", "route_id": "INTRADAY_STATE_TRANSITION", "holdout_day_sortino": 0.08140935, "worst_horizon_sortino": 0.07281384, "holdout_report_metric": 0.11712664, "pair_metric": 0.86897554, "turnover": 0.00858416, "strict_noncollapse": true},
+    {"candidate_id": "cn.comp.9d334488a5149b504c62", "route_id": "SLOW_CROSS_SECTIONAL_LEVEL", "holdout_day_sortino": -0.24872263, "worst_horizon_sortino": -0.87439353, "holdout_report_metric": -0.42252142, "pair_metric": 0.33161597, "turnover": 0.18567766, "strict_noncollapse": false},
+    {"candidate_id": "cn.comp.b3acff2c60fb4799bac0", "route_id": "MARKET_REGIME_CONDITION", "holdout_day_sortino": 0.06713835, "worst_horizon_sortino": 0.06329731, "holdout_report_metric": -0.13288009, "pair_metric": 0.50557122, "turnover": 0.00029597, "strict_noncollapse": false},
+    {"candidate_id": "cn.comp.b55362be65005b6d75b9", "route_id": "SLOW_CROSS_SECTIONAL_LEVEL", "holdout_day_sortino": 0.35147044, "worst_horizon_sortino": -0.28206868, "holdout_report_metric": 0.19450862, "pair_metric": -0.10674035, "turnover": 0.13006407, "strict_noncollapse": false},
+    {"candidate_id": "cn.comp.e690399646d947c7119a", "route_id": "MINUTE_STATIC", "holdout_day_sortino": 0.28170279, "worst_horizon_sortino": 0.23337677, "holdout_report_metric": 0.54440156, "pair_metric": 1.18348973, "turnover": 0.54324321, "strict_noncollapse": true},
+    {"candidate_id": "cn.comp.f627108ac6d94f2593cb", "route_id": "SLOW_CROSS_SECTIONAL_LEVEL", "holdout_day_sortino": 0.11137351, "worst_horizon_sortino": -0.32897176, "holdout_report_metric": 0.05373456, "pair_metric": 0.28421517, "turnover": 0.05009526, "strict_noncollapse": false},
+    {"candidate_id": "cn.comp.f9ea7251e72ce711baa4", "route_id": "MINUTE_STATIC", "holdout_day_sortino": 0.30441339, "worst_horizon_sortino": 0.23989787, "holdout_report_metric": 0.56038497, "pair_metric": 1.19407212, "turnover": 0.54436523, "strict_noncollapse": true}
+  ],
+  "evidence_classification": {
+    "oos_sample_grade": "WEAK",
+    "bias_audit_decision": "HOLD_RESEARCH",
+    "calendar_status": "candidate-untouched for this frozen decision but previously classified spent at project level",
+    "claim_ceiling": "fixed noncollapse evidence only; not sealed OOS, promotion or economic proof",
+    "reason": "Only 48 daily observations are available and the current Phase3CM path does not yet prove complete A-share T+1, suspension and price-limit fill behavior."
+  },
+  "next_decision": "Classify strict and partial survivors by economic mechanism, intended regime/event/state and portfolio role. Expand search only for materially uncovered regimes, reusing the existing validated Phase3BP search core beneath registry route authority."
+}

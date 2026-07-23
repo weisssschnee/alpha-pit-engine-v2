@@ -277,18 +277,29 @@ train-to-validation or acceleration-readiness blocker in the completed campaign.
 Its preserved cache, memory-headroom and monitor-path incidents are run-health
 facts, not financial route failures. The 93 unresolved rows in the historical V1
 archive remain immutable and are not retroactively rewritten. On 2026-07-23 the
-user separately authorized one fixed 48-session untouched-holdout evaluation of
-the already frozen 12 behavior-exact candidate pairs. That authorization is
-report-only, long-only, no-2026, and forbids feedback, scheduler, archive and
-promotion writes. It does not authorize formal search, candidate promotion or
-economic claims. The freeze is bound in
-`runtime/run_plans/cn_core_pack_fixed_holdout_candidate_freeze_20260723.json`.
-The executable path is prepared and locally verified, but 77o is currently
-unreachable over its canonical LAN SSH route, so no holdout row has yet been
-read and no duplicate task has been launched. Plate remains independently
-blocked by missing real PIT minute materialization; additional compound-state
-expansion beyond tested expanded source-leaf forms remains a localized
-materialization gap.
+user separately authorized and 77o completed one fixed 48-session report-only
+holdout evaluation of the already frozen 12 behavior-exact candidate pairs.
+All 12 pairs evaluated in `long_only_top` mode with shorting disabled, producing
+59,887,982 holdout reads, zero validation/2026 reads, zero feedback/scheduler/
+archive/promotion writes and unchanged protected train hashes. Ten candidates
+had positive aggregate holdout day Sortino and ten pairs had positive matched
+holdout metric. Six passed the fixed strict non-collapse rule requiring positive
+aggregate, worst-horizon, standalone report and matched-pair metrics. The
+highest aggregate holdout Sortino was 0.44725, but its worst-horizon Sortino was
+-0.12190; the highest strict survivor was `cn.comp.f9ea7251e72ce711baa4`
+with aggregate/worst-horizon Sortino 0.30441/0.23990 and matched metric 1.19407.
+The immutable repository receipt is
+`runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json`.
+
+This is a fixed candidate non-collapse check, not promotion evidence. The
+48-date calendar was candidate-untouched for this freeze but remains classified
+`spent` at project level after historical exposure. Its OOS sample grade is
+`WEAK`, and the evaluator still does not prove complete A-share T+1, suspension
+and price-limit fill behavior. Formal search, candidate promotion, economic
+claims, any additional holdout access and 2026 access therefore remain blocked.
+Plate remains independently blocked by missing real PIT minute materialization;
+additional compound-state expansion beyond tested expanded source-leaf forms
+remains a localized materialization gap.
 
 The active-chain audit is frozen in
 `runtime/run_plans/cn_active_search_chain_gap_audit_20260723.json`. The current
@@ -312,22 +323,20 @@ MCTS, crossover, mutation or replacement search engine.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.
-When 77o becomes reachable, first confirm that no matching process is running,
-reuse the frozen train and candidate-bound sidecar authorities, and run exactly
-one fixed 48-session holdout task through
-`scripts/run_cn_core_pack_fixed_holdout_77o.ps1`. Verify positive holdout reads,
-zero validation and 2026 reads, zero feedback/scheduler/archive writes,
-long-only portfolio mode, unchanged train hashes, and at least 24 GiB free
-memory. A pass is still weak OOS evidence because 48 daily observations cannot
-support promotion; a failure is candidate evidence, not route-health evidence.
+Classify the six strict survivors and four partial positives by economic
+mechanism, intended regime/event/state and portfolio role. Current strict
+coverage consists of three intraday state-transition formulas, one
+sentiment-conditioned market-regime formula and two high-turnover intraday
+return-discrepancy formulas. Slow cross-sectional candidates are positive only
+in aggregate and remain horizon-unstable; slow temporal change collapsed, while
+Disclosure Event and First-N Aggregated have no strict survivor in this frozen
+set. Any next development search should therefore target those materially
+uncovered mechanisms rather than rerun a global candidate race.
 
-After that result closes, classify non-collapsing candidates by economic
-mechanism, intended regime/event/state and portfolio role, then expand search
-only for materially uncovered regimes. The later search-policy repair is
-limited to reusing the existing Phase3BP RX/UCB-CEM-hybrid/orthogonal core as
-route-local generation actions beneath the unified registry `route_id`. Reuse
-the existing expression/skeleton identity keys for every legal attempt and the
-existing round top-decision output contract, projected by route and
+Before that search, repair only the lost connection to the existing Phase3BP
+RX/UCB-CEM-hybrid/orthogonal core as route-local generation actions beneath the
+unified registry `route_id`. Reuse its existing expression/skeleton identity
+keys and round top-decision output contract, projected by route and
 behavior/economic role. Do not promote legacy scheduler arm names into a second
 top-level authority, import old reward-bearing search memory, assign invented
 fresh/crossover/mutation percentages, or build MCTS/crossover/mutation
