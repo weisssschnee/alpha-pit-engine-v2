@@ -1469,6 +1469,81 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             for route_id, adapter in adapters.items()
         },
     )
+    if bool(args.preflight_only):
+        route_rows = []
+        for route_index, route_id in enumerate(ROUTES):
+            baseline = _materialize_population(
+                asked=build_baseline_population(
+                    route_id=route_id,
+                    checkpoint_index=0,
+                    seed=args.seed_base + route_index * 1009,
+                ),
+                generator=generator,
+                schema_by_backend=schema_by_backend,
+            )
+            catcma = _materialize_population(
+                asked=adapters[route_id].ask_population(
+                    checkpoint_id="preflight_checkpoint_001"
+                ),
+                generator=generator,
+                schema_by_backend=schema_by_backend,
+            )
+            for arm, rows in (
+                ("registry_baseline", baseline),
+                ("official_catcma", catcma),
+            ):
+                legal = [
+                    row
+                    for row in rows
+                    if str(row.get("construction_status") or "") == "LEGAL"
+                ]
+                novel = [
+                    row
+                    for row in legal
+                    if str(row["exact_identity"]) not in initial_exact
+                ]
+                route_rows.append(
+                    {
+                        "arm": arm,
+                        "route_id": route_id,
+                        "scheduled_pairs": len(rows),
+                        "legal_pairs": len(legal),
+                        "historically_exact_novel_pairs": len(novel),
+                        "deterministic_invalid_pairs": len(rows) - len(legal),
+                        "distinct_exact_identities": len(
+                            {str(row["exact_identity"]) for row in legal}
+                        ),
+                    }
+                )
+        catcma_rows = [
+            row
+            for row in route_rows
+            if row["arm"] == "official_catcma"
+        ]
+        if any(
+            int(row["historically_exact_novel_pairs"]) == 0
+            for row in catcma_rows
+        ):
+            raise RuntimeError(
+                "CATCMA_FIRST_POPULATION_HAS_NO_NOVEL_SUPPLY_ON_A_ROUTE"
+            )
+        receipt = {
+            "schema_version": "cn_search_policy_preflight_materialization_v1",
+            "status": "PASS",
+            "budget_consumed": 0,
+            "phase3cm_started": False,
+            "routes": route_rows,
+            "gene_space_manifest": _artifact(
+                gene_space_manifest_path, root=output_root
+            ),
+            "optimizer_environment": _artifact(
+                environment_path, root=output_root
+            ),
+        }
+        _write_json(
+            output_root / "preflight_materialization.json", receipt
+        )
+        return receipt
 
     summaries = []
     for checkpoint_index in range(CHECKPOINT_COUNT):
@@ -1601,6 +1676,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--active-threads", type=int, default=30)
     parser.add_argument("--session-threads", type=int, default=2)
     parser.add_argument("--maximum-wall-seconds", type=int, default=64_800)
+    parser.add_argument("--preflight-only", action="store_true")
     args = parser.parse_args(argv)
     verdict = run(args)
     print(json.dumps(verdict, ensure_ascii=False, sort_keys=True))
