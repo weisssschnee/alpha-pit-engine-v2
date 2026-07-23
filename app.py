@@ -55,6 +55,7 @@ ROUTES: dict[str, str] = {
     "cn-unified-capability-discovery": "our_system_phase2.runtime.cn_unified_capability_discovery",
     "cn-iterative-search-v1-canary": "our_system_phase2.runtime.cn_iterative_search_v1",
     "cn-targeted-search-medium-campaign": "our_system_phase2.runtime.cn_targeted_search_medium_campaign",
+    "cn-search-policy-qualification": "our_system_phase2.runtime.cn_search_policy_qualification",
     "cn-route-supply-closure": "scripts.run_cn_route_supply_closure",
     "cn-core-pack-authority-smoke": "scripts.run_cn_core_pack_authority_smoke",
     "build-development-only-true1min-release": "our_system_phase2.runtime.build_development_only_true1min_release",

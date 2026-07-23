@@ -685,8 +685,14 @@ def _run_phase3cm_monitored(
     deadline_epoch: float,
     output_namespace: str = "phase3cm",
     selected_backends: Sequence[str] = ("active_bar", "stock_session"),
+    pair_batch_sizes: Mapping[str, int] | None = None,
 ) -> list[dict[str, Any]]:
     receipts = []
+    effective_pair_batch_sizes = dict(PAIR_BATCH_SIZE_BY_BACKEND)
+    if pair_batch_sizes is not None:
+        effective_pair_batch_sizes.update(
+            {str(key): int(value) for key, value in pair_batch_sizes.items()}
+        )
     for backend in selected_backends:
         candidate_table = table_paths.get(backend)
         if candidate_table is None:
@@ -721,7 +727,7 @@ def _run_phase3cm_monitored(
             "--label-sidecar-root", str(label_roots[backend]),
             "--output-root", str(output_root),
             "--block-sessions", "10",
-            "--pair-batch-size", str(PAIR_BATCH_SIZE_BY_BACKEND[backend]),
+            "--pair-batch-size", str(effective_pair_batch_sizes[backend]),
             "--compute-threads", str(compute_threads[backend]),
             "--iterative-batch-id", checkpoint_id,
         ]
