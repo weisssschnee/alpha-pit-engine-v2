@@ -1,5 +1,7 @@
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 from scripts.run_cn_core_pack_fixed_holdout import _holdout_summary
@@ -130,3 +132,19 @@ def test_77o_launcher_defaults_to_full_period_authority() -> None:
         in text
     )
     assert "cn_true1min_development_only_release" not in text
+
+
+def test_prepare_cli_is_standalone_importable() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO / "scripts/prepare_cn_core_pack_fixed_holdout.py"),
+            "--help",
+        ],
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--campaign-root" in result.stdout

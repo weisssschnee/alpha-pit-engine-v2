@@ -3,9 +3,16 @@ from __future__ import annotations
 import argparse
 import json
 import platform
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
+
+REPO = Path(__file__).resolve().parents[1]
+SRC = REPO / "src"
+for search_path in (REPO, SRC):
+    if str(search_path) not in sys.path:
+        sys.path.insert(0, str(search_path))
 
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _clock_for_route,
