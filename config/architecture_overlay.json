@@ -373,6 +373,8 @@
         "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
         "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
+        "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
+        "runtime/run_plans/cn_active_search_chain_gap_audit_20260723.json",
         "runtime/cn_iterative_search_v1_20260721/final_decision.json",
         "runtime/cn_route_supply_closure_20260721_c939edf_4route/final_decision.json",
         "reports/CN_ITERATIVE_SEARCH_V1_20260721.md",
@@ -382,8 +384,10 @@
         "6 IMMUTABLE CHECKPOINTS",
         "872 DEVELOPMENT PAIRS",
         "533 VALIDATION-EVALUABLE PAIRS",
+        "12 FIXED SPENT-HOLDOUT PAIRS",
+        "6 STRICT NONCOLLAPSE",
         "LONG-ONLY TOP",
-        "NO OOS",
+        "WEAK NOT SEALED OOS",
         "NO PROMOTION"
       ],
       "critical": true,
@@ -391,7 +395,7 @@
       "semantic_role": "bounded_development_iterative_search_capability",
       "authority": {
         "path": "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
-        "verified_sha": "ddda189940eecb8beeca96262ed1d32b4df49412"
+        "verified_sha": "54ce73e59e486c186fa8b6b5a4ad0a944d1f5f9c"
       },
       "contracts": [
         {
@@ -421,7 +425,7 @@
         {
           "id": "iterative_development_only",
           "type": "BOUNDARY",
-          "rule": "Full materialization and train evaluation run only on 77o. After an immutable TRAIN_COMPLETE manifest, validation starts automatically in a separate report-only channel and cannot write feedback, scheduler state or the train behavior archive. Holdout, 2026, Strict Stage A, automatic promotion and validation-to-search feedback remain forbidden.",
+          "rule": "Full materialization and train evaluation run only on 77o. After immutable TRAIN_COMPLETE, validation is report-only. One separately authorized fixed 12-pair evaluation used the already-spent 48-date holdout calendar only for non-collapse evidence, with no feedback, scheduler, archive or promotion writes. It does not reopen candidate selection, sealed OOS status or further holdout access. 2026, Strict Stage A, automatic promotion and all validation/holdout-to-search feedback remain forbidden.",
           "severity": "HARD",
           "enforced_by": "post_train_validation sequential gate, immutable hashes and access receipts",
           "bypass_forbidden": true
@@ -430,8 +434,8 @@
       "validation": {
         "level": "PARTIAL",
         "result": "WARN",
-        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
-        "verified_at_sha": "4301f1a7e10bbd35c0a8439674a3602022c5c0e5"
+        "evidence_ref": "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
+        "verified_at_sha": "81b53dba81b2d710b19a74f32f50556f4dc4cba3"
       }
     },
     {
@@ -580,6 +584,7 @@
         "reports/cn_phase3cm_1024_development_confirmation_20260720/artifact_index.json",
         "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
         "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
+        "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "claim_badges": [
@@ -587,7 +592,9 @@
         "SHORTING DISABLED",
         "533/872 VALIDATION EVALUABLE",
         "PAIR DELTA != STANDALONE SORTINO",
-        "NO OOS",
+        "12 FIXED SPENT-HOLDOUT PAIRS",
+        "6 STRICT NONCOLLAPSE",
+        "WEAK NOT SEALED OOS",
         "NO PROMOTION"
       ],
       "critical": true,
@@ -595,13 +602,13 @@
       "semantic_role": "qualified_experimental_evaluation_path",
       "authority": {
         "path": "scripts/run_cn_phase3cm_streaming_qualification.py",
-        "verified_sha": "c25541b12dc4acda2927db95843cc027616e0fb6"
+        "verified_sha": "54ce73e59e486c186fa8b6b5a4ad0a944d1f5f9c"
       },
       "contracts": [
         {
           "id": "streaming_development_only",
           "type": "BOUNDARY",
-          "rule": "The train role may read only the frozen 2024-2025 development release. A separately bound evaluation_role=validation may run only after immutable TRAIN_COMPLETE and remains report-only with no feedback, scheduler, archive or promotion write. Holdout and 2026 reads remain forbidden in both roles.",
+          "rule": "The train role may read only the frozen 2024-2025 development release. Separately bound validation remains report-only after immutable TRAIN_COMPLETE. A one-time evaluation_role=holdout binding evaluated only 12 pre-frozen pairs on the already-spent 48-date calendar, with zero validation/2026 reads and no feedback, scheduler, archive or promotion write. It grants no additional holdout access and no sealed-OOS claim.",
           "severity": "HARD",
           "enforced_by": "phase3cm streaming access contracts and post_train_validation sequential gate",
           "bypass_forbidden": true
@@ -626,8 +633,8 @@
       "validation": {
         "level": "PARTIAL",
         "result": "WARN",
-        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
-        "verified_at_sha": "4301f1a7e10bbd35c0a8439674a3602022c5c0e5"
+        "evidence_ref": "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
+        "verified_at_sha": "81b53dba81b2d710b19a74f32f50556f4dc4cba3"
       },
       "promotion_requirements": [
         "separate strict Stage A authorization",
