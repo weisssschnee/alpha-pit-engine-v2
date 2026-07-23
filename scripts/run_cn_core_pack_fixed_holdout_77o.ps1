@@ -7,7 +7,7 @@ param(
     [string]$ChipRoot,
     [string]$PythonExe = "D:\ChengboRemote\venvs\alpha311\Scripts\python.exe",
     [string]$CampaignRoot = "D:\ChengboRemote\runtime\cn_core_pack_large_development_20260722_9f3a5f2_30t_r5",
-    [string]$MinuteSourceRoot = "D:\ChengboRemote\data\cn_true1min_development_only_release_v1_20260712_77o",
+    [string]$MinuteSourceRoot = "D:\ChengboRemote\data\phase3dz_true1min_sidecar_augmented_full16_20260702",
     [string]$OutputRoot = "D:\ChengboRemote\runtime\cn_core_pack_large_development_20260722_9f3a5f2_30t_r5\fixed_holdout_48d",
     [int]$PolarsThreads = 24,
     [int]$ActiveThreads = 30,

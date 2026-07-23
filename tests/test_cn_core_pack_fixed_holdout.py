@@ -18,6 +18,7 @@ SPLIT = (
     REPO
     / "runtime/run_plans/phase3ga_true1min_2024_2025_global_split_manifest.csv"
 )
+LAUNCHER = REPO / "scripts/run_cn_core_pack_fixed_holdout_77o.ps1"
 
 
 def test_fixed_holdout_freeze_is_closed_and_behavior_exact_unique() -> None:
@@ -120,3 +121,12 @@ def test_streaming_binding_accepts_only_report_only_holdout_role(
         evaluation_role="holdout",
     )
     assert observed["sealed_reads"] == {"forward_2026": 0}
+
+
+def test_77o_launcher_defaults_to_full_period_authority() -> None:
+    text = LAUNCHER.read_text(encoding="utf-8")
+    assert (
+        r"D:\ChengboRemote\data\phase3dz_true1min_sidecar_augmented_full16_20260702"
+        in text
+    )
+    assert "cn_true1min_development_only_release" not in text
