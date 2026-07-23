@@ -428,10 +428,10 @@
         }
       ],
       "validation": {
-        "level": "STATIC_VERIFIED",
-        "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
-        "verified_at_sha": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728"
+        "level": "PARTIAL",
+        "result": "WARN",
+        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
+        "verified_at_sha": "4301f1a7e10bbd35c0a8439674a3602022c5c0e5"
       }
     },
     {
@@ -624,10 +624,10 @@
         }
       ],
       "validation": {
-        "level": "STATIC_VERIFIED",
-        "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
-        "verified_at_sha": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728"
+        "level": "PARTIAL",
+        "result": "WARN",
+        "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
+        "verified_at_sha": "4301f1a7e10bbd35c0a8439674a3602022c5c0e5"
       },
       "promotion_requirements": [
         "separate strict Stage A authorization",
