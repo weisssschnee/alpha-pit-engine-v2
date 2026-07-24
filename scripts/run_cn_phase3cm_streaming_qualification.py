@@ -186,6 +186,7 @@ def _session_sample_calendar(
     expected = {
         "schema_version": "cn_phase3cm_session_sample_contract_v1",
         "authority_id": "MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1",
+        "authority_lifecycle": "EXPERIMENTAL_CAMPAIGN_LOCAL",
         "status": "FROZEN_DETERMINISTIC_SESSION_SUBSET",
         "evaluation_role": "train",
         "full_split_manifest_hash": str(

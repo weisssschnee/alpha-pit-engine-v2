@@ -81,6 +81,7 @@ from scripts.run_targeted_formula_cem_qualification import (
 )
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _context_and_binding,
+    _outcome_rows,
 )
 from our_system_phase2.runtime.cn_search_policy_qualification import (
     _read_rows,
@@ -570,7 +571,11 @@ def _input_artifact(path: Path) -> dict[str, Any]:
     }
 
 
-def _verify_reused_supply(root: Path) -> dict[str, Any]:
+def _verify_reused_supply(
+    root: Path,
+    *,
+    expected_production_root_contract_hash: str,
+) -> dict[str, Any]:
     manifest_path = root / "artifact_manifest.json"
     manifest = json.loads(
         manifest_path.read_text(encoding="utf-8-sig")
@@ -590,6 +595,8 @@ def _verify_reused_supply(root: Path) -> dict[str, Any]:
         < MINIMUM_EXACT_SUPPLY
         or int(gate.get("behavior_unique_pairs") or 0)
         < MINIMUM_BEHAVIOR_SUPPLY
+        or str(gate.get("production_root_contract_hash") or "")
+        != str(expected_production_root_contract_hash)
     ):
         raise RuntimeError("REUSED_OLD_SUPPLY_NOT_QUALIFIED")
     return {
@@ -597,6 +604,9 @@ def _verify_reused_supply(root: Path) -> dict[str, Any]:
         "manifest": _input_artifact(manifest_path),
         "exact_supply": int(gate["post_archive_exact_supply"]),
         "behavior_unique_pairs": int(gate["behavior_unique_pairs"]),
+        "production_root_contract_hash": str(
+            gate["production_root_contract_hash"]
+        ),
     }
 
 
@@ -763,6 +773,7 @@ def _session_sample_contract(
     payload = {
         "schema_version": "cn_phase3cm_session_sample_contract_v1",
         "authority_id": SAMPLED_AUTHORITY_ID,
+        "authority_lifecycle": "EXPERIMENTAL_CAMPAIGN_LOCAL",
         "status": "FROZEN_DETERMINISTIC_SESSION_SUBSET",
         "evaluation_role": "train",
         "full_split_manifest_hash": split.manifest_hash,
@@ -801,11 +812,19 @@ def _normalize_candidate_row(row: Mapping[str, Any]) -> dict[str, Any]:
 
 def _source_minute_corpus(
     *,
+    source_root: Path,
     candidate_ledger: Path,
     observation_ledger: Path,
+    split_manifest_hash: str,
+    data_release_hash: str,
+    registry_hash: str,
     pair_count: int,
     seed: int,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    dict[str, Any],
+]:
     candidates = [
         _normalize_candidate_row(row)
         for row in _read_rows(candidate_ledger)
@@ -823,12 +842,29 @@ def _source_minute_corpus(
             )
         )
     ]
+    source_contract = _source_full_comparator_contract(
+        source_root,
+        split_manifest_hash=split_manifest_hash,
+        data_release_hash=data_release_hash,
+        registry_hash=registry_hash,
+    )
+    result_pairs = source_contract.pop("_pair_proofs")
     by_pair: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in candidates:
         by_pair[str(row.get("pair_id") or "")].append(row)
     eligible = [
         row for row in observations
-        if len(by_pair.get(str(row.get("pair_id") or ""), ())) == 2
+        if (
+            len(by_pair.get(str(row.get("pair_id") or ""), ())) == 2
+            and str(row.get("pair_id") or "") in result_pairs
+            and str(row.get("pair_receipt_hash") or "")
+            == str(
+                result_pairs[str(row.get("pair_id") or "")].get(
+                    "pair_receipt_hash"
+                )
+                or ""
+            )
+        )
     ]
     selected_observations = sorted(
         eligible,
@@ -853,26 +889,193 @@ def _source_minute_corpus(
     ]
     if len(selected_candidates) != 2 * pair_count:
         raise RuntimeError("SAMPLED_AUTHORITY_CANDIDATE_MEMBER_DRIFT")
-    return selected_candidates, selected_observations
+    selected_contract_checks = {
+        "source_pair_receipts_bound": all(
+            str(row.get("pair_receipt_hash") or "")
+            == str(result_pairs[str(row["pair_id"])]["pair_receipt_hash"])
+            for row in selected_observations
+        ),
+        "direction_long_top": all(
+            str(row.get("open_direction") or "long_top").lower()
+            == "long_top"
+            for row in selected_candidates
+        ),
+        "full_cross_section": all(
+            str(row.get("outer_mapping") or "") == "cross_sectional"
+            and str(row.get("support_unit") or "")
+            == "stock-minute cross-section"
+            for row in selected_candidates
+        ),
+        "matched_reward_contract": all(
+            str(row.get("pair_mapping_portfolio_contract") or "")
+            == (
+                "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|"
+                "SAME_SPLIT_ROLES|SAME_HORIZONS|"
+                "SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|"
+                "SAME_COST_ASSUMPTIONS"
+            )
+            for row in selected_candidates
+        ),
+    }
+    if not all(selected_contract_checks.values()):
+        raise RuntimeError("SOURCE_FULL_COMPARATOR_CONTRACT_DRIFT")
+    source_contract["selected_pair_contract_checks"] = (
+        selected_contract_checks
+    )
+    source_contract["selected_pair_count"] = len(selected_observations)
+    return selected_candidates, selected_observations, source_contract
 
 
-def _source_full_pairs_per_hour(source_root: Path) -> float:
+def _source_full_comparator_contract(
+    source_root: Path,
+    *,
+    split_manifest_hash: str,
+    data_release_hash: str,
+    registry_hash: str,
+) -> dict[str, Any]:
+    pair_proofs: dict[str, dict[str, Any]] = {}
     pairs = 0
     wall = 0.0
+    effective_cores = []
+    result_artifacts = []
     for path in source_root.glob(
         "checkpoints/checkpoint_*/phase3cm/"
         "active_bar/CN_STREAMING_BACKEND_RESULT.json"
     ):
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
-        if (
-            payload.get("status")
-            == "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
-        ):
-            pairs += int(payload.get("pair_count") or 0)
-            wall += float(payload.get("wall_seconds") or 0.0)
-    if not pairs or wall <= 0.0:
-        raise RuntimeError("SOURCE_FULL_PHASE3CM_SPEED_EVIDENCE_MISSING")
-    return pairs * 3600.0 / wall
+        checkpoint_root = path.parents[2]
+        binding_path = checkpoint_root / "phase3cm_input_binding.json"
+        manifest_path = checkpoint_root / "batch_manifest.json"
+        gate_path = checkpoint_root / "runtime_utilization_gate.json"
+        binding = json.loads(
+            binding_path.read_text(encoding="utf-8-sig")
+        )
+        manifest = json.loads(
+            manifest_path.read_text(encoding="utf-8-sig")
+        )
+        gate = json.loads(gate_path.read_text(encoding="utf-8-sig"))
+        artifact_hashes = {
+            str(row.get("path") or ""): str(row.get("sha256") or "")
+            for row in manifest.get("artifacts") or ()
+        }
+        expected_result_rel = (
+            "phase3cm/active_bar/CN_STREAMING_BACKEND_RESULT.json"
+        )
+        checks = {
+            "immutable_manifest": (
+                manifest.get("status") == "BATCH_CLOSED_IMMUTABLE"
+            ),
+            "result_hash": (
+                artifact_hashes.get(expected_result_rel) == _sha256(path)
+            ),
+            "binding_hash": (
+                artifact_hashes.get("phase3cm_input_binding.json")
+                == _sha256(binding_path)
+                and str(binding.get("binding_hash") or "")
+                == str(payload.get("input_binding_hash") or "")
+            ),
+            "completed_train_full_coordinate": (
+                payload.get("status")
+                == "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
+                and payload.get("evaluation_role") == "train"
+                and binding.get("evaluation_role") == "train"
+                and binding.get("data_role") == "development"
+                and binding.get("evaluation_name")
+                == "full-coordinate development Phase3CM pair evaluation"
+            ),
+            "split": (
+                str(payload.get("split_manifest_hash") or "")
+                == str(split_manifest_hash)
+                and str(binding.get("split_manifest_hash") or "")
+                == str(split_manifest_hash)
+            ),
+            "evaluator_inputs": (
+                str(binding.get("development_release_hash") or "")
+                == str(data_release_hash)
+                and str(binding.get("source_closure_sha") or "")
+                == str(data_release_hash)
+                and str(binding.get("registry_hash") or "")
+                == str(registry_hash)
+            ),
+            "access": (
+                int(payload.get("validation_reads") or 0) == 0
+                and int(payload.get("holdout_reads") or 0) == 0
+                and int(payload.get("forward_2026_reads") or 0) == 0
+                and all(
+                    int((binding.get("sealed_reads") or {}).get(key) or 0)
+                    == 0
+                    for key in ("validation", "holdout", "forward_2026")
+                )
+            ),
+            "promotion_forbidden": (
+                payload.get("promotion") == "FORBIDDEN"
+                and binding.get("promotion") == "FORBIDDEN"
+            ),
+        }
+        if not all(checks.values()):
+            raise RuntimeError(
+                "SOURCE_FULL_COMPARATOR_ARTIFACT_DRIFT:"
+                + checkpoint_root.name
+            )
+        bound_pairs = {
+            str(row.get("pair_id") or ""): dict(row)
+            for row in binding.get("pairs") or ()
+            if str(row.get("route_id") or "") == ROUTE_ID
+            and str(row.get("clock_namespace") or "") == "active_bar"
+        }
+        for row in payload.get("pair_results") or ():
+            pair_id = str(row.get("pair_id") or "")
+            if (
+                str(row.get("route_id") or "") == ROUTE_ID
+                and pair_id in bound_pairs
+            ):
+                pair_proofs[pair_id] = {
+                    "pair_receipt_hash": str(
+                        row.get("pair_receipt_hash") or ""
+                    ),
+                    "primary_candidate_id": str(
+                        row.get("primary_candidate_id") or ""
+                    ),
+                    "control_candidate_id": str(
+                        row.get("control_candidate_id") or ""
+                    ),
+                    "checkpoint": checkpoint_root.name,
+                }
+        backend_gate = dict((gate.get("backends") or {}).get("active_bar") or {})
+        if backend_gate.get("effective_compute_cores") is not None:
+            effective_cores.append(
+                float(backend_gate["effective_compute_cores"])
+            )
+        pairs += int(payload.get("pair_count") or 0)
+        wall += float(payload.get("wall_seconds") or 0.0)
+        result_artifacts.append(
+            {
+                "checkpoint": checkpoint_root.name,
+                "result": _input_artifact(path),
+                "binding": _input_artifact(binding_path),
+                "checks": checks,
+            }
+        )
+    if (
+        not pair_proofs
+        or not pairs
+        or wall <= 0.0
+        or not effective_cores
+    ):
+        raise RuntimeError("SOURCE_FULL_PHASE3CM_EVIDENCE_MISSING")
+    return {
+        "status": "HASH_BOUND_COMPARABLE_FULL_EVIDENCE",
+        "portfolio_mode": "long_only_top",
+        "direction": "candidate_open_direction_default_long_top",
+        "cost_bps": 5.0,
+        "horizons": [1, 5, 15, 30],
+        "reward": "matched_net_increment",
+        "result_schema": "cn_phase3cm_streaming_backend_result_v1",
+        "full_coordinate_pairs_per_hour": pairs * 3600.0 / wall,
+        "effective_cores_median": statistics.median(effective_cores),
+        "result_artifacts": result_artifacts,
+        "_pair_proofs": pair_proofs,
+    }
 
 
 def _qualify_sampled_authority(
@@ -891,18 +1094,77 @@ def _qualify_sampled_authority(
     compute_threads: int,
     deadline_epoch: float,
 ) -> dict[str, Any]:
-    candidates, full_observations = _source_minute_corpus(
+    data_release_hash = _sha256(sidecar_closure)
+    candidates, full_observations, source_contract = _source_minute_corpus(
+        source_root=source_root,
         candidate_ledger=source_candidate_ledger,
         observation_ledger=source_observation_ledger,
+        split_manifest_hash=split.manifest_hash,
+        data_release_hash=data_release_hash,
+        registry_hash=registry.registry_hash,
         pair_count=SAMPLED_QUALIFICATION_PAIR_COUNT,
         seed=FINANCIAL_SEED + 101,
+    )
+    full_by_pair = {
+        str(row["pair_id"]): dict(row)
+        for row in full_observations
+    }
+    contract_pair_ids = sorted(
+        full_by_pair,
+        key=lambda pair_id: _stable_hash(
+            {"contract_seed": FINANCIAL_SEED + 202, "pair_id": pair_id}
+        ),
+    )[:4]
+    full_contract_candidates = [
+        dict(row)
+        for row in candidates
+        if str(row["pair_id"]) in set(contract_pair_ids)
+    ]
+    full_contract_root = root / "full_contract_check"
+    full_binding_path, full_tables = _context_and_binding(
+        batch_root=full_contract_root,
+        candidates=full_contract_candidates,
+        registry=registry,
+        split=split,
+        data_release_hash=data_release_hash,
+    )
+    _bind_purity(full_binding_path, purity_path)
+    full_contract_receipts = _run_phase3cm_monitored(
+        checkpoint_id="minute_static.sampled_authority.full_contract",
+        checkpoint_root=full_contract_root,
+        binding_path=full_binding_path,
+        table_paths=full_tables,
+        split_manifest=split.manifest_path,
+        field_roots={"active_bar": field_root},
+        label_roots={"active_bar": label_root},
+        purity_path=purity_path,
+        compute_threads={"active_bar": compute_threads},
+        deadline_epoch=deadline_epoch,
+        selected_backends=("active_bar",),
+        pair_batch_sizes={"active_bar": 4},
+    )
+    current_full_outcomes, _ = _outcome_rows(full_contract_root)
+    current_full_by_pair = {
+        str(row["pair_id"]): dict(row)
+        for row in current_full_outcomes
+    }
+    if set(current_full_by_pair) != set(contract_pair_ids):
+        raise RuntimeError("FULL_CONTRACT_CHECK_OUTCOME_SET_DRIFT")
+    full_contract_result_path = (
+        full_contract_root
+        / "phase3cm"
+        / "active_bar"
+        / "CN_STREAMING_BACKEND_RESULT.json"
+    )
+    full_contract_result = json.loads(
+        full_contract_result_path.read_text(encoding="utf-8-sig")
     )
     binding_path, tables = _context_and_binding(
         batch_root=root,
         candidates=candidates,
         registry=registry,
         split=split,
-        data_release_hash=_sha256(sidecar_closure),
+        data_release_hash=data_release_hash,
     )
     _bind_purity(binding_path, purity_path)
     _bind_session_sample(binding_path, session_sample_path)
@@ -930,15 +1192,60 @@ def _qualify_sampled_authority(
     result = json.loads(
         result_path.read_text(encoding="utf-8-sig")
     )
+    full_binding = json.loads(
+        full_binding_path.read_text(encoding="utf-8-sig")
+    )
+    sampled_binding = json.loads(
+        binding_path.read_text(encoding="utf-8-sig")
+    )
+
+    def normalized_binding(payload: Mapping[str, Any]) -> dict[str, Any]:
+        contract_ids = set(contract_pair_ids)
+        return {
+            key: payload.get(key)
+            for key in (
+                "status",
+                "data_role",
+                "evaluation_name",
+                "evaluation_role",
+                "development_release_hash",
+                "source_closure_sha",
+                "split_manifest_hash",
+                "registry_hash",
+                "label_purge_enforcement",
+                "sealed_reads",
+                "strict_stage_a",
+                "promotion",
+            )
+        } | {
+            "candidate_members": sorted(
+                (
+                    dict(row)
+                    for row in payload.get("candidate_members") or ()
+                    if str(row.get("pair_id") or "") in contract_ids
+                ),
+                key=lambda row: str(row.get("candidate_id") or ""),
+            ),
+            "pairs": sorted(
+                (
+                    dict(row)
+                    for row in payload.get("pairs") or ()
+                    if str(row.get("pair_id") or "") in contract_ids
+                ),
+                key=lambda row: str(row.get("pair_id") or ""),
+            ),
+        }
+
+    binding_parity = (
+        normalized_binding(full_binding)
+        == normalized_binding(sampled_binding)
+    )
+    sampled_outcomes, _ = _outcome_rows(root)
     sampled_by_pair = {
         str(row["pair_id"]): dict(row)
-        for row in result.get("pair_results") or ()
+        for row in sampled_outcomes
         if str(row.get("pair_evaluation_status") or "")
         == "PAIR_EVALUATED"
-    }
-    full_by_pair = {
-        str(row["pair_id"]): dict(row)
-        for row in full_observations
     }
     comparable_ids = sorted(set(sampled_by_pair) & set(full_by_pair))
     if len(comparable_ids) != SAMPLED_QUALIFICATION_PAIR_COUNT:
@@ -979,18 +1286,14 @@ def _qualify_sampled_authority(
         * 3600.0
         / max(float(result.get("wall_seconds") or 0.0), 1e-9)
     )
-    full_pairs_per_hour = _source_full_pairs_per_hour(source_root)
+    full_pairs_per_hour = float(
+        source_contract["full_coordinate_pairs_per_hour"]
+    )
     speed_multiple = sampled_pairs_per_hour / full_pairs_per_hour
 
     members_by_pair: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in candidates:
         members_by_pair[str(row["pair_id"])].append(row)
-    contract_pair_ids = sorted(
-        comparable_ids,
-        key=lambda pair_id: _stable_hash(
-            {"contract_seed": FINANCIAL_SEED + 202, "pair_id": pair_id}
-        ),
-    )[:4]
     contract_rows = []
     for pair_id in contract_pair_ids:
         members = members_by_pair[pair_id]
@@ -1012,11 +1315,36 @@ def _qualify_sampled_authority(
                 primary["candidate_id"] != control["candidate_id"]
                 and primary["pair_id"] == control["pair_id"]
             ),
-            "direction_and_long_only": (
-                result.get("portfolio_mode") == "long_only_top"
+            "direction": all(
+                str(row.get("open_direction") or "long_top").lower()
+                == "long_top"
+                for row in members
             ),
+            "long_only": result.get("portfolio_mode") == "long_only_top",
             "cost": float(result.get("cost_bps") or -1.0) == 5.0,
             "horizons": result.get("horizons") == [1, 5, 15, 30],
+            "full_sampled_evaluator_config_parity": (
+                binding_parity
+                and full_contract_result.get("portfolio_mode")
+                == result.get("portfolio_mode")
+                == "long_only_top"
+                and float(full_contract_result.get("cost_bps") or -1.0)
+                == float(result.get("cost_bps") or -1.0)
+                == 5.0
+                and full_contract_result.get("horizons")
+                == result.get("horizons")
+                == [1, 5, 15, 30]
+            ),
+            "current_full_outcome_matches_source": math.isclose(
+                float(
+                    current_full_by_pair[pair_id][
+                        "matched_net_increment"
+                    ]
+                ),
+                float(full_by_pair[pair_id]["matched_net_increment"]),
+                rel_tol=1e-12,
+                abs_tol=1e-12,
+            ),
             "field_lineage": (
                 set(map(str, primary.get("field_ids") or ()))
                 == set(map(str, control.get("field_ids") or ()))
@@ -1065,7 +1393,15 @@ def _qualify_sampled_authority(
             "cn_minute_static_sampled_phase3cm_qualification_v1"
         ),
         "authority_id": SAMPLED_AUTHORITY_ID,
-        "status": "QUALIFIED" if qualified else "NOT_QUALIFIED",
+        "status": (
+            "CAMPAIGN_LOCAL_EVIDENCE_QUALIFIED"
+            if qualified
+            else "CAMPAIGN_LOCAL_EVIDENCE_NOT_QUALIFIED"
+        ),
+        "evidence_status": "QUALIFIED" if qualified else "NOT_QUALIFIED",
+        "formal_authority_status": "NOT_PROMOTED",
+        "campaign_local_selector_authorized": bool(qualified),
+        "authority_lifecycle": "EXPERIMENTAL_CAMPAIGN_LOCAL",
         "comparable_pair_count": len(comparable_ids),
         "spearman_rank_correlation": spearman,
         "sign_agreement": sign_agreement,
@@ -1073,17 +1409,26 @@ def _qualify_sampled_authority(
         "sampled_pairs_per_hour": sampled_pairs_per_hour,
         "full_pairs_per_hour": full_pairs_per_hour,
         "speed_multiple": speed_multiple,
+        "source_full_comparator_contract": source_contract,
         "checks": checks,
         "contract_pairs": contract_rows,
         "session_sample_manifest": _input_artifact(
             session_sample_path
         ),
         "result": _input_artifact(result_path),
-        "access_receipts": receipts,
+        "full_contract_result": _input_artifact(
+            full_contract_result_path
+        ),
+        "full_contract_binding": _input_artifact(full_binding_path),
+        "sampled_binding": _input_artifact(binding_path),
+        "access_receipts": [
+            *full_contract_receipts,
+            *receipts,
+        ],
         "validation_reads": 0,
         "holdout_reads": 0,
         "forward_2026_reads": 0,
-        "promotion": "PENDING_REPOSITORY_AUTHORITY_UPDATE"
+        "promotion": "PENDING_FORMAL_PROMOTION_AFTER_CAMPAIGN_CLOSURE"
         if qualified
         else "FORBIDDEN",
     }
@@ -1413,17 +1758,18 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         except FileExistsError as exc:
             raise RuntimeError("DUPLICATE_CAMPAIGN_WRITER") from exc
 
-    supply_reuse = _verify_reused_supply(
-        args.reused_supply_root.resolve()
-    )
-    supply_reuse_path = _write_json(
-        output_root / "old_supply_reuse_receipt.json",
-        supply_reuse,
-    )
     registry = UnifiedCapabilityRegistry.read(args.registry.resolve())
     contract, route_roots = _load_production_contract(
         args.production_root_contract.resolve(),
         registry=registry,
+    )
+    supply_reuse = _verify_reused_supply(
+        args.reused_supply_root.resolve(),
+        expected_production_root_contract_hash=contract["contract_hash"],
+    )
+    supply_reuse_path = _write_json(
+        output_root / "old_supply_reuse_receipt.json",
+        supply_reuse,
     )
     generator = RegistryDrivenGenerator(
         registry,
@@ -1525,10 +1871,12 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         source_observation_ledger=(
             args.source_observation_ledger.resolve()
         ),
-        field_root=args.active_field_root.resolve(),
-        label_root=args.active_label_root.resolve(),
+        field_root=args.sampled_authority_field_root.resolve(),
+        label_root=args.sampled_authority_label_root.resolve(),
         purity_path=args.split_boundary_purity.resolve(),
-        sidecar_closure=args.sidecar_closure.resolve(),
+        sidecar_closure=(
+            args.sampled_authority_sidecar_closure.resolve()
+        ),
         compute_threads=int(args.compute_threads),
         deadline_epoch=deadline_epoch,
     )
@@ -1536,8 +1884,8 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         output_root / "sampled_authority_qualification.json",
         sampled_qualification,
     )
-    sampled_qualified = (
-        sampled_qualification["status"] == "QUALIFIED"
+    sampled_selector_evidence_qualified = bool(
+        sampled_qualification["campaign_local_selector_authorized"]
     )
 
     initial_exact = _historical_exact(
@@ -1642,7 +1990,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
                 selected_backends=("active_bar",),
                 pair_batch_sizes={"active_bar": 4},
                 session_sample_manifest=session_sample_path,
-                sampled_authority_qualified=sampled_qualified,
+                sampled_selector_evidence_qualified=(
+                    sampled_selector_evidence_qualified
+                ),
                 behavior_probe_target=(
                     FINANCIAL_BEHAVIOR_PROBE_TARGET
                 ),
@@ -1669,12 +2019,17 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         static_status="PASS",
         behavior_status="PASS",
         sampled_full_contract=(
-            "PASS" if sampled_qualified else "FAIL"
+            "PASS" if sampled_selector_evidence_qualified else "FAIL"
         ),
+        performance_baseline=sampled_qualification[
+            "source_full_comparator_contract"
+        ],
     )
     blockers = []
-    if not sampled_qualified:
-        blockers.append("SAMPLED_PHASE3CM_AUTHORITY_NOT_QUALIFIED")
+    if not sampled_selector_evidence_qualified:
+        blockers.append("SAMPLED_PHASE3CM_EVIDENCE_NOT_QUALIFIED")
+    else:
+        blockers.append("SAMPLED_PHASE3CM_AUTHORITY_PENDING_FORMAL_PROMOTION")
     if not all(comparison["minimum_support"].values()):
         blockers.append("INSUFFICIENT_FINANCIAL_COMPARISON_SUPPORT")
     if comparison["FORMULA_SPACE_INCREMENT"] != "QUALIFIED":
@@ -1685,16 +2040,30 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         blockers.append("PERFORMANCE_CONTRACT_NOT_PASS")
     final = {
         "SAMPLED_PHASE3CM_AUTHORITY": (
-            sampled_qualification["status"]
+            "PENDING_FORMAL_PROMOTION"
+            if sampled_selector_evidence_qualified
+            else "NOT_QUALIFIED"
         ),
+        "SAMPLED_PHASE3CM_EVIDENCE": sampled_qualification[
+            "evidence_status"
+        ],
         "FORMULA_SPACE_INCREMENT": comparison[
             "FORMULA_SPACE_INCREMENT"
         ],
         "CEM_SEARCH_INCREMENT": comparison["CEM_SEARCH_INCREMENT"],
         "PERFORMANCE_CONTRACT": comparison["PERFORMANCE_CONTRACT"],
-        "TARGET_FAMILY_LARGE_SEARCH_READINESS": comparison[
+        "CAMPAIGN_LOCAL_LARGE_SEARCH_READINESS": comparison[
             "TARGET_FAMILY_LARGE_SEARCH_READINESS"
         ],
+        "TARGET_FAMILY_LARGE_SEARCH_READINESS": (
+            "SEMANTICS_BLOCKED_PENDING_SAMPLED_AUTHORITY_PROMOTION"
+            if (
+                sampled_selector_evidence_qualified
+                and comparison["TARGET_FAMILY_LARGE_SEARCH_READINESS"]
+                == "READY"
+            )
+            else comparison["TARGET_FAMILY_LARGE_SEARCH_READINESS"]
+        ),
         "READINESS_BLOCKERS": blockers,
     }
     metrics_path = _write_json(
@@ -1823,6 +2192,11 @@ def main() -> int:
     parser.add_argument("--source-observation-ledger", type=Path)
     parser.add_argument("--active-field-root", type=Path)
     parser.add_argument("--active-label-root", type=Path)
+    parser.add_argument("--sampled-authority-field-root", type=Path)
+    parser.add_argument("--sampled-authority-label-root", type=Path)
+    parser.add_argument(
+        "--sampled-authority-sidecar-closure", type=Path
+    )
     parser.add_argument("--split-boundary-purity", type=Path)
     parser.add_argument("--sidecar-closure", type=Path)
     parser.add_argument(
@@ -1843,6 +2217,9 @@ def main() -> int:
             "source_observation_ledger",
             "active_field_root",
             "active_label_root",
+            "sampled_authority_field_root",
+            "sampled_authority_label_root",
+            "sampled_authority_sidecar_closure",
             "split_boundary_purity",
             "sidecar_closure",
             "historical_behavior_archive",

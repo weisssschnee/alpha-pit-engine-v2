@@ -967,6 +967,49 @@ def _write_batch_manifest(
     return _write_json(root / "batch_manifest.json", manifest)
 
 
+def _full_result_contract_drift(
+    checkpoint_root: Path,
+    *,
+    selected_backends: Sequence[str],
+) -> dict[str, int]:
+    semantic_drift = 0
+    metric_drift = 0
+    access_violations = 0
+    for backend in selected_backends:
+        path = (
+            checkpoint_root
+            / "phase3cm"
+            / backend
+            / "CN_STREAMING_BACKEND_RESULT.json"
+        )
+        if not path.is_file():
+            continue
+        result = json.loads(path.read_text(encoding="utf-8-sig"))
+        semantic_drift += int(
+            str(result.get("status") or "")
+            != "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
+            or str(result.get("evaluation_scope") or "")
+            != "full_coordinate_development"
+            or str(result.get("portfolio_mode") or "")
+            != "long_only_top"
+        )
+        metric_drift += int(
+            float(result.get("cost_bps") or -1.0) != 5.0
+            or list(result.get("horizons") or ()) != [1, 5, 15, 30]
+        )
+        access_violations += int(
+            str(result.get("evaluation_role") or "") != "train"
+            or int(result.get("validation_reads") or 0) != 0
+            or int(result.get("holdout_reads") or 0) != 0
+            or int(result.get("forward_2026_reads") or 0) != 0
+        )
+    return {
+        "semantic_drift_count": semantic_drift,
+        "metric_drift_count": metric_drift,
+        "access_violation_count": access_violations,
+    }
+
+
 def _selected_runtime_gate(
     checkpoint_root: Path,
     compute_threads: Mapping[str, int],
@@ -1192,7 +1235,7 @@ def _execute_checkpoint(
     selected_backends: Sequence[str] = ("stock_session",),
     pair_batch_sizes: Mapping[str, int] | None = None,
     session_sample_manifest: Path | None = None,
-    sampled_authority_qualified: bool = False,
+    sampled_selector_evidence_qualified: bool = False,
     behavior_probe_target: int = BEHAVIOR_PROBE_CAP,
 ) -> dict[str, Any]:
     checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
@@ -1282,7 +1325,7 @@ def _execute_checkpoint(
     sampled_artifacts: list[Path] = []
     sampled_rank_rows: list[dict[str, Any]] = []
     if (
-        sampled_authority_qualified
+        sampled_selector_evidence_qualified
         and session_sample_manifest is not None
         and sampled_pair_ids
     ):
@@ -1318,27 +1361,11 @@ def _execute_checkpoint(
             pair_batch_sizes=pair_batch_sizes or PAIR_BATCH_SIZES,
             session_sample_manifest=session_sample_manifest,
         )
-        sampled_by_pair: dict[str, dict[str, Any]] = {}
-        for backend in selected_backends:
-            result_path = (
-                sampled_root
-                / "phase3cm"
-                / backend
-                / "CN_STREAMING_BACKEND_RESULT.json"
-            )
-            if not result_path.is_file():
-                continue
-            result = json.loads(
-                result_path.read_text(encoding="utf-8-sig")
-            )
-            for row in result.get("pair_results") or ():
-                pair_id = str(row.get("pair_id") or "")
-                if pair_id in sampled_by_pair:
-                    raise RuntimeError(
-                        "SAMPLED_PAIR_RESULT_BACKEND_COLLISION:"
-                        + pair_id
-                    )
-                sampled_by_pair[pair_id] = dict(row)
+        sampled_outcomes, _ = _outcome_rows(sampled_root)
+        sampled_by_pair = {
+            str(row["pair_id"]): dict(row)
+            for row in sampled_outcomes
+        }
         if set(sampled_by_pair) != set(sampled_pair_ids):
             raise RuntimeError("SAMPLED_PAIR_RESULT_SET_DRIFT")
         sampled_rank_rows = sorted(
@@ -1396,9 +1423,11 @@ def _execute_checkpoint(
                 if sampled_rank_rows
                 else "BYPASSED_FROZEN_HASH_ORDER"
             ),
-            "sampled_authority_qualified": bool(
-                sampled_authority_qualified
+            "sampled_selector_evidence_qualified": bool(
+                sampled_selector_evidence_qualified
             ),
+            "selector_scope": "CAMPAIGN_LOCAL_EXPERIMENTAL",
+            "cross_campaign_reuse_requires_formal_promotion": True,
             "sampled_candidate_count": len(sampled_pair_ids),
             "sampled_evaluated_count": sum(
                 row["sampled_signed_matched_increment"] is not None
@@ -1583,6 +1612,9 @@ def _execute_checkpoint(
         "phase3cm_wall_seconds": _phase3cm_wall_seconds(root),
         "minimum_free_memory_bytes": _minimum_free_memory(root),
         "runtime_gate_status": str(gate.get("status") or ""),
+        **_full_result_contract_drift(
+            root, selected_backends=selected_backends
+        ),
         "cem_updated_context_count": int(
             tell_receipt.get("updated_context_count") or 0
         ),
@@ -1735,6 +1767,10 @@ def _arm_metrics(
         + float(row.get("generation_wall_seconds") or 0.0)
         for row in summaries
     )
+    phase3cm_wall = sum(
+        float(row.get("phase3cm_wall_seconds") or 0.0)
+        for row in summaries
+    )
     families = {
         str(row.get("portfolio_behavior_family_id") or "")
         for row in full_behavior
@@ -1772,9 +1808,11 @@ def _arm_metrics(
         "evaluated_pairs_per_wall_hour": len(evaluated)
         * 3600
         / max(1.0, wall),
-        "full_coordinate_pairs_per_wall_hour": len(evaluated)
+        "full_coordinate_pairs_per_wall_hour": sum(
+            int(row["full_coordinate_pairs"]) for row in summaries
+        )
         * 3600
-        / max(1.0, wall),
+        / max(1.0, phase3cm_wall),
         "estimated_effective_cpu_hours": effective_cpu_hours,
         "full_coordinate_pairs_per_effective_cpu_hour": (
             len(evaluated) / max(1e-12, effective_cpu_hours)
@@ -1836,6 +1874,18 @@ def _arm_metrics(
             (int(row.get("peak_rss_bytes") or 0) for row in runtime_rows),
             default=0,
         ),
+        "semantic_drift_count": sum(
+            int(row.get("semantic_drift_count") or 0)
+            for row in summaries
+        ),
+        "metric_drift_count": sum(
+            int(row.get("metric_drift_count") or 0)
+            for row in summaries
+        ),
+        "access_violation_count": sum(
+            int(row.get("access_violation_count") or 0)
+            for row in summaries
+        ),
         "checkpoint_summaries": summaries,
     }
 
@@ -1848,6 +1898,7 @@ def _comparison_verdict(
     static_status: str,
     behavior_status: str,
     sampled_full_contract: str,
+    performance_baseline: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     support = {
         arm["arm"]: (
@@ -1949,14 +2000,39 @@ def _comparison_verdict(
         )
         <= MAXIMUM_CACHE_BYTES,
         "pair_batch_at_most_4": max(PAIR_BATCH_SIZES.values()) <= 4,
+        "zero_semantic_drift": sum(
+            int(arm.get("semantic_drift_count") or 0)
+            for arm in (arm_a, arm_b, arm_c)
+        )
+        == 0,
+        "zero_metric_drift": sum(
+            int(arm.get("metric_drift_count") or 0)
+            for arm in (arm_a, arm_b, arm_c)
+        )
+        == 0,
+        "zero_access_violation": sum(
+            int(arm.get("access_violation_count") or 0)
+            for arm in (arm_a, arm_b, arm_c)
+        )
+        == 0,
     }
+    baseline_effective_cores = (
+        float(performance_baseline["effective_cores_median"])
+        if performance_baseline is not None
+        else None
+    )
+    baseline_pairs_per_hour = (
+        float(performance_baseline["full_coordinate_pairs_per_hour"])
+        if performance_baseline is not None
+        else None
+    )
     performance_utilization_checks = {
         "all_arms_logical_cpu_occupancy_at_least_75_percent": all(
             float(arm.get("selected_backend_host_cpu_median") or 0.0)
             >= 0.75
             for arm in (arm_a, arm_b, arm_c)
         ),
-        "full_host_native_kernel_smt_ceiling_proven": False,
+        "full_host_native_kernel_smt_ceiling_with_non_regression": False,
         "all_arms_full_host_native_kernel_smt_ceiling_proven": all(
             bool(
                 arm.get(
@@ -1965,16 +2041,54 @@ def _comparison_verdict(
             )
             for arm in (arm_a, arm_b, arm_c)
         ),
+        "all_arms_effective_cores_not_regressed": (
+            baseline_effective_cores is None
+            or all(
+                float(
+                    arm.get("selected_backend_effective_cores_median")
+                    or 0.0
+                )
+                >= baseline_effective_cores
+                for arm in (arm_a, arm_b, arm_c)
+            )
+        ),
+        "all_arms_full_coordinate_pairs_per_hour_not_regressed": (
+            baseline_pairs_per_hour is None
+            or all(
+                float(
+                    arm.get("full_coordinate_pairs_per_wall_hour")
+                    or 0.0
+                )
+                >= baseline_pairs_per_hour
+                for arm in (arm_a, arm_b, arm_c)
+            )
+        ),
     }
     performance_utilization_checks[
-        "full_host_native_kernel_smt_ceiling_proven"
-    ] = performance_utilization_checks.pop(
+        "full_host_native_kernel_smt_ceiling_with_non_regression"
+    ] = (
+        performance_utilization_checks.pop(
         "all_arms_full_host_native_kernel_smt_ceiling_proven"
+        )
+        and performance_utilization_checks[
+            "all_arms_effective_cores_not_regressed"
+        ]
+        and performance_utilization_checks[
+            "all_arms_full_coordinate_pairs_per_hour_not_regressed"
+        ]
+    )
+    utilization_gate = (
+        performance_utilization_checks[
+            "all_arms_logical_cpu_occupancy_at_least_75_percent"
+        ]
+        or performance_utilization_checks[
+            "full_host_native_kernel_smt_ceiling_with_non_regression"
+        ]
     )
     performance = (
         "PASS"
         if all(performance_safety_checks.values())
-        and any(performance_utilization_checks.values())
+        and utilization_gate
         else (
             "PARTIAL"
             if all(performance_safety_checks.values())
@@ -1989,7 +2103,9 @@ def _comparison_verdict(
         "cem_increment": cem_verdict == "QUALIFIED",
         "sampled_full_contract": sampled_full_contract == "PASS",
         "performance": performance == "PASS",
-        "access_boundary": True,
+        "access_boundary": performance_safety_checks[
+            "zero_access_violation"
+        ],
     }
     readiness = (
         "READY"

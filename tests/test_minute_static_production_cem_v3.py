@@ -184,6 +184,9 @@ def test_session_sample_is_frozen_month_stratified_quarter() -> None:
         left["selected_sessions"]
     )
     assert left["selected_session_count"] == 91
+    assert left["authority_lifecycle"] == (
+        "EXPERIMENTAL_CAMPAIGN_LOCAL"
+    )
     assert left["validation_reads"] == 0
     assert left["holdout_reads"] == 0
     assert left["forward_2026_reads"] == 0

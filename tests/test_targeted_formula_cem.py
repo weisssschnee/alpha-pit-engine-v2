@@ -194,6 +194,9 @@ def _comparison_arm(
     evaluated_pairs: int,
     active_checkpoint_count: int,
     host_cpu: float = 0.80,
+    effective_cores: float = 20.0,
+    pairs_per_hour: float = 100.0,
+    smt_ceiling: bool = False,
 ) -> dict[str, object]:
     return {
         "arm": arm,
@@ -209,7 +212,13 @@ def _comparison_arm(
         "maximum_token_share": 0.5,
         "minimum_free_memory_bytes": 25 * 1024**3,
         "maximum_observed_cache_bytes": 1024,
-        "stock_session_host_cpu_median": host_cpu,
+        "selected_backend_host_cpu_median": host_cpu,
+        "selected_backend_effective_cores_median": effective_cores,
+        "full_coordinate_pairs_per_wall_hour": pairs_per_hour,
+        "full_host_native_kernel_smt_ceiling_proven": smt_ceiling,
+        "semantic_drift_count": 0,
+        "metric_drift_count": 0,
+        "access_violation_count": 0,
         "checkpoint_summaries": [
             {
                 "runtime_gate_status": "PASS",
@@ -271,6 +280,42 @@ def test_performance_cpu_gate_requires_every_arm() -> None:
     )
     assert verdict["performance_utilization_checks"][
         "all_arms_logical_cpu_occupancy_at_least_75_percent"
+    ] is False
+    assert verdict["PERFORMANCE_CONTRACT"] == "PARTIAL"
+
+
+def test_smt_ceiling_requires_effective_core_and_throughput_non_regression(
+) -> None:
+    arms = [
+        _comparison_arm(
+            arm,
+            evaluated_pairs=48,
+            active_checkpoint_count=2,
+            host_cpu=0.60,
+            effective_cores=19.0,
+            pairs_per_hour=100.0,
+            smt_ceiling=True,
+        )
+        for arm in (
+            "arm_a_uniform_old",
+            "arm_b_uniform_expanded",
+            "arm_c_cem_expanded",
+        )
+    ]
+    verdict = _comparison_verdict(
+        arm_a=arms[0],
+        arm_b=arms[1],
+        arm_c=arms[2],
+        static_status="PASS",
+        behavior_status="PASS",
+        sampled_full_contract="PASS",
+        performance_baseline={
+            "effective_cores_median": 20.0,
+            "full_coordinate_pairs_per_hour": 100.0,
+        },
+    )
+    assert verdict["performance_utilization_checks"][
+        "full_host_native_kernel_smt_ceiling_with_non_regression"
     ] is False
     assert verdict["PERFORMANCE_CONTRACT"] == "PARTIAL"
 
