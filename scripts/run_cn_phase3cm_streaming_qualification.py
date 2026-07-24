@@ -176,6 +176,13 @@ def _session_sample_calendar(
     unsigned.pop("contract_hash", None)
     if claimed != _stable_hash(unsigned):
         raise RuntimeError("SESSION_SAMPLE_CONTRACT_HASH_MISMATCH")
+    bound = dict(binding.get("session_sample") or {})
+    if (
+        str(binding.get("evaluation_scope") or "")
+        != "development_session_sample"
+        or str(bound.get("sha256") or "") != _sha256(path)
+    ):
+        raise RuntimeError("SESSION_SAMPLE_NOT_BOUND_TO_INPUT")
     expected = {
         "schema_version": "cn_phase3cm_session_sample_contract_v1",
         "authority_id": "MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1",

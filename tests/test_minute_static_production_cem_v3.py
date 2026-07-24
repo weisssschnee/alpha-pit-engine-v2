@@ -28,6 +28,7 @@ from our_system_phase2.services.unified_discovery_generators import (
     RegistryDrivenGenerator,
 )
 from scripts.run_cn_phase3cm_streaming_qualification import (
+    _sha256 as _streaming_sha256,
     _session_sample_calendar,
 )
 
@@ -210,7 +211,13 @@ def test_streaming_evaluator_binds_session_sample_without_split_rewrite(
     )
     selected, receipt = _session_sample_calendar(
         path,
-        binding={"split_manifest_hash": split.manifest_hash},
+        binding={
+            "split_manifest_hash": split.manifest_hash,
+            "evaluation_scope": "development_session_sample",
+            "session_sample": {
+                "sha256": _streaming_sha256(path)
+            },
+        },
         evaluation_role="train",
         full_calendar=full_train,
     )

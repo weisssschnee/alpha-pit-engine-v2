@@ -72,6 +72,7 @@ from scripts.run_targeted_formula_cem_qualification import (
     PAIR_BATCH_SIZES,
     _arm_metrics,
     _bind_purity,
+    _bind_session_sample,
     _comparison_verdict,
     _execute_checkpoint,
     _fresh_large_search_state,
@@ -904,6 +905,7 @@ def _qualify_sampled_authority(
         data_release_hash=_sha256(sidecar_closure),
     )
     _bind_purity(binding_path, purity_path)
+    _bind_session_sample(binding_path, session_sample_path)
     receipts = _run_phase3cm_monitored(
         checkpoint_id="minute_static.sampled_authority",
         checkpoint_root=root,

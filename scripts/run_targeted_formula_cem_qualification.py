@@ -803,6 +803,20 @@ def _pair_members(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
+def _bind_session_sample(
+    binding_path: Path,
+    sample_manifest: Path,
+) -> None:
+    binding = json.loads(
+        binding_path.read_text(encoding="utf-8-sig")
+    )
+    binding.pop("binding_hash", None)
+    binding["session_sample"] = _artifact(sample_manifest)
+    binding["evaluation_scope"] = "development_session_sample"
+    binding["binding_hash"] = _stable_hash(binding)
+    _write_json(binding_path, binding)
+
+
 def _probe_rows(
     *,
     root: Path,
@@ -1286,6 +1300,9 @@ def _execute_checkpoint(
             data_release_hash=_sha256(sidecar_closure),
         )
         _bind_purity(sampled_binding, purity_path)
+        _bind_session_sample(
+            sampled_binding, session_sample_manifest
+        )
         sampled_access_receipts = _run_phase3cm_monitored(
             checkpoint_id=f"{arm}.{checkpoint_id}.sampled",
             checkpoint_root=sampled_root,
