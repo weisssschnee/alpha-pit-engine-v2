@@ -953,7 +953,11 @@ def _source_full_comparator_contract(
         manifest = json.loads(
             manifest_path.read_text(encoding="utf-8-sig")
         )
-        gate = json.loads(gate_path.read_text(encoding="utf-8-sig"))
+        gate = (
+            json.loads(gate_path.read_text(encoding="utf-8-sig"))
+            if gate_path.is_file()
+            else {}
+        )
         artifact_hashes = {
             str(row.get("path") or ""): str(row.get("sha256") or "")
             for row in manifest.get("artifacts") or ()
