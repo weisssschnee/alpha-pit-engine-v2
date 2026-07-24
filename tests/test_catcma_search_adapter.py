@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+import importlib.util
 from pathlib import Path
 
+import numpy as np
 import pytest
 
-pytest.importorskip("cmaes")
+CMAES_AVAILABLE = importlib.util.find_spec("cmaes") is not None
+requires_cmaes = pytest.mark.skipif(
+    not CMAES_AVAILABLE,
+    reason="official cmaes package is required for optimizer-state tests",
+)
 
 from our_system_phase2.runtime.cn_search_policy_qualification import (
     POPULATION_SIZE,
@@ -23,6 +29,7 @@ from our_system_phase2.services.catcma_search_adapter import (
     ExactGeneSemantics,
     rank_population_observations,
 )
+from our_system_phase2.services import catcma_search_adapter as catcma_module
 from our_system_phase2.services.compositional_grammar import (
     CompositionalGrammarV2,
 )
@@ -37,6 +44,26 @@ REGISTRY = (
     / "runtime/field_registry/cn_unified_capability_registry_v3_20260717"
     / "unified_capability_registry.json"
 )
+
+
+class _FakeCatCMA:
+    def __init__(
+        self,
+        *,
+        c_space: list[int],
+        population_size: int,
+        seed: int,
+    ) -> None:
+        self.c_space = tuple(c_space)
+        self.population_size = population_size
+        self.seed = seed
+
+    def ask(self):
+        width = max(self.c_space)
+        categorical = np.zeros((len(self.c_space), width), dtype=float)
+        for index, category_count in enumerate(self.c_space):
+            categorical[index, category_count - 1] = 1.0
+        return type("FakeSolution", (), {"c": categorical})()
 
 
 def _semantics(
@@ -125,6 +152,133 @@ def test_exact_gene_semantics_binds_slot_category_order_and_compatibility() -> N
     )
 
 
+def test_exact_gene_semantics_supports_one_fixed_skeleton_lane() -> None:
+    semantics = ExactGeneSemantics.freeze(
+        route_id="MINUTE_STATIC",
+        ordered_categories_by_slot=OrderedDict(
+            (
+                ("skeleton_id", ("cn.comp.v2.minute_static.normalized_level",)),
+                ("primary_field_id", ("amount", "ret_1m")),
+            )
+        ),
+        none_semantics={
+            "skeleton_id": "FIXED_ROUTE_LOCAL_GENERATION_LANE",
+            "primary_field_id": "NONE_NOT_PRESENT_ACTIVE_SLOT",
+        },
+        skeleton_compatibility={
+            "cn.comp.v2.minute_static.normalized_level": {
+                "required_slots": ["skeleton_id", "primary_field_id"],
+                "inactive_slots": [],
+            }
+        },
+        registry_hash="registry-hash",
+        root_contract_hash="root-contract-hash",
+        grammar_hash="grammar-hash",
+    )
+
+    assert semantics.ordered_category_ids_by_slot[0] == (
+        "cn.comp.v2.minute_static.normalized_level",
+    )
+    assert semantics.ordered_category_ids_by_slot[1] == (
+        "amount",
+        "ret_1m",
+    )
+
+
+def test_adapter_removes_fixed_slots_from_optimizer_and_rehydrates_them(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        catcma_module,
+        "_load_catcmawm",
+        lambda: (_FakeCatCMA, "0.13.0", "fake-cmaes"),
+    )
+    semantics = ExactGeneSemantics.freeze(
+        route_id="MINUTE_STATIC",
+        ordered_categories_by_slot=OrderedDict(
+            (
+                ("skeleton_id", ("fixed-skeleton",)),
+                ("gene_surface_id", ("fixed-surface",)),
+                ("primary_field_id", ("field-a", "field-b")),
+                ("window_id", ("3", "5", "10")),
+            )
+        ),
+        none_semantics={
+            "skeleton_id": "FIXED_ROUTE_LOCAL_GENERATION_LANE",
+            "gene_surface_id": "FIXED_GENE_SURFACE_VERSION",
+            "primary_field_id": "NONE_NOT_PRESENT_ACTIVE_SLOT",
+            "window_id": "NONE_NOT_PRESENT_ACTIVE_SLOT",
+        },
+        skeleton_compatibility={
+            "fixed-skeleton": {
+                "required_slots": [
+                    "skeleton_id",
+                    "gene_surface_id",
+                    "primary_field_id",
+                    "window_id",
+                ],
+                "inactive_slots": [],
+            }
+        },
+        registry_hash="registry-hash",
+        root_contract_hash="root-contract-hash",
+        grammar_hash="grammar-hash",
+    )
+
+    adapter = CatCMASearchAdapter(
+        semantics=semantics,
+        seed=17,
+        population_size=2,
+    )
+    asked = adapter.ask_population(checkpoint_id="checkpoint_001")
+
+    assert adapter._optimizer.c_space == (2, 3)
+    assert asked[0]["genes"] == {
+        "skeleton_id": "fixed-skeleton",
+        "gene_surface_id": "fixed-surface",
+        "primary_field_id": "field-b",
+        "window_id": "10",
+    }
+    assert adapter.environment_receipt()[
+        "fixed_categorical_gene_slot_count"
+    ] == 2
+
+
+def test_equivalent_blockers_receive_equal_optimizer_loss() -> None:
+    ranked = {
+        row["proposal_id"]: row
+        for row in rank_population_observations(
+            [
+                {
+                    "proposal_id": "blocked-z",
+                    "exact_identity": "z",
+                    "outcome_class": SUPPORT_BLOCKED,
+                },
+                {
+                    "proposal_id": "blocked-a",
+                    "exact_identity": "a",
+                    "outcome_class": SUPPORT_BLOCKED,
+                },
+                {
+                    "proposal_id": "invalid-z",
+                    "exact_identity": "z",
+                    "outcome_class": DETERMINISTIC_INVALID,
+                },
+                {
+                    "proposal_id": "invalid-a",
+                    "exact_identity": "a",
+                    "outcome_class": DETERMINISTIC_INVALID,
+                },
+            ]
+        )
+    }
+
+    assert ranked["blocked-z"]["loss"] == ranked["blocked-a"]["loss"]
+    assert ranked["invalid-z"]["loss"] == ranked["invalid-a"]["loss"]
+    assert ranked["blocked-z"]["loss"] < ranked["invalid-z"]["loss"]
+
+
+@requires_cmaes
 def test_population_is_complete_and_decodes_every_gene_slot() -> None:
     adapter = CatCMASearchAdapter(
         semantics=_semantics(),
@@ -150,6 +304,7 @@ def test_population_is_complete_and_decodes_every_gene_slot() -> None:
     assert len(receipt["observations"]) == 6
 
 
+@requires_cmaes
 def test_infrastructure_failure_invalidates_whole_population() -> None:
     adapter = CatCMASearchAdapter(
         semantics=_semantics(),
@@ -206,6 +361,7 @@ def test_loss_ranking_keeps_financial_objective_separate_from_novelty() -> None:
     assert ranked["invalid"]["loss"] == 3.0
 
 
+@requires_cmaes
 def test_genesis_replay_reproduces_next_population_exactly() -> None:
     semantics = _semantics()
     adapter = CatCMASearchAdapter(
@@ -228,6 +384,7 @@ def test_genesis_replay_reproduces_next_population_exactly() -> None:
     assert [row["genes"] for row in actual] == expected
 
 
+@requires_cmaes
 def test_tell_rejects_unasked_proposals() -> None:
     adapter = CatCMASearchAdapter(
         semantics=_semantics(),
@@ -279,9 +436,9 @@ def test_authoritative_grammar_materializes_exact_categorical_genes() -> None:
             slot: values[0] for slot, values in categories.items()
         }
         pair = None
-        # State payload/source and slow metadata constraints may reject an
-        # individual combination. The frozen space intentionally includes
-        # those deterministic-invalid outcomes for CatCMA to learn.
+        # Historical route-wide qualification surfaces remain replayable,
+        # including their deterministic-invalid combinations. New large
+        # search uses compatibility-qualified skeleton lanes instead.
         for primary in categories[
             "state_field_id"
             if route_id == "INTRADAY_STATE_TRANSITION"
@@ -311,6 +468,11 @@ def test_authoritative_grammar_materializes_exact_categorical_genes() -> None:
         assert pair.primary["legal"] is True
         assert pair.control["legal"] is True
         assert pair.primary["categorical_genes"] == candidate_genes
+        assert pair.primary["categorical_gene_construction"] == (
+            "AUTHORITATIVE_GRAMMAR_V2"
+        )
+        assert "categorical_gene_surface_version" not in pair.primary
+        assert "generation_mode" not in pair.primary
         again = grammar.propose_from_categorical_genes(
             route_id, genes=candidate_genes
         )

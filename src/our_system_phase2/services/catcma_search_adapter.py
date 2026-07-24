@@ -102,14 +102,18 @@ class ExactGeneSemantics:
             for slot in slot_names
         )
         for slot, category_ids in zip(slot_names, categories):
-            if len(category_ids) < 2:
+            if not category_ids:
                 raise ValueError(
-                    f"CatCMA gene slot requires at least two categories: {slot}"
+                    f"CatCMA gene slot requires at least one category: {slot}"
                 )
             if len(set(category_ids)) != len(category_ids):
                 raise ValueError(
                     f"category IDs must be unique and ordered within slot: {slot}"
                 )
+        if not any(len(category_ids) >= 2 for category_ids in categories):
+            raise ValueError(
+                "CatCMA requires at least one non-fixed categorical gene slot"
+            )
         if set(map(str, none_semantics)) != set(slot_names):
             raise ValueError("NONE semantics must cover every gene slot exactly")
         payload = {
@@ -202,9 +206,6 @@ def rank_population_observations(
         else:
             tier = 2
             objective_key = 0.0
-        exact_identity = str(
-            row.get("exact_identity") or row.get("proposal_id") or ""
-        )
         normalized.append(
             {
                 **row,
@@ -214,18 +215,20 @@ def rank_population_observations(
                     if outcome == EVALUATED
                     else None
                 ),
-                "_rank_key": (tier, objective_key, exact_identity),
+                "_rank_key": (tier, objective_key),
             }
         )
-    ranked = sorted(normalized, key=lambda row: row["_rank_key"])
-    loss_by_id = {
-        str(row["proposal_id"]): float(rank)
-        for rank, row in enumerate(ranked)
+    ranked_keys = sorted(
+        {tuple(row["_rank_key"]) for row in normalized}
+    )
+    loss_by_key = {
+        rank_key: float(rank)
+        for rank, rank_key in enumerate(ranked_keys)
     }
     return [
         {
             **{key: value for key, value in row.items() if key != "_rank_key"},
-            "loss": loss_by_id[str(row["proposal_id"])],
+            "loss": loss_by_key[tuple(row["_rank_key"])],
         }
         for row in normalized
     ]
@@ -249,10 +252,17 @@ class CatCMASearchAdapter:
         self.population_size = int(population_size)
         self.package_version = version
         self.package_path = package_path
+        self._optimized_slot_indices = tuple(
+            index
+            for index, category_ids in enumerate(
+                semantics.ordered_category_ids_by_slot
+            )
+            if len(category_ids) >= 2
+        )
         self._optimizer = CatCMAwM(
             c_space=[
-                len(category_ids)
-                for category_ids in semantics.ordered_category_ids_by_slot
+                len(semantics.ordered_category_ids_by_slot[index])
+                for index in self._optimized_slot_indices
             ],
             population_size=self.population_size,
             seed=self.seed,
@@ -272,6 +282,13 @@ class CatCMASearchAdapter:
             "population_size": self.population_size,
             "categorical_gene_slot_count": len(
                 self.semantics.ordered_gene_slot_names
+            ),
+            "optimized_categorical_gene_slot_count": len(
+                self._optimized_slot_indices
+            ),
+            "fixed_categorical_gene_slot_count": (
+                len(self.semantics.ordered_gene_slot_names)
+                - len(self._optimized_slot_indices)
             ),
             "restore_authority": "GENESIS_PLUS_ASK_TRANSCRIPT_PLUS_TELL_LOSSES",
             "pickle_usage": "DIAGNOSTIC_STATE_HASH_ONLY",
@@ -299,22 +316,35 @@ class CatCMASearchAdapter:
         for ordinal in range(self.population_size):
             solution = self._optimizer.ask()
             categorical = np.asarray(solution.c)
-            slot_count = len(self.semantics.ordered_gene_slot_names)
-            if categorical.ndim != 2 or categorical.shape[0] != slot_count:
+            optimized_slot_count = len(self._optimized_slot_indices)
+            if (
+                categorical.ndim != 2
+                or categorical.shape[0] != optimized_slot_count
+            ):
                 raise RuntimeError(
                     f"unexpected CatCMA categorical shape: {categorical.shape}"
                 )
             genes: dict[str, str] = {}
             category_indices: dict[str, int] = {}
+            optimized_row_index = 0
             for slot_index, (slot_name, category_ids) in enumerate(
                 zip(
                     self.semantics.ordered_gene_slot_names,
                     self.semantics.ordered_category_ids_by_slot,
                 )
             ):
-                category_index = int(
-                    np.argmax(categorical[slot_index, : len(category_ids)])
-                )
+                if len(category_ids) == 1:
+                    category_index = 0
+                else:
+                    category_index = int(
+                        np.argmax(
+                            categorical[
+                                optimized_row_index,
+                                : len(category_ids),
+                            ]
+                        )
+                    )
+                    optimized_row_index += 1
                 category_indices[slot_name] = category_index
                 genes[slot_name] = category_ids[category_index]
             gene_signature = _stable_hash(

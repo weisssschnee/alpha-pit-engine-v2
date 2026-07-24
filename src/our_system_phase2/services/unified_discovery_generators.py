@@ -121,12 +121,27 @@ class RegistryDrivenGenerator:
             else None
         )
 
-    def categorical_gene_space(self, route_id: str) -> dict[str, Any]:
+    def categorical_gene_space(
+        self,
+        route_id: str,
+        *,
+        skeleton_id: str | None = None,
+    ) -> dict[str, Any]:
         if self._compositional is None:
             raise RuntimeError(
                 "categorical genes require the compositional-v2 profile"
             )
-        return self._compositional.categorical_gene_space(route_id)
+        return self._compositional.categorical_gene_space(
+            route_id,
+            skeleton_id=skeleton_id,
+        )
+
+    def categorical_gene_lanes(self, route_id: str) -> dict[str, Any]:
+        if self._compositional is None:
+            raise RuntimeError(
+                "categorical genes require the compositional-v2 profile"
+            )
+        return self._compositional.categorical_gene_lanes(route_id)
 
     def propose_categorical_genes(
         self,

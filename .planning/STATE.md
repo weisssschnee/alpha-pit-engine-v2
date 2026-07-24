@@ -36,6 +36,18 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   financial route-health failure. Validation, holdout and 2026 reads were zero,
   and promotion remained forbidden. The compact bound receipt is
   `runtime/run_plans/cn_search_policy_qualification_20260724_receipt.json`.
+- The optimizer-facing Grammar surface has now been repaired without widening
+  registry or proposal-root authority. Unified registry `route_id` remains the
+  top-level scheduling key; each typed skeleton is a route-local generation
+  lane containing only active, compatibility-qualified slots. Exact ordered
+  field pairs replace ordinal secondary offsets, fixed lane slots are removed
+  from CatCMA dimensions and restored after `ask`, and equivalent blocked or
+  invalid outcomes receive equal losses. The seven primary routes expose 51
+  usable lanes and 72,307 bounded categorical points. Five additional
+  skeletons remain explicitly blocked by missing leg/representation metadata
+  or undeclared size roots rather than guessing from field names. This is
+  source/test qualification only: it used no financial, validation, holdout or
+  2026 reads and does not qualify CatCMA or authorize a large search.
 - `cn_core_pack_development_discovery_v1` is now the active proposal-root
   ontology authority for bounded development discovery. It remains subordinate
   to the unified registry `route_id` authority for route eligibility and
@@ -329,15 +341,16 @@ engine. It has partial admitted-candidate memory, deterministic typed skeleton
 coverage and immutable checkpoint ledgers, but it does not yet retain every
 legal attempted formula, continue elite ASTs, perform typed subtree crossover,
 apply mutation, or carry regime-partitioned top-K elites across search
-generations. The observed late-checkpoint supply collapse is therefore a search
-policy limitation, not a field-materialization failure. These gaps do not block
-the fixed holdout; they bound the design of any later expanded search. The
-repository's previously exercised Phase3BP RX/UCB, CEM, hybrid and orthogonal
-search core remains present, together with the EVALRESET train-only feedback
-guard and expression/skeleton memory keys, but the current
-`RegistryDrivenGenerator` campaign bypassed that core. A later search repair
-must reuse it through a thin registry-route adapter; it must not handcraft a new
-MCTS, crossover, mutation or replacement search engine.
+generations. The observed late-checkpoint supply collapse was therefore a
+search-policy and optimizer-facing Grammar limitation, not a field-
+materialization failure. These gaps do not block the fixed holdout; they bound
+the design of any later expanded search. The repository's checkpoint,
+train-only feedback, evaluator, archive, expression/skeleton identity and
+receipt infrastructure remains reusable. Its former RX/UCB, CEM, hybrid and
+orthogonal optimizer algorithms are rejected and must not be restored as search
+authority. Any replacement optimizer must remain a thin route-local adapter
+beneath registry `route_id`; no MCTS, crossover, mutation or replacement
+machinery may be handcrafted.
 
 ## Next action
 
@@ -353,15 +366,17 @@ Disclosure Event and First-N Aggregated have no strict survivor in this frozen
 set. Any next development search should therefore target those materially
 uncovered mechanisms rather than rerun a global candidate race.
 
-Before that search, repair only the lost connection to the existing Phase3BP
-RX/UCB-CEM-hybrid/orthogonal core as route-local generation actions beneath the
-unified registry `route_id`. Reuse its existing expression/skeleton identity
-keys and round top-decision output contract, projected by route and
-behavior/economic role. Do not promote legacy scheduler arm names into a second
+Before any large search, run one small zero-financial-read integration probe
+that freezes the new route-local lane semantics and verifies official CatCMA
+full-population ask/decode/replay against the existing Grammar/compiler. Then,
+only under a separately frozen development budget, compare the unchanged
+RegistryDrivenGenerator baseline with CatCMA on materially uncovered routes;
+the failed route-wide qualification is evidence, not a reusable optimizer
+configuration. Do not promote legacy scheduler arm names into a second
 top-level authority, import old reward-bearing search memory, assign invented
 fresh/crossover/mutation percentages, or build MCTS/crossover/mutation
-machinery. Preserve the fixed 8 GiB evaluator cache cap and existing
-registry/compiler/Phase3CM authority. Broad Event remains a zero-budget frozen
+machinery. Preserve the fixed 8 GiB evaluator cache cap and existing registry/
+compiler/Phase3CM authority. Broad Event remains a zero-budget frozen
 reference. Strict Stage A, candidate promotion, any additional holdout access,
 2026 access and cross-campaign reward memory remain forbidden until separately
 authorized. Plate resumes only when real PIT minute materialization is present
