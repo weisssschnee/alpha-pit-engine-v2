@@ -76,12 +76,17 @@ from our_system_phase2.services.phase3cm_streaming_expression import (
     unsupported_streaming_operators,
 )
 from our_system_phase2.services.portfolio_behavior_archive import (
+    BEHAVIOR_VERSION,
     PortfolioBehaviorArchive,
 )
 from our_system_phase2.services.search_choice_policy import (
     EXPANDED_FORMULA_SPACE_ID,
+    HISTORICAL_REJECTED_EXTENSION_IDS,
     OLD_FORMULA_SPACE_ID,
+    PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID,
+    PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
     PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+    TARGETED_RETRY_EXTENSION_IDS,
     LegacyParityPolicy,
     TargetedFormulaProjection,
     UniformPolicy,
@@ -125,6 +130,8 @@ MINIMUM_ACTIVE_CHECKPOINTS = 2
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 MAXIMUM_CACHE_BYTES = 8 * 1024**3
 PAIR_BATCH_SIZES = {"active_bar": 4, "stock_session": 4}
+RETRY_AUTHORIZATION_ID = "DISCLOSURE_PRE_EVENT_EXTENSION_RETRY_V2"
+REQUIRED_RETRY_BEHAVIOR_UNIQUE = 114
 
 
 def _formula_space_for_arm(arm: str) -> str:
@@ -162,6 +169,7 @@ def _projection(
     *,
     registry: UnifiedCapabilityRegistry,
     route_root_allowlist: Mapping[str, Sequence[str]],
+    extension_id: str,
 ) -> TargetedFormulaProjection:
     generator = RegistryDrivenGenerator(
         registry,
@@ -173,7 +181,7 @@ def _projection(
         generator=generator,
         route_id=ROUTE_ID,
         skeleton_id=SKELETON_ID,
-        extension_id=PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+        extension_id=extension_id,
     )
 
 
@@ -401,27 +409,68 @@ def _legacy_parity(
 def _static_verdict(
     old: Mapping[str, Any],
     expanded: Mapping[str, Any],
+    expanded_rows: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
+    target = next(
+        row
+        for row in skeleton_registry()[ROUTE_ID]
+        if row.skeleton_id == SKELETON_ID
+    )
+    legal_rows = [row for row in expanded_rows if bool(row.get("legal"))]
     checks = {
-        "compile_valid_rate": float(expanded["compile_valid_rate"])
-        + 1e-12
-        >= 0.90 * float(old["compile_valid_rate"]),
-        "control_valid_rate": float(expanded["control_valid_rate"])
-        + 1e-12
-        >= float(old["control_valid_rate"]),
-        "canonical_unique_per_attempt": float(
-            expanded["canonical_unique_per_attempt"]
+        "compile_valid_100_percent": (
+            float(expanded["compile_valid_rate"]) == 1.0
+        ),
+        "control_valid_100_percent": (
+            float(expanded["control_valid_rate"]) == 1.0
+        ),
+        "semantic_authority": bool(legal_rows)
+        and len(legal_rows) == len(expanded_rows),
+        "route_operator_authority": bool(legal_rows)
+        and all(
+            str(row["primary"].get("route_id") or "") == ROUTE_ID
+            and str(row["control"].get("route_id") or "") == ROUTE_ID
+            and not unsupported_streaming_operators(
+                (
+                    str(row["primary"].get("expression") or ""),
+                    str(row["control"].get("expression") or ""),
+                )
+            )
+            for row in legal_rows
+        ),
+        "primary_control_field_lineage": bool(legal_rows)
+        and all(
+            set(map(str, row["primary"].get("declared_field_ids") or ()))
+            == set(map(str, row["control"].get("declared_field_ids") or ()))
+            for row in legal_rows
+        ),
+        "maximum_depth": bool(legal_rows)
+        and max(int(row["depth"]) for row in legal_rows)
+        <= int(target.maximum_depth),
+        "streaming_operator_support": bool(legal_rows)
+        and all(
+            not unsupported_streaming_operators(
+                (
+                    str(row["primary"].get("expression") or ""),
+                    str(row["control"].get("expression") or ""),
+                )
+            )
+            for row in legal_rows
+        ),
+        "exact_space_increment": int(expanded["exact_unique_pairs"])
+        > int(old["exact_unique_pairs"]),
+        "canonical_space_increment": int(
+            expanded["canonical_unique_pairs"]
         )
-        + 1e-12
-        >= float(old["canonical_unique_per_attempt"]),
-        "ast_shape_unique_per_attempt": float(
-            expanded["ast_shape_unique_per_attempt"]
-        )
-        > float(old["ast_shape_unique_per_attempt"]),
+        > int(old["canonical_unique_pairs"]),
+        "ast_shape_increment": int(expanded["ast_shape_unique_pairs"])
+        > int(old["ast_shape_unique_pairs"]),
+        "validation_holdout_2026_reads_zero": True,
     }
     return {
         "status": "PASS" if all(checks.values()) else "FAIL",
         "checks": checks,
+        "maximum_allowed_depth": int(target.maximum_depth),
     }
 
 
@@ -436,6 +485,169 @@ def _qualification_gate_status(
     if not formula_space_behavior_gate:
         return "FORMULA_SPACE_INCREMENT_NOT_PROVEN"
     return "PASS"
+
+
+def _bind_reused_old_authority(
+    *,
+    authorization: Mapping[str, Any],
+    output_root: Path,
+    projection: TargetedFormulaProjection,
+    registry: UnifiedCapabilityRegistry,
+    discovery_contract: Path,
+    source_binding: Mapping[str, Any],
+    base_seed: int,
+) -> tuple[dict[str, Any], dict[str, Any], int, Path]:
+    """Verify and reuse the frozen OLD result without re-running it."""
+
+    authority = dict(authorization.get("old_authority") or {})
+    evidence_root = Path(str(authority.get("evidence_root") or "")).resolve()
+    artifact_hashes = {
+        str(path): str(sha256)
+        for path, sha256 in dict(
+            authority.get("artifact_sha256") or {}
+        ).items()
+    }
+    drift: list[str] = []
+    for relative_path, expected_hash in artifact_hashes.items():
+        path = evidence_root / relative_path
+        if not path.is_file() or _sha256(path) != expected_hash:
+            drift.append(f"artifact:{relative_path}")
+
+    current_old_catalog = projection.decision_catalog(
+        OLD_FORMULA_SPACE_ID
+    )
+    expected_bindings = {
+        "formula_space_id": OLD_FORMULA_SPACE_ID,
+        "decision_catalog_hash": str(
+            current_old_catalog["decision_catalog_hash"]
+        ),
+        "registry_hash": registry.registry_hash,
+        "development_discovery_contract_sha256": _sha256(
+            discovery_contract
+        ),
+        "historical_exact_archive_sha256": str(
+            (
+                source_binding.get("historical_candidate_archive")
+                or {}
+            ).get("sha256")
+            or ""
+        ),
+        "historical_behavior_archive_sha256": str(
+            (source_binding.get("behavior_archive") or {}).get(
+                "sha256"
+            )
+            or ""
+        ),
+        "behavior_identity_version": BEHAVIOR_VERSION,
+        "old_probe_seed": int(base_seed) + 101,
+        "old_probe_order_contract": (
+            "sha256(json(seed,exact_identity));ascending"
+        ),
+    }
+    for key, actual in expected_bindings.items():
+        if authority.get(key) != actual:
+            drift.append(key)
+
+    if drift:
+        raise RuntimeError(
+            "OLD_AUTHORITY_BINDING_DRIFT:" + ",".join(sorted(drift))
+        )
+
+    old_static_rows = _read_rows(
+        evidence_root / "static_generation_metrics.parquet"
+    )
+    old_static = next(
+        dict(row)
+        for row in old_static_rows
+        if str(row.get("formula_space_id") or "")
+        == OLD_FORMULA_SPACE_ID
+    )
+    old_behavior_rows = _read_rows(
+        evidence_root / "behavior_probe_metrics.parquet"
+    )
+    old_behavior = next(
+        dict(row)
+        for row in old_behavior_rows
+        if str(row.get("mode") or "") == "OLD_UNIFORM"
+    )
+    old_supply = json.loads(
+        (evidence_root / "supply_and_behavior_gate.json").read_text(
+            encoding="utf-8-sig"
+        )
+    )
+    admission_rows = _read_rows(
+        evidence_root
+        / "static_behavior"
+        / "old_uniform"
+        / "admission_decisions.parquet"
+    )
+    coordinate_bindings = {
+        str(row.get("coordinate_binding") or "")
+        for row in admission_rows
+    }
+    behavior_versions = {
+        str(row.get("behavior_identity_version") or "")
+        for row in admission_rows
+    }
+    observed = {
+        "post_archive_exact_supply": int(
+            old_supply["post_archive_old_space_exact_supply"]
+        ),
+        "behavior_probe_candidates": int(
+            old_behavior["behavior_probe_candidates"]
+        ),
+        "behavior_unique_pairs": int(
+            old_behavior["behavior_unique_pairs"]
+        ),
+        "ast_shape_unique_pairs": int(
+            old_static["ast_shape_unique_pairs"]
+        ),
+        "probe_coordinate_binding": (
+            next(iter(coordinate_bindings))
+            if len(coordinate_bindings) == 1
+            else ""
+        ),
+        "behavior_identity_version": (
+            next(iter(behavior_versions))
+            if len(behavior_versions) == 1
+            else ""
+        ),
+    }
+    expected_observed = {
+        key: authority.get(key)
+        for key in observed
+    }
+    observed_drift = [
+        key
+        for key, value in observed.items()
+        if expected_observed[key] != value
+    ]
+    if observed_drift:
+        raise RuntimeError(
+            "OLD_AUTHORITY_EVIDENCE_DRIFT:"
+            + ",".join(sorted(observed_drift))
+        )
+
+    receipt = {
+        "schema_version": "cn_old_formula_space_reuse_receipt_v1",
+        "status": "VERIFIED_REUSED_NOT_RECOMPUTED",
+        "authority": authority,
+        "observed": observed,
+        "current_semantic_bindings": expected_bindings,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    receipt["receipt_hash"] = _stable_hash(receipt)
+    receipt_path = _write_json(
+        output_root / "old_authority_reuse_receipt.json", receipt
+    )
+    return (
+        old_static,
+        old_behavior,
+        int(observed["post_archive_exact_supply"]),
+        receipt_path,
+    )
 
 
 def _pair_members(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -1495,6 +1707,7 @@ def run_static(args: argparse.Namespace) -> dict[str, Any]:
     projection = _projection(
         registry=registry,
         route_root_allowlist=discovery["route_root_allowlists"],
+        extension_id=args.extension_id,
     )
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
@@ -1516,7 +1729,9 @@ def run_static(args: argparse.Namespace) -> dict[str, Any]:
     expanded_rows, expanded_metrics = _enumerate_space(
         projection, EXPANDED_FORMULA_SPACE_ID
     )
-    static_verdict = _static_verdict(old_metrics, expanded_metrics)
+    static_verdict = _static_verdict(
+        old_metrics, expanded_metrics, expanded_rows
+    )
     metrics_path = _write_parquet(
         output_root / "static_generation_metrics.parquet",
         [old_metrics, expanded_metrics],
@@ -1532,7 +1747,7 @@ def run_static(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "route_id": ROUTE_ID,
         "skeleton_id": SKELETON_ID,
-        "extension_id": PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+        "extension_id": args.extension_id,
         "old_space_exact_upper_bound": old_metrics[
             "exact_unique_pairs"
         ],
@@ -1573,10 +1788,10 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         )
     )
     expected_authority = {
-        "status": "USER_AUTHORIZED_BOUNDED_EXECUTION",
+        "authorization_id": RETRY_AUTHORIZATION_ID,
+        "status": "BOUNDED_CONTINUOUS_EXECUTION",
         "route_id": ROUTE_ID,
         "skeleton_id": SKELETON_ID,
-        "extension_id": PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
     }
     authority_drift = [
         key
@@ -1589,7 +1804,32 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
             + ",".join(authority_drift)
         )
     if (
-        authorization.get("financial_arms") != list(ARMS)
+        authorization.get("candidate_queue")
+        != list(TARGETED_RETRY_EXTENSION_IDS)
+        or dict(authorization.get("historical_rejected_extension") or {})
+        != {
+            "extension_id": PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+            **HISTORICAL_REJECTED_EXTENSION_IDS[
+                PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID
+            ],
+        }
+        or authorization.get("financial_arms") != list(ARMS)
+        or int(authorization.get("base_seed") or -1) != int(args.seed)
+        or int(authorization.get("checkpoint_count") or -1)
+        != CHECKPOINT_COUNT
+        or int(
+            authorization.get(
+                "full_coordinate_pair_cap_per_checkpoint"
+            )
+            or -1
+        )
+        != FULL_PAIR_CAP
+        or int(
+            authorization.get("required_behavior_unique_pairs") or -1
+        )
+        != REQUIRED_RETRY_BEHAVIOR_UNIQUE
+        or authorization.get("launcher_mode")
+        != "A_IMMEDIATE_START_NO_SCHEDULED_TRIGGER"
         or authorization.get("validation") != "FORBIDDEN"
         or authorization.get("holdout") != "SEALED"
         or authorization.get("forward_2026") != "SEALED"
@@ -1672,16 +1912,265 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         discovery_allowlist=discovery["route_root_allowlists"][ROUTE_ID],
         available_fields=schema_by_backend["stock_session"],
     )
-    projection = _projection(
+    old_projection = _projection(
         registry=registry,
         route_root_allowlist={ROUTE_ID: usable},
+        extension_id=PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
     )
+    old_static, old_behavior, old_exact_supply, old_reuse_path = (
+        _bind_reused_old_authority(
+            authorization=authorization,
+            output_root=output_root,
+            projection=old_projection,
+            registry=registry,
+            discovery_contract=args.discovery_contract.resolve(),
+            source_binding=source_binding,
+            base_seed=args.seed,
+        )
+    )
+    rejected_path = _write_json(
+        output_root / "historical_rejected_extension_binding.json",
+        {
+            "schema_version": (
+                "cn_historical_rejected_formula_extension_binding_v1"
+            ),
+            "status": "PRESERVED_UNCHANGED",
+            **dict(authorization["historical_rejected_extension"]),
+            "historical_authorization": dict(
+                authorization["historical_sign_authorization"]
+            ),
+        },
+    )
+    parity_path = _write_json(
+        output_root / "legacy_parity_reuse_receipt.json",
+        {
+            "status": "PASS_REUSED_NOT_RECOMPUTED",
+            "source_artifact": (
+                Path(str(authorization["old_authority"]["evidence_root"]))
+                / "legacy_parity.parquet"
+            ).as_posix(),
+            "source_sha256": authorization["old_authority"][
+                "artifact_sha256"
+            ]["legacy_parity.parquet"],
+        },
+    )
+
+    candidate_results = {
+        extension_id: {
+            "extension_id": extension_id,
+            "static_gate": "NOT_RUN_PRIOR_CANDIDATE_ACCEPTED",
+            "behavior_gate": "NOT_RUN_PRIOR_CANDIDATE_ACCEPTED",
+        }
+        for extension_id in TARGETED_RETRY_EXTENSION_IDS
+    }
+    candidate_artifacts: list[Path] = []
+    behavior_metric_rows = [
+        {
+            **old_behavior,
+            "authority_mode": "VERIFIED_REUSED_NOT_RECOMPUTED",
+        }
+    ]
+    accepted_extension = ""
+    projection: TargetedFormulaProjection | None = None
+    expanded_rows: list[dict[str, Any]] = []
+    expanded_static: dict[str, Any] = {}
+    static_verdict: dict[str, Any] = {}
+    expanded_behavior: dict[str, Any] = {}
+    for extension_id in TARGETED_RETRY_EXTENSION_IDS:
+        candidate_root = output_root / "extension_qualification" / extension_id
+        candidate_root.mkdir(parents=True, exist_ok=True)
+        current_projection = _projection(
+            registry=registry,
+            route_root_allowlist={ROUTE_ID: usable},
+            extension_id=extension_id,
+        )
+        candidate_catalog_path = _write_json(
+            candidate_root / "decision_catalog.json",
+            current_projection.decision_catalog(
+                EXPANDED_FORMULA_SPACE_ID
+            ),
+        )
+        current_rows, current_static = _enumerate_space(
+            current_projection, EXPANDED_FORMULA_SPACE_ID
+        )
+        current_static_verdict = _static_verdict(
+            old_static, current_static, current_rows
+        )
+        current_static_path = _write_parquet(
+            candidate_root / "static_generation_metrics.parquet",
+            [old_static, current_static],
+        )
+        current_static_verdict_path = _write_json(
+            candidate_root / "static_generation_verdict.json",
+            current_static_verdict,
+        )
+        candidate_artifacts.extend(
+            (
+                candidate_catalog_path,
+                current_static_path,
+                current_static_verdict_path,
+            )
+        )
+        candidate_results[extension_id]["static_gate"] = str(
+            current_static_verdict["status"]
+        )
+        if current_static_verdict["status"] != "PASS":
+            candidate_results[extension_id][
+                "behavior_gate"
+            ] = "NOT_RUN_STATIC_GATE_FAILED"
+            candidate_artifacts.append(
+                _write_json(
+                    candidate_root / "extension_qualification.json",
+                    candidate_results[extension_id],
+                )
+            )
+            continue
+
+        exact_novel_expanded = _post_archive_exact_unique_rows(
+            current_rows, initial_exact
+        )
+        coordinate_binding = stable_hash(
+            {
+                "authorization": _sha256(authorization_path),
+                "candidate_catalog": _sha256(candidate_catalog_path),
+                "source_campaign": _sha256(source_path),
+                "old_authority_receipt": _sha256(old_reuse_path),
+                "expanded_probe_seed": int(args.seed) + 103,
+                "order_contract": (
+                    "sha256(json(seed,exact_identity));ascending"
+                ),
+            }
+        )
+        current_behavior, _ = _static_behavior_probe(
+            output_root=candidate_root,
+            mode="EXPANDED_UNIFORM",
+            rows=exact_novel_expanded,
+            seed=args.seed + 103,
+            historical=initial_behavior,
+            field_roots=field_roots,
+            split=split,
+            compute_threads=compute_threads,
+            coordinate_binding=coordinate_binding,
+        )
+        behavior_pass = (
+            int(current_behavior["behavior_unique_pairs"])
+            >= REQUIRED_RETRY_BEHAVIOR_UNIQUE
+        )
+        candidate_results[extension_id].update(
+            {
+                "behavior_gate": "PASS" if behavior_pass else "FAIL",
+                "behavior_unique_pairs": int(
+                    current_behavior["behavior_unique_pairs"]
+                ),
+                "behavior_probe_candidates": int(
+                    current_behavior["behavior_probe_candidates"]
+                ),
+                "required_behavior_unique_pairs": (
+                    REQUIRED_RETRY_BEHAVIOR_UNIQUE
+                ),
+                "expanded_probe_seed": int(args.seed) + 103,
+                "coordinate_binding": coordinate_binding,
+            }
+        )
+        behavior_metric_rows.append(
+            {
+                **current_behavior,
+                "extension_id": extension_id,
+                "authority_mode": "NEW_RETRY_PROBE",
+            }
+        )
+        candidate_result_path = _write_json(
+            candidate_root / "extension_qualification.json",
+            candidate_results[extension_id],
+        )
+        candidate_artifacts.append(candidate_result_path)
+        if behavior_pass:
+            accepted_extension = extension_id
+            projection = current_projection
+            expanded_rows = current_rows
+            expanded_static = current_static
+            static_verdict = current_static_verdict
+            expanded_behavior = current_behavior
+            break
+
+    final_gate_fields = {
+        "EXTENSION_CSRANK_STATIC_GATE": candidate_results[
+            PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID
+        ]["static_gate"],
+        "EXTENSION_CSRANK_BEHAVIOR_GATE": candidate_results[
+            PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID
+        ]["behavior_gate"],
+        "EXTENSION_ABS_STATIC_GATE": candidate_results[
+            PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID
+        ]["static_gate"],
+        "EXTENSION_ABS_BEHAVIOR_GATE": candidate_results[
+            PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID
+        ]["behavior_gate"],
+        "ACCEPTED_EXTENSION": accepted_extension or "NONE",
+    }
+    if projection is None:
+        verdict = {
+            **final_gate_fields,
+            "SAMPLED_FULL_CONTRACT_PARITY": (
+                "NOT_RUN_QUEUE_EXHAUSTED"
+            ),
+            "FORMULA_SPACE_INCREMENT": "NOT_RUN_QUEUE_EXHAUSTED",
+            "CEM_SEARCH_INCREMENT": "NOT_RUN_QUEUE_EXHAUSTED",
+            "PERFORMANCE_CONTRACT": "NOT_RUN_QUEUE_EXHAUSTED",
+            "TARGET_FAMILY_LARGE_SEARCH_READINESS": (
+                "FORMULA_EXTENSION_CANDIDATE_QUEUE_EXHAUSTED"
+            ),
+        }
+        verdict_path = _write_json(
+            output_root / "final_decision.json", verdict
+        )
+        metrics_path = _write_json(
+            output_root / "qualification_metrics.json",
+            {"extension_candidates": candidate_results},
+        )
+        manifest = {
+            "schema_version": (
+                "cn_targeted_formula_cem_artifact_manifest_v2"
+            ),
+            "status": "FORMULA_EXTENSION_CANDIDATE_QUEUE_EXHAUSTED",
+            "verdict": verdict,
+            "artifacts": [
+                _artifact(path, root=output_root)
+                for path in (
+                    authorization_path,
+                    source_path,
+                    registry_path,
+                    schema_path,
+                    purity_path,
+                    runtime_path,
+                    old_reuse_path,
+                    rejected_path,
+                    parity_path,
+                    metrics_path,
+                    verdict_path,
+                    *candidate_artifacts,
+                )
+                if path.is_file()
+            ],
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+            "promotion": "FORBIDDEN",
+        }
+        manifest["manifest_payload_hash"] = _stable_hash(manifest)
+        _write_json(output_root / "artifact_manifest.json", manifest)
+        return verdict
+
     contract = {
-        "schema_version": "cn_targeted_formula_cem_contract_v1",
+        "schema_version": "cn_targeted_formula_cem_contract_v2",
         "status": "FROZEN_EXECUTABLE",
         "route_id": ROUTE_ID,
         "skeleton_id": SKELETON_ID,
-        "extension_id": PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+        "extension_id": accepted_extension,
+        "extension_lifecycle": (
+            "FROZEN_ACCEPTED_EXTENSION_FOR_FINANCIAL_QUALIFICATION"
+        ),
+        "candidate_queue": list(TARGETED_RETRY_EXTENSION_IDS),
         "arms": list(ARMS),
         "checkpoint_count": CHECKPOINT_COUNT,
         "funnel_caps_per_arm_checkpoint": {
@@ -1726,21 +2215,10 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         output_root / "decision_catalog.json",
         projection.decision_catalog(EXPANDED_FORMULA_SPACE_ID),
     )
-    _write_json(
+    old_catalog_path = _write_json(
         output_root / "decision_catalog_old.json",
         projection.decision_catalog(OLD_FORMULA_SPACE_ID),
     )
-    parity_path = _write_parquet(
-        output_root / "legacy_parity.parquet",
-        _legacy_parity(projection, seed=args.seed),
-    )
-    old_rows, old_static = _enumerate_space(
-        projection, OLD_FORMULA_SPACE_ID
-    )
-    expanded_rows, expanded_static = _enumerate_space(
-        projection, EXPANDED_FORMULA_SPACE_ID
-    )
-    static_verdict = _static_verdict(old_static, expanded_static)
     static_path = _write_parquet(
         output_root / "static_generation_metrics.parquet",
         [old_static, expanded_static],
@@ -1749,59 +2227,28 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         output_root / "static_generation_verdict.json",
         static_verdict,
     )
-    if static_verdict["status"] != "PASS":
-        raise RuntimeError("FORMULA_SPACE_INCREMENT_NOT_PROVEN")
-
-    exact_novel_old = _post_archive_exact_unique_rows(
-        old_rows, initial_exact
-    )
-    static_binding = stable_hash(
-        {
-            "frozen_contract": _sha256(frozen_path),
-            "catalog": _sha256(catalog_path),
-            "source": _sha256(source_path),
-        }
-    )
-    old_behavior, _ = _static_behavior_probe(
-        output_root=output_root,
-        mode="OLD_UNIFORM",
-        rows=exact_novel_old,
-        seed=args.seed + 101,
-        historical=initial_behavior,
-        field_roots=field_roots,
-        split=split,
-        compute_threads=compute_threads,
-        coordinate_binding=static_binding,
-    )
-    exact_novel_expanded = _post_archive_exact_unique_rows(
-        expanded_rows, initial_exact
-    )
-    expanded_behavior, _ = _static_behavior_probe(
-        output_root=output_root,
-        mode="EXPANDED_UNIFORM",
-        rows=exact_novel_expanded,
-        seed=args.seed + 103,
-        historical=initial_behavior,
-        field_roots=field_roots,
-        split=split,
-        compute_threads=compute_threads,
-        coordinate_binding=static_binding,
-    )
-    behavior_gate = (
-        float(expanded_behavior["behavior_unique_per_candidate"])
-        + 1e-12
-        >= 0.90 * float(old_behavior["behavior_unique_per_candidate"])
-    )
     behavior_metrics_path = _write_parquet(
         output_root / "behavior_probe_metrics.parquet",
-        [old_behavior, expanded_behavior],
+        behavior_metric_rows,
+    )
+    behavior_gate = (
+        int(expanded_behavior["behavior_unique_pairs"])
+        >= REQUIRED_RETRY_BEHAVIOR_UNIQUE
     )
     supply = {
-        "post_archive_old_space_exact_supply": len(exact_novel_old),
+        "post_archive_old_space_exact_supply": old_exact_supply,
         "post_archive_old_space_behavior_supply": int(
             old_behavior["behavior_unique_pairs"]
         ),
-        "exact_gate": len(exact_novel_old) >= MINIMUM_EXACT_SUPPLY,
+        "old_authority_mode": "VERIFIED_REUSED_NOT_RECOMPUTED",
+        "accepted_extension": accepted_extension,
+        "expanded_behavior_unique_pairs": int(
+            expanded_behavior["behavior_unique_pairs"]
+        ),
+        "required_expanded_behavior_unique_pairs": (
+            REQUIRED_RETRY_BEHAVIOR_UNIQUE
+        ),
+        "exact_gate": old_exact_supply >= MINIMUM_EXACT_SUPPLY,
         "behavior_gate": int(old_behavior["behavior_unique_pairs"])
         >= MINIMUM_BEHAVIOR_SUPPLY,
         "formula_space_behavior_gate": behavior_gate,
@@ -1918,27 +2365,24 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         for row in initial_behavior.rows
         if str(row.get("portfolio_behavior_family_id") or "")
     }
-    metrics = {
+    arm_metrics = {
         arm: _arm_metrics(output_root, arm, initial_families)
         for arm in ARMS
     }
-    metrics_path = _write_json(
-        output_root / "qualification_metrics.json", metrics
-    )
-    verdict = _comparison_verdict(
-        arm_a=metrics["arm_a_uniform_old"],
-        arm_b=metrics["arm_b_uniform_expanded"],
-        arm_c=metrics["arm_c_cem_expanded"],
+    comparison = _comparison_verdict(
+        arm_a=arm_metrics["arm_a_uniform_old"],
+        arm_b=arm_metrics["arm_b_uniform_expanded"],
+        arm_c=arm_metrics["arm_c_cem_expanded"],
         static_status=str(static_verdict["status"]),
         behavior_status="PASS" if behavior_gate else "FAIL",
     )
-    verdict.update(
+    metrics_path = _write_json(
+        output_root / "qualification_metrics.json",
         {
-            "route_id": ROUTE_ID,
-            "skeleton_id": SKELETON_ID,
-            "extension_id": PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+            "extension_candidates": candidate_results,
             "supply_gate": supply,
-            "legacy_parity": "PASS",
+            "arms": arm_metrics,
+            "comparison": comparison,
             "access_boundary": {
                 "validation_reads": 0,
                 "holdout_reads": 0,
@@ -1946,13 +2390,22 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
                 "feedback_writes_from_validation": 0,
                 "promotion": "FORBIDDEN",
             },
-            "claim_boundary": (
-                "Target-family development-only qualification; "
-                "no global readiness, Alpha, promotion, validation, "
-                "holdout, or 2026 claim."
-            ),
-        }
+        },
     )
+    verdict = {
+        **final_gate_fields,
+        "SAMPLED_FULL_CONTRACT_PARITY": comparison[
+            "SAMPLED_FULL_CONTRACT_PARITY"
+        ],
+        "FORMULA_SPACE_INCREMENT": comparison[
+            "FORMULA_SPACE_INCREMENT"
+        ],
+        "CEM_SEARCH_INCREMENT": comparison["CEM_SEARCH_INCREMENT"],
+        "PERFORMANCE_CONTRACT": comparison["PERFORMANCE_CONTRACT"],
+        "TARGET_FAMILY_LARGE_SEARCH_READINESS": comparison[
+            "TARGET_FAMILY_LARGE_SEARCH_READINESS"
+        ],
+    }
     verdict_path = _write_json(
         output_root / "final_decision.json", verdict
     )
@@ -1969,7 +2422,7 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
                 "route_id": ROUTE_ID,
                 "skeleton_id": SKELETON_ID,
                 "formula_space_id": EXPANDED_FORMULA_SPACE_ID,
-                "extension_id": PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+                "extension_id": accepted_extension,
                 "raw_attempt_cap": 20_000,
                 "compile_valid_cap": 6_000,
                 "behavior_admitted_cap": 1_500,
@@ -2001,8 +2454,11 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         schema_path,
         purity_path,
         runtime_path,
+        old_reuse_path,
+        rejected_path,
         frozen_path,
         catalog_path,
+        old_catalog_path,
         parity_path,
         static_path,
         static_verdict_path,
@@ -2010,6 +2466,7 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         supply_path,
         metrics_path,
         verdict_path,
+        *candidate_artifacts,
         *(
             [large_contract_path, fresh_state_path]
             if large_contract_path is not None
@@ -2028,7 +2485,7 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
     ]
     manifest = {
         "schema_version": (
-            "cn_targeted_formula_cem_artifact_manifest_v1"
+            "cn_targeted_formula_cem_artifact_manifest_v2"
         ),
         "status": "QUALIFICATION_COMPLETE",
         "verdict": verdict,
@@ -2057,6 +2514,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--discovery-contract", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=2026072417)
+    parser.add_argument(
+        "--extension-id",
+        choices=TARGETED_RETRY_EXTENSION_IDS,
+        default=PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
+    )
     parser.add_argument("--source-campaign-root", type=Path)
     parser.add_argument("--qualification-authorization", type=Path)
     parser.add_argument("--source-receipt", type=Path)

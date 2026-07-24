@@ -1,0 +1,75 @@
+{
+  "schema_version": "cn_disclosure_pre_event_extension_retry_authorization_v2",
+  "authorization_id": "DISCLOSURE_PRE_EVENT_EXTENSION_RETRY_V2",
+  "status": "BOUNDED_CONTINUOUS_EXECUTION",
+  "route_id": "DISCLOSURE_EVENT",
+  "skeleton_id": "cn.comp.v2.disclosure_event.pre_event_path",
+  "candidate_queue": [
+    "DISCLOSURE_PRE_EVENT_PAYLOAD_CSRANK_V1",
+    "DISCLOSURE_PRE_EVENT_PAYLOAD_ABS_V1"
+  ],
+  "historical_rejected_extension": {
+    "extension_id": "DISCLOSURE_PRE_EVENT_PAYLOAD_SIGN_V1",
+    "lifecycle": "REJECTED_FORMULA_EXTENSION",
+    "reason": "BEHAVIOR_DISCOVERY_RETENTION_88.0952_PERCENT_BELOW_90_PERCENT",
+    "excluded_from_decision_catalog": true,
+    "excluded_from_cem": true,
+    "excluded_from_financial_qualification": true,
+    "eligible_for_retry": false
+  },
+  "historical_sign_authorization": {
+    "authorization_id": "CN_TARGETED_FORMULA_CEM_QUALIFICATION_20260724",
+    "status": "PRESERVED_UNCHANGED_HISTORICAL_REPLAY_ONLY",
+    "source_path": "D:\\ChengboRemote\\workspace\\alpha_pit_formula_cem_20260724_5a3f4d8\\runtime\\run_plans\\cn_targeted_formula_cem_qualification_20260724_authorization.json",
+    "source_sha256": "a37814e76062efd2795a40021be829d4093e5f53e66cec7306813177fd9dadcd"
+  },
+  "old_authority": {
+    "status": "VERIFIED_REUSE_REQUIRED_NO_RECOMPUTE",
+    "evidence_root": "D:\\ChengboRemote\\runtime\\cn_targeted_formula_cem_qualification_20260724_5a3f4d8_216p",
+    "formula_space_id": "OLD_PRODUCTION_SPACE",
+    "decision_catalog_hash": "71eddfbaf09de50c8a81c744c654897bdc079cf829e03dc57a4223e170800bb4",
+    "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+    "development_discovery_contract_sha256": "c9f6a0f9bc3380ca731d71958a8b68a88b3805d665778a37c2a8564276e2f640",
+    "historical_exact_archive_sha256": "80c963eabbe09aa63d73385ebf36a0a33ac07abfe99a060448c7c6fa6604f351",
+    "historical_behavior_archive_sha256": "d0501fa34a3ff2dfda8a8d375e039c1cc80281054f3c9556b3f2a9d93adf557e",
+    "behavior_identity_version": "cn_portfolio_behavior_v1",
+    "probe_coordinate_binding": "6b41d11c66450a4c63fcef6fb5d0dbca8ac44ca386fdf84af718a97685d4bf61",
+    "old_probe_seed": 2026072518,
+    "old_probe_order_contract": "sha256(json(seed,exact_identity));ascending",
+    "post_archive_exact_supply": 272,
+    "behavior_probe_candidates": 256,
+    "behavior_unique_pairs": 126,
+    "ast_shape_unique_pairs": 1,
+    "artifact_sha256": {
+      "decision_catalog_old.json": "70596639978bd13537134c70d2c3c44719cd378c36b89d5be7052e096b068689",
+      "static_generation_metrics.parquet": "d79d813d2c5ef44523c185b1c8b7e18de2b8c77c22a0aefd14e80f9a25b0eced",
+      "behavior_probe_metrics.parquet": "db93955310d5009b4fcede63d0b376a4289ae40e23883d3e494cc0c4c1d05336",
+      "supply_and_behavior_gate.json": "668bc2b2cd38d0a3652349f1948d5e816852c96ffa41e7c87c0ba601570c16e6",
+      "legacy_parity.parquet": "ae7b34f8e1d7c28522695b8e8c271c0a784c60a6c7895e3c6245c8e8443ec994",
+      "static_behavior\\old_uniform\\admission_decisions.parquet": "f970a3409bb80f7745be2c3bb02082d51e3aafc9d4a17978bb9d27c4b3e1121d"
+    }
+  },
+  "base_seed": 2026072417,
+  "expanded_probe_seed_offset": 103,
+  "sampled_full_parity_seed_offset": 107,
+  "behavior_probe_cap": 256,
+  "required_behavior_unique_pairs": 114,
+  "financial_arms": [
+    "arm_a_uniform_old",
+    "arm_b_uniform_expanded",
+    "arm_c_cem_expanded"
+  ],
+  "checkpoint_count": 3,
+  "full_coordinate_pair_cap_per_checkpoint": 24,
+  "minimum_evaluated_pairs_per_arm": 48,
+  "launcher_mode": "A_IMMEDIATE_START_NO_SCHEDULED_TRIGGER",
+  "evaluation_role": "development_train_only",
+  "validation": "FORBIDDEN",
+  "holdout": "SEALED",
+  "forward_2026": "SEALED",
+  "promotion": "FORBIDDEN",
+  "strict_stage_a": "NOT_AUTHORIZED",
+  "sampled_layer_policy": "DO_NOT_CREATE_SURROGATE_IF_NO_EXISTING_AUTHORITY; CONTINUE_FULL_COORDINATE; READINESS_MAX_SEMANTICS_BLOCKED",
+  "large_search": "QUALIFICATION_ONLY_NOT_AUTOMATICALLY_LAUNCHED",
+  "graph_update": "ONLY_AFTER_DURABLE_CAPABILITY_ACCEPTANCE"
+}

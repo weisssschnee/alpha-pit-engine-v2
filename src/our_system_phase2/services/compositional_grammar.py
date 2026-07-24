@@ -32,6 +32,17 @@ PRODUCTION_EXTENSION_ID = "PRODUCTION"
 PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID = (
     "DISCLOSURE_PRE_EVENT_PAYLOAD_SIGN_V1"
 )
+PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID = (
+    "DISCLOSURE_PRE_EVENT_PAYLOAD_CSRANK_V1"
+)
+PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID = (
+    "DISCLOSURE_PRE_EVENT_PAYLOAD_ABS_V1"
+)
+_TARGETED_PRE_EVENT_EXTENSION_IDS = {
+    PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+    PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
+    PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID,
+}
 LEGACY_ROUTE_WIDE_GENE_ROUTES = (
     "INTRADAY_STATE_TRANSITION",
     "DISCLOSURE_EVENT",
@@ -1877,6 +1888,30 @@ class CompositionalGrammarV2:
                     f"Add(Sign({payload_ref}),"
                     f"Mul(0,TimeSince({event_ref})))"
                 )
+            elif (
+                formula_extension_id
+                == PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID
+            ):
+                primary_expression = (
+                    f"EventWindow(CSRank({payload_ref}),"
+                    f"{event_ref},5,0)"
+                )
+                control_expression = (
+                    f"Add(CSRank({payload_ref}),"
+                    f"Mul(0,TimeSince({event_ref})))"
+                )
+            elif (
+                formula_extension_id
+                == PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID
+            ):
+                primary_expression = (
+                    f"EventWindow(Abs({payload_ref}),"
+                    f"{event_ref},5,0)"
+                )
+                control_expression = (
+                    f"Add(Abs({payload_ref}),"
+                    f"Mul(0,TimeSince({event_ref})))"
+                )
             else:
                 raise ValueError(
                     "TARGETED_FORMULA_EXTENSION_NOT_AUTHORIZED:"
@@ -2470,8 +2505,7 @@ class CompositionalGrammarV2:
             and str(genes.get("skeleton_id") or "").endswith(
                 ".pre_event_path"
             )
-            and extension_id
-            == PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID
+            and extension_id in _TARGETED_PRE_EVENT_EXTENSION_IDS
         ):
             raise ValueError(
                 "TARGETED_FORMULA_EXTENSION_NOT_AUTHORIZED:"

@@ -31,6 +31,43 @@ PRODUCTION_EXTENSION_ID = "PRODUCTION"
 PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID = (
     "DISCLOSURE_PRE_EVENT_PAYLOAD_SIGN_V1"
 )
+PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID = (
+    "DISCLOSURE_PRE_EVENT_PAYLOAD_CSRANK_V1"
+)
+PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID = (
+    "DISCLOSURE_PRE_EVENT_PAYLOAD_ABS_V1"
+)
+TARGETED_RETRY_EXTENSION_IDS = (
+    PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
+    PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID,
+)
+HISTORICAL_REJECTED_EXTENSION_IDS = {
+    PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID: {
+        "lifecycle": "REJECTED_FORMULA_EXTENSION",
+        "reason": (
+            "BEHAVIOR_DISCOVERY_RETENTION_88.0952_PERCENT_BELOW_90_PERCENT"
+        ),
+        "excluded_from_decision_catalog": True,
+        "excluded_from_cem": True,
+        "excluded_from_financial_qualification": True,
+        "eligible_for_retry": False,
+    }
+}
+_TARGETED_ACTIVE_EXTENSION_IDS = set(TARGETED_RETRY_EXTENSION_IDS)
+_TARGETED_EXTENSION_STRUCTURES = {
+    PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID: (
+        "ONE_LEVEL_NORMALIZER_PLACEMENT:"
+        "Sign(payload)_inside_EventWindow"
+    ),
+    PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID: (
+        "ONE_LEVEL_NORMALIZER_PLACEMENT:"
+        "CSRank(payload)_inside_EventWindow"
+    ),
+    PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID: (
+        "ONE_LEVEL_NORMALIZER_PLACEMENT:"
+        "Abs(payload)_inside_EventWindow"
+    ),
+}
 _FORMULA_SPACES = {
     OLD_FORMULA_SPACE_ID,
     EXPANDED_FORMULA_SPACE_ID,
@@ -209,7 +246,7 @@ class TargetedFormulaProjection:
         skeleton_id: str,
         extension_id: str,
     ) -> None:
-        if extension_id != PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID:
+        if extension_id not in _TARGETED_ACTIVE_EXTENSION_IDS:
             raise ValueError(f"unsupported targeted extension: {extension_id}")
         if route_id != "DISCLOSURE_EVENT" or not skeleton_id.endswith(
             ".pre_event_path"
@@ -323,10 +360,9 @@ class TargetedFormulaProjection:
                             gene_value=self.extension_id,
                             semantic_value={
                                 "extension_id": self.extension_id,
-                                "structure": (
-                                    "ONE_LEVEL_NORMALIZER_PLACEMENT:"
-                                    "Sign(payload)_inside_EventWindow"
-                                ),
+                                "structure": _TARGETED_EXTENSION_STRUCTURES[
+                                    self.extension_id
+                                ],
                             },
                         ),
                     ),

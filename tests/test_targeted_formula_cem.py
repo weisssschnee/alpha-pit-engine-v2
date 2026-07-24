@@ -14,8 +14,12 @@ from our_system_phase2.services.categorical_cem import (
 )
 from our_system_phase2.services.search_choice_policy import (
     EXPANDED_FORMULA_SPACE_ID,
+    HISTORICAL_REJECTED_EXTENSION_IDS,
     OLD_FORMULA_SPACE_ID,
+    PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID,
+    PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
     PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+    TARGETED_RETRY_EXTENSION_IDS,
     LegacyParityPolicy,
     TargetedFormulaProjection,
     TraceReplayPolicy,
@@ -74,7 +78,9 @@ def test_qualification_gate_classifies_supply_and_formula_failures_separately(
     )
 
 
-def _projection() -> TargetedFormulaProjection:
+def _projection(
+    extension_id: str = PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
+) -> TargetedFormulaProjection:
     registry = UnifiedCapabilityRegistry.read(REGISTRY)
     discovery = load_development_discovery_root_authority(
         DISCOVERY,
@@ -90,7 +96,7 @@ def _projection() -> TargetedFormulaProjection:
         generator=generator,
         route_id=ROUTE_ID,
         skeleton_id=SKELETON_ID,
-        extension_id=PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+        extension_id=extension_id,
     )
 
 
@@ -125,7 +131,7 @@ def test_catalog_is_read_only_projection_of_authority() -> None:
     )
     assert expanded["extension_ids"] == [
         "PRODUCTION",
-        PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+        PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
     ]
 
 
@@ -157,7 +163,7 @@ def test_legacy_projection_replays_exact_pair_and_control() -> None:
         assert left["control_constructor_id"] == right["control_constructor_id"]
 
 
-def test_trace_replay_and_single_extension_are_exact() -> None:
+def test_trace_replay_and_single_csrank_extension_are_exact() -> None:
     projection = _projection()
     rng = np.random.default_rng(31)
     first = projection.generate(
@@ -189,7 +195,7 @@ def test_trace_replay_and_single_extension_are_exact() -> None:
         {
             **row,
             "selected_token_id": (
-                f"extension.{PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID}"
+                f"extension.{PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID}"
                 if row["decision_type"] == "EXTENSION"
                 else row["selected_token_id"]
             ),
@@ -214,10 +220,72 @@ def test_trace_replay_and_single_extension_are_exact() -> None:
     ]
     assert production.candidate["expression"] != extended.candidate["expression"]
     assert production.control["expression"] != extended.control["expression"]
-    assert extended.candidate["extension_id"] == PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID
-    assert "Sign(" in extended.candidate["expression"]
+    assert (
+        extended.candidate["extension_id"]
+        == PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID
+    )
+    assert "CSRank(" in extended.candidate["expression"]
     assert extended.candidate["legal"] is True
     assert extended.control["legal"] is True
+
+
+def test_abs_extension_is_the_only_alternative_active_catalog() -> None:
+    projection = _projection(PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID)
+    catalog = projection.decision_catalog(EXPANDED_FORMULA_SPACE_ID)
+    assert catalog["extension_ids"] == [
+        "PRODUCTION",
+        PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID,
+    ]
+    decisions = projection.decision_specs(EXPANDED_FORMULA_SPACE_ID)
+    selected = {
+        row.decision_id: row.ordered_choices[0].token_id
+        for row in decisions
+    }
+    selected[decisions[-1].decision_id] = (
+        f"extension.{PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID}"
+    )
+    pair = projection.generate(
+        formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+        policy=LegacyParityPolicy(selected),
+        rng=np.random.default_rng(3),
+    )
+    assert "EventWindow(Abs(" in pair.candidate["expression"]
+    assert "Add(Abs(" in pair.control["expression"]
+    assert pair.candidate["legal"] is True
+    assert pair.control["legal"] is True
+
+
+def test_sign_is_historical_replay_only_and_excluded_from_active_catalog() -> None:
+    assert TARGETED_RETRY_EXTENSION_IDS == (
+        PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
+        PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID,
+    )
+    rejected = HISTORICAL_REJECTED_EXTENSION_IDS[
+        PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID
+    ]
+    assert rejected["lifecycle"] == "REJECTED_FORMULA_EXTENSION"
+    assert rejected["excluded_from_decision_catalog"] is True
+    assert rejected["excluded_from_cem"] is True
+    assert rejected["excluded_from_financial_qualification"] is True
+    assert rejected["eligible_for_retry"] is False
+    with pytest.raises(ValueError, match="unsupported targeted extension"):
+        _projection(PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID)
+
+    projection = _projection()
+    lane = projection.generator.categorical_gene_space(
+        ROUTE_ID, skeleton_id=SKELETON_ID
+    )
+    genes = {
+        slot: str(values[0])
+        for slot, values in lane["ordered_categories_by_slot"].items()
+    }
+    replay = projection.generator.propose_categorical_genes(
+        ROUTE_ID,
+        genes=genes,
+        formula_extension_id=PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
+    )
+    assert "EventWindow(Sign(" in replay.candidate["expression"]
+    assert "Add(Sign(" in replay.control["expression"]
 
 
 def _evaluated_observations(
