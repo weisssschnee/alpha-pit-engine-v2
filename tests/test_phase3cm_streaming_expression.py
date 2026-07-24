@@ -68,6 +68,8 @@ def test_streaming_expression_matches_reference_for_frozen_operator_surface() ->
         "Duration(Sign($x))",
         "Winsorize($x)",
         "Transition($event,0,1)",
+        "EventWindow($x,$event,2,1)",
+        "EventWindow(Sign($x),$event,5,0)",
         "MultiScaleRelation($x,$y,2,4)",
     )
     executor = _executor(frame)
@@ -88,12 +90,14 @@ def test_streaming_expression_continuation_matches_uninterrupted() -> None:
         "TimeSince($event)",
         "EventCount($event,3)",
         "Transition($event,0,1)",
+        "EventWindow($x,$event,2,1)",
+        "EventWindow(Sign($x),$event,5,0)",
         "MultiScaleRelation($x,$y,2,4)",
     )
     expected_executor = _executor(frame)
     expected = expected_executor.evaluate_many(expressions)
 
-    split = 12
+    split = 6
     code_values = sorted(frame["code"].unique())
     code_map = {code: index for index, code in enumerate(code_values)}
     streaming = StreamingExpressionExecutor(code_count=len(code_values), compute_threads=2)
@@ -404,6 +408,8 @@ def test_new_streaming_operators_resume_from_serialized_continuation() -> None:
     frame = _frame()
     expressions = (
         "Transition($event,0,1)",
+        "EventWindow($x,$event,2,1)",
+        "EventWindow(Sign($x),$event,5,0)",
         "MultiScaleRelation($x,$y,2,4)",
     )
     expected = _executor(frame).evaluate_many(expressions)
@@ -450,4 +456,5 @@ def test_new_streaming_operators_resume_from_serialized_continuation() -> None:
 
 def test_operator_surface_preflight_reports_unknown_calls() -> None:
     assert unsupported_streaming_operators(("CSRank(Winsorize($x))",)) == ()
+    assert unsupported_streaming_operators(("EventWindow(Sign($x),$event,5,0)",)) == ()
     assert unsupported_streaming_operators(("CSRank(FutureMagic($x))",)) == ("futuremagic",)

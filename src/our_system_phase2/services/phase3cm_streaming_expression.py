@@ -32,6 +32,7 @@ ROLLING_OPERATORS = {
     "acceleration",
     "delta",
     "eventcount",
+    "eventwindow",
     "firsthit",
     "lasthit",
     "maskedzscore",
@@ -54,7 +55,7 @@ STREAMING_OPERATOR_SURFACE = frozenset(
         "duration", "eventage", "eventcount", "firsthit", "lasthit", "maskedzscore",
         "mul", "multiscalerelation", "pathshape", "persistence", "positive", "rank",
         "safediv", "sign", "sincelastevent", "slope", "stateage", "sub", "timesince",
-        "transition", "winsorize", "zscore",
+        "transition", "winsorize", "zscore", "eventwindow",
     }
 )
 
@@ -402,6 +403,70 @@ if njit is not None:
 
 
     @njit(cache=True, parallel=True)
+    def _event_window_kernel(
+        values: np.ndarray,
+        events: np.ndarray,
+        order: np.ndarray,
+        starts: np.ndarray,
+        ends: np.ndarray,
+        sorted_codes: np.ndarray,
+        history_values: np.ndarray,
+        history_events: np.ndarray,
+        history_counts: np.ndarray,
+        pre: int,
+        post: int,
+    ) -> np.ndarray:
+        out = np.empty(values.shape[0], dtype=np.float64)
+        out[:] = np.nan
+        history_length = pre + post
+        for group in prange(starts.shape[0]):
+            start = starts[group]
+            end = ends[group]
+            code = sorted_codes[start]
+            old_count = int(history_counts[code])
+            length = end - start
+            combined_values = np.empty(old_count + length, dtype=np.float64)
+            combined_events = np.empty(old_count + length, dtype=np.float64)
+            for pos in range(old_count):
+                combined_values[pos] = history_values[code, pos]
+                combined_events[pos] = history_events[code, pos]
+            for pos in range(length):
+                row = order[start + pos]
+                combined_values[old_count + pos] = values[row]
+                combined_events[old_count + pos] = events[row]
+
+            for pos in range(length):
+                absolute = old_count + pos
+                event_index = absolute - post
+                window_start = event_index - pre
+                if window_start < 0:
+                    continue
+                event_value = combined_events[event_index]
+                if np.isnan(event_value) or event_value <= 0.0:
+                    continue
+                total = 0.0
+                complete = True
+                for window_pos in range(window_start, absolute + 1):
+                    value = combined_values[window_pos]
+                    if np.isnan(value):
+                        complete = False
+                        break
+                    total += value
+                if complete:
+                    out[order[start + pos]] = total / (pre + post + 1)
+
+            keep = history_length
+            if keep > combined_values.shape[0]:
+                keep = combined_values.shape[0]
+            source_start = combined_values.shape[0] - keep
+            for pos in range(keep):
+                history_values[code, pos] = combined_values[source_start + pos]
+                history_events[code, pos] = combined_events[source_start + pos]
+            history_counts[code] = keep
+        return out
+
+
+    @njit(cache=True, parallel=True)
     def _rank_kernel(values: np.ndarray, starts: np.ndarray, ends: np.ndarray) -> np.ndarray:
         out = np.empty(values.shape[0], dtype=np.float64)
         out[:] = np.nan
@@ -504,7 +569,7 @@ if njit is not None:
 
 else:  # pragma: no cover - development environment has Numba.
     _rolling_kernel = _state_kernel = _rank_kernel = _zscore_kernel = _residual_kernel = None
-    _winsorize_kernel = _multiscale_relation_kernel = None
+    _winsorize_kernel = _multiscale_relation_kernel = _event_window_kernel = None
 
 
 @dataclass(slots=True)
@@ -551,6 +616,7 @@ class StreamingExpressionExecutor:
         self._rolling_states: dict[str, _RollingState] = {}
         self._state_states: dict[str, _StateState] = {}
         self._multiscale_states: dict[str, _BivariateRollingState] = {}
+        self._event_window_states: dict[str, _BivariateRollingState] = {}
         self.raw_fields: dict[str, np.ndarray] = {}
         self.code_ids = np.empty(0, dtype=np.int32)
         self.time_ids = np.empty(0, dtype=np.int64)
@@ -826,6 +892,50 @@ class StreamingExpressionExecutor:
             int(long),
         )
 
+    def _event_window(
+        self,
+        key: str,
+        values: np.ndarray,
+        events: np.ndarray,
+        pre: int,
+        post: int,
+    ) -> np.ndarray:
+        if _event_window_kernel is None:
+            raise RuntimeError("Numba is required for the streaming event-window hot path")
+        if pre < 0 or post < 0:
+            raise ValueError("EventWindow pre/post must be non-negative")
+        history_length = pre + post
+        state = self._event_window_states.get(key)
+        if state is None:
+            state = _BivariateRollingState(
+                history_left=np.full(
+                    (self.code_count, max(1, history_length)),
+                    np.nan,
+                    dtype=np.float64,
+                ),
+                history_right=np.full(
+                    (self.code_count, max(1, history_length)),
+                    np.nan,
+                    dtype=np.float64,
+                ),
+                counts=np.zeros(self.code_count, dtype=np.int32),
+            )
+            self._event_window_states[key] = state
+        self.audit["native_kernel_calls"] += 1
+        return _event_window_kernel(
+            values,
+            events,
+            self._code_order,
+            self._code_starts,
+            self._code_ends,
+            self._sorted_codes,
+            state.history_left,
+            state.history_right,
+            state.counts,
+            int(pre),
+            int(post),
+        )
+
     @staticmethod
     def _number(node: ExpressionNode) -> float:
         if node.args:
@@ -923,6 +1033,14 @@ class StreamingExpressionExecutor:
                 3,
                 self._number(node.args[1]),
                 self._number(node.args[2]),
+            )
+        elif name == "eventwindow":
+            result = self._event_window(
+                key,
+                args[0],
+                args[1],
+                int(self._number(node.args[2])),
+                int(self._number(node.args[3])),
             )
         elif name == "multiscalerelation":
             result = self._multiscale(
@@ -1176,6 +1294,14 @@ class StreamingExpressionExecutor:
                 }
                 for key, value in sorted(self._multiscale_states.items())
             },
+            "event_window": {
+                key: {
+                    "history_left": value.history_left.copy(),
+                    "history_right": value.history_right.copy(),
+                    "counts": value.counts.copy(),
+                }
+                for key, value in sorted(self._event_window_states.items())
+            },
         }
 
     def restore_continuation_payload(self, payload: Mapping[str, Any]) -> None:
@@ -1201,4 +1327,12 @@ class StreamingExpressionExecutor:
                 counts=np.asarray(value["counts"], dtype=np.int32).copy(),
             )
             for key, value in dict(payload.get("multiscale") or {}).items()
+        }
+        self._event_window_states = {
+            str(key): _BivariateRollingState(
+                history_left=np.asarray(value["history_left"], dtype=np.float64).copy(),
+                history_right=np.asarray(value["history_right"], dtype=np.float64).copy(),
+                counts=np.asarray(value["counts"], dtype=np.int32).copy(),
+            )
+            for key, value in dict(payload.get("event_window") or {}).items()
         }
