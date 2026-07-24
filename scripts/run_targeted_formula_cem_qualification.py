@@ -1899,6 +1899,7 @@ def _comparison_verdict(
     behavior_status: str,
     sampled_full_contract: str,
     performance_baseline: Mapping[str, Any] | None = None,
+    selected_backends: Sequence[str] = ("stock_session",),
 ) -> dict[str, Any]:
     support = {
         arm["arm"]: (
@@ -1983,12 +1984,6 @@ def _comparison_verdict(
             )
         )
     performance_safety_checks = {
-        "stock_session_native_contract": all(
-            str(summary.get("runtime_gate_status") or "") == "PASS"
-            for arm in (arm_a, arm_b, arm_c)
-            for summary in arm["checkpoint_summaries"]
-            if int(summary.get("full_coordinate_pairs") or 0) > 0
-        ),
         "minimum_free_memory_24_gib": min(
             int(arm.get("minimum_free_memory_bytes") or 0)
             for arm in (arm_a, arm_b, arm_c)
@@ -2016,6 +2011,13 @@ def _comparison_verdict(
         )
         == 0,
     }
+    if "stock_session" in set(map(str, selected_backends)):
+        performance_safety_checks["stock_session_native_contract"] = all(
+            str(summary.get("runtime_gate_status") or "") == "PASS"
+            for arm in (arm_a, arm_b, arm_c)
+            for summary in arm["checkpoint_summaries"]
+            if int(summary.get("full_coordinate_pairs") or 0) > 0
+        )
     baseline_effective_cores = (
         float(performance_baseline["effective_cores_median"])
         if performance_baseline is not None

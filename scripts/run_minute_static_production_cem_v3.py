@@ -2028,6 +2028,7 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         performance_baseline=sampled_qualification[
             "source_full_comparator_contract"
         ],
+        selected_backends=("active_bar",),
     )
     blockers = []
     if not sampled_selector_evidence_qualified:

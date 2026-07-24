@@ -1,0 +1,192 @@
+{
+  "schema_version": "cn_minute_static_production_cem_v3_receipt_v1",
+  "authorization_id": "MINUTE_STATIC_PRODUCTION_LANE_CEM_V3",
+  "status": "CAMPAIGN_CLOSED_HASH_VERIFIED",
+  "campaign_root": "D:\\ChengboRemote\\runtime\\cn_minute_static_production_cem_v3_20260724_c93f736",
+  "task_id": "minute_static_v3_c93f736_single_writer",
+  "task_exit_code": 0,
+  "writer_status": "CLOSED",
+  "deployed_repo_sha": "c93f7364efc6e72e8ae6b683b4410b1358950208",
+  "host": "DESKTOP-77OPJ6F",
+  "closed_at": "2026-07-25T02:36:51+08:00",
+  "closure_verification": {
+    "root_manifest_status": "CAMPAIGN_CLOSED",
+    "root_manifest_sha256": "34d061f59f759b56c953f98dee7beb2f147504bd8e4e50094b240d8a4f75a6ee",
+    "root_manifest_payload_hash": "ce35e753b9ab65e1ca5d3e654027b2677e2697b3441fc377b4ecea51ac5b8c6e",
+    "root_artifacts_verified": 19,
+    "root_artifacts_total": 19,
+    "batch_manifests_verified": 9,
+    "batch_manifests_total": 9,
+    "batch_artifacts_verified": 171,
+    "batch_artifacts_total": 171,
+    "failures": []
+  },
+  "batch_manifests": [
+    {
+      "path": "arms/arm_a_uniform_old/checkpoint_001/batch_manifest.json",
+      "sha256": "bb3ad948129a3ac6484f919ae633db8be2a83ec48bdb8110df81abbe0245c9a5",
+      "payload_hash": "c7bdba46bb763007611dc2abf29cbec5ecb280a7a8430940796dba3d33c7f8a1"
+    },
+    {
+      "path": "arms/arm_a_uniform_old/checkpoint_002/batch_manifest.json",
+      "sha256": "2c71e59f08e29a020fa156e940629b69711e599c0baae98106f8a2d88e2789b6",
+      "payload_hash": "7e02f66b87ef6be4e91988b242b2b9e57000a26983bf21c575b075937439f2dc"
+    },
+    {
+      "path": "arms/arm_a_uniform_old/checkpoint_003/batch_manifest.json",
+      "sha256": "6b0497abd98998dc360ad88fdb145f4f30a87f4874cee10219c1ffbe13895c20",
+      "payload_hash": "b216e676682b95d3b445a2a4918c146f3e12d28a3b7a3b634456cfe6ec8f4b07"
+    },
+    {
+      "path": "arms/arm_b_uniform_expanded/checkpoint_001/batch_manifest.json",
+      "sha256": "b4cc2a4d5dca96add7403f46e9ee3dc95ec6516af7eef7dacfc0b73d13b7a95b",
+      "payload_hash": "766032a2d140591abf4a4b88d3837275615f6b8a9bc033d01ebb2199494ad024"
+    },
+    {
+      "path": "arms/arm_b_uniform_expanded/checkpoint_002/batch_manifest.json",
+      "sha256": "173a2998af09a529e27483e5b42addc7da327270ee20b56531f6cb88648d1dd6",
+      "payload_hash": "ca0060b50c199f04d2a2dd653c19e5f7eb17de4da2533be2be8b6960472e1373"
+    },
+    {
+      "path": "arms/arm_b_uniform_expanded/checkpoint_003/batch_manifest.json",
+      "sha256": "08b566253330b54e674c5e8920fdcd330481e7de6fcd19401ff1c887b6663721",
+      "payload_hash": "1021bf54dc5dfe3080f9744532c014b19bd30ad6dda673f55e77f9cb169648ea"
+    },
+    {
+      "path": "arms/arm_c_cem_expanded/checkpoint_001/batch_manifest.json",
+      "sha256": "0824178ede91ae740a47f37d24632c98c66024e90d841ba6608a3b08827fd0e6",
+      "payload_hash": "bf9347286a22b74e69dc0a3c9c004d0c73f8c90d25b1a7e50ac42106fed34b4c"
+    },
+    {
+      "path": "arms/arm_c_cem_expanded/checkpoint_002/batch_manifest.json",
+      "sha256": "4fd4adcf794e786e9712f7fa45278bf17ccf3f5343c2ad0866e476e8490c64de",
+      "payload_hash": "5bb49595f6871527fec861132d136529e302e20cef8e75c33740b39b109358b2"
+    },
+    {
+      "path": "arms/arm_c_cem_expanded/checkpoint_003/batch_manifest.json",
+      "sha256": "04a913ccd6a026f3a70ba0f42fd5dc9a566dacb35efc7e1d23f77102e225d068",
+      "payload_hash": "d200fc52c159a58ef5d64876d12de39b3e62269f77fb4c32907366d81582648c"
+    }
+  ],
+  "sampled_phase3cm": {
+    "authority_id": "MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1",
+    "evidence_status": "QUALIFIED",
+    "formal_status_at_campaign_close": "PENDING_FORMAL_PROMOTION",
+    "comparable_pair_count": 64,
+    "spearman_rank_correlation": 0.997481684981685,
+    "sign_agreement": 0.953125,
+    "full_top_quartile_recall_in_sampled_top_half": 1.0,
+    "speed_multiple": 4.970450298145309,
+    "four_pair_full_contract": "PASS",
+    "sample_fraction": 0.25,
+    "selection": "hash(sample_seed,session_id)",
+    "stratification": "calendar_month",
+    "portfolio_mode": "long_only_top",
+    "cost_bps": 5.0,
+    "horizons": [
+      1,
+      5,
+      15,
+      30
+    ]
+  },
+  "arm_results": {
+    "arm_a_uniform_old": {
+      "evaluated_pairs": 60,
+      "active_checkpoints": 3,
+      "median_signed_matched_increment": -0.9918907742878672,
+      "positive_matched_pairs": 30,
+      "positive_matched_pairs_per_wall_hour": 57.240963120094776,
+      "behavior_discovery_per_evaluated_pair": 0.7166666666666667,
+      "ast_shape_count": 1,
+      "full_coordinate_pairs_per_wall_hour": 114.76477972932823,
+      "effective_cores_median": 26.636798789857227,
+      "host_logical_cpu_occupancy_median": 0.8323999621830384
+    },
+    "arm_b_uniform_expanded": {
+      "evaluated_pairs": 72,
+      "active_checkpoints": 3,
+      "median_signed_matched_increment": 11.887682061773226,
+      "positive_matched_pairs": 44,
+      "positive_matched_pairs_per_wall_hour": 65.89892691403496,
+      "behavior_discovery_per_evaluated_pair": 0.7916666666666666,
+      "ast_shape_count": 2,
+      "full_coordinate_pairs_per_wall_hour": 108.05653611619057,
+      "effective_cores_median": 25.913129730704984,
+      "host_logical_cpu_occupancy_median": 0.8097853040845308
+    },
+    "arm_c_cem_expanded": {
+      "evaluated_pairs": 72,
+      "active_checkpoints": 3,
+      "median_signed_matched_increment": 2.674691272239471,
+      "positive_matched_pairs": 40,
+      "positive_matched_pairs_per_wall_hour": 61.874792042458225,
+      "behavior_discovery_per_evaluated_pair": 0.7777777777777778,
+      "ast_shape_count": 2,
+      "full_coordinate_pairs_per_wall_hour": 111.6177889203372,
+      "effective_cores_median": 26.16335115390008,
+      "host_logical_cpu_occupancy_median": 0.8176047235593775,
+      "cem_updated_context_count": 3,
+      "maximum_token_share": 0.25
+    }
+  },
+  "financial_verdicts": {
+    "formula_space_increment": "QUALIFIED",
+    "formula_checks": {
+      "positive_per_wall_hour": true,
+      "median_increment": true,
+      "behavior_discovery": true,
+      "ast_shape_diversity": true
+    },
+    "cem_search_increment": "NOT_QUALIFIED",
+    "cem_checks": {
+      "positive_per_wall_hour_15pct": false,
+      "median_increment": false,
+      "behavior_discovery": true,
+      "checkpoint_2_3_supply": true,
+      "cem_table_updated": true,
+      "no_category_collapse": true
+    }
+  },
+  "performance_classifier": {
+    "campaign_recorded_verdict": "FAIL",
+    "campaign_recorded_false_requirement": "stock_session_native_contract",
+    "selected_backend": "active_bar",
+    "classifier_fix": "Require the stock-session native contract only when stock_session is selected; active_bar uses the frozen 75 percent host-occupancy gate or the frozen SMT alternative.",
+    "replayed_verdict_after_fix": "PASS",
+    "safety_checks": {
+      "minimum_free_memory_24_gib": true,
+      "cache_cap_8_gib": true,
+      "pair_batch_at_most_4": true,
+      "zero_semantic_drift": true,
+      "zero_metric_drift": true,
+      "zero_access_violation": true
+    },
+    "utilization_checks": {
+      "all_arms_logical_cpu_occupancy_at_least_75_percent": true,
+      "all_arms_effective_cores_not_regressed": true,
+      "all_arms_full_coordinate_pairs_per_hour_not_regressed": false,
+      "full_host_native_kernel_smt_ceiling_with_non_regression": false
+    },
+    "minimum_free_memory_bytes": 76778741760,
+    "maximum_observed_cache_bytes": 1982253920,
+    "maximum_peak_rss_bytes": 9965494272,
+    "reclassification_requires_financial_recompute": false
+  },
+  "final_interpretation": {
+    "sampled_phase3cm_evidence": "QUALIFIED",
+    "formula_space_increment": "QUALIFIED",
+    "cem_search_increment": "NOT_QUALIFIED",
+    "performance_contract": "PASS_AFTER_CLASSIFIER_FIX",
+    "target_family_large_search_readiness": "SEARCH_POLICY_BLOCKED",
+    "remaining_blocker": "CEM_SEARCH_INCREMENT_NOT_QUALIFIED",
+    "large_search_authorized": false
+  },
+  "access_boundary": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "candidate_promotion": "FORBIDDEN",
+    "formal_search": "FROZEN"
+  }
+}

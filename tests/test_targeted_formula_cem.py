@@ -320,6 +320,45 @@ def test_smt_ceiling_requires_effective_core_and_throughput_non_regression(
     assert verdict["PERFORMANCE_CONTRACT"] == "PARTIAL"
 
 
+def test_active_bar_performance_does_not_require_unused_stock_session_gate(
+) -> None:
+    arms = [
+        _comparison_arm(
+            arm,
+            evaluated_pairs=48,
+            active_checkpoint_count=2,
+            host_cpu=0.80,
+        )
+        for arm in (
+            "arm_a_uniform_old",
+            "arm_b_uniform_expanded",
+            "arm_c_cem_expanded",
+        )
+    ]
+    for arm in arms:
+        arm["checkpoint_summaries"] = [
+            {
+                "runtime_gate_status": (
+                    "RUNTIME_ACCELERATION_GATE_FAILED"
+                ),
+                "full_coordinate_pairs": 24,
+            }
+        ]
+    verdict = _comparison_verdict(
+        arm_a=arms[0],
+        arm_b=arms[1],
+        arm_c=arms[2],
+        static_status="PASS",
+        behavior_status="PASS",
+        sampled_full_contract="PASS",
+        selected_backends=("active_bar",),
+    )
+    assert "stock_session_native_contract" not in (
+        verdict["performance_safety_checks"]
+    )
+    assert verdict["PERFORMANCE_CONTRACT"] == "PASS"
+
+
 def test_catalog_is_read_only_projection_of_authority() -> None:
     projection = _projection()
     old = projection.decision_catalog(OLD_FORMULA_SPACE_ID)
