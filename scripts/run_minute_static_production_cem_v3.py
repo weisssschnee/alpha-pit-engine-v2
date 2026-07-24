@@ -123,6 +123,10 @@ PAIRED_STRUCTURAL_CEM_V2_ARMS = (
 )
 PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT = 2
 PAIRED_STRUCTURAL_CEM_V2_FULL_PAIR_CAP = 12
+PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT = 3
+PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP = 24
+PAIRED_STRUCTURAL_CEM_V2_CANARY_SEED_OFFSET = 20_000
+PAIRED_STRUCTURAL_CEM_V2_MEDIUM_SEED_OFFSET = 30_000
 
 
 class MinuteStaticProductionProjection:
@@ -645,6 +649,69 @@ def _verify_reused_sampled_authority(
     return qualification, session, receipt
 
 
+def _verify_reused_structural_canary(
+    root: Path,
+) -> tuple[set[str], dict[str, Any]]:
+    root = root.resolve()
+    manifest_path = root / "artifact_manifest.json"
+    manifest = json.loads(
+        manifest_path.read_text(encoding="utf-8-sig")
+    )
+    _verify_artifacts(root, manifest)
+    final = json.loads(
+        (root / "final_decision.json").read_text(encoding="utf-8-sig")
+    )
+    if (
+        str(manifest.get("status") or "") != "CAMPAIGN_CLOSED"
+        or str(final.get("STRUCTURAL_CEM_V2_CANARY") or "")
+        != "MECHANICAL_PASS_RUN_MEDIUM"
+    ):
+        raise RuntimeError("STRUCTURAL_CEM_V2_CANARY_NOT_QUALIFIED")
+    exact: set[str] = set()
+    batch_manifest_hashes = []
+    for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS:
+        for checkpoint in range(
+            1, PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT + 1
+        ):
+            batch_root = (
+                root / "arms" / arm / f"checkpoint_{checkpoint:03d}"
+            )
+            batch_manifest_path = batch_root / "batch_manifest.json"
+            batch_manifest = json.loads(
+                batch_manifest_path.read_text(encoding="utf-8-sig")
+            )
+            if (
+                str(batch_manifest.get("status") or "")
+                != "BATCH_CLOSED_IMMUTABLE"
+            ):
+                raise RuntimeError(
+                    "STRUCTURAL_CEM_V2_CANARY_BATCH_NOT_CLOSED"
+                )
+            _verify_artifacts(batch_root, batch_manifest)
+            batch_manifest_hashes.append(_sha256(batch_manifest_path))
+            exact.update(
+                str(row["exact_identity"])
+                for row in _read_rows(
+                    batch_root / "proposal_ledger.parquet"
+                )
+            )
+    return exact, {
+        "schema_version": (
+            "cn_minute_static_structural_cem_v2_canary_reuse_receipt_v1"
+        ),
+        "status": "REUSED_HASH_VERIFIED_EXACT_MEMORY_ONLY",
+        "source_root": str(root),
+        "source_manifest_sha256": _sha256(manifest_path),
+        "batch_manifest_hashes": batch_manifest_hashes,
+        "exact_identity_count": len(exact),
+        "optimizer_probabilities_imported": False,
+        "reward_observations_imported": False,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+
+
 def _paired_structural_canary_verdict(
     output_root: Path,
     arm_metrics: Mapping[str, Mapping[str, Any]],
@@ -775,6 +842,230 @@ def _paired_structural_canary_verdict(
             else "MECHANICAL_FAIL_STOP"
         ),
         "large_search_authorized": False,
+    }
+
+
+def _paired_structural_medium_verdict(
+    output_root: Path,
+    arm_metrics: Mapping[str, Mapping[str, Any]],
+    *,
+    prior_canary_exact: set[str],
+) -> dict[str, Any]:
+    uniform_arm, cem_arm = PAIRED_STRUCTURAL_CEM_V2_ARMS
+
+    def proposal_stream(arm: str, checkpoint: int) -> list[str]:
+        return [
+            str(row["exact_identity"])
+            for row in sorted(
+                _read_rows(
+                    output_root
+                    / "arms"
+                    / arm
+                    / f"checkpoint_{checkpoint:03d}"
+                    / "proposal_ledger.parquet"
+                ),
+                key=lambda row: int(row["raw_attempt"]),
+            )
+        ]
+
+    def evaluated_exact_set(arm: str, checkpoint: int) -> list[str]:
+        return sorted(
+            str(row["exact_identity"])
+            for row in _read_rows(
+                output_root
+                / "arms"
+                / arm
+                / f"checkpoint_{checkpoint:03d}"
+                / "observation_ledger.parquet"
+            )
+            if str(row.get("outcome_class") or "") == "EVALUATED"
+        )
+
+    def evaluated_increments(
+        arm: str, checkpoints: Sequence[int]
+    ) -> list[float]:
+        return [
+            float(row["signed_matched_increment"])
+            for checkpoint in checkpoints
+            for row in _read_rows(
+                output_root
+                / "arms"
+                / arm
+                / f"checkpoint_{checkpoint:03d}"
+                / "observation_ledger.parquet"
+            )
+            if str(row.get("outcome_class") or "") == "EVALUATED"
+        ]
+
+    summaries = {
+        (arm, checkpoint): json.loads(
+            (
+                output_root
+                / "arms"
+                / arm
+                / f"checkpoint_{checkpoint:03d}"
+                / "checkpoint_summary.json"
+            ).read_text(encoding="utf-8-sig")
+        )
+        for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS
+        for checkpoint in range(
+            1, PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT + 1
+        )
+    }
+    proposed_exact = {
+        str(row["exact_identity"])
+        for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS
+        for checkpoint in range(
+            1, PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT + 1
+        )
+        for row in _read_rows(
+            output_root
+            / "arms"
+            / arm
+            / f"checkpoint_{checkpoint:03d}"
+            / "proposal_ledger.parquet"
+        )
+    }
+    uniform_adaptive = evaluated_increments(uniform_arm, (2, 3))
+    cem_adaptive = evaluated_increments(cem_arm, (2, 3))
+    uniform_metrics = arm_metrics[uniform_arm]
+    cem_metrics = arm_metrics[cem_arm]
+    cem_state = json.loads(
+        (
+            output_root
+            / "arms"
+            / cem_arm
+            / "checkpoint_003"
+            / "arm_state.json"
+        ).read_text(encoding="utf-8-sig")
+    )["optimizer_state"]
+    first_uniform = proposal_stream(uniform_arm, 1)
+    first_cem = proposal_stream(cem_arm, 1)
+    first_uniform_full = evaluated_exact_set(uniform_arm, 1)
+    first_cem_full = evaluated_exact_set(cem_arm, 1)
+    contracts = {
+        "generation_one_exact_stream_parity": (
+            bool(first_uniform) and first_uniform == first_cem
+        ),
+        "generation_one_full_evaluation_set_parity": (
+            bool(first_uniform_full)
+            and first_uniform_full == first_cem_full
+        ),
+        "minimum_support": all(
+            int(arm_metrics[arm]["evaluated_pairs"])
+            >= (
+                PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
+                * PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
+            )
+            for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS
+        ),
+        "zero_exact_duplicates": all(
+            int(summary["exact_duplicate_pairs"]) == 0
+            for summary in summaries.values()
+        ),
+        "no_canary_exact_replay": not bool(
+            proposed_exact & prior_canary_exact
+        ),
+        "fresh_medium_state_adapted": (
+            str(cem_state.get("initialization_origin") or "")
+            == "fresh_uniform_from_frozen_decision_catalog"
+            and str(cem_state.get("imported_source_campaign") or "")
+            == "none"
+            and str(cem_state.get("current_state") or "") == "ADAPTED"
+            and int(cem_state.get("generation") or 0)
+            == PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
+            and int(cem_state.get("reward_observation_count") or 0)
+            >= (
+                PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
+                * PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
+            )
+        ),
+        "sealed_reads_zero": all(
+            int(summary[name]) == 0
+            for summary in summaries.values()
+            for name in (
+                "validation_reads",
+                "holdout_reads",
+                "forward_2026_reads",
+            )
+        ),
+    }
+    uniform_positive = sum(value > 0.0 for value in uniform_adaptive)
+    cem_positive = sum(value > 0.0 for value in cem_adaptive)
+    uniform_median = (
+        statistics.median(uniform_adaptive) if uniform_adaptive else None
+    )
+    cem_median = statistics.median(cem_adaptive) if cem_adaptive else None
+    financial_checks = {
+        "adaptive_positive_count_noninferior": (
+            cem_positive >= uniform_positive
+        ),
+        "adaptive_median_strictly_better": (
+            cem_median is not None
+            and uniform_median is not None
+            and cem_median > uniform_median
+        ),
+        "behavior_discovery_noninferior": (
+            float(cem_metrics["behavior_discovery_per_evaluated_pair"])
+            >= float(
+                uniform_metrics["behavior_discovery_per_evaluated_pair"]
+            )
+        ),
+    }
+    performance_checks = {
+        "uniform_hot_path_host_occupancy_at_least_75pct": (
+            float(uniform_metrics["selected_backend_host_cpu_median"] or 0.0)
+            >= 0.75
+        ),
+        "cem_hot_path_host_occupancy_at_least_75pct": (
+            float(cem_metrics["selected_backend_host_cpu_median"] or 0.0)
+            >= 0.75
+        ),
+        "cache_at_most_8_gib": max(
+            int(uniform_metrics["maximum_observed_cache_bytes"]),
+            int(cem_metrics["maximum_observed_cache_bytes"]),
+        )
+        <= 8 * 1024**3,
+        "free_memory_at_least_24_gib": min(
+            int(uniform_metrics["minimum_free_memory_bytes"]),
+            int(cem_metrics["minimum_free_memory_bytes"]),
+        )
+        >= 24 * 1024**3,
+        "cem_full_pair_throughput_at_least_90pct_uniform": (
+            float(cem_metrics["full_coordinate_pairs_per_wall_hour"])
+            >= 0.90
+            * float(
+                uniform_metrics["full_coordinate_pairs_per_wall_hour"]
+            )
+        ),
+    }
+    qualified = (
+        all(contracts.values())
+        and all(financial_checks.values())
+        and all(performance_checks.values())
+    )
+    return {
+        "schema_version": (
+            "cn_minute_static_structural_cem_v2_medium_verdict_v1"
+        ),
+        "status": (
+            "STRUCTURAL_CEM_V2_FINANCIALLY_QUALIFIED"
+            if qualified
+            else "STRUCTURAL_CEM_V2_NOT_QUALIFIED"
+        ),
+        "mechanical_contracts": contracts,
+        "financial_checks": financial_checks,
+        "performance_checks": performance_checks,
+        "adaptive_checkpoint_metrics": {
+            "uniform_evaluated": len(uniform_adaptive),
+            "cem_evaluated": len(cem_adaptive),
+            "uniform_positive": uniform_positive,
+            "cem_positive": cem_positive,
+            "uniform_median": uniform_median,
+            "cem_median": cem_median,
+        },
+        "large_search_authorized": False,
+        "ready_for_separate_large_search_authorization": qualified,
     }
 
 
@@ -2186,8 +2477,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def run_financial(args: argparse.Namespace) -> dict[str, Any]:
-    paired_structural_v2 = bool(
+    paired_structural_canary = bool(
         getattr(args, "paired_structural_cem_v2_canary", False)
+    )
+    paired_structural_medium = bool(
+        getattr(args, "paired_structural_cem_v2_medium", False)
+    )
+    if paired_structural_canary and paired_structural_medium:
+        raise ValueError("STRUCTURAL_CEM_V2_MODE_AMBIGUOUS")
+    paired_structural_v2 = (
+        paired_structural_canary or paired_structural_medium
     )
     if (
         (paired_structural_v2 or not args.allow_noncanonical_host)
@@ -2204,14 +2503,22 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         else ARMS
     )
     checkpoint_count = (
-        PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT
-        if paired_structural_v2
-        else CHECKPOINT_COUNT
+        PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
+        if paired_structural_medium
+        else (
+            PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT
+            if paired_structural_canary
+            else CHECKPOINT_COUNT
+        )
     )
     full_pair_cap = (
-        PAIRED_STRUCTURAL_CEM_V2_FULL_PAIR_CAP
-        if paired_structural_v2
-        else FULL_PAIR_CAP
+        PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
+        if paired_structural_medium
+        else (
+            PAIRED_STRUCTURAL_CEM_V2_FULL_PAIR_CAP
+            if paired_structural_canary
+            else FULL_PAIR_CAP
+        )
     )
     lock_path = output_root / "campaign_writer.json"
     lock = {
@@ -2284,6 +2591,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
     split = FixedSplitAuthority.read(args.split_manifest.resolve())
     reused_sampled_receipt_path = None
     reused_sampled_qualification = None
+    reused_canary_receipt_path = None
+    reused_canary_receipt: dict[str, Any] | None = None
+    prior_canary_exact: set[str] = set()
     if paired_structural_v2:
         (
             reused_sampled_qualification,
@@ -2296,6 +2606,17 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             output_root / "sampled_authority_reuse_receipt.json",
             reused_sampled_receipt,
         )
+        if paired_structural_medium:
+            (
+                prior_canary_exact,
+                reused_canary_receipt,
+            ) = _verify_reused_structural_canary(
+                args.reused_structural_canary_root
+            )
+            reused_canary_receipt_path = _write_json(
+                output_root / "structural_canary_reuse_receipt.json",
+                reused_canary_receipt,
+            )
     else:
         session_sample = _session_sample_contract(
             split, seed=FINANCIAL_SEED + 77
@@ -2310,8 +2631,10 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "status": "FROZEN_EXECUTABLE",
         "authorization_id": (
-            "MINUTE_STATIC_STRUCTURAL_CEM_V2_PAIRED_CANARY"
-            if paired_structural_v2
+            "MINUTE_STATIC_STRUCTURAL_CEM_V2_PAIRED_MEDIUM"
+            if paired_structural_medium
+            else "MINUTE_STATIC_STRUCTURAL_CEM_V2_PAIRED_CANARY"
+            if paired_structural_canary
             else AUTHORIZATION_ID
         ),
         "route_id": ROUTE_ID,
@@ -2343,6 +2666,14 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "left_right_independent_probabilities": "FORBIDDEN",
         "paired_common_random_stream": paired_structural_v2,
+        "prior_canary_exact_memory_count": len(prior_canary_exact),
+        "prior_canary_source_manifest_sha256": (
+            reused_canary_receipt["source_manifest_sha256"]
+            if reused_canary_receipt is not None
+            else None
+        ),
+        "prior_optimizer_probabilities_imported": False,
+        "prior_reward_observations_imported": False,
         "sampled_feedback_writes": "FORBIDDEN",
         "portfolio_mode": "long_only_top",
         "cost_bps": 5.0,
@@ -2415,6 +2746,7 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         args.historical_exact_archive.resolve(),
         args.source_candidate_ledger.resolve(),
     )
+    initial_exact.update(prior_canary_exact)
     initial_behavior = PortfolioBehaviorArchive.read_parquet(
         args.historical_behavior_archive.resolve()
     )
@@ -2440,8 +2772,11 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         )
         rng = np.random.default_rng(
             (
-                FINANCIAL_SEED + 20_000
-                if paired_structural_v2
+                FINANCIAL_SEED + PAIRED_STRUCTURAL_CEM_V2_MEDIUM_SEED_OFFSET
+                if paired_structural_medium
+                else FINANCIAL_SEED
+                + PAIRED_STRUCTURAL_CEM_V2_CANARY_SEED_OFFSET
+                if paired_structural_canary
                 else FINANCIAL_SEED + 10_000 * (arm_index + 1)
             )
         )
@@ -2590,7 +2925,53 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         )
         for arm in campaign_arms
     }
-    if paired_structural_v2:
+    if paired_structural_medium:
+        comparison = _paired_structural_medium_verdict(
+            output_root,
+            arm_metrics,
+            prior_canary_exact=prior_canary_exact,
+        )
+        qualified = (
+            comparison["status"]
+            == "STRUCTURAL_CEM_V2_FINANCIALLY_QUALIFIED"
+        )
+        final = {
+            "SAMPLED_PHASE3CM_AUTHORITY": (
+                "REUSED_ACTIVE_ROUTE_LOCAL_SELECTION_AUTHORITY"
+            ),
+            "STRUCTURAL_CEM_V2_MEDIUM": comparison["status"],
+            "CEM_SEARCH_INCREMENT": (
+                "QUALIFIED" if qualified else "NOT_QUALIFIED"
+            ),
+            "PERFORMANCE_CONTRACT": (
+                "PASS"
+                if all(comparison["performance_checks"].values())
+                else "FAIL"
+            ),
+            "TARGET_FAMILY_LARGE_SEARCH_READINESS": (
+                "READY_FOR_SEPARATE_LARGE_SEARCH_AUTHORIZATION"
+                if qualified
+                else "SEARCH_POLICY_BLOCKED"
+            ),
+            "LARGE_SEARCH_INITIALIZATION": (
+                "FRESH_UNIFORM_REQUIRED_AFTER_SEPARATE_AUTHORIZATION"
+            ),
+            "READINESS_BLOCKERS": (
+                []
+                if qualified
+                else [
+                    name
+                    for group in (
+                        "mechanical_contracts",
+                        "financial_checks",
+                        "performance_checks",
+                    )
+                    for name, passed in comparison[group].items()
+                    if not passed
+                ]
+            ),
+        }
+    elif paired_structural_canary:
         comparison = _paired_structural_canary_verdict(
             output_root, arm_metrics
         )
@@ -2737,6 +3118,11 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             if reused_sampled_receipt_path is not None
             else []
         ),
+        *(
+            [reused_canary_receipt_path]
+            if reused_canary_receipt_path is not None
+            else []
+        ),
         metrics_path,
         final_path,
         *(
@@ -2756,8 +3142,10 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
     ]
     manifest = {
         "schema_version": (
-            "cn_minute_static_structural_cem_v2_canary_manifest_v1"
-            if paired_structural_v2
+            "cn_minute_static_structural_cem_v2_medium_manifest_v1"
+            if paired_structural_medium
+            else "cn_minute_static_structural_cem_v2_canary_manifest_v1"
+            if paired_structural_canary
             else "cn_minute_static_production_cem_v3_manifest_v2"
         ),
         "status": "CAMPAIGN_CLOSED",
@@ -2828,7 +3216,12 @@ def main() -> int:
         "--paired-structural-cem-v2-canary",
         action="store_true",
     )
+    parser.add_argument(
+        "--paired-structural-cem-v2-medium",
+        action="store_true",
+    )
     parser.add_argument("--reused-sampled-authority-root", type=Path)
+    parser.add_argument("--reused-structural-canary-root", type=Path)
     parser.add_argument("--reused-supply-root", type=Path)
     parser.add_argument("--source-campaign-root", type=Path)
     parser.add_argument("--source-observation-ledger", type=Path)
@@ -2852,6 +3245,13 @@ def main() -> int:
     parser.add_argument("--allow-noncanonical-host", action="store_true")
     parser.add_argument("--static-only", action="store_true")
     args = parser.parse_args()
+    if (
+        args.paired_structural_cem_v2_canary
+        and args.paired_structural_cem_v2_medium
+    ):
+        parser.error(
+            "choose exactly one structural CEM V2 paired mode"
+        )
     if args.continue_financial:
         required = (
             "reused_supply_root",
@@ -2876,12 +3276,23 @@ def main() -> int:
                 "--continue-financial missing: " + ",".join(missing)
             )
         if (
-            args.paired_structural_cem_v2_canary
+            (
+                args.paired_structural_cem_v2_canary
+                or args.paired_structural_cem_v2_medium
+            )
             and args.reused_sampled_authority_root is None
         ):
             parser.error(
-                "--paired-structural-cem-v2-canary requires "
+                "paired structural CEM V2 requires "
                 "--reused-sampled-authority-root"
+            )
+        if (
+            args.paired_structural_cem_v2_medium
+            and args.reused_structural_canary_root is None
+        ):
+            parser.error(
+                "--paired-structural-cem-v2-medium requires "
+                "--reused-structural-canary-root"
             )
     elif not args.static_only and (
         args.historical_behavior_archive is None

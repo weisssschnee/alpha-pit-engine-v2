@@ -13,10 +13,13 @@ from scripts.run_minute_static_production_cem_v3 import (
     MINIMUM_BEHAVIOR_SUPPLY,
     MINIMUM_EXACT_SUPPLY,
     PAIRED_STRUCTURAL_CEM_V2_ARMS,
+    PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT,
+    PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP,
     MinuteStaticProductionProjection,
     _failure_decision,
     _load_production_contract,
     _paired_structural_canary_verdict,
+    _paired_structural_medium_verdict,
     _production_parity,
     _session_sample_contract,
     run,
@@ -345,9 +348,11 @@ def test_structural_v2_canary_requires_common_first_full_evaluation_set(
     ]
 
 
-def test_structural_v2_canary_cannot_override_77o_host(
+@pytest.mark.parametrize("mode", ("canary", "medium"))
+def test_structural_v2_modes_cannot_override_77o_host(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    mode: str,
 ) -> None:
     monkeypatch.setattr(
         "scripts.run_minute_static_production_cem_v3.platform.node",
@@ -358,11 +363,163 @@ def test_structural_v2_canary_cannot_override_77o_host(
     ):
         run_financial(
             argparse.Namespace(
-                paired_structural_cem_v2_canary=True,
+                paired_structural_cem_v2_canary=mode == "canary",
+                paired_structural_cem_v2_medium=mode == "medium",
                 allow_noncanonical_host=True,
                 output_root=tmp_path,
             )
         )
+
+
+def test_structural_v2_medium_requires_financial_and_runtime_increment(
+    tmp_path: Path,
+) -> None:
+    uniform_arm, cem_arm = PAIRED_STRUCTURAL_CEM_V2_ARMS
+    for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS:
+        for checkpoint in range(
+            1, PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT + 1
+        ):
+            root = (
+                tmp_path
+                / "arms"
+                / arm
+                / f"checkpoint_{checkpoint:03d}"
+            )
+            root.mkdir(parents=True)
+            exact_ids = [
+                f"medium-{checkpoint}-{index}"
+                for index in range(
+                    PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
+                )
+            ]
+            pq.write_table(
+                pa.Table.from_pylist(
+                    [
+                        {
+                            "exact_identity": exact_id,
+                            "raw_attempt": index + 1,
+                        }
+                        for index, exact_id in enumerate(exact_ids)
+                    ]
+                ),
+                root / "proposal_ledger.parquet",
+            )
+            increment = (
+                float(checkpoint)
+                if arm == uniform_arm or checkpoint == 1
+                else float(checkpoint + 2)
+            )
+            pq.write_table(
+                pa.Table.from_pylist(
+                    [
+                        {
+                            "exact_identity": exact_id,
+                            "outcome_class": "EVALUATED",
+                            "signed_matched_increment": increment,
+                        }
+                        for exact_id in exact_ids
+                    ]
+                ),
+                root / "observation_ledger.parquet",
+            )
+            (root / "checkpoint_summary.json").write_text(
+                json.dumps(
+                    {
+                        "exact_duplicate_pairs": 0,
+                        "validation_reads": 0,
+                        "holdout_reads": 0,
+                        "forward_2026_reads": 0,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / "arm_state.json").write_text(
+                json.dumps(
+                    {
+                        "optimizer_state": (
+                            {
+                                "initialization_origin": (
+                                    "fresh_uniform_from_frozen_decision_catalog"
+                                ),
+                                "imported_source_campaign": "none",
+                                "current_state": "ADAPTED",
+                                "generation": 3,
+                                "reward_observation_count": 72,
+                            }
+                            if arm == cem_arm and checkpoint == 3
+                            else None
+                        )
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+    metrics = {
+        uniform_arm: {
+            "evaluated_pairs": 72,
+            "behavior_discovery_per_evaluated_pair": 0.50,
+            "selected_backend_host_cpu_median": 0.80,
+            "maximum_observed_cache_bytes": 2 * 1024**3,
+            "minimum_free_memory_bytes": 60 * 1024**3,
+            "full_coordinate_pairs_per_wall_hour": 100.0,
+        },
+        cem_arm: {
+            "evaluated_pairs": 72,
+            "behavior_discovery_per_evaluated_pair": 0.50,
+            "selected_backend_host_cpu_median": 0.82,
+            "maximum_observed_cache_bytes": 2 * 1024**3,
+            "minimum_free_memory_bytes": 58 * 1024**3,
+            "full_coordinate_pairs_per_wall_hour": 95.0,
+        },
+    }
+    passed = _paired_structural_medium_verdict(
+        tmp_path,
+        metrics,
+        prior_canary_exact={"canary-only"},
+    )
+    assert passed["status"] == (
+        "STRUCTURAL_CEM_V2_FINANCIALLY_QUALIFIED"
+    )
+    assert not passed["large_search_authorized"]
+    assert passed["ready_for_separate_large_search_authorization"]
+    assert passed["mechanical_contracts"][
+        "generation_one_exact_stream_parity"
+    ]
+
+    cem_first_proposals = (
+        tmp_path / "arms" / cem_arm / "checkpoint_001"
+        / "proposal_ledger.parquet"
+    )
+    rows = pq.read_table(cem_first_proposals).to_pylist()
+    rows[0]["exact_identity"] = "different-first-proposal"
+    pq.write_table(pa.Table.from_pylist(rows), cem_first_proposals)
+    unpaired = _paired_structural_medium_verdict(
+        tmp_path,
+        metrics,
+        prior_canary_exact={"canary-only"},
+    )
+    assert unpaired["status"] == "STRUCTURAL_CEM_V2_NOT_QUALIFIED"
+    assert not unpaired["mechanical_contracts"][
+        "generation_one_exact_stream_parity"
+    ]
+
+    cem_adaptive = (
+        tmp_path / "arms" / cem_arm / "checkpoint_002"
+        / "observation_ledger.parquet"
+    )
+    rows = pq.read_table(cem_adaptive).to_pylist()
+    for row in rows:
+        row["signed_matched_increment"] = -1.0
+    pq.write_table(pa.Table.from_pylist(rows), cem_adaptive)
+    failed = _paired_structural_medium_verdict(
+        tmp_path,
+        metrics,
+        prior_canary_exact={"canary-only"},
+    )
+    assert failed["status"] == "STRUCTURAL_CEM_V2_NOT_QUALIFIED"
+    assert not failed["financial_checks"][
+        "adaptive_positive_count_noninferior"
+    ]
 
 
 def test_session_sample_is_frozen_month_stratified_quarter() -> None:
