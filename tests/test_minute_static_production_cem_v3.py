@@ -46,6 +46,9 @@ from scripts.run_cn_phase3cm_streaming_qualification import (
     _sha256 as _streaming_sha256,
     _session_sample_calendar,
 )
+from scripts.run_targeted_formula_cem_qualification import (
+    _generate_checkpoint_pool,
+)
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -249,6 +252,50 @@ def test_structural_v2_fresh_policy_matches_uniform_without_exact_replay() -> No
             exact_seen=uniform_seen,
         ).candidate["decision_trace"]
     ) == 2
+
+
+def test_structural_v2_exact_exhaustion_closes_as_bounded_underfill() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+    catalog = projection._available_candidate_catalog(
+        EXPANDED_FORMULA_SPACE_ID
+    )
+    remaining = {
+        str(row["candidate"]["exact_identity"]) for row in catalog[:2]
+    }
+    exact_seen = {
+        str(row["candidate"]["exact_identity"])
+        for row in catalog
+        if str(row["candidate"]["exact_identity"]) not in remaining
+    }
+    proposals, funnel = _generate_checkpoint_pool(
+        projection=projection,
+        arm="arm_b_uniform_expanded",
+        policy=AvailableUniformPolicy(),
+        rng=np.random.default_rng(2026072503),
+        exact_seen=exact_seen,
+        checkpoint_id="checkpoint_003",
+        route_id="MINUTE_STATIC",
+        skeleton_id="cn.comp.v2.minute_static.field_spread",
+        behavior_probe_target=32,
+        availability_masked_sampling=True,
+        generator_policy_id="available_uniform_v1",
+        sampled_selection_cap=32,
+        full_pair_cap=24,
+    )
+    assert len(proposals) == 2
+    assert funnel["exact_unique_pairs"] == 2
+    assert funnel["underfill_reason"] == "EXACT_SUPPLY_EXHAUSTED"
 
 
 def test_structural_v2_canary_requires_common_first_full_evaluation_set(

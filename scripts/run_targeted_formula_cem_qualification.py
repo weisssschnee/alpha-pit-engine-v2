@@ -1122,6 +1122,7 @@ def _generate_checkpoint_pool(
     novel: list[dict[str, Any]] = []
     generation_exact: set[str] = set()
     raw = legal = duplicates = semantic_blocked = 0
+    exact_supply_exhausted = False
     started_wall = time.perf_counter()
     started_cpu = time.process_time()
     while (
@@ -1131,12 +1132,18 @@ def _generate_checkpoint_pool(
     ):
         raw += 1
         if availability_masked_sampling:
-            pair = projection.generate_available(
-                formula_space_id=formula_space_id,
-                policy=policy,
-                rng=rng,
-                exact_seen=exact_seen | generation_exact,
-            )
+            try:
+                pair = projection.generate_available(
+                    formula_space_id=formula_space_id,
+                    policy=policy,
+                    rng=rng,
+                    exact_seen=exact_seen | generation_exact,
+                )
+            except RuntimeError as exc:
+                if str(exc) != "MINUTE_STRUCTURAL_EXACT_SUPPLY_EXHAUSTED":
+                    raise
+                exact_supply_exhausted = True
+                break
         else:
             pair = projection.generate(
                 formula_space_id=formula_space_id,
@@ -1219,7 +1226,11 @@ def _generate_checkpoint_pool(
         "underfill_reason": (
             ""
             if len(novel) >= int(behavior_probe_target)
-            else "EXACT_SUPPLY_OR_ATTEMPT_CAP"
+            else (
+                "EXACT_SUPPLY_EXHAUSTED"
+                if exact_supply_exhausted
+                else "EXACT_SUPPLY_OR_ATTEMPT_CAP"
+            )
         ),
     }
     return novel, funnel
