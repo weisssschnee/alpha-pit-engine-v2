@@ -369,15 +369,13 @@ Disclosure Event and First-N Aggregated have no strict survivor in this frozen
 set. Any next development search should therefore target those materially
 uncovered mechanisms rather than rerun a global candidate race.
 
-Before any large search, run one small zero-financial-read integration probe
-that freezes the new route-local lane semantics and verifies official CatCMA
-full-population ask/decode/replay against the existing Grammar/compiler. Then,
-only under a separately frozen development budget, compare the unchanged
-RegistryDrivenGenerator baseline with CatCMA on materially uncovered routes;
-the failed route-wide qualification is evidence, not a reusable optimizer
-configuration. Do not promote legacy scheduler arm names into a second
-top-level authority, import old reward-bearing search memory, assign invented
-fresh/crossover/mutation percentages, or build MCTS/crossover/mutation
+The zero-financial-read route-lane integration probe is complete. Before any
+large search, use a separately frozen development budget to compare the
+unchanged RegistryDrivenGenerator baseline with CatCMA on materially uncovered
+routes; the failed route-wide qualification is evidence, not a reusable
+optimizer configuration. Do not promote legacy scheduler arm names into a
+second top-level authority, import old reward-bearing search memory, assign
+invented fresh/crossover/mutation percentages, or build MCTS/crossover/mutation
 machinery. Preserve the fixed 8 GiB evaluator cache cap and existing registry/
 compiler/Phase3CM authority. Broad Event remains a zero-budget frozen
 reference. Strict Stage A, candidate promotion, any additional holdout access,
