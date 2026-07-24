@@ -148,13 +148,16 @@ class RegistryDrivenGenerator:
         route_id: str,
         *,
         genes: Mapping[str, str],
+        formula_extension_id: str = "PRODUCTION",
     ) -> GeneratedPair:
         if self._compositional is None:
             raise RuntimeError(
                 "categorical genes require the compositional-v2 profile"
             )
         pair = self._compositional.propose_from_categorical_genes(
-            route_id, genes=genes
+            route_id,
+            genes=genes,
+            formula_extension_id=formula_extension_id,
         )
         shared = {
             "generator_authority": "RegistryDrivenGenerator",

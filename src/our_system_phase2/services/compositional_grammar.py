@@ -28,6 +28,10 @@ from our_system_phase2.services.unified_capability_registry import (
 GRAMMAR_VERSION = "cn_typed_compositional_grammar_v2"
 SUPPLEMENTAL_GRAMMAR_VERSION = "cn_typed_compositional_supplemental_v1"
 OPTIMIZER_GENE_SURFACE_VERSION = "cn_optimizer_skeleton_lane_gene_surface_v1"
+PRODUCTION_EXTENSION_ID = "PRODUCTION"
+PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID = (
+    "DISCLOSURE_PRE_EVENT_PAYLOAD_SIGN_V1"
+)
 LEGACY_ROUTE_WIDE_GENE_ROUTES = (
     "INTRADAY_STATE_TRANSITION",
     "DISCLOSURE_EVENT",
@@ -1801,6 +1805,7 @@ class CompositionalGrammarV2:
         attempt_index: int,
         seed: int,
         categorical_genes: Mapping[str, str] | None = None,
+        formula_extension_id: str = PRODUCTION_EXTENSION_ID,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         event_pool = self._route_pool(
             "DISCLOSURE_EVENT",
@@ -1853,8 +1858,30 @@ class CompositionalGrammarV2:
         elif name == "pre_event_path":
             if payload is None:  # pragma: no cover - lane schema owns this.
                 raise ValueError("DISCLOSURE_PAYLOAD_GENE_REQUIRED")
-            primary_expression = f"EventWindow({payload_ref},{event_ref},5,0)"
-            control_expression = f"Add({payload_ref},Mul(0,TimeSince({event_ref})))"
+            if formula_extension_id == PRODUCTION_EXTENSION_ID:
+                primary_expression = (
+                    f"EventWindow({payload_ref},{event_ref},5,0)"
+                )
+                control_expression = (
+                    f"Add({payload_ref},Mul(0,TimeSince({event_ref})))"
+                )
+            elif (
+                formula_extension_id
+                == PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID
+            ):
+                primary_expression = (
+                    f"EventWindow(Sign({payload_ref}),"
+                    f"{event_ref},5,0)"
+                )
+                control_expression = (
+                    f"Add(Sign({payload_ref}),"
+                    f"Mul(0,TimeSince({event_ref})))"
+                )
+            else:
+                raise ValueError(
+                    "TARGETED_FORMULA_EXTENSION_NOT_AUTHORIZED:"
+                    f"{formula_extension_id}"
+                )
             family = "PreEventPath"
             fields = (event, payload)
         elif name == "post_maturity_state":
@@ -1895,7 +1922,14 @@ class CompositionalGrammarV2:
             operator_family=family,
             fields=fields,
             condition_fields=(event,),
-            extra={"episode_policy": "UNIQUE_DISCLOSURE_EPISODE"},
+            extra={
+                "episode_policy": "UNIQUE_DISCLOSURE_EPISODE",
+                **(
+                    {"extension_id": formula_extension_id}
+                    if name == "pre_event_path"
+                    else {}
+                ),
+            },
         )
 
     def _market_regime_pair(
@@ -2426,8 +2460,23 @@ class CompositionalGrammarV2:
         route_id: str,
         *,
         genes: Mapping[str, str],
+        formula_extension_id: str = PRODUCTION_EXTENSION_ID,
     ) -> GeneratedCompositionalPair:
         """Construct one pair through the existing Grammar from exact genes."""
+
+        extension_id = str(formula_extension_id)
+        if extension_id != PRODUCTION_EXTENSION_ID and not (
+            route_id == "DISCLOSURE_EVENT"
+            and str(genes.get("skeleton_id") or "").endswith(
+                ".pre_event_path"
+            )
+            and extension_id
+            == PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID
+        ):
+            raise ValueError(
+                "TARGETED_FORMULA_EXTENSION_NOT_AUTHORIZED:"
+                f"{route_id}:{extension_id}"
+            )
 
         supplied_slots = tuple(map(str, genes))
         gene_space: dict[str, Any] | None = None
@@ -2479,6 +2528,7 @@ class CompositionalGrammarV2:
             "grammar": GRAMMAR_VERSION,
             "route_id": route_id,
             "genes": normalized,
+            "formula_extension_id": extension_id,
         }
         if is_skeleton_lane:
             gene_hash_payload["gene_surface"] = str(
@@ -2501,6 +2551,7 @@ class CompositionalGrammarV2:
                 attempt_index,
                 seed,
                 categorical_genes=normalized,
+                formula_extension_id=extension_id,
             )
         elif route_id == "INTRADAY_STATE_TRANSITION":
             primary, control = self._intraday_state_pair(
@@ -2549,6 +2600,7 @@ class CompositionalGrammarV2:
             ),
             "categorical_genes": normalized,
             "categorical_gene_hash": gene_hash,
+            "extension_id": extension_id,
         }
         if is_skeleton_lane:
             gene_binding.update(

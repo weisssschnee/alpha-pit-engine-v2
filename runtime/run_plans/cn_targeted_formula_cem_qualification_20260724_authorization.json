@@ -1,0 +1,26 @@
+{
+  "schema_version": "cn_targeted_formula_cem_qualification_authorization_v1",
+  "authorization_id": "CN_TARGETED_FORMULA_CEM_QUALIFICATION_20260724",
+  "status": "USER_AUTHORIZED_BOUNDED_EXECUTION",
+  "route_id": "DISCLOSURE_EVENT",
+  "skeleton_id": "cn.comp.v2.disclosure_event.pre_event_path",
+  "extension_id": "DISCLOSURE_PRE_EVENT_PAYLOAD_SIGN_V1",
+  "financial_arms": [
+    "arm_a_uniform_old",
+    "arm_b_uniform_expanded",
+    "arm_c_cem_expanded"
+  ],
+  "checkpoint_count": 3,
+  "full_coordinate_pair_cap_per_checkpoint": 24,
+  "minimum_evaluated_pairs_per_arm": 48,
+  "execution_host": "DESKTOP-77OPJ6F",
+  "evaluation_role": "development_train_only",
+  "validation": "FORBIDDEN",
+  "holdout": "SEALED",
+  "forward_2026": "SEALED",
+  "promotion": "FORBIDDEN",
+  "strict_stage_a": "NOT_AUTHORIZED",
+  "sampled_layer_policy": "DO_NOT_CREATE_SURROGATE_IF_NO_EXISTING_AUTHORITY; RECORD_SEMANTICS_BLOCK",
+  "large_search": "QUALIFICATION_ONLY_NOT_AUTOMATICALLY_LAUNCHED",
+  "graph_update": "ONLY_AFTER_DURABLE_CAPABILITY_ACCEPTANCE"
+}
