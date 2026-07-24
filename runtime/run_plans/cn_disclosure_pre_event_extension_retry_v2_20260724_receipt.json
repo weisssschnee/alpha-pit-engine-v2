@@ -1,0 +1,188 @@
+{
+  "schema_version": "cn_disclosure_pre_event_extension_retry_v2_receipt_v1",
+  "status": "QUALIFICATION_COMPLETE_NOT_READY",
+  "repo_sha": "aaed2f26d8a687cd19e3beb7cf822159d6c779ce",
+  "branch": "feature/search-policy-qualification",
+  "host": "DESKTOP-77OPJ6F",
+  "task_id": "lanjob_20260724_180737_aaed2f2",
+  "campaign_root": "D:\\ChengboRemote\\runtime\\cn_disclosure_pre_event_extension_retry_v2_20260724_aaed2f2_216p",
+  "authorization": {
+    "path": "runtime/run_plans/cn_disclosure_pre_event_extension_retry_v2_authorization.json",
+    "sha256": "bd2359839a698b0f971d562a4b6529e588b5968ea10da954ad2f8b7695286e0e"
+  },
+  "target": {
+    "route_id": "DISCLOSURE_EVENT",
+    "skeleton_id": "cn.comp.v2.disclosure_event.pre_event_path",
+    "old_structure": "EventWindow(payload,event,5,0)",
+    "accepted_extension": "DISCLOSURE_PRE_EVENT_PAYLOAD_CSRANK_V1",
+    "accepted_structure": "EventWindow(CSRank(payload),event,5,0)",
+    "historical_sign_extension": "REJECTED_FORMULA_EXTENSION"
+  },
+  "reused_old_authority": {
+    "mode": "VERIFIED_REUSED_NOT_RECOMPUTED",
+    "post_archive_exact_supply": 272,
+    "behavior_probe_candidates": 256,
+    "behavior_unique_pairs": 126
+  },
+  "extension_queue": {
+    "DISCLOSURE_PRE_EVENT_PAYLOAD_CSRANK_V1": {
+      "static_gate": "PASS",
+      "behavior_gate": "PASS",
+      "behavior_probe_candidates": 256,
+      "behavior_unique_pairs": 124,
+      "required_behavior_unique_pairs": 114,
+      "old_behavior_retention": 0.9841269841269841
+    },
+    "DISCLOSURE_PRE_EVENT_PAYLOAD_ABS_V1": {
+      "static_gate": "NOT_RUN_PRIOR_CANDIDATE_ACCEPTED",
+      "behavior_gate": "NOT_RUN_PRIOR_CANDIDATE_ACCEPTED"
+    }
+  },
+  "financial_arms": {
+    "arm_a_uniform_old": {
+      "evaluated_pairs": 57,
+      "positive_matched_pairs": 28,
+      "positive_matched_pairs_per_wall_hour": 1414.5063579808275,
+      "median_signed_matched_increment": -0.010357980429229308,
+      "behavior_family_count": 3,
+      "behavior_discovery_per_evaluated_pair": 0.05263157894736842,
+      "ast_shape_count": 1,
+      "full_coordinate_pairs_per_wall_hour": 2879.530800175256,
+      "full_coordinate_pairs_per_effective_cpu_hour": 1442.7196625522101
+    },
+    "arm_b_uniform_expanded": {
+      "evaluated_pairs": 72,
+      "positive_matched_pairs": 29,
+      "positive_matched_pairs_per_wall_hour": 1510.3300630620397,
+      "median_signed_matched_increment": -0.10138617061677868,
+      "behavior_family_count": 3,
+      "behavior_discovery_per_evaluated_pair": 0.041666666666666664,
+      "ast_shape_count": 2,
+      "full_coordinate_pairs_per_wall_hour": 3749.7849841540296,
+      "full_coordinate_pairs_per_effective_cpu_hour": 1816.390670477787
+    },
+    "arm_c_cem_expanded": {
+      "evaluated_pairs": 72,
+      "positive_matched_pairs": 26,
+      "positive_matched_pairs_per_wall_hour": 1207.5067381052481,
+      "median_signed_matched_increment": -0.11278898793530212,
+      "behavior_family_count": 2,
+      "behavior_discovery_per_evaluated_pair": 0.027777777777777776,
+      "ast_shape_count": 2,
+      "full_coordinate_pairs_per_wall_hour": 3343.864813214533,
+      "full_coordinate_pairs_per_effective_cpu_hour": 1673.5283000738686,
+      "cem_updated_context_count": 9
+    }
+  },
+  "comparison": {
+    "minimum_support_all_arms": true,
+    "formula_checks": {
+      "positive_per_wall_hour": true,
+      "median_increment": false,
+      "behavior_discovery": false,
+      "ast_shape_diversity": true
+    },
+    "cem_checks": {
+      "positive_per_wall_hour_15pct": false,
+      "median_increment": false,
+      "behavior_discovery": false,
+      "checkpoint_2_3_supply": true,
+      "cem_table_updated": true,
+      "no_category_collapse": true
+    }
+  },
+  "sampled_evaluator_authority": {
+    "checked_json_files": 60,
+    "qualified_current_authorities": 0,
+    "status": "NOT_AVAILABLE_NO_EXISTING_AUTHORITY",
+    "surrogate_created": false
+  },
+  "fresh_large_state_parity": {
+    "status": "PASS",
+    "state_origin": "fresh_uniform_from_frozen_catalog",
+    "generation": 0,
+    "reward_observation_count": 0,
+    "source_campaign": "none",
+    "state_hash": "3bb02463551cc15e5c783e57a8a356bd8ba88c5fd559438c6c60585cc8c79093"
+  },
+  "performance": {
+    "status": "FAIL",
+    "stock_session_effective_cores_median_by_arm": [
+      1.9959045924980932,
+      2.0644154614423775,
+      1.998092779827468
+    ],
+    "stock_session_host_logical_cpu_occupancy_median_by_arm": [
+      0.06237201851556541,
+      0.0645129831700743,
+      0.06244039936960837
+    ],
+    "minimum_free_memory_bytes": 245071872,
+    "maximum_cache_peak_bytes": 2878792,
+    "maximum_peak_rss_bytes": 447946752,
+    "pair_batch_max": 4,
+    "memory_incident": {
+      "classification": "INFRASTRUCTURE_ONLY_NOT_ROUTE_HEALTH",
+      "cause": "DUPLICATED_STALE_RECURSIVE_RESULT_TREE_MONITORS",
+      "orphan_monitor_count": 2,
+      "orphan_working_set_bytes": 77817200640,
+      "free_memory_before_resolution_bytes": 2657837056,
+      "free_memory_after_resolution_bytes": 85720412160,
+      "current_campaign_process_terminated": false,
+      "old_evidence_files_modified": false
+    }
+  },
+  "post_closure_operational_cleanup": {
+    "status": "PASS",
+    "classification": "INFRASTRUCTURE_ONLY_AFTER_CAMPAIGN_CLOSED",
+    "cause": "RECURSIVE_RESULT_TREE_MONITOR_OBJECT_RETENTION",
+    "terminated_monitor_processes": 3,
+    "free_memory_before_bytes": 25139367936,
+    "free_memory_after_bytes": 88133738496,
+    "campaign_artifacts_modified": false,
+    "scheduled_monitor_tasks_remaining": 0,
+    "live_monitor_processes_remaining": 0
+  },
+  "final_decision": {
+    "EXTENSION_CSRANK_STATIC_GATE": "PASS",
+    "EXTENSION_CSRANK_BEHAVIOR_GATE": "PASS",
+    "EXTENSION_ABS_STATIC_GATE": "NOT_RUN_PRIOR_CANDIDATE_ACCEPTED",
+    "EXTENSION_ABS_BEHAVIOR_GATE": "NOT_RUN_PRIOR_CANDIDATE_ACCEPTED",
+    "ACCEPTED_EXTENSION": "DISCLOSURE_PRE_EVENT_PAYLOAD_CSRANK_V1",
+    "SAMPLED_FULL_CONTRACT_PARITY": "NOT_AVAILABLE_NO_EXISTING_AUTHORITY",
+    "FORMULA_SPACE_INCREMENT": "NOT_QUALIFIED",
+    "CEM_SEARCH_INCREMENT": "NOT_QUALIFIED",
+    "PERFORMANCE_CONTRACT": "FAIL",
+    "TARGET_FAMILY_LARGE_SEARCH_READINESS": "SEMANTICS_BLOCKED"
+  },
+  "verification": {
+    "status": "PASS",
+    "root_artifacts_verified": 34,
+    "batch_manifests_verified": 9,
+    "batch_artifacts_verified": 135,
+    "access_receipts_verified": 9,
+    "prior_checkpoint_chain_ok": true,
+    "launch_event_count": 1,
+    "scheduled_trigger_count": 0,
+    "writer_status": "CLOSED",
+    "process_exit_code": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "promotion": "FORBIDDEN"
+  },
+  "remote_artifact_sha256": {
+    "artifact_manifest.json": "164b0c5cce02a7f9f6c781d6fcdec114da9bc102424330bbe074287fb7baba8d",
+    "final_decision.json": "74ca191552905b0a74097c2c29d2f06be25f5832f83683b0b15c83e61507815f",
+    "qualification_metrics.json": "16dd5cb550cbbde0e417a212f1bc1bea57bfa8d76a586ab82293f36f44538027",
+    "extension_qualification.json": "59a1d9ec7bd794aed4b9cb9dc13444096fd71d7ab9b77a2afe81ceb2466d3154",
+    "fresh_large_search_state_parity.json": "7085e2b3df08605e49345418055797f239f7465a620cce48ebfaac991d667718",
+    "sampled_evaluator_authority_resolution.json": "d62e9e59b9965021f999e830e9e5ad6ddc1e94cbc7de54371e28b134da65ae1a",
+    "orphan_monitor_incident_manifest.json": "37bac59997ffeaa4f266c90d48550186d142823c614c5e7f9b475ec8db85121f",
+    "post_closure_monitor_incident_manifest.json": "de3ba01c51f83b05bdf819bbf27e2b3a80b43337c57b481e68811582cf93071f",
+    "independent_verification.json": "ebc53bed2c659e41fb5a44bea0333a17c15a965048dd2cf126fdfc2ece9918c9"
+  },
+  "promotion": "FORBIDDEN",
+  "graph_update": "NOT_REQUIRED_NO_DURABLE_ACTIVE_RELATION_CHANGE",
+  "obsidian_update": "NOT_REQUIRED_NO_ACCEPTED_PROJECT_AUTHORITY_CHANGE"
+}

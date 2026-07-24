@@ -64,3 +64,23 @@ full-host-native SMT ceiling. Therefore the performance result may be
 large-search launcher would need evidence-backed pair-level concurrency or
 another already-qualified scheduling mechanism; this qualification does not
 handcraft one.
+
+## V2 measured result
+
+Retry V2 completed 201 full-coordinate pairs: 57 OLD uniform, 72 expanded
+uniform and 72 expanded CEM. The three arms measured 2.00/2.06/2.00 median
+effective stock-session cores, 2,879.53/3,749.78/3,343.86 pairs/hour and
+1,442.72/1,816.39/1,673.53 pairs per estimated effective CPU-hour. Whole-host
+occupancy remained 6.24%/6.45%/6.24%, so the frozen 75% gate was not met.
+
+The final performance result is `FAIL`, rather than `PARTIAL`, because two
+duplicated stale recursive monitors from the historical V1 root drove sampled
+free memory below 24 GiB before they were identified. They were unrelated to
+the evaluator, had no children and together held about 77.82 GB working set.
+Their termination restored free memory to 79.83 GiB without stopping the
+campaign or altering old evidence. The incident remains immutable run-health
+evidence and does not change any financial comparison.
+
+Cache peak remained below 2.75 MiB, pair batch remained four, peak evaluator
+RSS remained below 428 MiB, all nine Phase3CM receipts completed and all sealed
+data reads remained zero. No separate performance replay is authorized.

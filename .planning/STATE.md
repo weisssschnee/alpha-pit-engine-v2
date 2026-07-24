@@ -307,35 +307,50 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The targeted formula-space/CEM qualification selected `DISCLOSURE_EVENT` /
-`cn.comp.v2.disclosure_event.pre_event_path`. The OLD family passed its frozen
-historical post-archive supply gate with 272 exact-unique and 126
-behavior-unique pairs versus required minima 144/72. Legacy parity and the
-static compiler/control/canonical/AST-shape gates also passed: the comparable
-1,000-attempt spaces contained 272 OLD and 544 expanded exact identities and
-one versus two AST shapes.
+The targeted formula-space/CEM retry selected `DISCLOSURE_EVENT` /
+`cn.comp.v2.disclosure_event.pre_event_path` and reused the frozen OLD
+authority without recomputation. `EventWindow(CSRank(payload),event,5,0)`
+passed the static gate and retained 124/256 behavior-unique pairs versus OLD
+126/256, above the frozen 114-pair / 90% floor. It became the first accepted
+extension for financial qualification, so Abs was correctly not run. The
+historical Sign extension remains rejected at 111/256 and is excluded from the
+active catalog and CEM.
 
-The single frozen `EventWindow(Sign(payload),event,5,0)` extension did not pass
-the independent behavior gate. The deterministic 256-candidate probes retained
-126 OLD versus 111 expanded behavior-unique pairs, so expanded behavior
-discovery was 88.0952% of OLD against the frozen 90% minimum. The correct hard
-blocker is `FORMULA_SPACE_INCREMENT_NOT_PROVEN`, not target-family supply
-exhaustion. No sampled or full-coordinate financial pair ran, CEM performed no
-update, and validation, holdout, 2026, promotion and persistent optimizer-state
-writes remained zero.
+The three-arm full-coordinate comparison completed 57 OLD-uniform, 72
+expanded-uniform and 72 expanded-CEM pairs across nine immutable checkpoints.
+All arms met financial support. Expanded uniform improved positive pairs/hour
+and AST-shape diversity, but its median matched increment and behavior
+discovery regressed; `FORMULA_SPACE_INCREMENT=NOT_QUALIFIED`. CEM updated nine
+contexts without category collapse and retained checkpoint 2/3 supply, but
+failed the 15% positive-throughput, median-increment and behavior-discovery
+checks; `CEM_SEARCH_INCREMENT=NOT_QUALIFIED`.
 
-The run also closed a narrower engineering drift: canonical `EventWindow` had
-been legal in the typed registry, Grammar and compiler but absent from the
-Phase3CM streaming executor. The executor now reuses the existing canonical
-semantics with exact reference, cross-block and serialized-continuation parity.
-This repair does not qualify the rejected formula extension or authorize large
-search. The compact evidence is
+No qualified current development sampled-evaluator authority exists in the
+checked run-plan/config authority surface, and no surrogate was created.
+Fresh-uniform large-state construction passed deterministic generation-zero
+parity, but large-search readiness is `SEMANTICS_BLOCKED`. Performance is
+`FAIL`: the stock-session-only path did not meet 75% whole-host occupancy and
+two duplicated stale recursive V1 monitors drove sampled free memory below
+24 GiB. The orphan monitors were terminated without touching the active
+campaign or old evidence and free memory recovered to 79.83 GiB. This remains
+infrastructure-only run health, not financial route health.
+Post-closure recursive monitor processes were also removed after exact
+command-line checks; free memory returned to 82.08 GiB and no matching live or
+scheduled monitor remained. Campaign artifacts and metrics were unchanged.
+
+Independent closure verified 34 root artifacts, all nine immutable manifests,
+135 batch artifacts, nine Phase3CM receipts and the checkpoint chains. Launch
+count was one, scheduled triggers zero, writer closed, process exit zero, and
+validation/holdout/2026 reads remained zero. Compact evidence is in
+`runtime/run_plans/cn_disclosure_pre_event_extension_retry_v2_20260724_receipt.json`
+and
 `reports/cn_targeted_formula_cem_qualification_20260724/QUALIFICATION_RESULT.md`.
-Graph and Obsidian remain unchanged because no durable search capability was
-accepted.
+Graph and Obsidian remain unchanged because no durable active search authority
+or large-search-ready capability was accepted.
 
-There is no remaining global route-supply, ontology-authority,
-train-to-validation or acceleration-readiness blocker in the completed campaign.
+There is no remaining global route-supply, ontology-authority or
+train-to-validation blocker in the earlier completed core-pack campaign.
+Targeted formula/CEM large-search readiness remains blocked as recorded above.
 Its preserved cache, memory-headroom and monitor-path incidents are run-health
 facts, not financial route failures. The 93 unresolved rows in the historical V1
 archive remain immutable and are not retroactively rewritten. On 2026-07-23 the
@@ -384,11 +399,15 @@ machinery may be handcrafted.
 
 ## Next action
 
-Do not continue to CEM or Phase3CM with the rejected `Sign` extension, relax
-the 90% gate, or retry it with alternate seeds. A later iteration requires a
-newly frozen same-signature extension from the existing operator authority and
-must first pass the same deterministic 256-candidate behavior gate. Do not
-update Graph or Obsidian unless that later capability is explicitly accepted.
+Do not rerun Sign, CSRank, OLD supply, the nine financial checkpoints or the
+performance campaign. Do not continue to Abs automatically: CSRank already
+consumed the frozen first-pass queue rule, and the resulting financial
+comparison is complete. The CEM probability tables are failed qualification
+evidence, not reusable large-search initialization. Any later extension or
+optimizer trial requires a separately frozen target and budget; it must reuse
+the same registry/compiler/evaluator authority and may not create a sampled
+surrogate. Do not update Graph or Obsidian unless a later durable capability is
+explicitly accepted.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.
