@@ -46,8 +46,11 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   usable lanes and 72,307 bounded categorical points. Five additional
   skeletons remain explicitly blocked by missing leg/representation metadata
   or undeclared size roots rather than guessing from field names. This is
-  source/test qualification only: it used no financial, validation, holdout or
-  2026 reads and does not qualify CatCMA or authorize a large search.
+  source/test qualification only: the local relevant suite passed 56 tests
+  (four official-package tests skipped locally), while the exact patched files
+  passed 17/17 tests on 77o against the frozen official `cmaes 0.13.0` wheel.
+  It used no financial, validation, holdout or 2026 reads and does not qualify
+  CatCMA financially or authorize a large search.
 - `cn_core_pack_development_discovery_v1` is now the active proposal-root
   ontology authority for bounded development discovery. It remains subordinate
   to the unified registry `route_id` authority for route eligibility and
