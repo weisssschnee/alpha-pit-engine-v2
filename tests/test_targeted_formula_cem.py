@@ -1,13 +1,21 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from scripts.run_targeted_formula_cem_qualification import (
+    _acquire_campaign_writer,
+    _close_campaign_writer,
+    _comparison_verdict,
+    _fresh_large_search_state,
+    _fresh_large_search_state_parity,
+    _post_archive_exact_unique_rows,
     _qualification_gate_status,
+    _resolve_sampled_evaluator_authority,
 )
 from our_system_phase2.services.categorical_cem import (
     CategoricalCEMPolicy,
@@ -78,6 +86,69 @@ def test_qualification_gate_classifies_supply_and_formula_failures_separately(
     )
 
 
+def test_behavior_probe_input_is_exact_and_canonical_unique() -> None:
+    rows = [
+        {
+            "legal": True,
+            "exact_identity": "exact-a",
+            "canonical_identity": "canonical-1",
+        },
+        {
+            "legal": True,
+            "exact_identity": "exact-b",
+            "canonical_identity": "canonical-1",
+        },
+        {
+            "legal": True,
+            "exact_identity": "exact-c",
+            "canonical_identity": "canonical-2",
+        },
+    ]
+    selected = _post_archive_exact_unique_rows(rows, {"exact-c"})
+    assert selected == [rows[0]]
+
+
+def test_single_campaign_writer_rejects_duplicate(
+    tmp_path: Path,
+) -> None:
+    task_id = "lanjob-test-v2"
+    receipt = {
+        "task_id": task_id,
+        "launcher_mode": "A_IMMEDIATE_START_NO_SCHEDULED_TRIGGER",
+        "launch_event_count": 1,
+        "campaign_root": tmp_path.as_posix(),
+    }
+    (tmp_path / "campaign_launch_receipt.json").write_text(
+        json.dumps(receipt),
+        encoding="utf-8",
+    )
+    _, lock_path = _acquire_campaign_writer(
+        output_root=tmp_path.resolve(),
+        task_id=task_id,
+    )
+    with pytest.raises(
+        RuntimeError,
+        match="DUPLICATE_CAMPAIGN_LAUNCH_OR_ACTIVE_WRITER",
+    ):
+        _acquire_campaign_writer(
+            output_root=tmp_path.resolve(),
+            task_id=task_id,
+        )
+    _close_campaign_writer(lock_path, task_id=task_id)
+    assert json.loads(lock_path.read_text())["status"] == "CLOSED"
+
+
+def test_sampled_authority_resolution_is_explicitly_absent(
+    tmp_path: Path,
+) -> None:
+    resolution, path = _resolve_sampled_evaluator_authority(tmp_path)
+    assert path.is_file()
+    assert resolution["status"] == (
+        "NOT_AVAILABLE_NO_EXISTING_AUTHORITY"
+    )
+    assert resolution["surrogate_created"] is False
+
+
 def _projection(
     extension_id: str = PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
 ) -> TargetedFormulaProjection:
@@ -98,6 +169,108 @@ def _projection(
         skeleton_id=SKELETON_ID,
         extension_id=extension_id,
     )
+
+
+def test_fresh_large_state_is_uniform_and_reproducible() -> None:
+    projection = _projection()
+    state = _fresh_large_search_state(projection, seed=2026072518)
+    parity = _fresh_large_search_state_parity(
+        projection, seed=2026072518
+    )
+    assert state["state_origin"] == (
+        "fresh_uniform_from_frozen_catalog"
+    )
+    assert state["generation"] == 0
+    assert state["reward_observation_count"] == 0
+    assert state["source_campaign"] == "none"
+    assert parity["status"] == "PASS"
+
+
+def _comparison_arm(
+    arm: str,
+    *,
+    evaluated_pairs: int,
+    active_checkpoint_count: int,
+    host_cpu: float = 0.80,
+) -> dict[str, object]:
+    return {
+        "arm": arm,
+        "evaluated_pairs": evaluated_pairs,
+        "active_checkpoint_count": active_checkpoint_count,
+        "positive_matched_pairs_per_wall_hour": 1.0,
+        "median_signed_matched_increment": 0.1,
+        "behavior_discovery_per_evaluated_pair": 0.5,
+        "ast_shape_count": 2 if "old" not in arm else 1,
+        "exact_unique_by_checkpoint": [1, 1, 1],
+        "behavior_unique_by_checkpoint": [1, 1, 1],
+        "cem_updated_context_count": 1,
+        "maximum_token_share": 0.5,
+        "minimum_free_memory_bytes": 25 * 1024**3,
+        "maximum_observed_cache_bytes": 1024,
+        "stock_session_host_cpu_median": host_cpu,
+        "checkpoint_summaries": [
+            {
+                "runtime_gate_status": "PASS",
+                "full_coordinate_pairs": 1,
+            }
+        ],
+    }
+
+
+def test_missing_sampled_authority_caps_readiness_at_semantics() -> None:
+    verdict = _comparison_verdict(
+        arm_a=_comparison_arm(
+            "arm_a_uniform_old",
+            evaluated_pairs=0,
+            active_checkpoint_count=0,
+        ),
+        arm_b=_comparison_arm(
+            "arm_b_uniform_expanded",
+            evaluated_pairs=0,
+            active_checkpoint_count=0,
+        ),
+        arm_c=_comparison_arm(
+            "arm_c_cem_expanded",
+            evaluated_pairs=0,
+            active_checkpoint_count=0,
+        ),
+        static_status="PASS",
+        behavior_status="PASS",
+        sampled_full_contract=(
+            "NOT_AVAILABLE_NO_EXISTING_AUTHORITY"
+        ),
+    )
+    assert verdict["TARGET_FAMILY_LARGE_SEARCH_READINESS"] == (
+        "SEMANTICS_BLOCKED"
+    )
+
+
+def test_performance_cpu_gate_requires_every_arm() -> None:
+    verdict = _comparison_verdict(
+        arm_a=_comparison_arm(
+            "arm_a_uniform_old",
+            evaluated_pairs=48,
+            active_checkpoint_count=2,
+        ),
+        arm_b=_comparison_arm(
+            "arm_b_uniform_expanded",
+            evaluated_pairs=48,
+            active_checkpoint_count=2,
+            host_cpu=0.50,
+        ),
+        arm_c=_comparison_arm(
+            "arm_c_cem_expanded",
+            evaluated_pairs=48,
+            active_checkpoint_count=2,
+        ),
+        static_status="PASS",
+        behavior_status="PASS",
+        sampled_full_contract="PASS",
+    )
+    assert verdict["performance_utilization_checks"][
+        "all_arms_logical_cpu_occupancy_at_least_75_percent"
+    ] is False
+    assert verdict["PERFORMANCE_CONTRACT"] == "PARTIAL"
 
 
 def test_catalog_is_read_only_projection_of_authority() -> None:

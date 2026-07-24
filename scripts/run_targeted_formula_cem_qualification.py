@@ -21,6 +21,7 @@ import copy
 import itertools
 import json
 import math
+import os
 import platform
 import re
 import statistics
@@ -307,17 +308,161 @@ def _post_archive_exact_unique_rows(
     historical_exact: set[str],
 ) -> list[dict[str, Any]]:
     selected: dict[str, dict[str, Any]] = {}
+    canonical_seen: set[str] = set()
     for raw in rows:
         row = dict(raw)
         exact_identity = str(row.get("exact_identity") or "")
+        canonical_identity = str(row.get("canonical_identity") or "")
         if (
             not bool(row.get("legal"))
             or not exact_identity
+            or not canonical_identity
             or exact_identity in historical_exact
+            or canonical_identity in canonical_seen
         ):
             continue
         selected.setdefault(exact_identity, row)
+        canonical_seen.add(canonical_identity)
     return list(selected.values())
+
+
+def _acquire_campaign_writer(
+    *,
+    output_root: Path,
+    task_id: str,
+) -> tuple[Path, Path]:
+    receipt_path = output_root / "campaign_launch_receipt.json"
+    if not receipt_path.is_file():
+        raise RuntimeError("CAMPAIGN_LAUNCH_RECEIPT_MISSING")
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8-sig"))
+    expected = {
+        "task_id": task_id,
+        "launcher_mode": "A_IMMEDIATE_START_NO_SCHEDULED_TRIGGER",
+        "launch_event_count": 1,
+    }
+    if any(receipt.get(key) != value for key, value in expected.items()):
+        raise RuntimeError("CAMPAIGN_LAUNCH_RECEIPT_DRIFT")
+    if (
+        Path(str(receipt.get("campaign_root") or "")).resolve()
+        != output_root
+    ):
+        raise RuntimeError("CAMPAIGN_LAUNCH_ROOT_DRIFT")
+    if (output_root / "artifact_manifest.json").exists():
+        raise RuntimeError("CAMPAIGN_ALREADY_CLOSED")
+    lock_path = output_root / "campaign_writer.lock"
+    lock = {
+        "schema_version": "cn_single_campaign_writer_lock_v1",
+        "status": "ACTIVE",
+        "task_id": task_id,
+        "pid": os.getpid(),
+        "host": platform.node(),
+        "campaign_root": output_root.as_posix(),
+        "launch_receipt_sha256": _sha256(receipt_path),
+    }
+    try:
+        with lock_path.open("x", encoding="utf-8", newline="\n") as handle:
+            json.dump(lock, handle, ensure_ascii=False, indent=2)
+            handle.write("\n")
+    except FileExistsError as exc:
+        raise RuntimeError(
+            "DUPLICATE_CAMPAIGN_LAUNCH_OR_ACTIVE_WRITER"
+        ) from exc
+    return receipt_path, lock_path
+
+
+def _close_campaign_writer(lock_path: Path, *, task_id: str) -> None:
+    lock = json.loads(lock_path.read_text(encoding="utf-8-sig"))
+    if (
+        str(lock.get("status") or "") != "ACTIVE"
+        or str(lock.get("task_id") or "") != task_id
+        or int(lock.get("pid") or -1) != os.getpid()
+    ):
+        raise RuntimeError("CAMPAIGN_WRITER_LOCK_OWNERSHIP_DRIFT")
+    _write_json(
+        lock_path,
+        {
+            **lock,
+            "status": "CLOSED",
+            "closed_by_pid": os.getpid(),
+        },
+    )
+
+
+def _resolve_sampled_evaluator_authority(
+    output_root: Path,
+) -> tuple[dict[str, Any], Path]:
+    checked_roots = (
+        REPO / "runtime" / "run_plans",
+        REPO / "config",
+    )
+    checked_files = 0
+    declared = []
+    qualified = []
+    for root in checked_roots:
+        if not root.is_dir():
+            continue
+        for path in sorted(root.glob("*.json")):
+            checked_files += 1
+            try:
+                payload = json.loads(
+                    path.read_text(encoding="utf-8-sig")
+                )
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if (
+                str(payload.get("authority_role") or "")
+                != "development_sampled_evaluator"
+            ):
+                continue
+            row = {
+                "path": path.relative_to(REPO).as_posix(),
+                "sha256": _sha256(path),
+                "lifecycle_state": str(
+                    payload.get("lifecycle_state") or ""
+                ),
+                "evidence_state": str(
+                    payload.get("evidence_state") or ""
+                ),
+                "evaluation_role": str(
+                    payload.get("evaluation_role") or ""
+                ),
+            }
+            declared.append(row)
+            if (
+                row["lifecycle_state"] in {"ACTIVE", "CURRENT"}
+                and row["evidence_state"] == "QUALIFIED"
+                and row["evaluation_role"] == "development"
+            ):
+                qualified.append(row)
+    result = {
+        "schema_version": (
+            "cn_sampled_evaluator_authority_resolution_v1"
+        ),
+        "status": (
+            "PASS_EXISTING_QUALIFIED_AUTHORITY"
+            if len(qualified) == 1
+            else "NOT_AVAILABLE_NO_EXISTING_AUTHORITY"
+        ),
+        "authority_role": "development_sampled_evaluator",
+        "checked_roots": [
+            root.relative_to(REPO).as_posix() for root in checked_roots
+        ],
+        "checked_json_file_count": checked_files,
+        "declared_authorities": declared,
+        "qualified_current_authorities": qualified,
+        "surrogate_created": False,
+    }
+    if len(qualified) > 1:
+        raise RuntimeError("MULTIPLE_SAMPLED_EVALUATOR_AUTHORITIES")
+    path = _write_json(
+        output_root / "sampled_evaluator_authority_resolution.json",
+        result,
+    )
+    if qualified:
+        raise RuntimeError(
+            "SAMPLED_EVALUATOR_AUTHORITY_PRESENT_REQUIRES_PARITY_PATH"
+        )
+    return result, path
 
 
 def _legacy_parity(
@@ -1425,6 +1570,19 @@ def _arm_metrics(
         if str(row.get("portfolio_behavior_family_id") or "")
     } - initial_behavior_families
     token_counts = Counter(tokens)
+    effective_cores_median = (
+        statistics.median(
+            float(row.get("effective_compute_cores") or 0.0)
+            for row in runtime_rows
+        )
+        if runtime_rows
+        else None
+    )
+    effective_cpu_hours = (
+        wall * float(effective_cores_median) / 3600.0
+        if effective_cores_median is not None
+        else 0.0
+    )
     return {
         "arm": arm,
         "scheduled_full_coordinate_pairs": sum(
@@ -1443,6 +1601,19 @@ def _arm_metrics(
         "evaluated_pairs_per_wall_hour": len(evaluated)
         * 3600
         / max(1.0, wall),
+        "full_coordinate_pairs_per_wall_hour": len(evaluated)
+        * 3600
+        / max(1.0, wall),
+        "estimated_effective_cpu_hours": effective_cpu_hours,
+        "full_coordinate_pairs_per_effective_cpu_hour": (
+            len(evaluated) / max(1e-12, effective_cpu_hours)
+            if effective_cpu_hours > 0.0
+            else None
+        ),
+        "effective_cpu_hour_method": (
+            "total_wall_seconds_x_"
+            "stock_session_effective_cores_median"
+        ),
         "median_signed_matched_increment": (
             statistics.median(increments) if increments else None
         ),
@@ -1470,14 +1641,7 @@ def _arm_metrics(
             default=0,
         ),
         "maximum_observed_cache_bytes": max(cache_peaks, default=0),
-        "stock_session_effective_cores_median": (
-            statistics.median(
-                float(row.get("effective_compute_cores") or 0.0)
-                for row in runtime_rows
-            )
-            if runtime_rows
-            else None
-        ),
+        "stock_session_effective_cores_median": effective_cores_median,
         "stock_session_host_cpu_median": (
             statistics.median(
                 float(row.get("host_logical_cpu_occupancy") or 0.0)
@@ -1501,6 +1665,7 @@ def _comparison_verdict(
     arm_c: Mapping[str, Any],
     static_status: str,
     behavior_status: str,
+    sampled_full_contract: str,
 ) -> dict[str, Any]:
     support = {
         arm["arm"]: (
@@ -1604,7 +1769,7 @@ def _comparison_verdict(
         "pair_batch_at_most_4": max(PAIR_BATCH_SIZES.values()) <= 4,
     }
     performance_utilization_checks = {
-        "logical_cpu_occupancy_at_least_75_percent": any(
+        "all_arms_logical_cpu_occupancy_at_least_75_percent": all(
             float(arm.get("stock_session_host_cpu_median") or 0.0)
             >= 0.75
             for arm in (arm_a, arm_b, arm_c)
@@ -1621,9 +1786,6 @@ def _comparison_verdict(
             else "FAIL"
         )
     )
-    sampled_full_contract = (
-        "NOT_AVAILABLE_NO_EXISTING_AUTHORITY"
-    )
     readiness_checks = {
         "static_formula_space": static_status == "PASS",
         "behavior_space": behavior_status == "PASS",
@@ -1638,13 +1800,13 @@ def _comparison_verdict(
         "READY"
         if all(readiness_checks.values())
         else (
-            "COMPARISON_SUPPORT_BLOCKED"
-            if not readiness_checks["financial_support"]
+            "SEMANTICS_BLOCKED"
+            if not readiness_checks["sampled_full_contract"]
             else (
-                "SEMANTICS_BLOCKED"
-                if not readiness_checks["sampled_full_contract"]
+                "COMPARISON_SUPPORT_BLOCKED"
+                if not readiness_checks["financial_support"]
                 else (
-                "FORMULA_SPACE_BLOCKED"
+                    "FORMULA_SPACE_BLOCKED"
                 if not readiness_checks["formula_increment"]
                 else (
                     "SEARCH_POLICY_BLOCKED"
@@ -1690,12 +1852,48 @@ def _fresh_large_search_state(
     state = policy.state_dict(rng=rng)
     state.update(
         {
+            "optimizer_state_origin": state["state_origin"],
+            "state_origin": "fresh_uniform_from_frozen_catalog",
             "qualification_evidence_only": False,
             "forbidden_as_large_search_initialization": False,
             "large_search_seed": seed,
         }
     )
     return state
+
+
+def _fresh_large_search_state_parity(
+    projection: TargetedFormulaProjection,
+    *,
+    seed: int,
+) -> dict[str, Any]:
+    left = _fresh_large_search_state(projection, seed=seed)
+    right = _fresh_large_search_state(projection, seed=seed)
+    checks = {
+        "deterministic_replay": _stable_hash(left) == _stable_hash(right),
+        "state_origin": (
+            left.get("state_origin")
+            == "fresh_uniform_from_frozen_catalog"
+        ),
+        "generation_zero": left.get("generation") == 0,
+        "reward_observation_count_zero": (
+            left.get("reward_observation_count") == 0
+        ),
+        "source_campaign_none": left.get("source_campaign") == "none",
+        "catalog_hash_bound": (
+            left.get("decision_catalog_hash")
+            == projection.decision_catalog_hash(
+                EXPANDED_FORMULA_SPACE_ID
+            )
+        ),
+    }
+    return {
+        "schema_version": "cn_fresh_large_search_state_parity_v1",
+        "status": "PASS" if all(checks.values()) else "FAIL",
+        "seed": seed,
+        "state_hash": _stable_hash(left),
+        "checks": checks,
+    }
 
 
 def run_static(args: argparse.Namespace) -> dict[str, Any]:
@@ -1782,6 +1980,10 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("FROZEN_THREAD_CONTRACT_MISMATCH")
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
+    launch_receipt_path, writer_lock_path = _acquire_campaign_writer(
+        output_root=output_root,
+        task_id=args.task_id,
+    )
     authorization = json.loads(
         args.qualification_authorization.resolve().read_text(
             encoding="utf-8-sig"
@@ -1844,6 +2046,9 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
                 args.qualification_authorization.resolve()
             ),
         },
+    )
+    sampled_authority, sampled_authority_path = (
+        _resolve_sampled_evaluator_authority(output_root)
     )
     initial_exact, initial_behavior, source_binding = (
         _source_campaign_binding(
@@ -2138,6 +2343,8 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
                 _artifact(path, root=output_root)
                 for path in (
                     authorization_path,
+                    launch_receipt_path,
+                    sampled_authority_path,
                     source_path,
                     registry_path,
                     schema_path,
@@ -2159,6 +2366,9 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         }
         manifest["manifest_payload_hash"] = _stable_hash(manifest)
         _write_json(output_root / "artifact_manifest.json", manifest)
+        _close_campaign_writer(
+            writer_lock_path, task_id=args.task_id
+        )
         return verdict
 
     contract = {
@@ -2180,10 +2390,12 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
             "sampled_selection": SAMPLED_SELECTION_CAP,
             "full_coordinate_pairs": FULL_PAIR_CAP,
         },
+        "sampled_evaluator_authority_status": sampled_authority[
+            "status"
+        ],
         "sampled_evaluator": (
-            "NO_SEPARATE_AUTHORITY_PRESENT;"
-            "DETERMINISTIC_SELECTION_ONLY;"
-            "NO_SURROGATE_CREATED"
+            "NO_SURROGATE_CREATED;"
+            + str(sampled_authority["status"])
         ),
         "full_coordinate_evaluator": (
             "existing development Phase3CM matched evaluator"
@@ -2263,6 +2475,15 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
     )
     if supply["status"] != "PASS":
         raise RuntimeError(str(supply["status"]))
+    fresh_state_parity = _fresh_large_search_state_parity(
+        projection, seed=args.seed + 900_001
+    )
+    fresh_state_parity_path = _write_json(
+        output_root / "fresh_large_search_state_parity.json",
+        fresh_state_parity,
+    )
+    if fresh_state_parity["status"] != "PASS":
+        raise RuntimeError("FRESH_LARGE_SEARCH_STATE_PARITY_FAILED")
 
     deadline_epoch = time.time() + int(args.maximum_wall_seconds)
     arm_state: dict[str, dict[str, Any]] = {}
@@ -2375,6 +2596,7 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         arm_c=arm_metrics["arm_c_cem_expanded"],
         static_status=str(static_verdict["status"]),
         behavior_status="PASS" if behavior_gate else "FAIL",
+        sampled_full_contract=str(sampled_authority["status"]),
     )
     metrics_path = _write_json(
         output_root / "qualification_metrics.json",
@@ -2450,6 +2672,8 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
     artifacts = [
         source_path,
         authorization_path,
+        launch_receipt_path,
+        sampled_authority_path,
         registry_path,
         schema_path,
         purity_path,
@@ -2464,6 +2688,7 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         static_verdict_path,
         behavior_metrics_path,
         supply_path,
+        fresh_state_parity_path,
         metrics_path,
         verdict_path,
         *candidate_artifacts,
@@ -2502,6 +2727,7 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
     }
     manifest["manifest_payload_hash"] = _stable_hash(manifest)
     _write_json(output_root / "artifact_manifest.json", manifest)
+    _close_campaign_writer(writer_lock_path, task_id=args.task_id)
     return verdict
 
 
@@ -2533,6 +2759,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--active-threads", type=int, default=30)
     parser.add_argument("--session-threads", type=int, default=2)
     parser.add_argument("--maximum-wall-seconds", type=int, default=43_200)
+    parser.add_argument("--task-id")
     args = parser.parse_args(argv)
     if args.mode == "static":
         result = run_static(args)
@@ -2549,6 +2776,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "active_label_root",
             "session_field_root",
             "session_label_root",
+            "task_id",
         )
         missing = [
             name for name in required if getattr(args, name) is None

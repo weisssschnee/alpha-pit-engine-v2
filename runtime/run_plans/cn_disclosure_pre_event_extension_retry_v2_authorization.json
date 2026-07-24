@@ -70,6 +70,17 @@
   "promotion": "FORBIDDEN",
   "strict_stage_a": "NOT_AUTHORIZED",
   "sampled_layer_policy": "DO_NOT_CREATE_SURROGATE_IF_NO_EXISTING_AUTHORITY; CONTINUE_FULL_COORDINATE; READINESS_MAX_SEMANTICS_BLOCKED",
+  "sampled_evaluator_authority_contract": {
+    "authority_role": "development_sampled_evaluator",
+    "resolution_roots": [
+      "runtime/run_plans/*.json",
+      "config/*.json"
+    ],
+    "qualified_current_authority_count_at_baseline": 0,
+    "absent_status": "NOT_AVAILABLE_NO_EXISTING_AUTHORITY",
+    "if_authority_appears": "FAIL_CLOSED_REQUIRE_EXPLICIT_PARITY_PATH",
+    "surrogate_creation": "FORBIDDEN"
+  },
   "large_search": "QUALIFICATION_ONLY_NOT_AUTOMATICALLY_LAUNCHED",
   "graph_update": "ONLY_AFTER_DURABLE_CAPABILITY_ACCEPTANCE"
 }
