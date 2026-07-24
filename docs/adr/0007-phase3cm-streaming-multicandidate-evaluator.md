@@ -1,6 +1,7 @@
 # ADR 0007: Phase3CM streaming multi-candidate evaluator
 
-Status: Accepted for engineering qualification; strict Stage A remains forbidden.
+Status: Accepted as the active development streaming implementation; strict
+Stage A and formal-evaluator supersession remain forbidden.
 
 ## Context
 
@@ -39,6 +40,16 @@ execution-plan hash and fails closed at resource gates. At most two heavy
 processes and 24 active native compute threads are permitted, with one primary
 native thread pool per hot phase.
 
+For `MINUTE_STATIC`, `MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1` is the accepted
+route-local sampled-selection authority. It selects a frozen, month-stratified
+25% subset of development sessions while retaining the complete cross-section
+inside every selected session. Formula execution, pair identity, portfolio
+mapping, long-only mode, costs, horizons, matched increment, field lineage and
+access boundaries are identical to full-coordinate development evaluation.
+The sampled result may rank a bounded candidate pack for full-coordinate
+confirmation; it is not a surrogate reward and cannot write feedback or
+cross-campaign optimizer memory.
+
 ## Qualification requirements
 
 The evaluator is not qualified by code presence or package installation. A
@@ -51,13 +62,27 @@ separately recorded 77o qualification must prove:
 - 1/4/8/16/32 scaling followed by a distinct frozen 32-pair Phase E run;
 - zero validation, holdout, and 2026 reads.
 
+The 2026-07-25 V3 qualification satisfied the route-local sampled requirements
+on 64 hash-bound comparable pairs: Spearman rank correlation 0.99748, sign
+agreement 95.31%, full-top-quartile recall 100%, and 4.97x full-coordinate
+pairs/hour. Four current full-coordinate replay pairs passed identity,
+direction, long-only, 5 bps cost, horizon, lineage, matched-control and access
+parity. Nine financial checkpoints and their 171 batch artifacts closed
+immutably with zero validation, holdout and 2026 reads. Evidence is bound in
+`runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json`
+at repository SHA `1742c419b0d6625a548755b2e0a68231e7f623d3`.
+
 ## Consequences
 
-- The historical candidate-parallel evaluator remains an existing authority;
-  the streaming evaluator is `EXPERIMENTAL` until its explicit qualification
-  evidence is accepted.
+- The historical candidate-parallel evaluator remains the single
+  `formal_evaluation_authority`. The streaming evaluator is an `ACTIVE`
+  development implementation and owns only the bounded route-local sampled
+  selection contract accepted above; it does not supersede formal evaluation.
 - Engineering qualification may establish resource readiness only. It cannot
   run strict Stage A, promote a candidate, write adaptive memory, or open 2026.
 - If rank/mapping consumes at least 60 percent of compute time, the registered
   bottleneck is `BATCHED_PORTFOLIO_KERNEL_BOTTLENECK`; DAG work remains the
   primary optimization target only when Value DAG compute reaches that threshold.
+- The V3 `normalized_ratio` formula-space increment qualified, while the tested
+  CEM increment did not. This ADR does not authorize that CEM state or a large
+  search.

@@ -575,7 +575,7 @@
       "id": "phase3cm_streaming_multicandidate_evaluator",
       "label": "Phase3CM streaming multi-candidate evaluator",
       "kind": "evaluator",
-      "lifecycle": "EXPERIMENTAL",
+      "lifecycle": "ACTIVE",
       "paths": [
         "scripts/run_cn_phase3cm_streaming_qualification.py",
         "src/our_system_phase2/services/phase3cm_streaming_dag.py",
@@ -588,21 +588,21 @@
         "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json",
         "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
         "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
+        "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "claim_badges": [
         "LONG-ONLY TOP",
         "SHORTING DISABLED",
-        "533/872 VALIDATION EVALUABLE",
+        "MINUTE SAMPLE QUALIFIED",
+        "4.97X SAMPLE SPEED",
         "PAIR DELTA != STANDALONE SORTINO",
-        "12 FIXED SPENT-HOLDOUT PAIRS",
-        "6 STRICT NONCOLLAPSE",
         "WEAK NOT SEALED OOS",
         "NO PROMOTION"
       ],
       "critical": true,
       "active_authority": false,
-      "semantic_role": "qualified_experimental_evaluation_path",
+      "semantic_role": "active_development_evaluation_implementation",
       "authority": {
         "path": "scripts/run_cn_phase3cm_streaming_qualification.py",
         "verified_sha": "54ce73e59e486c186fa8b6b5a4ad0a944d1f5f9c"
@@ -631,18 +631,26 @@
           "severity": "HARD",
           "enforced_by": "phase3cm_streaming_block_reader",
           "bypass_forbidden": true
+        },
+        {
+          "id": "minute_static_session_sample_authority",
+          "type": "ADMISSION",
+          "rule": "MINUTE_STATIC may rank a bounded development candidate pack using the frozen month-stratified 25 percent session subset only when every selected session retains its full cross-section and the full-coordinate identity, portfolio, cost, horizon, lineage and sealed-data contracts remain unchanged.",
+          "severity": "HARD",
+          "enforced_by": "session_sample_contract and phase3cm session_sample binding",
+          "bypass_forbidden": true
         }
       ],
       "validation": {
-        "level": "PARTIAL",
-        "result": "WARN",
-        "evidence_ref": "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
-        "verified_at_sha": "81b53dba81b2d710b19a74f32f50556f4dc4cba3"
+        "level": "RUNTIME_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
+        "verified_at_sha": "1742c419b0d6625a548755b2e0a68231e7f623d3"
       },
       "promotion_requirements": [
         "separate strict Stage A authorization",
-        "frozen execution-plan hash",
-        "unchanged development-only data boundary"
+        "formal evaluator authority ADR",
+        "unchanged sealed-data and no-promotion boundaries"
       ]
     },
     {
@@ -1003,11 +1011,11 @@
       "id": "pair_to_streaming_evaluator",
       "source": "matched_control_pair_authority",
       "target": "phase3cm_streaming_multicandidate_evaluator",
-      "relation": "EXPERIMENTAL_CURRENT_NON_FORMAL",
-      "lifecycle": "EXPERIMENTAL",
+      "relation": "evaluates_whole_pair_for_development_and_qualified_minute_session_sample",
+      "lifecycle": "ACTIVE",
       "critical": true,
-      "contract": {"id": "streaming_pair_not_split", "type": "EVIDENCE", "rule": "The qualified streaming path evaluates each matched pair under one frozen mapping subcohort and one execution plan.", "severity": "HARD", "enforced_by": "phase3cm_streaming_qualification", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_phase3cm_streaming_repair_20260716/CN_STREAMING_32PAIR_FULL_COORDINATE_RESULT.json", "verified_at_sha": "a59c3956e078cd7c7861a57ec3d1d78b724c13c1"}
+      "contract": {"id": "streaming_pair_not_split", "type": "EVIDENCE", "rule": "The active development streaming path evaluates each matched pair under one frozen mapping subcohort and one execution plan. The qualified MINUTE_STATIC sampled selector changes only the frozen development-session calendar and retains complete within-session cross-sections.", "severity": "HARD", "enforced_by": "phase3cm_streaming_qualification and session_sample_contract", "bypass_forbidden": true},
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json", "verified_at_sha": "1742c419b0d6625a548755b2e0a68231e7f623d3"}
     },
     {
       "id": "compositional_to_streaming_evaluator",

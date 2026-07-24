@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-24
+Updated: 2026-07-25
 
-Current state: `CN_MINUTE_STATIC_V3_SUPPLY_BLOCKED`
+Current state: `CN_MINUTE_STATIC_V3_SEARCH_POLICY_BLOCKED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -23,15 +23,40 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   establish global CEM quality. All three extensions are excluded from the
   active catalog and CEM; CSRank/Abs require an explicit historical-evidence
   replay flag, while the old runner fails closed by default.
-- The `MINUTE_STATIC` production-lane V3 gate completed once on 77o at repo SHA
-  `cd9bb625ad041749ee7cd1a0d995335d266bf89b`. The active discovery authority
-  exposes six materializable roots to the OLD field-spread skeleton, giving
-  exactly 30 atomic ordered field pairs. Because the frozen exact-supply floor
-  is 144, qualification stopped before behavior probing, Phase3CM, or CEM.
-  Behavior/Phase3CM/arm counts and validation/holdout/2026 reads were all zero.
-  Five input hashes, three result hashes, and the downloaded manifest payload
-  hash independently matched. The compact receipt is
-  `runtime/run_plans/cn_minute_static_production_lane_cem_v3_20260724_receipt.json`.
+- The repaired `MINUTE_STATIC` production-lane V3 completed on 77o at deployed
+  repo SHA `c93f7364efc6e72e8ae6b683b4410b1358950208`. It reused the current
+  Registry/compiler/behavior archives and the full 11-root production contract;
+  OLD supply retained 76 post-archive exact pairs and 68 behavior-unique pairs,
+  above the amended 72/48 floors. The deterministic 25%-of-development-session
+  selector preserved full within-session cross-sections and qualified against
+  64 hash-bound full-coordinate MINUTE_STATIC pairs: Spearman 0.99748, sign
+  agreement 95.31%, full-top-quartile recall 100%, and 4.97x pairs/hour. Four
+  current full-coordinate replay pairs passed identity, direction, long-only,
+  5 bps cost, horizons, lineage, matched-control and access parity.
+- All nine V3 arm checkpoints are `BATCH_CLOSED_IMMUTABLE`. Independent closure
+  matched 19/19 root artifacts and 171/171 batch artifacts. Uniform OLD
+  evaluated 60 pairs; uniform OLD plus the existing `normalized_ratio`
+  production evaluated 72; expanded CEM evaluated 72. The production increment
+  qualified on all four frozen checks. CEM updated three contexts without
+  category collapse and retained checkpoint 2/3 supply, but failed both the
+  15% positive-pairs/hour increment and median-increment checks, so
+  `CEM_SEARCH_INCREMENT=NOT_QUALIFIED`.
+- The V3 campaign originally recorded `PERFORMANCE_CONTRACT=FAIL` because the
+  shared comparison helper required a `stock_session_native_contract` even
+  though this route selected only `active_bar`. The classifier now applies that
+  contract only when stock-session is selected. Replaying the immutable metrics
+  changes performance to `PASS` without recomputing financial results: all
+  three arms exceeded 80% median logical-CPU occupancy, effective cores were
+  25.91-26.64, free memory stayed above 71 GiB, cache stayed below 1.85 GiB,
+  pair batch stayed at four, and semantic/metric/access drift remained zero.
+  Large-search readiness remains `SEARCH_POLICY_BLOCKED` solely because the
+  tested CEM policy did not qualify. The compact receipt is
+  `runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json`.
+- `MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1` is accepted as the active
+  route-local sampled-selection implementation under ADR 0007. This does not
+  replace the candidate-parallel `formal_evaluation_authority`, authorize
+  Strict Stage A or large search, permit candidate promotion, or open
+  validation/holdout/2026 feedback.
 - The bounded official CatCMAwM search-policy qualification completed on 77o
   with eight immutable arm-checkpoints and 384 scheduled matched-pair asks.
   CatCMA improved positive matched pairs per wall-hour from 1,728.24 to
@@ -323,14 +348,15 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The current blocker is structural supply in the frozen `MINUTE_STATIC` OLD
-lane: six authorized roots yield 30 atomic ordered `field_pair_id` choices,
-below the required post-archive exact supply of 144. This is not a seed,
-archive, CEM, evaluator, field-materialization, or compute-utilization failure.
-The frozen contract therefore requires
-`FAIL_STOP_BEFORE_BEHAVIOR_AND_PHASE3CM`; sampled/full evaluation and all three
-arms were correctly not run. `TARGET_FAMILY_LARGE_SEARCH_READINESS` is
-`SUPPLY_BLOCKED`.
+The current `MINUTE_STATIC` blocker is search-policy quality, not supply,
+field registration, evaluator semantics or compute utilization. The repaired
+OLD supply gate, production parity, sampled Phase3CM authority, formula-space
+increment, financial support, access boundary and corrected performance
+classifier all pass. Expanded CEM failed its frozen financial increment:
+positive matched pairs/hour were 61.87 versus expanded uniform's 65.90 and the
+required 75.78, while median signed matched increment was 2.67 versus 11.89.
+`TARGET_FAMILY_LARGE_SEARCH_READINESS` therefore remains
+`SEARCH_POLICY_BLOCKED`.
 
 Historically, the targeted formula-space/CEM retry selected
 `DISCLOSURE_EVENT` /
@@ -354,18 +380,11 @@ checks; `CEM_SEARCH_INCREMENT=NOT_QUALIFIED`.
 That conclusion is limited to the Disclosure CSRank expanded space;
 `GLOBAL_CEM_CONCLUSION=NOT_ESTABLISHED`.
 
-No qualified current development sampled-evaluator authority exists in the
-checked run-plan/config authority surface, and no surrogate was created.
-Fresh-uniform large-state construction passed deterministic generation-zero
-parity, but large-search readiness is `SEMANTICS_BLOCKED`. Performance is
-`FAIL`: the stock-session-only path did not meet 75% whole-host occupancy and
-two duplicated stale recursive V1 monitors drove sampled free memory below
-24 GiB. The orphan monitors were terminated without touching the active
-campaign or old evidence and free memory recovered to 79.83 GiB. This remains
-infrastructure-only run health, not financial route health.
-Post-closure recursive monitor processes were also removed after exact
-command-line checks; free memory returned to 82.08 GiB and no matching live or
-scheduled monitor remained. Campaign artifacts and metrics were unchanged.
+The qualified `MINUTE_STATIC` sampled evaluator is now an active route-local
+development selection implementation. It is not a surrogate reward, does not
+change formula execution or portfolio semantics, and does not become the
+project-wide formal evaluator authority. Fresh-uniform generation-zero parity
+still passes, but no large search may start with the rejected V3 CEM state.
 
 Independent closure verified 34 root artifacts, all nine immutable manifests,
 135 batch artifacts, nine Phase3CM receipts and the checkpoint chains. Launch
@@ -428,16 +447,15 @@ machinery may be handcrafted.
 
 ## Next action
 
-Do not rerun Sign, CSRank, the Disclosure OLD supply, the nine financial
-checkpoints, the performance campaign, or the closed `MINUTE_STATIC` V3 gate.
-Do not continue to Abs automatically. The next bounded qualification must
-either select a different existing production lane whose current authorized
-catalog can meet the frozen supply floor, or explicitly amend the formula space
-or threshold. Do not silently widen discovery roots, lower 144, or launch CEM
-against the 30-point lane. The old CEM tables remain failed, target-scoped
-evidence rather than reusable initialization. Any later trial must freeze its
-target and budget and reuse the Registry/compiler/evaluator authority. Graph
-and Obsidian remain unchanged because no durable active capability qualified.
+Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
+qualification or the nine V3 financial checkpoints. Retain the qualified
+`normalized_ratio` production increment and the active route-local sampled
+selector. Do not reuse the failed CEM probabilities or launch a large search.
+The next bounded search-policy iteration should change only the optimizer policy
+over the same frozen expanded formula space, start from fresh uniform state and
+use the now-qualified sampled selector before full-coordinate confirmation.
+Any such run must keep Registry `route_id`, compiler, matched-control, long-only,
+5 bps cost, archive and sealed-data authorities unchanged.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.
