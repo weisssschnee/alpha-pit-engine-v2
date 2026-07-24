@@ -1052,6 +1052,9 @@ def _generate_checkpoint_pool(
     rng: np.random.Generator,
     exact_seen: set[str],
     checkpoint_id: str,
+    route_id: str = ROUTE_ID,
+    skeleton_id: str = SKELETON_ID,
+    behavior_probe_target: int = BEHAVIOR_PROBE_CAP,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     formula_space_id = _formula_space_for_arm(arm)
     novel: list[dict[str, Any]] = []
@@ -1062,7 +1065,7 @@ def _generate_checkpoint_pool(
     while (
         raw < RAW_ATTEMPT_CAP
         and legal < COMPILE_VALID_CAP
-        and len(novel) < BEHAVIOR_PROBE_CAP
+        and len(novel) < int(behavior_probe_target)
     ):
         raw += 1
         pair = projection.generate(
@@ -1102,8 +1105,10 @@ def _generate_checkpoint_pool(
                 "arm": arm,
                 "checkpoint": checkpoint_id,
                 "raw_attempt": raw,
-                "route_id": ROUTE_ID,
-                "skeleton_id": SKELETON_ID,
+                "route_id": route_id,
+                "skeleton_id": str(
+                    primary.get("skeleton_id") or skeleton_id
+                ),
                 "formula_space_id": formula_space_id,
                 "generator_policy": _policy_id_for_arm(arm),
                 "extension_id": str(primary["extension_id"]),
@@ -1132,6 +1137,7 @@ def _generate_checkpoint_pool(
         "exact_duplicate_pairs": duplicates,
         "exact_unique_pairs": len(novel),
         "behavior_probe_cap": BEHAVIOR_PROBE_CAP,
+        "behavior_probe_target": int(behavior_probe_target),
         "sampled_selection_cap": SAMPLED_SELECTION_CAP,
         "full_coordinate_pair_cap": FULL_PAIR_CAP,
         "generation_wall_seconds": wall,
@@ -1140,7 +1146,7 @@ def _generate_checkpoint_pool(
         "compile_valid_per_second": legal / max(wall, 1e-9),
         "underfill_reason": (
             ""
-            if len(novel) >= BEHAVIOR_PROBE_CAP
+            if len(novel) >= int(behavior_probe_target)
             else "EXACT_SUPPLY_OR_ATTEMPT_CAP"
         ),
     }
@@ -1152,7 +1158,7 @@ def _execute_checkpoint(
     arm: str,
     checkpoint_index: int,
     output_root: Path,
-    projection: TargetedFormulaProjection,
+    projection: Any,
     policy: Any,
     rng: np.random.Generator,
     exact_seen: set[str],
@@ -1167,6 +1173,13 @@ def _execute_checkpoint(
     deadline_epoch: float,
     frozen_contract_path: Path,
     decision_catalog_path: Path,
+    route_id: str = ROUTE_ID,
+    skeleton_id: str = SKELETON_ID,
+    selected_backends: Sequence[str] = ("stock_session",),
+    pair_batch_sizes: Mapping[str, int] | None = None,
+    session_sample_manifest: Path | None = None,
+    sampled_authority_qualified: bool = False,
+    behavior_probe_target: int = BEHAVIOR_PROBE_CAP,
 ) -> dict[str, Any]:
     checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
     root = output_root / "arms" / arm / checkpoint_id
@@ -1185,6 +1198,9 @@ def _execute_checkpoint(
         rng=rng,
         exact_seen=exact_seen,
         checkpoint_id=checkpoint_id,
+        route_id=route_id,
+        skeleton_id=skeleton_id,
+        behavior_probe_target=behavior_probe_target,
     )
     proposal_rows = [
         {
@@ -1248,7 +1264,133 @@ def _execute_checkpoint(
         ),
     )
     sampled_pair_ids = ordered_pair_ids[:SAMPLED_SELECTION_CAP]
-    full_pair_ids = set(sampled_pair_ids[:FULL_PAIR_CAP])
+    sampled_access_receipts: list[dict[str, Any]] = []
+    sampled_artifacts: list[Path] = []
+    sampled_rank_rows: list[dict[str, Any]] = []
+    if (
+        sampled_authority_qualified
+        and session_sample_manifest is not None
+        and sampled_pair_ids
+    ):
+        sampled_root = root / "sampled_selection"
+        sampled_candidates = [
+            dict(row)
+            for row in admitted
+            if str(row["pair_id"]) in set(sampled_pair_ids)
+        ]
+        sampled_binding, sampled_tables = _context_and_binding(
+            batch_root=sampled_root,
+            candidates=sampled_candidates,
+            registry=registry,
+            split=split,
+            data_release_hash=_sha256(sidecar_closure),
+        )
+        _bind_purity(sampled_binding, purity_path)
+        sampled_access_receipts = _run_phase3cm_monitored(
+            checkpoint_id=f"{arm}.{checkpoint_id}.sampled",
+            checkpoint_root=sampled_root,
+            binding_path=sampled_binding,
+            table_paths=sampled_tables,
+            split_manifest=split.manifest_path,
+            field_roots=field_roots,
+            label_roots=label_roots,
+            purity_path=purity_path,
+            compute_threads=compute_threads,
+            deadline_epoch=deadline_epoch,
+            selected_backends=selected_backends,
+            pair_batch_sizes=pair_batch_sizes or PAIR_BATCH_SIZES,
+            session_sample_manifest=session_sample_manifest,
+        )
+        sampled_by_pair: dict[str, dict[str, Any]] = {}
+        for backend in selected_backends:
+            result_path = (
+                sampled_root
+                / "phase3cm"
+                / backend
+                / "CN_STREAMING_BACKEND_RESULT.json"
+            )
+            if not result_path.is_file():
+                continue
+            result = json.loads(
+                result_path.read_text(encoding="utf-8-sig")
+            )
+            for row in result.get("pair_results") or ():
+                pair_id = str(row.get("pair_id") or "")
+                if pair_id in sampled_by_pair:
+                    raise RuntimeError(
+                        "SAMPLED_PAIR_RESULT_BACKEND_COLLISION:"
+                        + pair_id
+                    )
+                sampled_by_pair[pair_id] = dict(row)
+        if set(sampled_by_pair) != set(sampled_pair_ids):
+            raise RuntimeError("SAMPLED_PAIR_RESULT_SET_DRIFT")
+        sampled_rank_rows = sorted(
+            (
+                {
+                    "pair_id": pair_id,
+                    "pair_evaluation_status": str(
+                        row.get("pair_evaluation_status") or ""
+                    ),
+                    "pair_evaluation_blockers": str(
+                        row.get("pair_evaluation_blockers") or ""
+                    ),
+                    "sampled_signed_matched_increment": (
+                        float(row["matched_net_increment"])
+                        if str(row.get("pair_evaluation_status") or "")
+                        == "PAIR_EVALUATED"
+                        else None
+                    ),
+                }
+                for pair_id, row in sampled_by_pair.items()
+            ),
+            key=lambda row: (
+                0
+                if row["sampled_signed_matched_increment"] is not None
+                else 1,
+                -float(row["sampled_signed_matched_increment"])
+                if row["sampled_signed_matched_increment"] is not None
+                else 0.0,
+                stable_hash(
+                    {
+                        "arm": arm,
+                        "checkpoint": checkpoint_id,
+                        "pair_id": row["pair_id"],
+                    }
+                ),
+            ),
+        )
+        full_pair_ids = {
+            str(row["pair_id"])
+            for row in sampled_rank_rows[:FULL_PAIR_CAP]
+        }
+        sampled_artifacts.extend(
+            [sampled_binding, *sampled_tables.values()]
+        )
+    else:
+        full_pair_ids = set(sampled_pair_ids[:FULL_PAIR_CAP])
+    sampled_selection_path = _write_json(
+        root / "sampled_selection_receipt.json",
+        {
+            "schema_version": (
+                "cn_targeted_formula_sampled_selection_receipt_v1"
+            ),
+            "status": (
+                "SAMPLED_RANKING_APPLIED"
+                if sampled_rank_rows
+                else "BYPASSED_FROZEN_HASH_ORDER"
+            ),
+            "sampled_authority_qualified": bool(
+                sampled_authority_qualified
+            ),
+            "sampled_candidate_count": len(sampled_pair_ids),
+            "sampled_evaluated_count": sum(
+                row["sampled_signed_matched_increment"] is not None
+                for row in sampled_rank_rows
+            ),
+            "full_selected_pair_ids": sorted(full_pair_ids),
+            "rank_rows": sampled_rank_rows,
+        },
+    )
     full_candidates = [
         dict(row)
         for row in admitted
@@ -1258,7 +1400,9 @@ def _execute_checkpoint(
         str(row["pair_id"]): row for row in proposals
     }
 
-    access_receipts: list[dict[str, Any]] = []
+    access_receipts: list[dict[str, Any]] = list(
+        sampled_access_receipts
+    )
     table_paths: dict[str, Path] = {}
     binding_path: Path | None = None
     if full_candidates:
@@ -1270,7 +1414,7 @@ def _execute_checkpoint(
             data_release_hash=_sha256(sidecar_closure),
         )
         _bind_purity(binding_path, purity_path)
-        access_receipts = _run_phase3cm_monitored(
+        access_receipts.extend(_run_phase3cm_monitored(
             checkpoint_id=f"{arm}.{checkpoint_id}",
             checkpoint_root=root,
             binding_path=binding_path,
@@ -1281,9 +1425,9 @@ def _execute_checkpoint(
             purity_path=purity_path,
             compute_threads=compute_threads,
             deadline_epoch=deadline_epoch,
-            selected_backends=("stock_session",),
-            pair_batch_sizes=PAIR_BATCH_SIZES,
-        )
+            selected_backends=selected_backends,
+            pair_batch_sizes=pair_batch_sizes or PAIR_BATCH_SIZES,
+        ))
 
     outcomes, full_behavior = _outcome_rows(root)
     if full_candidates:
@@ -1358,7 +1502,7 @@ def _execute_checkpoint(
         _selected_runtime_gate(
             root,
             compute_threads,
-            selected_backends=("stock_session",),
+            selected_backends=selected_backends,
         )
         if full_candidates
         else {
@@ -1390,6 +1534,10 @@ def _execute_checkpoint(
             "behavior_probed_pairs": len(proposals),
             "behavior_unique_pairs": len(primary_admitted),
             "sampled_selected_pairs": len(sampled_pair_ids),
+            "sampled_evaluated_pairs": sum(
+                row["sampled_signed_matched_increment"] is not None
+                for row in sampled_rank_rows
+            ),
             "full_coordinate_pairs": len(full_pair_ids),
             "evaluated_pairs": len(evaluated),
             "probe_wall_seconds": probe_wall,
@@ -1441,6 +1589,8 @@ def _execute_checkpoint(
         state_path,
         funnel_path,
         summary_path,
+        sampled_selection_path,
+        *sampled_artifacts,
         *table_paths.values(),
     ]
     if binding_path is not None:
@@ -1477,6 +1627,8 @@ def _arm_metrics(
     output_root: Path,
     arm: str,
     initial_behavior_families: set[str],
+    *,
+    backend_name: str = "stock_session",
 ) -> dict[str, Any]:
     summaries = []
     observations = []
@@ -1538,8 +1690,10 @@ def _arm_metrics(
                 encoding="utf-8-sig"
             )
         )
-        if "stock_session" in (gate.get("backends") or {}):
-            runtime_rows.append(dict(gate["backends"]["stock_session"]))
+        if backend_name in (gate.get("backends") or {}):
+            runtime_rows.append(
+                dict(gate["backends"][backend_name])
+            )
         for result_path in (root / "phase3cm").glob(
             "*/CN_STREAMING_BACKEND_RESULT.json"
         ):
@@ -1612,7 +1766,7 @@ def _arm_metrics(
         ),
         "effective_cpu_hour_method": (
             "total_wall_seconds_x_"
-            "stock_session_effective_cores_median"
+            "selected_backend_effective_cores_median"
         ),
         "median_signed_matched_increment": (
             statistics.median(increments) if increments else None
@@ -1641,14 +1795,25 @@ def _arm_metrics(
             default=0,
         ),
         "maximum_observed_cache_bytes": max(cache_peaks, default=0),
-        "stock_session_effective_cores_median": effective_cores_median,
-        "stock_session_host_cpu_median": (
+        "selected_backend": backend_name,
+        "selected_backend_effective_cores_median": (
+            effective_cores_median
+        ),
+        "selected_backend_host_cpu_median": (
             statistics.median(
                 float(row.get("host_logical_cpu_occupancy") or 0.0)
                 for row in runtime_rows
             )
             if runtime_rows
             else None
+        ),
+        "full_host_native_kernel_smt_ceiling_proven": (
+            bool(runtime_rows)
+            and all(
+                str(row.get("hot_path_bottleneck") or "")
+                == "FULL_HOST_NATIVE_KERNEL_SMT_CEILING_PROVEN"
+                for row in runtime_rows
+            )
         ),
         "peak_rss_bytes": max(
             (int(row.get("peak_rss_bytes") or 0) for row in runtime_rows),
@@ -1770,12 +1935,25 @@ def _comparison_verdict(
     }
     performance_utilization_checks = {
         "all_arms_logical_cpu_occupancy_at_least_75_percent": all(
-            float(arm.get("stock_session_host_cpu_median") or 0.0)
+            float(arm.get("selected_backend_host_cpu_median") or 0.0)
             >= 0.75
             for arm in (arm_a, arm_b, arm_c)
         ),
         "full_host_native_kernel_smt_ceiling_proven": False,
+        "all_arms_full_host_native_kernel_smt_ceiling_proven": all(
+            bool(
+                arm.get(
+                    "full_host_native_kernel_smt_ceiling_proven"
+                )
+            )
+            for arm in (arm_a, arm_b, arm_c)
+        ),
     }
+    performance_utilization_checks[
+        "full_host_native_kernel_smt_ceiling_proven"
+    ] = performance_utilization_checks.pop(
+        "all_arms_full_host_native_kernel_smt_ceiling_proven"
+    )
     performance = (
         "PASS"
         if all(performance_safety_checks.values())

@@ -10,8 +10,25 @@ import pyarrow.parquet as pq
 from scripts.run_minute_static_production_cem_v3 import (
     MINIMUM_BEHAVIOR_SUPPLY,
     MINIMUM_EXACT_SUPPLY,
+    MinuteStaticProductionProjection,
     _failure_decision,
+    _load_production_contract,
+    _production_parity,
+    _session_sample_contract,
     run,
+)
+from our_system_phase2.services.fixed_split_authority import (
+    FixedSplitAuthority,
+)
+from our_system_phase2.services.unified_capability_registry import (
+    UnifiedCapabilityRegistry,
+)
+from our_system_phase2.services.unified_discovery_generators import (
+    COMPOSITIONAL_V2_PROFILE,
+    RegistryDrivenGenerator,
+)
+from scripts.run_cn_phase3cm_streaming_qualification import (
+    _session_sample_calendar,
 )
 
 
@@ -28,6 +45,12 @@ PRODUCTION_CONTRACT = (
     / "runtime"
     / "run_plans"
     / "cn_minute_static_production_roots_v1.json"
+)
+SPLIT = (
+    REPO
+    / "runtime"
+    / "run_plans"
+    / "phase3ga_true1min_2024_2025_global_split_manifest.csv"
 )
 
 
@@ -130,3 +153,67 @@ def test_real_production_roots_form_110_old_pairs_and_pass_exact_gate(
         "old_supply_gate.json",
         "supply_decision.json",
     }
+
+
+def test_minute_production_projection_replays_existing_grammar() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+    parity = _production_parity(projection)
+    assert parity["status"] == "PASS"
+    assert parity["checked_projection_rows"] == 330
+    assert parity["failure_count"] == 0
+
+
+def test_session_sample_is_frozen_month_stratified_quarter() -> None:
+    split = FixedSplitAuthority.read(SPLIT)
+    left = _session_sample_contract(split, seed=2026072500)
+    right = _session_sample_contract(split, seed=2026072500)
+    assert left == right
+    assert left["selected_session_count"] == len(
+        left["selected_sessions"]
+    )
+    assert left["selected_session_count"] == 91
+    assert left["validation_reads"] == 0
+    assert left["holdout_reads"] == 0
+    assert left["forward_2026_reads"] == 0
+    assert all(
+        row["selected_session_count"]
+        == max(1, round(row["full_session_count"] * 0.25))
+        for row in left["month_receipts"]
+    )
+
+
+def test_streaming_evaluator_binds_session_sample_without_split_rewrite(
+    tmp_path: Path,
+) -> None:
+    split = FixedSplitAuthority.read(SPLIT)
+    contract = _session_sample_contract(split, seed=2026072501)
+    path = tmp_path / "session_sample.json"
+    path.write_text(
+        json.dumps(contract, sort_keys=True),
+        encoding="utf-8",
+    )
+    full_train = tuple(
+        row["trade_date"]
+        for row in split.rows
+        if row["split"] == "train"
+    )
+    selected, receipt = _session_sample_calendar(
+        path,
+        binding={"split_manifest_hash": split.manifest_hash},
+        evaluation_role="train",
+        full_calendar=full_train,
+    )
+    assert selected == tuple(contract["selected_sessions"])
+    assert receipt["selected_session_count"] == 91
+    assert receipt["full_session_count"] == 364

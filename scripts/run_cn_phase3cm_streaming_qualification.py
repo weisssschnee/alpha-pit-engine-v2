@@ -156,6 +156,72 @@ def _train_calendar(split_manifest: Path, binding: Mapping[str, Any]) -> tuple[s
     return _evaluation_calendar(split_manifest, binding, evaluation_role="train")
 
 
+def _session_sample_calendar(
+    sample_manifest: Path,
+    *,
+    binding: Mapping[str, Any],
+    evaluation_role: str,
+    full_calendar: Sequence[str],
+) -> tuple[tuple[str, ...], dict[str, Any]]:
+    """Bind a frozen session subset without changing the fixed split authority."""
+
+    if evaluation_role != "train":
+        raise RuntimeError(
+            "SESSION_SAMPLED_PHASE3CM_IS_DEVELOPMENT_TRAIN_ONLY"
+        )
+    path = Path(sample_manifest).resolve()
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    claimed = str(payload.get("contract_hash") or "")
+    unsigned = dict(payload)
+    unsigned.pop("contract_hash", None)
+    if claimed != _stable_hash(unsigned):
+        raise RuntimeError("SESSION_SAMPLE_CONTRACT_HASH_MISMATCH")
+    expected = {
+        "schema_version": "cn_phase3cm_session_sample_contract_v1",
+        "authority_id": "MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1",
+        "status": "FROZEN_DETERMINISTIC_SESSION_SUBSET",
+        "evaluation_role": "train",
+        "full_split_manifest_hash": str(
+            binding.get("split_manifest_hash") or ""
+        ),
+        "selection": "sha256(sample_seed,session_id)_calendar_month",
+        "sample_fraction": 0.25,
+        "uses_return_or_regime_labels": False,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    drift = [
+        key for key, value in expected.items()
+        if payload.get(key) != value
+    ]
+    if drift:
+        raise RuntimeError(
+            "SESSION_SAMPLE_CONTRACT_DRIFT:" + ",".join(sorted(drift))
+        )
+    selected = tuple(map(str, payload.get("selected_sessions") or ()))
+    if (
+        not selected
+        or len(selected) != len(set(selected))
+        or list(selected) != sorted(selected)
+        or int(payload.get("selected_session_count") or -1)
+        != len(selected)
+    ):
+        raise RuntimeError("SESSION_SAMPLE_SELECTION_INVALID")
+    full = set(map(str, full_calendar))
+    if any(date not in full or date >= "2026-01-01" for date in selected):
+        raise RuntimeError("SESSION_SAMPLE_OUTSIDE_TRAIN_AUTHORITY")
+    return selected, {
+        "path": str(path),
+        "sha256": _sha256(path),
+        "contract_hash": claimed,
+        "selected_session_count": len(selected),
+        "full_session_count": len(full_calendar),
+        "sample_fraction": float(payload["sample_fraction"]),
+        "selection": str(payload["selection"]),
+    }
+
+
 def _verify_binding(
     binding_path: Path,
     artifact_root: Path,
@@ -662,6 +728,14 @@ def main() -> int:
     parser.add_argument("--binding", type=Path, required=True)
     parser.add_argument("--split-boundary-purity", type=Path)
     parser.add_argument("--split-manifest", type=Path, required=True)
+    parser.add_argument(
+        "--session-sample-manifest",
+        type=Path,
+        help=(
+            "Optional frozen train-session subset. The official split "
+            "manifest remains the access authority."
+        ),
+    )
     parser.add_argument("--artifact-root", type=Path, required=True)
     parser.add_argument("--field-sidecar-root", type=Path, required=True)
     parser.add_argument("--label-sidecar-root", type=Path, required=True)
@@ -733,6 +807,14 @@ def main() -> int:
         binding,
         evaluation_role=args.evaluation_role,
     )
+    session_sample = None
+    if args.session_sample_manifest is not None:
+        evaluation_dates, session_sample = _session_sample_calendar(
+            args.session_sample_manifest.resolve(),
+            binding=binding,
+            evaluation_role=args.evaluation_role,
+            full_calendar=evaluation_dates,
+        )
     candidates = _candidate_pairs(
         _read_csv(args.candidate_table.resolve()),
         pair_limit=int(args.pair_count),
@@ -1513,6 +1595,16 @@ def main() -> int:
         "eligible_train_date_count": (
             len(evaluation_dates) if args.evaluation_role == "train" else 0
         ),
+        "evaluation_scope": (
+            "development_session_sample"
+            if session_sample is not None
+            else "full_coordinate_development"
+        ),
+        "session_sample": session_sample,
+        "portfolio_mode": str(args.portfolio_mode),
+        "cost_bps": float(args.cost_bps),
+        "horizons": list(horizons),
+        "top_quantile": float(args.top_quantile),
         "dag_plan_hash": dag_plan.plan_hash,
         "coordinate_rows_retained": reducer.coordinate_rows_retained,
         "parallelism_status": parallelism_status,

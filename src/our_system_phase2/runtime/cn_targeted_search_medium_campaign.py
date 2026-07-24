@@ -686,6 +686,7 @@ def _run_phase3cm_monitored(
     output_namespace: str = "phase3cm",
     selected_backends: Sequence[str] = ("active_bar", "stock_session"),
     pair_batch_sizes: Mapping[str, int] | None = None,
+    session_sample_manifest: Path | None = None,
 ) -> list[dict[str, Any]]:
     receipts = []
     effective_pair_batch_sizes = dict(PAIR_BATCH_SIZE_BY_BACKEND)
@@ -704,10 +705,20 @@ def _run_phase3cm_monitored(
         if result_path.is_file():
             result = json.loads(result_path.read_text(encoding="utf-8"))
             binding = json.loads(binding_path.read_text(encoding="utf-8"))
+            expected_sample_hash = (
+                _sha256(session_sample_manifest)
+                if session_sample_manifest is not None
+                else ""
+            )
+            observed_sample_hash = str(
+                ((result.get("session_sample") or {}).get("sha256"))
+                or ""
+            )
             if (
                 result.get("status") != "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
                 or result.get("input_binding_hash") != binding.get("binding_hash")
                 or int(result.get("pair_count") or 0) != int(pair_count)
+                or observed_sample_hash != expected_sample_hash
             ):
                 raise RuntimeError(f"completed Phase3CM result drift on {backend}")
             receipts.append({"backend": backend, "status": "COMPLETED_REUSED", "result_path": str(result_path), "result_sha256": _sha256(result_path)})
@@ -731,6 +742,13 @@ def _run_phase3cm_monitored(
             "--compute-threads", str(compute_threads[backend]),
             "--iterative-batch-id", checkpoint_id,
         ]
+        if session_sample_manifest is not None:
+            command.extend(
+                [
+                    "--session-sample-manifest",
+                    str(session_sample_manifest),
+                ]
+            )
         checkpoint_path = output_root / "CN_STREAMING_CHECKPOINT.json"
         if checkpoint_path.is_file():
             command.append("--resume")
