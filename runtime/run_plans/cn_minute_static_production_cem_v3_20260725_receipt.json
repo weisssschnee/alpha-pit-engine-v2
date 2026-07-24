@@ -148,6 +148,30 @@
       "no_category_collapse": true
     }
   },
+  "causal_audit_20260725": {
+    "status": "IMPLEMENTATION_COMPARISON_INVALID_FOR_CAUSAL_CEM_CLAIM",
+    "campaign_numeric_results_preserved": true,
+    "arm_seed_streams": "INDEPENDENT_NOT_PAIRED",
+    "generation_one_policy_equivalence": "BOTH_UNIFORM_BUT_DIFFERENT_CANDIDATE_STREAMS",
+    "unique_adaptive_contexts": [
+      "production_id",
+      "field_pair_id"
+    ],
+    "numeric_context_updates": "field_pair_id updated once in each of three checkpoints; aggregate updated_context_count=3 is not three distinct contexts",
+    "tell_input_per_checkpoint": "24 full-coordinate evaluated outcomes",
+    "sampled_feedback_consumed": false,
+    "cem_exact_duplicate_pairs_by_checkpoint": [
+      19,
+      39,
+      98
+    ],
+    "modeling_defects": [
+      "production_id and field_pair_id were modeled as independent marginals",
+      "110 high-cardinality field-pair leaves were updated from six elites per checkpoint",
+      "probability mass was not masked after joint production-field exact identities were exhausted"
+    ],
+    "corrected_conclusion": "CEM_V1_OBSERVED_BELOW_UNIFORM_BUT_GLOBAL_AND_CAUSAL_CEM_VERDICT_NOT_ESTABLISHED"
+  },
   "performance_classifier": {
     "campaign_recorded_verdict": "FAIL",
     "campaign_recorded_false_requirement": "stock_session_native_contract",
@@ -176,10 +200,12 @@
   "final_interpretation": {
     "sampled_phase3cm_evidence": "QUALIFIED",
     "formula_space_increment": "QUALIFIED",
-    "cem_search_increment": "NOT_QUALIFIED",
+    "campaign_recorded_cem_search_increment": "NOT_QUALIFIED",
+    "cem_v1_causal_conclusion": "INCONCLUSIVE_IMPLEMENTATION_COMPARISON_INVALID",
+    "cem_v1_search_model": "INSUFFICIENT",
     "performance_contract": "PASS_AFTER_CLASSIFIER_FIX",
     "target_family_large_search_readiness": "SEARCH_POLICY_BLOCKED",
-    "remaining_blocker": "CEM_SEARCH_INCREMENT_NOT_QUALIFIED",
+    "remaining_blocker": "QUALIFIED_CAUSAL_SEARCH_POLICY_NOT_AVAILABLE",
     "large_search_authorized": false
   },
   "access_boundary": {

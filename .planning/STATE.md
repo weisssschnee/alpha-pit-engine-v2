@@ -37,10 +37,13 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   matched 19/19 root artifacts and 171/171 batch artifacts. Uniform OLD
   evaluated 60 pairs; uniform OLD plus the existing `normalized_ratio`
   production evaluated 72; expanded CEM evaluated 72. The production increment
-  qualified on all four frozen checks. CEM updated three contexts without
-  category collapse and retained checkpoint 2/3 supply, but failed both the
-  15% positive-pairs/hour increment and median-increment checks, so
-  `CEM_SEARCH_INCREMENT=NOT_QUALIFIED`.
+  qualified on all four frozen checks. A post-campaign causal audit found that
+  expanded uniform and CEM used different candidate RNG streams, that the policy
+  exposed only two unique decision contexts, and that the apparent three CEM
+  updates were the same field-pair context updated once per checkpoint. The
+  recorded CEM arm was numerically weaker, but it is not a valid causal estimate
+  of a CEM policy increment. `CEM_SEARCH_INCREMENT=NOT_QUALIFIED` remains the
+  admission result; the V1 implementation comparison is `INCONCLUSIVE`.
 - The V3 campaign originally recorded `PERFORMANCE_CONTRACT=FAIL` because the
   shared comparison helper required a `stock_session_native_contract` even
   though this route selected only `active_bar`. The classifier now applies that
@@ -352,9 +355,13 @@ The current `MINUTE_STATIC` blocker is search-policy quality, not supply,
 field registration, evaluator semantics or compute utilization. The repaired
 OLD supply gate, production parity, sampled Phase3CM authority, formula-space
 increment, financial support, access boundary and corrected performance
-classifier all pass. Expanded CEM failed its frozen financial increment:
-positive matched pairs/hour were 61.87 versus expanded uniform's 65.90 and the
-required 75.78, while median signed matched increment was 2.67 versus 11.89.
+classifier all pass. The recorded expanded-CEM arm produced 61.87 positive
+matched pairs/hour versus expanded uniform's 65.90, and median signed matched
+increment 2.67 versus 11.89. Those numbers do not qualify the policy, but the
+comparison used independent candidate streams and a leaf-level 110-way
+field-pair distribution learned from sparse elites without availability
+masking. It therefore cannot establish that adaptive search is worse than
+uniform search.
 `TARGET_FAMILY_LARGE_SEARCH_READINESS` therefore remains
 `SEARCH_POLICY_BLOCKED`.
 
@@ -450,12 +457,17 @@ machinery may be handcrafted.
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
 qualification or the nine V3 financial checkpoints. Retain the qualified
 `normalized_ratio` production increment and the active route-local sampled
-selector. Do not reuse the failed CEM probabilities or launch a large search.
-The next bounded search-policy iteration should change only the optimizer policy
-over the same frozen expanded formula space, start from fresh uniform state and
-use the now-qualified sampled selector before full-coordinate confirmation.
-Any such run must keep Registry `route_id`, compiler, matched-control, long-only,
-5 bps cost, archive and sealed-data authorities unchanged.
+selector. Do not reuse the V1 CEM probabilities or launch a large search. The
+active bounded iteration is a paired structural CEM V2 canary over the identical
+frozen expanded catalog: expanded uniform and CEM share the same fresh-state
+candidate stream, exact-unavailable candidates are masked before sampling,
+adaptation is limited to the authoritative low-cardinality production choice,
+and concrete field pairs remain uniform without replacement because Registry
+does not publish a semantic field-family authority. V2 consumes ranked
+full-coordinate train outcomes only, uses two 12-pair checkpoints per arm, and
+must pass its mechanical causal contract before a medium financial
+qualification. Registry `route_id`, compiler, matched-control, long-only,
+5 bps cost, archive and sealed-data authorities remain unchanged.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.

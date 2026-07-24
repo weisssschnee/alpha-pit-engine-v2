@@ -185,6 +185,50 @@ class ChoicePolicy(Protocol):
         ...
 
 
+def choose_available_token(
+    decision: DecisionSpec,
+    probabilities: Sequence[float],
+    *,
+    allowed_token_ids: Sequence[str],
+    rng: np.random.Generator,
+) -> str:
+    """Draw once from a frozen decision after masking unavailable tokens."""
+
+    values = np.asarray(tuple(probabilities), dtype=float)
+    if len(values) != len(decision.ordered_choices):
+        raise ValueError(
+            f"probability domain drift: {decision.context_id}"
+        )
+    token_index = {
+        row.token_id: index
+        for index, row in enumerate(decision.ordered_choices)
+    }
+    allowed = tuple(dict.fromkeys(map(str, allowed_token_ids)))
+    if not allowed:
+        raise RuntimeError(
+            f"NO_AVAILABLE_DECISION_TOKENS:{decision.context_id}"
+        )
+    unknown = [token_id for token_id in allowed if token_id not in token_index]
+    if unknown:
+        raise RuntimeError(
+            f"AVAILABLE_TOKEN_DOMAIN_DRIFT:{decision.context_id}:"
+            + ",".join(unknown)
+        )
+    masked = np.zeros(len(values), dtype=float)
+    for token_id in allowed:
+        masked[token_index[token_id]] = values[token_index[token_id]]
+    total = float(masked.sum())
+    if not np.isfinite(total) or total <= 0.0:
+        raise RuntimeError(
+            f"AVAILABLE_TOKEN_PROBABILITY_EMPTY:{decision.context_id}"
+        )
+    normalized = masked / total
+    draw = float(rng.random())
+    index = int(np.searchsorted(np.cumsum(normalized), draw, side="right"))
+    index = min(index, len(normalized) - 1)
+    return decision.ordered_choices[index].token_id
+
+
 @dataclass(frozen=True, slots=True)
 class UniformPolicy:
     policy_id: str = "uniform_choice_v1"
@@ -197,6 +241,41 @@ class UniformPolicy:
     ) -> str:
         index = int(rng.integers(0, len(decision.ordered_choices)))
         return decision.ordered_choices[index].token_id
+
+
+@dataclass(frozen=True, slots=True)
+class AvailableUniformPolicy:
+    """Uniform control using the same masked draw primitive as adaptive policy."""
+
+    policy_id: str = "available_uniform_choice_v2"
+
+    def choose(
+        self,
+        decision: DecisionSpec,
+        *,
+        rng: np.random.Generator,
+    ) -> str:
+        return self.choose_available(
+            decision,
+            allowed_token_ids=tuple(
+                row.token_id for row in decision.ordered_choices
+            ),
+            rng=rng,
+        )
+
+    def choose_available(
+        self,
+        decision: DecisionSpec,
+        *,
+        allowed_token_ids: Sequence[str],
+        rng: np.random.Generator,
+    ) -> str:
+        return choose_available_token(
+            decision,
+            [1.0] * len(decision.ordered_choices),
+            allowed_token_ids=allowed_token_ids,
+            rng=rng,
+        )
 
 
 class LegacyParityPolicy:

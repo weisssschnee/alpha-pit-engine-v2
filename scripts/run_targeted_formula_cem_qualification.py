@@ -1054,6 +1054,7 @@ def _load_arm_state(
     arm: str,
     initial_exact: set[str],
     initial_behavior: PortfolioBehaviorArchive,
+    checkpoint_count: int = CHECKPOINT_COUNT,
 ) -> tuple[
     set[str],
     PortfolioBehaviorArchive,
@@ -1067,7 +1068,7 @@ def _load_arm_state(
     optimizer_state = None
     rng_state = None
     gap = False
-    for index in range(CHECKPOINT_COUNT):
+    for index in range(int(checkpoint_count)):
         root = output_root / "arms" / arm / f"checkpoint_{index + 1:03d}"
         manifest_path = root / "batch_manifest.json"
         if not manifest_path.is_file():
@@ -1112,6 +1113,10 @@ def _generate_checkpoint_pool(
     route_id: str = ROUTE_ID,
     skeleton_id: str = SKELETON_ID,
     behavior_probe_target: int = BEHAVIOR_PROBE_CAP,
+    availability_masked_sampling: bool = False,
+    generator_policy_id: str | None = None,
+    sampled_selection_cap: int = SAMPLED_SELECTION_CAP,
+    full_pair_cap: int = FULL_PAIR_CAP,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     formula_space_id = _formula_space_for_arm(arm)
     novel: list[dict[str, Any]] = []
@@ -1125,11 +1130,19 @@ def _generate_checkpoint_pool(
         and len(novel) < int(behavior_probe_target)
     ):
         raw += 1
-        pair = projection.generate(
-            formula_space_id=formula_space_id,
-            policy=policy,
-            rng=rng,
-        )
+        if availability_masked_sampling:
+            pair = projection.generate_available(
+                formula_space_id=formula_space_id,
+                policy=policy,
+                rng=rng,
+                exact_seen=exact_seen | generation_exact,
+            )
+        else:
+            pair = projection.generate(
+                formula_space_id=formula_space_id,
+                policy=policy,
+                rng=rng,
+            )
         primary, control = pair.candidate, pair.control
         unsupported = unsupported_streaming_operators(
             (primary["expression"], control["expression"])
@@ -1167,7 +1180,9 @@ def _generate_checkpoint_pool(
                     primary.get("skeleton_id") or skeleton_id
                 ),
                 "formula_space_id": formula_space_id,
-                "generator_policy": _policy_id_for_arm(arm),
+                "generator_policy": str(
+                    generator_policy_id or _policy_id_for_arm(arm)
+                ),
                 "extension_id": str(primary["extension_id"]),
                 "pair_id": str(primary["pair_id"]),
                 "exact_identity": exact_identity,
@@ -1195,8 +1210,8 @@ def _generate_checkpoint_pool(
         "exact_unique_pairs": len(novel),
         "behavior_probe_cap": BEHAVIOR_PROBE_CAP,
         "behavior_probe_target": int(behavior_probe_target),
-        "sampled_selection_cap": SAMPLED_SELECTION_CAP,
-        "full_coordinate_pair_cap": FULL_PAIR_CAP,
+        "sampled_selection_cap": int(sampled_selection_cap),
+        "full_coordinate_pair_cap": int(full_pair_cap),
         "generation_wall_seconds": wall,
         "generation_cpu_seconds": cpu,
         "raw_attempts_per_second": raw / max(wall, 1e-9),
@@ -1237,6 +1252,11 @@ def _execute_checkpoint(
     session_sample_manifest: Path | None = None,
     sampled_selector_evidence_qualified: bool = False,
     behavior_probe_target: int = BEHAVIOR_PROBE_CAP,
+    availability_masked_sampling: bool = False,
+    generator_policy_id: str | None = None,
+    optimizer_updates_enabled: bool | None = None,
+    sampled_selection_cap: int = SAMPLED_SELECTION_CAP,
+    full_pair_cap: int = FULL_PAIR_CAP,
 ) -> dict[str, Any]:
     checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
     root = output_root / "arms" / arm / checkpoint_id
@@ -1258,6 +1278,10 @@ def _execute_checkpoint(
         route_id=route_id,
         skeleton_id=skeleton_id,
         behavior_probe_target=behavior_probe_target,
+        availability_masked_sampling=availability_masked_sampling,
+        generator_policy_id=generator_policy_id,
+        sampled_selection_cap=sampled_selection_cap,
+        full_pair_cap=full_pair_cap,
     )
     proposal_rows = [
         {
@@ -1310,17 +1334,22 @@ def _execute_checkpoint(
         for row in admitted
         if str(row.get("pair_member_role") or "") == "PRIMARY"
     }
+    selection_stream_key = (
+        "PAIRED_COMMON_RANDOM_STREAM"
+        if availability_masked_sampling
+        else arm
+    )
     ordered_pair_ids = sorted(
         primary_admitted,
         key=lambda pair_id: stable_hash(
             {
-                "arm": arm,
+                "arm_or_pairing_key": selection_stream_key,
                 "checkpoint": checkpoint_id,
                 "pair_id": pair_id,
             }
         ),
     )
-    sampled_pair_ids = ordered_pair_ids[:SAMPLED_SELECTION_CAP]
+    sampled_pair_ids = ordered_pair_ids[: int(sampled_selection_cap)]
     sampled_access_receipts: list[dict[str, Any]] = []
     sampled_artifacts: list[Path] = []
     sampled_rank_rows: list[dict[str, Any]] = []
@@ -1396,7 +1425,7 @@ def _execute_checkpoint(
                 else 0.0,
                 stable_hash(
                     {
-                        "arm": arm,
+                        "arm_or_pairing_key": selection_stream_key,
                         "checkpoint": checkpoint_id,
                         "pair_id": row["pair_id"],
                     }
@@ -1405,13 +1434,13 @@ def _execute_checkpoint(
         )
         full_pair_ids = {
             str(row["pair_id"])
-            for row in sampled_rank_rows[:FULL_PAIR_CAP]
+            for row in sampled_rank_rows[: int(full_pair_cap)]
         }
         sampled_artifacts.extend(
             [sampled_binding, *sampled_tables.values()]
         )
     else:
-        full_pair_ids = set(sampled_pair_ids[:FULL_PAIR_CAP])
+        full_pair_ids = set(sampled_pair_ids[: int(full_pair_cap)])
     sampled_selection_path = _write_json(
         root / "sampled_selection_receipt.json",
         {
@@ -1514,7 +1543,12 @@ def _execute_checkpoint(
         "status": "NOT_CEM_ARM",
         "updated_context_count": 0,
     }
-    if arm == "arm_c_cem_expanded" and observations:
+    adaptive = (
+        arm == "arm_c_cem_expanded"
+        if optimizer_updates_enabled is None
+        else bool(optimizer_updates_enabled)
+    )
+    if adaptive and observations:
         tell_receipt = policy.tell(observations)
     tell_path = _write_json(
         root / "optimizer_tell_receipt.json", tell_receipt
@@ -1564,7 +1598,7 @@ def _execute_checkpoint(
         "rng_state": copy.deepcopy(rng.bit_generator.state),
         "optimizer_state": (
             policy.state_dict(rng=rng)
-            if arm == "arm_c_cem_expanded"
+            if adaptive
             else None
         ),
     }
@@ -1678,6 +1712,7 @@ def _arm_metrics(
     initial_behavior_families: set[str],
     *,
     backend_name: str = "stock_session",
+    checkpoint_count: int = CHECKPOINT_COUNT,
 ) -> dict[str, Any]:
     summaries = []
     observations = []
@@ -1687,7 +1722,7 @@ def _arm_metrics(
     cache_peaks = []
     runtime_rows = []
     cem_updates = 0
-    for index in range(CHECKPOINT_COUNT):
+    for index in range(int(checkpoint_count)):
         root = output_root / "arms" / arm / f"checkpoint_{index + 1:03d}"
         manifest = json.loads(
             (root / "batch_manifest.json").read_text(

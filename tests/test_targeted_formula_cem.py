@@ -19,9 +19,12 @@ from scripts.run_targeted_formula_cem_qualification import (
 )
 from our_system_phase2.services.categorical_cem import (
     CategoricalCEMPolicy,
+    RankWeightedCategoricalCEMPolicy,
 )
 from our_system_phase2.services.search_choice_policy import (
+    AvailableUniformPolicy,
     DISCLOSURE_V2_EXTENSION_DISPOSITIONS,
+    DecisionSpec,
     EXPANDED_FORMULA_SPACE_ID,
     HISTORICAL_REJECTED_EXTENSION_IDS,
     OLD_FORMULA_SPACE_ID,
@@ -30,6 +33,7 @@ from our_system_phase2.services.search_choice_policy import (
     PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID,
     TARGETED_RETRY_EXTENSION_IDS,
     LegacyParityPolicy,
+    SearchChoice,
     TargetedFormulaProjection,
     TraceReplayPolicy,
     UniformPolicy,
@@ -691,3 +695,110 @@ def test_cem_rejects_infrastructure_failure_and_catalog_drift() -> None:
             formula_space_id=EXPANDED_FORMULA_SPACE_ID,
             rng=np.random.default_rng(53),
         )
+
+
+def test_rank_weighted_cem_v2_uses_all_ranks_and_marks_adapted_state() -> None:
+    decision = DecisionSpec(
+        decision_id="test.production_id",
+        context_id="route=TEST|decision=production_id",
+        decision_type="PRODUCTION",
+        gene_slot="production_id",
+        ordered_choices=(
+            SearchChoice("good", "good", {"production_id": "good"}),
+            SearchChoice("bad", "bad", {"production_id": "bad"}),
+        ),
+    )
+    policy = RankWeightedCategoricalCEMPolicy.fresh(
+        decisions=(decision,),
+        decision_catalog_hash="catalog-v2",
+        formula_space_id="TEST_SPACE",
+    )
+    observations = []
+    for index in range(12):
+        token = "good" if index % 2 == 0 else "bad"
+        reward = float(100 - index if token == "good" else index)
+        observations.append(
+            {
+                "proposal_id": f"proposal-{index}",
+                "exact_identity": f"exact-{index}",
+                "outcome_class": "EVALUATED",
+                "signed_matched_increment": reward,
+                "decision_trace": [
+                    {
+                        "decision_id": decision.decision_id,
+                        "context_id": decision.context_id,
+                        "decision_type": decision.decision_type,
+                        "selected_token_id": token,
+                    }
+                ],
+            }
+        )
+
+    receipt = policy.tell(observations)
+    probabilities = policy.probability_tables[decision.context_id]
+    assert receipt["weighting_mode"] == "LINEAR_RANK_ALL_EVALUATED"
+    assert receipt["evaluated_observation_count"] == 12
+    assert receipt["updated_context_count"] == 1
+    assert probabilities[0] > probabilities[1]
+
+    rng = np.random.default_rng(20260725)
+    state = policy.state_dict(rng=rng)
+    assert state["initialization_origin"] == (
+        "fresh_uniform_from_frozen_decision_catalog"
+    )
+    assert state["current_state"] == "ADAPTED"
+    assert state["generation"] == 1
+    assert state["reward_observation_count"] == 12
+    assert "state_origin" not in state
+
+    restored_rng = np.random.default_rng(0)
+    restored = RankWeightedCategoricalCEMPolicy.restore(
+        state,
+        decisions=(decision,),
+        decision_catalog_hash="catalog-v2",
+        formula_space_id="TEST_SPACE",
+        rng=restored_rng,
+    )
+    assert policy.choose(decision, rng=rng) == restored.choose(
+        decision, rng=restored_rng
+    )
+
+
+def test_rank_weighted_cem_v2_and_uniform_share_fresh_available_stream() -> None:
+    decision = DecisionSpec(
+        decision_id="test.production_id",
+        context_id="route=TEST|decision=production_id",
+        decision_type="PRODUCTION",
+        gene_slot="production_id",
+        ordered_choices=(
+            SearchChoice("a", "a", {"production_id": "a"}),
+            SearchChoice("b", "b", {"production_id": "b"}),
+            SearchChoice("c", "c", {"production_id": "c"}),
+        ),
+    )
+    uniform = AvailableUniformPolicy()
+    cem = RankWeightedCategoricalCEMPolicy.fresh(
+        decisions=(decision,),
+        decision_catalog_hash="catalog-v2",
+        formula_space_id="TEST_SPACE",
+    )
+    uniform_rng = np.random.default_rng(71)
+    cem_rng = np.random.default_rng(71)
+    allowed = ("a", "c")
+    assert [
+        uniform.choose_available(
+            decision, allowed_token_ids=allowed, rng=uniform_rng
+        )
+        for _ in range(30)
+    ] == [
+        cem.choose_available(
+            decision, allowed_token_ids=allowed, rng=cem_rng
+        )
+        for _ in range(30)
+    ]
+    assert {
+        uniform.choose_available(
+            decision, allowed_token_ids=("c",), rng=uniform_rng
+        )
+        for _ in range(10)
+    } == {"c"}

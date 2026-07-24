@@ -4,21 +4,33 @@ import argparse
 import json
 from pathlib import Path
 
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pytest
 
 from scripts.run_minute_static_production_cem_v3 import (
     MINIMUM_BEHAVIOR_SUPPLY,
     MINIMUM_EXACT_SUPPLY,
+    PAIRED_STRUCTURAL_CEM_V2_ARMS,
     MinuteStaticProductionProjection,
     _failure_decision,
     _load_production_contract,
+    _paired_structural_canary_verdict,
     _production_parity,
     _session_sample_contract,
     run,
+    run_financial,
+)
+from our_system_phase2.services.categorical_cem import (
+    RankWeightedCategoricalCEMPolicy,
 )
 from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
+)
+from our_system_phase2.services.search_choice_policy import (
+    AvailableUniformPolicy,
+    EXPANDED_FORMULA_SPACE_ID,
 )
 from our_system_phase2.services.unified_capability_registry import (
     UnifiedCapabilityRegistry,
@@ -173,6 +185,184 @@ def test_minute_production_projection_replays_existing_grammar() -> None:
     assert parity["status"] == "PASS"
     assert parity["checked_projection_rows"] == 330
     assert parity["failure_count"] == 0
+
+
+def test_structural_v2_fresh_policy_matches_uniform_without_exact_replay() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+    decisions = projection.structural_decision_specs(
+        EXPANDED_FORMULA_SPACE_ID
+    )
+    catalog_hash = projection.structural_decision_catalog_hash(
+        EXPANDED_FORMULA_SPACE_ID
+    )
+    uniform = AvailableUniformPolicy()
+    cem = RankWeightedCategoricalCEMPolicy.fresh(
+        decisions=decisions,
+        decision_catalog_hash=catalog_hash,
+        formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+    )
+    uniform_rng = np.random.default_rng(2026072501)
+    cem_rng = np.random.default_rng(2026072501)
+    uniform_seen: set[str] = set()
+    cem_seen: set[str] = set()
+    uniform_rows = []
+    cem_rows = []
+    for _ in range(40):
+        uniform_pair = projection.generate_available(
+            formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+            policy=uniform,
+            rng=uniform_rng,
+            exact_seen=uniform_seen,
+        )
+        cem_pair = projection.generate_available(
+            formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+            policy=cem,
+            rng=cem_rng,
+            exact_seen=cem_seen,
+        )
+        uniform_rows.append(uniform_pair.candidate["exact_identity"])
+        cem_rows.append(cem_pair.candidate["exact_identity"])
+        uniform_seen.add(uniform_rows[-1])
+        cem_seen.add(cem_rows[-1])
+
+    assert uniform_rows == cem_rows
+    assert len(set(cem_rows)) == 40
+    assert len(
+        projection.generate_available(
+            formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+            policy=uniform,
+            rng=uniform_rng,
+            exact_seen=uniform_seen,
+        ).candidate["decision_trace"]
+    ) == 2
+
+
+def test_structural_v2_canary_requires_common_first_full_evaluation_set(
+    tmp_path: Path,
+) -> None:
+    uniform_arm, cem_arm = PAIRED_STRUCTURAL_CEM_V2_ARMS
+    for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS:
+        for checkpoint in (1, 2):
+            root = (
+                tmp_path
+                / "arms"
+                / arm
+                / f"checkpoint_{checkpoint:03d}"
+            )
+            root.mkdir(parents=True)
+            exact_ids = [
+                f"exact-{checkpoint}-{index}" for index in range(12)
+            ]
+            pq.write_table(
+                pa.Table.from_pylist(
+                    [
+                        {
+                            "exact_identity": exact_id,
+                            "raw_attempt": index + 1,
+                        }
+                        for index, exact_id in enumerate(exact_ids)
+                    ]
+                ),
+                root / "proposal_ledger.parquet",
+            )
+            pq.write_table(
+                pa.Table.from_pylist(
+                    [
+                        {
+                            "exact_identity": exact_id,
+                            "outcome_class": "EVALUATED",
+                        }
+                        for exact_id in exact_ids
+                    ]
+                ),
+                root / "observation_ledger.parquet",
+            )
+            (root / "checkpoint_summary.json").write_text(
+                json.dumps({"exact_duplicate_pairs": 0}),
+                encoding="utf-8",
+            )
+            (root / "arm_state.json").write_text(
+                json.dumps(
+                    {
+                        "optimizer_state": (
+                            {
+                                "current_state": "ADAPTED",
+                                "generation": 2,
+                            }
+                            if arm == cem_arm and checkpoint == 2
+                            else None
+                        )
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+    metrics = {
+        arm: {
+            "evaluated_pairs": 24,
+            "positive_matched_pairs": 12,
+            "median_signed_matched_increment": 1.0,
+        }
+        for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS
+    }
+    passed = _paired_structural_canary_verdict(tmp_path, metrics)
+    assert passed["status"] == "MECHANICAL_PASS_RUN_MEDIUM"
+
+    cem_first = (
+        tmp_path
+        / "arms"
+        / cem_arm
+        / "checkpoint_001"
+        / "observation_ledger.parquet"
+    )
+    pq.write_table(
+        pa.Table.from_pylist(
+            [
+                {
+                    "exact_identity": f"different-{index}",
+                    "outcome_class": "EVALUATED",
+                }
+                for index in range(12)
+            ]
+        ),
+        cem_first,
+    )
+    failed = _paired_structural_canary_verdict(tmp_path, metrics)
+    assert failed["status"] == "MECHANICAL_FAIL_STOP"
+    assert not failed["mechanical_contracts"][
+        "generation_one_full_evaluation_set_parity"
+    ]
+
+
+def test_structural_v2_canary_cannot_override_77o_host(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        "scripts.run_minute_static_production_cem_v3.platform.node",
+        lambda: "NOT-77O",
+    )
+    with pytest.raises(
+        RuntimeError, match="official V3 evidence must run on"
+    ):
+        run_financial(
+            argparse.Namespace(
+                paired_structural_cem_v2_canary=True,
+                allow_noncanonical_host=True,
+                output_root=tmp_path,
+            )
+        )
 
 
 def test_session_sample_is_frozen_month_stratified_quarter() -> None:

@@ -11,7 +11,10 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
-from our_system_phase2.services.search_choice_policy import DecisionSpec
+from our_system_phase2.services.search_choice_policy import (
+    DecisionSpec,
+    choose_available_token,
+)
 
 
 def _stable_hash(value: Any) -> str:
@@ -385,6 +388,274 @@ class CategoricalCEMPolicy:
         ):
             raise RuntimeError("FORMULA_SPACE_ID_DRIFT")
         if str(state.get("source_campaign") or "") != "none":
+            raise RuntimeError("CROSS_SPRINT_ADAPTIVE_MEMORY_FORBIDDEN")
+        expected_specs = _stable_hash(
+            [row.to_dict() for row in decisions]
+        )
+        if str(state.get("decision_specs_hash") or "") != expected_specs:
+            raise RuntimeError("DECISION_SPECS_HASH_DRIFT")
+        rng.bit_generator.state = copy.deepcopy(state["rng_state"])
+        return cls(
+            decisions=decisions,
+            decision_catalog_hash=decision_catalog_hash,
+            formula_space_id=formula_space_id,
+            probability_tables=dict(state["probability_tables"]),
+            parameters=CEMParameters(**dict(state["parameters"])),
+            generation=int(state.get("generation") or 0),
+            reward_observation_count=int(
+                state.get("reward_observation_count") or 0
+            ),
+            last_support_diagnostics=list(
+                state.get("support_diagnostics") or ()
+            ),
+        )
+
+
+class RankWeightedCategoricalCEMPolicy(CategoricalCEMPolicy):
+    """Low-cardinality CEM using every evaluated rank and availability masks."""
+
+    policy_id = "rank_weighted_categorical_cem_v2"
+
+    def choose_available(
+        self,
+        decision: DecisionSpec,
+        *,
+        allowed_token_ids: Sequence[str],
+        rng: np.random.Generator,
+    ) -> str:
+        expected = self._by_context.get(decision.context_id)
+        if expected is None or expected.to_dict() != decision.to_dict():
+            raise RuntimeError(
+                f"CEM_DECISION_CONTEXT_DRIFT:{decision.context_id}"
+            )
+        return choose_available_token(
+            decision,
+            self._probability_tables[decision.context_id],
+            allowed_token_ids=allowed_token_ids,
+            rng=rng,
+        )
+
+    def choose(
+        self,
+        decision: DecisionSpec,
+        *,
+        rng: np.random.Generator,
+    ) -> str:
+        return self.choose_available(
+            decision,
+            allowed_token_ids=tuple(
+                row.token_id for row in decision.ordered_choices
+            ),
+            rng=rng,
+        )
+
+    def tell(
+        self,
+        observations: Sequence[Mapping[str, Any]],
+    ) -> dict[str, Any]:
+        rows = [copy.deepcopy(dict(row)) for row in observations]
+        if any(
+            str(row.get("outcome_class") or "")
+            == "INFRASTRUCTURE_FAILURE"
+            for row in rows
+        ):
+            raise RuntimeError(
+                "INFRASTRUCTURE_FAILURE_IS_RUN_HEALTH_NOT_CEM_OBSERVATION"
+            )
+        if not rows:
+            raise ValueError("CEM tell requires observations")
+        evaluated = sorted(
+            (
+                row
+                for row in rows
+                if str(row.get("outcome_class") or "") == "EVALUATED"
+            ),
+            key=self._rank_key,
+        )
+        if not evaluated:
+            raise ValueError(
+                "rank-weighted CEM tell requires evaluated observations"
+            )
+        rank_weights = {
+            str(row.get("proposal_id") or row.get("exact_identity") or ""): (
+                float(len(evaluated) - rank)
+            )
+            for rank, row in enumerate(evaluated)
+        }
+        if "" in rank_weights:
+            raise ValueError(
+                "rank-weighted CEM observations require stable identity"
+            )
+        diagnostics: list[dict[str, Any]] = []
+        updated_context_count = 0
+        before_hash = _stable_hash(self.probability_tables)
+
+        for decision in self.decisions:
+            token_index = {
+                row.token_id: index
+                for index, row in enumerate(decision.ordered_choices)
+            }
+            selected: list[tuple[str, float]] = []
+            for observation in evaluated:
+                matches = [
+                    str(row.get("selected_token_id") or "")
+                    for row in observation.get("decision_trace") or ()
+                    if str(row.get("context_id") or "")
+                    == decision.context_id
+                ]
+                if len(matches) > 1:
+                    raise RuntimeError(
+                        "CEM_DUPLICATE_CONTEXT_IN_DECISION_TRACE:"
+                        f"{decision.context_id}"
+                    )
+                if not matches:
+                    continue
+                token_id = matches[0]
+                if token_id not in token_index:
+                    raise RuntimeError(
+                        "CEM_TRACE_TOKEN_DRIFT:"
+                        f"{decision.context_id}:{token_id}"
+                    )
+                identity = str(
+                    observation.get("proposal_id")
+                    or observation.get("exact_identity")
+                    or ""
+                )
+                selected.append((token_id, rank_weights[identity]))
+
+            support_ok = (
+                len(selected)
+                >= self.parameters.minimum_active_observations_per_context
+            )
+            changed = False
+            if support_ok:
+                counts = np.zeros(
+                    len(decision.ordered_choices), dtype=float
+                )
+                for token_id, weight in selected:
+                    counts[token_index[token_id]] += float(weight)
+                p_hat = counts / float(counts.sum())
+                p_old = self._probability_tables[decision.context_id]
+                p_smooth = (
+                    (1.0 - self.parameters.alpha) * p_old
+                    + self.parameters.alpha * p_hat
+                )
+                p_new = (
+                    (1.0 - self.parameters.uniform_mix) * p_smooth
+                    + self.parameters.uniform_mix / len(p_smooth)
+                )
+                p_new = _cap_simplex(
+                    p_new,
+                    self.parameters.maximum_category_probability,
+                )
+                changed = not bool(
+                    np.allclose(p_old, p_new, rtol=0.0, atol=1e-15)
+                )
+                self._probability_tables[decision.context_id] = p_new
+                updated_context_count += int(changed)
+            diagnostics.append(
+                {
+                    "decision_id": decision.decision_id,
+                    "context_id": decision.context_id,
+                    "active_observation_count": len(selected),
+                    "rank_weight_sum": float(
+                        sum(weight for _, weight in selected)
+                    ),
+                    "support_status": (
+                        "UPDATED"
+                        if changed
+                        else (
+                            "SUPPORTED_NO_NUMERIC_CHANGE"
+                            if support_ok
+                            else "INSUFFICIENT_ACTIVE_SUPPORT"
+                        )
+                    ),
+                    "probability_changed": changed,
+                }
+            )
+
+        negative_count = sum(
+            float(row["signed_matched_increment"]) < 0.0
+            for row in evaluated
+        )
+        self.reward_observation_count += len(evaluated)
+        receipt = {
+            "generation": self.generation,
+            "observation_count": len(rows),
+            "evaluated_observation_count": len(evaluated),
+            "negative_evaluable_observation_count": negative_count,
+            "weighting_mode": "LINEAR_RANK_ALL_EVALUATED",
+            "updated_context_count": updated_context_count,
+            "probability_hash_before": before_hash,
+            "probability_hash_after": _stable_hash(
+                self.probability_tables
+            ),
+            "support_diagnostics": diagnostics,
+            "observation_digest": _stable_hash(rows),
+        }
+        self.last_support_diagnostics = copy.deepcopy(diagnostics)
+        self.generation += 1
+        return receipt
+
+    def state_dict(
+        self,
+        *,
+        rng: np.random.Generator,
+    ) -> dict[str, Any]:
+        current_state = (
+            "FRESH_UNIFORM"
+            if self.generation == 0 and self.reward_observation_count == 0
+            else "ADAPTED"
+        )
+        return {
+            "schema_version": "cn_rank_weighted_categorical_cem_state_v2",
+            "initialization_origin": (
+                "fresh_uniform_from_frozen_decision_catalog"
+            ),
+            "current_state": current_state,
+            "imported_source_campaign": "none",
+            "qualification_evidence_only": True,
+            "forbidden_as_large_search_initialization": True,
+            "formula_space_id": self.formula_space_id,
+            "decision_catalog_hash": self.decision_catalog_hash,
+            "decision_specs_hash": _stable_hash(
+                [row.to_dict() for row in self.decisions]
+            ),
+            "generation": self.generation,
+            "reward_observation_count": self.reward_observation_count,
+            "parameters": asdict(self.parameters),
+            "probability_tables": self.probability_tables,
+            "rng_state": copy.deepcopy(rng.bit_generator.state),
+            "support_diagnostics": copy.deepcopy(
+                self.last_support_diagnostics
+            ),
+        }
+
+    @classmethod
+    def restore(
+        cls,
+        state: Mapping[str, Any],
+        *,
+        decisions: Sequence[DecisionSpec],
+        decision_catalog_hash: str,
+        formula_space_id: str,
+        rng: np.random.Generator,
+    ) -> "RankWeightedCategoricalCEMPolicy":
+        if (
+            str(state.get("schema_version") or "")
+            != "cn_rank_weighted_categorical_cem_state_v2"
+        ):
+            raise RuntimeError("CEM_V2_STATE_SCHEMA_DRIFT")
+        if (
+            str(state.get("decision_catalog_hash") or "")
+            != str(decision_catalog_hash)
+        ):
+            raise RuntimeError("DECISION_CATALOG_HASH_DRIFT")
+        if str(state.get("formula_space_id") or "") != str(
+            formula_space_id
+        ):
+            raise RuntimeError("FORMULA_SPACE_ID_DRIFT")
+        if str(state.get("imported_source_campaign") or "") != "none":
             raise RuntimeError("CROSS_SPRINT_ADAPTIVE_MEMORY_FORBIDDEN")
         expected_specs = _stable_hash(
             [row.to_dict() for row in decisions]

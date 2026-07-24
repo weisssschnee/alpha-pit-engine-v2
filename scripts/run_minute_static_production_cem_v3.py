@@ -40,6 +40,7 @@ from our_system_phase2.services.portfolio_behavior_archive import (
     bounded_label_free_behavior_probe,
 )
 from our_system_phase2.services.search_choice_policy import (
+    AvailableUniformPolicy,
     DISCLOSURE_V2_EXTENSION_DISPOSITIONS,
     EXPANDED_FORMULA_SPACE_ID,
     OLD_FORMULA_SPACE_ID,
@@ -51,6 +52,7 @@ from our_system_phase2.services.search_choice_policy import (
 )
 from our_system_phase2.services.categorical_cem import (
     CategoricalCEMPolicy,
+    RankWeightedCategoricalCEMPolicy,
 )
 from our_system_phase2.services.typed_primitive_gate import (
     expression_fields,
@@ -115,6 +117,12 @@ SAMPLED_SPEARMAN_MINIMUM = 0.30
 SAMPLED_SIGN_AGREEMENT_MINIMUM = 0.60
 SAMPLED_TOP_RECALL_MINIMUM = 0.75
 SAMPLED_SPEED_MULTIPLIER_MINIMUM = 3.0
+PAIRED_STRUCTURAL_CEM_V2_ARMS = (
+    "arm_b_uniform_expanded",
+    "arm_c_structural_cem_v2",
+)
+PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT = 2
+PAIRED_STRUCTURAL_CEM_V2_FULL_PAIR_CAP = 12
 
 
 class MinuteStaticProductionProjection:
@@ -153,6 +161,9 @@ class MinuteStaticProductionProjection:
                 "gene_surface_id"
             ][0]
         )
+        self._available_candidate_cache: dict[
+            str, tuple[dict[str, Any], ...]
+        ] = {}
 
     def decision_specs(
         self,
@@ -233,6 +244,197 @@ class MinuteStaticProductionProjection:
 
     def decision_catalog_hash(self, formula_space_id: str) -> str:
         return str(self.decision_catalog(formula_space_id)["catalog_hash"])
+
+    def structural_decision_specs(
+        self,
+        formula_space_id: str,
+    ) -> tuple[DecisionSpec, ...]:
+        """Expose only reusable structural choices to adaptive policy."""
+
+        production, _ = self.decision_specs(formula_space_id)
+        return (production,)
+
+    def structural_decision_catalog(
+        self,
+        formula_space_id: str,
+    ) -> dict[str, Any]:
+        rows = self.structural_decision_specs(formula_space_id)
+        payload = {
+            "schema_version": (
+                "cn_minute_static_structural_decision_catalog_v2"
+            ),
+            "route_id": ROUTE_ID,
+            "formula_space_id": formula_space_id,
+            "fixed_gene_surface_id": self.gene_surface_id,
+            "adaptive_decisions": [row.to_dict() for row in rows],
+            "concrete_field_pair_selection": (
+                "UNIFORM_WITHOUT_REPLACEMENT_FROM_EXACT_AVAILABLE_SET"
+            ),
+            "joint_exact_availability_key": (
+                "production_id_x_field_pair_id"
+            ),
+            "field_family_authority": (
+                "NOT_DECLARED_IN_CURRENT_REGISTRY_NO_INVENTED_GROUPS"
+            ),
+        }
+        payload["catalog_hash"] = _stable_hash(payload)
+        return payload
+
+    def structural_decision_catalog_hash(
+        self,
+        formula_space_id: str,
+    ) -> str:
+        return str(
+            self.structural_decision_catalog(formula_space_id)[
+                "catalog_hash"
+            ]
+        )
+
+    def _available_candidate_catalog(
+        self,
+        formula_space_id: str,
+    ) -> tuple[dict[str, Any], ...]:
+        cached = self._available_candidate_cache.get(formula_space_id)
+        if cached is not None:
+            return cached
+        production = self.structural_decision_specs(
+            formula_space_id
+        )[0]
+        rows = []
+        for choice in production.ordered_choices:
+            production_id = str(choice.token_id)
+            skeleton_id = str(choice.gene_value)
+            for pair_id in self.field_pair_ids:
+                pair = self.generator.propose_categorical_genes(
+                    ROUTE_ID,
+                    genes={
+                        "skeleton_id": skeleton_id,
+                        "gene_surface_id": self.gene_surface_id,
+                        "field_pair_id": pair_id,
+                    },
+                )
+                rows.append(
+                    {
+                        "production_id": production_id,
+                        "skeleton_id": skeleton_id,
+                        "field_pair_id": pair_id,
+                        "candidate": dict(pair.candidate),
+                        "control": dict(pair.control),
+                    }
+                )
+        result = tuple(
+            sorted(
+                rows,
+                key=lambda row: (
+                    row["production_id"],
+                    row["field_pair_id"],
+                ),
+            )
+        )
+        self._available_candidate_cache[formula_space_id] = result
+        return result
+
+    def generate_available(
+        self,
+        *,
+        formula_space_id: str,
+        policy: Any,
+        rng: np.random.Generator,
+        exact_seen: set[str],
+    ) -> GeneratedPair:
+        """Draw a structural choice, then one unused concrete exact candidate."""
+
+        available = [
+            row
+            for row in self._available_candidate_catalog(formula_space_id)
+            if str(row["candidate"]["exact_identity"]) not in exact_seen
+        ]
+        if not available:
+            raise RuntimeError("MINUTE_STRUCTURAL_EXACT_SUPPLY_EXHAUSTED")
+        by_production: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for row in available:
+            by_production[str(row["production_id"])].append(row)
+        production = self.structural_decision_specs(
+            formula_space_id
+        )[0]
+        choose_available = getattr(policy, "choose_available", None)
+        if not callable(choose_available):
+            raise TypeError(
+                "structural V2 policy must implement choose_available"
+            )
+        selected_production = str(
+            choose_available(
+                production,
+                allowed_token_ids=tuple(by_production),
+                rng=rng,
+            )
+        )
+        field_decision = DecisionSpec(
+            decision_id="minute_static.field_pair_id",
+            context_id=(
+                f"route={ROUTE_ID}|formula_space={formula_space_id}|"
+                f"production={selected_production}|"
+                "decision=field_pair_id|adaptive=false"
+            ),
+            decision_type="FIELD_PAIR_NON_ADAPTIVE",
+            gene_slot="field_pair_id",
+            ordered_choices=tuple(
+                SearchChoice(
+                    token_id="field_pair:" + pair_id,
+                    gene_value=pair_id,
+                    semantic_value={
+                        "field_pair_id": pair_id,
+                        "selection": (
+                            "UNIFORM_REMAINING_EXACT_AVAILABLE"
+                        ),
+                    },
+                )
+                for pair_id in self.field_pair_ids
+            ),
+        )
+        concrete_uniform = AvailableUniformPolicy()
+        selected_pair_token = concrete_uniform.choose_available(
+            field_decision,
+            allowed_token_ids=tuple(
+                "field_pair:" + str(row["field_pair_id"])
+                for row in by_production[selected_production]
+            ),
+            rng=rng,
+        )
+        selected_pair_id = selected_pair_token.split(":", 1)[1]
+        selected = next(
+            row
+            for row in by_production[selected_production]
+            if str(row["field_pair_id"]) == selected_pair_id
+        )
+        trace = [
+            DecisionRecord(
+                decision_id=production.decision_id,
+                context_id=production.context_id,
+                decision_type=production.decision_type,
+                selected_token_id=selected_production,
+            ).to_dict(),
+            DecisionRecord(
+                decision_id=field_decision.decision_id,
+                context_id=field_decision.context_id,
+                decision_type=field_decision.decision_type,
+                selected_token_id=selected_pair_token,
+            ).to_dict(),
+        ]
+        shared = {
+            "formula_space_id": formula_space_id,
+            "production_id": selected_production,
+            "decision_trace": trace,
+            "decision_trace_hash": _stable_hash(trace),
+            "generator_policy": str(
+                getattr(policy, "policy_id", type(policy).__name__)
+            ),
+            "exact_availability_mask": "APPLIED_BEFORE_DRAW",
+        }
+        return GeneratedPair(
+            {**dict(selected["candidate"]), **shared},
+            {**dict(selected["control"]), **shared},
+        )
 
     def generate(
         self,
@@ -317,6 +519,263 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> Path:
         encoding="utf-8",
     )
     return path
+
+
+def _structural_v2_fresh_stream_parity(
+    projection: MinuteStaticProductionProjection,
+    *,
+    seed: int,
+    count: int = 32,
+) -> dict[str, Any]:
+    decisions = projection.structural_decision_specs(
+        EXPANDED_FORMULA_SPACE_ID
+    )
+    catalog_hash = projection.structural_decision_catalog_hash(
+        EXPANDED_FORMULA_SPACE_ID
+    )
+    uniform = AvailableUniformPolicy()
+    cem = RankWeightedCategoricalCEMPolicy.fresh(
+        decisions=decisions,
+        decision_catalog_hash=catalog_hash,
+        formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+    )
+    uniform_rng = np.random.default_rng(int(seed))
+    cem_rng = np.random.default_rng(int(seed))
+    uniform_seen: set[str] = set()
+    cem_seen: set[str] = set()
+    uniform_rows = []
+    cem_rows = []
+    for _ in range(int(count)):
+        left = projection.generate_available(
+            formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+            policy=uniform,
+            rng=uniform_rng,
+            exact_seen=uniform_seen,
+        )
+        right = projection.generate_available(
+            formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+            policy=cem,
+            rng=cem_rng,
+            exact_seen=cem_seen,
+        )
+        left_identity = str(left.candidate["exact_identity"])
+        right_identity = str(right.candidate["exact_identity"])
+        uniform_rows.append(left_identity)
+        cem_rows.append(right_identity)
+        uniform_seen.add(left_identity)
+        cem_seen.add(right_identity)
+    payload = {
+        "schema_version": (
+            "cn_minute_static_structural_cem_v2_fresh_parity_v1"
+        ),
+        "seed": int(seed),
+        "candidate_count": int(count),
+        "uniform_policy": uniform.policy_id,
+        "cem_policy": cem.policy_id,
+        "exact_candidate_stream_equal": uniform_rows == cem_rows,
+        "uniform_exact_unique": len(set(uniform_rows)) == len(uniform_rows),
+        "cem_exact_unique": len(set(cem_rows)) == len(cem_rows),
+        "uniform_stream_hash": _stable_hash(uniform_rows),
+        "cem_stream_hash": _stable_hash(cem_rows),
+    }
+    payload["status"] = (
+        "PASS"
+        if all(
+            (
+                payload["exact_candidate_stream_equal"],
+                payload["uniform_exact_unique"],
+                payload["cem_exact_unique"],
+            )
+        )
+        else "FAIL"
+    )
+    return payload
+
+
+def _verify_reused_sampled_authority(
+    root: Path,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    root = root.resolve()
+    qualification_path = root / "sampled_authority_qualification.json"
+    session_path = root / "session_sample_contract.json"
+    manifest_path = root / "artifact_manifest.json"
+    manifest = json.loads(
+        manifest_path.read_text(encoding="utf-8-sig")
+    )
+    artifacts = {
+        str(row["path"]): str(row["sha256"])
+        for row in manifest.get("artifacts") or ()
+    }
+    expected = {
+        qualification_path.name: _sha256(qualification_path),
+        session_path.name: _sha256(session_path),
+    }
+    drift = [
+        name
+        for name, digest in expected.items()
+        if artifacts.get(name) != digest
+    ]
+    if drift:
+        raise RuntimeError(
+            "REUSED_SAMPLED_AUTHORITY_HASH_DRIFT:" + ",".join(drift)
+        )
+    qualification = json.loads(
+        qualification_path.read_text(encoding="utf-8-sig")
+    )
+    if not bool(
+        qualification.get("campaign_local_selector_authorized")
+    ):
+        raise RuntimeError("REUSED_SAMPLED_AUTHORITY_NOT_QUALIFIED")
+    session = json.loads(
+        session_path.read_text(encoding="utf-8-sig")
+    )
+    receipt = {
+        "schema_version": (
+            "cn_minute_static_reused_sampled_authority_receipt_v1"
+        ),
+        "status": "REUSED_HASH_VERIFIED_NO_RECOMPUTATION",
+        "source_root": str(root),
+        "source_manifest_sha256": _sha256(manifest_path),
+        "qualification_sha256": expected[qualification_path.name],
+        "session_sample_sha256": expected[session_path.name],
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    return qualification, session, receipt
+
+
+def _paired_structural_canary_verdict(
+    output_root: Path,
+    arm_metrics: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    uniform_arm, cem_arm = PAIRED_STRUCTURAL_CEM_V2_ARMS
+
+    def proposal_stream(arm: str, checkpoint: int) -> list[str]:
+        rows = _read_rows(
+            output_root
+            / "arms"
+            / arm
+            / f"checkpoint_{checkpoint:03d}"
+            / "proposal_ledger.parquet"
+        )
+        return [
+            str(row["exact_identity"])
+            for row in sorted(
+                rows, key=lambda row: int(row["raw_attempt"])
+            )
+        ]
+
+    first_uniform = proposal_stream(uniform_arm, 1)
+    first_cem = proposal_stream(cem_arm, 1)
+
+    def evaluated_exact_set(arm: str, checkpoint: int) -> list[str]:
+        return sorted(
+            str(row["exact_identity"])
+            for row in _read_rows(
+                output_root
+                / "arms"
+                / arm
+                / f"checkpoint_{checkpoint:03d}"
+                / "observation_ledger.parquet"
+            )
+            if str(row.get("outcome_class") or "") == "EVALUATED"
+        )
+
+    first_uniform_full = evaluated_exact_set(uniform_arm, 1)
+    first_cem_full = evaluated_exact_set(cem_arm, 1)
+    duplicate_counts = {}
+    for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS:
+        duplicate_counts[arm] = []
+        for checkpoint in range(
+            1, PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT + 1
+        ):
+            summary = json.loads(
+                (
+                    output_root
+                    / "arms"
+                    / arm
+                    / f"checkpoint_{checkpoint:03d}"
+                    / "checkpoint_summary.json"
+                ).read_text(encoding="utf-8-sig")
+            )
+            duplicate_counts[arm].append(
+                int(summary["exact_duplicate_pairs"])
+            )
+    cem_state = json.loads(
+        (
+            output_root
+            / "arms"
+            / cem_arm
+            / (
+                "checkpoint_"
+                f"{PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT:03d}"
+            )
+            / "arm_state.json"
+        ).read_text(encoding="utf-8-sig")
+    )["optimizer_state"]
+    contracts = {
+        "generation_one_exact_stream_parity": (
+            bool(first_uniform)
+            and first_uniform == first_cem
+        ),
+        "generation_one_full_evaluation_set_parity": (
+            bool(first_uniform_full)
+            and first_uniform_full == first_cem_full
+        ),
+        "availability_mask_zero_exact_duplicates": all(
+            count == 0
+            for values in duplicate_counts.values()
+            for count in values
+        ),
+        "support_complete": all(
+            int(arm_metrics[arm]["evaluated_pairs"])
+            >= (
+                PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT
+                * PAIRED_STRUCTURAL_CEM_V2_FULL_PAIR_CAP
+            )
+            for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS
+        ),
+        "state_adapted": (
+            str(cem_state.get("current_state") or "") == "ADAPTED"
+            and int(cem_state.get("generation") or 0)
+            == PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT
+        ),
+    }
+    uniform_metrics = arm_metrics[uniform_arm]
+    cem_metrics = arm_metrics[cem_arm]
+    return {
+        "schema_version": (
+            "cn_minute_static_structural_cem_v2_canary_verdict_v1"
+        ),
+        "mechanical_contracts": contracts,
+        "exact_duplicate_counts": duplicate_counts,
+        "generation_one_stream_hash": _stable_hash(first_uniform),
+        "generation_one_full_evaluation_set_hash": _stable_hash(
+            first_uniform_full
+        ),
+        "directional_observation": {
+            "uniform_positive_pairs": int(
+                uniform_metrics["positive_matched_pairs"]
+            ),
+            "cem_positive_pairs": int(
+                cem_metrics["positive_matched_pairs"]
+            ),
+            "uniform_median_increment": uniform_metrics[
+                "median_signed_matched_increment"
+            ],
+            "cem_median_increment": cem_metrics[
+                "median_signed_matched_increment"
+            ],
+            "not_a_financial_qualification": True,
+        },
+        "status": (
+            "MECHANICAL_PASS_RUN_MEDIUM"
+            if all(contracts.values())
+            else "MECHANICAL_FAIL_STOP"
+        ),
+        "large_search_authorized": False,
+    }
 
 
 def _historical_exact(*paths: Path) -> set[str]:
@@ -1727,8 +2186,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def run_financial(args: argparse.Namespace) -> dict[str, Any]:
+    paired_structural_v2 = bool(
+        getattr(args, "paired_structural_cem_v2_canary", False)
+    )
     if (
-        not args.allow_noncanonical_host
+        (paired_structural_v2 or not args.allow_noncanonical_host)
         and platform.node().upper() != AUTHORIZED_HOST
     ):
         raise RuntimeError(
@@ -1736,6 +2198,21 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         )
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
+    campaign_arms = (
+        PAIRED_STRUCTURAL_CEM_V2_ARMS
+        if paired_structural_v2
+        else ARMS
+    )
+    checkpoint_count = (
+        PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT
+        if paired_structural_v2
+        else CHECKPOINT_COUNT
+    )
+    full_pair_cap = (
+        PAIRED_STRUCTURAL_CEM_V2_FULL_PAIR_CAP
+        if paired_structural_v2
+        else FULL_PAIR_CAP
+    )
     lock_path = output_root / "campaign_writer.json"
     lock = {
         "task_id": str(args.task_id),
@@ -1794,12 +2271,35 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
     )
     expanded_catalog_path = _write_json(
         output_root / "decision_catalog_expanded.json",
-        projection.decision_catalog(EXPANDED_FORMULA_SPACE_ID),
+        (
+            projection.structural_decision_catalog(
+                EXPANDED_FORMULA_SPACE_ID
+            )
+            if paired_structural_v2
+            else projection.decision_catalog(
+                EXPANDED_FORMULA_SPACE_ID
+            )
+        ),
     )
     split = FixedSplitAuthority.read(args.split_manifest.resolve())
-    session_sample = _session_sample_contract(
-        split, seed=FINANCIAL_SEED + 77
-    )
+    reused_sampled_receipt_path = None
+    reused_sampled_qualification = None
+    if paired_structural_v2:
+        (
+            reused_sampled_qualification,
+            session_sample,
+            reused_sampled_receipt,
+        ) = _verify_reused_sampled_authority(
+            args.reused_sampled_authority_root
+        )
+        reused_sampled_receipt_path = _write_json(
+            output_root / "sampled_authority_reuse_receipt.json",
+            reused_sampled_receipt,
+        )
+    else:
+        session_sample = _session_sample_contract(
+            split, seed=FINANCIAL_SEED + 77
+        )
     session_sample_path = _write_json(
         output_root / "session_sample_contract.json",
         session_sample,
@@ -1809,31 +2309,41 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             "cn_minute_static_production_cem_v3_financial_contract_v1"
         ),
         "status": "FROZEN_EXECUTABLE",
-        "authorization_id": AUTHORIZATION_ID,
+        "authorization_id": (
+            "MINUTE_STATIC_STRUCTURAL_CEM_V2_PAIRED_CANARY"
+            if paired_structural_v2
+            else AUTHORIZATION_ID
+        ),
         "route_id": ROUTE_ID,
         "old_production": "field_spread",
         "added_existing_production": "normalized_ratio",
-        "arms": list(ARMS),
-        "checkpoint_count": CHECKPOINT_COUNT,
-        "full_coordinate_pair_cap_per_checkpoint": FULL_PAIR_CAP,
+        "arms": list(campaign_arms),
+        "checkpoint_count": checkpoint_count,
+        "full_coordinate_pair_cap_per_checkpoint": full_pair_cap,
         "behavior_probe_cap": 128,
         "behavior_probe_target": FINANCIAL_BEHAVIOR_PROBE_TARGET,
         "sampled_selection_cap": 48,
         "minimum_evaluated_pairs_per_arm": (
-            MINIMUM_EVALUATED_PAIRS
+            checkpoint_count * full_pair_cap
+            if paired_structural_v2
+            else MINIMUM_EVALUATED_PAIRS
         ),
-        "minimum_active_checkpoints_per_arm": (
-            MINIMUM_ACTIVE_CHECKPOINTS
-        ),
+        "minimum_active_checkpoints_per_arm": checkpoint_count,
         "production_root_contract_hash": contract["contract_hash"],
         "session_sample_contract_hash": session_sample[
             "contract_hash"
         ],
-        "decision_surface": [
-            "production_id",
-            "field_pair_id",
-        ],
+        "decision_surface": (
+            [
+                "production_id_adaptive",
+                "field_pair_id_uniform_remaining_exact",
+            ]
+            if paired_structural_v2
+            else ["production_id", "field_pair_id"]
+        ),
         "left_right_independent_probabilities": "FORBIDDEN",
+        "paired_common_random_stream": paired_structural_v2,
+        "sampled_feedback_writes": "FORBIDDEN",
         "portfolio_mode": "long_only_top",
         "cost_bps": 5.0,
         "horizons": [1, 5, 15, 30],
@@ -1850,8 +2360,14 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
     frozen_path = _write_json(
         output_root / "frozen_contract.json", frozen_contract
     )
-    fresh_state_parity = _fresh_large_search_state_parity(
-        projection, seed=FINANCIAL_SEED + 900_001
+    fresh_state_parity = (
+        _structural_v2_fresh_stream_parity(
+            projection, seed=FINANCIAL_SEED + 900_001
+        )
+        if paired_structural_v2
+        else _fresh_large_search_state_parity(
+            projection, seed=FINANCIAL_SEED + 900_001
+        )
     )
     fresh_state_parity_path = _write_json(
         output_root / "fresh_large_search_state_parity.json",
@@ -1861,29 +2377,32 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("FRESH_LARGE_SEARCH_STATE_PARITY_FAILED")
 
     deadline_epoch = time.time() + int(args.maximum_wall_seconds)
-    sampled_root = output_root / "sampled_authority"
-    sampled_root.mkdir(parents=True, exist_ok=True)
-    sampled_qualification = _qualify_sampled_authority(
-        root=sampled_root,
-        registry=registry,
-        split=split,
-        session_sample_path=session_sample_path,
-        source_root=args.source_campaign_root.resolve(),
-        source_candidate_ledger=(
-            args.source_candidate_ledger.resolve()
-        ),
-        source_observation_ledger=(
-            args.source_observation_ledger.resolve()
-        ),
-        field_root=args.sampled_authority_field_root.resolve(),
-        label_root=args.sampled_authority_label_root.resolve(),
-        purity_path=args.split_boundary_purity.resolve(),
-        sidecar_closure=(
-            args.sampled_authority_sidecar_closure.resolve()
-        ),
-        compute_threads=int(args.compute_threads),
-        deadline_epoch=deadline_epoch,
-    )
+    if paired_structural_v2:
+        sampled_qualification = dict(reused_sampled_qualification or {})
+    else:
+        sampled_root = output_root / "sampled_authority"
+        sampled_root.mkdir(parents=True, exist_ok=True)
+        sampled_qualification = _qualify_sampled_authority(
+            root=sampled_root,
+            registry=registry,
+            split=split,
+            session_sample_path=session_sample_path,
+            source_root=args.source_campaign_root.resolve(),
+            source_candidate_ledger=(
+                args.source_candidate_ledger.resolve()
+            ),
+            source_observation_ledger=(
+                args.source_observation_ledger.resolve()
+            ),
+            field_root=args.sampled_authority_field_root.resolve(),
+            label_root=args.sampled_authority_label_root.resolve(),
+            purity_path=args.split_boundary_purity.resolve(),
+            sidecar_closure=(
+                args.sampled_authority_sidecar_closure.resolve()
+            ),
+            compute_threads=int(args.compute_threads),
+            deadline_epoch=deadline_epoch,
+        )
     sampled_qualification_path = _write_json(
         output_root / "sampled_authority_qualification.json",
         sampled_qualification,
@@ -1909,21 +2428,55 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         "active_bar": int(args.compute_threads)
     }
     arm_state: dict[str, dict[str, Any]] = {}
-    for arm_index, arm in enumerate(ARMS):
+    for arm_index, arm in enumerate(campaign_arms):
         exact, archive, closed, rng_state, optimizer_state = (
             _load_arm_state(
                 output_root=output_root,
                 arm=arm,
                 initial_exact=initial_exact,
                 initial_behavior=initial_behavior,
+                checkpoint_count=checkpoint_count,
             )
         )
         rng = np.random.default_rng(
-            FINANCIAL_SEED + 10_000 * (arm_index + 1)
+            (
+                FINANCIAL_SEED + 20_000
+                if paired_structural_v2
+                else FINANCIAL_SEED + 10_000 * (arm_index + 1)
+            )
         )
         if rng_state is not None:
             rng.bit_generator.state = copy.deepcopy(rng_state)
-        if arm == "arm_c_cem_expanded":
+        if paired_structural_v2 and arm == "arm_c_structural_cem_v2":
+            decisions = projection.structural_decision_specs(
+                EXPANDED_FORMULA_SPACE_ID
+            )
+            policy = (
+                RankWeightedCategoricalCEMPolicy.restore(
+                    optimizer_state,
+                    decisions=decisions,
+                    decision_catalog_hash=(
+                        projection.structural_decision_catalog_hash(
+                            EXPANDED_FORMULA_SPACE_ID
+                        )
+                    ),
+                    formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+                    rng=rng,
+                )
+                if optimizer_state is not None
+                else RankWeightedCategoricalCEMPolicy.fresh(
+                    decisions=decisions,
+                    decision_catalog_hash=(
+                        projection.structural_decision_catalog_hash(
+                            EXPANDED_FORMULA_SPACE_ID
+                        )
+                    ),
+                    formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+                )
+            )
+        elif paired_structural_v2:
+            policy = AvailableUniformPolicy()
+        elif arm == "arm_c_cem_expanded":
             decisions = projection.decision_specs(
                 EXPANDED_FORMULA_SPACE_ID
             )
@@ -1960,11 +2513,11 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             "policy": policy,
         }
 
-    for checkpoint_index in range(CHECKPOINT_COUNT):
+    for checkpoint_index in range(checkpoint_count):
         order = (
-            list(ARMS)
+            list(campaign_arms)
             if checkpoint_index % 2 == 0
-            else list(reversed(ARMS))
+            else list(reversed(campaign_arms))
         )
         for arm in order:
             state = arm_state[arm]
@@ -2000,6 +2553,26 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
                 behavior_probe_target=(
                     FINANCIAL_BEHAVIOR_PROBE_TARGET
                 ),
+                availability_masked_sampling=paired_structural_v2,
+                generator_policy_id=str(
+                    getattr(
+                        state["policy"],
+                        "policy_id",
+                        type(state["policy"]).__name__,
+                    )
+                ),
+                optimizer_updates_enabled=(
+                    paired_structural_v2
+                    and arm == "arm_c_structural_cem_v2"
+                )
+                if paired_structural_v2
+                else None,
+                sampled_selection_cap=(
+                    FINANCIAL_BEHAVIOR_PROBE_TARGET
+                    if paired_structural_v2
+                    else 48
+                ),
+                full_pair_cap=full_pair_cap,
             )
 
     initial_families = {
@@ -2013,64 +2586,116 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             arm,
             initial_families,
             backend_name="active_bar",
+            checkpoint_count=checkpoint_count,
         )
-        for arm in ARMS
+        for arm in campaign_arms
     }
-    comparison = _comparison_verdict(
-        arm_a=arm_metrics["arm_a_uniform_old"],
-        arm_b=arm_metrics["arm_b_uniform_expanded"],
-        arm_c=arm_metrics["arm_c_cem_expanded"],
-        static_status="PASS",
-        behavior_status="PASS",
-        sampled_full_contract=(
-            "PASS" if sampled_selector_evidence_qualified else "FAIL"
-        ),
-        performance_baseline=sampled_qualification[
-            "source_full_comparator_contract"
-        ],
-        selected_backends=("active_bar",),
-    )
-    blockers = []
-    if not sampled_selector_evidence_qualified:
-        blockers.append("SAMPLED_PHASE3CM_EVIDENCE_NOT_QUALIFIED")
+    if paired_structural_v2:
+        comparison = _paired_structural_canary_verdict(
+            output_root, arm_metrics
+        )
+        final = {
+            "SAMPLED_PHASE3CM_AUTHORITY": (
+                "REUSED_ACTIVE_ROUTE_LOCAL_SELECTION_AUTHORITY"
+            ),
+            "PAIRED_STREAM_CONTRACT": (
+                "PASS"
+                if all(
+                    comparison["mechanical_contracts"][name]
+                    for name in (
+                        "generation_one_exact_stream_parity",
+                        "generation_one_full_evaluation_set_parity",
+                    )
+                )
+                else "FAIL"
+            ),
+            "EXACT_AVAILABILITY_MASK": (
+                "PASS"
+                if comparison["mechanical_contracts"][
+                    "availability_mask_zero_exact_duplicates"
+                ]
+                else "FAIL"
+            ),
+            "STRUCTURAL_CEM_V2_CANARY": comparison["status"],
+            "CEM_SEARCH_INCREMENT": (
+                "NOT_YET_FINANCIALLY_QUALIFIED_MECHANICAL_CANARY_ONLY"
+            ),
+            "TARGET_FAMILY_LARGE_SEARCH_READINESS": (
+                "SEARCH_POLICY_MEDIUM_QUALIFICATION_REQUIRED"
+                if comparison["status"]
+                == "MECHANICAL_PASS_RUN_MEDIUM"
+                else "SEARCH_POLICY_IMPLEMENTATION_BLOCKED"
+            ),
+            "READINESS_BLOCKERS": [
+                "MEDIUM_PAIRED_SEARCH_POLICY_QUALIFICATION_REQUIRED"
+            ]
+            if comparison["status"] == "MECHANICAL_PASS_RUN_MEDIUM"
+            else ["STRUCTURAL_CEM_V2_MECHANICAL_CONTRACT_FAILED"],
+        }
     else:
-        blockers.append("SAMPLED_PHASE3CM_AUTHORITY_PENDING_FORMAL_PROMOTION")
-    if not all(comparison["minimum_support"].values()):
-        blockers.append("INSUFFICIENT_FINANCIAL_COMPARISON_SUPPORT")
-    if comparison["FORMULA_SPACE_INCREMENT"] != "QUALIFIED":
-        blockers.append("FORMULA_SPACE_INCREMENT_NOT_QUALIFIED")
-    if comparison["CEM_SEARCH_INCREMENT"] != "QUALIFIED":
-        blockers.append("CEM_SEARCH_INCREMENT_NOT_QUALIFIED")
-    if comparison["PERFORMANCE_CONTRACT"] != "PASS":
-        blockers.append("PERFORMANCE_CONTRACT_NOT_PASS")
-    final = {
-        "SAMPLED_PHASE3CM_AUTHORITY": (
-            "PENDING_FORMAL_PROMOTION"
-            if sampled_selector_evidence_qualified
-            else "NOT_QUALIFIED"
-        ),
-        "SAMPLED_PHASE3CM_EVIDENCE": sampled_qualification[
-            "evidence_status"
-        ],
-        "FORMULA_SPACE_INCREMENT": comparison[
-            "FORMULA_SPACE_INCREMENT"
-        ],
-        "CEM_SEARCH_INCREMENT": comparison["CEM_SEARCH_INCREMENT"],
-        "PERFORMANCE_CONTRACT": comparison["PERFORMANCE_CONTRACT"],
-        "CAMPAIGN_LOCAL_LARGE_SEARCH_READINESS": comparison[
-            "TARGET_FAMILY_LARGE_SEARCH_READINESS"
-        ],
-        "TARGET_FAMILY_LARGE_SEARCH_READINESS": (
-            "SEMANTICS_BLOCKED_PENDING_SAMPLED_AUTHORITY_PROMOTION"
-            if (
-                sampled_selector_evidence_qualified
-                and comparison["TARGET_FAMILY_LARGE_SEARCH_READINESS"]
-                == "READY"
+        comparison = _comparison_verdict(
+            arm_a=arm_metrics["arm_a_uniform_old"],
+            arm_b=arm_metrics["arm_b_uniform_expanded"],
+            arm_c=arm_metrics["arm_c_cem_expanded"],
+            static_status="PASS",
+            behavior_status="PASS",
+            sampled_full_contract=(
+                "PASS" if sampled_selector_evidence_qualified else "FAIL"
+            ),
+            performance_baseline=sampled_qualification[
+                "source_full_comparator_contract"
+            ],
+            selected_backends=("active_bar",),
+        )
+        blockers = []
+        if not sampled_selector_evidence_qualified:
+            blockers.append("SAMPLED_PHASE3CM_EVIDENCE_NOT_QUALIFIED")
+        else:
+            blockers.append(
+                "SAMPLED_PHASE3CM_AUTHORITY_PENDING_FORMAL_PROMOTION"
             )
-            else comparison["TARGET_FAMILY_LARGE_SEARCH_READINESS"]
-        ),
-        "READINESS_BLOCKERS": blockers,
-    }
+        if not all(comparison["minimum_support"].values()):
+            blockers.append("INSUFFICIENT_FINANCIAL_COMPARISON_SUPPORT")
+        if comparison["FORMULA_SPACE_INCREMENT"] != "QUALIFIED":
+            blockers.append("FORMULA_SPACE_INCREMENT_NOT_QUALIFIED")
+        if comparison["CEM_SEARCH_INCREMENT"] != "QUALIFIED":
+            blockers.append("CEM_SEARCH_INCREMENT_NOT_QUALIFIED")
+        if comparison["PERFORMANCE_CONTRACT"] != "PASS":
+            blockers.append("PERFORMANCE_CONTRACT_NOT_PASS")
+        final = {
+            "SAMPLED_PHASE3CM_AUTHORITY": (
+                "PENDING_FORMAL_PROMOTION"
+                if sampled_selector_evidence_qualified
+                else "NOT_QUALIFIED"
+            ),
+            "SAMPLED_PHASE3CM_EVIDENCE": sampled_qualification[
+                "evidence_status"
+            ],
+            "FORMULA_SPACE_INCREMENT": comparison[
+                "FORMULA_SPACE_INCREMENT"
+            ],
+            "CEM_SEARCH_INCREMENT": comparison[
+                "CEM_SEARCH_INCREMENT"
+            ],
+            "PERFORMANCE_CONTRACT": comparison[
+                "PERFORMANCE_CONTRACT"
+            ],
+            "CAMPAIGN_LOCAL_LARGE_SEARCH_READINESS": comparison[
+                "TARGET_FAMILY_LARGE_SEARCH_READINESS"
+            ],
+            "TARGET_FAMILY_LARGE_SEARCH_READINESS": (
+                "SEMANTICS_BLOCKED_PENDING_SAMPLED_AUTHORITY_PROMOTION"
+                if (
+                    sampled_selector_evidence_qualified
+                    and comparison[
+                        "TARGET_FAMILY_LARGE_SEARCH_READINESS"
+                    ]
+                    == "READY"
+                )
+                else comparison["TARGET_FAMILY_LARGE_SEARCH_READINESS"]
+            ),
+            "READINESS_BLOCKERS": blockers,
+        }
     metrics_path = _write_json(
         output_root / "qualification_metrics.json",
         {
@@ -2107,6 +2732,11 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         frozen_path,
         fresh_state_parity_path,
         sampled_qualification_path,
+        *(
+            [reused_sampled_receipt_path]
+            if reused_sampled_receipt_path is not None
+            else []
+        ),
         metrics_path,
         final_path,
         *(
@@ -2120,16 +2750,18 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             / arm
             / f"checkpoint_{index + 1:03d}"
             / "batch_manifest.json"
-            for arm in ARMS
-            for index in range(CHECKPOINT_COUNT)
+            for arm in campaign_arms
+            for index in range(checkpoint_count)
         ),
     ]
     manifest = {
         "schema_version": (
-            "cn_minute_static_production_cem_v3_manifest_v2"
+            "cn_minute_static_structural_cem_v2_canary_manifest_v1"
+            if paired_structural_v2
+            else "cn_minute_static_production_cem_v3_manifest_v2"
         ),
         "status": "CAMPAIGN_CLOSED",
-        "authorization_id": AUTHORIZATION_ID,
+        "authorization_id": frozen_contract["authorization_id"],
         "repo_sha": str(args.repo_sha),
         "task_id": str(args.task_id),
         "verdict": final,
@@ -2192,6 +2824,11 @@ def main() -> int:
     parser.add_argument("--split-manifest", type=Path)
     parser.add_argument("--compute-threads", type=int, default=30)
     parser.add_argument("--continue-financial", action="store_true")
+    parser.add_argument(
+        "--paired-structural-cem-v2-canary",
+        action="store_true",
+    )
+    parser.add_argument("--reused-sampled-authority-root", type=Path)
     parser.add_argument("--reused-supply-root", type=Path)
     parser.add_argument("--source-campaign-root", type=Path)
     parser.add_argument("--source-observation-ledger", type=Path)
@@ -2237,6 +2874,14 @@ def main() -> int:
         if missing:
             parser.error(
                 "--continue-financial missing: " + ",".join(missing)
+            )
+        if (
+            args.paired_structural_cem_v2_canary
+            and args.reused_sampled_authority_root is None
+        ):
+            parser.error(
+                "--paired-structural-cem-v2-canary requires "
+                "--reused-sampled-authority-root"
             )
     elif not args.static_only and (
         args.historical_behavior_archive is None
