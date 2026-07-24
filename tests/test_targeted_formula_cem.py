@@ -6,6 +6,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from scripts.run_targeted_formula_cem_qualification import (
+    _qualification_gate_status,
+)
 from our_system_phase2.services.categorical_cem import (
     CategoricalCEMPolicy,
 )
@@ -44,6 +47,31 @@ DISCOVERY = (
 )
 ROUTE_ID = "DISCLOSURE_EVENT"
 SKELETON_ID = "cn.comp.v2.disclosure_event.pre_event_path"
+
+
+@pytest.mark.parametrize(
+    ("exact_gate", "behavior_gate", "formula_gate", "expected"),
+    (
+        (False, True, True, "TARGET_FAMILY_SUPPLY_NOT_PROVEN"),
+        (True, False, True, "TARGET_FAMILY_SUPPLY_NOT_PROVEN"),
+        (True, True, False, "FORMULA_SPACE_INCREMENT_NOT_PROVEN"),
+        (True, True, True, "PASS"),
+    ),
+)
+def test_qualification_gate_classifies_supply_and_formula_failures_separately(
+    exact_gate: bool,
+    behavior_gate: bool,
+    formula_gate: bool,
+    expected: str,
+) -> None:
+    assert (
+        _qualification_gate_status(
+            exact_gate=exact_gate,
+            behavior_gate=behavior_gate,
+            formula_space_behavior_gate=formula_gate,
+        )
+        == expected
+    )
 
 
 def _projection() -> TargetedFormulaProjection:

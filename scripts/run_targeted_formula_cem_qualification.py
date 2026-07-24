@@ -425,6 +425,19 @@ def _static_verdict(
     }
 
 
+def _qualification_gate_status(
+    *,
+    exact_gate: bool,
+    behavior_gate: bool,
+    formula_space_behavior_gate: bool,
+) -> str:
+    if not exact_gate or not behavior_gate:
+        return "TARGET_FAMILY_SUPPLY_NOT_PROVEN"
+    if not formula_space_behavior_gate:
+        return "FORMULA_SPACE_INCREMENT_NOT_PROVEN"
+    return "PASS"
+
+
 def _pair_members(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     return [
         dict(member)
@@ -1793,12 +1806,10 @@ def run_full(args: argparse.Namespace) -> dict[str, Any]:
         >= MINIMUM_BEHAVIOR_SUPPLY,
         "formula_space_behavior_gate": behavior_gate,
     }
-    supply["status"] = (
-        "PASS"
-        if supply["exact_gate"]
-        and supply["behavior_gate"]
-        and behavior_gate
-        else "TARGET_FAMILY_SUPPLY_NOT_PROVEN"
+    supply["status"] = _qualification_gate_status(
+        exact_gate=bool(supply["exact_gate"]),
+        behavior_gate=bool(supply["behavior_gate"]),
+        formula_space_behavior_gate=behavior_gate,
     )
     supply_path = _write_json(
         output_root / "supply_and_behavior_gate.json", supply

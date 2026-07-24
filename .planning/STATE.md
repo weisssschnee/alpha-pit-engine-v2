@@ -2,7 +2,7 @@
 
 Updated: 2026-07-24
 
-Current state: `CN_CORE_PACK_RESULTS_RETAINED_SEARCH_POLICY_QUALIFICATION_FAILED_NO_PROMOTION`
+Current state: `CN_TARGETED_FORMULA_INCREMENT_NOT_PROVEN_NO_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -307,6 +307,33 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
+The targeted formula-space/CEM qualification selected `DISCLOSURE_EVENT` /
+`cn.comp.v2.disclosure_event.pre_event_path`. The OLD family passed its frozen
+historical post-archive supply gate with 272 exact-unique and 126
+behavior-unique pairs versus required minima 144/72. Legacy parity and the
+static compiler/control/canonical/AST-shape gates also passed: the comparable
+1,000-attempt spaces contained 272 OLD and 544 expanded exact identities and
+one versus two AST shapes.
+
+The single frozen `EventWindow(Sign(payload),event,5,0)` extension did not pass
+the independent behavior gate. The deterministic 256-candidate probes retained
+126 OLD versus 111 expanded behavior-unique pairs, so expanded behavior
+discovery was 88.0952% of OLD against the frozen 90% minimum. The correct hard
+blocker is `FORMULA_SPACE_INCREMENT_NOT_PROVEN`, not target-family supply
+exhaustion. No sampled or full-coordinate financial pair ran, CEM performed no
+update, and validation, holdout, 2026, promotion and persistent optimizer-state
+writes remained zero.
+
+The run also closed a narrower engineering drift: canonical `EventWindow` had
+been legal in the typed registry, Grammar and compiler but absent from the
+Phase3CM streaming executor. The executor now reuses the existing canonical
+semantics with exact reference, cross-block and serialized-continuation parity.
+This repair does not qualify the rejected formula extension or authorize large
+search. The compact evidence is
+`reports/cn_targeted_formula_cem_qualification_20260724/QUALIFICATION_RESULT.md`.
+Graph and Obsidian remain unchanged because no durable search capability was
+accepted.
+
 There is no remaining global route-supply, ontology-authority,
 train-to-validation or acceleration-readiness blocker in the completed campaign.
 Its preserved cache, memory-headroom and monitor-path incidents are run-health
@@ -356,6 +383,12 @@ beneath registry `route_id`; no MCTS, crossover, mutation or replacement
 machinery may be handcrafted.
 
 ## Next action
+
+Do not continue to CEM or Phase3CM with the rejected `Sign` extension, relax
+the 90% gate, or retry it with alternate seeds. A later iteration requires a
+newly frozen same-signature extension from the existing operator authority and
+must first pass the same deterministic 256-candidate behavior gate. Do not
+update Graph or Obsidian unless that later capability is explicitly accepted.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.
