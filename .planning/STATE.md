@@ -2,7 +2,7 @@
 
 Updated: 2026-07-24
 
-Current state: `CN_TARGETED_FORMULA_INCREMENT_NOT_PROVEN_NO_PROMOTION`
+Current state: `CN_MINUTE_STATIC_V3_SUPPLY_BLOCKED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,6 +16,22 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
+- Disclosure V2 is now closed in both evidence and code. Sign is
+  `REJECTED_BEHAVIOR_DISCOVERY`; CSRank is
+  `REJECTED_FINANCIAL_INCREMENT`; Abs is `NOT_EVALUATED`. The historical CEM
+  result is scoped only to the Disclosure CSRank expanded space and does not
+  establish global CEM quality. All three extensions are excluded from the
+  active catalog and CEM; CSRank/Abs require an explicit historical-evidence
+  replay flag, while the old runner fails closed by default.
+- The `MINUTE_STATIC` production-lane V3 gate completed once on 77o at repo SHA
+  `cd9bb625ad041749ee7cd1a0d995335d266bf89b`. The active discovery authority
+  exposes six materializable roots to the OLD field-spread skeleton, giving
+  exactly 30 atomic ordered field pairs. Because the frozen exact-supply floor
+  is 144, qualification stopped before behavior probing, Phase3CM, or CEM.
+  Behavior/Phase3CM/arm counts and validation/holdout/2026 reads were all zero.
+  Five input hashes, three result hashes, and the downloaded manifest payload
+  hash independently matched. The compact receipt is
+  `runtime/run_plans/cn_minute_static_production_lane_cem_v3_20260724_receipt.json`.
 - The bounded official CatCMAwM search-policy qualification completed on 77o
   with eight immutable arm-checkpoints and 384 scheduled matched-pair asks.
   CatCMA improved positive matched pairs per wall-hour from 1,728.24 to
@@ -307,14 +323,25 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The targeted formula-space/CEM retry selected `DISCLOSURE_EVENT` /
+The current blocker is structural supply in the frozen `MINUTE_STATIC` OLD
+lane: six authorized roots yield 30 atomic ordered `field_pair_id` choices,
+below the required post-archive exact supply of 144. This is not a seed,
+archive, CEM, evaluator, field-materialization, or compute-utilization failure.
+The frozen contract therefore requires
+`FAIL_STOP_BEFORE_BEHAVIOR_AND_PHASE3CM`; sampled/full evaluation and all three
+arms were correctly not run. `TARGET_FAMILY_LARGE_SEARCH_READINESS` is
+`SUPPLY_BLOCKED`.
+
+Historically, the targeted formula-space/CEM retry selected
+`DISCLOSURE_EVENT` /
 `cn.comp.v2.disclosure_event.pre_event_path` and reused the frozen OLD
 authority without recomputation. `EventWindow(CSRank(payload),event,5,0)`
 passed the static gate and retained 124/256 behavior-unique pairs versus OLD
 126/256, above the frozen 114-pair / 90% floor. It became the first accepted
-extension for financial qualification, so Abs was correctly not run. The
-historical Sign extension remains rejected at 111/256 and is excluded from the
-active catalog and CEM.
+extension for that financial qualification, so Abs was correctly not run.
+After the financial comparison, CSRank was rejected as
+`REJECTED_FINANCIAL_INCREMENT`; the historical Sign extension remains rejected
+at 111/256 as `REJECTED_BEHAVIOR_DISCOVERY`. Neither is active or CEM-eligible.
 
 The three-arm full-coordinate comparison completed 57 OLD-uniform, 72
 expanded-uniform and 72 expanded-CEM pairs across nine immutable checkpoints.
@@ -324,6 +351,8 @@ discovery regressed; `FORMULA_SPACE_INCREMENT=NOT_QUALIFIED`. CEM updated nine
 contexts without category collapse and retained checkpoint 2/3 supply, but
 failed the 15% positive-throughput, median-increment and behavior-discovery
 checks; `CEM_SEARCH_INCREMENT=NOT_QUALIFIED`.
+That conclusion is limited to the Disclosure CSRank expanded space;
+`GLOBAL_CEM_CONCLUSION=NOT_ESTABLISHED`.
 
 No qualified current development sampled-evaluator authority exists in the
 checked run-plan/config authority surface, and no surrogate was created.
@@ -399,15 +428,16 @@ machinery may be handcrafted.
 
 ## Next action
 
-Do not rerun Sign, CSRank, OLD supply, the nine financial checkpoints or the
-performance campaign. Do not continue to Abs automatically: CSRank already
-consumed the frozen first-pass queue rule, and the resulting financial
-comparison is complete. The CEM probability tables are failed qualification
-evidence, not reusable large-search initialization. Any later extension or
-optimizer trial requires a separately frozen target and budget; it must reuse
-the same registry/compiler/evaluator authority and may not create a sampled
-surrogate. Do not update Graph or Obsidian unless a later durable capability is
-explicitly accepted.
+Do not rerun Sign, CSRank, the Disclosure OLD supply, the nine financial
+checkpoints, the performance campaign, or the closed `MINUTE_STATIC` V3 gate.
+Do not continue to Abs automatically. The next bounded qualification must
+either select a different existing production lane whose current authorized
+catalog can meet the frozen supply floor, or explicitly amend the formula space
+or threshold. Do not silently widen discovery roots, lower 144, or launch CEM
+against the 30-point lane. The old CEM tables remain failed, target-scoped
+evidence rather than reusable initialization. Any later trial must freeze its
+target and budget and reuse the Registry/compiler/evaluator authority. Graph
+and Obsidian remain unchanged because no durable active capability qualified.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.

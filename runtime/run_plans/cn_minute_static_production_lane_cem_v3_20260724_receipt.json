@@ -1,0 +1,80 @@
+{
+  "schema_version": "cn_minute_static_production_lane_cem_v3_receipt_v1",
+  "status": "QUALIFICATION_CLOSED_SUPPLY_BLOCKED",
+  "authorization_id": "MINUTE_STATIC_PRODUCTION_LANE_CEM_V3",
+  "host": "DESKTOP-77OPJ6F",
+  "repo_sha": "cd9bb625ad041749ee7cd1a0d995335d266bf89b",
+  "task": {
+    "task_id": "lanjob_minute_static_v3_cd9bb62",
+    "task_name": "ChengboLanRemote_MinuteStaticV3_cd9bb62",
+    "start_mode": "ONE_IMMEDIATE_START_NO_TRIGGER",
+    "started_at_utc": "2026-07-24T14:01:48.3622936Z",
+    "completed_at_utc": "2026-07-24T14:01:50.8457846Z",
+    "exit_code": 0,
+    "task_result": 0,
+    "completed_task_unregistered": true,
+    "status_and_log_preserved": true
+  },
+  "remote_output_root": "D:\\ChengboRemote\\runtime\\cn_minute_static_production_lane_cem_v3_20260724_cd9bb62",
+  "old_supply_gate": {
+    "route_id": "MINUTE_STATIC",
+    "skeleton_id": "cn.comp.v2.minute_static.field_spread",
+    "discovery_authorized_roots": [
+      "amount",
+      "intraday_ret_from_open",
+      "open",
+      "pct_chg",
+      "ret_1m",
+      "vwap"
+    ],
+    "authorized_root_count": 6,
+    "atomic_ordered_field_pair_capacity": 30,
+    "required_post_archive_exact_supply": 144,
+    "required_behavior_supply": 72,
+    "historical_exact_identity_count": 2232,
+    "status": "FAIL_STOP_BEFORE_BEHAVIOR_AND_PHASE3CM",
+    "blocker": "OLD_AUTHORIZED_CATALOG_CAPACITY_30_BELOW_144"
+  },
+  "disclosure_v2_closure": {
+    "SIGN": "REJECTED_BEHAVIOR_DISCOVERY",
+    "CSRANK": "REJECTED_FINANCIAL_INCREMENT",
+    "ABS": "NOT_EVALUATED",
+    "CEM_RESULT_SCOPE": "DISCLOSURE_PRE_EVENT_CSRANK_EXPANDED_SPACE_ONLY",
+    "GLOBAL_CEM_CONCLUSION": "NOT_ESTABLISHED",
+    "active_catalog_and_cem_entry": "CLOSED_HISTORICAL_EVIDENCE_REPLAY_ONLY"
+  },
+  "final_decision": {
+    "SAMPLED_PHASE3CM_AUTHORITY": "NOT_RUN_OLD_SUPPLY_HARD_BLOCKER",
+    "FORMULA_SPACE_INCREMENT": "NOT_RUN_OLD_SUPPLY_HARD_BLOCKER",
+    "CEM_SEARCH_INCREMENT": "NOT_RUN_OLD_SUPPLY_HARD_BLOCKER",
+    "PERFORMANCE_CONTRACT": "NOT_RUN_OLD_SUPPLY_HARD_BLOCKER",
+    "TARGET_FAMILY_LARGE_SEARCH_READINESS": "SUPPLY_BLOCKED",
+    "READINESS_BLOCKERS": [
+      "OLD_AUTHORIZED_CATALOG_CAPACITY_30_BELOW_144"
+    ]
+  },
+  "access_counts": {
+    "behavior_probe_count": 0,
+    "phase3cm_pair_count": 0,
+    "campaign_arm_count": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "artifact_hashes": {
+    "old_supply_gate.json": "b4295ff0a10736a554afd0d3a018ec315d89b843054d05265b6b10eb5b65ce7b",
+    "disclosure_v2_dispositions.json": "847256178494242ab821fecbfb07cf068a4c40fdf12e3d0c7d39f66444c308f4",
+    "final_decision.json": "d91891d1d82a1a24e986cd17c8bfa5ea4187a9bb5a29774689056e218ebba70d",
+    "manifest_payload_hash": "a35b44ae37664c242a2b4e330a9366ce2efd04703850ab27457fa589eb09077a"
+  },
+  "independent_verification": {
+    "all_five_input_hashes_match": true,
+    "all_three_artifact_hashes_match": true,
+    "downloaded_manifest_payload_hash_matches": true,
+    "root_file_set_exactly_four_expected_json_files": true,
+    "minimum_observed_free_memory_gib_after_close": 81.47
+  },
+  "promotion": "FORBIDDEN",
+  "graph_update": "NOT_REQUIRED_NO_DURABLE_AUTHORITY_CHANGE",
+  "obsidian_update": "NOT_REQUIRED_PROJECT_NOT_ACCEPTED_AS_NEW_CAPABILITY"
+}
