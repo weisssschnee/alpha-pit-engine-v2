@@ -1,0 +1,38 @@
+{
+  "authorization_id": "MINUTE_STATIC_PRODUCTION_LANE_CEM_V3",
+  "claim_ceiling": "PRODUCTION_ROOT_SCOPE_AND_SUPPLY_ONLY_NO_ALPHA_CLAIM",
+  "contract_hash": "590a40eab4f3e043b183a1ade2c10f234266f45304cac0a6e97c4e747630b611",
+  "contract_version": "cn_minute_static_production_root_contract_v1",
+  "data_access_contract": {
+    "development_train_only": true,
+    "forward_2026_reads": 0,
+    "holdout_reads": 0,
+    "validation_reads": 0
+  },
+  "excluded_source_families": {
+    "true1min_plate_sparse": "REAL_PIT_MINUTE_MATERIALIZATION_UNAVAILABLE"
+  },
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "root_selection_policy": "REGISTRY_ROUTE_ELIGIBLE_AND_PRODUCTION_SOURCE_MATERIALIZED_NON_PLATE",
+  "route_id": "MINUTE_STATIC",
+  "route_roots": [
+    "amount",
+    "amount_yuan",
+    "close",
+    "high",
+    "intraday_ret_from_open",
+    "low",
+    "open",
+    "pct_chg",
+    "ret_1m",
+    "volume",
+    "vwap"
+  ],
+  "source_release_id": "cn_true1min_development_only_release_v1_20260712_77o",
+  "status": "ACTIVE_CAMPAIGN_LOCAL_PRODUCTION_ROOT_PROJECTION",
+  "supply_gate": {
+    "minimum_behavior_unique": 48,
+    "minimum_post_archive_exact_unique": 72,
+    "rationale": "72_MAXIMUM_THREE_CHECKPOINT_FULL_PAIRS_AND_48_MINIMUM_COMPARABLE_FULL_PAIRS"
+  }
+}
