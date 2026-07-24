@@ -21,6 +21,7 @@ from our_system_phase2.services.categorical_cem import (
     CategoricalCEMPolicy,
 )
 from our_system_phase2.services.search_choice_policy import (
+    DISCLOSURE_V2_EXTENSION_DISPOSITIONS,
     EXPANDED_FORMULA_SPACE_ID,
     HISTORICAL_REJECTED_EXTENSION_IDS,
     OLD_FORMULA_SPACE_ID,
@@ -168,6 +169,7 @@ def _projection(
         route_id=ROUTE_ID,
         skeleton_id=SKELETON_ID,
         extension_id=extension_id,
+        historical_replay_only=True,
     )
 
 
@@ -280,7 +282,9 @@ def test_catalog_is_read_only_projection_of_authority() -> None:
 
     assert old["route_id"] == ROUTE_ID
     assert old["skeleton_id"] == SKELETON_ID
-    assert old["authority_mode"] == "READ_ONLY_PROJECTION"
+    assert old["authority_mode"] == "HISTORICAL_EVIDENCE_REPLAY_ONLY"
+    assert old["active_catalog_eligible"] is False
+    assert old["cem_eligible"] is False
     assert old["field_authority"] == "UnifiedCapabilityRegistry"
     assert old["constructor_authority"] == "CompositionalGrammarV2"
     assert [row["decision_type"] for row in old["decisions"]] == [
@@ -402,7 +406,7 @@ def test_trace_replay_and_single_csrank_extension_are_exact() -> None:
     assert extended.control["legal"] is True
 
 
-def test_abs_extension_is_the_only_alternative_active_catalog() -> None:
+def test_abs_extension_is_available_only_for_historical_replay() -> None:
     projection = _projection(PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID)
     catalog = projection.decision_catalog(EXPANDED_FORMULA_SPACE_ID)
     assert catalog["extension_ids"] == [
@@ -436,13 +440,41 @@ def test_sign_is_historical_replay_only_and_excluded_from_active_catalog() -> No
     rejected = HISTORICAL_REJECTED_EXTENSION_IDS[
         PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID
     ]
-    assert rejected["lifecycle"] == "REJECTED_FORMULA_EXTENSION"
+    assert rejected["lifecycle"] == "REJECTED_BEHAVIOR_DISCOVERY"
     assert rejected["excluded_from_decision_catalog"] is True
     assert rejected["excluded_from_cem"] is True
     assert rejected["excluded_from_financial_qualification"] is True
     assert rejected["eligible_for_retry"] is False
+    assert DISCLOSURE_V2_EXTENSION_DISPOSITIONS["CSRANK"][
+        "lifecycle"
+    ] == "REJECTED_FINANCIAL_INCREMENT"
+    assert DISCLOSURE_V2_EXTENSION_DISPOSITIONS["ABS"][
+        "lifecycle"
+    ] == "NOT_EVALUATED"
     with pytest.raises(ValueError, match="unsupported targeted extension"):
         _projection(PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID)
+
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    discovery = load_development_discovery_root_authority(
+        DISCOVERY,
+        registry=registry,
+    )
+    generator = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+        enforce_route_compatibility=True,
+        route_root_allowlist=discovery["route_root_allowlists"],
+    )
+    with pytest.raises(
+        RuntimeError,
+        match="DISCLOSURE_V2_EXTENSION_CLOSED",
+    ):
+        TargetedFormulaProjection(
+            generator=generator,
+            route_id=ROUTE_ID,
+            skeleton_id=SKELETON_ID,
+            extension_id=PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
+        )
 
     projection = _projection()
     lane = projection.generator.categorical_gene_space(

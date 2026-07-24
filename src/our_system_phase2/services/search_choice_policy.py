@@ -41,9 +41,38 @@ TARGETED_RETRY_EXTENSION_IDS = (
     PRE_EVENT_PAYLOAD_CSRANK_EXTENSION_ID,
     PRE_EVENT_PAYLOAD_ABS_EXTENSION_ID,
 )
+DISCLOSURE_V2_EXTENSION_DISPOSITIONS = {
+    "SIGN": {
+        "lifecycle": "REJECTED_BEHAVIOR_DISCOVERY",
+        "reason": (
+            "BEHAVIOR_DISCOVERY_RETENTION_88.0952_PERCENT_BELOW_90_PERCENT"
+        ),
+        "excluded_from_active_catalog": True,
+        "excluded_from_cem": True,
+    },
+    "CSRANK": {
+        "lifecycle": "REJECTED_FINANCIAL_INCREMENT",
+        "static_gate": "PASS",
+        "behavior_gate": "PASS",
+        "formula_space_increment": "NOT_QUALIFIED",
+        "excluded_from_active_catalog": True,
+        "excluded_from_cem": True,
+    },
+    "ABS": {
+        "lifecycle": "NOT_EVALUATED",
+        "excluded_from_active_catalog": True,
+        "excluded_from_cem": True,
+    },
+    "CEM_RESULT_SCOPE": (
+        "DISCLOSURE_PRE_EVENT_CSRANK_EXPANDED_SPACE_ONLY"
+    ),
+    "GLOBAL_CEM_CONCLUSION": "NOT_ESTABLISHED",
+}
 HISTORICAL_REJECTED_EXTENSION_IDS = {
     PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID: {
-        "lifecycle": "REJECTED_FORMULA_EXTENSION",
+        "lifecycle": DISCLOSURE_V2_EXTENSION_DISPOSITIONS["SIGN"][
+            "lifecycle"
+        ],
         "reason": (
             "BEHAVIOR_DISCOVERY_RETENTION_88.0952_PERCENT_BELOW_90_PERCENT"
         ),
@@ -53,7 +82,8 @@ HISTORICAL_REJECTED_EXTENSION_IDS = {
         "eligible_for_retry": False,
     }
 }
-_TARGETED_ACTIVE_EXTENSION_IDS = set(TARGETED_RETRY_EXTENSION_IDS)
+_TARGETED_REPLAY_EXTENSION_IDS = set(TARGETED_RETRY_EXTENSION_IDS)
+_TARGETED_ACTIVE_EXTENSION_IDS: set[str] = set()
 _TARGETED_EXTENSION_STRUCTURES = {
     PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID: (
         "ONE_LEVEL_NORMALIZER_PLACEMENT:"
@@ -245,9 +275,18 @@ class TargetedFormulaProjection:
         route_id: str,
         skeleton_id: str,
         extension_id: str,
+        historical_replay_only: bool = False,
     ) -> None:
-        if extension_id not in _TARGETED_ACTIVE_EXTENSION_IDS:
+        if extension_id not in _TARGETED_REPLAY_EXTENSION_IDS:
             raise ValueError(f"unsupported targeted extension: {extension_id}")
+        if (
+            extension_id not in _TARGETED_ACTIVE_EXTENSION_IDS
+            and not historical_replay_only
+        ):
+            raise RuntimeError(
+                "DISCLOSURE_V2_EXTENSION_CLOSED_"
+                "HISTORICAL_REPLAY_ONLY"
+            )
         if route_id != "DISCLOSURE_EVENT" or not skeleton_id.endswith(
             ".pre_event_path"
         ):
@@ -374,7 +413,9 @@ class TargetedFormulaProjection:
         decisions = self.decision_specs(formula_space_id)
         payload = {
             "schema_version": "cn_targeted_decision_catalog_v1",
-            "authority_mode": "READ_ONLY_PROJECTION",
+            "authority_mode": "HISTORICAL_EVIDENCE_REPLAY_ONLY",
+            "active_catalog_eligible": False,
+            "cem_eligible": False,
             "route_id": self.route_id,
             "skeleton_id": self.skeleton_id,
             "formula_space_id": formula_space_id,
