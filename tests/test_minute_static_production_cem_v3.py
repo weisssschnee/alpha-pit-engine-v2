@@ -19,6 +19,7 @@ from scripts.run_minute_static_production_cem_v3 import (
     PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP,
     STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
     STRUCTURAL_SUPPLY_PRODUCTION_IDS,
+    STRUCTURAL_TYPED_FORMULA_SPACE_ID,
     MinuteStaticProductionProjection,
     _failure_decision,
     _load_production_contract,
@@ -28,6 +29,7 @@ from scripts.run_minute_static_production_cem_v3 import (
     _production_parity,
     _session_sample_contract,
     _structural_supply_generation_audit,
+    _structural_typed_surface_mechanical_proof,
     _structural_v2_fresh_stream_parity,
     run,
     run_financial,
@@ -242,6 +244,115 @@ def test_structural_supply_space_reuses_only_qualified_pair_lanes() -> None:
     )
 
 
+def test_structural_typed_surface_is_lossless_authoritative_projection() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+
+    decisions = projection.structural_typed_decision_specs(
+        STRUCTURAL_TYPED_FORMULA_SPACE_ID
+    )
+    assert [row.gene_slot for row in decisions] == [
+        "production_id",
+        "left_field_id",
+        "right_field_id",
+    ]
+    assert [len(row.ordered_choices) for row in decisions] == [4, 11, 11]
+    left_fields = {
+        pair_id.split("::", 1)[0]
+        for pair_id in projection.field_pair_ids
+    }
+    right_fields = {
+        pair_id.split("::", 1)[1]
+        for pair_id in projection.field_pair_ids
+    }
+    assert {
+        str(choice.gene_value)
+        for choice in decisions[1].ordered_choices
+    } == left_fields
+    assert {
+        str(choice.gene_value)
+        for choice in decisions[2].ordered_choices
+    } == right_fields
+
+    decision_catalog = projection.structural_typed_decision_catalog(
+        STRUCTURAL_TYPED_FORMULA_SPACE_ID
+    )
+    assert decision_catalog["field_family_authority"] == (
+        "NOT_DECLARED_NO_INVENTED_GROUPS"
+    )
+    assert decision_catalog["joint_exact_availability_mask"] == (
+        "APPLIED_BEFORE_EACH_HIERARCHICAL_DRAW"
+    )
+    catalog = projection._available_candidate_catalog(
+        STRUCTURAL_TYPED_FORMULA_SPACE_ID
+    )
+    assert len(catalog) == 440
+    assert len(
+        {
+            str(row["candidate"]["exact_identity"])
+            for row in catalog
+        }
+    ) == 440
+    assert all(
+        bool(row["candidate"]["legal"])
+        and bool(row["control"]["legal"])
+        for row in catalog
+    )
+
+
+def test_structural_typed_surface_parity_mask_and_synthetic_adaptation() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+
+    proof = _structural_typed_surface_mechanical_proof(
+        projection,
+        seed=2026072511,
+        generation_size=32,
+    )
+    assert proof["status"] == "PASS"
+    assert proof["first_generation_exact_stream_parity"] is True
+    assert proof["first_generation_duplicate_count"] == 0
+    assert proof["second_generation_stream_changed"] is True
+    assert proof["second_generation_duplicate_count"] == 0
+    assert proof["updated_context_count"] == 3
+    assert {
+        row["decision_id"]
+        for row in proof["support_diagnostics"]
+        if row["support_status"] == "UPDATED"
+    } == {
+        "minute_static.production_id",
+        "minute_static.left_field_id",
+        "minute_static.right_field_id",
+    }
+    assert proof["financial_reads"] == 0
+    assert proof["phase3cm_pair_count"] == 0
+    assert proof["validation_reads"] == 0
+    assert proof["holdout_reads"] == 0
+    assert proof["forward_2026_reads"] == 0
+
+
 def test_structural_supply_generation_audit_matches_cumulative_memory() -> None:
     registry = UnifiedCapabilityRegistry.read(REGISTRY)
     _, roots = _load_production_contract(
@@ -424,6 +535,120 @@ def test_structural_supply_static_run_closes_without_financial_reads(
     )
     assert manifest["financial_reads"] == 0
     assert manifest["large_search_authorized"] is False
+
+
+def test_structural_typed_static_audit_blocks_financial_when_19_exact_remain(
+    tmp_path: Path,
+) -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    contract = json.loads(
+        PRODUCTION_CONTRACT.read_text(encoding="utf-8")
+    )
+    roots = tuple(map(str, contract["route_roots"]))
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+    catalog = projection._available_candidate_catalog(
+        STRUCTURAL_TYPED_FORMULA_SPACE_ID
+    )
+    by_production = {
+        production_id: [
+            row
+            for row in catalog
+            if row["production_id"] == production_id
+        ]
+        for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+    }
+    seen = [
+        str(row["candidate"]["exact_identity"])
+        for production_id in ("field_spread", "normalized_ratio")
+        for row in by_production[production_id]
+    ]
+    seen.extend(
+        str(row["candidate"]["exact_identity"])
+        for row in by_production["absolute_state_interaction"][:-1]
+    )
+    seen.extend(
+        str(row["candidate"]["exact_identity"])
+        for row in by_production["dispersion_interaction"][:-18]
+    )
+    layout = tmp_path / "active_layout.json"
+    layout.write_text(
+        json.dumps({"fields": list(roots)}),
+        encoding="utf-8",
+    )
+    archive = tmp_path / "archive.parquet"
+    ledger = tmp_path / "ledger.parquet"
+    additional = tmp_path / "additional.parquet"
+    pq.write_table(
+        pa.table({"exact_identity": seen[:200]}),
+        archive,
+    )
+    pq.write_table(
+        pa.table({"exact_identity": seen[200:400]}),
+        ledger,
+    )
+    pq.write_table(
+        pa.table({"exact_identity": seen[400:]}),
+        additional,
+    )
+    output_root = tmp_path / "typed_surface"
+    result = run_structural_supply_design(
+        argparse.Namespace(
+            registry=REGISTRY,
+            production_root_contract=PRODUCTION_CONTRACT,
+            active_layout=layout,
+            historical_exact_archive=archive,
+            source_candidate_ledger=ledger,
+            historical_behavior_archive=None,
+            additional_exact_archive=[additional],
+            additional_behavior_archive=[],
+            split_manifest=None,
+            compute_threads=2,
+            output_root=output_root,
+            repo_sha="test-sha",
+            task_id="test-task",
+            allow_noncanonical_host=True,
+            static_only=True,
+            structural_typed_surface_audit=True,
+        )
+    )
+
+    supply = result["formula_space_supply"]
+    assert result["status"] == (
+        "STRUCTURAL_TYPED_SURFACE_MECHANICAL_PASS_"
+        "FINANCIAL_SUPPLY_BLOCKED"
+    )
+    assert supply["formula_space_id"] == (
+        STRUCTURAL_TYPED_FORMULA_SPACE_ID
+    )
+    assert supply["post_archive_exact_supply"] == 19
+    assert supply["post_archive_rows_by_production"] == {
+        "field_spread": 0,
+        "normalized_ratio": 0,
+        "absolute_state_interaction": 1,
+        "dispersion_interaction": 18,
+    }
+    assert result["supply_decision"][
+        "financial_qualification_authorized"
+    ] is False
+    assert result["supply_decision"]["next_action"] == (
+        "EXPAND_AUTHORITATIVE_FORMULA_SUPPLY_BEFORE_FINANCIAL_RETRY"
+    )
+    assert (output_root / "structural_typed_decision_catalog.json").is_file()
+    assert (output_root / "synthetic_adaptation_proof.json").is_file()
+    manifest = json.loads(
+        (output_root / "artifact_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert manifest["financial_reads"] == 0
+    assert manifest["phase3cm_pair_count"] == 0
 
 
 def test_structural_v2_fresh_policy_matches_uniform_without_exact_replay() -> None:

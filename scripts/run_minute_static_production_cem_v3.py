@@ -113,8 +113,14 @@ DISPERSION_INTERACTION_SKELETON_ID = (
 STRUCTURAL_SUPPLY_FORMULA_SPACE_ID = (
     "MINUTE_STATIC_STRUCTURAL_SUPPLY_V1"
 )
+STRUCTURAL_TYPED_FORMULA_SPACE_ID = (
+    "MINUTE_STATIC_STRUCTURAL_TYPED_V2"
+)
 STRUCTURAL_SUPPLY_AUTHORIZATION_ID = (
     "MINUTE_STATIC_STRUCTURAL_FORMULA_SPACE_SUPPLY_V1"
+)
+STRUCTURAL_TYPED_AUTHORIZATION_ID = (
+    "MINUTE_STATIC_STRUCTURAL_TYPED_SURFACE_AUDIT_V2"
 )
 STRUCTURAL_SUPPLY_PRODUCTION_IDS = (
     "field_spread",
@@ -204,7 +210,10 @@ class MinuteStaticProductionProjection:
             productions = ("field_spread",)
         elif formula_space_id == EXPANDED_FORMULA_SPACE_ID:
             productions = ("field_spread", "normalized_ratio")
-        elif formula_space_id == STRUCTURAL_SUPPLY_FORMULA_SPACE_ID:
+        elif formula_space_id in {
+            STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
+            STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+        }:
             productions = STRUCTURAL_SUPPLY_PRODUCTION_IDS
         else:
             raise ValueError("unknown formula space: " + formula_space_id)
@@ -323,6 +332,99 @@ class MinuteStaticProductionProjection:
             ]
         )
 
+    def structural_typed_decision_specs(
+        self,
+        formula_space_id: str,
+    ) -> tuple[DecisionSpec, ...]:
+        """Project the authoritative joint field-pair domain losslessly."""
+
+        if formula_space_id != STRUCTURAL_TYPED_FORMULA_SPACE_ID:
+            raise ValueError(
+                "typed structural decisions require "
+                + STRUCTURAL_TYPED_FORMULA_SPACE_ID
+            )
+        production, _ = self.decision_specs(formula_space_id)
+        base = f"route={ROUTE_ID}|formula_space={formula_space_id}"
+        ordered_fields = tuple(
+            dict.fromkeys(
+                field_id
+                for pair_id in self.field_pair_ids
+                for field_id in pair_id.split("::", 1)
+            )
+        )
+
+        def field_decision(
+            *,
+            side: str,
+        ) -> DecisionSpec:
+            return DecisionSpec(
+                decision_id=f"minute_static.{side}_field_id",
+                context_id=base + f"|decision={side}_field_id",
+                decision_type=f"{side.upper()}_FIELD",
+                gene_slot=f"{side}_field_id",
+                ordered_choices=tuple(
+                    SearchChoice(
+                        token_id="field:" + field_id,
+                        gene_value=field_id,
+                        semantic_value={
+                            "field_id": field_id,
+                            "side": side,
+                            "projection_authority": (
+                                "CompositionalGrammarV2."
+                                "field_pair_id"
+                            ),
+                        },
+                    )
+                    for field_id in ordered_fields
+                ),
+            )
+
+        return (
+            production,
+            field_decision(side="left"),
+            field_decision(side="right"),
+        )
+
+    def structural_typed_decision_catalog(
+        self,
+        formula_space_id: str,
+    ) -> dict[str, Any]:
+        rows = self.structural_typed_decision_specs(formula_space_id)
+        payload = {
+            "schema_version": (
+                "cn_minute_static_structural_typed_decision_catalog_v1"
+            ),
+            "route_id": ROUTE_ID,
+            "formula_space_id": formula_space_id,
+            "fixed_gene_surface_id": self.gene_surface_id,
+            "adaptive_decisions": [row.to_dict() for row in rows],
+            "authoritative_joint_source": (
+                "CompositionalGrammarV2.field_pair_id"
+            ),
+            "projection_contract": (
+                "LOSSLESS_PRODUCTION_LEFT_RIGHT_COORDINATES"
+            ),
+            "joint_exact_availability_mask": (
+                "APPLIED_BEFORE_EACH_HIERARCHICAL_DRAW"
+            ),
+            "field_family_authority": (
+                "NOT_DECLARED_NO_INVENTED_GROUPS"
+            ),
+            "new_fields_operators_formulas": 0,
+        }
+        payload["catalog_hash"] = _stable_hash(payload)
+        return payload
+
+    def structural_typed_decision_catalog_hash(
+        self,
+        formula_space_id: str,
+    ) -> str:
+        return str(
+            self.structural_typed_decision_catalog(formula_space_id)[
+                "catalog_hash"
+            ]
+        )
+
     def _available_candidate_catalog(
         self,
         formula_space_id: str,
@@ -377,6 +479,13 @@ class MinuteStaticProductionProjection:
     ) -> GeneratedPair:
         """Draw a structural choice, then one unused concrete exact candidate."""
 
+        if formula_space_id == STRUCTURAL_TYPED_FORMULA_SPACE_ID:
+            return self._generate_available_typed(
+                formula_space_id=formula_space_id,
+                policy=policy,
+                rng=rng,
+                exact_seen=exact_seen,
+            )
         available = [
             row
             for row in self._available_candidate_catalog(formula_space_id)
@@ -469,6 +578,127 @@ class MinuteStaticProductionProjection:
             {**dict(selected["control"]), **shared},
         )
 
+    def _generate_available_typed(
+        self,
+        *,
+        formula_space_id: str,
+        policy: Any,
+        rng: np.random.Generator,
+        exact_seen: set[str],
+    ) -> GeneratedPair:
+        """Draw lossless typed coordinates under the joint exact mask."""
+
+        available = [
+            row
+            for row in self._available_candidate_catalog(formula_space_id)
+            if str(row["candidate"]["exact_identity"]) not in exact_seen
+        ]
+        if not available:
+            raise RuntimeError("MINUTE_STRUCTURAL_EXACT_SUPPLY_EXHAUSTED")
+        choose_available = getattr(policy, "choose_available", None)
+        if not callable(choose_available):
+            raise TypeError(
+                "typed structural policy must implement choose_available"
+            )
+        production, left, right = self.structural_typed_decision_specs(
+            formula_space_id
+        )
+
+        allowed_productions = {
+            str(row["production_id"]) for row in available
+        }
+        selected_production = str(
+            choose_available(
+                production,
+                allowed_token_ids=tuple(
+                    choice.token_id
+                    for choice in production.ordered_choices
+                    if choice.token_id in allowed_productions
+                ),
+                rng=rng,
+            )
+        )
+        production_rows = [
+            row
+            for row in available
+            if str(row["production_id"]) == selected_production
+        ]
+        allowed_left = {
+            str(row["field_pair_id"]).split("::", 1)[0]
+            for row in production_rows
+        }
+        selected_left_token = str(
+            choose_available(
+                left,
+                allowed_token_ids=tuple(
+                    choice.token_id
+                    for choice in left.ordered_choices
+                    if str(choice.gene_value) in allowed_left
+                ),
+                rng=rng,
+            )
+        )
+        selected_left = selected_left_token.split(":", 1)[1]
+        left_rows = [
+            row
+            for row in production_rows
+            if str(row["field_pair_id"]).split("::", 1)[0]
+            == selected_left
+        ]
+        allowed_right = {
+            str(row["field_pair_id"]).split("::", 1)[1]
+            for row in left_rows
+        }
+        selected_right_token = str(
+            choose_available(
+                right,
+                allowed_token_ids=tuple(
+                    choice.token_id
+                    for choice in right.ordered_choices
+                    if str(choice.gene_value) in allowed_right
+                ),
+                rng=rng,
+            )
+        )
+        selected_right = selected_right_token.split(":", 1)[1]
+        selected_pair_id = selected_left + "::" + selected_right
+        selected = next(
+            row
+            for row in left_rows
+            if str(row["field_pair_id"]) == selected_pair_id
+        )
+        trace = [
+            DecisionRecord(
+                decision_id=decision.decision_id,
+                context_id=decision.context_id,
+                decision_type=decision.decision_type,
+                selected_token_id=token_id,
+            ).to_dict()
+            for decision, token_id in (
+                (production, selected_production),
+                (left, selected_left_token),
+                (right, selected_right_token),
+            )
+        ]
+        shared = {
+            "formula_space_id": formula_space_id,
+            "production_id": selected_production,
+            "left_field_id": selected_left,
+            "right_field_id": selected_right,
+            "decision_trace": trace,
+            "decision_trace_hash": _stable_hash(trace),
+            "generator_policy": str(
+                getattr(policy, "policy_id", type(policy).__name__)
+            ),
+            "exact_availability_mask": (
+                "APPLIED_BEFORE_EACH_HIERARCHICAL_DRAW"
+            ),
+        }
+        return GeneratedPair(
+            {**dict(selected["candidate"]), **shared},
+            {**dict(selected["control"]), **shared},
+        )
+
     def generate(
         self,
         *,
@@ -529,6 +759,143 @@ def _stable_hash(value: Any) -> str:
             separators=(",", ":"),
         ).encode("utf-8")
     ).hexdigest()
+
+
+def _structural_typed_surface_mechanical_proof(
+    projection: MinuteStaticProductionProjection,
+    *,
+    seed: int,
+    generation_size: int = 32,
+) -> dict[str, Any]:
+    """Prove parity, masking, and adaptation without financial reads."""
+
+    decisions = projection.structural_typed_decision_specs(
+        STRUCTURAL_TYPED_FORMULA_SPACE_ID
+    )
+    catalog_hash = projection.structural_typed_decision_catalog_hash(
+        STRUCTURAL_TYPED_FORMULA_SPACE_ID
+    )
+    uniform = AvailableUniformPolicy()
+    cem = RankWeightedCategoricalCEMPolicy.fresh(
+        decisions=decisions,
+        decision_catalog_hash=catalog_hash,
+        formula_space_id=STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+    )
+    uniform_rng = np.random.default_rng(seed)
+    cem_rng = np.random.default_rng(seed)
+    uniform_seen: set[str] = set()
+    cem_seen: set[str] = set()
+    first_uniform: list[GeneratedPair] = []
+    first_cem: list[GeneratedPair] = []
+    for _ in range(generation_size):
+        uniform_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+            policy=uniform,
+            rng=uniform_rng,
+            exact_seen=uniform_seen,
+        )
+        cem_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+            policy=cem,
+            rng=cem_rng,
+            exact_seen=cem_seen,
+        )
+        uniform_exact = str(
+            uniform_pair.candidate["exact_identity"]
+        )
+        cem_exact = str(cem_pair.candidate["exact_identity"])
+        uniform_seen.add(uniform_exact)
+        cem_seen.add(cem_exact)
+        first_uniform.append(uniform_pair)
+        first_cem.append(cem_pair)
+
+    first_uniform_exact = [
+        str(row.candidate["exact_identity"]) for row in first_uniform
+    ]
+    first_cem_exact = [
+        str(row.candidate["exact_identity"]) for row in first_cem
+    ]
+    observations = []
+    for pair in first_cem:
+        exact_identity = str(pair.candidate["exact_identity"])
+        synthetic_rank = int(
+            hashlib.sha256(exact_identity.encode("utf-8")).hexdigest()[:16],
+            16,
+        )
+        observations.append(
+            {
+                "exact_identity": exact_identity,
+                "outcome_class": "EVALUATED",
+                "signed_matched_increment": float(synthetic_rank),
+                "decision_trace": pair.candidate["decision_trace"],
+            }
+        )
+    tell_receipt = cem.tell(observations)
+
+    second_uniform_exact = []
+    second_cem_exact = []
+    for _ in range(generation_size):
+        uniform_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+            policy=uniform,
+            rng=uniform_rng,
+            exact_seen=uniform_seen,
+        )
+        cem_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+            policy=cem,
+            rng=cem_rng,
+            exact_seen=cem_seen,
+        )
+        uniform_exact = str(
+            uniform_pair.candidate["exact_identity"]
+        )
+        cem_exact = str(cem_pair.candidate["exact_identity"])
+        uniform_seen.add(uniform_exact)
+        cem_seen.add(cem_exact)
+        second_uniform_exact.append(uniform_exact)
+        second_cem_exact.append(cem_exact)
+
+    first_parity = first_uniform_exact == first_cem_exact
+    first_duplicate_count = (
+        len(first_cem_exact) - len(set(first_cem_exact))
+    )
+    second_duplicate_count = (
+        len(first_cem_exact + second_cem_exact)
+        - len(set(first_cem_exact + second_cem_exact))
+    )
+    stream_changed = second_uniform_exact != second_cem_exact
+    updated_context_count = int(
+        tell_receipt["updated_context_count"]
+    )
+    passed = (
+        first_parity
+        and first_duplicate_count == 0
+        and second_duplicate_count == 0
+        and stream_changed
+        and updated_context_count == len(decisions)
+    )
+    return {
+        "schema_version": (
+            "cn_minute_static_structural_typed_mechanical_proof_v1"
+        ),
+        "status": "PASS" if passed else "FAIL",
+        "proof_type": "SYNTHETIC_NON_FINANCIAL",
+        "formula_space_id": STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+        "seed": int(seed),
+        "generation_size": int(generation_size),
+        "first_generation_exact_stream_parity": first_parity,
+        "first_generation_duplicate_count": first_duplicate_count,
+        "second_generation_stream_changed": stream_changed,
+        "second_generation_duplicate_count": second_duplicate_count,
+        "updated_context_count": updated_context_count,
+        "support_diagnostics": tell_receipt["support_diagnostics"],
+        "financial_reads": 0,
+        "phase3cm_pair_count": 0,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
 
 
 def _sha256(path: Path) -> str:
@@ -2509,6 +2876,19 @@ def run_structural_supply_design(
             f"official structural supply evidence must run on {AUTHORIZED_HOST}"
         )
 
+    typed_surface = bool(
+        getattr(args, "structural_typed_surface_audit", False)
+    )
+    formula_space_id = (
+        STRUCTURAL_TYPED_FORMULA_SPACE_ID
+        if typed_surface
+        else STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+    )
+    authorization_id = (
+        STRUCTURAL_TYPED_AUTHORIZATION_ID
+        if typed_surface
+        else STRUCTURAL_SUPPLY_AUTHORIZATION_ID
+    )
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     registry = UnifiedCapabilityRegistry.read(args.registry.resolve())
@@ -2539,7 +2919,7 @@ def run_structural_supply_design(
     )
     projection = MinuteStaticProductionProjection(generator)
     catalog = projection._available_candidate_catalog(
-        STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+        formula_space_id
     )
     catalog_rows = []
     for ordinal, source in enumerate(catalog):
@@ -2630,12 +3010,14 @@ def run_structural_supply_design(
 
     design = {
         "schema_version": (
-            "cn_minute_static_structural_formula_space_supply_v1"
+            "cn_minute_static_structural_typed_surface_supply_v1"
+            if typed_surface
+            else "cn_minute_static_structural_formula_space_supply_v1"
         ),
         "status": "EXACT_SUPPLY_CLOSED_BEHAVIOR_PENDING",
-        "authorization_id": STRUCTURAL_SUPPLY_AUTHORIZATION_ID,
+        "authorization_id": authorization_id,
         "route_id": ROUTE_ID,
-        "formula_space_id": STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
+        "formula_space_id": formula_space_id,
         "production_ids": list(STRUCTURAL_SUPPLY_PRODUCTION_IDS),
         "production_skeletons": {
             production_id: projection._production_skeletons[
@@ -2652,8 +3034,12 @@ def run_structural_supply_design(
         "static_checks": static_checks,
         "production_root_contract_hash": contract["contract_hash"],
         "decision_catalog_hash": (
-            projection.structural_decision_catalog_hash(
-                STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+            projection.structural_typed_decision_catalog_hash(
+                formula_space_id
+            )
+            if typed_surface
+            else projection.structural_decision_catalog_hash(
+                formula_space_id
             )
         ),
         "raw_categorical_rows": len(catalog_rows),
@@ -2696,18 +3082,97 @@ def run_structural_supply_design(
     artifact_paths = [design_path, candidate_path]
 
     if bool(getattr(args, "static_only", False)):
-        decision = {
-            "schema_version": (
-                "cn_minute_static_structural_supply_decision_v1"
-            ),
-            "status": "BEHAVIOR_SUPPLY_PENDING",
-            "post_archive_exact_supply": len(post_archive),
-            "maximum_nonexhaustive_pair_budget_per_arm": None,
-            "reference_paired_qualification_supply_ready": False,
-            "large_search_authorized": False,
-            "next_action": "RUN_LABEL_FREE_BEHAVIOR_SUPPLY_PROBE",
-        }
-        status = "STRUCTURAL_EXACT_SUPPLY_CLOSED_BEHAVIOR_PENDING"
+        if typed_surface:
+            decision_catalog = (
+                projection.structural_typed_decision_catalog(
+                    formula_space_id
+                )
+            )
+            mechanical_proof = (
+                _structural_typed_surface_mechanical_proof(
+                    projection,
+                    seed=FROZEN_SUPPLY_SEED + 2,
+                )
+            )
+            if mechanical_proof["status"] != "PASS":
+                raise RuntimeError(
+                    "STRUCTURAL_TYPED_SURFACE_MECHANICAL_PROOF_FAILED"
+                )
+            exact_minimum = (
+                STRUCTURAL_SUPPLY_REFERENCE_PAIR_BUDGET
+                * STRUCTURAL_SUPPLY_NONEXHAUSTIVE_HEADROOM_MULTIPLIER
+            )
+            exact_ready = len(post_archive) >= exact_minimum
+            status = (
+                "STRUCTURAL_TYPED_SURFACE_MECHANICAL_PASS_"
+                + (
+                    "BEHAVIOR_SUPPLY_PENDING"
+                    if exact_ready
+                    else "FINANCIAL_SUPPLY_BLOCKED"
+                )
+            )
+            decision = {
+                "schema_version": (
+                    "cn_minute_static_structural_typed_"
+                    "surface_decision_v1"
+                ),
+                "status": status,
+                "post_archive_exact_supply": len(post_archive),
+                "minimum_nonexhaustive_exact_supply": exact_minimum,
+                "maximum_nonexhaustive_pair_budget_per_arm": (
+                    len(post_archive)
+                    // STRUCTURAL_SUPPLY_NONEXHAUSTIVE_HEADROOM_MULTIPLIER
+                ),
+                "financial_qualification_authorized": False,
+                "reference_paired_qualification_supply_ready": (
+                    exact_ready
+                ),
+                "large_search_authorized": False,
+                "next_action": (
+                    "RUN_LABEL_FREE_BEHAVIOR_SUPPLY_PROBE"
+                    if exact_ready
+                    else (
+                        "EXPAND_AUTHORITATIVE_FORMULA_SUPPLY_"
+                        "BEFORE_FINANCIAL_RETRY"
+                    )
+                ),
+            }
+            design.update(
+                {
+                    "status": status,
+                    "typed_surface_mechanical_status": "PASS",
+                    "minimum_nonexhaustive_exact_supply": (
+                        exact_minimum
+                    ),
+                    "reference_paired_qualification_supply_ready": (
+                        exact_ready
+                    ),
+                }
+            )
+            _write_json(design_path, design)
+            catalog_path = _write_json(
+                output_root
+                / "structural_typed_decision_catalog.json",
+                decision_catalog,
+            )
+            proof_path = _write_json(
+                output_root / "synthetic_adaptation_proof.json",
+                mechanical_proof,
+            )
+            artifact_paths.extend((catalog_path, proof_path))
+        else:
+            decision = {
+                "schema_version": (
+                    "cn_minute_static_structural_supply_decision_v1"
+                ),
+                "status": "BEHAVIOR_SUPPLY_PENDING",
+                "post_archive_exact_supply": len(post_archive),
+                "maximum_nonexhaustive_pair_budget_per_arm": None,
+                "reference_paired_qualification_supply_ready": False,
+                "large_search_authorized": False,
+                "next_action": "RUN_LABEL_FREE_BEHAVIOR_SUPPLY_PROBE",
+            }
+            status = "STRUCTURAL_EXACT_SUPPLY_CLOSED_BEHAVIOR_PENDING"
     else:
         split = FixedSplitAuthority.read(
             args.split_manifest.resolve()
@@ -2868,10 +3333,12 @@ def run_structural_supply_design(
         )
     manifest = {
         "schema_version": (
-            "cn_minute_static_structural_supply_manifest_v1"
+            "cn_minute_static_structural_typed_surface_manifest_v1"
+            if typed_surface
+            else "cn_minute_static_structural_supply_manifest_v1"
         ),
         "status": status,
-        "authorization_id": STRUCTURAL_SUPPLY_AUTHORIZATION_ID,
+        "authorization_id": authorization_id,
         "repo_sha": str(args.repo_sha),
         "host": platform.node(),
         "task_id": str(args.task_id),
@@ -4102,6 +4569,10 @@ def main() -> int:
         action="store_true",
     )
     parser.add_argument(
+        "--structural-typed-surface-audit",
+        action="store_true",
+    )
+    parser.add_argument(
         "--additional-exact-archive",
         type=Path,
         action="append",
@@ -4162,13 +4633,30 @@ def main() -> int:
             "choose exactly one structural CEM V2 paired mode"
         )
     if args.structural_supply_design and (
+        args.structural_typed_surface_audit
+        or args.continue_financial
+        or args.paired_structural_cem_v2_canary
+        or args.paired_structural_cem_v2_medium
+        or args.paired_structural_cem_v2_supply_medium
+    ):
+        parser.error(
+            "--structural-supply-design cannot run another mode"
+        )
+    if args.structural_typed_surface_audit and (
         args.continue_financial
         or args.paired_structural_cem_v2_canary
         or args.paired_structural_cem_v2_medium
         or args.paired_structural_cem_v2_supply_medium
     ):
         parser.error(
-            "--structural-supply-design cannot run a financial mode"
+            "--structural-typed-surface-audit cannot run a financial mode"
+        )
+    if (
+        args.structural_typed_surface_audit
+        and not args.static_only
+    ):
+        parser.error(
+            "--structural-typed-surface-audit requires --static-only"
         )
     if args.continue_financial:
         required = (
@@ -4238,7 +4726,10 @@ def main() -> int:
         )
     result = (
         run_structural_supply_design(args)
-        if args.structural_supply_design
+        if (
+            args.structural_supply_design
+            or args.structural_typed_surface_audit
+        )
         else run_financial(args)
         if args.continue_financial
         else run(args)
