@@ -2,7 +2,7 @@
 
 Updated: 2026-07-26
 
-Current state: `CN_MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_V5_PAIRED_AUTHORIZED_PENDING`
+Current state: `CN_MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_V5_PAIRED_RUNNING`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -505,8 +505,21 @@ zero-financial test produced 96 legal exact-unique pairs without materializing
 the eager catalog; fresh Uniform/CEM proposal streams matched before tell, and
 synthetic full-evaluation feedback changed the root and root-conditioned CEM
 contexts. The real runner is wired for one paired 3-checkpoint x 24-pair
-train-only comparison per arm. No financial, validation, holdout or 2026 read
-has occurred for V5 yet, and no search or Graph authority is promoted.
+train-only comparison per arm. Pushed implementation SHA
+`957c367af8101b252036ba5455d2a2047b766e03` is active on 77o as the single
+writer `minute_static_online_typed_grammar_cem_v1_957c367_single_writer`,
+detached task `lanjob_20260726_030400_113a1b`, under campaign root
+`D:\ChengboRemote\runtime\cn_minute_static_online_typed_grammar_cem_v1_20260726_957c367_3x24`.
+The task has entered checkpoint-one sampled Phase3CM. Two earlier launcher
+attempts stopped before Phase3CM because a behavior-only V4 archive was
+incorrectly supplied as exact memory; their logs are run-health evidence, not
+search or route health. A deterministic 256-row/256-exact projection now binds
+those V4 behavior-probed pair IDs back to the preserved primary exact
+identities, without marking the unprobed V4 catalog as searched. Its receipt is
+at
+`D:\ChengboRemote\runtime\cn_minute_static_online_typed_grammar_v5_inputs_20260726_957c367\projection_receipt.json`.
+Validation, holdout and 2026 reads remain zero, and no search or Graph authority
+is promoted.
 
 Historically, the targeted formula-space/CEM retry selected
 `DISCLOSURE_EVENT` /
