@@ -1333,6 +1333,8 @@ def _nonexhaustive_supply_decision(
         "next_action": (
             "FREEZE_SEPARATE_PAIRED_SEARCH_POLICY_BUDGET"
             if reference_ready
+            else "FREEZE_PAIRED_BUDGET_AT_OR_BELOW_SUPPLY_CEILING"
+            if ceiling > 0
             else "EXPAND_LEGITIMATE_ROUTE_LOCAL_FORMULA_SPACE"
         ),
     }

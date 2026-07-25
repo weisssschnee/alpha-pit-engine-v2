@@ -2,7 +2,7 @@
 
 Updated: 2026-07-25
 
-Current state: `CN_MINUTE_STATIC_STRUCTURAL_CEM_V2_SUPPLY_LIMITED_NOT_QUALIFIED`
+Current state: `CN_MINUTE_STATIC_STRUCTURAL_SUPPLY_CEILING_ESTABLISHED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -79,6 +79,23 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   preserved as `SEARCH_SUPPLY_CONTRACT_INFEASIBILITY`; it is neither
   infrastructure nor financial route health. The frozen verdict remains
   `STRUCTURAL_CEM_V2_NOT_QUALIFIED` and large search is not authorized.
+- The follow-on zero-financial-read structural supply design is closed on 77o
+  at implementation SHA `69e0b591e7d6f2fb43dc7838833c6021b09a4f30`.
+  It preserved the historical two-production space and added only the existing
+  compatibility-qualified Grammar lanes `absolute_state_interaction` and
+  `dispersion_interaction`; representation-family and minute-leg metadata
+  blocked the three remaining pair lanes without allowlist relaxation. All 440
+  categorical rows were legal and exact/canonical unique. After the cumulative
+  historical archive plus canary and medium exact memory, 157 exact identities
+  remained: 78 absolute-state and 79 dispersion interactions, with zero
+  remaining field-spread or normalized-ratio repeats. The label-free probe
+  retained 139 behavior-unique pairs after the same cumulative behavior memory.
+  Under the frozen 2x non-exhaustive headroom rule, the maximum paired budget is
+  69 pairs per arm, so the former 72-pair reference remains blocked but a
+  three-checkpoint x 20-pair budget is supportable. The manifest and all six
+  artifacts plus 27 inputs independently hash-verified; financial, Phase3CM,
+  validation, holdout and 2026 reads were zero. The compact receipt is
+  `runtime/run_plans/cn_minute_static_structural_supply_v1_20260725_receipt.json`.
 - `MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1` is accepted as the active
   route-local sampled-selection implementation under ADR 0007. This does not
   replace the candidate-parallel `formal_evaluation_authority`, authorize
@@ -375,19 +392,16 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The current `MINUTE_STATIC` blocker is a bounded formula-space/search-policy
-contract, not field registration, evaluator semantics, financial route health
-or compute utilization. The repaired OLD supply gate, production parity,
-sampled Phase3CM authority, access boundary and performance contract pass. The
-paired Structural CEM V2 medium corrected the earlier independent-stream defect
-and proved that adaptation runs from full-coordinate train outcomes, but the
-76-exact frozen space is too small for two separately exact-masked 72-pair arm
-budgets after historical and canary masking. Both arms nearly exhausted the
-same space
-and produced identical 59-pair results. That is valid evidence that this frozen
-medium contract cannot qualify a policy; it is not evidence that CEM is
-globally worse than uniform or that RegistryDrivenGenerator has a global
-supply failure. `TARGET_FAMILY_LARGE_SEARCH_READINESS` remains
+The current `MINUTE_STATIC` blocker is now the unrun financial comparison for a
+supportable bounded search-policy budget, not field registration, evaluator
+semantics, financial route health, compute utilization or an unknown supply
+ceiling. The earlier two-production medium nearly exhausted 76 exact identities
+and could not qualify. The separately frozen four-production design now proves
+157 post-memory exact and 139 behavior-unique identities, establishing 69 pairs
+per arm as the maximum under the 2x non-exhaustive rule. The old 72-pair budget
+must not be reused; a 60-pair paired comparison can proceed without near-
+exhaustive overlap. This supply evidence does not qualify CEM or authorize a
+large search. `TARGET_FAMILY_LARGE_SEARCH_READINESS` therefore remains
 `SEARCH_POLICY_BLOCKED`.
 
 Historically, the targeted formula-space/CEM retry selected
@@ -480,19 +494,19 @@ machinery may be handcrafted.
 ## Next action
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
-qualification, the nine V3 checkpoints, the Structural CEM V2 canary or its
-supply-limited medium. Retain the qualified `normalized_ratio` production
-increment and active route-local sampled selector. Do not reuse V1/V2 CEM
-probabilities or launch a large search. The next bounded action is one
-separately frozen formula-space/supply design for `MINUTE_STATIC`: use the
-existing Registry, Grammar, compiler and matched-control constructors to expose
-additional legitimate route-local structural choices, then calculate
-post-archive exact and behavior supply before fixing any paired optimizer
-budget. Only a space that can support both arms without near-exhaustive overlap
-should enter another paired search-policy qualification. This is a catalog
-design task, not a new platform, generic extension framework or handcrafted
-optimizer. Registry `route_id`, long-only, 5 bps cost, horizons 1/5/15/30,
-fixed 8 GiB cache and sealed-data authorities remain unchanged.
+qualification, the nine V3 checkpoints, the Structural CEM V2 canary, its
+supply-limited medium or the completed structural supply probe. Retain the
+qualified `normalized_ratio` production increment and active route-local
+sampled selector. Do not reuse V1/V2 CEM probabilities or launch a large
+search. The next bounded action is a separately frozen paired qualification on
+`MINUTE_STATIC_STRUCTURAL_SUPPLY_V1`: Uniform versus fresh Structural CEM V2,
+three checkpoints x 20 full-coordinate pairs per arm, common random stream,
+exact availability mask, cumulative exact/behavior memory and full-train-only
+feedback. The production choice may adapt across the four frozen lanes while
+concrete field pairs remain uniform without replacement. Registry `route_id`,
+compiler, matched-control, long-only, 5 bps cost, horizons 1/5/15/30, fixed
+8 GiB cache and sealed-data authorities remain unchanged. This is still a
+medium development qualification, not a large search or authority promotion.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.
@@ -506,15 +520,13 @@ Disclosure Event and First-N Aggregated have no strict survivor in this frozen
 set. Any next development search should therefore target those materially
 uncovered mechanisms rather than rerun a global candidate race.
 
-The zero-financial-read route-lane integration probe is complete. Do not run
-another optimizer comparison until the separately frozen space passes the
-pre-budget supply calculation above. After that, any optimizer qualification
-must reuse an existing implementation as a thin route-local adapter and keep a
-paired Uniform baseline, common random stream, exact mask and full-train-only
-feedback; the failed CatCMA and V1/V2 CEM states are evidence, not reusable
-initializers. Do not promote legacy scheduler arm names into a second top-level
-authority, import reward-bearing cross-campaign memory, assign invented
-fresh/crossover/mutation percentages, or build MCTS/crossover/mutation
+The zero-financial-read route-lane integration and pre-budget supply
+calculations are complete. The next comparison must reuse the existing
+Structural CEM V2 implementation as a thin route-local adapter with the paired
+Uniform baseline above; the failed CatCMA and V1/V2 CEM states remain evidence,
+not reusable initializers. Do not promote legacy scheduler arm names into a
+second top-level authority, import reward-bearing cross-campaign memory, assign
+invented fresh/crossover/mutation percentages, or build MCTS/crossover/mutation
 machinery. Broad Event remains a zero-budget frozen reference. Strict Stage A,
 candidate promotion, any additional holdout access, 2026 access and
 cross-campaign reward memory remain forbidden until separately authorized.

@@ -1,0 +1,75 @@
+{
+  "schema_version": "cn_minute_static_structural_supply_receipt_v1",
+  "status": "REFERENCE_72_BLOCKED_RECOMMEND_60_PAIR_BUDGET",
+  "authorization_id": "MINUTE_STATIC_STRUCTURAL_FORMULA_SPACE_SUPPLY_V1",
+  "route_id": "MINUTE_STATIC",
+  "formula_space_id": "MINUTE_STATIC_STRUCTURAL_SUPPLY_V1",
+  "implementation_repo_sha": "69e0b591e7d6f2fb43dc7838833c6021b09a4f30",
+  "remote_root": "D:\\ChengboRemote\\runtime\\cn_minute_static_structural_supply_v1_20260725_69e0b59_r2",
+  "remote_artifact_manifest": {
+    "path": "D:\\ChengboRemote\\runtime\\cn_minute_static_structural_supply_v1_20260725_69e0b59_r2\\artifact_manifest.json",
+    "sha256": "1e9084c7999484853d36a0ef60bcb2eb25a4930e1337ee66b92f06967c00a1c5",
+    "payload_hash_verified": true,
+    "artifacts_verified": "6/6",
+    "inputs_verified": "27/27"
+  },
+  "formula_space": {
+    "production_ids": [
+      "field_spread",
+      "normalized_ratio",
+      "absolute_state_interaction",
+      "dispersion_interaction"
+    ],
+    "raw_categorical_rows": 440,
+    "raw_exact_unique": 440,
+    "raw_canonical_unique": 440,
+    "blocked_metadata_lanes_excluded": [
+      "cross_sectional_residual",
+      "price_volume_interaction",
+      "liquidity_volatility_interaction"
+    ]
+  },
+  "search_memory": {
+    "historical_exact_identity_count": 2383,
+    "includes_prior_canary_and_medium_exact_ledgers": true,
+    "includes_prior_canary_and_medium_behavior_probes": true,
+    "post_archive_exact_supply": 157,
+    "post_archive_exact_by_production": {
+      "field_spread": 0,
+      "normalized_ratio": 0,
+      "absolute_state_interaction": 78,
+      "dispersion_interaction": 79
+    },
+    "observed_behavior_unique_supply": 139
+  },
+  "budget_interpretation": {
+    "nonexhaustive_headroom_multiplier": 2,
+    "maximum_nonexhaustive_pair_budget_per_arm": 69,
+    "reference_72_pair_budget_ready": false,
+    "recommended_pair_budget_per_arm": 60,
+    "recommended_checkpoint_count": 3,
+    "recommended_full_pair_cap_per_checkpoint": 20,
+    "reason": "60 preserves the existing three-generation shape and leaves 19 behavior-unique identities beyond the frozen 2x headroom requirement"
+  },
+  "access_boundary": {
+    "financial_reads": 0,
+    "phase3cm_pair_count": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "promotion": "FORBIDDEN",
+    "large_search_authorized": false
+  },
+  "run_health": {
+    "research_result_failures": 0,
+    "infrastructure_only_failures": [
+      "launcher PYTHONPATH omitted repository root before any output root or data read",
+      "Numba attempted to write compiled cache into the versioned source tree before the successful dedicated-cache retry"
+    ],
+    "successful_retry_cache": "D:\\ChengboRemote\\cache\\numba\\minute_structural_supply_69e0b59"
+  },
+  "authority_transition": "NONE_EXPERIMENTAL_SUPPLY_EVIDENCE_ONLY",
+  "next_action": "FREEZE_SEPARATE_3_CHECKPOINT_X_20_PAIR_PAIRED_SEARCH_POLICY_QUALIFICATION",
+  "graph_update": "NOT_REQUIRED_NO_ACTIVE_AUTHORITY_CHANGE",
+  "obsidian_update": "NOT_REQUIRED_NO_ACCEPTED_PROJECT_CAPABILITY"
+}

@@ -261,6 +261,9 @@ def test_structural_supply_decision_reserves_two_x_headroom() -> None:
     assert blocked[
         "reference_paired_qualification_supply_ready"
     ] is False
+    assert blocked["next_action"] == (
+        "FREEZE_PAIRED_BUDGET_AT_OR_BELOW_SUPPLY_CEILING"
+    )
 
 
 def test_structural_supply_static_run_closes_without_financial_reads(
