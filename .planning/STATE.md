@@ -2,7 +2,7 @@
 
 Updated: 2026-07-25
 
-Current state: `CN_MINUTE_STATIC_STRUCTURAL_SUPPLY_CEILING_ESTABLISHED`
+Current state: `CN_MINUTE_STATIC_STRUCTURAL_CEM_V2_MEDIUM_CLOSED_NOT_QUALIFIED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -96,6 +96,34 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   artifacts plus 27 inputs independently hash-verified; financial, Phase3CM,
   validation, holdout and 2026 reads were zero. The compact receipt is
   `runtime/run_plans/cn_minute_static_structural_supply_v1_20260725_receipt.json`.
+- The resulting paired Structural CEM V2 supply-medium campaign is now closed
+  on 77o at deployed SHA
+  `2027dda47cc7502752157cd85c3782437db4179e`. It used the verified four-lane
+  440-row Grammar surface, cumulative 157-exact/139-behavior supply, a common
+  generation-one stream, four checkpoints and 68 full-coordinate train pairs
+  per arm. All eight batch manifests are `BATCH_CLOSED_IMMUTABLE`; each
+  manifest payload hash and all 19 bound artifacts verified, as did all 21
+  root artifacts and the root payload hash. Exact duplicates, semantic/metric/
+  access drift and validation/holdout/2026 reads were zero. CEM started fresh
+  uniform, imported no probability or reward state, updated only the declared
+  production-choice context and reached generation four from 68 full-train
+  observations. Its proposal stream remained identical to Uniform through
+  generation two, then separated in generations three and four.
+- The completed comparison does not qualify Structural CEM V2. CEM retained
+  59/68 positive matched pairs versus Uniform 58/68 and nearly identical
+  overall medians, but the frozen adaptive-checkpoint median was exactly equal
+  at 14.74973, while behavior discovery was lower at 0.79412 versus 0.80882
+  and behavior families were 54 versus 55. Both arms exceeded the primary
+  75% host-occupancy gate with median effective cores of 25.39 CEM / 25.14
+  Uniform and comparable 97.73 / 96.51 full pairs/hour. A stale standalone
+  PowerShell inspector, not the evaluator cache or route, leaked 68.4 GiB and
+  polluted the frozen minimum-free-memory check; after its exact process was
+  removed, free memory recovered above 76 GiB and the following checkpoints
+  remained above 71 GiB. The incident is preserved as infrastructure run
+  health and does not change the financial result. The compact receipt is
+  `runtime/run_plans/cn_minute_static_structural_supply_cem_v2_medium_20260725_receipt.json`.
+  No optimizer authority, Graph relation, Obsidian projection or large-search
+  authorization changes.
 - `MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1` is accepted as the active
   route-local sampled-selection implementation under ADR 0007. This does not
   replace the candidate-parallel `formal_evaluation_authority`, authorize
@@ -392,17 +420,16 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The current `MINUTE_STATIC` blocker is now the unrun financial comparison for a
-supportable bounded search-policy budget, not field registration, evaluator
-semantics, financial route health, compute utilization or an unknown supply
-ceiling. The earlier two-production medium nearly exhausted 76 exact identities
-and could not qualify. The separately frozen four-production design now proves
-157 post-memory exact and 139 behavior-unique identities, establishing 69 pairs
-per arm as the maximum under the 2x non-exhaustive rule. The old 72-pair budget
-must not be reused; a 60-pair paired comparison can proceed without near-
-exhaustive overlap. This supply evidence does not qualify CEM or authorize a
-large search. `TARGET_FAMILY_LARGE_SEARCH_READINESS` therefore remains
-`SEARCH_POLICY_BLOCKED`.
+The four-production `MINUTE_STATIC` supply question and its paired 68-pair
+financial comparison are closed. Supply generation is not the blocker: the
+Grammar produced 440 legal exact/canonical-unique rows and 157 exact identities
+remained after cumulative memory. The tested optimizer surface is the blocker.
+Structural CEM V2 adapted only `production_id`; concrete typed field pairs
+remained uniform without replacement. That shallow treatment did not improve
+the frozen adaptive median or behavior discovery even after generation-three/
+four proposal separation. `TARGET_FAMILY_LARGE_SEARCH_READINESS` therefore
+remains `SEARCH_POLICY_BLOCKED`, and neither the terminal CEM probabilities nor
+the near-exhausted campaign catalog may seed another run.
 
 Historically, the targeted formula-space/CEM retry selected
 `DISCLOSURE_EVENT` /
@@ -494,19 +521,23 @@ machinery may be handcrafted.
 ## Next action
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
-qualification, the nine V3 checkpoints, the Structural CEM V2 canary, its
-supply-limited medium or the completed structural supply probe. Retain the
-qualified `normalized_ratio` production increment and active route-local
-sampled selector. Do not reuse V1/V2 CEM probabilities or launch a large
-search. The next bounded action is a separately frozen paired qualification on
-`MINUTE_STATIC_STRUCTURAL_SUPPLY_V1`: Uniform versus fresh Structural CEM V2,
-three checkpoints x 20 full-coordinate pairs per arm, common random stream,
-exact availability mask, cumulative exact/behavior memory and full-train-only
-feedback. The production choice may adapt across the four frozen lanes while
-concrete field pairs remain uniform without replacement. Registry `route_id`,
-compiler, matched-control, long-only, 5 bps cost, horizons 1/5/15/30, fixed
-8 GiB cache and sealed-data authorities remain unchanged. This is still a
-medium development qualification, not a large search or authority promotion.
+qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the
+completed four-lane supply probe or this 4x17 campaign. Retain the qualified
+`normalized_ratio` production increment and active route-local sampled
+selector. Do not reuse any terminal CEM probabilities or launch a large
+search.
+
+The next bounded implementation task is to deepen the optimizer-visible
+structure without inventing another optimizer: reuse the existing typed Grammar
+and Structural CEM machinery, but expose already-authoritative typed structural
+choices below `production_id` instead of leaving every concrete field pair in
+one non-adaptive uniform bucket. Keep registry `route_id`, compiler,
+matched-control, exact/behavior memory, long-only, 5 bps, horizons 1/5/15/30
+and sealed-data boundaries unchanged. First require a zero-financial-read
+catalog/supply proof that the added declared contexts are legal, supportable
+and materially change proposals; only then freeze one paired train-only
+qualification. Do not create MCTS, crossover/mutation machinery, a new search
+platform or a generic extension framework.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.

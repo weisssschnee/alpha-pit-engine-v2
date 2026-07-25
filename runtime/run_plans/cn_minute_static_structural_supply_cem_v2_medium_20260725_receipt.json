@@ -1,0 +1,150 @@
+{
+  "schema_version": "cn_minute_static_structural_supply_cem_v2_medium_receipt_v1",
+  "status": "CAMPAIGN_CLOSED_VERIFIED",
+  "campaign": {
+    "authorization_id": "MINUTE_STATIC_STRUCTURAL_SUPPLY_CEM_V2_PAIRED_MEDIUM",
+    "campaign_root": "D:\\ChengboRemote\\runtime\\cn_minute_static_structural_supply_cem_v2_medium_20260725_2027dda_4x17",
+    "task_id": "lanjob_20260725_132232_4362d8",
+    "writer_task_id": "minute_static_structural_supply_cem_v2_medium_2027dda_single_writer",
+    "repo_sha": "2027dda47cc7502752157cd85c3782437db4179e",
+    "started_at": "2026-07-25T13:22:52+08:00",
+    "ended_at": "2026-07-25T15:22:09+08:00",
+    "exit_code": 0,
+    "duplicate_writer_count": 0
+  },
+  "supply_generation": {
+    "formula_space_id": "MINUTE_STATIC_STRUCTURAL_SUPPLY_V1",
+    "status": "PASS",
+    "authoritative_production_count": 4,
+    "authoritative_field_pair_domain_count_per_production": 110,
+    "raw_legal_exact_unique_count": 440,
+    "raw_legal_canonical_unique_count": 440,
+    "cumulative_initial_exact_memory_count": 2383,
+    "post_memory_exact_supply": 157,
+    "post_memory_behavior_unique_supply": 139,
+    "post_memory_exact_by_production": {
+      "field_spread": 0,
+      "normalized_ratio": 0,
+      "absolute_state_interaction": 78,
+      "dispersion_interaction": 79
+    }
+  },
+  "frozen_execution": {
+    "arms": [
+      "arm_b_uniform_expanded",
+      "arm_c_structural_cem_v2"
+    ],
+    "checkpoint_count": 4,
+    "full_coordinate_pairs_per_checkpoint": 17,
+    "full_coordinate_pairs_per_arm": 68,
+    "proposal_pairs_per_checkpoint": 32,
+    "portfolio_mode": "long_only_top",
+    "shorting_allowed": false,
+    "cost_bps": 5.0,
+    "horizons": [
+      1,
+      5,
+      15,
+      30
+    ],
+    "compute_threads": 30,
+    "pair_batch_size": 4,
+    "evaluator_cache_cap_bytes": 8589934592
+  },
+  "causal_contract": {
+    "generation_1_exact_stream_parity": true,
+    "generation_1_full_evaluation_set_parity": true,
+    "generation_2_exact_stream_equal": true,
+    "generation_3_exact_stream_equal": false,
+    "generation_3_full_set_intersection": 11,
+    "generation_4_exact_stream_equal": false,
+    "generation_4_proposal_set_intersection": 19,
+    "generation_4_full_set_intersection": 11,
+    "zero_exact_duplicates": true,
+    "sealed_reads_zero": true,
+    "no_prior_campaign_exact_replay": true,
+    "optimizer_initialization_origin": "fresh_uniform_from_frozen_decision_catalog",
+    "optimizer_imported_source_campaign": "none",
+    "optimizer_final_generation": 4,
+    "optimizer_reward_observation_count": 68,
+    "optimizer_updated_context": "production_id",
+    "field_pair_choice_adaptive": false
+  },
+  "arm_results": {
+    "uniform": {
+      "evaluated_pairs": 68,
+      "positive_matched_pairs": 58,
+      "median_signed_matched_increment": 15.17667891340946,
+      "adaptive_checkpoint_positive_pairs": 41,
+      "adaptive_checkpoint_median_signed_matched_increment": 14.74972654558816,
+      "behavior_family_count": 55,
+      "behavior_discovery_per_evaluated_pair": 0.8088235294117647,
+      "full_coordinate_pairs_per_wall_hour": 96.50765246767145,
+      "median_effective_cores": 25.144221171622235,
+      "median_host_logical_cpu_occupancy": 0.7857569116131948,
+      "maximum_observed_cache_bytes": 1486690440,
+      "peak_rss_bytes": 9562169344
+    },
+    "structural_cem_v2": {
+      "evaluated_pairs": 68,
+      "positive_matched_pairs": 59,
+      "median_signed_matched_increment": 15.185622881225559,
+      "adaptive_checkpoint_positive_pairs": 42,
+      "adaptive_checkpoint_median_signed_matched_increment": 14.74972654558816,
+      "behavior_family_count": 54,
+      "behavior_discovery_per_evaluated_pair": 0.7941176470588235,
+      "full_coordinate_pairs_per_wall_hour": 97.72921291326684,
+      "median_effective_cores": 25.390120341881918,
+      "median_host_logical_cpu_occupancy": 0.7934412606838099,
+      "maximum_observed_cache_bytes": 1486690440,
+      "peak_rss_bytes": 9388568576,
+      "terminal_probability_table": [
+        0.09670198364257813,
+        0.09670198364257813,
+        0.5275795795116549,
+        0.27901645320318885
+      ]
+    }
+  },
+  "run_health_incident": {
+    "classification": "MONITOR_PATH_INFRASTRUCTURE_MEMORY_LEAK",
+    "offending_process": "powershell -File D:\\ChengboRemote\\runtime\\inspect_structural_supply_progress_2027dda.ps1",
+    "offending_peak_working_set_bytes": 73427697664,
+    "affected_frozen_check": "free_memory_at_least_24_gib",
+    "route_health_affected": false,
+    "financial_result_affected": false,
+    "free_memory_bytes_after_cleanup": 81761763328,
+    "later_checkpoint_minimum_free_memory_bytes": 76644978688,
+    "evidence_path": "D:\\ChengboRemote\\runtime\\cn_minute_static_structural_supply_cem_v2_medium_20260725_2027dda_4x17\\run_health_incidents\\20260725T143800_stale_progress_monitor_memory_leak\\incident_manifest.json",
+    "evidence_sha256": "43de49f288d773d0240b9765bbcbc6e910220a6b922769cdb7cf9b7c98523321"
+  },
+  "verification": {
+    "batch_manifest_count": 8,
+    "batch_manifest_payload_hash_match_count": 8,
+    "batch_artifact_count_per_manifest": 19,
+    "batch_artifact_mismatch_count": 0,
+    "root_artifact_count": 21,
+    "root_artifact_mismatch_count": 0,
+    "root_manifest_payload_hash": "d60874ed21d6de209f9eb1e2981da3513d475317ce89813c842d1f78f6a7f131",
+    "root_manifest_file_sha256": "929b41e456be5e6112d0f935a06bb8981f1c65747c4708ad8d283da8da41fd55",
+    "qualification_metrics_sha256": "fdfb7cf18728bc0f0d3a4681141e7bd38ee7499d045325a6eb1de9f52151943b",
+    "final_decision_sha256": "a207b519956c279c58880cb46ed5be46c75fdaa8127801d15164fc962932815d",
+    "structural_supply_generation_audit_sha256": "63cbb4a7590bc316bedda10bdd2b03a52a8f5628ba6e30a2a75110120718c1d6",
+    "matching_campaign_process_count_after_close": 0,
+    "current_free_memory_bytes_after_close": 86725189632
+  },
+  "verdict": {
+    "mechanical_contract": "PASS",
+    "supply_generation": "PASS",
+    "cem_search_increment": "NOT_QUALIFIED",
+    "performance_contract_recorded": "FAIL",
+    "performance_failure_scope": "MONITOR_PATH_INFRASTRUCTURE_MEMORY_LEAK",
+    "large_search_authorized": false,
+    "active_search_authority_changed": false,
+    "readiness_blockers": [
+      "adaptive_median_strictly_better",
+      "behavior_discovery_noninferior",
+      "free_memory_at_least_24_gib"
+    ]
+  }
+}
