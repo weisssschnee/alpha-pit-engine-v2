@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-25
+Updated: 2026-07-26
 
-Current state: `CN_MINUTE_STATIC_STRUCTURAL_TYPED_SURFACE_CLOSED_SUPPLY_BLOCKED`
+Current state: `CN_MINUTE_STATIC_STRUCTURAL_FORMULA_V4_SUPPLY_QUALIFIED_PAIRED_PENDING`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -441,10 +441,10 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current blocker
 
-The four-production `MINUTE_STATIC` supply question and its paired 68-pair
-financial comparison are closed. Supply generation is not the blocker: the
-Grammar produced 440 legal exact/canonical-unique rows and 157 exact identities
-remained after cumulative memory. The tested optimizer surface is the blocker.
+The earlier four-production `MINUTE_STATIC` supply question and its paired
+68-pair financial comparison are closed. In that frozen comparison the Grammar
+produced 440 legal exact/canonical-unique rows and 157 exact identities remained
+after cumulative memory. The tested optimizer surface was the blocker.
 Structural CEM V2 adapted only `production_id`; concrete typed field pairs
 remained uniform without replacement. That shallow treatment did not improve
 the frozen adaptive median or behavior discovery even after generation-three/
@@ -464,6 +464,31 @@ only for canonical identity. This rules out a field-registration, source-input
 or formula-leg error in the tested 440-row catalog, while making no Alpha,
 behavior-family, validation or OOS claim. Evidence is attached to
 `runtime/run_plans/cn_minute_static_structural_typed_surface_audit_20260725_receipt.json`.
+
+The bounded V4 formula-supply extension is now closed on 77o at pushed SHA
+`320d4f3fa7dd5c7e5f68ccd9c819591d1b4f4914`. It reuses the same Registry,
+`CompositionalGrammarV2`, `TypedRouteCompiler`, streaming executor and
+matched-control constructor while exposing five optimizer-visible decisions:
+`production_id`, left/right transform and left/right field. The only enabled
+transforms are the already registered and supported `ZSCORE`, `ABS_ZSCORE` and
+`SIGN`; `IDENTITY` remains excluded because the production signatures are
+dimensionless while raw roots span incompatible units, and
+`DELTA_EXISTING_WINDOW` remains excluded from the current `MINUTE_STATIC`
+compiler allowlist. The resulting bounded catalog contains 1,980 legal
+exact/canonical-unique formulas at maximum depth four.
+
+After the complete cumulative exact memory, 1,559 fresh exact identities
+remain, versus the frozen minimum 144. A deterministic
+`hash(frozen_seed, exact_identity)` probe materialized all 256 selected pairs,
+left zero unresolved, and admitted 171 behavior-unique primary pairs versus
+the frozen minimum 72. All 11 observed formula roots equal the production
+route authority; all are present in the active layout. Primary/control field
+and source lineage matched for all 1,559 pairs. The artifact manifest and all
+44 inputs plus six outputs independently hash-verified with zero mismatch;
+financial, Phase3CM, validation, holdout and 2026 reads were zero. This closes
+formula supply only. It does not accept a search policy, promote candidates or
+authorize a large search. Evidence is in
+`runtime/run_plans/cn_minute_static_structural_formula_v4_supply_20260726_receipt.json`.
 
 Historically, the targeted formula-space/CEM retry selected
 `DISCLOSURE_EVENT` /
@@ -561,16 +586,17 @@ Retain the qualified `normalized_ratio` production increment and active
 route-local sampled selector. Do not reuse any terminal CEM probabilities or
 launch a large search.
 
-The optimizer-visible typed structure is now mechanically closed; the blocker
-is formula supply, not another sampling-policy repair. The next bounded task is
-to add genuinely new authoritative `MINUTE_STATIC` formulas through the
-existing Registry, typed Grammar, compiler and matched-control path. Use
-already registered compatible operators and bounded typed nesting; do not
-relabel or replay the exhausted 440 formulas, invent field-family metadata, or
-create another optimizer/platform. Before any financial retry, a zero-financial
-catalog proof must retain at least 144 fresh exact identities after the full
-cumulative memory and demonstrate nontrivial behavior supply. Only then may one
-fresh paired Uniform versus Structural CEM train qualification be frozen.
+Do not rerun or enlarge the completed V4 supply proof. Formula supply is no
+longer the blocker: the frozen zero-financial gates closed at 1,559 fresh exact
+and 171 observed behavior-unique pairs. The next bounded task, after a separate
+financial-run authorization, is one fresh paired Uniform versus Structural CEM
+train qualification on this identical V4 catalog. Both arms must share the
+same proposal stream at generation one, cumulative exact/behavior memory,
+compiler, sampled-selection authority and full-coordinate evaluator; Structural
+CEM must initialize fresh uniform with no imported probabilities or rewards.
+Use at most the existing reference 72 full-coordinate pairs per arm, not the
+larger theoretical 171-pair supply ceiling. Do not tune alpha, elite fraction
+or checkpoint count before that causal comparison closes.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.

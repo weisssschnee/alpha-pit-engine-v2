@@ -1,0 +1,133 @@
+{
+  "schema_version": "cn_minute_static_structural_formula_v4_supply_receipt_v1",
+  "status": "STRUCTURAL_FORMULA_V4_SUPPLY_QUALIFIED",
+  "implementation": {
+    "authorization_id": "MINUTE_STATIC_STRUCTURAL_FORMULA_SUPPLY_V4",
+    "formula_space_id": "MINUTE_STATIC_STRUCTURAL_FORMULA_V4",
+    "repo_sha": "320d4f3fa7dd5c7e5f68ccd9c819591d1b4f4914",
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_minute_formula_v4_20260726_320d4f3fa7dd",
+    "campaign_root": "D:\\ChengboRemote\\runtime\\cn_minute_static_structural_formula_v4_supply_20260726_320d4f3",
+    "successful_task_id": "lanjob_20260726_014622_dc52e3",
+    "writer_task_id": "minute_static_formula_v4_supply_320d4f3_single_writer"
+  },
+  "formula_space": {
+    "adaptive_decisions": [
+      "production_id",
+      "left_transform_id",
+      "right_transform_id",
+      "left_field_id",
+      "right_field_id"
+    ],
+    "production_count": 4,
+    "route_root_count": 11,
+    "ordered_nonself_field_pair_count": 110,
+    "typed_transform_ids": [
+      "ZSCORE",
+      "ABS_ZSCORE",
+      "SIGN"
+    ],
+    "excluded_transform_candidates": {
+      "IDENTITY": "EXCLUDED_CROSS_UNIT_DIMENSIONLESS_SIGNATURE",
+      "DELTA_EXISTING_WINDOW": "EXCLUDED_MINUTE_STATIC_COMPILER_ALLOWLIST"
+    },
+    "raw_legal_rows": 1980,
+    "raw_exact_unique": 1980,
+    "raw_canonical_unique": 1980,
+    "maximum_primary_and_control_depth": 4,
+    "streaming_operator_support": "PASS",
+    "all_primary_control_legal": true
+  },
+  "input_authority": {
+    "status": "PASS",
+    "registry_sha256": "449fea36daaba8e501bd03d052497b881ac03c601cee701f3ebfe069c7ae61d7",
+    "production_root_contract_sha256": "a9b3bba99b5316d015de1bc9900c15e294361d6a635bd710616a35683bfefb8d",
+    "production_root_contract_hash": "590a40eab4f3e043b183a1ade2c10f234266f45304cac0a6e97c4e747630b611",
+    "active_layout_sha256": "d02d1642aa7098075b67093a4bfa41be236c8109772e3e774d9f05b681fec449",
+    "historical_exact_archive_sha256": "80c963eabbe09aa63d73385ebf36a0a33ac07abfe99a060448c7c6fa6604f351",
+    "historical_behavior_archive_sha256": "d0501fa34a3ff2dfda8a8d375e039c1cc80281054f3c9556b3f2a9d93adf557e",
+    "source_candidate_ledger_sha256": "927eadf6afcd5de7111f2be933920dbcaec2ffd5bcdffac0d9f453d9fe2d4fa5",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "immutable_checkpoint_count": 18,
+    "checkpoint_exact_behavior_files_verified": "36/36",
+    "observed_formula_field_count": 11,
+    "observed_fields_equal_route_authority": true,
+    "route_roots_materialized_in_active_layout": true,
+    "primary_control_field_and_source_lineage_parity": true,
+    "historical_exact_identity_count": 2521,
+    "historical_behavior_row_count": 3541
+  },
+  "supply": {
+    "post_archive_exact_supply": 1559,
+    "minimum_post_archive_exact_supply": 144,
+    "exact_supply_gate": "PASS",
+    "post_archive_exact_by_production": {
+      "field_spread": 330,
+      "normalized_ratio": 880,
+      "absolute_state_interaction": 111,
+      "dispersion_interaction": 238
+    },
+    "behavior_probe_ordering": "hash(frozen_seed,exact_identity)",
+    "behavior_probe_cap": 256,
+    "behavior_materialized_pairs": 256,
+    "behavior_unresolved_pairs": 0,
+    "observed_behavior_unique_supply": 171,
+    "minimum_behavior_unique_supply": 72,
+    "behavior_supply_gate": "PASS",
+    "behavior_supply_claim": "OBSERVED_LOWER_BOUND_WITHIN_FROZEN_PROBE_CAP",
+    "maximum_supported_paired_budget_per_arm": 171,
+    "reference_72_pair_budget_ready": true
+  },
+  "access_boundary": {
+    "financial_reads": 0,
+    "phase3cm_pair_count": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "promotion": "FORBIDDEN",
+    "large_search_authorized": false
+  },
+  "verification": {
+    "manifest_path": "D:\\ChengboRemote\\runtime\\cn_minute_static_structural_formula_v4_supply_20260726_320d4f3\\artifact_manifest.json",
+    "manifest_file_sha256": "741b03647dd8d1575cd4336860b79d6e639261685cfb507f97b68a8d8e752c98",
+    "manifest_payload_hash": "abd11055829fc8cd3e38cbd348c5a0a8acbb5e9b09336d32d2f800d5a2f8d3eb",
+    "manifest_payload_hash_match": true,
+    "artifact_count": 6,
+    "artifact_mismatch_count": 0,
+    "input_count": 44,
+    "input_mismatch_count": 0,
+    "candidate_member_rows": 3118,
+    "candidate_pair_count": 1559,
+    "pair_contract_all_pass": true,
+    "focused_tests": "62 passed"
+  },
+  "launcher_incidents": [
+    {
+      "task_id": "lanjob_20260726_014324_4a2b83",
+      "classification": "POWERSHELL_NATIVE_STDERR_TRUNCATION",
+      "research_data_reads": 0,
+      "research_artifacts_written": 0
+    },
+    {
+      "task_id": "lanjob_20260726_014432_ba51d4",
+      "classification": "POWERSHELL_NATIVE_STDERR_TRUNCATION",
+      "research_data_reads": 0,
+      "research_artifacts_written": 0
+    },
+    {
+      "task_id": "lanjob_20260726_014529_cc31d4",
+      "classification": "LAUNCHER_PYTHONPATH_OMITTED_SRC",
+      "research_data_reads": 0,
+      "research_artifacts_written": 0
+    }
+  ],
+  "verdict": {
+    "formula_supply": "QUALIFIED",
+    "behavior_supply": "QUALIFIED",
+    "financial_qualification_authorized_by_this_receipt": false,
+    "large_search_authorized": false,
+    "active_search_authority_changed": false,
+    "next_action": "FREEZE_SEPARATE_FRESH_UNIFORM_VERSUS_STRUCTURAL_CEM_PAIRED_QUALIFICATION"
+  },
+  "graph_update": "NOT_REQUIRED_NO_ACTIVE_AUTHORITY_CHANGE",
+  "obsidian_update": "NOT_REQUIRED_NO_ACCEPTED_ACTIVE_AUTHORITY"
+}
