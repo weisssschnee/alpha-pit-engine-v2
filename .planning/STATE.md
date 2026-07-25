@@ -452,6 +452,19 @@ four proposal separation. `TARGET_FAMILY_LARGE_SEARCH_READINESS` therefore
 remains `SEARCH_POLICY_BLOCKED`, and neither the terminal CEM probabilities nor
 the near-exhausted campaign catalog may seed another run.
 
+An independent zero-financial-read input-authority audit verified the complete
+current `MINUTE_STATIC` path: the production contract's 11 registered
+`raw_1min` roots, all 110 ordered non-self field pairs, all 440 primary formula
+ASTs and their 110 pair-specific matched-control identities, and the 16 active
+77o sidecar shards (446,443,583 rows; 10,813,323,428 bytes). All current file
+hashes, physical schemas, row/byte counts and historical source-to-sidecar
+parity records matched. Directional left/right order is preserved in the AST
+and declared lineage; compiler `field_ids` and `source_field_ids` are sorted
+only for canonical identity. This rules out a field-registration, source-input
+or formula-leg error in the tested 440-row catalog, while making no Alpha,
+behavior-family, validation or OOS claim. Evidence is attached to
+`runtime/run_plans/cn_minute_static_structural_typed_surface_audit_20260725_receipt.json`.
+
 Historically, the targeted formula-space/CEM retry selected
 `DISCLOSURE_EVENT` /
 `cn.comp.v2.disclosure_event.pre_event_path` and reused the frozen OLD

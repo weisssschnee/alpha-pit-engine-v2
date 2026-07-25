@@ -55,6 +55,43 @@
     "maximum_nonexhaustive_pair_budget_per_arm": 9,
     "reference_pair_budget_per_arm": 72
   },
+  "input_authority_audit": {
+    "status": "PASS",
+    "task_id": "lanjob_20260725_203155_6840d5",
+    "audit_path": "D:\\ChengboRemote\\runtime\\cn_minute_static_input_authority_audit_20260725_488e57e.json",
+    "audit_payload_hash": "6ca2645408f2bb3b5a7012680d4f9741f0a8726991687f423425485f6391a938",
+    "audit_file_sha256": "63fea676c3597e18e86ca0bed466e81d5726b6576f350a6d2ad9020cb301bc9f",
+    "production_contract_hash": "590a40eab4f3e043b183a1ade2c10f234266f45304cac0a6e97c4e747630b611",
+    "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+    "active_layout_sha256": "d02d1642aa7098075b67093a4bfa41be236c8109772e3e774d9f05b681fec449",
+    "route_root_count": 11,
+    "ordered_field_pair_count": 110,
+    "formula_count": 440,
+    "primary_exact_unique": 440,
+    "primary_canonical_unique": 440,
+    "control_exact_unique": 110,
+    "sidecar_shard_count": 16,
+    "sidecar_rows": 446443583,
+    "sidecar_bytes": 10813323428,
+    "all_current_sidecar_hashes_match": true,
+    "all_current_sidecar_schema_rows_bytes_match": true,
+    "all_source_sidecar_parity_checks_pass": true,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "financial_reads": 0,
+    "claim_ceiling": "FIELD_FORMULA_INPUT_AUTHORITY_ONLY_NO_ALPHA_OR_OOS_CLAIM",
+    "audit_assertion_corrections": [
+      {
+        "task_id": "lanjob_20260725_203037_a98d68",
+        "classification": "AUDIT_EXPECTED_LOGICAL_SCHEMA_NOT_PHYSICAL_SCHEMA"
+      },
+      {
+        "task_id": "lanjob_20260725_203115_3f96d8",
+        "classification": "AUDIT_OMITTED_REQUIRED_PROVENANCE_COLUMNS"
+      }
+    ]
+  },
   "access_boundary": {
     "financial_reads": 0,
     "phase3cm_pair_count": 0,

@@ -311,6 +311,161 @@ def test_structural_typed_surface_is_lossless_authoritative_projection() -> None
     )
 
 
+def test_minute_static_fields_and_formula_templates_match_authority() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    contract, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    assert contract["registry_hash"] == registry.registry_hash
+    assert roots == (
+        "amount",
+        "amount_yuan",
+        "close",
+        "high",
+        "intraday_ret_from_open",
+        "low",
+        "open",
+        "pct_chg",
+        "ret_1m",
+        "volume",
+        "vwap",
+    )
+    assert len(set(roots)) == 11
+    assert set(roots).issubset(
+        {row.field_id for row in registry.fields_for_route("MINUTE_STATIC")}
+    )
+    for field_id in roots:
+        field = registry.resolve(field_id)
+        assert field.source_family == "raw_1min"
+        assert field.source_table == "true1min_augmented_panel"
+        assert field.source_field == field_id
+        assert field.entity_scope == "STOCK"
+        assert field.temporal_semantics == "BAR_VALUE"
+        assert field.observable_clock == "bar_close"
+        assert field.maturity_rule == "0 bars"
+        assert field.pit_status == "PIT_VERSIONED_HISTORY"
+        assert field.search_eligible is True
+        assert field.semantic_role == "primary"
+        assert field.field_role == "primary"
+        assert field.support_unit == "stock-minute cross-section"
+        assert field.blocked_reason == ""
+        assert field.source_lag == 0
+        assert field.source_lag_unit == "bars"
+        assert field.metadata["dtype"] == "float64"
+        assert field.metadata["external_phase2_join"] is False
+        assert field.metadata["transform"] == "identity"
+
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+    expected_pairs = {
+        f"{left}::{right}"
+        for left in roots
+        for right in roots
+        if left != right
+    }
+    assert set(projection.field_pair_ids) == expected_pairs
+    assert len(projection.field_pair_ids) == 110
+
+    expression_templates = {
+        "field_spread": (
+            "CSRank(Sub(ZScore(${left}),ZScore(${right})))"
+        ),
+        "normalized_ratio": (
+            "CSRank(SafeDiv(ZScore(${left}),ZScore(${right}),0.05))"
+        ),
+        "absolute_state_interaction": (
+            "CSRank(Mul(Sign(${left}),Abs(ZScore(${right}))))"
+        ),
+        "dispersion_interaction": (
+            "CSRank(Sub(Abs(ZScore(${left})),"
+            "Abs(ZScore(${right}))))"
+        ),
+    }
+    control_template = (
+        "CSRank(Add(ZScore(${left}),Mul(0,ZScore(${right}))))"
+    )
+    catalog = projection._available_candidate_catalog(
+        STRUCTURAL_TYPED_FORMULA_SPACE_ID
+    )
+    production_ids = [str(row["production_id"]) for row in catalog]
+    assert set(production_ids) == set(expression_templates)
+    assert {
+        production_id: production_ids.count(production_id)
+        for production_id in expression_templates
+    } == {
+        production_id: 110
+        for production_id in expression_templates
+    }
+    primary_exact = set()
+    control_exact = set()
+    for row in catalog:
+        left, right = str(row["field_pair_id"]).split("::", 1)
+        candidate = row["candidate"]
+        control = row["control"]
+        expected_fields = [left, right]
+        canonical_fields = sorted(expected_fields)
+        expected_source_fields = [
+            registry.resolve(field_id).source_field_id
+            for field_id in canonical_fields
+        ]
+        expected_expression = expression_templates[
+            str(row["production_id"])
+        ].format(left=left, right=right)
+        expected_control = control_template.format(
+            left=left,
+            right=right,
+        )
+        assert candidate["expression"] == expected_expression
+        assert candidate["canonical_expression"] == expected_expression
+        assert control["expression"] == expected_control
+        assert control["canonical_expression"] == expected_control
+        assert candidate["field_ids"] == canonical_fields
+        assert control["field_ids"] == canonical_fields
+        assert candidate["declared_field_ids"] == expected_fields
+        assert control["declared_field_ids"] == expected_fields
+        assert candidate["source_field_ids"] == expected_source_fields
+        assert control["source_field_ids"] == expected_source_fields
+        assert candidate["categorical_genes"]["field_pair_id"] == (
+            row["field_pair_id"]
+        )
+        assert control["categorical_genes"] == (
+            candidate["categorical_genes"]
+        )
+        assert candidate["pair_id"] == control["pair_id"]
+        assert candidate["matched_control_id"] == control["candidate_id"]
+        assert control["matched_control_id"] == candidate["candidate_id"]
+        assert candidate["access_roles"] == ["development"]
+        assert control["access_roles"] == ["development"]
+        assert candidate["uses_future_revision"] is False
+        assert control["uses_future_revision"] is False
+        assert candidate["requires_intrabar_order"] is False
+        assert control["requires_intrabar_order"] is False
+        assert candidate["clock_contract"] == "bar_close"
+        assert control["clock_contract"] == "bar_close"
+        assert candidate["maturity_contract"] == "bar_close"
+        assert control["maturity_contract"] == "bar_close"
+        assert candidate["typed_route_decision"] == "ALLOW"
+        assert control["typed_route_decision"] == "ALLOW"
+        assert candidate["typed_route_rejection_code"] == ""
+        assert control["typed_route_rejection_code"] == ""
+        assert candidate["legal"] is True
+        assert control["legal"] is True
+        primary_exact.add(str(candidate["exact_identity"]))
+        control_exact.add(str(control["exact_identity"]))
+
+    assert len(catalog) == 440
+    assert len(primary_exact) == 440
+    # Each production ablates to the same pair-specific baseline by design.
+    assert len(control_exact) == 110
+
+
 def test_structural_typed_surface_parity_mask_and_synthetic_adaptation() -> None:
     registry = UnifiedCapabilityRegistry.read(REGISTRY)
     _, roots = _load_production_contract(
