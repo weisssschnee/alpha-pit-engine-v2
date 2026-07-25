@@ -12,7 +12,14 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     MAX_WALL_SECONDS,
     PAIR_BATCH_SIZE_BY_BACKEND,
     SEARCH_ROUTES,
+    SLOW_CROSS_SECTIONAL_384_PROFILE,
+    SLOW_CROSS_SECTIONAL_EVALUATED_TARGET,
+    SLOW_CROSS_SECTIONAL_MAX_CHECKPOINTS,
+    SLOW_CROSS_SECTIONAL_MAX_ADMITTED_PER_CHECKPOINT,
     TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
+    _campaign_profile,
+    _checkpoint_elites,
+    _next_target_admission_count,
     _campaign_authorization_binding,
     _rehydrate_closed_checkpoint,
     _verify_closed_checkpoint_manifest,
@@ -105,6 +112,104 @@ def test_seed_attempt_ranges_are_disjoint_and_bounded() -> None:
             if row["route_id"] == route
         ]
         assert ranges == [(index * 2300, (index + 1) * 2300) for index in range(6)]
+
+
+def test_slow_cross_sectional_profile_counts_actual_evaluated_pairs() -> None:
+    profile = _campaign_profile(SLOW_CROSS_SECTIONAL_384_PROFILE)
+
+    assert profile["checkpoint_count"] == SLOW_CROSS_SECTIONAL_MAX_CHECKPOINTS
+    assert profile["minimum_actual_evaluated_pairs"] == (
+        SLOW_CROSS_SECTIONAL_EVALUATED_TARGET
+    )
+    assert profile["evaluated_fill_required"] is True
+    assert profile["search_routes"] == ("SLOW_CROSS_SECTIONAL_LEVEL",)
+    assert all(
+        row == {
+            "SLOW_CROSS_SECTIONAL_LEVEL":
+                SLOW_CROSS_SECTIONAL_MAX_ADMITTED_PER_CHECKPOINT
+        }
+        for row in profile["base_targets"]
+    )
+
+
+def test_target_admission_refill_tracks_observed_evaluation_yield() -> None:
+    assert (
+        _next_target_admission_count(
+            evaluated_target=384,
+            completed_evaluated=0,
+            completed_admitted=0,
+            maximum_per_checkpoint=56,
+        )
+        == 56
+    )
+    assert (
+        _next_target_admission_count(
+            evaluated_target=384,
+            completed_evaluated=376,
+            completed_admitted=480,
+            maximum_per_checkpoint=56,
+        )
+        == 16
+    )
+    assert (
+        _next_target_admission_count(
+            evaluated_target=384,
+            completed_evaluated=384,
+            completed_admitted=480,
+            maximum_per_checkpoint=56,
+        )
+        == 0
+    )
+
+
+def test_checkpoint_elites_are_train_only_and_ranked_per_checkpoint() -> None:
+    candidates = [
+        {
+            "checkpoint": "checkpoint_001",
+            "pair_id": "pair.low",
+            "pair_member_role": "PRIMARY",
+            "candidate_id": "candidate.low",
+            "expression": "CSRank($field_a)",
+            "exact_identity": "exact.low",
+        },
+        {
+            "checkpoint": "checkpoint_001",
+            "pair_id": "pair.high",
+            "pair_member_role": "PRIMARY",
+            "candidate_id": "candidate.high",
+            "expression": "CSRank($field_b)",
+            "exact_identity": "exact.high",
+        },
+    ]
+    outcomes = [
+        {
+            "checkpoint": "checkpoint_001",
+            "pair_id": "pair.low",
+            "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+            "pair_evaluation_status": "PAIR_EVALUATED",
+            "matched_train_increment": 0.1,
+        },
+        {
+            "checkpoint": "checkpoint_001",
+            "pair_id": "pair.high",
+            "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+            "pair_evaluation_status": "PAIR_EVALUATED",
+            "matched_train_increment": 0.8,
+        },
+        {
+            "checkpoint": "checkpoint_001",
+            "pair_id": "pair.blocked",
+            "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+            "pair_evaluation_status": "PAIR_EVALUATION_BLOCKED",
+            "matched_train_increment": 99.0,
+        },
+    ]
+
+    elites = _checkpoint_elites(candidates=candidates, outcomes=outcomes)
+
+    assert [row["pair_id"] for row in elites] == ["pair.high", "pair.low"]
+    assert all(row["selection_scope"] == "TRAIN_ONLY_CHECKPOINT_ELITE" for row in elites)
+    assert all(row["validation_feedback"] == "FORBIDDEN" for row in elites)
 
 
 def test_registry_binding_accepts_only_frozen_v3_authority(tmp_path: Path) -> None:

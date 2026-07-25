@@ -95,6 +95,17 @@ MODIFIED_COMPATIBILITY_ROUTES = (
     "SLOW_TEMPORAL_CHANGE",
     "DISCLOSURE_EVENT",
 )
+LEGACY_CAMPAIGN_PROFILE = "legacy_medium"
+SLOW_CROSS_SECTIONAL_384_PROFILE = "slow_cross_sectional_evaluated384"
+SLOW_CROSS_SECTIONAL_TARGET_ROUTE = "SLOW_CROSS_SECTIONAL_LEVEL"
+SLOW_CROSS_SECTIONAL_EVALUATED_TARGET = 384
+SLOW_CROSS_SECTIONAL_MAX_CHECKPOINTS = 12
+SLOW_CROSS_SECTIONAL_MAX_ADMITTED_PER_CHECKPOINT = 56
+SLOW_CROSS_SECTIONAL_ROUTE_ATTEMPT_CAP = 10_000
+SLOW_CROSS_SECTIONAL_MAX_RAW_ATTEMPTS = (
+    SLOW_CROSS_SECTIONAL_MAX_CHECKPOINTS
+    * SLOW_CROSS_SECTIONAL_ROUTE_ATTEMPT_CAP
+)
 
 
 CHECKPOINT_BASE_TARGETS = (
@@ -105,6 +116,53 @@ CHECKPOINT_BASE_TARGETS = (
     {"INTRADAY_STATE_TRANSITION": 48, "SLOW_CROSS_SECTIONAL_LEVEL": 42, "MINUTE_STATIC": 38, "SLOW_TEMPORAL_CHANGE": 37, "FIRSTN_PATH": 32, "MARKET_REGIME_CONDITION": 32, "DISCLOSURE_EVENT": 27},
     {"INTRADAY_STATE_TRANSITION": 48, "SLOW_CROSS_SECTIONAL_LEVEL": 42, "MINUTE_STATIC": 37, "SLOW_TEMPORAL_CHANGE": 38, "FIRSTN_PATH": 32, "MARKET_REGIME_CONDITION": 32, "DISCLOSURE_EVENT": 27},
 )
+
+
+def _campaign_profile(name: str) -> dict[str, Any]:
+    if name == LEGACY_CAMPAIGN_PROFILE:
+        return {
+            "name": name,
+            "checkpoint_count": CHECKPOINT_COUNT,
+            "checkpoint_scheduled_pairs": CHECKPOINT_SCHEDULED_PAIRS,
+            "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
+            "maximum_completed_development_matched_pairs": MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
+            "minimum_actual_evaluated_pairs": 0,
+            "maximum_raw_attempts": MAX_RAW_ATTEMPTS,
+            "route_attempt_cap": ROUTE_ATTEMPT_CAP,
+            "search_routes": SEARCH_ROUTES,
+            "base_targets": CHECKPOINT_BASE_TARGETS,
+            "evaluated_fill_required": False,
+            "target_route": "",
+        }
+    if name == SLOW_CROSS_SECTIONAL_384_PROFILE:
+        base_targets = tuple(
+            {
+                SLOW_CROSS_SECTIONAL_TARGET_ROUTE:
+                    SLOW_CROSS_SECTIONAL_MAX_ADMITTED_PER_CHECKPOINT
+            }
+            for _ in range(SLOW_CROSS_SECTIONAL_MAX_CHECKPOINTS)
+        )
+        return {
+            "name": name,
+            "checkpoint_count": SLOW_CROSS_SECTIONAL_MAX_CHECKPOINTS,
+            "checkpoint_scheduled_pairs": SLOW_CROSS_SECTIONAL_MAX_ADMITTED_PER_CHECKPOINT,
+            "total_scheduled_matched_pair_budget": (
+                SLOW_CROSS_SECTIONAL_MAX_CHECKPOINTS
+                * SLOW_CROSS_SECTIONAL_MAX_ADMITTED_PER_CHECKPOINT
+            ),
+            "maximum_completed_development_matched_pairs": (
+                SLOW_CROSS_SECTIONAL_MAX_CHECKPOINTS
+                * SLOW_CROSS_SECTIONAL_MAX_ADMITTED_PER_CHECKPOINT
+            ),
+            "minimum_actual_evaluated_pairs": SLOW_CROSS_SECTIONAL_EVALUATED_TARGET,
+            "maximum_raw_attempts": SLOW_CROSS_SECTIONAL_MAX_RAW_ATTEMPTS,
+            "route_attempt_cap": SLOW_CROSS_SECTIONAL_ROUTE_ATTEMPT_CAP,
+            "search_routes": (SLOW_CROSS_SECTIONAL_TARGET_ROUTE,),
+            "base_targets": base_targets,
+            "evaluated_fill_required": True,
+            "target_route": SLOW_CROSS_SECTIONAL_TARGET_ROUTE,
+        }
+    raise ValueError(f"unknown campaign profile: {name}")
 
 
 def _source_hash(path: Path) -> str:
@@ -138,6 +196,7 @@ def _campaign_authorization_binding(
     seed_base: int,
     active_threads: int,
     session_threads: int,
+    profile: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     authorization_path = Path(authorization_path).resolve()
     history_manifest_path = Path(history_manifest_path).resolve()
@@ -145,13 +204,20 @@ def _campaign_authorization_binding(
     behavior_archive_path = Path(behavior_archive_path).resolve()
     authorization = json.loads(authorization_path.read_text(encoding="utf-8"))
     history = json.loads(history_manifest_path.read_text(encoding="utf-8"))
+    selected_profile = dict(profile or _campaign_profile(LEGACY_CAMPAIGN_PROFILE))
     expected = {
         "execution_authorized": True,
-        "checkpoint_count": CHECKPOINT_COUNT,
-        "checkpoint_scheduled_pairs": CHECKPOINT_SCHEDULED_PAIRS,
-        "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
-        "maximum_completed_development_matched_pairs": MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
-        "maximum_raw_attempts": MAX_RAW_ATTEMPTS,
+        "checkpoint_count": int(selected_profile["checkpoint_count"]),
+        "checkpoint_scheduled_pairs": int(
+            selected_profile["checkpoint_scheduled_pairs"]
+        ),
+        "total_scheduled_matched_pair_budget": int(
+            selected_profile["total_scheduled_matched_pair_budget"]
+        ),
+        "maximum_completed_development_matched_pairs": int(
+            selected_profile["maximum_completed_development_matched_pairs"]
+        ),
+        "maximum_raw_attempts": int(selected_profile["maximum_raw_attempts"]),
         "maximum_wall_seconds": MAX_WALL_SECONDS,
         "seed_base": int(seed_base),
         "active_threads": int(active_threads),
@@ -170,6 +236,15 @@ def _campaign_authorization_binding(
         "holdout": "SEALED",
         "forward_2026": "SEALED",
     }
+    if str(selected_profile["name"]) != LEGACY_CAMPAIGN_PROFILE:
+        expected.update(
+            {
+                "campaign_profile": str(selected_profile["name"]),
+                "minimum_actual_evaluated_pairs": int(
+                    selected_profile["minimum_actual_evaluated_pairs"]
+                ),
+            }
+        )
     drift = [
         key
         for key, value in expected.items()
@@ -223,21 +298,28 @@ def build_seed_attempt_manifest(
     schema_hash_by_backend: Mapping[str, str],
     grammar_hash: str,
     seed_base: int,
+    checkpoint_count: int = CHECKPOINT_COUNT,
+    search_routes: Sequence[str] = SEARCH_ROUTES,
+    route_attempt_cap: int = ROUTE_ATTEMPT_CAP,
+    maximum_raw_attempts: int = MAX_RAW_ATTEMPTS,
+    base_targets: Sequence[Mapping[str, int]] = CHECKPOINT_BASE_TARGETS,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
-    for checkpoint_index in range(CHECKPOINT_COUNT):
-        for route_index, route_id in enumerate(SEARCH_ROUTES):
-            attempt_start = checkpoint_index * ROUTE_ATTEMPT_CAP
+    if len(base_targets) != checkpoint_count:
+        raise ValueError("base target count must match checkpoint count")
+    for checkpoint_index in range(checkpoint_count):
+        for route_index, route_id in enumerate(search_routes):
+            attempt_start = checkpoint_index * route_attempt_cap
             rows.append(
                 {
                     "checkpoint": f"checkpoint_{checkpoint_index + 1:03d}",
                     "route_id": route_id,
                     "seed": int(seed_base + checkpoint_index * 100_003 + route_index * 1_009),
                     "attempt_start": attempt_start,
-                    "attempt_stop": attempt_start + ROUTE_ATTEMPT_CAP,
-                    "raw_attempt_cap": ROUTE_ATTEMPT_CAP,
+                    "attempt_stop": attempt_start + route_attempt_cap,
+                    "raw_attempt_cap": route_attempt_cap,
                     "base_scheduled_matched_pair_target": int(
-                        CHECKPOINT_BASE_TARGETS[checkpoint_index][route_id]
+                        base_targets[checkpoint_index][route_id]
                     ),
                     "constructor_profile": COMPOSITIONAL_V2_PROFILE,
                     "registry_hash": registry_hash,
@@ -248,12 +330,12 @@ def build_seed_attempt_manifest(
                 }
             )
     total_cap = sum(int(row["raw_attempt_cap"]) for row in rows)
-    if total_cap > MAX_RAW_ATTEMPTS:
+    if total_cap > maximum_raw_attempts:
         raise RuntimeError("frozen attempt ranges exceed the campaign raw-attempt cap")
     return {
         "schema_version": "cn_medium_campaign_seed_attempt_manifest_v1",
         "attempt_stream_policy": "DISJOINT_ROUTE_LOCAL_RANGES_NO_EXTENSION",
-        "maximum_raw_attempts": MAX_RAW_ATTEMPTS,
+        "maximum_raw_attempts": maximum_raw_attempts,
         "frozen_route_attempt_capacity": total_cap,
         "rows": rows,
     }
@@ -613,6 +695,187 @@ def _admit_behavior_unique(
         if str(row.get("pair_id") or "") in admitted_ids
     ]
     return admitted, decisions
+
+
+def _next_target_admission_count(
+    *,
+    evaluated_target: int,
+    completed_evaluated: int,
+    completed_admitted: int,
+    maximum_per_checkpoint: int,
+) -> int:
+    remaining = max(0, int(evaluated_target) - int(completed_evaluated))
+    if remaining == 0:
+        return 0
+    observed_rate = (
+        float(completed_evaluated) / float(completed_admitted)
+        if completed_admitted > 0
+        else 0.75
+    )
+    bounded_rate = min(0.95, max(0.50, observed_rate))
+    predicted = int(math.ceil(remaining / bounded_rate))
+    return min(int(maximum_per_checkpoint), max(16, predicted))
+
+
+def _generate_behavior_unique_target_pack(
+    *,
+    generator: RegistryDrivenGenerator,
+    registry: UnifiedCapabilityRegistry,
+    route_id: str,
+    admitted_pair_target: int,
+    seed: int,
+    attempt_start: int,
+    attempt_limit: int,
+    historical_exact: set[str],
+    historical_behavior_archive: PortfolioBehaviorArchive,
+    available_field_ids: set[str],
+    field_roots: Mapping[str, Path],
+    train_dates: Sequence[str],
+    coordinate_binding: str,
+    checkpoint_id: str,
+    compute_threads: Mapping[str, int],
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    dict[str, Any],
+]:
+    """Fill one immutable checkpoint to a behavior-unique admission target.
+
+    Generation and label-free probing may use multiple bounded rounds.  Full
+    Phase3CM materialization still runs once, after the candidate pack closes.
+    """
+
+    if admitted_pair_target <= 0:
+        raise ValueError("admitted_pair_target must be positive")
+    stop = int(attempt_start) + int(attempt_limit)
+    cursor = int(attempt_start)
+    generated: list[dict[str, Any]] = []
+    probe_rows: list[dict[str, Any]] = []
+    decisions: list[dict[str, Any]] = []
+    admitted: list[dict[str, Any]] = []
+    funnels: list[dict[str, Any]] = []
+    audits: list[dict[str, Any]] = []
+    probe_archive = PortfolioBehaviorArchive(historical_behavior_archive.rows)
+    round_index = 0
+
+    while len(admitted) // 2 < admitted_pair_target and cursor < stop:
+        round_index += 1
+        remaining = admitted_pair_target - len(admitted) // 2
+        requested = min(128, max(64, remaining * 2))
+        round_rows, funnel = generator.generate_route_attempts(
+            route_id,
+            scheduled_pairs=requested,
+            seed=seed,
+            attempt_start=cursor,
+            attempt_limit=stop - cursor,
+            existing_exact_identities=historical_exact,
+            available_field_ids=available_field_ids,
+        )
+        next_cursor = int(funnel["attempt_stop"])
+        funnel = {
+            **funnel,
+            "generation_round": round_index,
+            "generation_requested_pairs": requested,
+        }
+        funnels.append(funnel)
+        if round_rows:
+            round_rows = _annotate_generation_metadata(round_rows, registry)
+            generated.extend(round_rows)
+            historical_exact.update(
+                str(row["exact_identity"])
+                for row in round_rows
+                if str(row.get("exact_identity") or "")
+            )
+            round_probe, round_audit = _probe_pack(
+                candidate_rows=round_rows,
+                field_roots=field_roots,
+                train_dates=train_dates,
+                coordinate_binding=coordinate_binding,
+                batch_id=checkpoint_id,
+                compute_threads=compute_threads,
+            )
+            round_admitted, round_decisions = _admit_behavior_unique(
+                candidate_rows=round_rows,
+                probe_rows=round_probe,
+                historical_archive=probe_archive,
+            )
+            selected_pair_ids: list[str] = []
+            for index in range(0, len(round_admitted), 2):
+                pair_id = str(round_admitted[index].get("pair_id") or "")
+                if pair_id and pair_id not in selected_pair_ids:
+                    selected_pair_ids.append(pair_id)
+                if len(selected_pair_ids) >= remaining:
+                    break
+            selected = set(selected_pair_ids)
+            for row in round_decisions:
+                if (
+                    str(row.get("admission_decision") or "") == "ADMIT"
+                    and str(row.get("pair_id") or "") not in selected
+                ):
+                    row["admission_decision"] = "DEFER"
+                    row["admission_reason"] = "EVALUATED_TARGET_FILLED"
+            admitted.extend(
+                row
+                for row in round_admitted
+                if str(row.get("pair_id") or "") in selected
+            )
+            probe_rows.extend(round_probe)
+            decisions.extend(round_decisions)
+            audits.extend(
+                {"generation_round": round_index, **row}
+                for row in round_audit
+            )
+            _add_resolved_behavior_rows(probe_archive, round_probe)
+        if next_cursor <= cursor:
+            break
+        cursor = next_cursor
+
+    numeric_sums = (
+        "generation_attempts",
+        "legal_pairs",
+        "exact_unique_pairs",
+        "illegal_pairs",
+        "exact_duplicate_pairs",
+        "materialization_unsupported_pairs",
+        "materialization_missing_field_pairs",
+        "skeleton_compatibility_rejects",
+        "schema_first_rejected_field_count",
+        "generation_requested_pairs",
+    )
+    aggregate = dict(funnels[0]) if funnels else {
+        "route_id": route_id,
+        "constructor_profile": COMPOSITIONAL_V2_PROFILE,
+        "attempt_start": attempt_start,
+        "attempt_stop": attempt_start,
+    }
+    for key in numeric_sums:
+        aggregate[key] = sum(int(row.get(key) or 0) for row in funnels)
+    aggregate.update(
+        {
+            "scheduled_pairs": int(admitted_pair_target),
+            "attempt_start": int(attempt_start),
+            "attempt_stop": int(cursor),
+            "generation_round_count": int(round_index),
+            "behavior_unique_pairs": sum(
+                str(row.get("admission_reason") or "")
+                in {"LABEL_FREE_BEHAVIOR_UNIQUE", "EVALUATED_TARGET_FILLED"}
+                for row in decisions
+            ),
+            "admitted_pairs": len(admitted) // 2,
+            "evaluated_pair_target": int(admitted_pair_target),
+            "underfill_reason": (
+                ""
+                if len(admitted) // 2 >= admitted_pair_target
+                else "BEHAVIOR_UNIQUE_SUPPLY_EXHAUSTED"
+            ),
+        }
+    )
+    return generated, probe_rows, decisions, admitted, {
+        "funnel": aggregate,
+        "probe_audits": audits,
+    }
 
 
 def _bind_purity(binding_path: Path, purity_path: Path) -> None:
@@ -1345,7 +1608,11 @@ def _rehydrate_closed_checkpoint(
             "scheduled_pairs": sum(int(row.get("scheduled_pairs") or 0) for row in schedule),
             "generated_pairs": len(generated) // 2,
             "admitted_pairs": len(admitted) // 2,
-            "evaluated_pairs": len(outcomes),
+            "pair_result_count": len(outcomes),
+            "evaluated_pairs": sum(
+                str(row.get("pair_evaluation_status") or "") == "PAIR_EVALUATED"
+                for row in outcomes
+            ),
             "raw_attempts": sum(int(row.get("generation_attempts") or 0) for row in funnels),
             "positive_matched_increments": sum(
                 float(row.get("matched_net_increment") or 0.0) > 0.0
@@ -1548,6 +1815,76 @@ def _productivity_status(metrics: Sequence[Mapping[str, Any]], routes: set[str])
     return "NOT_QUALIFIED"
 
 
+def _checkpoint_elites(
+    *,
+    candidates: Sequence[Mapping[str, Any]],
+    outcomes: Sequence[Mapping[str, Any]],
+    limit_per_checkpoint: int = 8,
+) -> list[dict[str, Any]]:
+    primary_by_pair = {
+        (str(row.get("checkpoint") or ""), str(row.get("pair_id") or "")): row
+        for row in candidates
+        if str(row.get("pair_member_role") or "") == "PRIMARY"
+    }
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for source in outcomes:
+        row = dict(source)
+        if str(row.get("pair_evaluation_status") or "") != "PAIR_EVALUATED":
+            continue
+        value = row.get("matched_train_increment")
+        try:
+            reward = float(value)
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(reward):
+            continue
+        row["_elite_reward"] = reward
+        grouped[str(row.get("checkpoint") or "")].append(row)
+    elites: list[dict[str, Any]] = []
+    for checkpoint in sorted(grouped):
+        ranked = sorted(
+            grouped[checkpoint],
+            key=lambda row: (
+                -float(row["_elite_reward"]),
+                str(row.get("pair_id") or ""),
+            ),
+        )[:limit_per_checkpoint]
+        for rank, outcome in enumerate(ranked, start=1):
+            candidate = primary_by_pair.get(
+                (checkpoint, str(outcome.get("pair_id") or "")),
+                {},
+            )
+            elites.append(
+                {
+                    "checkpoint": checkpoint,
+                    "rank": rank,
+                    "pair_id": str(outcome.get("pair_id") or ""),
+                    "route_id": str(outcome.get("route_id") or ""),
+                    "candidate_id": str(candidate.get("candidate_id") or ""),
+                    "expression": str(candidate.get("expression") or ""),
+                    "exact_identity": str(
+                        candidate.get("exact_identity") or ""
+                    ),
+                    "structural_family_id": str(
+                        candidate.get("structural_family_id") or ""
+                    ),
+                    "matched_train_increment": float(
+                        outcome["_elite_reward"]
+                    ),
+                    "matched_net_increment": outcome.get(
+                        "matched_net_increment"
+                    ),
+                    "pair_turnover_metric": outcome.get(
+                        "pair_turnover_metric"
+                    ),
+                    "selection_scope": "TRAIN_ONLY_CHECKPOINT_ELITE",
+                    "validation_feedback": "FORBIDDEN",
+                    "promotion": "FORBIDDEN",
+                }
+            )
+    return elites
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     if platform.node().upper() != AUTHORIZED_HOST:
         raise RuntimeError(
@@ -1555,6 +1892,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
+    profile = _campaign_profile(
+        str(getattr(args, "campaign_profile", LEGACY_CAMPAIGN_PROFILE))
+    )
     registry_path = args.registry.resolve()
     registry = UnifiedCapabilityRegistry.read(registry_path)
     split = FixedSplitAuthority.read(args.split_manifest.resolve())
@@ -1569,6 +1909,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         seed_base=args.seed_base,
         active_threads=compute_threads["active_bar"],
         session_threads=compute_threads["stock_session"],
+        profile=profile,
     )
     campaign_id = str(campaign_authorization["campaign_id"])
     campaign_authorization_path = _write_json(
@@ -1641,6 +1982,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         },
         grammar_hash=registry_binding["grammar_hash"],
         seed_base=args.seed_base,
+        checkpoint_count=int(profile["checkpoint_count"]),
+        search_routes=tuple(profile["search_routes"]),
+        route_attempt_cap=int(profile["route_attempt_cap"]),
+        maximum_raw_attempts=int(profile["maximum_raw_attempts"]),
+        base_targets=tuple(profile["base_targets"]),
     )
     seed_manifest_path = _write_json(output_root / "seed_attempt_manifest.json", seed_manifest)
     started_epoch = time.time()
@@ -1648,11 +1994,26 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "schema_version": "cn_targeted_search_medium_campaign_contract_v1",
         "campaign_id": campaign_id,
         "started_epoch": started_epoch,
-        "checkpoint_count": CHECKPOINT_COUNT,
-        "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
-        "maximum_completed_development_matched_pairs": MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
-        "scheduled_target_is_fill_requirement": False,
-        "maximum_raw_attempts": MAX_RAW_ATTEMPTS,
+        "campaign_profile": str(profile["name"]),
+        "checkpoint_count": int(profile["checkpoint_count"]),
+        "total_scheduled_matched_pair_budget": int(
+            profile["total_scheduled_matched_pair_budget"]
+        ),
+        "maximum_completed_development_matched_pairs": int(
+            profile["maximum_completed_development_matched_pairs"]
+        ),
+        "minimum_actual_evaluated_pairs": int(
+            profile["minimum_actual_evaluated_pairs"]
+        ),
+        "scheduled_target_is_fill_requirement": bool(
+            profile["evaluated_fill_required"]
+        ),
+        "budget_counting_unit": (
+            "PAIR_EVALUATED"
+            if profile["evaluated_fill_required"]
+            else "FULL_COORDINATE_PAIR_RESULT"
+        ),
+        "maximum_raw_attempts": int(profile["maximum_raw_attempts"]),
         "maximum_wall_seconds": MAX_WALL_SECONDS,
         "constructor_profile": COMPOSITIONAL_V2_PROFILE,
         "broad_event": {"status": "FROZEN_REFERENCE_ONLY", "search_budget": 0},
@@ -1663,7 +2024,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "mixed_group_min_evaluated_pairs": 32,
             "runtime_low_utilization_consecutive_blocks": 3,
         },
-        "natural_underfill_retained": True,
+        "natural_underfill_retained": not bool(profile["evaluated_fill_required"]),
+        "underfill_continuation": (
+            "NEXT_IMMUTABLE_CHECKPOINT_UNTIL_ACTUAL_EVALUATED_TARGET"
+            if profile["evaluated_fill_required"]
+            else "NONE"
+        ),
         "cross_route_spillover": "FORBIDDEN",
         "validation_reads": 0,
         "holdout_reads": 0,
@@ -1714,6 +2080,62 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         enforce_route_compatibility=True,
         route_root_allowlist=discovery_authority["route_root_allowlists"],
     )
+    target_supply_preflight_path: Path | None = None
+    if profile["evaluated_fill_required"]:
+        target_route = str(profile["target_route"])
+        preflight_rows, preflight_funnel = generator.generate_route_attempts(
+            target_route,
+            scheduled_pairs=768,
+            seed=int(args.seed_base),
+            attempt_start=0,
+            attempt_limit=int(profile["route_attempt_cap"]),
+            existing_exact_identities=set(historical_exact),
+            available_field_ids=schema_by_backend[
+                _clock_for_route(target_route)
+            ],
+        )
+        fresh_exact_pairs = len(preflight_rows) // 2
+        target_supply_preflight_path = _write_json(
+            output_root / "target_route_supply_preflight.json",
+            {
+                "schema_version": "cn_target_route_supply_preflight_v1",
+                "campaign_profile": str(profile["name"]),
+                "route_id": target_route,
+                "financial_reads": 0,
+                "validation_reads": 0,
+                "holdout_reads": 0,
+                "forward_2026_reads": 0,
+                "fresh_exact_pair_count": fresh_exact_pairs,
+                "minimum_required_fresh_exact_pairs": 512,
+                "candidate_pack_digest": _stable_hash(
+                    [
+                        str(row.get("exact_identity") or "")
+                        for row in preflight_rows
+                    ]
+                ),
+                "sampled_primary_expressions": [
+                    {
+                        "expression": str(row.get("expression") or ""),
+                        "declared_field_ids": list(
+                            row.get("declared_field_ids") or ()
+                        ),
+                        "exact_identity": str(
+                            row.get("exact_identity") or ""
+                        ),
+                    }
+                    for row in preflight_rows
+                    if str(row.get("pair_member_role") or "") == "PRIMARY"
+                ][:16],
+                "funnel": preflight_funnel,
+                "status": (
+                    "PASS"
+                    if fresh_exact_pairs >= 512
+                    else "TARGET_ROUTE_FRESH_EXACT_SUPPLY_BELOW_512"
+                ),
+            },
+        )
+        if fresh_exact_pairs < 512:
+            raise RuntimeError("TARGET_ROUTE_FRESH_EXACT_SUPPLY_BELOW_512")
     previous_feedback = _initial_feedback()
     previous_manifest: Path | None = None
     cumulative_candidates: list[dict[str, Any]] = []
@@ -1724,6 +2146,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     cumulative_negative: list[dict[str, Any]] = []
     cumulative_run_health: list[dict[str, Any]] = []
     completed_pairs = 0
+    completed_admitted_pairs = 0
     raw_attempts = 0
     checkpoint_summaries = []
     runtime_gate_path: Path | None = None
@@ -1731,7 +2154,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     seed_rows = {(row["checkpoint"], row["route_id"]): row for row in seed_manifest["rows"]}
     deadline_epoch = started_epoch + MAX_WALL_SECONDS
 
-    for checkpoint_index in range(CHECKPOINT_COUNT):
+    for checkpoint_index in range(int(profile["checkpoint_count"])):
         checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
         checkpoint_root = output_root / "checkpoints" / checkpoint_id
         closed_checkpoint = _verify_closed_checkpoint_manifest(
@@ -1749,10 +2172,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             previous_manifest = manifest_path
             previous_feedback = restored["health"]
             behavior_archive = restored["behavior_archive"]
-            for row in restored["admitted"]:
+            for row in restored["generated"]:
                 if row.get("exact_identity"):
                     historical_exact.add(str(row["exact_identity"]))
-            completed_pairs += len(restored["outcomes"])
+            restored_evaluated_pairs = sum(
+                str(row.get("pair_evaluation_status") or "") == "PAIR_EVALUATED"
+                for row in restored["outcomes"]
+            )
+            completed_pairs += (
+                restored_evaluated_pairs
+                if profile["evaluated_fill_required"]
+                else len(restored["outcomes"])
+            )
+            completed_admitted_pairs += len(restored["admitted"]) // 2
             raw_attempts += int(restored["raw_attempts"])
             cumulative_candidates.extend(
                 {"checkpoint": checkpoint_id, **row} for row in restored["admitted"]
@@ -1781,52 +2213,145 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 runtime_gate_status = str(gate.get("status") or "NOT_EVALUATED")
             continue
         if (
-            completed_pairs >= MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS
-            or raw_attempts >= MAX_RAW_ATTEMPTS
+            (
+                bool(profile["evaluated_fill_required"])
+                and completed_pairs
+                >= int(profile["minimum_actual_evaluated_pairs"])
+            )
+            or (
+                not bool(profile["evaluated_fill_required"])
+                and completed_pairs
+                >= int(profile["maximum_completed_development_matched_pairs"])
+            )
+            or raw_attempts >= int(profile["maximum_raw_attempts"])
             or time.time() >= deadline_epoch
         ):
             break
         checkpoint_root.mkdir(parents=True, exist_ok=True)
         checkpoint_runtime_gate_path: Path | None = None
-        schedule, schedule_summary = build_medium_campaign_schedule(
-            previous_feedback,
-            base_targets=CHECKPOINT_BASE_TARGETS[checkpoint_index],
-            total_pairs=CHECKPOINT_SCHEDULED_PAIRS,
-        )
+        if profile["evaluated_fill_required"]:
+            admitted_pair_target = _next_target_admission_count(
+                evaluated_target=int(profile["minimum_actual_evaluated_pairs"]),
+                completed_evaluated=completed_pairs,
+                completed_admitted=completed_admitted_pairs,
+                maximum_per_checkpoint=int(
+                    profile["checkpoint_scheduled_pairs"]
+                ),
+            )
+            schedule = [
+                {
+                    "route_id": str(profile["target_route"]),
+                    "scheduled_pairs": admitted_pair_target,
+                    "generation_mode": "fresh",
+                    "top_level_scheduling_key": "unified_registry_route_id",
+                }
+            ]
+            schedule_summary = {
+                "campaign_profile": str(profile["name"]),
+                "schedule_authority": "UNIFIED_REGISTRY_ROUTE_ID",
+                "scheduled_admission_target": admitted_pair_target,
+                "cumulative_pair_evaluated_before_checkpoint": completed_pairs,
+                "campaign_pair_evaluated_target": int(
+                    profile["minimum_actual_evaluated_pairs"]
+                ),
+            }
+        else:
+            schedule, schedule_summary = build_medium_campaign_schedule(
+                previous_feedback,
+                base_targets=profile["base_targets"][checkpoint_index],
+                total_pairs=int(profile["checkpoint_scheduled_pairs"]),
+            )
         for row in schedule:
             row["checkpoint"] = checkpoint_id
         schedule_path = _write_parquet(checkpoint_root / "schedule.parquet", schedule)
         schedule_summary_path = _write_json(checkpoint_root / "schedule_summary.json", schedule_summary)
         generated: list[dict[str, Any]] = []
+        probe_rows: list[dict[str, Any]] = []
+        decisions: list[dict[str, Any]] = []
+        admitted: list[dict[str, Any]] = []
         funnels = []
-        for schedule_row in schedule:
+        probe_audits: list[dict[str, Any]] = []
+        if profile["evaluated_fill_required"]:
+            schedule_row = schedule[0]
             route_id = str(schedule_row["route_id"])
             spec = seed_rows[(checkpoint_id, route_id)]
-            rows, funnel = generator.generate_route_attempts(
-                route_id,
-                scheduled_pairs=int(schedule_row["scheduled_pairs"]),
-                seed=int(spec["seed"]),
-                attempt_start=int(spec["attempt_start"]),
-                attempt_limit=int(spec["raw_attempt_cap"]),
-                existing_exact_identities=set(historical_exact),
-                available_field_ids=schema_by_backend[_clock_for_route(route_id)],
+            probe_binding = _stable_hash(
+                {
+                    "checkpoint": checkpoint_id,
+                    "seed_manifest": _sha256(seed_manifest_path),
+                    "split": split.manifest_hash,
+                    "schema": _sha256(schema_binding_path),
+                    "probe_trade_times": 30,
+                }
             )
-            generated.extend(rows)
-            funnels.append({"checkpoint": checkpoint_id, **funnel})
-            raw_attempts += int(funnel["generation_attempts"])
-        generated = _annotate_generation_metadata(generated, registry)
+            generated, probe_rows, decisions, admitted, target_pack = (
+                _generate_behavior_unique_target_pack(
+                    generator=generator,
+                    registry=registry,
+                    route_id=route_id,
+                    admitted_pair_target=int(schedule_row["scheduled_pairs"]),
+                    seed=int(spec["seed"]),
+                    attempt_start=int(spec["attempt_start"]),
+                    attempt_limit=int(spec["raw_attempt_cap"]),
+                    historical_exact=historical_exact,
+                    historical_behavior_archive=behavior_archive,
+                    available_field_ids=schema_by_backend[
+                        _clock_for_route(route_id)
+                    ],
+                    field_roots=field_roots,
+                    train_dates=_train_dates(split),
+                    coordinate_binding=probe_binding,
+                    checkpoint_id=checkpoint_id,
+                    compute_threads=compute_threads,
+                )
+            )
+            funnels.append(
+                {"checkpoint": checkpoint_id, **target_pack["funnel"]}
+            )
+            probe_audits.extend(target_pack["probe_audits"])
+            raw_attempts += int(target_pack["funnel"]["generation_attempts"])
+        else:
+            for schedule_row in schedule:
+                route_id = str(schedule_row["route_id"])
+                spec = seed_rows[(checkpoint_id, route_id)]
+                rows, funnel = generator.generate_route_attempts(
+                    route_id,
+                    scheduled_pairs=int(schedule_row["scheduled_pairs"]),
+                    seed=int(spec["seed"]),
+                    attempt_start=int(spec["attempt_start"]),
+                    attempt_limit=int(spec["raw_attempt_cap"]),
+                    existing_exact_identities=set(historical_exact),
+                    available_field_ids=schema_by_backend[
+                        _clock_for_route(route_id)
+                    ],
+                )
+                generated.extend(rows)
+                funnels.append({"checkpoint": checkpoint_id, **funnel})
+                raw_attempts += int(funnel["generation_attempts"])
+            generated = _annotate_generation_metadata(generated, registry)
         candidate_attempt_path = _write_parquet(checkpoint_root / "candidate_attempts.parquet", generated)
         funnel_path = _write_parquet(checkpoint_root / "route_funnel.parquet", funnels)
-        probe_binding = _stable_hash({"checkpoint": checkpoint_id, "seed_manifest": _sha256(seed_manifest_path), "split": split.manifest_hash, "schema": _sha256(schema_binding_path), "probe_trade_times": 30})
-        probe_rows, probe_audit = _probe_pack(
-            candidate_rows=generated,
-            field_roots=field_roots,
-            train_dates=_train_dates(split),
-            coordinate_binding=probe_binding,
-            batch_id=checkpoint_id,
-            compute_threads=compute_threads,
-        )
-        admitted, decisions = _admit_behavior_unique(candidate_rows=generated, probe_rows=probe_rows, historical_archive=PortfolioBehaviorArchive(behavior_archive.rows))
+        probe_audit_path: Path | None = None
+        if profile["evaluated_fill_required"]:
+            probe_audit_path = _write_json(
+                checkpoint_root / "behavior_probe_audit.json",
+                {
+                    "schema_version": "cn_behavior_probe_refill_audit_v1",
+                    "campaign_profile": str(profile["name"]),
+                    "rows": probe_audits,
+                },
+            )
+        else:
+            probe_binding = _stable_hash({"checkpoint": checkpoint_id, "seed_manifest": _sha256(seed_manifest_path), "split": split.manifest_hash, "schema": _sha256(schema_binding_path), "probe_trade_times": 30})
+            probe_rows, probe_audits = _probe_pack(
+                candidate_rows=generated,
+                field_roots=field_roots,
+                train_dates=_train_dates(split),
+                coordinate_binding=probe_binding,
+                batch_id=checkpoint_id,
+                compute_threads=compute_threads,
+            )
+            admitted, decisions = _admit_behavior_unique(candidate_rows=generated, probe_rows=probe_rows, historical_archive=PortfolioBehaviorArchive(behavior_archive.rows))
         probe_path = _write_parquet(checkpoint_root / "behavior_probe.parquet", probe_rows)
         decisions_path = _write_parquet(checkpoint_root / "admission_decisions.parquet", decisions)
         if not admitted:
@@ -1891,12 +2416,21 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         funnel_path = _write_parquet(checkpoint_root / "route_funnel.parquet", funnels)
         health = _route_health(outcomes=outcomes, ledger=ledger, positive=positive, negative=negative, admission_rows=decisions, full_behavior_rows=full_behavior)
         previous_feedback = health
-        for row in admitted:
+        for row in generated:
             if row.get("exact_identity"):
                 historical_exact.add(str(row["exact_identity"]))
         _add_resolved_behavior_rows(behavior_archive, probe_rows)
         _add_resolved_behavior_rows(behavior_archive, full_behavior)
-        completed_pairs += len(outcomes)
+        evaluated_pairs = sum(
+            str(row.get("pair_evaluation_status") or "") == "PAIR_EVALUATED"
+            for row in outcomes
+        )
+        completed_pairs += (
+            evaluated_pairs
+            if profile["evaluated_fill_required"]
+            else len(outcomes)
+        )
+        completed_admitted_pairs += len(admitted) // 2
         cumulative_candidates.extend({"checkpoint": checkpoint_id, **row} for row in admitted)
         cumulative_outcomes.extend({"checkpoint": checkpoint_id, **row} for row in outcomes)
         cumulative_ledger.extend({"checkpoint": checkpoint_id, **row} for row in ledger)
@@ -1932,16 +2466,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             batch_root=checkpoint_root,
             batch_id=checkpoint_id,
             input_hashes=input_hashes,
-            paths=[schedule_path, schedule_summary_path, candidate_attempt_path, funnel_path, probe_path, decisions_path, binding_path, health_path, outcome_path, full_behavior_path, archive_path, metrics_path, *([checkpoint_runtime_gate_path] if checkpoint_runtime_gate_path else []), *[Path(str(row["result_path"])) for row in access_receipts]],
+            paths=[schedule_path, schedule_summary_path, candidate_attempt_path, funnel_path, probe_path, decisions_path, binding_path, health_path, outcome_path, full_behavior_path, archive_path, metrics_path, *([probe_audit_path] if probe_audit_path else []), *([checkpoint_runtime_gate_path] if checkpoint_runtime_gate_path else []), *[Path(str(row["result_path"])) for row in access_receipts]],
             access_receipts=access_receipts,
         )
-        checkpoint_summaries.append({"checkpoint": checkpoint_id, "scheduled_pairs": sum(int(row["scheduled_pairs"]) for row in schedule), "generated_pairs": len(generated) // 2, "admitted_pairs": len(admitted) // 2, "evaluated_pairs": len(outcomes), "raw_attempts": sum(int(row["generation_attempts"]) for row in funnels), "positive_matched_increments": sum(float(row.get("matched_net_increment") or 0.0) > 0 for row in outcomes), "manifest_sha256": _sha256(previous_manifest)})
+        checkpoint_summaries.append({"checkpoint": checkpoint_id, "scheduled_pairs": sum(int(row["scheduled_pairs"]) for row in schedule), "generated_pairs": len(generated) // 2, "admitted_pairs": len(admitted) // 2, "pair_result_count": len(outcomes), "evaluated_pairs": evaluated_pairs, "cumulative_evaluated_pairs": completed_pairs, "raw_attempts": sum(int(row["generation_attempts"]) for row in funnels), "positive_matched_increments": sum(float(row.get("matched_net_increment") or 0.0) > 0 for row in outcomes), "manifest_sha256": _sha256(previous_manifest)})
 
     candidate_ledger_path = _write_parquet(output_root / "candidate_ledger.parquet", cumulative_candidates)
     observation_ledger_path = _write_parquet(output_root / "observation_ledger.parquet", cumulative_outcomes)
     behavior_archive_path = output_root / "behavior_archive.parquet"
     behavior_archive.write_parquet(behavior_archive_path)
     metrics_path = _write_parquet(output_root / "campaign_metrics.parquet", cumulative_metrics)
+    checkpoint_elites_path = _write_parquet(
+        output_root / "checkpoint_elites.parquet",
+        _checkpoint_elites(
+            candidates=cumulative_candidates,
+            outcomes=cumulative_outcomes,
+        ),
+    )
     _write_parquet(output_root / "positive_policy_view.parquet", cumulative_positive)
     _write_parquet(output_root / "negative_scheduler_view.parquet", cumulative_negative)
     _write_parquet(output_root / "run_health.parquet", cumulative_run_health)
@@ -1949,7 +2490,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     cross_status = _productivity_status(cumulative_metrics, {"MINUTE_STATIC", "SLOW_CROSS_SECTIONAL_LEVEL"})
     materialization_missing = sum(int(row.get("materialization_missing_field_pairs") or 0) for path in (output_root / "checkpoints").glob("checkpoint_*/route_funnel.parquet") for row in pd.read_parquet(path).to_dict(orient="records"))
     field_status = "PASS" if materialization_missing == 0 else "PASS_WITH_LOCAL_BOTTLENECKS"
-    qualified = bool(checkpoint_summaries) and purity["status"] == "PASS" and runtime_gate_path is not None
+    evaluated_target_met = (
+        completed_pairs >= int(profile["minimum_actual_evaluated_pairs"])
+        if profile["evaluated_fill_required"]
+        else True
+    )
+    qualified = (
+        bool(checkpoint_summaries)
+        and purity["status"] == "PASS"
+        and runtime_gate_path is not None
+        and evaluated_target_met
+    )
     if not qualified:
         next_step = "INVALID"
     elif temporal_status == cross_status == "NOT_QUALIFIED":
@@ -1964,11 +2515,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "schema_version": "cn_targeted_search_train_complete_v1",
             "status": "TRAIN_COMPLETE" if qualified else "TRAIN_INVALID",
             "campaign_id": campaign_id,
+            "campaign_profile": str(profile["name"]),
             "completed_development_matched_pairs": completed_pairs,
+            "budget_counting_unit": (
+                "PAIR_EVALUATED"
+                if profile["evaluated_fill_required"]
+                else "FULL_COORDINATE_PAIR_RESULT"
+            ),
+            "minimum_actual_evaluated_pairs": int(
+                profile["minimum_actual_evaluated_pairs"]
+            ),
             "candidate_ledger": _artifact(candidate_ledger_path, root=output_root),
             "observation_ledger": _artifact(observation_ledger_path, root=output_root),
             "behavior_archive": _artifact(behavior_archive_path, root=output_root),
             "campaign_metrics": _artifact(metrics_path, root=output_root),
+            "checkpoint_elites": _artifact(
+                checkpoint_elites_path, root=output_root
+            ),
             "validation_trigger": "AUTOMATIC_AFTER_IMMUTABLE_TRAIN_COMPLETE",
             "runtime_gate_status": runtime_gate_status,
             "run_health_status": (
@@ -1988,6 +2551,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 observation_ledger_path,
                 behavior_archive_path,
                 metrics_path,
+                checkpoint_elites_path,
             ),
             validation_root=output_root / "post_train_validation",
             candidates=cumulative_candidates,
@@ -2020,9 +2584,29 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             if qualified
             else "RUN_INVALID"
         ),
-        "stop_reason": "CHECKPOINT_LIMIT" if len(checkpoint_summaries) == CHECKPOINT_COUNT else "HARD_CAP_OR_GATE",
-        "total_scheduled_matched_pair_budget": TOTAL_SCHEDULED_MATCHED_PAIR_BUDGET,
-        "maximum_completed_development_matched_pairs": MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
+        "campaign_profile": str(profile["name"]),
+        "stop_reason": (
+            "ACTUAL_EVALUATED_TARGET_REACHED"
+            if profile["evaluated_fill_required"] and evaluated_target_met
+            else "CHECKPOINT_LIMIT"
+            if len(checkpoint_summaries) == int(profile["checkpoint_count"])
+            else "HARD_CAP_OR_GATE"
+        ),
+        "total_scheduled_matched_pair_budget": int(
+            profile["total_scheduled_matched_pair_budget"]
+        ),
+        "maximum_completed_development_matched_pairs": int(
+            profile["maximum_completed_development_matched_pairs"]
+        ),
+        "minimum_actual_evaluated_pairs": int(
+            profile["minimum_actual_evaluated_pairs"]
+        ),
+        "actual_evaluated_target_met": evaluated_target_met,
+        "budget_counting_unit": (
+            "PAIR_EVALUATED"
+            if profile["evaluated_fill_required"]
+            else "FULL_COORDINATE_PAIR_RESULT"
+        ),
         "completed_development_matched_pairs": completed_pairs,
         "raw_generation_attempts": raw_attempts,
         "checkpoint_summaries": checkpoint_summaries,
@@ -2057,8 +2641,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     report_path.write_text(
         f"# {campaign_id}\n\n"
         f"- Status: `{decision['status']}`\n"
-        f"- Full-coordinate development matched pairs: `{completed_pairs}` / cap `{MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS}`\n"
-        f"- Raw attempts: `{raw_attempts}` / cap `{MAX_RAW_ATTEMPTS}`\n"
+        f"- Full-coordinate development matched pairs: `{completed_pairs}` / cap `{int(profile['maximum_completed_development_matched_pairs'])}`\n"
+        f"- Raw attempts: `{raw_attempts}` / cap `{int(profile['maximum_raw_attempts'])}`\n"
         f"- Field materialization funnel: `{field_status}`\n"
         f"- Split-boundary label purity: `{purity['status']}`\n"
         f"- Temporal/event productivity (CAMPAIGN_LOCAL): `{temporal_status}`\n"
@@ -2073,7 +2657,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "campaign_id": campaign_id,
         "host": platform.node(),
         "python": sys.executable,
-        "artifacts": [_artifact(path, root=output_root) for path in (campaign_authorization_path, frozen_contract_path, registry_binding_path, discovery_authority_path, schema_binding_path, purity_path, seed_manifest_path, runtime_envelope_path, comparison_path, archive_snapshot_path, candidate_ledger_path, observation_ledger_path, behavior_archive_path, metrics_path, train_manifest_path, decision_path, output_root / "post_train_validation/automatic_post_train_validation_receipt.json") if path.is_file()],
+        "artifacts": [_artifact(path, root=output_root) for path in (campaign_authorization_path, frozen_contract_path, registry_binding_path, discovery_authority_path, schema_binding_path, purity_path, seed_manifest_path, runtime_envelope_path, comparison_path, archive_snapshot_path, *([target_supply_preflight_path] if target_supply_preflight_path else []), candidate_ledger_path, observation_ledger_path, behavior_archive_path, metrics_path, checkpoint_elites_path, train_manifest_path, decision_path, output_root / "post_train_validation/automatic_post_train_validation_receipt.json") if path.is_file()],
         "report": _artifact(report_path),
         "validation_reads": validation_reads,
         "validation_usage": "report_only",
@@ -2088,6 +2672,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--campaign-profile",
+        choices=(LEGACY_CAMPAIGN_PROFILE, SLOW_CROSS_SECTIONAL_384_PROFILE),
+        default=LEGACY_CAMPAIGN_PROFILE,
+    )
     parser.add_argument("--campaign-authorization", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--discovery-contract", type=Path, required=True)
