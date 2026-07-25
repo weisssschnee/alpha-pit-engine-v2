@@ -10,6 +10,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $python = 'D:\ChengboRemote\venvs\alpha311\Scripts\python.exe'
+$git = 'D:\ChengboRemote\tools\PortableGit\cmd\git.exe'
 $inputRoot = 'D:\ChengboRemote\runtime\cn_slow_cross_sectional_search_inputs_20260726_678bf8f'
 $trainBase = 'D:\ChengboRemote\runtime\cn_core_pack_aggressive_discovery_20260718_595c5fc\strict_wave_01024_sidecars_3509d0c'
 $labelBase = 'D:\ChengboRemote\workspace\alpha_pit_compositional_667c82f_git\runtime\cn_phase3cm_streaming_repair_20260716'
@@ -27,14 +28,17 @@ if (-not $resolvedRoot.StartsWith('D:\ChengboRemote\runtime\cn_slow_cross_sectio
 if (-not (Test-Path -LiteralPath $python)) {
     throw "official Python missing: $python"
 }
-$actualSha = (& git -C $resolvedRepo rev-parse HEAD).Trim().ToLowerInvariant()
+if (-not (Test-Path -LiteralPath $git)) {
+    throw "portable Git missing: $git"
+}
+$actualSha = (& $git -C $resolvedRepo rev-parse HEAD).Trim().ToLowerInvariant()
 if ($actualSha -ne $RepoSha.ToLowerInvariant()) {
     throw "workspace SHA mismatch: expected=$RepoSha actual=$actualSha"
 }
 $matching = @(
     Get-CimInstance Win32_Process |
         Where-Object {
-            $_.CommandLine -and (
+            $_.ProcessId -ne $PID -and $_.CommandLine -and (
                 $_.CommandLine -like "*$resolvedRoot*" -or
                 $_.CommandLine -match 'cn-targeted-search-medium-campaign'
             )
