@@ -2,7 +2,7 @@
 
 Updated: 2026-07-25
 
-Current state: `CN_MINUTE_STATIC_STRUCTURAL_CEM_V2_MEDIUM_CLOSED_NOT_QUALIFIED`
+Current state: `CN_MINUTE_STATIC_STRUCTURAL_TYPED_SURFACE_CLOSED_SUPPLY_BLOCKED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -124,6 +124,27 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   `runtime/run_plans/cn_minute_static_structural_supply_cem_v2_medium_20260725_receipt.json`.
   No optimizer authority, Graph relation, Obsidian projection or large-search
   authorization changes.
+- The follow-on typed-surface audit is closed on 77o at pushed SHA
+  `6c490ff147c1a5c2ab146d5081e91a9bc90fb1c5`. It did not create another
+  optimizer: the existing authoritative joint Grammar `field_pair_id` was
+  projected losslessly into adaptive `production_id`, `left_field_id` and
+  `right_field_id` coordinates, with the joint exact mask applied before each
+  hierarchical draw. A 32-proposal synthetic non-financial proof retained
+  first-generation Uniform/CEM exact-stream parity, updated all three contexts
+  and showed that left/right adaptation changes proposals while the production
+  stream remains identical. Exact duplicates and financial, Phase3CM,
+  validation, holdout and 2026 reads were zero.
+- The same audit bound the full historical exact archive, cumulative candidate
+  ledger and all 18 prior proposal ledgers. The raw four-lane catalog remains
+  healthy at 440 legal exact/canonical-unique formulas, but only 19 genuinely
+  fresh exact identities remain: one `absolute_state_interaction` and 18
+  `dispersion_interaction`, with both older lanes exhausted. Under the frozen
+  2x non-exhaustive rule this supports at most nine pairs per arm, not the
+  72-pair reference. Financial qualification and large search are therefore
+  blocked before behavior probing; no optimizer/Graph/Obsidian authority
+  changed. All five artifacts, 23 inputs and the manifest payload hash
+  independently verified. The compact receipt is
+  `runtime/run_plans/cn_minute_static_structural_typed_surface_audit_20260725_receipt.json`.
 - `MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1` is accepted as the active
   route-local sampled-selection implementation under ADR 0007. This does not
   replace the candidate-parallel `formal_evaluation_authority`, authorize
@@ -522,22 +543,21 @@ machinery may be handcrafted.
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
 qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the
-completed four-lane supply probe or this 4x17 campaign. Retain the qualified
-`normalized_ratio` production increment and active route-local sampled
-selector. Do not reuse any terminal CEM probabilities or launch a large
-search.
+completed four-lane supply probe, the 4x17 campaign or the typed-surface audit.
+Retain the qualified `normalized_ratio` production increment and active
+route-local sampled selector. Do not reuse any terminal CEM probabilities or
+launch a large search.
 
-The next bounded implementation task is to deepen the optimizer-visible
-structure without inventing another optimizer: reuse the existing typed Grammar
-and Structural CEM machinery, but expose already-authoritative typed structural
-choices below `production_id` instead of leaving every concrete field pair in
-one non-adaptive uniform bucket. Keep registry `route_id`, compiler,
-matched-control, exact/behavior memory, long-only, 5 bps, horizons 1/5/15/30
-and sealed-data boundaries unchanged. First require a zero-financial-read
-catalog/supply proof that the added declared contexts are legal, supportable
-and materially change proposals; only then freeze one paired train-only
-qualification. Do not create MCTS, crossover/mutation machinery, a new search
-platform or a generic extension framework.
+The optimizer-visible typed structure is now mechanically closed; the blocker
+is formula supply, not another sampling-policy repair. The next bounded task is
+to add genuinely new authoritative `MINUTE_STATIC` formulas through the
+existing Registry, typed Grammar, compiler and matched-control path. Use
+already registered compatible operators and bounded typed nesting; do not
+relabel or replay the exhausted 440 formulas, invent field-family metadata, or
+create another optimizer/platform. Before any financial retry, a zero-financial
+catalog proof must retain at least 144 fresh exact identities after the full
+cumulative memory and demonstrate nontrivial behavior supply. Only then may one
+fresh paired Uniform versus Structural CEM train qualification be frozen.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.
