@@ -104,6 +104,26 @@ OLD_SKELETON_ID = "cn.comp.v2.minute_static.field_spread"
 NORMALIZED_RATIO_SKELETON_ID = (
     "cn.comp.v2.minute_static.normalized_ratio"
 )
+ABSOLUTE_STATE_INTERACTION_SKELETON_ID = (
+    "cn.comp.v2.minute_static.absolute_state_interaction"
+)
+DISPERSION_INTERACTION_SKELETON_ID = (
+    "cn.comp.v2.minute_static.dispersion_interaction"
+)
+STRUCTURAL_SUPPLY_FORMULA_SPACE_ID = (
+    "MINUTE_STATIC_STRUCTURAL_SUPPLY_V1"
+)
+STRUCTURAL_SUPPLY_AUTHORIZATION_ID = (
+    "MINUTE_STATIC_STRUCTURAL_FORMULA_SPACE_SUPPLY_V1"
+)
+STRUCTURAL_SUPPLY_PRODUCTION_IDS = (
+    "field_spread",
+    "normalized_ratio",
+    "absolute_state_interaction",
+    "dispersion_interaction",
+)
+STRUCTURAL_SUPPLY_REFERENCE_PAIR_BUDGET = 72
+STRUCTURAL_SUPPLY_NONEXHAUSTIVE_HEADROOM_MULTIPLIER = 2
 SAMPLED_AUTHORITY_ID = "MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1"
 MINIMUM_EXACT_SUPPLY = 72
 MINIMUM_BEHAVIOR_SUPPLY = 48
@@ -130,11 +150,15 @@ PAIRED_STRUCTURAL_CEM_V2_MEDIUM_SEED_OFFSET = 30_000
 
 
 class MinuteStaticProductionProjection:
-    """Read-only optimizer projection over two existing Grammar productions."""
+    """Read-only optimizer projection over qualified existing Grammar lanes."""
 
     _production_skeletons = {
         "field_spread": OLD_SKELETON_ID,
         "normalized_ratio": NORMALIZED_RATIO_SKELETON_ID,
+        "absolute_state_interaction": (
+            ABSOLUTE_STATE_INTERACTION_SKELETON_ID
+        ),
+        "dispersion_interaction": DISPERSION_INTERACTION_SKELETON_ID,
     }
 
     def __init__(self, generator: RegistryDrivenGenerator) -> None:
@@ -177,6 +201,8 @@ class MinuteStaticProductionProjection:
             productions = ("field_spread",)
         elif formula_space_id == EXPANDED_FORMULA_SPACE_ID:
             productions = ("field_spread", "normalized_ratio")
+        elif formula_space_id == STRUCTURAL_SUPPLY_FORMULA_SPACE_ID:
+            productions = STRUCTURAL_SUPPLY_PRODUCTION_IDS
         else:
             raise ValueError("unknown formula space: " + formula_space_id)
         base = (
@@ -1259,6 +1285,70 @@ def _post_archive_rows(
     return selected
 
 
+def _nonexhaustive_supply_decision(
+    *,
+    post_archive_exact_supply: int,
+    observed_behavior_unique_supply: int,
+) -> dict[str, Any]:
+    limiting_supply = min(
+        int(post_archive_exact_supply),
+        int(observed_behavior_unique_supply),
+    )
+    ceiling = (
+        limiting_supply
+        // STRUCTURAL_SUPPLY_NONEXHAUSTIVE_HEADROOM_MULTIPLIER
+    )
+    reference_ready = (
+        ceiling >= STRUCTURAL_SUPPLY_REFERENCE_PAIR_BUDGET
+    )
+    return {
+        "schema_version": (
+            "cn_minute_static_structural_supply_decision_v1"
+        ),
+        "status": (
+            "STRUCTURAL_FORMULA_SPACE_SUPPLY_QUALIFIED"
+            if reference_ready
+            else "STRUCTURAL_FORMULA_SPACE_SUPPLY_BLOCKED"
+        ),
+        "post_archive_exact_supply": int(
+            post_archive_exact_supply
+        ),
+        "observed_behavior_unique_supply": int(
+            observed_behavior_unique_supply
+        ),
+        "behavior_supply_claim": (
+            "OBSERVED_LOWER_BOUND_WITHIN_FROZEN_PROBE_CAP"
+        ),
+        "nonexhaustive_headroom_multiplier": (
+            STRUCTURAL_SUPPLY_NONEXHAUSTIVE_HEADROOM_MULTIPLIER
+        ),
+        "maximum_nonexhaustive_pair_budget_per_arm": ceiling,
+        "reference_pair_budget_per_arm": (
+            STRUCTURAL_SUPPLY_REFERENCE_PAIR_BUDGET
+        ),
+        "reference_paired_qualification_supply_ready": (
+            reference_ready
+        ),
+        "large_search_authorized": False,
+        "next_action": (
+            "FREEZE_SEPARATE_PAIRED_SEARCH_POLICY_BUDGET"
+            if reference_ready
+            else "EXPAND_LEGITIMATE_ROUTE_LOCAL_FORMULA_SPACE"
+        ),
+    }
+
+
+def _combined_behavior_archive(
+    *paths: Path,
+) -> PortfolioBehaviorArchive:
+    rows: list[dict[str, Any]] = []
+    for path in paths:
+        rows.extend(
+            PortfolioBehaviorArchive.read_parquet(path).rows
+        )
+    return PortfolioBehaviorArchive(rows)
+
+
 def _train_dates(split: FixedSplitAuthority) -> tuple[str, ...]:
     return tuple(
         row["trade_date"]
@@ -2185,6 +2275,418 @@ def _qualify_sampled_authority(
         "promotion": "PENDING_FORMAL_PROMOTION_AFTER_CAMPAIGN_CLOSURE"
         if qualified
         else "FORBIDDEN",
+    }
+
+
+def run_structural_supply_design(
+    args: argparse.Namespace,
+) -> dict[str, Any]:
+    """Qualify formula-space supply without labels or financial evaluation."""
+
+    if (
+        not args.allow_noncanonical_host
+        and platform.node().upper() != AUTHORIZED_HOST
+    ):
+        raise RuntimeError(
+            f"official structural supply evidence must run on {AUTHORIZED_HOST}"
+        )
+
+    output_root = args.output_root.resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
+    registry = UnifiedCapabilityRegistry.read(args.registry.resolve())
+    contract, route_roots = _load_production_contract(
+        args.production_root_contract.resolve(),
+        registry=registry,
+    )
+    layout = json.loads(
+        args.active_layout.resolve().read_text(encoding="utf-8-sig")
+    )
+    active_fields = set(map(str, layout.get("fields") or ()))
+    materializable = _materializable_roots(
+        registry=registry,
+        route_roots=route_roots,
+        active_fields=active_fields,
+    )
+    if materializable != route_roots:
+        missing = sorted(set(route_roots) - set(materializable))
+        raise RuntimeError(
+            "STRUCTURAL_SUPPLY_INPUT_AUTHORITY_MISMATCH:"
+            + ",".join(missing)
+        )
+    generator = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+        enforce_route_compatibility=True,
+        route_root_allowlist={ROUTE_ID: materializable},
+    )
+    projection = MinuteStaticProductionProjection(generator)
+    catalog = projection._available_candidate_catalog(
+        STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+    )
+    catalog_rows = []
+    for ordinal, source in enumerate(catalog):
+        primary = dict(source["candidate"])
+        control = dict(source["control"])
+        catalog_rows.append(
+            {
+                "ordinal": ordinal,
+                "production_id": str(source["production_id"]),
+                "skeleton_id": str(source["skeleton_id"]),
+                "field_pair_id": str(source["field_pair_id"]),
+                "pair_id": str(primary.get("pair_id") or ""),
+                "exact_identity": str(
+                    primary.get("exact_identity") or ""
+                ),
+                "canonical_identity": str(
+                    primary.get("canonical_identity") or ""
+                ),
+                "legal": bool(primary.get("legal"))
+                and bool(control.get("legal")),
+                "primary": primary,
+                "control": control,
+            }
+        )
+
+    additional_exact_paths = tuple(
+        Path(path).resolve()
+        for path in (
+            getattr(args, "additional_exact_archive", ()) or ()
+        )
+    )
+    historical_exact_paths = (
+        args.historical_exact_archive.resolve(),
+        args.source_candidate_ledger.resolve(),
+        *additional_exact_paths,
+    )
+    historical_exact = _historical_exact(
+        *historical_exact_paths
+    )
+    post_archive = _post_archive_rows(
+        catalog_rows,
+        historical_exact=historical_exact,
+    )
+    expected_productions = set(STRUCTURAL_SUPPLY_PRODUCTION_IDS)
+    observed_productions = {
+        str(row["production_id"]) for row in catalog_rows
+    }
+    static_checks = {
+        "production_queue_exact": (
+            observed_productions == expected_productions
+        ),
+        "all_primary_control_legal": all(
+            bool(row["legal"]) for row in catalog_rows
+        ),
+        "all_exact_identity_present": all(
+            bool(row["exact_identity"]) for row in catalog_rows
+        ),
+        "all_canonical_identity_present": all(
+            bool(row["canonical_identity"]) for row in catalog_rows
+        ),
+        "legacy_productions_preserved": {
+            "field_spread",
+            "normalized_ratio",
+        }.issubset(observed_productions),
+        "blocked_metadata_lanes_excluded": observed_productions.isdisjoint(
+            {
+                "price_volume_interaction",
+                "liquidity_volatility_interaction",
+                "cross_sectional_residual",
+            }
+        ),
+    }
+    if not all(static_checks.values()):
+        raise RuntimeError(
+            "STRUCTURAL_SUPPLY_STATIC_CONTRACT_FAILED"
+        )
+
+    def production_counts(
+        rows: Sequence[Mapping[str, Any]],
+    ) -> dict[str, int]:
+        counts = defaultdict(int)
+        for row in rows:
+            counts[str(row["production_id"])] += 1
+        return {
+            production_id: int(counts[production_id])
+            for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+        }
+
+    design = {
+        "schema_version": (
+            "cn_minute_static_structural_formula_space_supply_v1"
+        ),
+        "status": "EXACT_SUPPLY_CLOSED_BEHAVIOR_PENDING",
+        "authorization_id": STRUCTURAL_SUPPLY_AUTHORIZATION_ID,
+        "route_id": ROUTE_ID,
+        "formula_space_id": STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
+        "production_ids": list(STRUCTURAL_SUPPLY_PRODUCTION_IDS),
+        "production_skeletons": {
+            production_id: projection._production_skeletons[
+                production_id
+            ]
+            for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+        },
+        "authority": {
+            "route": "UnifiedCapabilityRegistry",
+            "grammar": "CompositionalGrammarV2",
+            "compiler": "TypedRouteCompiler",
+            "matched_control": "existing_route_constructor",
+        },
+        "static_checks": static_checks,
+        "production_root_contract_hash": contract["contract_hash"],
+        "decision_catalog_hash": (
+            projection.structural_decision_catalog_hash(
+                STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+            )
+        ),
+        "raw_categorical_rows": len(catalog_rows),
+        "raw_rows_by_production": production_counts(catalog_rows),
+        "raw_exact_unique": len(
+            {row["exact_identity"] for row in catalog_rows}
+        ),
+        "raw_canonical_unique": len(
+            {row["canonical_identity"] for row in catalog_rows}
+        ),
+        "historical_exact_identity_count": len(historical_exact),
+        "post_archive_exact_supply": len(post_archive),
+        "post_archive_rows_by_production": production_counts(
+            post_archive
+        ),
+        "behavior_probe_cap": BEHAVIOR_PROBE_CAP,
+        "behavior_probe_candidates": 0,
+        "observed_behavior_unique_supply": 0,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "financial_reads": 0,
+        "phase3cm_pair_count": 0,
+        "promotion": "FORBIDDEN",
+        "large_search_authorized": False,
+    }
+    member_rows = [
+        dict(member)
+        for row in post_archive
+        for member in (row["primary"], row["control"])
+    ]
+    candidate_path = _write_parquet(
+        output_root / "structural_post_archive_candidates.parquet",
+        member_rows,
+    )
+    design_path = _write_json(
+        output_root / "structural_formula_space_supply.json",
+        design,
+    )
+    artifact_paths = [design_path, candidate_path]
+
+    if bool(getattr(args, "static_only", False)):
+        decision = {
+            "schema_version": (
+                "cn_minute_static_structural_supply_decision_v1"
+            ),
+            "status": "BEHAVIOR_SUPPLY_PENDING",
+            "post_archive_exact_supply": len(post_archive),
+            "maximum_nonexhaustive_pair_budget_per_arm": None,
+            "reference_paired_qualification_supply_ready": False,
+            "large_search_authorized": False,
+            "next_action": "RUN_LABEL_FREE_BEHAVIOR_SUPPLY_PROBE",
+        }
+        status = "STRUCTURAL_EXACT_SUPPLY_CLOSED_BEHAVIOR_PENDING"
+    else:
+        split = FixedSplitAuthority.read(
+            args.split_manifest.resolve()
+        )
+        if (
+            str(layout.get("split_manifest_hash") or "")
+            != split.manifest_hash
+        ):
+            raise RuntimeError(
+                "STRUCTURAL_SUPPLY_SIDECAR_SPLIT_HASH_DRIFT"
+            )
+        field_paths = _field_sidecars(
+            layout,
+            required_roots=route_roots,
+        )
+        selected = post_archive[:BEHAVIOR_PROBE_CAP]
+        selected_members = [
+            dict(member)
+            for row in selected
+            for member in (row["primary"], row["control"])
+        ]
+        probe, audit = bounded_label_free_behavior_probe(
+            candidates=selected_members,
+            field_sidecars=field_paths,
+            eligible_trade_dates=_train_dates(split),
+            coordinate_binding=_stable_hash(
+                {
+                    "authorization_id": (
+                        STRUCTURAL_SUPPLY_AUTHORIZATION_ID
+                    ),
+                    "contract_hash": contract["contract_hash"],
+                    "decision_catalog_hash": design[
+                        "decision_catalog_hash"
+                    ],
+                    "split_hash": split.manifest_hash,
+                    "seed": FROZEN_SUPPLY_SEED,
+                }
+            ),
+            batch_id="minute_static.structural_supply_v1",
+            compute_threads=int(args.compute_threads),
+            max_trade_times=30,
+            max_trade_dates=1,
+            date_selection="calendar_stratified",
+            pair_batch_size=4,
+        )
+        additional_behavior_paths = tuple(
+            Path(path).resolve()
+            for path in (
+                getattr(
+                    args,
+                    "additional_behavior_archive",
+                    (),
+                )
+                or ()
+            )
+        )
+        behavior_archive_paths = (
+            args.historical_behavior_archive.resolve(),
+            *additional_behavior_paths,
+        )
+        behavior_archive = _combined_behavior_archive(
+            *behavior_archive_paths
+        )
+        admitted, decisions = _admit_behavior_unique(
+            candidate_rows=selected_members,
+            probe_rows=probe,
+            historical_archive=behavior_archive,
+        )
+        behavior_unique = sum(
+            str(row.get("pair_member_role") or "") == "PRIMARY"
+            for row in admitted
+        )
+        decision = _nonexhaustive_supply_decision(
+            post_archive_exact_supply=len(post_archive),
+            observed_behavior_unique_supply=behavior_unique,
+        )
+        status = str(decision["status"])
+        design.update(
+            {
+                "status": status,
+                "behavior_probe_candidates": len(selected),
+                "observed_behavior_unique_supply": behavior_unique,
+                "historical_behavior_row_count": len(
+                    behavior_archive.rows
+                ),
+                "maximum_nonexhaustive_pair_budget_per_arm": (
+                    decision[
+                        "maximum_nonexhaustive_pair_budget_per_arm"
+                    ]
+                ),
+                "reference_paired_qualification_supply_ready": (
+                    decision[
+                        "reference_paired_qualification_supply_ready"
+                    ]
+                ),
+            }
+        )
+        _write_json(design_path, design)
+        probe_path = _write_parquet(
+            output_root / "behavior_probe.parquet",
+            probe,
+        )
+        audit_path = _write_json(
+            output_root / "behavior_probe_audit.json",
+            audit,
+        )
+        decisions_path = _write_parquet(
+            output_root / "behavior_admission_decisions.parquet",
+            decisions,
+        )
+        artifact_paths.extend(
+            (probe_path, audit_path, decisions_path)
+        )
+
+    decision_path = _write_json(
+        output_root / "supply_decision.json",
+        decision,
+    )
+    artifact_paths.append(decision_path)
+    input_paths = {
+        "registry": args.registry.resolve(),
+        "production_root_contract": (
+            args.production_root_contract.resolve()
+        ),
+        "active_layout": args.active_layout.resolve(),
+        "historical_exact_archive": (
+            args.historical_exact_archive.resolve()
+        ),
+        "source_candidate_ledger": (
+            args.source_candidate_ledger.resolve()
+        ),
+        **{
+            f"additional_exact_archive_{index:03d}": path
+            for index, path in enumerate(
+                additional_exact_paths,
+                start=1,
+            )
+        },
+    }
+    if not bool(getattr(args, "static_only", False)):
+        input_paths.update(
+            {
+                "historical_behavior_archive": (
+                    args.historical_behavior_archive.resolve()
+                ),
+                "split_manifest": args.split_manifest.resolve(),
+                **{
+                    (
+                        "additional_behavior_archive_"
+                        f"{index:03d}"
+                    ): path
+                    for index, path in enumerate(
+                        additional_behavior_paths,
+                        start=1,
+                    )
+                },
+            }
+        )
+    manifest = {
+        "schema_version": (
+            "cn_minute_static_structural_supply_manifest_v1"
+        ),
+        "status": status,
+        "authorization_id": STRUCTURAL_SUPPLY_AUTHORIZATION_ID,
+        "repo_sha": str(args.repo_sha),
+        "host": platform.node(),
+        "task_id": str(args.task_id),
+        "inputs": {
+            name: _input_artifact(path)
+            for name, path in input_paths.items()
+        },
+        "artifacts": [
+            {
+                "path": path.name,
+                "sha256": _sha256(path),
+                "bytes": path.stat().st_size,
+            }
+            for path in artifact_paths
+        ],
+        "phase3cm_pair_count": 0,
+        "financial_reads": 0,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "promotion": "FORBIDDEN",
+        "large_search_authorized": False,
+    }
+    manifest["manifest_payload_hash"] = _stable_hash(manifest)
+    manifest_path = _write_json(
+        output_root / "artifact_manifest.json",
+        manifest,
+    )
+    return {
+        "status": status,
+        "formula_space_supply": design,
+        "supply_decision": decision,
+        "manifest": str(manifest_path),
     }
 
 
@@ -3211,6 +3713,22 @@ def main() -> int:
     )
     parser.add_argument("--split-manifest", type=Path)
     parser.add_argument("--compute-threads", type=int, default=30)
+    parser.add_argument(
+        "--structural-supply-design",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--additional-exact-archive",
+        type=Path,
+        action="append",
+        default=[],
+    )
+    parser.add_argument(
+        "--additional-behavior-archive",
+        type=Path,
+        action="append",
+        default=[],
+    )
     parser.add_argument("--continue-financial", action="store_true")
     parser.add_argument(
         "--paired-structural-cem-v2-canary",
@@ -3251,6 +3769,14 @@ def main() -> int:
     ):
         parser.error(
             "choose exactly one structural CEM V2 paired mode"
+        )
+    if args.structural_supply_design and (
+        args.continue_financial
+        or args.paired_structural_cem_v2_canary
+        or args.paired_structural_cem_v2_medium
+    ):
+        parser.error(
+            "--structural-supply-design cannot run a financial mode"
         )
     if args.continue_financial:
         required = (
@@ -3303,7 +3829,9 @@ def main() -> int:
             "are required unless --static-only"
         )
     result = (
-        run_financial(args)
+        run_structural_supply_design(args)
+        if args.structural_supply_design
+        else run_financial(args)
         if args.continue_financial
         else run(args)
     )

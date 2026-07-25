@@ -15,15 +15,19 @@ from scripts.run_minute_static_production_cem_v3 import (
     PAIRED_STRUCTURAL_CEM_V2_ARMS,
     PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT,
     PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP,
+    STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
+    STRUCTURAL_SUPPLY_PRODUCTION_IDS,
     MinuteStaticProductionProjection,
     _failure_decision,
     _load_production_contract,
+    _nonexhaustive_supply_decision,
     _paired_structural_canary_verdict,
     _paired_structural_medium_verdict,
     _production_parity,
     _session_sample_contract,
     run,
     run_financial,
+    run_structural_supply_design,
 )
 from our_system_phase2.services.categorical_cem import (
     RankWeightedCategoricalCEMPolicy,
@@ -191,6 +195,132 @@ def test_minute_production_projection_replays_existing_grammar() -> None:
     assert parity["status"] == "PASS"
     assert parity["checked_projection_rows"] == 330
     assert parity["failure_count"] == 0
+
+
+def test_structural_supply_space_reuses_only_qualified_pair_lanes() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+
+    decisions = projection.structural_decision_specs(
+        STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+    )
+    assert [
+        row.token_id for row in decisions[0].ordered_choices
+    ] == list(STRUCTURAL_SUPPLY_PRODUCTION_IDS)
+    catalog = projection._available_candidate_catalog(
+        STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+    )
+    assert len(catalog) == 440
+    assert {
+        str(row["production_id"]) for row in catalog
+    } == set(STRUCTURAL_SUPPLY_PRODUCTION_IDS)
+    assert len(
+        {
+            str(row["candidate"]["exact_identity"])
+            for row in catalog
+        }
+    ) == 440
+    assert all(
+        bool(row["candidate"]["legal"])
+        and bool(row["control"]["legal"])
+        for row in catalog
+    )
+
+
+def test_structural_supply_decision_reserves_two_x_headroom() -> None:
+    qualified = _nonexhaustive_supply_decision(
+        post_archive_exact_supply=220,
+        observed_behavior_unique_supply=150,
+    )
+    assert qualified[
+        "maximum_nonexhaustive_pair_budget_per_arm"
+    ] == 75
+    assert qualified[
+        "reference_paired_qualification_supply_ready"
+    ] is True
+    assert qualified["large_search_authorized"] is False
+
+    blocked = _nonexhaustive_supply_decision(
+        post_archive_exact_supply=220,
+        observed_behavior_unique_supply=143,
+    )
+    assert blocked[
+        "maximum_nonexhaustive_pair_budget_per_arm"
+    ] == 71
+    assert blocked[
+        "reference_paired_qualification_supply_ready"
+    ] is False
+
+
+def test_structural_supply_static_run_closes_without_financial_reads(
+    tmp_path: Path,
+) -> None:
+    contract = json.loads(
+        PRODUCTION_CONTRACT.read_text(encoding="utf-8")
+    )
+    layout = tmp_path / "active_layout.json"
+    layout.write_text(
+        json.dumps({"fields": contract["route_roots"]}),
+        encoding="utf-8",
+    )
+    archive = tmp_path / "archive.parquet"
+    ledger = tmp_path / "ledger.parquet"
+    pq.write_table(
+        pa.table({"exact_identity": ["historical-a"]}),
+        archive,
+    )
+    pq.write_table(
+        pa.table({"exact_identity": ["historical-b"]}),
+        ledger,
+    )
+    output_root = tmp_path / "structural_supply"
+    result = run_structural_supply_design(
+        argparse.Namespace(
+            registry=REGISTRY,
+            production_root_contract=PRODUCTION_CONTRACT,
+            active_layout=layout,
+            historical_exact_archive=archive,
+            source_candidate_ledger=ledger,
+            historical_behavior_archive=None,
+            additional_exact_archive=[],
+            additional_behavior_archive=[],
+            split_manifest=None,
+            compute_threads=2,
+            output_root=output_root,
+            repo_sha="test-sha",
+            task_id="test-task",
+            allow_noncanonical_host=True,
+            static_only=True,
+        )
+    )
+
+    supply = result["formula_space_supply"]
+    assert supply["raw_categorical_rows"] == 440
+    assert supply["raw_exact_unique"] == 440
+    assert supply["post_archive_exact_supply"] == 440
+    assert supply["financial_reads"] == 0
+    assert supply["phase3cm_pair_count"] == 0
+    assert result["status"] == (
+        "STRUCTURAL_EXACT_SUPPLY_CLOSED_BEHAVIOR_PENDING"
+    )
+    manifest = json.loads(
+        (output_root / "artifact_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert manifest["financial_reads"] == 0
+    assert manifest["large_search_authorized"] is False
 
 
 def test_structural_v2_fresh_policy_matches_uniform_without_exact_replay() -> None:
