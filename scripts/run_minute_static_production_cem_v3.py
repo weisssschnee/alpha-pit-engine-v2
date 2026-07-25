@@ -831,6 +831,41 @@ def _structural_typed_surface_mechanical_proof(
             }
         )
     tell_receipt = cem.tell(observations)
+    field_only_cem = RankWeightedCategoricalCEMPolicy.fresh(
+        decisions=decisions[1:],
+        decision_catalog_hash=catalog_hash,
+        formula_space_id=STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+    )
+    field_only_receipt = field_only_cem.tell(observations)
+
+    class _FieldOnlyProofPolicy:
+        policy_id = "synthetic_field_only_cem_proof"
+
+        def __init__(
+            self,
+            adaptive: RankWeightedCategoricalCEMPolicy,
+        ) -> None:
+            self.adaptive = adaptive
+            self.uniform = AvailableUniformPolicy()
+
+        def choose_available(
+            self,
+            decision: DecisionSpec,
+            *,
+            allowed_token_ids: Sequence[str],
+            rng: np.random.Generator,
+        ) -> str:
+            if decision.gene_slot == "production_id":
+                return self.uniform.choose_available(
+                    decision,
+                    allowed_token_ids=allowed_token_ids,
+                    rng=rng,
+                )
+            return self.adaptive.choose_available(
+                decision,
+                allowed_token_ids=allowed_token_ids,
+                rng=rng,
+            )
 
     second_uniform_exact = []
     second_cem_exact = []
@@ -856,6 +891,45 @@ def _structural_typed_surface_mechanical_proof(
         second_uniform_exact.append(uniform_exact)
         second_cem_exact.append(cem_exact)
 
+    causal_uniform_rng = np.random.default_rng(seed + 1)
+    causal_field_rng = np.random.default_rng(seed + 1)
+    causal_uniform_seen = set(first_cem_exact)
+    causal_field_seen = set(first_cem_exact)
+    causal_uniform_exact = []
+    causal_field_exact = []
+    causal_uniform_productions = []
+    causal_field_productions = []
+    field_only_policy = _FieldOnlyProofPolicy(field_only_cem)
+    for _ in range(generation_size):
+        causal_uniform_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+            policy=AvailableUniformPolicy(),
+            rng=causal_uniform_rng,
+            exact_seen=causal_uniform_seen,
+        )
+        causal_field_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+            policy=field_only_policy,
+            rng=causal_field_rng,
+            exact_seen=causal_field_seen,
+        )
+        uniform_exact = str(
+            causal_uniform_pair.candidate["exact_identity"]
+        )
+        field_exact = str(
+            causal_field_pair.candidate["exact_identity"]
+        )
+        causal_uniform_seen.add(uniform_exact)
+        causal_field_seen.add(field_exact)
+        causal_uniform_exact.append(uniform_exact)
+        causal_field_exact.append(field_exact)
+        causal_uniform_productions.append(
+            str(causal_uniform_pair.candidate["production_id"])
+        )
+        causal_field_productions.append(
+            str(causal_field_pair.candidate["production_id"])
+        )
+
     first_parity = first_uniform_exact == first_cem_exact
     first_duplicate_count = (
         len(first_cem_exact) - len(set(first_cem_exact))
@@ -865,6 +939,14 @@ def _structural_typed_surface_mechanical_proof(
         - len(set(first_cem_exact + second_cem_exact))
     )
     stream_changed = second_uniform_exact != second_cem_exact
+    causal_production_parity = (
+        causal_uniform_productions == causal_field_productions
+    )
+    added_field_contexts_change_proposals = (
+        causal_production_parity
+        and causal_uniform_exact != causal_field_exact
+        and int(field_only_receipt["updated_context_count"]) == 2
+    )
     updated_context_count = int(
         tell_receipt["updated_context_count"]
     )
@@ -873,6 +955,7 @@ def _structural_typed_surface_mechanical_proof(
         and first_duplicate_count == 0
         and second_duplicate_count == 0
         and stream_changed
+        and added_field_contexts_change_proposals
         and updated_context_count == len(decisions)
     )
     return {
@@ -888,6 +971,15 @@ def _structural_typed_surface_mechanical_proof(
         "first_generation_duplicate_count": first_duplicate_count,
         "second_generation_stream_changed": stream_changed,
         "second_generation_duplicate_count": second_duplicate_count,
+        "field_only_causal_production_stream_parity": (
+            causal_production_parity
+        ),
+        "added_field_contexts_change_proposals": (
+            added_field_contexts_change_proposals
+        ),
+        "field_only_updated_context_count": int(
+            field_only_receipt["updated_context_count"]
+        ),
         "updated_context_count": updated_context_count,
         "support_diagnostics": tell_receipt["support_diagnostics"],
         "financial_reads": 0,
@@ -3104,7 +3196,8 @@ def run_structural_supply_design(
             )
             exact_ready = len(post_archive) >= exact_minimum
             status = (
-                "STRUCTURAL_TYPED_SURFACE_MECHANICAL_PASS_"
+                "STRUCTURAL_TYPED_SURFACE_RAW_CATALOG_"
+                "MECHANICAL_PASS_"
                 + (
                     "BEHAVIOR_SUPPLY_PENDING"
                     if exact_ready
@@ -3140,7 +3233,9 @@ def run_structural_supply_design(
             design.update(
                 {
                     "status": status,
-                    "typed_surface_mechanical_status": "PASS",
+                    "typed_surface_mechanical_status": (
+                        "RAW_CATALOG_MECHANICAL_PASS"
+                    ),
                     "minimum_nonexhaustive_exact_supply": (
                         exact_minimum
                     ),

@@ -336,6 +336,9 @@ def test_structural_typed_surface_parity_mask_and_synthetic_adaptation() -> None
     assert proof["first_generation_duplicate_count"] == 0
     assert proof["second_generation_stream_changed"] is True
     assert proof["second_generation_duplicate_count"] == 0
+    assert proof["field_only_causal_production_stream_parity"] is True
+    assert proof["added_field_contexts_change_proposals"] is True
+    assert proof["field_only_updated_context_count"] == 2
     assert proof["updated_context_count"] == 3
     assert {
         row["decision_id"]
@@ -621,7 +624,7 @@ def test_structural_typed_static_audit_blocks_financial_when_19_exact_remain(
 
     supply = result["formula_space_supply"]
     assert result["status"] == (
-        "STRUCTURAL_TYPED_SURFACE_MECHANICAL_PASS_"
+        "STRUCTURAL_TYPED_SURFACE_RAW_CATALOG_MECHANICAL_PASS_"
         "FINANCIAL_SUPPLY_BLOCKED"
     )
     assert supply["formula_space_id"] == (
