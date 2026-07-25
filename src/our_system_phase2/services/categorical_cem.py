@@ -56,6 +56,8 @@ class CEMParameters:
 def _cap_simplex(values: np.ndarray, cap: float) -> np.ndarray:
     output = np.asarray(values, dtype=float).copy()
     output /= float(output.sum())
+    if len(output) == 1:
+        return np.ones(1, dtype=float)
     if len(output) * cap < 1.0 - 1e-12:
         raise ValueError("category probability cap is infeasible")
     for _ in range(len(output) + 2):

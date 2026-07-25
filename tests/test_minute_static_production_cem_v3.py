@@ -19,6 +19,7 @@ from scripts.run_minute_static_production_cem_v3 import (
     PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP,
     STRUCTURAL_FORMULA_V4_MINIMUM_FRESH_EXACT,
     STRUCTURAL_FORMULA_V4_SPACE_ID,
+    STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID,
     STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
     STRUCTURAL_SUPPLY_PRODUCTION_IDS,
     STRUCTURAL_TYPED_FORMULA_SPACE_ID,
@@ -41,6 +42,9 @@ from scripts.run_minute_static_production_cem_v3 import (
 )
 from our_system_phase2.services.categorical_cem import (
     RankWeightedCategoricalCEMPolicy,
+)
+from our_system_phase2.services.compositional_grammar import (
+    MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
 )
 from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
@@ -265,6 +269,7 @@ def test_structural_typed_surface_is_lossless_authoritative_projection() -> None
             route_root_allowlist={"MINUTE_STATIC": roots},
         )
     )
+    assert projection._online_gene_surface_id is None
 
     decisions = projection.structural_typed_decision_specs(
         STRUCTURAL_TYPED_FORMULA_SPACE_ID
@@ -446,6 +451,240 @@ def test_formula_v4_is_bounded_typed_unique_and_adaptive() -> None:
     assert proof["cumulative_duplicate_count"] == 0
     assert proof["second_generation_stream_changed"] is True
     assert proof["updated_context_count"] == 5
+    assert projection._online_gene_surface_id is None
+
+
+def test_online_typed_grammar_generates_without_formula_catalog(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+    monkeypatch.setattr(
+        projection,
+        "_available_candidate_catalog",
+        lambda *_args, **_kwargs: pytest.fail(
+            "online grammar generation must not materialize a formula catalog"
+        ),
+    )
+
+    decisions = projection.online_grammar_decision_specs(
+        STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID
+    )
+    assert len(decisions) == 13
+    assert decisions[0].gene_slot == "binary_operator_id"
+    assert {
+        row.context_id.split("|root_rule=", 1)[1].split("|", 1)[0]
+        for row in decisions[1:]
+    } == {"SUB", "SAFE_DIV", "MUL"}
+    decision_catalog = projection.online_grammar_decision_catalog(
+        STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID
+    )
+    assert decision_catalog["root_rule_cardinality"] == {
+        "SUB": 990,
+        "SAFE_DIV": 990,
+        "MUL": 110,
+    }
+    assert decision_catalog["bounded_formula_cardinality"] == 2_090
+    assert decision_catalog["root_mapping"] == "CSRank"
+    assert decision_catalog["root_mapping_status"] == (
+        "FROZEN_NOT_AN_ADAPTIVE_DECISION_IN_V5"
+    )
+
+    policy = AvailableUniformPolicy()
+    rng = np.random.default_rng(2026072601)
+    exact_seen: set[str] = set()
+    generated = []
+    for _ in range(96):
+        pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID,
+            policy=policy,
+            rng=rng,
+            exact_seen=exact_seen,
+        )
+        exact_identity = str(pair.candidate["exact_identity"])
+        assert exact_identity not in exact_seen
+        exact_seen.add(exact_identity)
+        generated.append(pair)
+
+    assert len(exact_seen) == 96
+    assert all(
+        row.candidate["formula_extension_id"]
+        == MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID
+        and row.candidate["formula_construction"]
+        == "ONLINE_TYPED_GRAMMAR"
+        and row.candidate["exact_availability_mask"]
+        == "POST_CONSTRUCTION_ARCHIVE_CHECK_WITH_BOUNDED_RESAMPLE"
+        and row.candidate["canonical_dedupe_contract"]
+        == "EXACT_IDENTITY_HASHES_COMPILER_CANONICAL_EXPRESSION"
+        and len(row.candidate["decision_trace"]) == 5
+        and row.candidate["legal"] is True
+        and row.control["legal"] is True
+        for row in generated
+    )
+    assert not unsupported_streaming_operators(
+        str(member["expression"])
+        for row in generated
+        for member in (row.candidate, row.control)
+    )
+
+
+def test_online_typed_grammar_cem_is_fresh_paired_and_conditional() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+    decisions = projection.online_grammar_decision_specs(
+        STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID
+    )
+    catalog_hash = projection.online_grammar_decision_catalog_hash(
+        STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID
+    )
+    uniform = AvailableUniformPolicy()
+    cem = RankWeightedCategoricalCEMPolicy.fresh(
+        decisions=decisions,
+        decision_catalog_hash=catalog_hash,
+        formula_space_id=STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID,
+    )
+    uniform_rng = np.random.default_rng(2026072602)
+    cem_rng = np.random.default_rng(2026072602)
+    uniform_seen: set[str] = set()
+    cem_seen: set[str] = set()
+    uniform_pairs = []
+    cem_pairs = []
+    for _ in range(96):
+        uniform_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID,
+            policy=uniform,
+            rng=uniform_rng,
+            exact_seen=uniform_seen,
+        )
+        cem_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID,
+            policy=cem,
+            rng=cem_rng,
+            exact_seen=cem_seen,
+        )
+        uniform_seen.add(str(uniform_pair.candidate["exact_identity"]))
+        cem_seen.add(str(cem_pair.candidate["exact_identity"]))
+        uniform_pairs.append(uniform_pair)
+        cem_pairs.append(cem_pair)
+
+    assert [
+        row.candidate["exact_identity"] for row in uniform_pairs
+    ] == [row.candidate["exact_identity"] for row in cem_pairs]
+
+    observations = []
+    for row in cem_pairs:
+        operator_id = str(row.candidate["binary_operator_id"])
+        observations.append(
+            {
+                "exact_identity": row.candidate["exact_identity"],
+                "outcome_class": "EVALUATED",
+                "signed_matched_increment": (
+                    100.0 if operator_id == "MUL" else 0.0
+                ),
+                "decision_trace": row.candidate["decision_trace"],
+            }
+        )
+    receipt = cem.tell(observations)
+    assert receipt["updated_context_count"] >= 2
+    assert any(
+        row["support_status"] == "UPDATED"
+        and "|root_rule=MUL|" in row["context_id"]
+        for row in receipt["support_diagnostics"]
+    )
+    parity = _structural_v2_fresh_stream_parity(
+        projection,
+        seed=2026072604,
+        count=24,
+        formula_space_id=STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID,
+    )
+    assert parity["status"] == "PASS"
+    assert all(
+        (
+            "|root_rule=" in row["context_id"]
+            or row["decision_id"]
+            == "minute_static.binary_operator_id"
+        )
+        for row in receipt["support_diagnostics"]
+    )
+
+
+def test_online_typed_grammar_builds_new_legal_rule_combinations() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    generator = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+        enforce_route_compatibility=True,
+        route_root_allowlist={"MINUTE_STATIC": roots},
+    )
+    projection = MinuteStaticProductionProjection(generator)
+    pair = generator.propose_categorical_genes(
+        "MINUTE_STATIC",
+        genes={
+            "skeleton_id": projection.online_operator_skeletons["SUB"],
+            "gene_surface_id": projection.online_gene_surface_id,
+            "binary_operator_id": "SUB",
+            "left_transform_id": "ABS_ZSCORE",
+            "right_transform_id": "SIGN",
+            "field_pair_id": "amount::volume",
+        },
+        formula_extension_id=(
+            MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID
+        ),
+    )
+    assert pair.candidate["expression"] == (
+        "CSRank(Sub(Abs(ZScore($amount)),Sign($volume)))"
+    )
+    assert pair.control["expression"] == (
+        "CSRank(Add(Abs(ZScore($amount)),Mul(0,$volume)))"
+    )
+    assert pair.candidate["legal"] is True
+    assert pair.control["legal"] is True
+    with pytest.raises(
+        ValueError,
+        match="INVALID_CATEGORICAL_GENE:left_transform_id:SIGN",
+    ):
+        generator.propose_categorical_genes(
+            "MINUTE_STATIC",
+            genes={
+                "skeleton_id": (
+                    projection.online_operator_skeletons["MUL"]
+                ),
+                "gene_surface_id": projection.online_gene_surface_id,
+                "binary_operator_id": "MUL",
+                "left_transform_id": "SIGN",
+                "right_transform_id": "ABS_ZSCORE",
+                "field_pair_id": "volume::amount",
+            },
+            formula_extension_id=(
+                MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID
+            ),
+        )
 
 
 def test_minute_static_fields_and_formula_templates_match_authority() -> None:
@@ -1249,7 +1488,10 @@ def test_structural_v2_canary_requires_common_first_full_evaluation_set(
     ]
 
 
-@pytest.mark.parametrize("mode", ("canary", "medium", "supply"))
+@pytest.mark.parametrize(
+    "mode",
+    ("canary", "medium", "supply", "online"),
+)
 def test_structural_v2_modes_cannot_override_77o_host(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -1267,6 +1509,7 @@ def test_structural_v2_modes_cannot_override_77o_host(
                 paired_structural_cem_v2_canary=mode == "canary",
                 paired_structural_cem_v2_medium=mode == "medium",
                 paired_structural_cem_v2_supply_medium=mode == "supply",
+                paired_online_typed_grammar_cem_v1=mode == "online",
                 allow_noncanonical_host=True,
                 output_root=tmp_path,
             )

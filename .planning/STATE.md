@@ -2,7 +2,7 @@
 
 Updated: 2026-07-26
 
-Current state: `CN_MINUTE_STATIC_STRUCTURAL_FORMULA_V4_SUPPLY_QUALIFIED_PAIRED_PENDING`
+Current state: `CN_MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_V5_PAIRED_AUTHORIZED_PENDING`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -490,6 +490,24 @@ formula supply only. It does not accept a search policy, promote candidates or
 authorize a large search. Evidence is in
 `runtime/run_plans/cn_minute_static_structural_formula_v4_supply_20260726_receipt.json`.
 
+The bounded V5 search adapter is now code-ready on the current branch. It no
+longer enumerates a complete formula catalog before search. Uniform and
+RankWeighted CEM V2 instead select a root binary rule and that rule's
+conditional left/right typed transforms and registered fields; the existing
+Grammar then constructs, compiles and matches the control online. Exact
+availability is enforced after compiler-canonical construction with bounded
+resampling, while behavior admission remains in the existing downstream
+archive path. The outer `CSRank` mapping is explicitly frozen for this first
+slice and is not claimed as an adaptive decision. The bounded rule space is
+2,090 formulas: 990 `SUB`, 990 `SAFE_DIV` and 110 matched-control-safe
+`MUL(ABS_ZSCORE,SIGN)` combinations at maximum depth four. A 96-proposal
+zero-financial test produced 96 legal exact-unique pairs without materializing
+the eager catalog; fresh Uniform/CEM proposal streams matched before tell, and
+synthetic full-evaluation feedback changed the root and root-conditioned CEM
+contexts. The real runner is wired for one paired 3-checkpoint x 24-pair
+train-only comparison per arm. No financial, validation, holdout or 2026 read
+has occurred for V5 yet, and no search or Graph authority is promoted.
+
 Historically, the targeted formula-space/CEM retry selected
 `DISCLOSURE_EVENT` /
 `cn.comp.v2.disclosure_event.pre_event_path` and reused the frozen OLD
@@ -586,17 +604,16 @@ Retain the qualified `normalized_ratio` production increment and active
 route-local sampled selector. Do not reuse any terminal CEM probabilities or
 launch a large search.
 
-Do not rerun or enlarge the completed V4 supply proof. Formula supply is no
-longer the blocker: the frozen zero-financial gates closed at 1,559 fresh exact
-and 171 observed behavior-unique pairs. The next bounded task, after a separate
-financial-run authorization, is one fresh paired Uniform versus Structural CEM
-train qualification on this identical V4 catalog. Both arms must share the
-same proposal stream at generation one, cumulative exact/behavior memory,
-compiler, sampled-selection authority and full-coordinate evaluator; Structural
-CEM must initialize fresh uniform with no imported probabilities or rewards.
-Use at most the existing reference 72 full-coordinate pairs per arm, not the
-larger theoretical 171-pair supply ceiling. Do not tune alpha, elite fraction
-or checkpoint count before that causal comparison closes.
+Do not rerun or enlarge the completed V4 supply proof. The user has authorized
+one V5 paired train qualification after the code-ready commit is pushed. Run
+fresh Uniform versus online typed-Grammar Structural CEM on the identical
+Registry/compiler/matched-control/evaluator authority, with the same proposal
+stream at generation one and shared cumulative exact/behavior memory. CEM must
+initialize fresh uniform with no imported probabilities or rewards. Use exactly
+the frozen 3 checkpoints x at most 24 full-coordinate pairs per arm on 77o.
+Keep `CSRank` frozen; do not add another root mapping, tune alpha/elite fraction,
+or widen the Grammar during this causal comparison. No validation, holdout or
+2026 access and no candidate or search-authority promotion are authorized.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.

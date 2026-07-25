@@ -40,6 +40,10 @@ from our_system_phase2.services.portfolio_behavior_archive import (
     bounded_label_free_behavior_probe,
 )
 from our_system_phase2.services.compositional_grammar import (
+    MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS,
+    MINUTE_STATIC_ONLINE_OPERATOR_SKELETON_NAMES,
+    MINUTE_STATIC_ONLINE_TRANSFORM_PAIRS,
+    MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
     MINUTE_STATIC_TYPED_TRANSFORM_IDS,
     MINUTE_STATIC_TYPED_TRANSFORM_PAIRS,
     MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
@@ -127,6 +131,10 @@ STRUCTURAL_TYPED_FORMULA_SPACE_ID = (
 STRUCTURAL_FORMULA_V4_SPACE_ID = (
     "MINUTE_STATIC_STRUCTURAL_FORMULA_V4"
 )
+STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID = (
+    "MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_V5"
+)
+ONLINE_TYPED_GRAMMAR_GENERATION_ATTEMPT_CAP = 256
 STRUCTURAL_SUPPLY_AUTHORIZATION_ID = (
     "MINUTE_STATIC_STRUCTURAL_FORMULA_SPACE_SUPPLY_V1"
 )
@@ -169,9 +177,12 @@ PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT = 3
 PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP = 24
 PAIRED_STRUCTURAL_SUPPLY_MEDIUM_CHECKPOINT_COUNT = 4
 PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP = 17
+PAIRED_ONLINE_TYPED_GRAMMAR_CHECKPOINT_COUNT = 3
+PAIRED_ONLINE_TYPED_GRAMMAR_FULL_PAIR_CAP = 24
 PAIRED_STRUCTURAL_CEM_V2_CANARY_SEED_OFFSET = 20_000
 PAIRED_STRUCTURAL_CEM_V2_MEDIUM_SEED_OFFSET = 30_000
 PAIRED_STRUCTURAL_SUPPLY_MEDIUM_SEED_OFFSET = 40_000
+PAIRED_ONLINE_TYPED_GRAMMAR_SEED_OFFSET = 50_000
 
 
 class MinuteStaticProductionProjection:
@@ -253,9 +264,68 @@ class MinuteStaticProductionProjection:
             )
             for production_id, lane in v4_lanes.items()
         }
+        self.online_operator_skeletons = {
+            operator_id: (
+                "cn.comp.v2.minute_static." + skeleton_name
+            )
+            for operator_id, skeleton_name
+            in MINUTE_STATIC_ONLINE_OPERATOR_SKELETON_NAMES.items()
+        }
+        self._online_gene_surface_id: str | None = None
         self._available_candidate_cache: dict[
             str, tuple[dict[str, Any], ...]
         ] = {}
+
+    @property
+    def online_gene_surface_id(self) -> str:
+        """Resolve the V5 surface only when the online path is requested."""
+
+        if self._online_gene_surface_id is not None:
+            return self._online_gene_surface_id
+        online_lanes = {
+            operator_id: self.generator.categorical_gene_space(
+                ROUTE_ID,
+                skeleton_id=skeleton_id,
+                formula_extension_id=(
+                    MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID
+                ),
+            )
+            for operator_id, skeleton_id
+            in self.online_operator_skeletons.items()
+        }
+        if tuple(online_lanes) != MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS:
+            raise RuntimeError(
+                "MINUTE_ONLINE_GRAMMAR_OPERATOR_AUTHORITY_DRIFT"
+            )
+        if any(
+            tuple(
+                lane["ordered_categories_by_slot"]["field_pair_id"]
+            )
+            != self.field_pair_ids
+            for lane in online_lanes.values()
+        ):
+            raise RuntimeError(
+                "MINUTE_ONLINE_GRAMMAR_FIELD_PAIR_DOMAIN_DRIFT"
+            )
+        online_gene_surface_id = str(
+            online_lanes["SUB"]["ordered_categories_by_slot"][
+                "gene_surface_id"
+            ][0]
+        )
+        if any(
+            str(
+                lane["ordered_categories_by_slot"]["gene_surface_id"][
+                    0
+                ]
+            )
+            != online_gene_surface_id
+            for lane in online_lanes.values()
+        ):
+            raise RuntimeError(
+                "MINUTE_ONLINE_GRAMMAR_GENE_SURFACE_DRIFT"
+            )
+        self._online_gene_surface_id = online_gene_surface_id
+        return online_gene_surface_id
 
     def decision_specs(
         self,
@@ -564,6 +634,219 @@ class MinuteStaticProductionProjection:
             ]
         )
 
+    def online_grammar_decision_specs(
+        self,
+        formula_space_id: str,
+    ) -> tuple[DecisionSpec, ...]:
+        """Expose grammar rules, not preconstructed formulas, to the policy."""
+
+        if formula_space_id != STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID:
+            raise ValueError(
+                "online Grammar decisions require the V5 formula space"
+            )
+        base = f"route={ROUTE_ID}|formula_space={formula_space_id}"
+        binary_operator = DecisionSpec(
+            decision_id="minute_static.binary_operator_id",
+            context_id=base + "|decision=binary_operator_id",
+            decision_type="BINARY_OPERATOR_RULE",
+            gene_slot="binary_operator_id",
+            ordered_choices=tuple(
+                SearchChoice(
+                    token_id=operator_id,
+                    gene_value=operator_id,
+                    semantic_value={
+                        "binary_operator_id": operator_id,
+                        "skeleton_id": self.online_operator_skeletons[
+                            operator_id
+                        ],
+                        "rule_authority": (
+                            "CompositionalGrammarV2."
+                            "MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS"
+                        ),
+                    },
+                )
+                for operator_id
+                in MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS
+            ),
+        )
+        ordered_fields = tuple(
+            dict.fromkeys(
+                field_id
+                for pair_id in self.field_pair_ids
+                for field_id in pair_id.split("::", 1)
+            )
+        )
+        child_decisions: list[DecisionSpec] = []
+        for operator_id in MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS:
+            context = base + f"|root_rule={operator_id}"
+            for side in ("left", "right"):
+                transform_index = 0 if side == "left" else 1
+                allowed_transforms = tuple(
+                    dict.fromkeys(
+                        pair[transform_index]
+                        for pair
+                        in MINUTE_STATIC_ONLINE_TRANSFORM_PAIRS[
+                            operator_id
+                        ]
+                    )
+                )
+                child_decisions.append(
+                    DecisionSpec(
+                        decision_id=(
+                            f"minute_static.{operator_id}."
+                            f"{side}_transform_id"
+                        ),
+                        context_id=(
+                            context + f"|decision={side}_transform_id"
+                        ),
+                        decision_type=(
+                            f"{side.upper()}_TYPED_CHILD_TRANSFORM"
+                        ),
+                        gene_slot=f"{side}_transform_id",
+                        ordered_choices=tuple(
+                            SearchChoice(
+                                token_id="transform:" + transform_id,
+                                gene_value=transform_id,
+                                semantic_value={
+                                    "root_rule": operator_id,
+                                    "side": side,
+                                    "transform_id": transform_id,
+                                    "operator_authority": (
+                                        "TypedRouteCompiler."
+                                        "ROUTE_PRIMITIVE_ALLOWLIST"
+                                    ),
+                                },
+                            )
+                            for transform_id
+                            in allowed_transforms
+                        ),
+                    )
+                )
+            for side in ("left", "right"):
+                child_decisions.append(
+                    DecisionSpec(
+                        decision_id=(
+                            f"minute_static.{operator_id}."
+                            f"{side}_field_id"
+                        ),
+                        context_id=(
+                            context + f"|decision={side}_field_id"
+                        ),
+                        decision_type=f"{side.upper()}_TYPED_FIELD",
+                        gene_slot=f"{side}_field_id",
+                        ordered_choices=tuple(
+                            SearchChoice(
+                                token_id="field:" + field_id,
+                                gene_value=field_id,
+                                semantic_value={
+                                    "root_rule": operator_id,
+                                    "side": side,
+                                    "field_id": field_id,
+                                    "field_authority": (
+                                        "unified_capability_registry"
+                                    ),
+                                },
+                            )
+                            for field_id in ordered_fields
+                        ),
+                    )
+                )
+        return binary_operator, *child_decisions
+
+    def online_grammar_decision_catalog(
+        self,
+        formula_space_id: str,
+    ) -> dict[str, Any]:
+        decisions = self.online_grammar_decision_specs(formula_space_id)
+        directional_pair_count = len(self.field_pair_ids)
+        root_rule_cardinality = {
+            operator_id: (
+                len(MINUTE_STATIC_ONLINE_TRANSFORM_PAIRS[operator_id])
+                * directional_pair_count
+            )
+            for operator_id
+            in MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS
+        }
+        payload = {
+            "schema_version": (
+                "cn_minute_static_online_typed_grammar_catalog_v1"
+            ),
+            "route_id": ROUTE_ID,
+            "formula_space_id": formula_space_id,
+            "gene_surface_id": self.online_gene_surface_id,
+            "formula_materialization": (
+                "LAZY_ONLINE_FROM_SELECTED_GRAMMAR_RULES"
+            ),
+            "eager_formula_catalog": "FORBIDDEN_IN_ASK_PATH",
+            "maximum_depth": 4,
+            "root_mapping": "CSRank",
+            "root_mapping_status": (
+                "FROZEN_NOT_AN_ADAPTIVE_DECISION_IN_V5"
+            ),
+            "root_mapping_rationale": (
+                "BOUNDED_FIRST_SLICE_REUSES_EXISTING_MATCHED_CONTROL_"
+                "SAFE_MINUTE_STATIC_AUTHORITY"
+            ),
+            "binary_operator_rules": list(
+                MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS
+            ),
+            "typed_child_transforms": list(
+                MINUTE_STATIC_TYPED_TRANSFORM_IDS
+            ),
+            "field_pair_authority": (
+                "CompositionalGrammarV2.field_pair_id"
+            ),
+            "matched_control_rule": (
+                "CSRank(Add(left_leg,Mul(0,right_raw_field)))"
+            ),
+            "commutative_semantic_dedupe": (
+                "MUL_ORDERED_TYPED_LEG_KEYS"
+            ),
+            "root_rule_cardinality": root_rule_cardinality,
+            "bounded_formula_cardinality": sum(
+                root_rule_cardinality.values()
+            ),
+            "decisions": [row.to_dict() for row in decisions],
+        }
+        payload["catalog_hash"] = _stable_hash(payload)
+        return payload
+
+    def online_grammar_decision_catalog_hash(
+        self,
+        formula_space_id: str,
+    ) -> str:
+        return str(
+            self.online_grammar_decision_catalog(formula_space_id)[
+                "catalog_hash"
+            ]
+        )
+
+    def adaptive_decision_specs(
+        self,
+        formula_space_id: str,
+    ) -> tuple[DecisionSpec, ...]:
+        if formula_space_id == STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID:
+            return self.online_grammar_decision_specs(formula_space_id)
+        return self.structural_decision_specs(formula_space_id)
+
+    def adaptive_decision_catalog(
+        self,
+        formula_space_id: str,
+    ) -> dict[str, Any]:
+        if formula_space_id == STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID:
+            return self.online_grammar_decision_catalog(formula_space_id)
+        return self.structural_decision_catalog(formula_space_id)
+
+    def adaptive_decision_catalog_hash(
+        self,
+        formula_space_id: str,
+    ) -> str:
+        return str(
+            self.adaptive_decision_catalog(formula_space_id)[
+                "catalog_hash"
+            ]
+        )
+
     def _available_candidate_catalog(
         self,
         formula_space_id: str,
@@ -648,6 +931,16 @@ class MinuteStaticProductionProjection:
     ) -> GeneratedPair:
         """Draw a structural choice, then one unused concrete exact candidate."""
 
+        if (
+            formula_space_id
+            == STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID
+        ):
+            return self._generate_available_online_grammar(
+                formula_space_id=formula_space_id,
+                policy=policy,
+                rng=rng,
+                exact_seen=exact_seen,
+            )
         if formula_space_id == STRUCTURAL_FORMULA_V4_SPACE_ID:
             return self._generate_available_v4(
                 formula_space_id=formula_space_id,
@@ -752,6 +1045,251 @@ class MinuteStaticProductionProjection:
         return GeneratedPair(
             {**dict(selected["candidate"]), **shared},
             {**dict(selected["control"]), **shared},
+        )
+
+    def _generate_available_online_grammar(
+        self,
+        *,
+        formula_space_id: str,
+        policy: Any,
+        rng: np.random.Generator,
+        exact_seen: set[str],
+    ) -> GeneratedPair:
+        """Construct one formula lazily from bounded typed Grammar rules."""
+
+        choose_available = getattr(policy, "choose_available", None)
+        if not callable(choose_available):
+            raise TypeError(
+                "online typed Grammar policy must implement choose_available"
+            )
+        decisions = self.online_grammar_decision_specs(
+            formula_space_id
+        )
+        root_decision = decisions[0]
+        by_context = {
+            row.context_id: row
+            for row in decisions[1:]
+        }
+        base = f"route={ROUTE_ID}|formula_space={formula_space_id}"
+        rejected_exact: list[str] = []
+
+        def choose(decision: DecisionSpec, allowed: tuple[str, ...]) -> str:
+            return str(
+                choose_available(
+                    decision,
+                    allowed_token_ids=allowed,
+                    rng=rng,
+                )
+            )
+
+        for attempt in range(
+            1,
+            ONLINE_TYPED_GRAMMAR_GENERATION_ATTEMPT_CAP + 1,
+        ):
+            operator_token = choose(
+                root_decision,
+                tuple(
+                    row.token_id
+                    for row in root_decision.ordered_choices
+                ),
+            )
+            operator_id = operator_token
+            context = base + f"|root_rule={operator_id}"
+
+            selected_decisions = [root_decision]
+            selected_tokens = [operator_token]
+            selected_genes: dict[str, str] = {}
+            for slot in (
+                "left_transform_id",
+                "right_transform_id",
+                "left_field_id",
+            ):
+                decision = by_context[
+                    context + f"|decision={slot}"
+                ]
+                allowed_choices = tuple(decision.ordered_choices)
+                if (
+                    slot == "right_transform_id"
+                ):
+                    allowed_choices = tuple(
+                        row
+                        for row in allowed_choices
+                        if (
+                            selected_genes["left_transform_id"],
+                            str(row.gene_value),
+                        )
+                        in MINUTE_STATIC_ONLINE_TRANSFORM_PAIRS[
+                            operator_id
+                        ]
+                    )
+                if (
+                    operator_id == "MUL"
+                    and slot == "left_field_id"
+                    and selected_genes["left_transform_id"]
+                    == selected_genes["right_transform_id"]
+                ):
+                    maximum_field_id = max(
+                        str(row.gene_value)
+                        for row in allowed_choices
+                    )
+                    allowed_choices = tuple(
+                        row
+                        for row in allowed_choices
+                        if str(row.gene_value) != maximum_field_id
+                    )
+                token_id = choose(
+                    decision,
+                    tuple(
+                        row.token_id
+                        for row in allowed_choices
+                    ),
+                )
+                choice = next(
+                    row
+                    for row in decision.ordered_choices
+                    if row.token_id == token_id
+                )
+                selected_genes[slot] = str(choice.gene_value)
+                selected_decisions.append(decision)
+                selected_tokens.append(token_id)
+
+            right_decision = by_context[
+                context + "|decision=right_field_id"
+            ]
+            left_field_id = selected_genes["left_field_id"]
+            left_transform_id = selected_genes[
+                "left_transform_id"
+            ]
+            right_transform_id = selected_genes[
+                "right_transform_id"
+            ]
+            right_token = choose(
+                right_decision,
+                tuple(
+                    row.token_id
+                    for row in right_decision.ordered_choices
+                    if (
+                        str(row.gene_value) != left_field_id
+                        and (
+                            (
+                                MINUTE_STATIC_TYPED_TRANSFORM_IDS.index(
+                                    right_transform_id
+                                ),
+                                str(row.gene_value),
+                            )
+                            > (
+                                MINUTE_STATIC_TYPED_TRANSFORM_IDS.index(
+                                    left_transform_id
+                                ),
+                                left_field_id,
+                            )
+                            if operator_id == "MUL"
+                            else True
+                        )
+                    )
+                ),
+            )
+            right_choice = next(
+                row
+                for row in right_decision.ordered_choices
+                if row.token_id == right_token
+            )
+            selected_genes["right_field_id"] = str(
+                right_choice.gene_value
+            )
+            selected_decisions.append(right_decision)
+            selected_tokens.append(right_token)
+
+            pair = self.generator.propose_categorical_genes(
+                ROUTE_ID,
+                genes={
+                    "skeleton_id": self.online_operator_skeletons[
+                        operator_id
+                    ],
+                    "gene_surface_id": self.online_gene_surface_id,
+                    "field_pair_id": (
+                        selected_genes["left_field_id"]
+                        + "::"
+                        + selected_genes["right_field_id"]
+                    ),
+                    "binary_operator_id": operator_id,
+                    "left_transform_id": selected_genes[
+                        "left_transform_id"
+                    ],
+                    "right_transform_id": selected_genes[
+                        "right_transform_id"
+                    ],
+                },
+                formula_extension_id=(
+                    MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID
+                ),
+            )
+            exact_identity = str(
+                pair.candidate["exact_identity"]
+            )
+            if exact_identity in exact_seen:
+                rejected_exact.append(exact_identity)
+                continue
+
+            trace = [
+                DecisionRecord(
+                    decision_id=decision.decision_id,
+                    context_id=decision.context_id,
+                    decision_type=decision.decision_type,
+                    selected_token_id=token_id,
+                ).to_dict()
+                for decision, token_id in zip(
+                    selected_decisions,
+                    selected_tokens,
+                    strict=True,
+                )
+            ]
+            shared = {
+                "formula_space_id": formula_space_id,
+                "formula_extension_id": (
+                    MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID
+                ),
+                "formula_construction": "ONLINE_TYPED_GRAMMAR",
+                "binary_operator_id": operator_id,
+                "left_transform_id": selected_genes[
+                    "left_transform_id"
+                ],
+                "right_transform_id": selected_genes[
+                    "right_transform_id"
+                ],
+                "left_field_id": selected_genes["left_field_id"],
+                "right_field_id": selected_genes["right_field_id"],
+                "decision_trace": trace,
+                "decision_trace_hash": _stable_hash(trace),
+                "generator_policy": str(
+                    getattr(policy, "policy_id", type(policy).__name__)
+                ),
+                "exact_availability_mask": (
+                    "POST_CONSTRUCTION_ARCHIVE_CHECK_WITH_BOUNDED_RESAMPLE"
+                ),
+                "canonical_dedupe_contract": (
+                    "EXACT_IDENTITY_HASHES_COMPILER_CANONICAL_EXPRESSION"
+                ),
+                "online_generation_attempts": attempt,
+                "online_exact_duplicate_rejections": len(
+                    rejected_exact
+                ),
+                "online_rejected_exact_identities": rejected_exact,
+                "eager_formula_catalog_materialized": False,
+                "commutative_rule_canonicalization": (
+                    "ORDERED_TYPED_LEG_KEYS"
+                    if operator_id == "MUL"
+                    else "NOT_APPLICABLE"
+                ),
+            }
+            return GeneratedPair(
+                {**dict(pair.candidate), **shared},
+                {**dict(pair.control), **shared},
+            )
+        raise RuntimeError(
+            "MINUTE_ONLINE_TYPED_GRAMMAR_RETRY_LIMIT_REACHED:"
+            f"attempts={ONLINE_TYPED_GRAMMAR_GENERATION_ATTEMPT_CAP}:"
+            f"exact_duplicate_rejections={len(rejected_exact)}"
         )
 
     def _generate_available_typed(
@@ -1525,10 +2063,10 @@ def _structural_v2_fresh_stream_parity(
     formula_space_id: str = EXPANDED_FORMULA_SPACE_ID,
     exact_seen: set[str] | None = None,
 ) -> dict[str, Any]:
-    decisions = projection.structural_decision_specs(
+    decisions = projection.adaptive_decision_specs(
         formula_space_id
     )
-    catalog_hash = projection.structural_decision_catalog_hash(
+    catalog_hash = projection.adaptive_decision_catalog_hash(
         formula_space_id
     )
     uniform = AvailableUniformPolicy()
@@ -4554,11 +5092,19 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             False,
         )
     )
+    paired_online_typed_grammar = bool(
+        getattr(
+            args,
+            "paired_online_typed_grammar_cem_v1",
+            False,
+        )
+    )
     if sum(
         (
             paired_structural_canary,
             paired_structural_medium,
             paired_structural_supply_medium,
+            paired_online_typed_grammar,
         )
     ) > 1:
         raise ValueError("STRUCTURAL_CEM_V2_MODE_AMBIGUOUS")
@@ -4566,9 +5112,12 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         paired_structural_canary
         or paired_structural_medium
         or paired_structural_supply_medium
+        or paired_online_typed_grammar
     )
     search_formula_space_id = (
-        STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+        STRUCTURAL_ONLINE_TYPED_GRAMMAR_SPACE_ID
+        if paired_online_typed_grammar
+        else STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
         if paired_structural_supply_medium
         else EXPANDED_FORMULA_SPACE_ID
     )
@@ -4587,7 +5136,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         else ARMS
     )
     checkpoint_count = (
-        PAIRED_STRUCTURAL_SUPPLY_MEDIUM_CHECKPOINT_COUNT
+        PAIRED_ONLINE_TYPED_GRAMMAR_CHECKPOINT_COUNT
+        if paired_online_typed_grammar
+        else PAIRED_STRUCTURAL_SUPPLY_MEDIUM_CHECKPOINT_COUNT
         if paired_structural_supply_medium
         else (
             PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
@@ -4600,7 +5151,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         )
     )
     full_pair_cap = (
-        PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP
+        PAIRED_ONLINE_TYPED_GRAMMAR_FULL_PAIR_CAP
+        if paired_online_typed_grammar
+        else PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP
         if paired_structural_supply_medium
         else (
             PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
@@ -4684,12 +5237,14 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
     expanded_catalog_path = _write_json(
         output_root
         / (
-            "decision_catalog_structural_supply.json"
+            "decision_catalog_online_typed_grammar.json"
+            if paired_online_typed_grammar
+            else "decision_catalog_structural_supply.json"
             if paired_structural_supply_medium
             else "decision_catalog_expanded.json"
         ),
         (
-            projection.structural_decision_catalog(
+            projection.adaptive_decision_catalog(
                 search_formula_space_id
             )
             if paired_structural_v2
@@ -4806,7 +5361,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "status": "FROZEN_EXECUTABLE",
         "authorization_id": (
-            "MINUTE_STATIC_STRUCTURAL_SUPPLY_CEM_V2_PAIRED_MEDIUM"
+            "MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_CEM_V1_PAIRED"
+            if paired_online_typed_grammar
+            else "MINUTE_STATIC_STRUCTURAL_SUPPLY_CEM_V2_PAIRED_MEDIUM"
             if paired_structural_supply_medium
             else "MINUTE_STATIC_STRUCTURAL_CEM_V2_PAIRED_MEDIUM"
             if paired_structural_medium
@@ -4818,7 +5375,7 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         "formula_space_id": search_formula_space_id,
         "production_ids": [
             choice.token_id
-            for choice in projection.structural_decision_specs(
+            for choice in projection.adaptive_decision_specs(
                 search_formula_space_id
             )[0].ordered_choices
         ]
@@ -4843,12 +5400,29 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             "contract_hash"
         ],
         "decision_surface": (
-            [
-                "production_id_adaptive",
-                "field_pair_id_uniform_remaining_exact",
-            ]
+            (
+                [
+                    row.gene_slot
+                    for row in projection.adaptive_decision_specs(
+                        search_formula_space_id
+                    )
+                ]
+                if paired_online_typed_grammar
+                else [
+                    "production_id_adaptive",
+                    "field_pair_id_uniform_remaining_exact",
+                ]
+            )
             if paired_structural_v2
             else ["production_id", "field_pair_id"]
+        ),
+        "root_mapping": (
+            {
+                "value": "CSRank",
+                "status": "FROZEN_NOT_AN_ADAPTIVE_DECISION_IN_V5",
+            }
+            if paired_online_typed_grammar
+            else None
         ),
         "left_right_independent_probabilities": "FORBIDDEN",
         "paired_common_random_stream": paired_structural_v2,
@@ -4959,6 +5533,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         rng = np.random.default_rng(
             (
                 FINANCIAL_SEED
+                + PAIRED_ONLINE_TYPED_GRAMMAR_SEED_OFFSET
+                if paired_online_typed_grammar
+                else FINANCIAL_SEED
                 + PAIRED_STRUCTURAL_SUPPLY_MEDIUM_SEED_OFFSET
                 if paired_structural_supply_medium
                 else FINANCIAL_SEED
@@ -4973,7 +5550,7 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         if rng_state is not None:
             rng.bit_generator.state = copy.deepcopy(rng_state)
         if paired_structural_v2 and arm == "arm_c_structural_cem_v2":
-            decisions = projection.structural_decision_specs(
+            decisions = projection.adaptive_decision_specs(
                 search_formula_space_id
             )
             policy = (
@@ -4981,7 +5558,7 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
                     optimizer_state,
                     decisions=decisions,
                     decision_catalog_hash=(
-                        projection.structural_decision_catalog_hash(
+                        projection.adaptive_decision_catalog_hash(
                             search_formula_space_id
                         )
                     ),
@@ -4992,7 +5569,7 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
                 else RankWeightedCategoricalCEMPolicy.fresh(
                     decisions=decisions,
                     decision_catalog_hash=(
-                        projection.structural_decision_catalog_hash(
+                        projection.adaptive_decision_catalog_hash(
                             search_formula_space_id
                         )
                     ),
@@ -5120,7 +5697,11 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         )
         for arm in campaign_arms
     }
-    if paired_structural_medium or paired_structural_supply_medium:
+    if (
+        paired_structural_medium
+        or paired_structural_supply_medium
+        or paired_online_typed_grammar
+    ):
         comparison = _paired_structural_medium_verdict(
             output_root,
             arm_metrics,
@@ -5132,7 +5713,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             checkpoint_count=checkpoint_count,
             full_pair_cap=full_pair_cap,
             schema_version=(
-                "cn_minute_static_structural_supply_cem_v2_"
+                "cn_minute_static_online_typed_grammar_cem_v1_verdict"
+                if paired_online_typed_grammar
+                else "cn_minute_static_structural_supply_cem_v2_"
                 "medium_verdict_v1"
                 if paired_structural_supply_medium
                 else "cn_minute_static_structural_cem_v2_"
@@ -5148,7 +5731,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
                 "REUSED_ACTIVE_ROUTE_LOCAL_SELECTION_AUTHORITY"
             ),
             (
-                "STRUCTURAL_SUPPLY_CEM_V2_MEDIUM"
+                "ONLINE_TYPED_GRAMMAR_CEM_V1"
+                if paired_online_typed_grammar
+                else "STRUCTURAL_SUPPLY_CEM_V2_MEDIUM"
                 if paired_structural_supply_medium
                 else "STRUCTURAL_CEM_V2_MEDIUM"
             ): comparison["status"],
@@ -5370,7 +5955,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
     ]
     manifest = {
         "schema_version": (
-            "cn_minute_static_structural_supply_cem_v2_medium_manifest_v1"
+            "cn_minute_static_online_typed_grammar_cem_v1_manifest_v1"
+            if paired_online_typed_grammar
+            else "cn_minute_static_structural_supply_cem_v2_medium_manifest_v1"
             if paired_structural_supply_medium
             else "cn_minute_static_structural_cem_v2_medium_manifest_v1"
             if paired_structural_medium
@@ -5478,6 +6065,10 @@ def main() -> int:
         "--paired-structural-cem-v2-supply-medium",
         action="store_true",
     )
+    parser.add_argument(
+        "--paired-online-typed-grammar-cem-v1",
+        action="store_true",
+    )
     parser.add_argument("--reused-sampled-authority-root", type=Path)
     parser.add_argument("--reused-structural-canary-root", type=Path)
     parser.add_argument("--reused-structural-supply-root", type=Path)
@@ -5508,6 +6099,7 @@ def main() -> int:
         args.paired_structural_cem_v2_canary,
         args.paired_structural_cem_v2_medium,
         args.paired_structural_cem_v2_supply_medium,
+        args.paired_online_typed_grammar_cem_v1,
     )
     if sum(map(bool, paired_modes)) > 1:
         parser.error(
@@ -5529,6 +6121,7 @@ def main() -> int:
         or args.paired_structural_cem_v2_canary
         or args.paired_structural_cem_v2_medium
         or args.paired_structural_cem_v2_supply_medium
+        or args.paired_online_typed_grammar_cem_v1
     ):
         parser.error(
             "--structural-supply-design cannot run another mode"
@@ -5539,6 +6132,7 @@ def main() -> int:
         or args.paired_structural_cem_v2_canary
         or args.paired_structural_cem_v2_medium
         or args.paired_structural_cem_v2_supply_medium
+        or args.paired_online_typed_grammar_cem_v1
     ):
         parser.error(
             "--structural-typed-surface-audit cannot run another mode"
@@ -5548,6 +6142,7 @@ def main() -> int:
         or args.paired_structural_cem_v2_canary
         or args.paired_structural_cem_v2_medium
         or args.paired_structural_cem_v2_supply_medium
+        or args.paired_online_typed_grammar_cem_v1
     ):
         parser.error(
             "--structural-formula-v4-supply cannot run a financial mode"
@@ -5587,11 +6182,12 @@ def main() -> int:
                 args.paired_structural_cem_v2_canary
                 or args.paired_structural_cem_v2_medium
                 or args.paired_structural_cem_v2_supply_medium
+                or args.paired_online_typed_grammar_cem_v1
             )
             and args.reused_sampled_authority_root is None
         ):
             parser.error(
-                "paired structural CEM V2 requires "
+                "paired typed CEM requires "
                 "--reused-sampled-authority-root"
             )
         if (

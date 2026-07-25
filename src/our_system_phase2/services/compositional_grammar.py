@@ -35,11 +35,42 @@ MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID = (
 MINUTE_STATIC_TYPED_TRANSFORM_GENE_SURFACE_VERSION = (
     "cn_minute_static_typed_transform_gene_surface_v4"
 )
+MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID = (
+    "MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_V5"
+)
+MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_GENE_SURFACE_VERSION = (
+    "cn_minute_static_online_typed_grammar_gene_surface_v5"
+)
 MINUTE_STATIC_TYPED_TRANSFORM_IDS = (
     "ZSCORE",
     "ABS_ZSCORE",
     "SIGN",
 )
+MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS = (
+    "SUB",
+    "SAFE_DIV",
+    "MUL",
+)
+MINUTE_STATIC_ONLINE_OPERATOR_SKELETON_NAMES = {
+    "SUB": "field_spread",
+    "SAFE_DIV": "normalized_ratio",
+    "MUL": "absolute_state_interaction",
+}
+MINUTE_STATIC_ONLINE_TRANSFORM_PAIRS = {
+    "SUB": tuple(
+        (left, right)
+        for left in MINUTE_STATIC_TYPED_TRANSFORM_IDS
+        for right in MINUTE_STATIC_TYPED_TRANSFORM_IDS
+    ),
+    "SAFE_DIV": tuple(
+        (left, right)
+        for left in MINUTE_STATIC_TYPED_TRANSFORM_IDS
+        for right in MINUTE_STATIC_TYPED_TRANSFORM_IDS
+    ),
+    # The existing absolute-state skeleton owns a magnitude-times-sign
+    # hypothesis. Canonical leg order removes its commutative mirror.
+    "MUL": (("ABS_ZSCORE", "SIGN"),),
+}
 MINUTE_STATIC_TYPED_TRANSFORM_PAIRS = {
     "field_spread": (
         ("ZSCORE", "ZSCORE"),
@@ -644,12 +675,18 @@ class CompositionalGrammarV2:
         """
 
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
-        transform_extension = (
+        transform_extension = formula_extension_id in {
+            MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+            MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
+        }
+        online_grammar_extension = (
             formula_extension_id
-            == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+            == MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID
         )
         surface_version = (
-            MINUTE_STATIC_TYPED_TRANSFORM_GENE_SURFACE_VERSION
+            MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_GENE_SURFACE_VERSION
+            if online_grammar_extension
+            else MINUTE_STATIC_TYPED_TRANSFORM_GENE_SURFACE_VERSION
             if transform_extension
             else OPTIMIZER_GENE_SURFACE_VERSION
         )
@@ -675,9 +712,33 @@ class CompositionalGrammarV2:
                     self._compatible_field_pair_ids(pool)
                 )
                 if transform_extension:
-                    allowed_transform_pairs = (
-                        MINUTE_STATIC_TYPED_TRANSFORM_PAIRS[name]
-                    )
+                    if online_grammar_extension:
+                        operator_by_skeleton = {
+                            skeleton_name: operator_id
+                            for operator_id, skeleton_name
+                            in (
+                                MINUTE_STATIC_ONLINE_OPERATOR_SKELETON_NAMES
+                                .items()
+                            )
+                        }
+                        if name not in operator_by_skeleton:
+                            raise ValueError(
+                                "OPTIMIZER_SKELETON_UNAVAILABLE:"
+                                f"{skeleton.skeleton_id}:"
+                                "MINUTE_ONLINE_GRAMMAR_ROOT_RULE_UNDECLARED"
+                            )
+                        categories["binary_operator_id"] = [
+                            operator_by_skeleton[name]
+                        ]
+                        allowed_transform_pairs = (
+                            MINUTE_STATIC_ONLINE_TRANSFORM_PAIRS[
+                                operator_by_skeleton[name]
+                            ]
+                        )
+                    else:
+                        allowed_transform_pairs = (
+                            MINUTE_STATIC_TYPED_TRANSFORM_PAIRS[name]
+                        )
                     categories["left_transform_id"] = list(
                         dict.fromkeys(
                             left
@@ -691,8 +752,12 @@ class CompositionalGrammarV2:
                         )
                     )
                     constraint = (
-                        "REGISTRY_ROUTE_TYPED_COMPILER_STREAMING_"
-                        "DEPTH4_AND_PRODUCTION_TRANSFORM_PAIR_MASK"
+                        "REGISTRY_ROUTE_TYPED_COMPILER_STREAMING_DEPTH4_"
+                        + (
+                            "ONLINE_ROOT_RULE_AND_TYPED_CHILDREN"
+                            if online_grammar_extension
+                            else "AND_PRODUCTION_TRANSFORM_PAIR_MASK"
+                        )
                     )
             elif name == "cross_sectional_residual":
                 pair_ids = self._compatible_field_pair_ids(
@@ -1029,6 +1094,7 @@ class CompositionalGrammarV2:
         if extension_id not in {
             PRODUCTION_EXTENSION_ID,
             MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+            MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
         }:
             raise ValueError(
                 "TARGETED_FORMULA_EXTENSION_NOT_AUTHORIZED:"
@@ -1036,7 +1102,10 @@ class CompositionalGrammarV2:
             )
         if (
             extension_id
-            == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+            in {
+                MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+                MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
+            }
             and route_id != "MINUTE_STATIC"
         ):
             raise ValueError(
@@ -1064,9 +1133,17 @@ class CompositionalGrammarV2:
                 ) from exc
             if (
                 extension_id
-                == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+                in {
+                    MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+                    MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
+                }
                 and skeleton.skeleton_id.rsplit(".", 1)[-1]
-                not in MINUTE_STATIC_TYPED_TRANSFORM_PAIRS
+                not in (
+                    MINUTE_STATIC_ONLINE_OPERATOR_SKELETON_NAMES.values()
+                    if extension_id
+                    == MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID
+                    else MINUTE_STATIC_TYPED_TRANSFORM_PAIRS
+                )
             ):
                 raise ValueError(
                     "OPTIMIZER_SKELETON_UNAVAILABLE:"
@@ -1417,7 +1494,10 @@ class CompositionalGrammarV2:
         if name == "normalized_level":
             if (
                 formula_extension_id
-                == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+                in {
+                    MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+                    MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
+                }
             ):
                 raise ValueError(
                     "MINUTE_TYPED_TRANSFORM_DOMAIN_NOT_DECLARED:"
@@ -1432,7 +1512,10 @@ class CompositionalGrammarV2:
             fields = (left, right)
             if (
                 formula_extension_id
-                == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+                in {
+                    MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+                    MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
+                }
             ):
                 if categorical_genes is None:
                     raise ValueError(
@@ -1452,9 +1535,35 @@ class CompositionalGrammarV2:
                     left_transform,
                     right_transform,
                 )
-                if transform_pair not in (
-                    MINUTE_STATIC_TYPED_TRANSFORM_PAIRS.get(name, ())
-                ):
+                online_grammar_extension = (
+                    formula_extension_id
+                    == MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID
+                )
+                binary_operator_id = ""
+                if online_grammar_extension:
+                    binary_operator_id = self._gene_value(
+                        categorical_genes,
+                        "binary_operator_id",
+                        MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS,
+                    )
+                    expected_name = (
+                        MINUTE_STATIC_ONLINE_OPERATOR_SKELETON_NAMES[
+                            binary_operator_id
+                        ]
+                    )
+                    if name != expected_name:
+                        raise ValueError(
+                            "MINUTE_ONLINE_GRAMMAR_ROOT_RULE_MISMATCH:"
+                            f"{name}:{binary_operator_id}"
+                        )
+                allowed_transform_pairs = (
+                    MINUTE_STATIC_ONLINE_TRANSFORM_PAIRS[
+                        binary_operator_id
+                    ]
+                    if online_grammar_extension
+                    else MINUTE_STATIC_TYPED_TRANSFORM_PAIRS.get(name, ())
+                )
+                if transform_pair not in allowed_transform_pairs:
                     raise ValueError(
                         "MINUTE_TYPED_TRANSFORM_PAIR_FORBIDDEN:"
                         f"{name}:{left_transform}:{right_transform}"
@@ -1483,19 +1592,54 @@ class CompositionalGrammarV2:
                 control_expression = (
                     f"CSRank(Add({left_leg},Mul(0,{right_ref})))"
                 )
-                if name == "field_spread":
+                if online_grammar_extension:
+                    if binary_operator_id == "MUL":
+                        left_key = (
+                            MINUTE_STATIC_TYPED_TRANSFORM_IDS.index(
+                                left_transform
+                            ),
+                            left.field_id,
+                        )
+                        right_key = (
+                            MINUTE_STATIC_TYPED_TRANSFORM_IDS.index(
+                                right_transform
+                            ),
+                            right.field_id,
+                        )
+                        if left_key >= right_key:
+                            raise ValueError(
+                                "MINUTE_ONLINE_GRAMMAR_COMMUTATIVE_"
+                                "NONCANONICAL:"
+                                f"{left_transform}:{left.field_id}:"
+                                f"{right_transform}:{right.field_id}"
+                            )
+                if (
+                    binary_operator_id == "SUB"
+                    or not online_grammar_extension
+                    and name == "field_spread"
+                ):
                     primary_expression = (
                         f"CSRank(Sub({left_leg},{right_leg}))"
                     )
-                elif name == "normalized_ratio":
+                elif (
+                    binary_operator_id == "SAFE_DIV"
+                    or not online_grammar_extension
+                    and name == "normalized_ratio"
+                ):
                     primary_expression = (
                         f"CSRank(SafeDiv({left_leg},{right_leg},0.05))"
                     )
-                elif name == "absolute_state_interaction":
+                elif (
+                    binary_operator_id == "MUL"
+                    or not online_grammar_extension
+                    and name == "absolute_state_interaction"
+                ):
                     primary_expression = (
                         f"CSRank(Mul({left_leg},{right_leg}))"
                     )
-                elif name == "dispersion_interaction":
+                elif not online_grammar_extension and (
+                    name == "dispersion_interaction"
+                ):
                     primary_expression = (
                         f"CSRank(Sub({left_leg},{right_leg}))"
                     )
@@ -1510,10 +1654,24 @@ class CompositionalGrammarV2:
                         "right_transform_id": right_transform,
                         "typed_transform_authority": (
                             "CompositionalGrammarV2."
-                            "MINUTE_STATIC_TYPED_TRANSFORM_PAIRS"
+                            + (
+                                "MINUTE_STATIC_ONLINE_TRANSFORM_PAIRS"
+                                if online_grammar_extension
+                                else "MINUTE_STATIC_TYPED_TRANSFORM_PAIRS"
+                            )
                         ),
                     }
                 )
+                if online_grammar_extension:
+                    extra.update(
+                        {
+                            "binary_operator_id": binary_operator_id,
+                            "online_grammar_rule_authority": (
+                                "CompositionalGrammarV2."
+                                "MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS"
+                            ),
+                        }
+                    )
             else:
                 control_expression = f"CSRank(Add(ZScore({left_ref}),Mul(0,ZScore({right_ref}))))"
                 if name == "field_spread":
@@ -2719,7 +2877,10 @@ class CompositionalGrammarV2:
             or (
                 route_id == "MINUTE_STATIC"
                 and extension_id
-                == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+                in {
+                    MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+                    MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
+                }
             )
         ):
             raise ValueError(
@@ -2747,8 +2908,10 @@ class CompositionalGrammarV2:
                 skeleton_id=selected_skeleton,
                 formula_extension_id=(
                     extension_id
-                    if extension_id
-                    == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+                    if extension_id in {
+                        MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+                        MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_EXTENSION_ID,
+                    }
                     else PRODUCTION_EXTENSION_ID
                 ),
             )
