@@ -44,7 +44,10 @@ from our_system_phase2.services.phase3cm_streaming_resource_contract import (
     balanced_pair_batches,
     validate_frozen_thread_environment,
 )
-from our_system_phase2.services.phase3cm_streaming_support import PairSupportAccumulator
+from our_system_phase2.services.phase3cm_streaming_support import (
+    PairSupportAccumulator,
+    common_support_masks,
+)
 from our_system_phase2.services.phase3cm_streaming_telemetry import (
     PhaseTelemetryRecorder,
     _process_snapshot,
@@ -606,19 +609,6 @@ def _write_json(path: Path, payload: Any) -> None:
         json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
         encoding="utf-8",
     )
-
-
-def _support_masks(signals: np.ndarray) -> np.ndarray:
-    if signals.shape[0] % 2:
-        raise ValueError("candidate member count must be even")
-    pair_count = signals.shape[0] // 2
-    masks = np.empty((pair_count, signals.shape[1]), dtype=np.bool_)
-    for pair_index in range(pair_count):
-        common = np.isfinite(signals[2 * pair_index]) & np.isfinite(signals[2 * pair_index + 1])
-        masks[pair_index] = common
-        signals[2 * pair_index, ~common] = np.nan
-        signals[2 * pair_index + 1, ~common] = np.nan
-    return masks
 
 
 def _finalize_pairs(
@@ -1264,8 +1254,8 @@ def main() -> int:
                         "candidate_indices": list(candidate_indices),
                     }
                 )
-            with telemetry.phase("pair_common_support", compute_heavy=False) as phase:
-                common_masks = _support_masks(signals)
+            with telemetry.phase("pair_common_support", compute_heavy=True) as phase:
+                common_masks = common_support_masks(signals)
                 support.update(
                     common_masks=common_masks,
                     pair_indices=pair_indices,

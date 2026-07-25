@@ -9,6 +9,62 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
+try:
+    from numba import njit, prange
+except ImportError:  # pragma: no cover - exercised only without the official runtime
+    njit = None
+    prange = range
+
+
+if njit is not None:
+
+    @njit(cache=True, parallel=True)
+    def _common_support_masks_numba(signals: np.ndarray) -> np.ndarray:
+        pair_count = signals.shape[0] // 2
+        row_count = signals.shape[1]
+        masks = np.empty((pair_count, row_count), dtype=np.bool_)
+        for flat_index in prange(pair_count * row_count):
+            pair_index = flat_index // row_count
+            row_index = flat_index - pair_index * row_count
+            left_index = 2 * pair_index
+            right_index = left_index + 1
+            common = np.isfinite(signals[left_index, row_index]) and np.isfinite(
+                signals[right_index, row_index]
+            )
+            masks[pair_index, row_index] = common
+            if not common:
+                signals[left_index, row_index] = np.nan
+                signals[right_index, row_index] = np.nan
+        return masks
+
+
+def _common_support_masks_numpy(values: np.ndarray) -> np.ndarray:
+    pair_count = values.shape[0] // 2
+    masks = np.empty((pair_count, values.shape[1]), dtype=np.bool_)
+    for pair_index in range(pair_count):
+        common = np.isfinite(values[2 * pair_index]) & np.isfinite(
+            values[2 * pair_index + 1]
+        )
+        masks[pair_index] = common
+        values[2 * pair_index, ~common] = np.nan
+        values[2 * pair_index + 1, ~common] = np.nan
+    return masks
+
+
+def common_support_masks(signals: np.ndarray) -> np.ndarray:
+    """Mask each matched pair in place using the official parallel runtime."""
+
+    values = np.asarray(signals)
+    if values.ndim != 2:
+        raise ValueError("candidate signals must be a 2D array")
+    if values.shape[0] % 2:
+        raise ValueError("candidate member count must be even")
+    if not np.issubdtype(values.dtype, np.floating):
+        raise TypeError("candidate signals must use a floating dtype")
+    if njit is not None and values.flags.c_contiguous:
+        return _common_support_masks_numba(values)
+    return _common_support_masks_numpy(values)
+
 
 @dataclass(frozen=True, slots=True)
 class PairSupportBlockTokens:

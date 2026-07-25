@@ -53,60 +53,67 @@ if njit is not None:
         support = np.zeros((candidate_count, time_count), dtype=np.float64)
         turnover = np.zeros((candidate_count, time_count), dtype=np.float64)
         selected_counts = np.zeros((candidate_count, time_count), dtype=np.int32)
+        for task_index in prange(candidate_count * time_count):
+            candidate = task_index // time_count
+            time_index = task_index - candidate * time_count
+            start = starts[time_index]
+            end = ends[time_index]
+            size = end - start
+            finite_count = 0
+            for row_index in range(start, end):
+                if np.isfinite(signals[candidate, row_index]):
+                    finite_count += 1
+            support[candidate, time_index] = finite_count / max(1, size)
+            if finite_count >= min_obs:
+                scores = np.empty(finite_count, dtype=np.float64)
+                finite_rows = np.empty(finite_count, dtype=np.int64)
+                cursor = 0
+                direction = 1.0 if directions[candidate] >= 0.0 else -1.0
+                for row_index in range(start, end):
+                    value = signals[candidate, row_index]
+                    if np.isfinite(value):
+                        scores[cursor] = value * direction
+                        finite_rows[cursor] = row_index
+                        cursor += 1
+                take = max(1, int(math.ceil(finite_count * top_quantile)))
+                threshold = np.sort(scores)[finite_count - take]
+                chosen = 0
+                for item in range(finite_count):
+                    if scores[item] > threshold:
+                        row_index = finite_rows[item]
+                        selected[candidate, row_index] = True
+                        chosen += 1
+                remaining = take - chosen
+                if remaining > 0:
+                    tied_count = 0
+                    for item in range(finite_count):
+                        if scores[item] == threshold:
+                            tied_count += 1
+                    tied_rows = np.empty(tied_count, dtype=np.int64)
+                    tied_codes = np.empty(tied_count, dtype=np.int32)
+                    cursor = 0
+                    for item in range(finite_count):
+                        if scores[item] == threshold:
+                            row_index = finite_rows[item]
+                            tied_rows[cursor] = row_index
+                            tied_codes[cursor] = code_ids[row_index]
+                            cursor += 1
+                    tie_order = np.argsort(tied_codes)
+                    for tie_index in range(min(remaining, tied_count)):
+                        row_index = tied_rows[tie_order[tie_index]]
+                        selected[candidate, row_index] = True
+                        chosen += 1
+                selected_counts[candidate, time_index] = chosen
+
         for candidate in prange(candidate_count):
             chosen_codes = np.zeros(previous_weights.shape[1], dtype=np.bool_)
             for time_index in range(time_count):
                 start = starts[time_index]
                 end = ends[time_index]
-                size = end - start
-                finite_count = 0
-                for row_index in range(start, end):
-                    if np.isfinite(signals[candidate, row_index]):
-                        finite_count += 1
-                support[candidate, time_index] = finite_count / max(1, size)
                 chosen_codes[:] = False
-                if finite_count >= min_obs:
-                    scores = np.empty(finite_count, dtype=np.float64)
-                    finite_rows = np.empty(finite_count, dtype=np.int64)
-                    cursor = 0
-                    direction = 1.0 if directions[candidate] >= 0.0 else -1.0
-                    for row_index in range(start, end):
-                        value = signals[candidate, row_index]
-                        if np.isfinite(value):
-                            scores[cursor] = value * direction
-                            finite_rows[cursor] = row_index
-                            cursor += 1
-                    take = max(1, int(math.ceil(finite_count * top_quantile)))
-                    threshold = np.sort(scores)[finite_count - take]
-                    chosen = 0
-                    for item in range(finite_count):
-                        if scores[item] > threshold:
-                            row_index = finite_rows[item]
-                            selected[candidate, row_index] = True
-                            chosen_codes[code_ids[row_index]] = True
-                            chosen += 1
-                    remaining = take - chosen
-                    if remaining > 0:
-                        tied_count = 0
-                        for item in range(finite_count):
-                            if scores[item] == threshold:
-                                tied_count += 1
-                        tied_rows = np.empty(tied_count, dtype=np.int64)
-                        tied_codes = np.empty(tied_count, dtype=np.int32)
-                        cursor = 0
-                        for item in range(finite_count):
-                            if scores[item] == threshold:
-                                row_index = finite_rows[item]
-                                tied_rows[cursor] = row_index
-                                tied_codes[cursor] = code_ids[row_index]
-                                cursor += 1
-                        tie_order = np.argsort(tied_codes)
-                        for tie_index in range(min(remaining, tied_count)):
-                            row_index = tied_rows[tie_order[tie_index]]
-                            selected[candidate, row_index] = True
-                            chosen_codes[code_ids[row_index]] = True
-                            chosen += 1
-                    selected_counts[candidate, time_index] = chosen
+                for row_index in range(start, end):
+                    if selected[candidate, row_index]:
+                        chosen_codes[code_ids[row_index]] = True
                 selected_code_count = 0
                 for code in range(previous_weights.shape[1]):
                     if chosen_codes[code]:

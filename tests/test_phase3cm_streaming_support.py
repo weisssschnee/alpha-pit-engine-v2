@@ -2,7 +2,87 @@ from __future__ import annotations
 
 import numpy as np
 
-from our_system_phase2.services.phase3cm_streaming_support import PairSupportAccumulator
+from our_system_phase2.services.phase3cm_streaming_support import (
+    PairSupportAccumulator,
+    common_support_masks,
+)
+
+
+def _reference_common_support_masks(signals: np.ndarray) -> np.ndarray:
+    pair_count = signals.shape[0] // 2
+    masks = np.empty((pair_count, signals.shape[1]), dtype=np.bool_)
+    for pair_index in range(pair_count):
+        common = np.isfinite(signals[2 * pair_index]) & np.isfinite(
+            signals[2 * pair_index + 1]
+        )
+        masks[pair_index] = common
+        signals[2 * pair_index, ~common] = np.nan
+        signals[2 * pair_index + 1, ~common] = np.nan
+    return masks
+
+
+def test_common_support_masks_match_reference_exactly() -> None:
+    source = np.array(
+        [
+            [1.0, np.nan, 3.0, np.inf, 5.0, -np.inf],
+            [1.5, 2.0, np.nan, 4.0, np.inf, 6.0],
+            [np.nan, 8.0, 9.0, 10.0, 11.0, 12.0],
+            [7.0, 8.5, np.inf, 10.5, 11.5, 12.5],
+        ],
+        dtype=np.float64,
+    )
+    expected_signals = source.copy()
+    expected_masks = _reference_common_support_masks(expected_signals)
+    actual_signals = source.copy()
+    actual_masks = common_support_masks(actual_signals)
+
+    np.testing.assert_array_equal(actual_masks, expected_masks)
+    np.testing.assert_array_equal(
+        np.isnan(actual_signals),
+        np.isnan(expected_signals),
+    )
+    np.testing.assert_allclose(
+        actual_signals,
+        expected_signals,
+        rtol=0.0,
+        atol=0.0,
+        equal_nan=True,
+    )
+
+
+def test_common_support_masks_preserve_float32_dtype() -> None:
+    signals = np.array(
+        [[1.0, np.nan, 3.0], [1.5, 2.0, np.inf]],
+        dtype=np.float32,
+    )
+    masks = common_support_masks(signals)
+    assert masks.dtype == np.bool_
+    assert signals.dtype == np.float32
+    np.testing.assert_array_equal(
+        masks,
+        np.array([[True, False, False]], dtype=np.bool_),
+    )
+    assert np.isnan(signals[:, 1:]).all()
+
+
+def test_common_support_masks_reject_invalid_layouts() -> None:
+    with np.testing.assert_raises(ValueError):
+        common_support_masks(np.ones((3, 4), dtype=np.float64))
+    with np.testing.assert_raises(TypeError):
+        common_support_masks(np.ones((2, 4), dtype=np.int64))
+
+
+def test_common_support_masks_preserve_non_contiguous_semantics() -> None:
+    signals = np.array(
+        [[1.0, np.nan, 3.0, 4.0], [1.5, 2.0, np.inf, 4.5]],
+        dtype=np.float64,
+    )[:, ::2]
+    masks = common_support_masks(signals)
+    np.testing.assert_array_equal(
+        masks,
+        np.array([[True, False]], dtype=np.bool_),
+    )
+    assert np.isnan(signals[:, 1]).all()
 
 
 def test_pair_support_digest_is_block_composable_and_checkpointable() -> None:
