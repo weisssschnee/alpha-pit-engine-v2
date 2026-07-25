@@ -29,6 +29,39 @@ GRAMMAR_VERSION = "cn_typed_compositional_grammar_v2"
 SUPPLEMENTAL_GRAMMAR_VERSION = "cn_typed_compositional_supplemental_v1"
 OPTIMIZER_GENE_SURFACE_VERSION = "cn_optimizer_skeleton_lane_gene_surface_v1"
 PRODUCTION_EXTENSION_ID = "PRODUCTION"
+MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID = (
+    "MINUTE_STATIC_TYPED_TRANSFORMS_V4"
+)
+MINUTE_STATIC_TYPED_TRANSFORM_GENE_SURFACE_VERSION = (
+    "cn_minute_static_typed_transform_gene_surface_v4"
+)
+MINUTE_STATIC_TYPED_TRANSFORM_IDS = (
+    "ZSCORE",
+    "ABS_ZSCORE",
+    "SIGN",
+)
+MINUTE_STATIC_TYPED_TRANSFORM_PAIRS = {
+    "field_spread": (
+        ("ZSCORE", "ZSCORE"),
+        ("ZSCORE", "SIGN"),
+        ("SIGN", "ZSCORE"),
+        ("SIGN", "SIGN"),
+    ),
+    "normalized_ratio": tuple(
+        (left, right)
+        for left in MINUTE_STATIC_TYPED_TRANSFORM_IDS
+        for right in MINUTE_STATIC_TYPED_TRANSFORM_IDS
+    ),
+    "absolute_state_interaction": (
+        ("SIGN", "ABS_ZSCORE"),
+        ("ABS_ZSCORE", "SIGN"),
+    ),
+    "dispersion_interaction": (
+        ("ABS_ZSCORE", "ABS_ZSCORE"),
+        ("ABS_ZSCORE", "ZSCORE"),
+        ("ZSCORE", "ABS_ZSCORE"),
+    ),
+}
 PRE_EVENT_PAYLOAD_SIGN_EXTENSION_ID = (
     "DISCLOSURE_PRE_EVENT_PAYLOAD_SIGN_V1"
 )
@@ -410,7 +443,7 @@ class CompositionalGrammarV2:
             tuple[str, ...], dict[str, CapabilityField]
         ] = {}
         self._gene_space_cache: dict[
-            tuple[str, str], dict[str, Any]
+            tuple[str, str, str], dict[str, Any]
         ] = {}
 
     def _validate_route_root_allowlist(
@@ -600,6 +633,8 @@ class CompositionalGrammarV2:
         self,
         route_id: str,
         skeleton: SkeletonSpec,
+        *,
+        formula_extension_id: str = PRODUCTION_EXTENSION_ID,
     ) -> dict[str, Any]:
         """Expose only active, compatibility-qualified genes for one skeleton.
 
@@ -609,11 +644,21 @@ class CompositionalGrammarV2:
         """
 
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
+        transform_extension = (
+            formula_extension_id
+            == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+        )
+        surface_version = (
+            MINUTE_STATIC_TYPED_TRANSFORM_GENE_SURFACE_VERSION
+            if transform_extension
+            else OPTIMIZER_GENE_SURFACE_VERSION
+        )
         categories: dict[str, list[str]] = {
             "skeleton_id": [skeleton.skeleton_id],
-            "gene_surface_id": [OPTIMIZER_GENE_SURFACE_VERSION],
+            "gene_surface_id": [surface_version],
         }
         constraint = "REGISTRY_ROUTE_AND_TYPED_COMPILER"
+        allowed_transform_pairs: tuple[tuple[str, str], ...] = ()
         if route_id == "MINUTE_STATIC":
             pool = self._payload_pool(route_id)
             if name == "normalized_level":
@@ -629,6 +674,26 @@ class CompositionalGrammarV2:
                 categories["field_pair_id"] = (
                     self._compatible_field_pair_ids(pool)
                 )
+                if transform_extension:
+                    allowed_transform_pairs = (
+                        MINUTE_STATIC_TYPED_TRANSFORM_PAIRS[name]
+                    )
+                    categories["left_transform_id"] = list(
+                        dict.fromkeys(
+                            left
+                            for left, _ in allowed_transform_pairs
+                        )
+                    )
+                    categories["right_transform_id"] = list(
+                        dict.fromkeys(
+                            right
+                            for _, right in allowed_transform_pairs
+                        )
+                    )
+                    constraint = (
+                        "REGISTRY_ROUTE_TYPED_COMPILER_STREAMING_"
+                        "DEPTH4_AND_PRODUCTION_TRANSFORM_PAIR_MASK"
+                    )
             elif name == "cross_sectional_residual":
                 pair_ids = self._compatible_field_pair_ids(
                     pool,
@@ -885,9 +950,9 @@ class CompositionalGrammarV2:
             )
             for slot in categories
         }
-        return {
+        result = {
             "route_id": route_id,
-            "surface_version": OPTIMIZER_GENE_SURFACE_VERSION,
+            "surface_version": surface_version,
             "surface_mode": "SKELETON_LANE",
             "generation_mode": skeleton.skeleton_id,
             "ordered_categories_by_slot": categories,
@@ -900,6 +965,15 @@ class CompositionalGrammarV2:
                 }
             },
         }
+        if allowed_transform_pairs:
+            result["allowed_transform_pairs"] = [
+                {
+                    "left_transform_id": left,
+                    "right_transform_id": right,
+                }
+                for left, right in allowed_transform_pairs
+            ]
+        return result
 
     def categorical_gene_lanes(self, route_id: str) -> dict[str, Any]:
         """Return all usable skeleton lanes without changing route authority."""
@@ -938,6 +1012,7 @@ class CompositionalGrammarV2:
         route_id: str,
         *,
         skeleton_id: str | None = None,
+        formula_extension_id: str = PRODUCTION_EXTENSION_ID,
     ) -> dict[str, Any]:
         """Expose exact categorical slots backed by existing constructors.
 
@@ -950,9 +1025,28 @@ class CompositionalGrammarV2:
             raise ValueError(
                 f"OPTIMIZER_GENE_ROUTE_NOT_AUTHORIZED:{route_id}"
             )
+        extension_id = str(formula_extension_id)
+        if extension_id not in {
+            PRODUCTION_EXTENSION_ID,
+            MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+        }:
+            raise ValueError(
+                "TARGETED_FORMULA_EXTENSION_NOT_AUTHORIZED:"
+                f"{route_id}:{extension_id}"
+            )
+        if (
+            extension_id
+            == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+            and route_id != "MINUTE_STATIC"
+        ):
+            raise ValueError(
+                "TARGETED_FORMULA_EXTENSION_NOT_AUTHORIZED:"
+                f"{route_id}:{extension_id}"
+            )
         cache_key = (
             str(route_id),
             str(skeleton_id or "__LEGACY_ROUTE_WIDE__"),
+            extension_id,
         )
         cached = self._gene_space_cache.get(cache_key)
         if cached is not None:
@@ -968,9 +1062,29 @@ class CompositionalGrammarV2:
                 raise ValueError(
                     f"INVALID_CATEGORICAL_GENE:skeleton_id:{skeleton_id}"
                 ) from exc
-            result = self._skeleton_lane_gene_space(route_id, skeleton)
+            if (
+                extension_id
+                == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+                and skeleton.skeleton_id.rsplit(".", 1)[-1]
+                not in MINUTE_STATIC_TYPED_TRANSFORM_PAIRS
+            ):
+                raise ValueError(
+                    "OPTIMIZER_SKELETON_UNAVAILABLE:"
+                    f"{skeleton.skeleton_id}:"
+                    "MINUTE_TYPED_TRANSFORM_DOMAIN_NOT_DECLARED"
+                )
+            result = self._skeleton_lane_gene_space(
+                route_id,
+                skeleton,
+                formula_extension_id=extension_id,
+            )
             self._gene_space_cache[cache_key] = result
             return result
+        if extension_id != PRODUCTION_EXTENSION_ID:
+            raise ValueError(
+                "SKELETON_LANE_REQUIRED_FOR_TYPED_FORMULA_EXTENSION:"
+                f"{route_id}:{extension_id}"
+            )
         if route_id not in LEGACY_ROUTE_WIDE_GENE_ROUTES:
             raise ValueError(
                 f"SKELETON_LANE_REQUIRED_FOR_OPTIMIZER_GENE_SPACE:{route_id}"
@@ -1233,6 +1347,7 @@ class CompositionalGrammarV2:
         attempt_index: int,
         seed: int,
         categorical_genes: Mapping[str, str] | None = None,
+        formula_extension_id: str = PRODUCTION_EXTENSION_ID,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         pool = self._payload_pool("MINUTE_STATIC")
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
@@ -1300,31 +1415,124 @@ class CompositionalGrammarV2:
         right_ref = f"${right.field_id}"
         fields: tuple[CapabilityField, ...]
         if name == "normalized_level":
+            if (
+                formula_extension_id
+                == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+            ):
+                raise ValueError(
+                    "MINUTE_TYPED_TRANSFORM_DOMAIN_NOT_DECLARED:"
+                    + name
+                )
             primary_expression = f"CSRank(ZScore({left_ref}))"
             control_expression = f"CSRank(Sign({left_ref}))"
             operator_family = "ZScore"
             fields = (left,)
         else:
-            control_expression = f"CSRank(Add(ZScore({left_ref}),Mul(0,ZScore({right_ref}))))"
             operator_family = "Arithmetic"
             fields = (left, right)
-            if name == "field_spread":
-                primary_expression = f"CSRank(Sub(ZScore({left_ref}),ZScore({right_ref})))"
-            elif name == "normalized_ratio":
-                primary_expression = f"CSRank(SafeDiv(ZScore({left_ref}),ZScore({right_ref}),0.05))"
-            elif name == "price_volume_interaction":
-                primary_expression = f"CSRank(Mul(ZScore({left_ref}),ZScore({right_ref})))"
-            elif name == "liquidity_volatility_interaction":
-                primary_expression = f"CSRank(Mul(ZScore({left_ref}),Abs(ZScore({right_ref}))))"
-            elif name == "cross_sectional_residual":
-                primary_expression = f"CSResidual(ZScore({left_ref}),ZScore({right_ref}))"
-                operator_family = "CrossSectionalResidual"
-            elif name == "absolute_state_interaction":
-                primary_expression = f"CSRank(Mul(Sign({left_ref}),Abs(ZScore({right_ref}))))"
-            elif name == "dispersion_interaction":
-                primary_expression = f"CSRank(Sub(Abs(ZScore({left_ref})),Abs(ZScore({right_ref}))))"
-            else:  # pragma: no cover - declarations and constructors are kept exhaustive.
-                raise KeyError(f"unhandled minute skeleton: {name}")
+            if (
+                formula_extension_id
+                == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+            ):
+                if categorical_genes is None:
+                    raise ValueError(
+                        "MINUTE_TYPED_TRANSFORM_GENES_REQUIRED"
+                    )
+                left_transform = self._gene_value(
+                    categorical_genes,
+                    "left_transform_id",
+                    MINUTE_STATIC_TYPED_TRANSFORM_IDS,
+                )
+                right_transform = self._gene_value(
+                    categorical_genes,
+                    "right_transform_id",
+                    MINUTE_STATIC_TYPED_TRANSFORM_IDS,
+                )
+                transform_pair = (
+                    left_transform,
+                    right_transform,
+                )
+                if transform_pair not in (
+                    MINUTE_STATIC_TYPED_TRANSFORM_PAIRS.get(name, ())
+                ):
+                    raise ValueError(
+                        "MINUTE_TYPED_TRANSFORM_PAIR_FORBIDDEN:"
+                        f"{name}:{left_transform}:{right_transform}"
+                    )
+
+                def render_leg(
+                    transform_id: str,
+                    field_ref: str,
+                ) -> str:
+                    if transform_id == "ZSCORE":
+                        return f"ZScore({field_ref})"
+                    if transform_id == "ABS_ZSCORE":
+                        return f"Abs(ZScore({field_ref}))"
+                    if transform_id == "SIGN":
+                        return f"Sign({field_ref})"
+                    raise ValueError(
+                        "MINUTE_TYPED_TRANSFORM_UNKNOWN:"
+                        + transform_id
+                    )
+
+                left_leg = render_leg(left_transform, left_ref)
+                right_leg = render_leg(right_transform, right_ref)
+                # The right source remains in the control validity mask, while
+                # its transform and the production interaction are ablated.
+                # This keeps the control within the declared depth-4 surface.
+                control_expression = (
+                    f"CSRank(Add({left_leg},Mul(0,{right_ref})))"
+                )
+                if name == "field_spread":
+                    primary_expression = (
+                        f"CSRank(Sub({left_leg},{right_leg}))"
+                    )
+                elif name == "normalized_ratio":
+                    primary_expression = (
+                        f"CSRank(SafeDiv({left_leg},{right_leg},0.05))"
+                    )
+                elif name == "absolute_state_interaction":
+                    primary_expression = (
+                        f"CSRank(Mul({left_leg},{right_leg}))"
+                    )
+                elif name == "dispersion_interaction":
+                    primary_expression = (
+                        f"CSRank(Sub({left_leg},{right_leg}))"
+                    )
+                else:
+                    raise ValueError(
+                        "MINUTE_TYPED_TRANSFORM_DOMAIN_NOT_DECLARED:"
+                        + name
+                    )
+                extra.update(
+                    {
+                        "left_transform_id": left_transform,
+                        "right_transform_id": right_transform,
+                        "typed_transform_authority": (
+                            "CompositionalGrammarV2."
+                            "MINUTE_STATIC_TYPED_TRANSFORM_PAIRS"
+                        ),
+                    }
+                )
+            else:
+                control_expression = f"CSRank(Add(ZScore({left_ref}),Mul(0,ZScore({right_ref}))))"
+                if name == "field_spread":
+                    primary_expression = f"CSRank(Sub(ZScore({left_ref}),ZScore({right_ref})))"
+                elif name == "normalized_ratio":
+                    primary_expression = f"CSRank(SafeDiv(ZScore({left_ref}),ZScore({right_ref}),0.05))"
+                elif name == "price_volume_interaction":
+                    primary_expression = f"CSRank(Mul(ZScore({left_ref}),ZScore({right_ref})))"
+                elif name == "liquidity_volatility_interaction":
+                    primary_expression = f"CSRank(Mul(ZScore({left_ref}),Abs(ZScore({right_ref}))))"
+                elif name == "cross_sectional_residual":
+                    primary_expression = f"CSResidual(ZScore({left_ref}),ZScore({right_ref}))"
+                    operator_family = "CrossSectionalResidual"
+                elif name == "absolute_state_interaction":
+                    primary_expression = f"CSRank(Mul(Sign({left_ref}),Abs(ZScore({right_ref}))))"
+                elif name == "dispersion_interaction":
+                    primary_expression = f"CSRank(Sub(Abs(ZScore({left_ref})),Abs(ZScore({right_ref}))))"
+                else:  # pragma: no cover - declarations and constructors are kept exhaustive.
+                    raise KeyError(f"unhandled minute skeleton: {name}")
 
         return self._make_pair(
             skeleton=skeleton,
@@ -2501,11 +2709,18 @@ class CompositionalGrammarV2:
 
         extension_id = str(formula_extension_id)
         if extension_id != PRODUCTION_EXTENSION_ID and not (
-            route_id == "DISCLOSURE_EVENT"
-            and str(genes.get("skeleton_id") or "").endswith(
-                ".pre_event_path"
+            (
+                route_id == "DISCLOSURE_EVENT"
+                and str(genes.get("skeleton_id") or "").endswith(
+                    ".pre_event_path"
+                )
+                and extension_id in _TARGETED_PRE_EVENT_EXTENSION_IDS
             )
-            and extension_id in _TARGETED_PRE_EVENT_EXTENSION_IDS
+            or (
+                route_id == "MINUTE_STATIC"
+                and extension_id
+                == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+            )
         ):
             raise ValueError(
                 "TARGETED_FORMULA_EXTENSION_NOT_AUTHORIZED:"
@@ -2530,6 +2745,12 @@ class CompositionalGrammarV2:
             gene_space = self.categorical_gene_space(
                 route_id,
                 skeleton_id=selected_skeleton,
+                formula_extension_id=(
+                    extension_id
+                    if extension_id
+                    == MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+                    else PRODUCTION_EXTENSION_ID
+                ),
             )
         categories = dict(gene_space["ordered_categories_by_slot"])
         expected_slots = tuple(categories)
@@ -2600,6 +2821,7 @@ class CompositionalGrammarV2:
                 attempt_index,
                 seed,
                 categorical_genes=normalized,
+                formula_extension_id=extension_id,
             )
         elif route_id == "FIRSTN_PATH":
             primary, control = self._firstn_pair(

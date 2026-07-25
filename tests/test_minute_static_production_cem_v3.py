@@ -17,10 +17,13 @@ from scripts.run_minute_static_production_cem_v3 import (
     PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP,
     PAIRED_STRUCTURAL_SUPPLY_MEDIUM_CHECKPOINT_COUNT,
     PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP,
+    STRUCTURAL_FORMULA_V4_MINIMUM_FRESH_EXACT,
+    STRUCTURAL_FORMULA_V4_SPACE_ID,
     STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
     STRUCTURAL_SUPPLY_PRODUCTION_IDS,
     STRUCTURAL_TYPED_FORMULA_SPACE_ID,
     MinuteStaticProductionProjection,
+    _expression_depth,
     _failure_decision,
     _load_production_contract,
     _nonexhaustive_supply_decision,
@@ -29,6 +32,7 @@ from scripts.run_minute_static_production_cem_v3 import (
     _production_parity,
     _session_sample_contract,
     _structural_supply_generation_audit,
+    _structural_formula_v4_mechanical_proof,
     _structural_typed_surface_mechanical_proof,
     _structural_v2_fresh_stream_parity,
     run,
@@ -40,6 +44,9 @@ from our_system_phase2.services.categorical_cem import (
 )
 from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
+)
+from our_system_phase2.services.phase3cm_streaming_expression import (
+    unsupported_streaming_operators,
 )
 from our_system_phase2.services.search_choice_policy import (
     AvailableUniformPolicy,
@@ -309,6 +316,136 @@ def test_structural_typed_surface_is_lossless_authoritative_projection() -> None
         and bool(row["control"]["legal"])
         for row in catalog
     )
+
+
+def test_formula_v4_is_bounded_typed_unique_and_adaptive() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+
+    decisions = projection.structural_typed_decision_specs(
+        STRUCTURAL_FORMULA_V4_SPACE_ID
+    )
+    assert [row.gene_slot for row in decisions] == [
+        "production_id",
+        "left_transform_id",
+        "right_transform_id",
+        "left_field_id",
+        "right_field_id",
+    ]
+    assert [len(row.ordered_choices) for row in decisions] == [
+        4,
+        3,
+        3,
+        11,
+        11,
+    ]
+    assert projection.v4_transform_pairs == {
+        "field_spread": (
+            ("ZSCORE", "ZSCORE"),
+            ("ZSCORE", "SIGN"),
+            ("SIGN", "ZSCORE"),
+            ("SIGN", "SIGN"),
+        ),
+        "normalized_ratio": (
+            ("ZSCORE", "ZSCORE"),
+            ("ZSCORE", "ABS_ZSCORE"),
+            ("ZSCORE", "SIGN"),
+            ("ABS_ZSCORE", "ZSCORE"),
+            ("ABS_ZSCORE", "ABS_ZSCORE"),
+            ("ABS_ZSCORE", "SIGN"),
+            ("SIGN", "ZSCORE"),
+            ("SIGN", "ABS_ZSCORE"),
+            ("SIGN", "SIGN"),
+        ),
+        "absolute_state_interaction": (
+            ("SIGN", "ABS_ZSCORE"),
+            ("ABS_ZSCORE", "SIGN"),
+        ),
+        "dispersion_interaction": (
+            ("ABS_ZSCORE", "ABS_ZSCORE"),
+            ("ABS_ZSCORE", "ZSCORE"),
+            ("ZSCORE", "ABS_ZSCORE"),
+        ),
+    }
+    catalog = projection._available_candidate_catalog(
+        STRUCTURAL_FORMULA_V4_SPACE_ID
+    )
+    assert len(catalog) == 1_980
+    assert {
+        production_id: sum(
+            str(row["production_id"]) == production_id
+            for row in catalog
+        )
+        for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+    } == {
+        "field_spread": 440,
+        "normalized_ratio": 990,
+        "absolute_state_interaction": 220,
+        "dispersion_interaction": 330,
+    }
+    assert len(
+        {
+            str(row["candidate"]["exact_identity"])
+            for row in catalog
+        }
+    ) == len(catalog)
+    assert len(
+        {
+            str(row["candidate"]["canonical_identity"])
+            for row in catalog
+        }
+    ) == len(catalog)
+    assert all(
+        bool(row["candidate"]["legal"])
+        and bool(row["control"]["legal"])
+        and set(row["candidate"]["field_ids"])
+        == set(row["control"]["field_ids"])
+        and _expression_depth(row["candidate"]["expression"])
+        <= int(row["candidate"]["maximum_depth"])
+        and _expression_depth(row["control"]["expression"])
+        <= int(row["control"]["maximum_depth"])
+        for row in catalog
+    )
+    assert not unsupported_streaming_operators(
+        str(member["expression"])
+        for row in catalog
+        for member in (row["candidate"], row["control"])
+    )
+    example = next(
+        row
+        for row in catalog
+        if row["production_id"] == "field_spread"
+        and row["left_transform_id"] == "SIGN"
+        and row["right_transform_id"] == "ZSCORE"
+        and row["field_pair_id"] == "amount::volume"
+    )
+    assert example["candidate"]["expression"] == (
+        "CSRank(Sub(Sign($amount),ZScore($volume)))"
+    )
+    assert example["control"]["expression"] == (
+        "CSRank(Add(Sign($amount),Mul(0,$volume)))"
+    )
+    assert "Delta(" not in example["candidate"]["expression"]
+    proof = _structural_formula_v4_mechanical_proof(
+        projection,
+        seed=2026072423,
+    )
+    assert proof["status"] == "PASS"
+    assert proof["first_generation_exact_stream_parity"] is True
+    assert proof["cumulative_duplicate_count"] == 0
+    assert proof["second_generation_stream_changed"] is True
+    assert proof["updated_context_count"] == 5
 
 
 def test_minute_static_fields_and_formula_templates_match_authority() -> None:
@@ -800,6 +937,107 @@ def test_structural_typed_static_audit_blocks_financial_when_19_exact_remain(
     )
     assert (output_root / "structural_typed_decision_catalog.json").is_file()
     assert (output_root / "synthetic_adaptation_proof.json").is_file()
+    manifest = json.loads(
+        (output_root / "artifact_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert manifest["financial_reads"] == 0
+    assert manifest["phase3cm_pair_count"] == 0
+
+
+def test_formula_v4_static_supply_retires_old_440_and_keeps_1540_fresh(
+    tmp_path: Path,
+) -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+    old_exact = [
+        str(row["candidate"]["exact_identity"])
+        for row in projection._available_candidate_catalog(
+            STRUCTURAL_TYPED_FORMULA_SPACE_ID
+        )
+    ]
+    layout = tmp_path / "active_layout.json"
+    layout.write_text(
+        json.dumps({"fields": list(roots)}),
+        encoding="utf-8",
+    )
+    archive = tmp_path / "archive.parquet"
+    ledger = tmp_path / "ledger.parquet"
+    pq.write_table(
+        pa.table({"exact_identity": old_exact}),
+        archive,
+    )
+    pq.write_table(
+        pa.table(
+            {
+                "exact_identity": pa.array(
+                    [],
+                    type=pa.string(),
+                )
+            }
+        ),
+        ledger,
+    )
+    output_root = tmp_path / "formula_v4"
+    result = run_structural_supply_design(
+        argparse.Namespace(
+            registry=REGISTRY,
+            production_root_contract=PRODUCTION_CONTRACT,
+            active_layout=layout,
+            historical_exact_archive=archive,
+            source_candidate_ledger=ledger,
+            historical_behavior_archive=None,
+            additional_exact_archive=[],
+            additional_behavior_archive=[],
+            split_manifest=None,
+            compute_threads=2,
+            output_root=output_root,
+            repo_sha="test-sha",
+            task_id="test-task",
+            allow_noncanonical_host=True,
+            static_only=True,
+            structural_typed_surface_audit=False,
+            structural_formula_v4_supply=True,
+        )
+    )
+
+    supply = result["formula_space_supply"]
+    decision = result["supply_decision"]
+    assert result["status"] == (
+        "STRUCTURAL_FORMULA_V4_EXACT_PASS_BEHAVIOR_PENDING"
+    )
+    assert supply["formula_space_id"] == (
+        STRUCTURAL_FORMULA_V4_SPACE_ID
+    )
+    assert supply["raw_categorical_rows"] == 1_980
+    assert supply["raw_exact_unique"] == 1_980
+    assert supply["raw_canonical_unique"] == 1_980
+    assert supply["post_archive_exact_supply"] == 1_540
+    assert supply["post_archive_exact_supply"] >= (
+        STRUCTURAL_FORMULA_V4_MINIMUM_FRESH_EXACT
+    )
+    assert decision["exact_supply_gate"] == "PASS"
+    assert decision["behavior_supply_gate"] == "PENDING"
+    assert decision["financial_qualification_authorized"] is False
+    assert (
+        output_root
+        / "structural_formula_v4_decision_catalog.json"
+    ).is_file()
+    assert (
+        output_root / "synthetic_v4_adaptation_proof.json"
+    ).is_file()
     manifest = json.loads(
         (output_root / "artifact_manifest.json").read_text(
             encoding="utf-8"

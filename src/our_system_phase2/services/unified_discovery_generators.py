@@ -126,6 +126,7 @@ class RegistryDrivenGenerator:
         route_id: str,
         *,
         skeleton_id: str | None = None,
+        formula_extension_id: str = "PRODUCTION",
     ) -> dict[str, Any]:
         if self._compositional is None:
             raise RuntimeError(
@@ -134,6 +135,7 @@ class RegistryDrivenGenerator:
         return self._compositional.categorical_gene_space(
             route_id,
             skeleton_id=skeleton_id,
+            formula_extension_id=formula_extension_id,
         )
 
     def categorical_gene_lanes(self, route_id: str) -> dict[str, Any]:

@@ -39,6 +39,14 @@ from our_system_phase2.services.portfolio_behavior_archive import (
     PortfolioBehaviorArchive,
     bounded_label_free_behavior_probe,
 )
+from our_system_phase2.services.compositional_grammar import (
+    MINUTE_STATIC_TYPED_TRANSFORM_IDS,
+    MINUTE_STATIC_TYPED_TRANSFORM_PAIRS,
+    MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID,
+)
+from our_system_phase2.services.phase3cm_streaming_expression import (
+    unsupported_streaming_operators,
+)
 from our_system_phase2.services.search_choice_policy import (
     AvailableUniformPolicy,
     DISCLOSURE_V2_EXTENSION_DISPOSITIONS,
@@ -116,11 +124,17 @@ STRUCTURAL_SUPPLY_FORMULA_SPACE_ID = (
 STRUCTURAL_TYPED_FORMULA_SPACE_ID = (
     "MINUTE_STATIC_STRUCTURAL_TYPED_V2"
 )
+STRUCTURAL_FORMULA_V4_SPACE_ID = (
+    "MINUTE_STATIC_STRUCTURAL_FORMULA_V4"
+)
 STRUCTURAL_SUPPLY_AUTHORIZATION_ID = (
     "MINUTE_STATIC_STRUCTURAL_FORMULA_SPACE_SUPPLY_V1"
 )
 STRUCTURAL_TYPED_AUTHORIZATION_ID = (
     "MINUTE_STATIC_STRUCTURAL_TYPED_SURFACE_AUDIT_V2"
+)
+STRUCTURAL_FORMULA_V4_AUTHORIZATION_ID = (
+    "MINUTE_STATIC_STRUCTURAL_FORMULA_SUPPLY_V4"
 )
 STRUCTURAL_SUPPLY_PRODUCTION_IDS = (
     "field_spread",
@@ -130,6 +144,8 @@ STRUCTURAL_SUPPLY_PRODUCTION_IDS = (
 )
 STRUCTURAL_SUPPLY_REFERENCE_PAIR_BUDGET = 72
 STRUCTURAL_SUPPLY_NONEXHAUSTIVE_HEADROOM_MULTIPLIER = 2
+STRUCTURAL_FORMULA_V4_MINIMUM_FRESH_EXACT = 144
+STRUCTURAL_FORMULA_V4_MINIMUM_BEHAVIOR_UNIQUE = 72
 SAMPLED_AUTHORITY_ID = "MINUTE_STATIC_PHASE3CM_SESSION_SAMPLE_V1"
 MINIMUM_EXACT_SUPPLY = 72
 MINIMUM_BEHAVIOR_SUPPLY = 48
@@ -198,6 +214,45 @@ class MinuteStaticProductionProjection:
                 "gene_surface_id"
             ][0]
         )
+        v4_lanes = {
+            production_id: generator.categorical_gene_space(
+                ROUTE_ID,
+                skeleton_id=skeleton_id,
+                formula_extension_id=(
+                    MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+                ),
+            )
+            for production_id, skeleton_id
+            in self._production_skeletons.items()
+        }
+        v4_pair_domains = {
+            production_id: tuple(
+                lane["ordered_categories_by_slot"]["field_pair_id"]
+            )
+            for production_id, lane in v4_lanes.items()
+        }
+        if any(
+            domain != self.field_pair_ids
+            for domain in v4_pair_domains.values()
+        ):
+            raise RuntimeError(
+                "MINUTE_FORMULA_V4_FIELD_PAIR_DOMAIN_DRIFT"
+            )
+        self.v4_gene_surface_id = str(
+            v4_lanes["field_spread"][
+                "ordered_categories_by_slot"
+            ]["gene_surface_id"][0]
+        )
+        self.v4_transform_pairs = {
+            production_id: tuple(
+                (
+                    str(row["left_transform_id"]),
+                    str(row["right_transform_id"]),
+                )
+                for row in lane["allowed_transform_pairs"]
+            )
+            for production_id, lane in v4_lanes.items()
+        }
         self._available_candidate_cache: dict[
             str, tuple[dict[str, Any], ...]
         ] = {}
@@ -213,6 +268,7 @@ class MinuteStaticProductionProjection:
         elif formula_space_id in {
             STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
             STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+            STRUCTURAL_FORMULA_V4_SPACE_ID,
         }:
             productions = STRUCTURAL_SUPPLY_PRODUCTION_IDS
         else:
@@ -338,10 +394,12 @@ class MinuteStaticProductionProjection:
     ) -> tuple[DecisionSpec, ...]:
         """Project the authoritative joint field-pair domain losslessly."""
 
-        if formula_space_id != STRUCTURAL_TYPED_FORMULA_SPACE_ID:
+        if formula_space_id not in {
+            STRUCTURAL_TYPED_FORMULA_SPACE_ID,
+            STRUCTURAL_FORMULA_V4_SPACE_ID,
+        }:
             raise ValueError(
-                "typed structural decisions require "
-                + STRUCTURAL_TYPED_FORMULA_SPACE_ID
+                "typed structural decisions require a typed formula space"
             )
         production, _ = self.decision_specs(formula_space_id)
         base = f"route={ROUTE_ID}|formula_space={formula_space_id}"
@@ -379,10 +437,50 @@ class MinuteStaticProductionProjection:
                 ),
             )
 
-        return (
-            production,
+        fields = (
             field_decision(side="left"),
             field_decision(side="right"),
+        )
+        if formula_space_id != STRUCTURAL_FORMULA_V4_SPACE_ID:
+            return production, *fields
+
+        def transform_decision(*, side: str) -> DecisionSpec:
+            return DecisionSpec(
+                decision_id=(
+                    f"minute_static.{side}_transform_id"
+                ),
+                context_id=(
+                    base + f"|decision={side}_transform_id"
+                ),
+                decision_type=f"{side.upper()}_TRANSFORM",
+                gene_slot=f"{side}_transform_id",
+                ordered_choices=tuple(
+                    SearchChoice(
+                        token_id="transform:" + transform_id,
+                        gene_value=transform_id,
+                        semantic_value={
+                            "transform_id": transform_id,
+                            "side": side,
+                            "operator_authority": (
+                                "TypedRouteCompiler."
+                                "ROUTE_PRIMITIVE_ALLOWLIST"
+                            ),
+                            "streaming_authority": (
+                                "phase3cm_streaming_expression."
+                                "STREAMING_OPERATOR_SURFACE"
+                            ),
+                        },
+                    )
+                    for transform_id
+                    in MINUTE_STATIC_TYPED_TRANSFORM_IDS
+                ),
+            )
+
+        return (
+            production,
+            transform_decision(side="left"),
+            transform_decision(side="right"),
+            *fields,
         )
 
     def structural_typed_decision_catalog(
@@ -396,21 +494,62 @@ class MinuteStaticProductionProjection:
             ),
             "route_id": ROUTE_ID,
             "formula_space_id": formula_space_id,
-            "fixed_gene_surface_id": self.gene_surface_id,
+            "fixed_gene_surface_id": (
+                self.v4_gene_surface_id
+                if formula_space_id
+                == STRUCTURAL_FORMULA_V4_SPACE_ID
+                else self.gene_surface_id
+            ),
             "adaptive_decisions": [row.to_dict() for row in rows],
             "authoritative_joint_source": (
-                "CompositionalGrammarV2.field_pair_id"
+                (
+                    "CompositionalGrammarV2."
+                    "MINUTE_STATIC_TYPED_TRANSFORM_PAIRS"
+                    "+field_pair_id"
+                )
+                if formula_space_id
+                == STRUCTURAL_FORMULA_V4_SPACE_ID
+                else "CompositionalGrammarV2.field_pair_id"
             ),
             "projection_contract": (
-                "LOSSLESS_PRODUCTION_LEFT_RIGHT_COORDINATES"
+                (
+                    "LOSSLESS_PRODUCTION_TRANSFORM_"
+                    "AND_LEFT_RIGHT_COORDINATES"
+                )
+                if formula_space_id
+                == STRUCTURAL_FORMULA_V4_SPACE_ID
+                else "LOSSLESS_PRODUCTION_LEFT_RIGHT_COORDINATES"
             ),
             "joint_exact_availability_mask": (
-                "APPLIED_BEFORE_EACH_HIERARCHICAL_DRAW"
+                (
+                    "APPLIED_BEFORE_EACH_OF_FIVE_"
+                    "HIERARCHICAL_DRAWS"
+                )
+                if formula_space_id
+                == STRUCTURAL_FORMULA_V4_SPACE_ID
+                else "APPLIED_BEFORE_EACH_HIERARCHICAL_DRAW"
             ),
             "field_family_authority": (
                 "NOT_DECLARED_NO_INVENTED_GROUPS"
             ),
-            "new_fields_operators_formulas": 0,
+            "new_fields_operators_formulas": (
+                {
+                    "new_fields": 0,
+                    "new_operators": 0,
+                    "bounded_formula_variants": True,
+                }
+                if formula_space_id
+                == STRUCTURAL_FORMULA_V4_SPACE_ID
+                else 0
+            ),
+            "transform_pair_authority": (
+                "CompositionalGrammarV2."
+                "MINUTE_STATIC_TYPED_TRANSFORM_PAIRS"
+                if formula_space_id
+                == STRUCTURAL_FORMULA_V4_SPACE_ID
+                else "NOT_APPLICABLE"
+            ),
+            "maximum_depth": 4,
         }
         payload["catalog_hash"] = _stable_hash(payload)
         return payload
@@ -439,29 +578,59 @@ class MinuteStaticProductionProjection:
         for choice in production.ordered_choices:
             production_id = str(choice.token_id)
             skeleton_id = str(choice.gene_value)
-            for pair_id in self.field_pair_ids:
-                pair = self.generator.propose_categorical_genes(
-                    ROUTE_ID,
-                    genes={
+            transform_pairs = (
+                self.v4_transform_pairs[production_id]
+                if formula_space_id
+                == STRUCTURAL_FORMULA_V4_SPACE_ID
+                else ((None, None),)
+            )
+            for left_transform, right_transform in transform_pairs:
+                for pair_id in self.field_pair_ids:
+                    genes = {
                         "skeleton_id": skeleton_id,
-                        "gene_surface_id": self.gene_surface_id,
+                        "gene_surface_id": (
+                            self.v4_gene_surface_id
+                            if formula_space_id
+                            == STRUCTURAL_FORMULA_V4_SPACE_ID
+                            else self.gene_surface_id
+                        ),
                         "field_pair_id": pair_id,
-                    },
-                )
-                rows.append(
-                    {
-                        "production_id": production_id,
-                        "skeleton_id": skeleton_id,
-                        "field_pair_id": pair_id,
-                        "candidate": dict(pair.candidate),
-                        "control": dict(pair.control),
                     }
-                )
+                    if left_transform is not None:
+                        genes.update(
+                            {
+                                "left_transform_id": left_transform,
+                                "right_transform_id": right_transform,
+                            }
+                        )
+                    pair = self.generator.propose_categorical_genes(
+                        ROUTE_ID,
+                        genes=genes,
+                        formula_extension_id=(
+                            MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID
+                            if formula_space_id
+                            == STRUCTURAL_FORMULA_V4_SPACE_ID
+                            else "PRODUCTION"
+                        ),
+                    )
+                    rows.append(
+                        {
+                            "production_id": production_id,
+                            "skeleton_id": skeleton_id,
+                            "field_pair_id": pair_id,
+                            "left_transform_id": left_transform,
+                            "right_transform_id": right_transform,
+                            "candidate": dict(pair.candidate),
+                            "control": dict(pair.control),
+                        }
+                    )
         result = tuple(
             sorted(
                 rows,
                 key=lambda row: (
                     row["production_id"],
+                    str(row.get("left_transform_id") or ""),
+                    str(row.get("right_transform_id") or ""),
                     row["field_pair_id"],
                 ),
             )
@@ -479,6 +648,13 @@ class MinuteStaticProductionProjection:
     ) -> GeneratedPair:
         """Draw a structural choice, then one unused concrete exact candidate."""
 
+        if formula_space_id == STRUCTURAL_FORMULA_V4_SPACE_ID:
+            return self._generate_available_v4(
+                formula_space_id=formula_space_id,
+                policy=policy,
+                rng=rng,
+                exact_seen=exact_seen,
+            )
         if formula_space_id == STRUCTURAL_TYPED_FORMULA_SPACE_ID:
             return self._generate_available_typed(
                 formula_space_id=formula_space_id,
@@ -699,6 +875,187 @@ class MinuteStaticProductionProjection:
             {**dict(selected["control"]), **shared},
         )
 
+    def _generate_available_v4(
+        self,
+        *,
+        formula_space_id: str,
+        policy: Any,
+        rng: np.random.Generator,
+        exact_seen: set[str],
+    ) -> GeneratedPair:
+        """Draw five bounded typed coordinates under the exact joint mask."""
+
+        available = [
+            row
+            for row in self._available_candidate_catalog(
+                formula_space_id
+            )
+            if str(row["candidate"]["exact_identity"])
+            not in exact_seen
+        ]
+        if not available:
+            raise RuntimeError(
+                "MINUTE_FORMULA_V4_EXACT_SUPPLY_EXHAUSTED"
+            )
+        choose_available = getattr(policy, "choose_available", None)
+        if not callable(choose_available):
+            raise TypeError(
+                "formula V4 policy must implement choose_available"
+            )
+        (
+            production,
+            left_transform,
+            right_transform,
+            left_field,
+            right_field,
+        ) = self.structural_typed_decision_specs(formula_space_id)
+
+        def choose(
+            decision: DecisionSpec,
+            allowed_token_values: set[str],
+        ) -> str:
+            token_id = str(
+                choose_available(
+                    decision,
+                    allowed_token_ids=tuple(
+                        choice.token_id
+                        for choice in decision.ordered_choices
+                        if choice.token_id
+                        in allowed_token_values
+                    ),
+                    rng=rng,
+                )
+            )
+            return token_id
+
+        selected_production = choose(
+            production,
+            {
+                str(row["production_id"])
+                for row in available
+            },
+        )
+        production_rows = [
+            row
+            for row in available
+            if str(row["production_id"]) == selected_production
+        ]
+        selected_left_transform_token = choose(
+            left_transform,
+            {
+                "transform:" + str(row["left_transform_id"])
+                for row in production_rows
+            },
+        )
+        selected_left_transform = (
+            selected_left_transform_token.split(":", 1)[1]
+        )
+        left_transform_rows = [
+            row
+            for row in production_rows
+            if str(row["left_transform_id"])
+            == selected_left_transform
+        ]
+        selected_right_transform_token = choose(
+            right_transform,
+            {
+                "transform:" + str(row["right_transform_id"])
+                for row in left_transform_rows
+            },
+        )
+        selected_right_transform = (
+            selected_right_transform_token.split(":", 1)[1]
+        )
+        transform_rows = [
+            row
+            for row in left_transform_rows
+            if str(row["right_transform_id"])
+            == selected_right_transform
+        ]
+        selected_left_field_token = choose(
+            left_field,
+            {
+                "field:"
+                + str(row["field_pair_id"]).split("::", 1)[0]
+                for row in transform_rows
+            },
+        )
+        selected_left_field = (
+            selected_left_field_token.split(":", 1)[1]
+        )
+        left_field_rows = [
+            row
+            for row in transform_rows
+            if str(row["field_pair_id"]).split("::", 1)[0]
+            == selected_left_field
+        ]
+        selected_right_field_token = choose(
+            right_field,
+            {
+                "field:"
+                + str(row["field_pair_id"]).split("::", 1)[1]
+                for row in left_field_rows
+            },
+        )
+        selected_right_field = (
+            selected_right_field_token.split(":", 1)[1]
+        )
+        selected_pair_id = (
+            selected_left_field + "::" + selected_right_field
+        )
+        selected = next(
+            row
+            for row in left_field_rows
+            if str(row["field_pair_id"]) == selected_pair_id
+        )
+        selected_tokens = (
+            selected_production,
+            selected_left_transform_token,
+            selected_right_transform_token,
+            selected_left_field_token,
+            selected_right_field_token,
+        )
+        decisions = (
+            production,
+            left_transform,
+            right_transform,
+            left_field,
+            right_field,
+        )
+        trace = [
+            DecisionRecord(
+                decision_id=decision.decision_id,
+                context_id=decision.context_id,
+                decision_type=decision.decision_type,
+                selected_token_id=token_id,
+            ).to_dict()
+            for decision, token_id in zip(
+                decisions,
+                selected_tokens,
+                strict=True,
+            )
+        ]
+        shared = {
+            "formula_space_id": formula_space_id,
+            "production_id": selected_production,
+            "left_transform_id": selected_left_transform,
+            "right_transform_id": selected_right_transform,
+            "left_field_id": selected_left_field,
+            "right_field_id": selected_right_field,
+            "decision_trace": trace,
+            "decision_trace_hash": _stable_hash(trace),
+            "generator_policy": str(
+                getattr(policy, "policy_id", type(policy).__name__)
+            ),
+            "exact_availability_mask": (
+                "APPLIED_BEFORE_EACH_OF_FIVE_HIERARCHICAL_DRAWS"
+            ),
+        }
+        return GeneratedPair(
+            {**dict(selected["candidate"]), **shared},
+            {**dict(selected["control"]), **shared},
+        )
+
     def generate(
         self,
         *,
@@ -759,6 +1116,153 @@ def _stable_hash(value: Any) -> str:
             separators=(",", ":"),
         ).encode("utf-8")
     ).hexdigest()
+
+
+def _expression_depth(expression: str) -> int:
+    depth = maximum = 0
+    for character in str(expression):
+        if character == "(":
+            depth += 1
+            maximum = max(maximum, depth)
+        elif character == ")":
+            depth -= 1
+    if depth != 0:
+        raise ValueError("UNBALANCED_EXPRESSION_DEPTH")
+    return maximum
+
+
+def _structural_formula_v4_mechanical_proof(
+    projection: MinuteStaticProductionProjection,
+    *,
+    seed: int,
+    generation_size: int = 32,
+) -> dict[str, Any]:
+    """Prove five-axis parity and adaptation without market or label reads."""
+
+    decisions = projection.structural_typed_decision_specs(
+        STRUCTURAL_FORMULA_V4_SPACE_ID
+    )
+    catalog_hash = projection.structural_typed_decision_catalog_hash(
+        STRUCTURAL_FORMULA_V4_SPACE_ID
+    )
+    uniform = AvailableUniformPolicy()
+    cem = RankWeightedCategoricalCEMPolicy.fresh(
+        decisions=decisions,
+        decision_catalog_hash=catalog_hash,
+        formula_space_id=STRUCTURAL_FORMULA_V4_SPACE_ID,
+    )
+    uniform_rng = np.random.default_rng(seed)
+    cem_rng = np.random.default_rng(seed)
+    uniform_seen: set[str] = set()
+    cem_seen: set[str] = set()
+    uniform_first: list[str] = []
+    cem_first: list[str] = []
+    observations = []
+    for _ in range(generation_size):
+        uniform_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_FORMULA_V4_SPACE_ID,
+            policy=uniform,
+            rng=uniform_rng,
+            exact_seen=uniform_seen,
+        )
+        cem_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_FORMULA_V4_SPACE_ID,
+            policy=cem,
+            rng=cem_rng,
+            exact_seen=cem_seen,
+        )
+        uniform_exact = str(
+            uniform_pair.candidate["exact_identity"]
+        )
+        cem_exact = str(cem_pair.candidate["exact_identity"])
+        uniform_seen.add(uniform_exact)
+        cem_seen.add(cem_exact)
+        uniform_first.append(uniform_exact)
+        cem_first.append(cem_exact)
+        observations.append(
+            {
+                "exact_identity": cem_exact,
+                "outcome_class": "EVALUATED",
+                "signed_matched_increment": float(
+                    int(
+                        hashlib.sha256(
+                            cem_exact.encode("utf-8")
+                        ).hexdigest()[:16],
+                        16,
+                    )
+                ),
+                "decision_trace": cem_pair.candidate[
+                    "decision_trace"
+                ],
+            }
+        )
+    tell_receipt = cem.tell(observations)
+    uniform_second: list[str] = []
+    cem_second: list[str] = []
+    for _ in range(generation_size):
+        uniform_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_FORMULA_V4_SPACE_ID,
+            policy=uniform,
+            rng=uniform_rng,
+            exact_seen=uniform_seen,
+        )
+        cem_pair = projection.generate_available(
+            formula_space_id=STRUCTURAL_FORMULA_V4_SPACE_ID,
+            policy=cem,
+            rng=cem_rng,
+            exact_seen=cem_seen,
+        )
+        uniform_exact = str(
+            uniform_pair.candidate["exact_identity"]
+        )
+        cem_exact = str(cem_pair.candidate["exact_identity"])
+        uniform_seen.add(uniform_exact)
+        cem_seen.add(cem_exact)
+        uniform_second.append(uniform_exact)
+        cem_second.append(cem_exact)
+
+    first_parity = uniform_first == cem_first
+    duplicate_count = (
+        len(cem_first + cem_second)
+        - len(set(cem_first + cem_second))
+    )
+    updated_context_count = int(
+        tell_receipt["updated_context_count"]
+    )
+    passed = (
+        first_parity
+        and duplicate_count == 0
+        and uniform_second != cem_second
+        and updated_context_count == len(decisions)
+    )
+    return {
+        "schema_version": (
+            "cn_minute_static_structural_formula_v4_"
+            "mechanical_proof_v1"
+        ),
+        "status": "PASS" if passed else "FAIL",
+        "proof_type": "SYNTHETIC_NON_FINANCIAL",
+        "formula_space_id": STRUCTURAL_FORMULA_V4_SPACE_ID,
+        "seed": int(seed),
+        "generation_size": int(generation_size),
+        "decision_slots": [
+            decision.gene_slot for decision in decisions
+        ],
+        "first_generation_exact_stream_parity": first_parity,
+        "cumulative_duplicate_count": duplicate_count,
+        "second_generation_stream_changed": (
+            uniform_second != cem_second
+        ),
+        "updated_context_count": updated_context_count,
+        "support_diagnostics": tell_receipt[
+            "support_diagnostics"
+        ],
+        "financial_reads": 0,
+        "phase3cm_pair_count": 0,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
 
 
 def _structural_typed_surface_mechanical_proof(
@@ -1800,6 +2304,79 @@ def _nonexhaustive_supply_decision(
             else "FREEZE_PAIRED_BUDGET_AT_OR_BELOW_SUPPLY_CEILING"
             if ceiling > 0
             else "EXPAND_LEGITIMATE_ROUTE_LOCAL_FORMULA_SPACE"
+        ),
+    }
+
+
+def _formula_v4_supply_decision(
+    *,
+    post_archive_exact_supply: int,
+    observed_behavior_unique_supply: int,
+) -> dict[str, Any]:
+    exact_ready = (
+        int(post_archive_exact_supply)
+        >= STRUCTURAL_FORMULA_V4_MINIMUM_FRESH_EXACT
+    )
+    behavior_ready = (
+        int(observed_behavior_unique_supply)
+        >= STRUCTURAL_FORMULA_V4_MINIMUM_BEHAVIOR_UNIQUE
+    )
+    maximum_budget = min(
+        int(post_archive_exact_supply)
+        // STRUCTURAL_SUPPLY_NONEXHAUSTIVE_HEADROOM_MULTIPLIER,
+        int(observed_behavior_unique_supply),
+    )
+    qualified = exact_ready and behavior_ready
+    return {
+        "schema_version": (
+            "cn_minute_static_structural_formula_v4_"
+            "supply_decision_v1"
+        ),
+        "status": (
+            "STRUCTURAL_FORMULA_V4_SUPPLY_QUALIFIED"
+            if qualified
+            else "STRUCTURAL_FORMULA_V4_SUPPLY_BLOCKED"
+        ),
+        "post_archive_exact_supply": int(
+            post_archive_exact_supply
+        ),
+        "minimum_post_archive_exact_supply": (
+            STRUCTURAL_FORMULA_V4_MINIMUM_FRESH_EXACT
+        ),
+        "exact_supply_gate": (
+            "PASS" if exact_ready else "FAIL"
+        ),
+        "observed_behavior_unique_supply": int(
+            observed_behavior_unique_supply
+        ),
+        "minimum_behavior_unique_supply": (
+            STRUCTURAL_FORMULA_V4_MINIMUM_BEHAVIOR_UNIQUE
+        ),
+        "behavior_supply_gate": (
+            "PASS" if behavior_ready else "FAIL"
+        ),
+        "behavior_supply_claim": (
+            "OBSERVED_LOWER_BOUND_WITHIN_FROZEN_PROBE_CAP"
+        ),
+        "maximum_supported_paired_budget_per_arm": (
+            maximum_budget
+        ),
+        "reference_pair_budget_per_arm": (
+            STRUCTURAL_SUPPLY_REFERENCE_PAIR_BUDGET
+        ),
+        "reference_paired_qualification_supply_ready": (
+            qualified
+            and maximum_budget
+            >= STRUCTURAL_SUPPLY_REFERENCE_PAIR_BUDGET
+        ),
+        "financial_qualification_authorized": False,
+        "large_search_authorized": False,
+        "next_action": (
+            "FREEZE_SEPARATE_FRESH_UNIFORM_PAIRED_QUALIFICATION"
+            if qualified
+            and maximum_budget
+            >= STRUCTURAL_SUPPLY_REFERENCE_PAIR_BUDGET
+            else "REVISE_BOUNDED_FORMULA_CATALOG"
         ),
     }
 
@@ -2971,15 +3548,26 @@ def run_structural_supply_design(
     typed_surface = bool(
         getattr(args, "structural_typed_surface_audit", False)
     )
+    formula_v4 = bool(
+        getattr(args, "structural_formula_v4_supply", False)
+    )
     formula_space_id = (
-        STRUCTURAL_TYPED_FORMULA_SPACE_ID
-        if typed_surface
-        else STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+        STRUCTURAL_FORMULA_V4_SPACE_ID
+        if formula_v4
+        else (
+            STRUCTURAL_TYPED_FORMULA_SPACE_ID
+            if typed_surface
+            else STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+        )
     )
     authorization_id = (
-        STRUCTURAL_TYPED_AUTHORIZATION_ID
-        if typed_surface
-        else STRUCTURAL_SUPPLY_AUTHORIZATION_ID
+        STRUCTURAL_FORMULA_V4_AUTHORIZATION_ID
+        if formula_v4
+        else (
+            STRUCTURAL_TYPED_AUTHORIZATION_ID
+            if typed_surface
+            else STRUCTURAL_SUPPLY_AUTHORIZATION_ID
+        )
     )
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
@@ -3023,6 +3611,12 @@ def run_structural_supply_design(
                 "production_id": str(source["production_id"]),
                 "skeleton_id": str(source["skeleton_id"]),
                 "field_pair_id": str(source["field_pair_id"]),
+                "left_transform_id": str(
+                    source.get("left_transform_id") or ""
+                ),
+                "right_transform_id": str(
+                    source.get("right_transform_id") or ""
+                ),
                 "pair_id": str(primary.get("pair_id") or ""),
                 "exact_identity": str(
                     primary.get("exact_identity") or ""
@@ -3059,6 +3653,13 @@ def run_structural_supply_design(
     observed_productions = {
         str(row["production_id"]) for row in catalog_rows
     }
+    expected_v4_rows = (
+        len(projection.field_pair_ids)
+        * sum(
+            len(pairs)
+            for pairs in projection.v4_transform_pairs.values()
+        )
+    )
     static_checks = {
         "production_queue_exact": (
             observed_productions == expected_productions
@@ -3083,6 +3684,62 @@ def run_structural_supply_design(
                 "cross_sectional_residual",
             }
         ),
+        "formula_v4_raw_row_count_exact": (
+            not formula_v4
+            or len(catalog_rows) == expected_v4_rows
+        ),
+        "formula_v4_transform_pair_domain_exact": (
+            not formula_v4
+            or projection.v4_transform_pairs
+            == {
+                production_id: tuple(
+                    MINUTE_STATIC_TYPED_TRANSFORM_PAIRS[
+                        production_id
+                    ]
+                )
+                for production_id
+                in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+            }
+        ),
+        "formula_v4_depth_within_declared_maximum": (
+            not formula_v4
+            or all(
+                _expression_depth(
+                    str(member.get("expression") or "")
+                )
+                <= int(member.get("maximum_depth") or 0)
+                for row in catalog_rows
+                for member in (row["primary"], row["control"])
+            )
+        ),
+        "formula_v4_streaming_operator_support": (
+            not formula_v4
+            or not unsupported_streaming_operators(
+                str(member.get("expression") or "")
+                for row in catalog_rows
+                for member in (row["primary"], row["control"])
+            )
+        ),
+        "formula_v4_primary_exact_unique": (
+            not formula_v4
+            or len(
+                {
+                    str(row["exact_identity"])
+                    for row in catalog_rows
+                }
+            )
+            == len(catalog_rows)
+        ),
+        "formula_v4_primary_canonical_unique": (
+            not formula_v4
+            or len(
+                {
+                    str(row["canonical_identity"])
+                    for row in catalog_rows
+                }
+            )
+            == len(catalog_rows)
+        ),
     }
     if not all(static_checks.values()):
         raise RuntimeError(
@@ -3102,9 +3759,13 @@ def run_structural_supply_design(
 
     design = {
         "schema_version": (
-            "cn_minute_static_structural_typed_surface_supply_v1"
-            if typed_surface
-            else "cn_minute_static_structural_formula_space_supply_v1"
+            "cn_minute_static_structural_formula_v4_supply_v1"
+            if formula_v4
+            else (
+                "cn_minute_static_structural_typed_surface_supply_v1"
+                if typed_surface
+                else "cn_minute_static_structural_formula_space_supply_v1"
+            )
         ),
         "status": "EXACT_SUPPLY_CLOSED_BEHAVIOR_PENDING",
         "authorization_id": authorization_id,
@@ -3117,6 +3778,39 @@ def run_structural_supply_design(
             ]
             for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
         },
+        "typed_transform_ids": (
+            list(MINUTE_STATIC_TYPED_TRANSFORM_IDS)
+            if formula_v4
+            else []
+        ),
+        "typed_transform_pairs_by_production": (
+            {
+                production_id: [
+                    {
+                        "left_transform_id": left,
+                        "right_transform_id": right,
+                    }
+                    for left, right
+                    in projection.v4_transform_pairs[production_id]
+                ]
+                for production_id
+                in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+            }
+            if formula_v4
+            else {}
+        ),
+        "excluded_transform_candidates": (
+            {
+                "IDENTITY": (
+                    "EXCLUDED_CROSS_UNIT_DIMENSIONLESS_SIGNATURE"
+                ),
+                "DELTA_EXISTING_WINDOW": (
+                    "EXCLUDED_MINUTE_STATIC_COMPILER_ALLOWLIST"
+                ),
+            }
+            if formula_v4
+            else {}
+        ),
         "authority": {
             "route": "UnifiedCapabilityRegistry",
             "grammar": "CompositionalGrammarV2",
@@ -3129,7 +3823,7 @@ def run_structural_supply_design(
             projection.structural_typed_decision_catalog_hash(
                 formula_space_id
             )
-            if typed_surface
+            if typed_surface or formula_v4
             else projection.structural_decision_catalog_hash(
                 formula_space_id
             )
@@ -3174,7 +3868,77 @@ def run_structural_supply_design(
     artifact_paths = [design_path, candidate_path]
 
     if bool(getattr(args, "static_only", False)):
-        if typed_surface:
+        if formula_v4:
+            decision_catalog = (
+                projection.structural_typed_decision_catalog(
+                    formula_space_id
+                )
+            )
+            mechanical_proof = (
+                _structural_formula_v4_mechanical_proof(
+                    projection,
+                    seed=FROZEN_SUPPLY_SEED + 4,
+                )
+            )
+            if mechanical_proof["status"] != "PASS":
+                raise RuntimeError(
+                    "STRUCTURAL_FORMULA_V4_MECHANICAL_PROOF_FAILED"
+                )
+            exact_ready = (
+                len(post_archive)
+                >= STRUCTURAL_FORMULA_V4_MINIMUM_FRESH_EXACT
+            )
+            status = (
+                "STRUCTURAL_FORMULA_V4_EXACT_PASS_BEHAVIOR_PENDING"
+                if exact_ready
+                else "STRUCTURAL_FORMULA_V4_EXACT_SUPPLY_BLOCKED"
+            )
+            decision = {
+                "schema_version": (
+                    "cn_minute_static_structural_formula_v4_"
+                    "static_decision_v1"
+                ),
+                "status": status,
+                "post_archive_exact_supply": len(post_archive),
+                "minimum_post_archive_exact_supply": (
+                    STRUCTURAL_FORMULA_V4_MINIMUM_FRESH_EXACT
+                ),
+                "exact_supply_gate": (
+                    "PASS" if exact_ready else "FAIL"
+                ),
+                "behavior_supply_gate": "PENDING",
+                "financial_qualification_authorized": False,
+                "large_search_authorized": False,
+                "next_action": (
+                    "RUN_LABEL_FREE_BEHAVIOR_SUPPLY_PROBE"
+                    if exact_ready
+                    else "REVISE_BOUNDED_FORMULA_CATALOG"
+                ),
+            }
+            design.update(
+                {
+                    "status": status,
+                    "formula_v4_mechanical_status": (
+                        "FIVE_AXIS_MECHANICAL_PASS"
+                    ),
+                    "minimum_post_archive_exact_supply": (
+                        STRUCTURAL_FORMULA_V4_MINIMUM_FRESH_EXACT
+                    ),
+                }
+            )
+            _write_json(design_path, design)
+            catalog_path = _write_json(
+                output_root
+                / "structural_formula_v4_decision_catalog.json",
+                decision_catalog,
+            )
+            proof_path = _write_json(
+                output_root
+                / "synthetic_v4_adaptation_proof.json",
+                mechanical_proof,
+            )
+            artifact_paths.extend((catalog_path, proof_path))
+        elif typed_surface:
             decision_catalog = (
                 projection.structural_typed_decision_catalog(
                     formula_space_id
@@ -3296,7 +4060,7 @@ def run_structural_supply_design(
             coordinate_binding=_stable_hash(
                 {
                     "authorization_id": (
-                        STRUCTURAL_SUPPLY_AUTHORIZATION_ID
+                        authorization_id
                     ),
                     "contract_hash": contract["contract_hash"],
                     "decision_catalog_hash": design[
@@ -3306,7 +4070,11 @@ def run_structural_supply_design(
                     "seed": FROZEN_SUPPLY_SEED,
                 }
             ),
-            batch_id="minute_static.structural_supply_v1",
+            batch_id=(
+                "minute_static.structural_formula_v4"
+                if formula_v4
+                else "minute_static.structural_supply_v1"
+            ),
             compute_threads=int(args.compute_threads),
             max_trade_times=30,
             max_trade_dates=1,
@@ -3340,9 +4108,16 @@ def run_structural_supply_design(
             str(row.get("pair_member_role") or "") == "PRIMARY"
             for row in admitted
         )
-        decision = _nonexhaustive_supply_decision(
-            post_archive_exact_supply=len(post_archive),
-            observed_behavior_unique_supply=behavior_unique,
+        decision = (
+            _formula_v4_supply_decision(
+                post_archive_exact_supply=len(post_archive),
+                observed_behavior_unique_supply=behavior_unique,
+            )
+            if formula_v4
+            else _nonexhaustive_supply_decision(
+                post_archive_exact_supply=len(post_archive),
+                observed_behavior_unique_supply=behavior_unique,
+            )
         )
         status = str(decision["status"])
         design.update(
@@ -3354,9 +4129,12 @@ def run_structural_supply_design(
                     behavior_archive.rows
                 ),
                 "maximum_nonexhaustive_pair_budget_per_arm": (
-                    decision[
-                        "maximum_nonexhaustive_pair_budget_per_arm"
-                    ]
+                    decision.get(
+                        "maximum_nonexhaustive_pair_budget_per_arm",
+                        decision.get(
+                            "maximum_supported_paired_budget_per_arm"
+                        ),
+                    )
                 ),
                 "reference_paired_qualification_supply_ready": (
                     decision[
@@ -3428,9 +4206,13 @@ def run_structural_supply_design(
         )
     manifest = {
         "schema_version": (
-            "cn_minute_static_structural_typed_surface_manifest_v1"
-            if typed_surface
-            else "cn_minute_static_structural_supply_manifest_v1"
+            "cn_minute_static_structural_formula_v4_manifest_v1"
+            if formula_v4
+            else (
+                "cn_minute_static_structural_typed_surface_manifest_v1"
+                if typed_surface
+                else "cn_minute_static_structural_supply_manifest_v1"
+            )
         ),
         "status": status,
         "authorization_id": authorization_id,
@@ -4668,6 +5450,10 @@ def main() -> int:
         action="store_true",
     )
     parser.add_argument(
+        "--structural-formula-v4-supply",
+        action="store_true",
+    )
+    parser.add_argument(
         "--additional-exact-archive",
         type=Path,
         action="append",
@@ -4727,8 +5513,18 @@ def main() -> int:
         parser.error(
             "choose exactly one structural CEM V2 paired mode"
         )
+    supply_design_modes = (
+        args.structural_supply_design,
+        args.structural_typed_surface_audit,
+        args.structural_formula_v4_supply,
+    )
+    if sum(map(bool, supply_design_modes)) > 1:
+        parser.error(
+            "choose exactly one structural supply design mode"
+        )
     if args.structural_supply_design and (
         args.structural_typed_surface_audit
+        or args.structural_formula_v4_supply
         or args.continue_financial
         or args.paired_structural_cem_v2_canary
         or args.paired_structural_cem_v2_medium
@@ -4738,13 +5534,23 @@ def main() -> int:
             "--structural-supply-design cannot run another mode"
         )
     if args.structural_typed_surface_audit and (
+        args.structural_formula_v4_supply
+        or args.continue_financial
+        or args.paired_structural_cem_v2_canary
+        or args.paired_structural_cem_v2_medium
+        or args.paired_structural_cem_v2_supply_medium
+    ):
+        parser.error(
+            "--structural-typed-surface-audit cannot run another mode"
+        )
+    if args.structural_formula_v4_supply and (
         args.continue_financial
         or args.paired_structural_cem_v2_canary
         or args.paired_structural_cem_v2_medium
         or args.paired_structural_cem_v2_supply_medium
     ):
         parser.error(
-            "--structural-typed-surface-audit cannot run a financial mode"
+            "--structural-formula-v4-supply cannot run a financial mode"
         )
     if (
         args.structural_typed_surface_audit
@@ -4824,6 +5630,7 @@ def main() -> int:
         if (
             args.structural_supply_design
             or args.structural_typed_surface_audit
+            or args.structural_formula_v4_supply
         )
         else run_financial(args)
         if args.continue_financial
