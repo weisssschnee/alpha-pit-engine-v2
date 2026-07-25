@@ -1,0 +1,104 @@
+{
+  "schema_version": "cn_minute_static_online_typed_grammar_v5_closure_receipt_v1",
+  "status": "CAMPAIGN_CLOSED_HASH_VERIFIED_NOT_QUALIFIED",
+  "campaign": {
+    "repo_sha": "957c367af8101b252036ba5455d2a2047b766e03",
+    "task_id": "lanjob_20260726_030400_113a1b",
+    "task_exit_code": 0,
+    "task_started_at": "2026-07-26T03:04:45+08:00",
+    "task_ended_at": "2026-07-26T04:38:28+08:00",
+    "remote_root": "D:\\ChengboRemote\\runtime\\cn_minute_static_online_typed_grammar_cem_v1_20260726_957c367_3x24",
+    "formula_space_id": "MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_V5",
+    "pair_budget_per_arm": 72
+  },
+  "independent_hash_verification": {
+    "root_manifest_sha256": "f3f418848cbd62014f0cffb827c5fe81adbe479992af364cf607f2681b32deda",
+    "root_artifacts_verified": 17,
+    "batch_manifest_count": 6,
+    "batch_artifacts_verified": 114,
+    "batch_manifest_sha256s": [
+      "242e75dffd34535db6c0a0a42c1d376b9722f835bfef436ac18db8859be48200",
+      "1b6b7a5ee85fda2736ef5f12420a086005bb9cd4864060d1554a78e6daaa48eb",
+      "50768f6615ad198fdd4b560964b547a29fa012bb0bd9b25ba84ac732fc370608",
+      "279c2753850be59aac65361e97543ac046351090f7a99514719d415a37e2fe4c",
+      "10145f5b826e0b8f07453268d526ca294fb342ea788474eba36284b70a666b2c",
+      "dfe49b2effa09737bb1ee0c6bad2be1cdad7f3f1942ed04d7ce7d309eebfbc5b"
+    ],
+    "all_batch_statuses": "BATCH_CLOSED_IMMUTABLE",
+    "artifact_mismatch_count": 0
+  },
+  "mechanical_contract": {
+    "generation_one_exact_stream_parity": true,
+    "generation_one_full_evaluation_set_parity": true,
+    "zero_exact_duplicates": true,
+    "sealed_reads_zero": true,
+    "cem_updated_context_count": 19,
+    "minimum_support_72_per_arm": false,
+    "fresh_state_reached_generation_three_with_72_rewards": false
+  },
+  "arm_metrics": {
+    "uniform": {
+      "evaluated_pairs": 54,
+      "positive_matched_pairs": 20,
+      "median_signed_matched_increment": -8.065477944927647,
+      "behavior_family_count": 62,
+      "behavior_discovery_per_evaluated_pair": 1.1481481481481481,
+      "full_coordinate_pairs_per_wall_hour": 102.7225200327563,
+      "selected_backend_host_cpu_median": 0.7303607643675977,
+      "selected_backend_effective_cores_median": 23.371544459763125,
+      "maximum_observed_cache_bytes": 1288465048,
+      "minimum_free_memory_bytes": 75789565952
+    },
+    "rank_weighted_cem_v2": {
+      "evaluated_pairs": 57,
+      "positive_matched_pairs": 21,
+      "median_signed_matched_increment": -8.816095648213434,
+      "behavior_family_count": 63,
+      "behavior_discovery_per_evaluated_pair": 1.105263157894737,
+      "full_coordinate_pairs_per_wall_hour": 108.25662734198558,
+      "selected_backend_host_cpu_median": 0.7883056785833307,
+      "selected_backend_effective_cores_median": 25.22578171466658,
+      "maximum_observed_cache_bytes": 1189352352,
+      "minimum_free_memory_bytes": 75740708864
+    }
+  },
+  "adaptive_checkpoint_comparison": {
+    "uniform_evaluated": 35,
+    "cem_evaluated": 38,
+    "uniform_positive": 14,
+    "cem_positive": 15,
+    "uniform_median": -10.050111702574839,
+    "cem_median": -9.433103675394136,
+    "adaptive_positive_count_noninferior": true,
+    "adaptive_median_strictly_better": true,
+    "behavior_discovery_noninferior": false
+  },
+  "access_boundary": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "promotion": "FORBIDDEN"
+  },
+  "verdict": {
+    "ONLINE_TYPED_GRAMMAR_CEM_V1": "STRUCTURAL_CEM_V2_NOT_QUALIFIED",
+    "CEM_SEARCH_INCREMENT": "NOT_QUALIFIED",
+    "PERFORMANCE_CONTRACT": "FAIL",
+    "TARGET_FAMILY_LARGE_SEARCH_READINESS": "SEARCH_POLICY_BLOCKED",
+    "large_search_authorized": false,
+    "readiness_blockers": [
+      "minimum_support",
+      "fresh_medium_state_adapted",
+      "behavior_discovery_noninferior",
+      "uniform_hot_path_host_occupancy_at_least_75pct"
+    ]
+  },
+  "performance_patch": {
+    "repo_sha": "72250f97612ec6db21e2b1142a33c4306ca31d90",
+    "scope": [
+      "parallel pair common-support mask",
+      "candidate-by-time parallel label-free selection"
+    ],
+    "financial_recomputation": "FORBIDDEN",
+    "official_77o_parity_and_microbenchmark": "PENDING_HOST_REACHABILITY_AFTER_VERSIONED_SYNC"
+  }
+}

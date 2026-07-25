@@ -2,7 +2,7 @@
 
 Updated: 2026-07-26
 
-Current state: `CN_MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_V5_PAIRED_RUNNING`
+Current state: `CN_MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_V5_CLOSED_NOT_QUALIFIED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -506,11 +506,11 @@ the eager catalog; fresh Uniform/CEM proposal streams matched before tell, and
 synthetic full-evaluation feedback changed the root and root-conditioned CEM
 contexts. The real runner is wired for one paired 3-checkpoint x 24-pair
 train-only comparison per arm. Pushed implementation SHA
-`957c367af8101b252036ba5455d2a2047b766e03` is active on 77o as the single
+`957c367af8101b252036ba5455d2a2047b766e03` completed on 77o as the single
 writer `minute_static_online_typed_grammar_cem_v1_957c367_single_writer`,
 detached task `lanjob_20260726_030400_113a1b`, under campaign root
 `D:\ChengboRemote\runtime\cn_minute_static_online_typed_grammar_cem_v1_20260726_957c367_3x24`.
-The task has entered checkpoint-one sampled Phase3CM. Two earlier launcher
+The task exited zero after all six arm/checkpoints closed immutable. Two earlier launcher
 attempts stopped before Phase3CM because a behavior-only V4 archive was
 incorrectly supplied as exact memory; their logs are run-health evidence, not
 search or route health. A deterministic 256-row/256-exact projection now binds
@@ -520,6 +520,31 @@ at
 `D:\ChengboRemote\runtime\cn_minute_static_online_typed_grammar_v5_inputs_20260726_957c367\projection_receipt.json`.
 Validation, holdout and 2026 reads remain zero, and no search or Graph authority
 is promoted.
+
+Independent closure matched the root manifest payload and all 17 root
+artifacts, plus all six batch-manifest payloads and 114/114 bound batch
+artifacts. Generation-one proposal streams and full-evaluation sets matched,
+exact duplicates were zero, and the CEM updated 19 declared contexts. Uniform
+completed 54 evaluated pairs and CEM 57, below the frozen 72-per-arm support
+minimum. Over adaptive checkpoints CEM retained 15 positive pairs versus 14
+Uniform and a less-negative median (-9.43310 versus -10.05011), but behavior
+discovery was lower (1.10526 versus 1.14815 per evaluated pair). The overall
+medians remained negative and CEM's aggregate median was below Uniform
+(-8.81610 versus -8.06548). Uniform's median selected-backend host occupancy
+was 73.04%, below the frozen 75% threshold; CEM reached 78.83%. The honest
+verdict is `STRUCTURAL_CEM_V2_NOT_QUALIFIED`,
+`CEM_SEARCH_INCREMENT=NOT_QUALIFIED`, performance `FAIL`, and
+`SEARCH_POLICY_BLOCKED`. No large search or optimizer authority is accepted.
+Compact closure evidence is in
+`runtime/run_plans/cn_minute_static_online_typed_grammar_v5_20260726_receipt.json`.
+
+Source-only performance commit
+`72250f97612ec6db21e2b1142a33c4306ca31d90` parallelizes the support mask and
+candidate-by-time label-free selection while preserving support, tie-break,
+turnover and behavior identity inputs. Local exact parity and bounded
+microbenchmarks passed. Official 77o parity and non-financial benchmarks remain
+pending because the host became unreachable after the new versioned-workspace
+sync; the completed financial campaign is not recomputed.
 
 Historically, the targeted formula-space/CEM retry selected
 `DISCLOSURE_EVENT` /
@@ -617,16 +642,16 @@ Retain the qualified `normalized_ratio` production increment and active
 route-local sampled selector. Do not reuse any terminal CEM probabilities or
 launch a large search.
 
-Do not rerun or enlarge the completed V4 supply proof. The user has authorized
-one V5 paired train qualification after the code-ready commit is pushed. Run
-fresh Uniform versus online typed-Grammar Structural CEM on the identical
-Registry/compiler/matched-control/evaluator authority, with the same proposal
-stream at generation one and shared cumulative exact/behavior memory. CEM must
-initialize fresh uniform with no imported probabilities or rewards. Use exactly
-the frozen 3 checkpoints x at most 24 full-coordinate pairs per arm on 77o.
-Keep `CSRank` frozen; do not add another root mapping, tune alpha/elite fraction,
-or widen the Grammar during this causal comparison. No validation, holdout or
-2026 access and no candidate or search-authority promotion are authorized.
+Do not rerun or enlarge the completed V4 supply proof or the closed V5 paired
+qualification. When 77o is reachable, verify the versioned workspace for
+performance commit `72250f9`, then run only focused official-runtime parity and
+bounded non-financial microbenchmarks for the two accelerated kernels. Do not
+recompute financial results. Keep the 8 GiB evaluator cache cap and at least
+24 GiB free memory. The next search-policy comparison must use a mature
+conditional optimizer as a thin route-local adapter over the same bounded
+Grammar/compiler/matched-control authority; do not continue tuning the rejected
+rank-weighted CEM, reuse its probabilities, launch a large search, or open
+validation/holdout/2026 access.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.
