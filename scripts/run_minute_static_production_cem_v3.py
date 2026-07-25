@@ -145,8 +145,11 @@ PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT = 2
 PAIRED_STRUCTURAL_CEM_V2_FULL_PAIR_CAP = 12
 PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT = 3
 PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP = 24
+PAIRED_STRUCTURAL_SUPPLY_MEDIUM_CHECKPOINT_COUNT = 4
+PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP = 17
 PAIRED_STRUCTURAL_CEM_V2_CANARY_SEED_OFFSET = 20_000
 PAIRED_STRUCTURAL_CEM_V2_MEDIUM_SEED_OFFSET = 30_000
+PAIRED_STRUCTURAL_SUPPLY_MEDIUM_SEED_OFFSET = 40_000
 
 
 class MinuteStaticProductionProjection:
@@ -556,34 +559,36 @@ def _structural_v2_fresh_stream_parity(
     *,
     seed: int,
     count: int = 32,
+    formula_space_id: str = EXPANDED_FORMULA_SPACE_ID,
+    exact_seen: set[str] | None = None,
 ) -> dict[str, Any]:
     decisions = projection.structural_decision_specs(
-        EXPANDED_FORMULA_SPACE_ID
+        formula_space_id
     )
     catalog_hash = projection.structural_decision_catalog_hash(
-        EXPANDED_FORMULA_SPACE_ID
+        formula_space_id
     )
     uniform = AvailableUniformPolicy()
     cem = RankWeightedCategoricalCEMPolicy.fresh(
         decisions=decisions,
         decision_catalog_hash=catalog_hash,
-        formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+        formula_space_id=formula_space_id,
     )
     uniform_rng = np.random.default_rng(int(seed))
     cem_rng = np.random.default_rng(int(seed))
-    uniform_seen: set[str] = set()
-    cem_seen: set[str] = set()
+    uniform_seen = set(exact_seen or ())
+    cem_seen = set(exact_seen or ())
     uniform_rows = []
     cem_rows = []
     for _ in range(int(count)):
         left = projection.generate_available(
-            formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+            formula_space_id=formula_space_id,
             policy=uniform,
             rng=uniform_rng,
             exact_seen=uniform_seen,
         )
         right = projection.generate_available(
-            formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+            formula_space_id=formula_space_id,
             policy=cem,
             rng=cem_rng,
             exact_seen=cem_seen,
@@ -600,6 +605,8 @@ def _structural_v2_fresh_stream_parity(
         ),
         "seed": int(seed),
         "candidate_count": int(count),
+        "formula_space_id": formula_space_id,
+        "initial_exact_memory_count": len(exact_seen or ()),
         "uniform_policy": uniform.policy_id,
         "cem_policy": cem.policy_id,
         "exact_candidate_stream_equal": uniform_rows == cem_rows,
@@ -876,6 +883,13 @@ def _paired_structural_medium_verdict(
     arm_metrics: Mapping[str, Mapping[str, Any]],
     *,
     prior_canary_exact: set[str],
+    checkpoint_count: int = (
+        PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
+    ),
+    full_pair_cap: int = PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP,
+    schema_version: str = (
+        "cn_minute_static_structural_cem_v2_medium_verdict_v1"
+    ),
 ) -> dict[str, Any]:
     uniform_arm, cem_arm = PAIRED_STRUCTURAL_CEM_V2_ARMS
 
@@ -934,16 +948,12 @@ def _paired_structural_medium_verdict(
             ).read_text(encoding="utf-8-sig")
         )
         for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS
-        for checkpoint in range(
-            1, PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT + 1
-        )
+        for checkpoint in range(1, int(checkpoint_count) + 1)
     }
     proposed_exact = {
         str(row["exact_identity"])
         for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS
-        for checkpoint in range(
-            1, PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT + 1
-        )
+        for checkpoint in range(1, int(checkpoint_count) + 1)
         for row in _read_rows(
             output_root
             / "arms"
@@ -952,8 +962,11 @@ def _paired_structural_medium_verdict(
             / "proposal_ledger.parquet"
         )
     }
-    uniform_adaptive = evaluated_increments(uniform_arm, (2, 3))
-    cem_adaptive = evaluated_increments(cem_arm, (2, 3))
+    adaptive_checkpoints = tuple(range(2, int(checkpoint_count) + 1))
+    uniform_adaptive = evaluated_increments(
+        uniform_arm, adaptive_checkpoints
+    )
+    cem_adaptive = evaluated_increments(cem_arm, adaptive_checkpoints)
     uniform_metrics = arm_metrics[uniform_arm]
     cem_metrics = arm_metrics[cem_arm]
     cem_state = json.loads(
@@ -961,7 +974,7 @@ def _paired_structural_medium_verdict(
             output_root
             / "arms"
             / cem_arm
-            / "checkpoint_003"
+            / f"checkpoint_{int(checkpoint_count):03d}"
             / "arm_state.json"
         ).read_text(encoding="utf-8-sig")
     )["optimizer_state"]
@@ -979,10 +992,7 @@ def _paired_structural_medium_verdict(
         ),
         "minimum_support": all(
             int(arm_metrics[arm]["evaluated_pairs"])
-            >= (
-                PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
-                * PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
-            )
+            >= int(checkpoint_count) * int(full_pair_cap)
             for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS
         ),
         "zero_exact_duplicates": all(
@@ -999,12 +1009,9 @@ def _paired_structural_medium_verdict(
             == "none"
             and str(cem_state.get("current_state") or "") == "ADAPTED"
             and int(cem_state.get("generation") or 0)
-            == PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
+            == int(checkpoint_count)
             and int(cem_state.get("reward_observation_count") or 0)
-            >= (
-                PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
-                * PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
-            )
+            >= int(checkpoint_count) * int(full_pair_cap)
         ),
         "sealed_reads_zero": all(
             int(summary[name]) == 0
@@ -1071,9 +1078,7 @@ def _paired_structural_medium_verdict(
         and all(performance_checks.values())
     )
     return {
-        "schema_version": (
-            "cn_minute_static_structural_cem_v2_medium_verdict_v1"
-        ),
+        "schema_version": str(schema_version),
         "status": (
             "STRUCTURAL_CEM_V2_FINANCIALLY_QUALIFIED"
             if qualified
@@ -1449,6 +1454,217 @@ def _verify_reused_supply(
         "production_root_contract_hash": str(
             gate["production_root_contract_hash"]
         ),
+    }
+
+
+def _verify_reused_structural_supply(
+    root: Path,
+    *,
+    required_pair_budget_per_arm: int,
+) -> dict[str, Any]:
+    root = root.resolve()
+    manifest_path = root / "artifact_manifest.json"
+    design_path = root / "structural_formula_space_supply.json"
+    decision_path = root / "supply_decision.json"
+    manifest = json.loads(
+        manifest_path.read_text(encoding="utf-8-sig")
+    )
+    unsigned_manifest = {
+        key: value
+        for key, value in manifest.items()
+        if key != "manifest_payload_hash"
+    }
+    if str(manifest.get("manifest_payload_hash") or "") != _stable_hash(
+        unsigned_manifest
+    ):
+        raise RuntimeError("STRUCTURAL_SUPPLY_MANIFEST_PAYLOAD_HASH_DRIFT")
+    _verify_artifacts(root, manifest)
+    design = json.loads(design_path.read_text(encoding="utf-8-sig"))
+    decision = json.loads(
+        decision_path.read_text(encoding="utf-8-sig")
+    )
+    maximum_budget = int(
+        decision.get("maximum_nonexhaustive_pair_budget_per_arm") or 0
+    )
+    access_counts = {
+        name: int(manifest.get(name) or 0)
+        for name in (
+            "financial_reads",
+            "phase3cm_pair_count",
+            "validation_reads",
+            "holdout_reads",
+            "forward_2026_reads",
+        )
+    }
+    checks = {
+        "formula_space_exact": (
+            str(design.get("formula_space_id") or "")
+            == STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+        ),
+        "production_queue_exact": tuple(
+            map(str, design.get("production_ids") or ())
+        )
+        == STRUCTURAL_SUPPLY_PRODUCTION_IDS,
+        "raw_catalog_exact_unique": (
+            int(design.get("raw_categorical_rows") or 0) == 440
+            and int(design.get("raw_exact_unique") or 0) == 440
+            and int(design.get("raw_canonical_unique") or 0) == 440
+        ),
+        "required_budget_within_observed_nonexhaustive_ceiling": (
+            int(required_pair_budget_per_arm) <= maximum_budget
+        ),
+        "access_boundary_clean": all(
+            value == 0 for value in access_counts.values()
+        ),
+        "large_search_not_authorized": not bool(
+            decision.get("large_search_authorized")
+        ),
+    }
+    if not all(checks.values()):
+        raise RuntimeError(
+            "REUSED_STRUCTURAL_SUPPLY_NOT_QUALIFIED:"
+            + ",".join(
+                name for name, passed in checks.items() if not passed
+            )
+        )
+
+    inputs = dict(manifest.get("inputs") or {})
+
+    def input_hashes(*prefixes: str) -> list[str]:
+        return sorted(
+            str(row.get("sha256") or "")
+            for name, row in inputs.items()
+            if any(
+                str(name) == prefix
+                or str(name).startswith(prefix + "_")
+                for prefix in prefixes
+            )
+        )
+
+    return {
+        "schema_version": (
+            "cn_minute_static_structural_supply_reuse_receipt_v1"
+        ),
+        "status": "REUSED_HASH_VERIFIED_FINANCIAL_READS_ZERO",
+        "source_root": str(root),
+        "source_manifest_sha256": _sha256(manifest_path),
+        "formula_space_id": STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
+        "production_ids": list(STRUCTURAL_SUPPLY_PRODUCTION_IDS),
+        "post_archive_exact_supply": int(
+            design.get("post_archive_exact_supply") or 0
+        ),
+        "post_archive_rows_by_production": dict(
+            design.get("post_archive_rows_by_production") or {}
+        ),
+        "observed_behavior_unique_supply": int(
+            design.get("observed_behavior_unique_supply") or 0
+        ),
+        "maximum_nonexhaustive_pair_budget_per_arm": maximum_budget,
+        "required_pair_budget_per_arm": int(
+            required_pair_budget_per_arm
+        ),
+        "exact_archive_sha256s": input_hashes(
+            "historical_exact_archive",
+            "source_candidate_ledger",
+            "additional_exact_archive",
+        ),
+        "behavior_archive_sha256s": input_hashes(
+            "historical_behavior_archive",
+            "additional_behavior_archive",
+        ),
+        "checks": checks,
+        **access_counts,
+    }
+
+
+def _structural_supply_generation_audit(
+    projection: MinuteStaticProductionProjection,
+    *,
+    initial_exact: set[str],
+    expected_post_archive_exact_supply: int,
+    expected_post_archive_rows_by_production: Mapping[str, Any],
+) -> dict[str, Any]:
+    catalog = projection._available_candidate_catalog(
+        STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+    )
+    raw_counts = defaultdict(int)
+    available_counts = defaultdict(int)
+    exact_ids = []
+    canonical_ids = []
+    lane_domain_checks = {}
+    for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS:
+        skeleton_id = projection._production_skeletons[production_id]
+        lane = projection.generator.categorical_gene_space(
+            ROUTE_ID,
+            skeleton_id=skeleton_id,
+        )
+        lane_domain_checks[production_id] = tuple(
+            lane["ordered_categories_by_slot"]["field_pair_id"]
+        ) == tuple(projection.field_pair_ids)
+    for row in catalog:
+        production_id = str(row["production_id"])
+        exact_id = str(row["candidate"]["exact_identity"])
+        canonical_id = str(row["candidate"]["canonical_identity"])
+        raw_counts[production_id] += 1
+        exact_ids.append(exact_id)
+        canonical_ids.append(canonical_id)
+        if exact_id not in initial_exact:
+            available_counts[production_id] += 1
+    expected_available = {
+        production_id: int(
+            expected_post_archive_rows_by_production.get(
+                production_id, 0
+            )
+        )
+        for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+    }
+    observed_available = {
+        production_id: int(available_counts[production_id])
+        for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+    }
+    checks = {
+        "all_productions_use_authoritative_lane_domain": all(
+            lane_domain_checks.values()
+        ),
+        "raw_rows_440": len(catalog) == 440,
+        "raw_rows_110_per_production": all(
+            int(raw_counts[production_id]) == 110
+            for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+        ),
+        "raw_exact_unique_440": len(set(exact_ids)) == 440,
+        "raw_canonical_unique_440": len(set(canonical_ids)) == 440,
+        "all_primary_control_legal": all(
+            bool(row["candidate"].get("legal"))
+            and bool(row["control"].get("legal"))
+            for row in catalog
+        ),
+        "cumulative_memory_available_count_matches_supply_evidence": (
+            sum(observed_available.values())
+            == int(expected_post_archive_exact_supply)
+        ),
+        "cumulative_memory_available_production_counts_match": (
+            observed_available == expected_available
+        ),
+    }
+    return {
+        "schema_version": (
+            "cn_minute_static_structural_supply_generation_audit_v1"
+        ),
+        "status": "PASS" if all(checks.values()) else "FAIL",
+        "formula_space_id": STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
+        "production_ids": list(STRUCTURAL_SUPPLY_PRODUCTION_IDS),
+        "authoritative_field_pair_domain_count": len(
+            projection.field_pair_ids
+        ),
+        "raw_rows_by_production": {
+            production_id: int(raw_counts[production_id])
+            for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+        },
+        "post_memory_exact_by_production": observed_available,
+        "post_memory_exact_supply": sum(observed_available.values()),
+        "initial_exact_memory_count": len(initial_exact),
+        "lane_domain_checks": lane_domain_checks,
+        "checks": checks,
     }
 
 
@@ -2987,10 +3203,30 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
     paired_structural_medium = bool(
         getattr(args, "paired_structural_cem_v2_medium", False)
     )
-    if paired_structural_canary and paired_structural_medium:
+    paired_structural_supply_medium = bool(
+        getattr(
+            args,
+            "paired_structural_cem_v2_supply_medium",
+            False,
+        )
+    )
+    if sum(
+        (
+            paired_structural_canary,
+            paired_structural_medium,
+            paired_structural_supply_medium,
+        )
+    ) > 1:
         raise ValueError("STRUCTURAL_CEM_V2_MODE_AMBIGUOUS")
     paired_structural_v2 = (
-        paired_structural_canary or paired_structural_medium
+        paired_structural_canary
+        or paired_structural_medium
+        or paired_structural_supply_medium
+    )
+    search_formula_space_id = (
+        STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+        if paired_structural_supply_medium
+        else EXPANDED_FORMULA_SPACE_ID
     )
     if (
         (paired_structural_v2 or not args.allow_noncanonical_host)
@@ -3007,21 +3243,29 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         else ARMS
     )
     checkpoint_count = (
-        PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
-        if paired_structural_medium
+        PAIRED_STRUCTURAL_SUPPLY_MEDIUM_CHECKPOINT_COUNT
+        if paired_structural_supply_medium
         else (
-            PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT
-            if paired_structural_canary
-            else CHECKPOINT_COUNT
+            PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT
+            if paired_structural_medium
+            else (
+                PAIRED_STRUCTURAL_CEM_V2_CHECKPOINT_COUNT
+                if paired_structural_canary
+                else CHECKPOINT_COUNT
+            )
         )
     )
     full_pair_cap = (
-        PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
-        if paired_structural_medium
+        PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP
+        if paired_structural_supply_medium
         else (
-            PAIRED_STRUCTURAL_CEM_V2_FULL_PAIR_CAP
-            if paired_structural_canary
-            else FULL_PAIR_CAP
+            PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
+            if paired_structural_medium
+            else (
+                PAIRED_STRUCTURAL_CEM_V2_FULL_PAIR_CAP
+                if paired_structural_canary
+                else FULL_PAIR_CAP
+            )
         )
     )
     lock_path = output_root / "campaign_writer.json"
@@ -3063,6 +3307,19 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         output_root / "old_supply_reuse_receipt.json",
         supply_reuse,
     )
+    structural_supply_reuse_path = None
+    structural_supply_reuse: dict[str, Any] | None = None
+    if paired_structural_supply_medium:
+        structural_supply_reuse = _verify_reused_structural_supply(
+            args.reused_structural_supply_root,
+            required_pair_budget_per_arm=(
+                checkpoint_count * full_pair_cap
+            ),
+        )
+        structural_supply_reuse_path = _write_json(
+            output_root / "structural_supply_reuse_receipt.json",
+            structural_supply_reuse,
+        )
     generator = RegistryDrivenGenerator(
         registry,
         constructor_profile=COMPOSITIONAL_V2_PROFILE,
@@ -3081,10 +3338,15 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         projection.decision_catalog(OLD_FORMULA_SPACE_ID),
     )
     expanded_catalog_path = _write_json(
-        output_root / "decision_catalog_expanded.json",
+        output_root
+        / (
+            "decision_catalog_structural_supply.json"
+            if paired_structural_supply_medium
+            else "decision_catalog_expanded.json"
+        ),
         (
             projection.structural_decision_catalog(
-                EXPANDED_FORMULA_SPACE_ID
+                search_formula_space_id
             )
             if paired_structural_v2
             else projection.decision_catalog(
@@ -3129,19 +3391,95 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         output_root / "session_sample_contract.json",
         session_sample,
     )
+    additional_exact_paths = tuple(
+        Path(path).resolve()
+        for path in (
+            getattr(args, "additional_exact_archive", ()) or ()
+        )
+    )
+    exact_archive_paths = (
+        args.historical_exact_archive.resolve(),
+        args.source_candidate_ledger.resolve(),
+        *additional_exact_paths,
+    )
+    initial_exact = _historical_exact(*exact_archive_paths)
+    initial_exact.update(prior_canary_exact)
+    additional_behavior_paths = tuple(
+        Path(path).resolve()
+        for path in (
+            getattr(args, "additional_behavior_archive", ()) or ()
+        )
+    )
+    behavior_archive_paths = (
+        args.historical_behavior_archive.resolve(),
+        *additional_behavior_paths,
+    )
+    initial_behavior = _combined_behavior_archive(
+        *behavior_archive_paths
+    )
+    structural_supply_audit_path = None
+    structural_supply_audit: dict[str, Any] | None = None
+    if paired_structural_supply_medium:
+        assert structural_supply_reuse is not None
+        current_exact_hashes = sorted(
+            _sha256(path) for path in exact_archive_paths
+        )
+        current_behavior_hashes = sorted(
+            _sha256(path) for path in behavior_archive_paths
+        )
+        if (
+            current_exact_hashes
+            != structural_supply_reuse["exact_archive_sha256s"]
+            or current_behavior_hashes
+            != structural_supply_reuse["behavior_archive_sha256s"]
+        ):
+            raise RuntimeError(
+                "STRUCTURAL_SUPPLY_CUMULATIVE_MEMORY_HASH_DRIFT"
+            )
+        structural_supply_audit = _structural_supply_generation_audit(
+            projection,
+            initial_exact=initial_exact,
+            expected_post_archive_exact_supply=int(
+                structural_supply_reuse["post_archive_exact_supply"]
+            ),
+            expected_post_archive_rows_by_production=dict(
+                structural_supply_reuse[
+                    "post_archive_rows_by_production"
+                ]
+            ),
+        )
+        structural_supply_audit_path = _write_json(
+            output_root / "structural_supply_generation_audit.json",
+            structural_supply_audit,
+        )
+        if structural_supply_audit["status"] != "PASS":
+            raise RuntimeError(
+                "STRUCTURAL_SUPPLY_GENERATION_AUDIT_FAILED"
+            )
     frozen_contract = {
         "schema_version": (
             "cn_minute_static_production_cem_v3_financial_contract_v1"
         ),
         "status": "FROZEN_EXECUTABLE",
         "authorization_id": (
-            "MINUTE_STATIC_STRUCTURAL_CEM_V2_PAIRED_MEDIUM"
+            "MINUTE_STATIC_STRUCTURAL_SUPPLY_CEM_V2_PAIRED_MEDIUM"
+            if paired_structural_supply_medium
+            else "MINUTE_STATIC_STRUCTURAL_CEM_V2_PAIRED_MEDIUM"
             if paired_structural_medium
             else "MINUTE_STATIC_STRUCTURAL_CEM_V2_PAIRED_CANARY"
             if paired_structural_canary
             else AUTHORIZATION_ID
         ),
         "route_id": ROUTE_ID,
+        "formula_space_id": search_formula_space_id,
+        "production_ids": [
+            choice.token_id
+            for choice in projection.structural_decision_specs(
+                search_formula_space_id
+            )[0].ordered_choices
+        ]
+        if paired_structural_v2
+        else ["field_spread", "normalized_ratio"],
         "old_production": "field_spread",
         "added_existing_production": "normalized_ratio",
         "arms": list(campaign_arms),
@@ -3171,6 +3509,10 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         "left_right_independent_probabilities": "FORBIDDEN",
         "paired_common_random_stream": paired_structural_v2,
         "prior_canary_exact_memory_count": len(prior_canary_exact),
+        "cumulative_exact_memory_count": len(initial_exact),
+        "cumulative_behavior_memory_row_count": len(
+            initial_behavior.rows
+        ),
         "prior_canary_source_manifest_sha256": (
             reused_canary_receipt["source_manifest_sha256"]
             if reused_canary_receipt is not None
@@ -3197,7 +3539,11 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
     )
     fresh_state_parity = (
         _structural_v2_fresh_stream_parity(
-            projection, seed=FINANCIAL_SEED + 900_001
+            projection,
+            seed=FINANCIAL_SEED + 900_001,
+            count=full_pair_cap,
+            formula_space_id=search_formula_space_id,
+            exact_seen=initial_exact,
         )
         if paired_structural_v2
         else _fresh_large_search_state_parity(
@@ -3246,14 +3592,6 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         sampled_qualification["campaign_local_selector_authorized"]
     )
 
-    initial_exact = _historical_exact(
-        args.historical_exact_archive.resolve(),
-        args.source_candidate_ledger.resolve(),
-    )
-    initial_exact.update(prior_canary_exact)
-    initial_behavior = PortfolioBehaviorArchive.read_parquet(
-        args.historical_behavior_archive.resolve()
-    )
     field_roots = {
         "active_bar": args.active_field_root.resolve()
     }
@@ -3276,7 +3614,11 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         )
         rng = np.random.default_rng(
             (
-                FINANCIAL_SEED + PAIRED_STRUCTURAL_CEM_V2_MEDIUM_SEED_OFFSET
+                FINANCIAL_SEED
+                + PAIRED_STRUCTURAL_SUPPLY_MEDIUM_SEED_OFFSET
+                if paired_structural_supply_medium
+                else FINANCIAL_SEED
+                + PAIRED_STRUCTURAL_CEM_V2_MEDIUM_SEED_OFFSET
                 if paired_structural_medium
                 else FINANCIAL_SEED
                 + PAIRED_STRUCTURAL_CEM_V2_CANARY_SEED_OFFSET
@@ -3288,7 +3630,7 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             rng.bit_generator.state = copy.deepcopy(rng_state)
         if paired_structural_v2 and arm == "arm_c_structural_cem_v2":
             decisions = projection.structural_decision_specs(
-                EXPANDED_FORMULA_SPACE_ID
+                search_formula_space_id
             )
             policy = (
                 RankWeightedCategoricalCEMPolicy.restore(
@@ -3296,10 +3638,10 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
                     decisions=decisions,
                     decision_catalog_hash=(
                         projection.structural_decision_catalog_hash(
-                            EXPANDED_FORMULA_SPACE_ID
+                            search_formula_space_id
                         )
                     ),
-                    formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+                    formula_space_id=search_formula_space_id,
                     rng=rng,
                 )
                 if optimizer_state is not None
@@ -3307,10 +3649,10 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
                     decisions=decisions,
                     decision_catalog_hash=(
                         projection.structural_decision_catalog_hash(
-                            EXPANDED_FORMULA_SPACE_ID
+                            search_formula_space_id
                         )
                     ),
-                    formula_space_id=EXPANDED_FORMULA_SPACE_ID,
+                    formula_space_id=search_formula_space_id,
                 )
             )
         elif paired_structural_v2:
@@ -3412,6 +3754,11 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
                     else 48
                 ),
                 full_pair_cap=full_pair_cap,
+                formula_space_id=(
+                    search_formula_space_id
+                    if paired_structural_v2
+                    else None
+                ),
             )
 
     initial_families = {
@@ -3429,11 +3776,24 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         )
         for arm in campaign_arms
     }
-    if paired_structural_medium:
+    if paired_structural_medium or paired_structural_supply_medium:
         comparison = _paired_structural_medium_verdict(
             output_root,
             arm_metrics,
-            prior_canary_exact=prior_canary_exact,
+            prior_canary_exact=(
+                initial_exact
+                if paired_structural_supply_medium
+                else prior_canary_exact
+            ),
+            checkpoint_count=checkpoint_count,
+            full_pair_cap=full_pair_cap,
+            schema_version=(
+                "cn_minute_static_structural_supply_cem_v2_"
+                "medium_verdict_v1"
+                if paired_structural_supply_medium
+                else "cn_minute_static_structural_cem_v2_"
+                "medium_verdict_v1"
+            ),
         )
         qualified = (
             comparison["status"]
@@ -3443,7 +3803,13 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             "SAMPLED_PHASE3CM_AUTHORITY": (
                 "REUSED_ACTIVE_ROUTE_LOCAL_SELECTION_AUTHORITY"
             ),
-            "STRUCTURAL_CEM_V2_MEDIUM": comparison["status"],
+            (
+                "STRUCTURAL_SUPPLY_CEM_V2_MEDIUM"
+                if paired_structural_supply_medium
+                else "STRUCTURAL_CEM_V2_MEDIUM"
+            ): comparison["status"],
+            "FORMULA_SPACE_ID": search_formula_space_id,
+            "PAIR_BUDGET_PER_ARM": checkpoint_count * full_pair_cap,
             "CEM_SEARCH_INCREMENT": (
                 "QUALIFIED" if qualified else "NOT_QUALIFIED"
             ),
@@ -3585,6 +3951,10 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
         output_root / "qualification_metrics.json",
         {
             "old_supply": supply_reuse,
+            "structural_supply": structural_supply_reuse,
+            "structural_supply_generation_audit": (
+                structural_supply_audit
+            ),
             "production_parity": parity,
             "sampled_authority": sampled_qualification,
             "arms": arm_metrics,
@@ -3627,6 +3997,16 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
             if reused_canary_receipt_path is not None
             else []
         ),
+        *(
+            [structural_supply_reuse_path]
+            if structural_supply_reuse_path is not None
+            else []
+        ),
+        *(
+            [structural_supply_audit_path]
+            if structural_supply_audit_path is not None
+            else []
+        ),
         metrics_path,
         final_path,
         *(
@@ -3646,7 +4026,9 @@ def run_financial(args: argparse.Namespace) -> dict[str, Any]:
     ]
     manifest = {
         "schema_version": (
-            "cn_minute_static_structural_cem_v2_medium_manifest_v1"
+            "cn_minute_static_structural_supply_cem_v2_medium_manifest_v1"
+            if paired_structural_supply_medium
+            else "cn_minute_static_structural_cem_v2_medium_manifest_v1"
             if paired_structural_medium
             else "cn_minute_static_structural_cem_v2_canary_manifest_v1"
             if paired_structural_canary
@@ -3740,8 +4122,13 @@ def main() -> int:
         "--paired-structural-cem-v2-medium",
         action="store_true",
     )
+    parser.add_argument(
+        "--paired-structural-cem-v2-supply-medium",
+        action="store_true",
+    )
     parser.add_argument("--reused-sampled-authority-root", type=Path)
     parser.add_argument("--reused-structural-canary-root", type=Path)
+    parser.add_argument("--reused-structural-supply-root", type=Path)
     parser.add_argument("--reused-supply-root", type=Path)
     parser.add_argument("--source-campaign-root", type=Path)
     parser.add_argument("--source-observation-ledger", type=Path)
@@ -3765,10 +4152,12 @@ def main() -> int:
     parser.add_argument("--allow-noncanonical-host", action="store_true")
     parser.add_argument("--static-only", action="store_true")
     args = parser.parse_args()
-    if (
-        args.paired_structural_cem_v2_canary
-        and args.paired_structural_cem_v2_medium
-    ):
+    paired_modes = (
+        args.paired_structural_cem_v2_canary,
+        args.paired_structural_cem_v2_medium,
+        args.paired_structural_cem_v2_supply_medium,
+    )
+    if sum(map(bool, paired_modes)) > 1:
         parser.error(
             "choose exactly one structural CEM V2 paired mode"
         )
@@ -3776,6 +4165,7 @@ def main() -> int:
         args.continue_financial
         or args.paired_structural_cem_v2_canary
         or args.paired_structural_cem_v2_medium
+        or args.paired_structural_cem_v2_supply_medium
     ):
         parser.error(
             "--structural-supply-design cannot run a financial mode"
@@ -3807,6 +4197,7 @@ def main() -> int:
             (
                 args.paired_structural_cem_v2_canary
                 or args.paired_structural_cem_v2_medium
+                or args.paired_structural_cem_v2_supply_medium
             )
             and args.reused_sampled_authority_root is None
         ):
@@ -3822,6 +4213,21 @@ def main() -> int:
                 "--paired-structural-cem-v2-medium requires "
                 "--reused-structural-canary-root"
             )
+        if args.paired_structural_cem_v2_supply_medium:
+            if args.reused_structural_supply_root is None:
+                parser.error(
+                    "--paired-structural-cem-v2-supply-medium requires "
+                    "--reused-structural-supply-root"
+                )
+            if (
+                not args.additional_exact_archive
+                or not args.additional_behavior_archive
+            ):
+                parser.error(
+                    "--paired-structural-cem-v2-supply-medium requires "
+                    "cumulative --additional-exact-archive and "
+                    "--additional-behavior-archive inputs"
+                )
     elif not args.static_only and (
         args.historical_behavior_archive is None
         or args.split_manifest is None

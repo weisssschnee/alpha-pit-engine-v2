@@ -1117,8 +1117,11 @@ def _generate_checkpoint_pool(
     generator_policy_id: str | None = None,
     sampled_selection_cap: int = SAMPLED_SELECTION_CAP,
     full_pair_cap: int = FULL_PAIR_CAP,
+    formula_space_id: str | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    formula_space_id = _formula_space_for_arm(arm)
+    formula_space_id = str(
+        formula_space_id or _formula_space_for_arm(arm)
+    )
     novel: list[dict[str, Any]] = []
     generation_exact: set[str] = set()
     raw = legal = duplicates = semantic_blocked = 0
@@ -1268,6 +1271,7 @@ def _execute_checkpoint(
     optimizer_updates_enabled: bool | None = None,
     sampled_selection_cap: int = SAMPLED_SELECTION_CAP,
     full_pair_cap: int = FULL_PAIR_CAP,
+    formula_space_id: str | None = None,
 ) -> dict[str, Any]:
     checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
     root = output_root / "arms" / arm / checkpoint_id
@@ -1293,6 +1297,7 @@ def _execute_checkpoint(
         generator_policy_id=generator_policy_id,
         sampled_selection_cap=sampled_selection_cap,
         full_pair_cap=full_pair_cap,
+        formula_space_id=formula_space_id,
     )
     proposal_rows = [
         {

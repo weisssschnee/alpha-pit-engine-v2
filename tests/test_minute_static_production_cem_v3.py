@@ -15,6 +15,8 @@ from scripts.run_minute_static_production_cem_v3 import (
     PAIRED_STRUCTURAL_CEM_V2_ARMS,
     PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT,
     PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP,
+    PAIRED_STRUCTURAL_SUPPLY_MEDIUM_CHECKPOINT_COUNT,
+    PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP,
     STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
     STRUCTURAL_SUPPLY_PRODUCTION_IDS,
     MinuteStaticProductionProjection,
@@ -25,6 +27,8 @@ from scripts.run_minute_static_production_cem_v3 import (
     _paired_structural_medium_verdict,
     _production_parity,
     _session_sample_contract,
+    _structural_supply_generation_audit,
+    _structural_v2_fresh_stream_parity,
     run,
     run_financial,
     run_structural_supply_design,
@@ -235,6 +239,102 @@ def test_structural_supply_space_reuses_only_qualified_pair_lanes() -> None:
         bool(row["candidate"]["legal"])
         and bool(row["control"]["legal"])
         for row in catalog
+    )
+
+
+def test_structural_supply_generation_audit_matches_cumulative_memory() -> None:
+    registry = UnifiedCapabilityRegistry.read(REGISTRY)
+    _, roots = _load_production_contract(
+        PRODUCTION_CONTRACT,
+        registry=registry,
+    )
+    projection = MinuteStaticProductionProjection(
+        RegistryDrivenGenerator(
+            registry,
+            constructor_profile=COMPOSITIONAL_V2_PROFILE,
+            enforce_route_compatibility=True,
+            route_root_allowlist={"MINUTE_STATIC": roots},
+        )
+    )
+    catalog = projection._available_candidate_catalog(
+        STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+    )
+    by_production = {
+        production_id: [
+            row
+            for row in catalog
+            if row["production_id"] == production_id
+        ]
+        for production_id in STRUCTURAL_SUPPLY_PRODUCTION_IDS
+    }
+    initial_exact = {
+        str(row["candidate"]["exact_identity"])
+        for production_id in ("field_spread", "normalized_ratio")
+        for row in by_production[production_id]
+    }
+    initial_exact.update(
+        str(row["candidate"]["exact_identity"])
+        for row in by_production["absolute_state_interaction"][:32]
+    )
+    initial_exact.update(
+        str(row["candidate"]["exact_identity"])
+        for row in by_production["dispersion_interaction"][:31]
+    )
+    expected = {
+        "field_spread": 0,
+        "normalized_ratio": 0,
+        "absolute_state_interaction": 78,
+        "dispersion_interaction": 79,
+    }
+    audit = _structural_supply_generation_audit(
+        projection,
+        initial_exact=initial_exact,
+        expected_post_archive_exact_supply=157,
+        expected_post_archive_rows_by_production=expected,
+    )
+    assert audit["status"] == "PASS"
+    assert audit["authoritative_field_pair_domain_count"] == 110
+    assert audit["post_memory_exact_by_production"] == expected
+    assert PAIRED_STRUCTURAL_SUPPLY_MEDIUM_CHECKPOINT_COUNT == 4
+    assert PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP == 17
+
+    parity = _structural_v2_fresh_stream_parity(
+        projection,
+        seed=2026072504,
+        count=PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP,
+        formula_space_id=STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
+        exact_seen=initial_exact,
+    )
+    assert parity["status"] == "PASS"
+    assert parity["formula_space_id"] == (
+        STRUCTURAL_SUPPLY_FORMULA_SPACE_ID
+    )
+    proposals, funnel = _generate_checkpoint_pool(
+        projection=projection,
+        arm="arm_b_uniform_expanded",
+        policy=AvailableUniformPolicy(),
+        rng=np.random.default_rng(2026072505),
+        exact_seen=set(initial_exact),
+        checkpoint_id="checkpoint_001",
+        behavior_probe_target=(
+            PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP
+        ),
+        availability_masked_sampling=True,
+        full_pair_cap=PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP,
+        formula_space_id=STRUCTURAL_SUPPLY_FORMULA_SPACE_ID,
+    )
+    assert len(proposals) == (
+        PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP
+    )
+    assert funnel["exact_duplicate_pairs"] == 0
+    assert {
+        row["formula_space_id"] for row in proposals
+    } == {STRUCTURAL_SUPPLY_FORMULA_SPACE_ID}
+    assert {
+        row["skeleton_id"].rsplit(".", 1)[-1]
+        for row in proposals
+    }.issubset(
+        {"absolute_state_interaction", "dispersion_interaction"}
     )
 
 
@@ -528,7 +628,7 @@ def test_structural_v2_canary_requires_common_first_full_evaluation_set(
     ]
 
 
-@pytest.mark.parametrize("mode", ("canary", "medium"))
+@pytest.mark.parametrize("mode", ("canary", "medium", "supply"))
 def test_structural_v2_modes_cannot_override_77o_host(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -545,20 +645,34 @@ def test_structural_v2_modes_cannot_override_77o_host(
             argparse.Namespace(
                 paired_structural_cem_v2_canary=mode == "canary",
                 paired_structural_cem_v2_medium=mode == "medium",
+                paired_structural_cem_v2_supply_medium=mode == "supply",
                 allow_noncanonical_host=True,
                 output_root=tmp_path,
             )
         )
 
 
+@pytest.mark.parametrize(
+    ("checkpoint_count", "full_pair_cap"),
+    (
+        (
+            PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT,
+            PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP,
+        ),
+        (
+            PAIRED_STRUCTURAL_SUPPLY_MEDIUM_CHECKPOINT_COUNT,
+            PAIRED_STRUCTURAL_SUPPLY_MEDIUM_FULL_PAIR_CAP,
+        ),
+    ),
+)
 def test_structural_v2_medium_requires_financial_and_runtime_increment(
     tmp_path: Path,
+    checkpoint_count: int,
+    full_pair_cap: int,
 ) -> None:
     uniform_arm, cem_arm = PAIRED_STRUCTURAL_CEM_V2_ARMS
     for arm in PAIRED_STRUCTURAL_CEM_V2_ARMS:
-        for checkpoint in range(
-            1, PAIRED_STRUCTURAL_CEM_V2_MEDIUM_CHECKPOINT_COUNT + 1
-        ):
+        for checkpoint in range(1, checkpoint_count + 1):
             root = (
                 tmp_path
                 / "arms"
@@ -568,9 +682,7 @@ def test_structural_v2_medium_requires_financial_and_runtime_increment(
             root.mkdir(parents=True)
             exact_ids = [
                 f"medium-{checkpoint}-{index}"
-                for index in range(
-                    PAIRED_STRUCTURAL_CEM_V2_MEDIUM_FULL_PAIR_CAP
-                )
+                for index in range(full_pair_cap)
             ]
             pq.write_table(
                 pa.Table.from_pylist(
@@ -623,10 +735,15 @@ def test_structural_v2_medium_requires_financial_and_runtime_increment(
                                 ),
                                 "imported_source_campaign": "none",
                                 "current_state": "ADAPTED",
-                                "generation": 3,
-                                "reward_observation_count": 72,
+                                "generation": checkpoint_count,
+                                "reward_observation_count": (
+                                    checkpoint_count * full_pair_cap
+                                ),
                             }
-                            if arm == cem_arm and checkpoint == 3
+                            if (
+                                arm == cem_arm
+                                and checkpoint == checkpoint_count
+                            )
                             else None
                         )
                     }
@@ -636,7 +753,7 @@ def test_structural_v2_medium_requires_financial_and_runtime_increment(
 
     metrics = {
         uniform_arm: {
-            "evaluated_pairs": 72,
+            "evaluated_pairs": checkpoint_count * full_pair_cap,
             "behavior_discovery_per_evaluated_pair": 0.50,
             "selected_backend_host_cpu_median": 0.80,
             "maximum_observed_cache_bytes": 2 * 1024**3,
@@ -644,7 +761,7 @@ def test_structural_v2_medium_requires_financial_and_runtime_increment(
             "full_coordinate_pairs_per_wall_hour": 100.0,
         },
         cem_arm: {
-            "evaluated_pairs": 72,
+            "evaluated_pairs": checkpoint_count * full_pair_cap,
             "behavior_discovery_per_evaluated_pair": 0.50,
             "selected_backend_host_cpu_median": 0.82,
             "maximum_observed_cache_bytes": 2 * 1024**3,
@@ -656,6 +773,8 @@ def test_structural_v2_medium_requires_financial_and_runtime_increment(
         tmp_path,
         metrics,
         prior_canary_exact={"canary-only"},
+        checkpoint_count=checkpoint_count,
+        full_pair_cap=full_pair_cap,
     )
     assert passed["status"] == (
         "STRUCTURAL_CEM_V2_FINANCIALLY_QUALIFIED"
@@ -677,6 +796,8 @@ def test_structural_v2_medium_requires_financial_and_runtime_increment(
         tmp_path,
         metrics,
         prior_canary_exact={"canary-only"},
+        checkpoint_count=checkpoint_count,
+        full_pair_cap=full_pair_cap,
     )
     assert unpaired["status"] == "STRUCTURAL_CEM_V2_NOT_QUALIFIED"
     assert not unpaired["mechanical_contracts"][
@@ -695,6 +816,8 @@ def test_structural_v2_medium_requires_financial_and_runtime_increment(
         tmp_path,
         metrics,
         prior_canary_exact={"canary-only"},
+        checkpoint_count=checkpoint_count,
+        full_pair_cap=full_pair_cap,
     )
     assert failed["status"] == "STRUCTURAL_CEM_V2_NOT_QUALIFIED"
     assert not failed["financial_checks"][
