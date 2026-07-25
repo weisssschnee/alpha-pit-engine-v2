@@ -541,10 +541,16 @@ Compact closure evidence is in
 Source-only performance commit
 `72250f97612ec6db21e2b1142a33c4306ca31d90` parallelizes the support mask and
 candidate-by-time label-free selection while preserving support, tie-break,
-turnover and behavior identity inputs. Local exact parity and bounded
-microbenchmarks passed. Official 77o parity and non-financial benchmarks remain
-pending because the host became unreachable after the new versioned-workspace
-sync; the completed financial campaign is not recomputed.
+turnover and behavior identity inputs. The exact commit was deployed to a new
+77o workspace, five source/test hashes matched, and 19 focused official-runtime
+tests passed in 5.34 seconds. At 30 threads the bounded non-financial
+microbenchmarks measured 8.51x for pair common-support masking and 2.58x for
+label-free behavior selection. Free memory stayed above 85.8 GB. These are
+kernel-direction measurements only, not whole-campaign speedup claims. The
+closed campaign's final timing evidence spans 12 timing files: pair common
+support consumed 423.43 recorded phase seconds at 9.59 effective cores and
+label-free behavior consumed 1,039.58 seconds at 13.62 effective cores. No
+financial result was recomputed and no sealed period was read.
 
 Historically, the targeted formula-space/CEM retry selected
 `DISCLOSURE_EVENT` /
@@ -643,13 +649,11 @@ route-local sampled selector. Do not reuse any terminal CEM probabilities or
 launch a large search.
 
 Do not rerun or enlarge the completed V4 supply proof or the closed V5 paired
-qualification. When 77o is reachable, verify the versioned workspace for
-performance commit `72250f9`, then run only focused official-runtime parity and
-bounded non-financial microbenchmarks for the two accelerated kernels. Do not
-recompute financial results. Keep the 8 GiB evaluator cache cap and at least
-24 GiB free memory. The next search-policy comparison must use a mature
+qualification. Performance commit `72250f9` is now officially parity-checked
+and directionally benchmarked on 77o; do not repeat that microbenchmark as
+another project phase. The next search-policy comparison must use a mature
 conditional optimizer as a thin route-local adapter over the same bounded
-Grammar/compiler/matched-control authority; do not continue tuning the rejected
+Grammar/compiler/matched-control authority. Do not continue tuning the rejected
 rank-weighted CEM, reuse its probabilities, launch a large search, or open
 validation/holdout/2026 access.
 

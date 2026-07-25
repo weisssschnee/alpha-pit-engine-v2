@@ -99,6 +99,40 @@
       "candidate-by-time parallel label-free selection"
     ],
     "financial_recomputation": "FORBIDDEN",
-    "official_77o_parity_and_microbenchmark": "PENDING_HOST_REACHABILITY_AFTER_VERSIONED_SYNC"
+    "official_77o_verification": {
+      "status": "OFFICIAL_77O_PARITY_AND_MICROBENCH_PASS",
+      "observed_at": "2026-07-26T06:18:47.1455282+08:00",
+      "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_phase3cm_perf_72250f9_20260726_061217_72250f97612e",
+      "workspace_manifest": "D:\\ChengboRemote\\runtime\\manifests\\alpha_pit_phase3cm_perf_72250f9_20260726_061217_72250f97612e.json",
+      "remote_receipt": "D:\\ChengboRemote\\runtime\\phase3cm_perf_72250f9_verification_20260726_061830\\verification_receipt.json",
+      "remote_receipt_sha256": "f8a8b9515eec4b0f22bdfbff41a55c7e0b19a1de01c34e706de776f5e1d8cd19",
+      "deployed_head_match": true,
+      "verified_source_and_test_hash_count": 5,
+      "focused_tests": {
+        "passed": 19,
+        "duration_seconds": 5.34
+      },
+      "closed_campaign_prechange_phase_totals": {
+        "timing_file_count": 12,
+        "recorded_phase_wall_seconds": 5389.410048876889,
+        "pair_common_support_wall_seconds": 423.4317087009549,
+        "pair_common_support_effective_cores": 9.585961364236505,
+        "label_free_behavior_wall_seconds": 1039.5758477929048,
+        "label_free_behavior_effective_cores": 13.61927141252755
+      },
+      "non_financial_microbenchmarks": {
+        "threads": 30,
+        "common_support_speedup": 8.511571582628164,
+        "label_free_behavior_speedup": 2.582159942555637,
+        "performance_direction_pass": true,
+        "whole_campaign_speedup_claim": "FORBIDDEN"
+      },
+      "memory": {
+        "required_minimum_free_bytes": 25769803776,
+        "minimum_observed_free_bytes": 85801701376
+      },
+      "sealed_reads": 0,
+      "graph_or_obsidian_update": 0
+    }
   }
 }
