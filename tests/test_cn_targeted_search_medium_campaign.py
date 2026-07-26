@@ -457,6 +457,97 @@ def test_runtime_gate_keeps_memory_headroom_failure_out_of_route_health(
     assert gate["run_health_policy"] == "INFRASTRUCTURE_ONLY_DOES_NOT_MUTATE_ROUTE_HEALTH"
 
 
+def test_runtime_gate_ignores_subsecond_parallelism_noise(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    backend_root = tmp_path / "phase3cm" / "stock_session"
+    backend_root.mkdir(parents=True)
+    result = {
+        "parallelism_status": "PARALLELISM_NOT_ENGAGED",
+        "compute_phase_parallelism": {
+            phase: {
+                "parallelism_status": (
+                    "PARALLELISM_NOT_ENGAGED"
+                    if phase == "turnover_and_cost"
+                    else "PARALLELISM_ENGAGED"
+                )
+            }
+            for phase in (
+                "expression_value_dag",
+                "cross_sectional_rank_mapping",
+                "label_free_behavior",
+                "turnover_and_cost",
+            )
+        },
+        "wall_seconds": 4.0,
+        "rows_processed": 100,
+        "pair_count": 1,
+        "peak_rss_bytes": 1024,
+        "phase_totals": {
+            "expression_value_dag": {"wall_seconds": 2.0},
+            "cross_sectional_rank_mapping": {"wall_seconds": 2.0},
+            "label_free_behavior": {"wall_seconds": 1.0},
+            "turnover_and_cost": {"wall_seconds": 0.25},
+            "checkpoint": {"wall_seconds": 0.1},
+        },
+        "expression_audits": [{"cache_hits": 1}],
+        "pair_results": [{"pair_id": "pair.stock"}],
+    }
+    (backend_root / "CN_STREAMING_BACKEND_RESULT.json").write_text(
+        json.dumps(result), encoding="utf-8"
+    )
+    events = []
+    for _ in range(3):
+        events.extend(
+            [
+                {"phase": "global_trade_time_barrier", "blocks_processed": 1},
+                {
+                    "phase": "expression_value_dag",
+                    "wall_seconds": 1.0,
+                    "cpu_seconds": 24.0,
+                },
+                {"phase": "checkpoint", "blocks_processed": 1},
+            ]
+        )
+    (backend_root / "CN_PHASE3CM_PHASE_TIMING.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in events), encoding="utf-8"
+    )
+    (backend_root / "runtime_samples.json").write_text(
+        json.dumps(
+            [
+                {
+                    "elapsed_seconds": 4.0,
+                    "available_memory_bytes": 64 * 1024**3,
+                    "system_read_bytes": 0,
+                    "system_write_bytes": 0,
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(campaign_module, "_physical_cpu_count", lambda: 16)
+    monkeypatch.setattr(campaign_module, "_logical_cpu_count", lambda: 32)
+
+    gate = _runtime_gate(
+        tmp_path,
+        {"active_bar": 30, "stock_session": 30},
+        expected_backends=("stock_session",),
+    )
+    stock = gate["backends"]["stock_session"]
+
+    assert gate["status"] == "PASS"
+    assert stock["parallelism_engaged"] is True
+    assert stock["parallelism_required_phases"] == [
+        "cross_sectional_rank_mapping",
+        "expression_value_dag",
+        "label_free_behavior",
+    ]
+    assert stock["parallelism_below_measurement_resolution_phases"] == [
+        "turnover_and_cost"
+    ]
+
+
 def test_bounded_adjustment_never_repeats_an_unchanged_full_host_pool(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

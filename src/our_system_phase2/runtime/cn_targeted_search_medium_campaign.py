@@ -1169,16 +1169,27 @@ def _runtime_gate(
             "turnover_and_cost",
         }
         present_parallel_phases = required_parallel_phases & set(compute_phase_parallelism)
+        phase_totals = dict(result.get("phase_totals") or {})
+        timed_parallel_phases = {
+            phase
+            for phase in present_parallel_phases
+            if float((phase_totals.get(phase) or {}).get("wall_seconds") or 0.0)
+            >= 1.0
+        }
+        parallelism_required_phases = (
+            timed_parallel_phases
+            if timed_parallel_phases
+            else present_parallel_phases
+        )
         parallel = (
             all(
                 str(compute_phase_parallelism[phase].get("parallelism_status") or "")
                 == "PARALLELISM_ENGAGED"
-                for phase in present_parallel_phases
+                for phase in parallelism_required_phases
             )
             if present_parallel_phases == required_parallel_phases
             else result.get("parallelism_status") == "PARALLELISM_ENGAGED"
         )
-        phase_totals = dict(result.get("phase_totals") or {})
         io_wall = float((phase_totals.get("global_trade_time_barrier") or {}).get("wall_seconds") or 0.0)
         total_wall = max(float(result.get("wall_seconds") or 0.0), 1e-12)
         read_throughput = read_bytes / max(duration, 1.0)
@@ -1261,6 +1272,11 @@ def _runtime_gate(
             "sustained_blocks_meeting_threshold": sustained_blocks,
             "per_block_compute": blocks,
             "parallelism_engaged": parallel,
+            "parallelism_required_phases": sorted(parallelism_required_phases),
+            "parallelism_below_measurement_resolution_phases": sorted(
+                present_parallel_phases - parallelism_required_phases
+            ),
+            "parallelism_phase_minimum_wall_seconds": 1.0,
             "system_cpu_percent_mean": statistics.mean(
                 [float(row.get("system_cpu_percent") or 0.0) for row in samples]
             ) if samples else None,
@@ -1289,7 +1305,7 @@ def _runtime_gate(
         }
     expected_outputs_complete = set(backends) == set(expected) and bool(expected)
     return {
-        "schema_version": "cn_medium_campaign_runtime_utilization_gate_v3",
+        "schema_version": "cn_medium_campaign_runtime_utilization_gate_v4",
         "status": (
             "PASS"
             if overall_execution and overall_run_health and expected_outputs_complete
