@@ -291,8 +291,40 @@ if njit is not None:
 
 
     @njit(cache=True, parallel=True)
+    def _prepare_signal_ranks(
+        signals: np.ndarray,
+        starts: np.ndarray,
+        ends: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Rank each candidate/group once before horizon-parallel mapping."""
+
+        candidate_count = signals.shape[0]
+        group_count = starts.shape[0]
+        ranks = np.full(signals.shape, np.nan, dtype=np.float64)
+        orders = np.full(signals.shape, -1, dtype=np.int32)
+        counts = np.zeros((candidate_count, group_count), dtype=np.int32)
+        for work_index in prange(candidate_count * group_count):
+            candidate = work_index // group_count
+            group = work_index - candidate * group_count
+            start = starts[group]
+            end = ends[group]
+            local_ranks, local_order = _rank_average_with_order(
+                signals[candidate, start:end]
+            )
+            ranks[candidate, start:end] = local_ranks
+            count = local_order.shape[0]
+            counts[candidate, group] = count
+            for index in range(count):
+                orders[candidate, start + index] = local_order[index]
+        return ranks, orders, counts
+
+
+    @njit(cache=True, parallel=True)
     def _mapping_kernel(
         signals: np.ndarray,
+        signal_ranks: np.ndarray,
+        signal_orders: np.ndarray,
+        signal_order_counts: np.ndarray,
         labels: np.ndarray,
         label_orders: np.ndarray,
         label_order_counts: np.ndarray,
@@ -308,94 +340,101 @@ if njit is not None:
         selected = np.zeros((candidate_count, horizon_count, signals.shape[1]), dtype=np.bool_)
         metrics = np.full((candidate_count, horizon_count, starts.shape[0], 7), np.nan, dtype=np.float64)
         group_count = starts.shape[0]
-        work_count = candidate_count * group_count
+        work_count = candidate_count * group_count * horizon_count
         for work_index in prange(work_count):
-            candidate = work_index // group_count
-            group = work_index - candidate * group_count
+            candidate = work_index // (group_count * horizon_count)
+            candidate_remainder = work_index - candidate * group_count * horizon_count
+            group = candidate_remainder // horizon_count
+            horizon = candidate_remainder - group * horizon_count
             direction = directions[candidate]
             start = starts[group]
             end = ends[group]
             signal_part = signals[candidate, start:end]
-            signal_rank, signal_order = _rank_average_with_order(signal_part)
+            signal_rank = signal_ranks[candidate, start:end]
+            signal_order_count = signal_order_counts[candidate, group]
+            signal_order = signal_orders[
+                candidate, start : start + signal_order_count
+            ]
             group_size = end - start
             ranks = np.empty(group_size, dtype=np.float64)
             returns = np.empty(group_size, dtype=np.float64)
             local_positions = np.empty(group_size, dtype=np.int64)
             return_rank = np.empty(group_size, dtype=np.float64)
             valid_index_by_local = np.empty(group_size, dtype=np.int64)
-            for horizon in range(horizon_count):
-                ret_part = labels[horizon, start:end]
-                valid_count = 0
-                for local in range(group_size):
-                    if np.isfinite(signal_rank[local]) and np.isfinite(ret_part[local]):
-                        ranks[valid_count] = signal_rank[local]
-                        returns[valid_count] = ret_part[local]
-                        local_positions[valid_count] = local
-                        valid_index_by_local[local] = valid_count
-                        valid_count += 1
-                    else:
-                        valid_index_by_local[local] = -1
-                if valid_count < min_obs:
-                    continue
-                low, high = _filtered_rank_quantile_pair(
-                    signal_rank,
-                    signal_order,
-                    ret_part,
-                    valid_count,
-                    top_quantile,
-                )
-                selected_count = 0
-                selected_return_sum = 0.0
-                market_sum = 0.0
-                top_sum = 0.0
-                top_count = 0
-                bottom_sum = 0.0
-                bottom_count = 0
-                top_signal_sum = 0.0
-                bottom_signal_sum = 0.0
-                for index in range(valid_count):
-                    market_sum += returns[index]
-                    if ranks[index] >= high:
-                        top_sum += returns[index]
-                        top_signal_sum += signal_part[local_positions[index]]
-                        top_count += 1
-                    if ranks[index] <= low:
-                        bottom_sum += returns[index]
-                        bottom_signal_sum += signal_part[local_positions[index]]
-                        bottom_count += 1
-                    chosen = ranks[index] >= high if direction > 0.0 else ranks[index] <= low
-                    if chosen:
-                        selected[candidate, horizon, start + local_positions[index]] = True
-                        selected_count += 1
-                        selected_return_sum += returns[index]
-                if selected_count == 0 or top_count == 0 or bottom_count == 0:
-                    continue
-                market_mean = market_sum / valid_count
-                selected_mean = selected_return_sum / selected_count
-                raw_return = selected_mean - market_mean if excess_market else selected_mean
-                label_order_count = label_order_counts[horizon, group]
-                _rank_filtered_returns_from_order(
-                    ret_part,
-                    label_orders[horizon, start : start + label_order_count],
-                    label_order_count,
-                    valid_index_by_local,
-                    valid_count,
-                    return_rank,
-                )
-                rank_ic_raw = _pearson(ranks[:valid_count], return_rank[:valid_count])
-                rank_ic = rank_ic_raw * direction if np.isfinite(rank_ic_raw) else np.nan
-                metrics[candidate, horizon, group, 0] = 1.0
-                metrics[candidate, horizon, group, 1] = raw_return
-                metrics[candidate, horizon, group, 2] = market_mean
-                metrics[candidate, horizon, group, 3] = rank_ic
-                metrics[candidate, horizon, group, 4] = valid_count
-                metrics[candidate, horizon, group, 5] = selected_count
-                metrics[candidate, horizon, group, 6] = abs(top_signal_sum / top_count - bottom_signal_sum / bottom_count)
+            ret_part = labels[horizon, start:end]
+            valid_count = 0
+            for local in range(group_size):
+                if np.isfinite(signal_rank[local]) and np.isfinite(ret_part[local]):
+                    ranks[valid_count] = signal_rank[local]
+                    returns[valid_count] = ret_part[local]
+                    local_positions[valid_count] = local
+                    valid_index_by_local[local] = valid_count
+                    valid_count += 1
+                else:
+                    valid_index_by_local[local] = -1
+            if valid_count < min_obs:
+                continue
+            low, high = _filtered_rank_quantile_pair(
+                signal_rank,
+                signal_order,
+                ret_part,
+                valid_count,
+                top_quantile,
+            )
+            selected_count = 0
+            selected_return_sum = 0.0
+            market_sum = 0.0
+            top_sum = 0.0
+            top_count = 0
+            bottom_sum = 0.0
+            bottom_count = 0
+            top_signal_sum = 0.0
+            bottom_signal_sum = 0.0
+            for index in range(valid_count):
+                market_sum += returns[index]
+                if ranks[index] >= high:
+                    top_sum += returns[index]
+                    top_signal_sum += signal_part[local_positions[index]]
+                    top_count += 1
+                if ranks[index] <= low:
+                    bottom_sum += returns[index]
+                    bottom_signal_sum += signal_part[local_positions[index]]
+                    bottom_count += 1
+                chosen = ranks[index] >= high if direction > 0.0 else ranks[index] <= low
+                if chosen:
+                    selected[candidate, horizon, start + local_positions[index]] = True
+                    selected_count += 1
+                    selected_return_sum += returns[index]
+            if selected_count == 0 or top_count == 0 or bottom_count == 0:
+                continue
+            market_mean = market_sum / valid_count
+            selected_mean = selected_return_sum / selected_count
+            raw_return = selected_mean - market_mean if excess_market else selected_mean
+            label_order_count = label_order_counts[horizon, group]
+            _rank_filtered_returns_from_order(
+                ret_part,
+                label_orders[horizon, start : start + label_order_count],
+                label_order_count,
+                valid_index_by_local,
+                valid_count,
+                return_rank,
+            )
+            rank_ic_raw = _pearson(ranks[:valid_count], return_rank[:valid_count])
+            rank_ic = rank_ic_raw * direction if np.isfinite(rank_ic_raw) else np.nan
+            metrics[candidate, horizon, group, 0] = 1.0
+            metrics[candidate, horizon, group, 1] = raw_return
+            metrics[candidate, horizon, group, 2] = market_mean
+            metrics[candidate, horizon, group, 3] = rank_ic
+            metrics[candidate, horizon, group, 4] = valid_count
+            metrics[candidate, horizon, group, 5] = selected_count
+            metrics[candidate, horizon, group, 6] = abs(
+                top_signal_sum / top_count - bottom_signal_sum / bottom_count
+            )
         return selected, metrics
 
 
     @njit(cache=True, parallel=True)
-    def _turnover_cost_kernel(
+    def _turnover_cost_kernel_legacy(
         selected: np.ndarray,
         metrics: np.ndarray,
         starts: np.ndarray,
@@ -537,8 +576,232 @@ if njit is not None:
                     daily[candidate, slot, day, 14] = max(daily[candidate, slot, day, 14], all_spread)
         return stats, daily, coordinate_metrics
 
+
+    @njit(cache=True, parallel=True)
+    def _turnover_cost_horizon_kernel(
+        selected: np.ndarray,
+        metrics: np.ndarray,
+        starts: np.ndarray,
+        ends: np.ndarray,
+        code_ids: np.ndarray,
+        day_ids: np.ndarray,
+        selection_epoch: np.ndarray,
+        epoch_counter: np.ndarray,
+        one_way_cost: float,
+        day_count: int,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Evaluate independent candidate/horizon turnover lanes in parallel."""
+
+        candidate_count = selected.shape[0]
+        horizon_count = selected.shape[1]
+        stats = np.zeros(
+            (candidate_count, horizon_count + 1, len(STAT_FIELDS)),
+            dtype=np.float64,
+        )
+        daily = np.zeros(
+            (candidate_count, horizon_count + 1, day_count, len(DAILY_FIELDS)),
+            dtype=np.float64,
+        )
+        coordinate_metrics = np.full(
+            (candidate_count, horizon_count, starts.shape[0], 4),
+            np.nan,
+            dtype=np.float64,
+        )
+        for lane in prange(candidate_count * horizon_count):
+            candidate = lane // horizon_count
+            horizon = lane - candidate * horizon_count
+            for group in range(starts.shape[0]):
+                start = starts[group]
+                end = ends[group]
+                day = int(day_ids[start])
+                if not np.isfinite(metrics[candidate, horizon, group, 0]):
+                    continue
+                current_epoch = epoch_counter[candidate, horizon] + 1
+                previous_epoch = epoch_counter[candidate, horizon]
+                intersection = 0
+                selected_count = 0
+                for row in range(start, end):
+                    if selected[candidate, horizon, row]:
+                        code = code_ids[row]
+                        if (
+                            previous_epoch > 0
+                            and selection_epoch[candidate, horizon, code]
+                            == previous_epoch
+                        ):
+                            intersection += 1
+                        selection_epoch[candidate, horizon, code] = current_epoch
+                        selected_count += 1
+                epoch_counter[candidate, horizon] = current_epoch
+                turnover = (
+                    1.0
+                    if previous_epoch == 0
+                    else 1.0 - intersection / selected_count
+                )
+                raw_return = metrics[candidate, horizon, group, 1]
+                market_mean = metrics[candidate, horizon, group, 2]
+                rank_ic = metrics[candidate, horizon, group, 3]
+                support_count = metrics[candidate, horizon, group, 4]
+                spread = metrics[candidate, horizon, group, 6]
+                net_return = raw_return - one_way_cost * turnover
+                coordinate_metrics[candidate, horizon, group, 0] = raw_return
+                coordinate_metrics[candidate, horizon, group, 1] = net_return
+                coordinate_metrics[candidate, horizon, group, 2] = turnover
+                coordinate_metrics[candidate, horizon, group, 3] = rank_ic
+                stats[candidate, horizon, 0] += 1.0
+                stats[candidate, horizon, 1] += net_return
+                stats[candidate, horizon, 2] += raw_return
+                stats[candidate, horizon, 3] += (
+                    1.0 if net_return > 0.0 else 0.0
+                )
+                stats[candidate, horizon, 4] += min(0.0, net_return) ** 2
+                stats[candidate, horizon, 5] += market_mean
+                stats[candidate, horizon, 6] += 1.0
+                stats[candidate, horizon, 7] += turnover
+                stats[candidate, horizon, 8] += 1.0
+                if np.isfinite(rank_ic):
+                    stats[candidate, horizon, 9] += rank_ic
+                    stats[candidate, horizon, 10] += 1.0
+                    stats[candidate, horizon, 11] += (
+                        1.0 if rank_ic > 0.0 else 0.0
+                    )
+                stats[candidate, horizon, 12] += support_count
+                stats[candidate, horizon, 13] += selected_count
+                stats[candidate, horizon, 14] = max(
+                    stats[candidate, horizon, 14], spread
+                )
+                daily[candidate, horizon, day, 0] += 1.0
+                daily[candidate, horizon, day, 1] += net_return
+                daily[candidate, horizon, day, 2] += raw_return
+                daily[candidate, horizon, day, 3] += (
+                    1.0 if net_return > 0.0 else 0.0
+                )
+                daily[candidate, horizon, day, 4] += min(0.0, net_return) ** 2
+                daily[candidate, horizon, day, 5] += market_mean
+                daily[candidate, horizon, day, 6] += 1.0
+                daily[candidate, horizon, day, 7] += turnover
+                daily[candidate, horizon, day, 8] += 1.0
+                if np.isfinite(rank_ic):
+                    daily[candidate, horizon, day, 9] += rank_ic
+                    daily[candidate, horizon, day, 10] += 1.0
+                    daily[candidate, horizon, day, 11] += (
+                        1.0 if rank_ic > 0.0 else 0.0
+                    )
+                daily[candidate, horizon, day, 12] += support_count
+                daily[candidate, horizon, day, 13] += selected_count
+                daily[candidate, horizon, day, 14] = max(
+                    daily[candidate, horizon, day, 14], spread
+                )
+        return stats, daily, coordinate_metrics
+
+
+    @njit(cache=True, parallel=True)
+    def _aggregate_horizon_kernel(
+        metrics: np.ndarray,
+        coordinate_metrics: np.ndarray,
+        starts: np.ndarray,
+        day_ids: np.ndarray,
+        stats: np.ndarray,
+        daily: np.ndarray,
+    ) -> None:
+        """Reproduce the legacy all-horizon sleeve after lane synchronization."""
+
+        candidate_count = metrics.shape[0]
+        horizon_count = metrics.shape[1]
+        for candidate in prange(candidate_count):
+            for group in range(starts.shape[0]):
+                day = int(day_ids[starts[group]])
+                all_net = 0.0
+                all_raw = 0.0
+                all_market = 0.0
+                all_turnover = 0.0
+                all_rank_ic = 0.0
+                all_support = 0.0
+                all_selected = 0.0
+                all_spread = 0.0
+                sleeve_count = 0
+                rank_ic_sleeves = 0
+                for horizon in range(horizon_count):
+                    if not np.isfinite(metrics[candidate, horizon, group, 0]):
+                        continue
+                    all_net += coordinate_metrics[candidate, horizon, group, 1]
+                    all_raw += coordinate_metrics[candidate, horizon, group, 0]
+                    all_market += metrics[candidate, horizon, group, 2]
+                    all_turnover += coordinate_metrics[
+                        candidate, horizon, group, 2
+                    ]
+                    all_support += metrics[candidate, horizon, group, 4]
+                    all_selected += metrics[candidate, horizon, group, 5]
+                    all_spread = max(
+                        all_spread, metrics[candidate, horizon, group, 6]
+                    )
+                    rank_ic = coordinate_metrics[candidate, horizon, group, 3]
+                    sleeve_count += 1
+                    if np.isfinite(rank_ic):
+                        all_rank_ic += rank_ic
+                        rank_ic_sleeves += 1
+                if sleeve_count == 0:
+                    continue
+                slot = horizon_count
+                net_return = all_net / sleeve_count
+                raw_return = all_raw / sleeve_count
+                market_mean = all_market / sleeve_count
+                turnover = all_turnover / sleeve_count
+                rank_ic = (
+                    all_rank_ic / rank_ic_sleeves
+                    if rank_ic_sleeves > 0
+                    else np.nan
+                )
+                stats[candidate, slot, 0] += 1.0
+                stats[candidate, slot, 1] += net_return
+                stats[candidate, slot, 2] += raw_return
+                stats[candidate, slot, 3] += (
+                    1.0 if net_return > 0.0 else 0.0
+                )
+                stats[candidate, slot, 4] += min(0.0, net_return) ** 2
+                stats[candidate, slot, 5] += market_mean
+                stats[candidate, slot, 6] += 1.0
+                stats[candidate, slot, 7] += turnover
+                stats[candidate, slot, 8] += 1.0
+                if np.isfinite(rank_ic):
+                    stats[candidate, slot, 9] += rank_ic
+                    stats[candidate, slot, 10] += 1.0
+                    stats[candidate, slot, 11] += (
+                        1.0 if rank_ic > 0.0 else 0.0
+                    )
+                stats[candidate, slot, 12] += all_support / sleeve_count
+                stats[candidate, slot, 13] += all_selected / sleeve_count
+                stats[candidate, slot, 14] = max(
+                    stats[candidate, slot, 14], all_spread
+                )
+                daily[candidate, slot, day, 0] += 1.0
+                daily[candidate, slot, day, 1] += net_return
+                daily[candidate, slot, day, 2] += raw_return
+                daily[candidate, slot, day, 3] += (
+                    1.0 if net_return > 0.0 else 0.0
+                )
+                daily[candidate, slot, day, 4] += min(0.0, net_return) ** 2
+                daily[candidate, slot, day, 5] += market_mean
+                daily[candidate, slot, day, 6] += 1.0
+                daily[candidate, slot, day, 7] += turnover
+                daily[candidate, slot, day, 8] += 1.0
+                if np.isfinite(rank_ic):
+                    daily[candidate, slot, day, 9] += rank_ic
+                    daily[candidate, slot, day, 10] += 1.0
+                    daily[candidate, slot, day, 11] += (
+                        1.0 if rank_ic > 0.0 else 0.0
+                    )
+                daily[candidate, slot, day, 12] += all_support / sleeve_count
+                daily[candidate, slot, day, 13] += (
+                    all_selected / sleeve_count
+                )
+                daily[candidate, slot, day, 14] = max(
+                    daily[candidate, slot, day, 14], all_spread
+                )
+
+
 else:  # pragma: no cover
-    _mapping_kernel = _prepare_label_orders = _turnover_cost_kernel = None
+    _mapping_kernel = _prepare_label_orders = _prepare_signal_ranks = None
+    _turnover_cost_horizon_kernel = _aggregate_horizon_kernel = None
 
 
 @dataclass(slots=True)
@@ -649,7 +912,13 @@ class BatchedPortfolioKernel:
         audit_coordinate_arrays: bool = False,
         prepared_block: PreparedPortfolioBlock | None = None,
     ) -> PortfolioBlockResult:
-        if _mapping_kernel is None or _prepare_label_orders is None or _turnover_cost_kernel is None:
+        if (
+            _mapping_kernel is None
+            or _prepare_label_orders is None
+            or _prepare_signal_ranks is None
+            or _turnover_cost_horizon_kernel is None
+            or _aggregate_horizon_kernel is None
+        ):
             raise RuntimeError("Numba is required for the batched portfolio hot path")
         signal_array = np.asarray(signals, dtype=np.float64)
         time_ids = np.asarray(time_ids, dtype=np.int64)
@@ -689,8 +958,16 @@ class BatchedPortfolioKernel:
         ends = prepared_block.ends
         label_orders = prepared_block.label_orders
         label_order_counts = prepared_block.label_order_counts
+        signal_ranks, signal_orders, signal_order_counts = _prepare_signal_ranks(
+            signal_array,
+            starts,
+            ends,
+        )
         selected, metrics = _mapping_kernel(
             signal_array,
+            signal_ranks,
+            signal_orders,
+            signal_order_counts,
             label_array,
             label_orders,
             label_order_counts,
@@ -705,7 +982,7 @@ class BatchedPortfolioKernel:
         mapping_cpu = time.process_time() - mapping_cpu_start
         turnover_wall_start = time.perf_counter()
         turnover_cpu_start = time.process_time()
-        stats, daily, coordinate_metrics = _turnover_cost_kernel(
+        stats, daily, coordinate_metrics = _turnover_cost_horizon_kernel(
             selected,
             metrics,
             starts,
@@ -716,6 +993,14 @@ class BatchedPortfolioKernel:
             self.epoch_counter,
             self.cost_bps / 10000.0,
             int(day_count),
+        )
+        _aggregate_horizon_kernel(
+            metrics,
+            coordinate_metrics,
+            starts,
+            day_ids,
+            stats,
+            daily,
         )
         turnover_wall = time.perf_counter() - turnover_wall_start
         turnover_cpu = time.process_time() - turnover_cpu_start
