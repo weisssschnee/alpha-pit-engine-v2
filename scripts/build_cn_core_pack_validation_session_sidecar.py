@@ -60,6 +60,48 @@ def _required_fields(path: Path) -> tuple[str, ...]:
     return tuple(sorted(fields))
 
 
+def _resolve_fundamental_partition_root(
+    root: Path,
+    *,
+    source_tables: set[str],
+) -> Path:
+    candidates = (root.resolve(), (root / "silver_partitioned").resolve())
+    for candidate in candidates:
+        if all((candidate / table).is_dir() for table in source_tables):
+            return candidate
+    missing = {
+        str(candidate): sorted(
+            table for table in source_tables if not (candidate / table).is_dir()
+        )
+        for candidate in candidates
+    }
+    raise FileNotFoundError(
+        "fundamental partition root does not expose required source tables: "
+        f"{missing}"
+    )
+
+
+def _assert_positive_pit_coverage(
+    *,
+    specs: dict[str, dict],
+    records: list[dict],
+) -> dict[str, float]:
+    aggregate = {
+        field_id: max(
+            (float(row["pit_coverage"].get(field_id, 0.0)) for row in records),
+            default=0.0,
+        )
+        for field_id in specs
+    }
+    empty = sorted(field_id for field_id, coverage in aggregate.items() if coverage <= 0.0)
+    if empty:
+        raise RuntimeError(
+            "canonical PIT fields have zero coverage across all session shards: "
+            f"{empty}"
+        )
+    return aggregate
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", type=Path, required=True)
@@ -111,8 +153,12 @@ def main() -> int:
                 str(source["source_field"])
             )
 
+    fundamental_partition_root = _resolve_fundamental_partition_root(
+        args.fundamental_root,
+        source_tables=set(prefetch),
+    )
     adapter = PITFundamentalFabricAdapter(
-        source_root=args.fundamental_root.resolve(),
+        source_root=fundamental_partition_root,
         sessions=sessions,
         maximum_observable_time=maximum_observable_time,
         prefetch_source_fields_by_table=prefetch,
@@ -253,6 +299,10 @@ def main() -> int:
         )
         print(json.dumps({"shard": shard, "rows": len(frame), "status": "PASS"}))
 
+    aggregate_pit_coverage = _assert_positive_pit_coverage(
+        specs=specs,
+        records=records,
+    )
     manifest = {
         "schema_version": "cn_core_pack_report_only_session_sidecar_v2",
         "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
@@ -268,6 +318,8 @@ def main() -> int:
             len(eligible_dates) if args.evaluation_role == "holdout" else 0
         ),
         "fields": records[0]["fields"],
+        "fundamental_partition_root": str(fundamental_partition_root),
+        "canonical_pit_coverage": aggregate_pit_coverage,
         "source_shard_count": len(records),
         "source_rows": sum(int(row["rows"]) for row in records),
         "sidecar_rows": sum(int(row["rows"]) for row in records),
