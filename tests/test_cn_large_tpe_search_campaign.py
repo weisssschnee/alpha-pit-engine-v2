@@ -82,7 +82,15 @@ class _FrozenLaneGenerator:
     def categorical_gene_lanes(self, route_id: str) -> dict[str, object]:
         return {
             "route_id": route_id,
-            "lanes": {"lane_a": {"root_rule": [self.rule]}},
+            "lanes": {
+                "lane_a": {
+                    "root_rule": [self.rule],
+                    "ordered_categories_by_slot": {
+                        "z_slot": ["Z"],
+                        "a_slot": ["A"],
+                    },
+                }
+            },
         }
 
 
@@ -112,6 +120,9 @@ def test_frozen_gene_lanes_survive_runtime_only_contract_change(
 
     assert resumed == initial
     assert resumed_manifest == manifest_path
+    assert list(
+        resumed[ROUTES[0]]["lane_a"]["ordered_categories_by_slot"]
+    ) == ["z_slot", "a_slot"]
 
 
 def test_frozen_gene_lanes_reject_projected_formula_space_drift(

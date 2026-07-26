@@ -259,6 +259,11 @@ def _freeze_gene_lanes(
         }
         if projected_payload != payload:
             raise RuntimeError("LARGE_TPE_GENE_LANE_INPUT_DRIFT")
+        # The frozen JSON is the immutable content authority, but _write_json
+        # sorts mapping keys.  Optuna consumes categorical slots in mapping
+        # order, so resume with the structurally equal Registry projection to
+        # preserve the original generator order used before the first write.
+        payload = projected_payload
     else:
         payload = {
             "schema_version": "cn_large_tpe_gene_lanes_v1",
