@@ -3,3 +3,4 @@ pandas
 pyarrow
 scipy
 pytest
+optuna==4.8.0
