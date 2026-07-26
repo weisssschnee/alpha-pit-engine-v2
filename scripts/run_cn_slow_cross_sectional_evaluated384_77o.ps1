@@ -10,7 +10,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $python = 'D:\ChengboRemote\venvs\alpha311\Scripts\python.exe'
-$git = 'D:\ChengboRemote\tools\PortableGit\cmd\git.exe'
+$deploymentManifestRoot = 'D:\ChengboRemote\runtime\manifests'
 $inputRoot = 'D:\ChengboRemote\runtime\cn_slow_cross_sectional_search_inputs_20260726_678bf8f'
 $trainBase = 'D:\ChengboRemote\runtime\cn_core_pack_aggressive_discovery_20260718_595c5fc\strict_wave_01024_sidecars_3509d0c'
 $labelBase = 'D:\ChengboRemote\workspace\alpha_pit_compositional_667c82f_git\runtime\cn_phase3cm_streaming_repair_20260716'
@@ -28,12 +28,32 @@ if (-not $resolvedRoot.StartsWith('D:\ChengboRemote\runtime\cn_slow_cross_sectio
 if (-not (Test-Path -LiteralPath $python)) {
     throw "official Python missing: $python"
 }
-if (-not (Test-Path -LiteralPath $git)) {
-    throw "portable Git missing: $git"
+if (-not (Test-Path -LiteralPath $deploymentManifestRoot)) {
+    throw "deployment manifest root missing: $deploymentManifestRoot"
 }
-$actualSha = (& $git -C $resolvedRepo rev-parse HEAD).Trim().ToLowerInvariant()
-if ($actualSha -ne $RepoSha.ToLowerInvariant()) {
-    throw "workspace SHA mismatch: expected=$RepoSha actual=$actualSha"
+$deploymentManifest = @(
+    Get-ChildItem -LiteralPath $deploymentManifestRoot -Filter '*.json' -File |
+        ForEach-Object {
+            try {
+                $payload = Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json
+                if (
+                    $payload.head -and
+                    $payload.workspace -and
+                    $payload.head.ToString().ToLowerInvariant() -eq $RepoSha.ToLowerInvariant() -and
+                    [IO.Path]::GetFullPath($payload.workspace.ToString()) -eq $resolvedRepo
+                ) {
+                    [pscustomobject]@{
+                        path = $_.FullName
+                        sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                    }
+                }
+            } catch {
+                # Ignore unrelated malformed historical manifests.
+            }
+        }
+)
+if ($deploymentManifest.Count -ne 1) {
+    throw "exact deployment manifest match count must be one: $($deploymentManifest.Count)"
 }
 $matching = @(
     Get-CimInstance Win32_Process |
@@ -74,6 +94,8 @@ New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
     schema_version = 'cn_slow_cross_sectional_evaluated384_deployment_binding_v1'
     repo_sha = $RepoSha
     repo = $resolvedRepo
+    deployment_manifest_path = $deploymentManifest[0].path
+    deployment_manifest_sha256 = $deploymentManifest[0].sha256
     output_root = $resolvedRoot
     host = $env:COMPUTERNAME
     python = $python
