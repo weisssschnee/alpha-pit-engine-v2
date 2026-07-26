@@ -675,23 +675,43 @@ Obsidian remain unchanged. The full remote closure is
 `D:\ChengboRemote\runtime\cn_slow_cross_sectional_evaluated384_20260726_351e503_384e\post_train_validation_repaired_d3de4b9\validation_repair_closure.json`
 (SHA256 `2fda9e2188068c88a0e6f1f69883b99ae453d9b1481c3a48bfc58d623e220685`).
 
+The current user instruction separately superseded the earlier large-search
+prohibition and authorized one five-digit development search, not a 2,000-pair
+claim. Commit `57b1fd36973131ad49933c47a9728b2440922e64` implements official
+Optuna 4.8.0 TPE as a thin route-local conditional typed-Grammar selector
+beneath registry `route_id`; it does not create a platform, optimizer database,
+new Graph authority or cross-campaign reward state. The frozen route targets
+sum to 20,000 actual `PAIR_EVALUATED`: 15,500 slow temporal, 2,000 First-N,
+1,200 slow cross-sectional, 800 market regime and 500 disclosure.
+
+The full zero-financial-read 77o supply preflight passed after subtracting
+3,475 historical exact identities. It found 49,771 fresh exact formulas:
+41,441/3,578/1,985/1,789/978 by the route order above, with every route above
+its frozen 1.20x supply floor and zero validation/holdout/2026 reads. Official
+77o focused tests passed 33/33. The single active task is
+`lanjob_20260726_143603_f2344c` at
+`D:\ChengboRemote\runtime\cn_large_optuna_tpe_actual20000_20260726_57b1fd3_20k`.
+Checkpoint 001 entered Phase3CM; an initial five-second host sample averaged
+75.94% logical-CPU occupancy with about 6.61 GB process-chain RSS and 78.86 GB
+free memory. This is active execution evidence, not a completed financial
+result or promotion.
+
 ## Next action
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
 qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the
 completed four-lane supply probe, the 4x17 campaign or the typed-surface audit.
 Retain the qualified `normalized_ratio` production increment and active
-route-local sampled selector. Do not reuse any terminal CEM probabilities or
-launch a large search.
+route-local sampled selector. Do not reuse any terminal CEM probabilities and
+do not launch a duplicate of the active 20,000-pair TPE campaign.
 
 Do not rerun or enlarge the completed V4 supply proof or the closed V5 paired
 qualification. Performance commit `72250f9` is now officially parity-checked
 and directionally benchmarked on 77o; do not repeat that microbenchmark as
-another project phase. The next search-policy comparison must use a mature
-conditional optimizer as a thin route-local adapter over the same bounded
-Grammar/compiler/matched-control authority. Do not continue tuning the rejected
-rank-weighted CEM, reuse its probabilities, launch a large search, or open
-validation/holdout/2026 access.
+another project phase. The mature conditional thin-adapter requirement is now
+the active official Optuna TPE campaign above. Monitor that single task through
+immutable checkpoints; do not continue tuning the rejected rank-weighted CEM,
+reuse its probabilities, launch another search, or open holdout/2026 access.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.
@@ -706,12 +726,12 @@ set. Any next development search should therefore target those materially
 uncovered mechanisms rather than rerun a global candidate race.
 
 The zero-financial-read route-lane integration and pre-budget supply
-calculations are complete. The next comparison must reuse the existing
-Structural CEM V2 implementation as a thin route-local adapter with the paired
-Uniform baseline above; the failed CatCMA and V1/V2 CEM states remain evidence,
-not reusable initializers. Do not promote legacy scheduler arm names into a
-second top-level authority, import reward-bearing cross-campaign memory, assign
-invented fresh/crossover/mutation percentages, or build MCTS/crossover/mutation
+calculations are complete. Continue only the active Optuna TPE task from its
+immutable ask/tell transcripts and Phase3CM checkpoints. The failed CatCMA and
+V1/V2 CEM states remain evidence, not reusable initializers. Do not promote
+legacy scheduler arm names into a second top-level authority, import
+reward-bearing cross-campaign memory, assign invented
+fresh/crossover/mutation percentages, or build MCTS/crossover/mutation
 machinery. Broad Event remains a zero-budget frozen reference. Strict Stage A,
 candidate promotion, any additional holdout access, 2026 access and
 cross-campaign reward memory remain forbidden until separately authorized.
