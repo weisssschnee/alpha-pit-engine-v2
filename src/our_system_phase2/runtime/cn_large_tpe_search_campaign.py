@@ -246,17 +246,19 @@ def _freeze_gene_lanes(
         manifest = json.loads(
             manifest_path.read_text(encoding="utf-8-sig")
         )
-        frozen_inputs = dict(manifest.get("input_hashes") or {})
-        if any(
-            str(frozen_inputs.get(key) or "")
-            != str(input_hashes.get(key) or "")
-            for key in ("registry", "schema")
-        ):
-            raise RuntimeError("LARGE_TPE_GENE_LANE_INPUT_DRIFT")
         _verify_artifacts(output_root, manifest)
         payload = json.loads(
             payload_path.read_text(encoding="utf-8-sig")
         )
+        projected_payload = {
+            "schema_version": "cn_large_tpe_gene_lanes_v1",
+            "routes": {
+                route_id: generator.categorical_gene_lanes(route_id)
+                for route_id in ROUTES
+            },
+        }
+        if projected_payload != payload:
+            raise RuntimeError("LARGE_TPE_GENE_LANE_INPUT_DRIFT")
     else:
         payload = {
             "schema_version": "cn_large_tpe_gene_lanes_v1",

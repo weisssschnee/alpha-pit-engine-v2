@@ -76,10 +76,13 @@ def test_observed_low_yield_increases_route_ask_share() -> None:
 
 
 class _FrozenLaneGenerator:
+    def __init__(self, rule: str = "RULE_A") -> None:
+        self.rule = rule
+
     def categorical_gene_lanes(self, route_id: str) -> dict[str, object]:
         return {
             "route_id": route_id,
-            "lanes": {"lane_a": {"root_rule": ["RULE_A"]}},
+            "lanes": {"lane_a": {"root_rule": [self.rule]}},
         }
 
 
@@ -111,7 +114,9 @@ def test_frozen_gene_lanes_survive_runtime_only_contract_change(
     assert resumed_manifest == manifest_path
 
 
-def test_frozen_gene_lanes_reject_registry_drift(tmp_path: Path) -> None:
+def test_frozen_gene_lanes_reject_projected_formula_space_drift(
+    tmp_path: Path,
+) -> None:
     generator = _FrozenLaneGenerator()
     _freeze_gene_lanes(
         output_root=tmp_path,
@@ -128,10 +133,10 @@ def test_frozen_gene_lanes_reject_registry_drift(tmp_path: Path) -> None:
     ):
         _freeze_gene_lanes(
             output_root=tmp_path,
-            generator=generator,
+            generator=_FrozenLaneGenerator("RULE_B"),
             input_hashes={
                 "contract": "contract-b",
-                "registry": "registry-b",
+                "registry": "registry-a",
                 "schema": "schema-a",
             },
         )
