@@ -639,6 +639,42 @@ authority. Any replacement optimizer must remain a thin route-local adapter
 beneath registry `route_id`; no MCTS, crossover, mutation or replacement
 machinery may be handcrafted.
 
+The bounded `SLOW_CROSS_SECTIONAL_LEVEL` evaluated-fill campaign is now closed
+on 77o. Eight immutable train checkpoints produced 392 actual `PAIR_EVALUATED`
+results against the 384-pair target, with zero evaluated exact duplicates and
+zero validation/holdout/2026 reads during train. The single-backend runtime gate
+passed at 25.35 effective cores and 79.20% logical-CPU occupancy. Portfolio
+semantics remained `long_only_top`, 5 bps one-way cost and horizons 1/5/15/30.
+
+The campaign's first automatic validation is preserved as inadequate evidence:
+all 19 required `fund_*` fields were schema-present but null because the
+sidecar builder received the package parent instead of its authoritative
+`silver_partitioned` root. Commit `d3de4b9` resolves the packaged partition
+root and fails closed on zero aggregate PIT coverage; 21 focused tests passed
+locally and on 77o. The candidate-bound validation-only repair rebuilt 381,649
+rows with 90.27%-97.53% coverage across all 19 canonical fundamental fields.
+It evaluated 392/408 frozen pairs; the remaining 16 were blocked only by a
+constant control. All eight train checkpoints, the train-complete manifest and
+five protected train projections retained their hashes. Validation recorded
+381,649 reads, zero holdout/2026 reads and zero feedback/scheduler/archive
+writes; promotion remained forbidden.
+
+The repaired OOS evidence does not qualify the batch for promotion. The matched
+validation report metric had median 0.01758 and 55.87% positive pairs, but mean
+-0.24525 and a -88.35 left-tail minimum. Matched net increment had median
+-0.01192, mean -0.29288 and only 46.43% positive pairs. Median/mean one-way
+turnover were 0.04074/0.08945, and train-to-validation rank correlation was
+only 0.17435. Validation-run regime positive share had median 0.5, while the
+worst-regime day Sortino median was -0.67697 and only 1.02% were positive.
+Fundamental-only pairs were the strongest broad family (matched-net median
+0.02742, mean 0.04231, 53.55% positive); chip-only and chip/context mixtures
+carried the most severe left-tail failures. The frozen verdict is
+`BATCH_NOT_PROMOTABLE_HEAVY_LEFT_TAIL`, while a bounded OOS survivor set remains
+available for economic/regime classification. Search authority, Graph and
+Obsidian remain unchanged. The full remote closure is
+`D:\ChengboRemote\runtime\cn_slow_cross_sectional_evaluated384_20260726_351e503_384e\post_train_validation_repaired_d3de4b9\validation_repair_closure.json`
+(SHA256 `2fda9e2188068c88a0e6f1f69883b99ae453d9b1481c3a48bfc58d623e220685`).
+
 ## Next action
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
@@ -680,3 +716,9 @@ machinery. Broad Event remains a zero-budget frozen reference. Strict Stage A,
 candidate promotion, any additional holdout access, 2026 access and
 cross-campaign reward memory remain forbidden until separately authorized.
 Plate resumes only when real PIT minute materialization is present on 77o.
+
+For the closed slow cross-sectional campaign, do not rerun the 392-pair train
+search or the repaired validation. Retain the fundamental-only OOS survivors
+for economic/regime classification, explicitly reject the severe chip/market-
+capitalization left-tail formulas, and require a separate authorization before
+any further validation, holdout access, candidate promotion or new search.
