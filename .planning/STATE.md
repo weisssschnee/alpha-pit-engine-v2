@@ -2,7 +2,7 @@
 
 Updated: 2026-07-26
 
-Current state: `CN_MINUTE_STATIC_ONLINE_TYPED_GRAMMAR_V5_CLOSED_NOT_QUALIFIED`
+Current state: `CN_LARGE_OPTUNA_TPE_ACTUAL20000_ACTIVE`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -524,15 +524,29 @@ is promoted.
 Independent closure matched the root manifest payload and all 17 root
 artifacts, plus all six batch-manifest payloads and 114/114 bound batch
 artifacts. Generation-one proposal streams and full-evaluation sets matched,
-exact duplicates were zero, and the CEM updated 19 declared contexts. Uniform
-completed 54 evaluated pairs and CEM 57, below the frozen 72-per-arm support
-minimum. Over adaptive checkpoints CEM retained 15 positive pairs versus 14
-Uniform and a less-negative median (-9.43310 versus -10.05011), but behavior
-discovery was lower (1.10526 versus 1.14815 per evaluated pair). The overall
-medians remained negative and CEM's aggregate median was below Uniform
-(-8.81610 versus -8.06548). Uniform's median selected-backend host occupancy
-was 73.04%, below the frozen 75% threshold; CEM reached 78.83%. The honest
-verdict is `STRUCTURAL_CEM_V2_NOT_QUALIFIED`,
+exact duplicates were zero. The recorded `cem_updated_context_count=19` means
+19 cumulative context-update events across three checkpoint tells, not 19
+unique declared contexts. The V5 decision surface has 13 unique contexts, and
+the receipt does not establish that all 13 ever received sufficient support.
+The sampled evaluator selected the full-coordinate shortlist but was forbidden
+from policy feedback, so CEM learned only from the sampled-top-K truncated full
+outcomes and received no signal for candidates discarded by sampled ranking.
+This prevents the comparison from cleanly separating optimizer quality from
+formula-space quality and shortlist-selection effects.
+
+Uniform completed 54 evaluated pairs and CEM 57, below the frozen 72-per-arm
+support minimum. Over adaptive checkpoints CEM retained 15 positive pairs
+versus 14 Uniform and a less-negative median (-9.43310 versus -10.05011), but
+behavior discovery was lower (1.10526 versus 1.14815 per evaluated pair).
+Their ratio is 96.2649%, so this is a strict 100% non-inferiority contract
+failure, not a material behavior-diversity collapse under the historical 90%
+reference. The overall medians remained negative and CEM's aggregate median
+was below Uniform (-8.81610 versus -8.06548). The rejected RankWeighted CEM V2
+also gave every evaluated rank positive weight and carried probability state
+without campaign-cumulative sufficient statistics; it is not a reusable
+mature optimizer. Uniform's median selected-backend host occupancy was 73.04%,
+below the frozen 75% threshold; CEM reached 78.83%. The honest verdict remains
+`STRUCTURAL_CEM_V2_NOT_QUALIFIED`,
 `CEM_SEARCH_INCREMENT=NOT_QUALIFIED`, performance `FAIL`, and
 `SEARCH_POLICY_BLOCKED`. No large search or optimizer authority is accepted.
 Compact closure evidence is in
@@ -693,8 +707,15 @@ its frozen 1.20x supply floor and zero validation/holdout/2026 reads. Official
 `D:\ChengboRemote\runtime\cn_large_optuna_tpe_actual20000_20260726_57b1fd3_20k`.
 Checkpoint 001 entered Phase3CM; an initial five-second host sample averaged
 75.94% logical-CPU occupancy with about 6.61 GB process-chain RSS and 78.86 GB
-free memory. This is active execution evidence, not a completed financial
-result or promotion.
+free memory. A direct data-flow audit found no sampled shortlist in this
+runner. Its first checkpoint scheduled 768 asks, produced 571 exact-unique
+admission decisions and admitted 312 behavior-unique pairs; all 312 primary
+pairs entered full-coordinate Phase3CM. Deterministic-invalid, exact-blocked
+and behavior-blocked trials receive no reward, while every full
+`PAIR_EVALUATED` outcome enters the route-local Optuna tell transcript. The
+MINUTE_STATIC sampled authority is not silently generalized to the five
+current routes without route/backend parity evidence. This is active execution
+evidence, not a completed financial result or promotion.
 
 ## Next action
 

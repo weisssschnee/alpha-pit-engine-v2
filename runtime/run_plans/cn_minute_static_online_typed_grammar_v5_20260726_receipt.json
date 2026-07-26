@@ -73,6 +73,19 @@
     "adaptive_median_strictly_better": true,
     "behavior_discovery_noninferior": false
   },
+  "interpretation_correction": {
+    "cem_updated_context_count_semantics": "19_CUMULATIVE_CONTEXT_UPDATE_EVENTS_ACROSS_THREE_CHECKPOINT_TELLS",
+    "unique_declared_decision_context_count": 13,
+    "all_unique_contexts_sufficiently_updated": "NOT_ESTABLISHED",
+    "sampled_feedback_role": "SHORTLIST_SELECTION_ONLY_POLICY_FEEDBACK_FORBIDDEN",
+    "optimizer_observation_distribution": "BEHAVIOR_ADMITTED_THEN_SAMPLED_TOP_K_THEN_FULL_COORDINATE",
+    "discarded_sampled_candidates_entered_tell": false,
+    "behavior_discovery_cem_to_uniform_ratio": 0.9626485568760612,
+    "behavior_gate_interpretation": "STRICT_100_PERCENT_NONINFERIORITY_FAILURE_NOT_MATERIAL_DIVERSITY_COLLAPSE",
+    "rank_weight_interpretation": "ALL_EVALUATED_RANKS_RECEIVE_POSITIVE_WEIGHT",
+    "campaign_cumulative_sufficient_statistics": false,
+    "causal_conclusion": "V5_DOES_NOT_SEPARATE_OPTIMIZER_QUALITY_FROM_FORMULA_SPACE_AND_SHORTLIST_EFFECTS"
+  },
   "access_boundary": {
     "validation_reads": 0,
     "holdout_reads": 0,
