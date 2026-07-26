@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from collections import Counter
+from pathlib import Path
+
+import pytest
 
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     ASKS_PER_CHECKPOINT,
@@ -8,6 +11,7 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     ROUTE_EVALUATED_TARGETS,
     ROUTES,
     _allocate_checkpoint_asks,
+    _freeze_gene_lanes,
 )
 
 
@@ -69,3 +73,65 @@ def test_observed_low_yield_increases_route_ask_share() -> None:
     )
 
     assert allocation["FIRSTN_PATH"] > 8
+
+
+class _FrozenLaneGenerator:
+    def categorical_gene_lanes(self, route_id: str) -> dict[str, object]:
+        return {
+            "route_id": route_id,
+            "lanes": {"lane_a": {"root_rule": ["RULE_A"]}},
+        }
+
+
+def test_frozen_gene_lanes_survive_runtime_only_contract_change(
+    tmp_path: Path,
+) -> None:
+    generator = _FrozenLaneGenerator()
+    initial, manifest_path = _freeze_gene_lanes(
+        output_root=tmp_path,
+        generator=generator,
+        input_hashes={
+            "contract": "contract-before-runtime-fix",
+            "registry": "registry-frozen",
+            "schema": "schema-frozen",
+        },
+    )
+
+    resumed, resumed_manifest = _freeze_gene_lanes(
+        output_root=tmp_path,
+        generator=generator,
+        input_hashes={
+            "contract": "contract-after-runtime-fix",
+            "registry": "registry-frozen",
+            "schema": "schema-frozen",
+        },
+    )
+
+    assert resumed == initial
+    assert resumed_manifest == manifest_path
+
+
+def test_frozen_gene_lanes_reject_registry_drift(tmp_path: Path) -> None:
+    generator = _FrozenLaneGenerator()
+    _freeze_gene_lanes(
+        output_root=tmp_path,
+        generator=generator,
+        input_hashes={
+            "contract": "contract-a",
+            "registry": "registry-a",
+            "schema": "schema-a",
+        },
+    )
+
+    with pytest.raises(
+        RuntimeError, match="LARGE_TPE_GENE_LANE_INPUT_DRIFT"
+    ):
+        _freeze_gene_lanes(
+            output_root=tmp_path,
+            generator=generator,
+            input_hashes={
+                "contract": "contract-b",
+                "registry": "registry-b",
+                "schema": "schema-a",
+            },
+        )

@@ -246,7 +246,12 @@ def _freeze_gene_lanes(
         manifest = json.loads(
             manifest_path.read_text(encoding="utf-8-sig")
         )
-        if dict(manifest.get("input_hashes") or {}) != dict(input_hashes):
+        frozen_inputs = dict(manifest.get("input_hashes") or {})
+        if any(
+            str(frozen_inputs.get(key) or "")
+            != str(input_hashes.get(key) or "")
+            for key in ("registry", "schema")
+        ):
             raise RuntimeError("LARGE_TPE_GENE_LANE_INPUT_DRIFT")
         _verify_artifacts(output_root, manifest)
         payload = json.loads(
