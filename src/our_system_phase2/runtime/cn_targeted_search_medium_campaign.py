@@ -1120,11 +1120,13 @@ def _runtime_gate(
     compute_threads: Mapping[str, int],
     *,
     output_namespace: str = "phase3cm",
+    expected_backends: Sequence[str] = ("active_bar", "stock_session"),
 ) -> dict[str, Any]:
+    expected = tuple(dict.fromkeys(str(backend) for backend in expected_backends))
     backends = {}
     overall_execution = True
     overall_run_health = True
-    for backend in ("active_bar", "stock_session"):
+    for backend in expected:
         backend_root = checkpoint_root / output_namespace / backend
         result_path = backend_root / "CN_STREAMING_BACKEND_RESULT.json"
         if not result_path.is_file():
@@ -1285,15 +1287,18 @@ def _runtime_gate(
             "checkpoint_status": "PASS" if "checkpoint" in (result.get("phase_totals") or {}) else "FAIL",
             "status": "PASS" if backend_pass else "FAIL",
         }
+    expected_outputs_complete = set(backends) == set(expected) and bool(expected)
     return {
         "schema_version": "cn_medium_campaign_runtime_utilization_gate_v3",
         "status": (
             "PASS"
-            if overall_execution and overall_run_health and len(backends) == 2
+            if overall_execution and overall_run_health and expected_outputs_complete
             else "PASS_WITH_RUN_HEALTH_FAILURE"
-            if overall_execution and len(backends) == 2
+            if overall_execution and expected_outputs_complete
             else "RUNTIME_ACCELERATION_GATE_FAILED"
         ),
+        "expected_backends": list(expected),
+        "observed_backends": list(backends),
         "backends": backends,
         "bounded_concurrency_adjustment_count": 0,
         "second_failure_policy": "RUN_INVALID",
@@ -1363,6 +1368,7 @@ def _bounded_runtime_adjustment(
         checkpoint_root,
         adjusted_threads,
         output_namespace="phase3cm_adjustment_1",
+        expected_backends=failed,
     )
     combined = json.loads(json.dumps(initial_gate))
     parity: dict[str, bool] = {}
@@ -2377,7 +2383,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             deadline_epoch=deadline_epoch,
         )
         if checkpoint_index == 0:
-            gate = _runtime_gate(checkpoint_root, compute_threads)
+            expected_backends = tuple(
+                backend
+                for backend in ("active_bar", "stock_session")
+                if backend in table_paths
+            )
+            gate = _runtime_gate(
+                checkpoint_root,
+                compute_threads,
+                expected_backends=expected_backends,
+            )
             if gate["status"] == "RUNTIME_ACCELERATION_GATE_FAILED":
                 gate, adjustment_receipts = _bounded_runtime_adjustment(
                     initial_gate=gate,

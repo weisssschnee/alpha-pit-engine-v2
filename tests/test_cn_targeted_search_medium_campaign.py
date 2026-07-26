@@ -363,12 +363,21 @@ def test_runtime_gate_requires_primary_host_occupancy(
     monkeypatch.setattr(campaign_module, "_physical_cpu_count", lambda: 16)
     monkeypatch.setattr(campaign_module, "_logical_cpu_count", lambda: 32)
 
-    gate = _runtime_gate(tmp_path, {"active_bar": 30, "stock_session": 2})
+    gate = _runtime_gate(
+        tmp_path,
+        {"active_bar": 30, "stock_session": 2},
+        expected_backends=("active_bar",),
+    )
     active = gate["backends"]["active_bar"]
 
     assert active["status"] == expected_status
     assert active["hot_path_bottleneck"] == expected_bottleneck
     assert active["host_logical_cpu_occupancy"] == pytest.approx(cpu_seconds / 32.0)
+    assert gate["expected_backends"] == ["active_bar"]
+    assert gate["observed_backends"] == ["active_bar"]
+    assert gate["status"] == (
+        "PASS" if expected_status == "PASS" else "RUNTIME_ACCELERATION_GATE_FAILED"
+    )
 
 
 def test_runtime_gate_keeps_memory_headroom_failure_out_of_route_health(
