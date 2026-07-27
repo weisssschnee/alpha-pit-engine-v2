@@ -9,6 +9,8 @@ import pandas as pd
 
 from our_system_phase2.services.compositional_grammar import (
     CompositionalGrammarV2,
+    FIRSTN_SUBSEQUENT_STATE_TRANSFORM_IDS,
+    OPTIMIZER_GENE_SURFACE_VERSION,
     SUPPLEMENTAL_GRAMMAR_VERSION,
     skeleton_registry,
     supplemental_skeleton_registry,
@@ -232,6 +234,52 @@ def test_firstn_compositions_compile_with_path_clock_preserved() -> None:
         assert pair.primary["clock_contract"] == "bar_close_and_firstN_clock"
         assert pair.control["clock_contract"] == pair.primary["clock_contract"]
         assert "Mul(0," in pair.control["expression"]
+
+
+def test_firstn_subsequent_state_transform_axis_is_bounded_and_depth_preserving() -> None:
+    grammar = CompositionalGrammarV2(UnifiedCapabilityRegistry.read(REGISTRY))
+    skeleton_id = "cn.comp.v2.firstn_path.firstn_path_state"
+    lane = grammar.categorical_gene_space(
+        "FIRSTN_PATH",
+        skeleton_id=skeleton_id,
+    )
+    categories = lane["ordered_categories_by_slot"]
+    assert categories["gene_surface_id"] == [
+        OPTIMIZER_GENE_SURFACE_VERSION
+    ]
+    assert tuple(categories["subsequent_state_transform_id"]) == (
+        FIRSTN_SUBSEQUENT_STATE_TRANSFORM_IDS
+    )
+
+    exact_ids = set()
+    expressions = {}
+    for transform_id in FIRSTN_SUBSEQUENT_STATE_TRANSFORM_IDS:
+        genes = {
+            slot: str(values[0])
+            for slot, values in categories.items()
+        }
+        genes["subsequent_state_transform_id"] = transform_id
+        pair = grammar.propose_from_categorical_genes(
+            "FIRSTN_PATH",
+            genes=genes,
+        )
+        assert pair.primary["legal"] is True
+        assert pair.control["legal"] is True
+        assert set(pair.primary["declared_field_ids"]) == set(
+            pair.control["declared_field_ids"]
+        )
+        assert _call_depth(pair.primary["canonical_expression"]) <= 4
+        assert _call_depth(pair.control["canonical_expression"]) <= 4
+        assert pair.primary["subsequent_state_transform_id"] == (
+            transform_id
+        )
+        exact_ids.add(str(pair.primary["exact_identity"]))
+        expressions[transform_id] = str(pair.primary["expression"])
+
+    assert len(exact_ids) == len(FIRSTN_SUBSEQUENT_STATE_TRANSFORM_IDS)
+    assert "ZScore(Delta(" in expressions["ZSCORE"]
+    assert "Sign(Delta(" in expressions["SIGN"]
+    assert "Abs(Delta(" in expressions["ABS"]
 
 
 def test_slow_routes_compile_without_unqualified_industry_neutralization() -> None:

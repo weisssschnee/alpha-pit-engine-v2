@@ -27,7 +27,7 @@ from our_system_phase2.services.unified_capability_registry import (
 
 GRAMMAR_VERSION = "cn_typed_compositional_grammar_v2"
 SUPPLEMENTAL_GRAMMAR_VERSION = "cn_typed_compositional_supplemental_v1"
-OPTIMIZER_GENE_SURFACE_VERSION = "cn_optimizer_skeleton_lane_gene_surface_v1"
+OPTIMIZER_GENE_SURFACE_VERSION = "cn_optimizer_skeleton_lane_gene_surface_v2"
 PRODUCTION_EXTENSION_ID = "PRODUCTION"
 MINUTE_STATIC_TYPED_TRANSFORMS_EXTENSION_ID = (
     "MINUTE_STATIC_TYPED_TRANSFORMS_V4"
@@ -45,6 +45,11 @@ MINUTE_STATIC_TYPED_TRANSFORM_IDS = (
     "ZSCORE",
     "ABS_ZSCORE",
     "SIGN",
+)
+FIRSTN_SUBSEQUENT_STATE_TRANSFORM_IDS = (
+    "ZSCORE",
+    "SIGN",
+    "ABS",
 )
 MINUTE_STATIC_ONLINE_BINARY_OPERATOR_IDS = (
     "SUB",
@@ -803,6 +808,14 @@ class CompositionalGrammarV2:
                     ),
                 }
             )
+            if name == "firstn_path_state":
+                categories["subsequent_state_transform_id"] = list(
+                    FIRSTN_SUBSEQUENT_STATE_TRANSFORM_IDS
+                )
+                constraint = (
+                    "FIRSTN_AND_RAW_ROUTE_ROOTS_"
+                    "DEPTH4_SUBSEQUENT_STATE_TRANSFORM"
+                )
         elif route_id == "SLOW_CROSS_SECTIONAL_LEVEL":
             pool = self._payload_pool(route_id)
             if name in {
@@ -1758,11 +1771,29 @@ class CompositionalGrammarV2:
             )
         short, long = (3, 10) if window <= 5 else (5, 20)
         name = skeleton.skeleton_id.rsplit(".", 1)[-1]
+        subsequent_state_transform = "ZSCORE"
+        if (
+            name == "firstn_path_state"
+            and categorical_genes is not None
+        ):
+            subsequent_state_transform = self._gene_value(
+                categorical_genes,
+                "subsequent_state_transform_id",
+                FIRSTN_SUBSEQUENT_STATE_TRANSFORM_IDS,
+            )
         control_expression = (
             f"CSRank(Add(ZScore({firstn_ref}),Mul(0,Delta({raw_ref},{window}))))"
         )
         if name == "firstn_path_state":
-            primary_expression = f"CSRank(Mul(ZScore({firstn_ref}),ZScore(Delta({raw_ref},{window}))))"
+            subsequent_state = {
+                "ZSCORE": f"ZScore(Delta({raw_ref},{window}))",
+                "SIGN": f"Sign(Delta({raw_ref},{window}))",
+                "ABS": f"Abs(Delta({raw_ref},{window}))",
+            }[subsequent_state_transform]
+            primary_expression = (
+                f"CSRank(Mul(ZScore({firstn_ref}),"
+                f"{subsequent_state}))"
+            )
             family = "SignedPath"
         elif name == "opening_path_liquidity":
             primary_expression = f"CSRank(Mul(ZScore(PathShape({firstn_ref},{window})),ZScore({raw_ref})))"
@@ -1795,6 +1826,15 @@ class CompositionalGrammarV2:
             control_expression=control_expression,
             operator_family=family,
             fields=(firstn, raw),
+            extra=(
+                {
+                    "subsequent_state_transform_id": (
+                        subsequent_state_transform
+                    )
+                }
+                if name == "firstn_path_state"
+                else None
+            ),
         )
 
     def _slow_level_pair(

@@ -56,6 +56,9 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     _runtime_gate,
     materialized_schema_binding,
 )
+from our_system_phase2.services.compositional_grammar import (
+    OPTIMIZER_GENE_SURFACE_VERSION,
+)
 from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
 )
@@ -525,6 +528,7 @@ def _authorization_binding(
             "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
         ),
         "optimizer_search_score_policy": SEARCH_SCORE_POLICY,
+        "optimizer_gene_surface_version": OPTIMIZER_GENE_SURFACE_VERSION,
         "validation_primary_decision": VALIDATION_PRIMARY_DECISION,
         "cache_cap_bytes": MAXIMUM_CACHE_BYTES,
         "minimum_free_memory_bytes": MINIMUM_FREE_MEMORY_BYTES,

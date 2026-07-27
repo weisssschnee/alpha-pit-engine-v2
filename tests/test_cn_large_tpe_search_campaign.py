@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+import json
 from pathlib import Path
 
 import numpy as np
@@ -28,6 +29,12 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _select_validation_finalists,
     _validation_eligible,
 )
+from our_system_phase2.services.compositional_grammar import (
+    OPTIMIZER_GENE_SURFACE_VERSION,
+)
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_large_contract_is_five_digit_actual_evaluated_not_scheduled() -> None:
@@ -50,6 +57,18 @@ def test_large_contract_is_five_digit_actual_evaluated_not_scheduled() -> None:
     )
     assert TPE_MULTIVARIATE is False
     assert TPE_GROUP is False
+    authorization = json.loads(
+        (
+            REPO_ROOT
+            / "runtime"
+            / "run_plans"
+            / "cn_large_optuna_tpe_actual20000_v2_authorization.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert authorization["authorization_revision"] == 2
+    assert authorization["optimizer_gene_surface_version"] == (
+        OPTIMIZER_GENE_SURFACE_VERSION
+    )
 
 
 def _evaluated_outcome(
