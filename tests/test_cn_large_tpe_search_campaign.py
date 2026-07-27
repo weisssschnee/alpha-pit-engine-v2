@@ -8,6 +8,7 @@ import pytest
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     ASKS_PER_CHECKPOINT,
     MINIMUM_ACTUAL_EVALUATED_PAIRS,
+    N_EI_CANDIDATES,
     OPTUNA_ROUTE_WORKERS,
     PAIR_BATCH_SIZES,
     ROUTE_EVALUATED_TARGETS,
@@ -15,6 +16,7 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _allocate_checkpoint_asks,
     _ask_route_populations,
     _freeze_gene_lanes,
+    _restore_or_import_adapters,
 )
 
 
@@ -29,6 +31,7 @@ def test_large_contract_is_five_digit_actual_evaluated_not_scheduled() -> None:
         "stock_session": 8,
     }
     assert OPTUNA_ROUTE_WORKERS == len(ROUTES)
+    assert N_EI_CANDIDATES == 24
 
 
 class _DeterministicRouteAdapter:
@@ -91,6 +94,53 @@ def test_parallel_route_ask_preserves_schedule_order_and_replay_genes() -> None:
     )
     assert audit["route_worker_count"] == len(scheduled_routes)
     assert audit["asked_pairs"] == sum(range(1, 4))
+
+
+def test_optimizer_snapshot_restores_without_transcript_resampling(
+    tmp_path: Path,
+) -> None:
+    lanes = {
+        route_id: {
+            f"{route_id}.single": {
+                "ordered_categories_by_slot": {
+                    "skeleton_id": [f"{route_id}.single"],
+                    "gene_surface_id": ["surface-v1"],
+                    "primary_field_id": ["field-a", "field-b"],
+                }
+            }
+        }
+        for route_id in ROUTES
+    }
+    transcripts = {route_id: [] for route_id in ROUTES}
+
+    imported = _restore_or_import_adapters(
+        output_root=tmp_path,
+        lanes_by_route=lanes,
+        seed_base=2026072602,
+        transcripts=transcripts,
+        checkpoint_count=0,
+        prior_manifest=None,
+    )
+    restored = _restore_or_import_adapters(
+        output_root=tmp_path,
+        lanes_by_route=lanes,
+        seed_base=2026072602,
+        transcripts=transcripts,
+        checkpoint_count=0,
+        prior_manifest=None,
+    )
+
+    assert set(imported) == set(ROUTES)
+    assert set(restored) == set(ROUTES)
+    assert all(
+        adapter.n_ei_candidates == N_EI_CANDIDATES
+        for adapter in restored.values()
+    )
+    assert (
+        tmp_path
+        / "optimizer_recovery"
+        / "GENESIS_post_tell_receipt.json"
+    ).is_file()
 
 
 def test_checkpoint_ask_allocation_is_registry_route_bounded() -> None:

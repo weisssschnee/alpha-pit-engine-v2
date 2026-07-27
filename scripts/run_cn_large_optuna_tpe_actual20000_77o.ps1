@@ -138,6 +138,10 @@ New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
     session_pair_batch_size = 8
     optimizer_ask_execution = "PROCESS_PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
     optuna_route_workers = 5
+    optimizer_n_ei_candidates = 24
+    optimizer_restore_authority = (
+        'HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS'
+    )
     evaluator_cache_cap_bytes = 8589934592
     portfolio_mode = 'LONG_ONLY_TOP'
     shorting = 'FORBIDDEN'

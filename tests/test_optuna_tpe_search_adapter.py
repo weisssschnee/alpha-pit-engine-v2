@@ -118,6 +118,51 @@ def test_tpe_adapter_round_trips_across_process_boundary() -> None:
     assert all(row["trial_number"] >= 8 for row in second)
 
 
+def test_tpe_trial_import_preserves_observations_without_resampling() -> None:
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=17,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+    )
+    first = adapter.ask_population(
+        checkpoint_id="checkpoint_001",
+        count=8,
+    )
+    adapter.tell_population(_observations(first))
+    second = adapter.ask_population(
+        checkpoint_id="checkpoint_002",
+        count=4,
+    )
+    adapter.tell_population(_observations(second))
+
+    restored = RouteConditionalTPESearchAdapter.restore_trials(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=17,
+        transcripts=adapter.history,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+    )
+
+    assert restored.history == adapter.history
+    assert restored.restore_mode == (
+        "IMMUTABLE_TRIAL_IMPORT_FRESH_DETERMINISTIC_SAMPLER_RNG"
+    )
+    assert len(restored._study.trials) == 12
+    assert [
+        trial.value for trial in restored._study.trials
+    ] == [
+        trial.value for trial in adapter._study.trials
+    ]
+    continued = restored.ask_population(
+        checkpoint_id="checkpoint_003",
+        count=3,
+    )
+    assert [row["trial_number"] for row in continued] == [12, 13, 14]
+
+
 def test_failed_nonfinancial_attempts_do_not_enter_tpe_reward() -> None:
     adapter = RouteConditionalTPESearchAdapter(
         route_id="TEST_ROUTE",
@@ -191,5 +236,5 @@ def test_environment_receipt_forbids_a_new_optimizer_database() -> None:
     assert receipt["package_version"] == "4.8.0"
     assert receipt["persistent_database"] is False
     assert receipt["restore_authority"] == (
-        "IMMUTABLE_ASK_TELL_TRANSCRIPT_REPLAY"
+        "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
     )

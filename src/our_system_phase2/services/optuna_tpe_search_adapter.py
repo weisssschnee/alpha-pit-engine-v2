@@ -141,6 +141,7 @@ class RouteConditionalTPESearchAdapter:
         self.n_ei_candidates = int(n_ei_candidates)
         self.package_version = version
         self.package_path = package_path
+        self.restore_mode = "GENESIS_EMPTY_STUDY"
         self.lanes = {
             str(skeleton_id): ConditionalLane.freeze(skeleton_id, space)
             for skeleton_id, space in sorted(lane_spaces.items())
@@ -187,7 +188,10 @@ class RouteConditionalTPESearchAdapter:
             "group": True,
             "constant_liar": True,
             "persistent_database": False,
-            "restore_authority": "IMMUTABLE_ASK_TELL_TRANSCRIPT_REPLAY",
+            "restore_authority": (
+                "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
+            ),
+            "restore_mode": self.restore_mode,
             "lane_hash": self.lane_hash,
             "lane_count": len(self.lanes),
         }
@@ -405,6 +409,122 @@ class RouteConditionalTPESearchAdapter:
             "history_hash": _stable_hash(self._history),
         }
 
+    def _frozen_trial_params(
+        self,
+        genes: Mapping[str, Any],
+    ) -> tuple[dict[str, str], dict[str, Any]]:
+        skeleton_id = str(genes["skeleton_id"])
+        lane = self.lanes[skeleton_id]
+        categorical = self._optuna.distributions.CategoricalDistribution
+        params: dict[str, str] = {"skeleton_id": skeleton_id}
+        distributions: dict[str, Any] = {
+            "skeleton_id": categorical(tuple(self.lanes))
+        }
+        for slot, values in lane.ordered_categories_by_slot.items():
+            if slot in {"skeleton_id", "gene_surface_id"}:
+                continue
+            if slot == "field_pair_id":
+                left_values: list[str] = []
+                right_values_by_left: dict[str, list[str]] = {}
+                for value in values:
+                    left, right = value.split("::", 1)
+                    if left not in right_values_by_left:
+                        left_values.append(left)
+                        right_values_by_left[left] = []
+                    if right not in right_values_by_left[left]:
+                        right_values_by_left[left].append(right)
+                chosen_left, chosen_right = str(genes[slot]).split(
+                    "::", 1
+                )
+                left_name = self._parameter_name(
+                    skeleton_id, "left_field_id"
+                )
+                right_name = self._parameter_name(
+                    skeleton_id,
+                    f"right_field_id|left={chosen_left}",
+                )
+                params[left_name] = chosen_left
+                params[right_name] = chosen_right
+                distributions[left_name] = categorical(tuple(left_values))
+                distributions[right_name] = categorical(
+                    tuple(right_values_by_left[chosen_left])
+                )
+                continue
+            name = self._parameter_name(skeleton_id, slot)
+            params[name] = str(genes[slot])
+            distributions[name] = categorical(tuple(values))
+        return params, distributions
+
+    @classmethod
+    def restore_trials(
+        cls,
+        *,
+        route_id: str,
+        lane_spaces: Mapping[str, Mapping[str, Any]],
+        seed: int,
+        transcripts: Sequence[Mapping[str, Any]],
+        n_startup_trials: int = 512,
+        n_ei_candidates: int = 24,
+    ) -> "RouteConditionalTPESearchAdapter":
+        adapter = cls(
+            route_id=route_id,
+            lane_spaces=lane_spaces,
+            seed=seed,
+            n_startup_trials=n_startup_trials,
+            n_ei_candidates=n_ei_candidates,
+        )
+        complete = adapter._optuna.trial.TrialState.COMPLETE
+        failed = adapter._optuna.trial.TrialState.FAIL
+        expected_number = 0
+        for transcript in transcripts:
+            asked = list(transcript.get("asked") or ())
+            observations = list(transcript.get("observations") or ())
+            observation_by_id = {
+                str(row["proposal_id"]): row for row in observations
+            }
+            if len(observation_by_id) != len(asked):
+                raise RuntimeError(
+                    "OPTUNA_TRIAL_IMPORT_OBSERVATION_COVERAGE_DRIFT"
+                )
+            for row in asked:
+                if int(row["trial_number"]) != expected_number:
+                    raise RuntimeError(
+                        "OPTUNA_TRIAL_IMPORT_NUMBER_DRIFT:"
+                        f"{route_id}:{expected_number}"
+                    )
+                proposal_id = str(row["proposal_id"])
+                observation = observation_by_id.get(proposal_id)
+                if observation is None:
+                    raise RuntimeError(
+                        "OPTUNA_TRIAL_IMPORT_PROPOSAL_COVERAGE_DRIFT"
+                    )
+                params, distributions = adapter._frozen_trial_params(
+                    dict(row["genes"])
+                )
+                if (
+                    str(observation.get("state") or "") == "COMPLETE"
+                    and observation.get("optimizer_reward") is not None
+                ):
+                    trial = adapter._optuna.trial.create_trial(
+                        params=params,
+                        distributions=distributions,
+                        value=float(observation["optimizer_reward"]),
+                        state=complete,
+                    )
+                else:
+                    trial = adapter._optuna.trial.create_trial(
+                        params=params,
+                        distributions=distributions,
+                        state=failed,
+                    )
+                adapter._study.add_trial(trial)
+                expected_number += 1
+        adapter._history = copy.deepcopy(list(transcripts))
+        adapter.restore_mode = (
+            "IMMUTABLE_TRIAL_IMPORT_FRESH_DETERMINISTIC_SAMPLER_RNG"
+        )
+        return adapter
+
     @classmethod
     def replay(
         cls,
@@ -463,4 +583,5 @@ class RouteConditionalTPESearchAdapter:
             )
             if expected_hash and receipt["transcript_hash"] != expected_hash:
                 raise RuntimeError("OPTUNA_TELL_TRANSCRIPT_REPLAY_DRIFT")
+        adapter.restore_mode = "EXACT_TRANSCRIPT_REPLAY"
         return adapter

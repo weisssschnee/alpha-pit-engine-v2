@@ -12,6 +12,7 @@ import copy
 import json
 import math
 import multiprocessing
+import pickle
 import platform
 import statistics
 import time
@@ -112,10 +113,10 @@ STARTUP_TRIALS_BY_ROUTE = {
     "MARKET_REGIME_CONDITION": 64,
     "DISCLOSURE_EVENT": 64,
 }
-N_EI_CANDIDATES = 64
+N_EI_CANDIDATES = 24
 
 
-def _replay_route_adapter_worker(
+def _restore_route_adapter_worker(
     route_id: str,
     lane_spaces: Mapping[str, Mapping[str, Any]],
     seed: int,
@@ -123,7 +124,7 @@ def _replay_route_adapter_worker(
     n_startup_trials: int,
     n_ei_candidates: int,
 ) -> RouteConditionalTPESearchAdapter:
-    return RouteConditionalTPESearchAdapter.replay(
+    return RouteConditionalTPESearchAdapter.restore_trials(
         route_id=route_id,
         lane_spaces=lane_spaces,
         seed=seed,
@@ -133,7 +134,7 @@ def _replay_route_adapter_worker(
     )
 
 
-def _replay_route_adapters(
+def _restore_route_adapters(
     *,
     lanes_by_route: Mapping[str, Mapping[str, Any]],
     seed_base: int,
@@ -145,7 +146,7 @@ def _replay_route_adapters(
     ) as executor:
         futures = {
             route_id: executor.submit(
-                _replay_route_adapter_worker,
+                _restore_route_adapter_worker,
                 route_id,
                 lanes_by_route[route_id],
                 int(seed_base) + index * 1009,
@@ -248,6 +249,162 @@ def _ask_route_populations(
     }
 
 
+def _write_optimizer_snapshot(
+    *,
+    snapshot_path: Path,
+    receipt_path: Path,
+    adapters: Mapping[str, RouteConditionalTPESearchAdapter],
+    boundary_checkpoint: str,
+    prior_manifest_sha256: str,
+) -> tuple[Path, Path]:
+    if set(adapters) != set(ROUTES):
+        raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_ROUTE_DRIFT")
+    if any(adapter.has_pending_population for adapter in adapters.values()):
+        raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_HAS_PENDING")
+    payload = {
+        "schema_version": "cn_large_tpe_optimizer_snapshot_v1",
+        "boundary_checkpoint": boundary_checkpoint,
+        "routes": list(ROUTES),
+        "n_ei_candidates": N_EI_CANDIDATES,
+        "adapters": dict(adapters),
+    }
+    snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = snapshot_path.with_suffix(snapshot_path.suffix + ".tmp")
+    temporary.write_bytes(
+        pickle.dumps(payload, protocol=pickle.HIGHEST_PROTOCOL)
+    )
+    temporary.replace(snapshot_path)
+    receipt_path = _write_json(
+        receipt_path,
+        {
+            "schema_version": "cn_large_tpe_optimizer_snapshot_receipt_v1",
+            "boundary_checkpoint": boundary_checkpoint,
+            "prior_manifest_sha256": prior_manifest_sha256,
+            "snapshot_path": str(snapshot_path),
+            "snapshot_sha256": _sha256(snapshot_path),
+            "routes": list(ROUTES),
+            "n_ei_candidates": N_EI_CANDIDATES,
+            "restore_authority": (
+                "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
+            ),
+        },
+    )
+    return snapshot_path, receipt_path
+
+
+def _load_optimizer_snapshot(
+    *,
+    snapshot_path: Path,
+    receipt_path: Path,
+    boundary_checkpoint: str,
+    prior_manifest_sha256: str,
+) -> dict[str, RouteConditionalTPESearchAdapter] | None:
+    if not snapshot_path.is_file() and not receipt_path.is_file():
+        return None
+    if not snapshot_path.is_file() or not receipt_path.is_file():
+        raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_PARTIAL")
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8-sig"))
+    expected = {
+        "boundary_checkpoint": boundary_checkpoint,
+        "prior_manifest_sha256": prior_manifest_sha256,
+        "snapshot_sha256": _sha256(snapshot_path),
+        "routes": list(ROUTES),
+        "n_ei_candidates": N_EI_CANDIDATES,
+    }
+    if any(receipt.get(key) != value for key, value in expected.items()):
+        raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_RECEIPT_DRIFT")
+    payload = pickle.loads(snapshot_path.read_bytes())
+    if (
+        str(payload.get("schema_version") or "")
+        != "cn_large_tpe_optimizer_snapshot_v1"
+        or str(payload.get("boundary_checkpoint") or "")
+        != boundary_checkpoint
+        or list(payload.get("routes") or ()) != list(ROUTES)
+        or int(payload.get("n_ei_candidates") or 0)
+        != N_EI_CANDIDATES
+    ):
+        raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_PAYLOAD_DRIFT")
+    adapters = dict(payload.get("adapters") or {})
+    if set(adapters) != set(ROUTES):
+        raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_ROUTE_DRIFT")
+    for route_id, adapter in adapters.items():
+        environment = adapter.environment_receipt()
+        if (
+            str(environment.get("route_id") or "") != route_id
+            or int(environment.get("n_ei_candidates") or 0)
+            != N_EI_CANDIDATES
+            or adapter.has_pending_population
+        ):
+            raise RuntimeError(
+                "LARGE_TPE_OPTIMIZER_SNAPSHOT_ADAPTER_DRIFT"
+            )
+    return adapters
+
+
+def _restore_or_import_adapters(
+    *,
+    output_root: Path,
+    lanes_by_route: Mapping[str, Mapping[str, Any]],
+    seed_base: int,
+    transcripts: Mapping[str, Sequence[Mapping[str, Any]]],
+    checkpoint_count: int,
+    prior_manifest: Path | None,
+) -> dict[str, RouteConditionalTPESearchAdapter]:
+    boundary = (
+        f"checkpoint_{checkpoint_count:03d}"
+        if checkpoint_count
+        else "GENESIS"
+    )
+    current_manifest_hash = (
+        _sha256(prior_manifest) if prior_manifest else "GENESIS"
+    )
+    if checkpoint_count:
+        manifest = json.loads(
+            prior_manifest.read_text(encoding="utf-8-sig")
+        )
+        checkpoint_prior_hash = str(
+            (manifest.get("input_hashes") or {}).get(
+                "prior_checkpoint_manifest"
+            )
+            or ""
+        )
+        checkpoint_root = (
+            output_root / "checkpoints" / f"checkpoint_{checkpoint_count:03d}"
+        )
+        adapters = _load_optimizer_snapshot(
+            snapshot_path=checkpoint_root / "optimizer_state.pkl",
+            receipt_path=checkpoint_root / "optimizer_state_receipt.json",
+            boundary_checkpoint=boundary,
+            prior_manifest_sha256=checkpoint_prior_hash,
+        )
+        if adapters is not None:
+            return adapters
+    recovery_root = output_root / "optimizer_recovery"
+    recovery_snapshot = recovery_root / f"{boundary}_post_tell.pkl"
+    recovery_receipt = recovery_root / f"{boundary}_post_tell_receipt.json"
+    adapters = _load_optimizer_snapshot(
+        snapshot_path=recovery_snapshot,
+        receipt_path=recovery_receipt,
+        boundary_checkpoint=boundary,
+        prior_manifest_sha256=current_manifest_hash,
+    )
+    if adapters is not None:
+        return adapters
+    adapters = _restore_route_adapters(
+        lanes_by_route=lanes_by_route,
+        seed_base=seed_base,
+        transcripts=transcripts,
+    )
+    _write_optimizer_snapshot(
+        snapshot_path=recovery_snapshot,
+        receipt_path=recovery_receipt,
+        adapters=adapters,
+        boundary_checkpoint=boundary,
+        prior_manifest_sha256=current_manifest_hash,
+    )
+    return adapters
+
+
 def _copy_behavior_archive(
     archive: PortfolioBehaviorArchive,
 ) -> PortfolioBehaviorArchive:
@@ -288,6 +445,10 @@ def _authorization_binding(
         "optuna_route_workers": OPTUNA_ROUTE_WORKERS,
         "optimizer_ask_execution": (
             "PROCESS_PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
+        ),
+        "optimizer_n_ei_candidates": N_EI_CANDIDATES,
+        "optimizer_restore_authority": (
+            "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
         ),
         "cache_cap_bytes": MAXIMUM_CACHE_BYTES,
         "minimum_free_memory_bytes": MINIMUM_FREE_MEMORY_BYTES,
@@ -892,6 +1053,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "behavior_memory": "CUMULATIVE_LABEL_FREE_AND_FULL_COORDINATE",
         "optimizer_feedback": "FULL_COORDINATE_TRAIN_ONLY",
         "optimizer_reward": "pair_optimizer_reward",
+        "optimizer_restore_authority": (
+            "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
+        ),
         "validation": "AUTOMATIC_REPORT_ONLY_ON_256_TRAIN_FINALISTS",
         "validation_feedback": "FORBIDDEN",
         "validation_scheduler_write": "FORBIDDEN",
@@ -968,10 +1132,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         initial_exact=historical_exact,
         initial_behavior=initial_behavior,
     )
-    adapters = _replay_route_adapters(
+    adapters = _restore_or_import_adapters(
+        output_root=output_root,
         lanes_by_route=lanes_by_route,
         seed_base=int(args.seed_base),
         transcripts=state["transcripts"],
+        checkpoint_count=len(state["summaries"]),
+        prior_manifest=state["prior_manifest"],
     )
     deadline = time.time() + int(args.maximum_wall_seconds)
     checkpoint_index = len(state["summaries"])
@@ -1254,6 +1421,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         transcript_path = _write_json(
             root / "optimizer_transcripts.json", transcripts
         )
+        optimizer_snapshot_path, optimizer_snapshot_receipt_path = (
+            _write_optimizer_snapshot(
+                snapshot_path=root / "optimizer_state.pkl",
+                receipt_path=root / "optimizer_state_receipt.json",
+                adapters=adapters,
+                boundary_checkpoint=checkpoint_id,
+                prior_manifest_sha256=(
+                    _sha256(state["prior_manifest"])
+                    if state["prior_manifest"]
+                    else "GENESIS"
+                ),
+            )
+        )
         _add_resolved_behavior_rows(state["behavior"], probe_rows)
         _add_resolved_behavior_rows(state["behavior"], full_behavior)
         for row in candidate_rows:
@@ -1334,6 +1514,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             observation_path,
             tell_path,
             transcript_path,
+            optimizer_snapshot_path,
+            optimizer_snapshot_receipt_path,
             gate_path,
             summary_path,
         ]
