@@ -126,6 +126,9 @@ class RouteConditionalTPESearchAdapter:
         seed: int,
         n_startup_trials: int = 512,
         n_ei_candidates: int = 64,
+        multivariate: bool = True,
+        group: bool = True,
+        constant_liar: bool = True,
     ) -> None:
         if not lane_spaces:
             raise ValueError(f"route has no optimizer lanes: {route_id}")
@@ -133,12 +136,22 @@ class RouteConditionalTPESearchAdapter:
             raise ValueError("n_startup_trials must be positive")
         if n_ei_candidates < 1:
             raise ValueError("n_ei_candidates must be positive")
+        if group and not multivariate:
+            raise ValueError("group requires multivariate TPE")
         optuna, version, package_path = _load_optuna()
         self._optuna = optuna
         self.route_id = str(route_id)
         self.seed = int(seed)
         self.n_startup_trials = int(n_startup_trials)
         self.n_ei_candidates = int(n_ei_candidates)
+        self.multivariate = bool(multivariate)
+        self.group = bool(group)
+        self.constant_liar = bool(constant_liar)
+        self.policy_id = (
+            "official_optuna_tpe_conditional_typed_grammar_v1"
+            if self.multivariate and self.group
+            else "official_optuna_tpe_conditional_typed_grammar_v2_univariate"
+        )
         self.package_version = version
         self.package_path = package_path
         self.restore_mode = "GENESIS_EMPTY_STUDY"
@@ -153,10 +166,10 @@ class RouteConditionalTPESearchAdapter:
             seed=self.seed,
             n_startup_trials=self.n_startup_trials,
             n_ei_candidates=self.n_ei_candidates,
-            multivariate=True,
-            group=True,
+            multivariate=self.multivariate,
+            group=self.group,
             warn_independent_sampling=False,
-            constant_liar=True,
+            constant_liar=self.constant_liar,
         )
         self._study = optuna.create_study(
             direction="maximize",
@@ -184,9 +197,9 @@ class RouteConditionalTPESearchAdapter:
             "seed": self.seed,
             "n_startup_trials": self.n_startup_trials,
             "n_ei_candidates": self.n_ei_candidates,
-            "multivariate": True,
-            "group": True,
-            "constant_liar": True,
+            "multivariate": self.multivariate,
+            "group": self.group,
+            "constant_liar": self.constant_liar,
             "persistent_database": False,
             "restore_authority": (
                 "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
@@ -465,6 +478,9 @@ class RouteConditionalTPESearchAdapter:
         transcripts: Sequence[Mapping[str, Any]],
         n_startup_trials: int = 512,
         n_ei_candidates: int = 24,
+        multivariate: bool = True,
+        group: bool = True,
+        constant_liar: bool = True,
     ) -> "RouteConditionalTPESearchAdapter":
         adapter = cls(
             route_id=route_id,
@@ -472,6 +488,9 @@ class RouteConditionalTPESearchAdapter:
             seed=seed,
             n_startup_trials=n_startup_trials,
             n_ei_candidates=n_ei_candidates,
+            multivariate=multivariate,
+            group=group,
+            constant_liar=constant_liar,
         )
         complete = adapter._optuna.trial.TrialState.COMPLETE
         failed = adapter._optuna.trial.TrialState.FAIL
@@ -535,6 +554,9 @@ class RouteConditionalTPESearchAdapter:
         transcripts: Sequence[Mapping[str, Any]],
         n_startup_trials: int = 512,
         n_ei_candidates: int = 64,
+        multivariate: bool = True,
+        group: bool = True,
+        constant_liar: bool = True,
     ) -> "RouteConditionalTPESearchAdapter":
         adapter = cls(
             route_id=route_id,
@@ -542,6 +564,9 @@ class RouteConditionalTPESearchAdapter:
             seed=seed,
             n_startup_trials=n_startup_trials,
             n_ei_candidates=n_ei_candidates,
+            multivariate=multivariate,
+            group=group,
+            constant_liar=constant_liar,
         )
         for transcript in transcripts:
             asked = list(transcript.get("asked") or ())

@@ -238,3 +238,22 @@ def test_environment_receipt_forbids_a_new_optimizer_database() -> None:
     assert receipt["restore_authority"] == (
         "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
     )
+
+
+def test_official_default_univariate_mode_is_explicit() -> None:
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=31,
+        n_startup_trials=2,
+        n_ei_candidates=24,
+        multivariate=False,
+        group=False,
+        constant_liar=True,
+    )
+
+    receipt = adapter.environment_receipt()
+    assert receipt["multivariate"] is False
+    assert receipt["group"] is False
+    assert receipt["constant_liar"] is True
+    assert receipt["policy_id"].endswith("_v2_univariate")

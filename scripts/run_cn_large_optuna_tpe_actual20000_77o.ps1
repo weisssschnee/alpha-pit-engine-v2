@@ -132,13 +132,17 @@ New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
     budget_counting_unit = 'PAIR_EVALUATED'
     minimum_actual_evaluated_pairs = 20000
     maximum_raw_asks = 73728
-    active_threads = 30
-    session_threads = 30
-    active_pair_batch_size = 8
-    session_pair_batch_size = 8
+    active_threads = 32
+    session_threads = 32
+    active_pair_batch_size = 12
+    session_pair_batch_size = 12
     optimizer_ask_execution = "PROCESS_PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
     optuna_route_workers = 5
     optimizer_n_ei_candidates = 24
+    optimizer_sampler_mode = 'OFFICIAL_DEFAULT_UNIVARIATE_CONSTANT_LIAR'
+    optimizer_multivariate = $false
+    optimizer_group = $false
+    optimizer_constant_liar = $true
     optimizer_restore_authority = (
         'HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS'
     )
@@ -160,7 +164,7 @@ New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
 $env:PYTHONPATH = Join-Path $resolvedRepo 'src'
 $env:PYTHONUTF8 = '1'
 $env:CN_CAMPAIGN_REPO_SHA = $RepoSha
-$env:NUMBA_NUM_THREADS = '30'
+$env:NUMBA_NUM_THREADS = '32'
 $env:ARROW_NUM_THREADS = '1'
 $env:OMP_NUM_THREADS = '1'
 $env:MKL_NUM_THREADS = '1'
@@ -224,8 +228,8 @@ $campaignArgs = @(
     (Join-Path $inputRoot 'manifest.json'),
     '--output-root', $resolvedRoot,
     '--seed-base', '2026072602',
-    '--active-threads', '30',
-    '--session-threads', '30',
+    '--active-threads', '32',
+    '--session-threads', '32',
     '--maximum-wall-seconds', '604800'
 )
 if ($PreflightOnly) {

@@ -101,7 +101,7 @@ ASKS_PER_CHECKPOINT = 768
 MAXIMUM_RAW_ASKS = MAXIMUM_CHECKPOINTS * ASKS_PER_CHECKPOINT
 MAXIMUM_WALL_SECONDS = 7 * 24 * 60 * 60
 VALIDATION_FINALIST_PAIRS = 256
-PAIR_BATCH_SIZES = {"active_bar": 8, "stock_session": 8}
+PAIR_BATCH_SIZES = {"active_bar": 12, "stock_session": 12}
 MAXIMUM_CACHE_BYTES = 8 * 1024**3
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 FRESH_EXACT_MARGIN = 1.20
@@ -114,6 +114,10 @@ STARTUP_TRIALS_BY_ROUTE = {
     "DISCLOSURE_EVENT": 64,
 }
 N_EI_CANDIDATES = 24
+TPE_MULTIVARIATE = False
+TPE_GROUP = False
+TPE_CONSTANT_LIAR = True
+TPE_SAMPLER_MODE = "OFFICIAL_DEFAULT_UNIVARIATE_CONSTANT_LIAR"
 
 
 def _restore_route_adapter_worker(
@@ -123,6 +127,9 @@ def _restore_route_adapter_worker(
     transcripts: Sequence[Mapping[str, Any]],
     n_startup_trials: int,
     n_ei_candidates: int,
+    multivariate: bool,
+    group: bool,
+    constant_liar: bool,
 ) -> RouteConditionalTPESearchAdapter:
     return RouteConditionalTPESearchAdapter.restore_trials(
         route_id=route_id,
@@ -131,6 +138,9 @@ def _restore_route_adapter_worker(
         transcripts=transcripts,
         n_startup_trials=n_startup_trials,
         n_ei_candidates=n_ei_candidates,
+        multivariate=multivariate,
+        group=group,
+        constant_liar=constant_liar,
     )
 
 
@@ -153,6 +163,9 @@ def _restore_route_adapters(
                 transcripts[route_id],
                 STARTUP_TRIALS_BY_ROUTE[route_id],
                 N_EI_CANDIDATES,
+                TPE_MULTIVARIATE,
+                TPE_GROUP,
+                TPE_CONSTANT_LIAR,
             )
             for index, route_id in enumerate(ROUTES)
         }
@@ -266,6 +279,7 @@ def _write_optimizer_snapshot(
         "boundary_checkpoint": boundary_checkpoint,
         "routes": list(ROUTES),
         "n_ei_candidates": N_EI_CANDIDATES,
+        "sampler_mode": TPE_SAMPLER_MODE,
         "adapters": dict(adapters),
     }
     snapshot_path.parent.mkdir(parents=True, exist_ok=True)
@@ -284,6 +298,7 @@ def _write_optimizer_snapshot(
             "snapshot_sha256": _sha256(snapshot_path),
             "routes": list(ROUTES),
             "n_ei_candidates": N_EI_CANDIDATES,
+            "sampler_mode": TPE_SAMPLER_MODE,
             "restore_authority": (
                 "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
             ),
@@ -313,6 +328,8 @@ def _load_optimizer_snapshot(
     }
     if any(receipt.get(key) != value for key, value in expected.items()):
         raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_RECEIPT_DRIFT")
+    if str(receipt.get("sampler_mode") or "") != TPE_SAMPLER_MODE:
+        return None
     payload = pickle.loads(snapshot_path.read_bytes())
     if (
         str(payload.get("schema_version") or "")
@@ -322,6 +339,7 @@ def _load_optimizer_snapshot(
         or list(payload.get("routes") or ()) != list(ROUTES)
         or int(payload.get("n_ei_candidates") or 0)
         != N_EI_CANDIDATES
+        or str(payload.get("sampler_mode") or "") != TPE_SAMPLER_MODE
     ):
         raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_PAYLOAD_DRIFT")
     adapters = dict(payload.get("adapters") or {})
@@ -333,6 +351,11 @@ def _load_optimizer_snapshot(
             str(environment.get("route_id") or "") != route_id
             or int(environment.get("n_ei_candidates") or 0)
             != N_EI_CANDIDATES
+            or bool(environment.get("multivariate"))
+            != TPE_MULTIVARIATE
+            or bool(environment.get("group")) != TPE_GROUP
+            or bool(environment.get("constant_liar"))
+            != TPE_CONSTANT_LIAR
             or adapter.has_pending_population
         ):
             raise RuntimeError(
@@ -380,8 +403,13 @@ def _restore_or_import_adapters(
         if adapters is not None:
             return adapters
     recovery_root = output_root / "optimizer_recovery"
-    recovery_snapshot = recovery_root / f"{boundary}_post_tell.pkl"
-    recovery_receipt = recovery_root / f"{boundary}_post_tell_receipt.json"
+    mode_slug = TPE_SAMPLER_MODE.lower()
+    recovery_snapshot = recovery_root / (
+        f"{boundary}_{mode_slug}_post_tell.pkl"
+    )
+    recovery_receipt = recovery_root / (
+        f"{boundary}_{mode_slug}_post_tell_receipt.json"
+    )
     adapters = _load_optimizer_snapshot(
         snapshot_path=recovery_snapshot,
         receipt_path=recovery_receipt,
@@ -447,6 +475,10 @@ def _authorization_binding(
             "PROCESS_PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
         ),
         "optimizer_n_ei_candidates": N_EI_CANDIDATES,
+        "optimizer_sampler_mode": TPE_SAMPLER_MODE,
+        "optimizer_multivariate": TPE_MULTIVARIATE,
+        "optimizer_group": TPE_GROUP,
+        "optimizer_constant_liar": TPE_CONSTANT_LIAR,
         "optimizer_restore_authority": (
             "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
         ),
@@ -943,7 +975,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError(
             f"LARGE_TPE_AUTHORIZED_ONLY_ON_77O:{platform.node()}"
         )
-    if int(args.active_threads) != 30 or int(args.session_threads) != 30:
+    if int(args.active_threads) != 32 or int(args.session_threads) != 32:
         raise RuntimeError("LARGE_TPE_THREAD_CONTRACT_MISMATCH")
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
@@ -1001,7 +1033,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "active_bar": args.validation_active_label_root.resolve(),
         "stock_session": args.validation_session_label_root.resolve(),
     }
-    compute_threads = {"active_bar": 30, "stock_session": 30}
+    compute_threads = {"active_bar": 32, "stock_session": 32}
     schema, schema_by_backend = materialized_schema_binding(
         field_roots=field_roots, registry=registry
     )
@@ -1016,7 +1048,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     if str(purity.get("status") or "") != "PASS":
         raise RuntimeError("SPLIT_BOUNDARY_LABEL_PURITY_FAILED")
-    runtime = _runtime_envelope(30, 30)
+    runtime = _runtime_envelope(32, 32)
     runtime_path = _write_json(
         output_root / "runtime_envelope.json", runtime
     )
@@ -1046,6 +1078,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "optimizer_initialization": "FRESH_NO_CROSS_CAMPAIGN_REWARD_STATE",
         "startup_trials_by_route": STARTUP_TRIALS_BY_ROUTE,
         "n_ei_candidates": N_EI_CANDIDATES,
+        "sampler_mode": TPE_SAMPLER_MODE,
+        "multivariate": TPE_MULTIVARIATE,
+        "group": TPE_GROUP,
+        "constant_liar": TPE_CONSTANT_LIAR,
         "formula_constructor_authority": "CompositionalGrammarV2",
         "compiler_authority": "TypedRouteCompiler",
         "matched_control_authority": "MATCHED_CONTROL_PAIR_AUTHORITY",
@@ -1734,8 +1770,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--seed-base", type=int, default=2026072602)
-    parser.add_argument("--active-threads", type=int, default=30)
-    parser.add_argument("--session-threads", type=int, default=30)
+    parser.add_argument("--active-threads", type=int, default=32)
+    parser.add_argument("--session-threads", type=int, default=32)
     parser.add_argument(
         "--maximum-wall-seconds",
         type=int,

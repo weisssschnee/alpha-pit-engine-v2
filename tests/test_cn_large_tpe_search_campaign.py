@@ -13,6 +13,9 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     PAIR_BATCH_SIZES,
     ROUTE_EVALUATED_TARGETS,
     ROUTES,
+    TPE_GROUP,
+    TPE_MULTIVARIATE,
+    TPE_SAMPLER_MODE,
     _allocate_checkpoint_asks,
     _ask_route_populations,
     _freeze_gene_lanes,
@@ -27,11 +30,16 @@ def test_large_contract_is_five_digit_actual_evaluated_not_scheduled() -> None:
     assert "MINUTE_STATIC" not in ROUTES
     assert "INTRADAY_STATE_TRANSITION" not in ROUTES
     assert PAIR_BATCH_SIZES == {
-        "active_bar": 8,
-        "stock_session": 8,
+        "active_bar": 12,
+        "stock_session": 12,
     }
     assert OPTUNA_ROUTE_WORKERS == len(ROUTES)
     assert N_EI_CANDIDATES == 24
+    assert TPE_SAMPLER_MODE == (
+        "OFFICIAL_DEFAULT_UNIVARIATE_CONSTANT_LIAR"
+    )
+    assert TPE_MULTIVARIATE is False
+    assert TPE_GROUP is False
 
 
 class _DeterministicRouteAdapter:
@@ -136,10 +144,18 @@ def test_optimizer_snapshot_restores_without_transcript_resampling(
         adapter.n_ei_candidates == N_EI_CANDIDATES
         for adapter in restored.values()
     )
+    assert all(
+        adapter.multivariate == TPE_MULTIVARIATE
+        and adapter.group == TPE_GROUP
+        for adapter in restored.values()
+    )
     assert (
         tmp_path
         / "optimizer_recovery"
-        / "GENESIS_post_tell_receipt.json"
+        / (
+            "GENESIS_"
+            f"{TPE_SAMPLER_MODE.lower()}_post_tell_receipt.json"
+        )
     ).is_file()
 
 
