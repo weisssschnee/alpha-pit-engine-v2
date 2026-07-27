@@ -12,7 +12,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $python = 'D:\ChengboRemote\venvs\alpha311\Scripts\python.exe'
 $deploymentManifestRoot = 'D:\ChengboRemote\runtime\manifests'
-$inputRoot = 'D:\ChengboRemote\runtime\cn_large_tpe_search_inputs_20260726_v1'
+$inputRoot = 'D:\ChengboRemote\runtime\cn_large_tpe_objective_v2_inputs_20260727'
 $trainBase = 'D:\ChengboRemote\runtime\cn_core_pack_aggressive_discovery_20260718_595c5fc\strict_wave_01024_sidecars_3509d0c'
 $labelBase = 'D:\ChengboRemote\workspace\alpha_pit_compositional_667c82f_git\runtime\cn_phase3cm_streaming_repair_20260716'
 $validationBase = 'D:\ChengboRemote\runtime\cn_core_pack_large_development_20260722_9f3a5f2_30t_r5\validation_sidecars_candidate_bound_2dff602'
@@ -128,7 +128,7 @@ New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
     logical_cpu_count = (
         Get-CimInstance Win32_ComputerSystem
     ).NumberOfLogicalProcessors
-    campaign_profile = 'cn_large_optuna_tpe_actual20000_v1'
+    campaign_profile = 'cn_large_optuna_tpe_actual20000_v2'
     budget_counting_unit = 'PAIR_EVALUATED'
     minimum_actual_evaluated_pairs = 20000
     asks_per_checkpoint = 3072
@@ -147,6 +147,10 @@ New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
     optimizer_restore_authority = (
         'HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS'
     )
+    optimizer_search_score_policy = (
+        'MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1'
+    )
+    validation_primary_decision = 'TRAIN_REWARD_FOLLOWUP_READY'
     evaluator_cache_cap_bytes = 8589934592
     portfolio_mode = 'LONG_ONLY_TOP'
     shorting = 'FORBIDDEN'
@@ -181,7 +185,7 @@ $campaignArgs = @(
     '--campaign-authorization',
     (
         Join-Path $resolvedRepo (
-            'runtime\run_plans\cn_large_optuna_tpe_actual20000_v1_authorization.json'
+            'runtime\run_plans\cn_large_optuna_tpe_actual20000_v2_authorization.json'
         )
     ),
     '--registry',
@@ -228,7 +232,7 @@ $campaignArgs = @(
     '--historical-archive-manifest',
     (Join-Path $inputRoot 'manifest.json'),
     '--output-root', $resolvedRoot,
-    '--seed-base', '2026072602',
+    '--seed-base', '2026072702',
     '--active-threads', '32',
     '--session-threads', '32',
     '--maximum-wall-seconds', '604800'

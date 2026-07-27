@@ -86,7 +86,7 @@ from our_system_phase2.services.unified_discovery_generators import (
 
 
 AUTHORIZED_HOST = "DESKTOP-77OPJ6F"
-CAMPAIGN_PROFILE = "cn_large_optuna_tpe_actual20000_v1"
+CAMPAIGN_PROFILE = "cn_large_optuna_tpe_actual20000_v2"
 ROUTE_EVALUATED_TARGETS = {
     "SLOW_TEMPORAL_CHANGE": 15_500,
     "FIRSTN_PATH": 2_000,
@@ -118,6 +118,48 @@ TPE_MULTIVARIATE = False
 TPE_GROUP = False
 TPE_CONSTANT_LIAR = True
 TPE_SAMPLER_MODE = "OFFICIAL_DEFAULT_UNIVARIATE_CONSTANT_LIAR"
+SEARCH_SCORE_POLICY = "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1"
+VALIDATION_PRIMARY_DECISION = "TRAIN_REWARD_FOLLOWUP_READY"
+
+
+def _finite_float(value: Any) -> float | None:
+    try:
+        output = float(value)
+    except (TypeError, ValueError):
+        return None
+    return output if math.isfinite(output) else None
+
+
+def _conservative_search_score(
+    outcome: Mapping[str, Any],
+) -> float | None:
+    if str(outcome.get("pair_evaluation_status") or "") != "PAIR_EVALUATED":
+        return None
+    primary = _finite_float(outcome.get("primary_composite_reward"))
+    if primary is None:
+        primary = _finite_float(outcome.get("primary_train_reward"))
+    matched = _finite_float(outcome.get("matched_train_increment"))
+    if matched is None:
+        matched = _finite_float(outcome.get("pair_train_reward"))
+    if primary is None or matched is None:
+        return None
+    return min(primary, matched)
+
+
+def _validation_eligible(outcome: Mapping[str, Any]) -> bool:
+    score = _conservative_search_score(outcome)
+    matched = _finite_float(outcome.get("matched_train_increment"))
+    if matched is None:
+        matched = _finite_float(outcome.get("pair_train_reward"))
+    return (
+        score is not None
+        and matched is not None
+        and matched > 0.0
+        and str(
+            outcome.get("primary_standalone_train_reward_decision") or ""
+        )
+        == VALIDATION_PRIMARY_DECISION
+    )
 
 
 def _restore_route_adapter_worker(
@@ -482,6 +524,8 @@ def _authorization_binding(
         "optimizer_restore_authority": (
             "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
         ),
+        "optimizer_search_score_policy": SEARCH_SCORE_POLICY,
+        "validation_primary_decision": VALIDATION_PRIMARY_DECISION,
         "cache_cap_bytes": MAXIMUM_CACHE_BYTES,
         "minimum_free_memory_bytes": MINIMUM_FREE_MEMORY_BYTES,
         "seed_base": int(seed_base),
@@ -527,7 +571,7 @@ def _authorization_binding(
             + ",".join(sorted(set(drift)))
         )
     return {
-        "schema_version": "cn_large_tpe_campaign_authority_binding_v1",
+        "schema_version": "cn_large_tpe_campaign_authority_binding_v2",
         "status": "FIVE_DIGIT_TRAIN_SEARCH_AUTHORIZED",
         "authorization": _artifact(path),
         "historical_candidate_archive": _artifact(candidate_archive),
@@ -913,16 +957,22 @@ def _select_validation_finalists(
         )
         for row in behavior_rows
     }
-    evaluated = [
-        dict(row)
-        for row in outcomes
-        if str(row.get("pair_evaluation_status") or "") == "PAIR_EVALUATED"
-        and row.get("optimizer_reward") is not None
-        and math.isfinite(float(row["optimizer_reward"]))
-    ]
+    evaluated = [dict(row) for row in outcomes if _validation_eligible(row)]
+    for row in evaluated:
+        row["search_score"] = _conservative_search_score(row)
+        primary = _finite_float(row.get("primary_composite_reward"))
+        if primary is None:
+            primary = _finite_float(row.get("primary_train_reward"))
+        matched = _finite_float(row.get("matched_train_increment"))
+        if matched is None:
+            matched = _finite_float(row.get("pair_train_reward"))
+        row["primary_composite_reward"] = primary
+        row["matched_train_increment"] = matched
     evaluated.sort(
         key=lambda row: (
-            -float(row["optimizer_reward"]),
+            -float(row["search_score"]),
+            -float(row["primary_composite_reward"]),
+            -float(row["matched_train_increment"]),
             str(row.get("pair_id") or ""),
         )
     )
@@ -1060,7 +1110,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         schema_by_backend=schema_by_backend,
     )
     contract = {
-        "schema_version": "cn_large_tpe_search_contract_v1",
+        "schema_version": "cn_large_tpe_search_contract_v2",
         "status": "FROZEN_EXECUTABLE",
         "campaign_profile": CAMPAIGN_PROFILE,
         "minimum_actual_evaluated_pairs": MINIMUM_ACTUAL_EVALUATED_PAIRS,
@@ -1088,7 +1138,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "exact_memory": "CUMULATIVE_IDENTITY_ONLY",
         "behavior_memory": "CUMULATIVE_LABEL_FREE_AND_FULL_COORDINATE",
         "optimizer_feedback": "FULL_COORDINATE_TRAIN_ONLY",
-        "optimizer_reward": "pair_optimizer_reward",
+        "optimizer_reward": "conservative_primary_and_increment_search_score",
+        "optimizer_search_score_policy": SEARCH_SCORE_POLICY,
+        "optimizer_search_score_formula": (
+            "min(primary_composite_reward,matched_train_increment)"
+        ),
+        "validation_primary_decision": VALIDATION_PRIMARY_DECISION,
         "optimizer_restore_authority": (
             "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
         ),
@@ -1381,6 +1436,21 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             full_behavior = _join_full_behavior_identities(
                 full_behavior, probe_rows
             )
+        for outcome in outcomes:
+            outcome["primary_composite_reward"] = outcome.get(
+                "primary_composite_reward",
+                outcome.get("primary_train_reward"),
+            )
+            outcome["control_composite_reward"] = outcome.get(
+                "control_composite_reward",
+                outcome.get("control_train_reward"),
+            )
+            outcome["matched_train_increment"] = outcome.get(
+                "matched_train_increment",
+                outcome.get("pair_train_reward"),
+            )
+            outcome["search_score"] = _conservative_search_score(outcome)
+            outcome["search_score_policy"] = SEARCH_SCORE_POLICY
         outcome_path = _write_parquet(
             root / "pair_outcomes.parquet", outcomes
         )
@@ -1402,15 +1472,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             outcome = outcome_by_pair[pair_id]
             outcome_class = _outcome_class(outcome)
             reward = (
-                float(outcome["optimizer_reward"])
+                _conservative_search_score(outcome)
                 if outcome_class == EVALUATED
-                and outcome.get("optimizer_reward") is not None
                 else None
             )
             observations[str(ask["proposal_id"])] = {
                 "proposal_id": str(ask["proposal_id"]),
                 "outcome_class": outcome_class,
                 "optimizer_reward": reward,
+                "search_score": reward,
+                "search_score_policy": SEARCH_SCORE_POLICY,
+                "primary_composite_reward": outcome.get(
+                    "primary_composite_reward"
+                ),
+                "control_composite_reward": outcome.get(
+                    "control_composite_reward"
+                ),
+                "matched_train_increment": outcome.get(
+                    "matched_train_increment"
+                ),
                 "outcome_reason": str(
                     outcome.get("pair_evaluation_blockers")
                     or "PAIR_EVALUATED"

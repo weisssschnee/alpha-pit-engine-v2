@@ -671,12 +671,27 @@ def _finalize_pairs(
         if control_value is None:
             blockers.append("control_not_evaluated")
         matched = None if blockers else float(primary_value) - float(control_value)
+        primary_standalone_decision = str(
+            primary_reward.get("train_reward_decision") or ""
+        )
+        primary_standalone_blockers = str(
+            primary_reward.get("train_reward_blockers") or ""
+        )
         bound_pair = pair_binding[pair_id]
         metrics = (
             {
                 "pair_train_reward": matched,
+                "matched_train_increment": matched,
                 "primary_train_reward": primary_value,
                 "control_train_reward": control_value,
+                "primary_composite_reward": primary_value,
+                "control_composite_reward": control_value,
+                "primary_standalone_train_reward_decision": (
+                    primary_standalone_decision
+                ),
+                "primary_standalone_train_reward_blockers": (
+                    primary_standalone_blockers
+                ),
                 "optimizer_reward": matched,
                 "optimizer_reward_split": "train",
             }
