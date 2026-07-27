@@ -1,6 +1,6 @@
 {
   "schema_version": "cn_large_tpe_campaign_authorization_v1",
-  "authorization_revision": 2,
+  "authorization_revision": 3,
   "campaign_id": "CN_LARGE_OPTUNA_TPE_ACTUAL20000_V1_20260726",
   "campaign_profile": "cn_large_optuna_tpe_actual20000_v1",
   "authorized_at": "2026-07-26",
@@ -45,7 +45,7 @@
   "historical_behavior_archive_sha256": "13963a77cc61aed35d59335eb427bce0e7f39054e2c56e675cde82c74c5747ab",
   "historical_manifest_sha256": "db9940e89475823816bcab006f0b1153452be939579d9b94a55f234b0c83ad93",
   "optimizer_feedback": "FULL_COORDINATE_TRAIN_ONLY",
-  "optimizer_ask_execution": "PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES",
+  "optimizer_ask_execution": "PROCESS_PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES",
   "optuna_route_workers": 5,
   "portfolio_mode": "LONG_ONLY_TOP",
   "shorting": "FORBIDDEN",

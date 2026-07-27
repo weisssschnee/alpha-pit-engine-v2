@@ -102,6 +102,22 @@ class RouteConditionalTPESearchAdapter:
 
     policy_id = "official_optuna_tpe_conditional_typed_grammar_v1"
 
+    def __getstate__(self) -> dict[str, Any]:
+        state = dict(self.__dict__)
+        state["_optuna"] = None
+        return state
+
+    def __setstate__(self, state: Mapping[str, Any]) -> None:
+        self.__dict__.update(state)
+        optuna, version, package_path = _load_optuna()
+        if version != self.package_version:
+            raise RuntimeError(
+                "OPTUNA_PICKLE_VERSION_MISMATCH:"
+                f"expected={self.package_version}:actual={version}"
+            )
+        self._optuna = optuna
+        self.package_path = package_path
+
     def __init__(
         self,
         *,

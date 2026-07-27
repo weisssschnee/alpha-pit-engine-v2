@@ -86,7 +86,9 @@ def test_parallel_route_ask_preserves_schedule_order_and_replay_genes() -> None:
         adapters[route_id].received_expected == expected[route_id]
         for route_id in scheduled_routes
     )
-    assert audit["execution"] == "PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
+    assert audit["execution"] == (
+        "PROCESS_PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
+    )
     assert audit["route_worker_count"] == len(scheduled_routes)
     assert audit["asked_pairs"] == sum(range(1, 4))
 

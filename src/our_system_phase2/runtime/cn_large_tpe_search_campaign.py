@@ -11,11 +11,12 @@ import argparse
 import copy
 import json
 import math
+import multiprocessing
 import platform
 import statistics
 import time
 from collections import Counter, defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from itertools import product
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -114,30 +115,44 @@ STARTUP_TRIALS_BY_ROUTE = {
 N_EI_CANDIDATES = 64
 
 
+def _replay_route_adapter_worker(
+    route_id: str,
+    lane_spaces: Mapping[str, Mapping[str, Any]],
+    seed: int,
+    transcripts: Sequence[Mapping[str, Any]],
+    n_startup_trials: int,
+    n_ei_candidates: int,
+) -> RouteConditionalTPESearchAdapter:
+    return RouteConditionalTPESearchAdapter.replay(
+        route_id=route_id,
+        lane_spaces=lane_spaces,
+        seed=seed,
+        transcripts=transcripts,
+        n_startup_trials=n_startup_trials,
+        n_ei_candidates=n_ei_candidates,
+    )
+
+
 def _replay_route_adapters(
     *,
     lanes_by_route: Mapping[str, Mapping[str, Any]],
     seed_base: int,
     transcripts: Mapping[str, Sequence[Mapping[str, Any]]],
 ) -> dict[str, RouteConditionalTPESearchAdapter]:
-    def replay_one(
-        index: int, route_id: str
-    ) -> RouteConditionalTPESearchAdapter:
-        return RouteConditionalTPESearchAdapter.replay(
-            route_id=route_id,
-            lane_spaces=lanes_by_route[route_id],
-            seed=int(seed_base) + index * 1009,
-            transcripts=transcripts[route_id],
-            n_startup_trials=STARTUP_TRIALS_BY_ROUTE[route_id],
-            n_ei_candidates=N_EI_CANDIDATES,
-        )
-
-    with ThreadPoolExecutor(
+    with ProcessPoolExecutor(
         max_workers=min(OPTUNA_ROUTE_WORKERS, len(ROUTES)),
-        thread_name_prefix="large-tpe-replay",
+        mp_context=multiprocessing.get_context("spawn"),
     ) as executor:
         futures = {
-            route_id: executor.submit(replay_one, index, route_id)
+            route_id: executor.submit(
+                _replay_route_adapter_worker,
+                route_id,
+                lanes_by_route[route_id],
+                int(seed_base) + index * 1009,
+                transcripts[route_id],
+                STARTUP_TRIALS_BY_ROUTE[route_id],
+                N_EI_CANDIDATES,
+            )
             for index, route_id in enumerate(ROUTES)
         }
         return {
@@ -146,10 +161,25 @@ def _replay_route_adapters(
         }
 
 
+def _ask_route_population_worker(
+    adapter: RouteConditionalTPESearchAdapter,
+    checkpoint_id: str,
+    count: int,
+    expected_genes: Sequence[Mapping[str, str]] | None,
+) -> tuple[RouteConditionalTPESearchAdapter, list[dict[str, Any]], float]:
+    started = time.perf_counter()
+    rows = adapter.ask_population(
+        checkpoint_id=checkpoint_id,
+        count=count,
+        expected_genes=expected_genes,
+    )
+    return adapter, rows, time.perf_counter() - started
+
+
 def _ask_route_populations(
     *,
     schedule: Sequence[Mapping[str, Any]],
-    adapters: Mapping[str, RouteConditionalTPESearchAdapter],
+    adapters: dict[str, RouteConditionalTPESearchAdapter],
     checkpoint_id: str,
     expected_by_route: Mapping[str, Sequence[Mapping[str, str]]],
     replay_existing: bool,
@@ -161,47 +191,44 @@ def _ask_route_populations(
     if not route_specs:
         raise RuntimeError("LARGE_TPE_EMPTY_ROUTE_SCHEDULE")
 
-    def ask_one(
-        route_id: str, count: int
-    ) -> tuple[list[dict[str, Any]], float]:
-        started = time.perf_counter()
-        rows = adapters[route_id].ask_population(
-            checkpoint_id=checkpoint_id,
-            count=count,
-            expected_genes=(
-                expected_by_route.get(route_id)
-                if replay_existing
-                else None
-            ),
-        )
-        return rows, time.perf_counter() - started
-
     started = time.perf_counter()
-    with ThreadPoolExecutor(
+    with ProcessPoolExecutor(
         max_workers=min(OPTUNA_ROUTE_WORKERS, len(route_specs)),
-        thread_name_prefix="large-tpe-ask",
+        mp_context=multiprocessing.get_context("spawn"),
     ) as executor:
         futures = {
-            route_id: executor.submit(ask_one, route_id, count)
+            route_id: executor.submit(
+                _ask_route_population_worker,
+                adapters[route_id],
+                checkpoint_id,
+                count,
+                (
+                    expected_by_route.get(route_id)
+                    if replay_existing
+                    else None
+                ),
+            )
             for route_id, count in route_specs
         }
         results = {
             route_id: futures[route_id].result()
             for route_id, _ in route_specs
         }
+    for route_id, _ in route_specs:
+        adapters[route_id] = results[route_id][0]
     wall_seconds = time.perf_counter() - started
     asked = [
         row
         for route_id, _ in route_specs
-        for row in results[route_id][0]
+        for row in results[route_id][1]
     ]
     route_timings = {
         route_id: {
-            "asked_pairs": len(results[route_id][0]),
-            "wall_seconds": results[route_id][1],
+            "asked_pairs": len(results[route_id][1]),
+            "wall_seconds": results[route_id][2],
             "asks_per_second": (
-                len(results[route_id][0])
-                / max(results[route_id][1], 1e-12)
+                len(results[route_id][1])
+                / max(results[route_id][2], 1e-12)
             ),
         }
         for route_id, _ in route_specs
@@ -209,7 +236,7 @@ def _ask_route_populations(
     return asked, {
         "schema_version": "cn_large_tpe_optimizer_ask_runtime_v1",
         "checkpoint": checkpoint_id,
-        "execution": "PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES",
+        "execution": "PROCESS_PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES",
         "route_worker_count": min(
             OPTUNA_ROUTE_WORKERS, len(route_specs)
         ),
@@ -260,7 +287,7 @@ def _authorization_binding(
         "session_pair_batch_size": PAIR_BATCH_SIZES["stock_session"],
         "optuna_route_workers": OPTUNA_ROUTE_WORKERS,
         "optimizer_ask_execution": (
-            "PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
+            "PROCESS_PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
         ),
         "cache_cap_bytes": MAXIMUM_CACHE_BYTES,
         "minimum_free_memory_bytes": MINIMUM_FREE_MEMORY_BYTES,

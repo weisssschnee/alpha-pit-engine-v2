@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pickle
 from collections import OrderedDict
 
 from our_system_phase2.services.optuna_tpe_search_adapter import (
@@ -90,6 +91,31 @@ def test_tpe_builds_complete_conditional_genes_and_factorizes_pairs() -> None:
     assert receipt["completed_count"] == 8
     assert receipt["failed_count"] == 0
     assert adapter.has_pending_population is False
+
+
+def test_tpe_adapter_round_trips_across_process_boundary() -> None:
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=17,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+    )
+    first = adapter.ask_population(
+        checkpoint_id="checkpoint_001",
+        count=8,
+    )
+    adapter.tell_population(_observations(first))
+
+    restored = pickle.loads(pickle.dumps(adapter))
+    second = restored.ask_population(
+        checkpoint_id="checkpoint_002",
+        count=4,
+    )
+
+    assert restored.environment_receipt() == adapter.environment_receipt()
+    assert len(second) == 4
+    assert all(row["trial_number"] >= 8 for row in second)
 
 
 def test_failed_nonfinancial_attempts_do_not_enter_tpe_reward() -> None:
