@@ -134,8 +134,10 @@ New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
     maximum_raw_asks = 73728
     active_threads = 30
     session_threads = 30
-    active_pair_batch_size = 4
+    active_pair_batch_size = 8
     session_pair_batch_size = 8
+    optimizer_ask_execution = "PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
+    optuna_route_workers = 5
     evaluator_cache_cap_bytes = 8589934592
     portfolio_mode = 'LONG_ONLY_TOP'
     shorting = 'FORBIDDEN'

@@ -15,6 +15,7 @@ import platform
 import statistics
 import time
 from collections import Counter, defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from itertools import product
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -98,10 +99,11 @@ ASKS_PER_CHECKPOINT = 768
 MAXIMUM_RAW_ASKS = MAXIMUM_CHECKPOINTS * ASKS_PER_CHECKPOINT
 MAXIMUM_WALL_SECONDS = 7 * 24 * 60 * 60
 VALIDATION_FINALIST_PAIRS = 256
-PAIR_BATCH_SIZES = {"active_bar": 4, "stock_session": 8}
+PAIR_BATCH_SIZES = {"active_bar": 8, "stock_session": 8}
 MAXIMUM_CACHE_BYTES = 8 * 1024**3
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 FRESH_EXACT_MARGIN = 1.20
+OPTUNA_ROUTE_WORKERS = len(ROUTES)
 STARTUP_TRIALS_BY_ROUTE = {
     "SLOW_TEMPORAL_CHANGE": 512,
     "FIRSTN_PATH": 128,
@@ -110,6 +112,113 @@ STARTUP_TRIALS_BY_ROUTE = {
     "DISCLOSURE_EVENT": 64,
 }
 N_EI_CANDIDATES = 64
+
+
+def _replay_route_adapters(
+    *,
+    lanes_by_route: Mapping[str, Mapping[str, Any]],
+    seed_base: int,
+    transcripts: Mapping[str, Sequence[Mapping[str, Any]]],
+) -> dict[str, RouteConditionalTPESearchAdapter]:
+    def replay_one(
+        index: int, route_id: str
+    ) -> RouteConditionalTPESearchAdapter:
+        return RouteConditionalTPESearchAdapter.replay(
+            route_id=route_id,
+            lane_spaces=lanes_by_route[route_id],
+            seed=int(seed_base) + index * 1009,
+            transcripts=transcripts[route_id],
+            n_startup_trials=STARTUP_TRIALS_BY_ROUTE[route_id],
+            n_ei_candidates=N_EI_CANDIDATES,
+        )
+
+    with ThreadPoolExecutor(
+        max_workers=min(OPTUNA_ROUTE_WORKERS, len(ROUTES)),
+        thread_name_prefix="large-tpe-replay",
+    ) as executor:
+        futures = {
+            route_id: executor.submit(replay_one, index, route_id)
+            for index, route_id in enumerate(ROUTES)
+        }
+        return {
+            route_id: futures[route_id].result()
+            for route_id in ROUTES
+        }
+
+
+def _ask_route_populations(
+    *,
+    schedule: Sequence[Mapping[str, Any]],
+    adapters: Mapping[str, RouteConditionalTPESearchAdapter],
+    checkpoint_id: str,
+    expected_by_route: Mapping[str, Sequence[Mapping[str, str]]],
+    replay_existing: bool,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    route_specs = [
+        (str(route["route_id"]), int(route["asked_pairs"]))
+        for route in schedule
+    ]
+    if not route_specs:
+        raise RuntimeError("LARGE_TPE_EMPTY_ROUTE_SCHEDULE")
+
+    def ask_one(
+        route_id: str, count: int
+    ) -> tuple[list[dict[str, Any]], float]:
+        started = time.perf_counter()
+        rows = adapters[route_id].ask_population(
+            checkpoint_id=checkpoint_id,
+            count=count,
+            expected_genes=(
+                expected_by_route.get(route_id)
+                if replay_existing
+                else None
+            ),
+        )
+        return rows, time.perf_counter() - started
+
+    started = time.perf_counter()
+    with ThreadPoolExecutor(
+        max_workers=min(OPTUNA_ROUTE_WORKERS, len(route_specs)),
+        thread_name_prefix="large-tpe-ask",
+    ) as executor:
+        futures = {
+            route_id: executor.submit(ask_one, route_id, count)
+            for route_id, count in route_specs
+        }
+        results = {
+            route_id: futures[route_id].result()
+            for route_id, _ in route_specs
+        }
+    wall_seconds = time.perf_counter() - started
+    asked = [
+        row
+        for route_id, _ in route_specs
+        for row in results[route_id][0]
+    ]
+    route_timings = {
+        route_id: {
+            "asked_pairs": len(results[route_id][0]),
+            "wall_seconds": results[route_id][1],
+            "asks_per_second": (
+                len(results[route_id][0])
+                / max(results[route_id][1], 1e-12)
+            ),
+        }
+        for route_id, _ in route_specs
+    }
+    return asked, {
+        "schema_version": "cn_large_tpe_optimizer_ask_runtime_v1",
+        "checkpoint": checkpoint_id,
+        "execution": "PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES",
+        "route_worker_count": min(
+            OPTUNA_ROUTE_WORKERS, len(route_specs)
+        ),
+        "asked_pairs": len(asked),
+        "wall_seconds": wall_seconds,
+        "asks_per_second": len(asked) / max(wall_seconds, 1e-12),
+        "routes": route_timings,
+        "replay_existing": bool(replay_existing),
+    }
 
 
 def _copy_behavior_archive(
@@ -149,6 +258,10 @@ def _authorization_binding(
         "session_threads": int(session_threads),
         "active_pair_batch_size": PAIR_BATCH_SIZES["active_bar"],
         "session_pair_batch_size": PAIR_BATCH_SIZES["stock_session"],
+        "optuna_route_workers": OPTUNA_ROUTE_WORKERS,
+        "optimizer_ask_execution": (
+            "PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
+        ),
         "cache_cap_bytes": MAXIMUM_CACHE_BYTES,
         "minimum_free_memory_bytes": MINIMUM_FREE_MEMORY_BYTES,
         "seed_base": int(seed_base),
@@ -828,17 +941,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         initial_exact=historical_exact,
         initial_behavior=initial_behavior,
     )
-    adapters = {
-        route_id: RouteConditionalTPESearchAdapter.replay(
-            route_id=route_id,
-            lane_spaces=lanes_by_route[route_id],
-            seed=int(args.seed_base) + index * 1009,
-            transcripts=state["transcripts"][route_id],
-            n_startup_trials=STARTUP_TRIALS_BY_ROUTE[route_id],
-            n_ei_candidates=N_EI_CANDIDATES,
-        )
-        for index, route_id in enumerate(ROUTES)
-    }
+    adapters = _replay_route_adapters(
+        lanes_by_route=lanes_by_route,
+        seed_base=int(args.seed_base),
+        transcripts=state["transcripts"],
+    )
     deadline = time.time() + int(args.maximum_wall_seconds)
     checkpoint_index = len(state["summaries"])
     while (
@@ -886,22 +993,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     for row in previous_asked
                     if str(row["route_id"]) == route_id
                 ]
-        asked: list[dict[str, Any]] = []
-        for route in schedule["routes"]:
-            route_id = str(route["route_id"])
-            count = int(route["asked_pairs"])
-            asked.extend(
-                adapters[route_id].ask_population(
-                    checkpoint_id=checkpoint_id,
-                    count=count,
-                    expected_genes=(
-                        expected_by_route.get(route_id)
-                        if ask_path.is_file()
-                        else None
-                    ),
-                )
-            )
+        asked, ask_runtime = _ask_route_populations(
+            schedule=schedule["routes"],
+            adapters=adapters,
+            checkpoint_id=checkpoint_id,
+            expected_by_route=expected_by_route,
+            replay_existing=ask_path.is_file(),
+        )
         _write_json(ask_path, asked)
+        ask_runtime_path = _write_json(
+            root / "optimizer_ask_runtime.json", ask_runtime
+        )
         materialized = _materialize_population(
             asked=asked,
             generator=generator,
@@ -1193,6 +1295,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         manifest_paths = [
             schedule_path,
             ask_path,
+            ask_runtime_path,
             candidate_path,
             probe_path,
             probe_audit_path,

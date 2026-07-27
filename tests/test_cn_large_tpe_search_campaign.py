@@ -8,9 +8,12 @@ import pytest
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     ASKS_PER_CHECKPOINT,
     MINIMUM_ACTUAL_EVALUATED_PAIRS,
+    OPTUNA_ROUTE_WORKERS,
+    PAIR_BATCH_SIZES,
     ROUTE_EVALUATED_TARGETS,
     ROUTES,
     _allocate_checkpoint_asks,
+    _ask_route_populations,
     _freeze_gene_lanes,
 )
 
@@ -21,6 +24,71 @@ def test_large_contract_is_five_digit_actual_evaluated_not_scheduled() -> None:
     assert set(ROUTE_EVALUATED_TARGETS) == set(ROUTES)
     assert "MINUTE_STATIC" not in ROUTES
     assert "INTRADAY_STATE_TRANSITION" not in ROUTES
+    assert PAIR_BATCH_SIZES == {
+        "active_bar": 8,
+        "stock_session": 8,
+    }
+    assert OPTUNA_ROUTE_WORKERS == len(ROUTES)
+
+
+class _DeterministicRouteAdapter:
+    def __init__(self, route_id: str) -> None:
+        self.route_id = route_id
+        self.received_expected: object = None
+
+    def ask_population(
+        self,
+        *,
+        checkpoint_id: str,
+        count: int,
+        expected_genes: object = None,
+    ) -> list[dict[str, object]]:
+        self.received_expected = expected_genes
+        return [
+            {
+                "route_id": self.route_id,
+                "checkpoint_id": checkpoint_id,
+                "ordinal": ordinal,
+            }
+            for ordinal in range(count)
+        ]
+
+
+def test_parallel_route_ask_preserves_schedule_order_and_replay_genes() -> None:
+    scheduled_routes = [ROUTES[2], ROUTES[0], ROUTES[4]]
+    schedule = [
+        {"route_id": route_id, "asked_pairs": index + 1}
+        for index, route_id in enumerate(scheduled_routes)
+    ]
+    adapters = {
+        route_id: _DeterministicRouteAdapter(route_id)
+        for route_id in scheduled_routes
+    }
+    expected = {
+        route_id: [{"slot": f"expected-{route_id}"}]
+        for route_id in scheduled_routes
+    }
+
+    asked, audit = _ask_route_populations(
+        schedule=schedule,
+        adapters=adapters,
+        checkpoint_id="checkpoint_011",
+        expected_by_route=expected,
+        replay_existing=True,
+    )
+
+    assert [row["route_id"] for row in asked] == [
+        route_id
+        for index, route_id in enumerate(scheduled_routes)
+        for _ in range(index + 1)
+    ]
+    assert all(
+        adapters[route_id].received_expected == expected[route_id]
+        for route_id in scheduled_routes
+    )
+    assert audit["execution"] == "PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
+    assert audit["route_worker_count"] == len(scheduled_routes)
+    assert audit["asked_pairs"] == sum(range(1, 4))
 
 
 def test_checkpoint_ask_allocation_is_registry_route_bounded() -> None:
