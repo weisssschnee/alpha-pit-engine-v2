@@ -1176,10 +1176,13 @@ def _runtime_gate(
             float((phase_totals.get(phase) or {}).get("wall_seconds") or 0.0)
             for phase in present_parallel_phases
         )
+        backend_wall_seconds = float(
+            result.get("wall_seconds") or present_parallel_wall_seconds
+        )
         parallelism_phase_minimum_wall_seconds = max(
             PARALLELISM_PHASE_MINIMUM_WALL_SECONDS,
             PARALLELISM_PHASE_MINIMUM_WALL_FRACTION
-            * present_parallel_wall_seconds,
+            * backend_wall_seconds,
         )
         timed_parallel_phases = {
             phase

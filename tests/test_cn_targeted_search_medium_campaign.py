@@ -631,7 +631,7 @@ def test_runtime_gate_ignores_immaterial_parallelism_tail(
     assert gate["status"] == "PASS"
     assert stock["parallelism_engaged"] is True
     assert stock["parallelism_phase_minimum_wall_seconds"] == pytest.approx(
-        2.2175
+        2.4
     )
     assert stock["parallelism_phase_minimum_wall_fraction"] == 0.01
     assert stock["parallelism_below_measurement_resolution_phases"] == [
