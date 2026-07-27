@@ -151,6 +151,11 @@ def test_batched_native_portfolio_matches_merged_legacy_reference() -> None:
             np.testing.assert_allclose(metrics[3], float(row["rank_ic"]), rtol=1e-12, atol=1e-12)
     assert observed.coordinate_rows_retained == 0
     assert observed.audit["native_portfolio_kernel_called"] is True
+    assert observed.audit["mapping_scratch_bytes"] > 0
+    assert (
+        observed.audit["mapping_temporary_bytes"]
+        >= observed.audit["mapping_scratch_bytes"]
+    )
 
 
 def test_linear_quantile_does_not_move_an_equal_cutoff_tie_by_one_ulp() -> None:

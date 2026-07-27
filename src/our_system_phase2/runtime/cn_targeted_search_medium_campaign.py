@@ -78,6 +78,8 @@ GLOBAL_WORKER_LIMIT = 24
 MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY = 0.75
 PEAK_RSS_LIMIT_BYTES = 48 * 1024**3
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
+PARALLELISM_PHASE_MINIMUM_WALL_SECONDS = 1.0
+PARALLELISM_PHASE_MINIMUM_WALL_FRACTION = 0.01
 PAIR_BATCH_SIZE_BY_BACKEND = {"active_bar": 4, "stock_session": 8}
 EXPECTED_REGISTRY_RELATIVE_PATH = Path(
     "runtime/field_registry/cn_unified_capability_registry_v3_20260717/"
@@ -1170,11 +1172,20 @@ def _runtime_gate(
         }
         present_parallel_phases = required_parallel_phases & set(compute_phase_parallelism)
         phase_totals = dict(result.get("phase_totals") or {})
+        present_parallel_wall_seconds = sum(
+            float((phase_totals.get(phase) or {}).get("wall_seconds") or 0.0)
+            for phase in present_parallel_phases
+        )
+        parallelism_phase_minimum_wall_seconds = max(
+            PARALLELISM_PHASE_MINIMUM_WALL_SECONDS,
+            PARALLELISM_PHASE_MINIMUM_WALL_FRACTION
+            * present_parallel_wall_seconds,
+        )
         timed_parallel_phases = {
             phase
             for phase in present_parallel_phases
             if float((phase_totals.get(phase) or {}).get("wall_seconds") or 0.0)
-            >= 1.0
+            >= parallelism_phase_minimum_wall_seconds
         }
         parallelism_required_phases = (
             timed_parallel_phases
@@ -1276,7 +1287,12 @@ def _runtime_gate(
             "parallelism_below_measurement_resolution_phases": sorted(
                 present_parallel_phases - parallelism_required_phases
             ),
-            "parallelism_phase_minimum_wall_seconds": 1.0,
+            "parallelism_phase_minimum_wall_seconds": (
+                parallelism_phase_minimum_wall_seconds
+            ),
+            "parallelism_phase_minimum_wall_fraction": (
+                PARALLELISM_PHASE_MINIMUM_WALL_FRACTION
+            ),
             "system_cpu_percent_mean": statistics.mean(
                 [float(row.get("system_cpu_percent") or 0.0) for row in samples]
             ) if samples else None,

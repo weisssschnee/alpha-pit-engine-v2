@@ -11,8 +11,9 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 
 try:  # pragma: no cover - native path is exercised on 77o.
-    from numba import njit, prange, set_num_threads
+    from numba import get_thread_id, njit, prange, set_num_threads
 except Exception:  # pragma: no cover
+    get_thread_id = None
     njit = None
     prange = range
     set_num_threads = None
@@ -334,6 +335,8 @@ if njit is not None:
         min_obs: int,
         top_quantile: float,
         excess_market: bool,
+        float_scratch: np.ndarray,
+        int_scratch: np.ndarray,
     ) -> tuple[np.ndarray, np.ndarray]:
         candidate_count = signals.shape[0]
         horizon_count = labels.shape[0]
@@ -356,11 +359,14 @@ if njit is not None:
                 candidate, start : start + signal_order_count
             ]
             group_size = end - start
-            ranks = np.empty(group_size, dtype=np.float64)
-            returns = np.empty(group_size, dtype=np.float64)
-            local_positions = np.empty(group_size, dtype=np.int64)
-            return_rank = np.empty(group_size, dtype=np.float64)
-            valid_index_by_local = np.empty(group_size, dtype=np.int64)
+            thread_id = get_thread_id()
+            ranks = float_scratch[thread_id, 0, :group_size]
+            returns = float_scratch[thread_id, 1, :group_size]
+            return_rank = float_scratch[thread_id, 2, :group_size]
+            local_positions = int_scratch[thread_id, 0, :group_size]
+            valid_index_by_local = int_scratch[
+                thread_id, 1, :group_size
+            ]
             ret_part = labels[horizon, start:end]
             valid_count = 0
             for local in range(group_size):
@@ -918,6 +924,7 @@ class BatchedPortfolioKernel:
             or _prepare_signal_ranks is None
             or _turnover_cost_horizon_kernel is None
             or _aggregate_horizon_kernel is None
+            or get_thread_id is None
         ):
             raise RuntimeError("Numba is required for the batched portfolio hot path")
         signal_array = np.asarray(signals, dtype=np.float64)
@@ -963,6 +970,15 @@ class BatchedPortfolioKernel:
             starts,
             ends,
         )
+        max_group_size = int(np.max(ends - starts)) if len(starts) else 0
+        float_scratch = np.empty(
+            (self.compute_threads, 3, max_group_size),
+            dtype=np.float64,
+        )
+        int_scratch = np.empty(
+            (self.compute_threads, 2, max_group_size),
+            dtype=np.int64,
+        )
         selected, metrics = _mapping_kernel(
             signal_array,
             signal_ranks,
@@ -977,6 +993,8 @@ class BatchedPortfolioKernel:
             self.min_obs,
             self.top_quantile,
             self.portfolio_mode == "long_only_excess_market",
+            float_scratch,
+            int_scratch,
         )
         mapping_wall = time.perf_counter() - mapping_wall_start
         mapping_cpu = time.process_time() - mapping_cpu_start
@@ -1048,7 +1066,15 @@ class BatchedPortfolioKernel:
                 if turnover_effective >= 0.5 * self.compute_threads
                 else "PARALLELISM_NOT_ENGAGED"
             ),
-            "mapping_temporary_bytes": int(selected.nbytes + metrics.nbytes),
+            "mapping_scratch_bytes": int(
+                float_scratch.nbytes + int_scratch.nbytes
+            ),
+            "mapping_temporary_bytes": int(
+                selected.nbytes
+                + metrics.nbytes
+                + float_scratch.nbytes
+                + int_scratch.nbytes
+            ),
             "python_pandas_hot_path_calls": 0,
             "native_thread_environment": {
                 key: os.environ.get(key)
