@@ -7,6 +7,7 @@ import pytest
 
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     ASKS_PER_CHECKPOINT,
+    MAXIMUM_RAW_ASKS,
     MINIMUM_ACTUAL_EVALUATED_PAIRS,
     N_EI_CANDIDATES,
     OPTUNA_ROUTE_WORKERS,
@@ -33,6 +34,8 @@ def test_large_contract_is_five_digit_actual_evaluated_not_scheduled() -> None:
         "active_bar": 12,
         "stock_session": 12,
     }
+    assert ASKS_PER_CHECKPOINT == 3_072
+    assert MAXIMUM_RAW_ASKS == 73_728
     assert OPTUNA_ROUTE_WORKERS == len(ROUTES)
     assert N_EI_CANDIDATES == 24
     assert TPE_SAMPLER_MODE == (

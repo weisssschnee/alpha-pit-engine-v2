@@ -1,6 +1,6 @@
 {
   "schema_version": "cn_large_tpe_campaign_authorization_v1",
-  "authorization_revision": 5,
+  "authorization_revision": 6,
   "campaign_id": "CN_LARGE_OPTUNA_TPE_ACTUAL20000_V1_20260726",
   "campaign_profile": "cn_large_optuna_tpe_actual20000_v1",
   "authorized_at": "2026-07-26",
@@ -28,7 +28,7 @@
   "minimum_actual_evaluated_pairs": 20000,
   "budget_counting_unit": "PAIR_EVALUATED",
   "maximum_checkpoints": 96,
-  "asks_per_checkpoint": 768,
+  "asks_per_checkpoint": 3072,
   "maximum_raw_asks": 73728,
   "maximum_wall_seconds": 604800,
   "validation_finalist_pairs": 256,

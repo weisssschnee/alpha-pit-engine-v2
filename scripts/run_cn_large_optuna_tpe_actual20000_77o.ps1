@@ -131,6 +131,7 @@ New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
     campaign_profile = 'cn_large_optuna_tpe_actual20000_v1'
     budget_counting_unit = 'PAIR_EVALUATED'
     minimum_actual_evaluated_pairs = 20000
+    asks_per_checkpoint = 3072
     maximum_raw_asks = 73728
     active_threads = 32
     session_threads = 32
