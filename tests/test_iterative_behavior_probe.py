@@ -63,6 +63,77 @@ def test_bounded_probe_reads_fields_without_label_sidecars(tmp_path) -> None:
     assert audit["validation_reads"] == 0
 
 
+def test_intraday_stratified_probe_reaches_late_maturing_fields(tmp_path) -> None:
+    trade_times = pd.date_range("2024-01-02 09:31", periods=8, freq="min")
+    codes = ["a", "b", "c", "d"]
+    repeated_times = np.repeat(trade_times.to_numpy(), len(codes))
+    late_values = np.tile(np.arange(1, 5, dtype=np.float64), len(trade_times))
+    late_values[: 4 * len(codes)] = np.nan
+    frame = pd.DataFrame(
+        {
+            "trade_time": repeated_times,
+            "code": codes * len(trade_times),
+            "source_shard": np.zeros(len(repeated_times), dtype=np.uint16),
+            "source_row_identity": np.arange(len(repeated_times), dtype=np.uint64),
+            "duplicate_ordinal": np.zeros(len(repeated_times), dtype=np.uint32),
+            "close": np.arange(1, len(repeated_times) + 1, dtype=np.float64),
+            "late_firstn": late_values,
+        }
+    )
+    sidecar = tmp_path / "shard_00.parquet"
+    frame.to_parquet(sidecar, index=False)
+    candidates = [
+        {
+            "candidate_id": "primary",
+            "pair_id": "pair-firstn",
+            "pair_member_role": "PRIMARY",
+            "route_id": "FIRSTN_PATH",
+            "operator_family": "CSRank",
+            "expression": "CSRank($late_firstn)",
+        },
+        {
+            "candidate_id": "control",
+            "pair_id": "pair-firstn",
+            "pair_member_role": "CONTROL",
+            "route_id": "FIRSTN_PATH",
+            "operator_family": "CSRank",
+            "expression": "CSRank(Sign($late_firstn))",
+        },
+    ]
+
+    open_rows, _ = bounded_label_free_behavior_probe(
+        candidates=candidates,
+        field_sidecars=[sidecar],
+        eligible_trade_dates=["2024-01-02"],
+        coordinate_binding="binding-open",
+        batch_id="batch-open",
+        compute_threads=1,
+        max_trade_times=2,
+        time_selection="session_open_head",
+        min_obs=2,
+        top_quantile=0.5,
+    )
+    stratified_rows, audit = bounded_label_free_behavior_probe(
+        candidates=candidates,
+        field_sidecars=[sidecar],
+        eligible_trade_dates=["2024-01-02"],
+        coordinate_binding="binding-stratified",
+        batch_id="batch-stratified",
+        compute_threads=1,
+        max_trade_times=2,
+        time_selection="intraday_stratified",
+        min_obs=2,
+        top_quantile=0.5,
+    )
+
+    assert open_rows[0]["behavior_status"] == "BEHAVIOR_UNRESOLVED"
+    assert stratified_rows[0]["behavior_status"] == "RESOLVED"
+    assert audit["time_selection"] == "intraday_stratified"
+    assert audit["validation_reads"] == 0
+    assert audit["holdout_reads"] == 0
+    assert audit["forward_2026_reads"] == 0
+
+
 def test_full_behavior_row_closes_all_four_identities_by_pair() -> None:
     joined = _join_full_behavior_identities(
         [
@@ -100,6 +171,7 @@ def test_probe_pack_uses_route_aware_coordinates(monkeypatch, tmp_path) -> None:
                 "max_trade_dates": kwargs["max_trade_dates"],
                 "max_trade_times": kwargs["max_trade_times"],
                 "date_selection": kwargs["date_selection"],
+                "time_selection": kwargs["time_selection"],
             }
         )
         pair_id = kwargs["candidates"][0]["pair_id"]
@@ -110,7 +182,7 @@ def test_probe_pack_uses_route_aware_coordinates(monkeypatch, tmp_path) -> None:
         fake_probe,
     )
     rows = []
-    for route_id in ("DISCLOSURE_EVENT", "MINUTE_STATIC"):
+    for route_id in ("DISCLOSURE_EVENT", "FIRSTN_PATH", "MINUTE_STATIC"):
         for role in ("PRIMARY", "CONTROL"):
             rows.append(
                 {
@@ -131,18 +203,27 @@ def test_probe_pack_uses_route_aware_coordinates(monkeypatch, tmp_path) -> None:
         compute_threads={"active_bar": 1, "stock_session": 1},
     )
 
-    assert len(records) == 2
+    assert len(records) == 3
     assert sorted(calls, key=lambda row: row["route_id"]) == [
         {
             "route_id": "DISCLOSURE_EVENT",
             "max_trade_dates": 12,
             "max_trade_times": 1,
             "date_selection": "condition_activation",
+            "time_selection": "session_open_head",
+        },
+        {
+            "route_id": "FIRSTN_PATH",
+            "max_trade_dates": 4,
+            "max_trade_times": 8,
+            "date_selection": "calendar_stratified",
+            "time_selection": "intraday_stratified",
         },
         {
             "route_id": "MINUTE_STATIC",
             "max_trade_dates": 4,
             "max_trade_times": 8,
             "date_selection": "calendar_stratified",
+            "time_selection": "session_open_head",
         },
     ]

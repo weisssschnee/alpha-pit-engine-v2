@@ -472,10 +472,17 @@ def _probe_pack(
             max_trade_dates = 12
             max_trade_times = 1
             date_selection = "condition_activation"
+            time_selection = "session_open_head"
+        elif route_id == "FIRSTN_PATH":
+            max_trade_dates = 4
+            max_trade_times = 8
+            date_selection = "calendar_stratified"
+            time_selection = "intraday_stratified"
         else:
             max_trade_dates = 4
             max_trade_times = 8
             date_selection = "calendar_stratified"
+            time_selection = "session_open_head"
         field_sidecars = tuple(sorted(Path(field_roots[backend]).glob("shard_*.parquet")))
         backend_records, audit = bounded_label_free_behavior_probe(
             candidates=members,
@@ -486,6 +493,10 @@ def _probe_pack(
                     "coordinate_binding": coordinate_binding,
                     "backend": backend,
                     "route_id": route_id,
+                    "date_selection": date_selection,
+                    "time_selection": time_selection,
+                    "max_trade_dates": max_trade_dates,
+                    "max_trade_times": max_trade_times,
                 }
             ),
             batch_id=batch_id,
@@ -493,6 +504,7 @@ def _probe_pack(
             max_trade_dates=max_trade_dates,
             max_trade_times=max_trade_times,
             date_selection=date_selection,
+            time_selection=time_selection,
             pair_batch_size=8,
         )
         records.extend(backend_records)

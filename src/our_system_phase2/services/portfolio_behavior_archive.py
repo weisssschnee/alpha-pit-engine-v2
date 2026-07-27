@@ -584,6 +584,17 @@ def _stratified_dates(values: Sequence[str], maximum: int) -> list[str]:
     return [ordered[index] for index in dict.fromkeys(indices)]
 
 
+def _stratified_values(values: Sequence[Any], maximum: int) -> list[Any]:
+    ordered = sorted(set(values))
+    limit = max(1, int(maximum))
+    if len(ordered) <= limit:
+        return ordered
+    if limit == 1:
+        return [ordered[len(ordered) // 2]]
+    indices = [round(index * (len(ordered) - 1) / (limit - 1)) for index in range(limit)]
+    return [ordered[index] for index in dict.fromkeys(indices)]
+
+
 def _condition_activation_dates(
     *,
     paths: Sequence[Path],
@@ -624,6 +635,7 @@ def bounded_label_free_behavior_probe(
     max_trade_times: int = 30,
     max_trade_dates: int = 1,
     date_selection: str = "calendar_stratified",
+    time_selection: str = "session_open_head",
     pair_batch_size: int = 8,
     min_obs: int = 20,
     top_quantile: float = 0.2,
@@ -690,6 +702,8 @@ def bounded_label_free_behavior_probe(
 
     if date_selection not in {"calendar_stratified", "condition_activation"}:
         raise ValueError(f"unknown behavior probe date selection: {date_selection}")
+    if time_selection not in {"session_open_head", "intraday_stratified"}:
+        raise ValueError(f"unknown behavior probe time selection: {time_selection}")
     condition_fields = sorted(
         {
             str(field)
@@ -725,15 +739,13 @@ def bounded_label_free_behavior_probe(
             ],
             how="vertical_relaxed",
             rechunk=False,
-        ).select(
-            pl.col("trade_time")
-            .unique()
-            .sort()
-            .head(max(1, int(max_trade_times)))
-        )
-        probe_times.extend(
-            time_frame.collect(engine="streaming")["trade_time"].to_list()
-        )
+        ).select(pl.col("trade_time").unique().sort())
+        selected_times = time_frame.collect(engine="streaming")["trade_time"].to_list()
+        if time_selection == "intraday_stratified":
+            selected_times = _stratified_values(selected_times, max_trade_times)
+        else:
+            selected_times = selected_times[: max(1, int(max_trade_times))]
+        probe_times.extend(selected_times)
     probe_times = sorted(set(probe_times))
     if not probe_times:
         raise RuntimeError("bounded behavior probe found no development coordinates")
@@ -821,6 +833,7 @@ def bounded_label_free_behavior_probe(
         "probe_date": probe_dates[0],
         "probe_dates": probe_dates,
         "date_selection": date_selection,
+        "time_selection": time_selection,
         "trade_time_count": len(probe_times),
         "coordinate_rows": frame.height,
         "candidate_pair_count": len(rows) // 2,
