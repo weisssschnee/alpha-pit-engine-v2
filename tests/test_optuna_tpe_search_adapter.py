@@ -189,6 +189,119 @@ def test_failed_nonfinancial_attempts_do_not_enter_tpe_reward() -> None:
     assert receipt["failed_count"] == 1
 
 
+def test_availability_fixed_trial_uses_official_queue_and_fail_state() -> None:
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=21,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+        multivariate=False,
+        group=False,
+    )
+    source = adapter.ask_trial(
+        checkpoint_id="checkpoint_001",
+        metadata={"emission_mode": "AVAILABILITY_REPLACED_SOURCE"},
+    )
+    fixed_genes = {
+        "skeleton_id": "route.skeleton.single",
+        "gene_surface_id": "surface-v1",
+        "primary_field_id": "c",
+    }
+    fixed = adapter.enqueue_fixed_trial(
+        checkpoint_id="checkpoint_001",
+        genes=fixed_genes,
+        metadata={
+            "emission_mode": "TPE_BUCKET_REPLACEMENT",
+            "source_optimizer_trial_number": source["trial_number"],
+        },
+    )
+
+    receipt = adapter.tell_population(
+        [
+            {
+                "proposal_id": source["proposal_id"],
+                "outcome_class": "AVAILABILITY_REPLACED",
+                "optimizer_reward": None,
+                "outcome_reason": "EXACT_ALREADY_SEEN",
+            },
+            {
+                "proposal_id": fixed["proposal_id"],
+                "outcome_class": "BEHAVIOR_BLOCKED",
+                "optimizer_reward": None,
+                "outcome_reason": "EXACT_BEHAVIOR_DUPLICATE",
+            },
+        ]
+    )
+
+    assert fixed["genes"] == fixed_genes
+    assert fixed["trial_number"] == source["trial_number"] + 1
+    assert receipt["completed_count"] == 0
+    assert receipt["failed_count"] == 2
+    assert all(
+        row["state"] == "FAIL"
+        for row in adapter.history[0]["observations"]
+    )
+    assert all(trial.value is None for trial in adapter._study.trials)
+
+
+def test_mixed_native_and_fixed_transcript_replays_exactly() -> None:
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=22,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+        multivariate=False,
+        group=False,
+    )
+    native = adapter.ask_trial(checkpoint_id="checkpoint_001")
+    fixed = adapter.enqueue_fixed_trial(
+        checkpoint_id="checkpoint_001",
+        genes={
+            "skeleton_id": "route.skeleton.single",
+            "gene_surface_id": "surface-v1",
+            "primary_field_id": "b",
+        },
+        metadata={"emission_mode": "GLOBAL_AVAILABILITY_FALLBACK"},
+    )
+    adapter.tell_population(
+        [
+            {
+                "proposal_id": native["proposal_id"],
+                "outcome_class": "AVAILABILITY_BUCKET_EXHAUSTED",
+                "optimizer_reward": None,
+                "outcome_reason": "BUCKET_EXHAUSTED",
+            },
+            {
+                "proposal_id": fixed["proposal_id"],
+                "outcome_class": EVALUATED,
+                "optimizer_reward": 0.25,
+                "outcome_reason": "",
+            },
+        ]
+    )
+
+    replayed = RouteConditionalTPESearchAdapter.replay(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=22,
+        transcripts=adapter.history,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+        multivariate=False,
+        group=False,
+    )
+
+    assert replayed.history_receipt()["history_hash"] == (
+        adapter.history_receipt()["history_hash"]
+    )
+    assert [trial.state.name for trial in replayed._study.trials] == [
+        "FAIL",
+        "COMPLETE",
+    ]
+
+
 def test_genesis_transcript_replay_reproduces_next_batch() -> None:
     adapter = RouteConditionalTPESearchAdapter(
         route_id="TEST_ROUTE",

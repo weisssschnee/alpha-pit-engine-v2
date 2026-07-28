@@ -740,12 +740,20 @@ def _allocate_checkpoint_asks(
     *,
     evaluated_by_route: Mapping[str, int],
     asked_by_route: Mapping[str, int],
+    infeasible_routes: Sequence[str] = (),
+    remaining_exact_by_route: Mapping[str, int] | None = None,
 ) -> dict[str, int]:
+    infeasible = set(map(str, infeasible_routes))
     active = [
         route_id
         for route_id in ROUTES
         if int(evaluated_by_route.get(route_id, 0))
         < ROUTE_EVALUATED_TARGETS[route_id]
+        and route_id not in infeasible
+        and (
+            remaining_exact_by_route is None
+            or int(remaining_exact_by_route.get(route_id, 0)) > 0
+        )
     ]
     if not active:
         return {}
@@ -754,9 +762,18 @@ def _allocate_checkpoint_asks(
         completed = int(evaluated_by_route.get(route_id, 0))
         asked = int(asked_by_route.get(route_id, 0))
         remaining = ROUTE_EVALUATED_TARGETS[route_id] - completed
-        observed_yield = completed / asked if asked else 0.50
-        bounded_yield = min(0.90, max(0.20, observed_yield))
-        weights[route_id] = remaining / bounded_yield
+        if asked:
+            observed_yield = completed / asked
+            # A zero-yield route receives a finite evidence-sized weight; no
+            # invented 20% floor and no infinite weight.
+            allocation_yield = (
+                observed_yield if observed_yield > 0.0 else 1.0 / (asked + 1)
+            )
+            weights[route_id] = remaining / allocation_yield
+        else:
+            # No historical yield exists.  Preserve target proportionality
+            # rather than claiming an arbitrary preflight conversion rate.
+            weights[route_id] = float(remaining)
     minimum = 8
     allocation = {route_id: minimum for route_id in active}
     residual = ASKS_PER_CHECKPOINT - minimum * len(active)
@@ -771,6 +788,57 @@ def _allocate_checkpoint_asks(
     for _, route_id in sorted(fractional, reverse=True)[:missing]:
         allocation[route_id] += 1
     return allocation
+
+
+def _route_budget_feasibility(
+    *,
+    remaining_evaluated_target: int,
+    remaining_formal_ask_budget: int,
+    remaining_exact_count: int,
+    recent_checkpoints: Sequence[Mapping[str, int]],
+) -> dict[str, Any]:
+    """Classify absolute infeasibility separately from point-estimate risk."""
+
+    remaining_target = max(0, int(remaining_evaluated_target))
+    remaining_budget = max(0, int(remaining_formal_ask_budget))
+    remaining_exact = max(0, int(remaining_exact_count))
+    required_future_yield = (
+        remaining_target / remaining_budget
+        if remaining_budget
+        else (0.0 if remaining_target == 0 else None)
+    )
+    checkpoint_yields = []
+    for row in recent_checkpoints[-2:]:
+        formal = max(0, int(row.get("formal_fresh_exact_asks", 0)))
+        evaluated = max(0, int(row.get("pair_evaluated", 0)))
+        checkpoint_yields.append(
+            evaluated / formal if formal else None
+        )
+    two_checkpoint_shortfall = (
+        required_future_yield is not None
+        and len(checkpoint_yields) == 2
+        and all(
+            value is not None and value < required_future_yield
+            for value in checkpoint_yields
+        )
+    )
+    absolute_ceiling = min(remaining_budget, remaining_exact)
+    if remaining_target > absolute_ceiling:
+        status = "INFEASIBLE_ABSOLUTE_CEILING"
+    elif two_checkpoint_shortfall:
+        status = "AT_RISK_RECENT_YIELD_SHORTFALL_TWO_CHECKPOINTS"
+    else:
+        status = "FEASIBLE_NOT_PROVEN"
+    return {
+        "status": status,
+        "remaining_evaluated_target": remaining_target,
+        "remaining_formal_ask_budget": remaining_budget,
+        "remaining_exact_count": remaining_exact,
+        "absolute_maximum_future_evaluations": absolute_ceiling,
+        "required_future_yield": required_future_yield,
+        "recent_checkpoint_yields": checkpoint_yields,
+        "two_checkpoint_point_estimate_shortfall": two_checkpoint_shortfall,
+    }
 
 
 def _load_closed_state(

@@ -268,6 +268,156 @@ class RouteConditionalTPESearchAdapter:
             )
         return genes, pair_compatible
 
+    def _register_asked_trial(
+        self,
+        *,
+        trial: Any,
+        checkpoint_id: str,
+        ask_ordinal: int,
+        genes: Mapping[str, str],
+        pair_compatible: bool,
+        ask_kind: str | None,
+        metadata: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        if self._pending_order:
+            pending_checkpoint = str(
+                self._pending[self._pending_order[0]]["row"][
+                    "checkpoint_id"
+                ]
+            )
+            if pending_checkpoint != str(checkpoint_id):
+                raise RuntimeError("OPTUNA_PENDING_CHECKPOINT_DRIFT")
+        normalized_genes = {
+            str(key): str(value) for key, value in genes.items()
+        }
+        proposal_id = _stable_hash(
+            {
+                "policy_id": self.policy_id,
+                "route_id": self.route_id,
+                "seed": self.seed,
+                "trial_number": trial.number,
+                "checkpoint_id": str(checkpoint_id),
+                "ask_ordinal": int(ask_ordinal),
+                "genes": normalized_genes,
+            }
+        )[:24]
+        row = {
+            "proposal_id": proposal_id,
+            "trial_number": int(trial.number),
+            "checkpoint_id": str(checkpoint_id),
+            "ask_ordinal": int(ask_ordinal),
+            "route_id": self.route_id,
+            "generation": len(self._history),
+            "genes": normalized_genes,
+            "category_id": _stable_hash(
+                {
+                    "route_id": self.route_id,
+                    "genes": normalized_genes,
+                }
+            ),
+            "typed_pair_compatible": bool(pair_compatible),
+            "optimizer_policy_id": self.policy_id,
+        }
+        if ask_kind:
+            row["optimizer_ask_kind"] = str(ask_kind)
+        if metadata:
+            overlap = set(row) & set(metadata)
+            if overlap:
+                raise ValueError(
+                    "OPTUNA_ASK_METADATA_RESERVED_KEYS:"
+                    + ",".join(sorted(overlap))
+                )
+            row.update(copy.deepcopy(dict(metadata)))
+        self._pending[proposal_id] = {
+            "trial": trial,
+            "row": copy.deepcopy(row),
+        }
+        self._pending_order.append(proposal_id)
+        return row
+
+    def ask_trial(
+        self,
+        *,
+        checkpoint_id: str,
+        ask_ordinal: int | None = None,
+        expected_genes: Mapping[str, str] | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        record_ask_kind: bool = True,
+    ) -> dict[str, Any]:
+        """Ask one native TPE trial while retaining batch ask/tell coverage."""
+
+        ordinal = (
+            len(self._pending_order)
+            if ask_ordinal is None
+            else int(ask_ordinal)
+        )
+        trial = self._study.ask()
+        genes, pair_compatible = self._sample_genes(trial)
+        if expected_genes is not None:
+            expected = {
+                str(key): str(value)
+                for key, value in expected_genes.items()
+            }
+            if genes != expected:
+                raise RuntimeError(
+                    "OPTUNA_TRANSCRIPT_REPLAY_DRIFT:"
+                    f"{self.route_id}:{checkpoint_id}:{ordinal}"
+                )
+        return self._register_asked_trial(
+            trial=trial,
+            checkpoint_id=checkpoint_id,
+            ask_ordinal=ordinal,
+            genes=genes,
+            pair_compatible=pair_compatible,
+            ask_kind=("TPE_NATIVE_DRAW" if record_ask_kind else None),
+            metadata=metadata,
+        )
+
+    def enqueue_fixed_trial(
+        self,
+        *,
+        checkpoint_id: str,
+        genes: Mapping[str, Any],
+        ask_ordinal: int | None = None,
+        metadata: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Create a fixed-parameter official Optuna trial for an exact emitter.
+
+        The fixed row still consumes a real ``study.ask()`` trial number and is
+        included in ordinary ask/tell coverage.  It receives no synthetic
+        reward and is not a second optimizer.
+        """
+
+        normalized = {
+            str(key): str(value) for key, value in genes.items()
+        }
+        params, _ = self._frozen_trial_params(normalized)
+        self._study.enqueue_trial(
+            params,
+            user_attrs={
+                "availability_fixed_trial": True,
+                "availability_fixed_genes_hash": _stable_hash(normalized),
+            },
+        )
+        trial = self._study.ask()
+        actual, pair_compatible = self._sample_genes(trial)
+        if actual != normalized:
+            raise RuntimeError("OPTUNA_FIXED_TRIAL_GENE_DRIFT")
+        ordinal = (
+            len(self._pending_order)
+            if ask_ordinal is None
+            else int(ask_ordinal)
+        )
+        return self._register_asked_trial(
+            trial=trial,
+            checkpoint_id=checkpoint_id,
+            ask_ordinal=ordinal,
+            genes=actual,
+            pair_compatible=pair_compatible,
+            ask_kind="AVAILABILITY_FIXED_ENQUEUED",
+            metadata=metadata,
+        )
+
     def ask_population(
         self,
         *,
@@ -283,52 +433,18 @@ class RouteConditionalTPESearchAdapter:
             raise ValueError("expected gene count drift")
         asked: list[dict[str, Any]] = []
         for ordinal in range(int(count)):
-            trial = self._study.ask()
-            genes, pair_compatible = self._sample_genes(trial)
-            if expected_genes is not None:
-                expected = {
-                    str(key): str(value)
-                    for key, value in expected_genes[ordinal].items()
-                }
-                if genes != expected:
-                    raise RuntimeError(
-                        "OPTUNA_TRANSCRIPT_REPLAY_DRIFT:"
-                        f"{self.route_id}:{checkpoint_id}:{ordinal}"
-                    )
-            proposal_id = _stable_hash(
-                {
-                    "policy_id": self.policy_id,
-                    "route_id": self.route_id,
-                    "seed": self.seed,
-                    "trial_number": trial.number,
-                    "checkpoint_id": str(checkpoint_id),
-                    "ask_ordinal": ordinal,
-                    "genes": genes,
-                }
-            )[:24]
-            row = {
-                "proposal_id": proposal_id,
-                "trial_number": int(trial.number),
-                "checkpoint_id": str(checkpoint_id),
-                "ask_ordinal": ordinal,
-                "route_id": self.route_id,
-                "generation": len(self._history),
-                "genes": genes,
-                "category_id": _stable_hash(
-                    {
-                        "route_id": self.route_id,
-                        "genes": genes,
-                    }
-                ),
-                "typed_pair_compatible": bool(pair_compatible),
-                "optimizer_policy_id": self.policy_id,
-            }
-            self._pending[proposal_id] = {
-                "trial": trial,
-                "row": copy.deepcopy(row),
-            }
-            self._pending_order.append(proposal_id)
-            asked.append(row)
+            asked.append(
+                self.ask_trial(
+                    checkpoint_id=checkpoint_id,
+                    ask_ordinal=ordinal,
+                    expected_genes=(
+                        expected_genes[ordinal]
+                        if expected_genes is not None
+                        else None
+                    ),
+                    record_ask_kind=False,
+                )
+            )
         return asked
 
     def tell_population(
@@ -571,13 +687,54 @@ class RouteConditionalTPESearchAdapter:
         for transcript in transcripts:
             asked = list(transcript.get("asked") or ())
             observations = list(transcript.get("observations") or ())
-            actual = adapter.ask_population(
-                checkpoint_id=str(transcript["checkpoint_id"]),
-                count=len(asked),
-                expected_genes=[
-                    dict(row["genes"]) for row in asked
-                ],
-            )
+            if adapter.has_pending_population:
+                raise RuntimeError("OPTUNA_REPLAY_PENDING_POPULATION_DRIFT")
+            actual = []
+            core_keys = {
+                "proposal_id",
+                "trial_number",
+                "checkpoint_id",
+                "ask_ordinal",
+                "route_id",
+                "generation",
+                "genes",
+                "category_id",
+                "typed_pair_compatible",
+                "optimizer_policy_id",
+                "optimizer_ask_kind",
+            }
+            for ordinal, source in enumerate(asked):
+                ask_kind = str(
+                    source.get("optimizer_ask_kind") or ""
+                )
+                metadata = {
+                    key: copy.deepcopy(value)
+                    for key, value in source.items()
+                    if key not in core_keys
+                }
+                if ask_kind == "AVAILABILITY_FIXED_ENQUEUED":
+                    actual.append(
+                        adapter.enqueue_fixed_trial(
+                            checkpoint_id=str(
+                                transcript["checkpoint_id"]
+                            ),
+                            genes=dict(source["genes"]),
+                            ask_ordinal=ordinal,
+                            metadata=metadata,
+                        )
+                    )
+                else:
+                    actual.append(
+                        adapter.ask_trial(
+                            checkpoint_id=str(
+                                transcript["checkpoint_id"]
+                            ),
+                            ask_ordinal=ordinal,
+                            expected_genes=dict(source["genes"]),
+                            metadata=metadata,
+                            record_ask_kind=bool(ask_kind),
+                        )
+                    )
             expected_ids = [
                 str(row["proposal_id"]) for row in asked
             ]

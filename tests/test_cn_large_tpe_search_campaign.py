@@ -25,6 +25,7 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _ask_route_populations,
     _conservative_search_score,
     _freeze_gene_lanes,
+    _route_budget_feasibility,
     _restore_or_import_adapters,
     _select_validation_finalists,
     _validation_eligible,
@@ -397,6 +398,46 @@ def test_observed_low_yield_increases_route_ask_share() -> None:
     )
 
     assert allocation["FIRSTN_PATH"] > 8
+
+
+def test_scheduler_preserves_observed_1_4_percent_without_20_percent_floor() -> None:
+    evaluated = Counter({route_id: 100 for route_id in ROUTES})
+    asked = Counter({route_id: 200 for route_id in ROUTES})
+    evaluated["FIRSTN_PATH"] = 14
+    asked["FIRSTN_PATH"] = 1_000
+
+    allocation = _allocate_checkpoint_asks(
+        evaluated_by_route=evaluated,
+        asked_by_route=asked,
+    )
+
+    assert 14 / 1_000 == pytest.approx(0.014)
+    assert allocation["FIRSTN_PATH"] == max(allocation.values())
+
+
+def test_budget_feasibility_separates_absolute_failure_from_recent_risk() -> None:
+    at_risk = _route_budget_feasibility(
+        remaining_evaluated_target=100,
+        remaining_formal_ask_budget=1_000,
+        remaining_exact_count=1_000,
+        recent_checkpoints=[
+            {"formal_fresh_exact_asks": 100, "pair_evaluated": 5},
+            {"formal_fresh_exact_asks": 100, "pair_evaluated": 6},
+        ],
+    )
+    impossible = _route_budget_feasibility(
+        remaining_evaluated_target=101,
+        remaining_formal_ask_budget=100,
+        remaining_exact_count=1_000,
+        recent_checkpoints=[],
+    )
+
+    assert at_risk["recent_checkpoint_yields"] == [0.05, 0.06]
+    assert at_risk["required_future_yield"] == pytest.approx(0.10)
+    assert at_risk["status"] == (
+        "AT_RISK_RECENT_YIELD_SHORTFALL_TWO_CHECKPOINTS"
+    )
+    assert impossible["status"] == "INFEASIBLE_ABSOLUTE_CEILING"
 
 
 class _FrozenLaneGenerator:
