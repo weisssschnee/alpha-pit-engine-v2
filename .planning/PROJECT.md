@@ -17,8 +17,12 @@ or development-positive results are not candidate promotion or OOS proof.
 - PIT/observable-time authorities own historical availability semantics.
 - Fixed split, candidate receipt, matched pair, and evaluator authorities own
   formal evaluation admission.
-- Validation, holdout, spent, sealed, and 2026 forward data cannot feed reward,
-  admission, scheduler, family decisions, or persistent memory.
+- Candidate-level validation, holdout, spent, sealed, and 2026 forward data
+  cannot feed reward, admission, automatic scheduler or family credit, or
+  persistent memory. A separately user-authorized report-only aggregate may
+  freeze one offline bounded route budget; once used, it is spent route-design
+  evidence and cannot support candidate promotion, optimizer feedback, or an
+  adaptive within-tranche scheduler.
 - Formal search, candidate promotion, and cross-sprint adaptive memory require
   separate explicit authorization.
 

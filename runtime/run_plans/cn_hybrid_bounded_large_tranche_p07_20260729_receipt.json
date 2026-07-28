@@ -1,0 +1,80 @@
+{
+  "schema_version": "cn_hybrid_bounded_large_tranche_p07_receipt_v1",
+  "status": "P07_COMPLETE_NEXT_BOUNDED_TRANCHE_FROZEN_NOT_LAUNCHED",
+  "completed_at": "2026-07-29",
+  "accepted_development_search_policy": "HYBRID_TPE_AVAILABILITY",
+  "policy_reopened": false,
+  "report_only_validation": {
+    "status": "REPORT_ONLY_VALIDATION_COMPLETE",
+    "selected_pairs": 256,
+    "hybrid_pairs": 128,
+    "uniform_pairs": 128,
+    "validation_report_sha256": "4772bccd70c392c9b09fb27fe2f75ce3112bc7df31da4db68f4f2e348256ce8e",
+    "source_train_artifacts_unchanged": true,
+    "feedback_writes": 0,
+    "scheduler_writes": 0,
+    "archive_writes": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "evidence_state_after_route_design_use": "SPENT_AGGREGATE_ROUTE_DESIGN_ONLY_NOT_PROMOTION_EVIDENCE"
+  },
+  "completed_hybrid_only_tranche": {
+    "task_id": "lanjob_20260729_044017_a6442f",
+    "scheduled_task": "ChengboLanRemote_lanjob_20260729_044017_a6442f",
+    "campaign_root": "D:\\ChengboRemote\\runtime\\cn_hybrid_only_tranche_20260729_0445_9e9e113_3072",
+    "deployed_sha": "9e9e113061a2ef7056edac1415fa3235a642a61d",
+    "deployment_manifest_sha256": "125e92155bf8cb532402e379a052638d7c9331ea355c95e084c4adf1528f2049",
+    "run_manifest_sha256": "17cc675ef555aefaa355c869e946c5efcd900a42c98bea50beed1d2393ee065f",
+    "final_decision_sha256": "a051f851ab3d0ac9f8ea93a0a2be583f872bb095018c90e687b6a9f0b7a43a1d",
+    "checkpoint_count": 8,
+    "checkpoint_artifacts_verified": "192_OF_192",
+    "formal_fresh_exact_asks": 3072,
+    "actual_evaluated_pairs": 2319,
+    "productive_candidates": 1029,
+    "productive_per_formal_ask": 0.3349609375,
+    "evaluated_per_formal_ask": 0.7548828125,
+    "formal_asks_per_hour": 1055.81,
+    "evaluated_pairs_per_hour": 797.01,
+    "productive_candidates_per_hour": 353.65,
+    "maximum_evaluator_cache_bytes": 1988299504,
+    "minimum_free_memory_bytes": 65890234368,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "remaining_exact_capacity_after_tranche": {
+    "SLOW_TEMPORAL_CHANGE": 34353,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 246,
+    "MARKET_REGIME_CONDITION": 1159,
+    "FIRSTN_PATH": 2661,
+    "DISCLOSURE_EVENT": 884
+  },
+  "identity_and_behavior_archives": {
+    "candidate_exact_archive_sha256": "450491d7ceff74dfa8eb5e019b4dd15c982a00f6f990299e7afd620dc87b1ae6",
+    "candidate_exact_rows": 22918,
+    "candidate_exact_unique": 22918,
+    "behavior_archive_sha256": "0d51f2ea0ace7b06cf5c02a7ac970a629490c284c442f6dd693a1deb007dfc64",
+    "reward_state_reused": false,
+    "scheduler_state_reused": false,
+    "optimizer_state_reused": false
+  },
+  "p07_remote_evidence": {
+    "manifest_file_sha256": "436a4062b4a8216f8ad1a1a651dcc2c2fb71f4aa36713dad71f3ae507983a9d2",
+    "manifest_payload_hash": "edfc5820b5e6973bf3b7add262df1462f8319a5dd9360a4a4fabd305a7430a72",
+    "route_contraction_evidence_sha256": "39787914c7c43f4a750a6e130261cbad17498e652f1a76d6fbc2866ade6991df",
+    "independent_audit": "PASS"
+  },
+  "next_contract": {
+    "path": "runtime/run_plans/cn_hybrid_bounded_large_tranche_v1_contract.json",
+    "sha256": "ba45d49fce0fd12e3e8e4fd216f36ec3b7b8a9e2a70e920d6493f48bf470770e",
+    "formal_budget": 6144,
+    "checkpoint_count": 8,
+    "asks_per_checkpoint": 768,
+    "execution_authorized": false,
+    "financial_campaign_authorized": false,
+    "unlimited_or_20k_search_authorized": false
+  },
+  "quant_audit_decision": "HOLD_RESEARCH",
+  "graph_authority_changed": false,
+  "obsidian_authority_changed": false
+}

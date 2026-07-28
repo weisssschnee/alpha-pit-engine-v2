@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-28
+Updated: 2026-07-29
 
-Current state: `CN_HYBRID_SEARCH_PRODUCTIVITY_MEDIUM_CLOSED_HYBRID_POLICY_ACCEPTED`
+Current state: `CN_HYBRID_3072_TRANCHE_CLOSED_NEXT_BOUNDED_6144_CONTRACT_FROZEN_NOT_LAUNCHED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -843,16 +843,60 @@ remains unchanged. The compact receipt is
   promotion remains forbidden. The compact receipt is
   `runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json`.
 
+### 2026-07-29 report-only validation, Hybrid tranche and route contraction
+
+- The accepted Hybrid policy was not reopened. One frozen report-only cohort of
+  128 Hybrid plus 128 Uniform pairs completed on 77o. Validation reads were
+  positive; feedback, scheduler, archive and promotion writes plus holdout and
+  2026 reads were zero. Source Medium train hashes were unchanged. The aggregate
+  route report is now spent route-design evidence: it may support this one
+  offline fixed budget, but candidate-level validation values cannot enter
+  reward, Optuna observations/tells, persistent memory or promotion.
+- The authorized Hybrid-only tranche completed on 77o under deployed SHA
+  `9e9e113061a2ef7056edac1415fa3235a642a61d`. All eight checkpoints were
+  independently verified `BATCH_CLOSED_IMMUTABLE`; 192/192 declared checkpoint
+  artifacts and 16/16 root artifacts matched. From 3,072 formal fresh exact
+  asks, 2,319 pairs were evaluated and 1,029 were productive. Overall
+  evaluated/formal and productive/formal yields were 75.49% and 33.50%;
+  throughput was 1,055.81 formal asks, 797.01 evaluated pairs and 353.65
+  productive candidates per hour. Cache remained below 1.99 GB, minimum free
+  memory stayed above 65.89 GB, and validation/holdout/2026 reads were zero.
+- Route productive/formal yields were Slow Temporal 46.61%, Slow
+  Cross-sectional 45.31%, Market Regime 2.19%, First-N 1.04% and Disclosure
+  3.65%. Aggregate Hybrid validation transfer was 53.70%, 46.88%, 68.75%,
+  46.15% and 69.23% respectively, but Market had five blocked pairs and the
+  Slow Cross-sectional p10 was -119.995. Quant promotion audit therefore
+  remains `HOLD_RESEARCH`; this evidence supports conservative route allocation
+  only, not candidate or economic acceptance.
+- The post-tranche remaining exact capacities are 34,353/246/1,159/2,661/884
+  for Slow Temporal/Slow Cross-sectional/Market/First-N/Disclosure. A refreshed
+  identity-only exact archive contains 22,918 unique identities with no
+  duplicates. Remote p07 manifest file SHA256 is
+  `436a4062b4a8216f8ad1a1a651dcc2c2fb71f4aa36713dad71f3ae507983a9d2`;
+  its canonical payload hash and both declared artifacts independently match.
+- The next tranche contract is frozen at 6,144 formal asks, eight checkpoints
+  of 768 and fixed route mix 672/24/16/8/48. Final route allocations are
+  5,376/192/128/64/384. Slow Temporal is the core scale route; Slow
+  Cross-sectional is supply-capped with OOS tail risk; Market and Disclosure
+  retain small exploration budgets; First-N is reduced to minimum coverage.
+  The 1.20 exact-supply cap margin passes every route. The contract is
+  deliberately `FROZEN_NOT_EXECUTION_AUTHORIZED`: no new financial task,
+  automatic validation, unlimited search or 20,000-target campaign was
+  launched. Evidence is in
+  `runtime/run_plans/cn_hybrid_bounded_large_tranche_p07_20260729_receipt.json`.
+
 ## Next action
 
-Do not rerun the completed 3,072-ask Hybrid Search Productivity Medium or the
-earlier availability-agency canaries. Use `HYBRID_TPE_AVAILABILITY` as the
-default policy only inside a separately frozen bounded development tranche.
-Before that tranche, replace administrative route fill targets with explicit
-coverage floors, maximum caps and a bounded flexible budget; retain a small
-exploration floor per active route and freeze the productive-yield allocation
-rule before launch. Do not automatically authorize the old 16,880 target or a
-new 20,000-target campaign.
+Do not rerun the Medium, its report-only validation, the completed 3,072-ask
+Hybrid-only tranche, or earlier availability-agency canaries. The next bounded
+6,144-ask contract is frozen but not execution-authorized. Before any launch,
+implement only the static runner profile, run focused local tests and an exact
+zero-financial 77o preflight against the refreshed identity/behavior archives,
+then obtain a separate execution authorization. Keep the fixed
+672/24/16/8/48 route mix for all eight checkpoints; do not adapt routes inside
+the tranche or feed candidate-level validation into reward, tells, scheduler
+or memory. Do not automatically authorize an unlimited or 20,000-target
+campaign.
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
 qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the

@@ -69,6 +69,29 @@ candidate non-collapse check. The project-level calendar classification remains
 Runtime evidence is
 `runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json`.
 
+## 2026-07-29 aggregate route-design addendum
+
+The user separately authorized one report-only validation of a cohort frozen
+at 128 Hybrid and 128 Uniform pairs, followed by one offline route-budget
+decision. This is a narrow exception for aggregate route contraction, not
+candidate selection or adaptive search feedback.
+
+- The report did not reopen the accepted `HYBRID_TPE_AVAILABILITY` policy.
+- Validation reads were positive, while feedback, scheduler, archive,
+  promotion, holdout and 2026 writes or reads remained forbidden.
+- Only arm-by-route aggregate transfer, score-tail and blocked-pair summaries
+  may inform the next fixed bounded route budget.
+- Candidate identities, candidate-level validation values and ranks cannot
+  enter reward, Optuna observations or tells, persistent memory, archive
+  credit, promotion, or a within-tranche scheduler.
+- Once the aggregate report was used for route contraction, it became
+  `SPENT_AGGREGATE_ROUTE_DESIGN_ONLY_NOT_PROMOTION_EVIDENCE`.
+- This addendum authorizes no further validation access and no unlimited or
+  20,000-target search.
+
+Runtime evidence is
+`runtime/run_plans/cn_hybrid_bounded_large_tranche_p07_20260729_receipt.json`.
+
 ## Evidence
 
 - `runtime/run_plans/evaluation_data_roles_v1.json`
