@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-26
+Updated: 2026-07-28
 
-Current state: `CN_LARGE_OPTUNA_TPE_ACTUAL20000_ACTIVE`
+Current state: `CN_LARGE_OPTUNA_TPE_ACTUAL20000_V2_CLOSED_INCOMPLETE`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -689,33 +689,49 @@ Obsidian remain unchanged. The full remote closure is
 `D:\ChengboRemote\runtime\cn_slow_cross_sectional_evaluated384_20260726_351e503_384e\post_train_validation_repaired_d3de4b9\validation_repair_closure.json`
 (SHA256 `2fda9e2188068c88a0e6f1f69883b99ae453d9b1481c3a48bfc58d623e220685`).
 
-The current user instruction separately superseded the earlier large-search
-prohibition and authorized one five-digit development search, not a 2,000-pair
-claim. Commit `57b1fd36973131ad49933c47a9728b2440922e64` implements official
-Optuna 4.8.0 TPE as a thin route-local conditional typed-Grammar selector
-beneath registry `route_id`; it does not create a platform, optimizer database,
-new Graph authority or cross-campaign reward state. The frozen route targets
-sum to 20,000 actual `PAIR_EVALUATED`: 15,500 slow temporal, 2,000 First-N,
-1,200 slow cross-sectional, 800 market regime and 500 disclosure.
+The separately authorized five-digit development search is now closed on 77o
+at deployed SHA `e4cc82fadfc54213de26dd47169cdc81691a7e6a`. Official Optuna
+4.8.0 TPE remained a thin route-local conditional typed-Grammar selector
+beneath registry `route_id`; no platform, optimizer database, new Graph
+authority or cross-campaign reward state was created. The corrected objective
+fed TPE `min(primary_composite_reward, matched_train_increment)` from full
+coordinate train outcomes only. Exact, behavior, reward, tell and sealed-read
+checks remained fail closed.
 
-The full zero-financial-read 77o supply preflight passed after subtracting
-3,475 historical exact identities. It found 49,771 fresh exact formulas:
-41,441/3,578/1,985/1,789/978 by the route order above, with every route above
-its frozen 1.20x supply floor and zero validation/holdout/2026 reads. Official
-77o focused tests passed 33/33. The single active task is
-`lanjob_20260726_143603_f2344c` at
-`D:\ChengboRemote\runtime\cn_large_optuna_tpe_actual20000_20260726_57b1fd3_20k`.
-Checkpoint 001 entered Phase3CM; an initial five-second host sample averaged
-75.94% logical-CPU occupancy with about 6.61 GB process-chain RSS and 78.86 GB
-free memory. A direct data-flow audit found no sampled shortlist in this
-runner. Its first checkpoint scheduled 768 asks, produced 571 exact-unique
-admission decisions and admitted 312 behavior-unique pairs; all 312 primary
-pairs entered full-coordinate Phase3CM. Deterministic-invalid, exact-blocked
-and behavior-blocked trials receive no reward, while every full
-`PAIR_EVALUATED` outcome enters the route-local Optuna tell transcript. The
-MINUTE_STATIC sampled authority is not silently generalized to the five
-current routes without route/backend parity evidence. This is active execution
-evidence, not a completed financial result or promotion.
+The campaign exhausted its frozen 73,728 raw asks across 24
+`BATCH_CLOSED_IMMUTABLE` checkpoints but produced only 8,736 actual
+`PAIR_EVALUATED`, so the 20,000 target closed `CAMPAIGN_INCOMPLETE`.
+Exact/behavior/evaluated funnel counts were 12,372/8,843/8,736; the total
+raw-ask-to-evaluated yield was 11.85%. Route completion was
+7,136/15,500 slow temporal, 665/2,000 First-N, 514/1,200 slow
+cross-sectional, 275/800 market regime and 146/500 disclosure. This is fixed
+budget and search-supply/admission infeasibility, not a host, evaluator, data
+access or financial-route crash.
+
+Independent closure matched all 24 batch-manifest payload hashes, 552/552
+declared batch artifacts and 15/15 root-manifest artifacts. All 8,736 evaluated
+pair IDs were globally unique; reward/search-score/tell mismatches and train
+validation/holdout/2026 reads were zero. All 24 runtime gates passed both
+backends. Median effective cores were 25.82 active-bar and 29.27
+stock-session; median logical-CPU occupancy was 80.69% and 91.45%;
+minimum free memory was 60,965,040,128 bytes and the fixed 8 GiB cache cap
+held. The earlier stale-inspector memory incidents remain infrastructure
+evidence only.
+
+Train evidence is mixed and not promotable. Of 8,736 evaluated pairs, 4,885
+had positive matched train increment; its median was 0.01204. Search-score
+median was 0.00330 but mean was -0.00784. Matched net increment had a positive
+0.69547 median but a negative -0.39689 mean and material tails. The strongest
+train-only positive shares were slow cross-sectional at 72.18% and market
+regime at 66.91%; First-N and disclosure were below 50%, and market regime's
+standalone primary median remained negative. These are development-train
+descriptives, not OOS or economic claims.
+
+Because all route targets were unmet, automatic report-only validation
+correctly did not run, `train_finalists.parquet` is empty, and no OOS
+regime/turnover evidence exists for this campaign. Promotion remains forbidden;
+Graph and Obsidian authority are unchanged. The compact closure receipt is
+`runtime/run_plans/cn_large_optuna_tpe_actual20000_v2_20260728_receipt.json`.
 
 ## Next action
 
@@ -724,15 +740,17 @@ qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the
 completed four-lane supply probe, the 4x17 campaign or the typed-surface audit.
 Retain the qualified `normalized_ratio` production increment and active
 route-local sampled selector. Do not reuse any terminal CEM probabilities and
-do not launch a duplicate of the active 20,000-pair TPE campaign.
+do not rerun or extend the closed 20,000-target TPE campaign.
 
 Do not rerun or enlarge the completed V4 supply proof or the closed V5 paired
 qualification. Performance commit `72250f9` is now officially parity-checked
 and directionally benchmarked on 77o; do not repeat that microbenchmark as
 another project phase. The mature conditional thin-adapter requirement is now
-the active official Optuna TPE campaign above. Monitor that single task through
-immutable checkpoints; do not continue tuning the rejected rank-weighted CEM,
-reuse its probabilities, launch another search, or open holdout/2026 access.
+mechanically demonstrated but the fixed-budget campaign above is incomplete.
+Do not continue tuning the rejected rank-weighted CEM, reuse its probabilities,
+launch another search, or open validation/holdout/2026 access without a new
+explicit authorization and a supply/yield design that addresses the observed
+late-checkpoint collapse.
 
 Do not repeat the 1,024 wave, V1 canary, field qualification, route-supply
 qualification, authority smoke, or the completed six-checkpoint large campaign.
@@ -747,9 +765,10 @@ set. Any next development search should therefore target those materially
 uncovered mechanisms rather than rerun a global candidate race.
 
 The zero-financial-read route-lane integration and pre-budget supply
-calculations are complete. Continue only the active Optuna TPE task from its
-immutable ask/tell transcripts and Phase3CM checkpoints. The failed CatCMA and
-V1/V2 CEM states remain evidence, not reusable initializers. Do not promote
+calculations and the authorized Optuna TPE run are complete. Preserve its
+immutable ask/tell transcripts, Phase3CM checkpoints and fail-closed incomplete
+verdict. The failed CatCMA and V1/V2 CEM states remain evidence, not reusable
+initializers. Do not promote
 legacy scheduler arm names into a second top-level authority, import
 reward-bearing cross-campaign memory, assign invented
 fresh/crossover/mutation percentages, or build MCTS/crossover/mutation

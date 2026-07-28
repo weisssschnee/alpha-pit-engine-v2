@@ -1,0 +1,228 @@
+{
+  "schema_version": "cn_large_optuna_tpe_actual20000_v2_closure_receipt_v1",
+  "status": "CAMPAIGN_CLOSED_HASH_VERIFIED_INCOMPLETE_BUDGET_EXHAUSTED",
+  "campaign": {
+    "campaign_id": "CN_LARGE_OPTUNA_TPE_ACTUAL20000_V2_20260727",
+    "campaign_profile": "cn_large_optuna_tpe_actual20000_v2",
+    "remote_root": "D:\\ChengboRemote\\runtime\\cn_large_optuna_tpe_actual20000_v2_20260727_f9cb27f_20k",
+    "final_task_id": "lanjob_20260728_005425_83fa19",
+    "final_scheduled_task": "ChengboLanRemote_lanjob_20260728_005425_83fa19",
+    "deployed_repo_sha": "e4cc82fadfc54213de26dd47169cdc81691a7e6a",
+    "deployed_workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_large_tpe_gatewall_e4cc82f_20260727_2359",
+    "deployment_manifest_sha256": "a0abc1358be2b1c1c7ff175a0ce5af8bafd9053fb49f5a4ec7fe0a090eb8deb2",
+    "process_exit_code": 0,
+    "completed_at_utc": "2026-07-28T00:19:46.7951582Z",
+    "optimizer": "official_optuna.samplers.TPESampler_conditional_typed_grammar",
+    "optimizer_package_version": "4.8.0",
+    "optimizer_state": "FRESH_NO_CROSS_CAMPAIGN_REWARD_STATE",
+    "search_score_policy": "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1"
+  },
+  "budget_and_funnel": {
+    "maximum_raw_asks": 73728,
+    "raw_asks_used": 73728,
+    "checkpoint_count": 24,
+    "asks_per_checkpoint": 3072,
+    "exact_unique_pairs": 12372,
+    "behavior_admitted_pairs": 8843,
+    "actual_evaluated_pairs": 8736,
+    "blocked_after_behavior_admission": 107,
+    "raw_ask_to_evaluated_yield": 0.11848958333333333,
+    "raw_ask_to_exact_unique_yield": 0.16780598958333334,
+    "exact_unique_to_behavior_admitted_yield": 0.7145974781765276,
+    "behavior_admitted_to_evaluated_yield": 0.9879000346047721,
+    "minimum_actual_evaluated_pairs": 20000,
+    "overall_target_fill": 0.4368,
+    "target_met": false,
+    "failure_class": "FIXED_RAW_ASK_BUDGET_EXHAUSTED_AFTER_EXACT_AND_BEHAVIOR_ADMISSION_YIELD_COLLAPSE"
+  },
+  "route_results": {
+    "SLOW_TEMPORAL_CHANGE": {
+      "actual_evaluated": 7136,
+      "target": 15500,
+      "target_fill": 0.46038709677419354,
+      "positive_matched_train_increment": 4059,
+      "positive_share": 0.5688060538116592,
+      "median_matched_train_increment": 0.014521690000000045,
+      "median_search_score": 0.01333977,
+      "median_primary_composite_reward": 0.2149584,
+      "median_matched_net_increment": 0.8668062642470726
+    },
+    "FIRSTN_PATH": {
+      "actual_evaluated": 665,
+      "target": 2000,
+      "target_fill": 0.3325,
+      "positive_matched_train_increment": 207,
+      "positive_share": 0.3112781954887218,
+      "median_matched_train_increment": -0.09962905999999999,
+      "median_search_score": -0.34107727,
+      "median_primary_composite_reward": -0.34107727,
+      "median_matched_net_increment": -36.308594378703106
+    },
+    "SLOW_CROSS_SECTIONAL_LEVEL": {
+      "actual_evaluated": 514,
+      "target": 1200,
+      "target_fill": 0.42833333333333334,
+      "positive_matched_train_increment": 371,
+      "positive_share": 0.7217898832684825,
+      "median_matched_train_increment": 0.06892941,
+      "median_search_score": 0.05430317499999999,
+      "median_primary_composite_reward": 0.22119162,
+      "median_matched_net_increment": 2.2697817573299863
+    },
+    "MARKET_REGIME_CONDITION": {
+      "actual_evaluated": 275,
+      "target": 800,
+      "target_fill": 0.34375,
+      "positive_matched_train_increment": 184,
+      "positive_share": 0.6690909090909091,
+      "median_matched_train_increment": 0.15026102,
+      "median_search_score": -0.3607024,
+      "median_primary_composite_reward": -0.3607024,
+      "median_matched_net_increment": 17.918017640304235
+    },
+    "DISCLOSURE_EVENT": {
+      "actual_evaluated": 146,
+      "target": 500,
+      "target_fill": 0.292,
+      "positive_matched_train_increment": 64,
+      "positive_share": 0.4383561643835616,
+      "median_matched_train_increment": -0.014226705000000006,
+      "median_search_score": -0.016442800000000007,
+      "median_primary_composite_reward": 0.39160013,
+      "median_matched_net_increment": -0.02754396113214952
+    }
+  },
+  "train_financial_summary": {
+    "evidence_role": "DEVELOPMENT_TRAIN_ONLY_NOT_OOS",
+    "evaluated_pairs": 8736,
+    "primary_followup_ready": 7320,
+    "primary_followup_ready_and_positive_matched_increment": 4329,
+    "positive_matched_train_increment": 4885,
+    "matched_train_increment": {
+      "mean": 0.04643225490956959,
+      "median": 0.012035354999999998,
+      "p10": -0.17070261499999997,
+      "p90": 0.31765895499999997,
+      "minimum": -0.9575342,
+      "maximum": 1.02455433
+    },
+    "search_score": {
+      "mean": -0.007843786154990842,
+      "median": 0.003296814999999953,
+      "positive_count": 4525,
+      "negative_count": 4211,
+      "minimum": -1.44698062,
+      "maximum": 0.94763669
+    },
+    "primary_composite_reward": {
+      "mean": 0.16965626704899267,
+      "median": 0.204808295,
+      "positive_count": 7664
+    },
+    "control_composite_reward": {
+      "mean": 0.12322401213942306,
+      "median": 0.18535372,
+      "positive_count": 6929
+    },
+    "matched_gross_increment": {
+      "mean": 5.071194336582105,
+      "median": 1.110690895034308,
+      "positive_count": 5698
+    },
+    "matched_net_increment": {
+      "mean": -0.3968920703441822,
+      "median": 0.6954737331426699,
+      "positive_count": 5286,
+      "p10": -4.075949164168704,
+      "p90": 7.863742487771634,
+      "minimum": -259.36785440434073,
+      "maximum": 443.7089776969715
+    },
+    "pair_turnover_metric": "NOT_POPULATED_IN_CLOSURE_OBSERVATION_LEDGER",
+    "interpretation": "TRAIN_DISTRIBUTION_HAS_POSITIVE_MEDIANS_BUT_MATERIAL_LEFT_TAIL_AND_CANNOT_SUPPORT_PROMOTION_WITHOUT_VALIDATION"
+  },
+  "diversity_and_identity": {
+    "evaluated_pair_ids": 8736,
+    "evaluated_pair_ids_unique": 8736,
+    "evaluated_pair_id_duplicates": 0,
+    "primary_exact_identities": 8843,
+    "primary_exact_identities_unique": 8843,
+    "primary_canonical_identities_unique": 8843,
+    "primary_expression_strings_unique": 8817,
+    "typed_skeletons": 27,
+    "portfolio_behavior_signatures_unique": 8733,
+    "portfolio_behavior_families_unique": 8470,
+    "primary_behavior_identities_unique": 6643,
+    "control_behavior_identities_unique": 6354,
+    "pair_support_identities_unique": 8736,
+    "operator_family_count": 18
+  },
+  "performance_contract": {
+    "status": "PASS_ALL_24_CHECKPOINTS_BOTH_BACKENDS",
+    "active_bar": {
+      "effective_cores_minimum": 19.43987867588624,
+      "effective_cores_median": 25.821722232838752,
+      "effective_cores_maximum": 28.720683174983616,
+      "host_occupancy_minimum": 0.607496208621445,
+      "host_occupancy_median": 0.806928819776211,
+      "host_occupancy_maximum": 0.897521349218238,
+      "matched_pairs_per_hour_minimum": 55.393396999232756,
+      "matched_pairs_per_hour_median": 111.70703450139972,
+      "matched_pairs_per_hour_maximum": 140.02221980139035,
+      "smt_ceiling_exception": "FULL_HOST_NATIVE_KERNEL_SMT_CEILING_PROVEN"
+    },
+    "stock_session": {
+      "effective_cores_minimum": 20.87764936927566,
+      "effective_cores_median": 29.265479099186315,
+      "effective_cores_maximum": 29.88120435326771,
+      "host_occupancy_minimum": 0.6524265427898643,
+      "host_occupancy_median": 0.9145462218495723,
+      "host_occupancy_maximum": 0.9337876360396159,
+      "matched_pairs_per_hour_minimum": 3386.1430245743886,
+      "matched_pairs_per_hour_median": 4385.12647728674,
+      "matched_pairs_per_hour_maximum": 4715.670723649959
+    },
+    "minimum_free_memory_bytes": 60965040128,
+    "maximum_process_peak_rss_bytes": 24854290432,
+    "cache_cap_bytes": 8589934592,
+    "cache_cap_status": "PASS_ALL_CHECKPOINTS"
+  },
+  "independent_verification": {
+    "root_manifest_file_sha256": "3acdefb926977d5ecdcd5f394d8f0142087bfb37bc4ff07c0ac5c162247069ca",
+    "root_manifest_artifacts_verified": 15,
+    "root_manifest_artifact_mismatches": 0,
+    "batch_manifests_verified": 24,
+    "batch_manifest_payload_hash_mismatches": 0,
+    "batch_artifacts_verified": 552,
+    "batch_artifact_mismatches": 0,
+    "all_batch_statuses": "BATCH_CLOSED_IMMUTABLE",
+    "optimizer_search_score_mismatches": 0,
+    "optimizer_tell_mismatches": 0,
+    "cross_checkpoint_evaluated_pair_id_duplicates": 0,
+    "development_only_feedback_guard": "PASS"
+  },
+  "access_and_validation": {
+    "train_validation_reads": 0,
+    "train_holdout_reads": 0,
+    "train_forward_2026_reads": 0,
+    "validation_status": "NOT_RUN_TRAIN_INCOMPLETE",
+    "validation_finalist_rows": 0,
+    "validation_feedback": "FORBIDDEN",
+    "validation_scheduler_writes": 0,
+    "validation_archive_writes": 0,
+    "promotion": "FORBIDDEN",
+    "regime_oos_evidence": "NOT_AVAILABLE_VALIDATION_NOT_RUN",
+    "train_hashes_after_closure": "UNCHANGED_BY_VALIDATION_BECAUSE_VALIDATION_DID_NOT_RUN"
+  },
+  "verdict": {
+    "campaign_result": "INCOMPLETE_FIXED_BUDGET_EXHAUSTED",
+    "financial_result": "DEVELOPMENT_TRAIN_DISTRIBUTION_MIXED_NOT_PROMOTABLE",
+    "diversity_result": "HIGH_IDENTITY_AND_BEHAVIOR_DIVERSITY_WITH_ZERO_EVALUATED_DUPLICATES",
+    "performance_result": "PASS",
+    "validation_result": "NOT_RUN_FAIL_CLOSED",
+    "route_targets_met": false,
+    "optimizer_or_search_authority_accepted": false,
+    "graph_or_obsidian_update": false,
+    "next_search_requires_new_authorization": true
+  }
+}
