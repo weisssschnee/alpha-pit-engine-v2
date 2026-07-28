@@ -1,0 +1,68 @@
+{
+  "schema_version": "cn_hybrid_policy_report_only_validation_authorization_v1",
+  "status": "ACTIVE_REPORT_ONLY_VALIDATION_AUTHORIZATION",
+  "authorized_at": "2026-07-29",
+  "authority_source": "CURRENT_USER_INSTRUCTION",
+  "accepted_development_policy": "HYBRID_TPE_AVAILABILITY",
+  "policy_selection_reopened": false,
+  "source_campaign_id": "CN_HYBRID_SEARCH_PRODUCTIVITY_MEDIUM_V1_20260728",
+  "source_campaign_deployed_sha": "9bc43e89398ea101393eb00e3d8e220ac4527d64",
+  "source_campaign_root": "D:\\ChengboRemote\\runtime\\cn_hybrid_search_productivity_medium_20260728_1536_07598a5",
+  "source_campaign_artifact_sha256": {
+    "run_manifest.json": "d427f9142849ba1a8cec545f06bbbec7ddce5c0d05552d0f814bb08702f47b0e",
+    "candidate_ledger.parquet": "6d4b8e01a0a22c40c45f3eb2026fa2e0333ae76a241e51392cf59894b30b8f03",
+    "observation_ledger.parquet": "05c35cc0649765fb5b9748dae5b6c32edfe7d64e49fac482f9ba7328e6e7c1b8",
+    "behavior_archive.parquet": "3014a7ff85c4cc3c338e03e519869c71aec3951f0445655b77a6cfb883a45ba8",
+    "policy_productivity_ledger.parquet": "695d0b0aa1692e09dddd08f8d401e2db922f25aec603f1cfd8705339b574faf7",
+    "search_policy_decision.json": "4264b679f7f7262e5169cb2999afb143a279e20016176a13ead0df9039735b24",
+    "train_complete_manifest.json": "3f2deaf8475f7f11729c57a9dd4742c895e2e5fdae51ed966ea23abb677d8088"
+  },
+  "arms": [
+    "HYBRID_TPE_AVAILABILITY",
+    "AVAILABILITY_AWARE_UNIFORM"
+  ],
+  "arm_pair_counts": {
+    "HYBRID_TPE_AVAILABILITY": 128,
+    "AVAILABILITY_AWARE_UNIFORM": 128
+  },
+  "route_quotas_per_arm": {
+    "SLOW_TEMPORAL_CHANGE": 54,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+    "MARKET_REGIME_CONDITION": 16,
+    "FIRSTN_PATH": 13,
+    "DISCLOSURE_EVENT": 13
+  },
+  "selection_rule": {
+    "population": "PAIR_EVALUATED",
+    "stratification": "INTENTION_TO_TREAT_ARM_X_ROUTE",
+    "route_quota_source": "FROZEN_MEDIUM_ROUTE_MIX_LARGEST_REMAINDER",
+    "ranking": [
+      "SEARCH_SCORE_DESC",
+      "PRIMARY_COMPOSITE_REWARD_DESC",
+      "MATCHED_TRAIN_INCREMENT_DESC",
+      "PAIR_ID_ASC"
+    ],
+    "behavior_family_deduplication": "ALREADY_GLOBAL_EXACT_FULL_SIGNATURE_UNIQUE"
+  },
+  "expected_selection_payload_sha256": "4d43274343cc1a4842b2b822bf686ea40fadd832d1f16f5e406338aa7b29aa01",
+  "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+  "evaluation_role": "validation",
+  "validation_usage": "report_only",
+  "validation_result_role": "ROUTE_CONTRACTION_EVIDENCE_ONLY",
+  "feedback_write": "FORBIDDEN",
+  "scheduler_write": "FORBIDDEN",
+  "archive_write": "FORBIDDEN",
+  "promotion": "FORBIDDEN",
+  "holdout_reads": 0,
+  "forward_2026_reads": 0,
+  "portfolio_mode": "LONG_ONLY_TOP",
+  "shorting": "FORBIDDEN",
+  "one_way_cost_bps": 5,
+  "horizons_minutes": [
+    1,
+    5,
+    15,
+    30
+  ],
+  "minimum_free_memory_bytes": 25769803776
+}
