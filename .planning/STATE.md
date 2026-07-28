@@ -2,7 +2,7 @@
 
 Updated: 2026-07-28
 
-Current state: `CN_LARGE_OPTUNA_TPE_ACTUAL20000_V2_CLOSED_INCOMPLETE`
+Current state: `CN_TPE_AVAILABILITY_QUALIFICATION_CLOSED_SUPPLY_BLOCKED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -733,6 +733,45 @@ regime/turnover evidence exists for this campaign. Promotion remains forbidden;
 Graph and Obsidian authority are unchanged. The compact closure receipt is
 `runtime/run_plans/cn_large_optuna_tpe_actual20000_v2_20260728_receipt.json`.
 
+The bounded novelty-aware availability repair is now implemented and
+independently qualified at pushed SHA
+`1f928fd88477741b4f9767ce32b6a000816174e0`. It retains Registry,
+generator, Grammar, compiler, matched-control and route scheduler authority,
+adds only deterministic route-local exact availability, and records native
+and fixed-enqueued Optuna asks in the same full ask/tell transcript. Local and
+official 77o focused suites both passed 31/31. The single zero-financial task
+`lanjob_20260728_110745_9bb945` closed exit 0; artifact manifest SHA256 is
+`1a1caaf01b27ee2e6cd37f2ca0776d4ca21983fea2ed1b20141c9f075f9666a5`.
+Its manifest payload hash and all 12 declared artifact sizes/SHA256 values
+were independently verified.
+
+Layer A bound 52,254 authoritative legal exact entries and replayed all 24
+closed checkpoints and 73,728 frozen native asks without reading reward,
+search score or matched increment. The non-causal availability remap emitted
+21,384 formal fresh exact asks with zero exact duplicates: 7,288 direct TPE,
+9,217 same-bucket replacements and 4,879 global fallbacks. Total native plus
+fixed draw attempts were 87,824 against a 663,552 cap, with no unfulfilled
+formal request. This proves that availability control repairs the mechanical
+late-checkpoint exact-novelty collapse; it does not claim a causal adaptive
+TPE counterfactual.
+
+Layer B used the existing label-free probe on a deterministic 2,048-pair
+train-field-only sample, with 1,219/269/213/184/163 pairs across slow temporal,
+First-N, slow cross-sectional, market regime and disclosure. Financial, label,
+validation, holdout, 2026 and Phase3CM reads/calls were all zero. Behavior
+admission and historical evaluator-completion lower confidence bounds passed
+their component gates, but current route supply did not: post-campaign formal
+capacities were 27,418/1,993/1,136/944/384 versus 10%-margin requirements
+29,300/2,855/1,431/2,680/1,256. Global fallback share was 22.82%, above the
+20% readiness ceiling, leaving only 77.18% TPE-guided emissions. The honest
+verdict is therefore mechanical/controller PASS but
+`NOVELTY_AWARE_TPE_LARGE_SEARCH_READINESS=SUPPLY_BLOCKED` and
+`PROJECTED_20K_ASK_FEASIBILITY=INFEASIBLE_UNDER_CURRENT_ROUTE_TARGETS`.
+The implementation is evidence, not accepted active search authority;
+promotion remains forbidden and Graph/Obsidian remain unchanged. The compact
+receipt is
+`runtime/run_plans/cn_tpe_availability_yield_qualification_20260728_receipt.json`.
+
 ## Next action
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
@@ -740,7 +779,12 @@ qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the
 completed four-lane supply probe, the 4x17 campaign or the typed-surface audit.
 Retain the qualified `normalized_ratio` production increment and active
 route-local sampled selector. Do not reuse any terminal CEM probabilities and
-do not rerun or extend the closed 20,000-target TPE campaign.
+do not rerun or extend the closed 20,000-target TPE campaign. Do not launch a
+new 20,000-target campaign merely by inserting the qualified availability
+controller or increasing raw asks: the formal route supply and TPE-agency
+gates remain failed. Any successor needs a separately authorized,
+semantics-preserving supply expansion or materially revised route targets,
+followed by a fresh zero-financial qualification.
 
 Do not rerun or enlarge the completed V4 supply proof or the closed V5 paired
 qualification. Performance commit `72250f9` is now officially parity-checked

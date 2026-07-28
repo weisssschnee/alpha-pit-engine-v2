@@ -1,0 +1,192 @@
+{
+  "schema_version": "cn_tpe_availability_yield_qualification_closure_receipt_v1",
+  "status": "QUALIFICATION_CLOSED_HASH_VERIFIED_SUPPLY_BLOCKED",
+  "implementation": {
+    "branch": "feature/search-policy-qualification",
+    "repo_sha": "1f928fd88477741b4f9767ce32b6a000816174e0",
+    "change_scope": "ROUTE_LOCAL_EXACT_AVAILABILITY_AND_ZERO_FINANCIAL_YIELD_QUALIFICATION",
+    "local_focused_tests": {
+      "passed": 31,
+      "failed": 0,
+      "wall_seconds": 19.99
+    },
+    "official_77o_focused_tests": {
+      "passed": 31,
+      "failed": 0,
+      "wall_seconds": 2.98
+    }
+  },
+  "qualification": {
+    "task_id": "lanjob_20260728_110745_9bb945",
+    "scheduled_task": "ChengboLanRemote_lanjob_20260728_110745_9bb945",
+    "exit_code": 0,
+    "started_at": "2026-07-28T11:08:10+08:00",
+    "ended_at": "2026-07-28T11:09:38+08:00",
+    "deployed_workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_tpe_availability_qual_1f928fd_20260728_104935_1f928fd88477",
+    "deployment_manifest": "D:\\ChengboRemote\\runtime\\manifests\\alpha_pit_tpe_availability_qual_1f928fd_20260728_104935_1f928fd88477.json",
+    "deployment_manifest_sha256": "98c190a375db67479d30f3815b0a346825ec3a19ada046fb9541e50fe3da0e94",
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_tpe_availability_yield_qualification_20260728_1f928fd",
+    "artifact_manifest_sha256": "1a1caaf01b27ee2e6cd37f2ca0776d4ca21983fea2ed1b20141c9f075f9666a5",
+    "artifact_manifest_payload_hash": "e116216f229e05cb7545b3d43e92a3f535ba49fc2d90b291de46c65a11dd269d",
+    "artifact_count": 12,
+    "artifact_hash_mismatches": 0,
+    "artifact_size_mismatches": 0
+  },
+  "frozen_evidence_binding": {
+    "closed_campaign_root": "D:\\ChengboRemote\\runtime\\cn_large_optuna_tpe_actual20000_v2_20260727_f9cb27f_20k",
+    "closed_checkpoint_count": 24,
+    "closed_campaign_raw_asks": 73728,
+    "closed_campaign_pair_evaluated": 8736,
+    "closed_campaign_exact_identity_count": 23396,
+    "campaign_seed_base": 2026072702,
+    "historical_exact_identity_count": 14877,
+    "historical_behavior_identity_rows": 13905,
+    "historical_reward_columns_imported": [],
+    "historical_scheduler_state_imported": false
+  },
+  "availability_index": {
+    "entry_count": 52254,
+    "entry_digest": "43db633935ed8f92c6ae5514036e967be5120c3b9395953e9daa507bca05543c",
+    "entries_by_route": {
+      "SLOW_TEMPORAL_CHANGE": 41801,
+      "FIRSTN_PATH": 4788,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 2545,
+      "MARKET_REGIME_CONDITION": 2016,
+      "DISCLOSURE_EVENT": 1104
+    },
+    "semantic_alias_points": 0,
+    "deterministic_invalid_points": 0
+  },
+  "layer_a_frozen_proposal_stream_remap": {
+    "causal_tpe_counterfactual": false,
+    "historical_optimizer_native_draws": 73728,
+    "formal_fresh_exact_asks": 21384,
+    "formal_exact_duplicate_count": 0,
+    "emission_mode_counts": {
+      "TPE_DIRECT_FRESH": 7288,
+      "TPE_BUCKET_REPLACEMENT": 9217,
+      "GLOBAL_AVAILABILITY_FALLBACK": 4879
+    },
+    "conceptual_fixed_enqueued_trials": 14096,
+    "optimizer_draw_attempts_including_fixed": 87824,
+    "maximum_optimizer_draw_attempts": 663552,
+    "optimizer_draw_budget_status": "PASS",
+    "tpe_guided_share": 0.7718387579498691,
+    "global_fallback_share": 0.22816124205013094,
+    "maximum_global_fallback_share_for_readiness": 0.2,
+    "retired_bucket_count": 74,
+    "unfulfilled_formal_requests_by_route": {},
+    "remaining_exact_by_route_after_layer_a": {
+      "SLOW_TEMPORAL_CHANGE": 21774,
+      "FIRSTN_PATH": 354,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 437,
+      "MARKET_REGIME_CONDITION": 293,
+      "DISCLOSURE_EVENT": 5
+    }
+  },
+  "layer_b_label_free_yield": {
+    "sample_size": 2048,
+    "minimum_route_sample": 128,
+    "sample_by_route": {
+      "SLOW_TEMPORAL_CHANGE": 1219,
+      "FIRSTN_PATH": 269,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 213,
+      "MARKET_REGIME_CONDITION": 184,
+      "DISCLOSURE_EVENT": 163
+    },
+    "route_results": {
+      "SLOW_TEMPORAL_CHANGE": {
+        "behavior_admission_wilson_95_lcb": 0.5826541985844317,
+        "historical_completion_wilson_95_lcb": 0.9987651178752657,
+        "conservative_formal_to_evaluated_conversion": 0.5819346893296984,
+        "future_formal_capacity": 27418,
+        "projected_formal_asks_required": 26636,
+        "required_supply_with_10pct_margin": 29300,
+        "route_supply_margin_pass": false
+      },
+      "FIRSTN_PATH": {
+        "behavior_admission_wilson_95_lcb": 0.7754095202048562,
+        "historical_completion_wilson_95_lcb": 0.9942565479905098,
+        "conservative_formal_to_evaluated_conversion": 0.7709559928378578,
+        "future_formal_capacity": 1993,
+        "projected_formal_asks_required": 2595,
+        "required_supply_with_10pct_margin": 2855,
+        "route_supply_margin_pass": false
+      },
+      "SLOW_CROSS_SECTIONAL_LEVEL": {
+        "behavior_admission_wilson_95_lcb": 0.9337298994623283,
+        "historical_completion_wilson_95_lcb": 0.9890841898601603,
+        "conservative_formal_to_evaluated_conversion": 0.923537481157906,
+        "future_formal_capacity": 1136,
+        "projected_formal_asks_required": 1300,
+        "required_supply_with_10pct_margin": 1431,
+        "route_supply_margin_pass": false
+      },
+      "MARKET_REGIME_CONDITION": {
+        "behavior_admission_wilson_95_lcb": 0.4605882494066694,
+        "historical_completion_wilson_95_lcb": 0.7130727229231265,
+        "conservative_formal_to_evaluated_conversion": 0.32843291715080986,
+        "future_formal_capacity": 944,
+        "projected_formal_asks_required": 2436,
+        "required_supply_with_10pct_margin": 2680,
+        "route_supply_margin_pass": false
+      },
+      "DISCLOSURE_EVENT": {
+        "behavior_admission_wilson_95_lcb": 0.5183858228619668,
+        "historical_completion_wilson_95_lcb": 0.8455921876731157,
+        "conservative_formal_to_evaluated_conversion": 0.43834300201257875,
+        "future_formal_capacity": 384,
+        "projected_formal_asks_required": 1141,
+        "required_supply_with_10pct_margin": 1256,
+        "route_supply_margin_pass": false
+      }
+    },
+    "projected_formal_asks_required_total": 34108,
+    "formal_ask_budget_reference": 73728,
+    "runtime": {
+      "compute_threads": 30,
+      "pair_batch_size": 4,
+      "source_cache_cap_bytes": 4294967296,
+      "maximum_sampled_process_rss_bytes": 838520832,
+      "minimum_sampled_free_memory_bytes": 86096809984
+    }
+  },
+  "access_receipt": {
+    "financial_reads": 0,
+    "label_sidecar_paths_accepted": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "phase3cm_calls": 0,
+    "primary_reward_columns_read": [],
+    "matched_increment_columns_read": [],
+    "search_score_columns_read": [],
+    "optimizer_reward_columns_read": []
+  },
+  "postclosure_monitor_incident": {
+    "classification": "MONITOR_INFRASTRUCTURE_MEMORY_LEAK_NOT_FINANCIAL_SEARCH_HEALTH",
+    "incident_root": "D:\\ChengboRemote\\runtime\\cn_large_optuna_tpe_actual20000_v2_20260727_f9cb27f_20k\\run_health_incidents\\20260728T030700Z_postclosure_stale_monitor_memory_leak",
+    "incident_manifest_sha256": "a6ba82816e340a996086e9bb62fdb8b47df0206b47724fe6dc324e052ac4b0b2",
+    "stopped_read_only_monitor_pids": [
+      44272,
+      65400
+    ],
+    "total_stale_rss_bytes": 54520819712,
+    "free_memory_bytes_before": 32607203328,
+    "free_memory_bytes_after": 87061745664,
+    "financial_processes_stopped": 0
+  },
+  "verdict": {
+    "availability_controller_mechanical": "PASS",
+    "formal_fresh_exact_yield": "PASS",
+    "historical_tail_replay_recovery": "PASS",
+    "behavior_admission_yield": "PASS",
+    "novelty_aware_tpe_large_search_readiness": "SUPPLY_BLOCKED",
+    "projected_20k_ask_feasibility": "INFEASIBLE_UNDER_CURRENT_ROUTE_TARGETS",
+    "interpretation": "MECHANISM_REPAIRS_EXACT_NOVELTY_LOSS_BUT_CURRENT_ROUTE_SUPPLY_AND_TPE_AGENCY_DO_NOT_SUPPORT_ANOTHER_20K_CAMPAIGN",
+    "promotion": "FORBIDDEN",
+    "optimizer_or_search_authority_accepted": false,
+    "graph_or_obsidian_update": false,
+    "next_financial_search_requires_new_authorization": true
+  }
+}
