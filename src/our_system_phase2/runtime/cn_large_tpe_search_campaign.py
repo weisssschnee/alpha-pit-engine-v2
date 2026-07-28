@@ -22,6 +22,7 @@ from itertools import product
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+import numpy as np
 import pandas as pd
 
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
@@ -95,6 +96,7 @@ from our_system_phase2.services.unified_discovery_generators import (
 
 AUTHORIZED_HOST = "DESKTOP-77OPJ6F"
 CAMPAIGN_PROFILE = "cn_large_optuna_tpe_availability_v3"
+PRODUCTIVITY_MEDIUM_PROFILE = "cn_hybrid_search_productivity_medium_v1"
 ROUTE_EVALUATED_TARGETS = {
     "SLOW_TEMPORAL_CHANGE": 14_000,
     "FIRSTN_PATH": 1_300,
@@ -129,6 +131,82 @@ TPE_CONSTANT_LIAR = True
 TPE_SAMPLER_MODE = "OFFICIAL_DEFAULT_UNIVARIATE_CONSTANT_LIAR"
 SEARCH_SCORE_POLICY = "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1"
 VALIDATION_PRIMARY_DECISION = "TRAIN_REWARD_FOLLOWUP_READY"
+HYBRID_POLICY_ARM = "HYBRID_TPE_AVAILABILITY"
+UNIFORM_POLICY_ARM = "AVAILABILITY_AWARE_UNIFORM"
+PRODUCTIVITY_POLICY_ARMS = (HYBRID_POLICY_ARM, UNIFORM_POLICY_ARM)
+PRODUCTIVITY_ROUTE_MIX = {
+    "SLOW_TEMPORAL_CHANGE": 160,
+    "FIRSTN_PATH": 40,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 96,
+    "MARKET_REGIME_CONDITION": 48,
+    "DISCLOSURE_EVENT": 40,
+}
+PRODUCTIVITY_MAXIMUM_CHECKPOINTS = 8
+PRODUCTIVITY_MAXIMUM_RAW_ASKS = 3_072
+PRODUCTIVITY_MAXIMUM_WALL_SECONDS = 18 * 60 * 60
+PRODUCTIVITY_MINIMUM_FORMAL_ASKS_PER_WALL_HOUR = 120.0
+PRODUCTIVITY_BOOTSTRAP_REPLICATES = 5_000
+PRODUCTIVITY_BOOTSTRAP_SEED = 2026072801
+
+
+def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
+    if str(profile) == PRODUCTIVITY_MEDIUM_PROFILE:
+        return {
+            "campaign_profile": PRODUCTIVITY_MEDIUM_PROFILE,
+            "maximum_checkpoints": PRODUCTIVITY_MAXIMUM_CHECKPOINTS,
+            "asks_per_checkpoint": ASKS_PER_CHECKPOINT,
+            "maximum_raw_asks": PRODUCTIVITY_MAXIMUM_RAW_ASKS,
+            "maximum_wall_seconds": PRODUCTIVITY_MAXIMUM_WALL_SECONDS,
+            "completion_mode": "FIXED_FORMAL_ASK_EXPERIMENT",
+            "validation": "FORBIDDEN_DURING_AND_AFTER_MEDIUM",
+            "fixed_route_mix": dict(PRODUCTIVITY_ROUTE_MIX),
+            "minimum_required_fresh_exact_by_route": {
+                route_id: int(math.ceil(count * PRODUCTIVITY_MAXIMUM_CHECKPOINTS * FRESH_EXACT_MARGIN))
+                for route_id, count in PRODUCTIVITY_ROUTE_MIX.items()
+            },
+        }
+    if str(profile) == CAMPAIGN_PROFILE:
+        return {
+            "campaign_profile": CAMPAIGN_PROFILE,
+            "maximum_checkpoints": MAXIMUM_CHECKPOINTS,
+            "asks_per_checkpoint": ASKS_PER_CHECKPOINT,
+            "maximum_raw_asks": MAXIMUM_RAW_ASKS,
+            "maximum_wall_seconds": MAXIMUM_WALL_SECONDS,
+            "completion_mode": "ACTUAL_EVALUATED_ROUTE_TARGETS",
+            "validation": "AUTOMATIC_POST_TRAIN_REPORT_ONLY",
+            "fixed_route_mix": None,
+            "minimum_required_fresh_exact_by_route": {
+                route_id: int(math.ceil(target * FRESH_EXACT_MARGIN))
+                for route_id, target in ROUTE_EVALUATED_TARGETS.items()
+            },
+        }
+    raise RuntimeError(f"UNSUPPORTED_CN_SEARCH_CAMPAIGN_PROFILE:{profile}")
+
+
+def _policy_arm_assignments(
+    *,
+    checkpoint_id: str,
+    route_id: str,
+    count: int,
+) -> list[str]:
+    if int(count) % 2:
+        raise RuntimeError("PRODUCTIVITY_MEDIUM_ROUTE_ASKS_MUST_BE_EVEN")
+    ranked = sorted(
+        range(int(count)),
+        key=lambda ordinal: _stable_hash(
+            {
+                "assignment_policy": "ROUTE_CHECKPOINT_FIXED_HASH_BALANCED_V1",
+                "checkpoint_id": str(checkpoint_id),
+                "route_id": str(route_id),
+                "route_formal_ordinal": ordinal,
+            }
+        ),
+    )
+    hybrid_ordinals = set(ranked[: int(count) // 2])
+    return [
+        HYBRID_POLICY_ARM if ordinal in hybrid_ordinals else UNIFORM_POLICY_ARM
+        for ordinal in range(int(count))
+    ]
 
 
 def _finite_float(value: Any) -> float | None:
@@ -336,6 +414,48 @@ def _availability_metadata(
     return metadata
 
 
+def _uniform_ask_row(
+    *,
+    emission: Any,
+    checkpoint_id: str,
+    route_formal_ordinal: int,
+    global_formal_ordinal: int,
+) -> dict[str, Any]:
+    genes = {str(key): str(value) for key, value in emission.genes.items()}
+    proposal_id = _stable_hash(
+        {
+            "policy_id": "AVAILABILITY_AWARE_UNIFORM_V1",
+            "checkpoint_id": str(checkpoint_id),
+            "route_id": str(emission.route_id),
+            "route_formal_ordinal": int(route_formal_ordinal),
+            "genes": genes,
+            "exact_identity": str(emission.exact_identity),
+        }
+    )[:24]
+    return {
+        "proposal_id": proposal_id,
+        "trial_number": None,
+        "checkpoint_id": str(checkpoint_id),
+        "ask_ordinal": int(route_formal_ordinal),
+        "route_id": str(emission.route_id),
+        "generation": int(str(checkpoint_id).rsplit("_", 1)[-1]) - 1,
+        "genes": genes,
+        "category_id": _stable_hash(
+            {"route_id": str(emission.route_id), "genes": genes}
+        ),
+        "typed_pair_compatible": True,
+        "optimizer_policy_id": "AVAILABILITY_AWARE_UNIFORM_V1",
+        "optimizer_feedback_eligible": False,
+        "search_policy_arm": UNIFORM_POLICY_ARM,
+        "intention_to_treat_arm": UNIFORM_POLICY_ARM,
+        "availability_trial_role": "UNIFORM_WITHOUT_REPLACEMENT",
+        **_availability_metadata(
+            emission,
+            formal_ask_ordinal=global_formal_ordinal,
+        ),
+    }
+
+
 def _ask_availability_aware_populations(
     *,
     schedule: Sequence[Mapping[str, Any]],
@@ -344,6 +464,7 @@ def _ask_availability_aware_populations(
     generator: RegistryDrivenGenerator,
     schema_by_backend: Mapping[str, set[str]],
     checkpoint_id: str,
+    productivity_experiment: bool = False,
 ) -> tuple[
     list[dict[str, Any]],
     list[dict[str, Any]],
@@ -373,10 +494,45 @@ def _ask_availability_aware_populations(
         direct = 0
         replacement = 0
         fallback_count = 0
+        uniform_count = 0
         unfulfilled = 0
-        for route_formal_ordinal in range(requested):
+        assignments = (
+            _policy_arm_assignments(
+                checkpoint_id=checkpoint_id,
+                route_id=route_id,
+                count=requested,
+            )
+            if productivity_experiment
+            else [HYBRID_POLICY_ARM] * requested
+        )
+        for route_formal_ordinal, policy_arm in enumerate(assignments):
+            if policy_arm == UNIFORM_POLICY_ARM:
+                uniform = controller.emit_uniform(route_id=route_id)
+                if uniform is None:
+                    unfulfilled += 1
+                    break
+                row = _uniform_ask_row(
+                    emission=uniform,
+                    checkpoint_id=checkpoint_id,
+                    route_formal_ordinal=route_formal_ordinal,
+                    global_formal_ordinal=global_formal_ordinal,
+                )
+                all_asked.append(row)
+                formal_asked.append(row)
+                uniform_count += 1
+                global_formal_ordinal += 1
+                continue
             emitted = False
             last_identity = ""
+            arm_metadata = (
+                {
+                    "optimizer_feedback_eligible": True,
+                    "search_policy_arm": HYBRID_POLICY_ARM,
+                    "intention_to_treat_arm": HYBRID_POLICY_ARM,
+                }
+                if productivity_experiment
+                else {}
+            )
             for internal_draw_ordinal in range(
                 MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL
             ):
@@ -390,6 +546,7 @@ def _ask_availability_aware_populations(
                             internal_draw_ordinal
                         ),
                         "availability_trial_role": "NATIVE_DRAW",
+                        **arm_metadata,
                     },
                 )
                 controller.record_optimizer_draw(route_id)
@@ -473,6 +630,7 @@ def _ask_availability_aware_populations(
                             ),
                         ),
                         "availability_trial_role": "FIXED_REPLACEMENT",
+                        **arm_metadata,
                     },
                 )
                 controller.record_optimizer_draw(route_id)
@@ -499,6 +657,7 @@ def _ask_availability_aware_populations(
                             formal_ask_ordinal=global_formal_ordinal,
                         ),
                         "availability_trial_role": "FIXED_FALLBACK",
+                        **arm_metadata,
                     },
                 )
                 controller.record_optimizer_draw(route_id)
@@ -513,7 +672,7 @@ def _ask_availability_aware_populations(
         route_metrics[route_id] = {
             "requested_formal_fresh_exact_asks": requested,
             "emitted_formal_fresh_exact_asks": (
-                direct + replacement + fallback_count
+                direct + replacement + fallback_count + uniform_count
             ),
             "native_optimizer_draw_attempts": native_draws,
             "fixed_optimizer_draw_attempts": fixed_draws,
@@ -521,6 +680,8 @@ def _ask_availability_aware_populations(
             "tpe_direct_fresh": direct,
             "tpe_bucket_replacement": replacement,
             "global_availability_fallback": fallback_count,
+            "availability_aware_uniform": uniform_count,
+            "policy_arm_counts": dict(Counter(assignments)),
             "unfulfilled_formal_requests": unfulfilled,
             "remaining_exact": controller.remaining_count(
                 route_id=route_id
@@ -531,7 +692,11 @@ def _ask_availability_aware_populations(
     runtime = {
         "schema_version": "cn_large_tpe_availability_ask_runtime_v1",
         "checkpoint": checkpoint_id,
-        "execution": "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA",
+        "execution": (
+            "BALANCED_HYBRID_TPE_AVAILABILITY_VS_UNIFORM"
+            if productivity_experiment
+            else "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA"
+        ),
         "maximum_internal_native_draws_per_formal": (
             MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL
         ),
@@ -732,33 +897,31 @@ def _authorization_binding(
     session_threads: int,
 ) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8-sig"))
-    expected = {
+    profile = str(payload.get("campaign_profile") or "")
+    runtime_spec = _campaign_runtime_spec(profile)
+    expected_common = {
         "execution_authorized": True,
         "authorized_host": AUTHORIZED_HOST,
-        "campaign_profile": CAMPAIGN_PROFILE,
-        "optimizer": (
-            "official_optuna.samplers.TPESampler_conditional_typed_grammar"
-        ),
+        "campaign_profile": profile,
         "optimizer_package_version": "4.8.0",
         "routes": list(ROUTES),
-        "route_actual_evaluated_targets": ROUTE_EVALUATED_TARGETS,
-        "minimum_actual_evaluated_pairs": MINIMUM_ACTUAL_EVALUATED_PAIRS,
-        "maximum_checkpoints": MAXIMUM_CHECKPOINTS,
-        "asks_per_checkpoint": ASKS_PER_CHECKPOINT,
-        "maximum_raw_asks": MAXIMUM_RAW_ASKS,
+        "maximum_checkpoints": runtime_spec["maximum_checkpoints"],
+        "asks_per_checkpoint": runtime_spec["asks_per_checkpoint"],
+        "maximum_raw_asks": runtime_spec["maximum_raw_asks"],
         "budget_counting_unit": "FORMAL_FRESH_EXACT_ASK",
         "maximum_internal_native_draws_per_formal": (
             MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL
         ),
-        "maximum_wall_seconds": MAXIMUM_WALL_SECONDS,
-        "validation_finalist_pairs": VALIDATION_FINALIST_PAIRS,
+        "maximum_wall_seconds": runtime_spec["maximum_wall_seconds"],
         "active_threads": int(active_threads),
         "session_threads": int(session_threads),
         "active_pair_batch_size": PAIR_BATCH_SIZES["active_bar"],
         "session_pair_batch_size": PAIR_BATCH_SIZES["stock_session"],
         "optuna_route_workers": OPTUNA_ROUTE_WORKERS,
         "optimizer_ask_execution": (
-            "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA"
+            "BALANCED_HYBRID_TPE_AVAILABILITY_VS_UNIFORM"
+            if profile == PRODUCTIVITY_MEDIUM_PROFILE
+            else "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA"
         ),
         "optimizer_n_ei_candidates": N_EI_CANDIDATES,
         "optimizer_sampler_mode": TPE_SAMPLER_MODE,
@@ -783,6 +946,62 @@ def _authorization_binding(
         "forward_2026": "SEALED",
         "promotion": "FORBIDDEN",
     }
+    if profile == PRODUCTIVITY_MEDIUM_PROFILE:
+        route_caps = {
+            route_id: int(count) * PRODUCTIVITY_MAXIMUM_CHECKPOINTS
+            for route_id, count in PRODUCTIVITY_ROUTE_MIX.items()
+        }
+        expected = {
+            **expected_common,
+            "optimizer": (
+                "balanced_hybrid_official_tpe_availability_vs_"
+                "availability_aware_uniform"
+            ),
+            "fixed_route_formal_asks_per_checkpoint": (
+                PRODUCTIVITY_ROUTE_MIX
+            ),
+            "route_formal_ask_caps": route_caps,
+            "policy_arms": list(PRODUCTIVITY_POLICY_ARMS),
+            "policy_arm_ratio": {
+                HYBRID_POLICY_ARM: 0.5,
+                UNIFORM_POLICY_ARM: 0.5,
+            },
+            "policy_arm_assignment": (
+                "ROUTE_CHECKPOINT_FIXED_HASH_BALANCED_V1"
+            ),
+            "uniform_optimizer_feedback": "FORBIDDEN",
+            "analysis_population": "INTENTION_TO_TREAT",
+            "productive_candidate_definition": (
+                "PAIR_EVALUATED_AND_SEARCH_SCORE_POSITIVE_AND_"
+                "PRIMARY_STANDALONE_READY"
+            ),
+            "primary_decision_metric": (
+                "ROUTE_STANDARDIZED_PRODUCTIVE_PER_FORMAL_FRESH_EXACT_ASK"
+            ),
+            "hybrid_acceptance_rule": (
+                "BOOTSTRAP_95_LOWER_RELATIVE_UPLIFT_GT_0.10_AND_"
+                "PRODUCTIVE_THROUGHPUT_HIGHER_AND_MEDIAN_P10_NONINFERIOR"
+            ),
+            "default_if_no_demonstrated_material_uplift": (
+                "AVAILABILITY_AWARE_UNIFORM"
+            ),
+            "minimum_formal_asks_per_wall_hour": (
+                PRODUCTIVITY_MINIMUM_FORMAL_ASKS_PER_WALL_HOUR
+            ),
+            "validation": "FORBIDDEN_DURING_AND_AFTER_MEDIUM",
+        }
+    else:
+        expected = {
+            **expected_common,
+            "optimizer": (
+                "official_optuna.samplers.TPESampler_conditional_typed_grammar"
+            ),
+            "route_actual_evaluated_targets": ROUTE_EVALUATED_TARGETS,
+            "minimum_actual_evaluated_pairs": (
+                MINIMUM_ACTUAL_EVALUATED_PAIRS
+            ),
+            "validation_finalist_pairs": VALIDATION_FINALIST_PAIRS,
+        }
     drift = [
         key for key, value in expected.items() if payload.get(key) != value
     ]
@@ -817,7 +1036,11 @@ def _authorization_binding(
         )
     return {
         "schema_version": "cn_large_tpe_campaign_authority_binding_v3",
-        "status": "FIVE_DIGIT_TRAIN_SEARCH_AUTHORIZED",
+        "status": (
+            "SEARCH_PRODUCTIVITY_MEDIUM_AUTHORIZED"
+            if profile == PRODUCTIVITY_MEDIUM_PROFILE
+            else "FIVE_DIGIT_TRAIN_SEARCH_AUTHORIZED"
+        ),
         "authorization": _artifact(path),
         "historical_candidate_archive": _artifact(candidate_archive),
         "historical_behavior_archive": _artifact(behavior_archive),
@@ -921,6 +1144,7 @@ def _fresh_exact_supply(
     generator: RegistryDrivenGenerator,
     lanes_by_route: Mapping[str, Mapping[str, Any]],
     historical_exact: set[str],
+    minimum_required_by_route: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
     route_rows = {}
     for route_id in ROUTES:
@@ -944,10 +1168,13 @@ def _fresh_exact_supply(
                     exact.add(str(pair.candidate["exact_identity"]))
         fresh = exact - historical_exact
         required = int(
-            math.ceil(
-                ROUTE_EVALUATED_TARGETS[route_id]
-                * FRESH_EXACT_MARGIN
-            )
+            (
+                minimum_required_by_route
+                or {
+                    key: math.ceil(value * FRESH_EXACT_MARGIN)
+                    for key, value in ROUTE_EVALUATED_TARGETS.items()
+                }
+            )[route_id]
         )
         route_rows[route_id] = {
             "categorical_points": scheduled,
@@ -964,7 +1191,10 @@ def _fresh_exact_supply(
         "total_fresh_exact": sum(
             int(row["fresh_exact"]) for row in route_rows.values()
         ),
-        "minimum_actual_evaluated_pairs": MINIMUM_ACTUAL_EVALUATED_PAIRS,
+        "minimum_required_fresh_exact": sum(
+            int(row["minimum_required_fresh_exact"])
+            for row in route_rows.values()
+        ),
         "financial_reads": 0,
         "validation_reads": 0,
         "holdout_reads": 0,
@@ -1188,6 +1418,7 @@ def _load_closed_state(
     output_root: Path,
     initial_exact: set[str],
     initial_behavior: PortfolioBehaviorArchive,
+    maximum_checkpoints: int = MAXIMUM_CHECKPOINTS,
 ) -> dict[str, Any]:
     exact = set(initial_exact)
     behavior = _copy_behavior_archive(initial_behavior)
@@ -1198,8 +1429,9 @@ def _load_closed_state(
     evaluated = Counter()
     asked_counts = Counter()
     summaries = []
+    policy_rows: list[dict[str, Any]] = []
     prior_manifest: Path | None = None
-    for checkpoint_index in range(MAXIMUM_CHECKPOINTS):
+    for checkpoint_index in range(int(maximum_checkpoints)):
         root = (
             output_root
             / "checkpoints"
@@ -1215,7 +1447,7 @@ def _load_closed_state(
                     / "batch_manifest.json"
                 ).is_file()
                 for later in range(
-                    checkpoint_index + 1, MAXIMUM_CHECKPOINTS
+                    checkpoint_index + 1, int(maximum_checkpoints)
                 )
             ):
                 raise RuntimeError("NONCONTIGUOUS_LARGE_TPE_CHECKPOINTS")
@@ -1249,7 +1481,10 @@ def _load_closed_state(
         }
         for route_id in ROUTES:
             route_asked = [
-                row for row in asked if str(row["route_id"]) == route_id
+                row
+                for row in asked
+                if str(row["route_id"]) == route_id
+                and bool(row.get("optimizer_feedback_eligible", True))
             ]
             route_observations = [
                 row
@@ -1309,8 +1544,9 @@ def _load_closed_state(
                     }
                 )
             asked_counts[route_id] += sum(
-                bool(row.get("formal_fresh_exact_ask", True))
-                for row in route_asked
+                bool(row.get("formal_fresh_exact_ask", False))
+                for row in asked
+                if str(row["route_id"]) == route_id
             )
         candidate_rows = (
             pd.read_parquet(root / "candidate_attempts.parquet")
@@ -1358,6 +1594,13 @@ def _load_closed_state(
                 )
             )
         )
+        policy_path = root / "policy_productivity_rows.parquet"
+        if policy_path.is_file():
+            policy_rows.extend(
+                pd.read_parquet(policy_path)
+                .where(pd.notna, None)
+                .to_dict(orient="records")
+            )
         prior_manifest = manifest_path
     return {
         "exact": exact,
@@ -1369,6 +1612,7 @@ def _load_closed_state(
         "evaluated": evaluated,
         "asked_counts": asked_counts,
         "summaries": summaries,
+        "policy_rows": policy_rows,
         "prior_manifest": prior_manifest,
     }
 
@@ -1453,6 +1697,330 @@ def _select_validation_finalists(
     ]
 
 
+def _is_productive_candidate(outcome: Mapping[str, Any]) -> bool:
+    score = _conservative_search_score(outcome)
+    return (
+        str(outcome.get("pair_evaluation_status") or "")
+        == "PAIR_EVALUATED"
+        and score is not None
+        and score > 0.0
+        and str(
+            outcome.get("primary_standalone_train_reward_decision") or ""
+        )
+        == VALIDATION_PRIMARY_DECISION
+    )
+
+
+def _policy_productivity_rows(
+    *,
+    checkpoint_id: str,
+    formal_asked: Sequence[Mapping[str, Any]],
+    materialized: Sequence[Mapping[str, Any]],
+    admission_decisions: Sequence[Mapping[str, Any]],
+    outcomes: Sequence[Mapping[str, Any]],
+    full_behavior: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    materialized_by_proposal = {
+        str(row["proposal_id"]): row for row in materialized
+    }
+    decision_by_pair = {
+        str(row["pair_id"]): row for row in admission_decisions
+    }
+    outcome_by_pair = {str(row["pair_id"]): row for row in outcomes}
+    behavior_by_pair = {
+        str(row.get("pair_id") or ""): row for row in full_behavior
+    }
+    rows: list[dict[str, Any]] = []
+    for asked in formal_asked:
+        proposal_id = str(asked["proposal_id"])
+        materialized_row = materialized_by_proposal[proposal_id]
+        pair_id = str(materialized_row["pair_id"])
+        decision = decision_by_pair[pair_id]
+        outcome = outcome_by_pair.get(pair_id, {})
+        behavior = behavior_by_pair.get(pair_id, {})
+        score = _conservative_search_score(outcome)
+        arm = str(asked.get("search_policy_arm") or "")
+        if arm not in PRODUCTIVITY_POLICY_ARMS:
+            raise RuntimeError(
+                f"PRODUCTIVITY_MEDIUM_POLICY_ARM_MISSING:{proposal_id}"
+            )
+        rows.append(
+            {
+                "checkpoint": str(checkpoint_id),
+                "route_id": str(asked["route_id"]),
+                "proposal_id": proposal_id,
+                "pair_id": pair_id,
+                "intention_to_treat_arm": arm,
+                "optimizer_feedback_eligible": bool(
+                    asked.get("optimizer_feedback_eligible", True)
+                ),
+                "availability_emission_mode": str(
+                    asked.get("availability_emission_mode") or ""
+                ),
+                "formal_fresh_exact_ask": True,
+                "exact_unique": True,
+                "behavior_admitted": (
+                    str(decision.get("admission_decision") or "") == "ADMIT"
+                ),
+                "pair_evaluated": (
+                    str(outcome.get("pair_evaluation_status") or "")
+                    == "PAIR_EVALUATED"
+                ),
+                "search_score": score,
+                "positive_search_score": (
+                    score is not None and score > 0.0
+                ),
+                "matched_train_increment": outcome.get(
+                    "matched_train_increment"
+                ),
+                "primary_standalone_train_reward_decision": str(
+                    outcome.get(
+                        "primary_standalone_train_reward_decision"
+                    )
+                    or ""
+                ),
+                "productive_candidate": _is_productive_candidate(outcome),
+                "portfolio_behavior_family_id": str(
+                    behavior.get("portfolio_behavior_family_id") or ""
+                ),
+                "validation_reads": 0,
+                "holdout_reads": 0,
+                "forward_2026_reads": 0,
+            }
+        )
+    return rows
+
+
+def _percentile(values: Sequence[float], percentile: float) -> float | None:
+    if not values:
+        return None
+    return float(np.percentile(np.asarray(values, dtype=float), percentile))
+
+
+def _medium_policy_decision(
+    *,
+    policy_rows: Sequence[Mapping[str, Any]],
+    checkpoint_summaries: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    rows = [dict(row) for row in policy_rows]
+    checkpoint_count = len(checkpoint_summaries)
+    formal_count = len(rows)
+    complete = (
+        checkpoint_count == PRODUCTIVITY_MAXIMUM_CHECKPOINTS
+        and formal_count == PRODUCTIVITY_MAXIMUM_RAW_ASKS
+    )
+    weights = {
+        route_id: count / ASKS_PER_CHECKPOINT
+        for route_id, count in PRODUCTIVITY_ROUTE_MIX.items()
+    }
+    arm_rows = {
+        arm: [
+            row
+            for row in rows
+            if str(row.get("intention_to_treat_arm") or "") == arm
+        ]
+        for arm in PRODUCTIVITY_POLICY_ARMS
+    }
+    arm_metrics: dict[str, dict[str, Any]] = {}
+    route_rates: dict[str, dict[str, float]] = {
+        arm: {} for arm in PRODUCTIVITY_POLICY_ARMS
+    }
+    for arm, selected in arm_rows.items():
+        scores = [
+            float(row["search_score"])
+            for row in selected
+            if _finite_float(row.get("search_score")) is not None
+        ]
+        for route_id in ROUTES:
+            route_selected = [
+                row
+                for row in selected
+                if str(row["route_id"]) == route_id
+            ]
+            route_rates[arm][route_id] = (
+                sum(bool(row["productive_candidate"]) for row in route_selected)
+                / len(route_selected)
+                if route_selected
+                else 0.0
+            )
+        standardized = sum(
+            weights[route_id] * route_rates[arm][route_id]
+            for route_id in ROUTES
+        )
+        arm_metrics[arm] = {
+            "formal_fresh_exact_asks": len(selected),
+            "pair_evaluated": sum(
+                bool(row["pair_evaluated"]) for row in selected
+            ),
+            "productive_candidates": sum(
+                bool(row["productive_candidate"]) for row in selected
+            ),
+            "productive_per_formal_ask": (
+                sum(bool(row["productive_candidate"]) for row in selected)
+                / len(selected)
+                if selected
+                else 0.0
+            ),
+            "route_standardized_productive_per_formal_ask": standardized,
+            "positive_search_score_per_formal_ask": (
+                sum(bool(row["positive_search_score"]) for row in selected)
+                / len(selected)
+                if selected
+                else 0.0
+            ),
+            "median_search_score": _percentile(scores, 50.0),
+            "p10_search_score": _percentile(scores, 10.0),
+            "unique_behavior_families": len(
+                {
+                    str(row.get("portfolio_behavior_family_id") or "")
+                    for row in selected
+                    if str(row.get("portfolio_behavior_family_id") or "")
+                }
+            ),
+            "by_route": {
+                route_id: {
+                    "formal_fresh_exact_asks": sum(
+                        str(row["route_id"]) == route_id
+                        for row in selected
+                    ),
+                    "productive_candidates": sum(
+                        str(row["route_id"]) == route_id
+                        and bool(row["productive_candidate"])
+                        for row in selected
+                    ),
+                    "productive_per_formal_ask": route_rates[arm][route_id],
+                }
+                for route_id in ROUTES
+            },
+            "emission_modes": dict(
+                Counter(
+                    str(row.get("availability_emission_mode") or "")
+                    for row in selected
+                )
+            ),
+        }
+    rng = np.random.default_rng(PRODUCTIVITY_BOOTSTRAP_SEED)
+    bootstrap_rates: dict[str, np.ndarray] = {}
+    for arm in PRODUCTIVITY_POLICY_ARMS:
+        sampled = np.zeros(PRODUCTIVITY_BOOTSTRAP_REPLICATES, dtype=float)
+        for route_id in ROUTES:
+            selected = [
+                row
+                for row in arm_rows[arm]
+                if str(row["route_id"]) == route_id
+            ]
+            n = len(selected)
+            k = sum(bool(row["productive_candidate"]) for row in selected)
+            probability = k / n if n else 0.0
+            sampled += weights[route_id] * (
+                rng.binomial(
+                    n,
+                    probability,
+                    size=PRODUCTIVITY_BOOTSTRAP_REPLICATES,
+                )
+                / max(n, 1)
+            )
+        bootstrap_rates[arm] = sampled
+    hybrid_rate = bootstrap_rates[HYBRID_POLICY_ARM]
+    uniform_rate = bootstrap_rates[UNIFORM_POLICY_ARM]
+    # Jeffreys-sized smoothing keeps relative uplift finite when a resample
+    # contains zero productive Uniform candidates.
+    smoothing = 0.5 / (
+        len(arm_rows[UNIFORM_POLICY_ARM]) + 1.0
+    )
+    relative_uplift = (
+        (hybrid_rate + smoothing) / (uniform_rate + smoothing)
+    ) - 1.0
+    uplift_ci = {
+        "method": (
+            "ROUTE_STRATIFIED_BINOMIAL_BOOTSTRAP_WITH_JEFFREYS_SIZED_"
+            "DENOMINATOR_SMOOTHING"
+        ),
+        "replicates": PRODUCTIVITY_BOOTSTRAP_REPLICATES,
+        "seed": PRODUCTIVITY_BOOTSTRAP_SEED,
+        "relative_uplift_p2_5": float(
+            np.percentile(relative_uplift, 2.5)
+        ),
+        "relative_uplift_median": float(
+            np.percentile(relative_uplift, 50.0)
+        ),
+        "relative_uplift_p97_5": float(
+            np.percentile(relative_uplift, 97.5)
+        ),
+    }
+    shared_wall_seconds = sum(
+        float(row.get("checkpoint_wall_seconds") or 0.0)
+        for row in checkpoint_summaries
+    )
+    formal_asks_per_wall_hour = formal_count / max(
+        shared_wall_seconds / 3600.0, 1e-12
+    )
+    for metrics in arm_metrics.values():
+        metrics["productive_per_shared_wall_hour"] = (
+            float(metrics["productive_candidates"])
+            / max(shared_wall_seconds / 3600.0, 1e-12)
+        )
+    hybrid = arm_metrics[HYBRID_POLICY_ARM]
+    uniform = arm_metrics[UNIFORM_POLICY_ARM]
+    distribution_noninferior = (
+        hybrid["median_search_score"] is not None
+        and uniform["median_search_score"] is not None
+        and hybrid["p10_search_score"] is not None
+        and uniform["p10_search_score"] is not None
+        and hybrid["median_search_score"] >= uniform["median_search_score"]
+        and hybrid["p10_search_score"] >= uniform["p10_search_score"]
+    )
+    hybrid_accepted = (
+        complete
+        and uplift_ci["relative_uplift_p2_5"] > 0.10
+        and hybrid["productive_per_shared_wall_hour"]
+        > uniform["productive_per_shared_wall_hour"]
+        and distribution_noninferior
+    )
+    selected_policy = (
+        HYBRID_POLICY_ARM if hybrid_accepted else UNIFORM_POLICY_ARM
+    ) if complete else "NONE_INCOMPLETE_EXPERIMENT"
+    return {
+        "schema_version": "cn_hybrid_search_productivity_decision_v1",
+        "status": (
+            "PRODUCTIVITY_MEDIUM_COMPLETE"
+            if complete
+            else "PRODUCTIVITY_MEDIUM_INCOMPLETE"
+        ),
+        "analysis_population": "INTENTION_TO_TREAT",
+        "checkpoint_count": checkpoint_count,
+        "formal_fresh_exact_asks": formal_count,
+        "shared_wall_seconds": shared_wall_seconds,
+        "formal_asks_per_wall_hour": formal_asks_per_wall_hour,
+        "minimum_formal_asks_per_wall_hour": (
+            PRODUCTIVITY_MINIMUM_FORMAL_ASKS_PER_WALL_HOUR
+        ),
+        "throughput_contract_passed": (
+            formal_asks_per_wall_hour
+            >= PRODUCTIVITY_MINIMUM_FORMAL_ASKS_PER_WALL_HOUR
+        ),
+        "policy_arm_metrics": arm_metrics,
+        "hybrid_relative_productivity_uplift_interval": uplift_ci,
+        "search_score_distribution_noninferior": distribution_noninferior,
+        "hybrid_acceptance_rule_passed": hybrid_accepted,
+        "selected_search_policy": selected_policy,
+        "selection_rationale": (
+            "HYBRID_DEMONSTRATED_MATERIAL_PRODUCTIVITY_UPLIFT"
+            if hybrid_accepted
+            else (
+                "COMPLEXITY_PENALTY_NO_DEMONSTRATED_MATERIAL_HYBRID_UPLIFT"
+                if complete
+                else "EXPERIMENT_NOT_COMPLETE_NO_POLICY_SELECTION"
+            )
+        ),
+        "statistical_equivalence_claimed": False,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "promotion": "FORBIDDEN",
+    }
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     if platform.node().upper() != AUTHORIZED_HOST:
         raise RuntimeError(
@@ -1471,6 +2039,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         active_threads=args.active_threads,
         session_threads=args.session_threads,
     )
+    campaign_profile = str(
+        (authority.get("frozen") or {}).get("campaign_profile") or ""
+    )
+    campaign_spec = _campaign_runtime_spec(campaign_profile)
+    productivity_experiment = (
+        campaign_profile == PRODUCTIVITY_MEDIUM_PROFILE
+    )
+    if int(args.maximum_wall_seconds) != int(
+        campaign_spec["maximum_wall_seconds"]
+    ):
+        raise RuntimeError("CN_SEARCH_MAXIMUM_WALL_CONTRACT_MISMATCH")
     authority_path = _write_json(
         output_root / "campaign_authority_binding.json", authority
     )
@@ -1545,19 +2124,36 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     contract = {
         "schema_version": "cn_large_tpe_search_contract_v2",
         "status": "FROZEN_EXECUTABLE",
-        "campaign_profile": CAMPAIGN_PROFILE,
-        "minimum_actual_evaluated_pairs": MINIMUM_ACTUAL_EVALUATED_PAIRS,
-        "route_actual_evaluated_targets": ROUTE_EVALUATED_TARGETS,
-        "maximum_checkpoints": MAXIMUM_CHECKPOINTS,
-        "asks_per_checkpoint": ASKS_PER_CHECKPOINT,
-        "maximum_raw_asks": MAXIMUM_RAW_ASKS,
-        "maximum_wall_seconds": MAXIMUM_WALL_SECONDS,
+        "campaign_profile": campaign_profile,
+        "completion_mode": campaign_spec["completion_mode"],
+        "minimum_actual_evaluated_pairs": (
+            None
+            if productivity_experiment
+            else MINIMUM_ACTUAL_EVALUATED_PAIRS
+        ),
+        "route_actual_evaluated_targets": (
+            None if productivity_experiment else ROUTE_EVALUATED_TARGETS
+        ),
+        "fixed_route_formal_asks_per_checkpoint": (
+            PRODUCTIVITY_ROUTE_MIX if productivity_experiment else None
+        ),
+        "maximum_checkpoints": campaign_spec["maximum_checkpoints"],
+        "asks_per_checkpoint": campaign_spec["asks_per_checkpoint"],
+        "maximum_raw_asks": campaign_spec["maximum_raw_asks"],
+        "maximum_wall_seconds": campaign_spec["maximum_wall_seconds"],
         "top_level_scheduling_key": "UNIFIED_REGISTRY_ROUTE_ID",
         "route_local_generation_mode": "TYPED_GRAMMAR_SKELETON_ID",
         "optimizer": (
-            "official_optuna.samplers.TPESampler_conditional_typed_grammar"
+            "balanced_hybrid_official_tpe_availability_vs_"
+            "availability_aware_uniform"
+            if productivity_experiment
+            else "official_optuna.samplers.TPESampler_conditional_typed_grammar"
         ),
-        "optimizer_role": "ROUTE_LOCAL_GENE_SELECTION_ONLY",
+        "optimizer_role": (
+            "HYBRID_ARM_ROUTE_LOCAL_GENE_SELECTION_ONLY"
+            if productivity_experiment
+            else "ROUTE_LOCAL_GENE_SELECTION_ONLY"
+        ),
         "optimizer_initialization": "FRESH_NO_CROSS_CAMPAIGN_REWARD_STATE",
         "startup_trials_by_route": STARTUP_TRIALS_BY_ROUTE,
         "n_ei_candidates": N_EI_CANDIDATES,
@@ -1570,7 +2166,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "matched_control_authority": "MATCHED_CONTROL_PAIR_AUTHORITY",
         "exact_memory": "CUMULATIVE_IDENTITY_ONLY",
         "behavior_memory": "CUMULATIVE_LABEL_FREE_AND_FULL_COORDINATE",
-        "optimizer_feedback": "FULL_COORDINATE_TRAIN_ONLY",
+        "optimizer_feedback": (
+            "HYBRID_ARM_FULL_COORDINATE_TRAIN_ONLY_UNIFORM_FORBIDDEN"
+            if productivity_experiment
+            else "FULL_COORDINATE_TRAIN_ONLY"
+        ),
         "optimizer_reward": "conservative_primary_and_increment_search_score",
         "optimizer_search_score_policy": SEARCH_SCORE_POLICY,
         "optimizer_search_score_formula": (
@@ -1580,7 +2180,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "optimizer_restore_authority": (
             "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
         ),
-        "validation": "AUTOMATIC_REPORT_ONLY_ON_256_TRAIN_FINALISTS",
+        "validation": (
+            "FORBIDDEN_DURING_AND_AFTER_MEDIUM"
+            if productivity_experiment
+            else "AUTOMATIC_REPORT_ONLY_ON_256_TRAIN_FINALISTS"
+        ),
         "validation_feedback": "FORBIDDEN",
         "validation_scheduler_write": "FORBIDDEN",
         "validation_archive_write": "FORBIDDEN",
@@ -1596,6 +2200,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "forward_2026_reads": 0,
         "promotion": "FORBIDDEN",
         "strict_stage_a": "NOT_AUTHORIZED",
+        "search_policy_experiment": (
+            {
+                "arms": list(PRODUCTIVITY_POLICY_ARMS),
+                "assignment": "ROUTE_CHECKPOINT_FIXED_HASH_BALANCED_V1",
+                "analysis_population": "INTENTION_TO_TREAT",
+                "uniform_optimizer_feedback": "FORBIDDEN",
+                "minimum_formal_asks_per_wall_hour": (
+                    PRODUCTIVITY_MINIMUM_FORMAL_ASKS_PER_WALL_HOUR
+                ),
+            }
+            if productivity_experiment
+            else None
+        ),
         "materialized_route_root_allowlists": {
             route_id: list(values)
             for route_id, values in materialized_allowlists.items()
@@ -1637,6 +2254,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             generator=generator,
             lanes_by_route=lanes_by_route,
             historical_exact=historical_exact,
+            minimum_required_by_route=campaign_spec[
+                "minimum_required_fresh_exact_by_route"
+            ],
         )
         _write_json(supply_path, supply)
     if str(supply.get("status") or "") != "PASS":
@@ -1655,6 +2275,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         output_root=output_root,
         initial_exact=historical_exact,
         initial_behavior=initial_behavior,
+        maximum_checkpoints=int(campaign_spec["maximum_checkpoints"]),
     )
     adapters = _restore_or_import_adapters(
         output_root=output_root,
@@ -1690,33 +2311,42 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             input_hashes=availability_input_hashes,
         )
     )
-    deadline = time.time() + int(args.maximum_wall_seconds)
+    deadline = time.time() + int(campaign_spec["maximum_wall_seconds"])
     checkpoint_index = len(state["summaries"])
     while (
-        checkpoint_index < MAXIMUM_CHECKPOINTS
-        and sum(state["evaluated"].values())
-        < MINIMUM_ACTUAL_EVALUATED_PAIRS
-        and sum(state["asked_counts"].values()) < MAXIMUM_RAW_ASKS
+        checkpoint_index < int(campaign_spec["maximum_checkpoints"])
+        and (
+            productivity_experiment
+            or sum(state["evaluated"].values())
+            < MINIMUM_ACTUAL_EVALUATED_PAIRS
+        )
+        and sum(state["asked_counts"].values())
+        < int(campaign_spec["maximum_raw_asks"])
         and time.time() < deadline
     ):
         checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
         root = output_root / "checkpoints" / checkpoint_id
         root.mkdir(parents=True, exist_ok=True)
+        checkpoint_started = time.perf_counter()
         schedule_path = root / "route_schedule.json"
         if schedule_path.is_file():
             schedule = json.loads(
                 schedule_path.read_text(encoding="utf-8-sig")
             )
         else:
-            allocation = _allocate_checkpoint_asks(
-                evaluated_by_route=state["evaluated"],
-                asked_by_route=state["asked_counts"],
-                remaining_exact_by_route={
-                    route_id: availability_controller.remaining_count(
-                        route_id=route_id
-                    )
-                    for route_id in ROUTES
-                },
+            allocation = (
+                dict(PRODUCTIVITY_ROUTE_MIX)
+                if productivity_experiment
+                else _allocate_checkpoint_asks(
+                    evaluated_by_route=state["evaluated"],
+                    asked_by_route=state["asked_counts"],
+                    remaining_exact_by_route={
+                        route_id: availability_controller.remaining_count(
+                            route_id=route_id
+                        )
+                        for route_id in ROUTES
+                    },
+                )
             )
             schedule = {
                 "checkpoint": checkpoint_id,
@@ -1726,13 +2356,58 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         "route_id": route_id,
                         "asked_pairs": count,
                         "generation_mode": (
-                            "OPTUNA_TPE_ROUTE_LOCAL_AVAILABILITY"
+                            "BALANCED_HYBRID_TPE_AVAILABILITY_VS_UNIFORM"
+                            if productivity_experiment
+                            else "OPTUNA_TPE_ROUTE_LOCAL_AVAILABILITY"
+                        ),
+                        "policy_arm_counts": (
+                            {
+                                HYBRID_POLICY_ARM: count // 2,
+                                UNIFORM_POLICY_ARM: count // 2,
+                            }
+                            if productivity_experiment
+                            else None
+                        ),
+                        "policy_arm_assignment_digest": (
+                            _stable_hash(
+                                _policy_arm_assignments(
+                                    checkpoint_id=checkpoint_id,
+                                    route_id=route_id,
+                                    count=count,
+                                )
+                            )
+                            if productivity_experiment
+                            else None
                         ),
                     }
                     for route_id, count in allocation.items()
                 ],
             }
             _write_json(schedule_path, schedule)
+        if productivity_experiment:
+            observed_mix = {
+                str(row["route_id"]): int(row["asked_pairs"])
+                for row in schedule.get("routes") or ()
+            }
+            if observed_mix != PRODUCTIVITY_ROUTE_MIX:
+                raise RuntimeError(
+                    "PRODUCTIVITY_MEDIUM_FIXED_ROUTE_MIX_DRIFT"
+                )
+            for row in schedule["routes"]:
+                assignments = _policy_arm_assignments(
+                    checkpoint_id=checkpoint_id,
+                    route_id=str(row["route_id"]),
+                    count=int(row["asked_pairs"]),
+                )
+                if (
+                    dict(row.get("policy_arm_counts") or {})
+                    != dict(Counter(assignments))
+                    or str(row.get("policy_arm_assignment_digest") or "")
+                    != _stable_hash(assignments)
+                ):
+                    raise RuntimeError(
+                        "PRODUCTIVITY_MEDIUM_POLICY_ASSIGNMENT_DRIFT"
+                    )
         ask_path = root / "asked_population.json"
         previous_asked: list[dict[str, Any]] | None = None
         if ask_path.is_file():
@@ -1751,6 +2426,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             generator=generator,
             schema_by_backend=schema_by_backend,
             checkpoint_id=checkpoint_id,
+            productivity_experiment=productivity_experiment,
         )
         if previous_asked is not None and _stable_hash(
             previous_asked
@@ -1789,11 +2465,32 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 )
             generation_exact.add(identity)
             unique_asked.append(row)
-        candidate_rows = [
-            dict(member)
-            for row in unique_asked
-            for member in (row["primary"], row["control"])
-        ]
+        candidate_rows = []
+        for row in unique_asked:
+            member_metadata = (
+                {
+                    "source_proposal_id": str(row["proposal_id"]),
+                    "search_policy_arm": str(
+                        row.get("search_policy_arm") or ""
+                    ),
+                    "intention_to_treat_arm": str(
+                        row.get("intention_to_treat_arm") or ""
+                    ),
+                    "optimizer_feedback_eligible": bool(
+                        row.get("optimizer_feedback_eligible", True)
+                    ),
+                    "availability_emission_mode": str(
+                        row.get("availability_emission_mode") or ""
+                    ),
+                    "formal_ask_ordinal": int(
+                        row.get("formal_ask_ordinal") or 0
+                    ),
+                }
+                if productivity_experiment
+                else {}
+            )
+            for member in (row["primary"], row["control"]):
+                candidate_rows.append({**dict(member), **member_metadata})
         candidate_path = _write_parquet(
             root / "candidate_attempts.parquet", candidate_rows
         )
@@ -1823,7 +2520,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 train_dates=_train_dates(split),
                 coordinate_binding=_stable_hash(
                     {
-                        "campaign": CAMPAIGN_PROFILE,
+                        "campaign": campaign_profile,
                         "checkpoint": checkpoint_id,
                         "contract": _sha256(contract_path),
                         "gene_lanes": _sha256(lane_manifest_path),
@@ -1875,7 +2572,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     ask.get("availability_bucket_key") or ""
                 ),
             )
-            if not admitted_decision:
+            if (
+                not admitted_decision
+                and bool(ask.get("optimizer_feedback_eligible", True))
+            ):
                 observations[str(ask["proposal_id"])] = {
                     "proposal_id": str(ask["proposal_id"]),
                     "outcome_class": "BEHAVIOR_BLOCKED",
@@ -1916,6 +2616,21 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 full_behavior, probe_rows
             )
         for outcome in outcomes:
+            ask = ask_by_pair[str(outcome["pair_id"])]
+            if productivity_experiment:
+                outcome["source_proposal_id"] = str(ask["proposal_id"])
+                outcome["search_policy_arm"] = str(
+                    ask["search_policy_arm"]
+                )
+                outcome["intention_to_treat_arm"] = str(
+                    ask["intention_to_treat_arm"]
+                )
+                outcome["optimizer_feedback_eligible"] = bool(
+                    ask["optimizer_feedback_eligible"]
+                )
+                outcome["availability_emission_mode"] = str(
+                    ask["availability_emission_mode"]
+                )
             outcome["primary_composite_reward"] = outcome.get(
                 "primary_composite_reward",
                 outcome.get("primary_train_reward"),
@@ -1955,26 +2670,27 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 if outcome_class == EVALUATED
                 else None
             )
-            observations[str(ask["proposal_id"])] = {
-                "proposal_id": str(ask["proposal_id"]),
-                "outcome_class": outcome_class,
-                "optimizer_reward": reward,
-                "search_score": reward,
-                "search_score_policy": SEARCH_SCORE_POLICY,
-                "primary_composite_reward": outcome.get(
-                    "primary_composite_reward"
-                ),
-                "control_composite_reward": outcome.get(
-                    "control_composite_reward"
-                ),
-                "matched_train_increment": outcome.get(
-                    "matched_train_increment"
-                ),
-                "outcome_reason": str(
-                    outcome.get("pair_evaluation_blockers")
-                    or "PAIR_EVALUATED"
-                ),
-            }
+            if bool(ask.get("optimizer_feedback_eligible", True)):
+                observations[str(ask["proposal_id"])] = {
+                    "proposal_id": str(ask["proposal_id"]),
+                    "outcome_class": outcome_class,
+                    "optimizer_reward": reward,
+                    "search_score": reward,
+                    "search_score_policy": SEARCH_SCORE_POLICY,
+                    "primary_composite_reward": outcome.get(
+                        "primary_composite_reward"
+                    ),
+                    "control_composite_reward": outcome.get(
+                        "control_composite_reward"
+                    ),
+                    "matched_train_increment": outcome.get(
+                        "matched_train_increment"
+                    ),
+                    "outcome_reason": str(
+                        outcome.get("pair_evaluation_blockers")
+                        or "PAIR_EVALUATED"
+                    ),
+                }
             if outcome_class == EVALUATED:
                 availability_controller.record_evaluated(
                     route_id=str(ask["route_id"]),
@@ -1982,12 +2698,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         ask.get("availability_bucket_key") or ""
                     ),
                 )
+        optimizer_asked = [
+            row
+            for row in asked
+            if bool(row.get("optimizer_feedback_eligible", True))
+        ]
         if set(observations) != {
-            str(row["proposal_id"]) for row in asked
+            str(row["proposal_id"]) for row in optimizer_asked
         }:
             raise RuntimeError("LARGE_TPE_ASK_TELL_COVERAGE_DRIFT")
         ordered_observations = [
-            observations[str(row["proposal_id"])] for row in asked
+            observations[str(row["proposal_id"])] for row in optimizer_asked
         ]
         observation_path = _write_parquet(
             root / "optimizer_observations.parquet",
@@ -2081,6 +2802,61 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             root / "availability_controller_state.json",
             availability_controller.snapshot(),
         )
+        checkpoint_wall_seconds = time.perf_counter() - checkpoint_started
+        policy_rows_path: Path | None = None
+        policy_summary_path: Path | None = None
+        checkpoint_policy_rows: list[dict[str, Any]] = []
+        if productivity_experiment:
+            checkpoint_policy_rows = _policy_productivity_rows(
+                checkpoint_id=checkpoint_id,
+                formal_asked=formal_asked,
+                materialized=unique_asked,
+                admission_decisions=decisions,
+                outcomes=outcomes,
+                full_behavior=full_behavior,
+            )
+            if len(checkpoint_policy_rows) != ASKS_PER_CHECKPOINT:
+                raise RuntimeError(
+                    "PRODUCTIVITY_MEDIUM_FORMAL_ROW_COVERAGE_DRIFT"
+                )
+            for route_id, expected in PRODUCTIVITY_ROUTE_MIX.items():
+                for arm in PRODUCTIVITY_POLICY_ARMS:
+                    observed = sum(
+                        str(row["route_id"]) == route_id
+                        and str(row["intention_to_treat_arm"]) == arm
+                        for row in checkpoint_policy_rows
+                    )
+                    if observed != expected // 2:
+                        raise RuntimeError(
+                            "PRODUCTIVITY_MEDIUM_BALANCE_DRIFT:"
+                            f"{route_id}:{arm}:{observed}"
+                        )
+            if any(
+                str(row["intention_to_treat_arm"]) == UNIFORM_POLICY_ARM
+                and bool(row["optimizer_feedback_eligible"])
+                for row in checkpoint_policy_rows
+            ):
+                raise RuntimeError(
+                    "PRODUCTIVITY_MEDIUM_UNIFORM_OPTIMIZER_FEEDBACK_DRIFT"
+                )
+            policy_rows_path = _write_parquet(
+                root / "policy_productivity_rows.parquet",
+                checkpoint_policy_rows,
+            )
+            policy_summary_path = _write_json(
+                root / "policy_productivity_summary.json",
+                _medium_policy_decision(
+                    policy_rows=checkpoint_policy_rows,
+                    checkpoint_summaries=[
+                        {
+                            "checkpoint_wall_seconds": (
+                                checkpoint_wall_seconds
+                            )
+                        }
+                    ],
+                ),
+            )
+            state["policy_rows"].extend(checkpoint_policy_rows)
         summary = {
             "checkpoint": checkpoint_id,
             "asked_pairs": len(formal_asked),
@@ -2099,6 +2875,33 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ),
             "evaluated_by_route": dict(state["evaluated"]),
             "asked_by_route": dict(state["asked_counts"]),
+            "checkpoint_wall_seconds": checkpoint_wall_seconds,
+            "formal_asks_per_wall_hour": (
+                len(formal_asked)
+                / max(checkpoint_wall_seconds / 3600.0, 1e-12)
+            ),
+            "policy_arm_counts": (
+                dict(
+                    Counter(
+                        str(row["intention_to_treat_arm"])
+                        for row in checkpoint_policy_rows
+                    )
+                )
+                if productivity_experiment
+                else {}
+            ),
+            "productive_by_policy_arm": (
+                {
+                    arm: sum(
+                        str(row["intention_to_treat_arm"]) == arm
+                        and bool(row["productive_candidate"])
+                        for row in checkpoint_policy_rows
+                    )
+                    for arm in PRODUCTIVITY_POLICY_ARMS
+                }
+                if productivity_experiment
+                else {}
+            ),
             "minimum_free_memory_bytes": _minimum_free_memory(root),
             "runtime_gate_status": str(gate.get("status") or ""),
             "validation_reads": 0,
@@ -2129,6 +2932,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             gate_path,
             summary_path,
         ]
+        if policy_rows_path is not None and policy_summary_path is not None:
+            manifest_paths.extend([policy_rows_path, policy_summary_path])
         if binding_path is not None:
             manifest_paths.append(binding_path)
             manifest_paths.extend(table_paths.values())
@@ -2159,13 +2964,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         checkpoint_index += 1
 
     evaluated_total = sum(state["evaluated"].values())
-    route_targets_met = all(
-        int(state["evaluated"].get(route_id, 0)) >= target
-        for route_id, target in ROUTE_EVALUATED_TARGETS.items()
+    raw_asks = sum(state["asked_counts"].values())
+    experiment_complete = (
+        productivity_experiment
+        and len(state["summaries"])
+        == int(campaign_spec["maximum_checkpoints"])
+        and raw_asks == int(campaign_spec["maximum_raw_asks"])
+    )
+    route_targets_met = (
+        None
+        if productivity_experiment
+        else all(
+            int(state["evaluated"].get(route_id, 0)) >= target
+            for route_id, target in ROUTE_EVALUATED_TARGETS.items()
+        )
     )
     qualified = (
-        evaluated_total >= MINIMUM_ACTUAL_EVALUATED_PAIRS
-        and route_targets_met
+        experiment_complete
+        if productivity_experiment
+        else (
+            evaluated_total >= MINIMUM_ACTUAL_EVALUATED_PAIRS
+            and bool(route_targets_met)
+        )
     )
     candidate_ledger_path = _write_parquet(
         output_root / "candidate_ledger.parquet", state["candidates"]
@@ -2182,13 +3002,29 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             for route_id in ROUTES
         },
     )
+    policy_ledger_path: Path | None = None
+    policy_decision_path: Path | None = None
+    policy_decision: dict[str, Any] | None = None
+    if productivity_experiment:
+        policy_ledger_path = _write_parquet(
+            output_root / "policy_productivity_ledger.parquet",
+            state["policy_rows"],
+        )
+        policy_decision = _medium_policy_decision(
+            policy_rows=state["policy_rows"],
+            checkpoint_summaries=state["summaries"],
+        )
+        policy_decision_path = _write_json(
+            output_root / "search_policy_decision.json",
+            policy_decision,
+        )
     finalists = (
         _select_validation_finalists(
             candidates=state["candidates"],
             outcomes=state["outcomes"],
             behavior_rows=state["full_behavior"],
         )
-        if qualified
+        if qualified and not productivity_experiment
         else []
     )
     finalists_path = _write_parquet(
@@ -2198,13 +3034,33 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         output_root / "train_complete_manifest.json",
         {
             "schema_version": "cn_large_tpe_train_complete_v1",
-            "status": "TRAIN_COMPLETE" if qualified else "TRAIN_INCOMPLETE",
+            "status": (
+                "PRODUCTIVITY_MEDIUM_COMPLETE"
+                if experiment_complete
+                else (
+                    "TRAIN_COMPLETE"
+                    if qualified
+                    else "TRAIN_INCOMPLETE"
+                )
+            ),
+            "campaign_profile": campaign_profile,
             "actual_evaluated_pairs": evaluated_total,
-            "minimum_actual_evaluated_pairs": MINIMUM_ACTUAL_EVALUATED_PAIRS,
-            "route_actual_evaluated_targets": ROUTE_EVALUATED_TARGETS,
+            "minimum_actual_evaluated_pairs": (
+                None
+                if productivity_experiment
+                else MINIMUM_ACTUAL_EVALUATED_PAIRS
+            ),
+            "route_actual_evaluated_targets": (
+                None if productivity_experiment else ROUTE_EVALUATED_TARGETS
+            ),
+            "fixed_route_formal_asks_per_checkpoint": (
+                PRODUCTIVITY_ROUTE_MIX
+                if productivity_experiment
+                else None
+            ),
             "actual_evaluated_by_route": dict(state["evaluated"]),
             "checkpoint_count": len(state["summaries"]),
-            "raw_asks": sum(state["asked_counts"].values()),
+            "raw_asks": raw_asks,
             "candidate_ledger": _artifact(
                 candidate_ledger_path, root=output_root
             ),
@@ -2219,13 +3075,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 finalists_path, root=output_root
             ),
             "validation_trigger": (
-                "AUTOMATIC_AFTER_IMMUTABLE_TRAIN_COMPLETE"
+                "FORBIDDEN_BY_PRODUCTIVITY_MEDIUM_CONTRACT"
+                if productivity_experiment
+                else "AUTOMATIC_AFTER_IMMUTABLE_TRAIN_COMPLETE"
             ),
             "promotion": "FORBIDDEN",
         },
     )
     validation_receipt = None
-    if qualified:
+    if qualified and not productivity_experiment:
         validation_receipt = _run_automatic_validation_after_train(
             train_manifest_path=train_manifest_path,
             protected_train_artifacts=(
@@ -2247,27 +3105,54 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             validation_label_roots=validation_label_roots,
             compute_threads=compute_threads,
         )
-    decision = {
-        "status": "CAMPAIGN_CLOSED" if qualified else "CAMPAIGN_INCOMPLETE",
-        "actual_evaluated_pairs": evaluated_total,
-        "minimum_actual_evaluated_pairs": MINIMUM_ACTUAL_EVALUATED_PAIRS,
-        "actual_evaluated_by_route": dict(state["evaluated"]),
-        "route_targets_met": route_targets_met,
-        "checkpoint_count": len(state["summaries"]),
-        "raw_asks": sum(state["asked_counts"].values()),
-        "optimizer": (
-            "official_optuna.samplers.TPESampler_conditional_typed_grammar"
-        ),
-        "validation_status": (
-            "AUTOMATIC_POST_TRAIN_VALIDATION_COMPLETE"
-            if validation_receipt
-            else "NOT_RUN_TRAIN_INCOMPLETE"
-        ),
-        "validation_feedback": "FORBIDDEN",
-        "holdout_reads": 0,
-        "forward_2026_reads": 0,
-        "promotion": "FORBIDDEN",
-    }
+    if productivity_experiment:
+        decision = {
+            **dict(policy_decision or {}),
+            "status": (
+                "CAMPAIGN_CLOSED"
+                if experiment_complete
+                else "CAMPAIGN_INCOMPLETE"
+            ),
+            "campaign_profile": campaign_profile,
+            "actual_evaluated_pairs": evaluated_total,
+            "actual_evaluated_by_route": dict(state["evaluated"]),
+            "checkpoint_count": len(state["summaries"]),
+            "raw_asks": raw_asks,
+            "validation_status": (
+                "NOT_RUN_BY_FROZEN_PRODUCTIVITY_MEDIUM_CONTRACT"
+            ),
+            "validation_feedback": "FORBIDDEN",
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+            "promotion": "FORBIDDEN",
+        }
+    else:
+        decision = {
+            "status": (
+                "CAMPAIGN_CLOSED" if qualified else "CAMPAIGN_INCOMPLETE"
+            ),
+            "actual_evaluated_pairs": evaluated_total,
+            "minimum_actual_evaluated_pairs": (
+                MINIMUM_ACTUAL_EVALUATED_PAIRS
+            ),
+            "actual_evaluated_by_route": dict(state["evaluated"]),
+            "route_targets_met": route_targets_met,
+            "checkpoint_count": len(state["summaries"]),
+            "raw_asks": raw_asks,
+            "optimizer": (
+                "official_optuna.samplers."
+                "TPESampler_conditional_typed_grammar"
+            ),
+            "validation_status": (
+                "AUTOMATIC_POST_TRAIN_VALIDATION_COMPLETE"
+                if validation_receipt
+                else "NOT_RUN_TRAIN_INCOMPLETE"
+            ),
+            "validation_feedback": "FORBIDDEN",
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+            "promotion": "FORBIDDEN",
+        }
     decision_path = _write_json(
         output_root / "final_decision.json", decision
     )
@@ -2295,7 +3180,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     train_manifest_path,
                     decision_path,
                 )
-            ],
+            ]
+            + (
+                [
+                    _artifact(policy_ledger_path, root=output_root),
+                    _artifact(policy_decision_path, root=output_root),
+                ]
+                if policy_ledger_path is not None
+                and policy_decision_path is not None
+                else []
+            ),
             "batch_manifest_count": len(state["summaries"]),
             "validation_feedback": "FORBIDDEN",
             "holdout_reads": 0,

@@ -293,6 +293,22 @@ class RouteLocalAvailabilityController:
             bucket_key: deque(rows)
             for bucket_key, rows in self._bucket_entries.items()
         }
+        self._uniform_queues: dict[str, deque[AvailabilityEntry]] = {}
+        for route_id in sorted({entry.route_id for entry in frozen_entries}):
+            rows = [
+                entry for entry in frozen_entries if entry.route_id == route_id
+            ]
+            rows.sort(
+                key=lambda entry: _stable_hash(
+                    {
+                        "emitter_seed": self.emitter_seed,
+                        "emitter": "AVAILABILITY_AWARE_UNIFORM_V1",
+                        "route_id": route_id,
+                        "exact_identity": entry.exact_identity,
+                    }
+                )
+            )
+            self._uniform_queues[route_id] = deque(rows)
         historical = {
             str(identity)
             for identity in seen_exact_identities
@@ -515,6 +531,32 @@ class RouteLocalAvailabilityController:
             source_exact_identity=source_exact_identity,
         )
 
+    def emit_uniform(
+        self,
+        *,
+        route_id: str,
+    ) -> AvailabilityEmission | None:
+        """Emit one deterministic route-local uniform exact without replacement.
+
+        The queue is a seed-bound hash permutation of the same authoritative
+        typed exact index used by the TPE availability path.  It has no
+        optimizer trial and therefore cannot receive optimizer feedback.
+        """
+
+        route = str(route_id)
+        queue = self._uniform_queues.get(route)
+        if queue is None:
+            raise RuntimeError("AVAILABILITY_UNIFORM_ROUTE_MISSING")
+        while queue and queue[0].exact_identity in self._seen:
+            queue.popleft()
+        if not queue:
+            return None
+        return self._reserve(
+            queue[0],
+            emission_mode="AVAILABILITY_AWARE_UNIFORM",
+            source_exact_identity="UNIFORM_HASH_PERMUTATION",
+        )
+
     def record_behavior(
         self,
         *,
@@ -591,9 +633,20 @@ class RouteLocalAvailabilityController:
                 route: {
                     mode: self._emission_modes[(route, mode)]
                     for mode in (
-                        "TPE_DIRECT_FRESH",
-                        "TPE_BUCKET_REPLACEMENT",
-                        "GLOBAL_AVAILABILITY_FALLBACK",
+                        (
+                            "TPE_DIRECT_FRESH",
+                            "TPE_BUCKET_REPLACEMENT",
+                            "GLOBAL_AVAILABILITY_FALLBACK",
+                            "AVAILABILITY_AWARE_UNIFORM",
+                        )
+                        if self._emission_modes[
+                            (route, "AVAILABILITY_AWARE_UNIFORM")
+                        ]
+                        else (
+                            "TPE_DIRECT_FRESH",
+                            "TPE_BUCKET_REPLACEMENT",
+                            "GLOBAL_AVAILABILITY_FALLBACK",
+                        )
                     )
                 }
                 for route in route_ids

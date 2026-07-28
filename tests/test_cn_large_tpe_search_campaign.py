@@ -17,6 +17,10 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     N_EI_CANDIDATES,
     OPTUNA_ROUTE_WORKERS,
     PAIR_BATCH_SIZES,
+    PRODUCTIVITY_MAXIMUM_CHECKPOINTS,
+    PRODUCTIVITY_MAXIMUM_RAW_ASKS,
+    PRODUCTIVITY_POLICY_ARMS,
+    PRODUCTIVITY_ROUTE_MIX,
     ROUTE_EVALUATED_TARGETS,
     ROUTES,
     TPE_GROUP,
@@ -27,10 +31,16 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _ask_route_populations,
     _conservative_search_score,
     _freeze_gene_lanes,
+    _medium_policy_decision,
+    _policy_arm_assignments,
     _route_budget_feasibility,
     _restore_or_import_adapters,
     _select_validation_finalists,
     _validation_eligible,
+)
+from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
+    HYBRID_POLICY_ARM,
+    UNIFORM_POLICY_ARM,
 )
 from our_system_phase2.services.optuna_tpe_search_adapter import (
     RouteConditionalTPESearchAdapter,
@@ -409,6 +419,184 @@ def test_live_runner_replaces_seen_exact_without_pruning_or_formal_budget_loss(
         "FAIL",
         "FAIL",
     ]
+
+
+def test_productivity_arm_assignment_is_exact_balanced_and_seedless_replayable() -> None:
+    first = _policy_arm_assignments(
+        checkpoint_id="checkpoint_003",
+        route_id="SLOW_TEMPORAL_CHANGE",
+        count=160,
+    )
+    second = _policy_arm_assignments(
+        checkpoint_id="checkpoint_003",
+        route_id="SLOW_TEMPORAL_CHANGE",
+        count=160,
+    )
+
+    assert first == second
+    assert Counter(first) == {
+        HYBRID_POLICY_ARM: 80,
+        UNIFORM_POLICY_ARM: 80,
+    }
+    assert sum(PRODUCTIVITY_ROUTE_MIX.values()) == 384
+    assert PRODUCTIVITY_MAXIMUM_CHECKPOINTS == 8
+    assert PRODUCTIVITY_MAXIMUM_RAW_ASKS == 3_072
+    assert PRODUCTIVITY_POLICY_ARMS == (
+        HYBRID_POLICY_ARM,
+        UNIFORM_POLICY_ARM,
+    )
+
+
+def test_productivity_ask_keeps_uniform_outside_optimizer_feedback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    route = "TEST_ROUTE"
+    lanes = OrderedDict(
+        {
+            "test.single": {
+                "ordered_categories_by_slot": OrderedDict(
+                    [
+                        ("skeleton_id", ["test.single"]),
+                        ("gene_surface_id", ["surface-v1"]),
+                        ("primary_field_id", ["a", "b", "c", "d"]),
+                    ]
+                )
+            }
+        }
+    )
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id=route,
+        lane_spaces=lanes,
+        seed=3,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+        multivariate=False,
+        group=False,
+    )
+
+    def genes(field: str) -> dict[str, str]:
+        return {
+            "skeleton_id": "test.single",
+            "gene_surface_id": "surface-v1",
+            "primary_field_id": field,
+        }
+
+    controller = RouteLocalAvailabilityController(
+        entries=[
+            AvailabilityEntry(
+                route_id=route,
+                bucket_key=structural_bucket_key(route, genes(field)),
+                exact_identity=f"exact-{field}",
+                control_exact_identity=f"control-{field}",
+                genes=genes(field),
+            )
+            for field in ("a", "b", "c", "d")
+        ],
+        seen_exact_identities=set(),
+        emitter_seed=19,
+        input_hashes={"registry": "r", "grammar": "g", "compiler": "c"},
+    )
+
+    def materialize(*, asked, generator, schema_by_backend):
+        del generator, schema_by_backend
+        return [
+            {
+                **row,
+                "construction_status": "LEGAL",
+                "exact_identity": (
+                    "exact-" + row["genes"]["primary_field_id"]
+                ),
+            }
+            for row in asked
+        ]
+
+    monkeypatch.setattr(
+        "our_system_phase2.runtime.cn_large_tpe_search_campaign."
+        "_materialize_population",
+        materialize,
+    )
+    all_asked, formal, internal, audit = (
+        _ask_availability_aware_populations(
+            schedule=[{"route_id": route, "asked_pairs": 2}],
+            adapters={route: adapter},
+            controller=controller,
+            generator=object(),
+            schema_by_backend={},
+            checkpoint_id="checkpoint_001",
+            productivity_experiment=True,
+        )
+    )
+
+    assert Counter(row["search_policy_arm"] for row in formal) == {
+        HYBRID_POLICY_ARM: 1,
+        UNIFORM_POLICY_ARM: 1,
+    }
+    uniform = next(
+        row for row in formal if row["search_policy_arm"] == UNIFORM_POLICY_ARM
+    )
+    assert uniform["trial_number"] is None
+    assert uniform["optimizer_feedback_eligible"] is False
+    assert audit["routes"][route]["availability_aware_uniform"] == 1
+    optimizer_rows = [
+        row
+        for row in all_asked
+        if bool(row.get("optimizer_feedback_eligible", True))
+    ]
+    observations = [
+        internal.get(
+            str(row["proposal_id"]),
+            {
+                "proposal_id": str(row["proposal_id"]),
+                "outcome_class": "BEHAVIOR_BLOCKED",
+                "optimizer_reward": None,
+                "outcome_reason": "TEST",
+            },
+        )
+        for row in optimizer_rows
+    ]
+    receipt = adapter.tell_population(observations)
+    assert receipt["asked_count"] == len(optimizer_rows)
+    assert uniform["proposal_id"] not in {
+        str(row["proposal_id"]) for row in observations
+    }
+
+
+def test_productivity_decision_defaults_to_uniform_without_demonstrated_uplift() -> None:
+    rows = []
+    for checkpoint_index in range(PRODUCTIVITY_MAXIMUM_CHECKPOINTS):
+        checkpoint = f"checkpoint_{checkpoint_index + 1:03d}"
+        for route_id, route_count in PRODUCTIVITY_ROUTE_MIX.items():
+            for arm in PRODUCTIVITY_POLICY_ARMS:
+                for ordinal in range(route_count // 2):
+                    rows.append(
+                        {
+                            "checkpoint": checkpoint,
+                            "route_id": route_id,
+                            "intention_to_treat_arm": arm,
+                            "pair_evaluated": True,
+                            "productive_candidate": ordinal % 4 == 0,
+                            "positive_search_score": ordinal % 3 == 0,
+                            "search_score": 0.2,
+                            "portfolio_behavior_family_id": (
+                                f"{route_id}-{arm}-{ordinal}"
+                            ),
+                            "availability_emission_mode": arm,
+                        }
+                    )
+    summaries = [
+        {"checkpoint_wall_seconds": 600.0}
+        for _ in range(PRODUCTIVITY_MAXIMUM_CHECKPOINTS)
+    ]
+
+    decision = _medium_policy_decision(
+        policy_rows=rows,
+        checkpoint_summaries=summaries,
+    )
+
+    assert decision["status"] == "PRODUCTIVITY_MEDIUM_COMPLETE"
+    assert decision["selected_search_policy"] == UNIFORM_POLICY_ARM
+    assert decision["hybrid_acceptance_rule_passed"] is False
+    assert decision["statistical_equivalence_claimed"] is False
 
 
 def test_optimizer_snapshot_restores_without_transcript_resampling(

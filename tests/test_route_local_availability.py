@@ -113,6 +113,38 @@ def test_global_fallback_is_deterministic_and_without_replacement() -> None:
     assert first.emit_global_fallback(route_id=ROUTE) is None
 
 
+def test_uniform_emitter_is_deterministic_without_replacement_and_restorable() -> None:
+    first = _controller(seen={"exact-a-5"})
+    second = _controller(seen={"exact-a-5"})
+
+    first_emission = first.emit_uniform(route_id=ROUTE)
+    second_emission = second.emit_uniform(route_id=ROUTE)
+
+    assert first_emission is not None
+    assert second_emission is not None
+    assert first_emission.to_dict() == second_emission.to_dict()
+    assert first_emission.emission_mode == "AVAILABILITY_AWARE_UNIFORM"
+    state = first.snapshot()
+    assert state["emission_modes_by_route"][ROUTE][
+        "AVAILABILITY_AWARE_UNIFORM"
+    ] == 1
+
+    restored = RouteLocalAvailabilityController.restore(
+        entries=[
+            _entry("a"),
+            _entry("b"),
+            _entry("c", window="20"),
+        ],
+        seen_exact_identities={"exact-a-5"},
+        state=state,
+        input_hashes={"registry": "r", "grammar": "g", "compiler": "c"},
+    )
+    assert (
+        restored.emit_uniform(route_id=ROUTE).exact_identity
+        == first.emit_uniform(route_id=ROUTE).exact_identity
+    )
+
+
 def test_checkpoint_restore_preserves_next_exact_sequence_and_hash() -> None:
     controller = _controller(seen={"exact-a-5"})
     first = controller.emit_same_bucket(
@@ -207,4 +239,3 @@ def test_authoritative_enumeration_canonicalizes_semantic_aliases() -> None:
     }
     assert report["routes"][ROUTE]["semantic_alias_points"] == 1
     assert report["entry_count"] == 2
-
