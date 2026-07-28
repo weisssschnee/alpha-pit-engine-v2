@@ -12,6 +12,13 @@ from scripts.run_cn_phase3cm_streaming_qualification import _finalize_pairs
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     ASKS_PER_CHECKPOINT,
     CAMPAIGN_PROFILE,
+    HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS,
+    HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION,
+    HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS,
+    HYBRID_ONLY_TRANCHE_MAXIMUM_RAW_ASKS,
+    HYBRID_ONLY_TRANCHE_PROFILE,
+    HYBRID_ONLY_TRANCHE_ROUTE_CAPS,
+    HYBRID_ONLY_TRANCHE_ROUTE_MIX,
     MAXIMUM_RAW_ASKS,
     MINIMUM_ACTUAL_EVALUATED_PAIRS,
     N_EI_CANDIDATES,
@@ -31,6 +38,7 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _ask_availability_aware_populations,
     _ask_route_populations,
     _conservative_search_score,
+    _campaign_runtime_spec,
     _freeze_availability_index,
     _freeze_gene_lanes,
     _medium_policy_decision,
@@ -449,6 +457,47 @@ def test_productivity_arm_assignment_is_exact_balanced_and_seedless_replayable()
         HYBRID_POLICY_ARM,
         UNIFORM_POLICY_ARM,
     )
+
+
+def test_hybrid_only_tranche_is_exact_bounded_and_not_an_unlimited_search() -> None:
+    spec = _campaign_runtime_spec(HYBRID_ONLY_TRANCHE_PROFILE)
+    final_allocation = {
+        route_id: count * HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS
+        for route_id, count in HYBRID_ONLY_TRANCHE_ROUTE_MIX.items()
+    }
+    authorization = json.loads(
+        (
+            REPO_ROOT
+            / "runtime"
+            / "run_plans"
+            / "cn_hybrid_only_tranche_v1_authorization.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert sum(HYBRID_ONLY_TRANCHE_ROUTE_MIX.values()) == 384
+    assert HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS == 8
+    assert HYBRID_ONLY_TRANCHE_MAXIMUM_RAW_ASKS == 3_072
+    assert sum(final_allocation.values()) == 3_072
+    assert sum(HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS.values()) == 1_728
+    assert sum(HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION.values()) == 1_344
+    assert all(
+        HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS[route_id]
+        <= final_allocation[route_id]
+        <= HYBRID_ONLY_TRANCHE_ROUTE_CAPS[route_id]
+        for route_id in ROUTES
+    )
+    assert spec["completion_mode"] == "FIXED_FORMAL_ASK_TRANCHE"
+    assert spec["validation"] == "FORBIDDEN_DURING_AND_AFTER_TRANCHE"
+    assert spec["fixed_route_mix"] == HYBRID_ONLY_TRANCHE_ROUTE_MIX
+    assert authorization["accepted_development_search_policy"] == (
+        HYBRID_POLICY_ARM
+    )
+    assert authorization["policy_reopened"] is False
+    assert authorization["uniform_arm"] == "FORBIDDEN"
+    assert authorization["final_route_formal_ask_allocation"] == (
+        final_allocation
+    )
+    assert authorization["unlimited_or_20k_search_authorized"] is False
 
 
 def test_availability_semantic_hashes_ignore_only_indirect_runtime_paths() -> None:

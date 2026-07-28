@@ -97,6 +97,7 @@ from our_system_phase2.services.unified_discovery_generators import (
 AUTHORIZED_HOST = "DESKTOP-77OPJ6F"
 CAMPAIGN_PROFILE = "cn_large_optuna_tpe_availability_v3"
 PRODUCTIVITY_MEDIUM_PROFILE = "cn_hybrid_search_productivity_medium_v1"
+HYBRID_ONLY_TRANCHE_PROFILE = "cn_hybrid_only_tranche_v1"
 ROUTE_EVALUATED_TARGETS = {
     "SLOW_TEMPORAL_CHANGE": 14_000,
     "FIRSTN_PATH": 1_300,
@@ -147,6 +148,37 @@ PRODUCTIVITY_MAXIMUM_WALL_SECONDS = 18 * 60 * 60
 PRODUCTIVITY_MINIMUM_FORMAL_ASKS_PER_WALL_HOUR = 120.0
 PRODUCTIVITY_BOOTSTRAP_REPLICATES = 5_000
 PRODUCTIVITY_BOOTSTRAP_SEED = 2026072801
+HYBRID_ONLY_TRANCHE_ROUTE_MIX = {
+    "SLOW_TEMPORAL_CHANGE": 192,
+    "FIRSTN_PATH": 24,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 80,
+    "MARKET_REGIME_CONDITION": 40,
+    "DISCLOSURE_EVENT": 48,
+}
+HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS = {
+    "SLOW_TEMPORAL_CHANGE": 768,
+    "FIRSTN_PATH": 192,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 384,
+    "MARKET_REGIME_CONDITION": 192,
+    "DISCLOSURE_EVENT": 192,
+}
+HYBRID_ONLY_TRANCHE_ROUTE_CAPS = {
+    "SLOW_TEMPORAL_CHANGE": 1_728,
+    "FIRSTN_PATH": 288,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 640,
+    "MARKET_REGIME_CONDITION": 480,
+    "DISCLOSURE_EVENT": 480,
+}
+HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION = {
+    "SLOW_TEMPORAL_CHANGE": 768,
+    "FIRSTN_PATH": 0,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 256,
+    "MARKET_REGIME_CONDITION": 128,
+    "DISCLOSURE_EVENT": 192,
+}
+HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS = 8
+HYBRID_ONLY_TRANCHE_MAXIMUM_RAW_ASKS = 3_072
+HYBRID_ONLY_TRANCHE_MAXIMUM_WALL_SECONDS = 18 * 60 * 60
 
 
 def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
@@ -163,6 +195,27 @@ def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
             "minimum_required_fresh_exact_by_route": {
                 route_id: int(math.ceil(count * PRODUCTIVITY_MAXIMUM_CHECKPOINTS * FRESH_EXACT_MARGIN))
                 for route_id, count in PRODUCTIVITY_ROUTE_MIX.items()
+            },
+        }
+    if str(profile) == HYBRID_ONLY_TRANCHE_PROFILE:
+        return {
+            "campaign_profile": HYBRID_ONLY_TRANCHE_PROFILE,
+            "maximum_checkpoints": HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS,
+            "asks_per_checkpoint": ASKS_PER_CHECKPOINT,
+            "maximum_raw_asks": HYBRID_ONLY_TRANCHE_MAXIMUM_RAW_ASKS,
+            "maximum_wall_seconds": HYBRID_ONLY_TRANCHE_MAXIMUM_WALL_SECONDS,
+            "completion_mode": "FIXED_FORMAL_ASK_TRANCHE",
+            "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+            "fixed_route_mix": dict(HYBRID_ONLY_TRANCHE_ROUTE_MIX),
+            "minimum_required_fresh_exact_by_route": {
+                route_id: int(
+                    math.ceil(
+                        count
+                        * HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS
+                        * FRESH_EXACT_MARGIN
+                    )
+                )
+                for route_id, count in HYBRID_ONLY_TRANCHE_ROUTE_MIX.items()
             },
         }
     if str(profile) == CAMPAIGN_PROFILE:
@@ -465,6 +518,7 @@ def _ask_availability_aware_populations(
     schema_by_backend: Mapping[str, set[str]],
     checkpoint_id: str,
     productivity_experiment: bool = False,
+    hybrid_only_tranche: bool = False,
 ) -> tuple[
     list[dict[str, Any]],
     list[dict[str, Any]],
@@ -530,7 +584,7 @@ def _ask_availability_aware_populations(
                     "search_policy_arm": HYBRID_POLICY_ARM,
                     "intention_to_treat_arm": HYBRID_POLICY_ARM,
                 }
-                if productivity_experiment
+                if productivity_experiment or hybrid_only_tranche
                 else {}
             )
             for internal_draw_ordinal in range(
@@ -695,7 +749,11 @@ def _ask_availability_aware_populations(
         "execution": (
             "BALANCED_HYBRID_TPE_AVAILABILITY_VS_UNIFORM"
             if productivity_experiment
-            else "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA"
+            else (
+                "HYBRID_TPE_AVAILABILITY_ONLY"
+                if hybrid_only_tranche
+                else "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA"
+            )
         ),
         "maximum_internal_native_draws_per_formal": (
             MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL
@@ -921,7 +979,11 @@ def _authorization_binding(
         "optimizer_ask_execution": (
             "BALANCED_HYBRID_TPE_AVAILABILITY_VS_UNIFORM"
             if profile == PRODUCTIVITY_MEDIUM_PROFILE
-            else "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA"
+            else (
+                "HYBRID_TPE_AVAILABILITY_ONLY"
+                if profile == HYBRID_ONLY_TRANCHE_PROFILE
+                else "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA"
+            )
         ),
         "optimizer_n_ei_candidates": N_EI_CANDIDATES,
         "optimizer_sampler_mode": TPE_SAMPLER_MODE,
@@ -941,7 +1003,7 @@ def _authorization_binding(
         "shorting": "FORBIDDEN",
         "one_way_cost_bps": 5,
         "horizons_minutes": [1, 5, 15, 30],
-        "validation": "AUTOMATIC_POST_TRAIN_REPORT_ONLY",
+        "validation": runtime_spec["validation"],
         "holdout": "SEALED",
         "forward_2026": "SEALED",
         "promotion": "FORBIDDEN",
@@ -989,6 +1051,40 @@ def _authorization_binding(
                 PRODUCTIVITY_MINIMUM_FORMAL_ASKS_PER_WALL_HOUR
             ),
             "validation": "FORBIDDEN_DURING_AND_AFTER_MEDIUM",
+        }
+    elif profile == HYBRID_ONLY_TRANCHE_PROFILE:
+        expected = {
+            **expected_common,
+            "optimizer": (
+                "official_optuna.samplers.TPESampler_conditional_typed_grammar"
+            ),
+            "accepted_development_search_policy": HYBRID_POLICY_ARM,
+            "policy_reopened": False,
+            "fixed_route_formal_asks_per_checkpoint": (
+                HYBRID_ONLY_TRANCHE_ROUTE_MIX
+            ),
+            "coverage_floors": HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS,
+            "route_formal_ask_caps": HYBRID_ONLY_TRANCHE_ROUTE_CAPS,
+            "globally_flexible_budget": sum(
+                HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION.values()
+            ),
+            "flexible_allocation": (
+                HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION
+            ),
+            "final_route_formal_ask_allocation": {
+                route_id: int(count)
+                * HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS
+                for route_id, count in HYBRID_ONLY_TRANCHE_ROUTE_MIX.items()
+            },
+            "policy_arms": [HYBRID_POLICY_ARM],
+            "policy_arm_ratio": {HYBRID_POLICY_ARM: 1.0},
+            "uniform_arm": "FORBIDDEN",
+            "within_tranche_route_adaptation": "FORBIDDEN",
+            "productive_candidate_definition": (
+                "PAIR_EVALUATED_AND_SEARCH_SCORE_POSITIVE_AND_"
+                "PRIMARY_STANDALONE_READY"
+            ),
+            "unlimited_or_20k_search_authorized": False,
         }
     else:
         expected = {
@@ -1039,7 +1135,11 @@ def _authorization_binding(
         "status": (
             "SEARCH_PRODUCTIVITY_MEDIUM_AUTHORIZED"
             if profile == PRODUCTIVITY_MEDIUM_PROFILE
-            else "FIVE_DIGIT_TRAIN_SEARCH_AUTHORIZED"
+            else (
+                "HYBRID_ONLY_TRANCHE_AUTHORIZED"
+                if profile == HYBRID_ONLY_TRANCHE_PROFILE
+                else "FIVE_DIGIT_TRAIN_SEARCH_AUTHORIZED"
+            )
         ),
         "authorization": _artifact(path),
         "historical_candidate_archive": _artifact(candidate_archive),
@@ -2247,6 +2347,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     productivity_experiment = (
         campaign_profile == PRODUCTIVITY_MEDIUM_PROFILE
     )
+    hybrid_only_tranche = (
+        campaign_profile == HYBRID_ONLY_TRANCHE_PROFILE
+    )
+    fixed_formal_campaign = (
+        productivity_experiment or hybrid_only_tranche
+    )
     if int(args.maximum_wall_seconds) != int(
         campaign_spec["maximum_wall_seconds"]
     ):
@@ -2333,14 +2439,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "completion_mode": campaign_spec["completion_mode"],
         "minimum_actual_evaluated_pairs": (
             None
-            if productivity_experiment
+            if fixed_formal_campaign
             else MINIMUM_ACTUAL_EVALUATED_PAIRS
         ),
         "route_actual_evaluated_targets": (
-            None if productivity_experiment else ROUTE_EVALUATED_TARGETS
+            None if fixed_formal_campaign else ROUTE_EVALUATED_TARGETS
         ),
         "fixed_route_formal_asks_per_checkpoint": (
-            PRODUCTIVITY_ROUTE_MIX if productivity_experiment else None
+            campaign_spec["fixed_route_mix"]
+            if fixed_formal_campaign
+            else None
         ),
         "maximum_checkpoints": campaign_spec["maximum_checkpoints"],
         "asks_per_checkpoint": campaign_spec["asks_per_checkpoint"],
@@ -2356,7 +2464,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "optimizer_role": (
             "HYBRID_ARM_ROUTE_LOCAL_GENE_SELECTION_ONLY"
-            if productivity_experiment
+            if fixed_formal_campaign
             else "ROUTE_LOCAL_GENE_SELECTION_ONLY"
         ),
         "optimizer_initialization": "FRESH_NO_CROSS_CAMPAIGN_REWARD_STATE",
@@ -2374,7 +2482,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "optimizer_feedback": (
             "HYBRID_ARM_FULL_COORDINATE_TRAIN_ONLY_UNIFORM_FORBIDDEN"
             if productivity_experiment
-            else "FULL_COORDINATE_TRAIN_ONLY"
+            else (
+                "HYBRID_FULL_COORDINATE_TRAIN_ONLY_UNIFORM_FORBIDDEN"
+                if hybrid_only_tranche
+                else "FULL_COORDINATE_TRAIN_ONLY"
+            )
         ),
         "optimizer_reward": "conservative_primary_and_increment_search_score",
         "optimizer_search_score_policy": SEARCH_SCORE_POLICY,
@@ -2388,7 +2500,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "validation": (
             "FORBIDDEN_DURING_AND_AFTER_MEDIUM"
             if productivity_experiment
-            else "AUTOMATIC_REPORT_ONLY_ON_256_TRAIN_FINALISTS"
+            else (
+                "FORBIDDEN_DURING_AND_AFTER_TRANCHE"
+                if hybrid_only_tranche
+                else "AUTOMATIC_REPORT_ONLY_ON_256_TRAIN_FINALISTS"
+            )
         ),
         "validation_feedback": "FORBIDDEN",
         "validation_scheduler_write": "FORBIDDEN",
@@ -2416,6 +2532,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 ),
             }
             if productivity_experiment
+            else None
+        ),
+        "hybrid_only_tranche": (
+            {
+                "accepted_policy": HYBRID_POLICY_ARM,
+                "policy_reopened": False,
+                "coverage_floors": HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS,
+                "route_formal_ask_caps": HYBRID_ONLY_TRANCHE_ROUTE_CAPS,
+                "globally_flexible_budget": sum(
+                    HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION.values()
+                ),
+                "flexible_allocation": (
+                    HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION
+                ),
+                "within_tranche_route_adaptation": "FORBIDDEN",
+                "uniform_arm": "FORBIDDEN",
+                "unlimited_or_20k_search_authorized": False,
+            }
+            if hybrid_only_tranche
             else None
         ),
         "materialized_route_root_allowlists": {
@@ -2536,7 +2671,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     while (
         checkpoint_index < int(campaign_spec["maximum_checkpoints"])
         and (
-            productivity_experiment
+            fixed_formal_campaign
             or sum(state["evaluated"].values())
             < MINIMUM_ACTUAL_EVALUATED_PAIRS
         )
@@ -2555,8 +2690,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
         else:
             allocation = (
-                dict(PRODUCTIVITY_ROUTE_MIX)
-                if productivity_experiment
+                dict(campaign_spec["fixed_route_mix"])
+                if fixed_formal_campaign
                 else _allocate_checkpoint_asks(
                     evaluated_by_route=state["evaluated"],
                     asked_by_route=state["asked_counts"],
@@ -2578,7 +2713,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         "generation_mode": (
                             "BALANCED_HYBRID_TPE_AVAILABILITY_VS_UNIFORM"
                             if productivity_experiment
-                            else "OPTUNA_TPE_ROUTE_LOCAL_AVAILABILITY"
+                            else (
+                                "HYBRID_TPE_AVAILABILITY_ONLY"
+                                if hybrid_only_tranche
+                                else "OPTUNA_TPE_ROUTE_LOCAL_AVAILABILITY"
+                            )
                         ),
                         "policy_arm_counts": (
                             {
@@ -2586,7 +2725,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                                 UNIFORM_POLICY_ARM: count // 2,
                             }
                             if productivity_experiment
-                            else None
+                            else (
+                                {HYBRID_POLICY_ARM: count}
+                                if hybrid_only_tranche
+                                else None
+                            )
                         ),
                         "policy_arm_assignment_digest": (
                             _stable_hash(
@@ -2628,6 +2771,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     raise RuntimeError(
                         "PRODUCTIVITY_MEDIUM_POLICY_ASSIGNMENT_DRIFT"
                     )
+        elif hybrid_only_tranche:
+            observed_mix = {
+                str(row["route_id"]): int(row["asked_pairs"])
+                for row in schedule.get("routes") or ()
+            }
+            if observed_mix != HYBRID_ONLY_TRANCHE_ROUTE_MIX:
+                raise RuntimeError(
+                    "HYBRID_ONLY_TRANCHE_FIXED_ROUTE_MIX_DRIFT"
+                )
+            if any(
+                dict(row.get("policy_arm_counts") or {})
+                != {HYBRID_POLICY_ARM: int(row["asked_pairs"])}
+                for row in schedule["routes"]
+            ):
+                raise RuntimeError(
+                    "HYBRID_ONLY_TRANCHE_POLICY_ARM_DRIFT"
+                )
         ask_path = root / "asked_population.json"
         previous_asked: list[dict[str, Any]] | None = None
         if ask_path.is_file():
@@ -2647,6 +2807,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             schema_by_backend=schema_by_backend,
             checkpoint_id=checkpoint_id,
             productivity_experiment=productivity_experiment,
+            hybrid_only_tranche=hybrid_only_tranche,
         )
         if previous_asked is not None and _stable_hash(
             previous_asked
@@ -2837,7 +2998,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
         for outcome in outcomes:
             ask = ask_by_pair[str(outcome["pair_id"])]
-            if productivity_experiment:
+            if productivity_experiment or hybrid_only_tranche:
                 outcome["source_proposal_id"] = str(ask["proposal_id"])
                 outcome["search_policy_arm"] = str(
                     ask["search_policy_arm"]
@@ -3122,6 +3283,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 if productivity_experiment
                 else {}
             ),
+            "productive_candidates": sum(
+                _is_productive_candidate(row) for row in outcomes
+            ),
+            "productive_by_route": {
+                route_id: sum(
+                    str(row.get("route_id") or "") == route_id
+                    and _is_productive_candidate(row)
+                    for row in outcomes
+                )
+                for route_id in ROUTES
+            },
             "minimum_free_memory_bytes": _minimum_free_memory(root),
             "runtime_gate_status": str(gate.get("status") or ""),
             "validation_reads": 0,
@@ -3190,23 +3362,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     evaluated_total = sum(state["evaluated"].values())
     raw_asks = sum(state["asked_counts"].values())
-    experiment_complete = (
-        productivity_experiment
+    fixed_formal_complete = (
+        fixed_formal_campaign
         and len(state["summaries"])
         == int(campaign_spec["maximum_checkpoints"])
         and raw_asks == int(campaign_spec["maximum_raw_asks"])
     )
     route_targets_met = (
         None
-        if productivity_experiment
+        if fixed_formal_campaign
         else all(
             int(state["evaluated"].get(route_id, 0)) >= target
             for route_id, target in ROUTE_EVALUATED_TARGETS.items()
         )
     )
     qualified = (
-        experiment_complete
-        if productivity_experiment
+        fixed_formal_complete
+        if fixed_formal_campaign
         else (
             evaluated_total >= MINIMUM_ACTUAL_EVALUATED_PAIRS
             and bool(route_targets_met)
@@ -3249,7 +3421,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             outcomes=state["outcomes"],
             behavior_rows=state["full_behavior"],
         )
-        if qualified and not productivity_experiment
+        if qualified and not fixed_formal_campaign
         else []
     )
     finalists_path = _write_parquet(
@@ -3261,26 +3433,30 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "schema_version": "cn_large_tpe_train_complete_v1",
             "status": (
                 "PRODUCTIVITY_MEDIUM_COMPLETE"
-                if experiment_complete
+                if productivity_experiment and fixed_formal_complete
                 else (
-                    "TRAIN_COMPLETE"
-                    if qualified
-                    else "TRAIN_INCOMPLETE"
+                    "HYBRID_ONLY_TRANCHE_COMPLETE"
+                    if hybrid_only_tranche and fixed_formal_complete
+                    else (
+                        "TRAIN_COMPLETE"
+                        if qualified
+                        else "TRAIN_INCOMPLETE"
+                    )
                 )
             ),
             "campaign_profile": campaign_profile,
             "actual_evaluated_pairs": evaluated_total,
             "minimum_actual_evaluated_pairs": (
                 None
-                if productivity_experiment
+                if fixed_formal_campaign
                 else MINIMUM_ACTUAL_EVALUATED_PAIRS
             ),
             "route_actual_evaluated_targets": (
-                None if productivity_experiment else ROUTE_EVALUATED_TARGETS
+                None if fixed_formal_campaign else ROUTE_EVALUATED_TARGETS
             ),
             "fixed_route_formal_asks_per_checkpoint": (
-                PRODUCTIVITY_ROUTE_MIX
-                if productivity_experiment
+                campaign_spec["fixed_route_mix"]
+                if fixed_formal_campaign
                 else None
             ),
             "actual_evaluated_by_route": dict(state["evaluated"]),
@@ -3302,13 +3478,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "validation_trigger": (
                 "FORBIDDEN_BY_PRODUCTIVITY_MEDIUM_CONTRACT"
                 if productivity_experiment
-                else "AUTOMATIC_AFTER_IMMUTABLE_TRAIN_COMPLETE"
+                else (
+                    "FORBIDDEN_BY_HYBRID_ONLY_TRANCHE_CONTRACT"
+                    if hybrid_only_tranche
+                    else "AUTOMATIC_AFTER_IMMUTABLE_TRAIN_COMPLETE"
+                )
             ),
             "promotion": "FORBIDDEN",
         },
     )
     validation_receipt = None
-    if qualified and not productivity_experiment:
+    if qualified and not fixed_formal_campaign:
         validation_receipt = _run_automatic_validation_after_train(
             train_manifest_path=train_manifest_path,
             protected_train_artifacts=(
@@ -3335,7 +3515,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             **dict(policy_decision or {}),
             "status": (
                 "CAMPAIGN_CLOSED"
-                if experiment_complete
+                if fixed_formal_complete
                 else "CAMPAIGN_INCOMPLETE"
             ),
             "campaign_profile": campaign_profile,
@@ -3350,6 +3530,42 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "holdout_reads": 0,
             "forward_2026_reads": 0,
             "promotion": "FORBIDDEN",
+        }
+    elif hybrid_only_tranche:
+        productive_by_route = {
+            route_id: sum(
+                str(row.get("route_id") or "") == route_id
+                and _is_productive_candidate(row)
+                for row in state["outcomes"]
+            )
+            for route_id in ROUTES
+        }
+        decision = {
+            "status": (
+                "CAMPAIGN_CLOSED"
+                if fixed_formal_complete
+                else "CAMPAIGN_INCOMPLETE"
+            ),
+            "campaign_profile": campaign_profile,
+            "accepted_development_search_policy": HYBRID_POLICY_ARM,
+            "policy_reopened": False,
+            "actual_evaluated_pairs": evaluated_total,
+            "actual_evaluated_by_route": dict(state["evaluated"]),
+            "productive_candidates": sum(productive_by_route.values()),
+            "productive_by_route": productive_by_route,
+            "fixed_route_formal_asks_per_checkpoint": (
+                HYBRID_ONLY_TRANCHE_ROUTE_MIX
+            ),
+            "checkpoint_count": len(state["summaries"]),
+            "raw_asks": raw_asks,
+            "validation_status": (
+                "NOT_RUN_BY_FROZEN_HYBRID_ONLY_TRANCHE_CONTRACT"
+            ),
+            "validation_feedback": "FORBIDDEN",
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+            "promotion": "FORBIDDEN",
+            "unlimited_or_20k_search_authorized": False,
         }
     else:
         decision = {
