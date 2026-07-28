@@ -27,14 +27,18 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     TPE_MULTIVARIATE,
     TPE_SAMPLER_MODE,
     _allocate_checkpoint_asks,
+    _availability_semantic_input_hashes,
     _ask_availability_aware_populations,
     _ask_route_populations,
     _conservative_search_score,
+    _freeze_availability_index,
     _freeze_gene_lanes,
     _medium_policy_decision,
     _policy_arm_assignments,
     _route_budget_feasibility,
     _restore_or_import_adapters,
+    _sha256,
+    _stable_hash,
     _select_validation_finalists,
     _validation_eligible,
 )
@@ -445,6 +449,191 @@ def test_productivity_arm_assignment_is_exact_balanced_and_seedless_replayable()
         HYBRID_POLICY_ARM,
         UNIFORM_POLICY_ARM,
     )
+
+
+def test_availability_semantic_hashes_ignore_only_indirect_runtime_paths() -> None:
+    authority = {
+        "status": "SEARCH_PRODUCTIVITY_MEDIUM_AUTHORIZED",
+        "frozen": {"asks_per_checkpoint": 384},
+        "authorization": {
+            "path": "D:/workspace-a/authorization.json",
+            "bytes": 11,
+            "sha256": "a",
+        },
+        "historical_candidate_archive": {
+            "path": "D:/runtime/candidates.parquet",
+            "bytes": 12,
+            "sha256": "b",
+        },
+        "historical_behavior_archive": {
+            "path": "D:/runtime/behavior.parquet",
+            "bytes": 13,
+            "sha256": "c",
+        },
+        "historical_archive_manifest": {
+            "path": "D:/runtime/manifest.json",
+            "bytes": 14,
+            "sha256": "d",
+        },
+    }
+    registry = {
+        "status": "BOUND",
+        "registry_path": "D:/workspace-a/registry.json",
+        "repo_sha": "old",
+        "registry_file_sha256": "registry",
+        "internal_registry_hash": "internal",
+    }
+    contract = {
+        "campaign_profile": "medium",
+        "maximum_raw_asks": 3072,
+        "input_bindings": {
+            "runtime": {"sha256": "dynamic-a"},
+            "registry": {"path": "D:/workspace-a/registry.json"},
+        },
+    }
+    first = _availability_semantic_input_hashes(
+        authority=authority,
+        registry_binding=registry,
+        contract=contract,
+    )
+    authority["authorization"]["path"] = (
+        "D:/workspace-b/authorization.json"
+    )
+    registry["registry_path"] = "D:/workspace-b/registry.json"
+    registry["repo_sha"] = "new"
+    contract["input_bindings"] = {
+        "runtime": {"sha256": "dynamic-b"},
+        "registry": {"path": "D:/workspace-b/registry.json"},
+    }
+    second = _availability_semantic_input_hashes(
+        authority=authority,
+        registry_binding=registry,
+        contract=contract,
+    )
+
+    assert first == second
+    contract["maximum_raw_asks"] = 3073
+    changed = _availability_semantic_input_hashes(
+        authority=authority,
+        registry_binding=registry,
+        contract=contract,
+    )
+    assert (
+        changed["compiler_contract_semantic"]
+        != first["compiler_contract_semantic"]
+    )
+
+
+def test_legacy_availability_index_resume_is_checkpoint_anchored_and_structural(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    entries = [
+        AvailabilityEntry(
+            route_id="SLOW_TEMPORAL_CHANGE",
+            bucket_key="bucket",
+            exact_identity="exact",
+            control_exact_identity="control",
+            genes={
+                "skeleton_id": "test.skeleton",
+                "primary_field_id": "field",
+            },
+        )
+    ]
+    enumeration = {
+        "schema_version": "test_enumeration_v1",
+        "routes": {"SLOW_TEMPORAL_CHANGE": 1},
+    }
+    monkeypatch.setattr(
+        "our_system_phase2.runtime.cn_large_tpe_search_campaign."
+        "enumerate_authoritative_entries",
+        lambda **_: (entries, enumeration),
+    )
+    legacy_inputs = {
+        "registry": "legacy-registry-binding",
+        "grammar_lanes": "stable-lanes",
+        "compiler_contract": "legacy-runtime-bearing-contract",
+        "historical_exact_archive": "stable-archive",
+    }
+    semantic_inputs = {
+        "campaign_authority_semantic": "authority",
+        "registry_semantic": "registry",
+        "compiler_contract_semantic": "contract",
+    }
+    frozen_entries, index_path, effective_inputs = (
+        _freeze_availability_index(
+            output_root=tmp_path,
+            generator=object(),
+            lanes_by_route={},
+            input_hashes=legacy_inputs,
+            semantic_input_hashes=semantic_inputs,
+        )
+    )
+    assert frozen_entries == entries
+    assert effective_inputs == legacy_inputs
+
+    checkpoint_root = (
+        tmp_path / "checkpoints" / "checkpoint_001"
+    )
+    checkpoint_root.mkdir(parents=True)
+    anchor = {
+        "status": "BATCH_CLOSED_IMMUTABLE",
+        "input_hashes": {
+            "availability_index": _sha256(index_path),
+            "frozen_contract": legacy_inputs["compiler_contract"],
+            "gene_lane_manifest": legacy_inputs["grammar_lanes"],
+            "prior_checkpoint_manifest": "GENESIS",
+        },
+    }
+    anchor["manifest_payload_hash"] = _stable_hash(anchor)
+    (checkpoint_root / "batch_manifest.json").write_text(
+        json.dumps(anchor),
+        encoding="utf-8",
+    )
+    current_indirect_inputs = {
+        **legacy_inputs,
+        "registry": "new-repo-path-bearing-binding",
+        "compiler_contract": "new-runtime-bearing-contract",
+    }
+    restored, _, restored_inputs = _freeze_availability_index(
+        output_root=tmp_path,
+        generator=object(),
+        lanes_by_route={},
+        input_hashes=current_indirect_inputs,
+        semantic_input_hashes=semantic_inputs,
+    )
+
+    assert restored == entries
+    assert restored_inputs == legacy_inputs
+    receipt = json.loads(
+        (
+            tmp_path
+            / "route_local_availability_index_resume_receipt.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert receipt["status"] == (
+        "LEGACY_INDIRECT_BINDING_RECOVERED_FAIL_CLOSED"
+    )
+    assert receipt["indirect_drift_keys"] == [
+        "compiler_contract",
+        "registry",
+    ]
+    assert receipt["financial_reads"] == 0
+
+    with pytest.raises(
+        RuntimeError,
+        match="LARGE_TPE_AVAILABILITY_INDEX_DRIFT",
+    ):
+        _freeze_availability_index(
+            output_root=tmp_path,
+            generator=object(),
+            lanes_by_route={},
+            input_hashes={
+                **current_indirect_inputs,
+                "grammar_lanes": "drifted-lanes",
+            },
+            semantic_input_hashes=semantic_inputs,
+        )
 
 
 def test_productivity_ask_keeps_uniform_outside_optimizer_feedback(

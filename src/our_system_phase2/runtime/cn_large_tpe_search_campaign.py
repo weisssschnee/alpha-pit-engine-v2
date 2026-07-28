@@ -1207,16 +1207,69 @@ def _fresh_exact_supply(
     }
 
 
+def _availability_semantic_input_hashes(
+    *,
+    authority: Mapping[str, Any],
+    registry_binding: Mapping[str, Any],
+    contract: Mapping[str, Any],
+) -> dict[str, str]:
+    artifact_keys = (
+        "authorization",
+        "historical_candidate_archive",
+        "historical_behavior_archive",
+        "historical_archive_manifest",
+    )
+    authority_projection = {
+        "status": str(authority.get("status") or ""),
+        "frozen": copy.deepcopy(authority.get("frozen") or {}),
+        "artifacts": {
+            key: {
+                "bytes": int(
+                    dict(authority.get(key) or {}).get("bytes") or 0
+                ),
+                "sha256": str(
+                    dict(authority.get(key) or {}).get("sha256") or ""
+                ),
+            }
+            for key in artifact_keys
+        },
+    }
+    registry_projection = {
+        key: copy.deepcopy(value)
+        for key, value in registry_binding.items()
+        if key not in {"registry_path", "repo_sha"}
+    }
+    contract_projection = {
+        key: copy.deepcopy(value)
+        for key, value in contract.items()
+        if key != "input_bindings"
+    }
+    return {
+        "campaign_authority_semantic": _stable_hash(
+            authority_projection
+        ),
+        "registry_semantic": _stable_hash(registry_projection),
+        "compiler_contract_semantic": _stable_hash(
+            contract_projection
+        ),
+    }
+
+
 def _freeze_availability_index(
     *,
     output_root: Path,
     generator: RegistryDrivenGenerator,
     lanes_by_route: Mapping[str, Mapping[str, Any]],
     input_hashes: Mapping[str, str],
-) -> tuple[list[AvailabilityEntry], Path]:
+    semantic_input_hashes: Mapping[str, str],
+) -> tuple[list[AvailabilityEntry], Path, dict[str, str]]:
     path = output_root / "route_local_availability_index.json"
     normalized_hashes = {
         str(key): str(value) for key, value in input_hashes.items()
+    }
+    normalized_semantic_hashes = {
+        str(key): str(value)
+        for key, value in semantic_input_hashes.items()
     }
     if path.is_file():
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
@@ -1228,12 +1281,160 @@ def _freeze_availability_index(
         if (
             str(payload.get("schema_version") or "")
             != "cn_route_local_availability_index_binding_v1"
-            or dict(payload.get("input_hashes") or {})
-            != normalized_hashes
             or _stable_hash(unhashed)
             != str(payload.get("payload_hash") or "")
         ):
             raise RuntimeError("LARGE_TPE_AVAILABILITY_INDEX_DRIFT")
+        stored_hashes = {
+            str(key): str(value)
+            for key, value in dict(
+                payload.get("input_hashes") or {}
+            ).items()
+        }
+        if stored_hashes != normalized_hashes:
+            expected_keys = {
+                "registry",
+                "grammar_lanes",
+                "compiler_contract",
+                "historical_exact_archive",
+            }
+            differing_keys = {
+                key
+                for key in expected_keys
+                if stored_hashes.get(key)
+                != normalized_hashes.get(key)
+            }
+            if (
+                set(stored_hashes) != expected_keys
+                or set(normalized_hashes) != expected_keys
+                or not differing_keys
+                or not differing_keys.issubset(
+                    {"registry", "compiler_contract"}
+                )
+                or stored_hashes.get("grammar_lanes")
+                != normalized_hashes.get("grammar_lanes")
+                or stored_hashes.get("historical_exact_archive")
+                != normalized_hashes.get(
+                    "historical_exact_archive"
+                )
+            ):
+                raise RuntimeError(
+                    "LARGE_TPE_AVAILABILITY_INDEX_DRIFT"
+                )
+            anchor_path = (
+                output_root
+                / "checkpoints"
+                / "checkpoint_001"
+                / "batch_manifest.json"
+            )
+            if not anchor_path.is_file():
+                raise RuntimeError(
+                    "LARGE_TPE_AVAILABILITY_INDEX_DRIFT"
+                )
+            anchor = json.loads(
+                anchor_path.read_text(encoding="utf-8-sig")
+            )
+            anchor_unsigned = {
+                key: copy.deepcopy(value)
+                for key, value in anchor.items()
+                if key != "manifest_payload_hash"
+            }
+            anchor_inputs = {
+                str(key): str(value)
+                for key, value in dict(
+                    anchor.get("input_hashes") or {}
+                ).items()
+            }
+            if (
+                str(anchor.get("status") or "")
+                != "BATCH_CLOSED_IMMUTABLE"
+                or _stable_hash(anchor_unsigned)
+                != str(anchor.get("manifest_payload_hash") or "")
+                or anchor_inputs.get("availability_index")
+                != _sha256(path)
+                or anchor_inputs.get("frozen_contract")
+                != stored_hashes["compiler_contract"]
+                or anchor_inputs.get("gene_lane_manifest")
+                != stored_hashes["grammar_lanes"]
+                or anchor_inputs.get("prior_checkpoint_manifest")
+                != "GENESIS"
+            ):
+                raise RuntimeError(
+                    "LARGE_TPE_AVAILABILITY_INDEX_DRIFT"
+                )
+            regenerated_entries, regenerated_enumeration = (
+                enumerate_authoritative_entries(
+                    generator=generator,
+                    lanes_by_route=lanes_by_route,
+                    routes=ROUTES,
+                )
+            )
+            regenerated_rows = [
+                entry.to_dict() for entry in regenerated_entries
+            ]
+            if (
+                regenerated_rows != list(
+                    payload.get("entries") or ()
+                )
+                or regenerated_enumeration
+                != dict(payload.get("enumeration") or {})
+            ):
+                raise RuntimeError(
+                    "LARGE_TPE_AVAILABILITY_INDEX_DRIFT"
+                )
+            receipt = {
+                "schema_version": (
+                    "cn_route_local_availability_index_resume_receipt_v1"
+                ),
+                "status": (
+                    "LEGACY_INDIRECT_BINDING_RECOVERED_FAIL_CLOSED"
+                ),
+                "legacy_index_sha256": _sha256(path),
+                "checkpoint_anchor": {
+                    "path": (
+                        "checkpoints/checkpoint_001/"
+                        "batch_manifest.json"
+                    ),
+                    "sha256": _sha256(anchor_path),
+                    "input_hashes": anchor_inputs,
+                },
+                "legacy_index_input_hashes": stored_hashes,
+                "semantic_input_hashes": (
+                    normalized_semantic_hashes
+                ),
+                "indirect_drift_keys": sorted(differing_keys),
+                "enumeration_hash": _stable_hash(
+                    regenerated_enumeration
+                ),
+                "entries_hash": _stable_hash(regenerated_rows),
+                "resume_authority": (
+                    "IMMUTABLE_CHECKPOINT_001_ANCHOR_PLUS_CURRENT_"
+                    "AUTHORITATIVE_STRUCTURAL_REGENERATION"
+                ),
+                "financial_reads": 0,
+                "validation_reads": 0,
+                "holdout_reads": 0,
+                "forward_2026_reads": 0,
+                "financial_results_reused": False,
+                "thresholds_weakened": False,
+            }
+            receipt["payload_hash"] = _stable_hash(receipt)
+            receipt_path = (
+                output_root
+                / "route_local_availability_index_resume_receipt.json"
+            )
+            if receipt_path.is_file():
+                existing_receipt = json.loads(
+                    receipt_path.read_text(encoding="utf-8-sig")
+                )
+                if existing_receipt != receipt:
+                    raise RuntimeError(
+                        "LARGE_TPE_AVAILABILITY_INDEX_RESUME_"
+                        "RECEIPT_DRIFT"
+                    )
+            else:
+                _write_json(receipt_path, receipt)
+            normalized_hashes = stored_hashes
         entries = [
             AvailabilityEntry(
                 route_id=str(row["route_id"]),
@@ -1271,7 +1472,7 @@ def _freeze_availability_index(
         _write_json(path, payload)
     if not entries:
         raise RuntimeError("LARGE_TPE_AVAILABILITY_INDEX_EMPTY")
-    return entries, path
+    return entries, path, normalized_hashes
 
 
 def _restore_or_initialize_availability_controller(
@@ -2060,9 +2261,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     )
     registry = UnifiedCapabilityRegistry.read(args.registry.resolve())
+    registry_binding = _registry_binding(
+        args.registry.resolve(),
+        registry,
+    )
     registry_path = _write_json(
         output_root / "registry_binding.json",
-        _registry_binding(args.registry.resolve(), registry),
+        registry_binding,
     )
     discovery = load_development_discovery_root_authority(
         args.discovery_contract.resolve(), registry=registry
@@ -2293,13 +2498,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             archive_snapshot["candidate_archive"]["sha256"]
         ),
     }
-    availability_entries, availability_index_path = (
+    (
+        availability_entries,
+        availability_index_path,
+        availability_controller_input_hashes,
+    ) = (
         _freeze_availability_index(
             output_root=output_root,
             generator=generator,
             lanes_by_route=lanes_by_route,
             input_hashes=availability_input_hashes,
+            semantic_input_hashes=(
+                _availability_semantic_input_hashes(
+                    authority=authority,
+                    registry_binding=registry_binding,
+                    contract=contract,
+                )
+            ),
         )
+    )
+    availability_resume_receipt_path = (
+        output_root
+        / "route_local_availability_index_resume_receipt.json"
     )
     availability_controller = (
         _restore_or_initialize_availability_controller(
@@ -2308,7 +2528,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             historical_exact=historical_exact,
             checkpoint_count=len(state["summaries"]),
             emitter_seed=int(args.seed_base) + 97_003,
-            input_hashes=availability_input_hashes,
+            input_hashes=availability_controller_input_hashes,
         )
     )
     deadline = time.time() + int(campaign_spec["maximum_wall_seconds"])
@@ -2943,20 +3163,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             if str(row.get("result_path") or "")
         )
         previous = state["prior_manifest"]
+        checkpoint_input_hashes = {
+            "campaign_authority": _sha256(authority_path),
+            "frozen_contract": _sha256(contract_path),
+            "gene_lane_manifest": _sha256(lane_manifest_path),
+            "availability_index": _sha256(
+                availability_index_path
+            ),
+            "prior_checkpoint_manifest": (
+                _sha256(previous) if previous else "GENESIS"
+            ),
+        }
+        if availability_resume_receipt_path.is_file():
+            checkpoint_input_hashes[
+                "availability_index_resume_receipt"
+            ] = _sha256(availability_resume_receipt_path)
         state["prior_manifest"] = _batch_manifest(
             batch_root=root,
             batch_id=checkpoint_id,
-            input_hashes={
-                "campaign_authority": _sha256(authority_path),
-                "frozen_contract": _sha256(contract_path),
-                "gene_lane_manifest": _sha256(lane_manifest_path),
-                "availability_index": _sha256(
-                    availability_index_path
-                ),
-                "prior_checkpoint_manifest": (
-                    _sha256(previous) if previous else "GENESIS"
-                ),
-            },
+            input_hashes=checkpoint_input_hashes,
             paths=manifest_paths,
             access_receipts=access_receipts,
         )
@@ -3171,6 +3396,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     runtime_path,
                     lane_manifest_path,
                     availability_index_path,
+                    *(
+                        (availability_resume_receipt_path,)
+                        if availability_resume_receipt_path.is_file()
+                        else ()
+                    ),
                     supply_path,
                     candidate_ledger_path,
                     observation_ledger_path,
