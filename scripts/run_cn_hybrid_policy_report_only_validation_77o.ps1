@@ -164,7 +164,7 @@ $registry = Join-Path $resolvedRepo (
 $env:PYTHONPATH = Join-Path $resolvedRepo 'src'
 $env:PYTHONUTF8 = '1'
 $env:CN_CAMPAIGN_REPO_SHA = $RepoSha
-$env:NUMBA_NUM_THREADS = '32'
+$env:NUMBA_NUM_THREADS = '1'
 $env:ARROW_NUM_THREADS = '1'
 $env:OMP_NUM_THREADS = '1'
 $env:MKL_NUM_THREADS = '1'
@@ -181,6 +181,9 @@ $stdoutPath = Join-Path $resolvedRoot 'validation.stdout.log'
 $stderrPath = Join-Path $resolvedRoot 'validation.stderr.log'
 
 try {
+    # Native Python failures must reach the explicit LASTEXITCODE gates with
+    # their complete stderr preserved in the validation log.
+    $ErrorActionPreference = 'Continue'
     & $python $runner prepare `
         --campaign-root $resolvedCampaign `
         --authorization $authorization `
@@ -256,6 +259,9 @@ try {
         throw "stock-session validation label sidecar build failed: $LASTEXITCODE"
     }
 
+    # Sidecar builders require serial native kernels.  Financial evaluation
+    # restores the frozen 32-thread Numba envelope only after all sidecars close.
+    $env:NUMBA_NUM_THREADS = '32'
     $env:POLARS_MAX_THREADS = '1'
     & $python $runner execute `
         --campaign-root $resolvedCampaign `
@@ -275,6 +281,7 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "report-only validation failed: $LASTEXITCODE"
     }
+    $ErrorActionPreference = 'Stop'
 } catch {
     $_ | Out-String | Add-Content -LiteralPath $stderrPath -Encoding UTF8
     [ordered]@{

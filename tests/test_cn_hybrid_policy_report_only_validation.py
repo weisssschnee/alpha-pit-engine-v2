@@ -173,5 +173,16 @@ def test_launcher_builds_candidate_bound_validation_sidecars() -> None:
     assert "forward_2026 = 'SEALED'" in text
 
 
+def test_launcher_scopes_thread_envelopes_by_build_and_evaluation_phase() -> None:
+    text = LAUNCHER.read_text(encoding="utf-8")
+    serial_numba = text.index("$env:NUMBA_NUM_THREADS = '1'")
+    active_sidecar = text.index("build_cn_phase3cm_time_major_sidecar.py")
+    session_sidecar = text.index("build_cn_core_pack_validation_session_sidecar.py")
+    compute_numba = text.index("$env:NUMBA_NUM_THREADS = '32'")
+    execute = text.index("& $python $runner execute")
+    assert serial_numba < active_sidecar < session_sidecar < compute_numba < execute
+    assert "$ErrorActionPreference = 'Continue'" in text
+
+
 def test_stable_hash_is_key_order_invariant() -> None:
     assert _stable_hash({"b": 2, "a": 1}) == _stable_hash({"a": 1, "b": 2})
