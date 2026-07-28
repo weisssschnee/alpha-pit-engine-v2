@@ -1,0 +1,171 @@
+{
+  "schema_version": "cn_hybrid_search_productivity_medium_closure_receipt_v1",
+  "status": "CAMPAIGN_CLOSED_HYBRID_DEVELOPMENT_SEARCH_POLICY_ACCEPTED",
+  "campaign": {
+    "campaign_profile": "cn_hybrid_search_productivity_medium_v1",
+    "remote_root": "D:\\ChengboRemote\\runtime\\cn_hybrid_search_productivity_medium_20260728_1536_07598a5",
+    "original_task_id": "lanjob_20260728_153422_008bbd",
+    "final_task_id": "lanjob_20260728_182428_28abc9",
+    "final_scheduled_task": "ChengboLanRemote_lanjob_20260728_182428_28abc9",
+    "deployed_repo_sha": "9bc43e89398ea101393eb00e3d8e220ac4527d64",
+    "deployed_workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_hybrid_medium_resume_9bc43e8_20260728_1800",
+    "deployment_manifest_sha256": "e951d13b050a8ca091d1492b22b3cb000dbda3f7af34008a31340f52e3128402",
+    "process_exit_code": 0,
+    "completed_at_utc": "2026-07-28T13:53:00.3782487Z"
+  },
+  "frozen_design": {
+    "checkpoint_count": 8,
+    "formal_fresh_exact_asks_per_checkpoint": 384,
+    "formal_fresh_exact_asks_total": 3072,
+    "analysis_population": "INTENTION_TO_TREAT",
+    "policy_assignment": "EXACT_ROUTE_CHECKPOINT_50_50_FIXED_HASH",
+    "route_mix_per_checkpoint": {
+      "SLOW_TEMPORAL_CHANGE": 160,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 96,
+      "MARKET_REGIME_CONDITION": 48,
+      "FIRSTN_PATH": 40,
+      "DISCLOSURE_EVENT": 40
+    },
+    "productive_candidate_definition": [
+      "PAIR_EVALUATED",
+      "search_score > 0",
+      "matched_train_increment > 0",
+      "primary_standalone_train_reward_decision = TRAIN_REWARD_FOLLOWUP_READY"
+    ],
+    "hybrid_acceptance_rule": [
+      "5,000-replicate route-standardized relative-uplift lower 95% bound > 10%",
+      "productive candidates per shared wall hour exceeds Uniform",
+      "median and p10 search score are noninferior to Uniform"
+    ]
+  },
+  "integrity": {
+    "run_manifest_sha256": "d427f9142849ba1a8cec545f06bbbec7ddce5c0d05552d0f814bb08702f47b0e",
+    "run_manifest_artifacts_verified": 19,
+    "run_manifest_artifact_mismatches": 0,
+    "batch_manifests_verified": 8,
+    "batch_manifest_payload_hash_mismatches": 0,
+    "batch_artifacts_verified": 208,
+    "batch_artifact_mismatches": 0,
+    "all_batch_statuses": "BATCH_CLOSED_IMMUTABLE",
+    "formal_exact_identities": 3072,
+    "formal_exact_identity_duplicates": 0,
+    "pair_ids": 3072,
+    "pair_id_duplicates": 0,
+    "full_behavior_signatures": 2175,
+    "full_behavior_signature_duplicates": 0,
+    "search_policy_decision_sha256": "4264b679f7f7262e5169cb2999afb143a279e20016176a13ead0df9039735b24",
+    "independent_decision_recomputation": "EXACT_MATCH"
+  },
+  "funnel": {
+    "formal_fresh_exact_asks": 3072,
+    "behavior_admitted": 2175,
+    "pair_evaluated": 2141,
+    "actual_evaluated_by_route": {
+      "SLOW_TEMPORAL_CHANGE": 818,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 760,
+      "MARKET_REGIME_CONDITION": 204,
+      "FIRSTN_PATH": 213,
+      "DISCLOSURE_EVENT": 146
+    }
+  },
+  "policy_arm_results": {
+    "HYBRID_TPE_AVAILABILITY": {
+      "formal_fresh_exact_asks": 1536,
+      "pair_evaluated": 1070,
+      "pair_evaluated_per_formal_ask": 0.6966145833333334,
+      "productive_candidates": 471,
+      "productive_per_formal_ask": 0.306640625,
+      "route_standardized_productive_per_formal_ask": 0.30664062500000006,
+      "productive_per_shared_wall_hour": 118.70794669256107,
+      "positive_search_score_per_formal_ask": 0.3352864583333333,
+      "median_search_score": -0.0020293799999999973,
+      "p10_search_score": -0.35787758799999997,
+      "unique_behavior_families": 987,
+      "productive_by_route": {
+        "SLOW_TEMPORAL_CHANGE": 224,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 236,
+        "MARKET_REGIME_CONDITION": 4,
+        "FIRSTN_PATH": 1,
+        "DISCLOSURE_EVENT": 6
+      },
+      "emission_modes": {
+        "TPE_DIRECT_FRESH": 719,
+        "TPE_BUCKET_REPLACEMENT": 803,
+        "GLOBAL_AVAILABILITY_FALLBACK": 14
+      }
+    },
+    "AVAILABILITY_AWARE_UNIFORM": {
+      "formal_fresh_exact_asks": 1536,
+      "pair_evaluated": 1071,
+      "pair_evaluated_per_formal_ask": 0.697265625,
+      "productive_candidates": 339,
+      "productive_per_formal_ask": 0.220703125,
+      "route_standardized_productive_per_formal_ask": 0.22070312500000003,
+      "productive_per_shared_wall_hour": 85.43947755579235,
+      "positive_search_score_per_formal_ask": 0.271484375,
+      "median_search_score": -0.009462169999999992,
+      "p10_search_score": -0.46098746,
+      "unique_behavior_families": 993,
+      "productive_by_route": {
+        "SLOW_TEMPORAL_CHANGE": 158,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 170,
+        "MARKET_REGIME_CONDITION": 6,
+        "FIRSTN_PATH": 3,
+        "DISCLOSURE_EVENT": 2
+      },
+      "emission_modes": {
+        "AVAILABILITY_AWARE_UNIFORM": 1536
+      }
+    }
+  },
+  "statistical_decision": {
+    "method": "ROUTE_STRATIFIED_BINOMIAL_BOOTSTRAP_WITH_JEFFREYS_SIZED_DENOMINATOR_SMOOTHING",
+    "replicates": 5000,
+    "seed": 2026072801,
+    "relative_productivity_uplift_median": 0.388969888346654,
+    "relative_productivity_uplift_p2_5": 0.24684454502317776,
+    "relative_productivity_uplift_p97_5": 0.5508692904103819,
+    "search_score_distribution_noninferior": true,
+    "hybrid_acceptance_rule_passed": true,
+    "selected_search_policy": "HYBRID_TPE_AVAILABILITY",
+    "selection_rationale": "HYBRID_DEMONSTRATED_MATERIAL_PRODUCTIVITY_UPLIFT",
+    "statistical_equivalence_claimed": false,
+    "pure_tpe_causal_attribution": "NOT_ESTABLISHED_HYBRID_SYSTEM_ACCEPTED_AS_A_WHOLE"
+  },
+  "performance": {
+    "shared_wall_seconds": 14283.795206999872,
+    "formal_asks_per_wall_hour": 774.2480090011626,
+    "minimum_formal_asks_per_wall_hour": 120.0,
+    "throughput_contract_passed": true,
+    "runtime_gates": "PASS_ALL_8_CHECKPOINTS_BOTH_BACKENDS",
+    "minimum_free_memory_bytes": 31282745344,
+    "cache_cap_bytes": 8589934592,
+    "maximum_observed_cache_peak_bytes": 2378704704,
+    "checkpoint_008_active_bar_effective_cores": 22.82130546338251,
+    "checkpoint_008_stock_session_effective_cores": 29.708176488355914
+  },
+  "optimizer_boundary": {
+    "uniform_optuna_trials": 0,
+    "uniform_optimizer_feedback": "FORBIDDEN_AND_ABSENT",
+    "hybrid_ask_observation_transcript_coverage": "EXACT",
+    "hybrid_evaluated_reward_alignment": "PASS",
+    "search_score_policy": "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1"
+  },
+  "access_and_promotion": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "validation_status": "NOT_RUN_BY_FROZEN_PRODUCTIVITY_MEDIUM_CONTRACT",
+    "candidate_promotion": "FORBIDDEN",
+    "additional_holdout_access": "FORBIDDEN",
+    "forward_2026_access": "FORBIDDEN"
+  },
+  "verdict": {
+    "development_search_policy_authority": "HYBRID_TPE_AVAILABILITY_ACCEPTED",
+    "candidate_or_economic_authority": "NOT_GRANTED",
+    "automatic_successor_campaign_authorization": false,
+    "next_campaign_requires_frozen_tranche_budget_and_route_allocation": true,
+    "graph_authority_transition": "DEVELOPMENT_SEARCH_POLICY_ONLY",
+    "obsidian_projection": "SKIPPED_NO_PROJECT_OBSIDIAN_VAULT"
+  }
+}
