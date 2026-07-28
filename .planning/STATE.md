@@ -2,7 +2,7 @@
 
 Updated: 2026-07-28
 
-Current state: `CN_TPE_AVAILABILITY_V3_QUALIFICATION_CLOSED_TPE_AGENCY_BLOCKED`
+Current state: `CN_HYBRID_SEARCH_PRODUCTIVITY_MEDIUM_CLOSED_HYBRID_POLICY_ACCEPTED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -817,27 +817,52 @@ No financial authorization was generated, and Graph/Obsidian authority
 remains unchanged. The compact receipt is
 `runtime/run_plans/cn_tpe_availability_v3_qualification_20260728_receipt.json`.
 
+- The successor Hybrid Search Productivity Medium is now closed on 77o at
+  deployed SHA `9bc43e89398ea101393eb00e3d8e220ac4527d64`. It used eight
+  immutable checkpoints, 384 formal fresh exact asks per checkpoint, the fixed
+  route mix 160/96/48/40/40 and exact per-route/checkpoint 192/192 Hybrid/
+  Uniform intention-to-treat balance. All eight manifest payload hashes,
+  208/208 batch artifacts and 19/19 root artifacts independently matched.
+  Across 3,072 formal asks there were zero exact, pair-ID or full behavior-
+  signature duplicates; 2,141 pairs completed full train evaluation.
+- Hybrid retained 471 productive candidates from 1,536 formal asks versus 339
+  for availability-aware Uniform. Route-standardized productive yield was
+  0.30664 versus 0.22070, and productive/shared wall hour was 118.71 versus
+  85.44. Pair-evaluation yield was essentially identical at 1,070 versus
+  1,071, so the productivity difference was candidate quality rather than
+  evaluator admission. The 5,000-replicate relative-uplift median was 38.90%,
+  with a 95% interval of 24.68%-55.09%; Hybrid median and p10 search score were
+  also noninferior. The independently rerun frozen decision function matched
+  the root decision exactly.
+- `HYBRID_TPE_AVAILABILITY` is accepted under ADR 0008 as the active bounded
+  development search policy. This accepts the combined TPE plus Availability
+  Controller system, not a pure TPE causal effect: its 1,536 emissions included
+  719 direct TPE draws, 803 same-bucket replacements and 14 global fallbacks.
+  Uniform remains the retained baseline. Validation/holdout/2026 reads and
+  Uniform optimizer feedback were zero; validation did not run and candidate
+  promotion remains forbidden. The compact receipt is
+  `runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json`.
+
 ## Next action
+
+Do not rerun the completed 3,072-ask Hybrid Search Productivity Medium or the
+earlier availability-agency canaries. Use `HYBRID_TPE_AVAILABILITY` as the
+default policy only inside a separately frozen bounded development tranche.
+Before that tranche, replace administrative route fill targets with explicit
+coverage floors, maximum caps and a bounded flexible budget; retain a small
+exploration floor per active route and freeze the productive-yield allocation
+rule before launch. Do not automatically authorize the old 16,880 target or a
+new 20,000-target campaign.
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
 qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the
 completed four-lane supply probe, the 4x17 campaign or the typed-surface audit.
 Retain the qualified `normalized_ratio` production increment and active
 route-local sampled selector. Do not reuse any terminal CEM probabilities and
-do not rerun or extend the closed 20,000-target TPE campaign. Do not launch a
-new 20,000-target campaign merely by inserting the qualified availability
-controller or increasing raw asks: the formal route supply and TPE-agency
-gates remain failed. Any successor needs a separately authorized,
-semantics-preserving supply expansion or materially revised route targets,
-followed by a fresh zero-financial qualification.
-
-For availability v3 specifically, supply, behavior and formal-budget design
-are no longer the blocker. Do not weaken the frozen 20% global-fallback ceiling
-or issue a financial campaign authorization. The next bounded design step, if
-explicitly authorized, must reduce route-local availability replacement/
-fallback pressure while preserving official Optuna trial accounting and the
-frozen typed economic hypotheses; it must then rerun the same zero-financial
-agency qualification before any financial campaign is considered.
+do not rerun or extend the closed 20,000-target TPE campaign. The Medium has
+superseded fallback share as the primary search-policy KPI, but it has not
+authorized candidate promotion, validation/holdout/2026 access, cross-campaign
+reward memory or an unfrozen successor budget.
 
 Do not rerun or enlarge the completed V4 supply proof or the closed V5 paired
 qualification. Performance commit `72250f9` is now officially parity-checked

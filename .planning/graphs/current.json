@@ -6,6 +6,161 @@
       "evidence": {},
       "message": "Current view is advisory; formal runtime evidence was not supplied",
       "severity": "INFO"
+    },
+    {
+      "category": "STALE",
+      "code": "RAW_GRAPH_SOURCE_CHANGED",
+      "evidence": {
+        "changed_paths": [
+          ".planning/STATE.md",
+          "app.py",
+          "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md",
+          "requirements.txt",
+          "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
+          "runtime/run_plans/cn_hybrid_search_productivity_medium_v1_authorization.json",
+          "runtime/run_plans/cn_large_optuna_tpe_actual20000_v1_authorization.json",
+          "runtime/run_plans/cn_large_optuna_tpe_actual20000_v2_20260728_receipt.json",
+          "runtime/run_plans/cn_large_optuna_tpe_actual20000_v2_authorization.json",
+          "runtime/run_plans/cn_large_tpe_successor_route_targets_v3.json",
+          "runtime/run_plans/cn_minute_static_online_typed_grammar_v5_20260726_receipt.json",
+          "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
+          "runtime/run_plans/cn_minute_static_structural_formula_v4_supply_20260726_receipt.json",
+          "runtime/run_plans/cn_minute_static_structural_supply_cem_v2_medium_20260725_receipt.json",
+          "runtime/run_plans/cn_minute_static_structural_supply_v1_20260725_receipt.json",
+          "runtime/run_plans/cn_minute_static_structural_typed_surface_audit_20260725_receipt.json",
+          "runtime/run_plans/cn_slow_cross_sectional_evaluated384_v1_authorization.json",
+          "runtime/run_plans/cn_tpe_availability_v3_qualification_20260728_receipt.json",
+          "runtime/run_plans/cn_tpe_availability_yield_qualification_20260728_receipt.json",
+          "scripts/build_cn_core_pack_validation_session_sidecar.py",
+          "scripts/run_cn_hybrid_search_productivity_medium_77o.ps1",
+          "scripts/run_cn_large_optuna_tpe_actual20000_77o.ps1",
+          "scripts/run_cn_phase3cm_streaming_qualification.py",
+          "scripts/run_cn_slow_cross_sectional_evaluated384_77o.ps1",
+          "scripts/run_cn_tpe_availability_yield_qualification.py",
+          "scripts/run_minute_static_production_cem_v3.py",
+          "scripts/run_targeted_formula_cem_qualification.py",
+          "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
+          "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
+          "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py",
+          "src/our_system_phase2/services/categorical_cem.py",
+          "src/our_system_phase2/services/compositional_grammar.py",
+          "src/our_system_phase2/services/optuna_tpe_search_adapter.py",
+          "src/our_system_phase2/services/phase3cm_streaming_portfolio.py",
+          "src/our_system_phase2/services/phase3cm_streaming_support.py",
+          "src/our_system_phase2/services/portfolio_behavior_archive.py",
+          "src/our_system_phase2/services/route_local_availability.py",
+          "src/our_system_phase2/services/search_choice_policy.py",
+          "src/our_system_phase2/services/unified_discovery_generators.py",
+          "tests/test_cn_core_pack_validation_session_sidecar.py",
+          "tests/test_cn_large_tpe_search_campaign.py",
+          "tests/test_cn_targeted_search_medium_campaign.py",
+          "tests/test_cn_tpe_availability_yield_qualification.py",
+          "tests/test_compositional_grammar_v2.py",
+          "tests/test_iterative_behavior_probe.py",
+          "tests/test_minute_static_production_cem_v3.py",
+          "tests/test_optimizer_grammar_surface.py",
+          "tests/test_optuna_tpe_search_adapter.py",
+          "tests/test_phase3cm_streaming_portfolio.py",
+          "tests/test_phase3cm_streaming_support.py",
+          "tests/test_portfolio_behavior_archive.py",
+          "tests/test_route_local_availability.py",
+          "tests/test_targeted_formula_cem.py"
+        ],
+        "raw_sha": "74f088af2b4b36f97ea13b7dba5f8542ecf3e55a",
+        "repo_head": "f4a6292a1012120fc74479da26066338099390fa"
+      },
+      "message": "Raw graph predates non-overlay source changes",
+      "severity": "ERROR"
+    },
+    {
+      "category": "DRIFT",
+      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
+      "evidence": {
+        "component": "fixed_split_authority",
+        "semantic_role": "split_authority"
+      },
+      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
+      "evidence": {
+        "component": "cn_field_master_registry",
+        "semantic_role": "complete_field_universe_authority"
+      },
+      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
+      "evidence": {
+        "component": "unified_capability_registry",
+        "semantic_role": "field_route_authority"
+      },
+      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
+      "evidence": {
+        "component": "core_pack_development_discovery_contract",
+        "semantic_role": "development_discovery_proposal_root_ontology_authority"
+      },
+      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
+      "evidence": {
+        "component": "pit_fundamental_fabric",
+        "semantic_role": "pit_fundamental_observable_episode_authority"
+      },
+      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
+      "evidence": {
+        "component": "candidate_submission_receipt",
+        "semantic_role": "candidate_identity_authority"
+      },
+      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
+      "evidence": {
+        "component": "matched_control_pair_authority",
+        "semantic_role": "matched_pair_authority"
+      },
+      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
+      "evidence": {
+        "component": "candidate_parallel_evaluator",
+        "semantic_role": "formal_evaluation_authority"
+      },
+      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
+      "severity": "WARN"
+    },
+    {
+      "category": "DRIFT",
+      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
+      "evidence": {
+        "component": "matched_train_feedback",
+        "semantic_role": "train_feedback_authority"
+      },
+      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
+      "severity": "WARN"
     }
   ],
   "edges": [
@@ -826,6 +981,114 @@
       }
     },
     {
+      "color": "#2e7d32",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "UnifiedCapabilityRegistry and route-local availability index",
+        "evidence_ref": "",
+        "id": "registry_remains_route_authority_for_hybrid",
+        "rule": "The unified Registry owns route eligibility and typed generation lanes; Hybrid TPE plus Availability operates beneath those frozen route-local contracts.",
+        "severity": "HARD",
+        "type": "AUTHORITY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "registry_to_hybrid_development_search_policy",
+      "lifecycle": "ACTIVE",
+      "line_style": "dotted",
+      "relation": "authorizes_route_local_typed_search_policy",
+      "required": false,
+      "source": "unified_capability_registry",
+      "target": "cn_development_search_policy",
+      "validation": {
+        "checked_at": "2026-07-28T14:10:19.400135+00:00",
+        "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
+        "evidence_sha256": "11CB3F4A4A57B2ED136BC17A89D567291CDBE8EF1EB2F90CC8665AA1F9073F37",
+        "level": "PARTIAL",
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
+        "profile": "",
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"
+      }
+    },
+    {
+      "color": "#2e7d32",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "Phase3CM input binding, immutable checkpoint manifests and access receipts",
+        "evidence_ref": "",
+        "id": "hybrid_full_coordinate_train_only",
+        "rule": "Hybrid policy rewards come only from full-coordinate train pair outcomes. The search-policy Medium does not run validation and cannot grant candidate promotion or sealed-period access.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "hybrid_development_search_to_streaming_evaluator",
+      "lifecycle": "ACTIVE",
+      "line_style": "dotted",
+      "relation": "submits_behavior_unique_pairs_for_train_only_evaluation",
+      "required": false,
+      "source": "cn_development_search_policy",
+      "target": "phase3cm_streaming_multicandidate_evaluator",
+      "validation": {
+        "checked_at": "2026-07-28T14:10:19.400135+00:00",
+        "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
+        "evidence_sha256": "11CB3F4A4A57B2ED136BC17A89D567291CDBE8EF1EB2F90CC8665AA1F9073F37",
+        "level": "PARTIAL",
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
+        "profile": "",
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"
+      }
+    },
+    {
+      "color": "#2e7d32",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "optimizer observations, tell receipts and transcripts",
+        "evidence_ref": "",
+        "id": "hybrid_min_primary_and_matched_increment_reward",
+        "rule": "Only full-coordinate train outcomes with search_score equal to min(primary_composite_reward, matched_train_increment) may complete a Hybrid optimizer trial; Uniform cannot enter observations or tells.",
+        "severity": "HARD",
+        "type": "ADMISSION"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "matched_train_feedback_to_hybrid_development_search",
+      "lifecycle": "ACTIVE",
+      "line_style": "dotted",
+      "relation": "supplies_train_only_search_score",
+      "required": false,
+      "source": "matched_train_feedback",
+      "target": "cn_development_search_policy",
+      "validation": {
+        "checked_at": "2026-07-28T14:10:19.400135+00:00",
+        "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
+        "evidence_sha256": "11CB3F4A4A57B2ED136BC17A89D567291CDBE8EF1EB2F90CC8665AA1F9073F37",
+        "level": "PARTIAL",
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
+        "profile": "",
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"
+      }
+    },
+    {
       "color": "#f9a825",
       "contract": {
         "bypass_forbidden": true,
@@ -1226,7 +1489,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-24T19:06:50.001606+00:00",
+  "generated_at": "2026-07-28T14:13:02.237881+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1251,6 +1514,8 @@
         "sha256": "F7C0B441C0AAF4FA4A2F5B3FE45474A961463B9728ABAC282419FB33789675D6",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1281,7 +1546,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -1293,13 +1558,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/fixed_split_authority.py",
         "repo_ref": "",
         "sha256": "2E26054A33ADD857A18FF7952D46BD3A4D2D9A407832DB380A4C08971F9FAACB",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "fixed_split_authority",
+          "authority_class": "UNCLASSIFIED",
+          "semantic_role": "split_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1343,7 +1616,7 @@
       "required": false,
       "semantic_role": "split_authority",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -1355,13 +1628,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
         "repo_ref": "",
         "sha256": "D34B6FCCC721A9F9866B067418C0740F2CF5CEB00C003A7B57D279008AE32258",
         "verified_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "cn_field_master_registry",
+          "authority_class": "UNCLASSIFIED",
+          "semantic_role": "complete_field_universe_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1409,7 +1690,7 @@
       "required": true,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-07-24T19:05:03.492151+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
@@ -1421,13 +1702,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/unified_capability_registry.py",
         "repo_ref": "",
         "sha256": "6E3F74C26FC6BBEBEF8E38808D219418C4F05079474CCC8163330C7D817B60A0",
         "verified_sha": "947a2988b720a42ed319fdcfc0eddbfdde9be496"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "unified_capability_registry",
+          "authority_class": "UNCLASSIFIED",
+          "semantic_role": "field_route_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1494,7 +1783,7 @@
       "required": true,
       "semantic_role": "field_route_authority",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
         "evidence_sha256": "4855AE00D975C5E05066CF21F73C6FA3DC08A15280DD9AD145D5EA5F30B1CF7F",
         "level": "STATIC_VERIFIED",
@@ -1508,6 +1797,13 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "1,683 FIELD UNIVERSE",
+        "450 TYPED CAPABILITIES",
+        "NO PERFORMANCE",
+        "NO OOS"
+      ],
       "color": "#f9a825",
       "contracts": [],
       "critical": false,
@@ -1542,7 +1838,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -1556,6 +1852,15 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "421 CAPABILITY METRICS",
+        "284 FUNDAMENTAL REPRESENTATIONS",
+        "4,931 WITHIN-CONTEXT NMI PAIRS",
+        "PLATE NOT EVALUATED",
+        "NO PERFORMANCE",
+        "NO OOS"
+      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -1651,7 +1956,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "tests/test_field_information_census.py",
         "evidence_sha256": "837FE2F72EAAFDE1703B699031850EDB1E3770A4C0602AE018FE93FE1F46B87D",
         "level": "STATIC_VERIFIED",
@@ -1665,6 +1970,15 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "272 REPRESENTATIVES",
+        "62 TRUE1MIN",
+        "204 FUNDAMENTAL",
+        "6 CHIP",
+        "EXPLORATORY",
+        "NOT SEARCH AUTHORITY"
+      ],
       "color": "#f9a825",
       "contracts": [],
       "critical": false,
@@ -1711,7 +2025,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -1725,6 +2039,15 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "466,944 STRUCTURAL ATTEMPTS",
+        "42,189 ROUTE-LEVEL EXACT IDENTITIES",
+        "264/272 CORE ROOTS",
+        "8 HELD",
+        "NO PERFORMANCE",
+        "NO OOS"
+      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -1792,7 +2115,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T13:06:58.427914+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/run_manifest.json",
         "evidence_sha256": "09C12C713CABE838DAE5A27DBC53709C7F6D277C2E8ADA810E64D855B10E0891",
         "level": "STATIC_VERIFIED",
@@ -1804,13 +2127,28 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
         "repo_ref": "",
         "sha256": "A986BB2D38D8C4716E85F8561ACC3551622AEA06EC27FF6326E1EE19FA132B27",
         "verified_sha": "81f481a6b7120498e06a8e7adeaf9291411d4adc"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "core_pack_development_discovery_contract",
+          "authority_class": "UNCLASSIFIED",
+          "semantic_role": "development_discovery_proposal_root_ontology_authority"
+        }
+      ],
+      "claim_badges": [
+        "ACTIVE ONTOLOGY ROOT AUTHORITY",
+        "CAMPAIGN BUDGET REQUIRED",
+        "PLATE DISABLED",
+        "POST-TRAIN VALIDATION REPORT-ONLY",
+        "2026 SEALED",
+        "NO PROMOTION"
+      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1943,7 +2281,7 @@
       "required": true,
       "semantic_role": "development_discovery_proposal_root_ontology_authority",
       "validation": {
-        "checked_at": "2026-07-24T19:05:03.492151+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "evidence_sha256": "80D89B1C5AFD4438F0BCAC4D994DBFD73D26E24A74A5A60B52D3B39F2F612FA9",
         "level": "STATIC_VERIFIED",
@@ -1957,6 +2295,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2036,7 +2376,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2050,6 +2390,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2129,7 +2471,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2143,6 +2485,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2200,7 +2544,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2212,13 +2556,28 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/pit_fundamental_fabric.py",
         "repo_ref": "",
         "sha256": "DCBEA382D2B2875FB5D93837B23EECE67576410F8B98CE69E6DCA0CAFEADD16C",
         "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "pit_fundamental_fabric",
+          "authority_class": "UNCLASSIFIED",
+          "semantic_role": "pit_fundamental_observable_episode_authority"
+        }
+      ],
+      "claim_badges": [
+        "4 DISCLOSURE ROOT RECEIPTS",
+        "1,852,463 DEVELOPMENT STOCK-SESSIONS",
+        "CURRENT-SNAPSHOT AS-OF ONLY",
+        "NO REVISION REPLAY",
+        "NO PERFORMANCE",
+        "NO OOS"
+      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2369,7 +2728,7 @@
       "required": false,
       "semantic_role": "pit_fundamental_observable_episode_authority",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "tests/test_pit_fundamental_fabric.py",
         "evidence_sha256": "20617E5E750049057A210DDE3451559B55388D7AD869605D0E9839E461A24769",
         "level": "STATIC_VERIFIED",
@@ -2383,6 +2742,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2414,7 +2775,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2433,6 +2794,15 @@
         "sha256": "2D2FF2E4AB958DC9ADB48745FE09D2D48DD38085669B3DF1FB477812BD83D1EE",
         "verified_sha": "54ce73e59e486c186fa8b6b5a4ad0a944d1f5f9c"
       },
+      "authority_bindings": [],
+      "claim_badges": [
+        "CATCMA QUALITY FAIL",
+        "SCALE READINESS FAIL",
+        "STATE EXACT SPACE EXHAUSTED",
+        "DEVELOPMENT ONLY",
+        "LONG-ONLY TOP",
+        "NO PROMOTION"
+      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -2844,7 +3214,7 @@
       "required": true,
       "semantic_role": "bounded_development_iterative_search_capability",
       "validation": {
-        "checked_at": "2026-07-24T19:05:03.492151+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "runtime/run_plans/cn_search_policy_qualification_20260724_receipt.json",
         "evidence_sha256": "959804532BA654090AD505F9754972990CA16D039FD4BF3D83BD92B7536084F7",
         "level": "PARTIAL",
@@ -2856,8 +3226,93 @@
       "visible_by_default": true
     },
     {
+      "active_authority": true,
+      "authority": {
+        "path": "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
+        "repo_ref": "feature/search-policy-qualification",
+        "sha256": "CDAAEF0B0AB2EF45AA8840E4BACBF66CD25A04FE81FAD5C11BE93B44C66B3B08",
+        "verified_sha": "9bc43e89398ea101393eb00e3d8e220ac4527d64"
+      },
+      "authority_bindings": [
+        {
+          "authoritative_component": "cn_development_search_policy",
+          "authority_class": "FORMAL",
+          "semantic_role": "development_search_policy_authority"
+        }
+      ],
+      "claim_badges": [
+        "HYBRID POLICY ACCEPTED",
+        "DEVELOPMENT TRAIN ONLY",
+        "UNIFORM BASELINE RETAINED",
+        "NO VALIDATION",
+        "NO CANDIDATE PROMOTION"
+      ],
+      "color": "#2e7d32",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "cn_large_tpe_search_campaign and ADR 0008",
+          "evidence_ref": "",
+          "id": "hybrid_development_search_policy_authority",
+          "rule": "Hybrid TPE plus Availability is the default policy for separately frozen bounded CN development-search tranches; the unified Registry remains the top-level route authority.",
+          "severity": "HARD",
+          "type": "AUTHORITY"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "optimizer_feedback_eligible and evaluation_access_guard",
+          "evidence_ref": "",
+          "id": "hybrid_optimizer_feedback_boundary",
+          "rule": "Uniform receives no Optuna trial or optimizer feedback; Hybrid observations and tells use full-coordinate train outcomes only, and validation, holdout and 2026 cannot feed search, scheduling, archives or memory.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "campaign frozen contract",
+          "evidence_ref": "",
+          "id": "hybrid_successor_budget_admission",
+          "rule": "Policy acceptance does not automatically authorize another campaign; every successor must separately freeze route floors, route caps, flexible budget, seeds, archives, runtime envelope and no-promotion boundary.",
+          "severity": "HARD",
+          "type": "ADMISSION"
+        }
+      ],
+      "critical": true,
+      "evidence": "DECLARED",
+      "expires_at": "",
+      "id": "cn_development_search_policy",
+      "kind": "authority-slot",
+      "label": "CN development search policy - Hybrid TPE plus Availability",
+      "lifecycle": "ACTIVE",
+      "owner": "",
+      "paths": [
+        "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
+        "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
+        "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"
+      ],
+      "promotion_requirements": [],
+      "raw_node_ids": [],
+      "required": false,
+      "semantic_role": "development_search_policy_authority",
+      "validation": {
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
+        "evidence_sha256": "11CB3F4A4A57B2ED136BC17A89D567291CDBE8EF1EB2F90CC8665AA1F9073F37",
+        "level": "PARTIAL",
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
+        "profile": "",
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"
+      },
+      "visible_by_default": true
+    },
+    {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#f9a825",
       "contracts": [
         {
@@ -2912,7 +3367,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
         "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
         "level": "STATIC_VERIFIED",
@@ -2924,13 +3379,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/candidate_submission_receipt.py",
         "repo_ref": "",
         "sha256": "A8BD94F43A2A7C58705C925FDF6FF8269C07042E58110CE296CB37BB85D9C02C",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "candidate_submission_receipt",
+          "authority_class": "UNCLASSIFIED",
+          "semantic_role": "candidate_identity_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2988,7 +3451,7 @@
       "required": false,
       "semantic_role": "candidate_identity_authority",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json",
         "evidence_sha256": "115218107C43C1B7CB9FB3E0039DA8261CB45E07CF4177915B21172DDA69632D",
         "level": "STATIC_VERIFIED",
@@ -3000,13 +3463,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/matched_control_pairs.py",
         "repo_ref": "",
         "sha256": "E652D586A518A7512B9A5C30D81898C4F4A77598CD8FF5808D1CECB4BAC9EF1F",
         "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "matched_control_pair_authority",
+          "authority_class": "UNCLASSIFIED",
+          "semantic_role": "matched_pair_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3081,7 +3552,7 @@
       "required": false,
       "semantic_role": "matched_pair_authority",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
         "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
@@ -3093,13 +3564,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
         "repo_ref": "",
         "sha256": "F2D55DD23FF220141333F0424DCD8E46CF336EB6F4D14FE7ACB0194F57506F70",
         "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "candidate_parallel_evaluator",
+          "authority_class": "UNCLASSIFIED",
+          "semantic_role": "formal_evaluation_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3232,7 +3711,7 @@
       "required": false,
       "semantic_role": "formal_evaluation_authority",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
         "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
@@ -3251,6 +3730,15 @@
         "sha256": "DBF67457F156D758C7519AA2A82EECECC24A662B7F06EBB6FAEB83CB9B45CD87",
         "verified_sha": "54ce73e59e486c186fa8b6b5a4ad0a944d1f5f9c"
       },
+      "authority_bindings": [],
+      "claim_badges": [
+        "LONG-ONLY TOP",
+        "SHORTING DISABLED",
+        "MINUTE SAMPLE QUALIFIED",
+        "4.97X SAMPLE SPEED",
+        "PAIR DELTA != STANDALONE SORTINO",
+        "WEAK NOT SEALED OOS"
+      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3474,7 +3962,7 @@
       "required": false,
       "semantic_role": "active_development_evaluation_implementation",
       "validation": {
-        "checked_at": "2026-07-24T19:05:03.492151+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
         "evidence_sha256": "0CD320DD013086FCE0D1E0555B8338843B4EF0C5AA67A7639F35893C87CA1D7E",
         "level": "PARTIAL",
@@ -3488,13 +3976,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
         "repo_ref": "",
         "sha256": "40C65CB37E6E5F8239AFE446269216345CBE234E17202A58DF4E54751962519A",
         "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "matched_train_feedback",
+          "authority_class": "UNCLASSIFIED",
+          "semantic_role": "train_feedback_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#f9a825",
       "contracts": [
         {
@@ -3551,7 +4047,7 @@
       "required": false,
       "semantic_role": "train_feedback_authority",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_TEST_RESULTS.json",
         "evidence_sha256": "FC996215C353588E01A4537EBED4B86B85A9AB6E556B223CB54EF92CDB4D17D9",
         "level": "STATIC_VERIFIED",
@@ -3565,6 +4061,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [],
       "critical": false,
@@ -3619,7 +4117,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -3633,6 +4131,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3677,7 +4177,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -3691,6 +4191,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3735,7 +4237,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -3749,6 +4251,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3775,7 +4279,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -3789,6 +4293,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3841,7 +4347,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -3855,6 +4361,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#757575",
       "contracts": [
         {
@@ -3881,7 +4389,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -3895,6 +4403,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -3921,7 +4431,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-20T12:27:17.055814+00:00",
+        "checked_at": "2026-07-28T14:13:02.237881+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -3935,7 +4445,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "BEC898A87B08777E0708673A06898A9810AB10E1A6F2A37D48EF893206028AAC"
+    "sha256": "31536FFE95B88B27DEB4BD3AC9B839946ACE3A892BED821BAD811F0FD5E7FA56"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -3952,18 +4462,70 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "37880BB8611E0320BD9EC4DDBD0730E5484111F3CBE6C726AF22F0597BEA3ED9"
   },
-  "repo_head": "74f088af2b4b36f97ea13b7dba5f8542ecf3e55a",
+  "repo_head": "f4a6292a1012120fc74479da26066338099390fa",
   "schema_version": 1,
-  "status": "INSUFFICIENT_EVIDENCE",
+  "semantic_authorities": [
+    {
+      "authoritative_component": "candidate_submission_receipt",
+      "authority_class": "UNCLASSIFIED",
+      "semantic_role": "candidate_identity_authority"
+    },
+    {
+      "authoritative_component": "cn_field_master_registry",
+      "authority_class": "UNCLASSIFIED",
+      "semantic_role": "complete_field_universe_authority"
+    },
+    {
+      "authoritative_component": "core_pack_development_discovery_contract",
+      "authority_class": "UNCLASSIFIED",
+      "semantic_role": "development_discovery_proposal_root_ontology_authority"
+    },
+    {
+      "authoritative_component": "cn_development_search_policy",
+      "authority_class": "FORMAL",
+      "semantic_role": "development_search_policy_authority"
+    },
+    {
+      "authoritative_component": "unified_capability_registry",
+      "authority_class": "UNCLASSIFIED",
+      "semantic_role": "field_route_authority"
+    },
+    {
+      "authoritative_component": "candidate_parallel_evaluator",
+      "authority_class": "UNCLASSIFIED",
+      "semantic_role": "formal_evaluation_authority"
+    },
+    {
+      "authoritative_component": "matched_control_pair_authority",
+      "authority_class": "UNCLASSIFIED",
+      "semantic_role": "matched_pair_authority"
+    },
+    {
+      "authoritative_component": "pit_fundamental_fabric",
+      "authority_class": "UNCLASSIFIED",
+      "semantic_role": "pit_fundamental_observable_episode_authority"
+    },
+    {
+      "authoritative_component": "fixed_split_authority",
+      "authority_class": "UNCLASSIFIED",
+      "semantic_role": "split_authority"
+    },
+    {
+      "authoritative_component": "matched_train_feedback",
+      "authority_class": "UNCLASSIFIED",
+      "semantic_role": "train_feedback_authority"
+    }
+  ],
+  "status": "STALE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 38,
-    "current_nodes": 28,
-    "errors": 0,
+    "current_edges": 41,
+    "current_nodes": 29,
+    "errors": 1,
     "runtime_edges": 0,
     "runtime_nodes": 0,
-    "warnings": 0
+    "warnings": 9
   },
   "trace": {
     "path": null,

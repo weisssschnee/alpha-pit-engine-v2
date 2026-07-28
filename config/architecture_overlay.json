@@ -442,6 +442,65 @@
       }
     },
     {
+      "id": "cn_development_search_policy",
+      "label": "CN development search policy - Hybrid TPE plus Availability",
+      "kind": "authority-slot",
+      "lifecycle": "ACTIVE",
+      "paths": [
+        "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
+        "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
+        "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"
+      ],
+      "claim_badges": [
+        "HYBRID POLICY ACCEPTED",
+        "DEVELOPMENT TRAIN ONLY",
+        "UNIFORM BASELINE RETAINED",
+        "NO VALIDATION",
+        "NO CANDIDATE PROMOTION"
+      ],
+      "critical": true,
+      "semantic_role": "development_search_policy_authority",
+      "authority": {
+        "path": "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
+        "repo_ref": "feature/search-policy-qualification",
+        "verified_sha": "9bc43e89398ea101393eb00e3d8e220ac4527d64",
+        "sha256": "cdaaef0b0ab2ef45aa8840e4bacbf66cd25a04fe81fad5c11be93b44c66b3b08"
+      },
+      "contracts": [
+        {
+          "id": "hybrid_development_search_policy_authority",
+          "type": "AUTHORITY",
+          "rule": "Hybrid TPE plus Availability is the default policy for separately frozen bounded CN development-search tranches; the unified Registry remains the top-level route authority.",
+          "severity": "HARD",
+          "enforced_by": "cn_large_tpe_search_campaign and ADR 0008",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "hybrid_optimizer_feedback_boundary",
+          "type": "BOUNDARY",
+          "rule": "Uniform receives no Optuna trial or optimizer feedback; Hybrid observations and tells use full-coordinate train outcomes only, and validation, holdout and 2026 cannot feed search, scheduling, archives or memory.",
+          "severity": "HARD",
+          "enforced_by": "optimizer_feedback_eligible and evaluation_access_guard",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "hybrid_successor_budget_admission",
+          "type": "ADMISSION",
+          "rule": "Policy acceptance does not automatically authorize another campaign; every successor must separately freeze route floors, route caps, flexible budget, seeds, archives, runtime envelope and no-promotion boundary.",
+          "severity": "HARD",
+          "enforced_by": "campaign frozen contract",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "RUNTIME_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
+        "evidence_sha256": "11cb3f4a4a57b2ed136bc17a89d567291cdbe8ef1eb2f90cc8665aa1f9073f37",
+        "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"
+      }
+    },
+    {
       "id": "compositional_stage_a_route_eligibility",
       "label": "Compositional Stage A route eligibility gate",
       "kind": "admission",
@@ -1028,6 +1087,39 @@
       "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_core_pack_large_development_20260723_receipt.json", "verified_at_sha": "021f753f7bf7f2ed96bbb49f73df1ba6dbd0b728"}
     },
     {
+      "id": "registry_to_hybrid_development_search_policy",
+      "source": "unified_capability_registry",
+      "target": "cn_development_search_policy",
+      "relation": "authorizes_route_local_typed_search_policy",
+      "lifecycle": "ACTIVE",
+      "required": false,
+      "critical": true,
+      "contract": {"id": "registry_remains_route_authority_for_hybrid", "type": "AUTHORITY", "rule": "The unified Registry owns route eligibility and typed generation lanes; Hybrid TPE plus Availability operates beneath those frozen route-local contracts.", "severity": "HARD", "enforced_by": "UnifiedCapabilityRegistry and route-local availability index", "bypass_forbidden": true},
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json", "evidence_sha256": "11cb3f4a4a57b2ed136bc17a89d567291cdbe8ef1eb2f90cc8665aa1f9073f37", "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"}
+    },
+    {
+      "id": "hybrid_development_search_to_streaming_evaluator",
+      "source": "cn_development_search_policy",
+      "target": "phase3cm_streaming_multicandidate_evaluator",
+      "relation": "submits_behavior_unique_pairs_for_train_only_evaluation",
+      "lifecycle": "ACTIVE",
+      "required": false,
+      "critical": true,
+      "contract": {"id": "hybrid_full_coordinate_train_only", "type": "BOUNDARY", "rule": "Hybrid policy rewards come only from full-coordinate train pair outcomes. The search-policy Medium does not run validation and cannot grant candidate promotion or sealed-period access.", "severity": "HARD", "enforced_by": "Phase3CM input binding, immutable checkpoint manifests and access receipts", "bypass_forbidden": true},
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json", "evidence_sha256": "11cb3f4a4a57b2ed136bc17a89d567291cdbe8ef1eb2f90cc8665aa1f9073f37", "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"}
+    },
+    {
+      "id": "matched_train_feedback_to_hybrid_development_search",
+      "source": "matched_train_feedback",
+      "target": "cn_development_search_policy",
+      "relation": "supplies_train_only_search_score",
+      "lifecycle": "ACTIVE",
+      "required": false,
+      "critical": true,
+      "contract": {"id": "hybrid_min_primary_and_matched_increment_reward", "type": "ADMISSION", "rule": "Only full-coordinate train outcomes with search_score equal to min(primary_composite_reward, matched_train_increment) may complete a Hybrid optimizer trial; Uniform cannot enter observations or tells.", "severity": "HARD", "enforced_by": "optimizer observations, tell receipts and transcripts", "bypass_forbidden": true},
+      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json", "evidence_sha256": "11cb3f4a4a57b2ed136bc17a89d567291cdbe8ef1eb2f90cc8665aa1f9073f37", "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"}
+    },
+    {
       "id": "stage_a_route_eligibility_to_streaming_evaluator",
       "source": "compositional_stage_a_route_eligibility",
       "target": "phase3cm_streaming_multicandidate_evaluator",
@@ -1087,6 +1179,7 @@
     {"semantic_role": "candidate_identity_authority", "authoritative_component": "candidate_submission_receipt"},
     {"semantic_role": "matched_pair_authority", "authoritative_component": "matched_control_pair_authority"},
     {"semantic_role": "formal_evaluation_authority", "authoritative_component": "candidate_parallel_evaluator"},
-    {"semantic_role": "train_feedback_authority", "authoritative_component": "matched_train_feedback"}
+    {"semantic_role": "train_feedback_authority", "authoritative_component": "matched_train_feedback"},
+    {"semantic_role": "development_search_policy_authority", "authoritative_component": "cn_development_search_policy", "authority_class": "FORMAL", "decision_ref": "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"}
   ]
 }
