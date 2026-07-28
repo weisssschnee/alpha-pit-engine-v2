@@ -30,11 +30,8 @@ from our_system_phase2.runtime.cn_iterative_search_v1 import (
 )
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     AUTHORIZED_HOST,
-    MAXIMUM_RAW_ASKS,
     MINIMUM_FREE_MEMORY_BYTES,
-    ROUTE_EVALUATED_TARGETS,
     ROUTES,
-    _authorization_binding,
     _materialized_route_root_allowlists,
 )
 from our_system_phase2.runtime.cn_search_policy_qualification import (
@@ -72,12 +69,20 @@ LAYER_A_MODE = "FROZEN_PROPOSAL_STREAM_AVAILABILITY_REMAP"
 BEHAVIOR_SAMPLE_SIZE = 2_048
 MINIMUM_ROUTE_BEHAVIOR_SAMPLE = 128
 MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL = 8
-MAXIMUM_OPTIMIZER_DRAW_ATTEMPTS = MAXIMUM_RAW_ASKS * (
+LEGACY_CLOSED_RAW_ASKS = 73_728
+MAXIMUM_OPTIMIZER_DRAW_ATTEMPTS = LEGACY_CLOSED_RAW_ASKS * (
     MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL + 1
 )
 BEHAVIOR_COMPUTE_THREADS = 30
 BEHAVIOR_PAIR_BATCH_SIZE = 4
 BEHAVIOR_CACHE_CAP_BYTES = 4 * 1024**3
+LEGACY_CLOSED_ROUTE_TARGETS = {
+    "SLOW_TEMPORAL_CHANGE": 15_500,
+    "FIRSTN_PATH": 2_000,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 1_200,
+    "MARKET_REGIME_CONDITION": 800,
+    "DISCLOSURE_EVENT": 500,
+}
 
 
 def _canonical_manifest_hash(manifest: Mapping[str, Any]) -> str:
@@ -88,6 +93,74 @@ def _canonical_manifest_hash(manifest: Mapping[str, Any]) -> str:
             if key != "manifest_payload_hash"
         }
     )
+
+
+def _closed_campaign_authority_binding(
+    *,
+    path: Path,
+    candidate_archive: Path,
+    behavior_archive: Path,
+    history_manifest: Path,
+    seed_base: int,
+) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    manifest = json.loads(
+        history_manifest.read_text(encoding="utf-8-sig")
+    )
+    expected = {
+        "execution_authorized": True,
+        "authorized_host": AUTHORIZED_HOST,
+        "campaign_profile": "cn_large_optuna_tpe_actual20000_v2",
+        "optimizer": (
+            "official_optuna.samplers.TPESampler_conditional_typed_grammar"
+        ),
+        "optimizer_package_version": "4.8.0",
+        "route_actual_evaluated_targets": LEGACY_CLOSED_ROUTE_TARGETS,
+        "minimum_actual_evaluated_pairs": 20_000,
+        "maximum_raw_asks": 73_728,
+        "seed_base": int(seed_base),
+        "optimizer_search_score_policy": (
+            "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1"
+        ),
+        "portfolio_mode": "LONG_ONLY_TOP",
+        "shorting": "FORBIDDEN",
+        "one_way_cost_bps": 5,
+        "horizons_minutes": [1, 5, 15, 30],
+        "holdout": "SEALED",
+        "forward_2026": "SEALED",
+        "promotion": "FORBIDDEN",
+    }
+    drift = [
+        key for key, value in expected.items() if payload.get(key) != value
+    ]
+    if (
+        str(payload.get("historical_candidate_archive_sha256") or "")
+        .lower()
+        != _sha256(candidate_archive).lower()
+        or str(payload.get("historical_behavior_archive_sha256") or "")
+        .lower()
+        != _sha256(behavior_archive).lower()
+        or str(payload.get("historical_manifest_sha256") or "").lower()
+        != _sha256(history_manifest).lower()
+        or str(manifest.get("status") or "") != "PASS"
+    ):
+        drift.append("historical_identity_snapshot")
+    if drift:
+        raise RuntimeError(
+            "QUALIFICATION_CLOSED_CAMPAIGN_AUTHORITY_DRIFT:"
+            + ",".join(sorted(set(drift)))
+        )
+    return {
+        "schema_version": (
+            "cn_tpe_qualification_closed_campaign_binding_v1"
+        ),
+        "status": "CLOSED_CAMPAIGN_IDENTITY_EVIDENCE_BOUND",
+        "authorization": _artifact(path),
+        "historical_candidate_archive": _artifact(candidate_archive),
+        "historical_behavior_archive": _artifact(behavior_archive),
+        "historical_archive_manifest": _artifact(history_manifest),
+        "frozen": expected,
+    }
 
 
 def _artifact_entry(
@@ -283,10 +356,10 @@ def _read_checkpoint_inputs(
         checkpoint_index += 1
     if not checkpoint_rows:
         raise RuntimeError("QUALIFICATION_NO_CLOSED_CHECKPOINTS")
-    if len(raw_rows) != MAXIMUM_RAW_ASKS:
+    if len(raw_rows) != LEGACY_CLOSED_RAW_ASKS:
         raise RuntimeError(
             "QUALIFICATION_HISTORICAL_DRAW_COUNT_DRIFT:"
-            f"{len(raw_rows)}!={MAXIMUM_RAW_ASKS}"
+            f"{len(raw_rows)}!={LEGACY_CLOSED_RAW_ASKS}"
         )
     return raw_rows, {
         "checkpoints": checkpoint_rows,
@@ -523,16 +596,19 @@ def _replay_layer_a(
     return emissions, layer
 
 
-def _target_weighted_quotas(sample_size: int) -> dict[str, int]:
+def _target_weighted_quotas(
+    sample_size: int,
+    route_targets: Mapping[str, int],
+) -> dict[str, int]:
     base = MINIMUM_ROUTE_BEHAVIOR_SAMPLE
     residual = int(sample_size) - base * len(ROUTES)
     if residual < 0:
         raise ValueError("behavior sample below route floors")
-    total_target = sum(ROUTE_EVALUATED_TARGETS.values())
+    total_target = sum(route_targets.values())
     quotas = {route_id: base for route_id in ROUTES}
     fractional = []
     for route_id in ROUTES:
-        raw = residual * ROUTE_EVALUATED_TARGETS[route_id] / total_target
+        raw = residual * int(route_targets[route_id]) / total_target
         whole = int(math.floor(raw))
         quotas[route_id] += whole
         fractional.append((raw - whole, route_id))
@@ -548,8 +624,9 @@ def _select_behavior_sample(
     emissions: Sequence[Mapping[str, Any]],
     qualification_seed: int,
     sample_size: int,
+    route_targets: Mapping[str, int],
 ) -> list[dict[str, Any]]:
-    quotas = _target_weighted_quotas(sample_size)
+    quotas = _target_weighted_quotas(sample_size, route_targets)
     selected: list[dict[str, Any]] = []
     selected_ids: set[str] = set()
     by_route: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -733,6 +810,8 @@ def _layer_b_and_feasibility(
     probe_audits: Sequence[Mapping[str, Any]],
     ledger: Mapping[str, Any],
     initial_remaining_by_route: Mapping[str, int],
+    route_targets: Mapping[str, int],
+    formal_ask_budget: int,
 ) -> dict[str, Any]:
     selected_by_exact = {
         str(row["exact_identity"]): dict(row) for row in selected
@@ -775,7 +854,7 @@ def _layer_b_and_feasibility(
         conservative_conversion = behavior_lcb * completion_lcb
         projected = (
             math.ceil(
-                ROUTE_EVALUATED_TARGETS[route_id]
+                int(route_targets[route_id])
                 / conservative_conversion
             )
             if conservative_conversion > 0.0
@@ -799,7 +878,7 @@ def _layer_b_and_feasibility(
         if sample < MINIMUM_ROUTE_BEHAVIOR_SAMPLE:
             evidence_sufficient = False
         route_rows[route_id] = {
-            "target_evaluated": ROUTE_EVALUATED_TARGETS[route_id],
+            "target_evaluated": int(route_targets[route_id]),
             "sample_formal_fresh_exact_asks": sample,
             "behavior_admitted": admitted,
             "behavior_admission_rate": admitted / sample if sample else None,
@@ -828,8 +907,9 @@ def _layer_b_and_feasibility(
         "INSUFFICIENT_ZERO_FINANCIAL_EVIDENCE"
         if not evidence_sufficient
         else (
-            "FEASIBLE_WITHIN_73728"
-            if projected_total <= MAXIMUM_RAW_ASKS and supply_sufficient
+            "FEASIBLE_WITHIN_FROZEN_FORMAL_BUDGET"
+            if projected_total <= int(formal_ask_budget)
+            and supply_sufficient
             else "INFEASIBLE_UNDER_CURRENT_ROUTE_TARGETS"
         )
     )
@@ -839,8 +919,8 @@ def _layer_b_and_feasibility(
         "minimum_route_sample": MINIMUM_ROUTE_BEHAVIOR_SAMPLE,
         "route_rows": route_rows,
         "projected_formal_asks_required_total": projected_total,
-        "formal_ask_budget_reference": MAXIMUM_RAW_ASKS,
-        "projected_20k_ask_feasibility": feasibility,
+        "formal_ask_budget_reference": int(formal_ask_budget),
+        "projected_target_ask_feasibility": feasibility,
         "probe_audits": list(probe_audits),
         "label_sidecar_paths_accepted": 0,
         "financial_reads": 0,
@@ -858,6 +938,43 @@ def _memory_sample() -> dict[str, int]:
         "available_memory_bytes": int(memory.available),
         "process_rss_bytes": int(psutil.Process().memory_info().rss),
     }
+
+
+def _load_successor_target_contract(
+    path: Path,
+) -> tuple[dict[str, int], int, dict[str, Any]]:
+    source = path.resolve()
+    payload = json.loads(source.read_text(encoding="utf-8-sig"))
+    unsigned = {
+        key: copy.deepcopy(value)
+        for key, value in payload.items()
+        if key != "contract_hash"
+    }
+    targets = {
+        str(key): int(value)
+        for key, value in dict(
+            payload.get("route_actual_evaluated_targets") or {}
+        ).items()
+    }
+    formal_budget = int(
+        payload.get("maximum_formal_fresh_exact_asks") or 0
+    )
+    if (
+        str(payload.get("schema_version") or "")
+        != "cn_large_tpe_successor_route_targets_v3"
+        or str(payload.get("status") or "")
+        != "FROZEN_FOR_ZERO_FINANCIAL_QUALIFICATION_ONLY"
+        or bool(payload.get("execution_authorized"))
+        or bool(payload.get("financial_campaign_authorized"))
+        or set(targets) != set(ROUTES)
+        or sum(targets.values())
+        != int(payload.get("minimum_actual_evaluated_pairs") or 0)
+        or formal_budget < 1
+        or _stable_hash(unsigned)
+        != str(payload.get("contract_hash") or "")
+    ):
+        raise RuntimeError("QUALIFICATION_TARGET_CONTRACT_DRIFT")
+    return targets, formal_budget, payload
 
 
 def _drain_formal_capacity(
@@ -884,14 +1001,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if any(output_root.iterdir()):
         raise RuntimeError("QUALIFICATION_OUTPUT_ROOT_NOT_EMPTY")
     campaign_root = args.closed_campaign_root.resolve()
-    authority = _authorization_binding(
+    route_targets, formal_ask_budget, target_contract = (
+        _load_successor_target_contract(args.target_contract)
+    )
+    authority = _closed_campaign_authority_binding(
         path=args.campaign_authorization.resolve(),
         candidate_archive=args.historical_candidate_archive.resolve(),
         behavior_archive=args.historical_behavior_archive.resolve(),
         history_manifest=args.historical_archive_manifest.resolve(),
         seed_base=int(args.campaign_seed_base),
-        active_threads=32,
-        session_threads=32,
     )
     historical_exact, historical_behavior, archive_snapshot = (
         _load_historical_dedupe(
@@ -1028,6 +1146,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         emissions=future_probe_pool,
         qualification_seed=int(args.qualification_seed),
         sample_size=int(args.behavior_sample_size),
+        route_targets=route_targets,
     )
     selected_path = _write_parquet(
         output_root / "layer_b_selected_emissions.parquet", selected
@@ -1086,6 +1205,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         probe_audits=probe_bundle["probe_audits"],
         ledger=ledger,
         initial_remaining_by_route=future_formal_capacity_by_route,
+        route_targets=route_targets,
+        formal_ask_budget=formal_ask_budget,
     )
     memory_samples.append(_memory_sample())
     layer_b["runtime"] = {
@@ -1133,7 +1254,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         else "ROUTE_PARTIAL"
     )
     fallback_share = float(layer_a["global_fallback_share"] or 0.0)
-    feasibility = str(layer_b["projected_20k_ask_feasibility"])
+    feasibility = str(
+        layer_b["projected_target_ask_feasibility"]
+    )
     supply_margin_pass = all(
         bool(row["route_supply_margin_pass"])
         for row in layer_b["route_rows"].values()
@@ -1145,7 +1268,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     elif feasibility == "INFEASIBLE_UNDER_CURRENT_ROUTE_TARGETS":
         readiness = "ROUTE_TARGET_REDESIGN_REQUIRED"
     elif (
-        feasibility == "FEASIBLE_WITHIN_73728"
+        feasibility == "FEASIBLE_WITHIN_FROZEN_FORMAL_BUDGET"
         and fallback_share
         <= float(args.maximum_global_fallback_share)
         and behavior_yield == "PASS"
@@ -1158,7 +1281,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "HISTORICAL_TAIL_REPLAY_RECOVERY": "PASS",
         "FORMAL_FRESH_EXACT_YIELD": formal_yield,
         "BEHAVIOR_ADMISSION_YIELD": behavior_yield,
-        "PROJECTED_20K_ASK_FEASIBILITY": feasibility,
+        "PROJECTED_FROZEN_TARGET_ASK_FEASIBILITY": feasibility,
         "NOVELTY_AWARE_TPE_LARGE_SEARCH_READINESS": readiness,
     }
     access_path = _write_json(
@@ -1199,6 +1322,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         {
             "schema_version": QUALIFICATION_SCHEMA_VERSION,
             "authority": authority,
+            "successor_target_contract": {
+                "artifact": _artifact(args.target_contract.resolve()),
+                "contract_hash": str(target_contract["contract_hash"]),
+                "route_actual_evaluated_targets": route_targets,
+                "minimum_actual_evaluated_pairs": sum(
+                    route_targets.values()
+                ),
+                "maximum_formal_fresh_exact_asks": formal_ask_budget,
+                "execution_authorized": False,
+            },
             "archive_snapshot": archive_snapshot,
             "registry_binding": registry_binding,
             "materialized_schema": schema,
@@ -1276,6 +1409,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--closed-campaign-root", type=Path, required=True)
+    parser.add_argument("--target-contract", type=Path, required=True)
     parser.add_argument("--campaign-authorization", type=Path, required=True)
     parser.add_argument(
         "--historical-candidate-archive", type=Path, required=True

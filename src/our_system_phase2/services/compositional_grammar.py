@@ -123,6 +123,9 @@ OPTIMIZER_GENE_ROUTES = tuple(
 _FIELD_PAIR_SEPARATOR = "::"
 _DISCLOSURE_PAYLOAD_SKELETON_NAMES = (
     "pre_event_path",
+    "pre_event_signed_path",
+    "pre_event_ranked_path",
+    "pre_event_absolute_path",
     "post_maturity_state",
     "event_prior_condition",
     "event_window",
@@ -278,6 +281,84 @@ def skeleton_registry() -> dict[str, tuple[SkeletonSpec, ...]]:
                 search_role=search_role,
             )
             for name, hypothesis, roles, unit_signature, ablation, maximum_depth in _DECLARATIONS[route_id]
+        )
+    return output
+
+
+def optimizer_typed_supply_extension_registry(
+) -> dict[str, tuple[SkeletonSpec, ...]]:
+    """Append-only economic hypotheses used only by optimizer gene lanes.
+
+    Legacy attempt-index proposal mapping remains owned by
+    :func:`skeleton_registry`; these extensions cannot remap historical asks.
+    """
+
+    declarations = {
+        "DISCLOSURE_EVENT": (
+            (
+                "pre_event_signed_path",
+                "the direction of the PIT payload before disclosure changes event interpretation",
+                ("PRIMARY",),
+                "dimensionless-path",
+                "remove_pre_event_path",
+                4,
+            ),
+            (
+                "pre_event_ranked_path",
+                "the cross-sectional standing of the PIT payload before disclosure changes event interpretation",
+                ("PRIMARY",),
+                "dimensionless-path",
+                "remove_pre_event_path",
+                4,
+            ),
+            (
+                "pre_event_absolute_path",
+                "the magnitude of the PIT payload before disclosure changes event interpretation",
+                ("PRIMARY",),
+                "dimensionless-path",
+                "remove_pre_event_path",
+                4,
+            ),
+        ),
+        "MARKET_REGIME_CONDITION": (
+            (
+                "regime_magnitude_persistence",
+                "payload magnitude behaves differently when a market regime persists",
+                ("PRIMARY", "CONDITION_ONLY"),
+                "dimensionless-gated",
+                "remove_regime_persistence_gate",
+                4,
+            ),
+            (
+                "regime_direction_persistence",
+                "payload direction behaves differently when a market regime persists",
+                ("PRIMARY", "CONDITION_ONLY"),
+                "dimensionless-gated",
+                "remove_regime_persistence_gate",
+                4,
+            ),
+        ),
+    }
+    output: dict[str, tuple[SkeletonSpec, ...]] = {}
+    for route_id, rows in declarations.items():
+        clock, maturity = _ROUTE_CLOCKS[route_id]
+        output[route_id] = tuple(
+            SkeletonSpec(
+                skeleton_id=(
+                    f"cn.comp.supply.v1.{route_id.lower()}.{name}"
+                ),
+                route_id=route_id,
+                financial_hypothesis=hypothesis,
+                input_roles=roles,
+                unit_signature=unit_signature,
+                clock_contract=clock,
+                maturity_contract=maturity,
+                control_ablation_rule=ablation,
+                maximum_depth=maximum_depth,
+                allowed_routes=(route_id,),
+            )
+            for name, hypothesis, roles, unit_signature, ablation, maximum_depth
+            in rows
         )
     return output
 
@@ -470,6 +551,14 @@ class CompositionalGrammarV2:
         self.registry = registry
         self.compiler = TypedRouteCompiler(registry)
         self._skeletons = skeleton_registry()
+        supply_extensions = optimizer_typed_supply_extension_registry()
+        self._optimizer_skeletons = {
+            route_id: (
+                self._skeletons[route_id]
+                + supply_extensions.get(route_id, ())
+            )
+            for route_id in self._skeletons
+        }
         self._route_root_allowlist = self._validate_route_root_allowlist(
             route_root_allowlist
         )
@@ -962,6 +1051,8 @@ class CompositionalGrammarV2:
                 "regime_maturity_payload",
                 "regime_conditioned_path",
                 "regime_persistence_gate",
+                "regime_magnitude_persistence",
+                "regime_direction_persistence",
             }:
                 categories["window_id"] = ["3", "5", "10", "20"]
             constraint = "STOCK_PAYLOAD_PLUS_MARKET_CONDITION"
@@ -1062,7 +1153,7 @@ class CompositionalGrammarV2:
             )
         lanes: dict[str, dict[str, Any]] = {}
         blocked: dict[str, str] = {}
-        for skeleton in self._skeletons[route_id]:
+        for skeleton in self._optimizer_skeletons[route_id]:
             try:
                 lanes[skeleton.skeleton_id] = (
                     self.categorical_gene_space(
@@ -1137,7 +1228,7 @@ class CompositionalGrammarV2:
             try:
                 skeleton = next(
                     row
-                    for row in self._skeletons[route_id]
+                    for row in self._optimizer_skeletons[route_id]
                     if row.skeleton_id == str(skeleton_id)
                 )
             except StopIteration as exc:
@@ -2325,6 +2416,27 @@ class CompositionalGrammarV2:
                 )
             family = "PreEventPath"
             fields = (event, payload)
+        elif name in {
+            "pre_event_signed_path",
+            "pre_event_ranked_path",
+            "pre_event_absolute_path",
+        }:
+            if payload is None:  # pragma: no cover - lane schema owns this.
+                raise ValueError("DISCLOSURE_PAYLOAD_GENE_REQUIRED")
+            payload_expression = {
+                "pre_event_signed_path": f"Sign({payload_ref})",
+                "pre_event_ranked_path": f"CSRank({payload_ref})",
+                "pre_event_absolute_path": f"Abs({payload_ref})",
+            }[name]
+            primary_expression = (
+                f"EventWindow({payload_expression},{event_ref},5,0)"
+            )
+            control_expression = (
+                f"Add({payload_expression},"
+                f"Mul(0,TimeSince({event_ref})))"
+            )
+            family = "PreEventPath"
+            fields = (event, payload)
         elif name == "post_maturity_state":
             if payload is None:  # pragma: no cover - lane schema owns this.
                 raise ValueError("DISCLOSURE_PAYLOAD_GENE_REQUIRED")
@@ -2471,6 +2583,26 @@ class CompositionalGrammarV2:
                 f"CSRank(Add(ZScore({payload_ref}),Mul(PathShape({payload_ref},{window}),Sign({condition_ref}))))"
             )
             family = "ConditionGate"
+        elif name == "regime_magnitude_persistence":
+            primary_expression = (
+                f"CSRank(Mul(Abs(ZScore({payload_ref})),"
+                f"Persistence(Positive({condition_ref}),{window})))"
+            )
+            control_expression = (
+                f"CSRank(Add(Abs(ZScore({payload_ref})),"
+                f"Mul(0,{condition_ref})))"
+            )
+            family = "RegimeInteraction"
+        elif name == "regime_direction_persistence":
+            primary_expression = (
+                f"CSRank(Mul(Sign({payload_ref}),"
+                f"Persistence(Positive({condition_ref}),{window})))"
+            )
+            control_expression = (
+                f"CSRank(Add(Sign({payload_ref}),"
+                f"Mul(0,{condition_ref})))"
+            )
+            family = "RegimeInteraction"
         else:  # pragma: no cover
             raise KeyError(f"unhandled market-regime skeleton: {name}")
         return self._make_pair(
@@ -2976,7 +3108,7 @@ class CompositionalGrammarV2:
             )
         skeleton = next(
             row
-            for row in self._skeletons[route_id]
+            for row in self._optimizer_skeletons[route_id]
             if row.skeleton_id == skeleton_id
         )
         is_skeleton_lane = (

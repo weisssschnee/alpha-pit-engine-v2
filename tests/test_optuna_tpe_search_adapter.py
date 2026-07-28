@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 from our_system_phase2.services.optuna_tpe_search_adapter import (
     EVALUATED,
+    PRUNED,
     RouteConditionalTPESearchAdapter,
 )
 
@@ -187,6 +188,88 @@ def test_failed_nonfinancial_attempts_do_not_enter_tpe_reward() -> None:
 
     assert receipt["completed_count"] == 3
     assert receipt["failed_count"] == 1
+
+
+def test_live_runner_pruned_requires_and_restores_real_intermediate() -> None:
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=20,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+    )
+    asked = adapter.ask_population(
+        checkpoint_id="checkpoint_001",
+        count=3,
+    )
+    observations = _observations(asked)
+    observations[1] = {
+        "proposal_id": asked[1]["proposal_id"],
+        "outcome_class": PRUNED,
+        "optimizer_reward": None,
+        "optimizer_intermediate_value": -0.125,
+        "optimizer_intermediate_step": 4,
+        "pruning_authority": "DECLARED_TRAIN_PREFIX_PRUNER_V1",
+        "outcome_reason": "TRAIN_PREFIX_DOMINATED",
+    }
+    observations[2] = {
+        "proposal_id": asked[2]["proposal_id"],
+        "outcome_class": "BEHAVIOR_BLOCKED",
+        "optimizer_reward": None,
+        "outcome_reason": "BEHAVIOR_DUPLICATE",
+    }
+
+    receipt = adapter.tell_population(observations)
+    restored = RouteConditionalTPESearchAdapter.restore_trials(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=20,
+        transcripts=adapter.history,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+    )
+
+    assert receipt["completed_count"] == 1
+    assert receipt["pruned_count"] == 1
+    assert receipt["failed_count"] == 1
+    assert [trial.state.name for trial in restored._study.trials] == [
+        "COMPLETE",
+        "PRUNED",
+        "FAIL",
+    ]
+    assert restored._study.trials[1].intermediate_values == {4: -0.125}
+    assert restored.history == adapter.history
+
+
+def test_pruned_cannot_be_used_for_archive_rejection() -> None:
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id="TEST_ROUTE",
+        lane_spaces=_lanes(),
+        seed=20,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+    )
+    asked = adapter.ask_population(
+        checkpoint_id="checkpoint_001",
+        count=1,
+    )
+
+    import pytest
+
+    with pytest.raises(
+        RuntimeError,
+        match="OPTUNA_PRUNED_REQUIRES_REAL_INTERMEDIATE_RECEIPT",
+    ):
+        adapter.tell_population(
+            [
+                {
+                    "proposal_id": asked[0]["proposal_id"],
+                    "outcome_class": PRUNED,
+                    "optimizer_reward": None,
+                    "outcome_reason": "EXACT_ALREADY_SEEN",
+                }
+            ]
+        )
 
 
 def test_availability_fixed_trial_uses_official_queue_and_fail_state() -> None:

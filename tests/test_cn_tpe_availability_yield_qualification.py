@@ -11,9 +11,20 @@ from scripts.run_cn_tpe_availability_yield_qualification import (
 )
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import ROUTES
 
+SUCCESSOR_TARGETS = {
+    "SLOW_TEMPORAL_CHANGE": 14_000,
+    "FIRSTN_PATH": 1_300,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 900,
+    "MARKET_REGIME_CONDITION": 380,
+    "DISCLOSURE_EVENT": 300,
+}
+
 
 def test_behavior_qualification_quotas_preserve_route_floor_and_total() -> None:
-    quotas = _target_weighted_quotas(BEHAVIOR_SAMPLE_SIZE)
+    quotas = _target_weighted_quotas(
+        BEHAVIOR_SAMPLE_SIZE,
+        SUCCESSOR_TARGETS,
+    )
 
     assert set(quotas) == set(ROUTES)
     assert sum(quotas.values()) == BEHAVIOR_SAMPLE_SIZE
@@ -57,11 +68,13 @@ def test_behavior_sample_is_deterministic_unique_and_route_stratified() -> None:
         emissions=emissions,
         qualification_seed=91,
         sample_size=BEHAVIOR_SAMPLE_SIZE,
+        route_targets=SUCCESSOR_TARGETS,
     )
     second = _select_behavior_sample(
         emissions=emissions,
         qualification_seed=91,
         sample_size=BEHAVIOR_SAMPLE_SIZE,
+        route_targets=SUCCESSOR_TARGETS,
     )
 
     assert first == second
@@ -80,4 +93,3 @@ def test_behavior_sample_is_deterministic_unique_and_route_stratified() -> None:
         assert {
             row["emission_mode"] for row in route_rows
         } == set(modes)
-

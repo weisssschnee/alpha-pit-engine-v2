@@ -72,6 +72,11 @@ from our_system_phase2.services.phase3cm_streaming_expression import (
 from our_system_phase2.services.portfolio_behavior_archive import (
     PortfolioBehaviorArchive,
 )
+from our_system_phase2.services.route_local_availability import (
+    AvailabilityEntry,
+    RouteLocalAvailabilityController,
+    enumerate_authoritative_entries,
+)
 from our_system_phase2.services.split_boundary_label_purity import (
     audit_split_boundary_label_purity,
 )
@@ -89,19 +94,20 @@ from our_system_phase2.services.unified_discovery_generators import (
 
 
 AUTHORIZED_HOST = "DESKTOP-77OPJ6F"
-CAMPAIGN_PROFILE = "cn_large_optuna_tpe_actual20000_v2"
+CAMPAIGN_PROFILE = "cn_large_optuna_tpe_availability_v3"
 ROUTE_EVALUATED_TARGETS = {
-    "SLOW_TEMPORAL_CHANGE": 15_500,
-    "FIRSTN_PATH": 2_000,
-    "SLOW_CROSS_SECTIONAL_LEVEL": 1_200,
-    "MARKET_REGIME_CONDITION": 800,
-    "DISCLOSURE_EVENT": 500,
+    "SLOW_TEMPORAL_CHANGE": 14_000,
+    "FIRSTN_PATH": 1_300,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 900,
+    "MARKET_REGIME_CONDITION": 380,
+    "DISCLOSURE_EVENT": 300,
 }
 ROUTES = tuple(ROUTE_EVALUATED_TARGETS)
 MINIMUM_ACTUAL_EVALUATED_PAIRS = sum(ROUTE_EVALUATED_TARGETS.values())
 MAXIMUM_CHECKPOINTS = 96
-ASKS_PER_CHECKPOINT = 3_072
-MAXIMUM_RAW_ASKS = 73_728
+ASKS_PER_CHECKPOINT = 384
+MAXIMUM_RAW_ASKS = 36_864
+MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL = 8
 MAXIMUM_WALL_SECONDS = 7 * 24 * 60 * 60
 VALIDATION_FINALIST_PAIRS = 256
 PAIR_BATCH_SIZES = {"active_bar": 12, "stock_session": 12}
@@ -307,6 +313,237 @@ def _ask_route_populations(
     }
 
 
+def _availability_metadata(
+    emission: Any,
+    *,
+    formal_ask_ordinal: int,
+    source_optimizer_trial_number: int | None = None,
+) -> dict[str, Any]:
+    metadata = {
+        "formal_fresh_exact_ask": True,
+        "formal_ask_ordinal": int(formal_ask_ordinal),
+        "availability_emission_mode": str(emission.emission_mode),
+        "availability_bucket_key": str(emission.bucket_key),
+        "availability_exact_identity": str(emission.exact_identity),
+        "availability_source_exact_identity": str(
+            emission.source_exact_identity
+        ),
+    }
+    if source_optimizer_trial_number is not None:
+        metadata["source_optimizer_trial_number"] = int(
+            source_optimizer_trial_number
+        )
+    return metadata
+
+
+def _ask_availability_aware_populations(
+    *,
+    schedule: Sequence[Mapping[str, Any]],
+    adapters: dict[str, RouteConditionalTPESearchAdapter],
+    controller: RouteLocalAvailabilityController,
+    generator: RegistryDrivenGenerator,
+    schema_by_backend: Mapping[str, set[str]],
+    checkpoint_id: str,
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    dict[str, dict[str, Any]],
+    dict[str, Any],
+]:
+    """Emit formal fresh exact asks while retaining every official trial.
+
+    Native draws that hit invalid, seen, or exhausted exact space remain real
+    Optuna trials and are told FAIL.  They do not consume the formal ask
+    budget.  Fixed replacements are ordinary queued Optuna trials and receive
+    financial reward only if the existing evaluator later completes them.
+    """
+
+    started = time.perf_counter()
+    all_asked: list[dict[str, Any]] = []
+    formal_asked: list[dict[str, Any]] = []
+    internal_observations: dict[str, dict[str, Any]] = {}
+    route_metrics: dict[str, dict[str, Any]] = {}
+    global_formal_ordinal = 0
+    for route_spec in schedule:
+        route_id = str(route_spec["route_id"])
+        requested = int(route_spec["asked_pairs"])
+        route_started = time.perf_counter()
+        native_draws = 0
+        fixed_draws = 0
+        direct = 0
+        replacement = 0
+        fallback_count = 0
+        unfulfilled = 0
+        for route_formal_ordinal in range(requested):
+            emitted = False
+            last_identity = ""
+            for internal_draw_ordinal in range(
+                MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL
+            ):
+                native = adapters[route_id].ask_trial(
+                    checkpoint_id=checkpoint_id,
+                    metadata={
+                        "formal_ask_target_ordinal": int(
+                            route_formal_ordinal
+                        ),
+                        "internal_draw_ordinal": int(
+                            internal_draw_ordinal
+                        ),
+                        "availability_trial_role": "NATIVE_DRAW",
+                    },
+                )
+                controller.record_optimizer_draw(route_id)
+                native_draws += 1
+                materialized = _materialize_population(
+                    asked=[native],
+                    generator=generator,
+                    schema_by_backend=schema_by_backend,
+                )[0]
+                proposal_id = str(native["proposal_id"])
+                legal = (
+                    str(materialized.get("construction_status") or "")
+                    == "LEGAL"
+                )
+                last_identity = str(
+                    materialized.get("exact_identity") or ""
+                )
+                if not legal:
+                    internal_observations[proposal_id] = {
+                        "proposal_id": proposal_id,
+                        "outcome_class": "DETERMINISTIC_INVALID",
+                        "optimizer_reward": None,
+                        "outcome_reason": str(
+                            materialized.get("construction_error")
+                            or "DETERMINISTIC_INVALID"
+                        ),
+                    }
+                    all_asked.append(native)
+                    continue
+                emission = controller.accept_direct(
+                    route_id=route_id,
+                    genes=dict(native["genes"]),
+                    exact_identity=last_identity,
+                )
+                if emission is not None:
+                    annotated = adapters[
+                        route_id
+                    ].annotate_pending_trial(
+                        proposal_id,
+                        _availability_metadata(
+                            emission,
+                            formal_ask_ordinal=global_formal_ordinal,
+                        ),
+                    )
+                    all_asked.append(annotated)
+                    formal_asked.append(annotated)
+                    direct += 1
+                    emitted = True
+                    break
+                replacement_emission = controller.emit_same_bucket(
+                    route_id=route_id,
+                    genes=dict(native["genes"]),
+                    source_exact_identity=last_identity,
+                )
+                internal_observations[proposal_id] = {
+                    "proposal_id": proposal_id,
+                    "outcome_class": (
+                        "AVAILABILITY_REPLACED"
+                        if replacement_emission is not None
+                        else "AVAILABILITY_BUCKET_EXHAUSTED"
+                    ),
+                    "optimizer_reward": None,
+                    "outcome_reason": (
+                        "EXACT_ALREADY_SEEN"
+                        if replacement_emission is not None
+                        else "STRUCTURAL_BUCKET_EXHAUSTED"
+                    ),
+                }
+                all_asked.append(native)
+                if replacement_emission is None:
+                    continue
+                fixed = adapters[route_id].enqueue_fixed_trial(
+                    checkpoint_id=checkpoint_id,
+                    genes=replacement_emission.genes,
+                    metadata={
+                        **_availability_metadata(
+                            replacement_emission,
+                            formal_ask_ordinal=global_formal_ordinal,
+                            source_optimizer_trial_number=int(
+                                native["trial_number"]
+                            ),
+                        ),
+                        "availability_trial_role": "FIXED_REPLACEMENT",
+                    },
+                )
+                controller.record_optimizer_draw(route_id)
+                fixed_draws += 1
+                all_asked.append(fixed)
+                formal_asked.append(fixed)
+                replacement += 1
+                emitted = True
+                break
+            if not emitted:
+                fallback = controller.emit_global_fallback(
+                    route_id=route_id,
+                    source_exact_identity=last_identity,
+                )
+                if fallback is None:
+                    unfulfilled += 1
+                    break
+                fixed = adapters[route_id].enqueue_fixed_trial(
+                    checkpoint_id=checkpoint_id,
+                    genes=fallback.genes,
+                    metadata={
+                        **_availability_metadata(
+                            fallback,
+                            formal_ask_ordinal=global_formal_ordinal,
+                        ),
+                        "availability_trial_role": "FIXED_FALLBACK",
+                    },
+                )
+                controller.record_optimizer_draw(route_id)
+                fixed_draws += 1
+                all_asked.append(fixed)
+                formal_asked.append(fixed)
+                fallback_count += 1
+                emitted = True
+            if emitted:
+                global_formal_ordinal += 1
+        route_wall = time.perf_counter() - route_started
+        route_metrics[route_id] = {
+            "requested_formal_fresh_exact_asks": requested,
+            "emitted_formal_fresh_exact_asks": (
+                direct + replacement + fallback_count
+            ),
+            "native_optimizer_draw_attempts": native_draws,
+            "fixed_optimizer_draw_attempts": fixed_draws,
+            "optimizer_draw_attempts": native_draws + fixed_draws,
+            "tpe_direct_fresh": direct,
+            "tpe_bucket_replacement": replacement,
+            "global_availability_fallback": fallback_count,
+            "unfulfilled_formal_requests": unfulfilled,
+            "remaining_exact": controller.remaining_count(
+                route_id=route_id
+            ),
+            "wall_seconds": route_wall,
+        }
+    wall_seconds = time.perf_counter() - started
+    runtime = {
+        "schema_version": "cn_large_tpe_availability_ask_runtime_v1",
+        "checkpoint": checkpoint_id,
+        "execution": "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA",
+        "maximum_internal_native_draws_per_formal": (
+            MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL
+        ),
+        "formal_fresh_exact_asks": len(formal_asked),
+        "optimizer_draw_attempts": len(all_asked),
+        "internal_failed_trials": len(internal_observations),
+        "wall_seconds": wall_seconds,
+        "routes": route_metrics,
+    }
+    return all_asked, formal_asked, internal_observations, runtime
+
+
 def _write_optimizer_snapshot(
     *,
     snapshot_path: Path,
@@ -509,6 +746,10 @@ def _authorization_binding(
         "maximum_checkpoints": MAXIMUM_CHECKPOINTS,
         "asks_per_checkpoint": ASKS_PER_CHECKPOINT,
         "maximum_raw_asks": MAXIMUM_RAW_ASKS,
+        "budget_counting_unit": "FORMAL_FRESH_EXACT_ASK",
+        "maximum_internal_native_draws_per_formal": (
+            MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL
+        ),
         "maximum_wall_seconds": MAXIMUM_WALL_SECONDS,
         "validation_finalist_pairs": VALIDATION_FINALIST_PAIRS,
         "active_threads": int(active_threads),
@@ -517,7 +758,7 @@ def _authorization_binding(
         "session_pair_batch_size": PAIR_BATCH_SIZES["stock_session"],
         "optuna_route_workers": OPTUNA_ROUTE_WORKERS,
         "optimizer_ask_execution": (
-            "PROCESS_PARALLEL_ROUTE_LOCAL_OPTUNA_STUDIES"
+            "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA"
         ),
         "optimizer_n_ei_candidates": N_EI_CANDIDATES,
         "optimizer_sampler_mode": TPE_SAMPLER_MODE,
@@ -575,7 +816,7 @@ def _authorization_binding(
             + ",".join(sorted(set(drift)))
         )
     return {
-        "schema_version": "cn_large_tpe_campaign_authority_binding_v2",
+        "schema_version": "cn_large_tpe_campaign_authority_binding_v3",
         "status": "FIVE_DIGIT_TRAIN_SEARCH_AUTHORIZED",
         "authorization": _artifact(path),
         "historical_candidate_archive": _artifact(candidate_archive),
@@ -734,6 +975,107 @@ def _fresh_exact_supply(
             else "FAIL"
         ),
     }
+
+
+def _freeze_availability_index(
+    *,
+    output_root: Path,
+    generator: RegistryDrivenGenerator,
+    lanes_by_route: Mapping[str, Mapping[str, Any]],
+    input_hashes: Mapping[str, str],
+) -> tuple[list[AvailabilityEntry], Path]:
+    path = output_root / "route_local_availability_index.json"
+    normalized_hashes = {
+        str(key): str(value) for key, value in input_hashes.items()
+    }
+    if path.is_file():
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+        unhashed = {
+            key: copy.deepcopy(value)
+            for key, value in payload.items()
+            if key != "payload_hash"
+        }
+        if (
+            str(payload.get("schema_version") or "")
+            != "cn_route_local_availability_index_binding_v1"
+            or dict(payload.get("input_hashes") or {})
+            != normalized_hashes
+            or _stable_hash(unhashed)
+            != str(payload.get("payload_hash") or "")
+        ):
+            raise RuntimeError("LARGE_TPE_AVAILABILITY_INDEX_DRIFT")
+        entries = [
+            AvailabilityEntry(
+                route_id=str(row["route_id"]),
+                bucket_key=str(row["bucket_key"]),
+                exact_identity=str(row["exact_identity"]),
+                control_exact_identity=str(
+                    row["control_exact_identity"]
+                ),
+                genes={
+                    str(key): str(value)
+                    for key, value in dict(row["genes"]).items()
+                },
+            )
+            for row in payload.get("entries") or ()
+        ]
+    else:
+        entries, enumeration = enumerate_authoritative_entries(
+            generator=generator,
+            lanes_by_route=lanes_by_route,
+            routes=ROUTES,
+        )
+        payload = {
+            "schema_version": (
+                "cn_route_local_availability_index_binding_v1"
+            ),
+            "input_hashes": normalized_hashes,
+            "enumeration": enumeration,
+            "entries": [entry.to_dict() for entry in entries],
+            "financial_reads": 0,
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+        }
+        payload["payload_hash"] = _stable_hash(payload)
+        _write_json(path, payload)
+    if not entries:
+        raise RuntimeError("LARGE_TPE_AVAILABILITY_INDEX_EMPTY")
+    return entries, path
+
+
+def _restore_or_initialize_availability_controller(
+    *,
+    output_root: Path,
+    entries: Sequence[AvailabilityEntry],
+    historical_exact: set[str],
+    checkpoint_count: int,
+    emitter_seed: int,
+    input_hashes: Mapping[str, str],
+) -> RouteLocalAvailabilityController:
+    if checkpoint_count == 0:
+        return RouteLocalAvailabilityController(
+            entries=entries,
+            seen_exact_identities=historical_exact,
+            emitter_seed=emitter_seed,
+            input_hashes=input_hashes,
+        )
+    state_path = (
+        output_root
+        / "checkpoints"
+        / f"checkpoint_{checkpoint_count:03d}"
+        / "availability_controller_state.json"
+    )
+    if not state_path.is_file():
+        raise RuntimeError(
+            "LARGE_TPE_AVAILABILITY_CONTROLLER_STATE_MISSING"
+        )
+    return RouteLocalAvailabilityController.restore(
+        entries=entries,
+        seen_exact_identities=historical_exact,
+        state=json.loads(state_path.read_text(encoding="utf-8-sig")),
+        input_hashes=input_hashes,
+    )
 
 
 def _allocate_checkpoint_asks(
@@ -934,7 +1276,14 @@ def _load_closed_state(
                                     "COMPLETE"
                                     if str(row.get("outcome_class") or "")
                                     == EVALUATED
-                                    else "FAIL"
+                                    else (
+                                        "PRUNED"
+                                        if str(
+                                            row.get("outcome_class") or ""
+                                        )
+                                        == "LIVE_RUNNER_PRUNED"
+                                        else "FAIL"
+                                    )
                                 ),
                                 "optimizer_reward": row.get(
                                     "optimizer_reward"
@@ -945,12 +1294,24 @@ def _load_closed_state(
                                 "outcome_reason": str(
                                     row.get("outcome_reason") or ""
                                 ),
+                                "optimizer_intermediate_value": row.get(
+                                    "optimizer_intermediate_value"
+                                ),
+                                "optimizer_intermediate_step": row.get(
+                                    "optimizer_intermediate_step"
+                                ),
+                                "pruning_authority": str(
+                                    row.get("pruning_authority") or ""
+                                ),
                             }
                             for row in route_observations
                         ],
                     }
                 )
-            asked_counts[route_id] += len(route_asked)
+            asked_counts[route_id] += sum(
+                bool(row.get("formal_fresh_exact_ask", True))
+                for row in route_asked
+            )
         candidate_rows = (
             pd.read_parquet(root / "candidate_attempts.parquet")
             .where(pd.notna, None)
@@ -1303,6 +1664,32 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         checkpoint_count=len(state["summaries"]),
         prior_manifest=state["prior_manifest"],
     )
+    availability_input_hashes = {
+        "registry": _sha256(registry_path),
+        "grammar_lanes": _sha256(lane_manifest_path),
+        "compiler_contract": _sha256(contract_path),
+        "historical_exact_archive": str(
+            archive_snapshot["candidate_archive"]["sha256"]
+        ),
+    }
+    availability_entries, availability_index_path = (
+        _freeze_availability_index(
+            output_root=output_root,
+            generator=generator,
+            lanes_by_route=lanes_by_route,
+            input_hashes=availability_input_hashes,
+        )
+    )
+    availability_controller = (
+        _restore_or_initialize_availability_controller(
+            output_root=output_root,
+            entries=availability_entries,
+            historical_exact=historical_exact,
+            checkpoint_count=len(state["summaries"]),
+            emitter_seed=int(args.seed_base) + 97_003,
+            input_hashes=availability_input_hashes,
+        )
+    )
     deadline = time.time() + int(args.maximum_wall_seconds)
     checkpoint_index = len(state["summaries"])
     while (
@@ -1324,6 +1711,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             allocation = _allocate_checkpoint_asks(
                 evaluated_by_route=state["evaluated"],
                 asked_by_route=state["asked_counts"],
+                remaining_exact_by_route={
+                    route_id: availability_controller.remaining_count(
+                        route_id=route_id
+                    )
+                    for route_id in ROUTES
+                },
             )
             schedule = {
                 "checkpoint": checkpoint_id,
@@ -1332,66 +1725,70 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     {
                         "route_id": route_id,
                         "asked_pairs": count,
-                        "generation_mode": "OPTUNA_TPE_TYPED_GRAMMAR",
+                        "generation_mode": (
+                            "OPTUNA_TPE_ROUTE_LOCAL_AVAILABILITY"
+                        ),
                     }
                     for route_id, count in allocation.items()
                 ],
             }
             _write_json(schedule_path, schedule)
         ask_path = root / "asked_population.json"
-        expected_by_route: dict[str, list[dict[str, str]]] = {}
+        previous_asked: list[dict[str, Any]] | None = None
         if ask_path.is_file():
             previous_asked = json.loads(
                 ask_path.read_text(encoding="utf-8-sig")
             )
-            for route_id in ROUTES:
-                expected_by_route[route_id] = [
-                    dict(row["genes"])
-                    for row in previous_asked
-                    if str(row["route_id"]) == route_id
-                ]
-        asked, ask_runtime = _ask_route_populations(
+        (
+            asked,
+            formal_asked,
+            internal_observations,
+            ask_runtime,
+        ) = _ask_availability_aware_populations(
             schedule=schedule["routes"],
             adapters=adapters,
+            controller=availability_controller,
+            generator=generator,
+            schema_by_backend=schema_by_backend,
             checkpoint_id=checkpoint_id,
-            expected_by_route=expected_by_route,
-            replay_existing=ask_path.is_file(),
         )
+        if previous_asked is not None and _stable_hash(
+            previous_asked
+        ) != _stable_hash(asked):
+            raise RuntimeError(
+                "LARGE_TPE_AVAILABILITY_ASK_REPLAY_DRIFT"
+            )
         _write_json(ask_path, asked)
         ask_runtime_path = _write_json(
             root / "optimizer_ask_runtime.json", ask_runtime
         )
         materialized = _materialize_population(
-            asked=asked,
+            asked=formal_asked,
             generator=generator,
             schema_by_backend=schema_by_backend,
         )
-        observations: dict[str, dict[str, Any]] = {}
+        observations: dict[str, dict[str, Any]] = dict(
+            internal_observations
+        )
         unique_asked = []
         generation_exact: set[str] = set()
         for row in materialized:
             proposal_id = str(row["proposal_id"])
             identity = str(row.get("exact_identity") or "")
-            if str(row.get("construction_status") or "") != "LEGAL":
-                observations[proposal_id] = {
-                    "proposal_id": proposal_id,
-                    "outcome_class": "DETERMINISTIC_INVALID",
-                    "optimizer_reward": None,
-                    "outcome_reason": str(
-                        row.get("construction_error")
-                        or "DETERMINISTIC_INVALID"
-                    ),
-                }
-            elif identity in state["exact"] or identity in generation_exact:
-                observations[proposal_id] = {
-                    "proposal_id": proposal_id,
-                    "outcome_class": "EXACT_BLOCKED",
-                    "optimizer_reward": None,
-                    "outcome_reason": "EXACT_SEARCH_MEMORY_DUPLICATE",
-                }
-            else:
-                generation_exact.add(identity)
-                unique_asked.append(row)
+            if (
+                str(row.get("construction_status") or "") != "LEGAL"
+                or not identity
+                or identity in state["exact"]
+                or identity in generation_exact
+                or identity
+                != str(row.get("availability_exact_identity") or "")
+            ):
+                raise RuntimeError(
+                    "LARGE_TPE_FORMAL_AVAILABILITY_GUARANTEE_DRIFT:"
+                    f"{proposal_id}"
+                )
+            generation_exact.add(identity)
+            unique_asked.append(row)
         candidate_rows = [
             dict(member)
             for row in unique_asked
@@ -1468,7 +1865,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         }
         for pair_id, ask in ask_by_pair.items():
             decision = decision_by_pair[pair_id]
-            if str(decision.get("admission_decision") or "") != "ADMIT":
+            admitted_decision = (
+                str(decision.get("admission_decision") or "") == "ADMIT"
+            )
+            availability_controller.record_behavior(
+                route_id=str(ask["route_id"]),
+                admitted=admitted_decision,
+                bucket_key=str(
+                    ask.get("availability_bucket_key") or ""
+                ),
+            )
+            if not admitted_decision:
                 observations[str(ask["proposal_id"])] = {
                     "proposal_id": str(ask["proposal_id"]),
                     "outcome_class": "BEHAVIOR_BLOCKED",
@@ -1568,6 +1975,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     or "PAIR_EVALUATED"
                 ),
             }
+            if outcome_class == EVALUATED:
+                availability_controller.record_evaluated(
+                    route_id=str(ask["route_id"]),
+                    bucket_key=str(
+                        ask.get("availability_bucket_key") or ""
+                    ),
+                )
         if set(observations) != {
             str(row["proposal_id"]) for row in asked
         }:
@@ -1636,7 +2050,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "PAIR_EVALUATED"
             ):
                 state["evaluated"][str(row["route_id"])] += 1
-        for row in asked:
+        for row in formal_asked:
             state["asked_counts"][str(row["route_id"])] += 1
         expected_backends = tuple(
             backend
@@ -1663,9 +2077,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             raise RuntimeError(
                 "LARGE_TPE_RUNTIME_ACCELERATION_GATE_FAILED"
             )
+        availability_state_path = _write_json(
+            root / "availability_controller_state.json",
+            availability_controller.snapshot(),
+        )
         summary = {
             "checkpoint": checkpoint_id,
-            "asked_pairs": len(asked),
+            "asked_pairs": len(formal_asked),
+            "formal_fresh_exact_asks": len(formal_asked),
+            "optimizer_draw_attempts": len(asked),
+            "internal_failed_trials": len(internal_observations),
             "exact_unique_pairs": len(unique_asked),
             "behavior_admitted_pairs": len(admitted) // 2,
             "actual_evaluated_pairs": sum(
@@ -1704,6 +2125,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             transcript_path,
             optimizer_snapshot_path,
             optimizer_snapshot_receipt_path,
+            availability_state_path,
             gate_path,
             summary_path,
         ]
@@ -1723,6 +2145,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "campaign_authority": _sha256(authority_path),
                 "frozen_contract": _sha256(contract_path),
                 "gene_lane_manifest": _sha256(lane_manifest_path),
+                "availability_index": _sha256(
+                    availability_index_path
+                ),
                 "prior_checkpoint_manifest": (
                     _sha256(previous) if previous else "GENESIS"
                 ),
@@ -1860,6 +2285,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     purity_path,
                     runtime_path,
                     lane_manifest_path,
+                    availability_index_path,
                     supply_path,
                     candidate_ledger_path,
                     observation_ledger_path,

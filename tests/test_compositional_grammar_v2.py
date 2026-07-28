@@ -12,6 +12,7 @@ from our_system_phase2.services.compositional_grammar import (
     FIRSTN_SUBSEQUENT_STATE_TRANSFORM_IDS,
     OPTIMIZER_GENE_SURFACE_VERSION,
     SUPPLEMENTAL_GRAMMAR_VERSION,
+    optimizer_typed_supply_extension_registry,
     skeleton_registry,
     supplemental_skeleton_registry,
 )
@@ -280,6 +281,52 @@ def test_firstn_subsequent_state_transform_axis_is_bounded_and_depth_preserving(
     assert "ZScore(Delta(" in expressions["ZSCORE"]
     assert "Sign(Delta(" in expressions["SIGN"]
     assert "Abs(Delta(" in expressions["ABS"]
+
+
+def test_optimizer_supply_extensions_are_append_only_economic_hypotheses() -> None:
+    grammar = CompositionalGrammarV2(
+        UnifiedCapabilityRegistry.read(REGISTRY)
+    )
+    extensions = optimizer_typed_supply_extension_registry()
+
+    assert set(extensions) == {
+        "DISCLOSURE_EVENT",
+        "MARKET_REGIME_CONDITION",
+    }
+    base_ids = {
+        row.skeleton_id
+        for rows in skeleton_registry().values()
+        for row in rows
+    }
+    extension_ids = {
+        row.skeleton_id for rows in extensions.values() for row in rows
+    }
+    assert not base_ids.intersection(extension_ids)
+    for route_id, skeletons in extensions.items():
+        lanes = grammar.categorical_gene_lanes(route_id)["lanes"]
+        for skeleton in skeletons:
+            assert skeleton.skeleton_id in lanes
+            categories = lanes[skeleton.skeleton_id][
+                "ordered_categories_by_slot"
+            ]
+            genes = {
+                slot: str(values[0])
+                for slot, values in categories.items()
+            }
+            pair = grammar.propose_from_categorical_genes(
+                route_id,
+                genes=genes,
+            )
+            assert pair.primary["legal"] is True
+            assert pair.control["legal"] is True
+            assert pair.primary["exact_identity"] != (
+                pair.control["exact_identity"]
+            )
+            assert set(pair.primary["declared_field_ids"]) == set(
+                pair.control["declared_field_ids"]
+            )
+            assert _call_depth(pair.primary["canonical_expression"]) <= 4
+            assert _call_depth(pair.control["canonical_expression"]) <= 4
 
 
 def test_slow_routes_compile_without_unqualified_industry_neutralization() -> None:

@@ -39,17 +39,17 @@ EXPECTED_LANE_COUNTS = {
     "FIRSTN_PATH": (8, 0),
     "SLOW_CROSS_SECTIONAL_LEVEL": (6, 2),
     "SLOW_TEMPORAL_CHANGE": (8, 0),
-    "DISCLOSURE_EVENT": (8, 0),
-    "MARKET_REGIME_CONDITION": (8, 0),
+    "DISCLOSURE_EVENT": (11, 0),
+    "MARKET_REGIME_CONDITION": (10, 0),
     "INTRADAY_STATE_TRANSITION": (8, 0),
 }
 EXPECTED_COMPATIBLE_PHENOTYPE_CEILINGS = {
     "MINUTE_STATIC": 126,
-    "FIRSTN_PATH": 3780,
+    "FIRSTN_PATH": 4788,
     "SLOW_CROSS_SECTIONAL_LEVEL": 2545,
     "SLOW_TEMPORAL_CHANGE": 62354,
-    "DISCLOSURE_EVENT": 1216,
-    "MARKET_REGIME_CONDITION": 2016,
+    "DISCLOSURE_EVENT": 2116,
+    "MARKET_REGIME_CONDITION": 2784,
     "INTRADAY_STATE_TRANSITION": 270,
 }
 
@@ -139,7 +139,7 @@ def test_skeleton_lane_surface_covers_every_primary_route_without_widening_roots
         )
         total_ceiling += route_ceiling
 
-    assert total_ceiling == 72307
+    assert total_ceiling == 74983
 
 
 def test_every_open_lane_endpoint_compiles_as_one_legal_matched_pair() -> None:
@@ -207,8 +207,8 @@ def test_disclosure_lanes_restore_event_only_skeletons_without_payload_aliases()
             assert pair.candidate["legal"] is True
             exact_identities.add(str(pair.candidate["exact_identity"]))
 
-    assert scheduled == 1216
-    assert len(exact_identities) == 1216
+    assert scheduled == 2116
+    assert len(exact_identities) == 2116
 
 
 def test_lane_semantics_freezes_fixed_skeleton_and_active_slots() -> None:

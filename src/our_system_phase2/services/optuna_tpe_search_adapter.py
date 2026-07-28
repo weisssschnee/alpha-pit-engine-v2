@@ -17,6 +17,7 @@ from typing import Any, Mapping, Sequence
 
 EXPECTED_OPTUNA_VERSION = "4.8.0"
 EVALUATED = "EVALUATED"
+PRUNED = "LIVE_RUNNER_PRUNED"
 
 
 def _stable_hash(value: Any) -> str:
@@ -418,6 +419,32 @@ class RouteConditionalTPESearchAdapter:
             metadata=metadata,
         )
 
+    def annotate_pending_trial(
+        self,
+        proposal_id: str,
+        metadata: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Append immutable ask metadata after exact materialization.
+
+        The trial and sampled parameters are unchanged.  This exists only
+        because exact identity and availability mode are known after the
+        Grammar/compiler path materializes the sampled genes.
+        """
+
+        identity = str(proposal_id)
+        pending = self._pending.get(identity)
+        if pending is None:
+            raise RuntimeError("OPTUNA_PENDING_PROPOSAL_MISSING")
+        row = pending["row"]
+        overlap = set(row) & set(metadata)
+        if overlap:
+            raise ValueError(
+                "OPTUNA_ASK_METADATA_RESERVED_KEYS:"
+                + ",".join(sorted(overlap))
+            )
+        row.update(copy.deepcopy(dict(metadata)))
+        return copy.deepcopy(row)
+
     def ask_population(
         self,
         *,
@@ -460,6 +487,7 @@ class RouteConditionalTPESearchAdapter:
             raise RuntimeError("OPTUNA_ASK_TELL_OBSERVATION_COVERAGE_MISMATCH")
         told: list[dict[str, Any]] = []
         completed = 0
+        pruned = 0
         failed = 0
         for proposal_id in self._pending_order:
             pending = self._pending[proposal_id]
@@ -467,17 +495,61 @@ class RouteConditionalTPESearchAdapter:
             source = by_id[proposal_id]
             outcome_class = str(source.get("outcome_class") or "")
             reward = source.get("optimizer_reward")
-            if (
-                outcome_class == EVALUATED
-                and reward is not None
-                and math.isfinite(float(reward))
-            ):
+            if outcome_class == EVALUATED:
+                if reward is None or not math.isfinite(float(reward)):
+                    raise RuntimeError(
+                        "OPTUNA_COMPLETE_REQUIRES_FINITE_REAL_REWARD:"
+                        f"{proposal_id}"
+                    )
                 value = float(reward)
                 self._study.tell(trial, value)
                 state = "COMPLETE"
                 completed += 1
+                intermediate_value = None
+                intermediate_step = None
+                pruning_authority = ""
+            elif outcome_class == PRUNED:
+                if reward is not None:
+                    raise RuntimeError(
+                        "OPTUNA_PRUNED_FORBIDS_OPTIMIZER_REWARD:"
+                        f"{proposal_id}"
+                    )
+                intermediate_value = source.get(
+                    "optimizer_intermediate_value"
+                )
+                intermediate_step = source.get(
+                    "optimizer_intermediate_step"
+                )
+                pruning_authority = str(
+                    source.get("pruning_authority") or ""
+                )
+                if (
+                    intermediate_value is None
+                    or not math.isfinite(float(intermediate_value))
+                    or isinstance(intermediate_step, bool)
+                    or not isinstance(intermediate_step, int)
+                    or int(intermediate_step) < 0
+                    or not pruning_authority
+                ):
+                    raise RuntimeError(
+                        "OPTUNA_PRUNED_REQUIRES_REAL_INTERMEDIATE_RECEIPT:"
+                        f"{proposal_id}"
+                    )
+                intermediate_value = float(intermediate_value)
+                intermediate_step = int(intermediate_step)
+                trial.report(intermediate_value, intermediate_step)
+                self._study.tell(
+                    trial,
+                    state=self._optuna.trial.TrialState.PRUNED,
+                )
+                value = None
+                state = "PRUNED"
+                pruned += 1
             else:
                 value = None
+                intermediate_value = None
+                intermediate_step = None
+                pruning_authority = ""
                 self._study.tell(
                     trial,
                     state=self._optuna.trial.TrialState.FAIL,
@@ -494,6 +566,9 @@ class RouteConditionalTPESearchAdapter:
                     "outcome_reason": str(
                         source.get("outcome_reason") or ""
                     ),
+                    "optimizer_intermediate_value": intermediate_value,
+                    "optimizer_intermediate_step": intermediate_step,
+                    "pruning_authority": pruning_authority,
                 }
             )
         transcript = {
@@ -514,11 +589,17 @@ class RouteConditionalTPESearchAdapter:
             "checkpoint_id": transcript["checkpoint_id"],
             "asked_count": len(told),
             "completed_count": completed,
+            "pruned_count": pruned,
             "failed_count": failed,
             "study_trial_count": len(self._study.trials),
             "complete_study_trial_count": sum(
                 trial.state
                 == self._optuna.trial.TrialState.COMPLETE
+                for trial in self._study.trials
+            ),
+            "pruned_study_trial_count": sum(
+                trial.state
+                == self._optuna.trial.TrialState.PRUNED
                 for trial in self._study.trials
             ),
             "transcript_hash": _stable_hash(transcript),
@@ -609,6 +690,7 @@ class RouteConditionalTPESearchAdapter:
             constant_liar=constant_liar,
         )
         complete = adapter._optuna.trial.TrialState.COMPLETE
+        pruned = adapter._optuna.trial.TrialState.PRUNED
         failed = adapter._optuna.trial.TrialState.FAIL
         expected_number = 0
         for transcript in transcripts:
@@ -636,15 +718,50 @@ class RouteConditionalTPESearchAdapter:
                 params, distributions = adapter._frozen_trial_params(
                     dict(row["genes"])
                 )
-                if (
-                    str(observation.get("state") or "") == "COMPLETE"
-                    and observation.get("optimizer_reward") is not None
-                ):
+                observation_state = str(
+                    observation.get("state") or ""
+                )
+                if observation_state == "COMPLETE":
+                    if observation.get("optimizer_reward") is None:
+                        raise RuntimeError(
+                            "OPTUNA_TRIAL_IMPORT_COMPLETE_REWARD_MISSING"
+                        )
                     trial = adapter._optuna.trial.create_trial(
                         params=params,
                         distributions=distributions,
                         value=float(observation["optimizer_reward"]),
                         state=complete,
+                    )
+                elif observation_state == "PRUNED":
+                    intermediate_value = observation.get(
+                        "optimizer_intermediate_value"
+                    )
+                    intermediate_step = observation.get(
+                        "optimizer_intermediate_step"
+                    )
+                    pruning_authority = str(
+                        observation.get("pruning_authority") or ""
+                    )
+                    if (
+                        intermediate_value is None
+                        or not math.isfinite(float(intermediate_value))
+                        or isinstance(intermediate_step, bool)
+                        or not isinstance(intermediate_step, int)
+                        or int(intermediate_step) < 0
+                        or not pruning_authority
+                    ):
+                        raise RuntimeError(
+                            "OPTUNA_TRIAL_IMPORT_PRUNED_RECEIPT_MISSING"
+                        )
+                    trial = adapter._optuna.trial.create_trial(
+                        params=params,
+                        distributions=distributions,
+                        state=pruned,
+                        intermediate_values={
+                            int(intermediate_step): float(
+                                intermediate_value
+                            )
+                        },
                     )
                 else:
                     trial = adapter._optuna.trial.create_trial(
@@ -748,11 +865,26 @@ class RouteConditionalTPESearchAdapter:
                         "outcome_class": (
                             EVALUATED
                             if str(row.get("state") or "") == "COMPLETE"
-                            else str(row.get("outcome_class") or "FAILED")
+                            else (
+                                PRUNED
+                                if str(row.get("state") or "") == "PRUNED"
+                                else str(
+                                    row.get("outcome_class") or "FAILED"
+                                )
+                            )
                         ),
                         "optimizer_reward": row.get("optimizer_reward"),
                         "outcome_reason": str(
                             row.get("outcome_reason") or ""
+                        ),
+                        "optimizer_intermediate_value": row.get(
+                            "optimizer_intermediate_value"
+                        ),
+                        "optimizer_intermediate_step": row.get(
+                            "optimizer_intermediate_step"
+                        ),
+                        "pruning_authority": str(
+                            row.get("pruning_authority") or ""
                         ),
                     }
                 )

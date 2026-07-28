@@ -1,0 +1,54 @@
+{
+  "schema_version": "cn_large_tpe_successor_route_targets_v3",
+  "status": "FROZEN_FOR_ZERO_FINANCIAL_QUALIFICATION_ONLY",
+  "execution_authorized": false,
+  "financial_campaign_authorized": false,
+  "source_closed_campaign": "CN_LARGE_OPTUNA_TPE_ACTUAL20000_V2_20260727",
+  "source_qualification_receipt": "runtime/run_plans/cn_tpe_availability_yield_qualification_20260728_receipt.json",
+  "source_qualification_artifact_manifest_sha256": "1a1caaf01b27ee2e6cd37f2ca0776d4ca21983fea2ed1b20141c9f075f9666a5",
+  "source_qualification_artifact_payload_hash": "e116216f229e05cb7545b3d43e92a3f535ba49fc2d90b291de46c65a11dd269d",
+  "route_actual_evaluated_targets": {
+    "SLOW_TEMPORAL_CHANGE": 14000,
+    "FIRSTN_PATH": 1300,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 900,
+    "MARKET_REGIME_CONDITION": 380,
+    "DISCLOSURE_EVENT": 300
+  },
+  "minimum_actual_evaluated_pairs": 16880,
+  "formal_asks_per_checkpoint": 384,
+  "maximum_checkpoints": 96,
+  "maximum_formal_fresh_exact_asks": 36864,
+  "maximum_internal_native_draws_per_formal": 8,
+  "supply_margin_multiplier": 1.1,
+  "target_basis": {
+    "SLOW_TEMPORAL_CHANGE": "dominant PIT slow-information change coverage bounded below prior qualified supply ceiling",
+    "FIRSTN_PATH": "opening-path coverage retained above one thousand evaluated pairs with prior high behavior yield",
+    "SLOW_CROSS_SECTIONAL_LEVEL": "cross-sectional PIT level coverage retained near prior qualified supply ceiling",
+    "MARKET_REGIME_CONDITION": "minimum meaningful regime-conditioned coverage with explicit route-local persistence supply expansion",
+    "DISCLOSURE_EVENT": "minimum meaningful disclosure-episode coverage with explicit pre-event typed-path expansion"
+  },
+  "typed_supply_extensions": {
+    "MARKET_REGIME_CONDITION": [
+      "regime_magnitude_persistence",
+      "regime_direction_persistence"
+    ],
+    "DISCLOSURE_EVENT": [
+      "pre_event_signed_path",
+      "pre_event_ranked_path",
+      "pre_event_absolute_path"
+    ]
+  },
+  "unchanged_contracts": {
+    "reward": "min(primary_composite_reward,matched_train_increment)",
+    "optimizer": "official_optuna_4.8.0_TPE_route_local_univariate",
+    "registry_authority": "UnifiedCapabilityRegistry",
+    "grammar_authority": "CompositionalGrammarV2",
+    "compiler_authority": "TypedRouteCompiler",
+    "validation": "FORBIDDEN_DURING_QUALIFICATION",
+    "holdout": "SEALED",
+    "forward_2026": "SEALED",
+    "promotion": "FORBIDDEN"
+  },
+  "next_gate": "ZERO_FINANCIAL_SUPPLY_AND_BEHAVIOR_YIELD_QUALIFICATION",
+  "contract_hash": "0233f6b55941ccf8b9c76c649e88e323d62443e79776e712b696e20ef8170d8b"
+}

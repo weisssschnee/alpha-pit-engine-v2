@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections import OrderedDict
 import json
 from pathlib import Path
 
@@ -22,6 +23,7 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     TPE_MULTIVARIATE,
     TPE_SAMPLER_MODE,
     _allocate_checkpoint_asks,
+    _ask_availability_aware_populations,
     _ask_route_populations,
     _conservative_search_score,
     _freeze_gene_lanes,
@@ -30,18 +32,23 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _select_validation_finalists,
     _validation_eligible,
 )
-from our_system_phase2.services.compositional_grammar import (
-    OPTIMIZER_GENE_SURFACE_VERSION,
+from our_system_phase2.services.optuna_tpe_search_adapter import (
+    RouteConditionalTPESearchAdapter,
+)
+from our_system_phase2.services.route_local_availability import (
+    AvailabilityEntry,
+    RouteLocalAvailabilityController,
+    structural_bucket_key,
 )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_large_contract_is_five_digit_actual_evaluated_not_scheduled() -> None:
-    assert CAMPAIGN_PROFILE == "cn_large_optuna_tpe_actual20000_v2"
-    assert MINIMUM_ACTUAL_EVALUATED_PAIRS == 20_000
-    assert sum(ROUTE_EVALUATED_TARGETS.values()) == 20_000
+def test_successor_contract_is_formal_exact_bounded_not_financially_authorized() -> None:
+    assert CAMPAIGN_PROFILE == "cn_large_optuna_tpe_availability_v3"
+    assert MINIMUM_ACTUAL_EVALUATED_PAIRS == 16_880
+    assert sum(ROUTE_EVALUATED_TARGETS.values()) == 16_880
     assert set(ROUTE_EVALUATED_TARGETS) == set(ROUTES)
     assert "MINUTE_STATIC" not in ROUTES
     assert "INTRADAY_STATE_TRANSITION" not in ROUTES
@@ -49,8 +56,8 @@ def test_large_contract_is_five_digit_actual_evaluated_not_scheduled() -> None:
         "active_bar": 12,
         "stock_session": 12,
     }
-    assert ASKS_PER_CHECKPOINT == 3_072
-    assert MAXIMUM_RAW_ASKS == 73_728
+    assert ASKS_PER_CHECKPOINT == 384
+    assert MAXIMUM_RAW_ASKS == 36_864
     assert OPTUNA_ROUTE_WORKERS == len(ROUTES)
     assert N_EI_CANDIDATES == 24
     assert TPE_SAMPLER_MODE == (
@@ -58,17 +65,18 @@ def test_large_contract_is_five_digit_actual_evaluated_not_scheduled() -> None:
     )
     assert TPE_MULTIVARIATE is False
     assert TPE_GROUP is False
-    authorization = json.loads(
+    target_contract = json.loads(
         (
             REPO_ROOT
             / "runtime"
             / "run_plans"
-            / "cn_large_optuna_tpe_actual20000_v2_authorization.json"
+            / "cn_large_tpe_successor_route_targets_v3.json"
         ).read_text(encoding="utf-8")
     )
-    assert authorization["authorization_revision"] == 2
-    assert authorization["optimizer_gene_surface_version"] == (
-        OPTIMIZER_GENE_SURFACE_VERSION
+    assert target_contract["execution_authorized"] is False
+    assert target_contract["financial_campaign_authorized"] is False
+    assert target_contract["route_actual_evaluated_targets"] == (
+        ROUTE_EVALUATED_TARGETS
     )
 
 
@@ -291,6 +299,116 @@ def test_parallel_route_ask_preserves_schedule_order_and_replay_genes() -> None:
     )
     assert audit["route_worker_count"] == len(scheduled_routes)
     assert audit["asked_pairs"] == sum(range(1, 4))
+
+
+def test_live_runner_replaces_seen_exact_without_pruning_or_formal_budget_loss(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    route = "TEST_ROUTE"
+    lanes = OrderedDict(
+        {
+            "test.single": {
+                "ordered_categories_by_slot": OrderedDict(
+                    [
+                        ("skeleton_id", ["test.single"]),
+                        ("gene_surface_id", ["surface-v1"]),
+                        ("primary_field_id", ["a", "b"]),
+                    ]
+                )
+            }
+        }
+    )
+    adapter = RouteConditionalTPESearchAdapter(
+        route_id=route,
+        lane_spaces=lanes,
+        seed=2,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+        multivariate=False,
+        group=False,
+    )
+
+    def genes(field: str) -> dict[str, str]:
+        return {
+            "skeleton_id": "test.single",
+            "gene_surface_id": "surface-v1",
+            "primary_field_id": field,
+        }
+
+    entries = [
+        AvailabilityEntry(
+            route_id=route,
+            bucket_key=structural_bucket_key(route, genes(field)),
+            exact_identity=f"exact-{field}",
+            control_exact_identity=f"control-{field}",
+            genes=genes(field),
+        )
+        for field in ("a", "b")
+    ]
+    controller = RouteLocalAvailabilityController(
+        entries=entries,
+        seen_exact_identities={"exact-a"},
+        emitter_seed=17,
+        input_hashes={"registry": "r", "grammar": "g", "compiler": "c"},
+    )
+
+    def materialize(*, asked, generator, schema_by_backend):
+        del generator, schema_by_backend
+        return [
+            {
+                **row,
+                "construction_status": "LEGAL",
+                "exact_identity": (
+                    "exact-" + row["genes"]["primary_field_id"]
+                ),
+            }
+            for row in asked
+        ]
+
+    monkeypatch.setattr(
+        "our_system_phase2.runtime.cn_large_tpe_search_campaign."
+        "_materialize_population",
+        materialize,
+    )
+    all_asked, formal, internal, audit = (
+        _ask_availability_aware_populations(
+            schedule=[{"route_id": route, "asked_pairs": 1}],
+            adapters={route: adapter},
+            controller=controller,
+            generator=object(),
+            schema_by_backend={},
+            checkpoint_id="checkpoint_001",
+        )
+    )
+
+    assert len(all_asked) == 2
+    assert len(formal) == 1
+    assert formal[0]["genes"]["primary_field_id"] == "b"
+    assert formal[0]["availability_emission_mode"] == (
+        "TPE_BUCKET_REPLACEMENT"
+    )
+    assert audit["formal_fresh_exact_asks"] == 1
+    assert audit["optimizer_draw_attempts"] == 2
+    assert list(internal.values())[0]["outcome_class"] == (
+        "AVAILABILITY_REPLACED"
+    )
+    receipt = adapter.tell_population(
+        [
+            *internal.values(),
+            {
+                "proposal_id": formal[0]["proposal_id"],
+                "outcome_class": "BEHAVIOR_BLOCKED",
+                "optimizer_reward": None,
+                "outcome_reason": "BEHAVIOR_DUPLICATE",
+            },
+        ]
+    )
+    assert receipt["pruned_count"] == 0
+    assert receipt["failed_count"] == 2
+    assert [trial.state.name for trial in adapter._study.trials] == [
+        "FAIL",
+        "FAIL",
+    ]
 
 
 def test_optimizer_snapshot_restores_without_transcript_resampling(
