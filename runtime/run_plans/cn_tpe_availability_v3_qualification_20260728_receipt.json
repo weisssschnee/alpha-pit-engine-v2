@@ -1,0 +1,152 @@
+{
+  "schema_version": "cn_tpe_availability_v3_qualification_closure_receipt_v1",
+  "status": "QUALIFICATION_CLOSED_TPE_AGENCY_BLOCKED_NO_FINANCIAL_AUTHORIZATION",
+  "implementation": {
+    "branch": "feature/search-policy-qualification",
+    "repo_sha": "bc7a2be832cbb3b9b638b684b382d5a5b2287027",
+    "scope": "LIVE_RUNNER_TRIAL_STATE_AVAILABILITY_V3_AND_ECONOMIC_TYPED_SUPPLY",
+    "local_relevant_tests": {
+      "passed": 99,
+      "failed": 0
+    },
+    "official_77o_git_archive_tests": {
+      "passed": 81,
+      "failed": 0,
+      "optuna_version": "4.8.0",
+      "historical_git_metadata_tests_excluded": 18,
+      "exclusion_reason": "VERSIONED_GIT_ARCHIVE_WORKSPACE_HAS_NO_DOT_GIT"
+    }
+  },
+  "deployment": {
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_tpe_availability_v3_bc7a2be_20260728_120407_bc7a2be832cb",
+    "manifest": "D:\\ChengboRemote\\runtime\\manifests\\alpha_pit_tpe_availability_v3_bc7a2be_20260728_120407_bc7a2be832cb.json",
+    "manifest_sha256": "c72c31f45b4a31ee5d12e057aa33e8f76742a2bb271752646b1742d2e0b21db7"
+  },
+  "qualification": {
+    "task_id": "lanjob_20260728_121110_0aac11",
+    "scheduled_task": "ChengboLanRemote_lanjob_20260728_121110_0aac11",
+    "exit_code": 0,
+    "started_at": "2026-07-28T12:11:35+08:00",
+    "ended_at": "2026-07-28T12:13:03+08:00",
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_tpe_availability_yield_qualification_v3_20260728_bc7a2be",
+    "artifact_manifest_sha256": "4f4cf510f923c776d3b9e7c479ddea7462e3ffddde7d49bc6bbfc730cea2201f",
+    "artifact_manifest_payload_hash": "64204e8de34f663e5a77a0b89ed3b58b2a7b462ef290af462306e07b1f90b748",
+    "artifact_count": 12,
+    "artifact_hash_mismatches": 0,
+    "artifact_size_mismatches": 0
+  },
+  "frozen_successor_contract": {
+    "path": "runtime/run_plans/cn_large_tpe_successor_route_targets_v3.json",
+    "contract_hash": "0233f6b55941ccf8b9c76c649e88e323d62443e79776e712b696e20ef8170d8b",
+    "execution_authorized": false,
+    "financial_campaign_authorized": false,
+    "route_actual_evaluated_targets": {
+      "SLOW_TEMPORAL_CHANGE": 14000,
+      "FIRSTN_PATH": 1300,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 900,
+      "MARKET_REGIME_CONDITION": 380,
+      "DISCLOSURE_EVENT": 300
+    },
+    "minimum_actual_evaluated_pairs": 16880,
+    "maximum_formal_fresh_exact_asks": 36864
+  },
+  "live_runner_trial_state_contract": {
+    "complete": "FULL_COORDINATE_TRAIN_EVALUATED_WITH_FINITE_REAL_REWARD_ONLY",
+    "pruned": "DECLARED_LIVE_RUNNER_AUTHORITY_WITH_FINITE_REAL_INTERMEDIATE_VALUE_AND_NONNEGATIVE_STEP_ONLY",
+    "fail": [
+      "GRAMMAR_INVALID",
+      "EXACT_BLOCKED",
+      "BEHAVIOR_BLOCKED",
+      "SUPPORT_BLOCKED",
+      "AVAILABILITY_REPLACED",
+      "AVAILABILITY_EXHAUSTED"
+    ],
+    "optimizer_database": "FORBIDDEN"
+  },
+  "layer_a": {
+    "historical_optimizer_native_draws": 73728,
+    "formal_fresh_exact_asks": 21317,
+    "formal_exact_duplicate_count": 0,
+    "emission_mode_counts": {
+      "TPE_DIRECT_FRESH": 7309,
+      "TPE_BUCKET_REPLACEMENT": 9128,
+      "GLOBAL_AVAILABILITY_FALLBACK": 4880
+    },
+    "optimizer_draw_attempts_including_fixed": 87736,
+    "tpe_guided_share": 0.7710747290894591,
+    "global_fallback_share": 0.22892527091054088,
+    "maximum_global_fallback_share_for_readiness": 0.2,
+    "unfulfilled_formal_requests_by_route": {}
+  },
+  "layer_b": {
+    "projected_formal_asks_required_total": 28574,
+    "formal_ask_budget_reference": 36864,
+    "projected_target_ask_feasibility": "FEASIBLE_WITHIN_FROZEN_FORMAL_BUDGET",
+    "routes": {
+      "SLOW_TEMPORAL_CHANGE": {
+        "target_evaluated": 14000,
+        "conservative_formal_to_evaluated_conversion": 0.5827795084263504,
+        "initial_formal_fresh_exact_capacity": 27418,
+        "projected_formal_asks_required": 24023,
+        "required_supply_with_10pct_margin": 26426,
+        "route_supply_margin_pass": true
+      },
+      "FIRSTN_PATH": {
+        "target_evaluated": 1300,
+        "conservative_formal_to_evaluated_conversion": 0.7683734758549383,
+        "initial_formal_fresh_exact_capacity": 1993,
+        "projected_formal_asks_required": 1692,
+        "required_supply_with_10pct_margin": 1862,
+        "route_supply_margin_pass": true
+      },
+      "SLOW_CROSS_SECTIONAL_LEVEL": {
+        "target_evaluated": 900,
+        "conservative_formal_to_evaluated_conversion": 0.9267991667772383,
+        "initial_formal_fresh_exact_capacity": 1136,
+        "projected_formal_asks_required": 972,
+        "required_supply_with_10pct_margin": 1070,
+        "route_supply_margin_pass": true
+      },
+      "MARKET_REGIME_CONDITION": {
+        "target_evaluated": 380,
+        "conservative_formal_to_evaluated_conversion": 0.31503711145897106,
+        "initial_formal_fresh_exact_capacity": 1328,
+        "projected_formal_asks_required": 1207,
+        "required_supply_with_10pct_margin": 1328,
+        "route_supply_margin_pass": true
+      },
+      "DISCLOSURE_EVENT": {
+        "target_evaluated": 300,
+        "conservative_formal_to_evaluated_conversion": 0.441532875878549,
+        "initial_formal_fresh_exact_capacity": 1200,
+        "projected_formal_asks_required": 680,
+        "required_supply_with_10pct_margin": 749,
+        "route_supply_margin_pass": true
+      }
+    }
+  },
+  "zero_financial_access": {
+    "financial_reads": 0,
+    "label_sidecar_paths_accepted": 0,
+    "optimizer_reward_columns_read": [],
+    "search_score_columns_read": [],
+    "matched_increment_columns_read": [],
+    "primary_reward_columns_read": [],
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "phase3cm_calls": 0
+  },
+  "verdict": {
+    "availability_controller_mechanical": "PASS",
+    "historical_tail_replay_recovery": "PASS",
+    "formal_fresh_exact_yield": "PASS",
+    "behavior_admission_yield": "PASS",
+    "projected_frozen_target_ask_feasibility": "FEASIBLE_WITHIN_FROZEN_FORMAL_BUDGET",
+    "novelty_aware_tpe_large_search_readiness": "ROUTE_TARGET_REDESIGN_REQUIRED",
+    "blocking_gate": "GLOBAL_AVAILABILITY_FALLBACK_SHARE_ABOVE_FROZEN_20_PERCENT",
+    "financial_campaign_authorization_generated": false,
+    "promotion": "FORBIDDEN",
+    "graph_or_obsidian_update": false
+  }
+}

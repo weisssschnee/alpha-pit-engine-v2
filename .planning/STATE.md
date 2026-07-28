@@ -2,7 +2,7 @@
 
 Updated: 2026-07-28
 
-Current state: `CN_TPE_AVAILABILITY_QUALIFICATION_CLOSED_SUPPLY_BLOCKED`
+Current state: `CN_TPE_AVAILABILITY_V3_QUALIFICATION_CLOSED_TPE_AGENCY_BLOCKED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -772,6 +772,51 @@ promotion remains forbidden and Graph/Obsidian remain unchanged. The compact
 receipt is
 `runtime/run_plans/cn_tpe_availability_yield_qualification_20260728_receipt.json`.
 
+The successor availability-v3 integration and zero-financial qualification
+are now closed at pushed SHA
+`bc7a2be832cbb3b9b638b684b382d5a5b2287027`. The live runner counts only
+fresh exact formal asks against its frozen budget and retains every official
+native or fixed Optuna trial in immutable ask/tell transcripts. A trial may be
+`PRUNED` only when a declared live-runner pruning authority supplies a finite
+real intermediate value and nonnegative step. Grammar invalid, exact/behavior/
+support blocked and availability replacement/exhaustion outcomes remain
+`FAIL`; only full-coordinate train evaluation with a finite real reward is
+`COMPLETE`. No reward, compiler, Registry, evaluator or sealed-period contract
+was changed.
+
+Route targets were refrozen for qualification only at
+14,000/1,300/900/380/300, total 16,880, with 36,864 formal fresh-exact asks.
+Only economically declared route-local typed supply was appended: payload
+direction/magnitude under persistent market regimes, and pre-disclosure
+payload direction/rank/magnitude. The target contract remains explicitly
+non-executable and non-financially-authorized. Local relevant regression was
+99/99. The versioned 77o deployment used official Optuna 4.8.0; all 81 tests
+executable in the Git-archive workspace passed, while 18 unrelated historical
+builder tests requiring `.git` were correctly unavailable there and had
+already passed locally.
+
+The single zero-financial task `lanjob_20260728_121110_0aac11` closed exit 0.
+Artifact manifest SHA256 is
+`4f4cf510f923c776d3b9e7c479ddea7462e3ffddde7d49bc6bbfc730cea2201f`;
+its canonical payload hash and all 12 declared artifact sizes and hashes were
+independently verified. Financial, label, reward, search-score, matched-
+increment, validation, holdout and 2026 reads were zero; Phase3CM calls were
+zero.
+
+Supply and behavior gates now pass for every route. Conservative projected
+formal asks were 24,023/1,692/972/1,207/680, total 28,574 within the 36,864
+budget. Fresh formal capacities were 27,418/1,993/1,136/1,328/1,200, meeting
+their 10% margin requirements 26,426/1,862/1,070/1,328/749. The frozen replay
+emitted 21,317 unique formal asks with no unfulfilled request: 7,309 direct
+TPE, 9,128 same-bucket replacements and 4,880 global fallbacks. The sole
+failed readiness gate is TPE agency: global fallback share was 22.8925%,
+above the frozen 20% ceiling, leaving 77.1075% TPE-guided emissions.
+The honest final verdict is therefore
+`NOVELTY_AWARE_TPE_LARGE_SEARCH_READINESS=ROUTE_TARGET_REDESIGN_REQUIRED`.
+No financial authorization was generated, and Graph/Obsidian authority
+remains unchanged. The compact receipt is
+`runtime/run_plans/cn_tpe_availability_v3_qualification_20260728_receipt.json`.
+
 ## Next action
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
@@ -785,6 +830,14 @@ controller or increasing raw asks: the formal route supply and TPE-agency
 gates remain failed. Any successor needs a separately authorized,
 semantics-preserving supply expansion or materially revised route targets,
 followed by a fresh zero-financial qualification.
+
+For availability v3 specifically, supply, behavior and formal-budget design
+are no longer the blocker. Do not weaken the frozen 20% global-fallback ceiling
+or issue a financial campaign authorization. The next bounded design step, if
+explicitly authorized, must reduce route-local availability replacement/
+fallback pressure while preserving official Optuna trial accounting and the
+frozen typed economic hypotheses; it must then rerun the same zero-financial
+agency qualification before any financial campaign is considered.
 
 Do not rerun or enlarge the completed V4 supply proof or the closed V5 paired
 qualification. Performance commit `72250f9` is now officially parity-checked
