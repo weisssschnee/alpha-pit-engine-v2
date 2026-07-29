@@ -941,33 +941,59 @@ remains unchanged. The compact receipt is
   behavior-family deduplication and train-stability ranking. They are not
   finalist, promotion, validation or economic evidence.
 - ADR 0009 records the authority correction without creating a new evaluator,
-  search system or authority node. Existing real-market and T+1 replay
-  implementations remain engineering capabilities until they are bound to the
-  guard and emit an immutable replay receipt.
-- Verification was deliberately non-financial: 30 related local tests plus
-  three semantic regressions passed; the exact implementation at
-  `f53eff442b468cfb823b6658b8bcd4ef2a315c01` passed 54/54 focused tests in the
-  versioned 77o workspace
-  `D:\ChengboRemote\workspace\alpha_pit_a_share_tradability_f53eff4_20260729_162854`.
-  No search, financial evaluation, validation, holdout or 2026 read was
-  launched. The compact evidence receipt is
+  search system, platform or authority node. The existing Phase3DY T+1 replay
+  path is now bound to the guard through canonical, candidate- and
+  exact-identity-bound receipts. Pair, feedback, adaptive and Hybrid-search
+  consumers revalidate both pair-member receipt payloads and hashes.
+- Phase3CM Sortino and matched increments remain predictive diagnostics. The
+  only optimizer-authorizing score is now
+  `min(primary executable net daily Sortino, primary-minus-control executable
+  net reward)` from the A-share replay receipts; copied READY labels cannot
+  authorize feedback.
+- The executable kernel now enforces close-t signal/next-session-open execution,
+  sell-before-buy cash and holdings, T+1 inventory age, opening limit-up buy
+  blocks, opening limit-down sell blocks with carry, suspension blocks, board
+  lots and a date-covering explicit fee contract. Input panel bytes, universe
+  manifest bytes, fee schedule, execution policy and source code are hashed
+  into the immutable receipt.
+- Verification was deliberately non-financial: the exact implementation at
+  `a33d8fccdb79372ffac54ce55302be362911df19` passed 88/88 focused tests locally
+  and 88/88 in the official 77o `alpha311` environment from versioned workspace
+  `D:\ChengboRemote\workspace\alpha_pit_a_share_exec_a33d8fc_20260729_205359`.
+  The deployment package SHA256 is
+  `f4acc432ebd8f64fdcb3fffb1457a211337bae84e3f5a57983dc4bc37f86d8b6`;
+  its three key deployed files match local normalized SHA256 exactly. No
+  search, financial evaluation, validation, holdout or 2026 read was launched.
+  The updated evidence receipt is
   `runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json`.
-- Current blocker is explicit: no integrated immutable
-  `A_SHARE_TRADABILITY_REPLAY_V1` receipt exists, so optimizer COMPLETE,
-  finalist promotion and economic claims remain unavailable.
+- Zero-financial 77o input qualification is BLOCKED. The active 28,026,372-row
+  train shard exposes `code/trade_time/open/close` but lacks high/low,
+  security type, exchange, PIT universe eligibility, listing age,
+  ST/delisting, suspension and limit prices. The 116,292-row session shard
+  additionally lacks open. Existing label sidecars do not supply those fields,
+  and no frozen account commission/minimum contract or promotion-grade
+  survivorship-free, delisting-inclusive universe manifest exists. Therefore
+  zero qualification pairs are authorized and no financial results were
+  produced or reused.
+- Corporate-action cash/share adjustments and terminal-liquidation semantics
+  remain unqualified. Optimizer COMPLETE, finalist promotion and economic
+  claims remain unavailable until the input-authority gaps are repaired and a
+  separate bounded train-only qualification is authorized.
 
 ## Next action
 
 Do not run another scale-search tranche and do not freeze finalists from the
-closed 2,676 development-productive candidates yet. First integrate the
-existing `real_market_validation` and
-`phase3dy_true1min_tplus1_tradable_replay` capabilities with the new A-share
-tradability guard, beginning with zero-financial synthetic contract and parity
-verification. The integration must emit an immutable replay receipt and must
-not create a second evaluator, platform or authority node. Only after that
-existing chain proves execution clock, same-bar exclusion, T+1, limit-lock
-fills, suspensions, full fees and a promotion-grade universe may the bounded
-behavior-family deduplication and train-stability finalist phase proceed.
+closed 2,676 development-productive candidates yet. The executable replay and
+guard integration is complete; do not reimplement it or create a second
+evaluator, platform or authority node. The next allowed work is narrow
+input-authority repair only: materialize promotion-grade PIT session
+tradability/universe fields on 77o, freeze the actual account
+commission/minimum plus historical statutory fee schedule, bind a
+survivorship-free and delisting-inclusive universe manifest, and define
+corporate-action adjustments. Rerun the zero-financial schema/manifest gate
+after those exact inputs are frozen. Only a clean gate may permit a separately
+frozen 64-pair train-only qualification; the current gate authorizes zero
+pairs.
 Candidate-level validation remains separately authorized and report-only; it
 must not enter reward, tells, scheduler or persistent memory. Do not rerun the
 Medium, its report-only validation, either completed Hybrid-only tranche or

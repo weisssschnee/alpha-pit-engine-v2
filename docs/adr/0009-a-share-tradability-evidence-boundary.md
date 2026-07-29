@@ -50,10 +50,45 @@ Missing evidence fails closed. A pending optimizer trial may be terminally
 closed as failed for lifecycle integrity, but it cannot receive a COMPLETE
 reward observation and cannot teach TPE.
 
-The existing `real_market_validation` and T+1 replay implementations remain
-engineering capabilities only. This ADR does not promote either one to
-authority. A later, separately reviewed integration must bind immutable replay
-receipts before it may emit `A_SHARE_TRADABILITY_READY`.
+The existing `phase3dy_true1min_tplus1_tradable_replay` path is the execution
+adapter for this boundary; it is not a second evaluator or a new authority
+node. In authority mode it must bind and hash the exact input panel bytes,
+split manifest, promotion-grade universe manifest, explicit historical fee
+schedule and execution policy before it may emit a canonical
+`A_SHARE_TRADABILITY_REPLAY_V1` receipt.
+
+The executable kernel must model a cash-and-holdings long-only portfolio with
+signals observed at close and orders attempted at the next session open. It
+must sell before buying, enforce T+1 inventory age, block opening limit-up
+buys and opening limit-down sells, carry blocked holdings, block suspended
+fills, round to board lots, and charge the frozen complete fee schedule. The
+fee schedule must cover every replay date and must bind the account-specific
+commission rate and minimum commission instead of relying on a repository
+default.
+
+Phase3CM predictive values remain available as diagnostics. The optimizer
+reward authority is instead:
+
+```text
+search_score =
+min(primary executable net daily Sortino,
+    primary-minus-control executable net reward)
+```
+
+Both members' canonical receipt payloads, hashes, candidate IDs and exact
+identities are revalidated at every pair, feedback, search and adaptive
+consumer. A copied READY label, an outer-row projection or a Phase3CM score
+cannot substitute for either receipt.
+
+This integration is statically accepted at implementation commit
+`a33d8fccdb79372ffac54ce55302be362911df19`, but runtime qualification remains
+fail-closed. The currently bound 77o train sidecars do not contain the full
+execution/universe fields required by the contract (including high/low,
+security type, exchange, PIT universe eligibility, listing age, ST/delisting,
+suspension and limit prices), and the project has no frozen account commission
+contract or promotion-grade survivorship-free, delisting-inclusive universe
+manifest. Therefore no 64-pair financial qualification is authorized from the
+current inputs.
 
 ## Consequences
 
@@ -67,6 +102,14 @@ receipts before it may emit `A_SHARE_TRADABILITY_READY`.
   Phase3CM scores may feed optimizer state without the tradability proof above.
 - No candidate search, replay, validation or sealed-period access is authorized
   by this repair.
-- The next implementation step, if separately authorized, is to connect the
-  existing replay capabilities to the guard with immutable evidence receipts;
-  it is not to create a new platform or authority node.
+- The implementation step that connects the existing replay path to the guard
+  is complete and zero-financial tested. The remaining blocker is an input
+  authority gap, not an invitation to run another experiment.
+- The next allowed work is narrow data-authority repair: materialize the
+  missing PIT session tradability/universe fields from authoritative sources,
+  freeze the account commission/minimum contract and bind a
+  survivorship-free, delisting-inclusive universe manifest. Only then may a
+  separately frozen 64-pair train-only qualification be considered.
+- Corporate-action share/cash adjustments and terminal liquidation semantics
+  are not yet promotion-qualified. Receipts therefore continue to set
+  economic-claim and candidate-promotion authorization false.

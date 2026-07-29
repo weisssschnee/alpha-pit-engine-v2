@@ -458,7 +458,8 @@
         "DEVELOPMENT TRAIN ONLY",
         "UNIFORM BASELINE RETAINED",
         "NO VALIDATION",
-        "NO CANDIDATE PROMOTION"
+        "NO CANDIDATE PROMOTION",
+        "EXECUTABLE REWARD INPUT BLOCKED"
       ],
       "critical": true,
       "active_authority": true,
@@ -466,8 +467,8 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44",
-        "sha256": "4f5460bc786f456f580430aac052f80f8e64c2d4797a7d90290857b158898bd6"
+        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19",
+        "sha256": "ea5612df77699d2a0479467c7f3a3ad825ede8353ef771bd464345d0ea94d269"
       },
       "contracts": [
         {
@@ -481,7 +482,7 @@
         {
           "id": "hybrid_optimizer_feedback_boundary",
           "type": "BOUNDARY",
-          "rule": "Uniform receives no Optuna trial or optimizer feedback; Hybrid observations and tells use full-coordinate train outcomes only, and validation, holdout and 2026 cannot feed search, scheduling, archives or memory.",
+          "rule": "Uniform receives no Optuna trial or optimizer feedback. Hybrid observations and tells require both matched-pair members' canonical A-share executable replay receipts and use only min(primary executable net daily Sortino, matched executable net reward); predictive Phase3CM values remain diagnostics, and validation, holdout and 2026 cannot feed search, scheduling, archives or memory.",
           "severity": "HARD",
           "enforced_by": "optimizer_feedback_eligible and evaluation_access_guard",
           "bypass_forbidden": true
@@ -499,8 +500,8 @@
         "level": "STATIC_VERIFIED",
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "f7a305b6cf52e5d945fb789e55322c6a49a4fbffc67a27badc9a1d395fb05fd5",
-        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
+        "evidence_sha256": "897420ed8c2822615e26204de5bacf6f445ba5985fabb275fb4a6135cb0e1474",
+        "verified_at_sha": "a33d8fccdb79372ffac54ce55302be362911df19"
       }
     },
     {
@@ -569,13 +570,19 @@
       "label": "Matched-control pair authority",
       "kind": "admission",
       "lifecycle": "ACTIVE",
-      "paths": ["src/our_system_phase2/services/matched_control_pairs.py"],
+      "paths": [
+        "src/our_system_phase2/services/matched_control_pairs.py",
+        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "docs/adr/0009-a-share-tradability-evidence-boundary.md"
+      ],
       "critical": true,
       "active_authority": true,
       "semantic_role": "matched_pair_authority",
       "authority": {
         "path": "src/our_system_phase2/services/matched_control_pairs.py",
-        "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
+        "repo_ref": "feature/a-share-tradability-authority-repair",
+        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19",
+        "sha256": "0254776613d491ec74038ce0172cebc131b7b7f8a2860319f691ee660adc643f"
       },
       "contracts": [
         {
@@ -585,13 +592,22 @@
           "severity": "HARD",
           "enforced_by": "attach_pair_contract",
           "bypass_forbidden": true
+        },
+        {
+          "id": "matched_executable_reward_only",
+          "type": "ADMISSION",
+          "rule": "A matched pair may authorize optimizer feedback only after both canonical A-share replay receipts revalidate and matched reward is primary-minus-control executable net reward; Phase3CM pair deltas remain predictive diagnostics.",
+          "severity": "HARD",
+          "enforced_by": "matched_control_pairs and a_share_tradability_guard",
+          "bypass_forbidden": true
         }
       ],
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
-        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
+        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "evidence_sha256": "897420ed8c2822615e26204de5bacf6f445ba5985fabb275fb4a6135cb0e1474",
+        "verified_at_sha": "a33d8fccdb79372ffac54ce55302be362911df19"
       }
     },
     {
@@ -610,8 +626,8 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44",
-        "sha256": "18875d978be6b2206ad5923eb1f92037ce06fae98b220f1f4511006a521c681e"
+        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19",
+        "sha256": "537a25d6a439e96eda16b340ab000a03822c8aa8cfd9c64f2f32aff52cf7f73a"
       },
       "contracts": [
         {
@@ -635,8 +651,8 @@
         "level": "STATIC_VERIFIED",
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "f7a305b6cf52e5d945fb789e55322c6a49a4fbffc67a27badc9a1d395fb05fd5",
-        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
+        "evidence_sha256": "897420ed8c2822615e26204de5bacf6f445ba5985fabb275fb4a6135cb0e1474",
+        "verified_at_sha": "a33d8fccdb79372ffac54ce55302be362911df19"
       },
       "promotion_requirements": ["explicit search authorization", "frozen candidate pack"]
     },
@@ -678,7 +694,7 @@
       "authority": {
         "path": "scripts/run_cn_phase3cm_streaming_qualification.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44",
+        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19",
         "sha256": "764cef1acbc9ef68d72c8d436a729e0313a65de066ea1b3087c6b939a8ead66f"
       },
       "contracts": [
@@ -727,8 +743,8 @@
         "level": "STATIC_VERIFIED",
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "f7a305b6cf52e5d945fb789e55322c6a49a4fbffc67a27badc9a1d395fb05fd5",
-        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
+        "evidence_sha256": "897420ed8c2822615e26204de5bacf6f445ba5985fabb275fb4a6135cb0e1474",
+        "verified_at_sha": "a33d8fccdb79372ffac54ce55302be362911df19"
       },
       "promotion_requirements": [
         "separate strict Stage A authorization",
@@ -747,19 +763,24 @@
         "docs/adr/0009-a-share-tradability-evidence-boundary.md"
       ],
       "critical": true,
+      "claim_badges": [
+        "EXECUTABLE REWARD GATE ENFORCED",
+        "QUALIFICATION INPUT BLOCKED",
+        "NO ECONOMIC CLAIM"
+      ],
       "active_authority": true,
       "semantic_role": "train_feedback_authority",
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44",
-        "sha256": "8e03311345e8e91d7fd7bf429ce26ba00d04861be31680b287c602a4609db9c8"
+        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19",
+        "sha256": "0c16bbd802445da410ab24a505808e9a0c4984099a36a902d361bce534f58ef6"
       },
       "contracts": [
         {
           "id": "matched_train_only",
           "type": "BOUNDARY",
-          "rule": "Feedback accepts only PAIR_TRAIN_FEEDBACK_READY primary rows after all three receipt hashes validate, the primary standalone decision is READY, and both pair members carry complete A_SHARE_TRADABILITY_REPLAY_V1 proof.",
+          "rule": "Feedback accepts only PAIR_TRAIN_FEEDBACK_READY rows after submission and pair receipts validate, both canonical A_SHARE_TRADABILITY_REPLAY_V1 member receipts revalidate against candidate ID and exact identity, and the primary decision is A_SHARE_EXECUTABLE_REWARD_READY.",
           "severity": "HARD",
           "enforced_by": "phase3cn_receipt_gate",
           "bypass_forbidden": true
@@ -769,8 +790,8 @@
         "level": "STATIC_VERIFIED",
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "f7a305b6cf52e5d945fb789e55322c6a49a4fbffc67a27badc9a1d395fb05fd5",
-        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
+        "evidence_sha256": "897420ed8c2822615e26204de5bacf6f445ba5985fabb275fb4a6135cb0e1474",
+        "verified_at_sha": "a33d8fccdb79372ffac54ce55302be362911df19"
       }
     },
     {
@@ -1137,7 +1158,7 @@
       "required": false,
       "critical": true,
       "contract": {"id": "hybrid_full_coordinate_train_only", "type": "BOUNDARY", "rule": "Hybrid proposals may receive predictive Phase3CM reports, but optimizer reward requires full-coordinate train pair outcomes plus complete A-share tradability replay proof under ADR 0009. Development scores alone cannot grant a COMPLETE optimizer observation, promotion or sealed-period access.", "severity": "HARD", "enforced_by": "Phase3CM input binding, a_share_tradability_guard, immutable checkpoint manifests and access receipts", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json", "evidence_sha256": "f7a305b6cf52e5d945fb789e55322c6a49a4fbffc67a27badc9a1d395fb05fd5", "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json", "evidence_sha256": "897420ed8c2822615e26204de5bacf6f445ba5985fabb275fb4a6135cb0e1474", "verified_at_sha": "a33d8fccdb79372ffac54ce55302be362911df19"}
     },
     {
       "id": "matched_train_feedback_to_hybrid_development_search",
@@ -1147,8 +1168,8 @@
       "lifecycle": "ACTIVE",
       "required": false,
       "critical": true,
-      "contract": {"id": "hybrid_min_primary_and_matched_increment_reward", "type": "ADMISSION", "rule": "A Hybrid optimizer trial may COMPLETE only when the pair and primary standalone decisions are READY, both members carry complete A_SHARE_TRADABILITY_REPLAY_V1 proof, and search_score equals min(primary_composite_reward, matched_train_increment). Missing proof terminally fails without reward; Uniform cannot enter observations or tells.", "severity": "HARD", "enforced_by": "a_share_tradability_guard, optimizer observations, tell receipts and transcripts", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json", "evidence_sha256": "f7a305b6cf52e5d945fb789e55322c6a49a4fbffc67a27badc9a1d395fb05fd5", "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"}
+      "contract": {"id": "hybrid_min_primary_and_matched_increment_reward", "type": "ADMISSION", "rule": "A Hybrid optimizer trial may COMPLETE only when both canonical pair-member A_SHARE_TRADABILITY_REPLAY_V1 receipts revalidate, the pair decision is READY, the primary decision is A_SHARE_EXECUTABLE_REWARD_READY, and search_score equals min(primary executable net daily Sortino, primary-minus-control executable net reward). Predictive Phase3CM scores remain diagnostics; missing proof terminally fails without reward and Uniform cannot enter observations or tells.", "severity": "HARD", "enforced_by": "a_share_tradability_guard, optimizer observations, tell receipts and transcripts", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json", "evidence_sha256": "897420ed8c2822615e26204de5bacf6f445ba5985fabb275fb4a6135cb0e1474", "verified_at_sha": "a33d8fccdb79372ffac54ce55302be362911df19"}
     },
     {
       "id": "stage_a_route_eligibility_to_streaming_evaluator",
@@ -1167,8 +1188,8 @@
       "relation": "supplies_pair_native_train_feedback",
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
-      "contract": {"id": "pair_native_ready_only", "type": "ADMISSION", "rule": "Phase3CN consumes only train-only pair-native READY rows whose primary standalone decision is READY and whose two members carry complete A-share tradability replay proof. Standalone and tradability blockers are hard admission gates.", "severity": "HARD", "enforced_by": "phase3cn_pair_native_gate and a_share_tradability_guard", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json", "evidence_sha256": "f7a305b6cf52e5d945fb789e55322c6a49a4fbffc67a27badc9a1d395fb05fd5", "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"}
+      "contract": {"id": "pair_native_ready_only", "type": "ADMISSION", "rule": "Phase3CN consumes only train-only pair-native READY rows whose primary decision is A_SHARE_EXECUTABLE_REWARD_READY and whose two canonical A-share replay receipts revalidate against member candidate IDs and exact identities. Predictive standalone decisions remain diagnostics; receipt and tradability blockers are hard admission gates.", "severity": "HARD", "enforced_by": "phase3cn_pair_native_gate and a_share_tradability_guard", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json", "evidence_sha256": "897420ed8c2822615e26204de5bacf6f445ba5985fabb275fb4a6135cb0e1474", "verified_at_sha": "a33d8fccdb79372ffac54ce55302be362911df19"}
     },
     {"id": "plate_to_lanes_forbidden", "source": "plate_industry_pit_route", "target": "hypothesis_lanes", "relation": "unresolved_pit_membership", "lifecycle": "FORBIDDEN", "forbidden": true},
     {

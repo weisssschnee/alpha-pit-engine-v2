@@ -1,29 +1,35 @@
 {
-  "schema_version": "cn_a_share_tradability_authority_repair_receipt_v1",
-  "status": "STATIC_VERIFIED_AUTHORITY_BOUNDARY_REPAIRED",
+  "schema_version": "cn_a_share_tradability_authority_repair_receipt_v2",
+  "status": "IMPLEMENTED_STATIC_VERIFIED_QUALIFICATION_INPUT_BLOCKED",
   "scope": {
     "project": "alpha_pit_true1min_engine_evalreset_20260711",
     "branch": "feature/a-share-tradability-authority-repair",
-    "implementation_sha": "f53eff442b468cfb823b6658b8bcd4ef2a315c01",
+    "implementation_sha": "a33d8fccdb79372ffac54ce55302be362911df19",
     "decision_ref": "docs/adr/0009-a-share-tradability-evidence-boundary.md",
     "new_authority_node_created": false,
+    "new_platform_created": false,
     "financial_campaign_launched": false,
     "validation_or_holdout_launched": false,
     "search_launched": false
   },
   "authority_change": {
+    "existing_execution_adapter": "phase3dy_true1min_tplus1_tradable_replay",
     "existing_evaluation_authority": "candidate_parallel_evaluator",
     "existing_feedback_authority": "matched_train_feedback",
     "existing_search_policy_authority": "cn_development_search_policy",
     "phase3cm_evidence_class": "DEVELOPMENT_PREDICTIVE_SCORE_ONLY",
     "phase3cm_a_share_tradability_status": "A_SHARE_TRADABILITY_UNPROVEN",
     "development_productive_label_status": "DEVELOPMENT_DIAGNOSTIC_ONLY",
-    "optimizer_complete_requires": [
-      "PAIR_TRAIN_FEEDBACK_READY",
-      "primary standalone TRAIN_REWARD_FOLLOWUP_READY",
-      "A_SHARE_TRADABILITY_REPLAY_V1 proof for both pair members"
-    ],
-    "finalist_promotion_or_economic_claim_requires": "immutable A_SHARE_TRADABILITY_REPLAY_V1 receipt",
+    "replay_receipt_schema": "a_share_tradability_replay_receipt_v1",
+    "replay_ready_decision": "A_SHARE_EXECUTABLE_REWARD_READY",
+    "standalone_reward_source": "A_SHARE_TRADABILITY_REPLAY_V1_EXECUTABLE_NET_REWARD",
+    "standalone_reward_metric": "EXECUTABLE_NET_DAILY_SORTINO_V1",
+    "matched_reward_source": "a_share_tradability_replay_v1_matched_executable_increment",
+    "matched_reward_metric": "matched_train_primary_minus_control_executable_net_reward",
+    "optimizer_search_score_policy": "MIN_EXECUTABLE_STANDALONE_AND_MATCHED_INCREMENT_V1",
+    "optimizer_search_score_formula": "min(primary_a_share_executable_net_reward,a_share_matched_executable_increment)",
+    "both_pair_member_receipts_revalidated": true,
+    "copied_ready_label_authorizes_feedback": false,
     "missing_proof_behavior": "FAIL_CLOSED_WITHOUT_OPTIMIZER_REWARD"
   },
   "required_a_share_execution_proofs": [
@@ -35,29 +41,59 @@
     "full_fee_schedule_enforced",
     "promotion_grade_universe_enforced"
   ],
+  "implemented_replay_semantics": {
+    "signal_clock": "SESSION_CLOSE_T",
+    "execution_clock": "NEXT_SESSION_OPEN",
+    "portfolio_mode": "LONG_ONLY_CASH_AND_HOLDINGS",
+    "sell_before_buy": true,
+    "t_plus_one_inventory_age": true,
+    "opening_limit_up_buy_block": true,
+    "opening_limit_down_sell_block_and_carry": true,
+    "suspension_fill_block": true,
+    "board_lot_rounding": true,
+    "historical_fee_schedule_must_cover_all_replay_dates": true,
+    "account_commission_and_minimum_must_be_explicit": true,
+    "input_panel_bytes_hashed": true,
+    "universe_manifest_bytes_hashed": true,
+    "train_only_split_required": true,
+    "forward_2026_forbidden": true,
+    "corporate_action_cash_share_adjustment_promotion_qualified": false,
+    "terminal_liquidation_promotion_qualified": false
+  },
   "source_hashes": {
-    "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py": "0b14dec82e5f06fa8e2c77a0f547fc5b9c452019f6e9d8ac65b0f77c4e634524",
-    "scripts/run_cn_phase3cm_streaming_qualification.py": "764cef1acbc9ef68d72c8d436a729e0313a65de066ea1b3087c6b939a8ead66f",
-    "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py": "11ac9d67a35f6f771e4ea49f67284dae3607de61980a6aa1a0ed34cfdcb962c9",
-    "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py": "4f5460bc786f456f580430aac052f80f8e64c2d4797a7d90290857b158898bd6",
-    "src/our_system_phase2/services/a_share_tradability_guard.py": "a940455980f9b2989b8237f94f7f94a28644c4d06520a9970f882f3e55185ae9",
-    "docs/adr/0009-a-share-tradability-evidence-boundary.md": "433fc9a4032aaf90954119703e7589ad3e803cbb225fd17051bafdd3b688136b"
+    "src/our_system_phase2/services/a_share_executable_replay.py": "edafdaddf845883d8af48187c51f0293c3250da48af30bcddd141ef6e378ed76",
+    "src/our_system_phase2/services/a_share_tradability_guard.py": "029a15b1d9f39b9984a2cbf6b7b98ee3d465f094ce67e1ef92148ae1df38b6ad",
+    "src/our_system_phase2/services/matched_control_pairs.py": "0254776613d491ec74038ce0172cebc131b7b7f8a2860319f691ee660adc643f",
+    "src/our_system_phase2/services/candidate_schema.py": "810ec5fb2ad6f79ceb544842f118abbea742ee43877223036df416aa1ec1d495",
+    "src/our_system_phase2/services/search_feedback.py": "5309054e86dfa7491c5f130de53e5370524e922a978943e55dd519e0f054d6c6",
+    "src/our_system_phase2/runtime/phase3dy_true1min_tplus1_tradable_replay.py": "8704068b08fdaecd5509b83bcea56f1f0989b6d30d33a991ff3544c2377a6e3b",
+    "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py": "537a25d6a439e96eda16b340ab000a03822c8aa8cfd9c64f2f32aff52cf7f73a",
+    "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py": "0c16bbd802445da410ab24a505808e9a0c4984099a36a902d361bce534f58ef6",
+    "src/our_system_phase2/runtime/phase3bs_adaptive_ucb_cem_practice.py": "dc7960dbbbfa43e277fc9216c2d1479537460e8155706c51428b19cf7d342a05",
+    "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py": "ea5612df77699d2a0479467c7f3a3ad825ede8353ef771bd464345d0ea94d269",
+    "scripts/build_cn_matched_control_candidate_parallel_artifacts.py": "28ed3fa3fba46afdbc4719e2e739c1b844ab2e6cf80bed2bec683d46e31ba5fa",
+    "docs/adr/0009-a-share-tradability-evidence-boundary.md": "da6e0b1d6b13040e41a4e12cfa4673d77da894c78093a08cbf9c61afafa876c6"
   },
   "verification": {
     "local": {
-      "related_tests_passed": 30,
-      "semantic_regression_tests_passed": 3,
-      "architecture_overlay_json_parse": "PASS",
-      "python_compile": "PASS"
+      "focused_tests_passed": 88,
+      "focused_tests_failed": 0,
+      "python_compile": "PASS",
+      "financial_data_reads": 0
     },
     "remote_77o": {
-      "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_a_share_tradability_f53eff4_20260729_162854",
-      "deployment_archive_sha256": "52e57dfe5d14206f1bccff5499cb24610701b5ed82559bdb85d2d3e7d874d97c",
-      "deployment_file_count": 1386,
-      "focused_tests_passed": 54,
+      "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_a_share_exec_a33d8fc_20260729_205359",
+      "deployment_archive": "D:\\ChengboRemote\\packages\\alpha_pit_a_share_exec_a33d8fc_20260729_205359.zip",
+      "deployment_archive_sha256": "f4acc432ebd8f64fdcb3fffb1457a211337bae84e3f5a57983dc4bc37f86d8b6",
+      "deployment_archive_bytes": 27663875,
+      "deployed_text_normalization": "CRLF",
+      "normalized_key_file_hashes_match_local": true,
+      "official_python": "D:\\ChengboRemote\\venvs\\alpha311\\Scripts\\python.exe",
+      "focused_tests_passed": 88,
       "focused_tests_failed": 0,
+      "focused_test_seconds": 8.75,
       "warnings": [
-        "Optuna constant_liar remains experimental"
+        "Optuna constant_liar, multivariate and group remain experimental"
       ]
     },
     "financial_data_reads": 0,
@@ -65,15 +101,84 @@
     "holdout_reads": 0,
     "forward_2026_reads": 0
   },
+  "zero_financial_input_qualification": {
+    "status": "BLOCKED_MISSING_PROMOTION_GRADE_A_SHARE_EXECUTION_INPUTS",
+    "inspection_mode": "PARQUET_SCHEMA_AND_EXISTING_MANIFEST_METADATA_ONLY",
+    "inspected_on": "77o",
+    "inspected_shards": [
+      {
+        "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_sidecars_3509d0c\\active_time_major_train_v1\\shard_00.parquet",
+        "row_count": 28026372,
+        "present_execution_fields": [
+          "code",
+          "trade_time",
+          "open",
+          "close"
+        ],
+        "missing_required_fields": [
+          "high",
+          "low",
+          "security_type",
+          "exchange",
+          "universe_eligible",
+          "listing_age_sessions",
+          "is_st",
+          "is_delisting",
+          "suspended",
+          "up_limit_price",
+          "down_limit_price"
+        ]
+      },
+      {
+        "path": "D:\\ChengboRemote\\runtime\\cn_core_pack_aggressive_discovery_20260718_595c5fc\\strict_wave_01024_sidecars_3509d0c\\session_time_major_train_v1\\shard_00.parquet",
+        "row_count": 116292,
+        "present_execution_fields": [
+          "code",
+          "trade_time",
+          "close"
+        ],
+        "missing_required_fields": [
+          "open",
+          "high",
+          "low",
+          "security_type",
+          "exchange",
+          "universe_eligible",
+          "listing_age_sessions",
+          "is_st",
+          "is_delisting",
+          "suspended",
+          "up_limit_price",
+          "down_limit_price"
+        ]
+      }
+    ],
+    "label_sidecars_supply_missing_execution_fields": true,
+    "promotion_grade_universe_manifest_found": false,
+    "survivorship_free_delisting_inclusive_universe_proved": false,
+    "account_commission_contract_found": false,
+    "fee_schedule_contract_frozen": false,
+    "corporate_action_contract_frozen": false,
+    "qualification_pairs_authorized": 0,
+    "qualification_financial_results_reused": false
+  },
   "non_claims": [
-    "This receipt does not prove A-share tradability.",
-    "This receipt does not promote the existing real-market replay implementations into formal authority.",
-    "This receipt does not authorize a financial campaign, finalist promotion, validation, holdout or 2026 access.",
-    "Historical productive candidates remain development diagnostics and are not economic or tradability evidence."
+    "Static implementation and tests do not prove A-share tradability or economics.",
+    "No candidate currently has a promotion-authorizing A_SHARE_TRADABILITY_REPLAY_V1 receipt.",
+    "Historical productive candidates remain development diagnostics and are not executable reward, finalist, validation or promotion evidence.",
+    "This repair does not authorize a search campaign, financial replay, validation, holdout or 2026 access.",
+    "This repair does not promote the execution adapter into a separate authority."
   ],
   "next_blocker": {
-    "status": "A_SHARE_TRADABILITY_REPLAY_NOT_INTEGRATED",
-    "required_resolution": "Bind the existing real_market_validation and phase3dy_true1min_tplus1_tradable_replay capabilities to the guard and produce an immutable replay receipt before any optimizer COMPLETE, finalist, promotion or economic claim.",
-    "first_allowed_step": "zero-financial synthetic contract and parity verification only"
+    "status": "PROMOTION_GRADE_A_SHARE_EXECUTION_INPUT_AUTHORITY_MISSING",
+    "required_resolution": [
+      "Materialize PIT session-level high/low, suspension, limit prices, security type, exchange, listing age, ST and delisting state for every held and eligible code/date.",
+      "Freeze and hash a survivorship-free, delisting-inclusive A-share universe manifest.",
+      "Freeze the actual account commission rate, minimum commission and historical statutory fee schedule covering all replay dates.",
+      "Define and test corporate-action cash/share adjustment semantics."
+    ],
+    "first_allowed_step": "zero-financial authoritative data and fee-contract repair only",
+    "financial_qualification_allowed_after_resolution": "separately frozen 64-pair train-only qualification",
+    "successor_search_authorized": false
   }
 }
