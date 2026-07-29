@@ -1,0 +1,140 @@
+{
+  "schema_version": "cn_productive_keep_review_closure_receipt_v1",
+  "status": "CN_DEVELOPMENT_KEEP_REVIEW_COHORT_FROZEN",
+  "closed_at": "2026-07-29T23:09:15.7956779+08:00",
+  "source_campaign": {
+    "root": "D:\\ChengboRemote\\runtime\\cn_hybrid_bounded_large_tranche_20260729_1030_6288d71_6144",
+    "execution_repo_sha": "6288d715429e6dc84af5e89ac3f73d3d0cebc21b",
+    "status": "CAMPAIGN_CLOSED",
+    "productive_pairs": 2676,
+    "source_artifacts_verified_unchanged": 38
+  },
+  "selection_implementation": {
+    "repo_sha": "76503e099ce90de338f0f8af15301f4ab9886b5c",
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_keep_review_76503e0_20260729_2315_76503e099ce9",
+    "deployment_manifest": "D:\\ChengboRemote\\runtime\\manifests\\alpha_pit_keep_review_76503e0_20260729_2315_76503e099ce9.json",
+    "deployment_manifest_sha256": "9dfae9f74b3170d2125c06254d9e9a5e10cfe4d78ed78db472f462e01d58d8cd",
+    "official_77o_tests": "3/3 plus py_compile PASS",
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_productive_keep_review_64_20260729_2318_76503e0",
+    "manifest_file_sha256": "a132f2aeb57eb64e621c55b96b0edffd36345592487d153bce4f9f64d79e5c6c",
+    "manifest_payload_sha256": "2cdc6d194c18a6c30718d0153a8b294ca52326eab1f95a16771d3ecf36928733",
+    "contract_payload_sha256": "ea3bc04c932f25134f35beb6d10d8b8bc06a9bd76eb978441da4727965de94cc",
+    "selection_payload_sha256": "5ab6dbdf374d4867cf197b254cf6672d342bed54436bf153a551ae65867a3815"
+  },
+  "independent_verification": {
+    "repo_sha": "dd9662b7dd23a5cfd21dfd2d42a971ff05e2bd53",
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_keep_review_verify_dd9662b_20260729_2325_dd9662b7dd23",
+    "deployment_manifest": "D:\\ChengboRemote\\runtime\\manifests\\alpha_pit_keep_review_verify_dd9662b_20260729_2325_dd9662b7dd23.json",
+    "deployment_manifest_sha256": "f4c1fd2dbce5634a62bf4612622f3b75ba26368f4c4ad15442eefb86eb38d04d",
+    "status": "INDEPENDENT_VERIFICATION_PASS",
+    "declared_artifacts_verified": 5,
+    "source_artifacts_verified_unchanged": 38,
+    "verification_receipt": "D:\\ChengboRemote\\runtime\\cn_productive_keep_review_64_20260729_2318_76503e0_verification\\verification_receipt.json",
+    "verification_receipt_sha256": "9fa1d943a87dfae5f7ab1e9ffd4d14e3d1f4c60082e9499d8b50ed6f8d4081e7"
+  },
+  "productive_review": {
+    "review_pairs": 2676,
+    "behavior_family_unique": 2676,
+    "behavior_signature_unique": 2676,
+    "deduplication_removed_pairs": 0,
+    "train_stability_screen_pass": 2145,
+    "train_stability_screen_hold": 531,
+    "screen_hold_reasons": {
+      "NONPOSITIVE_MATCHED_GROSS_INCREMENT": 358,
+      "NONPOSITIVE_MATCHED_NET_INCREMENT": 3,
+      "NONPOSITIVE_TRAIN_DAY_MCMC_P25": 2,
+      "TRAIN_REGIME_POSITIVE_SHARE_BELOW_HALF": 168
+    }
+  },
+  "frozen_cohort": {
+    "review_outcome": "ALLOW_KEEP_REVIEW",
+    "evidence_scope": "DEVELOPMENT_TRAIN_ONLY",
+    "selected_pairs": 64,
+    "selected_candidate_members": 128,
+    "selected_exact_identity_unique": 64,
+    "selected_behavior_family_unique": 64,
+    "selected_behavior_signature_unique": 64,
+    "selected_route_counts": {
+      "SLOW_TEMPORAL_CHANGE": 39,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 24,
+      "FIRSTN_PATH": 1,
+      "MARKET_REGIME_CONDITION": 0,
+      "DISCLOSURE_EVENT": 0
+    },
+    "selected_operator_family_counts": {
+      "Delta": 32,
+      "MultiScaleRelation": 7,
+      "SizeNeutralize": 24,
+      "SignedPath": 1
+    },
+    "selected_checkpoint_counts": {
+      "checkpoint_001": 8,
+      "checkpoint_002": 11,
+      "checkpoint_003": 10,
+      "checkpoint_004": 11,
+      "checkpoint_005": 4,
+      "checkpoint_006": 9,
+      "checkpoint_007": 5,
+      "checkpoint_008": 6
+    },
+    "selected_search_score": {
+      "minimum": 0.000646760000000024,
+      "median": 0.149936195,
+      "maximum": 0.47859155
+    },
+    "selected_train_stability_score": {
+      "minimum": 0.12361305361305361,
+      "median": 0.4626340326340326,
+      "maximum": 0.6340093240093241
+    },
+    "concentration_contract": {
+      "route_max_pairs": 48,
+      "structural_family_max_pairs": 32,
+      "signal_cluster_max_pairs": 48,
+      "actual_largest_route_pairs": 39,
+      "actual_largest_structural_family_pairs": 32,
+      "actual_largest_signal_cluster_pairs": 43
+    }
+  },
+  "authority_boundary": {
+    "financial_result_recomputed": false,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "optimizer_feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "archive_write": "FORBIDDEN",
+    "finalist_execution_eligible": false,
+    "validation_eligible": false,
+    "promotion_eligible": false,
+    "successor_search_authorized": false,
+    "deepseek_or_external_llm_called": false,
+    "new_platform_database_or_evaluator_created": false
+  },
+  "preserved_failure": {
+    "status": "PRESERVED_NON_FINANCIAL_SELECTOR_FAILURE",
+    "incident": "D:\\ChengboRemote\\runtime\\cn_hybrid_bounded_large_tranche_20260729_1030_6288d71_6144\\run_health_incidents\\20260729T2305_keep_review_behavior_identity_join_drift\\incident.json",
+    "incident_sha256": "882e507c73dc89c2177ef85e7f9fd52c048d3ff60851c3519fd2abc8cfcec0d0",
+    "selection_artifacts_written": 0,
+    "financial_result_recomputed": false,
+    "resolution": "Bind structural_family_id and signal_cluster_id from checkpoint full_behavior authority by immutable pair_id; validate legacy observation identities separately."
+  },
+  "interpretation": [
+    "All 2676 productive behavior families were already unique, so the phase performed no synthetic deduplication.",
+    "The 64-pair cohort is a development keep-review set selected from frozen train evidence, not an A-share executable or economic finalist set.",
+    "Market Regime candidates remained HOLD_RESEARCH because their train-day MCMC p25 was nonpositive; no route quota overrode the stability screen.",
+    "No additional search, Phase3CM replay, validation, holdout or 2026 access was run."
+  ],
+  "next_action": {
+    "status": "ZERO_FINANCIAL_FINALIST_INPUT_AUTHORITY_REPAIR_REQUIRED",
+    "scope": [
+      "Bind PIT session high/low, suspension, limit prices, security type, exchange, listing age, ST and delisting state for the frozen 64-pair lane.",
+      "Freeze a survivorship-free, delisting-inclusive A-share universe manifest.",
+      "Freeze actual account commission, minimum commission and historical statutory fee schedules.",
+      "Define and test corporate-action cash/share adjustments and terminal-liquidation semantics."
+    ],
+    "financial_replay_authorized_now": false,
+    "report_only_validation_authorized_now": false,
+    "successor_search_authorized": false
+  }
+}

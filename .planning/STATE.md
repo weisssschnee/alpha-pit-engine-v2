@@ -985,21 +985,67 @@ remains unchanged. The compact receipt is
   configured external LLM remain documentation maintenance only, not a runtime
   dependency. No DeepSeek/API call is required for this correction.
 
+## Development keep-review cohort freeze (2026-07-29)
+
+- The closed 6,144-ask campaign's 2,676 development-productive pairs were
+  reviewed without rerunning Phase3CM or reading validation, holdout or 2026.
+  All 2,676 portfolio behavior-family IDs and all 2,676 behavior signatures
+  were already unique, so no pair was removed by synthetic deduplication.
+- Frozen Phase3CM train artifacts retained the required stability evidence:
+  day Sortino and MCMC p25, worst/median horizon day Sortino, horizon
+  dispersion, regime stability, Rank-IC hit rate, matched gross/net
+  increments, cost difference and one-way turnover. The selector used only
+  these immutable train fields.
+- 2,145 pairs passed the fail-closed train-stability screen. The remaining 531
+  stay `HOLD_RESEARCH`: 358 had nonpositive matched gross increment, 3 had
+  nonpositive matched net increment, 2 had nonpositive train-day MCMC p25 and
+  168 had train regime positive share below one half.
+- A deterministic 64-pair / 128-member cohort is frozen with
+  `review_outcome=ALLOW_KEEP_REVIEW` and
+  `evidence_scope=DEVELOPMENT_TRAIN_ONLY`. It contains 39 Slow Temporal, 24
+  Slow Cross-sectional and 1 First-N pair. The two Market Regime productives
+  remained HOLD because their MCMC p25 was negative; route coverage did not
+  override the stability gate. Disclosure had no productive input.
+- Diversity is enforced at selection, not claimed from pairwise family
+  uniqueness alone: the selected set is capped at 48 pairs per route, 32 per
+  structural family and 48 per signal cluster. Actual maxima were 39/32/43.
+  Selected exact identities, behavior families and behavior signatures are
+  each 64/64 unique.
+- The selector ran only on 77o from source SHA
+  `76503e099ce90de338f0f8af15301f4ab9886b5c`. Independent verification from
+  SHA `dd9662b7dd23a5cfd21dfd2d42a971ff05e2bd53` matched the manifest
+  self-hash, all five declared outputs, all 38 immutable source artifacts and
+  the complete rank/cap selection. Selection payload SHA256 is
+  `5ab6dbdf374d4867cf197b254cf6672d342bed54436bf153a551ae65867a3815`;
+  verification receipt SHA256 is
+  `9fa1d943a87dfae5f7ab1e9ffd4d14e3d1f4c60082e9499d8b50ed6f8d4081e7`.
+- The first selector attempt wrote zero cohort artifacts and failed closed
+  because legacy root observations left structural/signal identities blank.
+  Evidence is preserved; the repair binds those identities from checkpoint
+  `full_behavior` authority by immutable pair ID and separately verifies every
+  nonblank legacy identity. No failed result was reused.
+- This cohort is not executable, validation, holdout, economic or promotion
+  evidence. `finalist_execution_eligible`, `validation_eligible`,
+  `promotion_eligible` and successor-search authorization all remain false.
+  No optimizer, scheduler or archive write occurred. The compact receipt is
+  `runtime/run_plans/cn_productive_keep_review_64_20260729_receipt.json`.
+
 ## Next action
 
-Do not run another scale-search tranche. The next phase is zero-financial
-behavior-family deduplication and train-stability ranking over the immutable
-2,676 development-productive candidates from the closed 6,144 tranche, then
-freeze a small finalist cohort. Do not recompute campaign outcomes and do not
-turn a historical productive label into economic evidence.
+Do not run another scale-search tranche. The frozen 64-pair development
+keep-review cohort now permits only zero-financial finalist input-authority
+repair: bind PIT session high/low, suspensions, limit prices, security type,
+exchange, listing age, ST and delisting state; freeze a survivorship-free,
+delisting-inclusive universe manifest; freeze actual commission, minimum
+commission and historical statutory fees; and define corporate-action plus
+terminal-liquidation semantics.
 
-Only after that small cohort is frozen may a separately authorized finalist
-lane bind the existing PIT tradability/universe authorities, actual account
-commission/minimum plus historical statutory fees, corporate-action and
-terminal-liquidation semantics, execute the retained A-share replay, and run
-one report-only validation. These finalist inputs must not be copied back into
-development optimizer reward, tells, scheduler or memory. Do not create a
-second evaluator, platform, database or authority node, and do not treat a RAW
+Only after those inputs and contracts close may a separate authorization run
+the retained A-share replay and one report-only validation for the same frozen
+cohort. The cohort must not feed development optimizer reward, tells,
+scheduler or memory. Financial replay, validation, holdout, 2026, successor
+search and promotion remain unauthorized now. Do not create a second
+evaluator, platform, database or authority node, and do not treat a RAW
 Graph/DeepSeek refresh as a blocker.
 
 Do not rerun the Medium, its report-only validation, either completed
