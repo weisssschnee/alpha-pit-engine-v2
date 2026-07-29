@@ -59,6 +59,7 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _restore_or_import_adapters,
     _sha256,
     _stable_hash,
+    _tell_scheduled_route_populations,
     _select_validation_finalists,
     _validation_eligible,
 )
@@ -704,6 +705,59 @@ def test_winner_guided_large_search_is_bounded_and_winner_concentrated() -> None
     assert authorization["cross_campaign_optimizer_state_reused"] is False
     assert authorization["cross_campaign_reward_rows_imported"] == 0
     assert authorization["automatic_validation"] == "FORBIDDEN"
+
+
+def test_zero_ask_routes_skip_optuna_tell() -> None:
+    class StubAdapter:
+        def __init__(self, *, pending: bool) -> None:
+            self.has_pending_population = pending
+            self.history: list[dict[str, object]] = []
+            self.tell_calls: list[list[dict[str, object]]] = []
+
+        def tell_population(
+            self,
+            observations: list[dict[str, object]],
+        ) -> dict[str, object]:
+            self.tell_calls.append(observations)
+            self.has_pending_population = False
+            transcript = {
+                "checkpoint_id": "checkpoint_001",
+                "asked": [{"proposal_id": "p1"}],
+                "observations": observations,
+            }
+            self.history.append(transcript)
+            return {
+                "schema_version": "cn_optuna_tpe_tell_receipt_v1",
+                "route_id": "ACTIVE",
+                "checkpoint_id": "checkpoint_001",
+                "asked_count": len(observations),
+            }
+
+    active = StubAdapter(pending=True)
+    zero = StubAdapter(pending=False)
+    observations = [{"proposal_id": "p1", "outcome_class": "EVALUATED"}]
+    receipts, transcripts = _tell_scheduled_route_populations(
+        schedule={
+            "routes": [
+                {"route_id": "ACTIVE", "asked_pairs": 1},
+                {"route_id": "ZERO", "asked_pairs": 0},
+            ]
+        },
+        ordered_observations=observations,
+        asked_by_id={
+            "p1": {"proposal_id": "p1", "route_id": "ACTIVE"}
+        },
+        adapters={"ACTIVE": active, "ZERO": zero},
+        checkpoint_id="checkpoint_001",
+    )
+
+    assert len(active.tell_calls) == 1
+    assert zero.tell_calls == []
+    assert receipts[1]["receipt"]["optimizer_action"] == (
+        "SKIPPED_ZERO_FORMAL_ASKS"
+    )
+    assert transcripts["ZERO"]["asked"] == []
+    assert transcripts["ZERO"]["observations"] == []
 
 
 def test_productive_family_diagnostics_are_diagnostic_only() -> None:

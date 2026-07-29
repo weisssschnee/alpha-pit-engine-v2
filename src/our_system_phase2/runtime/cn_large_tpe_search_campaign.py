@@ -1000,6 +1000,72 @@ def _write_optimizer_snapshot(
     return snapshot_path, receipt_path
 
 
+def _tell_scheduled_route_populations(
+    *,
+    schedule: Mapping[str, Any],
+    ordered_observations: Sequence[Mapping[str, Any]],
+    asked_by_id: Mapping[str, Mapping[str, Any]],
+    adapters: Mapping[str, RouteConditionalTPESearchAdapter],
+    checkpoint_id: str,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    tell_receipts: list[dict[str, Any]] = []
+    transcripts: dict[str, Any] = {}
+    for route in schedule["routes"]:
+        route_id = str(route["route_id"])
+        expected_formal_asks = int(route.get("asked_pairs") or 0)
+        route_observations = [
+            row
+            for row in ordered_observations
+            if str(
+                asked_by_id[str(row["proposal_id"])]["route_id"]
+            )
+            == route_id
+        ]
+        adapter = adapters[route_id]
+        if expected_formal_asks == 0:
+            if route_observations or adapter.has_pending_population:
+                raise RuntimeError("LARGE_TPE_ZERO_ASK_ROUTE_STATE_DRIFT")
+            receipt = {
+                "schema_version": (
+                    "cn_optuna_tpe_zero_ask_noop_receipt_v1"
+                ),
+                "route_id": route_id,
+                "checkpoint_id": checkpoint_id,
+                "asked_count": 0,
+                "completed_count": 0,
+                "pruned_count": 0,
+                "failed_count": 0,
+                "optimizer_action": "SKIPPED_ZERO_FORMAL_ASKS",
+            }
+            tell_receipts.append(
+                {"route_id": route_id, "receipt": receipt}
+            )
+            transcripts[route_id] = {
+                "schema_version": (
+                    "cn_optuna_tpe_zero_ask_noop_transcript_v1"
+                ),
+                "checkpoint_id": checkpoint_id,
+                "asked": [],
+                "observations": [],
+                "receipt": receipt,
+            }
+            continue
+        if not adapter.has_pending_population:
+            raise RuntimeError(
+                "LARGE_TPE_ACTIVE_ROUTE_PENDING_POPULATION_MISSING"
+            )
+        tell_receipts.append(
+            {
+                "route_id": route_id,
+                "receipt": adapter.tell_population(
+                    route_observations
+                ),
+            }
+        )
+        transcripts[route_id] = adapter.history[-1]
+    return tell_receipts, transcripts
+
+
 def _load_optimizer_snapshot(
     *,
     snapshot_path: Path,
@@ -3622,30 +3688,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             root / "optimizer_observations.parquet",
             ordered_observations,
         )
-        tell_receipts = []
-        transcripts = {}
         asked_by_id = {
             str(row["proposal_id"]): row for row in asked
         }
-        for route in schedule["routes"]:
-            route_id = str(route["route_id"])
-            route_observations = [
-                row
-                for row in ordered_observations
-                if str(
-                    asked_by_id[str(row["proposal_id"])]["route_id"]
-                )
-                == route_id
-            ]
-            tell_receipts.append(
-                {
-                    "route_id": route_id,
-                    "receipt": adapters[route_id].tell_population(
-                        route_observations
-                    ),
-                }
-            )
-            transcripts[route_id] = adapters[route_id].history[-1]
+        tell_receipts, transcripts = _tell_scheduled_route_populations(
+            schedule=schedule,
+            ordered_observations=ordered_observations,
+            asked_by_id=asked_by_id,
+            adapters=adapters,
+            checkpoint_id=checkpoint_id,
+        )
         tell_path = _write_json(
             root / "optimizer_tell_receipts.json", tell_receipts
         )
