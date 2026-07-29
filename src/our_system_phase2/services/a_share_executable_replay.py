@@ -21,7 +21,7 @@ from our_system_phase2.services.development_only_data_access import (
 )
 
 
-REPLAY_KERNEL_VERSION = "a_share_long_only_open_rebalance_v1"
+REPLAY_KERNEL_VERSION = "a_share_long_only_open_rebalance_v2"
 REQUIRED_SESSION_COLUMNS = frozenset(
     {
         "date",
@@ -38,6 +38,10 @@ REQUIRED_SESSION_COLUMNS = frozenset(
         "suspended",
         "up_limit_price",
         "down_limit_price",
+        "corporate_action_cash_per_share",
+        "corporate_action_share_multiplier",
+        "is_terminal_session",
+        "terminal_liquidation_price",
     }
 )
 
@@ -192,6 +196,53 @@ class AShareExecutionPolicy:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class AShareCorporateActionPolicy:
+    """Frozen timing and accounting semantics for finalist replay.
+
+    Input rows must already be PIT-aligned. Cash is credited on its declared
+    payment session and share multipliers are applied on their declared
+    effective session, both before that session's sell/buy rebalance. Only
+    positions carried into the session receive the adjustment.
+    """
+
+    cash_credit_clock: str = "PAYMENT_SESSION_OPEN"
+    share_adjustment_clock: str = "EFFECTIVE_SESSION_OPEN"
+    entitlement_basis: str = "OPENING_HOLDINGS_ONLY"
+    fractional_share_policy: str = "FAIL_CLOSED_NON_INTEGER"
+    delisting_liquidation_clock: str = "TERMINAL_SESSION_OPEN"
+    replay_end_liquidation_clock: str = "FINAL_SESSION_OPEN"
+    require_flat_at_replay_end: bool = True
+    source_reference: str = ""
+
+    def validate(self) -> None:
+        expected = {
+            "cash_credit_clock": "PAYMENT_SESSION_OPEN",
+            "share_adjustment_clock": "EFFECTIVE_SESSION_OPEN",
+            "entitlement_basis": "OPENING_HOLDINGS_ONLY",
+            "fractional_share_policy": "FAIL_CLOSED_NON_INTEGER",
+            "delisting_liquidation_clock": "TERMINAL_SESSION_OPEN",
+            "replay_end_liquidation_clock": "FINAL_SESSION_OPEN",
+        }
+        for field, value in expected.items():
+            if str(getattr(self, field)) != value:
+                raise ValueError(f"{field} must be {value}")
+        if not self.require_flat_at_replay_end:
+            raise ValueError("finalist replay must require a flat ending book")
+        if not self.source_reference:
+            raise ValueError("corporate-action policy source_reference is required")
+
+    @property
+    def payload_sha256(self) -> str:
+        self.validate()
+        return canonical_json_hash(
+            {
+                "schema_version": "a_share_corporate_action_policy_v1",
+                **asdict(self),
+            }
+        )
+
+
 def _sortino(values: pd.Series) -> float | None:
     clean = pd.to_numeric(values, errors="coerce").dropna()
     if clean.empty:
@@ -235,6 +286,9 @@ def _prepare_sessions(
         "listing_age_sessions",
         "up_limit_price",
         "down_limit_price",
+        "corporate_action_cash_per_share",
+        "corporate_action_share_multiplier",
+        "terminal_liquidation_price",
     ):
         out[column] = pd.to_numeric(out[column], errors="coerce")
     for column in (
@@ -242,6 +296,7 @@ def _prepare_sessions(
         "is_st",
         "is_delisting",
         "suspended",
+        "is_terminal_session",
     ):
         out[column] = _truthy(out[column])
     if "lot_size" in out:
@@ -257,9 +312,38 @@ def _prepare_sessions(
         & ~out["is_delisting"]
     )
     out["promotion_universe_eligible"] = eligible.fillna(False)
+    cash = out["corporate_action_cash_per_share"]
+    multiplier = out["corporate_action_share_multiplier"]
+    if cash.isna().any() or cash.lt(0).any():
+        raise ValueError(
+            "corporate_action_cash_per_share must be explicit and nonnegative"
+        )
+    if multiplier.isna().any() or multiplier.le(0).any():
+        raise ValueError(
+            "corporate_action_share_multiplier must be explicit and positive"
+        )
+    terminal = out["is_terminal_session"]
+    if (terminal & ~out["is_delisting"]).any():
+        raise ValueError("terminal sessions must also declare is_delisting")
+    terminal_price = out["terminal_liquidation_price"]
+    if (terminal & (terminal_price.isna() | terminal_price.le(0))).any():
+        raise ValueError(
+            "terminal sessions require a positive terminal_liquidation_price"
+        )
+    terminal_counts = out.loc[terminal].groupby("code", sort=False).size()
+    if terminal_counts.gt(1).any():
+        raise ValueError("a security may declare at most one terminal session")
     out = out.sort_values(["date", "code"], kind="mergesort").reset_index(
         drop=True
     )
+    terminal_dates = out.loc[out["is_terminal_session"], ["code", "date"]]
+    if not terminal_dates.empty:
+        last_dates = out.groupby("code", sort=False)["date"].max()
+        for row in terminal_dates.itertuples(index=False):
+            if pd.Timestamp(row.date) != pd.Timestamp(last_dates.loc[row.code]):
+                raise ValueError(
+                    "terminal session must be the final explicit row for its security"
+                )
     return out
 
 
@@ -289,6 +373,7 @@ def run_a_share_long_only_replay(
     fee_schedule: AShareFeeSchedule,
     universe_policy: AShareUniversePolicy,
     execution_policy: AShareExecutionPolicy,
+    corporate_action_policy: AShareCorporateActionPolicy,
 ) -> dict[str, Any]:
     """Replay close-t signals at next-session open with real inventory.
 
@@ -301,6 +386,7 @@ def run_a_share_long_only_replay(
     fee_schedule.validate()
     universe_policy.validate()
     execution_policy.validate()
+    corporate_action_policy.validate()
     sessions = _prepare_sessions(frame, universe_policy=universe_policy)
     dates = list(pd.Index(sessions["date"].drop_duplicates()).sort_values())
     if len(dates) < 3:
@@ -326,17 +412,76 @@ def run_a_share_long_only_replay(
     blocked_buy_count = 0
     blocked_sell_count = 0
     total_fees = 0.0
+    corporate_action_cash_cny = 0.0
+    corporate_action_share_delta = 0
+    terminal_liquidation_count = 0
 
     previous_nav = float(execution_policy.initial_cash_cny)
     for ordinal, date in enumerate(dates):
         day = by_date[pd.Timestamp(date)]
+
+        # Apply already PIT-aligned cash/share events to positions carried into
+        # the session. Same-session purchases cannot receive the adjustment.
+        for code in sorted(list(holdings)):
+            if code not in day.index:
+                raise ValueError(
+                    "held code missing from session panel; suspension/delisting "
+                    f"rows must be explicit: {code} on {pd.Timestamp(date).date()}"
+                )
+            row = day.loc[code]
+            opening_shares = int(holdings[code])
+            cash_per_share = float(row["corporate_action_cash_per_share"])
+            if cash_per_share:
+                credit = opening_shares * cash_per_share
+                cash += credit
+                corporate_action_cash_cny += credit
+            multiplier = float(row["corporate_action_share_multiplier"])
+            adjusted = opening_shares * multiplier
+            rounded = round(adjusted)
+            if not math.isclose(adjusted, rounded, rel_tol=0.0, abs_tol=1e-9):
+                raise ValueError(
+                    "corporate action produced fractional shares under "
+                    "FAIL_CLOSED_NON_INTEGER policy"
+                )
+            adjusted_shares = int(rounded)
+            if adjusted_shares <= 0:
+                raise ValueError("corporate action produced nonpositive shares")
+            holdings[code] = adjusted_shares
+            corporate_action_share_delta += adjusted_shares - opening_shares
+
+        # Delisting terminal rows are explicit cash exits, not disappearing
+        # panel rows. They occur before the ordinary session rebalance.
+        for code in sorted(list(holdings)):
+            row = day.loc[code]
+            if not bool(row["is_terminal_session"]):
+                continue
+            shares = int(holdings.pop(code))
+            price = float(row["terminal_liquidation_price"])
+            notional = shares * price
+            fee = fee_schedule.fee(notional, side="SELL")
+            cash += notional - fee
+            total_fees += fee
+            terminal_liquidation_count += 1
+            fills.append(
+                {
+                    "date": pd.Timestamp(date).date().isoformat(),
+                    "code": code,
+                    "side": "SELL",
+                    "shares": shares,
+                    "price": price,
+                    "notional": notional,
+                    "fee": fee,
+                    "fill_reason": "DELISTING_TERMINAL_LIQUIDATION",
+                }
+            )
+
         for code, row in day.iterrows():
             close = float(row["close"])
             if math.isfinite(close) and close > 0:
                 last_close[str(code)] = close
 
         desired_codes: list[str] = []
-        if ordinal > 0:
+        if ordinal > 0 and ordinal < len(dates) - 1:
             signal_day = by_date[pd.Timestamp(dates[ordinal - 1])]
             pool = signal_day[
                 signal_day["promotion_universe_eligible"]
@@ -421,6 +566,7 @@ def run_a_share_long_only_replay(
                     "price": open_price,
                     "notional": notional,
                     "fee": fee,
+                    "fill_reason": "REBALANCE",
                 }
             )
 
@@ -479,6 +625,7 @@ def run_a_share_long_only_replay(
                     "price": open_price,
                     "notional": notional,
                     "fee": fee,
+                    "fill_reason": "REBALANCE",
                 }
             )
 
@@ -506,6 +653,12 @@ def run_a_share_long_only_replay(
         )
         previous_nav = close_nav
 
+    if corporate_action_policy.require_flat_at_replay_end and holdings:
+        raise ValueError(
+            "final replay session could not liquidate every holding; "
+            f"remaining={sorted(holdings)}"
+        )
+
     daily = pd.DataFrame(daily_rows)
     net_returns = pd.to_numeric(daily["daily_net_return"], errors="coerce")
     reward = _sortino(net_returns)
@@ -527,6 +680,10 @@ def run_a_share_long_only_replay(
         "replay_kernel_version": REPLAY_KERNEL_VERSION,
         "execution_policy": asdict(execution_policy),
         "execution_policy_sha256": execution_policy.payload_sha256,
+        "corporate_action_policy": asdict(corporate_action_policy),
+        "corporate_action_policy_sha256": (
+            corporate_action_policy.payload_sha256
+        ),
         "fee_schedule": asdict(fee_schedule),
         "fee_schedule_sha256": fee_schedule.payload_sha256,
         "universe_policy": {
@@ -547,6 +704,9 @@ def run_a_share_long_only_replay(
         "blocked_buy_count": int(blocked_buy_count),
         "blocked_sell_count": int(blocked_sell_count),
         "total_fees_cny": float(total_fees),
+        "corporate_action_cash_cny": float(corporate_action_cash_cny),
+        "corporate_action_share_delta": int(corporate_action_share_delta),
+        "terminal_liquidation_count": int(terminal_liquidation_count),
         "traded_notional_cny": traded_notional,
         "a_share_mean_one_way_turnover": mean_one_way_turnover,
         "ending_nav_cny": float(daily.iloc[-1]["nav"]),
@@ -562,5 +722,7 @@ def run_a_share_long_only_replay(
             "suspension_fill_enforced": True,
             "full_fee_schedule_enforced": True,
             "promotion_grade_universe_enforced": True,
+            "corporate_action_cash_share_enforced": True,
+            "terminal_liquidation_enforced": True,
         },
     }

@@ -34,6 +34,8 @@ REQUIRED_TRADABILITY_PROOFS = (
     "suspension_fill_enforced",
     "full_fee_schedule_enforced",
     "promotion_grade_universe_enforced",
+    "corporate_action_cash_share_enforced",
+    "terminal_liquidation_enforced",
 )
 
 REQUIRED_REPLAY_BINDINGS = (
@@ -44,6 +46,7 @@ REQUIRED_REPLAY_BINDINGS = (
     "universe_manifest_sha256",
     "fee_schedule_sha256",
     "execution_policy_sha256",
+    "corporate_action_policy_sha256",
 )
 
 
@@ -110,6 +113,7 @@ def build_a_share_tradability_receipt(
     universe_manifest_sha256: str,
     fee_schedule_sha256: str,
     execution_policy_sha256: str,
+    corporate_action_policy_sha256: str,
     executable_net_reward: float,
     train_read_count: int,
     trade_count: int,
@@ -139,6 +143,9 @@ def build_a_share_tradability_receipt(
         "universe_manifest_sha256": str(universe_manifest_sha256),
         "fee_schedule_sha256": str(fee_schedule_sha256),
         "execution_policy_sha256": str(execution_policy_sha256),
+        "corporate_action_policy_sha256": str(
+            corporate_action_policy_sha256
+        ),
         "a_share_executable_net_reward": reward,
         "a_share_reward_metric": A_SHARE_EXECUTABLE_REWARD_METRIC,
         "a_share_reward_source": A_SHARE_EXECUTABLE_REWARD_SOURCE,

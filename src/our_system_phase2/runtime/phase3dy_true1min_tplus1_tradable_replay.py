@@ -33,6 +33,7 @@ from our_system_phase2.services.real_market_validation import (
     evaluate_panel_expression,
 )
 from our_system_phase2.services.a_share_executable_replay import (
+    AShareCorporateActionPolicy,
     AShareExecutionPolicy,
     AShareFeeSchedule,
     AShareUniversePolicy,
@@ -326,9 +327,13 @@ def _authority_replay_receipts(
     )
     universe_policy = AShareUniversePolicy(**universe_policy_raw)
     execution_policy = AShareExecutionPolicy(**dict(contract["execution_policy"]))
+    corporate_action_policy = AShareCorporateActionPolicy(
+        **dict(contract["corporate_action_policy"])
+    )
     fee_schedule.validate()
     universe_policy.validate()
     execution_policy.validate()
+    corporate_action_policy.validate()
 
     split_manifest = _contract_path(
         contract.get("split_manifest"),
@@ -396,6 +401,7 @@ def _authority_replay_receipts(
             fee_schedule=fee_schedule,
             universe_policy=universe_policy,
             execution_policy=execution_policy,
+            corporate_action_policy=corporate_action_policy,
         )
         receipt = build_a_share_tradability_receipt(
             candidate_id=candidate_id,
@@ -406,6 +412,9 @@ def _authority_replay_receipts(
             fee_schedule_sha256=str(replay["fee_schedule_sha256"]),
             execution_policy_sha256=str(
                 replay["execution_policy_sha256"]
+            ),
+            corporate_action_policy_sha256=str(
+                replay["corporate_action_policy_sha256"]
             ),
             executable_net_reward=float(
                 replay["a_share_executable_net_reward"]

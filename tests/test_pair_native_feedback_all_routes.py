@@ -91,6 +91,7 @@ def _pair_inputs(
             universe_manifest_sha256="c" * 64,
             fee_schedule_sha256="d" * 64,
             execution_policy_sha256="e" * 64,
+            corporate_action_policy_sha256="f" * 64,
             executable_net_reward=reward,
             train_read_count=10,
             trade_count=2,

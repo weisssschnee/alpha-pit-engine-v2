@@ -13,6 +13,7 @@ from our_system_phase2.runtime.phase3dy_true1min_tplus1_tradable_replay import (
     panel_input_manifest_sha256,
 )
 from our_system_phase2.services.a_share_executable_replay import (
+    AShareCorporateActionPolicy,
     AShareExecutionPolicy,
     AShareFeeSchedule,
     AShareUniversePolicy,
@@ -42,6 +43,12 @@ def _universe() -> AShareUniversePolicy:
     return AShareUniversePolicy(
         minimum_listing_sessions=60,
         source_reference="synthetic_pit_survivorship_free_universe",
+    )
+
+
+def _corporate_actions() -> AShareCorporateActionPolicy:
+    return AShareCorporateActionPolicy(
+        source_reference="synthetic_pit_corporate_action_and_terminal_policy",
     )
 
 
@@ -80,6 +87,10 @@ def _frame() -> pd.DataFrame:
                     "suspended": False,
                     "up_limit_price": up_limit,
                     "down_limit_price": down_limit,
+                    "corporate_action_cash_per_share": 0.0,
+                    "corporate_action_share_multiplier": 1.0,
+                    "is_terminal_session": False,
+                    "terminal_liquidation_price": float("nan"),
                     "lot_size": 100,
                 }
             )
@@ -92,6 +103,7 @@ def test_executable_replay_blocks_limit_fills_carries_sell_and_charges_full_fees
         fee_schedule=_fees(),
         universe_policy=_universe(),
         execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+        corporate_action_policy=_corporate_actions(),
     )
 
     fills = replay["fills"]
@@ -128,6 +140,7 @@ def test_replay_receipt_binds_reward_and_survives_outer_row_projection() -> None
         fee_schedule=_fees(),
         universe_policy=_universe(),
         execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+        corporate_action_policy=_corporate_actions(),
     )
     receipt = build_a_share_tradability_receipt(
         candidate_id="candidate-1",
@@ -137,6 +150,9 @@ def test_replay_receipt_binds_reward_and_survives_outer_row_projection() -> None
         universe_manifest_sha256="c" * 64,
         fee_schedule_sha256=replay["fee_schedule_sha256"],
         execution_policy_sha256=replay["execution_policy_sha256"],
+        corporate_action_policy_sha256=replay[
+            "corporate_action_policy_sha256"
+        ],
         executable_net_reward=replay["a_share_executable_net_reward"],
         train_read_count=15,
         trade_count=replay["trade_count"],
@@ -177,6 +193,7 @@ def test_replay_fails_closed_without_promotion_grade_universe_columns() -> None:
             fee_schedule=_fees(),
             universe_policy=_universe(),
             execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+            corporate_action_policy=_corporate_actions(),
         )
 
 
@@ -193,6 +210,7 @@ def test_replay_fails_closed_when_fee_schedule_does_not_cover_dates() -> None:
             fee_schedule=fees,
             universe_policy=_universe(),
             execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+            corporate_action_policy=_corporate_actions(),
         )
 
 
@@ -211,6 +229,7 @@ def test_replay_fails_closed_when_a_held_security_disappears() -> None:
             fee_schedule=_fees(),
             universe_policy=_universe(),
             execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+            corporate_action_policy=_corporate_actions(),
         )
 
 
@@ -270,6 +289,7 @@ def test_authority_receipt_verifies_actual_panel_and_universe_hashes(
         "execution_policy": asdict(
             AShareExecutionPolicy(top_quantile=0.2)
         ),
+        "corporate_action_policy": asdict(_corporate_actions()),
         "candidate_exact_identities": {"candidate-1": "exact-1"},
     }
     contract_path = tmp_path / "contract.json"
@@ -297,3 +317,52 @@ def test_authority_receipt_verifies_actual_panel_and_universe_hashes(
             panel_paths=[panel],
             shard_root=shard_root,
         )
+
+
+def test_corporate_actions_apply_only_to_opening_holdings_and_end_flat() -> None:
+    frame = _frame()
+    dates = sorted(frame["date"].unique())
+    action = frame["date"].eq(dates[3]) & frame["code"].eq("B")
+    frame.loc[action, "corporate_action_cash_per_share"] = 0.2
+    frame.loc[action, "corporate_action_share_multiplier"] = 1.1
+
+    replay = run_a_share_long_only_replay(
+        frame,
+        fee_schedule=_fees(),
+        universe_policy=_universe(),
+        execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+        corporate_action_policy=_corporate_actions(),
+    )
+
+    assert replay["corporate_action_cash_cny"] > 0
+    assert replay["corporate_action_share_delta"] > 0
+    assert replay["ending_holding_count"] == 0
+
+
+def test_delisting_terminal_liquidation_is_explicit_and_fee_charged() -> None:
+    frame = _frame()
+    dates = sorted(frame["date"].unique())
+    terminal = frame["date"].eq(dates[3]) & frame["code"].eq("B")
+    frame.loc[terminal, "is_delisting"] = True
+    frame.loc[terminal, "is_terminal_session"] = True
+    frame.loc[terminal, "terminal_liquidation_price"] = 18.0
+    frame = frame[
+        ~(frame["date"].eq(dates[4]) & frame["code"].eq("B"))
+    ].copy()
+
+    replay = run_a_share_long_only_replay(
+        frame,
+        fee_schedule=_fees(),
+        universe_policy=_universe(),
+        execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+        corporate_action_policy=_corporate_actions(),
+    )
+
+    terminal_fills = replay["fills"].loc[
+        replay["fills"]["fill_reason"].eq(
+            "DELISTING_TERMINAL_LIQUIDATION"
+        )
+    ]
+    assert replay["terminal_liquidation_count"] == 1
+    assert len(terminal_fills) == 1
+    assert terminal_fills.iloc[0]["fee"] > 0
