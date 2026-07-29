@@ -979,6 +979,11 @@ remains unchanged. The compact receipt is
   remain unqualified. Optimizer COMPLETE, finalist promotion and economic
   claims remain unavailable until the input-authority gaps are repaired and a
   separate bounded train-only qualification is authorized.
+- Existing CURRENT nodes and relationships were refreshed in place; their
+  A-share receipt and authority hashes pass static assurance. RAW Graph refresh
+  remains explicitly stale because the configured DeepSeek semantic backend
+  returned HTTP 402 `Insufficient Balance`; no generated graph was hand-edited
+  or treated as fresh.
 
 ## Next action
 
