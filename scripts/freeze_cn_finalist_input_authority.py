@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
 from typing import Any, Mapping
 
@@ -280,6 +281,15 @@ def _repo_sha(repo_root: Path) -> str:
     ).strip()
 
 
+def _resolve_repo_sha(repo_root: Path, declared_sha: str | None) -> str:
+    if declared_sha is None:
+        return _repo_sha(repo_root)
+    normalized = str(declared_sha).strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", normalized):
+        raise ValueError("--repo-sha must be an exact 40-character Git SHA")
+    return normalized
+
+
 def freeze(
     *,
     repo_root: Path,
@@ -288,6 +298,7 @@ def freeze(
     output_root: Path,
     universe_manifest: Path | None = None,
     fee_contract: Path | None = None,
+    repo_sha: str | None = None,
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     cohort_root = cohort_root.resolve()
@@ -340,7 +351,7 @@ def freeze(
             else "HOLD_RESEARCH_FINALIST_INPUTS_INCOMPLETE"
         ),
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "repo_sha": _repo_sha(repo_root),
+        "repo_sha": _resolve_repo_sha(repo_root, repo_sha),
         "existing_authority": "PHASE3DY_A_SHARE_TRADABILITY_REPLAY",
         "new_authority_node_created": False,
         "cohort": cohort,
@@ -438,6 +449,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--universe-manifest", type=Path)
     parser.add_argument("--fee-contract", type=Path)
+    parser.add_argument("--repo-sha")
     return parser
 
 
@@ -450,6 +462,7 @@ def main(argv: list[str] | None = None) -> int:
         output_root=args.output_root,
         universe_manifest=args.universe_manifest,
         fee_contract=args.fee_contract,
+        repo_sha=args.repo_sha,
     )
     return 0
 

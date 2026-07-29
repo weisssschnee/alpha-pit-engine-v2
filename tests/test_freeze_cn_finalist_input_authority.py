@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from scripts import freeze_cn_finalist_input_authority as subject
 from scripts import verify_cn_finalist_input_authority as verifier
@@ -208,3 +209,11 @@ def test_complete_frozen_inputs_can_close_zero_financial_binding(
     assert result["status"] == "FINALIST_INPUT_AUTHORITY_READY"
     assert result["blocker_count"] == 0
     assert result["financial_replay_authorized"] is False
+
+
+def test_explicit_deployment_sha_is_strictly_validated(
+    tmp_path: Path,
+) -> None:
+    assert subject._resolve_repo_sha(tmp_path, "A" * 40) == "a" * 40
+    with pytest.raises(ValueError, match="exact 40-character"):
+        subject._resolve_repo_sha(tmp_path, "not-a-sha")
