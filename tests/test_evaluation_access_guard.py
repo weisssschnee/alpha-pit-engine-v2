@@ -19,6 +19,7 @@ from our_system_phase2.services.a_share_tradability_guard import (
     A_SHARE_TRADABILITY_EVIDENCE_CLASS,
     A_SHARE_TRADABILITY_READY,
     REQUIRED_TRADABILITY_PROOFS,
+    a_share_tradability_blockers,
     build_a_share_tradability_receipt,
     pair_tradability_evidence,
     prefixed_tradability_evidence,
@@ -140,14 +141,15 @@ def test_projection_rejects_non_train_optimizer_reward() -> None:
         project_train_only_feedback_row(_reward_row(optimizer_reward_split="holdout"))
 
 
-def test_projection_rejects_unproven_a_share_tradability() -> None:
+def test_projection_allows_development_reward_without_finalist_replay() -> None:
     row = _reward_row(t_plus_one_enforced="false")
     row.pop("replay_receipt_canonical_json")
-    with pytest.raises(
-        EvaluationAccessViolation,
-        match="t_plus_one_enforced_not_proven",
-    ):
-        project_train_only_feedback_row(row)
+    projected = project_train_only_feedback_row(row)
+
+    assert projected["optimizer_reward"] == "0.25"
+    assert "t_plus_one_enforced_not_proven" in (
+        a_share_tradability_blockers(projected)
+    )
 
 
 def test_projection_rejects_missing_split_and_role() -> None:

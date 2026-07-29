@@ -71,6 +71,7 @@ from our_system_phase2.services.a_share_tradability_guard import (
     A_SHARE_TRADABILITY_READY,
     REQUIRED_TRADABILITY_PROOFS,
     build_a_share_tradability_receipt,
+    pair_row_tradability_blockers,
     pair_tradability_evidence,
     prefixed_tradability_evidence,
 )
@@ -211,13 +212,14 @@ def test_conservative_search_score_cannot_promote_bad_primary_against_worse_cont
     assert _validation_eligible(negative_increment) is False
 
 
-def test_optimizer_score_requires_explicit_a_share_tradability_evidence() -> None:
+def test_optimizer_score_remains_development_only_without_finalist_replay() -> None:
     outcome = _evaluated_outcome(primary=0.7, control=0.5)
     outcome.pop("primary_replay_receipt_canonical_json")
     outcome.pop("primary_t_plus_one_enforced")
 
-    assert _conservative_search_score(outcome) is None
-    assert _validation_eligible(outcome) is False
+    assert pair_row_tradability_blockers(outcome)
+    assert _conservative_search_score(outcome) == pytest.approx(0.2)
+    assert _validation_eligible(outcome) is True
 
 
 def test_validation_finalists_require_standalone_ready_and_positive_increment() -> None:

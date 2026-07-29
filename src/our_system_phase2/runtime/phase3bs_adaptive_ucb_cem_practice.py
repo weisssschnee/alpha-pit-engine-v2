@@ -23,9 +23,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from our_system_phase2.services.a_share_tradability_guard import (
-    pair_row_tradability_blockers,
-)
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import (
     DEFAULT_SHARD_ROOT,
     _discover_panels,
@@ -100,11 +97,6 @@ def _quality(row: dict[str, Any]) -> float:
 
 
 def _feedback_eligible(row: dict[str, Any]) -> bool:
-    if (
-        row.get("optimizer_reward") not in (None, "")
-        or row.get("pair_train_reward") not in (None, "")
-    ) and pair_row_tradability_blockers(row):
-        return False
     if analyze_expression(str(row.get("expression") or "")).hard_blocked:
         return False
     blockers = str(row.get("phase3bp_blocker_flags") or row.get("blocker_flags") or "")

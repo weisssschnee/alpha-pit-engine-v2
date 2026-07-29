@@ -18,7 +18,7 @@ from our_system_phase2.services.a_share_tradability_guard import (
     A_SHARE_EXECUTABLE_REWARD_READY,
     A_SHARE_EXECUTABLE_REWARD_METRIC,
     A_SHARE_EXECUTABLE_REWARD_SOURCE,
-    A_SHARE_TRADABILITY_READY,
+    DEVELOPMENT_PREDICTIVE_EVIDENCE_CLASS,
     a_share_tradability_blockers,
     pair_tradability_evidence,
     prefixed_tradability_evidence,
@@ -32,15 +32,13 @@ from our_system_phase2.services.unified_capability_registry import stable_hash
 
 PAIR_RECEIPT_SCHEMA_VERSION = "cn_candidate_pair_receipt_v2"
 PAIR_AUTHORIZATION_STATUS = "AUTHORIZED_FOR_FORMAL_PAIR_EVALUATION"
-MATCHED_OPTIMIZER_REWARD_SOURCE = (
-    "a_share_tradability_replay_v1_matched_executable_increment"
-)
+MATCHED_OPTIMIZER_REWARD_SOURCE = "train_only_phase3cm_matched_increment"
 MATCHED_OPTIMIZER_REWARD_METRIC = (
-    "matched_train_primary_minus_control_executable_net_reward"
+    "matched_train_primary_minus_control_composite_reward"
 )
 PAIR_TRAIN_FEEDBACK_READY = "PAIR_TRAIN_FEEDBACK_READY"
 PAIR_TRAIN_FEEDBACK_BLOCKED = "PAIR_TRAIN_FEEDBACK_BLOCKED"
-STANDALONE_TRAIN_REWARD_READY = A_SHARE_EXECUTABLE_REWARD_READY
+STANDALONE_TRAIN_REWARD_READY = "TRAIN_REWARD_FOLLOWUP_READY"
 PAIR_MAPPING_PORTFOLIO_CONTRACT = (
     "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|"
     "SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS"
@@ -733,30 +731,39 @@ def build_pair_evaluation_rows(
             or control_predictive_turnover is None
             else primary_predictive_turnover - control_predictive_turnover
         )
-        primary_value = _finite(
+        primary_executable_value = _finite(
             (primary_reward or {}).get("a_share_executable_net_reward")
         )
-        control_value = _finite(
+        control_executable_value = _finite(
             (control_reward or {}).get("a_share_executable_net_reward")
         )
-        primary_turnover = _finite(
+        primary_executable_turnover = _finite(
             (primary_reward or {}).get("a_share_mean_one_way_turnover")
         )
-        control_turnover = _finite(
+        control_executable_turnover = _finite(
             (control_reward or {}).get("a_share_mean_one_way_turnover")
         )
         primary_rank_ic = _finite((primary_reward or {}).get("train_rank_ic_mean"))
         control_rank_ic = _finite((control_reward or {}).get("train_rank_ic_mean"))
         if primary_predictive_value is None or control_predictive_value is None:
-            blockers.append("matched_predictive_reward_unavailable")
-        matched_increment = None if primary_value is None or control_value is None else primary_value - control_value
+            blockers.append("matched_train_reward_unavailable")
+        matched_increment = predictive_matched_increment
         turnover_increment = (
-            None if primary_turnover is None or control_turnover is None else primary_turnover - control_turnover
+            predictive_turnover_increment
+        )
+        executable_matched_increment = (
+            None
+            if primary_executable_value is None
+            or control_executable_value is None
+            else primary_executable_value - control_executable_value
         )
         rank_ic_increment = None if primary_rank_ic is None or control_rank_ic is None else primary_rank_ic - control_rank_ic
         status = "PAIR_EVALUATED" if not blockers else "PAIR_EVALUATION_BLOCKED"
         pair_turnover_metric = (
-            None if primary_turnover is None or control_turnover is None else max(primary_turnover, control_turnover)
+            None
+            if primary_predictive_turnover is None
+            or control_predictive_turnover is None
+            else max(primary_predictive_turnover, control_predictive_turnover)
         )
         pair_support_metric = overlap
         pair_rank_ic_metric = rank_ic_increment
@@ -775,8 +782,10 @@ def build_pair_evaluation_rows(
             )
             else ""
         )
-        if primary_executable_decision != STANDALONE_TRAIN_REWARD_READY:
-            pair_feedback_blockers.add("primary_executable_reward_not_ready")
+        if primary_standalone_decision != STANDALONE_TRAIN_REWARD_READY:
+            pair_feedback_blockers.add(
+                "primary_standalone_train_reward_not_ready"
+            )
         primary_tradability_blockers = a_share_tradability_blockers(
             primary_reward or {},
             expected_candidate_id=str(primary["candidate_id"]),
@@ -791,11 +800,28 @@ def build_pair_evaluation_rows(
                 (control_receipt or {}).get("exact_identity") or ""
             ),
         )
-        pair_feedback_blockers.update(
-            f"primary_{blocker}" for blocker in primary_tradability_blockers
-        )
-        pair_feedback_blockers.update(
-            f"control_{blocker}" for blocker in control_tradability_blockers
+        finalist_execution_blockers = [
+            *(f"primary_{blocker}" for blocker in primary_tradability_blockers),
+            *(f"control_{blocker}" for blocker in control_tradability_blockers),
+        ]
+        if status != "PAIR_EVALUATED":
+            finalist_execution_blockers.append("pair_evaluation_not_completed")
+        if not str((primary_receipt or {}).get("receipt_hash") or ""):
+            finalist_execution_blockers.append("primary_receipt_hash_missing")
+        if not str((control_receipt or {}).get("receipt_hash") or ""):
+            finalist_execution_blockers.append("control_receipt_hash_missing")
+        if not str((pair_receipt or {}).get("pair_receipt_hash") or ""):
+            finalist_execution_blockers.append("pair_receipt_hash_missing")
+        if primary_standalone_decision != STANDALONE_TRAIN_REWARD_READY:
+            finalist_execution_blockers.append(
+                "primary_standalone_train_reward_not_ready"
+            )
+        if executable_matched_increment is None:
+            finalist_execution_blockers.append(
+                "matched_executable_increment_not_finite"
+            )
+        finalist_execution_blockers = sorted(
+            set(finalist_execution_blockers)
         )
         pair_tradability = pair_tradability_evidence(
             primary_reward or {},
@@ -850,8 +876,8 @@ def build_pair_evaluation_rows(
             "pair_turnover_metric": pair_turnover_metric,
             "pair_support_metric": pair_support_metric,
             "pair_rank_ic_metric": pair_rank_ic_metric,
-            "primary_train_reward": primary_value,
-            "control_train_reward": control_value,
+            "primary_train_reward": primary_predictive_value,
+            "control_train_reward": control_predictive_value,
             "primary_predictive_reward": primary_predictive_value,
             "control_predictive_reward": control_predictive_value,
             "predictive_matched_increment": predictive_matched_increment,
@@ -859,8 +885,14 @@ def build_pair_evaluation_rows(
             "control_predictive_turnover": control_predictive_turnover,
             "predictive_turnover_increment": predictive_turnover_increment,
             "matched_train_increment": matched_increment,
-            "primary_turnover": primary_turnover,
-            "control_turnover": control_turnover,
+            "primary_a_share_mean_one_way_turnover": (
+                primary_executable_turnover
+            ),
+            "control_a_share_mean_one_way_turnover": (
+                control_executable_turnover
+            ),
+            "primary_turnover": primary_predictive_turnover,
+            "control_turnover": control_predictive_turnover,
             "matched_turnover_increment": turnover_increment,
             "primary_rank_ic": primary_rank_ic,
             "control_rank_ic": control_rank_ic,
@@ -881,7 +913,9 @@ def build_pair_evaluation_rows(
             "primary_standalone_train_reward_blockers": str(
                 (primary_reward or {}).get("train_reward_blockers") or ""
             ),
-            "primary_standalone_train_mean_one_way_turnover": primary_turnover,
+            "primary_standalone_train_mean_one_way_turnover": (
+                primary_predictive_turnover
+            ),
             **pair_tradability,
             **prefixed_tradability_evidence(
                 primary_reward or {}, prefix="primary_"
@@ -893,22 +927,35 @@ def build_pair_evaluation_rows(
                 pair_tradability["a_share_tradability_decision"]
             ),
             "pair_a_share_tradability_blockers": "|".join(
-                [
-                    *(f"primary_{value}" for value in primary_tradability_blockers),
-                    *(f"control_{value}" for value in control_tradability_blockers),
-                ]
+                finalist_execution_blockers
+            ),
+            "finalist_execution_eligible": (
+                not finalist_execution_blockers
+                and primary_executable_decision
+                == A_SHARE_EXECUTABLE_REWARD_READY
+            ),
+            "finalist_execution_blockers": "|".join(
+                finalist_execution_blockers
             ),
             "optimizer_feedback_eligible": (
                 pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY
-                and pair_tradability["a_share_tradability_decision"]
-                == A_SHARE_TRADABILITY_READY
             ),
             "optimizer_reward": matched_increment if pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY else "",
             "train_reward": matched_increment if pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY else "",
             "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
             "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
-            "standalone_reward_source": A_SHARE_EXECUTABLE_REWARD_SOURCE,
-            "standalone_reward_metric": A_SHARE_EXECUTABLE_REWARD_METRIC,
+            "optimizer_evidence_class": DEVELOPMENT_PREDICTIVE_EVIDENCE_CLASS,
+            "optimizer_feedback_scope": "DEVELOPMENT_SEARCH_ONLY",
+            "standalone_reward_source": (
+                "train_only_phase3cm_primary_composite_reward"
+            ),
+            "standalone_reward_metric": "primary_train_composite_reward",
+            "finalist_executable_reward_source": (
+                A_SHARE_EXECUTABLE_REWARD_SOURCE
+            ),
+            "finalist_executable_reward_metric": (
+                A_SHARE_EXECUTABLE_REWARD_METRIC
+            ),
             "optimizer_reward_split": "train",
             "control_independent_vote": False,
             "control_independent_memory": False,

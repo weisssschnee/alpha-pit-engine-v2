@@ -119,6 +119,35 @@ def test_degenerate_expression_cannot_enter_optimizer_feedback() -> None:
     assert _feedback_eligible({**valid, **materialization_metrics}) is True
 
 
+def test_development_feedback_does_not_require_finalist_replay() -> None:
+    row = _reward_row("Sign(ZScore($x))")
+    row["primary_executable_reward_decision"] = ""
+    row["pair_a_share_tradability_decision"] = (
+        "A_SHARE_TRADABILITY_UNPROVEN"
+    )
+    row.pop("primary_replay_receipt_canonical_json")
+    row.pop("control_replay_receipt_canonical_json")
+
+    clean = clean_optimizer_feedback_rows([row], arm_id="cem_exploit")
+    assert [value["expression"] for value in clean] == [
+        "Sign(ZScore($x))"
+    ]
+    assert _is_clean(
+        row,
+        train_threshold=0.0,
+        validation_floor=0.0,
+        max_turnover=0.75,
+    ) is True
+    assert _feedback_eligible(
+        {
+            **row,
+            "mean_one_way_turnover": 0.2,
+            "abs_aligned_ic_mean": 0.05,
+            "positive_horizon_count": 2,
+        }
+    ) is True
+
+
 def test_family_with_many_semantic_degeneracies_is_frozen_not_exploited() -> None:
     rows = [_reward_row("Sign(CSRank($x))"), _reward_row("Sign(ZScore($x))")]
 

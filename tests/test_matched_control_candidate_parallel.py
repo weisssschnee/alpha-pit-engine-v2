@@ -247,17 +247,18 @@ def test_pair_evaluation_computes_matched_increment_and_blocks_degenerate_contro
         evaluator_invocation_counts={str(primary["candidate_id"]): 1, str(control["candidate_id"]): 1},
     )
     assert result[0]["pair_evaluation_status"] == "PAIR_EVALUATED"
-    assert result[0]["matched_train_increment"] is None
+    assert result[0]["matched_train_increment"] == pytest.approx(0.2)
     assert result[0]["predictive_matched_increment"] == pytest.approx(0.2)
-    assert result[0]["matched_turnover_increment"] is None
+    assert result[0]["matched_turnover_increment"] == pytest.approx(0.1)
     assert result[0]["predictive_turnover_increment"] == pytest.approx(0.1)
     assert result[0]["matched_rank_ic_increment"] == pytest.approx(0.01)
     assert result[0]["pair_train_reward_decision"] == (
         "PAIR_TRAIN_FEEDBACK_BLOCKED"
     )
-    assert "primary_executable_reward_not_ready" in result[0][
+    assert "primary_standalone_train_reward_not_ready" in result[0][
         "pair_train_reward_blockers"
     ]
+    assert result[0]["finalist_execution_eligible"] is False
 
     blocked = build_pair_evaluation_rows(
         candidates=candidates,
@@ -471,11 +472,15 @@ def test_phase3cm_formally_evaluates_both_pair_members_and_writes_matched_increm
     }
     assert len(pair_rows) == 1
     assert pair_rows[0]["pair_evaluation_status"] == "PAIR_EVALUATED"
-    assert pair_rows[0]["matched_train_increment"] == ""
+    assert pair_rows[0]["matched_train_increment"] != ""
     assert pair_rows[0]["predictive_matched_increment"] != ""
     assert pair_rows[0]["pair_train_reward_decision"] == (
-        "PAIR_TRAIN_FEEDBACK_BLOCKED"
+        "PAIR_TRAIN_FEEDBACK_READY"
     )
+    assert pair_rows[0]["finalist_execution_eligible"] == "false"
+    assert "replay_receipt_schema_version_not_ready" in pair_rows[0][
+        "finalist_execution_blockers"
+    ]
     assert int(pair_rows[0]["primary_evaluator_invocation_count"]) == 1
     assert int(pair_rows[0]["control_evaluator_invocation_count"]) == 1
     summary = json.loads((output_root / "phase3cm_train_reward_audit_summary.json").read_text())

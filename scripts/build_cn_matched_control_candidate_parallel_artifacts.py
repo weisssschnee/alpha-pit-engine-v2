@@ -589,6 +589,10 @@ def run_all_route_runtime_qualification(
             else None
         )
         support_overlap = _finite(row.get("pair_support_overlap"))
+        finalist_execution_eligible = (
+            str(row.get("finalist_execution_eligible") or "").lower()
+            == "true"
+        )
         exact_equivalent = str(row.get("primary_expression_hash") or "") == str(
             row.get("control_expression_hash") or ""
         )
@@ -622,6 +626,10 @@ def run_all_route_runtime_qualification(
                 "pair_support_overlap": support_overlap,
                 "pair_train_reward_decision": decision,
                 "pair_train_reward_blockers": str(row.get("pair_train_reward_blockers") or ""),
+                "finalist_execution_eligible": finalist_execution_eligible,
+                "finalist_execution_blockers": str(
+                    row.get("finalist_execution_blockers") or ""
+                ),
                 "primary_control_exact_equivalent": exact_equivalent,
                 "primary_control_behavior_equivalent": behavior_equivalent,
                 "phase3cn_pair_feedback_validation": validation,
@@ -635,9 +643,8 @@ def run_all_route_runtime_qualification(
         in {"ACCEPTED_READY_PAIR", "REJECTED_BLOCKED_PAIR_AS_DESIGNED"}
         for row in route_results
     )
-    missing_executable_replay = all(
-        row.get("phase3cn_pair_feedback_validation")
-        == "REJECTED_MISSING_EXECUTABLE_REPLAY_AS_DESIGNED"
+    finalist_execution_not_qualified = all(
+        not bool(row.get("finalist_execution_eligible"))
         for row in route_results
     )
     return {
@@ -652,11 +659,12 @@ def run_all_route_runtime_qualification(
         "pair_native_phase3cn_feedback": (
             "QUALIFIED"
             if feedback_boundary_qualified
-            else (
-                "NOT_QUALIFIED_MISSING_EXECUTABLE_REPLAY"
-                if missing_executable_replay
-                else "PARTIAL"
-            )
+            else "PARTIAL"
+        ),
+        "finalist_execution_evidence": (
+            "NOT_QUALIFIED_MISSING_EXECUTABLE_REPLAY"
+            if finalist_execution_not_qualified
+            else "PARTIAL_OR_READY"
         ),
         "routes": route_results,
         "primary_evaluator_invocation_total": sum(

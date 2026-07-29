@@ -1,8 +1,8 @@
 # ADR 0009: A-share tradability evidence boundary
 
-Status: Accepted as a scope correction on the existing CN development
-evaluation and feedback chain. No new evaluator or tradability authority is
-created by this decision.
+Status: Superseded in part by ADR 0010. Its executable replay contract and
+economic-claim boundary remain accepted; its requirement that every
+development optimizer observation carry executable replay proof is revoked.
 
 ## Context
 
@@ -95,21 +95,23 @@ current inputs.
 - Historical Phase3CM search artifacts remain immutable development evidence.
   Their prior `productive` label does not become an economic or promotion
   claim. Development productive diagnostics remain available for behavior
-  deduplication and train-stability ranking; only optimizer COMPLETE, finalist,
-  promotion and economic-claim paths require the replay proof above.
+  deduplication and train-stability ranking. Under ADR 0010, development
+  optimizer observations no longer require the replay proof above; finalist,
+  promotion and economic-claim paths still do.
 - ADR 0008 continues to select Hybrid TPE plus Availability only inside a
-  separately authorized development search. It no longer implies that raw
-  Phase3CM scores may feed optimizer state without the tradability proof above.
+  separately authorized development search. ADR 0010 owns the train-only
+  development feedback boundary and prevents those observations from becoming
+  execution or economic evidence.
 - No candidate search, replay, validation or sealed-period access is authorized
   by this repair.
 - The implementation step that connects the existing replay path to the guard
   is complete and zero-financial tested. The remaining blocker is an input
   authority gap, not an invitation to run another experiment.
-- The next allowed work is narrow data-authority repair: materialize the
+- Before any finalist execution or economic qualification, materialize the
   missing PIT session tradability/universe fields from authoritative sources,
   freeze the account commission/minimum contract and bind a
-  survivorship-free, delisting-inclusive universe manifest. Only then may a
-  separately frozen 64-pair train-only qualification be considered.
+  survivorship-free, delisting-inclusive universe manifest. This finalist-lane
+  work is not a prerequisite for development optimizer feedback.
 - Corporate-action share/cash adjustments and terminal liquidation semantics
   are not yet promotion-qualified. Receipts therefore continue to set
   economic-claim and candidate-promotion authorization false.

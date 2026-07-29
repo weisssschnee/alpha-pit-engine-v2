@@ -1,8 +1,9 @@
-"""Fail-closed A-share tradability evidence boundary.
+"""Fail-closed A-share finalist tradability evidence boundary.
 
 Phase3CM is a development predictive/ranking evaluator. Its scores must not
-become optimizer feedback, finalist evidence, or economic claims unless a
-separate replay has explicitly proved the execution rules below.
+become finalist execution evidence or economic claims unless a separate replay
+has explicitly proved the execution rules below. Development-only optimizer
+feedback remains separately governed by the train feedback authority.
 """
 
 from __future__ import annotations
@@ -117,7 +118,7 @@ def build_a_share_tradability_receipt(
     blocked_sell_count: int,
     extra: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build the only receipt shape allowed to authorize optimizer feedback.
+    """Build the receipt shape required for finalist execution eligibility.
 
     Callers must derive every supplied hash from frozen inputs. This helper
     deliberately does not infer or weaken any execution proof.

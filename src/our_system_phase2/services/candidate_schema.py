@@ -94,6 +94,12 @@ CANONICAL_CANDIDATE_FIELDS = [
     "control_predictive_turnover",
     "predictive_turnover_increment",
     "primary_executable_reward_decision",
+    "finalist_execution_eligible",
+    "finalist_execution_blockers",
+    "optimizer_evidence_class",
+    "optimizer_feedback_scope",
+    "finalist_executable_reward_source",
+    "finalist_executable_reward_metric",
     "primary_a_share_replay_receipt_sha256",
     "control_a_share_replay_receipt_sha256",
     "primary_replay_receipt_canonical_json",
@@ -105,6 +111,8 @@ CANONICAL_CANDIDATE_FIELDS = [
     "primary_a_share_executable_net_reward",
     "control_a_share_executable_net_reward",
     "a_share_matched_executable_increment",
+    "primary_a_share_mean_one_way_turnover",
+    "control_a_share_mean_one_way_turnover",
     "a_share_executable_net_reward",
     "a_share_mean_one_way_turnover",
     "a_share_reward_metric",
@@ -430,6 +438,24 @@ def normalize_candidate_schema(row: dict[str, Any]) -> dict[str, Any]:
         "primary_executable_reward_decision": _first_existing(
             row, ["primary_executable_reward_decision"], ""
         ),
+        "finalist_execution_eligible": _first_existing(
+            row, ["finalist_execution_eligible"], False
+        ),
+        "finalist_execution_blockers": _first_existing(
+            row, ["finalist_execution_blockers"], ""
+        ),
+        "optimizer_evidence_class": _first_existing(
+            row, ["optimizer_evidence_class"], ""
+        ),
+        "optimizer_feedback_scope": _first_existing(
+            row, ["optimizer_feedback_scope"], ""
+        ),
+        "finalist_executable_reward_source": _first_existing(
+            row, ["finalist_executable_reward_source"], ""
+        ),
+        "finalist_executable_reward_metric": _first_existing(
+            row, ["finalist_executable_reward_metric"], ""
+        ),
         "primary_a_share_replay_receipt_sha256": _first_existing(
             row, ["primary_a_share_replay_receipt_sha256"], ""
         ),
@@ -462,6 +488,12 @@ def normalize_candidate_schema(row: dict[str, Any]) -> dict[str, Any]:
         ),
         "a_share_matched_executable_increment": _first_existing(
             row, ["a_share_matched_executable_increment"], ""
+        ),
+        "primary_a_share_mean_one_way_turnover": _first_existing(
+            row, ["primary_a_share_mean_one_way_turnover"], ""
+        ),
+        "control_a_share_mean_one_way_turnover": _first_existing(
+            row, ["control_a_share_mean_one_way_turnover"], ""
         ),
         "a_share_executable_net_reward": _first_existing(
             row, ["a_share_executable_net_reward"], ""

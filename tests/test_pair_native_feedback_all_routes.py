@@ -55,6 +55,8 @@ def _pair_inputs(
     *,
     primary_reward: float = 0.3,
     control_reward: float = 0.1,
+    primary_executable_reward: float = 0.8,
+    control_executable_reward: float = 0.7,
     primary_standalone_blockers: str = "",
 ) -> dict[str, object]:
     registry = UnifiedCapabilityRegistry.read(REGISTRY)
@@ -100,7 +102,9 @@ def _pair_inputs(
     rewards = [
         {
             **replay_receipt(
-                str(primary["candidate_id"]), primary_reward, 0.4
+                str(primary["candidate_id"]),
+                primary_executable_reward,
+                0.4,
             ),
             "candidate_id": primary["candidate_id"],
             "optimizer_reward": primary_reward,
@@ -111,7 +115,9 @@ def _pair_inputs(
         },
         {
             **replay_receipt(
-                str(control["candidate_id"]), control_reward, 0.2
+                str(control["candidate_id"]),
+                control_executable_reward,
+                0.2,
             ),
             "candidate_id": control["candidate_id"],
             "optimizer_reward": control_reward,
@@ -203,7 +209,7 @@ def test_phase3cn_clean_gate_blocks_primary_standalone_failure() -> None:
     ) is False
 
 
-def test_pair_feedback_blocks_missing_tradability_evidence() -> None:
+def test_pair_feedback_does_not_require_finalist_tradability_evidence() -> None:
     inputs = _pair_inputs()
     for reward in inputs["reward_rows"]:
         reward.pop("replay_receipt_canonical_json")
@@ -212,11 +218,13 @@ def test_pair_feedback_blocks_missing_tradability_evidence() -> None:
     row = build_pair_evaluation_rows(**inputs)[0]
 
     assert row["pair_evaluation_status"] == "PAIR_EVALUATED"
-    assert row["pair_train_reward_decision"] == "PAIR_TRAIN_FEEDBACK_BLOCKED"
+    assert row["pair_train_reward_decision"] == "PAIR_TRAIN_FEEDBACK_READY"
     assert "t_plus_one_enforced_not_proven" in row[
-        "pair_train_reward_blockers"
+        "pair_a_share_tradability_blockers"
     ]
-    assert row["optimizer_reward"] == ""
+    assert row["pair_train_reward_blockers"] == ""
+    assert row["optimizer_reward"] == pytest.approx(0.2)
+    assert row["finalist_execution_eligible"] is False
 
 
 def test_pair_feedback_binds_separate_immutable_replay_receipts() -> None:
@@ -258,9 +266,10 @@ def test_pair_feedback_binds_separate_immutable_replay_receipts() -> None:
         row["primary_executable_reward_decision"]
         == A_SHARE_EXECUTABLE_REWARD_READY
     )
-    assert row["optimizer_reward"] == pytest.approx(
-        row["matched_train_increment"]
-    )
+    assert row["matched_train_increment"] == pytest.approx(0.2)
+    assert row["a_share_matched_executable_increment"] == pytest.approx(0.1)
+    assert row["optimizer_reward"] == pytest.approx(0.2)
+    assert row["finalist_execution_eligible"] is True
 
 
 def test_pair_feedback_blocks_support_mismatch_and_missing_control_invocation() -> None:
@@ -355,22 +364,22 @@ def test_all_eight_routes_reach_real_phase3cm_and_pair_native_phase3cn_validatio
         repo_sha="synthetic-test-repo-sha",
     )
 
-    # The synthetic Phase3CM run still proves the predictive engine and all
-    # route constructors.  It deliberately cannot qualify optimizer feedback:
-    # no immutable executable A-share replay receipt is fabricated here.
-    assert result["status"] == "FAIL"
+    # The synthetic Phase3CM run proves the development feedback boundary and
+    # all route constructors. It deliberately remains ineligible for finalist
+    # execution evidence because no replay receipt is fabricated here.
+    assert result["status"] == "PASS"
     assert result["constructor_authority"] == "8/8"
     assert result["synthetic_end_to_end_runtime"] == "8/8"
-    assert (
-        result["pair_native_phase3cn_feedback"]
-        == "NOT_QUALIFIED_MISSING_EXECUTABLE_REPLAY"
+    assert result["pair_native_phase3cn_feedback"] == "QUALIFIED"
+    assert result["finalist_execution_evidence"] == (
+        "NOT_QUALIFIED_MISSING_EXECUTABLE_REPLAY"
     )
     assert {row["route_id"] for row in result["routes"]} == set(ALL_RUNTIME_ROUTES)
     for row in result["routes"]:
         assert row["primary_evaluator_invocation_count"] == 1
         assert row["control_evaluator_invocation_count"] == 1
         assert row["pair_evaluation_status"] == "PAIR_EVALUATED"
-        assert row["matched_train_increment_finite"] is False
+        assert row["matched_train_increment_finite"] is True
         assert row["predictive_matched_increment_finite"] is True
         assert row["pair_support_overlap"] == pytest.approx(1.0)
         assert row["pair_train_reward_decision"] in {
@@ -379,12 +388,13 @@ def test_all_eight_routes_reach_real_phase3cm_and_pair_native_phase3cn_validatio
         }
         assert row["primary_control_exact_equivalent"] is False
         assert row["primary_control_behavior_equivalent"] is False
-        assert (
-            row["phase3cn_pair_feedback_validation"]
-            == "REJECTED_MISSING_EXECUTABLE_REPLAY_AS_DESIGNED"
-        )
-        assert "primary_executable_reward_not_ready" in row[
-            "phase3cn_validation_error"
+        assert row["phase3cn_pair_feedback_validation"] in {
+            "ACCEPTED_READY_PAIR",
+            "REJECTED_BLOCKED_PAIR_AS_DESIGNED",
+        }
+        assert row["finalist_execution_eligible"] is False
+        assert "replay_receipt_schema_version_not_ready" in row[
+            "finalist_execution_blockers"
         ]
     assert result["data_access"] == {
         "validation_reads": 0,
