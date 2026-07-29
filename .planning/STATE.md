@@ -927,17 +927,52 @@ remains unchanged. The compact receipt is
   and
   `runtime/run_plans/cn_hybrid_bounded_large_tranche_p02_preflight_20260729_receipt.json`.
 
+## A-share tradability authority boundary repair (2026-07-29)
+
+- The existing Phase3CM candidate-parallel and streaming evaluators are now
+  explicitly development-predictive authorities only. Their train scores do
+  not prove A-share executability, tradability or economics.
+- The existing matched-feedback and Hybrid search-policy nodes now fail closed:
+  an optimizer trial cannot complete with reward unless the primary standalone
+  decision is READY and both pair members carry immutable replay proof for
+  execution clock, same-bar exclusion, T+1, limit-lock fills, suspensions,
+  complete fees and a promotion-grade universe.
+- Historical `productive` labels remain development diagnostics for
+  behavior-family deduplication and train-stability ranking. They are not
+  finalist, promotion, validation or economic evidence.
+- ADR 0009 records the authority correction without creating a new evaluator,
+  search system or authority node. Existing real-market and T+1 replay
+  implementations remain engineering capabilities until they are bound to the
+  guard and emit an immutable replay receipt.
+- Verification was deliberately non-financial: 30 related local tests plus
+  three semantic regressions passed; the exact implementation at
+  `f53eff442b468cfb823b6658b8bcd4ef2a315c01` passed 54/54 focused tests in the
+  versioned 77o workspace
+  `D:\ChengboRemote\workspace\alpha_pit_a_share_tradability_f53eff4_20260729_162854`.
+  No search, financial evaluation, validation, holdout or 2026 read was
+  launched. The compact evidence receipt is
+  `runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json`.
+- Current blocker is explicit: no integrated immutable
+  `A_SHARE_TRADABILITY_REPLAY_V1` receipt exists, so optimizer COMPLETE,
+  finalist promotion and economic claims remain unavailable.
+
 ## Next action
 
-Do not run another scale-search tranche. Begin a bounded finalist phase over
-the closed 2,676 productive train candidates: behavior-family deduplication,
-train-stability ranking, and freezing a small finalist set under an explicit
-non-validation contract. Only after that set is immutable may one report-only
-validation be separately authorized. Candidate-level validation must not enter
-reward, tells, scheduler or persistent memory. Do not rerun the Medium, its
-report-only validation, either completed Hybrid-only tranche or earlier
-availability-agency canaries. Unlimited search and a 20,000-target campaign
-remain unauthorized.
+Do not run another scale-search tranche and do not freeze finalists from the
+closed 2,676 development-productive candidates yet. First integrate the
+existing `real_market_validation` and
+`phase3dy_true1min_tplus1_tradable_replay` capabilities with the new A-share
+tradability guard, beginning with zero-financial synthetic contract and parity
+verification. The integration must emit an immutable replay receipt and must
+not create a second evaluator, platform or authority node. Only after that
+existing chain proves execution clock, same-bar exclusion, T+1, limit-lock
+fills, suspensions, full fees and a promotion-grade universe may the bounded
+behavior-family deduplication and train-stability finalist phase proceed.
+Candidate-level validation remains separately authorized and report-only; it
+must not enter reward, tells, scheduler or persistent memory. Do not rerun the
+Medium, its report-only validation, either completed Hybrid-only tranche or
+earlier availability-agency canaries. Unlimited search and a 20,000-target
+campaign remain unauthorized.
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
 qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the

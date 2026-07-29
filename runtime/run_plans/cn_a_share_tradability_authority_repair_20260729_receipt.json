@@ -1,0 +1,79 @@
+{
+  "schema_version": "cn_a_share_tradability_authority_repair_receipt_v1",
+  "status": "STATIC_VERIFIED_AUTHORITY_BOUNDARY_REPAIRED",
+  "scope": {
+    "project": "alpha_pit_true1min_engine_evalreset_20260711",
+    "branch": "feature/a-share-tradability-authority-repair",
+    "implementation_sha": "f53eff442b468cfb823b6658b8bcd4ef2a315c01",
+    "decision_ref": "docs/adr/0009-a-share-tradability-evidence-boundary.md",
+    "new_authority_node_created": false,
+    "financial_campaign_launched": false,
+    "validation_or_holdout_launched": false,
+    "search_launched": false
+  },
+  "authority_change": {
+    "existing_evaluation_authority": "candidate_parallel_evaluator",
+    "existing_feedback_authority": "matched_train_feedback",
+    "existing_search_policy_authority": "cn_development_search_policy",
+    "phase3cm_evidence_class": "DEVELOPMENT_PREDICTIVE_SCORE_ONLY",
+    "phase3cm_a_share_tradability_status": "A_SHARE_TRADABILITY_UNPROVEN",
+    "development_productive_label_status": "DEVELOPMENT_DIAGNOSTIC_ONLY",
+    "optimizer_complete_requires": [
+      "PAIR_TRAIN_FEEDBACK_READY",
+      "primary standalone TRAIN_REWARD_FOLLOWUP_READY",
+      "A_SHARE_TRADABILITY_REPLAY_V1 proof for both pair members"
+    ],
+    "finalist_promotion_or_economic_claim_requires": "immutable A_SHARE_TRADABILITY_REPLAY_V1 receipt",
+    "missing_proof_behavior": "FAIL_CLOSED_WITHOUT_OPTIMIZER_REWARD"
+  },
+  "required_a_share_execution_proofs": [
+    "execution_clock_enforced",
+    "same_bar_execution_excluded",
+    "t_plus_one_enforced",
+    "limit_lock_fill_enforced",
+    "suspension_fill_enforced",
+    "full_fee_schedule_enforced",
+    "promotion_grade_universe_enforced"
+  ],
+  "source_hashes": {
+    "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py": "0b14dec82e5f06fa8e2c77a0f547fc5b9c452019f6e9d8ac65b0f77c4e634524",
+    "scripts/run_cn_phase3cm_streaming_qualification.py": "764cef1acbc9ef68d72c8d436a729e0313a65de066ea1b3087c6b939a8ead66f",
+    "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py": "11ac9d67a35f6f771e4ea49f67284dae3607de61980a6aa1a0ed34cfdcb962c9",
+    "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py": "4f5460bc786f456f580430aac052f80f8e64c2d4797a7d90290857b158898bd6",
+    "src/our_system_phase2/services/a_share_tradability_guard.py": "a940455980f9b2989b8237f94f7f94a28644c4d06520a9970f882f3e55185ae9",
+    "docs/adr/0009-a-share-tradability-evidence-boundary.md": "433fc9a4032aaf90954119703e7589ad3e803cbb225fd17051bafdd3b688136b"
+  },
+  "verification": {
+    "local": {
+      "related_tests_passed": 30,
+      "semantic_regression_tests_passed": 3,
+      "architecture_overlay_json_parse": "PASS",
+      "python_compile": "PASS"
+    },
+    "remote_77o": {
+      "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_a_share_tradability_f53eff4_20260729_162854",
+      "deployment_archive_sha256": "52e57dfe5d14206f1bccff5499cb24610701b5ed82559bdb85d2d3e7d874d97c",
+      "deployment_file_count": 1386,
+      "focused_tests_passed": 54,
+      "focused_tests_failed": 0,
+      "warnings": [
+        "Optuna constant_liar remains experimental"
+      ]
+    },
+    "financial_data_reads": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "non_claims": [
+    "This receipt does not prove A-share tradability.",
+    "This receipt does not promote the existing real-market replay implementations into formal authority.",
+    "This receipt does not authorize a financial campaign, finalist promotion, validation, holdout or 2026 access.",
+    "Historical productive candidates remain development diagnostics and are not economic or tradability evidence."
+  ],
+  "next_blocker": {
+    "status": "A_SHARE_TRADABILITY_REPLAY_NOT_INTEGRATED",
+    "required_resolution": "Bind the existing real_market_validation and phase3dy_true1min_tplus1_tradable_replay capabilities to the guard and produce an immutable replay receipt before any optimizer COMPLETE, finalist, promotion or economic claim.",
+    "first_allowed_step": "zero-financial synthetic contract and parity verification only"
+  }
+}
