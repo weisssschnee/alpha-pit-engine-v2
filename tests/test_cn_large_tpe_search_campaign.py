@@ -345,9 +345,24 @@ def test_streaming_pair_outcome_preserves_primary_control_and_standalone_decisio
     assert rows[0]["control_composite_reward"] == pytest.approx(0.5)
     assert rows[0]["matched_train_increment"] == pytest.approx(0.2)
     assert rows[0]["optimizer_reward"] == pytest.approx(0.2)
+    assert rows[0]["pair_train_reward_decision"] == (
+        "PAIR_TRAIN_FEEDBACK_READY"
+    )
+    assert rows[0]["pair_train_reward_blockers"] == ""
+    assert rows[0]["optimizer_feedback_eligible"] is True
+    assert rows[0]["optimizer_feedback_scope"] == "DEVELOPMENT_SEARCH_ONLY"
+    assert rows[0]["evaluation_evidence_class"] == (
+        "DEVELOPMENT_PREDICTIVE_SCORE_ONLY"
+    )
+    assert rows[0]["pair_a_share_tradability_decision"] == (
+        "A_SHARE_TRADABILITY_UNPROVEN"
+    )
+    assert rows[0]["economic_claim_authorized"] is False
+    assert rows[0]["candidate_promotion_authorized"] is False
     assert rows[0]["primary_standalone_train_reward_decision"] == (
         "TRAIN_REWARD_FOLLOWUP_READY"
     )
+    assert _conservative_search_score(rows[0]) == pytest.approx(0.2)
 
 
 class _DeterministicRouteAdapter:

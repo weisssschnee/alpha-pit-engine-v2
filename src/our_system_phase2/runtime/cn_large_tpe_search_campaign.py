@@ -3622,7 +3622,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             optimizer_outcome_class = (
                 outcome_class
                 if outcome_class != EVALUATED or reward is not None
-                else "TRADABILITY_AUTHORITY_BLOCKED"
+                else "DEVELOPMENT_FEEDBACK_BLOCKED"
             )
             if bool(ask.get("optimizer_feedback_eligible", True)):
                 observations[str(ask["proposal_id"])] = {

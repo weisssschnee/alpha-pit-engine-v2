@@ -21,6 +21,10 @@ from our_system_phase2.services.a_share_tradability_guard import (
     A_SHARE_TRADABILITY_UNPROVEN,
     development_predictive_evidence,
 )
+from our_system_phase2.services.matched_control_pairs import (
+    PAIR_TRAIN_FEEDBACK_BLOCKED,
+    PAIR_TRAIN_FEEDBACK_READY,
+)
 from our_system_phase2.services.phase3cm_streaming_block_reader import TimeMajorBlockReader
 from our_system_phase2.services.phase3cm_streaming_checkpoint import (
     StreamingCheckpointPayload,
@@ -681,10 +685,18 @@ def _finalize_pairs(
         primary_standalone_blockers = str(
             primary_reward.get("train_reward_blockers") or ""
         )
+        pair_feedback_decision = (
+            PAIR_TRAIN_FEEDBACK_READY
+            if not blockers
+            else PAIR_TRAIN_FEEDBACK_BLOCKED
+        )
+        pair_feedback_blockers = "|".join(sorted(set(blockers)))
         bound_pair = pair_binding[pair_id]
         metrics = (
             {
                 "pair_train_reward": matched,
+                "pair_train_reward_decision": pair_feedback_decision,
+                "pair_train_reward_blockers": pair_feedback_blockers,
                 "matched_train_increment": matched,
                 "primary_train_reward": primary_value,
                 "control_train_reward": control_value,
@@ -705,7 +717,10 @@ def _finalize_pairs(
                 "pair_a_share_tradability_blockers": (
                     "phase3cm_is_development_predictive_only"
                 ),
-                "optimizer_feedback_eligible": False,
+                "optimizer_feedback_eligible": (
+                    pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY
+                ),
+                "optimizer_feedback_scope": "DEVELOPMENT_SEARCH_ONLY",
             }
             if evaluation_role == "train"
             else {
