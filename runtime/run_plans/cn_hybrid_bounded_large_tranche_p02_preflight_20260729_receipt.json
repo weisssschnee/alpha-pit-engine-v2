@@ -1,0 +1,120 @@
+{
+  "schema_version": "cn_hybrid_bounded_large_tranche_p02_preflight_receipt_v1",
+  "status": "P02_ZERO_FINANCIAL_PREFLIGHT_PASS_EXECUTION_AUTHORITY_NOT_YET_FORMED",
+  "completed_at": "2026-07-29",
+  "deployed_sha": "c5df6cc15c850dfe3543a8330927071e725771c0",
+  "repo_sha_equality": true,
+  "remote_workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_hybrid_bounded_large_c5df6cc_20260729_1017_c5df6cc15c85",
+  "deployment_manifest": {
+    "path": "D:\\ChengboRemote\\runtime\\manifests\\alpha_pit_hybrid_bounded_large_c5df6cc_20260729_1017_c5df6cc15c85.json",
+    "sha256": "f50361b1f16d8bab965a8947acb6bbeda0f44ca0ec2e04db06a788e3589ce00a",
+    "source_package_sha256": "01b50c7a7ef0971f9ae89ee229fdf3307b5ece87aacb8421aee3143123493850"
+  },
+  "official_77o_focused_tests": {
+    "passed": 22,
+    "failed": 0,
+    "powershell_launcher_parse": "PASS"
+  },
+  "preflight_root": "D:\\ChengboRemote\\runtime\\cn_hybrid_bounded_large_tranche_preflight_20260729_1018_c5df6cc_6144",
+  "preflight_exit_code": 0,
+  "campaign_profile": "cn_hybrid_bounded_large_tranche_v1",
+  "qualification_status": "ZERO_FINANCIAL_PREFLIGHT_QUALIFICATION_AUTHORIZED",
+  "execution_authorized": false,
+  "financial_campaign_authorized": false,
+  "maximum_checkpoints": 8,
+  "asks_per_checkpoint": 768,
+  "maximum_formal_fresh_exact_asks": 6144,
+  "fixed_route_formal_asks_per_checkpoint": {
+    "SLOW_TEMPORAL_CHANGE": 672,
+    "FIRSTN_PATH": 8,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 24,
+    "MARKET_REGIME_CONDITION": 16,
+    "DISCLOSURE_EVENT": 48
+  },
+  "final_route_formal_ask_allocation": {
+    "SLOW_TEMPORAL_CHANGE": 5376,
+    "FIRSTN_PATH": 64,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 192,
+    "MARKET_REGIME_CONDITION": 128,
+    "DISCLOSURE_EVENT": 384
+  },
+  "fresh_exact_supply": {
+    "status": "PASS",
+    "total_fresh_exact": 39303,
+    "minimum_required_fresh_exact": 7990,
+    "by_route": {
+      "SLOW_TEMPORAL_CHANGE": {
+        "fresh_exact": 34353,
+        "minimum_required": 6682,
+        "status": "PASS"
+      },
+      "FIRSTN_PATH": {
+        "fresh_exact": 2661,
+        "minimum_required": 154,
+        "status": "PASS"
+      },
+      "SLOW_CROSS_SECTIONAL_LEVEL": {
+        "fresh_exact": 246,
+        "minimum_required": 231,
+        "status": "PASS"
+      },
+      "MARKET_REGIME_CONDITION": {
+        "fresh_exact": 1159,
+        "minimum_required": 308,
+        "status": "PASS"
+      },
+      "DISCLOSURE_EVENT": {
+        "fresh_exact": 884,
+        "minimum_required": 615,
+        "status": "PASS"
+      }
+    }
+  },
+  "historical_archives": {
+    "candidate_exact_sha256": "450491d7ceff74dfa8eb5e019b4dd15c982a00f6f990299e7afd620dc87b1ae6",
+    "behavior_sha256": "0d51f2ea0ace7b06cf5c02a7ac970a629490c284c442f6dd693a1deb007dfc64",
+    "identity_manifest_deployed_sha256": "e218e505964f277260d6667b5426e532a7a69be1c2a4af5b1b689d3e7fb70beb",
+    "reward_state_reused": false,
+    "scheduler_state_reused": false,
+    "optimizer_state_reused": false
+  },
+  "runtime": {
+    "host": "DESKTOP-77OPJ6F",
+    "active_threads": 32,
+    "session_threads": 32,
+    "active_pair_batch_size": 12,
+    "session_pair_batch_size": 12,
+    "cache_cap_bytes": 8589934592,
+    "minimum_free_memory_bytes": 25769803776,
+    "free_memory_bytes_at_preflight": 86515236864
+  },
+  "sealed_access": {
+    "financial_reads": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "split_boundary_purity": "PASS",
+    "retained_crossing_count": 0
+  },
+  "phase3cm_started": false,
+  "checkpoint_artifacts_created": 0,
+  "financial_results_created": false,
+  "artifact_hashes": {
+    "campaign_process_exit.json": "7c17f46c3664d066dc7930f248280c82b5eafb858ad6b5fd2e4d7d68f96b458d",
+    "deployment_binding.json": "0f82fdcc39086ecf26f555d7fde93efb0c3fe39fd2cbcf4ce217463e0653d5c9",
+    "campaign_authority_binding.json": "bb987714acb8bd729c31146df61e653de9274bc16c00ef9fff8cd8a1c91256b0",
+    "fresh_exact_supply_preflight.json": "97a3f62658a82d6be9d678fa731e609eccf90e477f0ab9c20c4e18b4289f132c",
+    "split_boundary_purity.json": "4752f3ef322eb540b58ab393c62ddad390007d4b2cfc9fef164bf45cf94e1826",
+    "runtime_envelope.json": "a240339acff8e272ac1f41dea9c9b7f03b099466be9761461cc0f4a1fd384fae",
+    "campaign.stdout.log": "62c76a49eba159ff07f26b254a2d4e97a277cc91acada912f4443f97e74170a2",
+    "campaign.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "monitor_infrastructure_incident": {
+    "path": "D:\\ChengboRemote\\runtime\\run_health_incidents\\20260729T022100_bounded_large_preflight_audit_converttojson_memory_leak\\incident.json",
+    "sha256": "904118ac33adc3648d77e47c4739ef785ec93a24842a8cd243fbf5cead3ecefd",
+    "preflight_result_contaminated": false,
+    "financial_python_affected": false,
+    "free_memory_bytes_after_cleanup": 86806761472
+  },
+  "next_action": "FORM_SEPARATE_EXECUTION_AUTHORITY_AND_LAUNCH_EXACTLY_ONE_BOUNDED_6144_TRANCHE"
+}
