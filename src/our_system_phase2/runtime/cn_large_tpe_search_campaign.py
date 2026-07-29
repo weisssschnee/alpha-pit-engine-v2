@@ -98,6 +98,9 @@ AUTHORIZED_HOST = "DESKTOP-77OPJ6F"
 CAMPAIGN_PROFILE = "cn_large_optuna_tpe_availability_v3"
 PRODUCTIVITY_MEDIUM_PROFILE = "cn_hybrid_search_productivity_medium_v1"
 HYBRID_ONLY_TRANCHE_PROFILE = "cn_hybrid_only_tranche_v1"
+HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE = (
+    "cn_hybrid_bounded_large_tranche_v1"
+)
 ROUTE_EVALUATED_TARGETS = {
     "SLOW_TEMPORAL_CHANGE": 14_000,
     "FIRSTN_PATH": 1_300,
@@ -179,6 +182,45 @@ HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION = {
 HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS = 8
 HYBRID_ONLY_TRANCHE_MAXIMUM_RAW_ASKS = 3_072
 HYBRID_ONLY_TRANCHE_MAXIMUM_WALL_SECONDS = 18 * 60 * 60
+HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_MIX = {
+    "SLOW_TEMPORAL_CHANGE": 672,
+    "FIRSTN_PATH": 8,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 24,
+    "MARKET_REGIME_CONDITION": 16,
+    "DISCLOSURE_EVENT": 48,
+}
+HYBRID_BOUNDED_LARGE_TRANCHE_COVERAGE_FLOORS = {
+    "SLOW_TEMPORAL_CHANGE": 4_608,
+    "FIRSTN_PATH": 64,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 192,
+    "MARKET_REGIME_CONDITION": 96,
+    "DISCLOSURE_EVENT": 192,
+}
+HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_CAPS = {
+    "SLOW_TEMPORAL_CHANGE": 5_568,
+    "FIRSTN_PATH": 128,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 192,
+    "MARKET_REGIME_CONDITION": 256,
+    "DISCLOSURE_EVENT": 512,
+}
+HYBRID_BOUNDED_LARGE_TRANCHE_FLEXIBLE_ALLOCATION = {
+    "SLOW_TEMPORAL_CHANGE": 768,
+    "FIRSTN_PATH": 0,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 32,
+    "DISCLOSURE_EVENT": 192,
+}
+HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_CHECKPOINTS = 8
+HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_RAW_ASKS = 6_144
+HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_WALL_SECONDS = 24 * 60 * 60
+HYBRID_TRANCHE_PROFILES = (
+    HYBRID_ONLY_TRANCHE_PROFILE,
+    HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE,
+)
+
+
+def _is_hybrid_tranche_profile(profile: str) -> bool:
+    return str(profile) in HYBRID_TRANCHE_PROFILES
 
 
 def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
@@ -207,6 +249,15 @@ def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
             "completion_mode": "FIXED_FORMAL_ASK_TRANCHE",
             "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
             "fixed_route_mix": dict(HYBRID_ONLY_TRANCHE_ROUTE_MIX),
+            "coverage_floors": dict(
+                HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS
+            ),
+            "route_formal_ask_caps": dict(
+                HYBRID_ONLY_TRANCHE_ROUTE_CAPS
+            ),
+            "flexible_allocation": dict(
+                HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION
+            ),
             "minimum_required_fresh_exact_by_route": {
                 route_id: int(
                     math.ceil(
@@ -216,6 +267,42 @@ def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
                     )
                 )
                 for route_id, count in HYBRID_ONLY_TRANCHE_ROUTE_MIX.items()
+            },
+        }
+    if str(profile) == HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE:
+        return {
+            "campaign_profile": HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE,
+            "maximum_checkpoints": (
+                HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_CHECKPOINTS
+            ),
+            "asks_per_checkpoint": sum(
+                HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_MIX.values()
+            ),
+            "maximum_raw_asks": (
+                HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_RAW_ASKS
+            ),
+            "maximum_wall_seconds": (
+                HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_WALL_SECONDS
+            ),
+            "completion_mode": "FIXED_FORMAL_ASK_TRANCHE",
+            "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+            "fixed_route_mix": dict(
+                HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_MIX
+            ),
+            "coverage_floors": dict(
+                HYBRID_BOUNDED_LARGE_TRANCHE_COVERAGE_FLOORS
+            ),
+            "route_formal_ask_caps": dict(
+                HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_CAPS
+            ),
+            "flexible_allocation": dict(
+                HYBRID_BOUNDED_LARGE_TRANCHE_FLEXIBLE_ALLOCATION
+            ),
+            "minimum_required_fresh_exact_by_route": {
+                route_id: int(math.ceil(count * FRESH_EXACT_MARGIN))
+                for route_id, count in (
+                    HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_CAPS.items()
+                )
             },
         }
     if str(profile) == CAMPAIGN_PROFILE:
@@ -953,12 +1040,19 @@ def _authorization_binding(
     seed_base: int,
     active_threads: int,
     session_threads: int,
+    preflight_only: bool = False,
 ) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8-sig"))
     profile = str(payload.get("campaign_profile") or "")
     runtime_spec = _campaign_runtime_spec(profile)
+    authorization_gate = (
+        bool(payload.get("qualification_authorized"))
+        and not bool(payload.get("execution_authorized"))
+        if preflight_only
+        else bool(payload.get("execution_authorized"))
+    )
     expected_common = {
-        "execution_authorized": True,
+        "execution_authorized": not bool(preflight_only),
         "authorized_host": AUTHORIZED_HOST,
         "campaign_profile": profile,
         "optimizer_package_version": "4.8.0",
@@ -981,7 +1075,7 @@ def _authorization_binding(
             if profile == PRODUCTIVITY_MEDIUM_PROFILE
             else (
                 "HYBRID_TPE_AVAILABILITY_ONLY"
-                if profile == HYBRID_ONLY_TRANCHE_PROFILE
+                if _is_hybrid_tranche_profile(profile)
                 else "ROUTE_LOCAL_AVAILABILITY_AWARE_OFFICIAL_OPTUNA"
             )
         ),
@@ -1052,7 +1146,7 @@ def _authorization_binding(
             ),
             "validation": "FORBIDDEN_DURING_AND_AFTER_MEDIUM",
         }
-    elif profile == HYBRID_ONLY_TRANCHE_PROFILE:
+    elif _is_hybrid_tranche_profile(profile):
         expected = {
             **expected_common,
             "optimizer": (
@@ -1061,20 +1155,24 @@ def _authorization_binding(
             "accepted_development_search_policy": HYBRID_POLICY_ARM,
             "policy_reopened": False,
             "fixed_route_formal_asks_per_checkpoint": (
-                HYBRID_ONLY_TRANCHE_ROUTE_MIX
+                runtime_spec["fixed_route_mix"]
             ),
-            "coverage_floors": HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS,
-            "route_formal_ask_caps": HYBRID_ONLY_TRANCHE_ROUTE_CAPS,
+            "coverage_floors": runtime_spec["coverage_floors"],
+            "route_formal_ask_caps": (
+                runtime_spec["route_formal_ask_caps"]
+            ),
             "globally_flexible_budget": sum(
-                HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION.values()
+                runtime_spec["flexible_allocation"].values()
             ),
             "flexible_allocation": (
-                HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION
+                runtime_spec["flexible_allocation"]
             ),
             "final_route_formal_ask_allocation": {
                 route_id: int(count)
-                * HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS
-                for route_id, count in HYBRID_ONLY_TRANCHE_ROUTE_MIX.items()
+                * int(runtime_spec["maximum_checkpoints"])
+                for route_id, count in runtime_spec[
+                    "fixed_route_mix"
+                ].items()
             },
             "policy_arms": [HYBRID_POLICY_ARM],
             "policy_arm_ratio": {HYBRID_POLICY_ARM: 1.0},
@@ -1101,6 +1199,12 @@ def _authorization_binding(
     drift = [
         key for key, value in expected.items() if payload.get(key) != value
     ]
+    if not authorization_gate:
+        drift.append(
+            "qualification_authorized"
+            if preflight_only
+            else "execution_authorized"
+        )
     manifest = json.loads(history_manifest.read_text(encoding="utf-8-sig"))
     if (
         str(manifest.get("status") or "") != "PASS"
@@ -1133,12 +1237,21 @@ def _authorization_binding(
     return {
         "schema_version": "cn_large_tpe_campaign_authority_binding_v3",
         "status": (
-            "SEARCH_PRODUCTIVITY_MEDIUM_AUTHORIZED"
-            if profile == PRODUCTIVITY_MEDIUM_PROFILE
+            "ZERO_FINANCIAL_PREFLIGHT_QUALIFICATION_AUTHORIZED"
+            if preflight_only
             else (
-                "HYBRID_ONLY_TRANCHE_AUTHORIZED"
-                if profile == HYBRID_ONLY_TRANCHE_PROFILE
-                else "FIVE_DIGIT_TRAIN_SEARCH_AUTHORIZED"
+                "SEARCH_PRODUCTIVITY_MEDIUM_AUTHORIZED"
+                if profile == PRODUCTIVITY_MEDIUM_PROFILE
+                else (
+                    (
+                        "HYBRID_BOUNDED_LARGE_TRANCHE_AUTHORIZED"
+                        if profile
+                        == HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE
+                        else "HYBRID_ONLY_TRANCHE_AUTHORIZED"
+                    )
+                    if _is_hybrid_tranche_profile(profile)
+                    else "FIVE_DIGIT_TRAIN_SEARCH_AUTHORIZED"
+                )
             )
         ),
         "authorization": _artifact(path),
@@ -2012,6 +2125,109 @@ def _is_productive_candidate(outcome: Mapping[str, Any]) -> bool:
     )
 
 
+def _productive_behavior_family_ids(
+    *,
+    outcomes: Sequence[Mapping[str, Any]],
+    full_behavior: Sequence[Mapping[str, Any]],
+) -> set[str]:
+    family_by_pair = {
+        str(row.get("pair_id") or ""): str(
+            row.get("portfolio_behavior_family_id") or ""
+        )
+        for row in full_behavior
+        if str(row.get("pair_id") or "")
+    }
+    return {
+        family_by_pair.get(str(row.get("pair_id") or ""), "")
+        for row in outcomes
+        if _is_productive_candidate(row)
+        and family_by_pair.get(str(row.get("pair_id") or ""), "")
+    }
+
+
+def _productive_family_diagnostics(
+    *,
+    outcomes: Sequence[Mapping[str, Any]],
+    full_behavior: Sequence[Mapping[str, Any]],
+    candidates: Sequence[Mapping[str, Any]],
+    formal_asks: int,
+    prior_family_ids: Sequence[str] = (),
+) -> dict[str, Any]:
+    behavior_by_pair = {
+        str(row.get("pair_id") or ""): str(
+            row.get("portfolio_behavior_family_id") or ""
+        )
+        for row in full_behavior
+        if str(row.get("pair_id") or "")
+    }
+    exact_by_pair = {
+        str(row.get("pair_id") or ""): str(
+            row.get("exact_identity") or ""
+        )
+        for row in candidates
+        if str(row.get("pair_member_role") or "") == "PRIMARY"
+        and str(row.get("pair_id") or "")
+    }
+    productive = [
+        row for row in outcomes if _is_productive_candidate(row)
+    ]
+    productive_pairs = {
+        str(row.get("pair_id") or "") for row in productive
+    }
+    family_counts = Counter(
+        behavior_by_pair.get(pair_id, "")
+        for pair_id in productive_pairs
+        if behavior_by_pair.get(pair_id, "")
+    )
+    productive_exact = {
+        exact_by_pair.get(pair_id, "")
+        for pair_id in productive_pairs
+        if exact_by_pair.get(pair_id, "")
+    }
+    families = set(family_counts)
+    top_ten = sorted(
+        family_counts.items(),
+        key=lambda item: (-int(item[1]), str(item[0])),
+    )[:10]
+    prior = {str(value) for value in prior_family_ids if str(value)}
+    productive_count = len(productive_pairs)
+    family_count = len(families)
+    return {
+        "reporting_role": "DIAGNOSTIC_ONLY_NOT_RUNTIME_STOP_GATE",
+        "productive_candidates": productive_count,
+        "productive_yield": (
+            productive_count / int(formal_asks)
+            if int(formal_asks) > 0
+            else 0.0
+        ),
+        "productive_exact_unique": len(productive_exact),
+        "productive_behavior_family_unique": family_count,
+        "productive_exact_per_behavior_family": (
+            len(productive_exact) / family_count
+            if family_count
+            else None
+        ),
+        "top_10_productive_family_concentration": (
+            sum(int(count) for _, count in top_ten) / productive_count
+            if productive_count
+            else 0.0
+        ),
+        "top_10_productive_families": [
+            {"portfolio_behavior_family_id": family_id, "count": int(count)}
+            for family_id, count in top_ten
+        ],
+        "new_productive_behavior_families": len(families - prior),
+        "unresolved_productive_behavior_family_count": sum(
+            not bool(behavior_by_pair.get(pair_id, ""))
+            for pair_id in productive_pairs
+        ),
+        "unresolved_productive_exact_count": sum(
+            not bool(exact_by_pair.get(pair_id, ""))
+            for pair_id in productive_pairs
+        ),
+    }
+
+
 def _policy_productivity_rows(
     *,
     checkpoint_id: str,
@@ -2339,6 +2555,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         seed_base=args.seed_base,
         active_threads=args.active_threads,
         session_threads=args.session_threads,
+        preflight_only=bool(args.preflight_only),
     )
     campaign_profile = str(
         (authority.get("frozen") or {}).get("campaign_profile") or ""
@@ -2347,9 +2564,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     productivity_experiment = (
         campaign_profile == PRODUCTIVITY_MEDIUM_PROFILE
     )
-    hybrid_only_tranche = (
-        campaign_profile == HYBRID_ONLY_TRANCHE_PROFILE
-    )
+    hybrid_only_tranche = _is_hybrid_tranche_profile(campaign_profile)
     fixed_formal_campaign = (
         productivity_experiment or hybrid_only_tranche
     )
@@ -2538,13 +2753,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             {
                 "accepted_policy": HYBRID_POLICY_ARM,
                 "policy_reopened": False,
-                "coverage_floors": HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS,
-                "route_formal_ask_caps": HYBRID_ONLY_TRANCHE_ROUTE_CAPS,
+                "coverage_floors": campaign_spec["coverage_floors"],
+                "route_formal_ask_caps": (
+                    campaign_spec["route_formal_ask_caps"]
+                ),
                 "globally_flexible_budget": sum(
-                    HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION.values()
+                    campaign_spec["flexible_allocation"].values()
                 ),
                 "flexible_allocation": (
-                    HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION
+                    campaign_spec["flexible_allocation"]
                 ),
                 "within_tranche_route_adaptation": "FORBIDDEN",
                 "uniform_arm": "FORBIDDEN",
@@ -2776,7 +2993,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 str(row["route_id"]): int(row["asked_pairs"])
                 for row in schedule.get("routes") or ()
             }
-            if observed_mix != HYBRID_ONLY_TRANCHE_ROUTE_MIX:
+            if observed_mix != campaign_spec["fixed_route_mix"]:
                 raise RuntimeError(
                     "HYBRID_ONLY_TRANCHE_FIXED_ROUTE_MIX_DRIFT"
                 )
@@ -3138,6 +3355,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 ),
             )
         )
+        prior_productive_family_ids = (
+            _productive_behavior_family_ids(
+                outcomes=state["outcomes"],
+                full_behavior=state["full_behavior"],
+            )
+            if hybrid_only_tranche
+            else set()
+        )
+        checkpoint_productive_family_diagnostics = (
+            _productive_family_diagnostics(
+                outcomes=outcomes,
+                full_behavior=full_behavior,
+                candidates=admitted,
+                formal_asks=len(formal_asked),
+                prior_family_ids=prior_productive_family_ids,
+            )
+            if hybrid_only_tranche
+            else None
+        )
         _add_resolved_behavior_rows(state["behavior"], probe_rows)
         _add_resolved_behavior_rows(state["behavior"], full_behavior)
         for row in candidate_rows:
@@ -3154,6 +3390,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 state["evaluated"][str(row["route_id"])] += 1
         for row in formal_asked:
             state["asked_counts"][str(row["route_id"])] += 1
+        cumulative_productive_family_diagnostics = (
+            _productive_family_diagnostics(
+                outcomes=state["outcomes"],
+                full_behavior=state["full_behavior"],
+                candidates=state["candidates"],
+                formal_asks=sum(state["asked_counts"].values()),
+            )
+            if hybrid_only_tranche
+            else None
+        )
         expected_backends = tuple(
             backend
             for backend in ("active_bar", "stock_session")
@@ -3294,6 +3540,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 )
                 for route_id in ROUTES
             },
+            **(
+                {
+                    "productive_family_diagnostics": (
+                        checkpoint_productive_family_diagnostics
+                    ),
+                    "cumulative_productive_family_diagnostics": (
+                        cumulative_productive_family_diagnostics
+                    ),
+                }
+                if hybrid_only_tranche
+                else {}
+            ),
             "minimum_free_memory_bytes": _minimum_free_memory(root),
             "runtime_gate_status": str(gate.get("status") or ""),
             "validation_reads": 0,
@@ -3384,6 +3642,54 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             and bool(route_targets_met)
         )
     )
+    productive_family_diagnostics = (
+        _productive_family_diagnostics(
+            outcomes=state["outcomes"],
+            full_behavior=state["full_behavior"],
+            candidates=state["candidates"],
+            formal_asks=raw_asks,
+        )
+        if hybrid_only_tranche
+        else None
+    )
+    productive_checkpoint_diagnostics = (
+        [
+            {
+                "checkpoint": str(summary["checkpoint"]),
+                "productive_candidates": int(
+                    (
+                        summary.get("productive_family_diagnostics")
+                        or {}
+                    ).get("productive_candidates")
+                    or 0
+                ),
+                "productive_yield": float(
+                    (
+                        summary.get("productive_family_diagnostics")
+                        or {}
+                    ).get("productive_yield")
+                    or 0.0
+                ),
+                "productive_behavior_family_unique": int(
+                    (
+                        summary.get("productive_family_diagnostics")
+                        or {}
+                    ).get("productive_behavior_family_unique")
+                    or 0
+                ),
+                "new_productive_behavior_families": int(
+                    (
+                        summary.get("productive_family_diagnostics")
+                        or {}
+                    ).get("new_productive_behavior_families")
+                    or 0
+                ),
+            }
+            for summary in state["summaries"]
+        ]
+        if hybrid_only_tranche
+        else None
+    )
     candidate_ledger_path = _write_parquet(
         output_root / "candidate_ledger.parquet", state["candidates"]
     )
@@ -3435,7 +3741,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "PRODUCTIVITY_MEDIUM_COMPLETE"
                 if productivity_experiment and fixed_formal_complete
                 else (
-                    "HYBRID_ONLY_TRANCHE_COMPLETE"
+                    (
+                        "HYBRID_BOUNDED_LARGE_TRANCHE_COMPLETE"
+                        if campaign_profile
+                        == HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE
+                        else "HYBRID_ONLY_TRANCHE_COMPLETE"
+                    )
                     if hybrid_only_tranche and fixed_formal_complete
                     else (
                         "TRAIN_COMPLETE"
@@ -3485,6 +3796,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 )
             ),
             "promotion": "FORBIDDEN",
+            **(
+                {
+                    "productive_family_diagnostics": (
+                        productive_family_diagnostics
+                    ),
+                    "productive_checkpoint_diagnostics": (
+                        productive_checkpoint_diagnostics
+                    ),
+                }
+                if hybrid_only_tranche
+                else {}
+            ),
         },
     )
     validation_receipt = None
@@ -3553,8 +3876,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "actual_evaluated_by_route": dict(state["evaluated"]),
             "productive_candidates": sum(productive_by_route.values()),
             "productive_by_route": productive_by_route,
+            "productive_family_diagnostics": (
+                productive_family_diagnostics
+            ),
+            "productive_checkpoint_diagnostics": (
+                productive_checkpoint_diagnostics
+            ),
             "fixed_route_formal_asks_per_checkpoint": (
-                HYBRID_ONLY_TRANCHE_ROUTE_MIX
+                campaign_spec["fixed_route_mix"]
             ),
             "checkpoint_count": len(state["summaries"]),
             "raw_asks": raw_asks,

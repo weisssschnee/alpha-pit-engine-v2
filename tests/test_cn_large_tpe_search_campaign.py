@@ -12,6 +12,13 @@ from scripts.run_cn_phase3cm_streaming_qualification import _finalize_pairs
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     ASKS_PER_CHECKPOINT,
     CAMPAIGN_PROFILE,
+    HYBRID_BOUNDED_LARGE_TRANCHE_COVERAGE_FLOORS,
+    HYBRID_BOUNDED_LARGE_TRANCHE_FLEXIBLE_ALLOCATION,
+    HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_CHECKPOINTS,
+    HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_RAW_ASKS,
+    HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE,
+    HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_CAPS,
+    HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_MIX,
     HYBRID_ONLY_TRANCHE_COVERAGE_FLOORS,
     HYBRID_ONLY_TRANCHE_FLEXIBLE_ALLOCATION,
     HYBRID_ONLY_TRANCHE_MAXIMUM_CHECKPOINTS,
@@ -43,6 +50,7 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _freeze_gene_lanes,
     _medium_policy_decision,
     _policy_arm_assignments,
+    _productive_family_diagnostics,
     _route_budget_feasibility,
     _restore_or_import_adapters,
     _sha256,
@@ -498,6 +506,131 @@ def test_hybrid_only_tranche_is_exact_bounded_and_not_an_unlimited_search() -> N
         final_allocation
     )
     assert authorization["unlimited_or_20k_search_authorized"] is False
+
+
+def test_hybrid_bounded_large_tranche_profile_matches_frozen_contract() -> None:
+    spec = _campaign_runtime_spec(HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE)
+    final_allocation = {
+        route_id: count
+        * HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_CHECKPOINTS
+        for route_id, count in (
+            HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_MIX.items()
+        )
+    }
+    qualification = json.loads(
+        (
+            REPO_ROOT
+            / "runtime"
+            / "run_plans"
+            / "cn_hybrid_bounded_large_tranche_v1_qualification.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert sum(HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_MIX.values()) == 768
+    assert HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_CHECKPOINTS == 8
+    assert HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_RAW_ASKS == 6_144
+    assert sum(final_allocation.values()) == 6_144
+    assert final_allocation == {
+        "SLOW_TEMPORAL_CHANGE": 5_376,
+        "FIRSTN_PATH": 64,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 192,
+        "MARKET_REGIME_CONDITION": 128,
+        "DISCLOSURE_EVENT": 384,
+    }
+    assert all(
+        HYBRID_BOUNDED_LARGE_TRANCHE_COVERAGE_FLOORS[route_id]
+        <= final_allocation[route_id]
+        <= HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_CAPS[route_id]
+        for route_id in ROUTES
+    )
+    assert sum(
+        HYBRID_BOUNDED_LARGE_TRANCHE_FLEXIBLE_ALLOCATION.values()
+    ) == 992
+    assert spec["fixed_route_mix"] == (
+        HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_MIX
+    )
+    assert spec["minimum_required_fresh_exact_by_route"] == {
+        "SLOW_TEMPORAL_CHANGE": 6_682,
+        "FIRSTN_PATH": 154,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 231,
+        "MARKET_REGIME_CONDITION": 308,
+        "DISCLOSURE_EVENT": 615,
+    }
+    assert qualification["qualification_authorized"] is True
+    assert qualification["execution_authorized"] is False
+    assert qualification["financial_campaign_authorized"] is False
+    assert qualification["fixed_route_formal_asks_per_checkpoint"] == (
+        HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_MIX
+    )
+    assert qualification["final_route_formal_ask_allocation"] == (
+        final_allocation
+    )
+    assert qualification["unlimited_or_20k_search_authorized"] is False
+
+
+def test_productive_family_diagnostics_are_diagnostic_only() -> None:
+    outcomes = [
+        {
+            "pair_id": pair_id,
+            "pair_evaluation_status": "PAIR_EVALUATED",
+            "primary_composite_reward": score,
+            "matched_train_increment": score,
+            "primary_standalone_train_reward_decision": (
+                "TRAIN_REWARD_FOLLOWUP_READY"
+            ),
+        }
+        for pair_id, score in (
+            ("p1", 1.0),
+            ("p2", 2.0),
+            ("p3", 3.0),
+            ("p4", 4.0),
+            ("p5", -1.0),
+        )
+    ]
+    full_behavior = [
+        {
+            "pair_id": pair_id,
+            "portfolio_behavior_family_id": family_id,
+        }
+        for pair_id, family_id in (
+            ("p1", "family-a"),
+            ("p2", "family-a"),
+            ("p3", "family-b"),
+            ("p4", "family-c"),
+            ("p5", "family-d"),
+        )
+    ]
+    candidates = [
+        {
+            "pair_id": pair_id,
+            "pair_member_role": "PRIMARY",
+            "exact_identity": f"exact-{pair_id}",
+        }
+        for pair_id in ("p1", "p2", "p3", "p4", "p5")
+    ]
+
+    diagnostics = _productive_family_diagnostics(
+        outcomes=outcomes,
+        full_behavior=full_behavior,
+        candidates=candidates,
+        formal_asks=8,
+        prior_family_ids=("family-a",),
+    )
+
+    assert diagnostics["reporting_role"] == (
+        "DIAGNOSTIC_ONLY_NOT_RUNTIME_STOP_GATE"
+    )
+    assert diagnostics["productive_candidates"] == 4
+    assert diagnostics["productive_yield"] == 0.5
+    assert diagnostics["productive_exact_unique"] == 4
+    assert diagnostics["productive_behavior_family_unique"] == 3
+    assert diagnostics["productive_exact_per_behavior_family"] == pytest.approx(
+        4 / 3
+    )
+    assert diagnostics["top_10_productive_family_concentration"] == 1.0
+    assert diagnostics["new_productive_behavior_families"] == 2
+    assert diagnostics["unresolved_productive_behavior_family_count"] == 0
+    assert diagnostics["unresolved_productive_exact_count"] == 0
 
 
 def test_availability_semantic_hashes_ignore_only_indirect_runtime_paths() -> None:

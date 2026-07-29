@@ -1,0 +1,31 @@
+{
+  "schema_version": "cn_identity_archive_after_hybrid_tranche_v1",
+  "status": "PASS",
+  "identity_only": true,
+  "candidate_exact_archive": {
+    "path": "D:\\ChengboRemote\\runtime\\cn_hybrid_large_search_prep_20260729\\p07_bounded_large_tranche\\candidate_exact_archive_after_hybrid_tranche.parquet",
+    "bytes": 1436020,
+    "sha256": "450491d7ceff74dfa8eb5e019b4dd15c982a00f6f990299e7afd620dc87b1ae6",
+    "rows": 22918,
+    "unique_exact_identities": 22918
+  },
+  "behavior_archive": {
+    "path": "D:\\ChengboRemote\\runtime\\cn_hybrid_only_tranche_20260729_0445_9e9e113_3072\\behavior_archive.parquet",
+    "bytes": 3055394,
+    "sha256": "0d51f2ea0ace7b06cf5c02a7ac970a629490c284c442f6dd693a1deb007dfc64",
+    "usage": "LABEL_FREE_BEHAVIOR_IDENTITY_ONLY"
+  },
+  "source_p07_manifest": {
+    "path": "D:\\ChengboRemote\\runtime\\cn_hybrid_large_search_prep_20260729\\p07_bounded_large_tranche\\p07_manifest.json",
+    "bytes": 1330,
+    "sha256": "436a4062b4a8216f8ad1a1a651dcc2c2fb71f4aa36713dad71f3ae507983a9d2",
+    "manifest_payload_hash": "edfc5820b5e6973bf3b7add262df1462f8319a5dd9360a4a4fabd305a7430a72"
+  },
+  "optimizer_state_reused": false,
+  "reward_state_reused": false,
+  "scheduler_state_reused": false,
+  "financial_dataset_reads": 0,
+  "validation_dataset_reads": 0,
+  "holdout_reads": 0,
+  "forward_2026_reads": 0
+}
