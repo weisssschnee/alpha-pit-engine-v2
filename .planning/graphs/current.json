@@ -14,7 +14,9 @@
         "changed_paths": [
           ".planning/STATE.md",
           "docs/adr/0009-a-share-tradability-evidence-boundary.md",
+          "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
           "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+          "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
           "scripts/build_cn_matched_control_candidate_parallel_artifacts.py",
           "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
           "src/our_system_phase2/runtime/phase3bs_adaptive_ucb_cem_practice.py",
@@ -24,6 +26,7 @@
           "src/our_system_phase2/services/a_share_executable_replay.py",
           "src/our_system_phase2/services/a_share_tradability_guard.py",
           "src/our_system_phase2/services/candidate_schema.py",
+          "src/our_system_phase2/services/evaluation_access_guard.py",
           "src/our_system_phase2/services/matched_control_pairs.py",
           "src/our_system_phase2/services/search_feedback.py",
           "tests/test_a_share_executable_replay.py",
@@ -35,7 +38,7 @@
           "tests/test_search_feedback_semantics.py"
         ],
         "raw_sha": "edcf645c1c3fae96fbf773b9ecd17c652bfdfef6",
-        "repo_head": "a211009f7e619be3c322fef2a79f3d07b0b41c3d"
+        "repo_head": "ec489bce3971c421fd7fcc99f21331e0500870db"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -766,17 +769,17 @@
       "critical": true,
       "declared": true,
       "declared_evidence_type": "",
-      "evidence": "STATIC",
+      "evidence": "DECLARED",
       "forbidden": false,
       "id": "pair_to_evaluator",
       "lifecycle": "ACTIVE",
-      "line_style": "dashed",
+      "line_style": "dotted",
       "relation": "evaluates_whole_pair",
       "required": false,
       "source": "matched_control_pair_authority",
       "target": "candidate_parallel_evaluator",
       "validation": {
-        "checked_at": "2026-07-29T13:09:07.473680+00:00",
+        "checked_at": "2026-07-29T14:14:48.234809+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
         "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
@@ -800,17 +803,17 @@
       "critical": true,
       "declared": true,
       "declared_evidence_type": "",
-      "evidence": "STATIC",
+      "evidence": "DECLARED",
       "forbidden": false,
       "id": "pair_to_streaming_evaluator",
       "lifecycle": "ACTIVE",
-      "line_style": "dashed",
+      "line_style": "dotted",
       "relation": "evaluates_whole_pair_for_development_and_qualified_minute_session_sample",
       "required": false,
       "source": "matched_control_pair_authority",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-07-29T13:09:07.473680+00:00",
+        "checked_at": "2026-07-29T14:14:48.234809+00:00",
         "evidence_ref": "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
         "evidence_sha256": "0CD320DD013086FCE0D1E0555B8338843B4EF0C5AA67A7639F35893C87CA1D7E",
         "level": "PARTIAL",
@@ -898,10 +901,10 @@
       "color": "#2e7d32",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "Phase3CM input binding, a_share_tradability_guard, immutable checkpoint manifests and access receipts",
+        "enforced_by": "Phase3CM input binding, matched_control_pairs, evaluation_access_guard, immutable checkpoint manifests and access receipts",
         "evidence_ref": "",
         "id": "hybrid_full_coordinate_train_only",
-        "rule": "Hybrid proposals may receive predictive Phase3CM reports, but optimizer reward requires full-coordinate train pair outcomes plus complete A-share tradability replay proof under ADR 0009. Development scores alone cannot grant a COMPLETE optimizer observation, promotion or sealed-period access.",
+        "rule": "Hybrid proposals may receive development optimizer feedback only from full-coordinate Phase3CM train pair outcomes that pass the pair-native receipt and access guards. The resulting observation is DEVELOPMENT_PREDICTIVE_SCORE_ONLY and cannot grant finalist execution, promotion, economic claims or sealed-period access; A-share replay remains a separate finalist gate under ADR 0010.",
         "severity": "HARD",
         "type": "BOUNDARY"
       },
@@ -918,48 +921,48 @@
       "source": "cn_development_search_policy",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-07-29T13:13:46.269286+00:00",
-        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "897420ED8C2822615E26204DE5BACF6F445BA5985FABB275FB4A6135CB0E1474",
+        "checked_at": "2026-07-29T14:16:15.678204+00:00",
+        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a211009f7e619be3c322fef2a79f3d07b0b41c3d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       }
     },
     {
       "color": "#2e7d32",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "a_share_tradability_guard, optimizer observations, tell receipts and transcripts",
+        "enforced_by": "matched_control_pairs, evaluation_access_guard, optimizer observations, tell receipts and transcripts",
         "evidence_ref": "",
         "id": "hybrid_min_primary_and_matched_increment_reward",
-        "rule": "A Hybrid optimizer trial may COMPLETE only when both canonical pair-member A_SHARE_TRADABILITY_REPLAY_V1 receipts revalidate, the pair decision is READY, the primary decision is A_SHARE_EXECUTABLE_REWARD_READY, and search_score equals min(primary executable net daily Sortino, primary-minus-control executable net reward). Predictive Phase3CM scores remain diagnostics; missing proof terminally fails without reward and Uniform cannot enter observations or tells.",
+        "rule": "A Hybrid development trial may COMPLETE when the pair decision is PAIR_TRAIN_FEEDBACK_READY, the primary train decision is TRAIN_REWARD_FOLLOWUP_READY, immutable receipts and train-only guards pass, and search_score equals min(primary Phase3CM composite reward, primary-minus-control Phase3CM matched increment). Uniform cannot enter observations or tells; executable replay cannot mutate this reward and remains a separate finalist/economic gate.",
         "severity": "HARD",
         "type": "ADMISSION"
       },
       "critical": true,
       "declared": true,
       "declared_evidence_type": "",
-      "evidence": "STATIC",
+      "evidence": "DECLARED",
       "forbidden": false,
       "id": "matched_train_feedback_to_hybrid_development_search",
       "lifecycle": "ACTIVE",
-      "line_style": "dashed",
+      "line_style": "dotted",
       "relation": "supplies_train_only_search_score",
       "required": false,
       "source": "matched_train_feedback",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-07-29T13:13:46.269286+00:00",
-        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "897420ED8C2822615E26204DE5BACF6F445BA5985FABB275FB4A6135CB0E1474",
+        "checked_at": "2026-07-29T14:16:15.678204+00:00",
+        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a211009f7e619be3c322fef2a79f3d07b0b41c3d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       }
     },
     {
@@ -1000,34 +1003,34 @@
       "color": "#f9a825",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "phase3cn_pair_native_gate and a_share_tradability_guard",
+        "enforced_by": "phase3cn_pair_native_gate, matched_control_pairs and evaluation_access_guard",
         "evidence_ref": "",
         "id": "pair_native_ready_only",
-        "rule": "Phase3CN consumes only train-only pair-native READY rows whose primary decision is A_SHARE_EXECUTABLE_REWARD_READY and whose two canonical A-share replay receipts revalidate against member candidate IDs and exact identities. Predictive standalone decisions remain diagnostics; receipt and tradability blockers are hard admission gates.",
+        "rule": "Phase3CN consumes only train-only pair-native READY rows whose primary train decision is TRAIN_REWARD_FOLLOWUP_READY and whose immutable submission and pair receipts validate. The accepted reward is explicitly DEVELOPMENT_PREDICTIVE_SCORE_ONLY; missing A-share replay blocks finalist execution evidence but not this development feedback lane.",
         "severity": "HARD",
         "type": "ADMISSION"
       },
       "critical": true,
       "declared": true,
       "declared_evidence_type": "",
-      "evidence": "STATIC",
+      "evidence": "DECLARED",
       "forbidden": false,
       "id": "evaluator_to_feedback",
       "lifecycle": "EXPERIMENTAL",
-      "line_style": "dashed",
+      "line_style": "dotted",
       "relation": "supplies_pair_native_train_feedback",
       "required": false,
       "source": "candidate_parallel_evaluator",
       "target": "matched_train_feedback",
       "validation": {
-        "checked_at": "2026-07-29T13:13:46.269286+00:00",
-        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "897420ED8C2822615E26204DE5BACF6F445BA5985FABB275FB4A6135CB0E1474",
+        "checked_at": "2026-07-29T14:16:15.678204+00:00",
+        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a211009f7e619be3c322fef2a79f3d07b0b41c3d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       }
     },
     {
@@ -1363,7 +1366,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-29T13:15:58.857075+00:00",
+  "generated_at": "2026-07-29T14:19:07.981219+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -2934,8 +2937,8 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "sha256": "EA5612DF77699D2A0479467C7F3A3AD825EDE8353EF771BD464345D0EA94D269",
-        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19"
+        "sha256": "97DE8C82F9EBA4657DDB78691BF0BAE4DEB87ABFC96B32CA7D77E8141635147A",
+        "verified_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"
       },
       "color": "#2e7d32",
       "contracts": [
@@ -2953,7 +2956,7 @@
           "enforced_by": "optimizer_feedback_eligible and evaluation_access_guard",
           "evidence_ref": "",
           "id": "hybrid_optimizer_feedback_boundary",
-          "rule": "Uniform receives no Optuna trial or optimizer feedback. Hybrid observations and tells require both matched-pair members' canonical A-share executable replay receipts and use only min(primary executable net daily Sortino, matched executable net reward); predictive Phase3CM values remain diagnostics, and validation, holdout and 2026 cannot feed search, scheduling, archives or memory.",
+          "rule": "Uniform receives no Optuna trial or optimizer feedback. Hybrid observations and tells require full-coordinate pair-native train feedback and use only min(primary Phase3CM composite reward, primary-minus-control Phase3CM matched increment). Every observation remains DEVELOPMENT_PREDICTIVE_SCORE_ONLY and DEVELOPMENT_SEARCH_ONLY; A-share executable replay is a separate finalist/economic gate, while validation, holdout and 2026 cannot feed search, scheduling, archives or memory.",
           "severity": "HARD",
           "type": "BOUNDARY"
         },
@@ -2978,9 +2981,9 @@
       "paths": [
         "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
         "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
-        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md",
-        "docs/adr/0009-a-share-tradability-evidence-boundary.md"
+        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
@@ -2990,11 +2993,6 @@
         "docs_adr_0008_hybrid_tpe_availability_development_search_policy_consequences",
         "docs_adr_0008_hybrid_tpe_availability_development_search_policy_context",
         "docs_adr_0008_hybrid_tpe_availability_development_search_policy_decision",
-        "docs_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_consequences",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_context",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_decision",
         "src_our_system_phase2_runtime_cn_large_tpe_search_campaign",
         "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_allocate_checkpoint_asks",
         "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_ask_availability_aware_populations",
@@ -3077,14 +3075,14 @@
       "required": false,
       "semantic_role": "development_search_policy_authority",
       "validation": {
-        "checked_at": "2026-07-29T13:13:46.269286+00:00",
-        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "897420ED8C2822615E26204DE5BACF6F445BA5985FABB275FB4A6135CB0E1474",
+        "checked_at": "2026-07-29T14:19:07.981219+00:00",
+        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a211009f7e619be3c322fef2a79f3d07b0b41c3d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       },
       "visible_by_default": true
     },
@@ -3231,8 +3229,8 @@
       "authority": {
         "path": "src/our_system_phase2/services/matched_control_pairs.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "sha256": "0254776613D491EC74038CE0172CEBC131B7B7F8A2860319F691EE660ADC643F",
-        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19"
+        "sha256": "9817F11673E1896871EBAF68504DBAAE33A852F1D7AFE0732A50280153ED2FD9",
+        "verified_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"
       },
       "color": "#2e7d32",
       "contracts": [
@@ -3247,10 +3245,10 @@
         },
         {
           "bypass_forbidden": true,
-          "enforced_by": "matched_control_pairs and a_share_tradability_guard",
+          "enforced_by": "matched_control_pairs and evaluation_access_guard",
           "evidence_ref": "",
-          "id": "matched_executable_reward_only",
-          "rule": "A matched pair may authorize optimizer feedback only after both canonical A-share replay receipts revalidate and matched reward is primary-minus-control executable net reward; Phase3CM pair deltas remain predictive diagnostics.",
+          "id": "matched_development_reward_only",
+          "rule": "A matched pair may authorize development optimizer feedback only after full-coordinate pair evaluation, immutable submission and pair receipts, PAIR_TRAIN_FEEDBACK_READY and primary TRAIN_REWARD_FOLLOWUP_READY. The reward is the train-only primary-minus-control Phase3CM composite increment; A-share executable replay remains separate finalist/economic evidence.",
           "severity": "HARD",
           "type": "ADMISSION"
         }
@@ -3265,16 +3263,11 @@
       "owner": "",
       "paths": [
         "src/our_system_phase2/services/matched_control_pairs.py",
-        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "docs/adr/0009-a-share-tradability-evidence-boundary.md"
+        "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
-        "docs_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_consequences",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_context",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_decision",
         "matched_control_pair_authority",
         "src_our_system_phase2_services_matched_control_pairs",
         "src_our_system_phase2_services_matched_control_pairs_attach_pair_contract",
@@ -3308,14 +3301,14 @@
       "required": false,
       "semantic_role": "matched_pair_authority",
       "validation": {
-        "checked_at": "2026-07-29T13:13:46.269286+00:00",
-        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "897420ED8C2822615E26204DE5BACF6F445BA5985FABB275FB4A6135CB0E1474",
+        "checked_at": "2026-07-29T14:19:07.981219+00:00",
+        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a211009f7e619be3c322fef2a79f3d07b0b41c3d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       },
       "visible_by_default": true
     },
@@ -3358,8 +3351,8 @@
       "owner": "",
       "paths": [
         "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
-        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "docs/adr/0009-a-share-tradability-evidence-boundary.md"
+        "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
       ],
       "promotion_requirements": [
         "explicit search authorization",
@@ -3367,11 +3360,6 @@
       ],
       "raw_node_ids": [
         "candidate_parallel_evaluator",
-        "docs_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_consequences",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_context",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_decision",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_bootstrap_days",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_bounded",
@@ -3462,14 +3450,14 @@
       "required": false,
       "semantic_role": "development_predictive_evaluation_authority",
       "validation": {
-        "checked_at": "2026-07-29T13:15:04.826839+00:00",
-        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "897420ED8C2822615E26204DE5BACF6F445BA5985FABB275FB4A6135CB0E1474",
+        "checked_at": "2026-07-29T14:16:15.678204+00:00",
+        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a211009f7e619be3c322fef2a79f3d07b0b41c3d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       },
       "visible_by_default": true
     },
@@ -3494,10 +3482,10 @@
         },
         {
           "bypass_forbidden": true,
-          "enforced_by": "a_share_tradability_guard and ADR 0009",
+          "enforced_by": "matched_control_pairs, evaluation_access_guard, a_share_tradability_guard and ADR 0010",
           "evidence_ref": "",
           "id": "streaming_not_a_share_execution_authority",
-          "rule": "Phase3CM emits DEVELOPMENT_PREDICTIVE_SCORE_ONLY and cannot authorize optimizer reward, finalist eligibility, promotion or economic claims until immutable replay evidence proves execution clock, same-bar exclusion, T+1, limit-lock, suspension, complete fees and a promotion-grade universe.",
+          "rule": "Phase3CM emits DEVELOPMENT_PREDICTIVE_SCORE_ONLY. Its full-coordinate pair outcomes may enter development optimizer feedback only through the pair-native train gate; Phase3CM alone cannot authorize finalist execution, promotion or economic claims. Those claims still require separate immutable replay evidence for execution clock, same-bar exclusion, T+1, limit-lock, suspension, complete fees and a promotion-grade universe.",
           "severity": "HARD",
           "type": "BOUNDARY"
         },
@@ -3550,8 +3538,8 @@
         "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
         "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
         "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
-        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "docs/adr/0009-a-share-tradability-evidence-boundary.md",
+        "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "promotion_requirements": [
@@ -3560,11 +3548,6 @@
         "unchanged sealed-data and no-promotion boundaries"
       ],
       "raw_node_ids": [
-        "docs_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_consequences",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_context",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_decision",
         "reports_cn_matched_control_candidate_parallel_20260715_cn_matched_control_run_manifest_json",
         "runtime_run_plans_cn_core_pack_fixed_holdout_20260723_receipt",
         "runtime_run_plans_cn_core_pack_large_development_20260723_receipt",
@@ -3704,14 +3687,14 @@
       "required": false,
       "semantic_role": "active_development_evaluation_implementation",
       "validation": {
-        "checked_at": "2026-07-29T13:13:46.269286+00:00",
-        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "897420ED8C2822615E26204DE5BACF6F445BA5985FABB275FB4A6135CB0E1474",
+        "checked_at": "2026-07-29T14:16:15.678204+00:00",
+        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a211009f7e619be3c322fef2a79f3d07b0b41c3d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       },
       "visible_by_default": true
     },
@@ -3720,8 +3703,8 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "sha256": "87939C6B0520BDDDB21870AC4653F37FFDB4446B2722670310708869720F455E",
-        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19"
+        "sha256": "B59C87D3B9ECD4D3B108B24D15F75B8C37C099BC976FEC3243C9747832BA7867",
+        "verified_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"
       },
       "color": "#f9a825",
       "contracts": [
@@ -3730,7 +3713,7 @@
           "enforced_by": "phase3cn_receipt_gate",
           "evidence_ref": "",
           "id": "matched_train_only",
-          "rule": "Feedback accepts only PAIR_TRAIN_FEEDBACK_READY rows after submission and pair receipts validate, both canonical A_SHARE_TRADABILITY_REPLAY_V1 member receipts revalidate against candidate ID and exact identity, and the primary decision is A_SHARE_EXECUTABLE_REWARD_READY.",
+          "rule": "Development feedback accepts only PAIR_TRAIN_FEEDBACK_READY rows after immutable submission and pair receipts validate, the primary decision is TRAIN_REWARD_FOLLOWUP_READY, the reward source is the train-only Phase3CM matched increment, and the row is DEVELOPMENT_SEARCH_ONLY. Executable replay is not required here and remains a separate finalist/economic gate.",
           "severity": "HARD",
           "type": "BOUNDARY"
         }
@@ -3740,21 +3723,16 @@
       "expires_at": "",
       "id": "matched_train_feedback",
       "kind": "feedback",
-      "label": "Pair-native feedback gate with tradability proof",
+      "label": "Pair-native development feedback gate",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
         "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
-        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "docs/adr/0009-a-share-tradability-evidence-boundary.md"
+        "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
-        "docs_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_adr_0009_a_share_tradability_evidence_boundary",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_consequences",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_context",
-        "docs_adr_0009_a_share_tradability_evidence_boundary_decision",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_arm_score_table",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_assert_raw_phase3cm_provenance",
@@ -3784,14 +3762,14 @@
       "required": false,
       "semantic_role": "train_feedback_authority",
       "validation": {
-        "checked_at": "2026-07-29T13:15:58.857075+00:00",
-        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
-        "evidence_sha256": "897420ED8C2822615E26204DE5BACF6F445BA5985FABB275FB4A6135CB0E1474",
+        "checked_at": "2026-07-29T14:19:07.981219+00:00",
+        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a211009f7e619be3c322fef2a79f3d07b0b41c3d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       },
       "visible_by_default": true
     },
@@ -4184,7 +4162,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "9D0164F2407CE3C0414AF25A98A4990AEAACB5B7B76E281B50619B17E929591E"
+    "sha256": "F32BFD4B50D04DEF31566E4690D79BF32DD3FCBBE61CA15320A1B582BBB1FB8D"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -4201,7 +4179,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "DC7B7A6DBCF12B96BB4817A6A4D753A047E6659A12C5E98AFF7FE9213F3CB428"
   },
-  "repo_head": "a211009f7e619be3c322fef2a79f3d07b0b41c3d",
+  "repo_head": "ec489bce3971c421fd7fcc99f21331e0500870db",
   "schema_version": 1,
   "status": "STALE",
   "strict_mode": false,

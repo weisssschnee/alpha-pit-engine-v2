@@ -501,7 +501,7 @@
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       }
     },
     {
@@ -607,7 +607,7 @@
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       }
     },
     {
@@ -652,7 +652,7 @@
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       },
       "promotion_requirements": ["explicit search authorization", "frozen candidate pack"]
     },
@@ -744,7 +744,7 @@
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       },
       "promotion_requirements": [
         "separate strict Stage A authorization",
@@ -774,7 +774,7 @@
         "path": "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
         "verified_sha": "ac299246d4390eb256e42f5b472db203ba315e2d",
-        "sha256": "6a0a66ab711ecf333be0c31a344a96efc18f86c27c4a4d0fe9e6563f5633b33f"
+        "sha256": "b59c87d3b9ecd4d3b108b24d15f75b8c37c099bc976fec3243c9747832ba7867"
       },
       "contracts": [
         {
@@ -791,7 +791,7 @@
         "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"
+        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
       }
     },
     {
@@ -1158,7 +1158,7 @@
       "required": false,
       "critical": true,
       "contract": {"id": "hybrid_full_coordinate_train_only", "type": "BOUNDARY", "rule": "Hybrid proposals may receive development optimizer feedback only from full-coordinate Phase3CM train pair outcomes that pass the pair-native receipt and access guards. The resulting observation is DEVELOPMENT_PREDICTIVE_SCORE_ONLY and cannot grant finalist execution, promotion, economic claims or sealed-period access; A-share replay remains a separate finalist gate under ADR 0010.", "severity": "HARD", "enforced_by": "Phase3CM input binding, matched_control_pairs, evaluation_access_guard, immutable checkpoint manifests and access receipts", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json", "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb", "verified_at_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json", "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb", "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"}
     },
     {
       "id": "matched_train_feedback_to_hybrid_development_search",
@@ -1169,7 +1169,7 @@
       "required": false,
       "critical": true,
       "contract": {"id": "hybrid_min_primary_and_matched_increment_reward", "type": "ADMISSION", "rule": "A Hybrid development trial may COMPLETE when the pair decision is PAIR_TRAIN_FEEDBACK_READY, the primary train decision is TRAIN_REWARD_FOLLOWUP_READY, immutable receipts and train-only guards pass, and search_score equals min(primary Phase3CM composite reward, primary-minus-control Phase3CM matched increment). Uniform cannot enter observations or tells; executable replay cannot mutate this reward and remains a separate finalist/economic gate.", "severity": "HARD", "enforced_by": "matched_control_pairs, evaluation_access_guard, optimizer observations, tell receipts and transcripts", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json", "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb", "verified_at_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json", "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb", "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"}
     },
     {
       "id": "stage_a_route_eligibility_to_streaming_evaluator",
@@ -1189,7 +1189,7 @@
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
       "contract": {"id": "pair_native_ready_only", "type": "ADMISSION", "rule": "Phase3CN consumes only train-only pair-native READY rows whose primary train decision is TRAIN_REWARD_FOLLOWUP_READY and whose immutable submission and pair receipts validate. The accepted reward is explicitly DEVELOPMENT_PREDICTIVE_SCORE_ONLY; missing A-share replay blocks finalist execution evidence but not this development feedback lane.", "severity": "HARD", "enforced_by": "phase3cn_pair_native_gate, matched_control_pairs and evaluation_access_guard", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json", "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb", "verified_at_sha": "ac299246d4390eb256e42f5b472db203ba315e2d"}
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json", "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb", "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"}
     },
     {"id": "plate_to_lanes_forbidden", "source": "plate_industry_pit_route", "target": "hypothesis_lanes", "relation": "unresolved_pit_membership", "lifecycle": "FORBIDDEN", "forbidden": true},
     {
