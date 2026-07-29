@@ -17,7 +17,13 @@
           "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
           "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
           "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+          "runtime/run_plans/cn_finalist_input_authority_64_20260730_receipt.json",
+          "runtime/run_plans/cn_productive_keep_review_64_20260729_receipt.json",
           "scripts/build_cn_matched_control_candidate_parallel_artifacts.py",
+          "scripts/freeze_cn_finalist_input_authority.py",
+          "scripts/freeze_cn_productive_keep_review_cohort.py",
+          "scripts/verify_cn_finalist_input_authority.py",
+          "scripts/verify_cn_productive_keep_review_cohort.py",
           "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
           "src/our_system_phase2/runtime/phase3bs_adaptive_ucb_cem_practice.py",
           "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
@@ -33,12 +39,14 @@
           "tests/test_a_share_tradability_guard.py",
           "tests/test_cn_large_tpe_search_campaign.py",
           "tests/test_evaluation_access_guard.py",
+          "tests/test_freeze_cn_finalist_input_authority.py",
+          "tests/test_freeze_cn_productive_keep_review_cohort.py",
           "tests/test_matched_control_candidate_parallel.py",
           "tests/test_pair_native_feedback_all_routes.py",
           "tests/test_search_feedback_semantics.py"
         ],
         "raw_sha": "edcf645c1c3fae96fbf773b9ecd17c652bfdfef6",
-        "repo_head": "ec489bce3971c421fd7fcc99f21331e0500870db"
+        "repo_head": "da40c9a3bcdea19bc0814cdb887202b8c1b5c353"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -1366,7 +1374,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-29T14:19:07.981219+00:00",
+  "generated_at": "2026-07-29T17:03:49.655031+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -3485,7 +3493,7 @@
           "enforced_by": "matched_control_pairs, evaluation_access_guard, a_share_tradability_guard and ADR 0010",
           "evidence_ref": "",
           "id": "streaming_not_a_share_execution_authority",
-          "rule": "Phase3CM emits DEVELOPMENT_PREDICTIVE_SCORE_ONLY. Its full-coordinate pair outcomes may enter development optimizer feedback only through the pair-native train gate; Phase3CM alone cannot authorize finalist execution, promotion or economic claims. Those claims still require separate immutable replay evidence for execution clock, same-bar exclusion, T+1, limit-lock, suspension, complete fees and a promotion-grade universe.",
+          "rule": "Phase3CM emits DEVELOPMENT_PREDICTIVE_SCORE_ONLY. Its full-coordinate pair outcomes may enter development optimizer feedback only through the pair-native train gate; Phase3CM alone cannot authorize finalist execution, promotion or economic claims. Those claims still require separate immutable replay evidence for execution clock, same-bar exclusion, T+1, limit-lock, suspension, complete fees, a promotion-grade universe, corporate actions and terminal liquidation. The 2026-07-30 zero-financial binding is HOLD until every required finalist input is materially bound.",
           "severity": "HARD",
           "type": "BOUNDARY"
         },
@@ -3539,6 +3547,7 @@
         "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
         "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
         "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "runtime/run_plans/cn_finalist_input_authority_64_20260730_receipt.json",
         "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
@@ -3687,7 +3696,7 @@
       "required": false,
       "semantic_role": "active_development_evaluation_implementation",
       "validation": {
-        "checked_at": "2026-07-29T14:16:15.678204+00:00",
+        "checked_at": "2026-07-29T17:03:49.655031+00:00",
         "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
@@ -4162,7 +4171,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "F32BFD4B50D04DEF31566E4690D79BF32DD3FCBBE61CA15320A1B582BBB1FB8D"
+    "sha256": "CF8E88CA26C33B6D0091F425A782E47663D17455265234B6DEB48EB524407478"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -4179,7 +4188,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "DC7B7A6DBCF12B96BB4817A6A4D753A047E6659A12C5E98AFF7FE9213F3CB428"
   },
-  "repo_head": "ec489bce3971c421fd7fcc99f21331e0500870db",
+  "repo_head": "da40c9a3bcdea19bc0814cdb887202b8c1b5c353",
   "schema_version": 1,
   "status": "STALE",
   "strict_mode": false,
