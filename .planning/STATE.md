@@ -884,32 +884,60 @@ remains unchanged. The compact receipt is
   zero-financial preflight passed with 39,303 fresh exact identities against
   7,990 required at the frozen 1.20 cap margins; financial, validation,
   holdout and 2026 reads were zero.
-- A separate single-task execution authority was then formed. Exactly one 77o
-  task, `lanjob_20260729_102437_32fddd` /
-  `ChengboLanRemote_lanjob_20260729_102437_32fddd`, is running at
+- The separately authorized 6,144-ask bounded tranche is now closed on 77o.
+  Task `lanjob_20260729_102437_32fddd` /
+  `ChengboLanRemote_lanjob_20260729_102437_32fddd` exited 0 at
   `D:\ChengboRemote\runtime\cn_hybrid_bounded_large_tranche_20260729_1030_6288d71_6144`
   from pushed/deployed SHA `6288d715429e6dc84af5e89ac3f73d3d0cebc21b`.
-  No automatic validation, successor tranche, unlimited search or 20,000
-  target is authorized. Productive behavior-family unique count, productive
-  exact/family ratio, top-10 family concentration, new productive families per
-  checkpoint and productive yield per checkpoint are reporting diagnostics,
-  not runtime stop gates. Frozen-contract evidence remains in
-  `runtime/run_plans/cn_hybrid_bounded_large_tranche_p07_20260729_receipt.json`;
-  the preflight receipt is
+  All eight checkpoint payload hashes, 192/192 checkpoint artifacts and 16/16
+  root artifacts independently matched; the checkpoint manifest chain also
+  matched from `GENESIS` through `checkpoint_008`.
+- The fixed 8x768 Hybrid-only schedule completed exactly 6,144 formal asks,
+  5,378 evaluated pairs and 2,676 productive candidates. There were zero
+  primary-exact, pair-ID or nonempty behavior-signature duplicates, zero
+  pair-search-score or optimizer-observation reward mismatches, and every
+  productive candidate mapped to a distinct productive behavior family.
+  Cumulative top-10 productive-family concentration was only 0.3737%.
+  The two repeated empty behavior signatures were behavior-unresolved blocked
+  pairs, not resolved behavior duplicates.
+- Route productive/formal yields were Slow Temporal 48.62%, Slow
+  Cross-sectional 30.73%, Market Regime 1.56%, First-N 1.56% and Disclosure
+  0%. Evaluated/formal yields were 91.20%, 95.83%, 60.94%, 59.38% and 45.57%
+  respectively. Slow Temporal median/p10 search score was 0.00871/-0.12759;
+  Slow Cross-sectional was -0.01215/-0.29075; Market was
+  -0.51944/-1.36581; First-N was -0.34693/-0.60902; Disclosure was
+  -0.02325/-0.32328.
+- Task-wall throughput was 2,520.90 formal asks, 2,206.61 evaluated pairs and
+  1,097.97 productive candidates per hour. Productive yield by checkpoint was
+  31.90%, 30.86%, 50.26%, 52.60%, 49.09%, 46.48%, 44.40% and 42.84%.
+  New productive families equalled productive candidates in every checkpoint,
+  so no family-information collapse occurred even as late-checkpoint yield
+  declined. Runtime gates passed with 32 compute threads, pair batch 12,
+  long-only 5 bps horizons 1/5/15/30, cache peak below 1.0 GB, minimum free
+  memory 68.99 GB and zero validation/holdout/2026 reads.
+- Campaign root status is `CAMPAIGN_CLOSED`; automatic validation, promotion,
+  a successor scale tranche, unlimited search and a 20,000 target remain
+  forbidden. The generated `train_finalists.parquet` is intentionally empty:
+  the next phase must deduplicate and rank the 2,676 productive train
+  candidates by behavior family and train stability before freezing a small
+  finalist set. The compact closure receipt is
+  `runtime/run_plans/cn_hybrid_bounded_large_tranche_20260729_receipt.json`.
+  Frozen-contract and preflight evidence remains in
+  `runtime/run_plans/cn_hybrid_bounded_large_tranche_p07_20260729_receipt.json`
+  and
   `runtime/run_plans/cn_hybrid_bounded_large_tranche_p02_preflight_20260729_receipt.json`.
 
 ## Next action
 
-Monitor only the single running 6,144-ask task above and independently verify
-each immutable checkpoint. Keep the fixed 672/24/16/8/48 route mix for all
-eight checkpoints; do not adapt routes inside the tranche or feed
-candidate-level validation into reward, tells, scheduler or memory. Do not
-rerun the Medium, its report-only validation, the completed 3,072-ask
-Hybrid-only tranche, or earlier availability-agency canaries. After this
-tranche closes, move to behavior-family deduplication, train stability
-finalist selection, a small frozen finalist set and one report-only validation.
-Do not automatically authorize another scale tranche, an unlimited search or
-a 20,000-target campaign.
+Do not run another scale-search tranche. Begin a bounded finalist phase over
+the closed 2,676 productive train candidates: behavior-family deduplication,
+train-stability ranking, and freezing a small finalist set under an explicit
+non-validation contract. Only after that set is immutable may one report-only
+validation be separately authorized. Candidate-level validation must not enter
+reward, tells, scheduler or persistent memory. Do not rerun the Medium, its
+report-only validation, either completed Hybrid-only tranche or earlier
+availability-agency canaries. Unlimited search and a 20,000-target campaign
+remain unauthorized.
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
 qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the

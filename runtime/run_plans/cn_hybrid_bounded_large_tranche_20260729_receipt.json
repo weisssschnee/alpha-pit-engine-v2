@@ -1,0 +1,238 @@
+{
+  "schema_version": "cn_hybrid_bounded_large_tranche_receipt_v1",
+  "status": "CLOSED_VERIFIED_TRANSITION_TO_FINALISTS",
+  "task": {
+    "task_id": "lanjob_20260729_102437_32fddd",
+    "scheduled_task": "ChengboLanRemote_lanjob_20260729_102437_32fddd",
+    "campaign_root": "D:\\ChengboRemote\\runtime\\cn_hybrid_bounded_large_tranche_20260729_1030_6288d71_6144",
+    "repo_sha": "6288d715429e6dc84af5e89ac3f73d3d0cebc21b",
+    "exit_code": 0,
+    "started_at": "2026-07-29T10:25:04",
+    "ended_at": "2026-07-29T12:51:18"
+  },
+  "closure_hashes": {
+    "deployment_manifest_sha256": "019551c6e8513fec0834aacdf736667f913feafe5f50a23f814a5fbdfc0348d9",
+    "run_manifest_sha256": "f4ff0311150beb7e4ee497480e7568e3f5631686e5d4c78d7ad0d8a8a031a8d0",
+    "train_complete_manifest_sha256": "4517159200ac6c00d1920d6cfc133ca38d7df98a1cfc950a13cfcb4c0348728b",
+    "final_decision_sha256": "6e9ce37d3bd6e82c41427a9c37e33705e67ac600774b408d7d66a672d3902cf9",
+    "campaign_process_exit_sha256": "7805567702953ccfb8357aeaf3818a5df01727127be3b8814b979fa55468f8bd"
+  },
+  "checkpoint_manifests": [
+    {
+      "checkpoint": "checkpoint_001",
+      "file_sha256": "96bc7e1ef3015c4baff3e5ccc77c8203f5397b1ff493367128067041c4f8d1de",
+      "payload_sha256": "6bad4528e3c381bfe745e4313a6af22694111839e1efd682c9413099038cdff0"
+    },
+    {
+      "checkpoint": "checkpoint_002",
+      "file_sha256": "d4c63e3c57e932f7443920312d9da7b75741df10b0652bc5268079e1e6375a19",
+      "payload_sha256": "89778b2769e86c73546fe3fba7b42a67ae57bad44365700f4c6b71fcf05ff1ef"
+    },
+    {
+      "checkpoint": "checkpoint_003",
+      "file_sha256": "c47d67ce102ca28f6c6cd8f45349e22bd346393d05949f3d503471d18d061e14",
+      "payload_sha256": "b05282ff5a42c66c5ddd294a2bc0ab59a54b80bd8c876992e58e570c27e7e3a9"
+    },
+    {
+      "checkpoint": "checkpoint_004",
+      "file_sha256": "a4dfd8d212dd8bf222b1d4bea8488204764c9d5dce491a070f09afc5b1d47fdf",
+      "payload_sha256": "d13fac8a1e54afa4056d9133c3e87bc9a6e362c05e223385d5ed760379cadb1b"
+    },
+    {
+      "checkpoint": "checkpoint_005",
+      "file_sha256": "84df1e2851b22dfc0056ef8dc09ccee73ce5beeec37fcd4e31b782df388f919c",
+      "payload_sha256": "b00e7ce1ad9d51ef2ef6fb34d13b1add5d5c6c836afbd13dae43ce3c0e2c675c"
+    },
+    {
+      "checkpoint": "checkpoint_006",
+      "file_sha256": "431fb57332876523647b78d9824b8f575b169d041161a9403dc2f3b3aa8bc4b2",
+      "payload_sha256": "211840560c1288c7c69550966fcb4a508b4fd6a253c6000adb22b01110ac0122"
+    },
+    {
+      "checkpoint": "checkpoint_007",
+      "file_sha256": "8c8ca580e6799de2f103647eaa56315cee751455483fd607c109ca7f40400bf8",
+      "payload_sha256": "7bb1a579467d91fdcd1a6d6dc1e79be789bc918e996276fe1047a9a03b488406"
+    },
+    {
+      "checkpoint": "checkpoint_008",
+      "file_sha256": "574d9593ae997d6f0384a9e3eabcaeb1872967646ea2eb5e82c209219c5515af",
+      "payload_sha256": "184c7484219c7cd5121a468b629eed5e35e93b53873ae036a34cf658650ce48e"
+    }
+  ],
+  "verification": {
+    "checkpoint_manifest_payload_hashes_match": true,
+    "checkpoint_declared_artifacts_verified": 192,
+    "checkpoint_artifact_mismatches": 0,
+    "prior_manifest_chain_match": true,
+    "root_declared_artifacts_verified": 16,
+    "root_artifact_mismatches": 0,
+    "fixed_route_schedule_match": true,
+    "hybrid_only_metadata_match": true,
+    "optimizer_ask_observation_transcript_sets_match": true,
+    "tell_receipts_match": true,
+    "pair_search_score_mismatches": 0,
+    "optimizer_observation_reward_mismatches": 0,
+    "primary_exact_duplicates": 0,
+    "pair_id_duplicates": 0,
+    "nonempty_behavior_signature_duplicates": 0,
+    "productive_definition_mismatches": 0,
+    "compute_threads": 32,
+    "pair_batch_size": 12,
+    "portfolio_mode": "long_only_top",
+    "cost_bps": 5.0,
+    "horizons": [
+      1,
+      5,
+      15,
+      30
+    ],
+    "maximum_evaluator_cache_peak_bytes": 991126960,
+    "minimum_free_memory_bytes": 68992483328,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "promotion": "FORBIDDEN"
+  },
+  "totals": {
+    "formal_asks": 6144,
+    "evaluated": 5378,
+    "productive": 2676,
+    "productive_behavior_family_unique": 2676,
+    "productive_exact_per_behavior_family": 1.0,
+    "top_10_productive_family_concentration": 0.0037369207772795215,
+    "formal_asks_per_wall_hour": 2520.902666970595,
+    "evaluated_per_wall_hour": 2206.610439936175,
+    "productive_per_wall_hour": 1097.9712787782084,
+    "score_median": 0.003952320000000002,
+    "score_p10": -0.150421357
+  },
+  "route_metrics": {
+    "SLOW_TEMPORAL_CHANGE": {
+      "formal_asks": 5376,
+      "evaluated": 4903,
+      "evaluated_yield": 0.9120163690476191,
+      "productive": 2614,
+      "productive_per_formal_ask": 0.48623511904761907,
+      "score_median": 0.008712479999999967,
+      "score_p10": -0.12758537399999997,
+      "productive_behavior_family_unique": 2614,
+      "top_10_productive_family_concentration": 0.0038255547054322878
+    },
+    "SLOW_CROSS_SECTIONAL_LEVEL": {
+      "formal_asks": 192,
+      "evaluated": 184,
+      "evaluated_yield": 0.9583333333333334,
+      "productive": 59,
+      "productive_per_formal_ask": 0.3072916666666667,
+      "score_median": -0.012150245000000023,
+      "score_p10": -0.290749953,
+      "productive_behavior_family_unique": 59,
+      "top_10_productive_family_concentration": 0.1694915254237288
+    },
+    "MARKET_REGIME_CONDITION": {
+      "formal_asks": 128,
+      "evaluated": 78,
+      "evaluated_yield": 0.609375,
+      "productive": 2,
+      "productive_per_formal_ask": 0.015625,
+      "score_median": -0.519438385,
+      "score_p10": -1.365807596,
+      "productive_behavior_family_unique": 2,
+      "top_10_productive_family_concentration": 1.0
+    },
+    "FIRSTN_PATH": {
+      "formal_asks": 64,
+      "evaluated": 38,
+      "evaluated_yield": 0.59375,
+      "productive": 1,
+      "productive_per_formal_ask": 0.015625,
+      "score_median": -0.346932035,
+      "score_p10": -0.609020684,
+      "productive_behavior_family_unique": 1,
+      "top_10_productive_family_concentration": 1.0
+    },
+    "DISCLOSURE_EVENT": {
+      "formal_asks": 384,
+      "evaluated": 175,
+      "evaluated_yield": 0.4557291666666667,
+      "productive": 0,
+      "productive_per_formal_ask": 0.0,
+      "score_median": -0.02324968999999999,
+      "score_p10": -0.323280488,
+      "productive_behavior_family_unique": 0,
+      "top_10_productive_family_concentration": 0.0
+    }
+  },
+  "checkpoint_productive_family_trends": [
+    {
+      "checkpoint": "checkpoint_001",
+      "productive": 245,
+      "new_productive_families": 245,
+      "productive_yield": 0.3190104166666667,
+      "top_10_family_concentration": 0.04081632653061224
+    },
+    {
+      "checkpoint": "checkpoint_002",
+      "productive": 237,
+      "new_productive_families": 237,
+      "productive_yield": 0.30859375,
+      "top_10_family_concentration": 0.04219409282700422
+    },
+    {
+      "checkpoint": "checkpoint_003",
+      "productive": 386,
+      "new_productive_families": 386,
+      "productive_yield": 0.5026041666666666,
+      "top_10_family_concentration": 0.025906735751295335
+    },
+    {
+      "checkpoint": "checkpoint_004",
+      "productive": 404,
+      "new_productive_families": 404,
+      "productive_yield": 0.5260416666666666,
+      "top_10_family_concentration": 0.024752475247524754
+    },
+    {
+      "checkpoint": "checkpoint_005",
+      "productive": 377,
+      "new_productive_families": 377,
+      "productive_yield": 0.4908854166666667,
+      "top_10_family_concentration": 0.026525198938992044
+    },
+    {
+      "checkpoint": "checkpoint_006",
+      "productive": 357,
+      "new_productive_families": 357,
+      "productive_yield": 0.46484375,
+      "top_10_family_concentration": 0.028011204481792718
+    },
+    {
+      "checkpoint": "checkpoint_007",
+      "productive": 341,
+      "new_productive_families": 341,
+      "productive_yield": 0.4440104166666667,
+      "top_10_family_concentration": 0.02932551319648094
+    },
+    {
+      "checkpoint": "checkpoint_008",
+      "productive": 329,
+      "new_productive_families": 329,
+      "productive_yield": 0.4283854166666667,
+      "top_10_family_concentration": 0.030395136778115502
+    }
+  ],
+  "decision": {
+    "scale_candidate_pool_expansion": "COMPLETE",
+    "automatic_validation": "FORBIDDEN_NOT_RUN",
+    "successor_scale_tranche": "NOT_AUTHORIZED",
+    "unlimited_or_20k_search": "NOT_AUTHORIZED",
+    "next_phase": "BEHAVIOR_FAMILY_DEDUPLICATION_AND_TRAIN_STABILITY_FINALIST_SELECTION",
+    "train_finalists_at_campaign_closure": 0,
+    "required_sequence": [
+      "behavior-family deduplication",
+      "train stability finalist selection",
+      "freeze a small finalist set",
+      "one report-only validation"
+    ]
+  }
+}
