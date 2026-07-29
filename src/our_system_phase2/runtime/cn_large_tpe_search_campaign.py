@@ -104,6 +104,7 @@ HYBRID_ONLY_TRANCHE_PROFILE = "cn_hybrid_only_tranche_v1"
 HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE = (
     "cn_hybrid_bounded_large_tranche_v1"
 )
+WINNER_GUIDED_LARGE_SEARCH_PROFILE = "cn_winner_guided_large_search_v1"
 ROUTE_EVALUATED_TARGETS = {
     "SLOW_TEMPORAL_CHANGE": 14_000,
     "FIRSTN_PATH": 1_300,
@@ -216,9 +217,30 @@ HYBRID_BOUNDED_LARGE_TRANCHE_FLEXIBLE_ALLOCATION = {
 HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_CHECKPOINTS = 8
 HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_RAW_ASKS = 6_144
 HYBRID_BOUNDED_LARGE_TRANCHE_MAXIMUM_WALL_SECONDS = 24 * 60 * 60
+WINNER_GUIDED_LARGE_SEARCH_ROUTE_MIX = {
+    "SLOW_TEMPORAL_CHANGE": 1_520,
+    "FIRSTN_PATH": 12,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 4,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0,
+}
+WINNER_GUIDED_LARGE_SEARCH_ROUTE_CAPS = {
+    route_id: count * 8
+    for route_id, count in WINNER_GUIDED_LARGE_SEARCH_ROUTE_MIX.items()
+}
+WINNER_GUIDED_LARGE_SEARCH_COVERAGE_FLOORS = dict(
+    WINNER_GUIDED_LARGE_SEARCH_ROUTE_CAPS
+)
+WINNER_GUIDED_LARGE_SEARCH_FLEXIBLE_ALLOCATION = {
+    route_id: 0 for route_id in ROUTES
+}
+WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_CHECKPOINTS = 8
+WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_RAW_ASKS = 12_288
+WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_WALL_SECONDS = 36 * 60 * 60
 HYBRID_TRANCHE_PROFILES = (
     HYBRID_ONLY_TRANCHE_PROFILE,
     HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE,
+    WINNER_GUIDED_LARGE_SEARCH_PROFILE,
 )
 
 
@@ -305,6 +327,42 @@ def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
                 route_id: int(math.ceil(count * FRESH_EXACT_MARGIN))
                 for route_id, count in (
                     HYBRID_BOUNDED_LARGE_TRANCHE_ROUTE_CAPS.items()
+                )
+            },
+        }
+    if str(profile) == WINNER_GUIDED_LARGE_SEARCH_PROFILE:
+        return {
+            "campaign_profile": WINNER_GUIDED_LARGE_SEARCH_PROFILE,
+            "maximum_checkpoints": (
+                WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_CHECKPOINTS
+            ),
+            "asks_per_checkpoint": sum(
+                WINNER_GUIDED_LARGE_SEARCH_ROUTE_MIX.values()
+            ),
+            "maximum_raw_asks": (
+                WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_RAW_ASKS
+            ),
+            "maximum_wall_seconds": (
+                WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_WALL_SECONDS
+            ),
+            "completion_mode": "FIXED_FORMAL_ASK_TRANCHE",
+            "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+            "fixed_route_mix": dict(
+                WINNER_GUIDED_LARGE_SEARCH_ROUTE_MIX
+            ),
+            "coverage_floors": dict(
+                WINNER_GUIDED_LARGE_SEARCH_COVERAGE_FLOORS
+            ),
+            "route_formal_ask_caps": dict(
+                WINNER_GUIDED_LARGE_SEARCH_ROUTE_CAPS
+            ),
+            "flexible_allocation": dict(
+                WINNER_GUIDED_LARGE_SEARCH_FLEXIBLE_ALLOCATION
+            ),
+            "minimum_required_fresh_exact_by_route": {
+                route_id: int(math.ceil(count * FRESH_EXACT_MARGIN))
+                for route_id, count in (
+                    WINNER_GUIDED_LARGE_SEARCH_ROUTE_CAPS.items()
                 )
             },
         }
@@ -1080,6 +1138,7 @@ def _authorization_binding(
     candidate_archive: Path,
     behavior_archive: Path,
     history_manifest: Path,
+    winner_structural_guide: Path | None,
     seed_base: int,
     active_threads: int,
     session_threads: int,
@@ -1233,6 +1292,32 @@ def _authorization_binding(
             ),
             "unlimited_or_20k_search_authorized": False,
         }
+        if profile == WINNER_GUIDED_LARGE_SEARCH_PROFILE:
+            if winner_structural_guide is None:
+                raise RuntimeError(
+                    "WINNER_GUIDED_SEARCH_REQUIRES_STRUCTURAL_GUIDE"
+                )
+            guide = json.loads(
+                winner_structural_guide.read_text(encoding="utf-8-sig")
+            )
+            expected.update(
+                {
+                    "winner_guidance_mode": (
+                        "FROZEN_WINNER_SKELETON_LANES_FRESH_TPE"
+                    ),
+                    "winner_source_selection_payload_sha256": (
+                        "5ab6dbdf374d4867cf197b254cf6672d342bed54436bf153a551ae65867a3815"
+                    ),
+                    "winner_structural_guide_sha256": _sha256(
+                        winner_structural_guide
+                    ),
+                    "winner_structural_skeletons": dict(
+                        guide.get("allowed_skeletons_by_route") or {}
+                    ),
+                    "cross_campaign_optimizer_state_reused": False,
+                    "cross_campaign_reward_rows_imported": 0,
+                }
+            )
     else:
         expected = {
             **expected_common,
@@ -1278,6 +1363,38 @@ def _authorization_binding(
         != _sha256(history_manifest).lower()
     ):
         drift.append("historical_snapshot_authorization_hashes")
+    if profile == WINNER_GUIDED_LARGE_SEARCH_PROFILE:
+        if winner_structural_guide is None:
+            drift.append("winner_structural_guide")
+        else:
+            guide = json.loads(
+                winner_structural_guide.read_text(encoding="utf-8-sig")
+            )
+            if (
+                str(guide.get("status") or "")
+                != "FROZEN_DEVELOPMENT_WINNER_STRUCTURES"
+                or str(
+                    guide.get("source_selection_payload_sha256") or ""
+                )
+                != str(
+                    expected[
+                        "winner_source_selection_payload_sha256"
+                    ]
+                )
+                or dict(
+                    guide.get("allowed_skeletons_by_route") or {}
+                )
+                != dict(expected["winner_structural_skeletons"])
+                or str(
+                    (
+                        manifest.get("winner_structural_guide")
+                        or {}
+                    ).get("sha256")
+                    or ""
+                ).lower()
+                != _sha256(winner_structural_guide).lower()
+            ):
+                drift.append("winner_structural_guide")
     if drift:
         raise RuntimeError(
             "LARGE_TPE_CAMPAIGN_AUTHORITY_MISMATCH:"
@@ -1296,7 +1413,12 @@ def _authorization_binding(
                         "HYBRID_BOUNDED_LARGE_TRANCHE_AUTHORIZED"
                         if profile
                         == HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE
-                        else "HYBRID_ONLY_TRANCHE_AUTHORIZED"
+                        else (
+                            "WINNER_GUIDED_LARGE_SEARCH_AUTHORIZED"
+                            if profile
+                            == WINNER_GUIDED_LARGE_SEARCH_PROFILE
+                            else "HYBRID_ONLY_TRANCHE_AUTHORIZED"
+                        )
                     )
                     if _is_hybrid_tranche_profile(profile)
                     else "FIVE_DIGIT_TRAIN_SEARCH_AUTHORIZED"
@@ -1307,6 +1429,11 @@ def _authorization_binding(
         "historical_candidate_archive": _artifact(candidate_archive),
         "historical_behavior_archive": _artifact(behavior_archive),
         "historical_archive_manifest": _artifact(history_manifest),
+        "winner_structural_guide": (
+            _artifact(winner_structural_guide)
+            if winner_structural_guide is not None
+            else None
+        ),
         "frozen": expected,
     }
 
@@ -1346,6 +1473,9 @@ def _freeze_gene_lanes(
     output_root: Path,
     generator: RegistryDrivenGenerator,
     input_hashes: Mapping[str, str],
+    allowed_skeletons_by_route: (
+        Mapping[str, Sequence[str]] | None
+    ) = None,
 ) -> tuple[dict[str, dict[str, Any]], Path]:
     payload_path = output_root / "categorical_gene_lanes.json"
     manifest_path = output_root / "categorical_gene_lanes_manifest.json"
@@ -1357,13 +1487,33 @@ def _freeze_gene_lanes(
         payload = json.loads(
             payload_path.read_text(encoding="utf-8-sig")
         )
+        projected_routes = {
+            route_id: generator.categorical_gene_lanes(route_id)
+            for route_id in ROUTES
+        }
+        if allowed_skeletons_by_route:
+            for route_id, allowed in allowed_skeletons_by_route.items():
+                if route_id not in projected_routes:
+                    raise RuntimeError(
+                        f"WINNER_GUIDE_UNKNOWN_ROUTE:{route_id}"
+                    )
+                allowed_set = set(map(str, allowed))
+                lanes = projected_routes[route_id]["lanes"]
+                projected_routes[route_id]["lanes"] = {
+                    skeleton_id: lane
+                    for skeleton_id, lane in lanes.items()
+                    if skeleton_id in allowed_set
+                }
+                if set(projected_routes[route_id]["lanes"]) != allowed_set:
+                    raise RuntimeError(
+                        f"WINNER_GUIDE_SKELETON_DRIFT:{route_id}"
+                    )
         projected_payload = {
             "schema_version": "cn_large_tpe_gene_lanes_v1",
-            "routes": {
-                route_id: generator.categorical_gene_lanes(route_id)
-                for route_id in ROUTES
-            },
+            "routes": projected_routes,
         }
+        if allowed_skeletons_by_route:
+            projected_payload["winner_guided"] = True
         if projected_payload != payload:
             raise RuntimeError("LARGE_TPE_GENE_LANE_INPUT_DRIFT")
         # The frozen JSON is the immutable content authority, but _write_json
@@ -1372,13 +1522,33 @@ def _freeze_gene_lanes(
         # preserve the original generator order used before the first write.
         payload = projected_payload
     else:
+        projected_routes = {
+            route_id: generator.categorical_gene_lanes(route_id)
+            for route_id in ROUTES
+        }
+        if allowed_skeletons_by_route:
+            for route_id, allowed in allowed_skeletons_by_route.items():
+                if route_id not in projected_routes:
+                    raise RuntimeError(
+                        f"WINNER_GUIDE_UNKNOWN_ROUTE:{route_id}"
+                    )
+                allowed_set = set(map(str, allowed))
+                lanes = projected_routes[route_id]["lanes"]
+                projected_routes[route_id]["lanes"] = {
+                    skeleton_id: lane
+                    for skeleton_id, lane in lanes.items()
+                    if skeleton_id in allowed_set
+                }
+                if set(projected_routes[route_id]["lanes"]) != allowed_set:
+                    raise RuntimeError(
+                        f"WINNER_GUIDE_SKELETON_DRIFT:{route_id}"
+                    )
         payload = {
             "schema_version": "cn_large_tpe_gene_lanes_v1",
-            "routes": {
-                route_id: generator.categorical_gene_lanes(route_id)
-                for route_id in ROUTES
-            },
+            "routes": projected_routes,
         }
+        if allowed_skeletons_by_route:
+            payload["winner_guided"] = True
         _write_json(payload_path, payload)
         manifest = {
             "schema_version": "cn_large_tpe_gene_lane_manifest_v1",
@@ -1480,6 +1650,7 @@ def _availability_semantic_input_hashes(
         "historical_candidate_archive",
         "historical_behavior_archive",
         "historical_archive_manifest",
+        "winner_structural_guide",
     )
     authority_projection = {
         "status": str(authority.get("status") or ""),
@@ -2601,6 +2772,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         candidate_archive=args.historical_candidate_archive.resolve(),
         behavior_archive=args.historical_behavior_archive.resolve(),
         history_manifest=args.historical_archive_manifest.resolve(),
+        winner_structural_guide=(
+            args.winner_structural_guide.resolve()
+            if args.winner_structural_guide is not None
+            else None
+        ),
         seed_base=args.seed_base,
         active_threads=args.active_threads,
         session_threads=args.session_threads,
@@ -2610,6 +2786,22 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         (authority.get("frozen") or {}).get("campaign_profile") or ""
     )
     campaign_spec = _campaign_runtime_spec(campaign_profile)
+    winner_guide_payload: dict[str, Any] | None = None
+    winner_guide_binding_path: Path | None = None
+    if campaign_profile == WINNER_GUIDED_LARGE_SEARCH_PROFILE:
+        if args.winner_structural_guide is None:
+            raise RuntimeError(
+                "WINNER_GUIDED_SEARCH_REQUIRES_STRUCTURAL_GUIDE"
+            )
+        winner_guide_payload = json.loads(
+            args.winner_structural_guide.resolve().read_text(
+                encoding="utf-8-sig"
+            )
+        )
+        winner_guide_binding_path = _write_json(
+            output_root / "winner_structural_guide_binding.json",
+            winner_guide_payload,
+        )
     productivity_experiment = (
         campaign_profile == PRODUCTIVITY_MEDIUM_PROFILE
     )
@@ -2719,7 +2911,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "maximum_raw_asks": campaign_spec["maximum_raw_asks"],
         "maximum_wall_seconds": campaign_spec["maximum_wall_seconds"],
         "top_level_scheduling_key": "UNIFIED_REGISTRY_ROUTE_ID",
-        "route_local_generation_mode": "TYPED_GRAMMAR_SKELETON_ID",
+        "route_local_generation_mode": (
+            "WINNER_SKELETON_LANE_TYPED_GRAMMAR"
+            if winner_guide_payload is not None
+            else "TYPED_GRAMMAR_SKELETON_ID"
+        ),
         "optimizer": (
             "balanced_hybrid_official_tpe_availability_vs_"
             "availability_aware_uniform"
@@ -2731,7 +2927,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             if fixed_formal_campaign
             else "ROUTE_LOCAL_GENE_SELECTION_ONLY"
         ),
-        "optimizer_initialization": "FRESH_NO_CROSS_CAMPAIGN_REWARD_STATE",
+        "optimizer_initialization": (
+            "FRESH_TPE_ON_FROZEN_WINNER_SKELETON_LANES_"
+            "NO_CROSS_CAMPAIGN_REWARD_STATE"
+            if winner_guide_payload is not None
+            else "FRESH_NO_CROSS_CAMPAIGN_REWARD_STATE"
+        ),
         "startup_trials_by_route": STARTUP_TRIALS_BY_ROUTE,
         "n_ei_candidates": N_EI_CANDIDATES,
         "sampler_mode": TPE_SAMPLER_MODE,
@@ -2819,6 +3020,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             if hybrid_only_tranche
             else None
         ),
+        "winner_guidance": (
+            {
+                "mode": "FROZEN_WINNER_SKELETON_LANES_FRESH_TPE",
+                "source_selection_payload_sha256": (
+                    winner_guide_payload[
+                        "source_selection_payload_sha256"
+                    ]
+                ),
+                "allowed_skeletons_by_route": dict(
+                    winner_guide_payload[
+                        "allowed_skeletons_by_route"
+                    ]
+                ),
+                "optimizer_state_reused": False,
+                "reward_rows_imported": 0,
+            }
+            if winner_guide_payload is not None
+            else None
+        ),
         "materialized_route_root_allowlists": {
             route_id: list(values)
             for route_id, values in materialized_allowlists.items()
@@ -2830,6 +3050,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "schema": _artifact(schema_path, root=output_root),
             "purity": _artifact(purity_path, root=output_root),
             "runtime": _artifact(runtime_path, root=output_root),
+            **(
+                {
+                    "winner_structural_guide": _artifact(
+                        winner_guide_binding_path,
+                        root=output_root,
+                    )
+                }
+                if winner_guide_binding_path is not None
+                else {}
+            ),
         },
     }
     contract_path = _write_json(
@@ -2849,6 +3079,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "registry": _sha256(registry_path),
             "schema": _sha256(schema_path),
         },
+        allowed_skeletons_by_route=(
+            dict(winner_guide_payload["allowed_skeletons_by_route"])
+            if winner_guide_payload is not None
+            else None
+        ),
     )
     supply_path = output_root / "fresh_exact_supply_preflight.json"
     if supply_path.is_file():
@@ -3817,10 +4052,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 if productivity_experiment and fixed_formal_complete
                 else (
                     (
-                        "HYBRID_BOUNDED_LARGE_TRANCHE_COMPLETE"
-                        if campaign_profile
-                        == HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE
-                        else "HYBRID_ONLY_TRANCHE_COMPLETE"
+                        (
+                            "WINNER_GUIDED_LARGE_SEARCH_COMPLETE"
+                            if campaign_profile
+                            == WINNER_GUIDED_LARGE_SEARCH_PROFILE
+                            else (
+                                "HYBRID_BOUNDED_LARGE_TRANCHE_COMPLETE"
+                                if campaign_profile
+                                == HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE
+                                else "HYBRID_ONLY_TRANCHE_COMPLETE"
+                            )
+                        )
                     )
                     if hybrid_only_tranche and fixed_formal_complete
                     else (
@@ -4014,6 +4256,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     schema_path,
                     purity_path,
                     runtime_path,
+                    *(
+                        (winner_guide_binding_path,)
+                        if winner_guide_binding_path is not None
+                        else ()
+                    ),
                     lane_manifest_path,
                     availability_index_path,
                     *(
@@ -4064,6 +4311,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--historical-archive-manifest", type=Path, required=True
     )
+    parser.add_argument("--winner-structural-guide", type=Path)
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--discovery-contract", type=Path, required=True)
     parser.add_argument(

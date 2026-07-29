@@ -1,0 +1,132 @@
+{
+  "schema_version": "cn_winner_guided_large_search_authorization_v1",
+  "status": "EXECUTION_AUTHORIZED_ONE_WINNER_GUIDED_BOUNDED_SEARCH",
+  "authority_source": "CURRENT_USER_DIRECT_EXECUTION_INSTRUCTION_20260730",
+  "campaign_id": "CN_WINNER_GUIDED_LARGE_SEARCH_V1_20260730",
+  "campaign_profile": "cn_winner_guided_large_search_v1",
+  "qualification_authorized": true,
+  "execution_authorized": true,
+  "financial_campaign_authorized": true,
+  "single_bounded_task_authorized": true,
+  "authorized_task_count": 1,
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "optimizer": "official_optuna.samplers.TPESampler_conditional_typed_grammar",
+  "optimizer_package_version": "4.8.0",
+  "optimizer_initialization": "FRESH_TPE_ON_FROZEN_WINNER_SKELETON_LANES_NO_CROSS_CAMPAIGN_REWARD_STATE",
+  "accepted_development_search_policy": "HYBRID_TPE_AVAILABILITY",
+  "policy_reopened": false,
+  "routes": [
+    "SLOW_TEMPORAL_CHANGE",
+    "FIRSTN_PATH",
+    "SLOW_CROSS_SECTIONAL_LEVEL",
+    "MARKET_REGIME_CONDITION",
+    "DISCLOSURE_EVENT"
+  ],
+  "coverage_floors": {
+    "SLOW_TEMPORAL_CHANGE": 12160,
+    "FIRSTN_PATH": 96,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "route_formal_ask_caps": {
+    "SLOW_TEMPORAL_CHANGE": 12160,
+    "FIRSTN_PATH": 96,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "globally_flexible_budget": 0,
+  "flexible_allocation": {
+    "SLOW_TEMPORAL_CHANGE": 0,
+    "FIRSTN_PATH": 0,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "final_route_formal_ask_allocation": {
+    "SLOW_TEMPORAL_CHANGE": 12160,
+    "FIRSTN_PATH": 96,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 32,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "fixed_route_formal_asks_per_checkpoint": {
+    "SLOW_TEMPORAL_CHANGE": 1520,
+    "FIRSTN_PATH": 12,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 4,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "policy_arms": [
+    "HYBRID_TPE_AVAILABILITY"
+  ],
+  "policy_arm_ratio": {
+    "HYBRID_TPE_AVAILABILITY": 1.0
+  },
+  "uniform_arm": "FORBIDDEN",
+  "within_tranche_route_adaptation": "FORBIDDEN",
+  "winner_guidance_mode": "FROZEN_WINNER_SKELETON_LANES_FRESH_TPE",
+  "winner_source_selection_payload_sha256": "5ab6dbdf374d4867cf197b254cf6672d342bed54436bf153a551ae65867a3815",
+  "winner_structural_guide_sha256": "889bf9ecd092ddf3c0d712d4c13d61615a8649c312b24e4fc8ad76883e9e8c51",
+  "winner_structural_skeletons": {
+    "FIRSTN_PATH": [
+      "cn.comp.v2.firstn_path.firstn_path_state"
+    ],
+    "SLOW_CROSS_SECTIONAL_LEVEL": [
+      "cn.comp.v2.slow_cross_sectional_level.fundamental_residual"
+    ],
+    "SLOW_TEMPORAL_CHANGE": [
+      "cn.comp.v2.slow_temporal_change.change_level_interaction",
+      "cn.comp.v2.slow_temporal_change.cross_change_interaction"
+    ]
+  },
+  "cross_campaign_optimizer_state_reused": false,
+  "cross_campaign_reward_rows_imported": 0,
+  "productive_candidate_definition": "DEVELOPMENT_DIAGNOSTIC_ONLY_PAIR_EVALUATED_AND_PREDICTIVE_SCORE_POSITIVE_AND_PRIMARY_STANDALONE_READY",
+  "productive_candidate_evidence_class": "DEVELOPMENT_PREDICTIVE_NOT_TRADABILITY_OR_PROMOTION",
+  "budget_counting_unit": "FORMAL_FRESH_EXACT_ASK",
+  "maximum_checkpoints": 8,
+  "asks_per_checkpoint": 1536,
+  "maximum_raw_asks": 12288,
+  "maximum_internal_native_draws_per_formal": 8,
+  "maximum_wall_seconds": 129600,
+  "seed_base": 2026073001,
+  "historical_archive_policy": "IDENTITY_AND_LABEL_FREE_BEHAVIOR_ONLY_NO_REWARD_NO_SCHEDULER_STATE",
+  "historical_candidate_archive_sha256": "5a217edd05ff504755753b6dc593bbf7171d03e57995a630355782b75a19c70d",
+  "historical_behavior_archive_sha256": "6783727d8877bdacf8c6b443c5af77b61a55a179d09aae65f86a22fe3b59ced1",
+  "historical_manifest_sha256": "429bc4459d3fff0e4cf2ade73bea77105ac27822aa6d543c857e6af4c1a55a24",
+  "optimizer_ask_execution": "HYBRID_TPE_AVAILABILITY_ONLY",
+  "optuna_route_workers": 5,
+  "optimizer_n_ei_candidates": 24,
+  "optimizer_sampler_mode": "OFFICIAL_DEFAULT_UNIVARIATE_CONSTANT_LIAR",
+  "optimizer_multivariate": false,
+  "optimizer_group": false,
+  "optimizer_constant_liar": true,
+  "optimizer_restore_authority": "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS",
+  "optimizer_search_score_policy": "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1",
+  "optimizer_gene_surface_version": "cn_optimizer_skeleton_lane_gene_surface_v2",
+  "validation_primary_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+  "portfolio_mode": "LONG_ONLY_TOP",
+  "shorting": "FORBIDDEN",
+  "one_way_cost_bps": 5,
+  "horizons_minutes": [
+    1,
+    5,
+    15,
+    30
+  ],
+  "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+  "automatic_validation": "FORBIDDEN",
+  "active_threads": 32,
+  "session_threads": 32,
+  "active_pair_batch_size": 12,
+  "session_pair_batch_size": 12,
+  "cache_cap_bytes": 8589934592,
+  "minimum_free_memory_bytes": 25769803776,
+  "holdout": "SEALED",
+  "forward_2026": "SEALED",
+  "promotion": "FORBIDDEN",
+  "unlimited_or_20k_search_authorized": false,
+  "successor_search_pre_authorized": false
+}

@@ -26,6 +26,10 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     HYBRID_ONLY_TRANCHE_PROFILE,
     HYBRID_ONLY_TRANCHE_ROUTE_CAPS,
     HYBRID_ONLY_TRANCHE_ROUTE_MIX,
+    WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_CHECKPOINTS,
+    WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_RAW_ASKS,
+    WINNER_GUIDED_LARGE_SEARCH_PROFILE,
+    WINNER_GUIDED_LARGE_SEARCH_ROUTE_MIX,
     MAXIMUM_RAW_ASKS,
     MINIMUM_ACTUAL_EVALUATED_PAIRS,
     N_EI_CANDIDATES,
@@ -669,6 +673,39 @@ def test_bounded_large_execution_authority_is_single_tranche_only() -> None:
     assert authorization["preflight_forward_2026_reads"] == 0
 
 
+def test_winner_guided_large_search_is_bounded_and_winner_concentrated() -> None:
+    spec = _campaign_runtime_spec(WINNER_GUIDED_LARGE_SEARCH_PROFILE)
+    authorization = json.loads(
+        (
+            REPO_ROOT
+            / "runtime"
+            / "run_plans"
+            / "cn_winner_guided_large_search_v1_authorization.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_CHECKPOINTS == 8
+    assert WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_RAW_ASKS == 12_288
+    assert sum(WINNER_GUIDED_LARGE_SEARCH_ROUTE_MIX.values()) == 1_536
+    assert spec["fixed_route_mix"] == {
+        "SLOW_TEMPORAL_CHANGE": 1_520,
+        "FIRSTN_PATH": 12,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 4,
+        "MARKET_REGIME_CONDITION": 0,
+        "DISCLOSURE_EVENT": 0,
+    }
+    assert spec["maximum_raw_asks"] == 12_288
+    assert spec["validation"] == "FORBIDDEN_DURING_AND_AFTER_TRANCHE"
+    assert authorization["execution_authorized"] is True
+    assert authorization["authorized_task_count"] == 1
+    assert authorization["winner_guidance_mode"] == (
+        "FROZEN_WINNER_SKELETON_LANES_FRESH_TPE"
+    )
+    assert authorization["cross_campaign_optimizer_state_reused"] is False
+    assert authorization["cross_campaign_reward_rows_imported"] == 0
+    assert authorization["automatic_validation"] == "FORBIDDEN"
+
+
 def test_productive_family_diagnostics_are_diagnostic_only() -> None:
     outcomes = [
         {
@@ -1235,6 +1272,45 @@ class _FrozenLaneGenerator:
                 }
             },
         }
+
+
+class _WinnerLaneGenerator:
+    def categorical_gene_lanes(self, route_id: str) -> dict[str, object]:
+        return {
+            "route_id": route_id,
+            "lanes": {
+                "winner_lane": {
+                    "ordered_categories_by_slot": {
+                        "skeleton_id": ["winner_lane"],
+                        "field_pair_id": ["left::right"],
+                    }
+                },
+                "loser_lane": {
+                    "ordered_categories_by_slot": {
+                        "skeleton_id": ["loser_lane"],
+                        "field_pair_id": ["left::right"],
+                    }
+                },
+            },
+        }
+
+
+def test_winner_guide_freezes_only_selected_skeleton_lanes(
+    tmp_path: Path,
+) -> None:
+    lanes, _ = _freeze_gene_lanes(
+        output_root=tmp_path,
+        generator=_WinnerLaneGenerator(),
+        input_hashes={
+            "contract": "winner-contract",
+            "registry": "winner-registry",
+            "schema": "winner-schema",
+        },
+        allowed_skeletons_by_route={ROUTES[0]: ["winner_lane"]},
+    )
+
+    assert set(lanes[ROUTES[0]]) == {"winner_lane"}
+    assert set(lanes[ROUTES[1]]) == {"winner_lane", "loser_lane"}
 
 
 def test_frozen_gene_lanes_survive_runtime_only_contract_change(
