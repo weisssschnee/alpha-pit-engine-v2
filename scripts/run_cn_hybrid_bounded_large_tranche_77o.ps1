@@ -32,6 +32,10 @@ $contractRelative = (
     'runtime\run_plans\' +
     'cn_hybrid_bounded_large_tranche_v1_contract.json'
 )
+$preflightReceiptRelative = (
+    'runtime\run_plans\' +
+    'cn_hybrid_bounded_large_tranche_p02_preflight_20260729_receipt.json'
+)
 $p07Manifest = Join-Path $p07Root 'p07_manifest.json'
 $trainBase = (
     'D:\ChengboRemote\runtime\' +
@@ -110,6 +114,13 @@ if ($PreflightOnly) {
 ) {
     throw "financial tranche requires separate execution authority"
 }
+if (
+    -not $PreflightOnly -and
+    $authorization.preflight_receipt_sha256 -ne
+        'ffa0a6da14db46e2df364154f981185f06a376bb5b0387ccaf8a2e3998adc530'
+) {
+    throw "execution authority preflight receipt binding drift"
+}
 
 $optunaVersion = (
     & $python -c 'import optuna; print(optuna.__version__)'
@@ -177,6 +188,7 @@ if ($freeMemoryBytes -lt 24GB) {
 
 $historyManifest = Join-Path $resolvedRepo $historyManifestRelative
 $contract = Join-Path $resolvedRepo $contractRelative
+$preflightReceipt = Join-Path $resolvedRepo $preflightReceiptRelative
 $requiredHashes = [ordered]@{
     $candidateArchive = (
         '450491d7ceff74dfa8eb5e019b4dd15c982a00f6f990299e7afd620dc87b1ae6'
@@ -192,6 +204,11 @@ $requiredHashes = [ordered]@{
     )
     $p07Manifest = (
         '436a4062b4a8216f8ad1a1a651dcc2c2fb71f4aa36713dad71f3ae507983a9d2'
+    )
+}
+if (-not $PreflightOnly) {
+    $requiredHashes[$preflightReceipt] = (
+        'ffa0a6da14db46e2df364154f981185f06a376bb5b0387ccaf8a2e3998adc530'
     )
 }
 foreach ($entry in $requiredHashes.GetEnumerator()) {

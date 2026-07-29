@@ -568,6 +568,31 @@ def test_hybrid_bounded_large_tranche_profile_matches_frozen_contract() -> None:
     assert qualification["unlimited_or_20k_search_authorized"] is False
 
 
+def test_bounded_large_execution_authority_is_single_tranche_only() -> None:
+    authorization = json.loads(
+        (
+            REPO_ROOT
+            / "runtime"
+            / "run_plans"
+            / "cn_hybrid_bounded_large_tranche_v1_authorization.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert authorization["qualification_authorized"] is True
+    assert authorization["execution_authorized"] is True
+    assert authorization["financial_campaign_authorized"] is True
+    assert authorization["single_bounded_task_authorized"] is True
+    assert authorization["authorized_task_count"] == 1
+    assert authorization["maximum_raw_asks"] == 6_144
+    assert authorization["automatic_validation"] == "FORBIDDEN"
+    assert authorization["unlimited_or_20k_search_authorized"] is False
+    assert authorization["next_search_tranche_pre_authorized"] is False
+    assert authorization["preflight_financial_reads"] == 0
+    assert authorization["preflight_validation_reads"] == 0
+    assert authorization["preflight_holdout_reads"] == 0
+    assert authorization["preflight_forward_2026_reads"] == 0
+
+
 def test_productive_family_diagnostics_are_diagnostic_only() -> None:
     outcomes = [
         {
