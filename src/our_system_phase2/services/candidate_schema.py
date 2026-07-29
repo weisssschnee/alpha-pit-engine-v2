@@ -9,6 +9,7 @@ route-specific column names.
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import re
 from typing import Any
@@ -86,6 +87,39 @@ CANONICAL_CANDIDATE_FIELDS = [
     "primary_standalone_train_reward_decision",
     "primary_standalone_train_reward_blockers",
     "primary_standalone_train_mean_one_way_turnover",
+    "primary_predictive_reward",
+    "control_predictive_reward",
+    "predictive_matched_increment",
+    "primary_predictive_turnover",
+    "control_predictive_turnover",
+    "predictive_turnover_increment",
+    "primary_executable_reward_decision",
+    "primary_a_share_replay_receipt_sha256",
+    "control_a_share_replay_receipt_sha256",
+    "primary_replay_receipt_canonical_json",
+    "control_replay_receipt_canonical_json",
+    "primary_replay_receipt_payload_sha256",
+    "control_replay_receipt_payload_sha256",
+    "primary_candidate_exact_identity",
+    "control_candidate_exact_identity",
+    "primary_a_share_executable_net_reward",
+    "control_a_share_executable_net_reward",
+    "a_share_matched_executable_increment",
+    "a_share_executable_net_reward",
+    "a_share_mean_one_way_turnover",
+    "a_share_reward_metric",
+    "a_share_reward_source",
+    "a_share_reward_split",
+    "replay_receipt_schema_version",
+    "replay_receipt_canonical_json",
+    "replay_receipt_payload_sha256",
+    "candidate_exact_identity",
+    "replay_code_sha256",
+    "input_data_sha256",
+    "universe_manifest_sha256",
+    "fee_schedule_sha256",
+    "execution_policy_sha256",
+    "data_access_counts",
     "evaluation_evidence_class",
     "a_share_tradability_decision",
     "execution_clock_enforced",
@@ -297,6 +331,12 @@ def normalize_candidate_schema(row: dict[str, Any]) -> dict[str, Any]:
     blocker_flags = _first_existing(row, ["blocker_flags", "phase3bp_blocker_flags", "inherited_blockers"], "")
     train_reward = _first_existing(row, ["train_reward"], "")
     optimizer_reward = _first_existing(row, ["optimizer_reward"], train_reward)
+    raw_access_counts = row.get("data_access_counts")
+    if isinstance(raw_access_counts, str):
+        try:
+            raw_access_counts = json.loads(raw_access_counts)
+        except json.JSONDecodeError:
+            pass
     return {
         "candidate_id": _first_existing(row, ["candidate_id"], expression_hash[:12]),
         "pair_id": _first_existing(row, ["pair_id"], ""),
@@ -368,6 +408,129 @@ def normalize_candidate_schema(row: dict[str, Any]) -> dict[str, Any]:
         ),
         "primary_standalone_train_mean_one_way_turnover": _first_existing(
             row, ["primary_standalone_train_mean_one_way_turnover"], ""
+        ),
+        "primary_predictive_reward": _first_existing(
+            row, ["primary_predictive_reward"], ""
+        ),
+        "control_predictive_reward": _first_existing(
+            row, ["control_predictive_reward"], ""
+        ),
+        "predictive_matched_increment": _first_existing(
+            row, ["predictive_matched_increment"], ""
+        ),
+        "primary_predictive_turnover": _first_existing(
+            row, ["primary_predictive_turnover"], ""
+        ),
+        "control_predictive_turnover": _first_existing(
+            row, ["control_predictive_turnover"], ""
+        ),
+        "predictive_turnover_increment": _first_existing(
+            row, ["predictive_turnover_increment"], ""
+        ),
+        "primary_executable_reward_decision": _first_existing(
+            row, ["primary_executable_reward_decision"], ""
+        ),
+        "primary_a_share_replay_receipt_sha256": _first_existing(
+            row, ["primary_a_share_replay_receipt_sha256"], ""
+        ),
+        "control_a_share_replay_receipt_sha256": _first_existing(
+            row, ["control_a_share_replay_receipt_sha256"], ""
+        ),
+        "primary_replay_receipt_canonical_json": _first_existing(
+            row, ["primary_replay_receipt_canonical_json"], ""
+        ),
+        "control_replay_receipt_canonical_json": _first_existing(
+            row, ["control_replay_receipt_canonical_json"], ""
+        ),
+        "primary_replay_receipt_payload_sha256": _first_existing(
+            row, ["primary_replay_receipt_payload_sha256"], ""
+        ),
+        "control_replay_receipt_payload_sha256": _first_existing(
+            row, ["control_replay_receipt_payload_sha256"], ""
+        ),
+        "primary_candidate_exact_identity": _first_existing(
+            row, ["primary_candidate_exact_identity"], ""
+        ),
+        "control_candidate_exact_identity": _first_existing(
+            row, ["control_candidate_exact_identity"], ""
+        ),
+        "primary_a_share_executable_net_reward": _first_existing(
+            row, ["primary_a_share_executable_net_reward"], ""
+        ),
+        "control_a_share_executable_net_reward": _first_existing(
+            row, ["control_a_share_executable_net_reward"], ""
+        ),
+        "a_share_matched_executable_increment": _first_existing(
+            row, ["a_share_matched_executable_increment"], ""
+        ),
+        "a_share_executable_net_reward": _first_existing(
+            row, ["a_share_executable_net_reward"], ""
+        ),
+        "a_share_mean_one_way_turnover": _first_existing(
+            row, ["a_share_mean_one_way_turnover"], ""
+        ),
+        "a_share_reward_metric": _first_existing(
+            row, ["a_share_reward_metric"], ""
+        ),
+        "a_share_reward_source": _first_existing(
+            row, ["a_share_reward_source"], ""
+        ),
+        "a_share_reward_split": _first_existing(
+            row, ["a_share_reward_split"], ""
+        ),
+        "replay_receipt_schema_version": _first_existing(
+            row, ["replay_receipt_schema_version"], ""
+        ),
+        "replay_receipt_canonical_json": _first_existing(
+            row, ["replay_receipt_canonical_json"], ""
+        ),
+        "replay_receipt_payload_sha256": _first_existing(
+            row, ["replay_receipt_payload_sha256"], ""
+        ),
+        "candidate_exact_identity": _first_existing(
+            row, ["candidate_exact_identity"], ""
+        ),
+        "replay_code_sha256": _first_existing(
+            row, ["replay_code_sha256"], ""
+        ),
+        "input_data_sha256": _first_existing(
+            row, ["input_data_sha256"], ""
+        ),
+        "universe_manifest_sha256": _first_existing(
+            row, ["universe_manifest_sha256"], ""
+        ),
+        "fee_schedule_sha256": _first_existing(
+            row, ["fee_schedule_sha256"], ""
+        ),
+        "execution_policy_sha256": _first_existing(
+            row, ["execution_policy_sha256"], ""
+        ),
+        "data_access_counts": raw_access_counts,
+        "evaluation_evidence_class": _first_existing(
+            row, ["evaluation_evidence_class"], ""
+        ),
+        "a_share_tradability_decision": _first_existing(
+            row, ["a_share_tradability_decision"], ""
+        ),
+        **{
+            field: _first_existing(row, [field], False)
+            for field in (
+                "execution_clock_enforced",
+                "same_bar_execution_excluded",
+                "t_plus_one_enforced",
+                "limit_lock_fill_enforced",
+                "suspension_fill_enforced",
+                "full_fee_schedule_enforced",
+                "promotion_grade_universe_enforced",
+                "economic_claim_authorized",
+                "candidate_promotion_authorized",
+            )
+        },
+        "pair_a_share_tradability_decision": _first_existing(
+            row, ["pair_a_share_tradability_decision"], ""
+        ),
+        "pair_a_share_tradability_blockers": _first_existing(
+            row, ["pair_a_share_tradability_blockers"], ""
         ),
         "train_rank_ic_mean": _first_existing(row, ["train_rank_ic_mean"], ""),
         "train_rank_ic_hit_rate": _first_existing(row, ["train_rank_ic_hit_rate"], ""),

@@ -51,6 +51,7 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
 from our_system_phase2.services.legacy_field_aliases import rewrite_legacy_field_aliases, rewrite_summary
 from our_system_phase2.services.a_share_tradability_guard import (
     development_predictive_evidence,
+    read_a_share_tradability_receipts,
 )
 from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema
 from our_system_phase2.services.candidate_submission_receipt import (
@@ -2799,6 +2800,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--candidate-receipt-table", type=Path, required=True)
     parser.add_argument("--candidate-pair-receipt-table", type=Path, required=True)
+    parser.add_argument(
+        "--a-share-replay-receipt-table",
+        type=Path,
+        default=None,
+        help=(
+            "Optional immutable train-only executable replay receipts. "
+            "Without this table Phase3CM remains predictive evidence only."
+        ),
+    )
     parser.add_argument("--unified-registry", type=Path, required=True)
     parser.add_argument("--data-release-hash", required=True)
     parser.add_argument("--min-obs-per-time", type=int, default=20)
@@ -2936,6 +2946,20 @@ def main(argv: list[str] | None = None) -> int:
         candidates,
         validated_receipts,
         pair_receipts,
+    )
+    candidate_ids = {
+        str(row.get("candidate_id") or "") for row in candidates
+    }
+    replay_receipts = (
+        [
+            row
+            for row in read_a_share_tradability_receipts(
+                _resolve(args.a_share_replay_receipt_table)
+            )
+            if str(row.get("candidate_id") or "") in candidate_ids
+        ]
+        if args.a_share_replay_receipt_table is not None
+        else []
     )
     receipt_by_candidate = {str(row["candidate_id"]): row for row in validated_receipts}
     pair_receipt_by_id = {str(row["pair_id"]): row for row in validated_pair_receipts}
@@ -3228,6 +3252,7 @@ def main(argv: list[str] | None = None) -> int:
             pair_receipts=validated_pair_receipts,
             reward_rows=reward_rows,
             portfolio_rows_by_expression_hash=portfolio_rows_by_expression_hash,
+            replay_receipt_rows=replay_receipts,
             reward_atom_rows=reward_atom_rows,
             evaluator_invocation_counts=evaluator_invocation_counts,
         )
@@ -3277,6 +3302,12 @@ def main(argv: list[str] | None = None) -> int:
         "portfolio_mode": args.portfolio_mode,
         "short_allowed": bool(args.portfolio_mode == "long_short_spread"),
         "pair_shared_support_enforced": bool(args.enforce_pair_shared_support),
+        "a_share_replay_receipt_table": (
+            str(_resolve(args.a_share_replay_receipt_table))
+            if args.a_share_replay_receipt_table is not None
+            else ""
+        ),
+        "a_share_replay_receipt_count": len(replay_receipts),
         "pair_support_alignment_policy": (
             PAIR_SUPPORT_ALIGNMENT_POLICY if args.enforce_pair_shared_support else "LEGACY_INDEPENDENT_SUPPORT"
         ),

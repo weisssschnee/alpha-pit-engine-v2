@@ -61,8 +61,9 @@ from our_system_phase2.services.compositional_grammar import (
     OPTIMIZER_GENE_SURFACE_VERSION,
 )
 from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_EXECUTABLE_REWARD_READY,
     A_SHARE_TRADABILITY_READY,
-    a_share_tradability_blockers,
+    pair_row_tradability_blockers,
 )
 from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
@@ -140,8 +141,9 @@ TPE_MULTIVARIATE = False
 TPE_GROUP = False
 TPE_CONSTANT_LIAR = True
 TPE_SAMPLER_MODE = "OFFICIAL_DEFAULT_UNIVARIATE_CONSTANT_LIAR"
-SEARCH_SCORE_POLICY = "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1"
-VALIDATION_PRIMARY_DECISION = "TRAIN_REWARD_FOLLOWUP_READY"
+SEARCH_SCORE_POLICY = "MIN_EXECUTABLE_STANDALONE_AND_MATCHED_INCREMENT_V1"
+VALIDATION_PRIMARY_DECISION = A_SHARE_EXECUTABLE_REWARD_READY
+DEVELOPMENT_PRODUCTIVE_PRIMARY_DECISION = "TRAIN_REWARD_FOLLOWUP_READY"
 HYBRID_POLICY_ARM = "HYBRID_TPE_AVAILABILITY"
 UNIFORM_POLICY_ARM = "AVAILABILITY_AWARE_UNIFORM"
 PRODUCTIVITY_POLICY_ARMS = (HYBRID_POLICY_ARM, UNIFORM_POLICY_ARM)
@@ -367,14 +369,43 @@ def _finite_float(value: Any) -> float | None:
 def _development_predictive_score(
     outcome: Mapping[str, Any],
 ) -> float | None:
+    """Legacy Phase3CM diagnostic; never optimizer or promotion authority."""
+
     if str(outcome.get("pair_evaluation_status") or "") != "PAIR_EVALUATED":
         return None
-    primary = _finite_float(outcome.get("primary_composite_reward"))
+    primary = _finite_float(outcome.get("primary_predictive_reward"))
     if primary is None:
-        primary = _finite_float(outcome.get("primary_train_reward"))
-    matched = _finite_float(outcome.get("matched_train_increment"))
+        primary = _finite_float(outcome.get("primary_composite_reward"))
+    matched = _finite_float(outcome.get("predictive_matched_increment"))
     if matched is None:
-        matched = _finite_float(outcome.get("pair_train_reward"))
+        primary_predictive = _finite_float(
+            outcome.get("primary_predictive_reward")
+        )
+        control_predictive = _finite_float(
+            outcome.get("control_predictive_reward")
+        )
+        if primary_predictive is not None and control_predictive is not None:
+            matched = primary_predictive - control_predictive
+    if matched is None:
+        # Historical development-only rows predate explicit provenance fields.
+        # This fallback is consumed only by diagnostic productive reporting.
+        matched = _finite_float(outcome.get("matched_train_increment"))
+    if primary is None or matched is None:
+        return None
+    return min(primary, matched)
+
+
+def _executable_search_score(
+    outcome: Mapping[str, Any],
+) -> float | None:
+    if str(outcome.get("pair_evaluation_status") or "") != "PAIR_EVALUATED":
+        return None
+    primary = _finite_float(
+        outcome.get("primary_a_share_executable_net_reward")
+    )
+    matched = _finite_float(
+        outcome.get("a_share_matched_executable_increment")
+    )
     if primary is None or matched is None:
         return None
     return min(primary, matched)
@@ -392,16 +423,23 @@ def _optimizer_feedback_blockers(
     ):
         blockers.append("pair_train_reward_not_ready")
     if (
-        str(outcome.get("primary_standalone_train_reward_decision") or "")
+        str(outcome.get("primary_executable_reward_decision") or "")
         != VALIDATION_PRIMARY_DECISION
     ):
-        blockers.append("primary_standalone_train_reward_not_ready")
+        blockers.append("primary_executable_reward_not_ready")
+    if (
+        str(
+            outcome.get("primary_standalone_train_reward_decision") or ""
+        )
+        != DEVELOPMENT_PRODUCTIVE_PRIMARY_DECISION
+    ):
+        blockers.append("primary_predictive_standalone_reward_not_ready")
     if (
         str(outcome.get("pair_a_share_tradability_decision") or "")
         != A_SHARE_TRADABILITY_READY
     ):
         blockers.append("pair_a_share_tradability_not_ready")
-    blockers.extend(a_share_tradability_blockers(outcome))
+    blockers.extend(pair_row_tradability_blockers(outcome))
     return tuple(dict.fromkeys(blockers))
 
 
@@ -410,22 +448,27 @@ def _conservative_search_score(
 ) -> float | None:
     if _optimizer_feedback_blockers(outcome):
         return None
-    return _development_predictive_score(outcome)
+    return _executable_search_score(outcome)
 
 
 def _validation_eligible(outcome: Mapping[str, Any]) -> bool:
     score = _conservative_search_score(outcome)
-    matched = _finite_float(outcome.get("matched_train_increment"))
-    if matched is None:
-        matched = _finite_float(outcome.get("pair_train_reward"))
+    matched = _finite_float(
+        outcome.get("a_share_matched_executable_increment")
+    )
     return (
         score is not None
+        and score > 0.0
         and matched is not None
         and matched > 0.0
         and str(
-            outcome.get("primary_standalone_train_reward_decision") or ""
+            outcome.get("primary_executable_reward_decision") or ""
         )
         == VALIDATION_PRIMARY_DECISION
+        and str(
+            outcome.get("primary_standalone_train_reward_decision") or ""
+        )
+        == DEVELOPMENT_PRODUCTIVE_PRIMARY_DECISION
     )
 
 
@@ -2167,7 +2210,10 @@ def _is_productive_candidate(outcome: Mapping[str, Any]) -> bool:
         and str(
             outcome.get("primary_standalone_train_reward_decision") or ""
         )
-        == VALIDATION_PRIMARY_DECISION
+        in {
+            DEVELOPMENT_PRODUCTIVE_PRIMARY_DECISION,
+            VALIDATION_PRIMARY_DECISION,
+        }
     )
 
 
@@ -2752,7 +2798,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "optimizer_reward": "conservative_primary_and_increment_search_score",
         "optimizer_search_score_policy": SEARCH_SCORE_POLICY,
         "optimizer_search_score_formula": (
-            "min(primary_composite_reward,matched_train_increment)"
+            "min(primary_a_share_executable_net_reward,"
+            "matched_train_increment)"
         ),
         "validation_primary_decision": VALIDATION_PRIMARY_DECISION,
         "optimizer_restore_authority": (
@@ -3345,6 +3392,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     ),
                     "matched_train_increment": outcome.get(
                         "matched_train_increment"
+                    ),
+                    "primary_executable_reward_decision": outcome.get(
+                        "primary_executable_reward_decision"
+                    ),
+                    "primary_a_share_replay_receipt_sha256": outcome.get(
+                        "primary_a_share_replay_receipt_sha256"
+                    ),
+                    "control_a_share_replay_receipt_sha256": outcome.get(
+                        "control_a_share_replay_receipt_sha256"
                     ),
                     "outcome_reason": str(
                         "|".join(feedback_blockers)

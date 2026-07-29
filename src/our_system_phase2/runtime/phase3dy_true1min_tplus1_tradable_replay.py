@@ -7,8 +7,10 @@ This route is intentionally narrow:
 * run long-only top-bucket T+1 replay with entry limit-up blocking;
 * report open/open and close/close variants separately.
 
-It is a research audit, not a promotion gate. The current default shard root is
-the partial Phase3CY sidecar-augmented canary root.
+It is a research audit by default. An optional frozen train-only contract may
+emit candidate-bound replay receipts for the existing feedback guard, but it
+still cannot promote candidates or authorize economic claims. The current
+default shard root is the partial Phase3CY sidecar-augmented canary root.
 """
 
 from __future__ import annotations
@@ -29,6 +31,20 @@ import pyarrow.parquet as pq
 from our_system_phase2.services.real_market_validation import (
     UnsupportedExpressionError,
     evaluate_panel_expression,
+)
+from our_system_phase2.services.a_share_executable_replay import (
+    AShareExecutionPolicy,
+    AShareFeeSchedule,
+    AShareUniversePolicy,
+    run_a_share_long_only_replay,
+)
+from our_system_phase2.services.a_share_tradability_guard import (
+    build_a_share_tradability_receipt,
+)
+from our_system_phase2.services.development_only_data_access import (
+    canonical_json_hash,
+    sha256_file,
+    split_roles,
 )
 
 
@@ -54,7 +70,32 @@ BASE_COLUMNS = [
     "vol",
     "vwap",
     "evt_uplimit_active",
+    "security_type",
+    "exchange",
+    "universe_eligible",
+    "listing_age_sessions",
+    "ctx_hfq_is_st",
+    "is_st",
+    "is_delisting",
+    "suspended",
+    "susp",
+    "up_limit_price",
+    "down_limit_price",
+    "lot_size",
 ]
+
+AUTHORITY_SESSION_COLUMNS = (
+    "security_type",
+    "exchange",
+    "universe_eligible",
+    "listing_age_sessions",
+    "is_st",
+    "is_delisting",
+    "suspended",
+    "up_limit_price",
+    "down_limit_price",
+    "lot_size",
+)
 
 
 def _resolve(path: Path) -> Path:
@@ -164,6 +205,13 @@ def _daily_from_minute_frame(frame: pd.DataFrame, signal_columns: list[str]) -> 
     }
     for col in signal_columns:
         aggregations[col] = (col, "last")
+    for col in AUTHORITY_SESSION_COLUMNS:
+        if col in frame.columns:
+            aggregations[col] = (col, "first")
+    if "is_st" not in aggregations and "ctx_hfq_is_st" in frame.columns:
+        aggregations["is_st"] = ("ctx_hfq_is_st", "first")
+    if "suspended" not in aggregations and "susp" in frame.columns:
+        aggregations["suspended"] = ("susp", "first")
     daily = frame.groupby(group_cols, sort=False).agg(**aggregations).reset_index()
     daily["date"] = pd.to_datetime(daily["exec_date"], errors="coerce")
     daily["amount"] = pd.to_numeric(daily["amount"], errors="coerce")
@@ -171,6 +219,243 @@ def _daily_from_minute_frame(frame: pd.DataFrame, signal_columns: list[str]) -> 
     daily["vwap"] = daily["amount"] / daily["volume"].replace(0, np.nan)
     daily["is_limit_up"] = pd.to_numeric(daily["is_limit_up"], errors="coerce").fillna(0.0) > 0.0
     return daily
+
+
+def _combined_code_sha256(paths: list[Path]) -> str:
+    return canonical_json_hash(
+        [
+            {
+                "path": str(path.resolve()),
+                "sha256": sha256_file(path.resolve()),
+            }
+            for path in paths
+        ]
+    )
+
+
+def panel_input_manifest_sha256(
+    panel_paths: list[Path],
+    *,
+    shard_root: Path,
+) -> str:
+    """Hash the exact panel bytes read, using paths relative to the shard root."""
+
+    root = shard_root.resolve()
+    entries: list[dict[str, Any]] = []
+    for path in sorted(Path(value).resolve() for value in panel_paths):
+        try:
+            relative_path = path.relative_to(root).as_posix()
+        except ValueError as exc:
+            raise ValueError(
+                f"panel is outside frozen shard root: {path}"
+            ) from exc
+        entries.append(
+            {
+                "relative_path": relative_path,
+                "size": int(path.stat().st_size),
+                "sha256": sha256_file(path),
+            }
+        )
+    if not entries:
+        raise ValueError("A-share replay input panel manifest is empty")
+    return canonical_json_hash(
+        {
+            "schema_version": "a_share_replay_input_panel_manifest_v1",
+            "panels": entries,
+        }
+    )
+
+
+def _contract_path(value: Any, *, label: str) -> Path:
+    raw = str(value or "")
+    if not raw:
+        raise ValueError(f"{label} is required")
+    path = Path(raw)
+    resolved = path if path.is_absolute() else REPO / path
+    resolved = resolved.resolve()
+    if not resolved.is_file():
+        raise FileNotFoundError(f"{label} does not exist: {resolved}")
+    return resolved
+
+
+def _authority_replay_receipts(
+    *,
+    daily: pd.DataFrame,
+    candidates: pd.DataFrame,
+    contract_path: Path,
+    panel_paths: list[Path],
+    shard_root: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    if (
+        str(contract.get("schema_version") or "")
+        != "a_share_tradability_replay_qualification_contract_v1"
+    ):
+        raise ValueError("unsupported A-share replay qualification contract")
+    input_data_sha256 = str(contract.get("input_data_sha256") or "")
+    universe_manifest_sha256 = str(
+        contract.get("universe_manifest_sha256") or ""
+    )
+    for name, value in (
+        ("input_data_sha256", input_data_sha256),
+        ("universe_manifest_sha256", universe_manifest_sha256),
+    ):
+        if len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
+            raise ValueError(f"{name} must be a lowercase SHA256")
+    observed_input_data_sha256 = panel_input_manifest_sha256(
+        panel_paths,
+        shard_root=shard_root,
+    )
+    if input_data_sha256 != observed_input_data_sha256:
+        raise ValueError(
+            "input_data_sha256 does not match the panels actually read"
+        )
+    universe_manifest = _contract_path(
+        contract.get("universe_manifest"),
+        label="universe_manifest",
+    )
+    if universe_manifest_sha256 != sha256_file(universe_manifest):
+        raise ValueError(
+            "universe_manifest_sha256 does not match universe_manifest"
+        )
+
+    fee_schedule = AShareFeeSchedule(**dict(contract["fee_schedule"]))
+    universe_policy_raw = dict(contract["universe_policy"])
+    universe_policy_raw["allowed_exchanges"] = tuple(
+        universe_policy_raw.get("allowed_exchanges") or ()
+    )
+    universe_policy = AShareUniversePolicy(**universe_policy_raw)
+    execution_policy = AShareExecutionPolicy(**dict(contract["execution_policy"]))
+    fee_schedule.validate()
+    universe_policy.validate()
+    execution_policy.validate()
+
+    split_manifest = _contract_path(
+        contract.get("split_manifest"),
+        label="split_manifest",
+    )
+    roles = split_roles(split_manifest)
+    observed_dates = {
+        pd.Timestamp(value).normalize()
+        for value in pd.to_datetime(daily["date"], errors="raise")
+    }
+    observed_roles = {roles.get(date, "UNMAPPED") for date in observed_dates}
+    if observed_roles != {"train"}:
+        raise ValueError(
+            f"A-share replay qualification is train-only; observed roles={sorted(observed_roles)}"
+        )
+    if any(date.year >= 2026 for date in observed_dates):
+        raise ValueError("A-share replay qualification forbids 2026 reads")
+
+    code_hash = _combined_code_sha256(
+        [
+            Path(__file__),
+            REPO
+            / "src/our_system_phase2/services/a_share_executable_replay.py",
+            REPO
+            / "src/our_system_phase2/services/a_share_tradability_guard.py",
+        ]
+    )
+    exact_identities = {
+        str(key): str(value)
+        for key, value in dict(
+            contract.get("candidate_exact_identities") or {}
+        ).items()
+    }
+    receipts: list[dict[str, Any]] = []
+    diagnostics: list[dict[str, Any]] = []
+    for _, candidate in candidates.iterrows():
+        candidate_id = str(candidate["candidate_id"])
+        signal_column = f"signal__{candidate_id}"
+        if signal_column not in daily.columns:
+            diagnostics.append(
+                {
+                    "candidate_id": candidate_id,
+                    "decision": "A_SHARE_REPLAY_BLOCKED",
+                    "blockers": "signal_column_missing",
+                }
+            )
+            continue
+        exact_identity = exact_identities.get(candidate_id) or str(
+            candidate.get("candidate_exact_identity")
+            or candidate.get("exact_identity")
+            or ""
+        )
+        if not exact_identity:
+            diagnostics.append(
+                {
+                    "candidate_id": candidate_id,
+                    "decision": "A_SHARE_REPLAY_BLOCKED",
+                    "blockers": "candidate_exact_identity_missing",
+                }
+            )
+            continue
+        replay_frame = daily.rename(columns={signal_column: "signal"})
+        replay = run_a_share_long_only_replay(
+            replay_frame,
+            fee_schedule=fee_schedule,
+            universe_policy=universe_policy,
+            execution_policy=execution_policy,
+        )
+        receipt = build_a_share_tradability_receipt(
+            candidate_id=candidate_id,
+            candidate_exact_identity=exact_identity,
+            replay_code_sha256=code_hash,
+            input_data_sha256=input_data_sha256,
+            universe_manifest_sha256=universe_manifest_sha256,
+            fee_schedule_sha256=str(replay["fee_schedule_sha256"]),
+            execution_policy_sha256=str(
+                replay["execution_policy_sha256"]
+            ),
+            executable_net_reward=float(
+                replay["a_share_executable_net_reward"]
+            ),
+            train_read_count=int(len(replay_frame)),
+            trade_count=int(replay["trade_count"]),
+            fill_count=int(replay["fill_count"]),
+            blocked_buy_count=int(replay["blocked_buy_count"]),
+            blocked_sell_count=int(replay["blocked_sell_count"]),
+            extra={
+                "replay_kernel_version": str(
+                    replay["replay_kernel_version"]
+                ),
+                "panel_count": int(len(panel_paths)),
+                "daily_observation_count": int(
+                    replay["daily_observation_count"]
+                ),
+                "a_share_mean_one_way_turnover": replay[
+                    "a_share_mean_one_way_turnover"
+                ],
+                "total_fees_cny": replay["total_fees_cny"],
+                "traded_notional_cny": replay["traded_notional_cny"],
+                "ending_nav_cny": replay["ending_nav_cny"],
+                "ending_holding_count": replay[
+                    "ending_holding_count"
+                ],
+                "universe_policy_sha256": replay[
+                    "universe_policy_sha256"
+                ],
+                "qualification_contract_sha256": sha256_file(
+                    contract_path
+                ),
+                "split_manifest_sha256": sha256_file(split_manifest),
+            },
+        )
+        receipts.append(receipt)
+        diagnostics.append(
+            {
+                "candidate_id": candidate_id,
+                "decision": "A_SHARE_TRADABILITY_READY",
+                "blockers": "",
+                "a_share_executable_net_reward": receipt[
+                    "a_share_executable_net_reward"
+                ],
+                "replay_receipt_payload_sha256": receipt[
+                    "replay_receipt_payload_sha256"
+                ],
+            }
+        )
+    return receipts, diagnostics
 
 
 def _evaluate_shard(
@@ -399,11 +684,57 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     metrics = pd.DataFrame(metric_rows)
     metrics_path = output_root / "phase3dy_candidate_tradable_metrics.csv"
     metrics.to_csv(metrics_path, index=False)
+    authority_receipts: list[dict[str, Any]] = []
+    authority_diagnostics: list[dict[str, Any]] = []
+    replay_contract_path: Path | None = None
+    if args.replay_contract:
+        replay_contract_path = Path(args.replay_contract)
+        if not replay_contract_path.is_absolute():
+            replay_contract_path = _resolve(replay_contract_path)
+        replay_contract_path = replay_contract_path.resolve()
+        authority_receipts, authority_diagnostics = _authority_replay_receipts(
+            daily=daily_all,
+            candidates=candidates,
+            contract_path=replay_contract_path,
+            panel_paths=panels,
+            shard_root=shard_root,
+        )
+        receipt_path = output_root / "a_share_tradability_replay_receipts.jsonl"
+        receipt_path.write_text(
+            "".join(
+                json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n"
+                for row in authority_receipts
+            ),
+            encoding="utf-8",
+        )
+        pd.DataFrame(authority_diagnostics).to_csv(
+            output_root / "a_share_tradability_replay_diagnostics.csv",
+            index=False,
+        )
 
     decision_counts = Counter(metrics.get("decision", pd.Series(dtype=str)).astype(str))
+    authority_status = (
+        "A_SHARE_TRADABILITY_REPLAY_V1_RECEIPTS_WRITTEN"
+        if args.replay_contract
+        and len(authority_receipts) == len(candidates)
+        else (
+            "A_SHARE_TRADABILITY_REPLAY_V1_PARTIAL_FAIL_CLOSED"
+            if args.replay_contract
+            else "RESEARCH_ONLY_NO_AUTHORITY_RECEIPTS"
+        )
+    )
     summary = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "decision": "PHASE3DY_TRUE1MIN_TPLUS1_TRADABLE_REPLAY_RESEARCH_ONLY",
+        "decision": (
+            "PHASE3DY_A_SHARE_TRAIN_REPLAY_QUALIFICATION_COMPLETE"
+            if authority_status
+            == "A_SHARE_TRADABILITY_REPLAY_V1_RECEIPTS_WRITTEN"
+            else (
+                "PHASE3DY_A_SHARE_TRAIN_REPLAY_QUALIFICATION_BLOCKED"
+                if args.replay_contract
+                else "PHASE3DY_TRUE1MIN_TPLUS1_TRADABLE_REPLAY_RESEARCH_ONLY"
+            )
+        ),
         "input_path": str(input_path),
         "shard_root": str(shard_root),
         "output_root": str(output_root),
@@ -418,6 +749,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "eval_error_count": int(len(errors)),
         "daily_panel_path": str(daily_path),
         "metrics_path": str(metrics_path),
+        "authority_replay_contract": (
+            str(replay_contract_path)
+            if replay_contract_path is not None
+            else None
+        ),
+        "authority_replay_receipt_count": len(authority_receipts),
+        "authority_replay_blocked_count": sum(
+            row.get("decision") == "A_SHARE_REPLAY_BLOCKED"
+            for row in authority_diagnostics
+        ),
+        "authority_status": authority_status,
         "trading_contract": [
             "expressions are evaluated on true minute rows before daily collapse",
             "daily signal is the last available minute signal for each code/exec_date",
@@ -448,6 +790,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--top-quantile", type=float, default=0.2)
     parser.add_argument("--execution-lag-days", type=int, default=1)
     parser.add_argument("--horizon-days", type=int, default=1)
+    parser.add_argument(
+        "--replay-contract",
+        default=None,
+        help=(
+            "Optional frozen train-only A-share qualification contract. "
+            "Without it this runner remains research-only."
+        ),
+    )
     return parser
 
 

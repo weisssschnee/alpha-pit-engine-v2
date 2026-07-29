@@ -566,13 +566,28 @@ def run_all_route_runtime_qualification(
                 decision == "PAIR_TRAIN_FEEDBACK_BLOCKED"
                 and "not pair-native feedback ready" in validation_error
             ):
-                validation = "REJECTED_BLOCKED_PAIR_AS_DESIGNED"
+                if (
+                    "primary_executable_reward_not_ready" in validation_error
+                    and "primary_replay_receipt_schema_version_not_ready"
+                    in validation_error
+                ):
+                    validation = "REJECTED_MISSING_EXECUTABLE_REPLAY_AS_DESIGNED"
+                else:
+                    validation = "REJECTED_BLOCKED_PAIR_AS_DESIGNED"
             else:
                 validation = "UNEXPECTED_PHASE3CN_REJECTION"
 
         primary_invocations = int(float(row.get("primary_evaluator_invocation_count") or 0))
         control_invocations = int(float(row.get("control_evaluator_invocation_count") or 0))
         matched_increment = _finite(row.get("matched_train_increment"))
+        primary_predictive_reward = _finite(row.get("primary_predictive_reward"))
+        control_predictive_reward = _finite(row.get("control_predictive_reward"))
+        predictive_matched_increment = (
+            primary_predictive_reward - control_predictive_reward
+            if primary_predictive_reward is not None
+            and control_predictive_reward is not None
+            else None
+        )
         support_overlap = _finite(row.get("pair_support_overlap"))
         exact_equivalent = str(row.get("primary_expression_hash") or "") == str(
             row.get("control_expression_hash") or ""
@@ -580,28 +595,30 @@ def run_all_route_runtime_qualification(
         behavior_equivalent = str(row.get("primary_behavior_identity") or "") == str(
             row.get("control_behavior_identity") or ""
         )
-        passed = (
+        runtime_passed = (
             primary_invocations == 1
             and control_invocations == 1
             and str(row.get("pair_evaluation_status") or "") == "PAIR_EVALUATED"
-            and matched_increment is not None
+            and predictive_matched_increment is not None
             and support_overlap == 1.0
             and decision in {"PAIR_TRAIN_FEEDBACK_READY", "PAIR_TRAIN_FEEDBACK_BLOCKED"}
             and not exact_equivalent
             and not behavior_equivalent
-            and validation
-            in {"ACCEPTED_READY_PAIR", "REJECTED_BLOCKED_PAIR_AS_DESIGNED"}
         )
         route_results.append(
             {
                 "route_id": route_id,
-                "runtime_status": "PASS" if passed else "FAIL",
+                "runtime_status": "PASS" if runtime_passed else "FAIL",
                 "primary_evaluator_invocation_count": primary_invocations,
                 "control_evaluator_invocation_count": control_invocations,
                 "pair_evaluation_status": str(row.get("pair_evaluation_status") or ""),
                 "pair_evaluation_blockers": str(row.get("pair_evaluation_blockers") or ""),
                 "matched_train_increment": matched_increment,
                 "matched_train_increment_finite": matched_increment is not None,
+                "predictive_matched_increment": predictive_matched_increment,
+                "predictive_matched_increment_finite": (
+                    predictive_matched_increment is not None
+                ),
                 "pair_support_overlap": support_overlap,
                 "pair_train_reward_decision": decision,
                 "pair_train_reward_blockers": str(row.get("pair_train_reward_blockers") or ""),
@@ -613,21 +630,34 @@ def run_all_route_runtime_qualification(
         )
 
     passed_routes = sum(row.get("runtime_status") == "PASS" for row in route_results)
+    feedback_boundary_qualified = all(
+        row.get("phase3cn_pair_feedback_validation")
+        in {"ACCEPTED_READY_PAIR", "REJECTED_BLOCKED_PAIR_AS_DESIGNED"}
+        for row in route_results
+    )
+    missing_executable_replay = all(
+        row.get("phase3cn_pair_feedback_validation")
+        == "REJECTED_MISSING_EXECUTABLE_REPLAY_AS_DESIGNED"
+        for row in route_results
+    )
     return {
         "status": "PASS"
         if len(CONTROL_CONSTRUCTOR_MATRIX) == len(ALL_RUNTIME_ROUTES)
         and passed_routes == len(ALL_RUNTIME_ROUTES)
+        and feedback_boundary_qualified
         else "FAIL",
         "repo_sha": repo_sha,
         "constructor_authority": f"{len(CONTROL_CONSTRUCTOR_MATRIX)}/{len(ALL_RUNTIME_ROUTES)}",
         "synthetic_end_to_end_runtime": f"{passed_routes}/{len(ALL_RUNTIME_ROUTES)}",
-        "pair_native_phase3cn_feedback": "QUALIFIED"
-        if all(
-            row.get("phase3cn_pair_feedback_validation")
-            in {"ACCEPTED_READY_PAIR", "REJECTED_BLOCKED_PAIR_AS_DESIGNED"}
-            for row in route_results
-        )
-        else "PARTIAL",
+        "pair_native_phase3cn_feedback": (
+            "QUALIFIED"
+            if feedback_boundary_qualified
+            else (
+                "NOT_QUALIFIED_MISSING_EXECUTABLE_REPLAY"
+                if missing_executable_replay
+                else "PARTIAL"
+            )
+        ),
         "routes": route_results,
         "primary_evaluator_invocation_total": sum(
             int(row.get("primary_evaluator_invocation_count") or 0) for row in route_results

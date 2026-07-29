@@ -66,9 +66,13 @@ from our_system_phase2.services.optuna_tpe_search_adapter import (
     RouteConditionalTPESearchAdapter,
 )
 from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_EXECUTABLE_REWARD_READY,
     A_SHARE_TRADABILITY_EVIDENCE_CLASS,
     A_SHARE_TRADABILITY_READY,
     REQUIRED_TRADABILITY_PROOFS,
+    build_a_share_tradability_receipt,
+    pair_tradability_evidence,
+    prefixed_tradability_evidence,
 )
 from our_system_phase2.services.route_local_availability import (
     AvailabilityEntry,
@@ -124,8 +128,52 @@ def _evaluated_outcome(
     decision: str = "TRAIN_REWARD_FOLLOWUP_READY",
 ) -> dict[str, object]:
     matched = primary - control
+    primary_receipt = build_a_share_tradability_receipt(
+        candidate_id=f"{pair_id}-primary",
+        candidate_exact_identity=f"{pair_id}-primary-exact",
+        replay_code_sha256="a" * 64,
+        input_data_sha256="b" * 64,
+        universe_manifest_sha256="c" * 64,
+        fee_schedule_sha256="d" * 64,
+        execution_policy_sha256="e" * 64,
+        executable_net_reward=primary,
+        train_read_count=10,
+        trade_count=2,
+        fill_count=2,
+        blocked_buy_count=0,
+        blocked_sell_count=0,
+    )
+    control_receipt = build_a_share_tradability_receipt(
+        candidate_id=f"{pair_id}-control",
+        candidate_exact_identity=f"{pair_id}-control-exact",
+        replay_code_sha256="a" * 64,
+        input_data_sha256="b" * 64,
+        universe_manifest_sha256="c" * 64,
+        fee_schedule_sha256="d" * 64,
+        execution_policy_sha256="e" * 64,
+        executable_net_reward=control,
+        train_read_count=10,
+        trade_count=2,
+        fill_count=2,
+        blocked_buy_count=0,
+        blocked_sell_count=0,
+    )
+    pair_evidence = pair_tradability_evidence(
+        primary_receipt,
+        control_receipt,
+    )
     return {
+        **primary_receipt,
+        **pair_evidence,
+        **prefixed_tradability_evidence(
+            primary_receipt, prefix="primary_"
+        ),
+        **prefixed_tradability_evidence(
+            control_receipt, prefix="control_"
+        ),
         "pair_id": pair_id,
+        "primary_candidate_id": f"{pair_id}-primary",
+        "control_candidate_id": f"{pair_id}-control",
         "route_id": route_id,
         "pair_evaluation_status": "PAIR_EVALUATED",
         "primary_composite_reward": primary,
@@ -134,6 +182,11 @@ def _evaluated_outcome(
         "pair_train_reward": matched,
         "pair_train_reward_decision": "PAIR_TRAIN_FEEDBACK_READY",
         "primary_standalone_train_reward_decision": decision,
+        "primary_executable_reward_decision": (
+            A_SHARE_EXECUTABLE_REWARD_READY
+        ),
+        "primary_a_share_executable_net_reward": primary,
+        "a_share_matched_executable_increment": matched,
         "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
         "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
         "pair_a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
@@ -160,7 +213,8 @@ def test_conservative_search_score_cannot_promote_bad_primary_against_worse_cont
 
 def test_optimizer_score_requires_explicit_a_share_tradability_evidence() -> None:
     outcome = _evaluated_outcome(primary=0.7, control=0.5)
-    outcome.pop("t_plus_one_enforced")
+    outcome.pop("primary_replay_receipt_canonical_json")
+    outcome.pop("primary_t_plus_one_enforced")
 
     assert _conservative_search_score(outcome) is None
     assert _validation_eligible(outcome) is False

@@ -15,6 +15,9 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_EXECUTABLE_REWARD_READY,
+    A_SHARE_EXECUTABLE_REWARD_METRIC,
+    A_SHARE_EXECUTABLE_REWARD_SOURCE,
     A_SHARE_TRADABILITY_READY,
     a_share_tradability_blockers,
     pair_tradability_evidence,
@@ -29,11 +32,15 @@ from our_system_phase2.services.unified_capability_registry import stable_hash
 
 PAIR_RECEIPT_SCHEMA_VERSION = "cn_candidate_pair_receipt_v2"
 PAIR_AUTHORIZATION_STATUS = "AUTHORIZED_FOR_FORMAL_PAIR_EVALUATION"
-MATCHED_OPTIMIZER_REWARD_SOURCE = "train_only_phase3cm_matched_increment"
-MATCHED_OPTIMIZER_REWARD_METRIC = "matched_train_primary_minus_control_composite_reward"
+MATCHED_OPTIMIZER_REWARD_SOURCE = (
+    "a_share_tradability_replay_v1_matched_executable_increment"
+)
+MATCHED_OPTIMIZER_REWARD_METRIC = (
+    "matched_train_primary_minus_control_executable_net_reward"
+)
 PAIR_TRAIN_FEEDBACK_READY = "PAIR_TRAIN_FEEDBACK_READY"
 PAIR_TRAIN_FEEDBACK_BLOCKED = "PAIR_TRAIN_FEEDBACK_BLOCKED"
-STANDALONE_TRAIN_REWARD_READY = "TRAIN_REWARD_FOLLOWUP_READY"
+STANDALONE_TRAIN_REWARD_READY = A_SHARE_EXECUTABLE_REWARD_READY
 PAIR_MAPPING_PORTFOLIO_CONTRACT = (
     "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|"
     "SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS"
@@ -598,6 +605,7 @@ def build_pair_evaluation_rows(
     pair_receipts: Iterable[Mapping[str, Any]],
     reward_rows: Iterable[Mapping[str, Any]],
     portfolio_rows_by_expression_hash: Mapping[str, Sequence[Mapping[str, Any]]],
+    replay_receipt_rows: Iterable[Mapping[str, Any]] = (),
     reward_atom_rows: Iterable[Mapping[str, Any]] = (),
     evaluator_invocation_counts: Mapping[str, int] | None = None,
 ) -> list[dict[str, Any]]:
@@ -605,6 +613,33 @@ def build_pair_evaluation_rows(
     candidate_receipt_by_id = {str(row.get("candidate_id") or ""): dict(row) for row in candidate_receipts}
     pair_receipt_by_id = {str(row.get("pair_id") or ""): dict(row) for row in pair_receipts}
     reward_by_id = {str(row.get("candidate_id") or ""): dict(row) for row in reward_rows}
+    replay_by_id: dict[str, dict[str, Any]] = {}
+    for raw_receipt in replay_receipt_rows:
+        receipt = dict(raw_receipt)
+        candidate_id = str(receipt.get("candidate_id") or "")
+        if not candidate_id:
+            raise CandidatePairError(
+                "A-share replay receipt is missing candidate_id"
+            )
+        if candidate_id in replay_by_id:
+            raise CandidatePairError(
+                f"duplicate A-share replay receipt candidate_id: {candidate_id}"
+            )
+        replay_by_id[candidate_id] = receipt
+    unknown_replay_ids = sorted(set(replay_by_id) - set(reward_by_id))
+    if unknown_replay_ids:
+        raise CandidatePairError(
+            "A-share replay receipts do not match evaluated candidates: "
+            + "|".join(unknown_replay_ids)
+        )
+    reward_by_id = {
+        candidate_id: {
+            **reward,
+            **replay_by_id.get(candidate_id, {}),
+            "candidate_id": candidate_id,
+        }
+        for candidate_id, reward in reward_by_id.items()
+    }
     atoms = [dict(row) for row in reward_atom_rows]
     invocation_counts = {str(key): int(value) for key, value in (evaluator_invocation_counts or {}).items()}
     output: list[dict[str, Any]] = []
@@ -674,14 +709,46 @@ def build_pair_evaluation_rows(
         if control_invocations <= 0:
             blockers.append("control_evaluator_not_invoked")
 
-        primary_value = _finite((primary_reward or {}).get("optimizer_reward"))
-        control_value = _finite((control_reward or {}).get("optimizer_reward"))
-        primary_turnover = _finite((primary_reward or {}).get("train_mean_one_way_turnover"))
-        control_turnover = _finite((control_reward or {}).get("train_mean_one_way_turnover"))
+        primary_predictive_value = _finite(
+            (primary_reward or {}).get("optimizer_reward")
+        )
+        control_predictive_value = _finite(
+            (control_reward or {}).get("optimizer_reward")
+        )
+        predictive_matched_increment = (
+            None
+            if primary_predictive_value is None
+            or control_predictive_value is None
+            else primary_predictive_value - control_predictive_value
+        )
+        primary_predictive_turnover = _finite(
+            (primary_reward or {}).get("train_mean_one_way_turnover")
+        )
+        control_predictive_turnover = _finite(
+            (control_reward or {}).get("train_mean_one_way_turnover")
+        )
+        predictive_turnover_increment = (
+            None
+            if primary_predictive_turnover is None
+            or control_predictive_turnover is None
+            else primary_predictive_turnover - control_predictive_turnover
+        )
+        primary_value = _finite(
+            (primary_reward or {}).get("a_share_executable_net_reward")
+        )
+        control_value = _finite(
+            (control_reward or {}).get("a_share_executable_net_reward")
+        )
+        primary_turnover = _finite(
+            (primary_reward or {}).get("a_share_mean_one_way_turnover")
+        )
+        control_turnover = _finite(
+            (control_reward or {}).get("a_share_mean_one_way_turnover")
+        )
         primary_rank_ic = _finite((primary_reward or {}).get("train_rank_ic_mean"))
         control_rank_ic = _finite((control_reward or {}).get("train_rank_ic_mean"))
-        if primary_value is None or control_value is None:
-            blockers.append("matched_train_reward_unavailable")
+        if primary_predictive_value is None or control_predictive_value is None:
+            blockers.append("matched_predictive_reward_unavailable")
         matched_increment = None if primary_value is None or control_value is None else primary_value - control_value
         turnover_increment = (
             None if primary_turnover is None or control_turnover is None else primary_turnover - control_turnover
@@ -697,13 +764,32 @@ def build_pair_evaluation_rows(
         primary_standalone_decision = str(
             (primary_reward or {}).get("train_reward_decision") or ""
         )
-        if primary_standalone_decision != STANDALONE_TRAIN_REWARD_READY:
-            pair_feedback_blockers.add("primary_standalone_train_reward_not_ready")
+        primary_executable_decision = (
+            A_SHARE_EXECUTABLE_REWARD_READY
+            if not a_share_tradability_blockers(
+                primary_reward or {},
+                expected_candidate_id=str(primary["candidate_id"]),
+                expected_exact_identity=str(
+                    (primary_receipt or {}).get("exact_identity") or ""
+                ),
+            )
+            else ""
+        )
+        if primary_executable_decision != STANDALONE_TRAIN_REWARD_READY:
+            pair_feedback_blockers.add("primary_executable_reward_not_ready")
         primary_tradability_blockers = a_share_tradability_blockers(
-            primary_reward or {}
+            primary_reward or {},
+            expected_candidate_id=str(primary["candidate_id"]),
+            expected_exact_identity=str(
+                (primary_receipt or {}).get("exact_identity") or ""
+            ),
         )
         control_tradability_blockers = a_share_tradability_blockers(
-            control_reward or {}
+            control_reward or {},
+            expected_candidate_id=str(control["candidate_id"]),
+            expected_exact_identity=str(
+                (control_receipt or {}).get("exact_identity") or ""
+            ),
         )
         pair_feedback_blockers.update(
             f"primary_{blocker}" for blocker in primary_tradability_blockers
@@ -766,6 +852,12 @@ def build_pair_evaluation_rows(
             "pair_rank_ic_metric": pair_rank_ic_metric,
             "primary_train_reward": primary_value,
             "control_train_reward": control_value,
+            "primary_predictive_reward": primary_predictive_value,
+            "control_predictive_reward": control_predictive_value,
+            "predictive_matched_increment": predictive_matched_increment,
+            "primary_predictive_turnover": primary_predictive_turnover,
+            "control_predictive_turnover": control_predictive_turnover,
+            "predictive_turnover_increment": predictive_turnover_increment,
             "matched_train_increment": matched_increment,
             "primary_turnover": primary_turnover,
             "control_turnover": control_turnover,
@@ -785,6 +877,7 @@ def build_pair_evaluation_rows(
             "primary_evaluator_invocation_count": primary_invocations,
             "control_evaluator_invocation_count": control_invocations,
             "primary_standalone_train_reward_decision": primary_standalone_decision,
+            "primary_executable_reward_decision": primary_executable_decision,
             "primary_standalone_train_reward_blockers": str(
                 (primary_reward or {}).get("train_reward_blockers") or ""
             ),
@@ -814,6 +907,8 @@ def build_pair_evaluation_rows(
             "train_reward": matched_increment if pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY else "",
             "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
             "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
+            "standalone_reward_source": A_SHARE_EXECUTABLE_REWARD_SOURCE,
+            "standalone_reward_metric": A_SHARE_EXECUTABLE_REWARD_METRIC,
             "optimizer_reward_split": "train",
             "control_independent_vote": False,
             "control_independent_memory": False,

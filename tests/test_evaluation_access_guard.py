@@ -15,14 +15,61 @@ from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule
 from our_system_phase2.services.search_feedback import build_search_feedback_context
 from our_system_phase2.services.search_feedback import clean_optimizer_feedback_rows
 from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_EXECUTABLE_REWARD_READY,
     A_SHARE_TRADABILITY_EVIDENCE_CLASS,
     A_SHARE_TRADABILITY_READY,
     REQUIRED_TRADABILITY_PROOFS,
+    build_a_share_tradability_receipt,
+    pair_tradability_evidence,
+    prefixed_tradability_evidence,
+)
+from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_METRIC,
+    MATCHED_OPTIMIZER_REWARD_SOURCE,
 )
 
 
-def _reward_row(**overrides: str) -> dict[str, str]:
+def _reward_row(**overrides: str) -> dict[str, object]:
+    receipt = build_a_share_tradability_receipt(
+        candidate_id="c1",
+        candidate_exact_identity="exact-c1",
+        replay_code_sha256="a" * 64,
+        input_data_sha256="b" * 64,
+        universe_manifest_sha256="c" * 64,
+        fee_schedule_sha256="d" * 64,
+        execution_policy_sha256="e" * 64,
+        executable_net_reward=0.25,
+        train_read_count=10,
+        trade_count=2,
+        fill_count=2,
+        blocked_buy_count=0,
+        blocked_sell_count=0,
+        extra={"a_share_mean_one_way_turnover": 0.2},
+    )
+    control_receipt = build_a_share_tradability_receipt(
+        candidate_id="c1-control",
+        candidate_exact_identity="exact-c1-control",
+        replay_code_sha256="a" * 64,
+        input_data_sha256="b" * 64,
+        universe_manifest_sha256="c" * 64,
+        fee_schedule_sha256="d" * 64,
+        execution_policy_sha256="e" * 64,
+        executable_net_reward=0.0,
+        train_read_count=10,
+        trade_count=2,
+        fill_count=2,
+        blocked_buy_count=0,
+        blocked_sell_count=0,
+        extra={"a_share_mean_one_way_turnover": 0.1},
+    )
+    pair_evidence = pair_tradability_evidence(receipt, control_receipt)
     row = {
+        **receipt,
+        **pair_evidence,
+        **prefixed_tradability_evidence(receipt, prefix="primary_"),
+        **prefixed_tradability_evidence(
+            control_receipt, prefix="control_"
+        ),
         "candidate_id": "c1",
         "pair_id": "p1",
         "pair_member_role": "PRIMARY",
@@ -38,6 +85,7 @@ def _reward_row(**overrides: str) -> dict[str, str]:
         "optimizer_reward": "0.25",
         "train_reward": "0.25",
         "matched_train_increment": "0.25",
+        "a_share_matched_executable_increment": "0.25",
         "pair_train_reward": "0.25",
         "pair_train_reward_decision": "PAIR_TRAIN_FEEDBACK_READY",
         "pair_train_reward_blockers": "",
@@ -46,14 +94,16 @@ def _reward_row(**overrides: str) -> dict[str, str]:
         "pair_rank_ic_metric": "0.01",
         "primary_evaluator_invocation_count": "1",
         "control_evaluator_invocation_count": "1",
-        "optimizer_reward_source": "train_only_phase3cm_matched_increment",
-        "optimizer_reward_metric": "matched_train_primary_minus_control_composite_reward",
+        "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
+        "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
         "optimizer_reward_split": "train",
         "feedback_data_role": "development",
         "primary_standalone_train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+        "primary_executable_reward_decision": A_SHARE_EXECUTABLE_REWARD_READY,
         "primary_standalone_train_reward_blockers": "",
         "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
         "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
+        "pair_a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
         **{field: "true" for field in REQUIRED_TRADABILITY_PROOFS},
         "validation_day_sortino": "9.9",
         "holdout_day_sortino": "8.8",
@@ -91,13 +141,13 @@ def test_projection_rejects_non_train_optimizer_reward() -> None:
 
 
 def test_projection_rejects_unproven_a_share_tradability() -> None:
+    row = _reward_row(t_plus_one_enforced="false")
+    row.pop("replay_receipt_canonical_json")
     with pytest.raises(
         EvaluationAccessViolation,
         match="t_plus_one_enforced_not_proven",
     ):
-        project_train_only_feedback_row(
-            _reward_row(t_plus_one_enforced="false")
-        )
+        project_train_only_feedback_row(row)
 
 
 def test_projection_rejects_missing_split_and_role() -> None:

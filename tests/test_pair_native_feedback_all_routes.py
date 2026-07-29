@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -31,9 +32,11 @@ from scripts.build_cn_matched_control_candidate_parallel_artifacts import (
     run_all_route_runtime_qualification,
 )
 from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_EXECUTABLE_REWARD_READY,
     A_SHARE_TRADABILITY_EVIDENCE_CLASS,
     A_SHARE_TRADABILITY_READY,
     REQUIRED_TRADABILITY_PROOFS,
+    build_a_share_tradability_receipt,
 )
 
 
@@ -72,26 +75,48 @@ def _pair_inputs(
     receipts = authority.authorize_table(candidates)
     pair_receipts = CandidatePairAuthority().authorize_table(candidates, receipts)
     primary, control = group_candidate_pairs(candidates)[0]
+    receipt_by_id = {
+        str(row["candidate_id"]): row for row in receipts
+    }
+    def replay_receipt(candidate_id: str, reward: float, turnover: float) -> dict[str, object]:
+        return build_a_share_tradability_receipt(
+            candidate_id=candidate_id,
+            candidate_exact_identity=str(
+                receipt_by_id[candidate_id]["exact_identity"]
+            ),
+            replay_code_sha256="a" * 64,
+            input_data_sha256="b" * 64,
+            universe_manifest_sha256="c" * 64,
+            fee_schedule_sha256="d" * 64,
+            execution_policy_sha256="e" * 64,
+            executable_net_reward=reward,
+            train_read_count=10,
+            trade_count=2,
+            fill_count=2,
+            blocked_buy_count=0,
+            blocked_sell_count=0,
+            extra={"a_share_mean_one_way_turnover": turnover},
+        )
     rewards = [
         {
+            **replay_receipt(
+                str(primary["candidate_id"]), primary_reward, 0.4
+            ),
             "candidate_id": primary["candidate_id"],
             "optimizer_reward": primary_reward,
             "train_mean_one_way_turnover": 0.4,
             "train_rank_ic_mean": 0.03,
             "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
             "train_reward_blockers": primary_standalone_blockers,
-            "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
-            "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
-            **{field: True for field in REQUIRED_TRADABILITY_PROOFS},
         },
         {
+            **replay_receipt(
+                str(control["candidate_id"]), control_reward, 0.2
+            ),
             "candidate_id": control["candidate_id"],
             "optimizer_reward": control_reward,
             "train_mean_one_way_turnover": 0.2,
             "train_rank_ic_mean": 0.01,
-            "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
-            "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
-            **{field: True for field in REQUIRED_TRADABILITY_PROOFS},
         },
     ]
     support = {
@@ -160,6 +185,7 @@ def test_phase3cn_clean_gate_blocks_primary_standalone_failure() -> None:
         "pair_rank_ic_metric": 0.01,
         "optimizer_reward": 0.2,
         "primary_standalone_train_reward_decision": "TRAIN_REWARD_BLOCKED",
+        "primary_executable_reward_decision": "",
         "primary_standalone_train_reward_blockers": "legacy_primary_blocker",
         "train_reward_decision": "TRAIN_REWARD_BLOCKED",
         "train_reward_blockers": "legacy_primary_blocker",
@@ -180,6 +206,7 @@ def test_phase3cn_clean_gate_blocks_primary_standalone_failure() -> None:
 def test_pair_feedback_blocks_missing_tradability_evidence() -> None:
     inputs = _pair_inputs()
     for reward in inputs["reward_rows"]:
+        reward.pop("replay_receipt_canonical_json")
         reward.pop("t_plus_one_enforced")
 
     row = build_pair_evaluation_rows(**inputs)[0]
@@ -190,6 +217,50 @@ def test_pair_feedback_blocks_missing_tradability_evidence() -> None:
         "pair_train_reward_blockers"
     ]
     assert row["optimizer_reward"] == ""
+
+
+def test_pair_feedback_binds_separate_immutable_replay_receipts() -> None:
+    inputs = _pair_inputs()
+    predictive_rows: list[dict[str, object]] = []
+    replay_rows: list[dict[str, object]] = []
+    for reward in inputs["reward_rows"]:
+        canonical = str(reward["replay_receipt_canonical_json"])
+        replay = json.loads(canonical)
+        replay["replay_receipt_canonical_json"] = canonical
+        replay["replay_receipt_payload_sha256"] = reward[
+            "replay_receipt_payload_sha256"
+        ]
+        replay_rows.append(replay)
+        predictive_rows.append(
+            {
+                "candidate_id": reward["candidate_id"],
+                "optimizer_reward": reward["optimizer_reward"],
+                "train_mean_one_way_turnover": reward[
+                    "train_mean_one_way_turnover"
+                ],
+                "train_rank_ic_mean": reward["train_rank_ic_mean"],
+                "train_reward_decision": reward.get(
+                    "train_reward_decision", ""
+                ),
+                "train_reward_blockers": reward.get(
+                    "train_reward_blockers", ""
+                ),
+            }
+        )
+    inputs["reward_rows"] = predictive_rows
+    inputs["replay_receipt_rows"] = replay_rows
+
+    row = build_pair_evaluation_rows(**inputs)[0]
+
+    assert row["pair_evaluation_status"] == "PAIR_EVALUATED"
+    assert row["pair_train_reward_decision"] == "PAIR_TRAIN_FEEDBACK_READY"
+    assert (
+        row["primary_executable_reward_decision"]
+        == A_SHARE_EXECUTABLE_REWARD_READY
+    )
+    assert row["optimizer_reward"] == pytest.approx(
+        row["matched_train_increment"]
+    )
 
 
 def test_pair_feedback_blocks_support_mismatch_and_missing_control_invocation() -> None:
@@ -221,6 +292,10 @@ def test_pair_feedback_ready_ignores_primary_standalone_blocker_but_keeps_diagno
     )[0]
 
     assert row["pair_train_reward_decision"] == "PAIR_TRAIN_FEEDBACK_READY"
+    assert (
+        row["primary_executable_reward_decision"]
+        == A_SHARE_EXECUTABLE_REWARD_READY
+    )
     assert row["pair_train_reward_blockers"] == ""
     assert row["primary_standalone_train_reward_blockers"] == "legacy_primary_blocker"
     assert "train_reward_decision" not in row
@@ -280,15 +355,23 @@ def test_all_eight_routes_reach_real_phase3cm_and_pair_native_phase3cn_validatio
         repo_sha="synthetic-test-repo-sha",
     )
 
-    assert result["status"] == "PASS"
+    # The synthetic Phase3CM run still proves the predictive engine and all
+    # route constructors.  It deliberately cannot qualify optimizer feedback:
+    # no immutable executable A-share replay receipt is fabricated here.
+    assert result["status"] == "FAIL"
     assert result["constructor_authority"] == "8/8"
     assert result["synthetic_end_to_end_runtime"] == "8/8"
+    assert (
+        result["pair_native_phase3cn_feedback"]
+        == "NOT_QUALIFIED_MISSING_EXECUTABLE_REPLAY"
+    )
     assert {row["route_id"] for row in result["routes"]} == set(ALL_RUNTIME_ROUTES)
     for row in result["routes"]:
         assert row["primary_evaluator_invocation_count"] == 1
         assert row["control_evaluator_invocation_count"] == 1
         assert row["pair_evaluation_status"] == "PAIR_EVALUATED"
-        assert row["matched_train_increment_finite"] is True
+        assert row["matched_train_increment_finite"] is False
+        assert row["predictive_matched_increment_finite"] is True
         assert row["pair_support_overlap"] == pytest.approx(1.0)
         assert row["pair_train_reward_decision"] in {
             "PAIR_TRAIN_FEEDBACK_READY",
@@ -296,10 +379,13 @@ def test_all_eight_routes_reach_real_phase3cm_and_pair_native_phase3cn_validatio
         }
         assert row["primary_control_exact_equivalent"] is False
         assert row["primary_control_behavior_equivalent"] is False
-        assert row["phase3cn_pair_feedback_validation"] in {
-            "ACCEPTED_READY_PAIR",
-            "REJECTED_BLOCKED_PAIR_AS_DESIGNED",
-        }
+        assert (
+            row["phase3cn_pair_feedback_validation"]
+            == "REJECTED_MISSING_EXECUTABLE_REPLAY_AS_DESIGNED"
+        )
+        assert "primary_executable_reward_not_ready" in row[
+            "phase3cn_validation_error"
+        ]
     assert result["data_access"] == {
         "validation_reads": 0,
         "holdout_reads": 0,

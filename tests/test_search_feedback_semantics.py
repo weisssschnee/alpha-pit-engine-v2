@@ -8,15 +8,62 @@ from our_system_phase2.services.matched_control_pairs import (
     MATCHED_OPTIMIZER_REWARD_SOURCE,
 )
 from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_EXECUTABLE_REWARD_READY,
     A_SHARE_TRADABILITY_EVIDENCE_CLASS,
     A_SHARE_TRADABILITY_READY,
     REQUIRED_TRADABILITY_PROOFS,
+    build_a_share_tradability_receipt,
+    pair_tradability_evidence,
+    prefixed_tradability_evidence,
 )
 
 
 def _reward_row(expression: str) -> dict[str, object]:
+    primary_id = f"{expression}::primary"
+    control_id = f"{expression}::control"
+    receipt = build_a_share_tradability_receipt(
+        candidate_id=primary_id,
+        candidate_exact_identity=f"exact::{expression}",
+        replay_code_sha256="a" * 64,
+        input_data_sha256="b" * 64,
+        universe_manifest_sha256="c" * 64,
+        fee_schedule_sha256="d" * 64,
+        execution_policy_sha256="e" * 64,
+        executable_net_reward=0.25,
+        train_read_count=10,
+        trade_count=2,
+        fill_count=2,
+        blocked_buy_count=0,
+        blocked_sell_count=0,
+        extra={"a_share_mean_one_way_turnover": 0.2},
+    )
+    control_receipt = build_a_share_tradability_receipt(
+        candidate_id=control_id,
+        candidate_exact_identity=f"exact::{expression}::control",
+        replay_code_sha256="a" * 64,
+        input_data_sha256="b" * 64,
+        universe_manifest_sha256="c" * 64,
+        fee_schedule_sha256="d" * 64,
+        execution_policy_sha256="e" * 64,
+        executable_net_reward=0.0,
+        train_read_count=10,
+        trade_count=2,
+        fill_count=2,
+        blocked_buy_count=0,
+        blocked_sell_count=0,
+        extra={"a_share_mean_one_way_turnover": 0.1},
+    )
+    pair_evidence = pair_tradability_evidence(receipt, control_receipt)
     return {
-        "candidate_id": expression,
+        **receipt,
+        **pair_evidence,
+        **prefixed_tradability_evidence(receipt, prefix="primary_"),
+        **prefixed_tradability_evidence(
+            control_receipt, prefix="control_"
+        ),
+        "candidate_id": primary_id,
+        "primary_candidate_id": primary_id,
+        "control_candidate_id": control_id,
         "expression_hash": expression,
         "expression": expression,
         "family_id": "family-a",
@@ -34,6 +81,7 @@ def _reward_row(expression: str) -> dict[str, object]:
         "evaluation_access_guard": "evalreset_feedback_guard_v1",
         "train_reward": 0.25,
         "matched_train_increment": 0.25,
+        "a_share_matched_executable_increment": 0.25,
         "pair_train_reward": 0.25,
         "pair_train_reward_decision": "PAIR_TRAIN_FEEDBACK_READY",
         "pair_train_reward_blockers": "",
@@ -44,8 +92,10 @@ def _reward_row(expression: str) -> dict[str, object]:
         "control_evaluator_invocation_count": 1,
         "primary_standalone_train_reward_blockers": "",
         "primary_standalone_train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+        "primary_executable_reward_decision": A_SHARE_EXECUTABLE_REWARD_READY,
         "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
         "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
+        "pair_a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
         **{field: True for field in REQUIRED_TRADABILITY_PROOFS},
     }
 
