@@ -460,17 +460,55 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
     if primary_candidates["exact_identity"].duplicated().any():
         raise RuntimeError("productive primary exact-identity duplicate")
 
+    identity_columns = [
+        "route_id",
+        "structural_family_id",
+        "signal_cluster_id",
+        "portfolio_behavior_family_id",
+        "portfolio_behavior_signature_id",
+    ]
+    identity_check = productive[
+        ["pair_id", *identity_columns]
+    ].merge(
+        behavior,
+        on="pair_id",
+        how="inner",
+        validate="one_to_one",
+        suffixes=("_observation", "_behavior"),
+    )
+    if len(identity_check) != 2676:
+        raise RuntimeError("productive behavior identity coverage drift")
+    for column in (
+        "route_id",
+        "portfolio_behavior_family_id",
+        "portfolio_behavior_signature_id",
+    ):
+        if not (
+            identity_check[f"{column}_observation"].astype(str)
+            == identity_check[f"{column}_behavior"].astype(str)
+        ).all():
+            raise RuntimeError(
+                f"productive behavior identity mismatch: {column}"
+            )
+    for column in ("structural_family_id", "signal_cluster_id"):
+        observation_values = identity_check[
+            f"{column}_observation"
+        ].fillna("").astype(str)
+        behavior_values = identity_check[
+            f"{column}_behavior"
+        ].fillna("").astype(str)
+        if not (
+            (observation_values == "") | (observation_values == behavior_values)
+        ).all():
+            raise RuntimeError(
+                f"productive legacy identity conflicts with behavior "
+                f"authority: {column}"
+            )
+
     review = (
-        productive.merge(
+        productive.drop(columns=identity_columns).merge(
             behavior,
-            on=[
-                "pair_id",
-                "route_id",
-                "structural_family_id",
-                "signal_cluster_id",
-                "portfolio_behavior_family_id",
-                "portfolio_behavior_signature_id",
-            ],
+            on="pair_id",
             how="inner",
             validate="one_to_one",
         )
