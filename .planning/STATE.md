@@ -2,7 +2,7 @@
 
 Updated: 2026-07-29
 
-Current state: `CN_HYBRID_BOUNDED_6144_TRANCHE_RUNNING_ON_77O`
+Current state: `CN_BEHAVIOR_FAMILY_FINALIST_SELECTION_READY`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -929,81 +929,82 @@ remains unchanged. The compact receipt is
 
 ## A-share tradability authority boundary repair (2026-07-29)
 
-- The existing Phase3CM candidate-parallel and streaming evaluators are now
-  explicitly development-predictive authorities only. Their train scores do
-  not prove A-share executability, tradability or economics.
-- The existing matched-feedback and Hybrid search-policy nodes now fail closed:
-  an optimizer trial cannot complete with reward unless the primary standalone
-  decision is READY and both pair members carry immutable replay proof for
-  execution clock, same-bar exclusion, T+1, limit-lock fills, suspensions,
-  complete fees and a promotion-grade universe.
+- The existing Phase3CM candidate-parallel and streaming evaluators remain
+  development-predictive authorities only. Their full-coordinate train scores
+  may feed the accepted development optimizer, but do not prove A-share
+  executability, tradability or economics.
+- ADR 0010 supersedes only ADR 0009's over-broad optimizer hard gate. A
+  development observation now requires a completed pair, pair-native
+  train-feedback READY, primary standalone
+  `TRAIN_REWARD_FOLLOWUP_READY`, immutable submission/pair receipts and the
+  existing train-only access guards. It does not require executable replay.
 - Historical `productive` labels remain development diagnostics for
   behavior-family deduplication and train-stability ranking. They are not
   finalist, promotion, validation or economic evidence.
-- ADR 0009 records the authority correction without creating a new evaluator,
-  search system, platform or authority node. The existing Phase3DY T+1 replay
-  path is now bound to the guard through canonical, candidate- and
-  exact-identity-bound receipts. Pair, feedback, adaptive and Hybrid-search
-  consumers revalidate both pair-member receipt payloads and hashes.
-- Phase3CM Sortino and matched increments remain predictive diagnostics. The
-  only optimizer-authorizing score is now
-  `min(primary executable net daily Sortino, primary-minus-control executable
-  net reward)` from the A-share replay receipts; copied READY labels cannot
-  authorize feedback.
+- Development ask/tell uses
+  `min(primary Phase3CM composite reward, primary-minus-control Phase3CM
+  matched increment)` and writes the explicit evidence/scope labels
+  `DEVELOPMENT_PREDICTIVE_SCORE_ONLY` and `DEVELOPMENT_SEARCH_ONLY`.
+  Validation, holdout and 2026 remain unreachable from feedback.
+- The executable replay implemented under ADR 0009 is retained unchanged as a
+  separate finalist/economic-eligibility gate. Both members must still carry
+  canonical candidate- and exact-identity-bound receipts for execution clock,
+  same-bar exclusion, T+1, limit-lock fills, suspensions, complete fees and a
+  promotion-grade universe. Missing proof makes
+  `finalist_execution_eligible=false`; it does not invalidate a clean
+  development observation.
 - The executable kernel now enforces close-t signal/next-session-open execution,
   sell-before-buy cash and holdings, T+1 inventory age, opening limit-up buy
   blocks, opening limit-down sell blocks with carry, suspension blocks, board
   lots and a date-covering explicit fee contract. Input panel bytes, universe
   manifest bytes, fee schedule, execution policy and source code are hashed
   into the immutable receipt.
-- Verification was deliberately non-financial: the exact implementation at
-  `a33d8fccdb79372ffac54ce55302be362911df19` passed 88/88 focused tests locally
-  and 88/88 in the official 77o `alpha311` environment from versioned workspace
-  `D:\ChengboRemote\workspace\alpha_pit_a_share_exec_a33d8fc_20260729_205359`.
-  The deployment package SHA256 is
-  `f4acc432ebd8f64fdcb3fffb1457a211337bae84e3f5a57983dc4bc37f86d8b6`;
-  its three key deployed files match local normalized SHA256 exactly. No
-  search, financial evaluation, validation, holdout or 2026 read was launched.
-  The updated evidence receipt is
-  `runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json`.
-- Zero-financial 77o input qualification is BLOCKED. The active 28,026,372-row
-  train shard exposes `code/trade_time/open/close` but lacks high/low,
-  security type, exchange, PIT universe eligibility, listing age,
-  ST/delisting, suspension and limit prices. The 116,292-row session shard
-  additionally lacks open. Existing label sidecars do not supply those fields,
-  and no frozen account commission/minimum contract or promotion-grade
-  survivorship-free, delisting-inclusive universe manifest exists. Therefore
-  zero qualification pairs are authorized and no financial results were
-  produced or reused.
+- The current Phase3CM materialized tables do not directly carry every input
+  needed by finalist execution replay. This is a finalist adapter/input-binding
+  gap, not a failure of the project's PIT fabric and not a prerequisite for
+  development feedback. PIT observable-time, release, maturity, suspension,
+  limit-lifecycle and universe authorities remain in place; a later frozen
+  finalist lane must bind their required fields explicitly.
 - Corporate-action cash/share adjustments and terminal-liquidation semantics
-  remain unqualified. Optimizer COMPLETE, finalist promotion and economic
-  claims remain unavailable until the input-authority gaps are repaired and a
-  separate bounded train-only qualification is authorized.
-- Existing CURRENT nodes and relationships were refreshed in place; their
-  A-share receipt and authority hashes pass static assurance. RAW Graph refresh
-  remains explicitly stale because the configured DeepSeek semantic backend
-  returned HTTP 402 `Insufficient Balance`; no generated graph was hand-edited
-  or treated as fresh.
+  remain unqualified for finalist economic claims.
+- Verification was deliberately non-financial. Source commit
+  `ac299246d4390eb256e42f5b472db203ba315e2d` reached 73/73 in the local
+  affected suite before the final fail-closed finalist-blocker refinement; its
+  impacted eight tests then re-passed. The final source passed 73/73 in the
+  official 77o `alpha311` environment plus Python syntax compilation, from
+  versioned workspace
+  `D:\ChengboRemote\workspace\alpha_pit_feedback_boundary_20260729_220112_ac299246d439`.
+  Deployment manifest SHA256 is
+  `f987903e02d6fbc8a10e0802e813899c17999697d7985c9831fea9e0e44f7830`
+  and package SHA256 is
+  `907668c672d4e4cbbadccecfaf54113f4eb849d3abc4c341aeb2a9e345e32824`.
+  No search, financial evaluation, validation, holdout or 2026 read was
+  launched.
+- Existing CURRENT nodes and relationships are refreshed in place under ADR
+  0010; no new authority node is created. RAW Graph semantic refresh and its
+  configured external LLM remain documentation maintenance only, not a runtime
+  dependency. No DeepSeek/API call is required for this correction.
 
 ## Next action
 
-Do not run another scale-search tranche and do not freeze finalists from the
-closed 2,676 development-productive candidates yet. The executable replay and
-guard integration is complete; do not reimplement it or create a second
-evaluator, platform or authority node. The next allowed work is narrow
-input-authority repair only: materialize promotion-grade PIT session
-tradability/universe fields on 77o, freeze the actual account
-commission/minimum plus historical statutory fee schedule, bind a
-survivorship-free and delisting-inclusive universe manifest, and define
-corporate-action adjustments. Rerun the zero-financial schema/manifest gate
-after those exact inputs are frozen. Only a clean gate may permit a separately
-frozen 64-pair train-only qualification; the current gate authorizes zero
-pairs.
-Candidate-level validation remains separately authorized and report-only; it
-must not enter reward, tells, scheduler or persistent memory. Do not rerun the
-Medium, its report-only validation, either completed Hybrid-only tranche or
-earlier availability-agency canaries. Unlimited search and a 20,000-target
-campaign remain unauthorized.
+Do not run another scale-search tranche. The next phase is zero-financial
+behavior-family deduplication and train-stability ranking over the immutable
+2,676 development-productive candidates from the closed 6,144 tranche, then
+freeze a small finalist cohort. Do not recompute campaign outcomes and do not
+turn a historical productive label into economic evidence.
+
+Only after that small cohort is frozen may a separately authorized finalist
+lane bind the existing PIT tradability/universe authorities, actual account
+commission/minimum plus historical statutory fees, corporate-action and
+terminal-liquidation semantics, execute the retained A-share replay, and run
+one report-only validation. These finalist inputs must not be copied back into
+development optimizer reward, tells, scheduler or memory. Do not create a
+second evaluator, platform, database or authority node, and do not treat a RAW
+Graph/DeepSeek refresh as a blocker.
+
+Do not rerun the Medium, its report-only validation, either completed
+Hybrid-only tranche or earlier availability-agency canaries. Unlimited search,
+another scale tranche and a 20,000-target campaign remain unauthorized.
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
 qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the

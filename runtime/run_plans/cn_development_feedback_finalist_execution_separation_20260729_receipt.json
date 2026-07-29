@@ -1,0 +1,74 @@
+{
+  "schema_version": "cn_development_feedback_finalist_execution_separation_receipt_v1",
+  "status": "PASS",
+  "recorded_at": "2026-07-29",
+  "source_commit": "ac299246d4390eb256e42f5b472db203ba315e2d",
+  "decision_ref": "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
+  "supersedes_in_part": "docs/adr/0009-a-share-tradability-evidence-boundary.md",
+  "authority_change": {
+    "new_authority_node_created": false,
+    "development_optimizer_feedback": {
+      "required_evidence": [
+        "PAIR_EVALUATED",
+        "PAIR_TRAIN_FEEDBACK_READY",
+        "TRAIN_REWARD_FOLLOWUP_READY",
+        "immutable_submission_and_pair_receipts",
+        "development_train_only_access"
+      ],
+      "search_score_policy": "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1",
+      "search_score_formula": "min(primary_phase3cm_composite_reward,primary_minus_control_phase3cm_matched_increment)",
+      "optimizer_evidence_class": "DEVELOPMENT_PREDICTIVE_SCORE_ONLY",
+      "optimizer_feedback_scope": "DEVELOPMENT_SEARCH_ONLY",
+      "a_share_executable_replay_required": false,
+      "economic_claim_authorized": false,
+      "candidate_promotion_authorized": false
+    },
+    "finalist_execution_eligibility": {
+      "a_share_executable_replay_required": true,
+      "both_pair_member_receipts_required": true,
+      "identity_revalidation_required": true,
+      "economic_claim_authorized_by_replay_alone": false,
+      "candidate_promotion_authorized_by_replay_alone": false
+    }
+  },
+  "pit_scope": {
+    "project_pit_declared_broken": false,
+    "phase3cm_materialization_contains_all_finalist_execution_fields": false,
+    "interpretation": "finalist adapter and input binding gap, not a development feedback prerequisite or project-wide PIT failure"
+  },
+  "local_verification": {
+    "affected_suite_before_final_blocker_refinement": "73_passed_2_warnings",
+    "post_refinement_impacted_suite": "8_passed",
+    "python_compile": "PASS"
+  },
+  "official_77o_verification": {
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_feedback_boundary_20260729_220112_ac299246d439",
+    "manifest": "D:\\ChengboRemote\\runtime\\manifests\\alpha_pit_feedback_boundary_20260729_220112_ac299246d439.json",
+    "manifest_sha256": "f987903e02d6fbc8a10e0802e813899c17999697d7985c9831fea9e0e44f7830",
+    "package_sha256": "907668c672d4e4cbbadccecfaf54113f4eb849d3abc4c341aeb2a9e345e32824",
+    "focused_tests": "73_passed_2_warnings",
+    "python_compile": "PASS",
+    "financial_results_produced": false
+  },
+  "access_counts": {
+    "financial_reads": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "year_2026_reads": 0
+  },
+  "execution": {
+    "search_launched": false,
+    "financial_evaluation_launched": false,
+    "validation_launched": false,
+    "new_platform_created": false,
+    "new_database_created": false,
+    "deepseek_or_external_llm_called": false
+  },
+  "current_projection": {
+    "overlay_existing_nodes_refreshed_in_place": true,
+    "raw_graph_refresh_required_for_runtime": false,
+    "raw_graph_external_llm_balance_is_non_blocking": true
+  },
+  "next_authorized_phase": "ZERO_FINANCIAL_BEHAVIOR_FAMILY_DEDUPLICATION_AND_TRAIN_STABILITY_FINALIST_SELECTION",
+  "another_scale_search_authorized": false
+}
