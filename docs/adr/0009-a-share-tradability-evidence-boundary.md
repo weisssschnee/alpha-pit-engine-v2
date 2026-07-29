@@ -34,7 +34,8 @@ The existing Phase3CM node is narrowed in place to
 declare `DEVELOPMENT_PREDICTIVE_SCORE_ONLY`,
 `A_SHARE_TRADABILITY_UNPROVEN`, and false proof flags for execution clock,
 same-bar exclusion, T+1, limit-lock, suspension, complete fees and
-promotion-grade universe handling.
+promotion-grade universe handling. Finalist receipts additionally require
+corporate-action cash/share and terminal-liquidation proof.
 
 No optimizer reward, finalist eligibility, promotion eligibility or economic
 claim may cross the existing feedback boundary unless all of the following are
@@ -54,7 +55,7 @@ The existing `phase3dy_true1min_tplus1_tradable_replay` path is the execution
 adapter for this boundary; it is not a second evaluator or a new authority
 node. In authority mode it must bind and hash the exact input panel bytes,
 split manifest, promotion-grade universe manifest, explicit historical fee
-schedule and execution policy before it may emit a canonical
+schedule, execution policy and corporate-action policy before it may emit a canonical
 `A_SHARE_TRADABILITY_REPLAY_V1` receipt.
 
 The executable kernel must model a cash-and-holdings long-only portfolio with
@@ -64,7 +65,11 @@ buys and opening limit-down sells, carry blocked holdings, block suspended
 fills, round to board lots, and charge the frozen complete fee schedule. The
 fee schedule must cover every replay date and must bind the account-specific
 commission rate and minimum commission instead of relying on a repository
-default.
+default. Explicit PIT-aligned cash/share actions apply only to opening
+holdings before the session rebalance. Delisting exits require an explicit
+terminal session and liquidation price, charge ordinary sell-side fees and
+cannot silently disappear from the panel. Replay-end liquidation must fail
+closed unless the final book is flat.
 
 Phase3CM predictive values remain available as diagnostics. The optimizer
 reward authority is instead:
@@ -80,15 +85,17 @@ identities are revalidated at every pair, feedback, search and adaptive
 consumer. A copied READY label, an outer-row projection or a Phase3CM score
 cannot substitute for either receipt.
 
-This integration is statically accepted at implementation commit
-`a33d8fccdb79372ffac54ce55302be362911df19`, but runtime qualification remains
-fail-closed. The currently bound 77o train sidecars do not contain the full
-execution/universe fields required by the contract (including high/low,
-security type, exchange, PIT universe eligibility, listing age, ST/delisting,
-suspension and limit prices), and the project has no frozen account commission
-contract or promotion-grade survivorship-free, delisting-inclusive universe
-manifest. Therefore no 64-pair financial qualification is authorized from the
-current inputs.
+The original integration was statically accepted at commit
+`a33d8fccdb79372ffac54ce55302be362911df19`. Existing-authority kernel and
+receipt hardening completed at
+`3f32f5518f187a4f421208113179ca9d98fc97d3`, but runtime qualification remains
+fail-closed. The 77o zero-financial binding proves high/low and ST are present.
+Security type, exchange and conservative limit-price derivations exist but are
+not materialized. PIT universe eligibility, listing age, delisting, suspension,
+corporate-action cash/share and terminal session/price are absent. The project
+also lacks the frozen actual-account fee contract and promotion-grade
+survivorship-free, delisting-inclusive universe manifest. Therefore no 64-pair
+financial qualification is authorized from the current inputs.
 
 ## Consequences
 
@@ -112,6 +119,7 @@ current inputs.
   freeze the account commission/minimum contract and bind a
   survivorship-free, delisting-inclusive universe manifest. This finalist-lane
   work is not a prerequisite for development optimizer feedback.
-- Corporate-action share/cash adjustments and terminal liquidation semantics
-  are not yet promotion-qualified. Receipts therefore continue to set
-  economic-claim and candidate-promotion authorization false.
+- Corporate-action share/cash and terminal-liquidation semantics are now
+  implemented and zero-financial tested in the existing replay, but their PIT
+  input fields are not yet bound. Receipts therefore continue to set economic
+  claim and candidate-promotion authorization false.

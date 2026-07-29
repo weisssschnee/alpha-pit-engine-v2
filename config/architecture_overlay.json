@@ -675,6 +675,7 @@
         "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
         "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
         "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "runtime/run_plans/cn_finalist_input_authority_64_20260730_receipt.json",
         "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
@@ -709,7 +710,7 @@
         {
           "id": "streaming_not_a_share_execution_authority",
           "type": "BOUNDARY",
-          "rule": "Phase3CM emits DEVELOPMENT_PREDICTIVE_SCORE_ONLY. Its full-coordinate pair outcomes may enter development optimizer feedback only through the pair-native train gate; Phase3CM alone cannot authorize finalist execution, promotion or economic claims. Those claims still require separate immutable replay evidence for execution clock, same-bar exclusion, T+1, limit-lock, suspension, complete fees and a promotion-grade universe.",
+          "rule": "Phase3CM emits DEVELOPMENT_PREDICTIVE_SCORE_ONLY. Its full-coordinate pair outcomes may enter development optimizer feedback only through the pair-native train gate; Phase3CM alone cannot authorize finalist execution, promotion or economic claims. Those claims still require separate immutable replay evidence for execution clock, same-bar exclusion, T+1, limit-lock, suspension, complete fees, a promotion-grade universe, corporate actions and terminal liquidation. The 2026-07-30 zero-financial binding is HOLD until every required finalist input is materially bound.",
           "severity": "HARD",
           "enforced_by": "matched_control_pairs, evaluation_access_guard, a_share_tradability_guard and ADR 0010",
           "bypass_forbidden": true

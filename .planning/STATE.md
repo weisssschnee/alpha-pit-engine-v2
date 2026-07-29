@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-29
+Updated: 2026-07-30
 
-Current state: `CN_BEHAVIOR_FAMILY_FINALIST_SELECTION_READY`
+Current state: `CN_FINALIST_INPUT_AUTHORITY_REPAIR_PARTIAL_HOLD`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -946,7 +946,7 @@ remains unchanged. The compact receipt is
   matched increment)` and writes the explicit evidence/scope labels
   `DEVELOPMENT_PREDICTIVE_SCORE_ONLY` and `DEVELOPMENT_SEARCH_ONLY`.
   Validation, holdout and 2026 remain unreachable from feedback.
-- The executable replay implemented under ADR 0009 is retained unchanged as a
+- The executable replay implemented under ADR 0009 is retained as the same
   separate finalist/economic-eligibility gate. Both members must still carry
   canonical candidate- and exact-identity-bound receipts for execution clock,
   same-bar exclusion, T+1, limit-lock fills, suspensions, complete fees and a
@@ -965,8 +965,13 @@ remains unchanged. The compact receipt is
   development feedback. PIT observable-time, release, maturity, suspension,
   limit-lifecycle and universe authorities remain in place; a later frozen
   finalist lane must bind their required fields explicitly.
-- Corporate-action cash/share adjustments and terminal-liquidation semantics
-  remain unqualified for finalist economic claims.
+- Existing replay kernel V2 now applies explicitly PIT-aligned cash/share
+  corporate actions to opening holdings, requires integer resulting shares,
+  charges sell-side fees on explicit delisting terminal liquidation and fails
+  closed unless the final book is flat. The canonical receipt now requires
+  both corporate-action and terminal-liquidation proof flags plus the frozen
+  corporate-action policy hash. These are existing-authority contract repairs,
+  not a second evaluator or new authority node.
 - Verification was deliberately non-financial. Source commit
   `ac299246d4390eb256e42f5b472db203ba315e2d` reached 73/73 in the local
   affected suite before the final fail-closed finalist-blocker refinement; its
@@ -980,6 +985,31 @@ remains unchanged. The compact receipt is
   `907668c672d4e4cbbadccecfaf54113f4eb849d3abc4c341aeb2a9e345e32824`.
   No search, financial evaluation, validation, holdout or 2026 read was
   launched.
+- The authorized zero-financial finalist input binding ran on 77o from pushed
+  source SHA `3f32f5518f187a4f421208113179ca9d98fc97d3` and passed 69/69
+  focused tests plus syntax compilation. The exact versioned package SHA256 is
+  `6a2e921eae38563fe326564c1a23ddf6fe488feff0e58da6c9043c591341e77e`;
+  deployment manifest SHA256 is
+  `84a5f815c0be8be84fce503fa952fedb0ab47fad64d102d967817e02ddb61deb`.
+- The frozen release directly binds code/time/open/high/low/close and
+  `ctx_hfq_is_st`. Security type, exchange and conservative up/down limit
+  derivations exist but are not materialized into the frozen finalist input.
+  Universe eligibility, listing age, delisting, suspension, corporate-action
+  cash/share, terminal-session and terminal-price fields are absent. The
+  promotion-grade survivorship-free/delisting-inclusive universe manifest and
+  actual account commission/minimum contract are also absent.
+- The resulting status is therefore
+  `HOLD_RESEARCH_FINALIST_INPUTS_INCOMPLETE` with 14 explicit blockers, not a
+  PIT-fabric failure and not a financial result. Independent verification
+  passed against both root self-hashes, every declared artifact and both input
+  manifests. Source manifest SHA256 is
+  `32bae0505d93c9653a741898776ac115a0e1095bff80310280f65672c0a4ac11`;
+  verification receipt SHA256 is
+  `ce24fd063ae68c2bbd074900f9b9e8f9545a8abb62d98be14ca26d2fb43fce4b`.
+  Financial replay, validation, holdout, 2026, optimizer, scheduler, archive,
+  promotion and successor-search activity remained zero/false. The compact
+  receipt is
+  `runtime/run_plans/cn_finalist_input_authority_64_20260730_receipt.json`.
 - Existing CURRENT nodes and relationships are refreshed in place under ADR
   0010; no new authority node is created. RAW Graph semantic refresh and its
   configured external LLM remain documentation maintenance only, not a runtime
@@ -1032,21 +1062,23 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-Do not run another scale-search tranche. The frozen 64-pair development
-keep-review cohort now permits only zero-financial finalist input-authority
-repair: bind PIT session high/low, suspensions, limit prices, security type,
-exchange, listing age, ST and delisting state; freeze a survivorship-free,
-delisting-inclusive universe manifest; freeze actual commission, minimum
-commission and historical statutory fees; and define corporate-action plus
-terminal-liquidation semantics.
+Do not run another scale-search tranche. The existing replay's corporate-action
+and terminal-liquidation contract is repaired, and high/low/ST are bound. The
+only authorized next work is to close the 14 recorded zero-financial input
+blockers inside the same finalist lane: materialize authoritative suspension,
+security type, exchange, listing age, delisting, PIT-universe eligibility,
+limit-price, corporate-action and terminal-liquidation fields; freeze a
+survivorship-free, delisting-inclusive universe manifest; and bind the real
+account commission/minimum plus date-effective statutory fees. Then rerun the
+same zero-financial binding and independent verifier.
 
-Only after those inputs and contracts close may a separate authorization run
-the retained A-share replay and one report-only validation for the same frozen
-cohort. The cohort must not feed development optimizer reward, tells,
-scheduler or memory. Financial replay, validation, holdout, 2026, successor
-search and promotion remain unauthorized now. Do not create a second
-evaluator, platform, database or authority node, and do not treat a RAW
-Graph/DeepSeek refresh as a blocker.
+Only after that binding becomes `FINALIST_INPUT_AUTHORITY_READY` may a separate
+user authorization run the retained A-share replay and one report-only
+validation for the same frozen cohort. The cohort must not feed development
+optimizer reward, tells, scheduler or memory. Financial replay, validation,
+holdout, 2026, successor search and promotion remain unauthorized now. Do not
+create a second evaluator, platform, database or authority node, and do not
+treat a RAW Graph/DeepSeek refresh as a blocker.
 
 Do not rerun the Medium, its report-only validation, either completed
 Hybrid-only tranche or earlier availability-agency canaries. Unlimited search,

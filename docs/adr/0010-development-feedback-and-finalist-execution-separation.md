@@ -61,7 +61,8 @@ execution readiness, finalist economic eligibility or later promotion. Both
 matched members must carry canonical `A_SHARE_TRADABILITY_REPLAY_V1` receipts
 that revalidate candidate identity, exact identity, execution clock, same-bar
 exclusion, T+1, limit-lock and suspension behavior, complete fees and the
-promotion-grade universe binding.
+promotion-grade universe binding, plus corporate-action cash/share and
+terminal-liquidation proofs.
 
 Executable replay metrics are recorded alongside predictive metrics but never
 replace or mutate the development optimizer reward. Missing replay evidence
@@ -69,8 +70,9 @@ sets finalist execution eligibility false; it does not invalidate a clean
 development observation.
 
 The replay remains unable by itself to authorize promotion or an economic
-claim. Corporate-action, terminal-liquidation, report-only validation and
-other finalist requirements remain separate fail-closed gates.
+claim. Corporate-action and terminal-liquidation semantics are now enforced
+inside the same existing replay receipt, while their PIT inputs, report-only
+validation and all other finalist requirements remain fail-closed gates.
 
 ## Consequences
 

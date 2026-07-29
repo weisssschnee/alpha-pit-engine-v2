@@ -1,0 +1,99 @@
+{
+  "schema_version": "cn_finalist_input_authority_local_receipt_v1",
+  "status": "HOLD_RESEARCH_FINALIST_INPUTS_INCOMPLETE",
+  "recorded_at": "2026-07-30",
+  "scope": "ZERO_FINANCIAL_EXISTING_FINALIST_AUTHORITY_REPAIR",
+  "repo_sha": "3f32f5518f187a4f421208113179ca9d98fc97d3",
+  "local_tracking_remote_sha_equal": true,
+  "existing_authority": "PHASE3DY_A_SHARE_TRADABILITY_REPLAY",
+  "new_authority_node_created": false,
+  "implementation": {
+    "replay_kernel_version": "a_share_long_only_open_rebalance_v2",
+    "corporate_action_cash_share_enforced": true,
+    "terminal_liquidation_enforced": true,
+    "corporate_action_policy_hash_required": true,
+    "official_77o_tests_passed": 69,
+    "official_77o_tests_total": 69
+  },
+  "deployment": {
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_finalist_input_3f32f55_20260730_005652_3f32f5518f18",
+    "package": "D:\\ChengboRemote\\runtime\\packages\\alpha_pit_finalist_input_3f32f55_20260730_005652.zip",
+    "package_sha256": "6a2e921eae38563fe326564c1a23ddf6fe488feff0e58da6c9043c591341e77e",
+    "deployment_manifest": "D:\\ChengboRemote\\runtime\\manifests\\alpha_pit_finalist_input_3f32f55_20260730_005652.json",
+    "deployment_manifest_sha256": "84a5f815c0be8be84fce503fa952fedb0ab47fad64d102d967817e02ddb61deb"
+  },
+  "frozen_inputs": {
+    "cohort_root": "D:\\ChengboRemote\\runtime\\cn_productive_keep_review_64_20260729_2318_76503e0",
+    "selection_payload_sha256": "5ab6dbdf374d4867cf197b254cf6672d342bed54436bf153a551ae65867a3815",
+    "pair_count": 64,
+    "candidate_member_count": 128,
+    "minute_release_id": "cn_true1min_development_only_release_v1_20260712_77o",
+    "minute_release_date_min": "2024-01-02",
+    "minute_release_date_max": "2025-07-07",
+    "minute_panel_count": 16
+  },
+  "bound_existing_release_columns": {
+    "code": "code",
+    "trade_time": "trade_time",
+    "open": "open",
+    "high": "high",
+    "low": "low",
+    "close": "close",
+    "is_st": "ctx_hfq_is_st"
+  },
+  "implemented_but_not_materialized": [
+    "security_type",
+    "exchange",
+    "up_limit_price",
+    "down_limit_price"
+  ],
+  "missing_from_frozen_release": [
+    "universe_eligible",
+    "listing_age_sessions",
+    "is_delisting",
+    "suspended",
+    "corporate_action_cash_per_share",
+    "corporate_action_share_multiplier",
+    "is_terminal_session",
+    "terminal_liquidation_price"
+  ],
+  "blockers": [
+    "actual_account_fee_contract_missing",
+    "promotion_grade_universe_manifest_missing",
+    "session_field_not_bound:corporate_action_cash_per_share",
+    "session_field_not_bound:corporate_action_share_multiplier",
+    "session_field_not_bound:down_limit_price",
+    "session_field_not_bound:exchange",
+    "session_field_not_bound:is_delisting",
+    "session_field_not_bound:is_terminal_session",
+    "session_field_not_bound:listing_age_sessions",
+    "session_field_not_bound:security_type",
+    "session_field_not_bound:suspended",
+    "session_field_not_bound:terminal_liquidation_price",
+    "session_field_not_bound:universe_eligible",
+    "session_field_not_bound:up_limit_price"
+  ],
+  "remote_evidence": {
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_finalist_input_authority_64_20260730_0110_3f32f55",
+    "manifest_file_sha256": "32bae0505d93c9653a741898776ac115a0e1095bff80310280f65672c0a4ac11",
+    "manifest_payload_sha256": "d02829a81c97fdcfd98a0f9671b62dac0ac23d876be073b210a6a0ddefdb1181",
+    "binding_payload_sha256": "ebea0abd23a71cfcd70409e62efa397b53fccab2da4d7ed7ced9db13816a6737",
+    "verification_root": "D:\\ChengboRemote\\runtime\\cn_finalist_input_authority_64_20260730_0110_3f32f55_verification",
+    "verification_status": "INDEPENDENT_VERIFICATION_PASS",
+    "verification_receipt_sha256": "ce24fd063ae68c2bbd074900f9b9e8f9545a8abb62d98be14ca26d2fb43fce4b",
+    "verification_payload_sha256": "df40cbe1875ea42293298894ad237a236c04c154e89b765745ab79cbaa9a3550"
+  },
+  "prohibited_activity": {
+    "financial_replay_authorized": false,
+    "report_only_validation_authorized": false,
+    "promotion_authorized": false,
+    "successor_search_authorized": false,
+    "financial_result_recomputed": false,
+    "optimizer_feedback_writes": 0,
+    "scheduler_writes": 0,
+    "archive_writes": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0
+  }
+}
