@@ -188,7 +188,7 @@ $requiredHashes = [ordered]@{
         'e218e505964f277260d6667b5426e532a7a69be1c2a4af5b1b689d3e7fb70beb'
     )
     $contract = (
-        'ba45d49fce0fd12e3e8e4fd216f36ec3b7b8a9e2a70e920d6493f48bf470770e'
+        '7c621f7d673b28230c67eaeb42a8964999631cae09f8d23fc1ac524b799c4a2b'
     )
     $p07Manifest = (
         '436a4062b4a8216f8ad1a1a651dcc2c2fb71f4aa36713dad71f3ae507983a9d2'
