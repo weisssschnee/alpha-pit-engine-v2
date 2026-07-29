@@ -2,7 +2,7 @@
 
 Updated: 2026-07-29
 
-Current state: `CN_HYBRID_3072_TRANCHE_CLOSED_NEXT_BOUNDED_6144_CONTRACT_FROZEN_NOT_LAUNCHED`
+Current state: `CN_HYBRID_BOUNDED_6144_TRANCHE_RUNNING_ON_77O`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -874,29 +874,42 @@ remains unchanged. The compact receipt is
   duplicates. Remote p07 manifest file SHA256 is
   `436a4062b4a8216f8ad1a1a651dcc2c2fb71f4aa36713dad71f3ae507983a9d2`;
   its canonical payload hash and both declared artifacts independently match.
-- The next tranche contract is frozen at 6,144 formal asks, eight checkpoints
+- The next tranche contract was frozen at 6,144 formal asks, eight checkpoints
   of 768 and fixed route mix 672/24/16/8/48. Final route allocations are
   5,376/192/128/64/384. Slow Temporal is the core scale route; Slow
   Cross-sectional is supply-capped with OOS tail risk; Market and Disclosure
   retain small exploration budgets; First-N is reduced to minimum coverage.
-  The 1.20 exact-supply cap margin passes every route. The contract is
-  deliberately `FROZEN_NOT_EXECUTION_AUTHORIZED`: no new financial task,
-  automatic validation, unlimited search or 20,000-target campaign was
-  launched. Evidence is in
-  `runtime/run_plans/cn_hybrid_bounded_large_tranche_p07_20260729_receipt.json`.
+  The static runner profile and diagnostic-only behavior-family concentration
+  reporting passed 23/23 local and official 77o focused tests. The exact
+  zero-financial preflight passed with 39,303 fresh exact identities against
+  7,990 required at the frozen 1.20 cap margins; financial, validation,
+  holdout and 2026 reads were zero.
+- A separate single-task execution authority was then formed. Exactly one 77o
+  task, `lanjob_20260729_102437_32fddd` /
+  `ChengboLanRemote_lanjob_20260729_102437_32fddd`, is running at
+  `D:\ChengboRemote\runtime\cn_hybrid_bounded_large_tranche_20260729_1030_6288d71_6144`
+  from pushed/deployed SHA `6288d715429e6dc84af5e89ac3f73d3d0cebc21b`.
+  No automatic validation, successor tranche, unlimited search or 20,000
+  target is authorized. Productive behavior-family unique count, productive
+  exact/family ratio, top-10 family concentration, new productive families per
+  checkpoint and productive yield per checkpoint are reporting diagnostics,
+  not runtime stop gates. Frozen-contract evidence remains in
+  `runtime/run_plans/cn_hybrid_bounded_large_tranche_p07_20260729_receipt.json`;
+  the preflight receipt is
+  `runtime/run_plans/cn_hybrid_bounded_large_tranche_p02_preflight_20260729_receipt.json`.
 
 ## Next action
 
-Do not rerun the Medium, its report-only validation, the completed 3,072-ask
-Hybrid-only tranche, or earlier availability-agency canaries. The next bounded
-6,144-ask contract is frozen but not execution-authorized. Before any launch,
-implement only the static runner profile, run focused local tests and an exact
-zero-financial 77o preflight against the refreshed identity/behavior archives,
-then obtain a separate execution authorization. Keep the fixed
-672/24/16/8/48 route mix for all eight checkpoints; do not adapt routes inside
-the tranche or feed candidate-level validation into reward, tells, scheduler
-or memory. Do not automatically authorize an unlimited or 20,000-target
-campaign.
+Monitor only the single running 6,144-ask task above and independently verify
+each immutable checkpoint. Keep the fixed 672/24/16/8/48 route mix for all
+eight checkpoints; do not adapt routes inside the tranche or feed
+candidate-level validation into reward, tells, scheduler or memory. Do not
+rerun the Medium, its report-only validation, the completed 3,072-ask
+Hybrid-only tranche, or earlier availability-agency canaries. After this
+tranche closes, move to behavior-family deduplication, train stability
+finalist selection, a small frozen finalist set and one report-only validation.
+Do not automatically authorize another scale tranche, an unlimited search or
+a 20,000-target campaign.
 
 Do not rerun Sign, CSRank, Abs, the repaired OLD supply proof, sampled
 qualification, the nine V3 checkpoints, either Structural CEM V2 medium, the

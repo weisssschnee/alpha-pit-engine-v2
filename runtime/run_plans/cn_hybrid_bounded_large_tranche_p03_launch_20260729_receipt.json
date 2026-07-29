@@ -1,0 +1,65 @@
+{
+  "schema_version": "cn_hybrid_bounded_large_tranche_p03_launch_receipt_v1",
+  "status": "ONE_BOUNDED_6144_TRANCHE_LAUNCHED_ON_77O",
+  "launched_at": "2026-07-29T10:25:04+08:00",
+  "task_id": "lanjob_20260729_102437_32fddd",
+  "scheduled_task": "ChengboLanRemote_lanjob_20260729_102437_32fddd",
+  "campaign_root": "D:\\ChengboRemote\\runtime\\cn_hybrid_bounded_large_tranche_20260729_1030_6288d71_6144",
+  "deployed_sha": "6288d715429e6dc84af5e89ac3f73d3d0cebc21b",
+  "repo_sha_equality": true,
+  "remote_workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_hybrid_bounded_large_6288d71_20260729_1027_6288d715429e",
+  "deployment_manifest": {
+    "path": "D:\\ChengboRemote\\runtime\\manifests\\alpha_pit_hybrid_bounded_large_6288d71_20260729_1027_6288d715429e.json",
+    "sha256": "019551c6e8513fec0834aacdf736667f913feafe5f50a23f814a5fbdfc0348d9",
+    "source_package_sha256": "ecd20d454397af8b573c4a01a1b07001c406ae1fde8f67c89760fece5f201eb6"
+  },
+  "execution_authorization": {
+    "path": "runtime/run_plans/cn_hybrid_bounded_large_tranche_v1_authorization.json",
+    "deployed_sha256": "4b919c2d943370c288d3bb1b050d841f936482df7b7f5c2ce2369dee74bb9b2d",
+    "single_bounded_task_authorized": true,
+    "authorized_task_count": 1,
+    "automatic_validation": "FORBIDDEN",
+    "next_search_tranche_pre_authorized": false
+  },
+  "official_77o_focused_tests": {
+    "passed": 23,
+    "failed": 0,
+    "powershell_launcher_parse": "PASS"
+  },
+  "launch_gate": {
+    "target_root_preexisting": false,
+    "matching_financial_python_before_launch": 0,
+    "free_memory_bytes_before_launch": 86644072448,
+    "minimum_required_free_memory_bytes": 25769803776,
+    "duplicate_writer": false
+  },
+  "campaign_contract": {
+    "maximum_checkpoints": 8,
+    "asks_per_checkpoint": 768,
+    "maximum_formal_fresh_exact_asks": 6144,
+    "fixed_route_formal_asks_per_checkpoint": {
+      "SLOW_TEMPORAL_CHANGE": 672,
+      "FIRSTN_PATH": 8,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 24,
+      "MARKET_REGIME_CONDITION": 16,
+      "DISCLOSURE_EVENT": 48
+    },
+    "policy": "HYBRID_TPE_AVAILABILITY_ONLY",
+    "uniform_arm": "FORBIDDEN",
+    "within_tranche_route_adaptation": "FORBIDDEN",
+    "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+    "holdout": "SEALED",
+    "forward_2026": "SEALED",
+    "unlimited_or_20k_search_authorized": false
+  },
+  "initial_observation": {
+    "single_process_chain": true,
+    "process_chain_python_processes": 4,
+    "free_memory_bytes": 76273684480,
+    "campaign_exit_present": false,
+    "stderr_classification": "OPTUNA_EXPERIMENTAL_WARNINGS_AND_FRESH_IN_MEMORY_STUDY_CREATION_ONLY",
+    "failure_evidence": false
+  },
+  "heartbeat_automation_id": "monitor-cn-hybrid-bounded-large-tranche",
+  "next_action": "MONITOR_ONLY_THIS_TASK_TO_EIGHT_IMMUTABLE_CHECKPOINTS_AND_ROOT_CLOSURE"
+}
