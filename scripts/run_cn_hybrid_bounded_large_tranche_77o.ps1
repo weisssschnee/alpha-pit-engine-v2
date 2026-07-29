@@ -185,7 +185,7 @@ $requiredHashes = [ordered]@{
         '0d51f2ea0ace7b06cf5c02a7ac970a629490c284c442f6dd693a1deb007dfc64'
     )
     $historyManifest = (
-        '7de34a718dea8251e3f15852c98b2e38b732cd67ab2bc2ce38222c937aaf6133'
+        'e218e505964f277260d6667b5426e532a7a69be1c2a4af5b1b689d3e7fb70beb'
     )
     $contract = (
         'ba45d49fce0fd12e3e8e4fd216f36ec3b7b8a9e2a70e920d6493f48bf470770e'
