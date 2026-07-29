@@ -14,6 +14,11 @@ from our_system_phase2.services.evaluation_access_guard import (
 from our_system_phase2.services.multi_arm_scheduler import build_arm_schedule
 from our_system_phase2.services.search_feedback import build_search_feedback_context
 from our_system_phase2.services.search_feedback import clean_optimizer_feedback_rows
+from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+    A_SHARE_TRADABILITY_READY,
+    REQUIRED_TRADABILITY_PROOFS,
+)
 
 
 def _reward_row(**overrides: str) -> dict[str, str]:
@@ -47,6 +52,9 @@ def _reward_row(**overrides: str) -> dict[str, str]:
         "feedback_data_role": "development",
         "primary_standalone_train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
         "primary_standalone_train_reward_blockers": "",
+        "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+        "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
+        **{field: "true" for field in REQUIRED_TRADABILITY_PROOFS},
         "validation_day_sortino": "9.9",
         "holdout_day_sortino": "8.8",
     }
@@ -80,6 +88,16 @@ def test_search_feedback_rejects_raw_candidate_level_oos_payload() -> None:
 def test_projection_rejects_non_train_optimizer_reward() -> None:
     with pytest.raises(EvaluationAccessViolation, match="split 'holdout'"):
         project_train_only_feedback_row(_reward_row(optimizer_reward_split="holdout"))
+
+
+def test_projection_rejects_unproven_a_share_tradability() -> None:
+    with pytest.raises(
+        EvaluationAccessViolation,
+        match="t_plus_one_enforced_not_proven",
+    ):
+        project_train_only_feedback_row(
+            _reward_row(t_plus_one_enforced="false")
+        )
 
 
 def test_projection_rejects_missing_split_and_role() -> None:

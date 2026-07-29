@@ -49,6 +49,9 @@ from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization impor
     _write_json,
 )
 from our_system_phase2.services.legacy_field_aliases import rewrite_legacy_field_aliases, rewrite_summary
+from our_system_phase2.services.a_share_tradability_guard import (
+    development_predictive_evidence,
+)
 from our_system_phase2.services.candidate_schema import OPTIMIZER_REWARD_METRIC, normalize_candidate_schema
 from our_system_phase2.services.candidate_submission_receipt import (
     CandidateSubmissionAuthority,
@@ -968,6 +971,7 @@ def _schema_hold_reward_row(candidate: dict[str, Any], *, portfolio_mode: str) -
         "holdout_usage": "report_only",
         "train_reward_blockers": blockers,
         "train_reward_decision": "HOLD_SCHEMA_MISSING_FIELDS",
+        **development_predictive_evidence(),
     }
     row.update(normalize_candidate_schema(row))
     return row
@@ -2505,6 +2509,7 @@ def _candidate_summary_from_reward_atoms(
         "train_reward_blockers": "|".join(blockers),
         "train_reward_decision": decision,
         "reward_atom_mode": "daily_aggregate",
+        **development_predictive_evidence(),
     }
     reward_row.update(normalize_candidate_schema(reward_row))
     return split_rows, reward_row
@@ -2673,6 +2678,7 @@ def _candidate_summary(
         "inherited_blockers": candidate.get("phase3bp_blocker_flags") or candidate.get("blocker_flags"),
         "train_reward_blockers": "|".join(blockers),
         "train_reward_decision": decision,
+        **development_predictive_evidence(),
     }
     reward_row.update(normalize_candidate_schema(reward_row))
     return split_rows, reward_row

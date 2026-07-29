@@ -11,6 +11,9 @@ from __future__ import annotations
 import math
 from typing import Any, Iterable, Mapping
 
+from our_system_phase2.services.a_share_tradability_guard import (
+    a_share_tradability_blockers,
+)
 from our_system_phase2.services.matched_control_pairs import (
     MATCHED_OPTIMIZER_REWARD_METRIC,
     MATCHED_OPTIMIZER_REWARD_SOURCE,
@@ -76,6 +79,12 @@ def assert_train_only_feedback_row(
             f"{source} optimizer_reward_split must be 'train'; observed {split or '<missing>'}"
         )
     if _has_reward(row):
+        tradability_blockers = a_share_tradability_blockers(row)
+        if tradability_blockers:
+            raise EvaluationAccessViolation(
+                f"{source} lacks A-share tradability authority: "
+                + ", ".join(tradability_blockers)
+            )
         reward_source = str(row.get("optimizer_reward_source") or "").strip()
         reward_metric = str(row.get("optimizer_reward_metric") or "").strip()
         if reward_source != MATCHED_OPTIMIZER_REWARD_SOURCE:

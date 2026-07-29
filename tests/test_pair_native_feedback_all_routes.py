@@ -30,6 +30,11 @@ from scripts.build_cn_matched_control_candidate_parallel_artifacts import (
     ALL_RUNTIME_ROUTES,
     run_all_route_runtime_qualification,
 )
+from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+    A_SHARE_TRADABILITY_READY,
+    REQUIRED_TRADABILITY_PROOFS,
+)
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -75,12 +80,18 @@ def _pair_inputs(
             "train_rank_ic_mean": 0.03,
             "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
             "train_reward_blockers": primary_standalone_blockers,
+            "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+            "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
+            **{field: True for field in REQUIRED_TRADABILITY_PROOFS},
         },
         {
             "candidate_id": control["candidate_id"],
             "optimizer_reward": control_reward,
             "train_mean_one_way_turnover": 0.2,
             "train_rank_ic_mean": 0.01,
+            "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+            "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
+            **{field: True for field in REQUIRED_TRADABILITY_PROOFS},
         },
     ]
     support = {
@@ -137,7 +148,7 @@ def test_pair_feedback_blocks_nonpositive_matched_increment_even_when_primary_is
     assert row["optimizer_reward"] == ""
 
 
-def test_phase3cn_clean_gate_uses_pair_native_fields_not_primary_standalone_diagnostics() -> None:
+def test_phase3cn_clean_gate_blocks_primary_standalone_failure() -> None:
     row = {
         "expression": "Sign(ZScore($close))",
         "pair_evaluation_status": "PAIR_EVALUATED",
@@ -153,6 +164,9 @@ def test_phase3cn_clean_gate_uses_pair_native_fields_not_primary_standalone_diag
         "train_reward_decision": "TRAIN_REWARD_BLOCKED",
         "train_reward_blockers": "legacy_primary_blocker",
         "train_mean_one_way_turnover": 99.0,
+        "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+        "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
+        **{field: True for field in REQUIRED_TRADABILITY_PROOFS},
     }
 
     assert _is_clean(
@@ -160,7 +174,22 @@ def test_phase3cn_clean_gate_uses_pair_native_fields_not_primary_standalone_diag
         train_threshold=0.0,
         validation_floor=0.0,
         max_turnover=0.75,
-    ) is True
+    ) is False
+
+
+def test_pair_feedback_blocks_missing_tradability_evidence() -> None:
+    inputs = _pair_inputs()
+    for reward in inputs["reward_rows"]:
+        reward.pop("t_plus_one_enforced")
+
+    row = build_pair_evaluation_rows(**inputs)[0]
+
+    assert row["pair_evaluation_status"] == "PAIR_EVALUATED"
+    assert row["pair_train_reward_decision"] == "PAIR_TRAIN_FEEDBACK_BLOCKED"
+    assert "t_plus_one_enforced_not_proven" in row[
+        "pair_train_reward_blockers"
+    ]
+    assert row["optimizer_reward"] == ""
 
 
 def test_pair_feedback_blocks_support_mismatch_and_missing_control_invocation() -> None:

@@ -65,6 +65,11 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
 from our_system_phase2.services.optuna_tpe_search_adapter import (
     RouteConditionalTPESearchAdapter,
 )
+from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+    A_SHARE_TRADABILITY_READY,
+    REQUIRED_TRADABILITY_PROOFS,
+)
 from our_system_phase2.services.route_local_availability import (
     AvailabilityEntry,
     RouteLocalAvailabilityController,
@@ -127,7 +132,12 @@ def _evaluated_outcome(
         "control_composite_reward": control,
         "matched_train_increment": matched,
         "pair_train_reward": matched,
+        "pair_train_reward_decision": "PAIR_TRAIN_FEEDBACK_READY",
         "primary_standalone_train_reward_decision": decision,
+        "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+        "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
+        "pair_a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
+        **{field: True for field in REQUIRED_TRADABILITY_PROOFS},
     }
 
 
@@ -140,12 +150,20 @@ def test_conservative_search_score_cannot_promote_bad_primary_against_worse_cont
     good_primary = _evaluated_outcome(primary=0.7, control=0.5)
     negative_increment = _evaluated_outcome(primary=0.7, control=0.9)
 
-    assert _conservative_search_score(bad_primary) == pytest.approx(-0.3)
+    assert _conservative_search_score(bad_primary) is None
     assert _conservative_search_score(good_primary) == pytest.approx(0.2)
     assert _conservative_search_score(negative_increment) == pytest.approx(-0.2)
     assert _validation_eligible(bad_primary) is False
     assert _validation_eligible(good_primary) is True
     assert _validation_eligible(negative_increment) is False
+
+
+def test_optimizer_score_requires_explicit_a_share_tradability_evidence() -> None:
+    outcome = _evaluated_outcome(primary=0.7, control=0.5)
+    outcome.pop("t_plus_one_enforced")
+
+    assert _conservative_search_score(outcome) is None
+    assert _validation_eligible(outcome) is False
 
 
 def test_validation_finalists_require_standalone_ready_and_positive_increment() -> None:

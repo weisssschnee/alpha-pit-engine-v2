@@ -2,6 +2,8 @@
 
 Status: Accepted as the active CN development search-policy authority; candidate
 promotion, validation feedback, holdout access and 2026 access remain forbidden.
+Optimizer feedback is additionally constrained by ADR 0009: Phase3CM predictive
+scores cannot teach TPE without explicit A-share tradability replay evidence.
 
 ## Context
 

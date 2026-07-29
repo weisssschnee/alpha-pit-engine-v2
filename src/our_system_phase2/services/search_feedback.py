@@ -15,6 +15,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from our_system_phase2.services.a_share_tradability_guard import (
+    a_share_tradability_ready,
+)
 from our_system_phase2.services.candidate_schema import normalize_candidate_schema, safe_float
 from our_system_phase2.services.evaluation_access_guard import (
     assert_train_only_feedback_rows,
@@ -164,6 +167,11 @@ def _clean_feedback_row(
         and turnover_ok
         and not blockers
         and (not decision or "FOLLOWUP_READY" in decision)
+        and str(
+            row.get("primary_standalone_train_reward_decision") or ""
+        )
+        == "TRAIN_REWARD_FOLLOWUP_READY"
+        and a_share_tradability_ready(row)
         and not _has_wrong_lag_or_corr(row)
     )
 

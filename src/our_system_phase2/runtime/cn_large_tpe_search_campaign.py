@@ -60,8 +60,15 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
 from our_system_phase2.services.compositional_grammar import (
     OPTIMIZER_GENE_SURFACE_VERSION,
 )
+from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_TRADABILITY_READY,
+    a_share_tradability_blockers,
+)
 from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
+)
+from our_system_phase2.services.matched_control_pairs import (
+    PAIR_TRAIN_FEEDBACK_READY,
 )
 from our_system_phase2.services.optuna_tpe_search_adapter import (
     EVALUATED,
@@ -357,7 +364,7 @@ def _finite_float(value: Any) -> float | None:
     return output if math.isfinite(output) else None
 
 
-def _conservative_search_score(
+def _development_predictive_score(
     outcome: Mapping[str, Any],
 ) -> float | None:
     if str(outcome.get("pair_evaluation_status") or "") != "PAIR_EVALUATED":
@@ -371,6 +378,39 @@ def _conservative_search_score(
     if primary is None or matched is None:
         return None
     return min(primary, matched)
+
+
+def _optimizer_feedback_blockers(
+    outcome: Mapping[str, Any],
+) -> tuple[str, ...]:
+    blockers: list[str] = []
+    if str(outcome.get("pair_evaluation_status") or "") != "PAIR_EVALUATED":
+        blockers.append("pair_evaluation_not_completed")
+    if (
+        str(outcome.get("pair_train_reward_decision") or "")
+        != PAIR_TRAIN_FEEDBACK_READY
+    ):
+        blockers.append("pair_train_reward_not_ready")
+    if (
+        str(outcome.get("primary_standalone_train_reward_decision") or "")
+        != VALIDATION_PRIMARY_DECISION
+    ):
+        blockers.append("primary_standalone_train_reward_not_ready")
+    if (
+        str(outcome.get("pair_a_share_tradability_decision") or "")
+        != A_SHARE_TRADABILITY_READY
+    ):
+        blockers.append("pair_a_share_tradability_not_ready")
+    blockers.extend(a_share_tradability_blockers(outcome))
+    return tuple(dict.fromkeys(blockers))
+
+
+def _conservative_search_score(
+    outcome: Mapping[str, Any],
+) -> float | None:
+    if _optimizer_feedback_blockers(outcome):
+        return None
+    return _development_predictive_score(outcome)
 
 
 def _validation_eligible(outcome: Mapping[str, Any]) -> bool:
@@ -3263,18 +3303,34 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ask = ask_by_pair[pair_id]
             outcome = outcome_by_pair[pair_id]
             outcome_class = _outcome_class(outcome)
+            feedback_blockers = _optimizer_feedback_blockers(outcome)
             reward = (
                 _conservative_search_score(outcome)
                 if outcome_class == EVALUATED
                 else None
             )
+            optimizer_outcome_class = (
+                outcome_class
+                if outcome_class != EVALUATED or reward is not None
+                else "TRADABILITY_AUTHORITY_BLOCKED"
+            )
             if bool(ask.get("optimizer_feedback_eligible", True)):
                 observations[str(ask["proposal_id"])] = {
                     "proposal_id": str(ask["proposal_id"]),
-                    "outcome_class": outcome_class,
+                    "outcome_class": optimizer_outcome_class,
                     "optimizer_reward": reward,
                     "search_score": reward,
                     "search_score_policy": SEARCH_SCORE_POLICY,
+                    "optimizer_feedback_accepted": reward is not None,
+                    "optimizer_feedback_blockers": "|".join(
+                        feedback_blockers
+                    ),
+                    "evaluation_evidence_class": outcome.get(
+                        "evaluation_evidence_class"
+                    ),
+                    "pair_a_share_tradability_decision": outcome.get(
+                        "pair_a_share_tradability_decision"
+                    ),
                     "primary_composite_reward": outcome.get(
                         "primary_composite_reward"
                     ),
@@ -3285,7 +3341,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         "matched_train_increment"
                     ),
                     "outcome_reason": str(
-                        outcome.get("pair_evaluation_blockers")
+                        "|".join(feedback_blockers)
+                        or outcome.get("pair_evaluation_blockers")
                         or "PAIR_EVALUATED"
                     ),
                 }

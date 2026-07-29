@@ -14,6 +14,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
+from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_TRADABILITY_READY,
+    a_share_tradability_blockers,
+    pair_tradability_evidence,
+    prefixed_tradability_evidence,
+)
 from our_system_phase2.services.candidate_submission_receipt import (
     CandidateReceiptError,
     normalize_candidate_contract,
@@ -27,6 +33,7 @@ MATCHED_OPTIMIZER_REWARD_SOURCE = "train_only_phase3cm_matched_increment"
 MATCHED_OPTIMIZER_REWARD_METRIC = "matched_train_primary_minus_control_composite_reward"
 PAIR_TRAIN_FEEDBACK_READY = "PAIR_TRAIN_FEEDBACK_READY"
 PAIR_TRAIN_FEEDBACK_BLOCKED = "PAIR_TRAIN_FEEDBACK_BLOCKED"
+STANDALONE_TRAIN_REWARD_READY = "TRAIN_REWARD_FOLLOWUP_READY"
 PAIR_MAPPING_PORTFOLIO_CONTRACT = (
     "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|"
     "SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS"
@@ -687,6 +694,27 @@ def build_pair_evaluation_rows(
         pair_support_metric = overlap
         pair_rank_ic_metric = rank_ic_increment
         pair_feedback_blockers = set(blockers)
+        primary_standalone_decision = str(
+            (primary_reward or {}).get("train_reward_decision") or ""
+        )
+        if primary_standalone_decision != STANDALONE_TRAIN_REWARD_READY:
+            pair_feedback_blockers.add("primary_standalone_train_reward_not_ready")
+        primary_tradability_blockers = a_share_tradability_blockers(
+            primary_reward or {}
+        )
+        control_tradability_blockers = a_share_tradability_blockers(
+            control_reward or {}
+        )
+        pair_feedback_blockers.update(
+            f"primary_{blocker}" for blocker in primary_tradability_blockers
+        )
+        pair_feedback_blockers.update(
+            f"control_{blocker}" for blocker in control_tradability_blockers
+        )
+        pair_tradability = pair_tradability_evidence(
+            primary_reward or {},
+            control_reward or {},
+        )
         if status != "PAIR_EVALUATED":
             pair_feedback_blockers.add("pair_evaluation_not_completed")
         if not str((primary_receipt or {}).get("receipt_hash") or ""):
@@ -756,13 +784,32 @@ def build_pair_evaluation_rows(
             "control_reward_atom_count": control_atoms,
             "primary_evaluator_invocation_count": primary_invocations,
             "control_evaluator_invocation_count": control_invocations,
-            "primary_standalone_train_reward_decision": str(
-                (primary_reward or {}).get("train_reward_decision") or ""
-            ),
+            "primary_standalone_train_reward_decision": primary_standalone_decision,
             "primary_standalone_train_reward_blockers": str(
                 (primary_reward or {}).get("train_reward_blockers") or ""
             ),
             "primary_standalone_train_mean_one_way_turnover": primary_turnover,
+            **pair_tradability,
+            **prefixed_tradability_evidence(
+                primary_reward or {}, prefix="primary_"
+            ),
+            **prefixed_tradability_evidence(
+                control_reward or {}, prefix="control_"
+            ),
+            "pair_a_share_tradability_decision": str(
+                pair_tradability["a_share_tradability_decision"]
+            ),
+            "pair_a_share_tradability_blockers": "|".join(
+                [
+                    *(f"primary_{value}" for value in primary_tradability_blockers),
+                    *(f"control_{value}" for value in control_tradability_blockers),
+                ]
+            ),
+            "optimizer_feedback_eligible": (
+                pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY
+                and pair_tradability["a_share_tradability_decision"]
+                == A_SHARE_TRADABILITY_READY
+            ),
             "optimizer_reward": matched_increment if pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY else "",
             "train_reward": matched_increment if pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY else "",
             "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,

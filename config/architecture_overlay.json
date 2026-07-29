@@ -593,13 +593,13 @@
     },
     {
       "id": "candidate_parallel_evaluator",
-      "label": "Candidate-parallel formal evaluator",
+      "label": "Candidate-parallel development predictive evaluator",
       "kind": "evaluator",
       "lifecycle": "ACTIVE",
       "paths": ["src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"],
       "critical": true,
       "active_authority": true,
-      "semantic_role": "formal_evaluation_authority",
+      "semantic_role": "development_predictive_evaluation_authority",
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
         "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
@@ -608,7 +608,7 @@
         {
           "id": "evaluate_whole_pair",
           "type": "EVIDENCE",
-          "rule": "The formal evaluator invokes both pair members and computes train-only matched increments on the same coordinates.",
+          "rule": "The development predictive evaluator invokes both pair members and computes train-only matched increments on the same coordinates; it is not an A-share execution replay or economic authority.",
           "severity": "HARD",
           "enforced_by": "phase3cm_candidate_parallel",
           "bypass_forbidden": true
@@ -616,7 +616,7 @@
         {
           "id": "candidate_axis_only",
           "type": "BOUNDARY",
-          "rule": "Multi-worker formal evaluation partitions candidate pairs, never portfolio shards.",
+          "rule": "Multi-worker development evaluation partitions candidate pairs, never portfolio shards.",
           "severity": "HARD",
           "enforced_by": "phase3cm_candidate_parallel",
           "bypass_forbidden": true
@@ -657,7 +657,8 @@
         "4.97X SAMPLE SPEED",
         "PAIR DELTA != STANDALONE SORTINO",
         "WEAK NOT SEALED OOS",
-        "NO PROMOTION"
+        "NO PROMOTION",
+        "A-SHARE TRADABILITY UNPROVEN"
       ],
       "critical": true,
       "active_authority": false,
@@ -673,6 +674,14 @@
           "rule": "The train role may read only the frozen 2024-2025 development release. Separately bound validation remains report-only after immutable TRAIN_COMPLETE. A one-time evaluation_role=holdout binding evaluated only 12 pre-frozen pairs on the already-spent 48-date calendar, with zero validation/2026 reads and no feedback, scheduler, archive or promotion write. It grants no additional holdout access and no sealed-OOS claim.",
           "severity": "HARD",
           "enforced_by": "phase3cm streaming access contracts and post_train_validation sequential gate",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "streaming_not_a_share_execution_authority",
+          "type": "BOUNDARY",
+          "rule": "Phase3CM emits DEVELOPMENT_PREDICTIVE_SCORE_ONLY and cannot authorize optimizer reward, finalist eligibility, promotion or economic claims until immutable replay evidence proves execution clock, same-bar exclusion, T+1, limit-lock, suspension, complete fees and a promotion-grade universe.",
+          "severity": "HARD",
+          "enforced_by": "a_share_tradability_guard and ADR 0009",
           "bypass_forbidden": true
         },
         {
@@ -714,7 +723,7 @@
     },
     {
       "id": "matched_train_feedback",
-      "label": "Pair-native Phase3CN feedback authority",
+      "label": "Pair-native feedback gate with tradability proof",
       "kind": "feedback",
       "lifecycle": "EXPERIMENTAL",
       "paths": ["src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py"],
@@ -729,7 +738,7 @@
         {
           "id": "matched_train_only",
           "type": "BOUNDARY",
-          "rule": "Feedback accepts only PAIR_TRAIN_FEEDBACK_READY primary rows governed by pair-native reward, blockers, support, turnover and RankIC fields after all three receipt hashes validate.",
+          "rule": "Feedback accepts only PAIR_TRAIN_FEEDBACK_READY primary rows after all three receipt hashes validate, the primary standalone decision is READY, and both pair members carry complete A_SHARE_TRADABILITY_REPLAY_V1 proof.",
           "severity": "HARD",
           "enforced_by": "phase3cn_receipt_gate",
           "bypass_forbidden": true
@@ -1105,7 +1114,7 @@
       "lifecycle": "ACTIVE",
       "required": false,
       "critical": true,
-      "contract": {"id": "hybrid_full_coordinate_train_only", "type": "BOUNDARY", "rule": "Hybrid policy rewards come only from full-coordinate train pair outcomes. The search-policy Medium does not run validation and cannot grant candidate promotion or sealed-period access.", "severity": "HARD", "enforced_by": "Phase3CM input binding, immutable checkpoint manifests and access receipts", "bypass_forbidden": true},
+      "contract": {"id": "hybrid_full_coordinate_train_only", "type": "BOUNDARY", "rule": "Hybrid proposals may receive predictive Phase3CM reports, but optimizer reward requires full-coordinate train pair outcomes plus complete A-share tradability replay proof under ADR 0009. Development scores alone cannot grant a COMPLETE optimizer observation, promotion or sealed-period access.", "severity": "HARD", "enforced_by": "Phase3CM input binding, a_share_tradability_guard, immutable checkpoint manifests and access receipts", "bypass_forbidden": true},
       "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json", "evidence_sha256": "11cb3f4a4a57b2ed136bc17a89d567291cdbe8ef1eb2f90cc8665aa1f9073f37", "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"}
     },
     {
@@ -1116,7 +1125,7 @@
       "lifecycle": "ACTIVE",
       "required": false,
       "critical": true,
-      "contract": {"id": "hybrid_min_primary_and_matched_increment_reward", "type": "ADMISSION", "rule": "Only full-coordinate train outcomes with search_score equal to min(primary_composite_reward, matched_train_increment) may complete a Hybrid optimizer trial; Uniform cannot enter observations or tells.", "severity": "HARD", "enforced_by": "optimizer observations, tell receipts and transcripts", "bypass_forbidden": true},
+      "contract": {"id": "hybrid_min_primary_and_matched_increment_reward", "type": "ADMISSION", "rule": "A Hybrid optimizer trial may COMPLETE only when the pair and primary standalone decisions are READY, both members carry complete A_SHARE_TRADABILITY_REPLAY_V1 proof, and search_score equals min(primary_composite_reward, matched_train_increment). Missing proof terminally fails without reward; Uniform cannot enter observations or tells.", "severity": "HARD", "enforced_by": "a_share_tradability_guard, optimizer observations, tell receipts and transcripts", "bypass_forbidden": true},
       "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json", "evidence_sha256": "11cb3f4a4a57b2ed136bc17a89d567291cdbe8ef1eb2f90cc8665aa1f9073f37", "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"}
     },
     {
@@ -1136,7 +1145,7 @@
       "relation": "supplies_pair_native_train_feedback",
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
-      "contract": {"id": "pair_native_ready_only", "type": "ADMISSION", "rule": "Phase3CN consumes only train-only pair-native READY rows; standalone-primary decisions and blockers are diagnostic only.", "severity": "HARD", "enforced_by": "phase3cn_pair_native_gate", "bypass_forbidden": true},
+      "contract": {"id": "pair_native_ready_only", "type": "ADMISSION", "rule": "Phase3CN consumes only train-only pair-native READY rows whose primary standalone decision is READY and whose two members carry complete A-share tradability replay proof. Standalone and tradability blockers are hard admission gates.", "severity": "HARD", "enforced_by": "phase3cn_pair_native_gate and a_share_tradability_guard", "bypass_forbidden": true},
       "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_CONTRACT.json", "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"}
     },
     {"id": "plate_to_lanes_forbidden", "source": "plate_industry_pit_route", "target": "hypothesis_lanes", "relation": "unresolved_pit_membership", "lifecycle": "FORBIDDEN", "forbidden": true},
@@ -1178,7 +1187,7 @@
     {"semantic_role": "pit_fundamental_observable_episode_authority", "authoritative_component": "pit_fundamental_fabric"},
     {"semantic_role": "candidate_identity_authority", "authoritative_component": "candidate_submission_receipt"},
     {"semantic_role": "matched_pair_authority", "authoritative_component": "matched_control_pair_authority"},
-    {"semantic_role": "formal_evaluation_authority", "authoritative_component": "candidate_parallel_evaluator"},
+    {"semantic_role": "development_predictive_evaluation_authority", "authoritative_component": "candidate_parallel_evaluator", "authority_class": "FORMAL", "decision_ref": "docs/adr/0009-a-share-tradability-evidence-boundary.md"},
     {"semantic_role": "train_feedback_authority", "authoritative_component": "matched_train_feedback"},
     {"semantic_role": "development_search_policy_authority", "authoritative_component": "cn_development_search_policy", "authority_class": "FORMAL", "decision_ref": "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"}
   ]

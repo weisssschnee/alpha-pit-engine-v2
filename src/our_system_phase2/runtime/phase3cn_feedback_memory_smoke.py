@@ -18,6 +18,9 @@ from typing import Any, Mapping
 
 import numpy as np
 
+from our_system_phase2.services.a_share_tradability_guard import (
+    a_share_tradability_ready,
+)
 from our_system_phase2.services.candidate_schema import (
     TRAIN_ONLY_FEEDBACK_FIELDS,
     normalize_candidate_schema,
@@ -239,6 +242,12 @@ def _is_clean(row: dict[str, Any], *, train_threshold: float, validation_floor: 
     if str(row.get("pair_evaluation_status") or "") != "PAIR_EVALUATED":
         return False
     if decision != PAIR_TRAIN_FEEDBACK_READY or blockers:
+        return False
+    if (
+        str(row.get("primary_standalone_train_reward_decision") or "")
+        != "TRAIN_REWARD_FOLLOWUP_READY"
+        or not a_share_tradability_ready(row)
+    ):
         return False
     if not math.isfinite(train_reward) or train_reward <= train_threshold:
         return False

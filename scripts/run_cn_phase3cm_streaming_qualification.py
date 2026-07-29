@@ -17,6 +17,10 @@ import polars as pl
 from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit import (
     _candidate_summary_from_reward_atoms,
 )
+from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_TRADABILITY_UNPROVEN,
+    development_predictive_evidence,
+)
 from our_system_phase2.services.phase3cm_streaming_block_reader import TimeMajorBlockReader
 from our_system_phase2.services.phase3cm_streaming_checkpoint import (
     StreamingCheckpointPayload,
@@ -694,6 +698,14 @@ def _finalize_pairs(
                 ),
                 "optimizer_reward": matched,
                 "optimizer_reward_split": "train",
+                **development_predictive_evidence(),
+                "pair_a_share_tradability_decision": (
+                    A_SHARE_TRADABILITY_UNPROVEN
+                ),
+                "pair_a_share_tradability_blockers": (
+                    "phase3cm_is_development_predictive_only"
+                ),
+                "optimizer_feedback_eligible": False,
             }
             if evaluation_role == "train"
             else {

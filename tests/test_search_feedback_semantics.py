@@ -7,6 +7,11 @@ from our_system_phase2.services.matched_control_pairs import (
     MATCHED_OPTIMIZER_REWARD_METRIC,
     MATCHED_OPTIMIZER_REWARD_SOURCE,
 )
+from our_system_phase2.services.a_share_tradability_guard import (
+    A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+    A_SHARE_TRADABILITY_READY,
+    REQUIRED_TRADABILITY_PROOFS,
+)
 
 
 def _reward_row(expression: str) -> dict[str, object]:
@@ -39,6 +44,9 @@ def _reward_row(expression: str) -> dict[str, object]:
         "control_evaluator_invocation_count": 1,
         "primary_standalone_train_reward_blockers": "",
         "primary_standalone_train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+        "evaluation_evidence_class": A_SHARE_TRADABILITY_EVIDENCE_CLASS,
+        "a_share_tradability_decision": A_SHARE_TRADABILITY_READY,
+        **{field: True for field in REQUIRED_TRADABILITY_PROOFS},
     }
 
 
