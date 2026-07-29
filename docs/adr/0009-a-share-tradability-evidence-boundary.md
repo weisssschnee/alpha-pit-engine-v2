@@ -59,7 +59,9 @@ receipts before it may emit `A_SHARE_TRADABILITY_READY`.
 
 - Historical Phase3CM search artifacts remain immutable development evidence.
   Their prior `productive` label does not become an economic or promotion
-  claim.
+  claim. Development productive diagnostics remain available for behavior
+  deduplication and train-stability ranking; only optimizer COMPLETE, finalist,
+  promotion and economic-claim paths require the replay proof above.
 - ADR 0008 continues to select Hybrid TPE plus Availability only inside a
   separately authorized development search. It no longer implies that raw
   Phase3CM scores may feed optimizer state without the tradability proof above.

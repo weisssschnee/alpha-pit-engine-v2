@@ -1168,8 +1168,11 @@ def _authorization_binding(
             "uniform_optimizer_feedback": "FORBIDDEN",
             "analysis_population": "INTENTION_TO_TREAT",
             "productive_candidate_definition": (
-                "PAIR_EVALUATED_AND_SEARCH_SCORE_POSITIVE_AND_"
-                "PRIMARY_STANDALONE_READY"
+                "DEVELOPMENT_DIAGNOSTIC_ONLY_PAIR_EVALUATED_AND_"
+                "PREDICTIVE_SCORE_POSITIVE_AND_PRIMARY_STANDALONE_READY"
+            ),
+            "productive_candidate_evidence_class": (
+                "DEVELOPMENT_PREDICTIVE_NOT_TRADABILITY_OR_PROMOTION"
             ),
             "primary_decision_metric": (
                 "ROUTE_STANDARDIZED_PRODUCTIVE_PER_FORMAL_FRESH_EXACT_ASK"
@@ -1219,8 +1222,11 @@ def _authorization_binding(
             "uniform_arm": "FORBIDDEN",
             "within_tranche_route_adaptation": "FORBIDDEN",
             "productive_candidate_definition": (
-                "PAIR_EVALUATED_AND_SEARCH_SCORE_POSITIVE_AND_"
-                "PRIMARY_STANDALONE_READY"
+                "DEVELOPMENT_DIAGNOSTIC_ONLY_PAIR_EVALUATED_AND_"
+                "PREDICTIVE_SCORE_POSITIVE_AND_PRIMARY_STANDALONE_READY"
+            ),
+            "productive_candidate_evidence_class": (
+                "DEVELOPMENT_PREDICTIVE_NOT_TRADABILITY_OR_PROMOTION"
             ),
             "unlimited_or_20k_search_authorized": False,
         }
@@ -2152,7 +2158,7 @@ def _select_validation_finalists(
 
 
 def _is_productive_candidate(outcome: Mapping[str, Any]) -> bool:
-    score = _conservative_search_score(outcome)
+    score = _development_predictive_score(outcome)
     return (
         str(outcome.get("pair_evaluation_status") or "")
         == "PAIR_EVALUATED"
