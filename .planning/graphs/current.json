@@ -6,161 +6,6 @@
       "evidence": {},
       "message": "Current view is advisory; formal runtime evidence was not supplied",
       "severity": "INFO"
-    },
-    {
-      "category": "STALE",
-      "code": "RAW_GRAPH_SOURCE_CHANGED",
-      "evidence": {
-        "changed_paths": [
-          ".planning/STATE.md",
-          "app.py",
-          "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md",
-          "requirements.txt",
-          "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
-          "runtime/run_plans/cn_hybrid_search_productivity_medium_v1_authorization.json",
-          "runtime/run_plans/cn_large_optuna_tpe_actual20000_v1_authorization.json",
-          "runtime/run_plans/cn_large_optuna_tpe_actual20000_v2_20260728_receipt.json",
-          "runtime/run_plans/cn_large_optuna_tpe_actual20000_v2_authorization.json",
-          "runtime/run_plans/cn_large_tpe_successor_route_targets_v3.json",
-          "runtime/run_plans/cn_minute_static_online_typed_grammar_v5_20260726_receipt.json",
-          "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
-          "runtime/run_plans/cn_minute_static_structural_formula_v4_supply_20260726_receipt.json",
-          "runtime/run_plans/cn_minute_static_structural_supply_cem_v2_medium_20260725_receipt.json",
-          "runtime/run_plans/cn_minute_static_structural_supply_v1_20260725_receipt.json",
-          "runtime/run_plans/cn_minute_static_structural_typed_surface_audit_20260725_receipt.json",
-          "runtime/run_plans/cn_slow_cross_sectional_evaluated384_v1_authorization.json",
-          "runtime/run_plans/cn_tpe_availability_v3_qualification_20260728_receipt.json",
-          "runtime/run_plans/cn_tpe_availability_yield_qualification_20260728_receipt.json",
-          "scripts/build_cn_core_pack_validation_session_sidecar.py",
-          "scripts/run_cn_hybrid_search_productivity_medium_77o.ps1",
-          "scripts/run_cn_large_optuna_tpe_actual20000_77o.ps1",
-          "scripts/run_cn_phase3cm_streaming_qualification.py",
-          "scripts/run_cn_slow_cross_sectional_evaluated384_77o.ps1",
-          "scripts/run_cn_tpe_availability_yield_qualification.py",
-          "scripts/run_minute_static_production_cem_v3.py",
-          "scripts/run_targeted_formula_cem_qualification.py",
-          "src/our_system_phase2/runtime/cn_iterative_search_v1.py",
-          "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
-          "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py",
-          "src/our_system_phase2/services/categorical_cem.py",
-          "src/our_system_phase2/services/compositional_grammar.py",
-          "src/our_system_phase2/services/optuna_tpe_search_adapter.py",
-          "src/our_system_phase2/services/phase3cm_streaming_portfolio.py",
-          "src/our_system_phase2/services/phase3cm_streaming_support.py",
-          "src/our_system_phase2/services/portfolio_behavior_archive.py",
-          "src/our_system_phase2/services/route_local_availability.py",
-          "src/our_system_phase2/services/search_choice_policy.py",
-          "src/our_system_phase2/services/unified_discovery_generators.py",
-          "tests/test_cn_core_pack_validation_session_sidecar.py",
-          "tests/test_cn_large_tpe_search_campaign.py",
-          "tests/test_cn_targeted_search_medium_campaign.py",
-          "tests/test_cn_tpe_availability_yield_qualification.py",
-          "tests/test_compositional_grammar_v2.py",
-          "tests/test_iterative_behavior_probe.py",
-          "tests/test_minute_static_production_cem_v3.py",
-          "tests/test_optimizer_grammar_surface.py",
-          "tests/test_optuna_tpe_search_adapter.py",
-          "tests/test_phase3cm_streaming_portfolio.py",
-          "tests/test_phase3cm_streaming_support.py",
-          "tests/test_portfolio_behavior_archive.py",
-          "tests/test_route_local_availability.py",
-          "tests/test_targeted_formula_cem.py"
-        ],
-        "raw_sha": "74f088af2b4b36f97ea13b7dba5f8542ecf3e55a",
-        "repo_head": "f4a6292a1012120fc74479da26066338099390fa"
-      },
-      "message": "Raw graph predates non-overlay source changes",
-      "severity": "ERROR"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "fixed_split_authority",
-        "semantic_role": "split_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "cn_field_master_registry",
-        "semantic_role": "complete_field_universe_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "unified_capability_registry",
-        "semantic_role": "field_route_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "core_pack_development_discovery_contract",
-        "semantic_role": "development_discovery_proposal_root_ontology_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "pit_fundamental_fabric",
-        "semantic_role": "pit_fundamental_observable_episode_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "candidate_submission_receipt",
-        "semantic_role": "candidate_identity_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "matched_control_pair_authority",
-        "semantic_role": "matched_pair_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "candidate_parallel_evaluator",
-        "semantic_role": "formal_evaluation_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "matched_train_feedback",
-        "semantic_role": "train_feedback_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
     }
   ],
   "edges": [
@@ -784,17 +629,17 @@
       "critical": true,
       "declared": true,
       "declared_evidence_type": "",
-      "evidence": "DECLARED",
+      "evidence": "STATIC",
       "forbidden": false,
       "id": "compositional_to_receipt",
       "lifecycle": "EXPERIMENTAL",
-      "line_style": "dotted",
+      "line_style": "dashed",
       "relation": "submits_registry_bound_development_candidates",
       "required": false,
       "source": "compositional_nline_bounded_search",
       "target": "candidate_submission_receipt",
       "validation": {
-        "checked_at": "2026-07-23T21:46:50.901070+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "runtime/cn_route_supply_closure_20260721_c939edf_4route/full_coordinate_development_qualification/candidate_receipts.jsonl",
         "evidence_sha256": "BD2ADE00F3CB6C658BE1BA28596422102718394798D47D820F27D56EF4945E7E",
         "level": "PARTIAL",
@@ -1020,72 +865,68 @@
       "color": "#2e7d32",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "Phase3CM input binding, immutable checkpoint manifests and access receipts",
+        "enforced_by": "Phase3CM input binding, a_share_tradability_guard, immutable checkpoint manifests and access receipts",
         "evidence_ref": "",
         "id": "hybrid_full_coordinate_train_only",
-        "rule": "Hybrid policy rewards come only from full-coordinate train pair outcomes. The search-policy Medium does not run validation and cannot grant candidate promotion or sealed-period access.",
+        "rule": "Hybrid proposals may receive predictive Phase3CM reports, but optimizer reward requires full-coordinate train pair outcomes plus complete A-share tradability replay proof under ADR 0009. Development scores alone cannot grant a COMPLETE optimizer observation, promotion or sealed-period access.",
         "severity": "HARD",
         "type": "BOUNDARY"
       },
       "critical": true,
       "declared": true,
       "declared_evidence_type": "",
-      "evidence": "DECLARED",
+      "evidence": "STATIC",
       "forbidden": false,
       "id": "hybrid_development_search_to_streaming_evaluator",
       "lifecycle": "ACTIVE",
-      "line_style": "dotted",
+      "line_style": "dashed",
       "relation": "submits_behavior_unique_pairs_for_train_only_evaluation",
       "required": false,
       "source": "cn_development_search_policy",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-07-28T14:10:19.400135+00:00",
-        "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
-        "evidence_sha256": "11CB3F4A4A57B2ED136BC17A89D567291CDBE8EF1EB2F90CC8665AA1F9073F37",
-        "level": "PARTIAL",
-        "notes": [
-          "runtime assurance needs a completed matching trace with all contract bindings"
-        ],
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "evidence_sha256": "F7A305B6CF52E5D945FB789E55322C6A49A4FBFFC67A27BADC9A1D395FB05FD5",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
         "profile": "",
-        "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"
+        "result": "PASS",
+        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       }
     },
     {
       "color": "#2e7d32",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "optimizer observations, tell receipts and transcripts",
+        "enforced_by": "a_share_tradability_guard, optimizer observations, tell receipts and transcripts",
         "evidence_ref": "",
         "id": "hybrid_min_primary_and_matched_increment_reward",
-        "rule": "Only full-coordinate train outcomes with search_score equal to min(primary_composite_reward, matched_train_increment) may complete a Hybrid optimizer trial; Uniform cannot enter observations or tells.",
+        "rule": "A Hybrid optimizer trial may COMPLETE only when the pair and primary standalone decisions are READY, both members carry complete A_SHARE_TRADABILITY_REPLAY_V1 proof, and search_score equals min(primary_composite_reward, matched_train_increment). Missing proof terminally fails without reward; Uniform cannot enter observations or tells.",
         "severity": "HARD",
         "type": "ADMISSION"
       },
       "critical": true,
       "declared": true,
       "declared_evidence_type": "",
-      "evidence": "DECLARED",
+      "evidence": "STATIC",
       "forbidden": false,
       "id": "matched_train_feedback_to_hybrid_development_search",
       "lifecycle": "ACTIVE",
-      "line_style": "dotted",
+      "line_style": "dashed",
       "relation": "supplies_train_only_search_score",
       "required": false,
       "source": "matched_train_feedback",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-07-28T14:10:19.400135+00:00",
-        "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
-        "evidence_sha256": "11CB3F4A4A57B2ED136BC17A89D567291CDBE8EF1EB2F90CC8665AA1F9073F37",
-        "level": "PARTIAL",
-        "notes": [
-          "runtime assurance needs a completed matching trace with all contract bindings"
-        ],
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "evidence_sha256": "F7A305B6CF52E5D945FB789E55322C6A49A4FBFFC67A27BADC9A1D395FB05FD5",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
         "profile": "",
-        "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"
+        "result": "PASS",
+        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       }
     },
     {
@@ -1126,34 +967,34 @@
       "color": "#f9a825",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "phase3cn_pair_native_gate",
+        "enforced_by": "phase3cn_pair_native_gate and a_share_tradability_guard",
         "evidence_ref": "",
         "id": "pair_native_ready_only",
-        "rule": "Phase3CN consumes only train-only pair-native READY rows; standalone-primary decisions and blockers are diagnostic only.",
+        "rule": "Phase3CN consumes only train-only pair-native READY rows whose primary standalone decision is READY and whose two members carry complete A-share tradability replay proof. Standalone and tradability blockers are hard admission gates.",
         "severity": "HARD",
         "type": "ADMISSION"
       },
       "critical": true,
       "declared": true,
       "declared_evidence_type": "",
-      "evidence": "DECLARED",
+      "evidence": "STATIC",
       "forbidden": false,
       "id": "evaluator_to_feedback",
       "lifecycle": "EXPERIMENTAL",
-      "line_style": "dotted",
+      "line_style": "dashed",
       "relation": "supplies_pair_native_train_feedback",
       "required": false,
       "source": "candidate_parallel_evaluator",
       "target": "matched_train_feedback",
       "validation": {
-        "checked_at": "2026-07-15T10:02:06.610324+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_CONTRACT.json",
-        "evidence_sha256": "136435AFB57ABB81FCEC1562A7E992BE0A8F90BE14EB995CE1227627A97A33DA",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "evidence_sha256": "F7A305B6CF52E5D945FB789E55322C6A49A4FBFFC67A27BADC9A1D395FB05FD5",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
+        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       }
     },
     {
@@ -1489,7 +1330,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-28T14:13:02.237881+00:00",
+  "generated_at": "2026-07-29T09:56:26.186384+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1514,8 +1355,6 @@
         "sha256": "F7C0B441C0AAF4FA4A2F5B3FE45474A961463B9728ABAC282419FB33789675D6",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1546,7 +1385,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -1558,21 +1397,13 @@
       "visible_by_default": true
     },
     {
-      "active_authority": false,
+      "active_authority": true,
       "authority": {
         "path": "src/our_system_phase2/services/fixed_split_authority.py",
         "repo_ref": "",
         "sha256": "2E26054A33ADD857A18FF7952D46BD3A4D2D9A407832DB380A4C08971F9FAACB",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "fixed_split_authority",
-          "authority_class": "UNCLASSIFIED",
-          "semantic_role": "split_authority"
-        }
-      ],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1616,7 +1447,7 @@
       "required": false,
       "semantic_role": "split_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -1628,21 +1459,13 @@
       "visible_by_default": true
     },
     {
-      "active_authority": false,
+      "active_authority": true,
       "authority": {
         "path": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
         "repo_ref": "",
         "sha256": "D34B6FCCC721A9F9866B067418C0740F2CF5CEB00C003A7B57D279008AE32258",
         "verified_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "cn_field_master_registry",
-          "authority_class": "UNCLASSIFIED",
-          "semantic_role": "complete_field_universe_authority"
-        }
-      ],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1690,7 +1513,7 @@
       "required": true,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
@@ -1702,21 +1525,13 @@
       "visible_by_default": true
     },
     {
-      "active_authority": false,
+      "active_authority": true,
       "authority": {
         "path": "src/our_system_phase2/services/unified_capability_registry.py",
         "repo_ref": "",
         "sha256": "6E3F74C26FC6BBEBEF8E38808D219418C4F05079474CCC8163330C7D817B60A0",
         "verified_sha": "947a2988b720a42ed319fdcfc0eddbfdde9be496"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "unified_capability_registry",
-          "authority_class": "UNCLASSIFIED",
-          "semantic_role": "field_route_authority"
-        }
-      ],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1783,7 +1598,7 @@
       "required": true,
       "semantic_role": "field_route_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
         "evidence_sha256": "4855AE00D975C5E05066CF21F73C6FA3DC08A15280DD9AD145D5EA5F30B1CF7F",
         "level": "STATIC_VERIFIED",
@@ -1797,13 +1612,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [
-        "1,683 FIELD UNIVERSE",
-        "450 TYPED CAPABILITIES",
-        "NO PERFORMANCE",
-        "NO OOS"
-      ],
       "color": "#f9a825",
       "contracts": [],
       "critical": false,
@@ -1838,7 +1646,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -1852,15 +1660,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [
-        "421 CAPABILITY METRICS",
-        "284 FUNDAMENTAL REPRESENTATIONS",
-        "4,931 WITHIN-CONTEXT NMI PAIRS",
-        "PLATE NOT EVALUATED",
-        "NO PERFORMANCE",
-        "NO OOS"
-      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -1917,9 +1716,6 @@
         "scripts_run_cn_full_field_information_research_import_chip",
         "scripts_run_cn_full_field_information_research_main",
         "scripts_run_cn_full_field_information_research_parquet_files",
-        "scripts_run_cn_full_field_information_research_py_any",
-        "scripts_run_cn_full_field_information_research_py_path",
-        "scripts_run_cn_full_field_information_research_py_series",
         "scripts_run_cn_full_field_information_research_rationale_1",
         "scripts_run_cn_full_field_information_research_rationale_350",
         "scripts_run_cn_full_field_information_research_sample_diagnostics",
@@ -1935,10 +1731,6 @@
         "src_our_system_phase2_services_field_information_census_normalized_entropy",
         "src_our_system_phase2_services_field_information_census_normalized_mutual_information",
         "src_our_system_phase2_services_field_information_census_pairwise_nmi",
-        "src_our_system_phase2_services_field_information_census_py_any",
-        "src_our_system_phase2_services_field_information_census_py_dataframe",
-        "src_our_system_phase2_services_field_information_census_py_ndarray",
-        "src_our_system_phase2_services_field_information_census_py_series",
         "src_our_system_phase2_services_field_information_census_quantile_codes",
         "src_our_system_phase2_services_field_information_census_rationale_1",
         "src_our_system_phase2_services_field_information_census_rationale_235",
@@ -1956,7 +1748,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "tests/test_field_information_census.py",
         "evidence_sha256": "837FE2F72EAAFDE1703B699031850EDB1E3770A4C0602AE018FE93FE1F46B87D",
         "level": "STATIC_VERIFIED",
@@ -1970,15 +1762,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [
-        "272 REPRESENTATIVES",
-        "62 TRUE1MIN",
-        "204 FUNDAMENTAL",
-        "6 CHIP",
-        "EXPLORATORY",
-        "NOT SEARCH AUTHORITY"
-      ],
       "color": "#f9a825",
       "contracts": [],
       "critical": false,
@@ -2004,10 +1787,6 @@
         "src_our_system_phase2_services_field_information_census_normalized_entropy",
         "src_our_system_phase2_services_field_information_census_normalized_mutual_information",
         "src_our_system_phase2_services_field_information_census_pairwise_nmi",
-        "src_our_system_phase2_services_field_information_census_py_any",
-        "src_our_system_phase2_services_field_information_census_py_dataframe",
-        "src_our_system_phase2_services_field_information_census_py_ndarray",
-        "src_our_system_phase2_services_field_information_census_py_series",
         "src_our_system_phase2_services_field_information_census_quantile_codes",
         "src_our_system_phase2_services_field_information_census_rationale_1",
         "src_our_system_phase2_services_field_information_census_rationale_235",
@@ -2025,7 +1804,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2039,15 +1818,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [
-        "466,944 STRUCTURAL ATTEMPTS",
-        "42,189 ROUTE-LEVEL EXACT IDENTITIES",
-        "264/272 CORE ROOTS",
-        "8 HELD",
-        "NO PERFORMANCE",
-        "NO OOS"
-      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -2115,7 +1885,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/run_manifest.json",
         "evidence_sha256": "09C12C713CABE838DAE5A27DBC53709C7F6D277C2E8ADA810E64D855B10E0891",
         "level": "STATIC_VERIFIED",
@@ -2127,28 +1897,13 @@
       "visible_by_default": true
     },
     {
-      "active_authority": false,
+      "active_authority": true,
       "authority": {
         "path": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
         "repo_ref": "",
         "sha256": "A986BB2D38D8C4716E85F8561ACC3551622AEA06EC27FF6326E1EE19FA132B27",
         "verified_sha": "81f481a6b7120498e06a8e7adeaf9291411d4adc"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "core_pack_development_discovery_contract",
-          "authority_class": "UNCLASSIFIED",
-          "semantic_role": "development_discovery_proposal_root_ontology_authority"
-        }
-      ],
-      "claim_badges": [
-        "ACTIVE ONTOLOGY ROOT AUTHORITY",
-        "CAMPAIGN BUDGET REQUIRED",
-        "PLATE DISABLED",
-        "POST-TRAIN VALIDATION REPORT-ONLY",
-        "2026 SEALED",
-        "NO PROMOTION"
-      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2224,20 +1979,20 @@
         "src_our_system_phase2_services_compositional_grammar_declared_size",
         "src_our_system_phase2_services_compositional_grammar_declared_temporal_evolution",
         "src_our_system_phase2_services_compositional_grammar_generatedcompositionalpair",
+        "src_our_system_phase2_services_compositional_grammar_optimizer_typed_supply_extension_registry",
         "src_our_system_phase2_services_compositional_grammar_pick",
         "src_our_system_phase2_services_compositional_grammar_pick_compatible_pair",
         "src_our_system_phase2_services_compositional_grammar_pick_excluding",
         "src_our_system_phase2_services_compositional_grammar_pick_value",
-        "src_our_system_phase2_services_compositional_grammar_py_any",
-        "src_our_system_phase2_services_compositional_grammar_py_capabilityfield",
         "src_our_system_phase2_services_compositional_grammar_rationale_1",
-        "src_our_system_phase2_services_compositional_grammar_rationale_217",
-        "src_our_system_phase2_services_compositional_grammar_rationale_2500",
-        "src_our_system_phase2_services_compositional_grammar_rationale_2708",
-        "src_our_system_phase2_services_compositional_grammar_rationale_388",
-        "src_our_system_phase2_services_compositional_grammar_rationale_604",
-        "src_our_system_phase2_services_compositional_grammar_rationale_905",
-        "src_our_system_phase2_services_compositional_grammar_rationale_942",
+        "src_our_system_phase2_services_compositional_grammar_rationale_1148",
+        "src_our_system_phase2_services_compositional_grammar_rationale_1186",
+        "src_our_system_phase2_services_compositional_grammar_rationale_290",
+        "src_our_system_phase2_services_compositional_grammar_rationale_3038",
+        "src_our_system_phase2_services_compositional_grammar_rationale_3265",
+        "src_our_system_phase2_services_compositional_grammar_rationale_367",
+        "src_our_system_phase2_services_compositional_grammar_rationale_538",
+        "src_our_system_phase2_services_compositional_grammar_rationale_764",
         "src_our_system_phase2_services_compositional_grammar_representation_family",
         "src_our_system_phase2_services_compositional_grammar_skeleton_registry",
         "src_our_system_phase2_services_compositional_grammar_skeletonspec",
@@ -2248,8 +2003,8 @@
         "src_our_system_phase2_services_unified_discovery_generators_load_development_discovery_root_authority",
         "src_our_system_phase2_services_unified_discovery_generators_pick",
         "src_our_system_phase2_services_unified_discovery_generators_rationale_1",
-        "src_our_system_phase2_services_unified_discovery_generators_rationale_179",
-        "src_our_system_phase2_services_unified_discovery_generators_rationale_440",
+        "src_our_system_phase2_services_unified_discovery_generators_rationale_181",
+        "src_our_system_phase2_services_unified_discovery_generators_rationale_442",
         "src_our_system_phase2_services_unified_discovery_generators_rationale_51",
         "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator",
         "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator_base",
@@ -2281,7 +2036,7 @@
       "required": true,
       "semantic_role": "development_discovery_proposal_root_ontology_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "evidence_sha256": "80D89B1C5AFD4438F0BCAC4D994DBFD73D26E24A74A5A60B52D3B39F2F612FA9",
         "level": "STATIC_VERIFIED",
@@ -2295,8 +2050,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2312,12 +2065,6 @@
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
-        "enum",
-        "scripts_build_nextgen_field_registry",
-        "scripts_build_nextgen_field_registry_main",
-        "scripts_build_nextgen_field_registry_rationale_1",
-        "src_our_system_phase2_services_chip_sidecar_chipsidecarresult",
-        "src_our_system_phase2_services_expression_semantics_valuedomain",
         "src_our_system_phase2_services_feature_state_fabric",
         "src_our_system_phase2_services_feature_state_fabric_capability_payload",
         "src_our_system_phase2_services_feature_state_fabric_close_range_location_sign",
@@ -2351,16 +2098,12 @@
         "src_our_system_phase2_services_feature_state_fabric_materialize_registered_close_range_state",
         "src_our_system_phase2_services_feature_state_fabric_missingpolicy",
         "src_our_system_phase2_services_feature_state_fabric_observableclock",
-        "src_our_system_phase2_services_feature_state_fabric_py_path",
         "src_our_system_phase2_services_feature_state_fabric_rationale_1",
         "src_our_system_phase2_services_feature_state_fabric_rationale_275",
         "src_our_system_phase2_services_feature_state_fabric_rationale_356",
         "src_our_system_phase2_services_feature_state_fabric_registered_close_range_state_spec",
         "src_our_system_phase2_services_feature_state_fabric_registry_from_schema_fields",
         "src_our_system_phase2_services_feature_state_fabric_stable_json",
-        "src_our_system_phase2_services_tdx_plate_market_sidecar_tdxplatemarketresult",
-        "src_our_system_phase2_services_true1min_plate_aggregation_true1minplateaggregationresult",
-        "str",
         "tests_test_feature_state_fabric",
         "tests_test_feature_state_fabric_frame",
         "tests_test_feature_state_fabric_registry",
@@ -2376,7 +2119,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2390,8 +2133,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2422,10 +2163,6 @@
         "src_our_system_phase2_services_typed_temporal_program_normalize_param",
         "src_our_system_phase2_services_typed_temporal_program_path_shape",
         "src_our_system_phase2_services_typed_temporal_program_primitive_contract",
-        "src_our_system_phase2_services_typed_temporal_program_py_any",
-        "src_our_system_phase2_services_typed_temporal_program_py_dataframe",
-        "src_our_system_phase2_services_typed_temporal_program_py_ndarray",
-        "src_our_system_phase2_services_typed_temporal_program_py_series",
         "src_our_system_phase2_services_typed_temporal_program_rationale_1",
         "src_our_system_phase2_services_typed_temporal_program_recovery",
         "src_our_system_phase2_services_typed_temporal_program_rolling_apply",
@@ -2450,8 +2187,6 @@
         "src_our_system_phase2_services_typed_temporal_program_validate_temporal_signature",
         "tests_test_typed_temporal_program",
         "tests_test_typed_temporal_program_frame",
-        "tests_test_typed_temporal_program_py_dataframe",
-        "tests_test_typed_temporal_program_py_monkeypatch",
         "tests_test_typed_temporal_program_test_all_required_temporal_primitives_have_full_contracts",
         "tests_test_typed_temporal_program_test_canonicalization_and_symmetric_relation_dedup",
         "tests_test_typed_temporal_program_test_each_temporal_primitive_is_deterministic",
@@ -2471,7 +2206,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2485,8 +2220,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2503,8 +2236,6 @@
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
-        "scripts_build_broad_event_semantic_registry",
-        "scripts_build_broad_event_semantic_registry_main",
         "src_our_system_phase2_services_broad_event_episodes",
         "src_our_system_phase2_services_broad_event_episodes_audit_episode_support",
         "src_our_system_phase2_services_broad_event_episodes_chip_episodes",
@@ -2525,8 +2256,6 @@
         "src_our_system_phase2_services_broad_event_semantics_eventfieldsemantic_canonical",
         "src_our_system_phase2_services_broad_event_semantics_inventory_row",
         "src_our_system_phase2_services_broad_event_semantics_load_and_build",
-        "src_our_system_phase2_services_broad_event_semantics_py_any",
-        "src_our_system_phase2_services_broad_event_semantics_py_path",
         "src_our_system_phase2_services_broad_event_semantics_rationale_1",
         "src_our_system_phase2_services_broad_event_semantics_source",
         "src_our_system_phase2_services_broad_event_semantics_validate_semantic_registry",
@@ -2544,7 +2273,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2556,28 +2285,13 @@
       "visible_by_default": true
     },
     {
-      "active_authority": false,
+      "active_authority": true,
       "authority": {
         "path": "src/our_system_phase2/services/pit_fundamental_fabric.py",
         "repo_ref": "",
         "sha256": "DCBEA382D2B2875FB5D93837B23EECE67576410F8B98CE69E6DCA0CAFEADD16C",
         "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "pit_fundamental_fabric",
-          "authority_class": "UNCLASSIFIED",
-          "semantic_role": "pit_fundamental_observable_episode_authority"
-        }
-      ],
-      "claim_badges": [
-        "4 DISCLOSURE ROOT RECEIPTS",
-        "1,852,463 DEVELOPMENT STOCK-SESSIONS",
-        "CURRENT-SNAPSHOT AS-OF ONLY",
-        "NO REVISION REPLAY",
-        "NO PERFORMANCE",
-        "NO OOS"
-      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2616,7 +2330,6 @@
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
-        "field",
         "scripts_build_pit_fundamental_fabric",
         "scripts_build_pit_fundamental_fabric_allowed_change_transforms",
         "scripts_build_pit_fundamental_fabric_arrow_schema",
@@ -2624,14 +2337,6 @@
         "scripts_build_pit_fundamental_fabric_main",
         "scripts_build_pit_fundamental_fabric_observable_contract",
         "scripts_build_pit_fundamental_fabric_parquet_cutoff_value",
-        "scripts_build_pit_fundamental_fabric_py_any",
-        "scripts_build_pit_fundamental_fabric_py_counter",
-        "scripts_build_pit_fundamental_fabric_py_datetimeindex",
-        "scripts_build_pit_fundamental_fabric_py_namespace",
-        "scripts_build_pit_fundamental_fabric_py_path",
-        "scripts_build_pit_fundamental_fabric_py_schema",
-        "scripts_build_pit_fundamental_fabric_py_table",
-        "scripts_build_pit_fundamental_fabric_py_timestamp",
         "scripts_build_pit_fundamental_fabric_rationale_261",
         "scripts_build_pit_fundamental_fabric_read_split",
         "scripts_build_pit_fundamental_fabric_repo_sha",
@@ -2701,10 +2406,6 @@
         "src_our_system_phase2_services_pit_fundamental_fabric_stocksessionasofresolver_resolve",
         "tests_test_pit_fundamental_fabric",
         "tests_test_pit_fundamental_fabric_finance_frame",
-        "tests_test_pit_fundamental_fabric_py_dataframe",
-        "tests_test_pit_fundamental_fabric_py_datetimeindex",
-        "tests_test_pit_fundamental_fabric_py_monkeypatch",
-        "tests_test_pit_fundamental_fabric_py_path",
         "tests_test_pit_fundamental_fabric_sessions",
         "tests_test_pit_fundamental_fabric_test_adapter_prefetches_a_table_cohort_once",
         "tests_test_pit_fundamental_fabric_test_asof_resolution_preserves_unknown_until_safe_version_time",
@@ -2728,7 +2429,7 @@
       "required": false,
       "semantic_role": "pit_fundamental_observable_episode_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "tests/test_pit_fundamental_fabric.py",
         "evidence_sha256": "20617E5E750049057A210DDE3451559B55388D7AD869605D0E9839E461A24769",
         "level": "STATIC_VERIFIED",
@@ -2742,8 +2443,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2775,7 +2474,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2794,15 +2493,6 @@
         "sha256": "2D2FF2E4AB958DC9ADB48745FE09D2D48DD38085669B3DF1FB477812BD83D1EE",
         "verified_sha": "54ce73e59e486c186fa8b6b5a4ad0a944d1f5f9c"
       },
-      "authority_bindings": [],
-      "claim_badges": [
-        "CATCMA QUALITY FAIL",
-        "SCALE READINESS FAIL",
-        "STATE EXACT SPACE EXHAUSTED",
-        "DEVELOPMENT ONLY",
-        "LONG-ONLY TOP",
-        "NO PROMOTION"
-      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -2942,16 +2632,10 @@
         "src_our_system_phase2_runtime_cn_iterative_search_v1_main",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_outcome_rows",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_probe_pack",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_py_any",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_py_fixedsplitauthority",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_py_namespace",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_py_path",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_py_portfoliobehaviorarchive",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_py_unifiedcapabilityregistry",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_1",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_313",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_809",
-        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_922",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_821",
+        "src_our_system_phase2_runtime_cn_iterative_search_v1_rationale_934",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_read_csv",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_route_health",
         "src_our_system_phase2_runtime_cn_iterative_search_v1_run",
@@ -3049,20 +2733,20 @@
         "src_our_system_phase2_services_compositional_grammar_declared_size",
         "src_our_system_phase2_services_compositional_grammar_declared_temporal_evolution",
         "src_our_system_phase2_services_compositional_grammar_generatedcompositionalpair",
+        "src_our_system_phase2_services_compositional_grammar_optimizer_typed_supply_extension_registry",
         "src_our_system_phase2_services_compositional_grammar_pick",
         "src_our_system_phase2_services_compositional_grammar_pick_compatible_pair",
         "src_our_system_phase2_services_compositional_grammar_pick_excluding",
         "src_our_system_phase2_services_compositional_grammar_pick_value",
-        "src_our_system_phase2_services_compositional_grammar_py_any",
-        "src_our_system_phase2_services_compositional_grammar_py_capabilityfield",
         "src_our_system_phase2_services_compositional_grammar_rationale_1",
-        "src_our_system_phase2_services_compositional_grammar_rationale_217",
-        "src_our_system_phase2_services_compositional_grammar_rationale_2500",
-        "src_our_system_phase2_services_compositional_grammar_rationale_2708",
-        "src_our_system_phase2_services_compositional_grammar_rationale_388",
-        "src_our_system_phase2_services_compositional_grammar_rationale_604",
-        "src_our_system_phase2_services_compositional_grammar_rationale_905",
-        "src_our_system_phase2_services_compositional_grammar_rationale_942",
+        "src_our_system_phase2_services_compositional_grammar_rationale_1148",
+        "src_our_system_phase2_services_compositional_grammar_rationale_1186",
+        "src_our_system_phase2_services_compositional_grammar_rationale_290",
+        "src_our_system_phase2_services_compositional_grammar_rationale_3038",
+        "src_our_system_phase2_services_compositional_grammar_rationale_3265",
+        "src_our_system_phase2_services_compositional_grammar_rationale_367",
+        "src_our_system_phase2_services_compositional_grammar_rationale_538",
+        "src_our_system_phase2_services_compositional_grammar_rationale_764",
         "src_our_system_phase2_services_compositional_grammar_representation_family",
         "src_our_system_phase2_services_compositional_grammar_skeleton_registry",
         "src_our_system_phase2_services_compositional_grammar_skeletonspec",
@@ -3078,8 +2762,6 @@
         "src_our_system_phase2_services_multi_arm_scheduler_build_route_schedule",
         "src_our_system_phase2_services_multi_arm_scheduler_fit_shares",
         "src_our_system_phase2_services_multi_arm_scheduler_integer_budgets",
-        "src_our_system_phase2_services_multi_arm_scheduler_py_any",
-        "src_our_system_phase2_services_multi_arm_scheduler_py_path",
         "src_our_system_phase2_services_multi_arm_scheduler_rationale_1",
         "src_our_system_phase2_services_multi_arm_scheduler_rationale_117",
         "src_our_system_phase2_services_multi_arm_scheduler_rationale_263",
@@ -3103,14 +2785,15 @@
         "src_our_system_phase2_services_portfolio_behavior_archive_portfoliobehaviorarchive_read_parquet",
         "src_our_system_phase2_services_portfolio_behavior_archive_portfoliobehaviorarchive_write_parquet",
         "src_our_system_phase2_services_portfolio_behavior_archive_rationale_1",
-        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_160",
-        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_341",
-        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_417",
-        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_475",
-        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_624",
+        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_167",
+        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_348",
+        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_424",
+        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_482",
+        "src_our_system_phase2_services_portfolio_behavior_archive_rationale_643",
         "src_our_system_phase2_services_portfolio_behavior_archive_signal_cluster_id",
         "src_our_system_phase2_services_portfolio_behavior_archive_stable_json",
         "src_our_system_phase2_services_portfolio_behavior_archive_stratified_dates",
+        "src_our_system_phase2_services_portfolio_behavior_archive_stratified_values",
         "src_our_system_phase2_services_portfolio_behavior_archive_streaminglabelfreebehavior",
         "src_our_system_phase2_services_portfolio_behavior_archive_streaminglabelfreebehavior_continuation_payload",
         "src_our_system_phase2_services_portfolio_behavior_archive_streaminglabelfreebehavior_init",
@@ -3137,8 +2820,8 @@
         "src_our_system_phase2_services_unified_discovery_generators_load_development_discovery_root_authority",
         "src_our_system_phase2_services_unified_discovery_generators_pick",
         "src_our_system_phase2_services_unified_discovery_generators_rationale_1",
-        "src_our_system_phase2_services_unified_discovery_generators_rationale_179",
-        "src_our_system_phase2_services_unified_discovery_generators_rationale_440",
+        "src_our_system_phase2_services_unified_discovery_generators_rationale_181",
+        "src_our_system_phase2_services_unified_discovery_generators_rationale_442",
         "src_our_system_phase2_services_unified_discovery_generators_rationale_51",
         "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator",
         "src_our_system_phase2_services_unified_discovery_generators_registrydrivengenerator_base",
@@ -3171,25 +2854,13 @@
         "tests_test_catcma_search_adapter_test_population_is_complete_and_decodes_every_gene_slot",
         "tests_test_catcma_search_adapter_test_registry_baseline_schedules_attempts_without_searching_past_them",
         "tests_test_catcma_search_adapter_test_tell_rejects_unasked_proposals",
-        "tests_test_iterative_behavior_probe",
-        "tests_test_iterative_behavior_probe_test_bounded_probe_reads_fields_without_label_sidecars",
-        "tests_test_iterative_behavior_probe_test_full_behavior_row_closes_all_four_identities_by_pair",
-        "tests_test_iterative_behavior_probe_test_probe_pack_uses_route_aware_coordinates",
-        "tests_test_iterative_route_scheduler",
-        "tests_test_iterative_route_scheduler_row",
-        "tests_test_iterative_route_scheduler_test_causal_gate_excludes_maintain_spillover_and_records_supply_clamp",
-        "tests_test_iterative_route_scheduler_test_causal_gate_requires_actual_route_distribution_to_follow_schedule",
-        "tests_test_iterative_route_scheduler_test_freeze_requires_semantic_or_exact_behavior_evidence",
-        "tests_test_iterative_route_scheduler_test_infrastructure_failure_is_not_a_route_health_input",
-        "tests_test_iterative_route_scheduler_test_iterative_canary_is_exposed_through_narrow_app_route",
-        "tests_test_iterative_route_scheduler_test_medium_campaign_scheduler_holds_route_diversity_bounds",
-        "tests_test_iterative_route_scheduler_test_positive_and_negative_rules_expand_and_contract_synthetically",
-        "tests_test_iterative_route_scheduler_test_route_scheduler_uses_registry_route_as_top_level_key",
         "tests_test_portfolio_behavior_archive",
         "tests_test_portfolio_behavior_archive_behavior",
+        "tests_test_portfolio_behavior_archive_serial_label_free_mapping",
         "tests_test_portfolio_behavior_archive_test_archive_dedupes_probe_and_full_signature_separately",
         "tests_test_portfolio_behavior_archive_test_behavior_identity_changes_with_selection_not_outcome",
         "tests_test_portfolio_behavior_archive_test_behavior_probe_is_label_free_and_exact",
+        "tests_test_portfolio_behavior_archive_test_parallel_label_free_mapping_matches_serial_reference_exactly",
         "tests_test_portfolio_behavior_archive_test_unresolved_behavior_never_falls_back_to_structure",
         "tests_test_post_train_validation",
         "tests_test_post_train_validation_test_validation_refuses_to_start_before_train_complete",
@@ -3214,7 +2885,7 @@
       "required": true,
       "semantic_role": "bounded_development_iterative_search_capability",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "runtime/run_plans/cn_search_policy_qualification_20260724_receipt.json",
         "evidence_sha256": "959804532BA654090AD505F9754972990CA16D039FD4BF3D83BD92B7536084F7",
         "level": "PARTIAL",
@@ -3229,24 +2900,10 @@
       "active_authority": true,
       "authority": {
         "path": "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
-        "repo_ref": "feature/search-policy-qualification",
-        "sha256": "CDAAEF0B0AB2EF45AA8840E4BACBF66CD25A04FE81FAD5C11BE93B44C66B3B08",
-        "verified_sha": "9bc43e89398ea101393eb00e3d8e220ac4527d64"
+        "repo_ref": "feature/a-share-tradability-authority-repair",
+        "sha256": "4F5460BC786F456F580430AAC052F80F8E64C2D4797A7D90290857B158898BD6",
+        "verified_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "cn_development_search_policy",
-          "authority_class": "FORMAL",
-          "semantic_role": "development_search_policy_authority"
-        }
-      ],
-      "claim_badges": [
-        "HYBRID POLICY ACCEPTED",
-        "DEVELOPMENT TRAIN ONLY",
-        "UNIFORM BASELINE RETAINED",
-        "NO VALIDATION",
-        "NO CANDIDATE PROMOTION"
-      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3278,7 +2935,7 @@
         }
       ],
       "critical": true,
-      "evidence": "DECLARED",
+      "evidence": "STATIC",
       "expires_at": "",
       "id": "cn_development_search_policy",
       "kind": "authority-slot",
@@ -3288,31 +2945,119 @@
       "paths": [
         "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
         "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
-        "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"
+        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md",
+        "docs/adr/0009-a-share-tradability-evidence-boundary.md"
       ],
       "promotion_requirements": [],
-      "raw_node_ids": [],
+      "raw_node_ids": [
+        "docs_adr_0008_hybrid_tpe_availability_development_search_policy",
+        "docs_adr_0008_hybrid_tpe_availability_development_search_policy_adr_0008_hybrid_tpe_plus_availability_development_search_policy",
+        "docs_adr_0008_hybrid_tpe_availability_development_search_policy_boundaries",
+        "docs_adr_0008_hybrid_tpe_availability_development_search_policy_consequences",
+        "docs_adr_0008_hybrid_tpe_availability_development_search_policy_context",
+        "docs_adr_0008_hybrid_tpe_availability_development_search_policy_decision",
+        "docs_adr_0009_a_share_tradability_evidence_boundary",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_adr_0009_a_share_tradability_evidence_boundary",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_consequences",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_context",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_decision",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_allocate_checkpoint_asks",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_ask_availability_aware_populations",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_ask_route_population_worker",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_ask_route_populations",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_authorization_binding",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_availability_metadata",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_availability_semantic_input_hashes",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_campaign_runtime_spec",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_conservative_search_score",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_copy_behavior_archive",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_development_predictive_score",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_finite_float",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_freeze_availability_index",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_freeze_gene_lanes",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_fresh_exact_supply",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_is_hybrid_tranche_profile",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_is_productive_candidate",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_load_closed_state",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_load_optimizer_snapshot",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_main",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_materialized_route_root_allowlists",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_medium_policy_decision",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_optimizer_feedback_blockers",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_percentile",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_policy_arm_assignments",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_policy_productivity_rows",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_productive_behavior_family_ids",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_productive_family_diagnostics",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_rationale_1",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_rationale_1832",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_rationale_655",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_restore_or_import_adapters",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_restore_or_initialize_availability_controller",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_restore_route_adapter_worker",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_restore_route_adapters",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_route_budget_feasibility",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_run",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_select_validation_finalists",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_uniform_ask_row",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_validation_eligible",
+        "src_our_system_phase2_runtime_cn_large_tpe_search_campaign_write_optimizer_snapshot",
+        "tests_test_cn_large_tpe_search_campaign",
+        "tests_test_cn_large_tpe_search_campaign_deterministicrouteadapter",
+        "tests_test_cn_large_tpe_search_campaign_deterministicrouteadapter_ask_population",
+        "tests_test_cn_large_tpe_search_campaign_deterministicrouteadapter_init",
+        "tests_test_cn_large_tpe_search_campaign_evaluated_outcome",
+        "tests_test_cn_large_tpe_search_campaign_frozenlanegenerator",
+        "tests_test_cn_large_tpe_search_campaign_frozenlanegenerator_categorical_gene_lanes",
+        "tests_test_cn_large_tpe_search_campaign_frozenlanegenerator_init",
+        "tests_test_cn_large_tpe_search_campaign_pairreducer",
+        "tests_test_cn_large_tpe_search_campaign_pairreducer_behavior_identity",
+        "tests_test_cn_large_tpe_search_campaign_pairsupport",
+        "tests_test_cn_large_tpe_search_campaign_pairsupport_identities",
+        "tests_test_cn_large_tpe_search_campaign_test_availability_semantic_hashes_ignore_only_indirect_runtime_paths",
+        "tests_test_cn_large_tpe_search_campaign_test_bounded_large_execution_authority_is_single_tranche_only",
+        "tests_test_cn_large_tpe_search_campaign_test_budget_feasibility_separates_absolute_failure_from_recent_risk",
+        "tests_test_cn_large_tpe_search_campaign_test_checkpoint_ask_allocation_is_registry_route_bounded",
+        "tests_test_cn_large_tpe_search_campaign_test_completed_route_receives_no_further_asks",
+        "tests_test_cn_large_tpe_search_campaign_test_conservative_search_score_cannot_promote_bad_primary_against_worse_control",
+        "tests_test_cn_large_tpe_search_campaign_test_frozen_gene_lanes_reject_projected_formula_space_drift",
+        "tests_test_cn_large_tpe_search_campaign_test_frozen_gene_lanes_survive_runtime_only_contract_change",
+        "tests_test_cn_large_tpe_search_campaign_test_hybrid_bounded_large_tranche_profile_matches_frozen_contract",
+        "tests_test_cn_large_tpe_search_campaign_test_hybrid_only_tranche_is_exact_bounded_and_not_an_unlimited_search",
+        "tests_test_cn_large_tpe_search_campaign_test_legacy_availability_index_resume_is_checkpoint_anchored_and_structural",
+        "tests_test_cn_large_tpe_search_campaign_test_live_runner_replaces_seen_exact_without_pruning_or_formal_budget_loss",
+        "tests_test_cn_large_tpe_search_campaign_test_observed_low_yield_increases_route_ask_share",
+        "tests_test_cn_large_tpe_search_campaign_test_optimizer_score_requires_explicit_a_share_tradability_evidence",
+        "tests_test_cn_large_tpe_search_campaign_test_optimizer_snapshot_restores_without_transcript_resampling",
+        "tests_test_cn_large_tpe_search_campaign_test_parallel_route_ask_preserves_schedule_order_and_replay_genes",
+        "tests_test_cn_large_tpe_search_campaign_test_productive_family_diagnostics_are_diagnostic_only",
+        "tests_test_cn_large_tpe_search_campaign_test_productivity_arm_assignment_is_exact_balanced_and_seedless_replayable",
+        "tests_test_cn_large_tpe_search_campaign_test_productivity_ask_keeps_uniform_outside_optimizer_feedback",
+        "tests_test_cn_large_tpe_search_campaign_test_productivity_decision_defaults_to_uniform_without_demonstrated_uplift",
+        "tests_test_cn_large_tpe_search_campaign_test_scheduler_preserves_observed_1_4_percent_without_20_percent_floor",
+        "tests_test_cn_large_tpe_search_campaign_test_streaming_pair_outcome_preserves_primary_control_and_standalone_decision",
+        "tests_test_cn_large_tpe_search_campaign_test_successor_contract_is_formal_exact_bounded_not_financially_authorized",
+        "tests_test_cn_large_tpe_search_campaign_test_validation_finalists_require_standalone_ready_and_positive_increment"
+      ],
       "required": false,
       "semantic_role": "development_search_policy_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
-        "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
-        "evidence_sha256": "11CB3F4A4A57B2ED136BC17A89D567291CDBE8EF1EB2F90CC8665AA1F9073F37",
-        "level": "PARTIAL",
-        "notes": [
-          "runtime assurance needs a completed matching trace with all contract bindings"
-        ],
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "evidence_sha256": "F7A305B6CF52E5D945FB789E55322C6A49A4FBFFC67A27BADC9A1D395FB05FD5",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
         "profile": "",
-        "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"
+        "result": "PASS",
+        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       },
       "visible_by_default": true
     },
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#f9a825",
       "contracts": [
         {
@@ -3350,24 +3095,18 @@
         "scripts_freeze_cn_compositional_stage_a_eligibility_fail",
         "scripts_freeze_cn_compositional_stage_a_eligibility_freeze_stage_a_eligibility",
         "scripts_freeze_cn_compositional_stage_a_eligibility_main",
-        "scripts_freeze_cn_compositional_stage_a_eligibility_py_any",
-        "scripts_freeze_cn_compositional_stage_a_eligibility_py_path",
         "scripts_freeze_cn_compositional_stage_a_eligibility_rationale_103",
         "scripts_freeze_cn_compositional_stage_a_eligibility_rationale_24",
         "scripts_freeze_cn_compositional_stage_a_eligibility_read_csv",
         "scripts_freeze_cn_compositional_stage_a_eligibility_sha256",
         "scripts_freeze_cn_compositional_stage_a_eligibility_stable_hash",
         "scripts_freeze_cn_compositional_stage_a_eligibility_stageaeligibilityerror",
-        "scripts_freeze_cn_compositional_stage_a_eligibility_unique_count",
-        "tests_test_compositional_stage_a_eligibility",
-        "tests_test_compositional_stage_a_eligibility_py_path",
-        "tests_test_compositional_stage_a_eligibility_test_current_evidence_supports_scoped_stage_a_pack",
-        "tests_test_compositional_stage_a_eligibility_test_performance_selected_admission_fails_closed"
+        "scripts_freeze_cn_compositional_stage_a_eligibility_unique_count"
       ],
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
         "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
         "level": "STATIC_VERIFIED",
@@ -3379,21 +3118,13 @@
       "visible_by_default": true
     },
     {
-      "active_authority": false,
+      "active_authority": true,
       "authority": {
         "path": "src/our_system_phase2/services/candidate_submission_receipt.py",
         "repo_ref": "",
         "sha256": "A8BD94F43A2A7C58705C925FDF6FF8269C07042E58110CE296CB37BB85D9C02C",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "candidate_submission_receipt",
-          "authority_class": "UNCLASSIFIED",
-          "semantic_role": "candidate_identity_authority"
-        }
-      ],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3451,7 +3182,7 @@
       "required": false,
       "semantic_role": "candidate_identity_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json",
         "evidence_sha256": "115218107C43C1B7CB9FB3E0039DA8261CB45E07CF4177915B21172DDA69632D",
         "level": "STATIC_VERIFIED",
@@ -3463,21 +3194,13 @@
       "visible_by_default": true
     },
     {
-      "active_authority": false,
+      "active_authority": true,
       "authority": {
         "path": "src/our_system_phase2/services/matched_control_pairs.py",
         "repo_ref": "",
         "sha256": "E652D586A518A7512B9A5C30D81898C4F4A77598CD8FF5808D1CECB4BAC9EF1F",
         "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "matched_control_pair_authority",
-          "authority_class": "UNCLASSIFIED",
-          "semantic_role": "matched_pair_authority"
-        }
-      ],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3520,39 +3243,23 @@
         "src_our_system_phase2_services_matched_control_pairs_group_candidate_pairs",
         "src_our_system_phase2_services_matched_control_pairs_pair_identity",
         "src_our_system_phase2_services_matched_control_pairs_partition_candidate_pairs",
-        "src_our_system_phase2_services_matched_control_pairs_py_any",
-        "src_our_system_phase2_services_matched_control_pairs_py_path",
         "src_our_system_phase2_services_matched_control_pairs_rationale_1",
-        "src_our_system_phase2_services_matched_control_pairs_rationale_131",
-        "src_our_system_phase2_services_matched_control_pairs_rationale_322",
-        "src_our_system_phase2_services_matched_control_pairs_rationale_517",
-        "src_our_system_phase2_services_matched_control_pairs_rationale_556",
+        "src_our_system_phase2_services_matched_control_pairs_rationale_138",
+        "src_our_system_phase2_services_matched_control_pairs_rationale_329",
+        "src_our_system_phase2_services_matched_control_pairs_rationale_524",
+        "src_our_system_phase2_services_matched_control_pairs_rationale_563",
         "src_our_system_phase2_services_matched_control_pairs_read_pair_receipt_table",
         "src_our_system_phase2_services_matched_control_pairs_receipt_payload",
         "src_our_system_phase2_services_matched_control_pairs_select_candidate_pairs",
         "src_our_system_phase2_services_matched_control_pairs_signal_value_identity",
         "src_our_system_phase2_services_matched_control_pairs_support_coordinate",
         "src_our_system_phase2_services_matched_control_pairs_validate_constructor_shape",
-        "src_our_system_phase2_services_matched_control_pairs_write_pair_receipt_table",
-        "tests_test_matched_control_candidate_parallel",
-        "tests_test_matched_control_candidate_parallel_candidate_authority",
-        "tests_test_matched_control_candidate_parallel_four_route_pairs",
-        "tests_test_matched_control_candidate_parallel_py_path",
-        "tests_test_matched_control_candidate_parallel_test_all_routes_have_authoritative_constructor_and_immutable_pair_receipt",
-        "tests_test_matched_control_candidate_parallel_test_candidate_parallel_partition_never_splits_a_pair_and_is_deterministic",
-        "tests_test_matched_control_candidate_parallel_test_pair_authority_rejects_pointer_route_context_and_exact_drift",
-        "tests_test_matched_control_candidate_parallel_test_pair_common_finite_mask_uses_strict_intersection",
-        "tests_test_matched_control_candidate_parallel_test_pair_evaluation_computes_matched_increment_and_blocks_degenerate_control",
-        "tests_test_matched_control_candidate_parallel_test_pair_evaluation_fails_closed_for_missing_receipts_and_control_invocation",
-        "tests_test_matched_control_candidate_parallel_test_pair_receipt_hash_and_clock_contract_are_immutable",
-        "tests_test_matched_control_candidate_parallel_test_phase3cm_formally_evaluates_both_pair_members_and_writes_matched_increment",
-        "tests_test_phase3cm_semantic_only_integration",
-        "tests_test_phase3cm_semantic_only_integration_test_semantic_only_main_never_builds_future_return_labels"
+        "src_our_system_phase2_services_matched_control_pairs_write_pair_receipt_table"
       ],
       "required": false,
       "semantic_role": "matched_pair_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
         "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
         "level": "STATIC_VERIFIED",
@@ -3564,21 +3271,13 @@
       "visible_by_default": true
     },
     {
-      "active_authority": false,
+      "active_authority": true,
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
-        "repo_ref": "",
-        "sha256": "F2D55DD23FF220141333F0424DCD8E46CF336EB6F4D14FE7ACB0194F57506F70",
-        "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
+        "repo_ref": "feature/a-share-tradability-authority-repair",
+        "sha256": "18875D978BE6B2206AD5923EB1F92037CE06FAE98B220F1F4511006A521C681E",
+        "verified_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "candidate_parallel_evaluator",
-          "authority_class": "UNCLASSIFIED",
-          "semantic_role": "formal_evaluation_authority"
-        }
-      ],
-      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3586,7 +3285,7 @@
           "enforced_by": "phase3cm_candidate_parallel",
           "evidence_ref": "",
           "id": "evaluate_whole_pair",
-          "rule": "The formal evaluator invokes both pair members and computes train-only matched increments on the same coordinates.",
+          "rule": "The development predictive evaluator invokes both pair members and computes train-only matched increments on the same coordinates; it is not an A-share execution replay or economic authority.",
           "severity": "HARD",
           "type": "EVIDENCE"
         },
@@ -3595,7 +3294,7 @@
           "enforced_by": "phase3cm_candidate_parallel",
           "evidence_ref": "",
           "id": "candidate_axis_only",
-          "rule": "Multi-worker formal evaluation partitions candidate pairs, never portfolio shards.",
+          "rule": "Multi-worker development evaluation partitions candidate pairs, never portfolio shards.",
           "severity": "HARD",
           "type": "BOUNDARY"
         }
@@ -3605,11 +3304,13 @@
       "expires_at": "",
       "id": "candidate_parallel_evaluator",
       "kind": "evaluator",
-      "label": "Candidate-parallel formal evaluator",
+      "label": "Candidate-parallel development predictive evaluator",
       "lifecycle": "ACTIVE",
       "owner": "",
       "paths": [
-        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py"
+        "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
+        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "docs/adr/0009-a-share-tradability-evidence-boundary.md"
       ],
       "promotion_requirements": [
         "explicit search authorization",
@@ -3617,6 +3318,11 @@
       ],
       "raw_node_ids": [
         "candidate_parallel_evaluator",
+        "docs_adr_0009_a_share_tradability_evidence_boundary",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_adr_0009_a_share_tradability_evidence_boundary",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_consequences",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_context",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_decision",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_bootstrap_days",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_bounded",
@@ -3665,17 +3371,16 @@
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_persistentseriescache_path_for_key",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_persistentseriescache_put_memory",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_persistentseriescache_setitem",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_py_any",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_quantile",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rank_by_eval_time_index",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rank_pct_1d_average",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rank_pct_1d_average_numba",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_1",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_1485",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_2032",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_615",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_704",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_991",
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_1489",
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_2036",
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_618",
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_707",
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_rationale_995",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_read_cached_feature_matrix",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_read_cached_series",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_read_csv",
@@ -3703,22 +3408,19 @@
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_timestamp_fingerprint",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_write_cached_feature_matrix",
         "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_write_cached_series",
-        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_write_incremental_checkpoint",
-        "tests_test_phase3cm_bootstrap",
-        "tests_test_phase3cm_bootstrap_test_bootstrap_days_is_deterministic_and_reports_vectorized_engine",
-        "tests_test_phase3cm_bootstrap_test_bootstrap_days_preserves_no_downside_behavior"
+        "src_our_system_phase2_runtime_phase3cm_train_portfolio_sortino_reward_audit_write_incremental_checkpoint"
       ],
       "required": false,
-      "semantic_role": "formal_evaluation_authority",
+      "semantic_role": "development_predictive_evaluation_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_ALL_ROUTE_RUNTIME_QUALIFICATION.json",
-        "evidence_sha256": "43A5F393377042FDFC7CBE5D36F034085A2F4917AA681A3FA0D5A58402B13302",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "evidence_sha256": "F7A305B6CF52E5D945FB789E55322C6A49A4FBFFC67A27BADC9A1D395FB05FD5",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
+        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       },
       "visible_by_default": true
     },
@@ -3726,19 +3428,10 @@
       "active_authority": false,
       "authority": {
         "path": "scripts/run_cn_phase3cm_streaming_qualification.py",
-        "repo_ref": "",
-        "sha256": "DBF67457F156D758C7519AA2A82EECECC24A662B7F06EBB6FAEB83CB9B45CD87",
-        "verified_sha": "54ce73e59e486c186fa8b6b5a4ad0a944d1f5f9c"
+        "repo_ref": "feature/a-share-tradability-authority-repair",
+        "sha256": "764CEF1ACBC9EF68D72C8D436A729E0313A65DE066EA1B3087C6B939A8EAD66F",
+        "verified_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       },
-      "authority_bindings": [],
-      "claim_badges": [
-        "LONG-ONLY TOP",
-        "SHORTING DISABLED",
-        "MINUTE SAMPLE QUALIFIED",
-        "4.97X SAMPLE SPEED",
-        "PAIR DELTA != STANDALONE SORTINO",
-        "WEAK NOT SEALED OOS"
-      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3747,6 +3440,15 @@
           "evidence_ref": "",
           "id": "streaming_development_only",
           "rule": "The train role may read only the frozen 2024-2025 development release. Separately bound validation remains report-only after immutable TRAIN_COMPLETE. A one-time evaluation_role=holdout binding evaluated only 12 pre-frozen pairs on the already-spent 48-date calendar, with zero validation/2026 reads and no feedback, scheduler, archive or promotion write. It grants no additional holdout access and no sealed-OOS claim.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "a_share_tradability_guard and ADR 0009",
+          "evidence_ref": "",
+          "id": "streaming_not_a_share_execution_authority",
+          "rule": "Phase3CM emits DEVELOPMENT_PREDICTIVE_SCORE_ONLY and cannot authorize optimizer reward, finalist eligibility, promotion or economic claims until immutable replay evidence proves execution clock, same-bar exclusion, T+1, limit-lock, suspension, complete fees and a promotion-grade universe.",
           "severity": "HARD",
           "type": "BOUNDARY"
         },
@@ -3799,6 +3501,8 @@
         "runtime/run_plans/cn_core_pack_large_development_result_interpretation_20260723.json",
         "runtime/run_plans/cn_core_pack_fixed_holdout_20260723_receipt.json",
         "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
+        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "docs/adr/0009-a-share-tradability-evidence-boundary.md",
         "runtime/cn_batched_portfolio_kernel_v1_20260719/run_manifest.json"
       ],
       "promotion_requirements": [
@@ -3807,22 +3511,16 @@
         "unchanged sealed-data and no-promotion boundaries"
       ],
       "raw_node_ids": [
-        "float64",
-        "frozenexecutionplan",
-        "ndarray",
-        "pairsupportaccumulator",
+        "docs_adr_0009_a_share_tradability_evidence_boundary",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_adr_0009_a_share_tradability_evidence_boundary",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_consequences",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_context",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_decision",
         "reports_cn_matched_control_candidate_parallel_20260715_cn_matched_control_run_manifest_json",
         "runtime_run_plans_cn_core_pack_fixed_holdout_20260723_receipt",
         "runtime_run_plans_cn_core_pack_large_development_20260723_receipt",
         "runtime_run_plans_cn_core_pack_large_development_result_interpretation_20260723",
         "runtime_run_plans_cn_minute_static_production_cem_v3_20260725_receipt",
-        "scripts_diagnose_cn_phase3cm_signal_mapping_parity",
-        "scripts_diagnose_cn_phase3cm_signal_mapping_parity_main",
-        "scripts_diagnose_cn_phase3cm_signal_mapping_parity_py_ndarray",
-        "scripts_diagnose_cn_phase3cm_signal_mapping_parity_py_path",
-        "scripts_diagnose_cn_phase3cm_signal_mapping_parity_read_csv",
-        "scripts_diagnose_cn_phase3cm_signal_mapping_parity_sidecars",
-        "scripts_diagnose_cn_phase3cm_signal_mapping_parity_top_summary",
         "scripts_run_cn_phase3cm_streaming_qualification",
         "scripts_run_cn_phase3cm_streaming_qualification_block_boundaries",
         "scripts_run_cn_phase3cm_streaming_qualification_candidate_direction",
@@ -3838,13 +3536,11 @@
         "scripts_run_cn_phase3cm_streaming_qualification_pair_batches",
         "scripts_run_cn_phase3cm_streaming_qualification_phase_e_plan_pair_order",
         "scripts_run_cn_phase3cm_streaming_qualification_portfolio_continuation_payload",
-        "scripts_run_cn_phase3cm_streaming_qualification_py_any",
-        "scripts_run_cn_phase3cm_streaming_qualification_py_path",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_166",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_345",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_379",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_425",
-        "scripts_run_cn_phase3cm_streaming_qualification_rationale_68",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_173",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_352",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_386",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_432",
+        "scripts_run_cn_phase3cm_streaming_qualification_rationale_75",
         "scripts_run_cn_phase3cm_streaming_qualification_raw_fields",
         "scripts_run_cn_phase3cm_streaming_qualification_read_csv",
         "scripts_run_cn_phase3cm_streaming_qualification_restore_portfolio_continuation_payload",
@@ -3853,7 +3549,6 @@
         "scripts_run_cn_phase3cm_streaming_qualification_sha256",
         "scripts_run_cn_phase3cm_streaming_qualification_sidecar_files",
         "scripts_run_cn_phase3cm_streaming_qualification_stable_hash",
-        "scripts_run_cn_phase3cm_streaming_qualification_support_masks",
         "scripts_run_cn_phase3cm_streaming_qualification_symbol_registry",
         "scripts_run_cn_phase3cm_streaming_qualification_train_calendar",
         "scripts_run_cn_phase3cm_streaming_qualification_truthy",
@@ -3891,6 +3586,7 @@
         "src_our_system_phase2_services_phase3cm_streaming_dag_valuecohort",
         "src_our_system_phase2_services_phase3cm_streaming_dag_window_profile",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_aggregate_horizon_kernel",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_batchedportfoliokernel",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_batchedportfoliokernel_continuation_payload",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_batchedportfoliokernel_evaluate_block",
@@ -3906,22 +3602,22 @@
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_portfolioblockresult",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_prepare_label_orders",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_prepare_portfolio_block",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_prepare_signal_ranks",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_preparedportfolioblock",
-        "src_our_system_phase2_services_phase3cm_streaming_portfolio_py_any",
-        "src_our_system_phase2_services_phase3cm_streaming_portfolio_py_ndarray",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_quantile_from_order_stats",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rank_average",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rank_average_with_order",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rank_filtered_returns_from_order",
         "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_1",
-        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_146",
-        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_197",
-        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_241",
-        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_603",
-        "src_our_system_phase2_services_phase3cm_streaming_portfolio_turnover_cost_kernel",
-        "streamingportfolioreducer",
-        "tests_test_cn_core_pack_fixed_holdout_py_path",
-        "tests_test_cn_core_pack_fixed_holdout_test_streaming_binding_accepts_only_report_only_holdout_role",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_147",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_198",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_242",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_300",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_599",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_712",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_rationale_872",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_turnover_cost_horizon_kernel",
+        "src_our_system_phase2_services_phase3cm_streaming_portfolio_turnover_cost_kernel_legacy",
         "tests_test_phase3cm_streaming_checkpoint",
         "tests_test_phase3cm_streaming_checkpoint_payload",
         "tests_test_phase3cm_streaming_checkpoint_test_atomic_manifest_temporary_name_stays_short_at_windows_path_boundary",
@@ -3942,8 +3638,6 @@
         "tests_test_phase3cm_streaming_portfolio_legacy_linear_quantile",
         "tests_test_phase3cm_streaming_portfolio_legacy_rank_average",
         "tests_test_phase3cm_streaming_portfolio_legacy_rows",
-        "tests_test_phase3cm_streaming_portfolio_py_dataframe",
-        "tests_test_phase3cm_streaming_portfolio_py_ndarray",
         "tests_test_phase3cm_streaming_portfolio_test_batched_native_portfolio_matches_merged_legacy_reference",
         "tests_test_phase3cm_streaming_portfolio_test_full_market_barrier_differs_from_shard_local_mapping",
         "tests_test_phase3cm_streaming_portfolio_test_independent_pair_batch_kernels_match_one_full_candidate_kernel",
@@ -3956,41 +3650,30 @@
         "tests_test_phase3cm_streaming_portfolio_test_portfolio_turnover_state_matches_across_block_boundary",
         "tests_test_phase3cm_streaming_portfolio_test_prepared_label_orders_preserve_exact_portfolio_results",
         "tests_test_phase3cm_streaming_portfolio_test_reused_orders_match_legacy_ranking_and_quantiles_with_nonfinite_values",
-        "tests_test_phase3cm_streaming_portfolio_test_shared_label_order_rebuilds_candidate_specific_return_rank_exactly",
-        "uint64"
+        "tests_test_phase3cm_streaming_portfolio_test_shared_label_order_rebuilds_candidate_specific_return_rank_exactly"
       ],
       "required": false,
       "semantic_role": "active_development_evaluation_implementation",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
-        "evidence_ref": "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json",
-        "evidence_sha256": "0CD320DD013086FCE0D1E0555B8338843B4EF0C5AA67A7639F35893C87CA1D7E",
-        "level": "PARTIAL",
-        "notes": [
-          "runtime assurance needs a completed matching trace with all contract bindings"
-        ],
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "evidence_sha256": "F7A305B6CF52E5D945FB789E55322C6A49A4FBFFC67A27BADC9A1D395FB05FD5",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
         "profile": "",
-        "result": "INSUFFICIENT_EVIDENCE",
-        "verified_at_sha": "1742c419b0d6625a548755b2e0a68231e7f623d3"
+        "result": "PASS",
+        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       },
       "visible_by_default": true
     },
     {
-      "active_authority": false,
+      "active_authority": true,
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
-        "repo_ref": "",
-        "sha256": "40C65CB37E6E5F8239AFE446269216345CBE234E17202A58DF4E54751962519A",
-        "verified_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
+        "repo_ref": "feature/a-share-tradability-authority-repair",
+        "sha256": "8E03311345E8E91D7FD7BF429CE26BA00D04861BE31680B287C602A4609DB9C8",
+        "verified_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       },
-      "authority_bindings": [
-        {
-          "authoritative_component": "matched_train_feedback",
-          "authority_class": "UNCLASSIFIED",
-          "semantic_role": "train_feedback_authority"
-        }
-      ],
-      "claim_badges": [],
       "color": "#f9a825",
       "contracts": [
         {
@@ -3998,7 +3681,7 @@
           "enforced_by": "phase3cn_receipt_gate",
           "evidence_ref": "",
           "id": "matched_train_only",
-          "rule": "Feedback accepts only PAIR_TRAIN_FEEDBACK_READY primary rows governed by pair-native reward, blockers, support, turnover and RankIC fields after all three receipt hashes validate.",
+          "rule": "Feedback accepts only PAIR_TRAIN_FEEDBACK_READY primary rows after all three receipt hashes validate, the primary standalone decision is READY, and both pair members carry complete A_SHARE_TRADABILITY_REPLAY_V1 proof.",
           "severity": "HARD",
           "type": "BOUNDARY"
         }
@@ -4008,14 +3691,21 @@
       "expires_at": "",
       "id": "matched_train_feedback",
       "kind": "feedback",
-      "label": "Pair-native Phase3CN feedback authority",
+      "label": "Pair-native feedback gate with tradability proof",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
-        "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py"
+        "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
+        "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "docs/adr/0009-a-share-tradability-evidence-boundary.md"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
+        "docs_adr_0009_a_share_tradability_evidence_boundary",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_adr_0009_a_share_tradability_evidence_boundary",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_consequences",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_context",
+        "docs_adr_0009_a_share_tradability_evidence_boundary_decision",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_arm_score_table",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_assert_raw_phase3cm_provenance",
@@ -4032,11 +3722,9 @@
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_main",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_median",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_optimizer_reward",
-        "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_py_any",
-        "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_py_path",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_rationale_1",
-        "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_rationale_124",
-        "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_rationale_275",
+        "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_rationale_127",
+        "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_rationale_284",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_read_csv",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_render_md",
         "src_our_system_phase2_runtime_phase3cn_feedback_memory_smoke_resolve",
@@ -4047,22 +3735,20 @@
       "required": false,
       "semantic_role": "train_feedback_authority",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_PAIR_NATIVE_FEEDBACK_TEST_RESULTS.json",
-        "evidence_sha256": "FC996215C353588E01A4537EBED4B86B85A9AB6E556B223CB54EF92CDB4D17D9",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "evidence_ref": "runtime/run_plans/cn_a_share_tradability_authority_repair_20260729_receipt.json",
+        "evidence_sha256": "F7A305B6CF52E5D945FB789E55322C6A49A4FBFFC67A27BADC9A1D395FB05FD5",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "470eb7a3870fbda94acc359c1d03c8dff87ad632"
+        "verified_at_sha": "c32bfae45a6e5a8b4cad55cb8362594315365e44"
       },
       "visible_by_default": true
     },
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [],
       "critical": false,
@@ -4092,19 +3778,11 @@
         "src_our_system_phase2_services_tdx_plate_market_sidecar_plate_market_field_specs",
         "src_our_system_phase2_services_tdx_plate_market_sidecar_plate_market_linkage_report",
         "src_our_system_phase2_services_tdx_plate_market_sidecar_point_in_time_plate_market_context",
-        "src_our_system_phase2_services_tdx_plate_market_sidecar_py_any",
-        "src_our_system_phase2_services_tdx_plate_market_sidecar_py_dataframe",
-        "src_our_system_phase2_services_tdx_plate_market_sidecar_py_path",
-        "src_our_system_phase2_services_tdx_plate_market_sidecar_py_timestamp",
-        "src_our_system_phase2_services_tdx_plate_market_sidecar_py_zipfile",
-        "src_our_system_phase2_services_tdx_plate_market_sidecar_py_zipinfo",
         "src_our_system_phase2_services_tdx_plate_market_sidecar_rationale_1",
         "src_our_system_phase2_services_tdx_plate_market_sidecar_tdxplatemarketresult",
         "src_our_system_phase2_services_tdx_plate_market_sidecar_validate_archive",
         "tests_test_tdx_plate_market_sidecar",
         "tests_test_tdx_plate_market_sidecar_market_zip",
-        "tests_test_tdx_plate_market_sidecar_py_monkeypatch",
-        "tests_test_tdx_plate_market_sidecar_py_path",
         "tests_test_tdx_plate_market_sidecar_test_archive_discovery_requires_all_four_market_categories",
         "tests_test_tdx_plate_market_sidecar_test_market_builder_enforces_archive_expansion_limits",
         "tests_test_tdx_plate_market_sidecar_test_market_builder_filters_sealed_rows_and_writes_content_hashes",
@@ -4117,7 +3795,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -4131,8 +3809,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -4158,9 +3834,20 @@
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
+        "src_our_system_phase2_services_evaluation_access_guard",
+        "src_our_system_phase2_services_evaluation_access_guard_assert_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_assert_train_only_feedback_rows",
         "src_our_system_phase2_services_evaluation_access_guard_evaluation_access_guard",
+        "src_our_system_phase2_services_evaluation_access_guard_evaluationaccessviolation",
+        "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
+        "src_our_system_phase2_services_evaluation_access_guard_has_reward",
+        "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_120",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_37",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_41",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_68",
         "tests_test_evaluation_access_guard",
-        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -4170,6 +3857,7 @@
         "tests_test_evaluation_access_guard_test_projection_physically_removes_candidate_level_oos_fields",
         "tests_test_evaluation_access_guard_test_projection_rejects_missing_split_and_role",
         "tests_test_evaluation_access_guard_test_projection_rejects_non_train_optimizer_reward",
+        "tests_test_evaluation_access_guard_test_projection_rejects_unproven_a_share_tradability",
         "tests_test_evaluation_access_guard_test_scheduler_rejects_candidate_level_oos_columns",
         "tests_test_evaluation_access_guard_test_search_feedback_rejects_raw_candidate_level_oos_payload",
         "tests_test_evaluation_access_guard_write_csv"
@@ -4177,7 +3865,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -4191,8 +3879,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -4218,9 +3904,20 @@
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
+        "src_our_system_phase2_services_evaluation_access_guard",
+        "src_our_system_phase2_services_evaluation_access_guard_assert_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_assert_train_only_feedback_rows",
         "src_our_system_phase2_services_evaluation_access_guard_evaluation_access_guard",
+        "src_our_system_phase2_services_evaluation_access_guard_evaluationaccessviolation",
+        "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
+        "src_our_system_phase2_services_evaluation_access_guard_has_reward",
+        "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_120",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_37",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_41",
+        "src_our_system_phase2_services_evaluation_access_guard_rationale_68",
         "tests_test_evaluation_access_guard",
-        "tests_test_evaluation_access_guard_py_path",
         "tests_test_evaluation_access_guard_reward_row",
         "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
         "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
@@ -4230,6 +3927,7 @@
         "tests_test_evaluation_access_guard_test_projection_physically_removes_candidate_level_oos_fields",
         "tests_test_evaluation_access_guard_test_projection_rejects_missing_split_and_role",
         "tests_test_evaluation_access_guard_test_projection_rejects_non_train_optimizer_reward",
+        "tests_test_evaluation_access_guard_test_projection_rejects_unproven_a_share_tradability",
         "tests_test_evaluation_access_guard_test_scheduler_rejects_candidate_level_oos_columns",
         "tests_test_evaluation_access_guard_test_search_feedback_rejects_raw_candidate_level_oos_payload",
         "tests_test_evaluation_access_guard_write_csv"
@@ -4237,7 +3935,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:56:26.186384+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -4251,8 +3949,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -4279,7 +3975,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -4293,8 +3989,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -4347,7 +4041,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -4361,8 +4055,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#757575",
       "contracts": [
         {
@@ -4389,7 +4081,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -4403,8 +4095,6 @@
     {
       "active_authority": false,
       "authority": null,
-      "authority_bindings": [],
-      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -4431,7 +4121,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-28T14:13:02.237881+00:00",
+        "checked_at": "2026-07-29T09:23:52.330525+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -4445,7 +4135,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "31536FFE95B88B27DEB4BD3AC9B839946ACE3A892BED821BAD811F0FD5E7FA56"
+    "sha256": "7870119D6346361D6E6F2FB126CB9F5C33A8FA0B355F3360656DDEAE30100829"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -4456,76 +4146,24 @@
     }
   ],
   "raw": {
-    "built_at_commit": "74f088af2b4b36f97ea13b7dba5f8542ecf3e55a",
-    "edge_count": 14622,
-    "node_count": 5894,
+    "built_at_commit": "edcf645c1c3fae96fbf773b9ecd17c652bfdfef6",
+    "edge_count": 15955,
+    "node_count": 6304,
     "path": ".planning/graphs/graph.json",
-    "sha256": "37880BB8611E0320BD9EC4DDBD0730E5484111F3CBE6C726AF22F0597BEA3ED9"
+    "sha256": "DC7B7A6DBCF12B96BB4817A6A4D753A047E6659A12C5E98AFF7FE9213F3CB428"
   },
-  "repo_head": "f4a6292a1012120fc74479da26066338099390fa",
+  "repo_head": "edcf645c1c3fae96fbf773b9ecd17c652bfdfef6",
   "schema_version": 1,
-  "semantic_authorities": [
-    {
-      "authoritative_component": "candidate_submission_receipt",
-      "authority_class": "UNCLASSIFIED",
-      "semantic_role": "candidate_identity_authority"
-    },
-    {
-      "authoritative_component": "cn_field_master_registry",
-      "authority_class": "UNCLASSIFIED",
-      "semantic_role": "complete_field_universe_authority"
-    },
-    {
-      "authoritative_component": "core_pack_development_discovery_contract",
-      "authority_class": "UNCLASSIFIED",
-      "semantic_role": "development_discovery_proposal_root_ontology_authority"
-    },
-    {
-      "authoritative_component": "cn_development_search_policy",
-      "authority_class": "FORMAL",
-      "semantic_role": "development_search_policy_authority"
-    },
-    {
-      "authoritative_component": "unified_capability_registry",
-      "authority_class": "UNCLASSIFIED",
-      "semantic_role": "field_route_authority"
-    },
-    {
-      "authoritative_component": "candidate_parallel_evaluator",
-      "authority_class": "UNCLASSIFIED",
-      "semantic_role": "formal_evaluation_authority"
-    },
-    {
-      "authoritative_component": "matched_control_pair_authority",
-      "authority_class": "UNCLASSIFIED",
-      "semantic_role": "matched_pair_authority"
-    },
-    {
-      "authoritative_component": "pit_fundamental_fabric",
-      "authority_class": "UNCLASSIFIED",
-      "semantic_role": "pit_fundamental_observable_episode_authority"
-    },
-    {
-      "authoritative_component": "fixed_split_authority",
-      "authority_class": "UNCLASSIFIED",
-      "semantic_role": "split_authority"
-    },
-    {
-      "authoritative_component": "matched_train_feedback",
-      "authority_class": "UNCLASSIFIED",
-      "semantic_role": "train_feedback_authority"
-    }
-  ],
-  "status": "STALE",
+  "status": "INSUFFICIENT_EVIDENCE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
     "current_edges": 41,
     "current_nodes": 29,
-    "errors": 1,
+    "errors": 0,
     "runtime_edges": 0,
     "runtime_nodes": 0,
-    "warnings": 9
+    "warnings": 0
   },
   "trace": {
     "path": null,
