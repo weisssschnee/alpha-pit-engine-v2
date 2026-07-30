@@ -1117,25 +1117,46 @@ remains unchanged. The compact receipt is
   holdout, 2026 access, promotion or successor budget is authorized, and all
   closed artifacts remain immutable under their original reward contract.
 
+## A-share finalist input authority completion (2026-07-30)
+
+- The existing development candidate pool is not empty: the closed
+  winner-guided search produced 2,836 development-productive candidates. The
+  earlier zero referred to the absence of an authority-valid train-finalist
+  input set, not to candidate supply.
+- The existing 64-candidate keep-review cohort is now bound to the same
+  A-share replay lane under execution SHA
+  `c615f74013a6e4e14fdaa731de4a3659daf85bf4`; no new evaluator, platform,
+  database or authority node was created.
+- The frozen session authority contains 1,854,153 rows. Of 1,852,463 observed
+  code/date rows, 1,851,076 have exact PIT ST state and the remaining 1,387
+  exact-date source gaps are explicitly ineligible, with no forward fill,
+  backfill or assumption of normal status. All 1,852,463 rows are therefore
+  resolved or conservatively blocked. The sidecar contains no null ST state.
+- `FINALIST_INPUT_AUTHORITY_READY` closed with zero blockers and independent
+  verification PASS. The session manifest SHA256 is
+  `2a92810a0f6d4ebaf0532ff356be754dba9d8db600568a78dcc8b0cf4b3d4d45`,
+  the finalist-input manifest SHA256 is
+  `615a0caafedfd1b67173862262f1d820e9203586150dc62637a9af7e7497f3d9`,
+  and the verification receipt SHA256 is
+  `1769df3507fc4f1f1cf7344b888a628a086c6a521306b3c24c79a5ad2cfda0a4`.
+- This was a zero-financial qualification: financial, validation, holdout and
+  2026 reads were zero; financial replay and report-only validation remain
+  unauthorized. The fee binding remains a conservative research upper bound,
+  not an actual broker-account contract and not promotion authority.
+
 ## Next action
 
-Do not run another scale-search tranche. The existing replay's corporate-action
-and terminal-liquidation contract is repaired, and high/low/ST are bound. The
-only authorized next work is to close the 14 recorded zero-financial input
-blockers inside the same finalist lane: materialize authoritative suspension,
-security type, exchange, listing age, delisting, PIT-universe eligibility,
-limit-price, corporate-action and terminal-liquidation fields; freeze a
-survivorship-free, delisting-inclusive universe manifest; and bind the real
-account commission/minimum plus date-effective statutory fees. Then rerun the
-same zero-financial binding and independent verifier.
+Do not run another scale-search tranche. Candidate supply is already sufficient:
+use the 2,836 development-productive pool for behavior-family deduplication and
+train-stability selection, with the existing 64-candidate keep-review cohort as
+the current bounded decision input. The next financial action, if separately
+authorized, is the retained A-share executable replay and then one report-only
+validation on a frozen small finalist set. The cohort must not feed development
+optimizer reward, tells, scheduler or memory.
 
-Only after that binding becomes `FINALIST_INPUT_AUTHORITY_READY` may a separate
-user authorization run the retained A-share replay and one report-only
-validation for the same frozen cohort. The cohort must not feed development
-optimizer reward, tells, scheduler or memory. Financial replay, validation,
-holdout, 2026, successor search and promotion remain unauthorized now. Do not
-create a second evaluator, platform, database or authority node, and do not
-treat a RAW Graph/DeepSeek refresh as a blocker.
+Financial replay, validation, holdout, 2026, successor search and promotion
+remain unauthorized now. Do not create a second evaluator, platform, database
+or authority node, and do not treat a RAW Graph/DeepSeek refresh as a blocker.
 
 Do not rerun the Medium, its report-only validation, either completed
 Hybrid-only tranche or earlier availability-agency canaries. Unlimited search,
