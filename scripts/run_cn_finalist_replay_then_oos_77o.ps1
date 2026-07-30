@@ -39,11 +39,16 @@ if (Test-Path -LiteralPath $resolvedRoot -PathType Leaf) {
 }
 New-Item -ItemType Directory -Path $resolvedRoot -Force | Out-Null
 
-$observedSha = (& $git -C $resolvedRepo rev-parse HEAD).Trim()
+$gitSafeDirectory = "safe.directory=$resolvedRepo"
+$observedSha = (
+    & $git -c $gitSafeDirectory -C $resolvedRepo rev-parse HEAD
+).Trim()
 if ($LASTEXITCODE -ne 0 -or $observedSha -ne $RepoSha) {
     throw "deployed repo SHA drift: expected=$RepoSha observed=$observedSha"
 }
-$dirty = @(& $git -C $resolvedRepo status --porcelain)
+$dirty = @(
+    & $git -c $gitSafeDirectory -C $resolvedRepo status --porcelain
+)
 if ($LASTEXITCODE -ne 0 -or $dirty.Count -ne 0) {
     throw "deployed workspace must be clean"
 }
