@@ -184,6 +184,21 @@ def _nonnegative_number(value: Any) -> float:
     return result
 
 
+def _is_nonstandard_restructuring_transfer(
+    record: Mapping[str, Any],
+) -> bool:
+    """Identify non-pro-rata restructuring transfers.
+
+    CNInfo exposes court/restructuring capital-reserve transfers through the
+    same endpoint as ordinary dividends.  They do not declare the normal
+    ex-right/effective or share-arrival clocks and must not be multiplied into
+    every shareholder's position.
+    """
+
+    action_type = str(record.get("F044V") or "")
+    return "重整" in action_type or "é‡æ•´" in action_type
+
+
 def _normalize_master_part(
     frame: pd.DataFrame,
     *,
@@ -676,6 +691,11 @@ def parse_dividend_actions(
             except ValueError:
                 blockers.append(f"invalid_corporate_action_value:{code}")
                 continue
+            if (
+                bonus + transfer > 0
+                and _is_nonstandard_restructuring_transfer(record)
+            ):
+                continue
             relevant_hint = any(
                 not pd.isna(value) and lower <= value.normalize() <= upper
                 for value in (announcement, effective, payment)
@@ -967,6 +987,12 @@ def build_authority(
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((source_root / "cninfo_dividend_raw").glob("*.json"))
     ]
+    restructuring_exclusion_count = sum(
+        1
+        for payload in raw_payloads
+        for record in payload.get("records") or []
+        if _is_nonstandard_restructuring_transfer(record)
+    )
     actions, action_blockers = parse_dividend_actions(
         raw_payloads,
         date_min=release["date_min"],
@@ -1056,6 +1082,9 @@ def build_authority(
         "corporate_share_event_count": int(
             authority["corporate_action_share_multiplier"].ne(1.0).sum()
         ),
+        "nonstandard_restructuring_transfer_exclusion_count": (
+            restructuring_exclusion_count
+        ),
         "columns": list(SESSION_AUTHORITY_COLUMNS),
         "policies": {
             "suspension": "LISTED_CALENDAR_MINUS_MINUTE_OBSERVATION",
@@ -1063,6 +1092,9 @@ def build_authority(
             "limits": "CN_CONSERVATIVE_LIMIT_LIFECYCLE_V2_EQUIVALENT_SESSION_RULES",
             "cash_actions": "CNINFO_F012N_PER_10_ON_F023D_PAYMENT_SESSION",
             "share_actions": "CNINFO_F010N_PLUS_F011N_ON_F020D_EFFECTIVE_SESSION",
+            "nonstandard_restructuring": (
+                "EXCLUDED_NOT_PRO_RATA_NO_STANDARD_EFFECTIVE_CLOCK"
+            ),
             "delisting": "EXPLICIT_TERMINAL_SESSION_ZERO_RECOVERY_FAIL_CLOSED",
         },
         "source_snapshot_manifest": source["manifest"],

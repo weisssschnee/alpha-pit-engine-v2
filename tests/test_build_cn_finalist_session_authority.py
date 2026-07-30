@@ -63,6 +63,34 @@ def test_missing_relevant_action_date_fails_closed() -> None:
     assert blockers == ["cash_action_missing_payment_date:000001"]
 
 
+def test_restructuring_transfer_is_not_applied_as_pro_rata_dividend() -> None:
+    payload = {
+        "code": "002217",
+        "records": [
+            {
+                "F006D": "2024-12-25",
+                "F010N": None,
+                "F011N": 14.0,
+                "F012N": None,
+                "F018D": "2024-12-30",
+                "F020D": None,
+                "F023D": None,
+                "F025D": None,
+                "F044V": "重整转增",
+            }
+        ],
+    }
+
+    actions, blockers = subject.parse_dividend_actions(
+        [payload],
+        date_min="2024-01-01",
+        date_max="2025-07-07",
+    )
+
+    assert blockers == []
+    assert actions.empty
+
+
 def test_session_authority_adds_suspensions_and_zero_recovery_terminal() -> None:
     calendar = pd.Series(pd.bdate_range("2023-12-01", "2024-01-05"))
     observed = pd.DataFrame(
