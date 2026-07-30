@@ -11,6 +11,10 @@ from our_system_phase2.runtime.phase3cm_train_portfolio_sortino_reward_audit imp
     _stationary_bootstrap_block_length,
     _stationary_bootstrap_indices,
 )
+from our_system_phase2.services.time_series_uncertainty import (
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
+    bootstrap_paired_delta_days,
+)
 
 
 def test_bootstrap_days_is_deterministic_and_reports_stationary_engine() -> None:
@@ -96,3 +100,39 @@ def test_bootstrap_days_preserves_no_downside_behavior() -> None:
     assert result["day_count"] == 3
     assert result["engine"] == DAY_UNCERTAINTY_ENGINE
     assert result["sufficient_day_count"] is False
+
+
+def test_paired_delta_bootstrap_uses_one_shared_stationary_path() -> None:
+    deltas = [0.01, -0.002, 0.006, 0.004] * 25
+
+    first = bootstrap_paired_delta_days(
+        deltas,
+        iterations=600,
+        seed=41,
+    )
+    second = bootstrap_paired_delta_days(
+        deltas,
+        iterations=600,
+        seed=41,
+    )
+
+    assert first == second
+    assert first["contract"] == PAIRED_DELTA_UNCERTAINTY_CONTRACT
+    assert first["shared_block_indices"] is True
+    assert first["resampling_unit"] == "ordered_trade_day_paired_delta"
+    assert first["valid_iterations"] == 600
+    assert first["invalid_iterations"] == 0
+    assert first["observed_mean_delta"] > 0.0
+    assert first["support_mean_delta_gt_0"] > 0.60
+
+
+def test_paired_delta_bootstrap_handles_all_positive_days() -> None:
+    result = bootstrap_paired_delta_days(
+        [0.01] * 20,
+        iterations=128,
+        seed=7,
+    )
+
+    assert result["valid_iterations"] == 128
+    assert result["support_mean_delta_gt_0"] == 1.0
+    assert result["mean_delta_p25"] == 0.01

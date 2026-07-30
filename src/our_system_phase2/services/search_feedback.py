@@ -22,8 +22,12 @@ from our_system_phase2.services.evaluation_access_guard import (
 )
 from our_system_phase2.services.expression_semantics import analyze_expression
 from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
     MATCHED_OPTIMIZER_REWARD_METRIC,
     MATCHED_OPTIMIZER_REWARD_SOURCE,
+)
+from our_system_phase2.services.time_series_uncertainty import (
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
 )
 
 
@@ -49,6 +53,10 @@ class SearchFeedbackContext:
     holdout_used_for_score: bool = False
     optimizer_reward_source: str = MATCHED_OPTIMIZER_REWARD_SOURCE
     optimizer_reward_metric: str = MATCHED_OPTIMIZER_REWARD_METRIC
+    optimizer_reward_contract: str = MATCHED_OPTIMIZER_REWARD_CONTRACT
+    optimizer_reward_uncertainty_contract: str = (
+        PAIRED_DELTA_UNCERTAINTY_CONTRACT
+    )
     optimizer_reward_split: str = "train"
     guardrail: str = ""
     eligible_source: str = ""
@@ -72,6 +80,10 @@ class SearchFeedbackContext:
             "holdout_used_for_score": self.holdout_used_for_score,
             "optimizer_reward_source": self.optimizer_reward_source,
             "optimizer_reward_metric": self.optimizer_reward_metric,
+            "optimizer_reward_contract": self.optimizer_reward_contract,
+            "optimizer_reward_uncertainty_contract": (
+                self.optimizer_reward_uncertainty_contract
+            ),
             "optimizer_reward_split": self.optimizer_reward_split,
             "guardrail": self.guardrail,
             "eligible_source": self.eligible_source,
@@ -130,6 +142,14 @@ def _normalize_feedback_row(row: dict[str, Any]) -> dict[str, Any]:
     out["optimizer_reward_metric"] = str(
         out.get("optimizer_reward_metric") or MATCHED_OPTIMIZER_REWARD_METRIC
     )
+    out["optimizer_reward_contract"] = str(
+        out.get("optimizer_reward_contract")
+        or MATCHED_OPTIMIZER_REWARD_CONTRACT
+    )
+    out["optimizer_reward_uncertainty_contract"] = str(
+        out.get("optimizer_reward_uncertainty_contract")
+        or PAIRED_DELTA_UNCERTAINTY_CONTRACT
+    )
     out["optimizer_reward_split"] = str(out.get("optimizer_reward_split") or "train")
     return project_train_only_feedback_row(out)
 
@@ -168,6 +188,12 @@ def _clean_feedback_row(
             row.get("primary_standalone_train_reward_decision") or ""
         )
         == "TRAIN_REWARD_FOLLOWUP_READY"
+        and str(row.get("optimizer_reward_contract") or "")
+        == MATCHED_OPTIMIZER_REWARD_CONTRACT
+        and str(
+            row.get("optimizer_reward_uncertainty_contract") or ""
+        )
+        == PAIRED_DELTA_UNCERTAINTY_CONTRACT
         and not _has_wrong_lag_or_corr(row)
     )
 
@@ -294,6 +320,10 @@ def build_search_feedback_context(
         holdout_used_for_score=False,
         optimizer_reward_source=MATCHED_OPTIMIZER_REWARD_SOURCE,
         optimizer_reward_metric=MATCHED_OPTIMIZER_REWARD_METRIC,
+        optimizer_reward_contract=MATCHED_OPTIMIZER_REWARD_CONTRACT,
+        optimizer_reward_uncertainty_contract=(
+            PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ),
         optimizer_reward_split="train",
         guardrail=guardrail,
         eligible_source=eligible_source,

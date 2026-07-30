@@ -31,6 +31,7 @@ from our_system_phase2.services.candidate_submission_receipt import (
     CandidateSubmissionAuthority,
     ReceiptContext,
 )
+from our_system_phase2.services.evaluation_access_guard import GUARD_VERSION
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority, file_sha256
 from our_system_phase2.services.matched_control_pairs import CandidatePairAuthority
 from our_system_phase2.services.multi_arm_scheduler import build_route_schedule
@@ -918,7 +919,7 @@ def _outcome_rows(batch_root: Path) -> tuple[list[dict[str, Any]], list[dict[str
                     "pair_turnover_metric": reward.get("pair_turnover_metric"),
                     "pair_train_reward_blockers": row.get("pair_evaluation_blockers"),
                     "feedback_data_role": "development",
-                    "evaluation_access_guard": "evalreset_feedback_guard_v1",
+                    "evaluation_access_guard": GUARD_VERSION,
                 }
             )
             outcomes.append(row)

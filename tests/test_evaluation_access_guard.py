@@ -25,8 +25,12 @@ from our_system_phase2.services.a_share_tradability_guard import (
     prefixed_tradability_evidence,
 )
 from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
     MATCHED_OPTIMIZER_REWARD_METRIC,
     MATCHED_OPTIMIZER_REWARD_SOURCE,
+)
+from our_system_phase2.services.time_series_uncertainty import (
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
 )
 
 
@@ -99,6 +103,10 @@ def _reward_row(**overrides: str) -> dict[str, object]:
         "control_evaluator_invocation_count": "1",
         "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
         "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
+        "optimizer_reward_contract": MATCHED_OPTIMIZER_REWARD_CONTRACT,
+        "optimizer_reward_uncertainty_contract": (
+            PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ),
         "optimizer_reward_split": "train",
         "feedback_data_role": "development",
         "primary_standalone_train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
@@ -240,6 +248,14 @@ def test_feedback_memory_rejects_missing_candidate_receipt_authority(tmp_path: P
         ({"optimizer_reward_split": ""}, "split=<missing>"),
         ({"optimizer_reward_source": ""}, "source=<missing>"),
         ({"optimizer_reward_metric": ""}, "metric=<missing>"),
+        (
+            {"optimizer_reward_contract": ""},
+            "reward contract mismatch",
+        ),
+        (
+            {"optimizer_reward_uncertainty_contract": ""},
+            "uncertainty contract mismatch",
+        ),
         ({"feedback_data_role": "spent"}, "cannot relabel feedback_data_role=spent"),
     ],
 )

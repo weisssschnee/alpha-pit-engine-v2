@@ -4,6 +4,7 @@ from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import _family_tab
 from our_system_phase2.runtime.phase3bs_adaptive_ucb_cem_practice import _feedback_eligible
 from our_system_phase2.services.search_feedback import clean_optimizer_feedback_rows
 from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
     MATCHED_OPTIMIZER_REWARD_METRIC,
     MATCHED_OPTIMIZER_REWARD_SOURCE,
 )
@@ -15,6 +16,10 @@ from our_system_phase2.services.a_share_tradability_guard import (
     build_a_share_tradability_receipt,
     pair_tradability_evidence,
     prefixed_tradability_evidence,
+)
+from our_system_phase2.services.evaluation_access_guard import GUARD_VERSION
+from our_system_phase2.services.time_series_uncertainty import (
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
 )
 
 
@@ -74,13 +79,17 @@ def _reward_row(expression: str) -> dict[str, object]:
         "optimizer_reward_split": "train",
         "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
         "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
+        "optimizer_reward_contract": MATCHED_OPTIMIZER_REWARD_CONTRACT,
+        "optimizer_reward_uncertainty_contract": (
+            PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ),
         "pair_evaluation_status": "PAIR_EVALUATED",
         "pair_member_role": "PRIMARY",
         "primary_receipt_hash": "p" * 64,
         "control_receipt_hash": "c" * 64,
         "pair_receipt_hash": "r" * 64,
         "feedback_data_role": "development",
-        "evaluation_access_guard": "evalreset_feedback_guard_v1",
+        "evaluation_access_guard": GUARD_VERSION,
         "train_reward": 0.25,
         "matched_train_increment": 0.25,
         "a_share_matched_executable_increment": 0.25,

@@ -62,6 +62,7 @@ from our_system_phase2.services.candidate_submission_receipt import (
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
 from our_system_phase2.services.matched_control_pairs import (
     CandidatePairAuthority,
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
     PAIR_MATURITY_ALIGNMENT_POLICY,
     PAIR_SUPPORT_ALIGNMENT_POLICY,
     build_pair_evaluation_rows,
@@ -74,6 +75,21 @@ from our_system_phase2.services.real_market_validation import (
     frozen_replay_channels,
 )
 from our_system_phase2.services.signal_vector_semantics import build_signal_semantic_diagnostics
+from our_system_phase2.services.time_series_uncertainty import (
+    DAY_UNCERTAINTY_BLOCK_LENGTH_RULE,
+    DAY_UNCERTAINTY_CONTRACT,
+    DAY_UNCERTAINTY_ENGINE,
+    DAY_UNCERTAINTY_METHOD,
+    DAY_UNCERTAINTY_MIN_DAYS,
+    DAY_UNCERTAINTY_MIN_VALID_FRACTION,
+    DAY_UNCERTAINTY_REFERENCE,
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
+    PAIRED_DELTA_UNCERTAINTY_ITERATIONS,
+    PAIRED_DELTA_UNCERTAINTY_MIN_SUPPORT,
+    bootstrap_sortino_days as _bootstrap_days,
+    stationary_bootstrap_block_length as _stationary_bootstrap_block_length,
+    stationary_bootstrap_indices as _stationary_bootstrap_indices,
+)
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry, stable_hash
 
 
@@ -93,13 +109,6 @@ PERSISTENT_CACHE_VERSION = "phase3cm_persistent_series_cache_v1"
 DEFAULT_PERSISTENT_CACHE_MAX_GB = 120.0
 DEFAULT_PERSISTENT_CACHE_TTL_DAYS = 7.0
 _PERSISTENT_CACHE_PRUNE_LAST_RUN: dict[str, float] = {}
-DAY_UNCERTAINTY_ENGINE = "stationary_block_bootstrap_v2"
-DAY_UNCERTAINTY_METHOD = "politis_romano_stationary_bootstrap"
-DAY_UNCERTAINTY_CONTRACT = "phase3cm_ordered_day_stationary_block_uncertainty_v2"
-DAY_UNCERTAINTY_REFERENCE = "doi:10.1080/01621459.1994.10476870"
-DAY_UNCERTAINTY_BLOCK_LENGTH_RULE = "round_cuberoot_day_count_clamped_2_20"
-DAY_UNCERTAINTY_MIN_DAYS = 20
-DAY_UNCERTAINTY_MIN_VALID_FRACTION = 0.90
 
 
 def _resolve(path: Path) -> Path:
@@ -1969,153 +1978,6 @@ def _daily_returns(curve_rows: list[dict[str, Any]]) -> list[float]:
     return [float(value) for value in daily.to_numpy(dtype=float) if math.isfinite(float(value))]
 
 
-def _stationary_bootstrap_block_length(day_count: int) -> int:
-    """Return the frozen expected block length for ordered daily returns."""
-
-    day_count = max(0, int(day_count))
-    if day_count <= 1:
-        return day_count
-    return min(day_count, 20, max(2, int(round(day_count ** (1.0 / 3.0)))))
-
-
-def _sortino_draws(samples: np.ndarray) -> tuple[np.ndarray, int]:
-    if samples.ndim != 2:
-        raise ValueError("bootstrap samples must be a two-dimensional matrix")
-    means = np.mean(samples, axis=1)
-    downside = np.minimum(samples, 0.0)
-    downside_scale = np.sqrt(np.mean(downside * downside, axis=1))
-    valid = np.isfinite(means) & np.isfinite(downside_scale) & (downside_scale > 1e-18)
-    return means[valid] / downside_scale[valid], int(np.sum(~valid))
-
-
-def _stationary_bootstrap_indices(
-    *,
-    rng: np.random.Generator,
-    iterations: int,
-    day_count: int,
-    expected_block_length: int,
-) -> np.ndarray:
-    """Generate circular stationary-bootstrap indices.
-
-    Each path restarts at a uniformly sampled day with probability 1/L and
-    otherwise advances to the next ordered day. This retains short-run
-    dependence without introducing a parametric return model.
-    """
-
-    if iterations <= 0 or day_count <= 0:
-        return np.empty((0, max(0, day_count)), dtype=np.int64)
-    restart_probability = 1.0 / max(1, int(expected_block_length))
-    indices = np.empty((int(iterations), int(day_count)), dtype=np.int64)
-    indices[:, 0] = rng.integers(0, day_count, size=iterations, dtype=np.int64)
-    if day_count == 1:
-        return indices
-    restarts = rng.random((iterations, day_count - 1)) < restart_probability
-    fresh_starts = rng.integers(
-        0,
-        day_count,
-        size=(iterations, day_count - 1),
-        dtype=np.int64,
-    )
-    for offset in range(1, day_count):
-        continuation = (indices[:, offset - 1] + 1) % day_count
-        indices[:, offset] = np.where(
-            restarts[:, offset - 1],
-            fresh_starts[:, offset - 1],
-            continuation,
-        )
-    return indices
-
-
-def _bootstrap_days(day_values: list[float], *, iterations: int, seed: int) -> dict[str, Any]:
-    """Estimate daily Sortino uncertainty with a stationary block bootstrap.
-
-    Historical outputs use ``day_mcmc_*`` names. Those names are retained by
-    callers as compatibility aliases only: the estimator is a non-parametric
-    time-series bootstrap, not a Bayesian posterior or Markov chain.
-    """
-
-    clean = np.asarray([float(value) for value in day_values if math.isfinite(float(value))], dtype=np.float64)
-    requested_iterations = max(0, int(iterations))
-    day_count = int(len(clean))
-    block_length = _stationary_bootstrap_block_length(day_count)
-    base = {
-        "iterations": 0,
-        "requested_iterations": requested_iterations,
-        "valid_iterations": 0,
-        "invalid_iterations": requested_iterations,
-        "valid_fraction": 0.0 if requested_iterations else None,
-        "day_count": day_count,
-        "downside_day_count": int(np.sum(clean < 0.0)),
-        "downside_day_fraction": _round(float(np.mean(clean < 0.0)) if day_count else None),
-        "engine": DAY_UNCERTAINTY_ENGINE,
-        "method": DAY_UNCERTAINTY_METHOD,
-        "contract": DAY_UNCERTAINTY_CONTRACT,
-        "reference": DAY_UNCERTAINTY_REFERENCE,
-        "resampling_unit": "ordered_trade_day",
-        "seed": int(seed),
-        "expected_block_length": block_length,
-        "restart_probability": _round(1.0 / block_length if block_length else None),
-        "block_length_rule": DAY_UNCERTAINTY_BLOCK_LENGTH_RULE,
-        "minimum_day_count": DAY_UNCERTAINTY_MIN_DAYS,
-        "sufficient_day_count": bool(day_count >= DAY_UNCERTAINTY_MIN_DAYS),
-        "minimum_valid_fraction": DAY_UNCERTAINTY_MIN_VALID_FRACTION,
-    }
-    if day_count == 0 or requested_iterations == 0:
-        return base
-
-    rng = np.random.default_rng(int(seed))
-    indices = _stationary_bootstrap_indices(
-        rng=rng,
-        iterations=requested_iterations,
-        day_count=day_count,
-        expected_block_length=block_length,
-    )
-    draws, invalid_iterations = _sortino_draws(clean[indices])
-    valid_iterations = int(len(draws))
-    positives = int(np.sum(draws > 0.0))
-    probability = positives / valid_iterations if valid_iterations else None
-
-    # Keep an IID reference as a diagnostic only. It never feeds reward; its
-    # purpose is to expose how much serial dependence changes the result.
-    iid_rng = np.random.default_rng(int(seed) + 104_729)
-    iid_indices = iid_rng.integers(
-        0,
-        day_count,
-        size=(requested_iterations, day_count),
-        dtype=np.int64,
-    )
-    iid_draws, iid_invalid_iterations = _sortino_draws(clean[iid_indices])
-    iid_p25 = float(np.quantile(iid_draws, 0.25)) if len(iid_draws) else None
-    p25 = float(np.quantile(draws, 0.25)) if valid_iterations else None
-    return {
-        **base,
-        "iterations": valid_iterations,
-        "valid_iterations": valid_iterations,
-        "invalid_iterations": invalid_iterations,
-        "valid_fraction": _round(valid_iterations / requested_iterations),
-        "p05": _round(float(np.quantile(draws, 0.05)) if len(draws) else None),
-        "p25": _round(p25),
-        "median": _round(float(np.quantile(draws, 0.50)) if len(draws) else None),
-        "p75": _round(float(np.quantile(draws, 0.75)) if len(draws) else None),
-        "p95": _round(float(np.quantile(draws, 0.95)) if len(draws) else None),
-        "prob_gt_0": _round(probability),
-        "prob_gt_0_mcse": _round(
-            math.sqrt(probability * (1.0 - probability) / valid_iterations)
-            if probability is not None and valid_iterations
-            else None
-        ),
-        "iid_reference_valid_iterations": int(len(iid_draws)),
-        "iid_reference_invalid_iterations": int(iid_invalid_iterations),
-        "iid_reference_p25": _round(iid_p25),
-        "iid_reference_prob_gt_0": _round(
-            float(np.mean(iid_draws > 0.0)) if len(iid_draws) else None
-        ),
-        "dependence_p25_delta": _round(
-            p25 - iid_p25 if p25 is not None and iid_p25 is not None else None
-        ),
-    }
-
-
 def _day_uncertainty_fields(bootstrap: dict[str, Any]) -> dict[str, Any]:
     """Expose canonical uncertainty fields plus historical MCMC aliases."""
 
@@ -3589,6 +3451,26 @@ def main(argv: list[str] | None = None) -> int:
         "regime_stability_weight": args.regime_stability_weight,
         "regime_component_cap": args.regime_component_cap,
         "optimizer_reward_metric": None if args.semantic_only else OPTIMIZER_REWARD_METRIC,
+        "matched_optimizer_reward_contract": (
+            None
+            if args.semantic_only
+            else MATCHED_OPTIMIZER_REWARD_CONTRACT
+        ),
+        "paired_delta_uncertainty_contract": (
+            None
+            if args.semantic_only
+            else PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ),
+        "paired_delta_uncertainty_iterations": (
+            0
+            if args.semantic_only
+            else PAIRED_DELTA_UNCERTAINTY_ITERATIONS
+        ),
+        "paired_delta_uncertainty_minimum_support": (
+            None
+            if args.semantic_only
+            else PAIRED_DELTA_UNCERTAINTY_MIN_SUPPORT
+        ),
         "bootstrap_engine": None if args.semantic_only else DAY_UNCERTAINTY_ENGINE,
         "bootstrap_method": None if args.semantic_only else DAY_UNCERTAINTY_METHOD,
         "bootstrap_contract": (

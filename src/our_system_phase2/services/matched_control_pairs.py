@@ -27,6 +27,13 @@ from our_system_phase2.services.candidate_submission_receipt import (
     CandidateReceiptError,
     normalize_candidate_contract,
 )
+from our_system_phase2.services.time_series_uncertainty import (
+    DAY_UNCERTAINTY_CONTRACT,
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
+    PAIRED_DELTA_UNCERTAINTY_ITERATIONS,
+    PAIRED_DELTA_UNCERTAINTY_MIN_SUPPORT,
+    bootstrap_paired_delta_days,
+)
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
 
@@ -35,6 +42,9 @@ PAIR_AUTHORIZATION_STATUS = "AUTHORIZED_FOR_FORMAL_PAIR_EVALUATION"
 MATCHED_OPTIMIZER_REWARD_SOURCE = "train_only_phase3cm_matched_increment"
 MATCHED_OPTIMIZER_REWARD_METRIC = (
     "matched_train_primary_minus_control_composite_reward"
+)
+MATCHED_OPTIMIZER_REWARD_CONTRACT = (
+    "cn_matched_train_composite_increment_with_paired_uncertainty_v2"
 )
 PAIR_TRAIN_FEEDBACK_READY = "PAIR_TRAIN_FEEDBACK_READY"
 PAIR_TRAIN_FEEDBACK_BLOCKED = "PAIR_TRAIN_FEEDBACK_BLOCKED"
@@ -596,6 +606,221 @@ def _signal_value_identity(rows: Sequence[Mapping[str, Any]]) -> str:
     )
 
 
+def _paired_delta_seed(pair_id: str) -> int:
+    payload = (
+        f"{pair_id}|{PAIRED_DELTA_UNCERTAINTY_CONTRACT}"
+    ).encode("utf-8")
+    return int(hashlib.sha256(payload).hexdigest()[:16], 16) % (2**32)
+
+
+def _trade_date(row: Mapping[str, Any]) -> str:
+    explicit = str(row.get("trade_date") or "").strip()
+    if explicit:
+        return explicit[:10]
+    trade_time = str(row.get("trade_time") or "").strip()
+    return trade_time[:10] if trade_time else ""
+
+
+def paired_daily_net_deltas_from_portfolio_rows(
+    primary_rows: Sequence[Mapping[str, Any]],
+    control_rows: Sequence[Mapping[str, Any]],
+) -> tuple[list[float], tuple[str, ...]]:
+    """Build ordered daily primary-minus-control net deltas.
+
+    The existing support coordinate performs the pairing.  Horizons are then
+    averaged at each shared trade time exactly as the Phase3CM ``all`` sleeve
+    is formed, before values are summed by ordered trade date.
+    """
+
+    blockers: list[str] = []
+
+    def train_net_by_coordinate(
+        rows: Sequence[Mapping[str, Any]],
+        *,
+        role: str,
+    ) -> dict[tuple[str, str, str, str, str, int], float]:
+        output: dict[
+            tuple[str, str, str, str, str, int],
+            float,
+        ] = {}
+        for row in rows:
+            if str(row.get("split") or "") != "train":
+                continue
+            coordinate = _support_coordinate(row)
+            if coordinate is None:
+                blockers.append(
+                    f"{role}_paired_delta_support_coordinate_missing"
+                )
+                continue
+            value = _finite(row.get("net_return"))
+            if value is None:
+                blockers.append(
+                    f"{role}_paired_delta_net_return_missing"
+                )
+                continue
+            if coordinate in output:
+                blockers.append(
+                    f"{role}_paired_delta_coordinate_duplicate"
+                )
+                continue
+            output[coordinate] = value
+        return output
+
+    primary = train_net_by_coordinate(primary_rows, role="primary")
+    control = train_net_by_coordinate(control_rows, role="control")
+    if not primary or not control:
+        blockers.append("paired_delta_train_support_empty")
+    if set(primary) != set(control):
+        blockers.append("paired_delta_train_support_mismatch")
+    if blockers:
+        return [], tuple(sorted(set(blockers)))
+
+    by_trade_time: dict[
+        tuple[str, str, str],
+        list[float],
+    ] = {}
+    for coordinate in sorted(primary):
+        shard_index, trade_time, _, _, _, _ = coordinate
+        date = _trade_date(
+            {
+                "trade_time": trade_time,
+            }
+        )
+        if not date:
+            blockers.append("paired_delta_trade_date_missing")
+            continue
+        by_trade_time.setdefault(
+            (shard_index, trade_time, date),
+            [],
+        ).append(primary[coordinate] - control[coordinate])
+    if blockers:
+        return [], tuple(sorted(set(blockers)))
+
+    by_date: dict[str, float] = {}
+    for (_, _, date), values in sorted(by_trade_time.items()):
+        by_date[date] = by_date.get(date, 0.0) + (
+            sum(values) / len(values)
+        )
+    return (
+        [by_date[date] for date in sorted(by_date)],
+        (),
+    )
+
+
+def paired_delta_uncertainty_fields(
+    day_deltas: Sequence[float],
+    *,
+    pair_id: str,
+) -> dict[str, Any]:
+    result = bootstrap_paired_delta_days(
+        day_deltas,
+        iterations=PAIRED_DELTA_UNCERTAINTY_ITERATIONS,
+        seed=_paired_delta_seed(pair_id),
+    )
+    return {
+        "paired_delta_day_uncertainty_engine": result.get("engine"),
+        "paired_delta_day_uncertainty_method": result.get("method"),
+        "paired_delta_day_uncertainty_contract": result.get("contract"),
+        "paired_delta_day_aggregation_contract": result.get(
+            "aggregation_contract"
+        ),
+        "paired_delta_day_shared_block_indices": result.get(
+            "shared_block_indices"
+        ),
+        "paired_delta_day_uncertainty_seed": result.get("seed"),
+        "paired_delta_day_count": result.get("day_count"),
+        "paired_delta_day_uncertainty_requested_iterations": result.get(
+            "requested_iterations"
+        ),
+        "paired_delta_day_uncertainty_valid_iterations": result.get(
+            "valid_iterations"
+        ),
+        "paired_delta_day_uncertainty_invalid_iterations": result.get(
+            "invalid_iterations"
+        ),
+        "paired_delta_day_uncertainty_valid_fraction": result.get(
+            "valid_fraction"
+        ),
+        "paired_delta_day_uncertainty_expected_block_length": result.get(
+            "expected_block_length"
+        ),
+        "paired_delta_day_observed_mean": result.get(
+            "observed_mean_delta"
+        ),
+        "paired_delta_day_mean_p05": result.get("mean_delta_p05"),
+        "paired_delta_day_mean_p25": result.get("mean_delta_p25"),
+        "paired_delta_day_mean_median": result.get(
+            "mean_delta_median"
+        ),
+        "paired_delta_day_mean_p75": result.get("mean_delta_p75"),
+        "paired_delta_day_mean_p95": result.get("mean_delta_p95"),
+        "paired_delta_day_support_mean_gt_0": result.get(
+            "support_mean_delta_gt_0"
+        ),
+        "paired_delta_day_support_mcse": result.get(
+            "support_mean_delta_gt_0_mcse"
+        ),
+        "paired_delta_day_minimum_support": result.get(
+            "minimum_support"
+        ),
+    }
+
+
+def paired_daily_net_deltas_from_reward_atoms(
+    reward_atoms: Sequence[Mapping[str, Any]],
+    *,
+    primary_candidate_id: str,
+    control_candidate_id: str,
+) -> tuple[list[float], tuple[str, ...]]:
+    """Read the streaming reducer's canonical all-horizon daily atoms."""
+
+    blockers: list[str] = []
+
+    def daily_by_candidate(candidate_id: str) -> dict[str, float]:
+        output: dict[str, float] = {}
+        for row in reward_atoms:
+            if str(row.get("candidate_id") or "") != candidate_id:
+                continue
+            if str(row.get("split") or "") != "train":
+                continue
+            if str(row.get("horizon_min") or "") != "all":
+                continue
+            trade_date = str(row.get("trade_date") or "")[:10]
+            value = _finite(
+                row.get("daily_net_return")
+                if row.get("daily_net_return") not in (None, "")
+                else row.get("net_return_sum")
+            )
+            if not trade_date or value is None:
+                blockers.append(
+                    f"{candidate_id}_paired_delta_daily_atom_invalid"
+                )
+                continue
+            if trade_date in output:
+                blockers.append(
+                    f"{candidate_id}_paired_delta_daily_atom_duplicate"
+                )
+                continue
+            output[trade_date] = value
+        return output
+
+    primary = daily_by_candidate(str(primary_candidate_id))
+    control = daily_by_candidate(str(control_candidate_id))
+    if not primary or not control:
+        blockers.append("paired_delta_daily_atoms_empty")
+    if set(primary) != set(control):
+        blockers.append("paired_delta_daily_atom_support_mismatch")
+    if blockers:
+        return [], tuple(sorted(set(blockers)))
+    return (
+        [
+            primary[date] - control[date]
+            for date in sorted(primary)
+        ],
+        (),
+    )
+
+
 def build_pair_evaluation_rows(
     *,
     candidates: Iterable[Mapping[str, Any]],
@@ -768,6 +993,50 @@ def build_pair_evaluation_rows(
         pair_support_metric = overlap
         pair_rank_ic_metric = rank_ic_increment
         pair_feedback_blockers = set(blockers)
+        primary_uncertainty_contract = str(
+            (primary_reward or {}).get(
+                "train_day_uncertainty_contract"
+            )
+            or ""
+        )
+        control_uncertainty_contract = str(
+            (control_reward or {}).get(
+                "train_day_uncertainty_contract"
+            )
+            or ""
+        )
+        if primary_uncertainty_contract != DAY_UNCERTAINTY_CONTRACT:
+            pair_feedback_blockers.add(
+                "primary_day_uncertainty_contract_mismatch"
+            )
+        if control_uncertainty_contract != DAY_UNCERTAINTY_CONTRACT:
+            pair_feedback_blockers.add(
+                "control_day_uncertainty_contract_mismatch"
+            )
+        paired_day_deltas, paired_delta_blockers = (
+            paired_daily_net_deltas_from_portfolio_rows(
+                primary_rows,
+                control_rows,
+            )
+        )
+        pair_feedback_blockers.update(paired_delta_blockers)
+        paired_uncertainty = paired_delta_uncertainty_fields(
+            paired_day_deltas,
+            pair_id=pair_id,
+        )
+        paired_support = _finite(
+            paired_uncertainty.get(
+                "paired_delta_day_support_mean_gt_0"
+            )
+        )
+        if paired_support is None:
+            pair_feedback_blockers.add(
+                "paired_delta_day_uncertainty_unavailable"
+            )
+        elif paired_support < PAIRED_DELTA_UNCERTAINTY_MIN_SUPPORT:
+            pair_feedback_blockers.add(
+                "paired_delta_day_uncertainty_support_below_0_60"
+            )
         primary_standalone_decision = str(
             (primary_reward or {}).get("train_reward_decision") or ""
         )
@@ -916,6 +1185,13 @@ def build_pair_evaluation_rows(
             "primary_standalone_train_mean_one_way_turnover": (
                 primary_predictive_turnover
             ),
+            "primary_day_uncertainty_contract": (
+                primary_uncertainty_contract
+            ),
+            "control_day_uncertainty_contract": (
+                control_uncertainty_contract
+            ),
+            **paired_uncertainty,
             **pair_tradability,
             **prefixed_tradability_evidence(
                 primary_reward or {}, prefix="primary_"
@@ -944,6 +1220,12 @@ def build_pair_evaluation_rows(
             "train_reward": matched_increment if pair_feedback_decision == PAIR_TRAIN_FEEDBACK_READY else "",
             "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
             "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
+            "optimizer_reward_contract": (
+                MATCHED_OPTIMIZER_REWARD_CONTRACT
+            ),
+            "optimizer_reward_uncertainty_contract": (
+                PAIRED_DELTA_UNCERTAINTY_CONTRACT
+            ),
             "optimizer_evidence_class": DEVELOPMENT_PREDICTIVE_EVIDENCE_CLASS,
             "optimizer_feedback_scope": "DEVELOPMENT_SEARCH_ONLY",
             "standalone_reward_source": (

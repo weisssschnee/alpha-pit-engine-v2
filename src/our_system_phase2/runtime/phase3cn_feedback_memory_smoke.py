@@ -38,10 +38,14 @@ from our_system_phase2.services.expression_semantics import analyze_expression
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
 from our_system_phase2.services.matched_control_pairs import (
     CandidatePairAuthority,
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
     MATCHED_OPTIMIZER_REWARD_METRIC,
     MATCHED_OPTIMIZER_REWARD_SOURCE,
     PAIR_TRAIN_FEEDBACK_READY,
     read_pair_receipt_table,
+)
+from our_system_phase2.services.time_series_uncertainty import (
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
 )
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry
 
@@ -127,6 +131,12 @@ def _assert_raw_phase3cm_provenance(raw: dict[str, Any], *, source: Path) -> Non
     split = str(raw.get("optimizer_reward_split") or "").strip().lower()
     reward_source = str(raw.get("optimizer_reward_source") or "").strip()
     metric = str(raw.get("optimizer_reward_metric") or "").strip()
+    reward_contract = str(
+        raw.get("optimizer_reward_contract") or ""
+    ).strip()
+    uncertainty_contract = str(
+        raw.get("optimizer_reward_uncertainty_contract") or ""
+    ).strip()
     role = str(raw.get("feedback_data_role") or "").strip().lower()
     if split != "train":
         raise RuntimeError(
@@ -142,6 +152,16 @@ def _assert_raw_phase3cm_provenance(raw: dict[str, Any], *, source: Path) -> Non
         raise RuntimeError(
             f"raw Phase3CM source metric mismatch before normalization; "
             f"table={source} candidate={candidate} metric={metric or '<missing>'}"
+        )
+    if reward_contract != MATCHED_OPTIMIZER_REWARD_CONTRACT:
+        raise RuntimeError(
+            "raw Phase3CM source reward contract mismatch before normalization; "
+            f"table={source} candidate={candidate} contract={reward_contract or '<missing>'}"
+        )
+    if uncertainty_contract != PAIRED_DELTA_UNCERTAINTY_CONTRACT:
+        raise RuntimeError(
+            "raw Phase3CM source uncertainty contract mismatch before normalization; "
+            f"table={source} candidate={candidate} contract={uncertainty_contract or '<missing>'}"
         )
     if role and role != DEVELOPMENT_ROLE:
         raise RuntimeError(
@@ -243,6 +263,16 @@ def _is_clean(row: dict[str, Any], *, train_threshold: float, validation_floor: 
     if (
         str(row.get("primary_standalone_train_reward_decision") or "")
         != "TRAIN_REWARD_FOLLOWUP_READY"
+    ):
+        return False
+    if (
+        str(row.get("optimizer_reward_contract") or "")
+        != MATCHED_OPTIMIZER_REWARD_CONTRACT
+    ):
+        return False
+    if (
+        str(row.get("optimizer_reward_uncertainty_contract") or "")
+        != PAIRED_DELTA_UNCERTAINTY_CONTRACT
     ):
         return False
     if not math.isfinite(train_reward) or train_reward <= train_threshold:
@@ -675,6 +705,25 @@ def build_feedback_memory(
                 "Phase3CM feedback source metric mismatch; "
                 f"candidate={item.get('candidate_id')} metric={source_metric or '<missing>'}"
             )
+        source_reward_contract = str(
+            item.get("optimizer_reward_contract") or ""
+        ).strip()
+        if source_reward_contract != MATCHED_OPTIMIZER_REWARD_CONTRACT:
+            raise RuntimeError(
+                "Phase3CM feedback source reward contract mismatch; "
+                f"candidate={item.get('candidate_id')} contract={source_reward_contract or '<missing>'}"
+            )
+        source_uncertainty_contract = str(
+            item.get("optimizer_reward_uncertainty_contract") or ""
+        ).strip()
+        if (
+            source_uncertainty_contract
+            != PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ):
+            raise RuntimeError(
+                "Phase3CM feedback source uncertainty contract mismatch; "
+                f"candidate={item.get('candidate_id')} contract={source_uncertainty_contract or '<missing>'}"
+            )
         item.update(normalize_candidate_schema(item))
         reward = safe_float(item.get("pair_train_reward"), float("nan"))
         item["optimizer_reward"] = reward if math.isfinite(reward) else ""
@@ -716,6 +765,10 @@ def build_feedback_memory(
         "evaluation_access_guard": GUARD_VERSION,
         "optimizer_reward_source": MATCHED_OPTIMIZER_REWARD_SOURCE,
         "optimizer_reward_metric": MATCHED_OPTIMIZER_REWARD_METRIC,
+        "optimizer_reward_contract": MATCHED_OPTIMIZER_REWARD_CONTRACT,
+        "optimizer_reward_uncertainty_contract": (
+            PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ),
         "optimizer_reward_split": "train",
         "max_turnover": max_turnover,
         "max_family_share": max_family_share,

@@ -49,7 +49,9 @@
   "feedback_boundary": {
     "allowed_role": "development",
     "allowed_optimizer_split": "train",
-    "machine_guard": "evalreset_feedback_guard_v1",
+    "machine_guard": "evalreset_feedback_guard_v2",
+    "optimizer_reward_contract": "cn_matched_train_composite_increment_with_paired_uncertainty_v2",
+    "optimizer_reward_uncertainty_contract": "phase3cm_paired_daily_net_delta_stationary_bootstrap_v1",
     "forbidden_candidate_level_prefixes": [
       "validation_",
       "holdout_",

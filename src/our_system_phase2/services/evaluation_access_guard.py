@@ -12,12 +12,16 @@ import math
 from typing import Any, Iterable, Mapping
 
 from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
     MATCHED_OPTIMIZER_REWARD_METRIC,
     MATCHED_OPTIMIZER_REWARD_SOURCE,
 )
+from our_system_phase2.services.time_series_uncertainty import (
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
+)
 
 
-GUARD_VERSION = "evalreset_feedback_guard_v1"
+GUARD_VERSION = "evalreset_feedback_guard_v2"
 DEVELOPMENT_ROLE = "development"
 
 FORBIDDEN_FEEDBACK_PREFIXES = (
@@ -78,6 +82,12 @@ def assert_train_only_feedback_row(
     if _has_reward(row):
         reward_source = str(row.get("optimizer_reward_source") or "").strip()
         reward_metric = str(row.get("optimizer_reward_metric") or "").strip()
+        reward_contract = str(
+            row.get("optimizer_reward_contract") or ""
+        ).strip()
+        uncertainty_contract = str(
+            row.get("optimizer_reward_uncertainty_contract") or ""
+        ).strip()
         if reward_source != MATCHED_OPTIMIZER_REWARD_SOURCE:
             raise EvaluationAccessViolation(
                 f"{source} optimizer_reward_source must be '{MATCHED_OPTIMIZER_REWARD_SOURCE}'; observed {reward_source or '<missing>'}"
@@ -85,6 +95,14 @@ def assert_train_only_feedback_row(
         if reward_metric != MATCHED_OPTIMIZER_REWARD_METRIC:
             raise EvaluationAccessViolation(
                 f"{source} optimizer_reward_metric must be '{MATCHED_OPTIMIZER_REWARD_METRIC}'; observed {reward_metric or '<missing>'}"
+            )
+        if reward_contract != MATCHED_OPTIMIZER_REWARD_CONTRACT:
+            raise EvaluationAccessViolation(
+                f"{source} optimizer_reward_contract must be '{MATCHED_OPTIMIZER_REWARD_CONTRACT}'; observed {reward_contract or '<missing>'}"
+            )
+        if uncertainty_contract != PAIRED_DELTA_UNCERTAINTY_CONTRACT:
+            raise EvaluationAccessViolation(
+                f"{source} optimizer_reward_uncertainty_contract must be '{PAIRED_DELTA_UNCERTAINTY_CONTRACT}'; observed {uncertainty_contract or '<missing>'}"
             )
     role = str(row.get("feedback_data_role") or "").strip().lower()
     if role != DEVELOPMENT_ROLE:

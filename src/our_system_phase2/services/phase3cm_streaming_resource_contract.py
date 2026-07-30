@@ -12,6 +12,12 @@ from our_system_phase2.services.phase3cm_streaming_telemetry import (
     ResourceSnapshot,
     freeze_thread_budget,
 )
+from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
+)
+from our_system_phase2.services.time_series_uncertainty import (
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
+)
 
 
 class FrozenPlanDriftError(RuntimeError):
@@ -72,6 +78,8 @@ class FrozenExecutionPlan:
     rss_soft_bytes: int
     rss_hard_bytes: int
     global_rss_hard_bytes: int
+    optimizer_reward_contract: str
+    optimizer_reward_uncertainty_contract: str
     execution_plan_hash: str
 
     @classmethod
@@ -104,7 +112,7 @@ class FrozenExecutionPlan:
             primary_pool=str(primary_thread_pool),
         )
         payload = {
-            "schema_version": "cn_phase3cm_frozen_execution_plan_v1",
+            "schema_version": "cn_phase3cm_frozen_execution_plan_v2",
             "phase": phase_name,
             "block_size": int(block_size),
             "block_boundaries": tuple(tuple(str(value) for value in row) for row in block_boundaries),
@@ -118,6 +126,12 @@ class FrozenExecutionPlan:
             "rss_soft_bytes": int(rss_soft_bytes),
             "rss_hard_bytes": int(rss_hard_bytes),
             "global_rss_hard_bytes": int(global_rss_hard_bytes),
+            "optimizer_reward_contract": (
+                MATCHED_OPTIMIZER_REWARD_CONTRACT
+            ),
+            "optimizer_reward_uncertainty_contract": (
+                PAIRED_DELTA_UNCERTAINTY_CONTRACT
+            ),
         }
         return cls(**payload, execution_plan_hash=_stable_hash(payload))
 
@@ -127,8 +141,25 @@ class FrozenExecutionPlan:
         claimed_hash = str(raw.pop("execution_plan_hash", ""))
         claimed_schema = str(raw.pop("schema_version", ""))
         claimed_environment = dict(raw.pop("thread_environment", {}))
-        if claimed_schema != "cn_phase3cm_frozen_execution_plan_v1":
+        claimed_reward_contract = str(
+            raw.pop("optimizer_reward_contract", "")
+        )
+        claimed_uncertainty_contract = str(
+            raw.pop("optimizer_reward_uncertainty_contract", "")
+        )
+        if claimed_schema != "cn_phase3cm_frozen_execution_plan_v2":
             raise FrozenPlanDriftError("frozen execution-plan schema drift")
+        if claimed_reward_contract != MATCHED_OPTIMIZER_REWARD_CONTRACT:
+            raise FrozenPlanDriftError(
+                "frozen execution-plan reward contract drift"
+            )
+        if (
+            claimed_uncertainty_contract
+            != PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ):
+            raise FrozenPlanDriftError(
+                "frozen execution-plan uncertainty contract drift"
+            )
         plan = cls.create(**raw)
         if plan.execution_plan_hash != claimed_hash:
             raise FrozenPlanDriftError("frozen execution-plan hash drift")
@@ -160,6 +191,8 @@ class FrozenExecutionPlan:
         payload.pop("schema_version", None)
         payload.pop("thread_environment", None)
         payload.pop("primary_thread_pool", None)
+        payload.pop("optimizer_reward_contract", None)
+        payload.pop("optimizer_reward_uncertainty_contract", None)
         return FrozenExecutionPlan.create(
             primary_thread_pool=self.primary_thread_pool,
             **payload,

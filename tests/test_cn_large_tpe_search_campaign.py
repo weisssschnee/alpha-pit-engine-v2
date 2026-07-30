@@ -85,6 +85,13 @@ from our_system_phase2.services.route_local_availability import (
     RouteLocalAvailabilityController,
     structural_bucket_key,
 )
+from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
+)
+from our_system_phase2.services.time_series_uncertainty import (
+    DAY_UNCERTAINTY_CONTRACT,
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -189,6 +196,10 @@ def _evaluated_outcome(
         "matched_train_increment": matched,
         "pair_train_reward": matched,
         "pair_train_reward_decision": "PAIR_TRAIN_FEEDBACK_READY",
+        "optimizer_reward_contract": MATCHED_OPTIMIZER_REWARD_CONTRACT,
+        "optimizer_reward_uncertainty_contract": (
+            PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ),
         "primary_standalone_train_reward_decision": decision,
         "primary_executable_reward_decision": (
             A_SHARE_EXECUTABLE_REWARD_READY
@@ -296,6 +307,25 @@ class _PairReducer:
     def behavior_identity(index: int) -> str:
         return f"behavior-{index}"
 
+    @staticmethod
+    def reward_atoms() -> list[dict[str, object]]:
+        return [
+            {
+                "candidate_id": "primary-1",
+                "split": "train",
+                "horizon_min": "all",
+                "trade_date": "2024-01-02",
+                "daily_net_return": 0.02,
+            },
+            {
+                "candidate_id": "control-1",
+                "split": "train",
+                "horizon_min": "all",
+                "trade_date": "2024-01-02",
+                "daily_net_return": 0.01,
+            },
+        ]
+
 
 class _PairSupport:
     @staticmethod
@@ -320,12 +350,18 @@ def test_streaming_pair_outcome_preserves_primary_control_and_standalone_decisio
                 "optimizer_reward": 0.7,
                 "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
                 "train_reward_blockers": "",
+                "train_day_uncertainty_contract": (
+                    DAY_UNCERTAINTY_CONTRACT
+                ),
             },
             {
                 "candidate_id": "control-1",
                 "optimizer_reward": 0.5,
                 "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
                 "train_reward_blockers": "",
+                "train_day_uncertainty_contract": (
+                    DAY_UNCERTAINTY_CONTRACT
+                ),
             },
         ],
         reducer=_PairReducer(),

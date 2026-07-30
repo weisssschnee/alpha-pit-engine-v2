@@ -38,6 +38,9 @@ from our_system_phase2.services.a_share_tradability_guard import (
     REQUIRED_TRADABILITY_PROOFS,
     build_a_share_tradability_receipt,
 )
+from our_system_phase2.services.time_series_uncertainty import (
+    DAY_UNCERTAINTY_CONTRACT,
+)
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -113,6 +116,7 @@ def _pair_inputs(
             "train_rank_ic_mean": 0.03,
             "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
             "train_reward_blockers": primary_standalone_blockers,
+            "train_day_uncertainty_contract": DAY_UNCERTAINTY_CONTRACT,
         },
         {
             **replay_receipt(
@@ -124,6 +128,7 @@ def _pair_inputs(
             "optimizer_reward": control_reward,
             "train_mean_one_way_turnover": 0.2,
             "train_rank_ic_mean": 0.01,
+            "train_day_uncertainty_contract": DAY_UNCERTAINTY_CONTRACT,
         },
     ]
     support = {
@@ -131,6 +136,7 @@ def _pair_inputs(
         "trade_time": "2024-01-02 09:35:00",
         "horizon_min": 1,
         "split": "train",
+        "trade_date": "2024-01-02",
         "eligible_code_count": 4,
         "eligible_code_identity": stable_hash(["S1", "S2", "S3", "S4"]),
         "long_count": 2,
@@ -144,6 +150,7 @@ def _pair_inputs(
                 "top_signal_mean": 1.0,
                 "bottom_signal_mean": -1.0,
                 "portfolio_weight_identity": "primary-weights",
+                "net_return": 0.02,
             }
         ],
         str(control["expression_hash"]): [
@@ -152,6 +159,7 @@ def _pair_inputs(
                 "top_signal_mean": 0.5,
                 "bottom_signal_mean": -0.5,
                 "portfolio_weight_identity": "control-weights",
+                "net_return": 0.01,
             }
         ],
     }
@@ -177,6 +185,48 @@ def test_pair_feedback_blocks_nonpositive_matched_increment_even_when_primary_is
     assert row["matched_train_increment"] == pytest.approx(-0.1)
     assert row["pair_train_reward_decision"] == "PAIR_TRAIN_FEEDBACK_BLOCKED"
     assert "matched_train_increment_nonpositive" in row["pair_train_reward_blockers"]
+    assert row["optimizer_reward"] == ""
+
+
+def test_pair_feedback_requires_paired_daily_delta_support() -> None:
+    inputs = _pair_inputs(primary_reward=0.5, control_reward=0.1)
+    control_id = str(inputs["candidates"][1]["candidate_id"])
+    control_hash = str(inputs["candidates"][1]["expression_hash"])
+    inputs["portfolio_rows_by_expression_hash"][control_hash][0][
+        "net_return"
+    ] = 0.03
+
+    row = build_pair_evaluation_rows(**inputs)[0]
+
+    assert control_id == str(row["control_candidate_id"])
+    assert row["matched_train_increment"] == pytest.approx(0.4)
+    assert row["paired_delta_day_observed_mean"] < 0.0
+    assert row["paired_delta_day_support_mean_gt_0"] == 0.0
+    assert row["pair_train_reward_decision"] == (
+        "PAIR_TRAIN_FEEDBACK_BLOCKED"
+    )
+    assert (
+        "paired_delta_day_uncertainty_support_below_0_60"
+        in row["pair_train_reward_blockers"]
+    )
+    assert row["optimizer_reward"] == ""
+
+
+def test_pair_feedback_requires_exact_standalone_uncertainty_contracts() -> None:
+    inputs = _pair_inputs()
+    inputs["reward_rows"][1]["train_day_uncertainty_contract"] = (
+        "wrong-contract"
+    )
+
+    row = build_pair_evaluation_rows(**inputs)[0]
+
+    assert row["pair_train_reward_decision"] == (
+        "PAIR_TRAIN_FEEDBACK_BLOCKED"
+    )
+    assert (
+        "control_day_uncertainty_contract_mismatch"
+        in row["pair_train_reward_blockers"]
+    )
     assert row["optimizer_reward"] == ""
 
 
@@ -253,6 +303,9 @@ def test_pair_feedback_binds_separate_immutable_replay_receipts() -> None:
                 ),
                 "train_reward_blockers": reward.get(
                     "train_reward_blockers", ""
+                ),
+                "train_day_uncertainty_contract": (
+                    reward["train_day_uncertainty_contract"]
                 ),
             }
         )

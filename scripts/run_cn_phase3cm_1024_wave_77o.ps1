@@ -228,8 +228,8 @@ $BoundSessionPairIds = @(
         ForEach-Object { [string]$_.pair_id } |
         Sort-Object
 )
-if ($ActivePlan.schema_version -ne "cn_phase3cm_frozen_execution_plan_v1" -or
-    $SessionPlan.schema_version -ne "cn_phase3cm_frozen_execution_plan_v1" -or
+if ($ActivePlan.schema_version -ne "cn_phase3cm_frozen_execution_plan_v2" -or
+    $SessionPlan.schema_version -ne "cn_phase3cm_frozen_execution_plan_v2" -or
     $ActivePlan.phase -ne "E" -or $SessionPlan.phase -ne "E" -or
     [string]$ActivePlan.execution_plan_hash -ne [string]$Contract.plans.active_bar.execution_plan_hash -or
     [string]$SessionPlan.execution_plan_hash -ne [string]$Contract.plans.stock_session.execution_plan_hash -or

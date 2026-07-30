@@ -22,8 +22,11 @@ from our_system_phase2.services.a_share_tradability_guard import (
     development_predictive_evidence,
 )
 from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
     PAIR_TRAIN_FEEDBACK_BLOCKED,
     PAIR_TRAIN_FEEDBACK_READY,
+    paired_daily_net_deltas_from_reward_atoms,
+    paired_delta_uncertainty_fields,
 )
 from our_system_phase2.services.phase3cm_streaming_block_reader import TimeMajorBlockReader
 from our_system_phase2.services.phase3cm_streaming_checkpoint import (
@@ -55,6 +58,11 @@ from our_system_phase2.services.phase3cm_streaming_resource_contract import (
 from our_system_phase2.services.phase3cm_streaming_support import (
     PairSupportAccumulator,
     common_support_masks,
+)
+from our_system_phase2.services.time_series_uncertainty import (
+    DAY_UNCERTAINTY_CONTRACT,
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
+    PAIRED_DELTA_UNCERTAINTY_MIN_SUPPORT,
 )
 from our_system_phase2.services.phase3cm_streaming_telemetry import (
     PhaseTelemetryRecorder,
@@ -628,11 +636,17 @@ def _finalize_pairs(
     binding: Mapping[str, Any],
     evaluation_role: str = "train",
     label_free_behavior_by_candidate: Mapping[str, Mapping[str, Any]] | None = None,
+    reward_atom_rows: Sequence[Mapping[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     reward_by_id = {str(row.get("candidate_id")): dict(row) for row in reward_rows}
     member_binding = {str(row["candidate_id"]): dict(row) for row in binding["candidate_members"]}
     pair_binding = {str(row["pair_id"]): dict(row) for row in binding["pairs"]}
     support_identity = support.identities()
+    atoms = (
+        [dict(row) for row in reward_atom_rows]
+        if reward_atom_rows is not None
+        else [dict(row) for row in reducer.reward_atoms()]
+    )
     rows = []
     for pair_index in range(len(candidates) // 2):
         primary = dict(candidates[2 * pair_index])
@@ -678,19 +692,81 @@ def _finalize_pairs(
             blockers.append("primary_not_evaluated")
         if control_value is None:
             blockers.append("control_not_evaluated")
-        matched = None if blockers else float(primary_value) - float(control_value)
+        matched = (
+            None
+            if blockers
+            else float(primary_value) - float(control_value)
+        )
+        pair_feedback_blocker_set = set(blockers)
+        primary_uncertainty_contract = str(
+            primary_reward.get("train_day_uncertainty_contract") or ""
+        )
+        control_uncertainty_contract = str(
+            control_reward.get("train_day_uncertainty_contract") or ""
+        )
+        if evaluation_role == "train":
+            if primary_uncertainty_contract != DAY_UNCERTAINTY_CONTRACT:
+                pair_feedback_blocker_set.add(
+                    "primary_day_uncertainty_contract_mismatch"
+                )
+            if control_uncertainty_contract != DAY_UNCERTAINTY_CONTRACT:
+                pair_feedback_blocker_set.add(
+                    "control_day_uncertainty_contract_mismatch"
+                )
+        paired_day_deltas, paired_delta_blockers = (
+            paired_daily_net_deltas_from_reward_atoms(
+                atoms,
+                primary_candidate_id=str(primary["candidate_id"]),
+                control_candidate_id=str(control["candidate_id"]),
+            )
+            if evaluation_role == "train"
+            else ([], ())
+        )
+        pair_feedback_blocker_set.update(paired_delta_blockers)
+        paired_uncertainty = (
+            paired_delta_uncertainty_fields(
+                paired_day_deltas,
+                pair_id=pair_id,
+            )
+            if evaluation_role == "train"
+            else {}
+        )
+        paired_support = _finite_float(
+            paired_uncertainty.get(
+                "paired_delta_day_support_mean_gt_0"
+            )
+        )
+        if evaluation_role == "train":
+            if paired_support is None:
+                pair_feedback_blocker_set.add(
+                    "paired_delta_day_uncertainty_unavailable"
+                )
+            elif paired_support < PAIRED_DELTA_UNCERTAINTY_MIN_SUPPORT:
+                pair_feedback_blocker_set.add(
+                    "paired_delta_day_uncertainty_support_below_0_60"
+                )
         primary_standalone_decision = str(
             primary_reward.get("train_reward_decision") or ""
         )
         primary_standalone_blockers = str(
             primary_reward.get("train_reward_blockers") or ""
         )
+        if (
+            evaluation_role == "train"
+            and primary_standalone_decision
+            != "TRAIN_REWARD_FOLLOWUP_READY"
+        ):
+            pair_feedback_blocker_set.add(
+                "primary_standalone_train_reward_not_ready"
+            )
         pair_feedback_decision = (
             PAIR_TRAIN_FEEDBACK_READY
-            if not blockers
+            if not pair_feedback_blocker_set
             else PAIR_TRAIN_FEEDBACK_BLOCKED
         )
-        pair_feedback_blockers = "|".join(sorted(set(blockers)))
+        pair_feedback_blockers = "|".join(
+            sorted(pair_feedback_blocker_set)
+        )
         bound_pair = pair_binding[pair_id]
         metrics = (
             {
@@ -708,8 +784,26 @@ def _finalize_pairs(
                 "primary_standalone_train_reward_blockers": (
                     primary_standalone_blockers
                 ),
-                "optimizer_reward": matched,
+                "optimizer_reward": (
+                    matched
+                    if pair_feedback_decision
+                    == PAIR_TRAIN_FEEDBACK_READY
+                    else None
+                ),
                 "optimizer_reward_split": "train",
+                "optimizer_reward_contract": (
+                    MATCHED_OPTIMIZER_REWARD_CONTRACT
+                ),
+                "optimizer_reward_uncertainty_contract": (
+                    PAIRED_DELTA_UNCERTAINTY_CONTRACT
+                ),
+                "primary_day_uncertainty_contract": (
+                    primary_uncertainty_contract
+                ),
+                "control_day_uncertainty_contract": (
+                    control_uncertainty_contract
+                ),
+                **paired_uncertainty,
                 **development_predictive_evidence(),
                 "pair_a_share_tradability_decision": (
                     A_SHARE_TRADABILITY_UNPROVEN
@@ -1462,6 +1556,7 @@ def main() -> int:
             binding=binding,
             evaluation_role=args.evaluation_role,
             label_free_behavior_by_candidate=behavior_by_candidate,
+            reward_atom_rows=atom_rows,
         )
         if args.evaluation_role in REPORT_ONLY_EVALUATION_ROLES:
             for reward in reward_rows:
@@ -1603,6 +1698,12 @@ def main() -> int:
         / max(1e-12, time.perf_counter() - run_started),
         "peak_rss_bytes": max((int(event.get("peak_rss_bytes") or 0) for event in events), default=0),
         "execution_plan_hash": plan.execution_plan_hash,
+        "optimizer_reward_contract": (
+            plan.optimizer_reward_contract
+        ),
+        "optimizer_reward_uncertainty_contract": (
+            plan.optimizer_reward_uncertainty_contract
+        ),
         "capacity_receipt_hash": str(args.capacity_receipt_hash) or None,
         "max_block_rows_contract": (
             int(args.max_block_rows) if int(args.max_block_rows) > 0 else None

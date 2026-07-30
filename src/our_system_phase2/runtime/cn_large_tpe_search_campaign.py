@@ -64,6 +64,7 @@ from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
 )
 from our_system_phase2.services.matched_control_pairs import (
+    MATCHED_OPTIMIZER_REWARD_CONTRACT,
     PAIR_TRAIN_FEEDBACK_READY,
 )
 from our_system_phase2.services.optuna_tpe_search_adapter import (
@@ -83,6 +84,9 @@ from our_system_phase2.services.route_local_availability import (
 )
 from our_system_phase2.services.split_boundary_label_purity import (
     audit_split_boundary_label_purity,
+)
+from our_system_phase2.services.time_series_uncertainty import (
+    PAIRED_DELTA_UNCERTAINTY_CONTRACT,
 )
 from our_system_phase2.services.typed_primitive_gate import (
     expression_fields,
@@ -462,6 +466,21 @@ def _optimizer_feedback_blockers(
         != VALIDATION_PRIMARY_DECISION
     ):
         blockers.append("primary_standalone_train_reward_not_ready")
+    if (
+        str(outcome.get("optimizer_reward_contract") or "")
+        != MATCHED_OPTIMIZER_REWARD_CONTRACT
+    ):
+        blockers.append("optimizer_reward_contract_mismatch")
+    if (
+        str(
+            outcome.get("optimizer_reward_uncertainty_contract")
+            or ""
+        )
+        != PAIRED_DELTA_UNCERTAINTY_CONTRACT
+    ):
+        blockers.append(
+            "optimizer_reward_uncertainty_contract_mismatch"
+        )
     return tuple(dict.fromkeys(blockers))
 
 
@@ -968,11 +987,15 @@ def _write_optimizer_snapshot(
     if any(adapter.has_pending_population for adapter in adapters.values()):
         raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_HAS_PENDING")
     payload = {
-        "schema_version": "cn_large_tpe_optimizer_snapshot_v1",
+        "schema_version": "cn_large_tpe_optimizer_snapshot_v2",
         "boundary_checkpoint": boundary_checkpoint,
         "routes": list(ROUTES),
         "n_ei_candidates": N_EI_CANDIDATES,
         "sampler_mode": TPE_SAMPLER_MODE,
+        "optimizer_reward_contract": MATCHED_OPTIMIZER_REWARD_CONTRACT,
+        "optimizer_reward_uncertainty_contract": (
+            PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ),
         "adapters": dict(adapters),
     }
     snapshot_path.parent.mkdir(parents=True, exist_ok=True)
@@ -984,7 +1007,7 @@ def _write_optimizer_snapshot(
     receipt_path = _write_json(
         receipt_path,
         {
-            "schema_version": "cn_large_tpe_optimizer_snapshot_receipt_v1",
+            "schema_version": "cn_large_tpe_optimizer_snapshot_receipt_v2",
             "boundary_checkpoint": boundary_checkpoint,
             "prior_manifest_sha256": prior_manifest_sha256,
             "snapshot_path": str(snapshot_path),
@@ -992,6 +1015,12 @@ def _write_optimizer_snapshot(
             "routes": list(ROUTES),
             "n_ei_candidates": N_EI_CANDIDATES,
             "sampler_mode": TPE_SAMPLER_MODE,
+            "optimizer_reward_contract": (
+                MATCHED_OPTIMIZER_REWARD_CONTRACT
+            ),
+            "optimizer_reward_uncertainty_contract": (
+                PAIRED_DELTA_UNCERTAINTY_CONTRACT
+            ),
             "restore_authority": (
                 "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS"
             ),
@@ -1084,6 +1113,10 @@ def _load_optimizer_snapshot(
         "snapshot_sha256": _sha256(snapshot_path),
         "routes": list(ROUTES),
         "n_ei_candidates": N_EI_CANDIDATES,
+        "optimizer_reward_contract": MATCHED_OPTIMIZER_REWARD_CONTRACT,
+        "optimizer_reward_uncertainty_contract": (
+            PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ),
     }
     if any(receipt.get(key) != value for key, value in expected.items()):
         raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_RECEIPT_DRIFT")
@@ -1092,13 +1125,20 @@ def _load_optimizer_snapshot(
     payload = pickle.loads(snapshot_path.read_bytes())
     if (
         str(payload.get("schema_version") or "")
-        != "cn_large_tpe_optimizer_snapshot_v1"
+        != "cn_large_tpe_optimizer_snapshot_v2"
         or str(payload.get("boundary_checkpoint") or "")
         != boundary_checkpoint
         or list(payload.get("routes") or ()) != list(ROUTES)
         or int(payload.get("n_ei_candidates") or 0)
         != N_EI_CANDIDATES
         or str(payload.get("sampler_mode") or "") != TPE_SAMPLER_MODE
+        or str(payload.get("optimizer_reward_contract") or "")
+        != MATCHED_OPTIMIZER_REWARD_CONTRACT
+        or str(
+            payload.get("optimizer_reward_uncertainty_contract")
+            or ""
+        )
+        != PAIRED_DELTA_UNCERTAINTY_CONTRACT
     ):
         raise RuntimeError("LARGE_TPE_OPTIMIZER_SNAPSHOT_PAYLOAD_DRIFT")
     adapters = dict(payload.get("adapters") or {})
@@ -2176,6 +2216,28 @@ def _load_closed_state(
             .where(pd.notna, None)
             .to_dict(orient="records")
         )
+        for row in observations:
+            if not bool(row.get("optimizer_feedback_accepted")):
+                continue
+            if (
+                str(row.get("optimizer_reward_contract") or "")
+                != MATCHED_OPTIMIZER_REWARD_CONTRACT
+            ):
+                raise RuntimeError(
+                    "LARGE_TPE_REWARD_CONTRACT_CHECKPOINT_DRIFT"
+                )
+            if (
+                str(
+                    row.get(
+                        "optimizer_reward_uncertainty_contract"
+                    )
+                    or ""
+                )
+                != PAIRED_DELTA_UNCERTAINTY_CONTRACT
+            ):
+                raise RuntimeError(
+                    "LARGE_TPE_UNCERTAINTY_CONTRACT_CHECKPOINT_DRIFT"
+                )
         asked_by_id = {
             str(row["proposal_id"]): row for row in asked
         }
@@ -2222,6 +2284,14 @@ def _load_closed_state(
                                 ),
                                 "optimizer_reward": row.get(
                                     "optimizer_reward"
+                                ),
+                                "optimizer_reward_contract": row.get(
+                                    "optimizer_reward_contract"
+                                ),
+                                "optimizer_reward_uncertainty_contract": (
+                                    row.get(
+                                        "optimizer_reward_uncertainty_contract"
+                                    )
                                 ),
                                 "outcome_class": str(
                                     row.get("outcome_class") or ""
@@ -2955,7 +3025,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         schema_by_backend=schema_by_backend,
     )
     contract = {
-        "schema_version": "cn_large_tpe_search_contract_v2",
+        "schema_version": "cn_large_tpe_search_contract_v3",
         "status": "FROZEN_EXECUTABLE",
         "campaign_profile": campaign_profile,
         "completion_mode": campaign_spec["completion_mode"],
@@ -3020,6 +3090,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
         ),
         "optimizer_reward": "conservative_primary_and_increment_search_score",
+        "optimizer_reward_contract": MATCHED_OPTIMIZER_REWARD_CONTRACT,
+        "optimizer_reward_uncertainty_contract": (
+            PAIRED_DELTA_UNCERTAINTY_CONTRACT
+        ),
         "optimizer_search_score_policy": SEARCH_SCORE_POLICY,
         "optimizer_search_score_formula": (
             "min(primary_composite_reward,matched_train_increment)"
@@ -3629,6 +3703,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "proposal_id": str(ask["proposal_id"]),
                     "outcome_class": optimizer_outcome_class,
                     "optimizer_reward": reward,
+                    "optimizer_reward_contract": outcome.get(
+                        "optimizer_reward_contract"
+                    ),
+                    "optimizer_reward_uncertainty_contract": outcome.get(
+                        "optimizer_reward_uncertainty_contract"
+                    ),
                     "search_score": reward,
                     "search_score_policy": SEARCH_SCORE_POLICY,
                     "optimizer_feedback_accepted": reward is not None,

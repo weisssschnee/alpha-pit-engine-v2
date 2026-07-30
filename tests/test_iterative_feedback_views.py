@@ -3,6 +3,7 @@ from __future__ import annotations
 from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import (
     build_iterative_feedback_views,
 )
+from our_system_phase2.services.evaluation_access_guard import GUARD_VERSION
 
 
 def _row(**values: object) -> dict[str, object]:
@@ -17,7 +18,7 @@ def _row(**values: object) -> dict[str, object]:
         "pair_turnover_metric": 0.2,
         "pair_train_reward_blockers": "",
         "feedback_data_role": "development",
-        "evaluation_access_guard": "evalreset_feedback_guard_v1",
+        "evaluation_access_guard": GUARD_VERSION,
         **values,
     }
 
