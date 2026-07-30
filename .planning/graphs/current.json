@@ -19,9 +19,14 @@
           "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
           "runtime/run_plans/cn_finalist_input_authority_64_20260730_receipt.json",
           "runtime/run_plans/cn_productive_keep_review_64_20260729_receipt.json",
+          "runtime/run_plans/cn_winner_guided_large_search_20260730_receipt.json",
+          "runtime/run_plans/cn_winner_guided_large_search_v1_authorization.json",
           "scripts/build_cn_matched_control_candidate_parallel_artifacts.py",
           "scripts/freeze_cn_finalist_input_authority.py",
           "scripts/freeze_cn_productive_keep_review_cohort.py",
+          "scripts/prepare_cn_winner_guided_large_search.py",
+          "scripts/run_cn_phase3cm_streaming_qualification.py",
+          "scripts/run_cn_winner_guided_large_search_77o.ps1",
           "scripts/verify_cn_finalist_input_authority.py",
           "scripts/verify_cn_productive_keep_review_cohort.py",
           "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
@@ -46,7 +51,7 @@
           "tests/test_search_feedback_semantics.py"
         ],
         "raw_sha": "edcf645c1c3fae96fbf773b9ecd17c652bfdfef6",
-        "repo_head": "da40c9a3bcdea19bc0814cdb887202b8c1b5c353"
+        "repo_head": "a99d1a75d9b70fa23d434223f3c7d69617a228e0"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -929,7 +934,7 @@
       "source": "cn_development_search_policy",
       "target": "phase3cm_streaming_multicandidate_evaluator",
       "validation": {
-        "checked_at": "2026-07-29T14:16:15.678204+00:00",
+        "checked_at": "2026-07-30T03:38:30.746547+00:00",
         "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
@@ -963,7 +968,7 @@
       "source": "matched_train_feedback",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-07-29T14:16:15.678204+00:00",
+        "checked_at": "2026-07-30T03:38:30.746547+00:00",
         "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
@@ -1374,7 +1379,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-29T17:03:49.655031+00:00",
+  "generated_at": "2026-07-30T03:38:30.746547+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -2990,6 +2995,7 @@
         "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
         "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
         "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "runtime/run_plans/cn_winner_guided_large_search_20260730_receipt.json",
         "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md",
         "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
       ],
@@ -3083,7 +3089,7 @@
       "required": false,
       "semantic_role": "development_search_policy_authority",
       "validation": {
-        "checked_at": "2026-07-29T14:19:07.981219+00:00",
+        "checked_at": "2026-07-30T03:38:30.746547+00:00",
         "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
         "evidence_sha256": "149E85A687D5C5843629F3D2400EBDBB24E7191A58C3016BC180503C541A6ACB",
         "level": "STATIC_VERIFIED",
@@ -4171,7 +4177,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "CF8E88CA26C33B6D0091F425A782E47663D17455265234B6DEB48EB524407478"
+    "sha256": "6CE155FC9C21BCA9140A73BAD2196F79D9E1850B2ED8ED8EDB98B801D95295D9"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -4188,7 +4194,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "DC7B7A6DBCF12B96BB4817A6A4D753A047E6659A12C5E98AFF7FE9213F3CB428"
   },
-  "repo_head": "da40c9a3bcdea19bc0814cdb887202b8c1b5c353",
+  "repo_head": "a99d1a75d9b70fa23d434223f3c7d69617a228e0",
   "schema_version": 1,
   "status": "STALE",
   "strict_mode": false,

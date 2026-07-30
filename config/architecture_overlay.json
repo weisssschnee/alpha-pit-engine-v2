@@ -450,6 +450,7 @@
         "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
         "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
         "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
+        "runtime/run_plans/cn_winner_guided_large_search_20260730_receipt.json",
         "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md",
         "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
       ],
