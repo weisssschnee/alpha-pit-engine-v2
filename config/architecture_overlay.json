@@ -618,8 +618,8 @@
       "lifecycle": "ACTIVE",
       "paths": [
         "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
-        "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
-        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
+        "tests/test_phase3cm_bootstrap.py",
+        "docs/adr/0011-phase3cm-ordered-day-uncertainty.md"
       ],
       "critical": true,
       "active_authority": true,
@@ -627,8 +627,8 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19",
-        "sha256": "e57f343e6631e6fa095be665a13930fdacdefc52716941d2c1e203ff70c0469c"
+        "verified_sha": "636390da6fc91d7766569c35aac237046c848f80",
+        "sha256": "5245ea150d5920e1fced8b10a2c2e7a904f5cecebbb331688385cf38d1cf3460"
       },
       "contracts": [
         {
@@ -646,14 +646,22 @@
           "severity": "HARD",
           "enforced_by": "phase3cm_candidate_parallel",
           "bypass_forbidden": true
+        },
+        {
+          "id": "ordered_day_uncertainty",
+          "type": "EVIDENCE",
+          "rule": "Train Sortino uncertainty uses the frozen ordered-trade-day stationary block bootstrap contract phase3cm_ordered_day_stationary_block_uncertainty_v2. Legacy day_mcmc fields are compatibility aliases and do not claim a Bayesian posterior or Markov chain.",
+          "severity": "HARD",
+          "enforced_by": "phase3cm_train_portfolio_sortino_reward_audit and ADR 0011",
+          "bypass_forbidden": true
         }
       ],
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
-        "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
+        "evidence_ref": "tests/test_phase3cm_bootstrap.py",
+        "evidence_sha256": "e11f7466039108ea98a1ecf6b4c3563a572917c568e98cc207f86be5a0474201",
+        "verified_at_sha": "636390da6fc91d7766569c35aac237046c848f80"
       },
       "promotion_requirements": ["explicit search authorization", "frozen candidate pack"]
     },
@@ -1232,7 +1240,7 @@
     {"semantic_role": "pit_fundamental_observable_episode_authority", "authoritative_component": "pit_fundamental_fabric"},
     {"semantic_role": "candidate_identity_authority", "authoritative_component": "candidate_submission_receipt"},
     {"semantic_role": "matched_pair_authority", "authoritative_component": "matched_control_pair_authority"},
-    {"semantic_role": "development_predictive_evaluation_authority", "authoritative_component": "candidate_parallel_evaluator", "authority_class": "FORMAL", "decision_ref": "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"},
+    {"semantic_role": "development_predictive_evaluation_authority", "authoritative_component": "candidate_parallel_evaluator", "authority_class": "FORMAL", "decision_ref": "docs/adr/0011-phase3cm-ordered-day-uncertainty.md"},
     {"semantic_role": "train_feedback_authority", "authoritative_component": "matched_train_feedback", "authority_class": "FORMAL", "decision_ref": "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"},
     {"semantic_role": "development_search_policy_authority", "authoritative_component": "cn_development_search_policy", "authority_class": "FORMAL", "decision_ref": "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"}
   ]
