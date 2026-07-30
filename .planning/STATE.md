@@ -2,7 +2,7 @@
 
 Updated: 2026-07-30
 
-Current state: `CN_FINALIST_INPUT_AUTHORITY_REPAIR_PARTIAL_HOLD`
+Current state: `CN_FINALIST_REPLAY_OOS_REPORT_ONLY_COMPLETE_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -1183,15 +1183,51 @@ remains unchanged. The compact receipt is
   Financial replay, report-only validation, promotion and successor search
   remain unauthorized by this zero-financial freeze.
 
+## Fixed 24-pair executable replay and report-only OOS closure (2026-07-30)
+
+- The exact frozen 24-pair / 48-member winner cohort completed retained-lane
+  A-share train replay followed by report-only OOS on 77o at final execution
+  SHA `b8e63b05020346b5f1786c7fcb43c1295ad8bf42`. Candidate identities and
+  order matched selection payload SHA256
+  `3bf60efb7816161f2f6a8a8004cc61aa4d5930e2c99d65ffb46ba1da7a215201`;
+  no interstage filtering occurred.
+- Executable replay remained deliberately fail-closed: 11/48 candidate
+  members completed and 37 were blocked, leaving 2/24 complete matched pairs.
+  Thirty-six blockers were final-session unliquidated holdings concentrated in
+  `000545`, `002514` and `002581`; one control had no executable fills. These
+  are terminal-liquidity/no-fill evidence, not a runtime failure, and they did
+  not filter the unchanged OOS cohort.
+- Report-only OOS evaluated all 24 pairs. Nine had positive transfer (37.5%);
+  validation search-score median was -0.46185411 and p10 was -8.005324319.
+  Slow Temporal was positive for 6/18 with median -1.230319075; Slow
+  Cross-sectional was positive for 3/6 with median 0.009378515. This evidence
+  is `HOLD_RESEARCH`, not candidate promotion or an economic claim.
+- OOS closure canonical body SHA256
+  `5333b7978c7652d1e10c6ffcf144427cbf2e6723fe30201875a6a4a9d37881be`
+  matched with 9/9 declared artifacts. Root closure canonical body SHA256
+  `792cb290187ab98dd697ae4931789b37f1da5d0aa1151f982d368ae3391fec4c`
+  matched with 5/5 declared artifacts. Validation reads were 381,649;
+  holdout/2026 reads and feedback/scheduler/archive/promotion writes were zero
+  or forbidden, and protected source hashes were unchanged.
+- The replay kernel marks ending holdings at the final PIT close before the
+  flat-book check, but blocked candidates do not persist that in-memory path.
+  A mark-to-market comparison therefore requires one separately bounded replay
+  of the same 48 members; it must remain a diagnostic with unresolved
+  liquidation risk reported separately and must not trigger new OOS or search.
+
 ## Next action
 
-Do not run another scale-search tranche. Candidate supply, behavior-family
-deduplication and train-stability finalist selection are complete. The current
-bounded decision input is the frozen 24-pair winner cohort. The next financial
-action, if separately authorized, is one retained-lane A-share executable replay
-for those 24 pairs, followed by a separate decision on one report-only
-validation. The cohort must not feed development optimizer reward, tells,
-scheduler or memory.
+Do not run another search tranche, automatic validation or promotion. The fixed
+24-pair executable replay and unchanged-cohort report-only OOS are complete.
+The current decision is `HOLD_RESEARCH`: OOS transfer is mixed and the strict
+flat-book replay leaves only two executable matched pairs.
+
+If separately authorized, the smallest next diagnostic is one same-cohort
+48-member train replay that values ending holdings at the final PIT close
+without fabricating a sale, while retaining terminal liquidity as a separate
+risk field. It must not change identities or order, reopen OOS, feed optimizer
+state, or authorize successor search. Otherwise stop here and classify the
+nine positive OOS transfers by turnover, regime and terminal-liquidity risk.
 
 Financial replay, validation, holdout, 2026, successor search and promotion
 remain unauthorized now. Do not create a second evaluator, platform, database
