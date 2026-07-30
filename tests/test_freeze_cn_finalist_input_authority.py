@@ -17,13 +17,15 @@ def _write_json(path: Path, payload: dict[str, object]) -> None:
     )
 
 
-def _cohort(root: Path) -> None:
+def _cohort(root: Path, *, pair_count: int = 64) -> None:
     root.mkdir(parents=True)
-    pairs = pd.DataFrame({"pair_id": [f"pair-{idx:03d}" for idx in range(64)]})
+    pairs = pd.DataFrame(
+        {"pair_id": [f"pair-{idx:03d}" for idx in range(pair_count)]}
+    )
     candidates = pd.DataFrame(
         {
             "candidate_id": [
-                f"candidate-{idx:03d}" for idx in range(128)
+                f"candidate-{idx:03d}" for idx in range(pair_count * 2)
             ]
         }
     )
@@ -32,7 +34,13 @@ def _cohort(root: Path) -> None:
         root / "keep_review_candidates.parquet",
         index=False,
     )
-    _write_json(root / "keep_review_contract.json", {"contract": "test"})
+    contract = {
+        "schema_version": "cn_productive_keep_review_freeze_v2",
+        "cohort_pairs": pair_count,
+        "cohort_candidate_members": pair_count * 2,
+    }
+    contract["contract_payload_sha256"] = subject._payload_sha256(contract)
+    _write_json(root / "keep_review_contract.json", contract)
     _write_json(root / "keep_review_summary.json", {"summary": "test"})
     pd.DataFrame({"row": [1]}).to_parquet(
         root / "productive_review_ledger.parquet",
@@ -368,7 +376,7 @@ def test_complete_frozen_inputs_can_close_zero_financial_binding(
     release = tmp_path / "release"
     session = tmp_path / "session"
     output = tmp_path / "output"
-    _cohort(cohort)
+    _cohort(cohort, pair_count=24)
     _release(
         release,
         ("code", "trade_time", "open", "high", "low", "close"),
@@ -392,6 +400,8 @@ def test_complete_frozen_inputs_can_close_zero_financial_binding(
             encoding="utf-8"
         )
     )
+    assert binding["cohort"]["pair_count"] == 24
+    assert binding["cohort"]["candidate_member_count"] == 48
     assert binding["fee_contract"]["account_contract_confirmed"] is False
     assert binding["fee_contract"]["research_upper_bound_confirmed"] is True
     assert binding["promotion_authorized"] is False

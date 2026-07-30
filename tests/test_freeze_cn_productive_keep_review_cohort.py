@@ -7,6 +7,7 @@ import pandas as pd
 from scripts.freeze_cn_productive_keep_review_cohort import (
     HIGHER_IS_BETTER,
     LOWER_IS_BETTER,
+    _deduplicate_behavior_candidates,
     _payload_sha256,
     _rank_candidates,
     _screen_reason,
@@ -58,6 +59,39 @@ def test_cap_constrained_selection_is_deterministic_and_diverse() -> None:
         "SIGNAL_A",
         "SIGNAL_B",
         "SIGNAL_C",
+    }
+
+
+def test_small_cohort_does_not_overshoot_diversity_anchors() -> None:
+    ranked = _rank_candidates(_ranking_frame())
+    selected_ids = _select_with_caps(ranked, cohort_pairs=2)
+    assert len(selected_ids) == 2
+    assert selected_ids == _select_with_caps(ranked, cohort_pairs=2)
+
+
+def test_behavior_dedup_keeps_highest_ranked_representative() -> None:
+    frame = _ranking_frame().head(4).copy()
+    frame["portfolio_behavior_family_id"] = [
+        "FAMILY_DUPLICATE",
+        "FAMILY_DUPLICATE",
+        "FAMILY_3",
+        "FAMILY_4",
+    ]
+    frame["portfolio_behavior_signature_id"] = [
+        "SIGNATURE_1",
+        "SIGNATURE_2",
+        "SIGNATURE_3",
+        "SIGNATURE_4",
+    ]
+    ranked = _rank_candidates(frame)
+    deduped, rejected = _deduplicate_behavior_candidates(ranked)
+    assert deduped["pair_id"].tolist() == [
+        "pair-001",
+        "pair-003",
+        "pair-004",
+    ]
+    assert rejected == {
+        "pair-002": "BEHAVIOR_FAMILY_DUPLICATE_LOWER_RANK"
     }
 
 

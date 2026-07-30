@@ -128,18 +128,30 @@ def _verify_keep_review(cohort_root: Path) -> dict[str, Any]:
             raise ValueError(f"cohort artifact size mismatch: {path}")
         if _sha256(path) != str(artifact["sha256"]):
             raise ValueError(f"cohort artifact hash mismatch: {path}")
+    contract_path = cohort_root / "keep_review_contract.json"
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    if contract.get("contract_payload_sha256"):
+        _verify_self_hash(contract, "contract_payload_sha256")
+    pair_count = int(contract.get("cohort_pairs") or 0)
+    if pair_count <= 0:
+        raise ValueError("frozen cohort contract has invalid cohort_pairs")
+    candidate_member_count = pair_count * 2
     pairs = pd.read_parquet(cohort_root / "keep_review_pairs.parquet")
     candidates = pd.read_parquet(
         cohort_root / "keep_review_candidates.parquet"
     )
-    if len(pairs) != 64 or len(candidates) != 128:
+    if len(pairs) != pair_count or len(candidates) != candidate_member_count:
         raise ValueError(
-            f"frozen cohort must remain 64 pairs/128 members: "
-            f"{len(pairs)}/{len(candidates)}"
+            "frozen cohort count differs from its contract: "
+            f"expected={pair_count}/{candidate_member_count} "
+            f"observed={len(pairs)}/{len(candidates)}"
         )
-    if pairs["pair_id"].astype(str).nunique() != 64:
+    if pairs["pair_id"].astype(str).nunique() != pair_count:
         raise ValueError("frozen cohort pair IDs are not unique")
-    if candidates["candidate_id"].astype(str).nunique() != 128:
+    if (
+        candidates["candidate_id"].astype(str).nunique()
+        != candidate_member_count
+    ):
         raise ValueError("frozen cohort candidate IDs are not unique")
     return {
         "root": str(cohort_root),
@@ -147,8 +159,8 @@ def _verify_keep_review(cohort_root: Path) -> dict[str, Any]:
         "manifest_file_sha256": _sha256(manifest_path),
         "manifest_payload_sha256": manifest["manifest_payload_sha256"],
         "selection_payload_sha256": manifest["selection_payload_sha256"],
-        "pair_count": 64,
-        "candidate_member_count": 128,
+        "pair_count": pair_count,
+        "candidate_member_count": candidate_member_count,
     }
 
 

@@ -17,7 +17,8 @@ COHORT_PAIRS = 64
 PRODUCTIVE_DECISION = "TRAIN_REWARD_FOLLOWUP_READY"
 REVIEW_OUTCOME_ALLOW = "ALLOW_KEEP_REVIEW"
 REVIEW_OUTCOME_HOLD = "HOLD_RESEARCH"
-SCHEMA_VERSION = "cn_productive_keep_review_freeze_v1"
+REVIEW_OUTCOME_REJECT_DUPLICATE = "REJECT_DUPLICATE"
+SCHEMA_VERSION = "cn_productive_keep_review_freeze_v2"
 
 HIGHER_IS_BETTER = (
     "search_score",
@@ -260,10 +261,6 @@ def _load_behavior_rows(root: Path, productive_pairs: set[str]) -> pd.DataFrame:
     for column in columns[1:]:
         if (frame[column].fillna("").astype(str) == "").any():
             raise RuntimeError(f"blank productive behavior identity: {column}")
-    if frame["portfolio_behavior_family_id"].duplicated().any():
-        raise RuntimeError("productive behavior-family duplicate")
-    if frame["portfolio_behavior_signature_id"].duplicated().any():
-        raise RuntimeError("productive behavior-signature duplicate")
     return frame
 
 
@@ -306,6 +303,31 @@ def _rank_candidates(frame: pd.DataFrame) -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
+def _deduplicate_behavior_candidates(
+    ranked: pd.DataFrame,
+) -> tuple[pd.DataFrame, dict[str, str]]:
+    """Keep the highest-ranked pair for each behavior family/signature."""
+
+    kept_indexes: list[int] = []
+    rejected: dict[str, str] = {}
+    seen_families: set[str] = set()
+    seen_signatures: set[str] = set()
+    for index, row in ranked.iterrows():
+        pair_id = str(row["pair_id"])
+        family_id = str(row["portfolio_behavior_family_id"])
+        signature_id = str(row["portfolio_behavior_signature_id"])
+        if family_id in seen_families:
+            rejected[pair_id] = "BEHAVIOR_FAMILY_DUPLICATE_LOWER_RANK"
+            continue
+        if signature_id in seen_signatures:
+            rejected[pair_id] = "BEHAVIOR_SIGNATURE_DUPLICATE_LOWER_RANK"
+            continue
+        kept_indexes.append(index)
+        seen_families.add(family_id)
+        seen_signatures.add(signature_id)
+    return ranked.loc[kept_indexes].reset_index(drop=True), rejected
+
+
 def _select_with_caps(
     ranked: pd.DataFrame,
     *,
@@ -344,6 +366,8 @@ def _select_with_caps(
     for group_column in ("structural_family_id", "signal_cluster_id"):
         seen: set[str] = set()
         for row in records:
+            if len(selected) >= cohort_pairs:
+                break
             group_id = str(row[group_column])
             if group_id in seen:
                 continue
@@ -382,7 +406,7 @@ def _screen_reason(row: Mapping[str, Any]) -> str:
     return ""
 
 
-def _validate_source_closure(root: Path) -> None:
+def _validate_source_closure(root: Path) -> int:
     run_manifest = json.loads(
         (root / "run_manifest.json").read_text(encoding="utf-8-sig")
     )
@@ -398,28 +422,39 @@ def _validate_source_closure(root: Path) -> None:
         raise RuntimeError("source run manifest is not CAMPAIGN_CLOSED")
     if final_decision.get("status") != "CAMPAIGN_CLOSED":
         raise RuntimeError("source final decision is not CAMPAIGN_CLOSED")
-    if (
-        train_manifest.get("status")
-        != "HYBRID_BOUNDED_LARGE_TRANCHE_COMPLETE"
-    ):
+    if train_manifest.get("status") not in {
+        "HYBRID_BOUNDED_LARGE_TRANCHE_COMPLETE",
+        "WINNER_GUIDED_LARGE_SEARCH_COMPLETE",
+    }:
         raise RuntimeError("source train manifest is not closed")
-    if int(final_decision.get("productive_candidates") or -1) != 2676:
+    productive_candidates = int(
+        final_decision.get("productive_candidates") or -1
+    )
+    if productive_candidates <= 0:
         raise RuntimeError("source productive count drift")
     for payload in (run_manifest, final_decision):
         if int(payload.get("holdout_reads") or 0) != 0:
             raise RuntimeError("source holdout reads are nonzero")
         if int(payload.get("forward_2026_reads") or 0) != 0:
             raise RuntimeError("source 2026 reads are nonzero")
+    return productive_candidates
 
 
-def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
+def freeze_cohort(
+    *,
+    campaign_root: Path,
+    output_root: Path,
+    cohort_pairs: int = COHORT_PAIRS,
+) -> dict[str, Any]:
     campaign_root = campaign_root.resolve()
     output_root = output_root.resolve()
     if output_root.exists() and any(output_root.iterdir()):
         raise RuntimeError(f"output root is not empty: {output_root}")
     output_root.mkdir(parents=True, exist_ok=True)
 
-    _validate_source_closure(campaign_root)
+    if cohort_pairs <= 0:
+        raise ValueError("cohort_pairs must be positive")
+    source_productive_pairs = _validate_source_closure(campaign_root)
     source_paths = _source_paths(campaign_root)
     source_artifacts = [
         _source_artifact(path, root=campaign_root) for path in source_paths
@@ -432,9 +467,10 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
         campaign_root / "observation_ledger.parquet"
     )
     productive = _productive_observations(observations)
-    if len(productive) != 2676:
+    if len(productive) != source_productive_pairs:
         raise RuntimeError(
-            f"expected 2676 productive observations, found {len(productive)}"
+            f"expected {source_productive_pairs} productive observations, "
+            f"found {len(productive)}"
         )
     if productive["pair_id"].duplicated().any():
         raise RuntimeError("productive pair-id duplicate")
@@ -450,12 +486,15 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
         candidates["pair_id"].astype(str).isin(productive_pairs)
     ].copy()
     member_counts = productive_candidates.groupby("pair_id").size()
-    if len(member_counts) != 2676 or not (member_counts == 2).all():
+    if (
+        len(member_counts) != source_productive_pairs
+        or not (member_counts == 2).all()
+    ):
         raise RuntimeError("productive pair candidate-member coverage drift")
     primary_candidates = productive_candidates[
         productive_candidates["pair_member_role"] == "PRIMARY"
     ].copy()
-    if len(primary_candidates) != 2676:
+    if len(primary_candidates) != source_productive_pairs:
         raise RuntimeError("productive primary candidate coverage drift")
     if primary_candidates["exact_identity"].duplicated().any():
         raise RuntimeError("productive primary exact-identity duplicate")
@@ -476,7 +515,7 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
         validate="one_to_one",
         suffixes=("_observation", "_behavior"),
     )
-    if len(identity_check) != 2676:
+    if len(identity_check) != source_productive_pairs:
         raise RuntimeError("productive behavior identity coverage drift")
     for column in (
         "route_id",
@@ -563,7 +602,7 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
             validate="one_to_one",
         )
     )
-    if len(review) != 2676:
+    if len(review) != source_productive_pairs:
         raise RuntimeError("productive review evidence join drift")
     if not (
         review["primary_candidate_id"].astype(str)
@@ -579,16 +618,22 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
     review["train_stability_screen_pass"] = (
         review["train_stability_screen_reason"] == ""
     )
-    eligible = _rank_candidates(
+    screen_ranked = _rank_candidates(
         review[review["train_stability_screen_pass"]].copy()
     )
-    selected_pairs = _select_with_caps(eligible)
+    eligible, duplicate_reasons = _deduplicate_behavior_candidates(
+        screen_ranked
+    )
+    selected_pairs = _select_with_caps(
+        eligible,
+        cohort_pairs=cohort_pairs,
+    )
     selected_set = set(selected_pairs)
     rank_by_pair = {
         pair_id: rank
         for rank, pair_id in enumerate(selected_pairs, start=1)
     }
-    ranked_metrics = eligible.set_index("pair_id")[
+    ranked_metrics = screen_ranked.set_index("pair_id")[
         [
             *[
                 f"{column}_percentile"
@@ -605,18 +650,33 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
         right_index=True,
         how="left",
     )
+    review["behavior_dedup_reason"] = [
+        duplicate_reasons.get(str(pair_id), "")
+        for pair_id in review["pair_id"]
+    ]
+    review["behavior_dedup_pass"] = (
+        review["train_stability_screen_pass"]
+        & (review["behavior_dedup_reason"] == "")
+    )
     review["review_outcome"] = [
-        REVIEW_OUTCOME_ALLOW
-        if str(pair_id) in selected_set
-        else REVIEW_OUTCOME_HOLD
+        (
+            REVIEW_OUTCOME_ALLOW
+            if str(pair_id) in selected_set
+            else (
+                REVIEW_OUTCOME_REJECT_DUPLICATE
+                if str(pair_id) in duplicate_reasons
+                else REVIEW_OUTCOME_HOLD
+            )
+        )
         for pair_id in review["pair_id"]
     ]
     review["review_reason"] = [
         (
-            "FROZEN_64_PAIR_TRAIN_STABILITY_AND_DIVERSITY_COHORT"
+            f"FROZEN_{cohort_pairs}_PAIR_TRAIN_STABILITY_AND_DIVERSITY_COHORT"
             if str(row["pair_id"]) in selected_set
             else (
-                str(row["train_stability_screen_reason"])
+                str(row["behavior_dedup_reason"])
+                or str(row["train_stability_screen_reason"])
                 or "VALID_BUT_OUTSIDE_FROZEN_COHORT"
             )
         )
@@ -641,7 +701,7 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
     selected_review = selected_review.sort_values(
         "keep_review_rank", kind="mergesort"
     )
-    if len(selected_review) != COHORT_PAIRS:
+    if len(selected_review) != cohort_pairs:
         raise RuntimeError("selected keep-review cohort size drift")
     selected_candidates = productive_candidates[
         productive_candidates["pair_id"].astype(str).isin(selected_set)
@@ -657,7 +717,7 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
     selected_candidates = selected_candidates.sort_values(
         ["keep_review_rank", "pair_member_role"], kind="mergesort"
     )
-    if len(selected_candidates) != COHORT_PAIRS * 2:
+    if len(selected_candidates) != cohort_pairs * 2:
         raise RuntimeError("selected candidate member count drift")
 
     contract = {
@@ -665,9 +725,9 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
         "status": "FROZEN_DEVELOPMENT_KEEP_REVIEW_ONLY",
         "source_campaign_root": str(campaign_root),
         "source_campaign_status": "CAMPAIGN_CLOSED",
-        "source_productive_pairs": 2676,
-        "cohort_pairs": COHORT_PAIRS,
-        "cohort_candidate_members": COHORT_PAIRS * 2,
+        "source_productive_pairs": source_productive_pairs,
+        "cohort_pairs": cohort_pairs,
+        "cohort_candidate_members": cohort_pairs * 2,
         "productive_definition": {
             "pair_evaluation_status": "PAIR_EVALUATED",
             "search_score": ">0",
@@ -696,6 +756,17 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
                 "score desc,floor desc,median desc,search_score desc,"
                 "pair_id asc"
             ),
+        },
+        "behavior_deduplication": {
+            "scope": "TRAIN_STABILITY_SCREEN_PASS_PRODUCTIVE_PAIRS",
+            "family_policy": (
+                "KEEP_HIGHEST_RANKED_PAIR_PER_BEHAVIOR_FAMILY"
+            ),
+            "signature_policy": (
+                "KEEP_HIGHEST_RANKED_PAIR_PER_BEHAVIOR_SIGNATURE"
+            ),
+            "lower_ranked_outcome": REVIEW_OUTCOME_REJECT_DUPLICATE,
+            "ranking_precedes_deduplication": True,
         },
         "diversity_selection": {
             "anchors": [
@@ -751,6 +822,12 @@ def freeze_cohort(*, campaign_root: Path, output_root: Path) -> dict[str, Any]:
         "behavior_signature_unique": int(
             review["portfolio_behavior_signature_id"].nunique()
         ),
+        "behavior_dedup_pass": int(review["behavior_dedup_pass"].sum()),
+        "behavior_duplicate_rejected": len(duplicate_reasons),
+        "behavior_duplicate_reasons": {
+            str(key): int(value)
+            for key, value in Counter(duplicate_reasons.values()).items()
+        },
         "train_stability_screen_pass": int(
             review["train_stability_screen_pass"].sum()
         ),
@@ -876,10 +953,16 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--campaign-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument(
+        "--cohort-pairs",
+        type=int,
+        default=COHORT_PAIRS,
+    )
     args = parser.parse_args()
     result = freeze_cohort(
         campaign_root=args.campaign_root,
         output_root=args.output_root,
+        cohort_pairs=args.cohort_pairs,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0

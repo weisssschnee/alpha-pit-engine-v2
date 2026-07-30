@@ -11,7 +11,10 @@ from typing import Any, Mapping
 import pandas as pd
 
 
-COHORT_PAIRS = 64
+SUPPORTED_SCHEMA_VERSIONS = {
+    "cn_productive_keep_review_freeze_v1",
+    "cn_productive_keep_review_freeze_v2",
+}
 HIGHER_IS_BETTER = (
     "search_score",
     "matched_net_increment",
@@ -87,7 +90,37 @@ def _recompute_ranking(frame: pd.DataFrame) -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
-def _recompute_selection(ranked: pd.DataFrame) -> list[str]:
+def _deduplicate_behavior_candidates(
+    ranked: pd.DataFrame,
+) -> tuple[pd.DataFrame, dict[str, str]]:
+    kept_indexes: list[int] = []
+    rejected: dict[str, str] = {}
+    seen_families: set[str] = set()
+    seen_signatures: set[str] = set()
+    for index, row in ranked.iterrows():
+        pair_id = str(row["pair_id"])
+        family_id = str(row["portfolio_behavior_family_id"])
+        signature_id = str(row["portfolio_behavior_signature_id"])
+        if family_id in seen_families:
+            rejected[pair_id] = "BEHAVIOR_FAMILY_DUPLICATE_LOWER_RANK"
+            continue
+        if signature_id in seen_signatures:
+            rejected[pair_id] = "BEHAVIOR_SIGNATURE_DUPLICATE_LOWER_RANK"
+            continue
+        kept_indexes.append(index)
+        seen_families.add(family_id)
+        seen_signatures.add(signature_id)
+    return ranked.loc[kept_indexes].reset_index(drop=True), rejected
+
+
+def _recompute_selection(
+    ranked: pd.DataFrame,
+    *,
+    cohort_pairs: int,
+) -> list[str]:
+    route_cap = math.ceil(cohort_pairs * 0.75)
+    structural_cap = math.ceil(cohort_pairs * 0.50)
+    signal_cap = math.ceil(cohort_pairs * 0.75)
     selected: list[str] = []
     selected_set: set[str] = set()
     route_counts: Counter[str] = Counter()
@@ -101,11 +134,11 @@ def _recompute_selection(ranked: pd.DataFrame) -> list[str]:
         signal_id = str(row["signal_cluster_id"])
         if pair_id in selected_set:
             return False
-        if route_counts[route_id] >= 48:
+        if route_counts[route_id] >= route_cap:
             return False
-        if structural_counts[structural_id] >= 32:
+        if structural_counts[structural_id] >= structural_cap:
             return False
-        if signal_counts[signal_id] >= 48:
+        if signal_counts[signal_id] >= signal_cap:
             return False
         selected.append(pair_id)
         selected_set.add(pair_id)
@@ -118,17 +151,22 @@ def _recompute_selection(ranked: pd.DataFrame) -> list[str]:
     for column in ("structural_family_id", "signal_cluster_id"):
         anchored: set[str] = set()
         for row in rows:
+            if len(selected) >= cohort_pairs:
+                break
             group_id = str(row[column])
             if group_id in anchored:
                 continue
             if add(row):
                 anchored.add(group_id)
     for row in rows:
-        if len(selected) == COHORT_PAIRS:
+        if len(selected) >= cohort_pairs:
             break
         add(row)
-    if len(selected) != COHORT_PAIRS:
-        raise RuntimeError("independent cap-constrained supply below 64")
+    if len(selected) != cohort_pairs:
+        raise RuntimeError(
+            "independent cap-constrained supply below "
+            f"{cohort_pairs}"
+        )
     return selected
 
 
@@ -144,6 +182,9 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
     manifest["manifest_payload_sha256"] = claimed_manifest_payload
     if manifest.get("status") != "KEEP_REVIEW_COHORT_CLOSED_IMMUTABLE":
         raise RuntimeError("selection manifest is not closed immutable")
+    schema_version = str(manifest.get("schema_version") or "")
+    if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
+        raise RuntimeError(f"unsupported selection schema: {schema_version}")
 
     declared_paths: set[str] = set()
     for artifact in manifest["artifacts"]:
@@ -174,6 +215,13 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
     contract["contract_payload_sha256"] = claimed_contract_payload
     if contract.get("status") != "FROZEN_DEVELOPMENT_KEEP_REVIEW_ONLY":
         raise RuntimeError("contract status drift")
+    if str(contract.get("schema_version") or "") != schema_version:
+        raise RuntimeError("contract/manifest schema drift")
+    expected_productive = int(contract.get("source_productive_pairs") or 0)
+    cohort_pairs = int(contract.get("cohort_pairs") or 0)
+    if expected_productive <= 0 or cohort_pairs <= 0:
+        raise RuntimeError("invalid contract pair counts")
+    expected_members = cohort_pairs * 2
     boundary = contract["authority_boundary"]
     expected_zero_or_false = {
         "financial_result_recomputed": False,
@@ -208,26 +256,24 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         selection_root / "keep_review_candidates.parquet"
     )
     summary = _read_json(selection_root / "keep_review_summary.json")
-    if len(review) != 2676 or review["pair_id"].nunique() != 2676:
-        raise RuntimeError("review ledger productive coverage drift")
     if (
-        review["portfolio_behavior_family_id"].nunique() != 2676
-        or review["portfolio_behavior_signature_id"].nunique() != 2676
+        len(review) != expected_productive
+        or review["pair_id"].nunique() != expected_productive
     ):
-        raise RuntimeError("behavior deduplication proof drift")
-    if len(pairs) != 64 or pairs["pair_id"].nunique() != 64:
+        raise RuntimeError("review ledger productive coverage drift")
+    if len(pairs) != cohort_pairs or pairs["pair_id"].nunique() != cohort_pairs:
         raise RuntimeError("selected pair count drift")
     if (
-        len(candidates) != 128
-        or candidates["pair_id"].nunique() != 64
+        len(candidates) != expected_members
+        or candidates["pair_id"].nunique() != cohort_pairs
         or not (candidates.groupby("pair_id").size() == 2).all()
     ):
         raise RuntimeError("selected pair-member coverage drift")
-    if pairs["primary_exact_identity"].nunique() != 64:
+    if pairs["primary_exact_identity"].nunique() != cohort_pairs:
         raise RuntimeError("selected primary exact duplicate")
-    if pairs["portfolio_behavior_family_id"].nunique() != 64:
+    if pairs["portfolio_behavior_family_id"].nunique() != cohort_pairs:
         raise RuntimeError("selected behavior-family duplicate")
-    if pairs["portfolio_behavior_signature_id"].nunique() != 64:
+    if pairs["portfolio_behavior_signature_id"].nunique() != cohort_pairs:
         raise RuntimeError("selected behavior-signature duplicate")
     if set(pairs["review_outcome"]) != {"ALLOW_KEEP_REVIEW"}:
         raise RuntimeError("selected review outcome drift")
@@ -259,15 +305,45 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         str(key): int(value)
         for key, value in pairs["signal_cluster_id"].value_counts().items()
     }
-    if max(route_counts.values()) > 48:
+    route_cap = math.ceil(cohort_pairs * 0.75)
+    structural_cap = math.ceil(cohort_pairs * 0.50)
+    signal_cap = math.ceil(cohort_pairs * 0.75)
+    if max(route_counts.values()) > route_cap:
         raise RuntimeError("route concentration cap violated")
-    if max(structural_counts.values()) > 32:
+    if max(structural_counts.values()) > structural_cap:
         raise RuntimeError("structural concentration cap violated")
-    if max(signal_counts.values()) > 48:
+    if max(signal_counts.values()) > signal_cap:
         raise RuntimeError("signal concentration cap violated")
 
     ranked = _recompute_ranking(review)
-    recomputed_selection = _recompute_selection(ranked)
+    if schema_version == "cn_productive_keep_review_freeze_v2":
+        ranked, duplicate_reasons = _deduplicate_behavior_candidates(ranked)
+        recorded_duplicate_reasons = {
+            str(row["pair_id"]): str(row["behavior_dedup_reason"])
+            for row in review.loc[
+                review["review_outcome"] == "REJECT_DUPLICATE",
+                ["pair_id", "behavior_dedup_reason"],
+            ].to_dict(orient="records")
+        }
+        if duplicate_reasons != recorded_duplicate_reasons:
+            raise RuntimeError("independent behavior deduplication mismatch")
+        if int(summary.get("behavior_duplicate_rejected") or 0) != len(
+            duplicate_reasons
+        ):
+            raise RuntimeError("behavior duplicate summary count drift")
+    else:
+        duplicate_reasons = {}
+        if (
+            review["portfolio_behavior_family_id"].nunique()
+            != expected_productive
+            or review["portfolio_behavior_signature_id"].nunique()
+            != expected_productive
+        ):
+            raise RuntimeError("legacy behavior deduplication proof drift")
+    recomputed_selection = _recompute_selection(
+        ranked,
+        cohort_pairs=cohort_pairs,
+    )
     recorded_selection = (
         pairs.sort_values("keep_review_rank", kind="mergesort")["pair_id"]
         .astype(str)
@@ -308,6 +384,7 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         "screen_pass": int(review["train_stability_screen_pass"].sum()),
         "screen_hold": int((~review["train_stability_screen_pass"]).sum()),
         "screen_hold_reasons": screen_hold_reasons,
+        "behavior_duplicate_rejected": len(duplicate_reasons),
         "selected_pairs": len(pairs),
         "selected_candidate_members": len(candidates),
         "selected_route_counts": route_counts,
