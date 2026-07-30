@@ -653,6 +653,68 @@ def _read_observed_sessions(release_root: Path) -> pd.DataFrame:
     return result
 
 
+def _load_or_build_observed_cache(
+    *,
+    release_root: Path,
+    cache_path: Path | None,
+) -> pd.DataFrame:
+    if cache_path is None:
+        return _read_observed_sessions(release_root)
+    cache_path = cache_path.resolve()
+    manifest_path = cache_path.with_suffix(cache_path.suffix + ".manifest.json")
+    release = _release_manifest(release_root)
+    if cache_path.is_file() or manifest_path.is_file():
+        if not cache_path.is_file() or not manifest_path.is_file():
+            raise ValueError("observed-session cache is only partially present")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        _verify_self_hash(manifest, "manifest_payload_sha256")
+        if (
+            str(manifest.get("schema_version") or "")
+            != "cn_development_observed_session_cache_v1"
+        ):
+            raise ValueError("observed-session cache schema is unsupported")
+        if str(manifest.get("release_manifest_sha256") or "") != str(
+            release["sha256"]
+        ):
+            raise ValueError("observed-session cache release binding mismatch")
+        if _sha256(cache_path) != str(manifest.get("artifact_sha256") or ""):
+            raise ValueError("observed-session cache artifact hash mismatch")
+        for field in (
+            "financial_reads",
+            "validation_reads",
+            "holdout_reads",
+            "forward_2026_reads",
+        ):
+            if int(manifest.get(field, -1)) != 0:
+                raise ValueError(f"observed-session cache {field} is not zero")
+        return pd.read_parquet(cache_path)
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    observed = _read_observed_sessions(release_root)
+    observed.to_parquet(cache_path, index=False)
+    manifest = {
+        "schema_version": "cn_development_observed_session_cache_v1",
+        "status": "DERIVED_ZERO_FINANCIAL_CACHE_CLOSED_IMMUTABLE",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "release_manifest": str(release["path"]),
+        "release_manifest_sha256": release["sha256"],
+        "collapse_policy": (
+            "CODE_DATE_FIRST_OPEN_MAX_HIGH_MIN_LOW_LAST_CLOSE_LAST_PIT_ST"
+        ),
+        "row_count": len(observed),
+        "security_count": int(observed["code"].nunique()),
+        "artifact": str(cache_path),
+        "artifact_bytes": cache_path.stat().st_size,
+        "artifact_sha256": _sha256(cache_path),
+        "financial_reads": 0,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    manifest["manifest_payload_sha256"] = _payload_sha256(manifest)
+    _write_json(manifest_path, manifest)
+    return observed
+
+
 def parse_dividend_actions(
     raw_payloads: Iterable[Mapping[str, Any]],
     *,
@@ -847,16 +909,14 @@ def materialize_session_authority(
     )
     grid["suspended"] = grid["open"].isna()
     grid["universe_eligible"] = True
-    grid["is_st"] = pd.to_numeric(
+    resolved_st = pd.to_numeric(
         grid["is_st"], errors="coerce"
     ).groupby(grid["code"], sort=False).ffill()
-    if grid["is_st"].isna().any():
-        missing = grid.loc[grid["is_st"].isna(), "code"].unique().tolist()
-        raise ValueError(
-            "PIT ST state is unavailable before first explicit observation: "
-            f"{missing[:20]}"
-        )
-    grid["is_st"] = grid["is_st"].ne(0)
+    leading_unknown_st = resolved_st.isna()
+    # A release-leading suspension has no PIT ST state to carry.  Treat it as
+    # ineligible until the first observed state rather than backfilling from
+    # the future or assuming eligibility.
+    grid["is_st"] = resolved_st.fillna(1.0).ne(0)
     grid["close"] = pd.to_numeric(
         grid["close"], errors="coerce"
     ).groupby(grid["code"], sort=False).ffill()
@@ -952,6 +1012,9 @@ def materialize_session_authority(
         )
     ).any():
         raise RuntimeError("terminal recovery is not explicit and nonnegative")
+    result.attrs["leading_unknown_st_blocked_session_count"] = int(
+        leading_unknown_st.sum()
+    )
     return result
 
 
@@ -968,6 +1031,7 @@ def build_authority(
     release_root: Path,
     source_root: Path,
     output_root: Path,
+    observed_cache: Path | None = None,
 ) -> dict[str, Any]:
     release_root = release_root.resolve()
     source_root = source_root.resolve()
@@ -980,7 +1044,22 @@ def build_authority(
     if source["date_max"] != release["date_max"]:
         raise ValueError("source/release date_max mismatch")
 
-    observed = _read_observed_sessions(release_root)
+    observed = _load_or_build_observed_cache(
+        release_root=release_root,
+        cache_path=observed_cache,
+    )
+    observed_cache_receipt = None
+    if observed_cache is not None:
+        resolved_cache = observed_cache.resolve()
+        cache_manifest = resolved_cache.with_suffix(
+            resolved_cache.suffix + ".manifest.json"
+        )
+        observed_cache_receipt = {
+            "path": str(resolved_cache),
+            "sha256": _sha256(resolved_cache),
+            "manifest": str(cache_manifest),
+            "manifest_sha256": _sha256(cache_manifest),
+        }
     master = pd.read_parquet(source_root / "security_master.parquet")
     calendar = pd.read_parquet(source_root / "trade_calendar.parquet")["date"]
     raw_payloads = [
@@ -1072,7 +1151,13 @@ def build_authority(
         "security_count": int(authority["code"].nunique()),
         "session_row_count": len(authority),
         "observed_session_row_count": len(observed),
+        "observed_session_cache": observed_cache_receipt,
         "suspended_session_row_count": int(authority["suspended"].sum()),
+        "leading_unknown_st_blocked_session_count": int(
+            authority.attrs.get(
+                "leading_unknown_st_blocked_session_count", 0
+            )
+        ),
         "terminal_session_row_count": int(
             authority["is_terminal_session"].sum()
         ),
@@ -1089,6 +1174,9 @@ def build_authority(
         "policies": {
             "suspension": "LISTED_CALENDAR_MINUS_MINUTE_OBSERVATION",
             "st": "PIT_MINUTE_STATE_FORWARD_FILLED_ONLY_ACROSS_SUSPENSION",
+            "leading_unknown_st": (
+                "CONSERVATIVE_INELIGIBLE_UNTIL_FIRST_PIT_OBSERVATION"
+            ),
             "limits": "CN_CONSERVATIVE_LIMIT_LIFECYCLE_V2_EQUIVALENT_SESSION_RULES",
             "cash_actions": "CNINFO_F012N_PER_10_ON_F023D_PAYMENT_SESSION",
             "share_actions": "CNINFO_F010N_PLUS_F011N_ON_F020D_EFFECTIVE_SESSION",
@@ -1154,6 +1242,7 @@ def build_parser() -> argparse.ArgumentParser:
     materialize.add_argument("--release-root", type=Path, required=True)
     materialize.add_argument("--source-root", type=Path, required=True)
     materialize.add_argument("--output-root", type=Path, required=True)
+    materialize.add_argument("--observed-cache", type=Path)
     return parser
 
 
@@ -1171,6 +1260,7 @@ def main(argv: list[str] | None = None) -> int:
             release_root=args.release_root,
             source_root=args.source_root,
             output_root=args.output_root,
+            observed_cache=args.observed_cache,
         )
     return 0
 

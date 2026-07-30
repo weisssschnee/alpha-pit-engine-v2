@@ -95,15 +95,15 @@ def test_session_authority_adds_suspensions_and_zero_recovery_terminal() -> None
     calendar = pd.Series(pd.bdate_range("2023-12-01", "2024-01-05"))
     observed = pd.DataFrame(
         {
-            "code": ["600001", "600001", "000001", "000001"],
+            "code": ["600001", "600001", "000001"],
             "date": pd.to_datetime(
-                ["2024-01-02", "2024-01-03", "2024-01-02", "2024-01-05"]
+                ["2024-01-02", "2024-01-03", "2024-01-05"]
             ),
-            "open": [10.0, 10.5, 8.0, 8.2],
-            "high": [10.2, 10.7, 8.1, 8.3],
-            "low": [9.9, 10.4, 7.9, 8.1],
-            "close": [10.1, 10.6, 8.0, 8.2],
-            "is_st": [0, 0, 1, 1],
+            "open": [10.0, 10.5, 8.2],
+            "high": [10.2, 10.7, 8.3],
+            "low": [9.9, 10.4, 8.1],
+            "close": [10.1, 10.6, 8.2],
+            "is_st": [0, 0, 0],
         }
     )
     master = pd.DataFrame(
@@ -152,6 +152,12 @@ def test_session_authority_adds_suspensions_and_zero_recovery_terminal() -> None
     assert terminal["terminal_liquidation_price"] == 0.0
     assert result["listing_age_sessions"].min() > 5
     assert not result.duplicated(["date", "code"]).any()
+    leading_unknown = result.loc[
+        result["code"].eq("000001")
+        & result["date"].lt(pd.Timestamp("2024-01-05"))
+    ]
+    assert leading_unknown["is_st"].all()
+    assert result.attrs["leading_unknown_st_blocked_session_count"] == 3
 
 
 def test_code_namespace_resolves_supported_exchanges() -> None:
