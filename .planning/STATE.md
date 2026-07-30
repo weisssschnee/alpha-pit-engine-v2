@@ -1093,9 +1093,9 @@ remains unchanged. The compact receipt is
 - Root status is `CAMPAIGN_CLOSED`; `train_finalists.parquet` is intentionally
   empty. This is development-search evidence only: it does not establish OOS,
   executable, economic or promotion authority and does not reopen the accepted
-  Hybrid policy. The existing 64-pair keep-review cohort and the
-  `HOLD_RESEARCH_FINALIST_INPUTS_INCOMPLETE` boundary remain authoritative.
-  The compact receipt is
+  Hybrid policy. The subsequent 24-pair winner finalist freeze is the current
+  bounded decision input; the earlier 64-pair keep-review cohort remains its
+  immutable winner-guide evidence. The compact receipt is
   `runtime/run_plans/cn_winner_guided_large_search_20260730_receipt.json`.
 
 ## Phase3CM ordered-day uncertainty repair (2026-07-30)
@@ -1144,15 +1144,54 @@ remains unchanged. The compact receipt is
   unauthorized. The fee binding remains a conservative research upper bound,
   not an actual broker-account contract and not promotion authority.
 
+## Winner-guided 24-pair finalist freeze (2026-07-30)
+
+- The existing keep-review selector and independent verifier were generalized
+  rather than duplicated. Source productive count and cohort size are now
+  contract-declared, while legacy 64-pair artifacts remain independently
+  verifiable. The current selector performs the existing train hard screen,
+  keeps the highest-ranked screen-pass representative for each behavior family
+  and signature, then applies the existing 75% route, 50% structural-family
+  and 75% signal-cluster concentration caps.
+- The closed winner-guided pool contained 2,836 development-productive pairs.
+  The train-only hard screen retained 2,067 and held 769: 686 for nonpositive
+  matched gross increment, 22 for nonpositive matched net increment and 61 for
+  regime-positive share below 0.5. No validation, holdout or 2026 data entered
+  ranking or selection.
+- The largest clean small cohort under the existing concentration caps is 24
+  pairs/48 members: 18 `SLOW_TEMPORAL_CHANGE` and 6
+  `SLOW_CROSS_SECTIONAL_LEVEL`, with 24 unique primary exact identities,
+  behavior families and behavior signatures. A 32-pair cohort was not
+  supply-feasible under the same caps because only six slow cross-sectional
+  rows passed the train screen.
+- The cohort closed on 77o from exact pushed/deployed SHA
+  `06a58e0c5795ba2c7feef44f348db6f31cc27556`. Its manifest file SHA256 is
+  `e37312fa79ace9a9244888d959605b438118352cc48030d89d2844302c05a6be`,
+  payload SHA256 is
+  `40437549a49852ced5f1ea1739edc440d43fdb2596feb1700a1a3360baa59a55`
+  and selection payload SHA256 is
+  `3bf60efb7816161f2f6a8a8004cc61aa4d5930e2c99d65ffb46ba1da7a215201`.
+  Independent verification matched all five declared artifacts and all 38
+  immutable source artifacts.
+- The 24-pair cohort was bound to the existing A-share development
+  release/session authority without creating a new authority node.
+  `FINALIST_INPUT_AUTHORITY_READY` closed with zero blockers; its manifest file
+  SHA256 is
+  `3c4a1fe4d8568e63c1befb3743a18270fc35db5abc651ab49b01680101790189`
+  and independent verification payload SHA256 is
+  `b58a9eb9db2797b4ae215f8e005ae813e663dab9e36ed44f3a32cc8f5ad10d94`.
+  Financial replay, report-only validation, promotion and successor search
+  remain unauthorized by this zero-financial freeze.
+
 ## Next action
 
-Do not run another scale-search tranche. Candidate supply is already sufficient:
-use the 2,836 development-productive pool for behavior-family deduplication and
-train-stability selection, with the existing 64-candidate keep-review cohort as
-the current bounded decision input. The next financial action, if separately
-authorized, is the retained A-share executable replay and then one report-only
-validation on a frozen small finalist set. The cohort must not feed development
-optimizer reward, tells, scheduler or memory.
+Do not run another scale-search tranche. Candidate supply, behavior-family
+deduplication and train-stability finalist selection are complete. The current
+bounded decision input is the frozen 24-pair winner cohort. The next financial
+action, if separately authorized, is one retained-lane A-share executable replay
+for those 24 pairs, followed by a separate decision on one report-only
+validation. The cohort must not feed development optimizer reward, tells,
+scheduler or memory.
 
 Financial replay, validation, holdout, 2026, successor search and promotion
 remain unauthorized now. Do not create a second evaluator, platform, database
