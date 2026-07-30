@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-30
+Updated: 2026-07-31
 
-Current state: `CN_FINALIST_REPLAY_OOS_REPORT_ONLY_COMPLETE_HOLD_RESEARCH`
+Current state: `CN_FINALIST_MTM_OOS_INTERSECTION_COMPLETE_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -1215,19 +1215,64 @@ remains unchanged. The compact receipt is
   of the same 48 members; it must remain a diagnostic with unresolved
   liquidation risk reported separately and must not trigger new OOS or search.
 
+## Same-cohort ending-book mark-to-market diagnostic closure (2026-07-31)
+
+- The separately bounded diagnostic replay completed on 77o at exact
+  pushed/deployed SHA `9a742e2fd392224cd4e60c773fde0455610ab129`.
+  It retained the same ordered 24-pair / 48-member cohort and selection payload
+  SHA256
+  `3bf60efb7816161f2f6a8a8004cc61aa4d5930e2c99d65ffb46ba1da7a215201`;
+  strict replay and OOS were not recomputed and no interstage filtering
+  occurred.
+- The diagnostic valued remaining positions at the final PIT close without
+  fabricating a terminal sale or charging a terminal sale fee. Forty-seven
+  candidate members completed; the existing no-fill control
+  `cn.comp.4283153e01db8ad7ed21.control` remained fail-closed, leaving 23/24
+  complete matched pairs.
+- Independent verification matched the canonical manifest body SHA256
+  `596c7820d160d47b196ee09a412573d11a4ba11c1e4ee0700079a525a773fc2f`,
+  closure file SHA256
+  `e5d0e113488b2b018955d5b4e35b93d7c656172d65aa23da9086a32efb39683a`
+  and all 58 declared artifacts. Candidate and pair identities and order
+  matched both the frozen source and unchanged OOS result. Validation,
+  holdout and 2026 reads were zero; feedback, scheduler, archive, promotion
+  and successor-search writes remained forbidden.
+- Seventeen primary members had positive standalone train mark-to-market
+  reward, but only 4/23 complete pairs had positive matched increment. The
+  matched-increment median was -0.148394822 and p10 was -1.990572284. Primary
+  ending-holdings weight had median 0.415363371 and p90 0.759098296; eight
+  pairs ended above 50% invested and six above 75%, so terminal liquidity
+  remains material rather than being erased by marking.
+- Intersecting this diagnostic with the already closed 24-pair report-only OOS
+  left exactly one pair positive on both dimensions:
+  `cn.pair.cf7adc00bbda5464908c7ad0dc8fb258` /
+  `cn.comp.8ec6fa0046650168ee04` in
+  `SLOW_CROSS_SECTIONAL_LEVEL`. Its train mark-to-market matched increment was
+  0.018555799, validation search score was 0.037562010 and ending-holdings
+  weight was 0.262087250. Validation regime-positive share was only 0.5 and
+  worst-regime day Sortino was -0.83256163, so it remains research evidence,
+  not a promotion or economic claim.
+- The other three train mark-to-market-positive pairs were OOS-negative. Eight
+  other OOS-positive pairs lacked a positive matched mark-to-market increment,
+  including the one no-fill-blocked pair. The diagnostic therefore resolves
+  the terminal-mark accounting question but does not turn the cohort into a
+  promotion-ready finalist set or authorize more search.
+
 ## Next action
 
 Do not run another search tranche, automatic validation or promotion. The fixed
-24-pair executable replay and unchanged-cohort report-only OOS are complete.
-The current decision is `HOLD_RESEARCH`: OOS transfer is mixed and the strict
-flat-book replay leaves only two executable matched pairs.
+24-pair executable replay, unchanged-cohort report-only OOS and same-cohort
+ending-book mark-to-market diagnostic are complete. The current decision is
+`HOLD_RESEARCH`: only one pair is positive in both the matched train
+mark-to-market comparison and OOS, and that pair still has negative
+worst-regime evidence.
 
-If separately authorized, the smallest next diagnostic is one same-cohort
-48-member train replay that values ending holdings at the final PIT close
-without fabricating a sale, while retaining terminal liquidity as a separate
-risk field. It must not change identities or order, reopen OOS, feed optimizer
-state, or authorize successor search. Otherwise stop here and classify the
-nine positive OOS transfers by turnover, regime and terminal-liquidity risk.
+Do not repeat the mark-to-market replay or OOS. If work continues, keep it
+small and analytical: explain the economic mechanism and regime/turnover/
+terminal-liquidity profile of
+`cn.pair.cf7adc00bbda5464908c7ad0dc8fb258`, then decide whether it merits a
+future separately frozen confirmation cohort. Otherwise stop this finalist
+line; there is no evidence basis for another global or winner-guided search.
 
 Financial replay, validation, holdout, 2026, successor search and promotion
 remain unauthorized now. Do not create a second evaluator, platform, database
