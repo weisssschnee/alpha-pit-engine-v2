@@ -45,6 +45,15 @@ REQUIRED_SESSION_COLUMNS = frozenset(
     }
 )
 
+ENDING_BOOK_REQUIRE_FLAT_FINAL_OPEN = "REQUIRE_FLAT_FINAL_OPEN"
+ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET = "FINAL_CLOSE_MARK_TO_MARKET"
+ENDING_BOOK_POLICIES = frozenset(
+    {
+        ENDING_BOOK_REQUIRE_FLAT_FINAL_OPEN,
+        ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
+    }
+)
+
 
 class AShareTerminalLiquidationError(ValueError):
     """A candidate-specific fail-closed terminal liquidity outcome."""
@@ -388,6 +397,7 @@ def run_a_share_long_only_replay(
     universe_policy: AShareUniversePolicy,
     execution_policy: AShareExecutionPolicy,
     corporate_action_policy: AShareCorporateActionPolicy,
+    ending_book_policy: str = ENDING_BOOK_REQUIRE_FLAT_FINAL_OPEN,
 ) -> dict[str, Any]:
     """Replay close-t signals at next-session open with real inventory.
 
@@ -401,6 +411,11 @@ def run_a_share_long_only_replay(
     universe_policy.validate()
     execution_policy.validate()
     corporate_action_policy.validate()
+    if ending_book_policy not in ENDING_BOOK_POLICIES:
+        raise ValueError(
+            "ending_book_policy must be one of "
+            f"{sorted(ENDING_BOOK_POLICIES)}"
+        )
     sessions = _prepare_sessions(frame, universe_policy=universe_policy)
     dates = list(pd.Index(sessions["date"].drop_duplicates()).sort_values())
     if len(dates) < 3:
@@ -519,6 +534,11 @@ def run_a_share_long_only_replay(
                     .tolist()
                 )
         desired_set = set(desired_codes)
+        final_close_mark_only = (
+            ending_book_policy
+            == ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET
+            and ordinal == len(dates) - 1
+        )
 
         open_nav = cash
         for code, shares in holdings.items():
@@ -537,7 +557,9 @@ def run_a_share_long_only_replay(
 
         # Sell first. All positions were acquired on an earlier session because
         # buys occur only after this loop, so same-session sales are impossible.
-        for code in sorted(list(holdings)):
+        for code in (
+            [] if final_close_mark_only else sorted(list(holdings))
+        ):
             current = int(holdings.get(code, 0))
             row = day.loc[code] if code in day.index else None
             if row is None:
@@ -585,7 +607,7 @@ def run_a_share_long_only_replay(
             )
 
         buy_orders: list[tuple[str, int, float, int]] = []
-        for code in desired_codes:
+        for code in ([] if final_close_mark_only else desired_codes):
             if code not in day.index:
                 blocked_buy_count += 1
                 continue
@@ -667,7 +689,11 @@ def run_a_share_long_only_replay(
         )
         previous_nav = close_nav
 
-    if corporate_action_policy.require_flat_at_replay_end and holdings:
+    if (
+        ending_book_policy == ENDING_BOOK_REQUIRE_FLAT_FINAL_OPEN
+        and corporate_action_policy.require_flat_at_replay_end
+        and holdings
+    ):
         raise AShareTerminalLiquidationError(list(holdings))
 
     daily = pd.DataFrame(daily_rows)
@@ -687,6 +713,22 @@ def run_a_share_long_only_replay(
         if average_nav > 0
         else None
     )
+    final_day = by_date[pd.Timestamp(dates[-1])]
+    ending_holdings = []
+    ending_holdings_market_value_cny = 0.0
+    for code, shares in sorted(holdings.items()):
+        mark_price = float(final_day.at[code, "close"])
+        market_value = int(shares) * mark_price
+        ending_holdings_market_value_cny += market_value
+        ending_holdings.append(
+            {
+                "code": str(code),
+                "shares": int(shares),
+                "final_pit_close": mark_price,
+                "market_value_cny": market_value,
+            }
+        )
+    ending_nav_cny = float(daily.iloc[-1]["nav"])
     return {
         "replay_kernel_version": REPLAY_KERNEL_VERSION,
         "execution_policy": asdict(execution_policy),
@@ -703,6 +745,11 @@ def run_a_share_long_only_replay(
         },
         "universe_policy_sha256": universe_policy.payload_sha256,
         "a_share_executable_net_reward": float(reward),
+        "ending_book_policy": ending_book_policy,
+        "final_close_mark_to_market_diagnostic": (
+            ending_book_policy
+            == ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET
+        ),
         "daily_observation_count": int(len(daily)),
         "trade_count": int(len(fill_frame)),
         "fill_count": int(len(fill_frame)),
@@ -720,9 +767,18 @@ def run_a_share_long_only_replay(
         "terminal_liquidation_count": int(terminal_liquidation_count),
         "traded_notional_cny": traded_notional,
         "a_share_mean_one_way_turnover": mean_one_way_turnover,
-        "ending_nav_cny": float(daily.iloc[-1]["nav"]),
+        "ending_nav_cny": ending_nav_cny,
         "ending_cash_cny": float(cash),
         "ending_holding_count": int(len(holdings)),
+        "ending_holdings": ending_holdings,
+        "ending_holdings_market_value_cny": float(
+            ending_holdings_market_value_cny
+        ),
+        "ending_holdings_weight": (
+            float(ending_holdings_market_value_cny / ending_nav_cny)
+            if ending_nav_cny > 0
+            else None
+        ),
         "daily": daily,
         "fills": fill_frame,
         "proofs": {
@@ -734,6 +790,15 @@ def run_a_share_long_only_replay(
             "full_fee_schedule_enforced": True,
             "promotion_grade_universe_enforced": True,
             "corporate_action_cash_share_enforced": True,
-            "terminal_liquidation_enforced": True,
+            "terminal_liquidation_enforced": (
+                ending_book_policy
+                == ENDING_BOOK_REQUIRE_FLAT_FINAL_OPEN
+            ),
+            **(
+                {"final_close_mark_to_market_enforced": True}
+                if ending_book_policy
+                == ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET
+                else {}
+            ),
         },
     }

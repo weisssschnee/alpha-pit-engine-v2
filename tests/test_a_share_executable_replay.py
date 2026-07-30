@@ -17,6 +17,7 @@ from our_system_phase2.services.a_share_executable_replay import (
     AShareExecutionPolicy,
     AShareFeeSchedule,
     AShareUniversePolicy,
+    ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
     run_a_share_long_only_replay,
 )
 from our_system_phase2.services.a_share_tradability_guard import (
@@ -337,6 +338,32 @@ def test_corporate_actions_apply_only_to_opening_holdings_and_end_flat() -> None
     assert replay["corporate_action_cash_cny"] > 0
     assert replay["corporate_action_share_delta"] > 0
     assert replay["ending_holding_count"] == 0
+
+
+def test_final_close_mark_to_market_skips_fabricated_terminal_sale() -> None:
+    frame = _frame()
+    replay = run_a_share_long_only_replay(
+        frame,
+        fee_schedule=_fees(),
+        universe_policy=_universe(),
+        execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+        corporate_action_policy=_corporate_actions(),
+        ending_book_policy=ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
+    )
+
+    final_date = pd.Timestamp(frame["date"].max()).date().isoformat()
+    assert replay["ending_book_policy"] == (
+        ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET
+    )
+    assert replay["final_close_mark_to_market_diagnostic"] is True
+    assert replay["ending_holding_count"] > 0
+    assert replay["ending_holdings_market_value_cny"] > 0
+    assert 0 < replay["ending_holdings_weight"] <= 1
+    assert replay["fills"]["date"].ne(final_date).all()
+    assert replay["proofs"]["terminal_liquidation_enforced"] is False
+    assert (
+        replay["proofs"]["final_close_mark_to_market_enforced"] is True
+    )
 
 
 def test_delisting_terminal_liquidation_is_explicit_and_fee_charged() -> None:
