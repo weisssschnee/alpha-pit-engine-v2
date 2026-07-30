@@ -448,11 +448,8 @@
       "lifecycle": "ACTIVE",
       "paths": [
         "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
-        "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json",
-        "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
-        "runtime/run_plans/cn_winner_guided_large_search_20260730_receipt.json",
         "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md",
-        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
+        "docs/adr/0011-phase3cm-ordered-day-uncertainty.md"
       ],
       "claim_badges": [
         "HYBRID POLICY ACCEPTED",
@@ -468,8 +465,8 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "ac299246d4390eb256e42f5b472db203ba315e2d",
-        "sha256": "97de8c82f9eba4657ddb78691bf0bae4deb87abfc96b32ca7d77e8141635147a"
+        "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295",
+        "sha256": "8385ad64836149d358361aac5b044e2058954f653799e3cf1ef8a2a471324ce4"
       },
       "contracts": [
         {
@@ -483,7 +480,7 @@
         {
           "id": "hybrid_optimizer_feedback_boundary",
           "type": "BOUNDARY",
-          "rule": "Uniform receives no Optuna trial or optimizer feedback. Hybrid observations and tells require full-coordinate pair-native train feedback and use only min(primary Phase3CM composite reward, primary-minus-control Phase3CM matched increment). Every observation remains DEVELOPMENT_PREDICTIVE_SCORE_ONLY and DEVELOPMENT_SEARCH_ONLY; A-share executable replay is a separate finalist/economic gate, while validation, holdout and 2026 cannot feed search, scheduling, archives or memory.",
+          "rule": "Uniform receives no Optuna trial or optimizer feedback. Hybrid observations and tells require full-coordinate pair-native train feedback under cn_matched_train_composite_increment_with_paired_uncertainty_v2 and use only min(primary Phase3CM composite reward, primary-minus-control Phase3CM matched increment). The paired uncertainty contract must survive observation, transcript, frozen contract, optimizer snapshot and checkpoint restore. Every observation remains DEVELOPMENT_PREDICTIVE_SCORE_ONLY and DEVELOPMENT_SEARCH_ONLY; A-share executable replay is a separate finalist/economic gate, while validation, holdout and 2026 cannot feed search, scheduling, archives or memory.",
           "severity": "HARD",
           "enforced_by": "optimizer_feedback_eligible and evaluation_access_guard",
           "bypass_forbidden": true
@@ -500,9 +497,9 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
-        "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
+        "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
+        "evidence_sha256": "766418e2f69e660790d95552aa5c4d2db44cd4a36d0c5f746710b8d45a7de823",
+        "verified_at_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       }
     },
     {
@@ -573,8 +570,8 @@
       "lifecycle": "ACTIVE",
       "paths": [
         "src/our_system_phase2/services/matched_control_pairs.py",
-        "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
-        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
+        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
+        "docs/adr/0011-phase3cm-ordered-day-uncertainty.md"
       ],
       "critical": true,
       "active_authority": true,
@@ -582,8 +579,8 @@
       "authority": {
         "path": "src/our_system_phase2/services/matched_control_pairs.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "ac299246d4390eb256e42f5b472db203ba315e2d",
-        "sha256": "9817f11673e1896871ebaf68504dbaae33a852f1d7afe0732a50280153ed2fd9"
+        "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295",
+        "sha256": "9e1441eb6ffa87c0ce79467976237b21e6ec80230f8644f86f12b95ccef2292c"
       },
       "contracts": [
         {
@@ -597,7 +594,7 @@
         {
           "id": "matched_development_reward_only",
           "type": "ADMISSION",
-          "rule": "A matched pair may authorize development optimizer feedback only after full-coordinate pair evaluation, immutable submission and pair receipts, PAIR_TRAIN_FEEDBACK_READY and primary TRAIN_REWARD_FOLLOWUP_READY. The reward is the train-only primary-minus-control Phase3CM composite increment; A-share executable replay remains separate finalist/economic evidence.",
+          "rule": "A matched pair may authorize development optimizer feedback only after full-coordinate pair evaluation, immutable submission and pair receipts, PAIR_TRAIN_FEEDBACK_READY, primary TRAIN_REWARD_FOLLOWUP_READY, exact standalone uncertainty contracts and paired daily net-delta stationary-bootstrap support at or above 0.60. Primary and control share one block-index path. The reward contract is cn_matched_train_composite_increment_with_paired_uncertainty_v2; A-share executable replay remains separate finalist/economic evidence.",
           "severity": "HARD",
           "enforced_by": "matched_control_pairs and evaluation_access_guard",
           "bypass_forbidden": true
@@ -606,9 +603,9 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
-        "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
+        "evidence_ref": "tests/test_pair_native_feedback_all_routes.py",
+        "evidence_sha256": "eb5ce3343faed6159142c5fb28fea1c78b657801484a8f0f3996184994e78bf5",
+        "verified_at_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       }
     },
     {
@@ -627,8 +624,8 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cm_train_portfolio_sortino_reward_audit.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "636390da6fc91d7766569c35aac237046c848f80",
-        "sha256": "5245ea150d5920e1fced8b10a2c2e7a904f5cecebbb331688385cf38d1cf3460"
+        "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295",
+        "sha256": "379253940690e6f4540ece34b0922444591fbb44e8237f94d6580e36fe8b36e4"
       },
       "contracts": [
         {
@@ -654,14 +651,22 @@
           "severity": "HARD",
           "enforced_by": "phase3cm_train_portfolio_sortino_reward_audit and ADR 0011",
           "bypass_forbidden": true
+        },
+        {
+          "id": "paired_delta_uncertainty",
+          "type": "ADMISSION",
+          "rule": "Matched feedback pairs primary and control on exact shared coordinates before resampling, applies one stationary-bootstrap path to the ordered daily net-return delta and blocks optimizer feedback below 0.60 mean-delta support without erasing the completed evaluation.",
+          "severity": "HARD",
+          "enforced_by": "time_series_uncertainty, matched_control_pairs and ADR 0011",
+          "bypass_forbidden": true
         }
       ],
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
         "evidence_ref": "tests/test_phase3cm_bootstrap.py",
-        "evidence_sha256": "e11f7466039108ea98a1ecf6b4c3563a572917c568e98cc207f86be5a0474201",
-        "verified_at_sha": "636390da6fc91d7766569c35aac237046c848f80"
+        "evidence_sha256": "c68a46b830230e2d98dfb22a638fdf34ae346271f4af7bb4be45fb51f3ea64b5",
+        "verified_at_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       },
       "promotion_requirements": ["explicit search authorization", "frozen candidate pack"]
     },
@@ -704,8 +709,8 @@
       "authority": {
         "path": "scripts/run_cn_phase3cm_streaming_qualification.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "a33d8fccdb79372ffac54ce55302be362911df19",
-        "sha256": "764cef1acbc9ef68d72c8d436a729e0313a65de066ea1b3087c6b939a8ead66f"
+        "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295",
+        "sha256": "a380422dd9cb31c9035cf1c22ce1538a5536864243b88933798a2bd3692935f5"
       },
       "contracts": [
         {
@@ -747,14 +752,22 @@
           "severity": "HARD",
           "enforced_by": "session_sample_contract and phase3cm session_sample binding",
           "bypass_forbidden": true
+        },
+        {
+          "id": "streaming_reward_v2_resume",
+          "type": "ADMISSION",
+          "rule": "The streaming train path uses the same paired daily-delta uncertainty implementation as the batch evaluator. Frozen execution-plan v2 and optimizer snapshot v2 bind the matched reward and paired uncertainty contracts; missing or mismatched identities fail closed on resume.",
+          "severity": "HARD",
+          "enforced_by": "FrozenExecutionPlan, StreamingCheckpointPayload and optimizer snapshot receipt",
+          "bypass_forbidden": true
         }
       ],
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
-        "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
+        "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
+        "evidence_sha256": "766418e2f69e660790d95552aa5c4d2db44cd4a36d0c5f746710b8d45a7de823",
+        "verified_at_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       },
       "promotion_requirements": [
         "separate strict Stage A authorization",
@@ -769,8 +782,8 @@
       "lifecycle": "EXPERIMENTAL",
       "paths": [
         "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
-        "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
-        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"
+        "src/our_system_phase2/services/evaluation_access_guard.py",
+        "docs/adr/0011-phase3cm-ordered-day-uncertainty.md"
       ],
       "critical": true,
       "claim_badges": [
@@ -783,14 +796,14 @@
       "authority": {
         "path": "src/our_system_phase2/runtime/phase3cn_feedback_memory_smoke.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "ac299246d4390eb256e42f5b472db203ba315e2d",
-        "sha256": "b59c87d3b9ecd4d3b108b24d15f75b8c37c099bc976fec3243c9747832ba7867"
+        "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295",
+        "sha256": "9d19012826b3da2b518d79250554c7a47047fb1f4b77c955e84c62ac899ee788"
       },
       "contracts": [
         {
           "id": "matched_train_only",
           "type": "BOUNDARY",
-          "rule": "Development feedback accepts only PAIR_TRAIN_FEEDBACK_READY rows after immutable submission and pair receipts validate, the primary decision is TRAIN_REWARD_FOLLOWUP_READY, the reward source is the train-only Phase3CM matched increment, and the row is DEVELOPMENT_SEARCH_ONLY. Executable replay is not required here and remains a separate finalist/economic gate.",
+          "rule": "Development feedback accepts only PAIR_TRAIN_FEEDBACK_READY rows after immutable submission and pair receipts validate, the primary decision is TRAIN_REWARD_FOLLOWUP_READY, and both cn_matched_train_composite_increment_with_paired_uncertainty_v2 and phase3cm_paired_daily_net_delta_stationary_bootstrap_v1 are present. The row remains DEVELOPMENT_SEARCH_ONLY. Executable replay is not required here and remains a separate finalist/economic gate.",
           "severity": "HARD",
           "enforced_by": "phase3cn_receipt_gate",
           "bypass_forbidden": true
@@ -799,9 +812,9 @@
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json",
-        "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb",
-        "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"
+        "evidence_ref": "tests/test_evaluation_access_guard.py",
+        "evidence_sha256": "4f2921aa8ad2f7041c36ca7888260696067e846c9807ff7712bccc79f7c4f982",
+        "verified_at_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       }
     },
     {
@@ -1135,8 +1148,8 @@
       "relation": "evaluates_whole_pair_for_development_and_qualified_minute_session_sample",
       "lifecycle": "ACTIVE",
       "critical": true,
-      "contract": {"id": "streaming_pair_not_split", "type": "EVIDENCE", "rule": "The active development streaming path evaluates each matched pair under one frozen mapping subcohort and one execution plan. The qualified MINUTE_STATIC sampled selector changes only the frozen development-session calendar and retains complete within-session cross-sections.", "severity": "HARD", "enforced_by": "phase3cm_streaming_qualification and session_sample_contract", "bypass_forbidden": true},
-      "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_minute_static_production_cem_v3_20260725_receipt.json", "verified_at_sha": "1742c419b0d6625a548755b2e0a68231e7f623d3"}
+      "contract": {"id": "streaming_pair_not_split", "type": "EVIDENCE", "rule": "The active development streaming path evaluates each matched pair under one frozen mapping subcohort and one execution plan, then constructs paired daily net deltas on exact shared coordinates before applying a single stationary-bootstrap block path. The qualified MINUTE_STATIC sampled selector changes only the frozen development-session calendar and retains complete within-session cross-sections.", "severity": "HARD", "enforced_by": "phase3cm_streaming_qualification, time_series_uncertainty and session_sample_contract", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py", "evidence_sha256": "766418e2f69e660790d95552aa5c4d2db44cd4a36d0c5f746710b8d45a7de823", "verified_at_sha": "0e1004b7266a88e616bd6036126e6f777e474295"}
     },
     {
       "id": "compositional_to_streaming_evaluator",
@@ -1167,8 +1180,8 @@
       "lifecycle": "ACTIVE",
       "required": false,
       "critical": true,
-      "contract": {"id": "hybrid_full_coordinate_train_only", "type": "BOUNDARY", "rule": "Hybrid proposals may receive development optimizer feedback only from full-coordinate Phase3CM train pair outcomes that pass the pair-native receipt and access guards. The resulting observation is DEVELOPMENT_PREDICTIVE_SCORE_ONLY and cannot grant finalist execution, promotion, economic claims or sealed-period access; A-share replay remains a separate finalist gate under ADR 0010.", "severity": "HARD", "enforced_by": "Phase3CM input binding, matched_control_pairs, evaluation_access_guard, immutable checkpoint manifests and access receipts", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json", "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb", "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"}
+      "contract": {"id": "hybrid_full_coordinate_train_only", "type": "BOUNDARY", "rule": "Hybrid proposals may receive development optimizer feedback only from full-coordinate Phase3CM train pair outcomes that pass pair-native receipt and access guards, exact standalone uncertainty identity and phase3cm_paired_daily_net_delta_stationary_bootstrap_v1 support. The resulting observation is DEVELOPMENT_PREDICTIVE_SCORE_ONLY and cannot grant finalist execution, promotion, economic claims or sealed-period access; A-share replay remains a separate finalist gate under ADR 0010.", "severity": "HARD", "enforced_by": "Phase3CM input binding, matched_control_pairs, evaluation_access_guard, immutable checkpoint manifests and access receipts", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py", "evidence_sha256": "766418e2f69e660790d95552aa5c4d2db44cd4a36d0c5f746710b8d45a7de823", "verified_at_sha": "0e1004b7266a88e616bd6036126e6f777e474295"}
     },
     {
       "id": "matched_train_feedback_to_hybrid_development_search",
@@ -1178,8 +1191,8 @@
       "lifecycle": "ACTIVE",
       "required": false,
       "critical": true,
-      "contract": {"id": "hybrid_min_primary_and_matched_increment_reward", "type": "ADMISSION", "rule": "A Hybrid development trial may COMPLETE when the pair decision is PAIR_TRAIN_FEEDBACK_READY, the primary train decision is TRAIN_REWARD_FOLLOWUP_READY, immutable receipts and train-only guards pass, and search_score equals min(primary Phase3CM composite reward, primary-minus-control Phase3CM matched increment). Uniform cannot enter observations or tells; executable replay cannot mutate this reward and remains a separate finalist/economic gate.", "severity": "HARD", "enforced_by": "matched_control_pairs, evaluation_access_guard, optimizer observations, tell receipts and transcripts", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json", "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb", "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"}
+      "contract": {"id": "hybrid_min_primary_and_matched_increment_reward", "type": "ADMISSION", "rule": "A Hybrid development trial may COMPLETE when the pair decision is PAIR_TRAIN_FEEDBACK_READY, the primary train decision is TRAIN_REWARD_FOLLOWUP_READY, immutable receipts and train-only guards pass, paired daily mean-delta support is at least 0.60, and search_score equals min(primary Phase3CM composite reward, primary-minus-control Phase3CM matched increment). The matched reward and paired uncertainty contract identities must persist in observations, tell transcripts, the frozen execution plan, optimizer snapshot and checkpoint restore. Uniform cannot enter observations or tells; executable replay cannot mutate this reward and remains a separate finalist/economic gate.", "severity": "HARD", "enforced_by": "matched_control_pairs, evaluation_access_guard, optimizer observations, tell receipts, frozen execution plan and checkpoint validation", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py", "evidence_sha256": "766418e2f69e660790d95552aa5c4d2db44cd4a36d0c5f746710b8d45a7de823", "verified_at_sha": "0e1004b7266a88e616bd6036126e6f777e474295"}
     },
     {
       "id": "stage_a_route_eligibility_to_streaming_evaluator",
@@ -1198,8 +1211,8 @@
       "relation": "supplies_pair_native_train_feedback",
       "lifecycle": "EXPERIMENTAL",
       "critical": true,
-      "contract": {"id": "pair_native_ready_only", "type": "ADMISSION", "rule": "Phase3CN consumes only train-only pair-native READY rows whose primary train decision is TRAIN_REWARD_FOLLOWUP_READY and whose immutable submission and pair receipts validate. The accepted reward is explicitly DEVELOPMENT_PREDICTIVE_SCORE_ONLY; missing A-share replay blocks finalist execution evidence but not this development feedback lane.", "severity": "HARD", "enforced_by": "phase3cn_pair_native_gate, matched_control_pairs and evaluation_access_guard", "bypass_forbidden": true},
-      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_development_feedback_finalist_execution_separation_20260729_receipt.json", "evidence_sha256": "149e85a687d5c5843629f3d2400ebdbb24e7191a58c3016bc180503c541a6acb", "verified_at_sha": "ec489bce3971c421fd7fcc99f21331e0500870db"}
+      "contract": {"id": "pair_native_ready_only", "type": "ADMISSION", "rule": "Phase3CN consumes only train-only pair-native READY rows whose primary train decision is TRAIN_REWARD_FOLLOWUP_READY, immutable submission and pair receipts validate, and both cn_matched_train_composite_increment_with_paired_uncertainty_v2 and phase3cm_paired_daily_net_delta_stationary_bootstrap_v1 match the frozen authority. The accepted reward is explicitly DEVELOPMENT_PREDICTIVE_SCORE_ONLY; missing A-share replay blocks finalist execution evidence but not this development feedback lane.", "severity": "HARD", "enforced_by": "phase3cn_pair_native_gate, matched_control_pairs and evaluation_access_guard", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_evaluation_access_guard.py", "evidence_sha256": "4f2921aa8ad2f7041c36ca7888260696067e846c9807ff7712bccc79f7c4f982", "verified_at_sha": "0e1004b7266a88e616bd6036126e6f777e474295"}
     },
     {"id": "plate_to_lanes_forbidden", "source": "plate_industry_pit_route", "target": "hypothesis_lanes", "relation": "unresolved_pit_membership", "lifecycle": "FORBIDDEN", "forbidden": true},
     {
