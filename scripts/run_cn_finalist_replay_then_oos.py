@@ -947,6 +947,7 @@ def replay(
                 field_frame,
                 str(candidate["expression"]),
                 cache={},
+                data_role="development",
             ),
             errors="coerce",
         )
