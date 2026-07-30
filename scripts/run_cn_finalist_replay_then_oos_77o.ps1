@@ -39,7 +39,8 @@ if (Test-Path -LiteralPath $resolvedRoot -PathType Leaf) {
 }
 New-Item -ItemType Directory -Path $resolvedRoot -Force | Out-Null
 
-$gitSafeDirectory = "safe.directory=$resolvedRepo"
+$gitSafePath = $resolvedRepo.Replace('\', '/')
+$gitSafeDirectory = "safe.directory=$gitSafePath"
 $observedSha = (
     & $git -c $gitSafeDirectory -C $resolvedRepo rev-parse HEAD
 ).Trim()
