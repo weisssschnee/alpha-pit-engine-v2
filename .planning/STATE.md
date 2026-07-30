@@ -1060,6 +1060,44 @@ remains unchanged. The compact receipt is
   No optimizer, scheduler or archive write occurred. The compact receipt is
   `runtime/run_plans/cn_productive_keep_review_64_20260729_receipt.json`.
 
+## Winner-guided bounded development search closure (2026-07-30)
+
+- The separately authorized winner-structure-guided Hybrid tranche is closed
+  and independently verified on 77o at pushed/deployed SHA
+  `4f134281f4e9d13d591c5fd81dd32746a0258456`. Eight immutable checkpoints
+  completed the fixed 12,288-ask schedule: 12,160 slow-temporal, 96 First-N,
+  32 slow cross-sectional and zero market-regime/disclosure asks.
+- The campaign produced 7,379 `PAIR_EVALUATED` results, 5,642 accepted
+  full-train-only optimizer observations/COMPLETE trials and 2,836 development-
+  productive candidates. Productive throughput was 635.59/hour. Productive
+  identities covered 2,835 behavior families; the exact/family ratio was
+  1.00035 and top-10 family concentration was 0.388%, so the run did not
+  collapse into a small family cluster.
+- Slow temporal produced 2,824 productive candidates from 12,160 formal asks
+  (23.22%); slow cross-sectional produced 12/32 (37.50%); First-N produced
+  0/96. Overall scored median was 0.000117 and p10 was -0.064901. Productive
+  yield fell from 50.78% at checkpoint 002 to 14.84%-16.28% across checkpoints
+  005-008, so this result does not authorize another scale tranche.
+- Canonical payload hashes, all 192 checkpoint-declared artifacts, all 18 root
+  artifacts and the full manifest chain matched. There were zero primary-exact,
+  pair-ID or full-behavior duplicates and zero eligible-score/formula
+  mismatches. Runtime gates passed with 32 threads, pair batch 12, long-only,
+  5 bps and horizons 1/5/15/30; cache stayed below 1.10 GB, minimum free memory
+  exceeded 68.90 GB and validation/holdout/2026 reads were zero.
+- The first checkpoint-008 attempt failed only the unchanged acceleration gate
+  (15.964 effective cores versus 16.0), was preserved, and was regenerated from
+  verified checkpoint 007 without reusing financial results or optimizer
+  state. The clean rerun passed at 16.912 effective cores. The earlier
+  development-feedback authority failure is also preserved; no invalid
+  financial result or optimizer state entered the valid chain.
+- Root status is `CAMPAIGN_CLOSED`; `train_finalists.parquet` is intentionally
+  empty. This is development-search evidence only: it does not establish OOS,
+  executable, economic or promotion authority and does not reopen the accepted
+  Hybrid policy. The existing 64-pair keep-review cohort and the
+  `HOLD_RESEARCH_FINALIST_INPUTS_INCOMPLETE` boundary remain authoritative.
+  The compact receipt is
+  `runtime/run_plans/cn_winner_guided_large_search_20260730_receipt.json`.
+
 ## Next action
 
 Do not run another scale-search tranche. The existing replay's corporate-action
