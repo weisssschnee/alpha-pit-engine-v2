@@ -110,7 +110,7 @@ def main() -> int:
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument(
         "--evaluation-role",
-        choices=("validation", "holdout"),
+        choices=("train", "validation", "holdout"),
         default="validation",
     )
     parser.add_argument("--split-manifest", type=Path, required=True)
@@ -126,10 +126,15 @@ def main() -> int:
     split = pd.read_csv(split_manifest, dtype=str)
     role_rows = split.loc[split["split"] == args.evaluation_role]
     eligible_dates = tuple(sorted(role_rows["trade_date"].tolist()))
+    expected_usage = (
+        "allowed" if args.evaluation_role == "train" else "report_only"
+    )
     if not eligible_dates or not role_rows["optimizer_usage"].eq(
-        "report_only"
+        expected_usage
     ).all():
-        raise RuntimeError(f"{args.evaluation_role} calendar is not report-only")
+        raise RuntimeError(
+            f"{args.evaluation_role} calendar usage is not {expected_usage}"
+        )
     sessions = pd.DatetimeIndex(pd.to_datetime(eligible_dates))
     maximum_observable_time = str(sessions.max() + pd.Timedelta(hours=15))
 
@@ -220,10 +225,15 @@ def main() -> int:
         lazy = (
             pl.scan_parquet(source, low_memory=True)
             .filter(pl.col("trade_time").dt.date().is_in(tuple(sessions.date)))
-            .select("code", "trade_time", "close", *direct_fields)
+            .select("code", "trade_time", "open", "close", *direct_fields)
             .with_columns(pl.col("trade_time").dt.date().alias("__trade_date"))
             .group_by("code", "__trade_date")
-            .agg(pl.col("trade_time").max(), *value_exprs, *variation_exprs)
+            .agg(
+                pl.col("trade_time").max(),
+                pl.col("open").sort_by("trade_time").first().alias("open"),
+                *value_exprs,
+                *variation_exprs,
+            )
             .sort("trade_time", "code")
         )
         frame = lazy.collect(engine="streaming").to_pandas()
@@ -268,6 +278,7 @@ def main() -> int:
             dict.fromkeys(
                 [
                     *STABLE_KEY,
+                    "open",
                     "close",
                     *required_fields,
                     *(["chip_source_session"] if chip_fields else []),
@@ -306,11 +317,17 @@ def main() -> int:
     manifest = {
         "schema_version": "cn_core_pack_report_only_session_sidecar_v2",
         "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
-        "data_role": f"{args.evaluation_role}_report_only",
+        "data_role": (
+            "development_train_only"
+            if args.evaluation_role == "train"
+            else f"{args.evaluation_role}_report_only"
+        ),
         "evaluation_role": args.evaluation_role,
         "split_manifest_hash": args.split_manifest_hash,
         "eligible_trade_date_count": len(eligible_dates),
-        "eligible_train_date_count": 0,
+        "eligible_train_date_count": (
+            len(eligible_dates) if args.evaluation_role == "train" else 0
+        ),
         "eligible_validation_date_count": (
             len(eligible_dates) if args.evaluation_role == "validation" else 0
         ),
