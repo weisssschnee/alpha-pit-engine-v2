@@ -45,6 +45,9 @@ EXPECTED_MEMBER_COUNT = 48
 EXPECTED_ROUTES = frozenset(
     {"SLOW_TEMPORAL_CHANGE", "SLOW_CROSS_SECTIONAL_LEVEL"}
 )
+CANDIDATE_ECONOMIC_REPLAY_BLOCKERS = {
+    frozenset({"replay_has_no_executable_fills"}): "NO_EXECUTABLE_FILLS",
+}
 REPLAY_REQUIRED_SESSION_COLUMNS = (
     "date",
     "code",
@@ -191,6 +194,12 @@ def _finite(value: Any) -> float | None:
     except (TypeError, ValueError):
         return None
     return output if math.isfinite(output) else None
+
+
+def _candidate_economic_blocker_code(
+    blockers: Sequence[str],
+) -> str | None:
+    return CANDIDATE_ECONOMIC_REPLAY_BLOCKERS.get(frozenset(blockers))
 
 
 def _normalize_code(value: Any) -> str:
@@ -924,15 +933,31 @@ def replay(
                 receipts.append(row["receipt"])
             elif status == "CANDIDATE_REPLAY_BLOCKED_IMMUTABLE":
                 blocker = dict(row.get("blocker") or {})
+                blocker_code = str(blocker.get("blocker_code") or "")
                 invalid = (
                     str(blocker.get("candidate_id")) != candidate_id
                     or str(blocker.get("exact_identity"))
                     != str(candidate["exact_identity"])
-                    or str(blocker.get("blocker_code"))
-                    != "FINAL_SESSION_UNLIQUIDATED_HOLDINGS"
-                    or not blocker.get("remaining_holdings")
                     or blocker.get("economic_claim_authorized") is not False
                 )
+                if blocker_code == "FINAL_SESSION_UNLIQUIDATED_HOLDINGS":
+                    invalid = invalid or not blocker.get(
+                        "remaining_holdings"
+                    )
+                elif blocker_code == "NO_EXECUTABLE_FILLS":
+                    receipt_blockers = a_share_tradability_blockers(
+                        row.get("receipt") or {},
+                        expected_candidate_id=candidate_id,
+                        expected_exact_identity=str(
+                            candidate["exact_identity"]
+                        ),
+                    )
+                    invalid = invalid or (
+                        _candidate_economic_blocker_code(receipt_blockers)
+                        != blocker_code
+                    )
+                else:
+                    invalid = True
                 blocked_receipts.append(blocker)
             else:
                 invalid = True
@@ -1075,6 +1100,67 @@ def replay(
             expected_exact_identity=str(candidate["exact_identity"]),
         )
         if blockers:
+            blocker_code = _candidate_economic_blocker_code(blockers)
+            if blocker_code is not None:
+                diagnostic_reward = float(
+                    result["a_share_executable_net_reward"]
+                )
+                blocker = {
+                    "schema_version": "cn_finalist_replay_blocker_v1",
+                    "candidate_id": candidate_id,
+                    "pair_id": str(candidate["pair_id"]),
+                    "pair_member_role": str(
+                        candidate["pair_member_role"]
+                    ),
+                    "route_id": str(candidate["route_id"]),
+                    "exact_identity": str(candidate["exact_identity"]),
+                    "blocker_code": blocker_code,
+                    "receipt_blockers": list(blockers),
+                    "diagnostic_net_reward": diagnostic_reward,
+                    "trade_count": int(result["trade_count"]),
+                    "fill_count": int(result["fill_count"]),
+                    "input_data_sha256": input_data_sha256,
+                    "fail_closed": True,
+                    "economic_claim_authorized": False,
+                    "promotion_authorized": False,
+                }
+                summary = {
+                    **summary,
+                    "candidate_replay_status": "CANDIDATE_REPLAY_BLOCKED",
+                    "a_share_executable_net_reward": None,
+                    "diagnostic_net_reward": diagnostic_reward,
+                    "blocker_code": blocker_code,
+                    "economic_claim_authorized": False,
+                    "promotion_authorized": False,
+                }
+                _write_json(
+                    target,
+                    {
+                        "schema_version": (
+                            "cn_finalist_candidate_replay_result_v2"
+                        ),
+                        "status": "CANDIDATE_REPLAY_BLOCKED_IMMUTABLE",
+                        "candidate_id": candidate_id,
+                        "input_data_sha256": input_data_sha256,
+                        "summary": summary,
+                        "blocker": blocker,
+                        "receipt": receipt,
+                    },
+                )
+                candidate_rows.append(summary)
+                blocked_receipts.append(blocker)
+                print(
+                    json.dumps(
+                        {
+                            "candidate_id": candidate_id,
+                            "status": "CANDIDATE_REPLAY_BLOCKED",
+                            "blocker_code": blocker_code,
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+                continue
             raise RuntimeError(
                 f"A-share replay receipt blocked for {candidate_id}: "
                 + ",".join(blockers)

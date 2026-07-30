@@ -205,3 +205,18 @@ def test_pair_replay_keeps_terminal_liquidity_blocked_pair() -> None:
     assert pairs.iloc[1:]["a_share_replay_status"].eq(
         "PAIR_REPLAY_COMPLETE"
     ).all()
+
+
+def test_only_no_fill_receipt_is_candidate_economic_blocker() -> None:
+    assert subject._candidate_economic_blocker_code(
+        ["replay_has_no_executable_fills"]
+    ) == "NO_EXECUTABLE_FILLS"
+    assert (
+        subject._candidate_economic_blocker_code(
+            [
+                "replay_has_no_executable_fills",
+                "replay_candidate_id_mismatch",
+            ]
+        )
+        is None
+    )
