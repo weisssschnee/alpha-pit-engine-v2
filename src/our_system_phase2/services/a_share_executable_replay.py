@@ -211,6 +211,7 @@ class AShareCorporateActionPolicy:
     entitlement_basis: str = "OPENING_HOLDINGS_ONLY"
     fractional_share_policy: str = "FAIL_CLOSED_NON_INTEGER"
     delisting_liquidation_clock: str = "TERMINAL_SESSION_OPEN"
+    delisting_recovery_policy: str = "ZERO_RECOVERY_FAIL_CLOSED"
     replay_end_liquidation_clock: str = "FINAL_SESSION_OPEN"
     require_flat_at_replay_end: bool = True
     source_reference: str = ""
@@ -222,6 +223,7 @@ class AShareCorporateActionPolicy:
             "entitlement_basis": "OPENING_HOLDINGS_ONLY",
             "fractional_share_policy": "FAIL_CLOSED_NON_INTEGER",
             "delisting_liquidation_clock": "TERMINAL_SESSION_OPEN",
+            "delisting_recovery_policy": "ZERO_RECOVERY_FAIL_CLOSED",
             "replay_end_liquidation_clock": "FINAL_SESSION_OPEN",
         }
         for field, value in expected.items():
@@ -326,9 +328,10 @@ def _prepare_sessions(
     if (terminal & ~out["is_delisting"]).any():
         raise ValueError("terminal sessions must also declare is_delisting")
     terminal_price = out["terminal_liquidation_price"]
-    if (terminal & (terminal_price.isna() | terminal_price.le(0))).any():
+    if (terminal & (terminal_price.isna() | terminal_price.lt(0))).any():
         raise ValueError(
-            "terminal sessions require a positive terminal_liquidation_price"
+            "terminal sessions require an explicit nonnegative "
+            "terminal_liquidation_price"
         )
     terminal_counts = out.loc[terminal].groupby("code", sort=False).size()
     if terminal_counts.gt(1).any():

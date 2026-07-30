@@ -70,9 +70,10 @@ def verify(
     if artifact_count != 2:
         raise ValueError(f"expected 2 declared artifacts, got {artifact_count}")
     input_manifests = list(manifest.get("input_manifests") or [])
-    if len(input_manifests) != 2:
+    if len(input_manifests) not in {2, 3}:
         raise ValueError(
-            f"expected 2 frozen input manifests, got {len(input_manifests)}"
+            "expected 2 legacy or 3 session-bound frozen input manifests, "
+            f"got {len(input_manifests)}"
         )
     for source in input_manifests:
         path = Path(str(source["path"])).resolve()
@@ -127,6 +128,19 @@ def verify(
     status = str(binding["status"])
     if status == "FINALIST_INPUT_AUTHORITY_READY" and blockers:
         raise ValueError("READY binding carries blockers")
+    if status == "FINALIST_INPUT_AUTHORITY_READY":
+        if len(input_manifests) != 3:
+            raise ValueError(
+                "READY binding requires cohort, release, and session "
+                "authority manifests"
+            )
+        session = binding.get("session_authority")
+        if not isinstance(session, dict):
+            raise ValueError("READY binding lacks session authority")
+        if int(session.get("security_count") or 0) <= 0:
+            raise ValueError("READY session authority security count is invalid")
+        if int(session.get("session_row_count") or 0) <= 0:
+            raise ValueError("READY session authority row count is invalid")
     if status == "HOLD_RESEARCH_FINALIST_INPUTS_INCOMPLETE" and not blockers:
         raise ValueError("HOLD binding has no blocker")
     if status not in {

@@ -366,3 +366,35 @@ def test_delisting_terminal_liquidation_is_explicit_and_fee_charged() -> None:
     assert replay["terminal_liquidation_count"] == 1
     assert len(terminal_fills) == 1
     assert terminal_fills.iloc[0]["fee"] > 0
+
+
+def test_delisting_zero_recovery_is_explicit_without_fabricated_price() -> None:
+    frame = _frame()
+    dates = sorted(frame["date"].unique())
+    terminal = frame["date"].eq(dates[3]) & frame["code"].eq("B")
+    frame.loc[terminal, "is_delisting"] = True
+    frame.loc[terminal, "is_terminal_session"] = True
+    frame.loc[terminal, "terminal_liquidation_price"] = 0.0
+    frame = frame[
+        ~(frame["date"].eq(dates[4]) & frame["code"].eq("B"))
+    ].copy()
+
+    replay = run_a_share_long_only_replay(
+        frame,
+        fee_schedule=_fees(),
+        universe_policy=_universe(),
+        execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+        corporate_action_policy=_corporate_actions(),
+    )
+
+    terminal_fills = replay["fills"].loc[
+        replay["fills"]["fill_reason"].eq(
+            "DELISTING_TERMINAL_LIQUIDATION"
+        )
+    ]
+    assert replay["terminal_liquidation_count"] == 1
+    assert len(terminal_fills) == 1
+    assert terminal_fills.iloc[0]["price"] == 0.0
+    assert terminal_fills.iloc[0]["notional"] == 0.0
+    assert terminal_fills.iloc[0]["fee"] == 0.0
+    assert replay["ending_holding_count"] == 0

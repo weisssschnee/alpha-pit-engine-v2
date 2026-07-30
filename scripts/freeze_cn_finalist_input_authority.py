@@ -28,7 +28,7 @@ from our_system_phase2.services.a_share_executable_replay import (
 )
 
 
-SCHEMA_VERSION = "cn_finalist_input_authority_binding_v1"
+SCHEMA_VERSION = "cn_finalist_input_authority_binding_v2"
 MINUTE_PATTERN = (
     "shard_*/phase3aq_wide_true1min/canary/"
     "phase3aq_true_1min_formula_canary.parquet"
@@ -184,26 +184,43 @@ def _release_schema(release_root: Path) -> dict[str, Any]:
     }
 
 
-def _field_bindings(columns: set[str]) -> tuple[list[dict[str, Any]], list[str]]:
+def _field_bindings(
+    release_columns: set[str],
+    session_columns: set[str],
+) -> tuple[list[dict[str, Any]], list[str]]:
     rows: list[dict[str, Any]] = []
     blockers: list[str] = []
     for field in DIRECT_REQUIRED_COLUMNS:
         aliases = FIELD_ALIASES.get(field, (field,))
-        observed = next((name for name in aliases if name in columns), None)
-        if observed:
+        release_observed = next(
+            (name for name in aliases if name in release_columns), None
+        )
+        session_observed = next(
+            (name for name in aliases if name in session_columns), None
+        )
+        observed = release_observed or session_observed
+        if release_observed:
             status = "BOUND_EXISTING_RELEASE_COLUMN"
             blocker = False
+            source = "FROZEN_DEVELOPMENT_MINUTE_RELEASE"
+        elif session_observed:
+            status = "BOUND_EXISTING_REPLAY_SESSION_SIDECAR"
+            blocker = False
+            source = "PHASE3DY_A_SHARE_TRADABILITY_REPLAY"
         elif field in DERIVABLE_FIELDS:
             status = "DERIVATION_IMPLEMENTED_NOT_MATERIALIZED"
             blocker = True
+            source = None
         else:
             status = "MISSING_FROM_FROZEN_RELEASE"
             blocker = True
+            source = None
         rows.append(
             {
                 "replay_field": field,
                 "observed_column": observed,
                 "status": status,
+                "source": source,
                 "derivation_authority": DERIVABLE_FIELDS.get(field),
                 "execution_ready": not blocker,
             }
@@ -211,6 +228,89 @@ def _field_bindings(columns: set[str]) -> tuple[list[dict[str, Any]], list[str]]
         if blocker:
             blockers.append(f"session_field_not_bound:{field}")
     return rows, blockers
+
+
+def _validate_session_authority_manifest(
+    path: Path | None,
+    *,
+    date_min: str,
+    date_max: str,
+) -> tuple[dict[str, Any] | None, set[str], list[str]]:
+    if path is None:
+        return None, set(), ["session_authority_manifest_missing"]
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    _verify_self_hash(payload, "manifest_payload_sha256")
+    blockers: list[str] = []
+    if str(payload.get("status") or "") != (
+        "SESSION_AUTHORITY_CLOSED_IMMUTABLE"
+    ):
+        blockers.append("session_authority_not_closed_immutable")
+    if str(payload.get("data_role") or "") != "development":
+        blockers.append("session_authority_not_development_only")
+    if bool(payload.get("new_authority_node_created")):
+        blockers.append("session_authority_illegally_creates_new_node")
+    if str(payload.get("date_min") or "") > date_min:
+        blockers.append("session_authority_date_start_does_not_cover_release")
+    if str(payload.get("date_max") or "") < date_max:
+        blockers.append("session_authority_date_end_does_not_cover_release")
+    for field in (
+        "financial_reads",
+        "validation_reads",
+        "holdout_reads",
+        "forward_2026_reads",
+        "optimizer_feedback_writes",
+        "scheduler_writes",
+        "archive_writes",
+    ):
+        if int(payload.get(field, -1)) != 0:
+            blockers.append(f"session_authority_{field}_not_zero")
+    for field in ("financial_result_recomputed", "promotion_authorized"):
+        if bool(payload.get(field)):
+            blockers.append(f"session_authority_{field}_must_be_false")
+    root = path.parent
+    for artifact in payload.get("artifacts") or []:
+        artifact_path = root / str(artifact["path"])
+        if not artifact_path.is_file():
+            raise FileNotFoundError(artifact_path)
+        if artifact_path.stat().st_size != int(artifact["bytes"]):
+            raise ValueError(
+                f"session authority artifact size mismatch: {artifact_path}"
+            )
+        if _sha256(artifact_path) != str(artifact["sha256"]):
+            raise ValueError(
+                f"session authority artifact hash mismatch: {artifact_path}"
+            )
+    sidecar_path = Path(
+        str(payload.get("session_authority_path") or "")
+    ).resolve()
+    if not sidecar_path.is_file():
+        raise FileNotFoundError(sidecar_path)
+    columns = set(pq.ParquetFile(sidecar_path).schema_arrow.names)
+    declared_columns = set(payload.get("columns") or [])
+    if columns != declared_columns:
+        blockers.append("session_authority_schema_differs_from_manifest")
+    required = set(DIRECT_REQUIRED_COLUMNS) - {
+        "trade_time",
+        "open",
+        "high",
+        "low",
+        "close",
+    }
+    missing = sorted(required - columns)
+    blockers.extend(
+        f"session_authority_column_missing:{field}" for field in missing
+    )
+    return {
+        "path": str(path),
+        "sha256": _sha256(path),
+        "manifest_payload_sha256": payload["manifest_payload_sha256"],
+        "session_authority_path": str(sidecar_path),
+        "universe_manifest_path": str(payload["universe_manifest_path"]),
+        "fee_contract_path": str(payload["fee_contract_path"]),
+        "security_count": int(payload.get("security_count") or 0),
+        "session_row_count": int(payload.get("session_row_count") or 0),
+        "payload": payload,
+    }, columns, blockers
 
 
 def _validate_universe_manifest(
@@ -256,8 +356,15 @@ def _validate_fee_contract(
     if path is None:
         return None, ["actual_account_fee_contract_missing"]
     payload = json.loads(path.read_text(encoding="utf-8"))
-    if not bool(payload.get("account_contract_confirmed")):
-        return None, ["account_commission_not_confirmed"]
+    actual_account = bool(payload.get("account_contract_confirmed"))
+    research_upper_bound = (
+        str(payload.get("contract_mode") or "")
+        == "CONSERVATIVE_RESEARCH_UPPER_BOUND_NON_PROMOTION"
+        and bool(payload.get("research_upper_bound_confirmed"))
+        and not bool(payload.get("promotion_authorized"))
+    )
+    if not actual_account and not research_upper_bound:
+        return None, ["fee_contract_not_confirmed_for_research_or_account"]
     schedule = AShareFeeSchedule(**dict(payload.get("fee_schedule") or {}))
     schedule.validate()
     blockers: list[str] = []
@@ -269,7 +376,14 @@ def _validate_fee_contract(
         "path": str(path),
         "sha256": _sha256(path),
         "fee_schedule_sha256": schedule.payload_sha256,
-        "account_contract_confirmed": True,
+        "contract_mode": (
+            "ACTUAL_ACCOUNT_CONTRACT"
+            if actual_account
+            else "CONSERVATIVE_RESEARCH_UPPER_BOUND_NON_PROMOTION"
+        ),
+        "account_contract_confirmed": actual_account,
+        "research_upper_bound_confirmed": research_upper_bound,
+        "promotion_authorized": False,
     }, blockers
 
 
@@ -298,6 +412,7 @@ def freeze(
     output_root: Path,
     universe_manifest: Path | None = None,
     fee_contract: Path | None = None,
+    session_authority_manifest: Path | None = None,
     repo_sha: str | None = None,
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve()
@@ -308,7 +423,40 @@ def freeze(
 
     cohort = _verify_keep_review(cohort_root)
     release = _release_schema(release_root)
-    fields, blockers = _field_bindings(set(release["columns"]))
+    session_authority, session_columns, session_blockers = (
+        _validate_session_authority_manifest(
+            (
+                session_authority_manifest.resolve()
+                if session_authority_manifest
+                else None
+            ),
+            date_min=str(release["date_min"]),
+            date_max=str(release["date_max"]),
+        )
+    )
+    if session_authority is not None:
+        declared_universe = Path(
+            session_authority["universe_manifest_path"]
+        ).resolve()
+        declared_fee = Path(session_authority["fee_contract_path"]).resolve()
+        if universe_manifest is not None:
+            if universe_manifest.resolve() != declared_universe:
+                raise ValueError(
+                    "explicit universe manifest differs from session authority"
+                )
+        else:
+            universe_manifest = declared_universe
+        if fee_contract is not None:
+            if fee_contract.resolve() != declared_fee:
+                raise ValueError(
+                    "explicit fee contract differs from session authority"
+                )
+        else:
+            fee_contract = declared_fee
+    fields, blockers = _field_bindings(
+        set(release["columns"]), session_columns
+    )
+    blockers.extend(session_blockers)
     universe, universe_blockers = _validate_universe_manifest(
         universe_manifest.resolve() if universe_manifest else None,
         date_min=str(release["date_min"]),
@@ -324,8 +472,15 @@ def freeze(
 
     corporate_policy = AShareCorporateActionPolicy(
         source_reference=(
-            "ADR-0009/0010 existing A-share replay; "
-            "PIT-aligned event inputs required"
+            (
+                f"existing A-share replay session authority "
+                f"{session_authority['manifest_payload_sha256']}"
+            )
+            if session_authority is not None
+            else (
+                "ADR-0009/0010 existing A-share replay; "
+                "PIT-aligned event inputs required"
+            )
         )
     )
     corporate_policy.validate()
@@ -358,6 +513,7 @@ def freeze(
         "minute_release": {
             key: value for key, value in release.items() if key != "columns"
         },
+        "session_authority": session_authority,
         "field_bindings": fields,
         "universe_manifest": universe,
         "fee_contract": fees,
@@ -412,7 +568,17 @@ def freeze(
                 "path": release["manifest"],
                 "sha256": release["manifest_file_sha256"],
             },
-        ],
+        ]
+        + (
+            [
+                {
+                    "path": session_authority["path"],
+                    "sha256": session_authority["sha256"],
+                }
+            ]
+            if session_authority is not None
+            else []
+        ),
         "blockers": binding["blockers"],
         "financial_replay_authorized": False,
         "report_only_validation_authorized": False,
@@ -449,6 +615,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--universe-manifest", type=Path)
     parser.add_argument("--fee-contract", type=Path)
+    parser.add_argument("--session-authority-manifest", type=Path)
     parser.add_argument("--repo-sha")
     return parser
 
@@ -462,6 +629,7 @@ def main(argv: list[str] | None = None) -> int:
         output_root=args.output_root,
         universe_manifest=args.universe_manifest,
         fee_contract=args.fee_contract,
+        session_authority_manifest=args.session_authority_manifest,
         repo_sha=args.repo_sha,
     )
     return 0
