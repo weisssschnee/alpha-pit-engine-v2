@@ -21,6 +21,7 @@ from our_system_phase2.services.a_share_executable_replay import (
     AShareCorporateActionPolicy,
     AShareExecutionPolicy,
     AShareFeeSchedule,
+    AShareTerminalLiquidationError,
     AShareUniversePolicy,
     run_a_share_long_only_replay,
 )
@@ -742,11 +743,17 @@ def _replay_pair_results(
         control = members["CONTROL"]
         primary_result = result_by_id[str(primary["candidate_id"])]
         control_result = result_by_id[str(control["candidate_id"])]
-        primary_reward = float(
-            primary_result["a_share_executable_net_reward"]
+        primary_status = str(primary_result["candidate_replay_status"])
+        control_status = str(control_result["candidate_replay_status"])
+        pair_complete = (
+            primary_status == "CANDIDATE_REPLAY_COMPLETE"
+            and control_status == "CANDIDATE_REPLAY_COMPLETE"
         )
-        control_reward = float(
-            control_result["a_share_executable_net_reward"]
+        primary_reward = _finite(
+            primary_result.get("a_share_executable_net_reward")
+        )
+        control_reward = _finite(
+            control_result.get("a_share_executable_net_reward")
         )
         rows.append(
             {
@@ -754,24 +761,32 @@ def _replay_pair_results(
                 "route_id": str(primary["route_id"]),
                 "primary_candidate_id": str(primary["candidate_id"]),
                 "control_candidate_id": str(control["candidate_id"]),
+                "primary_candidate_replay_status": primary_status,
+                "control_candidate_replay_status": control_status,
                 "primary_a_share_executable_net_reward": primary_reward,
                 "control_a_share_executable_net_reward": control_reward,
                 "a_share_executable_net_increment": (
                     primary_reward - control_reward
+                    if pair_complete
+                    and primary_reward is not None
+                    and control_reward is not None
+                    else None
                 ),
-                "primary_trade_count": int(
-                    primary_result["trade_count"]
+                "primary_trade_count": primary_result.get("trade_count"),
+                "control_trade_count": control_result.get("trade_count"),
+                "primary_blocked_buy_count": primary_result.get(
+                    "blocked_buy_count"
                 ),
-                "control_trade_count": int(
-                    control_result["trade_count"]
+                "primary_blocked_sell_count": primary_result.get(
+                    "blocked_sell_count"
                 ),
-                "primary_blocked_buy_count": int(
-                    primary_result["blocked_buy_count"]
+                "primary_replay_blocker": primary_result.get("blocker_code"),
+                "control_replay_blocker": control_result.get("blocker_code"),
+                "a_share_replay_status": (
+                    "PAIR_REPLAY_COMPLETE"
+                    if pair_complete
+                    else "PAIR_REPLAY_BLOCKED"
                 ),
-                "primary_blocked_sell_count": int(
-                    primary_result["blocked_sell_count"]
-                ),
-                "a_share_replay_status": "PAIR_REPLAY_COMPLETE",
                 "economic_claim_authorized": False,
                 "promotion_authorized": False,
             }
@@ -885,28 +900,47 @@ def replay(
     candidate_root.mkdir(parents=True, exist_ok=True)
     candidate_rows: list[dict[str, Any]] = []
     receipts: list[dict[str, Any]] = []
+    blocked_receipts: list[dict[str, Any]] = []
     for candidate in candidates.to_dict(orient="records"):
         candidate_id = str(candidate["candidate_id"])
         target = candidate_root / f"{candidate_id}.json"
         if target.is_file():
             row = _read_json(target)
-            if (
+            common_drift = (
                 str(row.get("candidate_id")) != candidate_id
-                or str(row.get("input_data_sha256"))
-                != input_data_sha256
-                or a_share_tradability_blockers(
-                    row["receipt"],
-                    expected_candidate_id=candidate_id,
-                    expected_exact_identity=str(
-                        candidate["exact_identity"]
-                    ),
+                or str(row.get("input_data_sha256")) != input_data_sha256
+            )
+            status = str(row.get("status") or "")
+            if status == "CANDIDATE_REPLAY_COMPLETE_IMMUTABLE":
+                invalid = bool(
+                    a_share_tradability_blockers(
+                        row["receipt"],
+                        expected_candidate_id=candidate_id,
+                        expected_exact_identity=str(
+                            candidate["exact_identity"]
+                        ),
+                    )
                 )
-            ):
+                receipts.append(row["receipt"])
+            elif status == "CANDIDATE_REPLAY_BLOCKED_IMMUTABLE":
+                blocker = dict(row.get("blocker") or {})
+                invalid = (
+                    str(blocker.get("candidate_id")) != candidate_id
+                    or str(blocker.get("exact_identity"))
+                    != str(candidate["exact_identity"])
+                    or str(blocker.get("blocker_code"))
+                    != "FINAL_SESSION_UNLIQUIDATED_HOLDINGS"
+                    or not blocker.get("remaining_holdings")
+                    or blocker.get("economic_claim_authorized") is not False
+                )
+                blocked_receipts.append(blocker)
+            else:
+                invalid = True
+            if common_drift or invalid:
                 raise RuntimeError(
                     f"completed replay candidate identity drift: {candidate_id}"
                 )
             candidate_rows.append(row["summary"])
-            receipts.append(row["receipt"])
             continue
         signal = pd.to_numeric(
             evaluate_panel_expression(
@@ -924,19 +958,77 @@ def replay(
         replay_frame["signal"] = signal_by_coordinate.reindex(
             authority_index
         ).to_numpy()
-        result = run_a_share_long_only_replay(
-            replay_frame,
-            fee_schedule=fee,
-            universe_policy=universe,
-            execution_policy=execution,
-            corporate_action_policy=corporate,
-        )
+        try:
+            result = run_a_share_long_only_replay(
+                replay_frame,
+                fee_schedule=fee,
+                universe_policy=universe,
+                execution_policy=execution,
+                corporate_action_policy=corporate,
+            )
+        except AShareTerminalLiquidationError as exc:
+            blocker = {
+                "schema_version": "cn_finalist_replay_blocker_v1",
+                "candidate_id": candidate_id,
+                "pair_id": str(candidate["pair_id"]),
+                "pair_member_role": str(candidate["pair_member_role"]),
+                "route_id": str(candidate["route_id"]),
+                "exact_identity": str(candidate["exact_identity"]),
+                "blocker_code": "FINAL_SESSION_UNLIQUIDATED_HOLDINGS",
+                "remaining_holdings": list(exc.remaining_holdings),
+                "input_data_sha256": input_data_sha256,
+                "fail_closed": True,
+                "economic_claim_authorized": False,
+                "promotion_authorized": False,
+            }
+            summary = {
+                "candidate_id": candidate_id,
+                "pair_id": str(candidate["pair_id"]),
+                "pair_member_role": str(candidate["pair_member_role"]),
+                "route_id": str(candidate["route_id"]),
+                "exact_identity": str(candidate["exact_identity"]),
+                "candidate_replay_status": "CANDIDATE_REPLAY_BLOCKED",
+                "a_share_executable_net_reward": None,
+                "blocker_code": blocker["blocker_code"],
+                "remaining_holdings": blocker["remaining_holdings"],
+                "train_read_count": len(replay_frame),
+                "economic_claim_authorized": False,
+                "promotion_authorized": False,
+            }
+            _write_json(
+                target,
+                {
+                    "schema_version": "cn_finalist_candidate_replay_result_v2",
+                    "status": "CANDIDATE_REPLAY_BLOCKED_IMMUTABLE",
+                    "candidate_id": candidate_id,
+                    "input_data_sha256": input_data_sha256,
+                    "summary": summary,
+                    "blocker": blocker,
+                },
+            )
+            candidate_rows.append(summary)
+            blocked_receipts.append(blocker)
+            print(
+                json.dumps(
+                    {
+                        "candidate_id": candidate_id,
+                        "status": "CANDIDATE_REPLAY_BLOCKED",
+                        "blocker_code": blocker["blocker_code"],
+                        "remaining_holdings": blocker["remaining_holdings"],
+                    },
+                    sort_keys=True,
+                ),
+                flush=True,
+            )
+            continue
         summary = {
             "candidate_id": candidate_id,
             "pair_id": str(candidate["pair_id"]),
             "pair_member_role": str(candidate["pair_member_role"]),
             "route_id": str(candidate["route_id"]),
             "exact_identity": str(candidate["exact_identity"]),
+            "candidate_replay_status": "CANDIDATE_REPLAY_COMPLETE",
+            "train_read_count": len(replay_frame),
             **_jsonable_replay_summary(result),
         }
         receipt = build_a_share_tradability_receipt(
@@ -1030,38 +1122,49 @@ def replay(
         output_root / "a_share_tradability_replay_receipts.jsonl",
         receipts,
     )
+    blocker_path = _write_jsonl(
+        output_root / "a_share_replay_blockers.jsonl",
+        blocked_receipts,
+    )
+    complete_pairs = pair_results["a_share_replay_status"].eq(
+        "PAIR_REPLAY_COMPLETE"
+    )
     summary = {
         "schema_version": "cn_finalist_replay_summary_v1",
         "status": "A_SHARE_EXECUTABLE_TRAIN_REPLAY_COMPLETE",
         "selection_payload_sha256": freeze["selection_payload_sha256"],
         "pair_count": len(pair_results),
         "candidate_member_count": len(candidate_rows),
+        "candidate_replay_complete_count": len(receipts),
+        "candidate_replay_blocked_count": len(blocked_receipts),
+        "pair_replay_complete_count": int(complete_pairs.sum()),
+        "pair_replay_blocked_count": int((~complete_pairs).sum()),
         "primary_positive_reward_count": int(
             (
                 pair_results[
                     "primary_a_share_executable_net_reward"
                 ]
                 > 0
-            ).sum()
+            ).loc[complete_pairs].sum()
         ),
         "positive_executable_increment_count": int(
             (
                 pair_results["a_share_executable_net_increment"] > 0
-            ).sum()
+            ).loc[complete_pairs].sum()
         ),
-        "primary_reward_median": float(
+        "primary_reward_median": _finite(
             pair_results[
                 "primary_a_share_executable_net_reward"
+            ].loc[complete_pairs].median()
+        ),
+        "executable_increment_median": _finite(
+            pair_results.loc[
+                complete_pairs,
+                "a_share_executable_net_increment",
             ].median()
         ),
-        "executable_increment_median": float(
-            pair_results["a_share_executable_net_increment"].median()
-        ),
         "train_reads": int(
-            sum(
-                int(row["data_access_counts"]["train"])
-                for row in receipts
-            )
+            sum(int(row["train_read_count"]) for row in candidate_rows)
         ),
         "validation_reads": 0,
         "holdout_reads": 0,
@@ -1084,6 +1187,7 @@ def replay(
         candidate_results_path,
         pair_results_path,
         receipt_path,
+        blocker_path,
         summary_path,
         *sorted(candidate_root.glob("*.json")),
     ]
@@ -1200,13 +1304,13 @@ def _oos_pair_rows(
                 "a_share_replay_status": str(
                     replay["a_share_replay_status"]
                 ),
-                "primary_a_share_executable_net_reward": float(
+                "primary_a_share_executable_net_reward": _finite(
                     replay["primary_a_share_executable_net_reward"]
                 ),
-                "control_a_share_executable_net_reward": float(
+                "control_a_share_executable_net_reward": _finite(
                     replay["control_a_share_executable_net_reward"]
                 ),
-                "a_share_executable_net_increment": float(
+                "a_share_executable_net_increment": _finite(
                     replay["a_share_executable_net_increment"]
                 ),
                 "validation_pair_status": status,
@@ -1417,12 +1521,12 @@ def oos(
         "validation_score_p10": _finite(
             pair_rows["validation_search_score"].quantile(0.1)
         ),
-        "primary_executable_reward_median": float(
+        "primary_executable_reward_median": _finite(
             pair_rows[
                 "primary_a_share_executable_net_reward"
             ].median()
         ),
-        "executable_increment_median": float(
+        "executable_increment_median": _finite(
             pair_rows["a_share_executable_net_increment"].median()
         ),
         "validation_reads": int(result["validation_reads"]),

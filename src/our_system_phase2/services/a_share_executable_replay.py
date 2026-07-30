@@ -46,6 +46,17 @@ REQUIRED_SESSION_COLUMNS = frozenset(
 )
 
 
+class AShareTerminalLiquidationError(ValueError):
+    """A candidate-specific fail-closed terminal liquidity outcome."""
+
+    def __init__(self, remaining_holdings: list[str]) -> None:
+        self.remaining_holdings = tuple(sorted(str(code) for code in remaining_holdings))
+        super().__init__(
+            "final replay session could not liquidate every holding; "
+            f"remaining={list(self.remaining_holdings)}"
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class AShareFeeSchedule:
     """Explicit cash fee schedule in basis points and CNY.
@@ -657,10 +668,7 @@ def run_a_share_long_only_replay(
         previous_nav = close_nav
 
     if corporate_action_policy.require_flat_at_replay_end and holdings:
-        raise ValueError(
-            "final replay session could not liquidate every holding; "
-            f"remaining={sorted(holdings)}"
-        )
+        raise AShareTerminalLiquidationError(list(holdings))
 
     daily = pd.DataFrame(daily_rows)
     net_returns = pd.to_numeric(daily["daily_net_return"], errors="coerce")

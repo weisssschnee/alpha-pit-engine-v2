@@ -139,10 +139,20 @@ def test_oos_rows_keep_every_pair_without_interstage_filter() -> None:
         [
             {
                 "pair_id": f"pair-{rank:02d}",
-                "a_share_replay_status": "PAIR_REPLAY_COMPLETE",
-                "primary_a_share_executable_net_reward": 0.4,
-                "control_a_share_executable_net_reward": 0.1,
-                "a_share_executable_net_increment": 0.3,
+                "a_share_replay_status": (
+                    "PAIR_REPLAY_COMPLETE"
+                    if rank != 24
+                    else "PAIR_REPLAY_BLOCKED"
+                ),
+                "primary_a_share_executable_net_reward": (
+                    0.4 if rank != 24 else None
+                ),
+                "control_a_share_executable_net_reward": (
+                    0.1 if rank != 24 else None
+                ),
+                "a_share_executable_net_increment": (
+                    0.3 if rank != 24 else None
+                ),
             }
             for rank in range(1, 25)
         ]
@@ -154,3 +164,44 @@ def test_oos_rows_keep_every_pair_without_interstage_filter() -> None:
     assert rows["interstage_filter_applied"].eq(False).all()
     assert rows["oos_positive_transfer"].sum() == 23
     assert rows.iloc[-1]["validation_pair_status"] == "SUPPORT_BLOCKED"
+    assert rows.iloc[-1]["a_share_replay_status"] == "PAIR_REPLAY_BLOCKED"
+    assert pd.isna(
+        rows.iloc[-1]["primary_a_share_executable_net_reward"]
+    )
+
+
+def test_pair_replay_keeps_terminal_liquidity_blocked_pair() -> None:
+    candidates = _candidate_rows()
+    candidate_rows = []
+    for candidate in candidates.to_dict(orient="records"):
+        blocked = candidate["candidate_id"] == "pair-01-primary"
+        candidate_rows.append(
+            {
+                **candidate,
+                "candidate_replay_status": (
+                    "CANDIDATE_REPLAY_BLOCKED"
+                    if blocked
+                    else "CANDIDATE_REPLAY_COMPLETE"
+                ),
+                "a_share_executable_net_reward": None if blocked else 0.2,
+                "trade_count": None if blocked else 5,
+                "blocked_buy_count": None if blocked else 0,
+                "blocked_sell_count": None if blocked else 0,
+                "blocker_code": (
+                    "FINAL_SESSION_UNLIQUIDATED_HOLDINGS"
+                    if blocked
+                    else None
+                ),
+            }
+        )
+
+    pairs = subject._replay_pair_results(candidates, candidate_rows)
+
+    assert len(pairs) == 24
+    assert pairs.iloc[0]["a_share_replay_status"] == "PAIR_REPLAY_BLOCKED"
+    assert pd.isna(
+        pairs.iloc[0]["primary_a_share_executable_net_reward"]
+    )
+    assert pairs.iloc[1:]["a_share_replay_status"].eq(
+        "PAIR_REPLAY_COMPLETE"
+    ).all()
