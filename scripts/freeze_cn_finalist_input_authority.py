@@ -253,6 +253,63 @@ def _validate_session_authority_manifest(
         blockers.append("session_authority_date_start_does_not_cover_release")
     if str(payload.get("date_max") or "") < date_max:
         blockers.append("session_authority_date_end_does_not_cover_release")
+    observed_rows = int(payload.get("observed_session_row_count") or 0)
+    known_st_rows = int(payload.get("st_known_observed_session_count") or 0)
+    session_rows = int(payload.get("session_row_count") or 0)
+    leading_unknown_st = int(
+        payload.get("leading_unknown_st_blocked_session_count") or 0
+    )
+    st_source = payload.get("pit_historical_st_source")
+    if not isinstance(st_source, dict):
+        blockers.append("pit_historical_st_source_missing")
+    else:
+        if (
+            str(st_source.get("semantics") or "")
+            != "EXACT_CODE_DATE_NAME_STATE_NO_FORWARD_BACKFILL"
+        ):
+            blockers.append("pit_historical_st_source_semantics_invalid")
+        if int(st_source.get("st_true_row_count") or 0) <= 0:
+            blockers.append("pit_historical_st_source_has_no_st_rows")
+        if not str(st_source.get("manifest_file_sha256") or ""):
+            blockers.append("pit_historical_st_source_hash_missing")
+        st_manifest_path = Path(
+            str(st_source.get("manifest") or "")
+        ).resolve()
+        st_artifact_path = Path(
+            str(st_source.get("artifact") or "")
+        ).resolve()
+        if not st_manifest_path.is_file():
+            blockers.append("pit_historical_st_source_manifest_missing")
+        elif _sha256(st_manifest_path) != str(
+            st_source.get("manifest_file_sha256") or ""
+        ):
+            blockers.append("pit_historical_st_source_manifest_hash_mismatch")
+        else:
+            st_manifest = json.loads(
+                st_manifest_path.read_text(encoding="utf-8")
+            )
+            _verify_self_hash(st_manifest, "manifest_payload_sha256")
+            if (
+                str(st_manifest.get("status") or "")
+                != "PIT_HISTORICAL_ST_SOURCE_CLOSED_IMMUTABLE"
+            ):
+                blockers.append("pit_historical_st_source_not_closed")
+        if not st_artifact_path.is_file():
+            blockers.append("pit_historical_st_artifact_missing")
+        elif _sha256(st_artifact_path) != str(
+            st_source.get("artifact_sha256") or ""
+        ):
+            blockers.append("pit_historical_st_artifact_hash_mismatch")
+    if observed_rows <= 0:
+        blockers.append("session_authority_observed_row_count_not_positive")
+    if known_st_rows != observed_rows:
+        blockers.append("pit_historical_st_observed_coverage_incomplete")
+    if float(payload.get("pit_st_observed_session_coverage") or 0.0) != 1.0:
+        blockers.append("pit_historical_st_observed_coverage_not_one")
+    if int(payload.get("st_true_observed_session_count") or 0) <= 0:
+        blockers.append("pit_historical_st_has_no_observed_st_sessions")
+    if session_rows <= 0 or leading_unknown_st >= session_rows:
+        blockers.append("pit_historical_st_blocks_all_sessions")
     for field in (
         "financial_reads",
         "validation_reads",
@@ -308,7 +365,17 @@ def _validate_session_authority_manifest(
         "universe_manifest_path": str(payload["universe_manifest_path"]),
         "fee_contract_path": str(payload["fee_contract_path"]),
         "security_count": int(payload.get("security_count") or 0),
-        "session_row_count": int(payload.get("session_row_count") or 0),
+        "session_row_count": session_rows,
+        "observed_session_row_count": observed_rows,
+        "st_known_observed_session_count": known_st_rows,
+        "st_true_observed_session_count": int(
+            payload.get("st_true_observed_session_count") or 0
+        ),
+        "pit_st_observed_session_coverage": float(
+            payload.get("pit_st_observed_session_coverage") or 0.0
+        ),
+        "leading_unknown_st_blocked_session_count": leading_unknown_st,
+        "pit_historical_st_source": st_source,
         "payload": payload,
     }, columns, blockers
 

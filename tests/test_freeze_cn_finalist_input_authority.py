@@ -109,6 +109,27 @@ def _session_authority(
     fee_mode: str = "CONSERVATIVE_RESEARCH_UPPER_BOUND_NON_PROMOTION",
 ) -> Path:
     root.mkdir(parents=True)
+    st_root = root / "pit_st"
+    st_root.mkdir()
+    st_artifact = st_root / "pit_historical_st.parquet"
+    pd.DataFrame(
+        {
+            "date": [pd.Timestamp("2024-01-02")],
+            "code": ["600000"],
+            "is_st": [True],
+        }
+    ).to_parquet(st_artifact, index=False)
+    st_manifest_payload = {
+        "schema_version": "cn_finalist_pit_historical_st_source_v1",
+        "status": "PIT_HISTORICAL_ST_SOURCE_CLOSED_IMMUTABLE",
+        "artifact": st_artifact.name,
+        "artifact_sha256": subject._sha256(st_artifact),
+    }
+    st_manifest_payload["manifest_payload_sha256"] = subject._payload_sha256(
+        st_manifest_payload
+    )
+    st_manifest = st_root / "pit_st_source_manifest.json"
+    _write_json(st_manifest, st_manifest_payload)
     sidecar = root / "session_authority.parquet"
     values: dict[str, list[object]] = {}
     for column in subject.DIRECT_REQUIRED_COLUMNS:
@@ -185,6 +206,19 @@ def _session_authority(
         "date_max": "2025-07-07",
         "security_count": 1,
         "session_row_count": 1,
+        "observed_session_row_count": 1,
+        "st_known_observed_session_count": 1,
+        "st_true_observed_session_count": 1,
+        "pit_st_observed_session_coverage": 1.0,
+        "leading_unknown_st_blocked_session_count": 0,
+        "pit_historical_st_source": {
+            "manifest": str(st_manifest),
+            "manifest_file_sha256": subject._sha256(st_manifest),
+            "artifact": str(st_artifact),
+            "artifact_sha256": subject._sha256(st_artifact),
+            "st_true_row_count": 1,
+            "semantics": "EXACT_CODE_DATE_NAME_STATE_NO_FORWARD_BACKFILL",
+        },
         "columns": list(pd.read_parquet(sidecar).columns),
         "session_authority_path": str(sidecar),
         "universe_manifest_path": str(universe),
@@ -255,6 +289,35 @@ def test_existing_release_is_bound_without_inventing_missing_authorities(
     assert verified["source_status"] == (
         "HOLD_RESEARCH_FINALIST_INPUTS_INCOMPLETE"
     )
+
+
+def test_all_null_or_all_blocked_st_cannot_close_ready_binding(
+    tmp_path: Path,
+) -> None:
+    session = tmp_path / "session"
+    manifest_path = _session_authority(session)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["st_known_observed_session_count"] = 0
+    manifest["pit_st_observed_session_coverage"] = 0.0
+    manifest["leading_unknown_st_blocked_session_count"] = 1
+    manifest["manifest_payload_sha256"] = subject._payload_sha256(
+        {
+            key: value
+            for key, value in manifest.items()
+            if key != "manifest_payload_sha256"
+        }
+    )
+    _write_json(manifest_path, manifest)
+
+    _, _, blockers = subject._validate_session_authority_manifest(
+        manifest_path,
+        date_min="2024-01-02",
+        date_max="2025-07-07",
+    )
+
+    assert "pit_historical_st_observed_coverage_incomplete" in blockers
+    assert "pit_historical_st_observed_coverage_not_one" in blockers
+    assert "pit_historical_st_blocks_all_sessions" in blockers
 
 
 def test_complete_frozen_inputs_can_close_zero_financial_binding(

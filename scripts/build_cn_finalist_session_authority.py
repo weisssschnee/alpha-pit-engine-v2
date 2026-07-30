@@ -35,6 +35,7 @@ import pyarrow.parquet as pq
 
 SCHEMA_VERSION = "cn_finalist_session_authority_v1"
 SOURCE_SCHEMA_VERSION = "cn_finalist_public_source_snapshot_v1"
+PIT_ST_SOURCE_SCHEMA_VERSION = "cn_finalist_pit_historical_st_source_v1"
 MINUTE_PATTERN = (
     "shard_*/phase3aq_wide_true1min/canary/"
     "phase3aq_true_1min_formula_canary.parquet"
@@ -121,6 +122,27 @@ def _verify_self_hash(payload: Mapping[str, Any], field: str) -> None:
         raise ValueError(
             f"{field} mismatch: declared={expected} observed={observed}"
         )
+
+
+def _normalize_pit_st(values: pd.Series) -> pd.Series:
+    """Normalize exact-session ST state without treating text as numeric."""
+
+    normalized = pd.Series(pd.NA, index=values.index, dtype="boolean")
+    numeric = pd.to_numeric(values, errors="coerce")
+    normalized.loc[numeric.eq(0)] = False
+    normalized.loc[numeric.eq(1)] = True
+    text = values.astype("string").str.strip().str.lower()
+    false_values = {"否", "false", "f", "no", "n", "normal", "非st"}
+    true_values = {"是", "true", "t", "yes", "y", "st", "*st", "退市"}
+    normalized.loc[text.isin(false_values)] = False
+    normalized.loc[text.isin(true_values)] = True
+    unknown = values.notna() & normalized.isna()
+    if unknown.any():
+        examples = sorted(values.loc[unknown].astype(str).unique())[:20]
+        raise ValueError(f"historical ST source has unknown values: {examples}")
+    if normalized.isna().any():
+        raise ValueError("historical ST source contains null state")
+    return normalized.astype(bool)
 
 
 def normalize_code(value: Any) -> str:
@@ -578,27 +600,197 @@ def verify_source_snapshot(source_root: Path) -> dict[str, Any]:
     }
 
 
+def freeze_pit_st_source(
+    *,
+    release_root: Path,
+    hfq_paths: Iterable[Path],
+    output_root: Path,
+) -> dict[str, Any]:
+    """Freeze exact-date historical ST state from the existing HFQ silver."""
+
+    release_root = release_root.resolve()
+    output_root = output_root.resolve()
+    output_root.mkdir(parents=True, exist_ok=False)
+    release = _release_manifest(release_root)
+    source_files: list[Path] = []
+    for candidate in hfq_paths:
+        resolved = candidate.resolve()
+        if resolved.is_dir():
+            source_files.extend(sorted(resolved.rglob("*.parquet")))
+        elif resolved.is_file():
+            source_files.append(resolved)
+        else:
+            raise FileNotFoundError(resolved)
+    source_files = sorted(set(source_files))
+    if not source_files:
+        raise FileNotFoundError("no HFQ parquet inputs were supplied")
+
+    parts: list[pd.DataFrame] = []
+    source_artifacts: list[dict[str, Any]] = []
+    lower = pd.Timestamp(release["date_min"]).normalize()
+    upper = pd.Timestamp(release["date_max"]).normalize()
+    for path in source_files:
+        parquet = pq.ParquetFile(path)
+        required = {"date", "code", "is_st"}
+        missing = sorted(required - set(parquet.schema_arrow.names))
+        if missing:
+            raise ValueError(f"HFQ source lacks {missing}: {path}")
+        frame = parquet.read(columns=sorted(required)).to_pandas()
+        frame["date"] = pd.to_datetime(frame["date"], errors="raise").dt.normalize()
+        frame = frame.loc[frame["date"].between(lower, upper)].copy()
+        if not frame.empty:
+            frame["code"] = frame["code"].map(normalize_code)
+            frame["is_st"] = _normalize_pit_st(frame["is_st"])
+            parts.append(frame[["date", "code", "is_st"]])
+        source_artifacts.append(
+            {
+                "path": str(path),
+                "bytes": path.stat().st_size,
+                "sha256": _sha256(path),
+            }
+        )
+    if not parts:
+        raise ValueError("HFQ source has no rows inside the development dates")
+    combined = pd.concat(parts, ignore_index=True)
+    duplicated = combined.duplicated(["date", "code"], keep=False)
+    if duplicated.any():
+        conflicts = (
+            combined.loc[duplicated]
+            .groupby(["date", "code"], sort=False)["is_st"]
+            .nunique()
+            .gt(1)
+        )
+        if conflicts.any():
+            examples = [
+                f"{date.date()}:{code}"
+                for date, code in conflicts.loc[conflicts].index[:20]
+            ]
+            raise ValueError(
+                f"historical ST source has conflicting duplicate rows: {examples}"
+            )
+        combined = combined.drop_duplicates(["date", "code"], keep="last")
+    combined = combined.sort_values(["code", "date"]).reset_index(drop=True)
+    if combined["is_st"].isna().any():
+        raise RuntimeError("normalized historical ST state is unexpectedly null")
+
+    artifact_path = output_root / "pit_historical_st.parquet"
+    combined.to_parquet(artifact_path, index=False)
+    manifest = {
+        "schema_version": PIT_ST_SOURCE_SCHEMA_VERSION,
+        "status": "PIT_HISTORICAL_ST_SOURCE_CLOSED_IMMUTABLE",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "data_role": "development",
+        "date_min": release["date_min"],
+        "date_max": release["date_max"],
+        "semantics": "EXACT_CODE_DATE_NAME_STATE_NO_FORWARD_BACKFILL",
+        "source_artifacts": source_artifacts,
+        "release_manifest": str(release["path"]),
+        "release_manifest_sha256": release["sha256"],
+        "row_count": len(combined),
+        "security_count": int(combined["code"].nunique()),
+        "st_true_row_count": int(combined["is_st"].sum()),
+        "st_false_row_count": int((~combined["is_st"]).sum()),
+        "unknown_row_count": 0,
+        "artifact": artifact_path.name,
+        "artifact_bytes": artifact_path.stat().st_size,
+        "artifact_sha256": _sha256(artifact_path),
+        "financial_reads": 0,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    manifest["manifest_payload_sha256"] = _payload_sha256(manifest)
+    manifest_path = _write_json(
+        output_root / "pit_st_source_manifest.json", manifest
+    )
+    result = {
+        "status": manifest["status"],
+        "output_root": str(output_root),
+        "manifest": str(manifest_path),
+        "manifest_file_sha256": _sha256(manifest_path),
+        "manifest_payload_sha256": manifest["manifest_payload_sha256"],
+        "row_count": manifest["row_count"],
+        "security_count": manifest["security_count"],
+        "st_true_row_count": manifest["st_true_row_count"],
+    }
+    print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    return result
+
+
+def verify_pit_st_source(
+    pit_st_root: Path,
+    *,
+    release: Mapping[str, Any],
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    pit_st_root = pit_st_root.resolve()
+    manifest_path = pit_st_root / "pit_st_source_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    _verify_self_hash(manifest, "manifest_payload_sha256")
+    if manifest.get("schema_version") != PIT_ST_SOURCE_SCHEMA_VERSION:
+        raise ValueError("historical ST source schema is unsupported")
+    if manifest.get("status") != "PIT_HISTORICAL_ST_SOURCE_CLOSED_IMMUTABLE":
+        raise ValueError("historical ST source is not closed immutable")
+    if manifest.get("data_role") != "development":
+        raise ValueError("historical ST source is not development-only")
+    if str(manifest.get("date_min") or "") != str(release["date_min"]):
+        raise ValueError("historical ST source date_min mismatch")
+    if str(manifest.get("date_max") or "") != str(release["date_max"]):
+        raise ValueError("historical ST source date_max mismatch")
+    if str(manifest.get("release_manifest_sha256") or "") != str(
+        release["sha256"]
+    ):
+        raise ValueError("historical ST source release binding mismatch")
+    for field in (
+        "financial_reads",
+        "validation_reads",
+        "holdout_reads",
+        "forward_2026_reads",
+        "unknown_row_count",
+    ):
+        if int(manifest.get(field, -1)) != 0:
+            raise ValueError(f"historical ST source {field} is not zero")
+    artifact_path = pit_st_root / str(manifest["artifact"])
+    if artifact_path.stat().st_size != int(manifest["artifact_bytes"]):
+        raise ValueError("historical ST artifact size mismatch")
+    if _sha256(artifact_path) != str(manifest["artifact_sha256"]):
+        raise ValueError("historical ST artifact hash mismatch")
+    frame = pd.read_parquet(artifact_path)
+    if len(frame) != int(manifest["row_count"]):
+        raise ValueError("historical ST artifact row count mismatch")
+    frame["date"] = pd.to_datetime(frame["date"], errors="raise").dt.normalize()
+    frame["code"] = frame["code"].map(normalize_code)
+    frame["is_st"] = _normalize_pit_st(frame["is_st"])
+    if frame.duplicated(["date", "code"]).any():
+        raise ValueError("historical ST artifact has duplicate code/date rows")
+    receipt = {
+        "root": str(pit_st_root),
+        "manifest": str(manifest_path),
+        "manifest_file_sha256": _sha256(manifest_path),
+        "manifest_payload_sha256": manifest["manifest_payload_sha256"],
+        "artifact": str(artifact_path),
+        "artifact_sha256": manifest["artifact_sha256"],
+        "row_count": len(frame),
+        "security_count": int(frame["code"].nunique()),
+        "st_true_row_count": int(frame["is_st"].sum()),
+        "semantics": manifest["semantics"],
+    }
+    return frame, receipt
+
+
 def _read_observed_sessions(release_root: Path) -> pd.DataFrame:
     release = _release_manifest(release_root)
     chunks: list[pd.DataFrame] = []
     for path in release["panels"]:
         parquet = pq.ParquetFile(path)
         names = set(parquet.schema_arrow.names)
-        st_column = (
-            "is_st"
-            if "is_st" in names
-            else "ctx_hfq_is_st"
-            if "ctx_hfq_is_st" in names
-            else None
-        )
         required = {"code", "trade_time", "open", "high", "low", "close"}
         missing = sorted(required - names)
-        if missing or st_column is None:
+        if missing:
             raise ValueError(
                 f"minute panel lacks session authority inputs: {path}; "
-                f"missing={missing}, st_column={st_column}"
+                f"missing={missing}"
             )
-        columns = list(required) + [st_column]
+        columns = list(required)
         optional_limits = [
             column
             for column in ("up_limit_price", "down_limit_price")
@@ -622,7 +814,6 @@ def _read_observed_sessions(release_root: Path) -> pd.DataFrame:
                 "high": ("high", "max"),
                 "low": ("low", "min"),
                 "close": ("close", "last"),
-                "is_st": (st_column, "last"),
             }
             for column in optional_limits:
                 aggregations[column] = (column, "last")
@@ -640,7 +831,6 @@ def _read_observed_sessions(release_root: Path) -> pd.DataFrame:
         "high": ("high", "max"),
         "low": ("low", "min"),
         "close": ("close", "last"),
-        "is_st": ("is_st", "last"),
     }
     for column in ("up_limit_price", "down_limit_price"):
         if column in combined:
@@ -668,10 +858,10 @@ def _load_or_build_observed_cache(
             raise ValueError("observed-session cache is only partially present")
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         _verify_self_hash(manifest, "manifest_payload_sha256")
-        if (
-            str(manifest.get("schema_version") or "")
-            != "cn_development_observed_session_cache_v1"
-        ):
+        if str(manifest.get("schema_version") or "") not in {
+            "cn_development_observed_session_cache_v1",
+            "cn_development_observed_session_cache_v2",
+        }:
             raise ValueError("observed-session cache schema is unsupported")
         if str(manifest.get("release_manifest_sha256") or "") != str(
             release["sha256"]
@@ -687,19 +877,20 @@ def _load_or_build_observed_cache(
         ):
             if int(manifest.get(field, -1)) != 0:
                 raise ValueError(f"observed-session cache {field} is not zero")
-        return pd.read_parquet(cache_path)
+        return pd.read_parquet(cache_path).drop(
+            columns=["is_st"], errors="ignore"
+        )
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     observed = _read_observed_sessions(release_root)
     observed.to_parquet(cache_path, index=False)
     manifest = {
-        "schema_version": "cn_development_observed_session_cache_v1",
+        "schema_version": "cn_development_observed_session_cache_v2",
         "status": "DERIVED_ZERO_FINANCIAL_CACHE_CLOSED_IMMUTABLE",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "release_manifest": str(release["path"]),
         "release_manifest_sha256": release["sha256"],
-        "collapse_policy": (
-            "CODE_DATE_FIRST_OPEN_MAX_HIGH_MIN_LOW_LAST_CLOSE_LAST_PIT_ST"
-        ),
+        "collapse_policy": "CODE_DATE_FIRST_OPEN_MAX_HIGH_MIN_LOW_LAST_CLOSE",
+        "st_state_in_cache": False,
         "row_count": len(observed),
         "security_count": int(observed["code"].nunique()),
         "artifact": str(cache_path),
@@ -1030,11 +1221,13 @@ def build_authority(
     *,
     release_root: Path,
     source_root: Path,
+    pit_st_root: Path,
     output_root: Path,
     observed_cache: Path | None = None,
 ) -> dict[str, Any]:
     release_root = release_root.resolve()
     source_root = source_root.resolve()
+    pit_st_root = pit_st_root.resolve()
     output_root = output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=False)
     release = _release_manifest(release_root)
@@ -1047,6 +1240,32 @@ def build_authority(
     observed = _load_or_build_observed_cache(
         release_root=release_root,
         cache_path=observed_cache,
+    )
+    pit_st, pit_st_receipt = verify_pit_st_source(
+        pit_st_root,
+        release=release,
+    )
+    observed = observed.drop(columns=["is_st"], errors="ignore").merge(
+        pit_st,
+        on=["code", "date"],
+        how="left",
+        validate="one_to_one",
+    )
+    missing_st = observed["is_st"].isna()
+    if missing_st.any():
+        examples = [
+            f"{row.code}:{row.date.date()}"
+            for row in observed.loc[missing_st, ["code", "date"]]
+            .head(20)
+            .itertuples(index=False)
+        ]
+        raise ValueError(
+            "historical ST source does not cover every observed session: "
+            f"missing={int(missing_st.sum())}, examples={examples}"
+        )
+    st_known_observed_session_count = int(observed["is_st"].notna().sum())
+    pit_st_observed_session_coverage = (
+        st_known_observed_session_count / len(observed)
     )
     observed_cache_receipt = None
     if observed_cache is not None:
@@ -1104,11 +1323,15 @@ def build_authority(
         "session_row_count": len(authority),
         "source_reference": (
             "SSE/SZSE active and delisted security masters plus full "
-            "exchange trade calendar; PIT ST state from frozen development "
-            "minute release"
+            "exchange trade calendar; exact code/date PIT ST state from "
+            "the frozen historical HFQ daily silver"
         ),
         "source_snapshot_manifest": source["manifest"],
         "source_snapshot_manifest_sha256": source["manifest_file_sha256"],
+        "pit_st_source_manifest": pit_st_receipt["manifest"],
+        "pit_st_source_manifest_sha256": pit_st_receipt[
+            "manifest_file_sha256"
+        ],
         "validation_reads": 0,
         "holdout_reads": 0,
         "forward_2026_reads": 0,
@@ -1151,6 +1374,10 @@ def build_authority(
         "security_count": int(authority["code"].nunique()),
         "session_row_count": len(authority),
         "observed_session_row_count": len(observed),
+        "st_known_observed_session_count": st_known_observed_session_count,
+        "pit_st_observed_session_coverage": pit_st_observed_session_coverage,
+        "st_true_observed_session_count": int(observed["is_st"].sum()),
+        "pit_historical_st_source": pit_st_receipt,
         "observed_session_cache": observed_cache_receipt,
         "suspended_session_row_count": int(authority["suspended"].sum()),
         "leading_unknown_st_blocked_session_count": int(
@@ -1173,7 +1400,10 @@ def build_authority(
         "columns": list(SESSION_AUTHORITY_COLUMNS),
         "policies": {
             "suspension": "LISTED_CALENDAR_MINUS_MINUTE_OBSERVATION",
-            "st": "PIT_MINUTE_STATE_FORWARD_FILLED_ONLY_ACROSS_SUSPENSION",
+            "st": (
+                "EXACT_CODE_DATE_PIT_HFQ_DAILY_STATE_FORWARD_FILLED_ONLY_"
+                "ACROSS_SUSPENSION"
+            ),
             "leading_unknown_st": (
                 "CONSERVATIVE_INELIGIBLE_UNTIL_FIRST_PIT_OBSERVATION"
             ),
@@ -1187,6 +1417,10 @@ def build_authority(
         },
         "source_snapshot_manifest": source["manifest"],
         "source_snapshot_manifest_sha256": source["manifest_file_sha256"],
+        "pit_st_source_manifest": pit_st_receipt["manifest"],
+        "pit_st_source_manifest_sha256": pit_st_receipt[
+            "manifest_file_sha256"
+        ],
         "release_manifest": str(release["path"]),
         "release_manifest_sha256": release["sha256"],
         "session_authority_path": str(sidecar_path),
@@ -1238,9 +1472,19 @@ def build_parser() -> argparse.ArgumentParser:
     fetch.add_argument("--release-root", type=Path, required=True)
     fetch.add_argument("--source-root", type=Path, required=True)
     fetch.add_argument("--dividend-workers", type=int, default=8)
+    freeze_st = subparsers.add_parser("freeze-st-source")
+    freeze_st.add_argument("--release-root", type=Path, required=True)
+    freeze_st.add_argument(
+        "--hfq-path",
+        type=Path,
+        action="append",
+        required=True,
+    )
+    freeze_st.add_argument("--output-root", type=Path, required=True)
     materialize = subparsers.add_parser("materialize")
     materialize.add_argument("--release-root", type=Path, required=True)
     materialize.add_argument("--source-root", type=Path, required=True)
+    materialize.add_argument("--pit-st-root", type=Path, required=True)
     materialize.add_argument("--output-root", type=Path, required=True)
     materialize.add_argument("--observed-cache", type=Path)
     return parser
@@ -1252,9 +1496,16 @@ def main(argv: list[str] | None = None) -> int:
         result = fetch_public_sources(
             release_root=args.release_root,
             source_root=args.source_root,
+            pit_st_root=args.pit_st_root,
             dividend_workers=args.dividend_workers,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    elif args.command == "freeze-st-source":
+        freeze_pit_st_source(
+            release_root=args.release_root,
+            hfq_paths=args.hfq_path,
+            output_root=args.output_root,
+        )
     else:
         build_authority(
             release_root=args.release_root,

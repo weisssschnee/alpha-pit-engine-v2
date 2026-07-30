@@ -1,8 +1,82 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pandas as pd
+import pytest
 
 from scripts import build_cn_finalist_session_authority as subject
+
+
+def test_text_pit_st_values_are_not_coerced_to_null() -> None:
+    values = pd.Series(["否", "是", 0, 1, False, True])
+
+    observed = subject._normalize_pit_st(values)
+
+    assert observed.tolist() == [False, True, False, True, False, True]
+    with pytest.raises(ValueError, match="unknown values"):
+        subject._normalize_pit_st(pd.Series(["未知"]))
+
+
+def test_freeze_pit_st_source_is_exact_date_and_hash_bound(
+    tmp_path: Path,
+) -> None:
+    release = tmp_path / "release"
+    panel = (
+        release
+        / "shard_00"
+        / "phase3aq_wide_true1min"
+        / "canary"
+        / "phase3aq_true_1min_formula_canary.parquet"
+    )
+    panel.parent.mkdir(parents=True)
+    pd.DataFrame(
+        {
+            "code": ["600000"],
+            "trade_time": [pd.Timestamp("2024-01-02 09:31")],
+        }
+    ).to_parquet(panel, index=False)
+    (release / "development_only_release_manifest.json").write_text(
+        json.dumps(
+            {
+                "data_role": "development",
+                "forward_2026_present": False,
+                "allowed_dates": {
+                    "min": "2024-01-02",
+                    "max": "2024-01-03",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    hfq = tmp_path / "hfq.parquet"
+    pd.DataFrame(
+        {
+            "date": pd.to_datetime(
+                ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04"]
+            ),
+            "code": ["600000"] * 4,
+            "is_st": ["否", "否", "是", "否"],
+        }
+    ).to_parquet(hfq, index=False)
+    output = tmp_path / "pit_st"
+
+    result = subject.freeze_pit_st_source(
+        release_root=release,
+        hfq_paths=[hfq],
+        output_root=output,
+    )
+    frame, receipt = subject.verify_pit_st_source(
+        output,
+        release=subject._release_manifest(release),
+    )
+
+    assert result["status"] == "PIT_HISTORICAL_ST_SOURCE_CLOSED_IMMUTABLE"
+    assert frame["date"].min() == pd.Timestamp("2024-01-02")
+    assert frame["date"].max() == pd.Timestamp("2024-01-03")
+    assert frame["is_st"].tolist() == [False, True]
+    assert receipt["st_true_row_count"] == 1
 
 
 def test_cninfo_raw_keys_map_to_payment_and_effective_sessions() -> None:

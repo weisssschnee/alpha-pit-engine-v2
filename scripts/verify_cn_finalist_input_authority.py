@@ -141,6 +141,55 @@ def verify(
             raise ValueError("READY session authority security count is invalid")
         if int(session.get("session_row_count") or 0) <= 0:
             raise ValueError("READY session authority row count is invalid")
+        observed_rows = int(session.get("observed_session_row_count") or 0)
+        known_st_rows = int(
+            session.get("st_known_observed_session_count") or 0
+        )
+        if observed_rows <= 0 or known_st_rows != observed_rows:
+            raise ValueError(
+                "READY session authority lacks full observed-session ST "
+                "coverage"
+            )
+        if float(session.get("pit_st_observed_session_coverage") or 0) != 1.0:
+            raise ValueError(
+                "READY session authority ST coverage ratio is not one"
+            )
+        if int(session.get("st_true_observed_session_count") or 0) <= 0:
+            raise ValueError("READY session authority has no observed ST rows")
+        if int(
+            session.get("leading_unknown_st_blocked_session_count") or 0
+        ) >= int(session["session_row_count"]):
+            raise ValueError("READY session authority blocks every session")
+        st_source = session.get("pit_historical_st_source")
+        if not isinstance(st_source, dict):
+            raise ValueError("READY session authority lacks PIT ST source")
+        if (
+            str(st_source.get("semantics") or "")
+            != "EXACT_CODE_DATE_NAME_STATE_NO_FORWARD_BACKFILL"
+        ):
+            raise ValueError("READY PIT ST source semantics are invalid")
+        if not str(st_source.get("manifest_file_sha256") or ""):
+            raise ValueError("READY PIT ST source hash is missing")
+        st_manifest_path = Path(str(st_source.get("manifest") or "")).resolve()
+        if not st_manifest_path.is_file():
+            raise FileNotFoundError(st_manifest_path)
+        if _sha256(st_manifest_path) != str(
+            st_source["manifest_file_sha256"]
+        ):
+            raise ValueError("READY PIT ST source manifest hash mismatch")
+        st_manifest = json.loads(
+            st_manifest_path.read_text(encoding="utf-8")
+        )
+        _verify_payload_hash(st_manifest, "manifest_payload_sha256")
+        st_artifact_path = Path(
+            str(st_source.get("artifact") or "")
+        ).resolve()
+        if not st_artifact_path.is_file():
+            raise FileNotFoundError(st_artifact_path)
+        if _sha256(st_artifact_path) != str(
+            st_source.get("artifact_sha256") or ""
+        ):
+            raise ValueError("READY PIT ST artifact hash mismatch")
     if status == "HOLD_RESEARCH_FINALIST_INPUTS_INCOMPLETE" and not blockers:
         raise ValueError("HOLD binding has no blocker")
     if status not in {
