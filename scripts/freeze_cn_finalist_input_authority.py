@@ -14,6 +14,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import subprocess
@@ -255,6 +256,18 @@ def _validate_session_authority_manifest(
         blockers.append("session_authority_date_end_does_not_cover_release")
     observed_rows = int(payload.get("observed_session_row_count") or 0)
     known_st_rows = int(payload.get("st_known_observed_session_count") or 0)
+    source_gap_blocked_rows = int(
+        payload.get(
+            "pit_st_source_gap_blocked_observed_session_count"
+        )
+        or 0
+    )
+    resolved_or_blocked_st_rows = int(
+        payload.get(
+            "st_resolved_or_conservatively_blocked_observed_session_count"
+        )
+        or 0
+    )
     session_rows = int(payload.get("session_row_count") or 0)
     leading_unknown_st = int(
         payload.get("leading_unknown_st_blocked_session_count") or 0
@@ -302,13 +315,30 @@ def _validate_session_authority_manifest(
             blockers.append("pit_historical_st_artifact_hash_mismatch")
     if observed_rows <= 0:
         blockers.append("session_authority_observed_row_count_not_positive")
-    if known_st_rows != observed_rows:
-        blockers.append("pit_historical_st_observed_coverage_incomplete")
-    if float(payload.get("pit_st_observed_session_coverage") or 0.0) != 1.0:
-        blockers.append("pit_historical_st_observed_coverage_not_one")
-    if int(payload.get("st_true_observed_session_count") or 0) <= 0:
+    if known_st_rows <= 0:
+        blockers.append("pit_historical_st_known_observed_rows_not_positive")
+    if (
+        known_st_rows + source_gap_blocked_rows != observed_rows
+        or resolved_or_blocked_st_rows != observed_rows
+    ):
+        blockers.append("pit_historical_st_observed_rows_not_fail_closed")
+    exact_coverage = float(
+        payload.get("pit_st_observed_session_coverage") or 0.0
+    )
+    if observed_rows > 0 and not math.isclose(
+        exact_coverage,
+        known_st_rows / observed_rows,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        blockers.append("pit_historical_st_observed_coverage_mismatch")
+    if int(payload.get("st_true_source_observed_session_count") or 0) <= 0:
         blockers.append("pit_historical_st_has_no_observed_st_sessions")
-    if session_rows <= 0 or leading_unknown_st >= session_rows:
+    if (
+        session_rows <= 0
+        or leading_unknown_st >= session_rows
+        or source_gap_blocked_rows >= observed_rows
+    ):
         blockers.append("pit_historical_st_blocks_all_sessions")
     for field in (
         "financial_reads",
@@ -342,7 +372,10 @@ def _validate_session_authority_manifest(
     ).resolve()
     if not sidecar_path.is_file():
         raise FileNotFoundError(sidecar_path)
-    columns = set(pq.ParquetFile(sidecar_path).schema_arrow.names)
+    sidecar = pq.ParquetFile(sidecar_path)
+    columns = set(sidecar.schema_arrow.names)
+    if int(sidecar.metadata.num_rows) != session_rows:
+        blockers.append("session_authority_row_count_differs_from_manifest")
     declared_columns = set(payload.get("columns") or [])
     if columns != declared_columns:
         blockers.append("session_authority_schema_differs_from_manifest")
@@ -368,8 +401,17 @@ def _validate_session_authority_manifest(
         "session_row_count": session_rows,
         "observed_session_row_count": observed_rows,
         "st_known_observed_session_count": known_st_rows,
+        "pit_st_source_gap_blocked_observed_session_count": (
+            source_gap_blocked_rows
+        ),
+        "st_resolved_or_conservatively_blocked_observed_session_count": (
+            resolved_or_blocked_st_rows
+        ),
         "st_true_observed_session_count": int(
             payload.get("st_true_observed_session_count") or 0
+        ),
+        "st_true_source_observed_session_count": int(
+            payload.get("st_true_source_observed_session_count") or 0
         ),
         "pit_st_observed_session_coverage": float(
             payload.get("pit_st_observed_session_coverage") or 0.0

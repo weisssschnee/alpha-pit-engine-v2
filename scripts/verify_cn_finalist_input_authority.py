@@ -6,6 +6,7 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -145,16 +146,44 @@ def verify(
         known_st_rows = int(
             session.get("st_known_observed_session_count") or 0
         )
-        if observed_rows <= 0 or known_st_rows != observed_rows:
-            raise ValueError(
-                "READY session authority lacks full observed-session ST "
-                "coverage"
+        gap_blocked_rows = int(
+            session.get(
+                "pit_st_source_gap_blocked_observed_session_count"
             )
-        if float(session.get("pit_st_observed_session_coverage") or 0) != 1.0:
-            raise ValueError(
-                "READY session authority ST coverage ratio is not one"
+            or 0
+        )
+        resolved_or_blocked_rows = int(
+            session.get(
+                "st_resolved_or_conservatively_blocked_observed_session_count"
             )
-        if int(session.get("st_true_observed_session_count") or 0) <= 0:
+            or 0
+        )
+        if (
+            observed_rows <= 0
+            or known_st_rows <= 0
+            or known_st_rows + gap_blocked_rows != observed_rows
+            or resolved_or_blocked_rows != observed_rows
+        ):
+            raise ValueError(
+                "READY session authority does not resolve or conservatively "
+                "block every observed-session ST state"
+            )
+        if gap_blocked_rows >= observed_rows:
+            raise ValueError(
+                "READY session authority blocks every observed session"
+            )
+        if not math.isclose(
+            float(session.get("pit_st_observed_session_coverage") or 0.0),
+            known_st_rows / observed_rows,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ):
+            raise ValueError(
+                "READY session authority ST coverage ratio is inconsistent"
+            )
+        if int(
+            session.get("st_true_source_observed_session_count") or 0
+        ) <= 0:
             raise ValueError("READY session authority has no observed ST rows")
         if int(
             session.get("leading_unknown_st_blocked_session_count") or 0

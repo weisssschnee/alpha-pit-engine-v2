@@ -1252,21 +1252,17 @@ def build_authority(
         validate="one_to_one",
     )
     missing_st = observed["is_st"].isna()
-    if missing_st.any():
-        examples = [
-            f"{row.code}:{row.date.date()}"
-            for row in observed.loc[missing_st, ["code", "date"]]
-            .head(20)
-            .itertuples(index=False)
-        ]
-        raise ValueError(
-            "historical ST source does not cover every observed session: "
-            f"missing={int(missing_st.sum())}, examples={examples}"
-        )
     st_known_observed_session_count = int(observed["is_st"].notna().sum())
+    pit_st_source_gap_blocked_observed_session_count = int(missing_st.sum())
     pit_st_observed_session_coverage = (
         st_known_observed_session_count / len(observed)
     )
+    st_true_source_observed_session_count = int(
+        observed["is_st"].fillna(False).sum()
+    )
+    # A missing exact-date source row is never forward-filled or assumed
+    # normal.  It remains explicitly ineligible in the existing replay.
+    observed["is_st"] = observed["is_st"].fillna(True).astype(bool)
     observed_cache_receipt = None
     if observed_cache is not None:
         resolved_cache = observed_cache.resolve()
@@ -1323,8 +1319,9 @@ def build_authority(
         "session_row_count": len(authority),
         "source_reference": (
             "SSE/SZSE active and delisted security masters plus full "
-            "exchange trade calendar; exact code/date PIT ST state from "
-            "the frozen historical HFQ daily silver"
+            "exchange trade calendar; exact code/date PIT ST state where "
+            "present in the frozen historical HFQ daily silver, with source "
+            "gaps explicitly ineligible"
         ),
         "source_snapshot_manifest": source["manifest"],
         "source_snapshot_manifest_sha256": source["manifest_file_sha256"],
@@ -1375,7 +1372,17 @@ def build_authority(
         "session_row_count": len(authority),
         "observed_session_row_count": len(observed),
         "st_known_observed_session_count": st_known_observed_session_count,
+        "pit_st_source_gap_blocked_observed_session_count": (
+            pit_st_source_gap_blocked_observed_session_count
+        ),
+        "st_resolved_or_conservatively_blocked_observed_session_count": (
+            st_known_observed_session_count
+            + pit_st_source_gap_blocked_observed_session_count
+        ),
         "pit_st_observed_session_coverage": pit_st_observed_session_coverage,
+        "st_true_source_observed_session_count": (
+            st_true_source_observed_session_count
+        ),
         "st_true_observed_session_count": int(observed["is_st"].sum()),
         "pit_historical_st_source": pit_st_receipt,
         "observed_session_cache": observed_cache_receipt,
@@ -1406,6 +1413,9 @@ def build_authority(
             ),
             "leading_unknown_st": (
                 "CONSERVATIVE_INELIGIBLE_UNTIL_FIRST_PIT_OBSERVATION"
+            ),
+            "st_source_gap": (
+                "CONSERVATIVE_INELIGIBLE_NO_FORWARD_OR_BACKFILL"
             ),
             "limits": "CN_CONSERVATIVE_LIMIT_LIFECYCLE_V2_EQUIVALENT_SESSION_RULES",
             "cash_actions": "CNINFO_F012N_PER_10_ON_F023D_PAYMENT_SESSION",

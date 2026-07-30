@@ -107,6 +107,7 @@ def _session_authority(
     root: Path,
     *,
     fee_mode: str = "CONSERVATIVE_RESEARCH_UPPER_BOUND_NON_PROMOTION",
+    gap_blocked_rows: int = 0,
 ) -> Path:
     root.mkdir(parents=True)
     st_root = root / "pit_st"
@@ -131,24 +132,26 @@ def _session_authority(
     st_manifest = st_root / "pit_st_source_manifest.json"
     _write_json(st_manifest, st_manifest_payload)
     sidecar = root / "session_authority.parquet"
+    row_count = 1 + gap_blocked_rows
+    session_dates = pd.date_range("2024-01-02", periods=row_count, freq="D")
     values: dict[str, list[object]] = {}
     for column in subject.DIRECT_REQUIRED_COLUMNS:
         if column in {"trade_time", "open", "high", "low", "close"}:
             continue
         if column == "code":
-            values[column] = ["600000"]
+            values[column] = ["600000"] * row_count
         elif column in {"security_type"}:
-            values[column] = ["A_SHARE"]
+            values[column] = ["A_SHARE"] * row_count
         elif column == "exchange":
-            values[column] = ["SSE"]
+            values[column] = ["SSE"] * row_count
         elif column.startswith("is_") or column in {
             "universe_eligible",
             "suspended",
         }:
-            values[column] = [False]
+            values[column] = [False] * row_count
         else:
-            values[column] = [1.0]
-    values["date"] = [pd.Timestamp("2024-01-02")]
+            values[column] = [1.0] * row_count
+    values["date"] = list(session_dates)
     pd.DataFrame(values).to_parquet(sidecar, index=False)
     universe = root / "universe_manifest.json"
     _write_json(
@@ -205,11 +208,16 @@ def _session_authority(
         "date_min": "2024-01-02",
         "date_max": "2025-07-07",
         "security_count": 1,
-        "session_row_count": 1,
-        "observed_session_row_count": 1,
+        "session_row_count": row_count,
+        "observed_session_row_count": row_count,
         "st_known_observed_session_count": 1,
-        "st_true_observed_session_count": 1,
-        "pit_st_observed_session_coverage": 1.0,
+        "pit_st_source_gap_blocked_observed_session_count": gap_blocked_rows,
+        "st_resolved_or_conservatively_blocked_observed_session_count": (
+            row_count
+        ),
+        "st_true_source_observed_session_count": 1,
+        "st_true_observed_session_count": row_count,
+        "pit_st_observed_session_coverage": 1 / row_count,
         "leading_unknown_st_blocked_session_count": 0,
         "pit_historical_st_source": {
             "manifest": str(st_manifest),
@@ -298,6 +306,11 @@ def test_all_null_or_all_blocked_st_cannot_close_ready_binding(
     manifest_path = _session_authority(session)
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["st_known_observed_session_count"] = 0
+    manifest["pit_st_source_gap_blocked_observed_session_count"] = 1
+    manifest[
+        "st_resolved_or_conservatively_blocked_observed_session_count"
+    ] = 1
+    manifest["st_true_source_observed_session_count"] = 0
     manifest["pit_st_observed_session_coverage"] = 0.0
     manifest["leading_unknown_st_blocked_session_count"] = 1
     manifest["manifest_payload_sha256"] = subject._payload_sha256(
@@ -315,9 +328,36 @@ def test_all_null_or_all_blocked_st_cannot_close_ready_binding(
         date_max="2025-07-07",
     )
 
-    assert "pit_historical_st_observed_coverage_incomplete" in blockers
-    assert "pit_historical_st_observed_coverage_not_one" in blockers
+    assert "pit_historical_st_known_observed_rows_not_positive" in blockers
     assert "pit_historical_st_blocks_all_sessions" in blockers
+
+
+def test_partial_pit_st_source_gap_is_explicitly_fail_closed(
+    tmp_path: Path,
+) -> None:
+    manifest_path = _session_authority(
+        tmp_path / "session",
+        gap_blocked_rows=1,
+    )
+
+    receipt, _, blockers = subject._validate_session_authority_manifest(
+        manifest_path,
+        date_min="2024-01-02",
+        date_max="2025-07-07",
+    )
+
+    assert blockers == []
+    assert receipt["st_known_observed_session_count"] == 1
+    assert (
+        receipt["pit_st_source_gap_blocked_observed_session_count"] == 1
+    )
+    assert (
+        receipt[
+            "st_resolved_or_conservatively_blocked_observed_session_count"
+        ]
+        == 2
+    )
+    assert receipt["pit_st_observed_session_coverage"] == 0.5
 
 
 def test_complete_frozen_inputs_can_close_zero_financial_binding(
