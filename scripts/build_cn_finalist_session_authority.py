@@ -1496,7 +1496,6 @@ def main(argv: list[str] | None = None) -> int:
         result = fetch_public_sources(
             release_root=args.release_root,
             source_root=args.source_root,
-            pit_st_root=args.pit_st_root,
             dividend_workers=args.dividend_workers,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
@@ -1510,6 +1509,7 @@ def main(argv: list[str] | None = None) -> int:
         build_authority(
             release_root=args.release_root,
             source_root=args.source_root,
+            pit_st_root=args.pit_st_root,
             output_root=args.output_root,
             observed_cache=args.observed_cache,
         )

@@ -19,6 +19,34 @@ def test_text_pit_st_values_are_not_coerced_to_null() -> None:
         subject._normalize_pit_st(pd.Series(["未知"]))
 
 
+def test_materialize_cli_requires_and_routes_pit_st_root() -> None:
+    args = subject.build_parser().parse_args(
+        [
+            "materialize",
+            "--release-root",
+            "release",
+            "--source-root",
+            "source",
+            "--pit-st-root",
+            "pit-st",
+            "--output-root",
+            "output",
+        ]
+    )
+
+    assert args.pit_st_root == Path("pit-st")
+    fetch = subject.build_parser().parse_args(
+        [
+            "fetch",
+            "--release-root",
+            "release",
+            "--source-root",
+            "source",
+        ]
+    )
+    assert not hasattr(fetch, "pit_st_root")
+
+
 def test_freeze_pit_st_source_is_exact_date_and_hash_bound(
     tmp_path: Path,
 ) -> None:
