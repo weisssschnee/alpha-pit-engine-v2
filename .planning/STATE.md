@@ -1098,6 +1098,25 @@ remains unchanged. The compact receipt is
   The compact receipt is
   `runtime/run_plans/cn_winner_guided_large_search_20260730_receipt.json`.
 
+## Phase3CM ordered-day uncertainty repair (2026-07-30)
+
+- ADR 0011 corrects the historical `day_mcmc_*` naming and IID-resampling
+  weakness without changing the ADR 0010 development/finalist boundary.
+- Phase3CM now uses deterministic ordered-trade-day stationary block bootstrap
+  uncertainty. The frozen block rule is rounded cube root of day count clamped
+  to 2-20; candidate reward does not tune it.
+- Canonical `day_uncertainty_*` output records the contract, method, seed,
+  requested/valid/invalid draws, block metadata, tail quantiles, support above
+  zero, Monte Carlo probability error, downside-day support and an IID
+  diagnostic reference. Historical `day_mcmc_*` fields remain compatibility
+  aliases only and do not claim a Bayesian posterior or Markov chain.
+- The existing 20% train uncertainty weight and 0.60 support gate are retained.
+  Sample-day and invalid-draw warnings are explicit diagnostics, not new hidden
+  admission gates.
+- Verification is synthetic/non-financial. No search, replay, validation,
+  holdout, 2026 access, promotion or successor budget is authorized, and all
+  closed artifacts remain immutable under their original reward contract.
+
 ## Next action
 
 Do not run another scale-search tranche. The existing replay's corporate-action

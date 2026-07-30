@@ -93,6 +93,13 @@ PERSISTENT_CACHE_VERSION = "phase3cm_persistent_series_cache_v1"
 DEFAULT_PERSISTENT_CACHE_MAX_GB = 120.0
 DEFAULT_PERSISTENT_CACHE_TTL_DAYS = 7.0
 _PERSISTENT_CACHE_PRUNE_LAST_RUN: dict[str, float] = {}
+DAY_UNCERTAINTY_ENGINE = "stationary_block_bootstrap_v2"
+DAY_UNCERTAINTY_METHOD = "politis_romano_stationary_bootstrap"
+DAY_UNCERTAINTY_CONTRACT = "phase3cm_ordered_day_stationary_block_uncertainty_v2"
+DAY_UNCERTAINTY_REFERENCE = "doi:10.1080/01621459.1994.10476870"
+DAY_UNCERTAINTY_BLOCK_LENGTH_RULE = "round_cuberoot_day_count_clamped_2_20"
+DAY_UNCERTAINTY_MIN_DAYS = 20
+DAY_UNCERTAINTY_MIN_VALID_FRACTION = 0.90
 
 
 def _resolve(path: Path) -> Path:
@@ -1962,31 +1969,266 @@ def _daily_returns(curve_rows: list[dict[str, Any]]) -> list[float]:
     return [float(value) for value in daily.to_numpy(dtype=float) if math.isfinite(float(value))]
 
 
-def _bootstrap_days(day_values: list[float], *, iterations: int, seed: int) -> dict[str, Any]:
-    clean = np.asarray([float(value) for value in day_values if math.isfinite(float(value))], dtype=np.float64)
-    engine = "numpy_vectorized_v1"
-    iterations = max(0, int(iterations))
-    if len(clean) == 0 or iterations == 0:
-        return {"iterations": 0, "day_count": int(len(clean)), "engine": engine}
-    rng = np.random.default_rng(int(seed))
-    indices = rng.integers(0, len(clean), size=(iterations, len(clean)), dtype=np.int64)
-    samples = clean[indices]
+def _stationary_bootstrap_block_length(day_count: int) -> int:
+    """Return the frozen expected block length for ordered daily returns."""
+
+    day_count = max(0, int(day_count))
+    if day_count <= 1:
+        return day_count
+    return min(day_count, 20, max(2, int(round(day_count ** (1.0 / 3.0)))))
+
+
+def _sortino_draws(samples: np.ndarray) -> tuple[np.ndarray, int]:
+    if samples.ndim != 2:
+        raise ValueError("bootstrap samples must be a two-dimensional matrix")
     means = np.mean(samples, axis=1)
     downside = np.minimum(samples, 0.0)
     downside_scale = np.sqrt(np.mean(downside * downside, axis=1))
     valid = np.isfinite(means) & np.isfinite(downside_scale) & (downside_scale > 1e-18)
-    draws = means[valid] / downside_scale[valid]
-    positives = int(np.sum(draws > 0.0))
-    return {
-        "iterations": int(len(draws)),
-        "day_count": int(len(clean)),
-        "engine": engine,
-        "p05": _round(float(np.quantile(draws, 0.05)) if len(draws) else None),
-        "p25": _round(float(np.quantile(draws, 0.25)) if len(draws) else None),
-        "median": _round(float(np.quantile(draws, 0.50)) if len(draws) else None),
-        "p95": _round(float(np.quantile(draws, 0.95)) if len(draws) else None),
-        "prob_gt_0": _round(positives / len(draws) if len(draws) else None),
+    return means[valid] / downside_scale[valid], int(np.sum(~valid))
+
+
+def _stationary_bootstrap_indices(
+    *,
+    rng: np.random.Generator,
+    iterations: int,
+    day_count: int,
+    expected_block_length: int,
+) -> np.ndarray:
+    """Generate circular stationary-bootstrap indices.
+
+    Each path restarts at a uniformly sampled day with probability 1/L and
+    otherwise advances to the next ordered day. This retains short-run
+    dependence without introducing a parametric return model.
+    """
+
+    if iterations <= 0 or day_count <= 0:
+        return np.empty((0, max(0, day_count)), dtype=np.int64)
+    restart_probability = 1.0 / max(1, int(expected_block_length))
+    indices = np.empty((int(iterations), int(day_count)), dtype=np.int64)
+    indices[:, 0] = rng.integers(0, day_count, size=iterations, dtype=np.int64)
+    if day_count == 1:
+        return indices
+    restarts = rng.random((iterations, day_count - 1)) < restart_probability
+    fresh_starts = rng.integers(
+        0,
+        day_count,
+        size=(iterations, day_count - 1),
+        dtype=np.int64,
+    )
+    for offset in range(1, day_count):
+        continuation = (indices[:, offset - 1] + 1) % day_count
+        indices[:, offset] = np.where(
+            restarts[:, offset - 1],
+            fresh_starts[:, offset - 1],
+            continuation,
+        )
+    return indices
+
+
+def _bootstrap_days(day_values: list[float], *, iterations: int, seed: int) -> dict[str, Any]:
+    """Estimate daily Sortino uncertainty with a stationary block bootstrap.
+
+    Historical outputs use ``day_mcmc_*`` names. Those names are retained by
+    callers as compatibility aliases only: the estimator is a non-parametric
+    time-series bootstrap, not a Bayesian posterior or Markov chain.
+    """
+
+    clean = np.asarray([float(value) for value in day_values if math.isfinite(float(value))], dtype=np.float64)
+    requested_iterations = max(0, int(iterations))
+    day_count = int(len(clean))
+    block_length = _stationary_bootstrap_block_length(day_count)
+    base = {
+        "iterations": 0,
+        "requested_iterations": requested_iterations,
+        "valid_iterations": 0,
+        "invalid_iterations": requested_iterations,
+        "valid_fraction": 0.0 if requested_iterations else None,
+        "day_count": day_count,
+        "downside_day_count": int(np.sum(clean < 0.0)),
+        "downside_day_fraction": _round(float(np.mean(clean < 0.0)) if day_count else None),
+        "engine": DAY_UNCERTAINTY_ENGINE,
+        "method": DAY_UNCERTAINTY_METHOD,
+        "contract": DAY_UNCERTAINTY_CONTRACT,
+        "reference": DAY_UNCERTAINTY_REFERENCE,
+        "resampling_unit": "ordered_trade_day",
+        "seed": int(seed),
+        "expected_block_length": block_length,
+        "restart_probability": _round(1.0 / block_length if block_length else None),
+        "block_length_rule": DAY_UNCERTAINTY_BLOCK_LENGTH_RULE,
+        "minimum_day_count": DAY_UNCERTAINTY_MIN_DAYS,
+        "sufficient_day_count": bool(day_count >= DAY_UNCERTAINTY_MIN_DAYS),
+        "minimum_valid_fraction": DAY_UNCERTAINTY_MIN_VALID_FRACTION,
     }
+    if day_count == 0 or requested_iterations == 0:
+        return base
+
+    rng = np.random.default_rng(int(seed))
+    indices = _stationary_bootstrap_indices(
+        rng=rng,
+        iterations=requested_iterations,
+        day_count=day_count,
+        expected_block_length=block_length,
+    )
+    draws, invalid_iterations = _sortino_draws(clean[indices])
+    valid_iterations = int(len(draws))
+    positives = int(np.sum(draws > 0.0))
+    probability = positives / valid_iterations if valid_iterations else None
+
+    # Keep an IID reference as a diagnostic only. It never feeds reward; its
+    # purpose is to expose how much serial dependence changes the result.
+    iid_rng = np.random.default_rng(int(seed) + 104_729)
+    iid_indices = iid_rng.integers(
+        0,
+        day_count,
+        size=(requested_iterations, day_count),
+        dtype=np.int64,
+    )
+    iid_draws, iid_invalid_iterations = _sortino_draws(clean[iid_indices])
+    iid_p25 = float(np.quantile(iid_draws, 0.25)) if len(iid_draws) else None
+    p25 = float(np.quantile(draws, 0.25)) if valid_iterations else None
+    return {
+        **base,
+        "iterations": valid_iterations,
+        "valid_iterations": valid_iterations,
+        "invalid_iterations": invalid_iterations,
+        "valid_fraction": _round(valid_iterations / requested_iterations),
+        "p05": _round(float(np.quantile(draws, 0.05)) if len(draws) else None),
+        "p25": _round(p25),
+        "median": _round(float(np.quantile(draws, 0.50)) if len(draws) else None),
+        "p75": _round(float(np.quantile(draws, 0.75)) if len(draws) else None),
+        "p95": _round(float(np.quantile(draws, 0.95)) if len(draws) else None),
+        "prob_gt_0": _round(probability),
+        "prob_gt_0_mcse": _round(
+            math.sqrt(probability * (1.0 - probability) / valid_iterations)
+            if probability is not None and valid_iterations
+            else None
+        ),
+        "iid_reference_valid_iterations": int(len(iid_draws)),
+        "iid_reference_invalid_iterations": int(iid_invalid_iterations),
+        "iid_reference_p25": _round(iid_p25),
+        "iid_reference_prob_gt_0": _round(
+            float(np.mean(iid_draws > 0.0)) if len(iid_draws) else None
+        ),
+        "dependence_p25_delta": _round(
+            p25 - iid_p25 if p25 is not None and iid_p25 is not None else None
+        ),
+    }
+
+
+def _day_uncertainty_fields(bootstrap: dict[str, Any]) -> dict[str, Any]:
+    """Expose canonical uncertainty fields plus historical MCMC aliases."""
+
+    return {
+        "day_uncertainty_sortino_p05": bootstrap.get("p05"),
+        "day_uncertainty_sortino_p25": bootstrap.get("p25"),
+        "day_uncertainty_sortino_median": bootstrap.get("median"),
+        "day_uncertainty_sortino_p75": bootstrap.get("p75"),
+        "day_uncertainty_sortino_p95": bootstrap.get("p95"),
+        "day_uncertainty_support_sortino_gt_0": bootstrap.get("prob_gt_0"),
+        "day_uncertainty_support_mcse": bootstrap.get("prob_gt_0_mcse"),
+        "day_uncertainty_engine": bootstrap.get("engine"),
+        "day_uncertainty_method": bootstrap.get("method"),
+        "day_uncertainty_contract": bootstrap.get("contract"),
+        "day_uncertainty_reference": bootstrap.get("reference"),
+        "day_uncertainty_seed": bootstrap.get("seed"),
+        "day_uncertainty_requested_iterations": bootstrap.get("requested_iterations"),
+        "day_uncertainty_valid_iterations": bootstrap.get("valid_iterations"),
+        "day_uncertainty_invalid_iterations": bootstrap.get("invalid_iterations"),
+        "day_uncertainty_valid_fraction": bootstrap.get("valid_fraction"),
+        "day_uncertainty_expected_block_length": bootstrap.get("expected_block_length"),
+        "day_uncertainty_restart_probability": bootstrap.get("restart_probability"),
+        "day_uncertainty_block_length_rule": bootstrap.get("block_length_rule"),
+        "day_uncertainty_downside_day_count": bootstrap.get("downside_day_count"),
+        "day_uncertainty_downside_day_fraction": bootstrap.get("downside_day_fraction"),
+        "day_uncertainty_minimum_day_count": bootstrap.get("minimum_day_count"),
+        "day_uncertainty_sufficient_day_count": bootstrap.get("sufficient_day_count"),
+        "day_uncertainty_minimum_valid_fraction": bootstrap.get(
+            "minimum_valid_fraction"
+        ),
+        "day_uncertainty_iid_reference_p25": bootstrap.get("iid_reference_p25"),
+        "day_uncertainty_iid_reference_support_gt_0": bootstrap.get(
+            "iid_reference_prob_gt_0"
+        ),
+        "day_uncertainty_dependence_p25_delta": bootstrap.get(
+            "dependence_p25_delta"
+        ),
+        # Compatibility only. These names predate the corrected estimator and
+        # must not be interpreted as a Bayesian posterior or Markov chain.
+        "day_mcmc_sortino_p25": bootstrap.get("p25"),
+        "day_mcmc_sortino_median": bootstrap.get("median"),
+        "day_mcmc_prob_sortino_gt_0": bootstrap.get("prob_gt_0"),
+        "day_mcmc_engine": bootstrap.get("engine"),
+        "day_mcmc_iterations": bootstrap.get("valid_iterations"),
+    }
+
+
+def _train_day_uncertainty(
+    train_summary: dict[str, Any],
+) -> tuple[float, float, float, list[str]]:
+    p25 = _f(
+        train_summary.get(
+            "day_uncertainty_sortino_p25",
+            train_summary.get("day_mcmc_sortino_p25"),
+        )
+    )
+    support = _f(
+        train_summary.get(
+            "day_uncertainty_support_sortino_gt_0",
+            train_summary.get("day_mcmc_prob_sortino_gt_0"),
+        ),
+        0.0,
+    )
+    valid_fraction = _f(
+        train_summary.get("day_uncertainty_valid_fraction"),
+        0.0,
+    )
+    quality_flags: list[str] = []
+    if not bool(train_summary.get("day_uncertainty_sufficient_day_count")):
+        quality_flags.append("insufficient_train_day_uncertainty_days")
+    if valid_fraction < DAY_UNCERTAINTY_MIN_VALID_FRACTION:
+        quality_flags.append("insufficient_train_day_uncertainty_draws")
+    return p25, support, valid_fraction, quality_flags
+
+
+def _train_day_uncertainty_reward_fields(
+    train_summary: dict[str, Any],
+    *,
+    quality_flags: list[str],
+) -> dict[str, Any]:
+    canonical_sources = {
+        "p25": "day_uncertainty_sortino_p25",
+        "prob_gt_0": "day_uncertainty_support_sortino_gt_0",
+        "prob_mcse": "day_uncertainty_support_mcse",
+        "engine": "day_uncertainty_engine",
+        "method": "day_uncertainty_method",
+        "contract": "day_uncertainty_contract",
+        "reference": "day_uncertainty_reference",
+        "seed": "day_uncertainty_seed",
+        "requested_iterations": "day_uncertainty_requested_iterations",
+        "valid_iterations": "day_uncertainty_valid_iterations",
+        "invalid_iterations": "day_uncertainty_invalid_iterations",
+        "valid_fraction": "day_uncertainty_valid_fraction",
+        "expected_block_length": "day_uncertainty_expected_block_length",
+        "block_length_rule": "day_uncertainty_block_length_rule",
+        "downside_day_count": "day_uncertainty_downside_day_count",
+        "dependence_p25_delta": "day_uncertainty_dependence_p25_delta",
+        "sufficient_day_count": "day_uncertainty_sufficient_day_count",
+    }
+    fields = {
+        f"train_day_uncertainty_{name}": train_summary.get(source)
+        for name, source in canonical_sources.items()
+    }
+    fields.update(
+        {
+            "train_day_uncertainty_quality_flags": "|".join(quality_flags),
+            "train_day_mcmc_p25": train_summary.get("day_mcmc_sortino_p25"),
+            "train_day_mcmc_prob_gt_0": train_summary.get(
+                "day_mcmc_prob_sortino_gt_0"
+            ),
+        }
+    )
+    return fields
 
 
 def _summarize_curve(
@@ -2019,11 +2261,7 @@ def _summarize_curve(
         "net_hit_rate": _round(sum(1 for value in values if value > 0) / len(values) if values else None),
         "minute_sortino": _round(_sortino(values)),
         "day_sortino": _round(_sortino(day_values)),
-        "day_mcmc_sortino_p25": boot.get("p25"),
-        "day_mcmc_sortino_median": boot.get("median"),
-        "day_mcmc_prob_sortino_gt_0": boot.get("prob_gt_0"),
-        "day_mcmc_engine": boot.get("engine"),
-        "day_mcmc_iterations": boot.get("iterations"),
+        **_day_uncertainty_fields(boot),
         "max_drawdown": _round(_max_drawdown(values)),
         "mean_one_way_turnover": _round(statistics.fmean(turnover) if turnover else None),
         "rank_ic_mean": _round(rank_ic_mean),
@@ -2244,7 +2482,12 @@ def _summarize_reward_atoms(atom_rows: list[dict[str, Any]], *, split: str, hori
         rank_ic_count += int(_f(row.get("rank_ic_count"), 0.0))
         rank_ic_positive_count += int(_f(row.get("rank_ic_positive_count"), 0.0))
 
-    day_values = [item["daily_net_return"] for item in by_date.values() if math.isfinite(item["daily_net_return"])]
+    ordered_dates = sorted(by_date)
+    day_values = [
+        by_date[trade_date]["daily_net_return"]
+        for trade_date in ordered_dates
+        if math.isfinite(by_date[trade_date]["daily_net_return"])
+    ]
     boot = _bootstrap_days(day_values, iterations=600, seed=seed)
     net_mean = net_return_sum / curve_count if curve_count else None
     raw_mean = raw_return_sum / curve_count if curve_count else None
@@ -2254,7 +2497,8 @@ def _summarize_reward_atoms(atom_rows: list[dict[str, Any]], *, split: str, hori
         minute_sortino = net_mean / math.sqrt(downside_var)
     rank_ic_mean = rank_ic_sum / rank_ic_count if rank_ic_count else None
     daily_rows = []
-    for trade_date, item in by_date.items():
+    for trade_date in ordered_dates:
+        item = by_date[trade_date]
         market_count = item["market_mean_return_count"]
         daily_rows.append(
             {
@@ -2273,11 +2517,7 @@ def _summarize_reward_atoms(atom_rows: list[dict[str, Any]], *, split: str, hori
         "net_hit_rate": _round(net_positive_count / curve_count if curve_count else None),
         "minute_sortino": _round(minute_sortino),
         "day_sortino": _round(_sortino(day_values)),
-        "day_mcmc_sortino_p25": boot.get("p25"),
-        "day_mcmc_sortino_median": boot.get("median"),
-        "day_mcmc_prob_sortino_gt_0": boot.get("prob_gt_0"),
-        "day_mcmc_engine": boot.get("engine"),
-        "day_mcmc_iterations": boot.get("iterations"),
+        **_day_uncertainty_fields(boot),
         "max_drawdown": _round(_max_drawdown(day_values)),
         "mean_one_way_turnover": _round(turnover_sum / turnover_count if turnover_count else None),
         "rank_ic_mean": _round(rank_ic_mean),
@@ -2399,7 +2639,14 @@ def _candidate_summary_from_reward_atoms(
     instability = _safe_stdev(train_horizon_sortinos)
     train_turnover = _f(train_all.get("mean_one_way_turnover"), 0.0)
     train_day_sortino = _f(train_all.get("day_sortino"))
-    train_day_mcmc_p25 = _f(train_all.get("day_mcmc_sortino_p25"))
+    (
+        train_day_uncertainty_p25,
+        train_day_uncertainty_support,
+        _,
+        uncertainty_quality_flags,
+    ) = _train_day_uncertainty(
+        train_all
+    )
     train_rank_ic_mean = _f(train_all.get("rank_ic_mean"))
     train_rank_ic_loss = _f(train_all.get("rank_ic_loss"), 0.05)
     rank_ic_reward_component = _bounded(-float(rank_ic_loss_weight) * train_rank_ic_loss, float(rank_ic_component_cap))
@@ -2412,7 +2659,7 @@ def _candidate_summary_from_reward_atoms(
     reward = (
         0.55 * _f(train_day_sortino, -2.0)
         + 0.25 * _f(train_worst, -2.0)
-        + 0.20 * _f(train_day_mcmc_p25, -2.0)
+        + 0.20 * _f(train_day_uncertainty_p25, -2.0)
         + rank_ic_reward_component
         + regime_reward_component
         - turnover_penalty
@@ -2426,8 +2673,8 @@ def _candidate_summary_from_reward_atoms(
         blockers.append("non_positive_train_day_sortino")
     if not math.isfinite(train_worst) or train_worst <= 0.0:
         blockers.append("non_positive_worst_horizon_train_sortino")
-    if _f(train_all.get("day_mcmc_prob_sortino_gt_0"), 0.0) < 0.60:
-        blockers.append("weak_train_day_mcmc")
+    if train_day_uncertainty_support < 0.60:
+        blockers.append("weak_train_day_uncertainty_support")
     if not math.isfinite(train_rank_ic_mean):
         blockers.append("no_valid_train_rank_ic")
     if train_turnover > 0.75:
@@ -2482,8 +2729,10 @@ def _candidate_summary_from_reward_atoms(
         "train_worst_horizon_day_sortino": _round(train_worst),
         "train_median_horizon_day_sortino": _round(train_median),
         "train_horizon_sortino_stdev": _round(instability),
-        "train_day_mcmc_p25": train_all.get("day_mcmc_sortino_p25"),
-        "train_day_mcmc_prob_gt_0": train_all.get("day_mcmc_prob_sortino_gt_0"),
+        **_train_day_uncertainty_reward_fields(
+            train_all,
+            quality_flags=uncertainty_quality_flags,
+        ),
         "train_mean_one_way_turnover": train_all.get("mean_one_way_turnover"),
         "train_rank_ic_mean": train_all.get("rank_ic_mean"),
         "train_rank_ic_hit_rate": train_all.get("rank_ic_hit_rate"),
@@ -2499,10 +2748,16 @@ def _candidate_summary_from_reward_atoms(
         "train_regime_method": train_regime.get("train_regime_method"),
         "train_regime_rows": train_regime.get("train_regime_rows"),
         "validation_day_sortino": validation_all.get("day_sortino"),
+        "validation_day_uncertainty_prob_gt_0": validation_all.get(
+            "day_uncertainty_support_sortino_gt_0"
+        ),
         "validation_day_mcmc_prob_gt_0": validation_all.get("day_mcmc_prob_sortino_gt_0"),
         "validation_rank_ic_mean": validation_all.get("rank_ic_mean"),
         "validation_rank_ic_loss": validation_all.get("rank_ic_loss"),
         "holdout_day_sortino": holdout_all.get("day_sortino"),
+        "holdout_day_uncertainty_prob_gt_0": holdout_all.get(
+            "day_uncertainty_support_sortino_gt_0"
+        ),
         "holdout_day_mcmc_prob_gt_0": holdout_all.get("day_mcmc_prob_sortino_gt_0"),
         "holdout_rank_ic_mean": holdout_all.get("rank_ic_mean"),
         "holdout_rank_ic_loss": holdout_all.get("rank_ic_loss"),
@@ -2569,7 +2824,14 @@ def _candidate_summary(
     instability = _safe_stdev(train_horizon_sortinos)
     train_turnover = _f(train_all.get("mean_one_way_turnover"), 0.0)
     train_day_sortino = _f(train_all.get("day_sortino"))
-    train_day_mcmc_p25 = _f(train_all.get("day_mcmc_sortino_p25"))
+    (
+        train_day_uncertainty_p25,
+        train_day_uncertainty_support,
+        _,
+        uncertainty_quality_flags,
+    ) = _train_day_uncertainty(
+        train_all
+    )
     train_rank_ic_mean = _f(train_all.get("rank_ic_mean"))
     train_rank_ic_loss = _f(train_all.get("rank_ic_loss"), 0.05)
     rank_ic_reward_component = _bounded(-float(rank_ic_loss_weight) * train_rank_ic_loss, float(rank_ic_component_cap))
@@ -2582,7 +2844,7 @@ def _candidate_summary(
     reward = (
         0.55 * _f(train_day_sortino, -2.0)
         + 0.25 * _f(train_worst, -2.0)
-        + 0.20 * _f(train_day_mcmc_p25, -2.0)
+        + 0.20 * _f(train_day_uncertainty_p25, -2.0)
         + rank_ic_reward_component
         + regime_reward_component
         - turnover_penalty
@@ -2596,8 +2858,8 @@ def _candidate_summary(
         blockers.append("non_positive_train_day_sortino")
     if not math.isfinite(train_worst) or train_worst <= 0.0:
         blockers.append("non_positive_worst_horizon_train_sortino")
-    if _f(train_all.get("day_mcmc_prob_sortino_gt_0"), 0.0) < 0.60:
-        blockers.append("weak_train_day_mcmc")
+    if train_day_uncertainty_support < 0.60:
+        blockers.append("weak_train_day_uncertainty_support")
     if not math.isfinite(train_rank_ic_mean):
         blockers.append("no_valid_train_rank_ic")
     if train_turnover > 0.75:
@@ -2652,8 +2914,10 @@ def _candidate_summary(
         "train_worst_horizon_day_sortino": _round(train_worst),
         "train_median_horizon_day_sortino": _round(train_median),
         "train_horizon_sortino_stdev": _round(instability),
-        "train_day_mcmc_p25": train_all.get("day_mcmc_sortino_p25"),
-        "train_day_mcmc_prob_gt_0": train_all.get("day_mcmc_prob_sortino_gt_0"),
+        **_train_day_uncertainty_reward_fields(
+            train_all,
+            quality_flags=uncertainty_quality_flags,
+        ),
         "train_mean_one_way_turnover": train_all.get("mean_one_way_turnover"),
         "train_rank_ic_mean": train_all.get("rank_ic_mean"),
         "train_rank_ic_hit_rate": train_all.get("rank_ic_hit_rate"),
@@ -2669,10 +2933,16 @@ def _candidate_summary(
         "train_regime_method": train_regime.get("train_regime_method"),
         "train_regime_rows": train_regime.get("train_regime_rows"),
         "validation_day_sortino": validation_all.get("day_sortino"),
+        "validation_day_uncertainty_prob_gt_0": validation_all.get(
+            "day_uncertainty_support_sortino_gt_0"
+        ),
         "validation_day_mcmc_prob_gt_0": validation_all.get("day_mcmc_prob_sortino_gt_0"),
         "validation_rank_ic_mean": validation_all.get("rank_ic_mean"),
         "validation_rank_ic_loss": validation_all.get("rank_ic_loss"),
         "holdout_day_sortino": holdout_all.get("day_sortino"),
+        "holdout_day_uncertainty_prob_gt_0": holdout_all.get(
+            "day_uncertainty_support_sortino_gt_0"
+        ),
         "holdout_day_mcmc_prob_gt_0": holdout_all.get("day_mcmc_prob_sortino_gt_0"),
         "holdout_rank_ic_mean": holdout_all.get("rank_ic_mean"),
         "holdout_rank_ic_loss": holdout_all.get("rank_ic_loss"),
@@ -3319,14 +3589,34 @@ def main(argv: list[str] | None = None) -> int:
         "regime_stability_weight": args.regime_stability_weight,
         "regime_component_cap": args.regime_component_cap,
         "optimizer_reward_metric": None if args.semantic_only else OPTIMIZER_REWARD_METRIC,
-        "bootstrap_engine": None if args.semantic_only else "numpy_vectorized_v1",
+        "bootstrap_engine": None if args.semantic_only else DAY_UNCERTAINTY_ENGINE,
+        "bootstrap_method": None if args.semantic_only else DAY_UNCERTAINTY_METHOD,
+        "bootstrap_contract": (
+            None if args.semantic_only else DAY_UNCERTAINTY_CONTRACT
+        ),
+        "bootstrap_reference": (
+            None if args.semantic_only else DAY_UNCERTAINTY_REFERENCE
+        ),
+        "bootstrap_resampling_unit": None if args.semantic_only else "ordered_trade_day",
+        "bootstrap_block_length_rule": (
+            None if args.semantic_only else DAY_UNCERTAINTY_BLOCK_LENGTH_RULE
+        ),
+        "bootstrap_minimum_day_count": (
+            0 if args.semantic_only else DAY_UNCERTAINTY_MIN_DAYS
+        ),
+        "bootstrap_minimum_valid_fraction": (
+            None if args.semantic_only else DAY_UNCERTAINTY_MIN_VALID_FRACTION
+        ),
+        "legacy_day_mcmc_fields_are_compatibility_aliases": not bool(
+            args.semantic_only
+        ),
         "bootstrap_iterations_per_curve": 0 if args.semantic_only else 600,
         "portfolio_pnl_rows_written": len(pnl_rows) if args.write_pnl_rows else 0,
         "reward_atom_rows_written": len(reward_atom_rows) if args.write_reward_atoms else 0,
         "metric_boundary": (
             "signal-value and rank-equivalence diagnostics only; no labels, PnL, reward, validation, or holdout optimization"
             if args.semantic_only
-            else "train portfolio Sortino + rankIC loss reward audit; not production proof; validation/holdout must not feed search; long_short_spread is not CN tradable"
+            else "train portfolio Sortino + ordered-day stationary-block uncertainty + rankIC loss reward audit; legacy day_mcmc fields are aliases, not a Bayesian posterior; not production proof; validation/holdout must not feed search; long_short_spread is not CN tradable"
         ),
         "semantic_only": bool(args.semantic_only),
         "semantic_sketches_written": bool(write_semantic_sketches),
