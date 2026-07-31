@@ -23,12 +23,32 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   checkpoint. It uses fresh in-memory TPE, the existing Availability
   Controller and Phase3CM, 32 compute threads and no cross-campaign reward or
   optimizer state. Its exact deployed SHA is
-  `69e33b6bd0d9e213326aaa4340e4ba8351158c52`, task
-  `lanjob_20260731_101807_291ccb`, and campaign root
+  `69e33b6bd0d9e213326aaa4340e4ba8351158c52` and its campaign root is
   `D:\ChengboRemote\runtime\cn_winner_guided_large_search_continuation_20260731_1025_69e33b6_12288`.
   Final-SHA zero-financial preflight passed with 16,817 fresh Slow Temporal
   identities versus 14,439 required and 1,037 fresh First-N identities versus
   308 required; validation, holdout and 2026 reads were zero.
+  Checkpoints 001-003 are independently verified
+  `BATCH_CLOSED_IMMUTABLE`: 4,608 formal fresh exact asks, 2,334 evaluated
+  pairs, zero primary exact/pair/full-behavior-signature duplicates, exact
+  ask/observation/transcript coverage, zero scored reward mismatch and zero
+  sealed-period reads. Productive counts were 246/231/233.
+- The original search task `lanjob_20260731_101807_291ccb` stopped at unclosed
+  checkpoint 004 because the unchanged runtime acceleration gate failed only
+  for stock-session parallelism: 20.1196 effective cores, 62.8736% logical CPU
+  occupancy and 31/37 sustained blocks meeting threshold. Active-bar passed,
+  stock-session `run_health_status` was PASS, minimum free memory exceeded
+  64.41 GB and this is infrastructure evidence rather than route or financial
+  health. The unclosed checkpoint and logs are preserved at
+  `run_health_incidents\20260731T122800_checkpoint004_runtime_acceleration_gate_failure_dual_lane`;
+  incident SHA256 is
+  `175d986dac2f68ac56a82e803b45eb5f8e73986a9b07bc797b9497317b1753c9`
+  and the 54-file/3,920,983,739-byte preservation manifest SHA256 is
+  `504f84d07a839949fe3123eeaba50ad27b6904fc0cbd8198a248acae771a0876`.
+  No failed financial result or optimizer state is reused and no threshold is
+  weakened. The single same-root recovery task is
+  `lanjob_20260731_123132_54145c`, regenerating checkpoint 004 from verified
+  checkpoint 003.
 - The isolated report-only lane originally froze 64 pairs, but its sole
   First-N pair required intraday `intraday_ret_from_open` and could not be
   represented by the stock-session replay sidecar. That attempt stopped before
@@ -44,7 +64,7 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   replay; it cannot write optimizer, feedback, scheduler, archive or promotion
   state and cannot affect the running search.
 - Both lanes are active on 77o in separate roots and process chains. The latest
-  bounded launch check retained 65,351,286,784 bytes free memory with no
+  bounded recovery check retained 83,499,671,552 bytes free memory with no
   duplicate task or persistent inspector. This is execution evidence only:
   neither a running process nor a prepared cohort is closure or promotion
   authority.
