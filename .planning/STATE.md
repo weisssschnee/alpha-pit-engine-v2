@@ -2,7 +2,7 @@
 
 Updated: 2026-07-31
 
-Current state: `CN_SEARCH_RUN_INVALID_VALIDATION_RECOVERY_ACTIVE`
+Current state: `CN_DUAL_LANE_PARTIAL_SEARCH_INVALID_VALIDATION_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -96,8 +96,8 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   No candidate financial result is reused. SHA
   `6a68ad06ca341a14445385b123d978616955328e` renames only that
   blocker-specific scalar field; the replay rule and cohort are unchanged.
-  Local and official 77o focused tests again passed 22/22. The current
-  recovery task is `lanjob_20260731_153336_a7d457`, with deployment manifest
+  Local and official 77o focused tests again passed 22/22. The final
+  recovery task was `lanjob_20260731_153336_a7d457`, with deployment manifest
   SHA256
   `299cd2603431a503ba8c5ed1841522f639ad0026c22c51c417a41c5b51b3f81f`.
   Its train replay is independently verified
@@ -110,16 +110,33 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   completed and 68 were blocked; 14/63 pairs were replay-complete and 49
   blocked. Seven replay-complete pairs had positive executable train
   increment, with median increment `-0.0020958822`. Validation, holdout and
-  2026 reads were zero. The task is now building validation sidecars.
-  It may read only the fixed validation split after unchanged-cohort train
-  replay; it cannot write optimizer, feedback, scheduler, archive or promotion
-  state and cannot affect the running search.
-- Only the validation recovery lane remains active on 77o. The latest bounded
-  check showed one validation-sidecar process chain and
-  84,325,445,632 bytes free memory. The invalid search tasks and both failed
-  validation tasks were deleted; there is no duplicate or persistent
-  inspector. This is execution evidence only: neither a running process nor a
-  prepared cohort is closure or promotion authority.
+  2026 reads were zero.
+- The unchanged 63-pair report-only OOS then closed successfully and the task
+  exited zero. OOS status is `REPORT_ONLY_OOS_CLOSED_IMMUTABLE`; closure file
+  SHA256 is
+  `de1694e157336dcbf5fafe32bc057dee3fe1907fe084894026cc506bcaff54ea`,
+  canonical body SHA256 is
+  `43dafc7f45bab3aafba840434a0ae947f1551392b35fc6362195393dc34aa483`,
+  and all 9 declared artifacts matched. All 63 fixed pairs were evaluated with
+  no interstage filtering: 35/63 had positive OOS transfer (55.56%), validation
+  score median was `0.03418275` and p10 was `-9.276330014`. Slow Temporal had
+  26/39 positive OOS transfers but zero replay-complete pairs; Slow
+  Cross-sectional had 9/24 positive OOS transfers, 14 replay-complete pairs and
+  seven positive executable train increments. Only one pair was positive on
+  both strict executable train increment and OOS transfer:
+  `cn.pair.5e25230a83e937a50805fe63712d5cb9`, with train increment
+  `0.0654307020` and validation score `0.56012896`. It remains research
+  evidence, not promotion authority.
+- Root status is `REPLAY_THEN_OOS_COMPLETE_IMMUTABLE_REPORT_ONLY`; closure file
+  SHA256 is
+  `c6e8a349255683cb3e6010448049b625c14bafdab93f66c48be6e060c2b73521`,
+  canonical body SHA256 is
+  `9c729a489130894d9137e1687ea7837429d23f44bf43f0f3d01c9febc096f3b4`,
+  and all 5 declared artifacts matched. Protected source hashes were unchanged,
+  validation reads were 381,649, holdout/2026 reads and prohibited writes were
+  zero, and promotion/economic claims remain false. No search or validation
+  task remains active; the invalid search and failed recovery evidence remain
+  preserved.
 - Disclosure V2 is now closed in both evidence and code. Sign is
   `REJECTED_BEHAVIOR_DISCOVERY`; CSRank is
   `REJECTED_FINANCIAL_INCREMENT`; Abs is `NOT_EVALUATED`. The historical CEM
@@ -1367,19 +1384,20 @@ remains unchanged. The compact receipt is
 Do not retry or reinterpret the invalid 12,288-ask search lane. Retain only its
 three verified immutable checkpoints as partial development evidence.
 
-Monitor only validation recovery task `lanjob_20260731_153336_a7d457`.
-Verify exactly 126 candidate and 63 pair replay records with candidate-level
-A-share blockers retained, replay closure, validation sidecars, the unchanged
-63-pair report-only OOS cohort, positive validation reads and zero
-optimizer/feedback/scheduler/archive/promotion writes or holdout/2026 reads.
-The new corporate-action blocker must remain fail-closed and must not filter
-the OOS cohort.
+The fixed 63-pair replay/OOS lane is closed. Retain all 35 OOS-positive pairs as
+report-only research evidence, but distinguish the 26 Slow Temporal pairs that
+were not replay-executable from the nine Slow Cross-sectional OOS positives.
+The only strict executable-train plus OOS-positive intersection is
+`cn.pair.5e25230a83e937a50805fe63712d5cb9`; classify its economic mechanism,
+turnover and regime/left-tail behavior before any new finalist decision. Do not
+promote it from this single intersection.
 
-At valid closure, report actual partial search production, behavior-family
-concentration, replay executability and OOS transfer without forcing PASS.
-Then return to finalist deduplication and economic selection; do not
-automatically launch another search tranche. Holdout/2026 access, promotion, a
-new platform/database and cross-campaign reward memory remain unauthorized.
+Next work is bounded finalist deduplication and economic classification, not
+another search tranche: group the OOS-positive evidence by behavior family,
+retain explicit A-share executability blockers, and freeze only a small review
+set if multiple independent mechanisms survive. Holdout/2026 access, promotion,
+a new platform/database, automatic successor search and cross-campaign reward
+memory remain unauthorized.
 
 Do not rerun the Medium, its report-only validation, either completed
 Hybrid-only tranche or earlier availability-agency canaries. Unlimited search,
