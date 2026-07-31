@@ -2,7 +2,7 @@
 
 Updated: 2026-07-31
 
-Current state: `CN_FINALIST_MTM_OOS_INTERSECTION_COMPLETE_HOLD_RESEARCH`
+Current state: `CN_DUAL_LANE_SEARCH_AND_REPORT_ONLY_VALIDATION_ACTIVE`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,6 +16,38 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
+- The user explicitly superseded the prior no-successor hold for one bounded
+  dual-lane run. The active train lane is a full 12,288-formal-ask
+  winner-guided continuation search on 77o, not a reduced canary:
+  8 checkpoints x 1,536 asks, with 1,504 Slow Temporal and 32 First-N asks per
+  checkpoint. It uses fresh in-memory TPE, the existing Availability
+  Controller and Phase3CM, 32 compute threads and no cross-campaign reward or
+  optimizer state. Its exact deployed SHA is
+  `69e33b6bd0d9e213326aaa4340e4ba8351158c52`, task
+  `lanjob_20260731_101807_291ccb`, and campaign root
+  `D:\ChengboRemote\runtime\cn_winner_guided_large_search_continuation_20260731_1025_69e33b6_12288`.
+  Final-SHA zero-financial preflight passed with 16,817 fresh Slow Temporal
+  identities versus 14,439 required and 1,037 fresh First-N identities versus
+  308 required; validation, holdout and 2026 reads were zero.
+- The isolated report-only lane originally froze 64 pairs, but its sole
+  First-N pair required intraday `intraday_ret_from_open` and could not be
+  represented by the stock-session replay sidecar. That attempt stopped before
+  replay or OOS and produced no reusable financial result. The corrected
+  immutable cohort excludes exactly that incompatible route before financial
+  work and retains 63 pairs/126 members in original relative order: 39 Slow
+  Temporal and 24 Slow Cross-sectional. Its selection payload SHA256 is
+  `c5b2d72aaa3aa3792995db35ba45c7d29237b574e22e75967bcdbaddebbc381b`.
+  The active 8-thread task is `lanjob_20260731_102229_961008` at
+  `D:\ChengboRemote\runtime\cn_finalist_replay_then_oos_stock_session_63_dual_lane_20260731_74f46a3`,
+  deployed from SHA `74f46a33291475360f1ca5898f16af44d0dc2f64`.
+  It may read only the fixed validation split after unchanged-cohort train
+  replay; it cannot write optimizer, feedback, scheduler, archive or promotion
+  state and cannot affect the running search.
+- Both lanes are active on 77o in separate roots and process chains. The latest
+  bounded launch check retained 65,351,286,784 bytes free memory with no
+  duplicate task or persistent inspector. This is execution evidence only:
+  neither a running process nor a prepared cohort is closure or promotion
+  authority.
 - Disclosure V2 is now closed in both evidence and code. Sign is
   `REJECTED_BEHAVIOR_DISCOVERY`; CSRank is
   `REJECTED_FINANCIAL_INCREMENT`; Abs is `NOT_EVALUATED`. The historical CEM
@@ -1260,23 +1292,28 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-Do not run another search tranche, automatic validation or promotion. The fixed
-24-pair executable replay, unchanged-cohort report-only OOS and same-cohort
-ending-book mark-to-market diagnostic are complete. The current decision is
-`HOLD_RESEARCH`: only one pair is positive in both the matched train
-mark-to-market comparison and OOS, and that pair still has negative
-worst-regime evidence.
+Monitor only the two exact active 77o tasks above. For the search lane,
+independently verify each `BATCH_CLOSED_IMMUTABLE` checkpoint, the fixed route
+schedule, train-only ask/tell and reward alignment, exact/pair/behavior
+uniqueness, runtime/cache/memory gates and zero validation/holdout/2026 reads.
+For the report-only lane, verify the 63-pair unchanged cohort through replay,
+validation sidecars, OOS and root closure, with positive validation reads and
+zero holdout/2026 or prohibited writes. Validation results must never enter the
+search optimizer or alter its live schedule.
 
-Do not repeat the mark-to-market replay or OOS. If work continues, keep it
-small and analytical: explain the economic mechanism and regime/turnover/
-terminal-liquidity profile of
-`cn.pair.cf7adc00bbda5464908c7ad0dc8fb258`, then decide whether it merits a
-future separately frozen confirmation cohort. Otherwise stop this finalist
-line; there is no evidence basis for another global or winner-guided search.
+Do not launch a third task, duplicate either lane, expand beyond 12,288 asks,
+rerun the incompatible 64th First-N pair through a stock-session evaluator,
+or authorize promotion from a running process. On a genuine code or
+infrastructure failure, preserve evidence and resume only from the last
+independently verified immutable boundary without reusing incomplete financial
+results.
 
-Financial replay, validation, holdout, 2026, successor search and promotion
-remain unauthorized now. Do not create a second evaluator, platform, database
-or authority node, and do not treat a RAW Graph/DeepSeek refresh as a blocker.
+After both roots close, report actual candidate production, behavior-family
+concentration, replay executability and report-only OOS transfer without
+forcing PASS. Then return to finalist deduplication and economic selection; do
+not automatically launch another search tranche. Holdout/2026 access,
+promotion, a new platform/database and cross-campaign reward memory remain
+unauthorized.
 
 Do not rerun the Medium, its report-only validation, either completed
 Hybrid-only tranche or earlier availability-agency canaries. Unlimited search,
