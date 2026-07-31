@@ -100,12 +100,23 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   recovery task is `lanjob_20260731_153336_a7d457`, with deployment manifest
   SHA256
   `299cd2603431a503ba8c5ed1841522f639ad0026c22c51c417a41c5b51b3f81f`.
+  Its train replay is independently verified
+  `A_SHARE_REPLAY_CLOSED_IMMUTABLE`: closure file SHA256
+  `ee4e9ff83dd09115dec58f4d5d96bef4d1a6be8791bee7915bab348022af02db`,
+  canonical body SHA256
+  `1935bbd557cbc5714242795c87fedff804e8839a5eec0d5da0f4aa53ce555ca7`,
+  and all 135 declared artifacts matched. All 126 candidates and 63 pairs
+  were unique and complete as a cohort. Fifty-eight candidate members
+  completed and 68 were blocked; 14/63 pairs were replay-complete and 49
+  blocked. Seven replay-complete pairs had positive executable train
+  increment, with median increment `-0.0020958822`. Validation, holdout and
+  2026 reads were zero. The task is now building validation sidecars.
   It may read only the fixed validation split after unchanged-cohort train
   replay; it cannot write optimizer, feedback, scheduler, archive or promotion
   state and cannot affect the running search.
 - Only the validation recovery lane remains active on 77o. The latest bounded
-  check showed a fresh replay with zero candidate records reused and
-  83,294,220,288 bytes free memory. The invalid search tasks and both failed
+  check showed one validation-sidecar process chain and
+  84,325,445,632 bytes free memory. The invalid search tasks and both failed
   validation tasks were deleted; there is no duplicate or persistent
   inspector. This is execution evidence only: neither a running process nor a
   prepared cohort is closure or promotion authority.
