@@ -127,6 +127,7 @@ def build_verified_history(
     campaign_root: Path,
     base_candidate_archive: Path,
     base_behavior_archive: Path,
+    winner_structural_guide: Path,
     output_root: Path,
     checkpoint_count: int,
     expected_route_mix: Mapping[str, int],
@@ -134,11 +135,14 @@ def build_verified_history(
     campaign_root = Path(campaign_root).resolve()
     base_candidate_archive = Path(base_candidate_archive).resolve()
     base_behavior_archive = Path(base_behavior_archive).resolve()
+    winner_structural_guide = Path(winner_structural_guide).resolve()
     output_root = Path(output_root).resolve()
     if checkpoint_count <= 0:
         raise ValueError("checkpoint_count must be positive")
     if output_root.exists():
         raise FileExistsError(output_root)
+    if not winner_structural_guide.is_file():
+        raise FileNotFoundError(winner_structural_guide)
     output_root.mkdir(parents=True)
 
     verified: list[dict[str, Any]] = []
@@ -183,6 +187,15 @@ def build_verified_history(
         behavior_output=behavior_output,
         manifest_output=history_manifest,
     )
+    history["winner_structural_guide"] = {
+        "path": str(winner_structural_guide),
+        "bytes": winner_structural_guide.stat().st_size,
+        "sha256": _sha256(winner_structural_guide),
+    }
+    history_manifest.write_text(
+        json.dumps(history, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     receipt: dict[str, Any] = {
         "schema_version": "cn_verified_partial_campaign_history_receipt_v1",
         "status": "ZERO_FINANCIAL_HISTORY_REFRESH_PASS",
@@ -195,6 +208,10 @@ def build_verified_history(
         "candidate_exact_archive_sha256": _sha256(candidate_output),
         "behavior_archive": str(behavior_output),
         "behavior_archive_sha256": _sha256(behavior_output),
+        "winner_structural_guide": str(winner_structural_guide),
+        "winner_structural_guide_sha256": _sha256(
+            winner_structural_guide
+        ),
         "exact_identity_count": int(history["exact_identity_count"]),
         "behavior_identity_row_count": int(
             history["behavior_identity_row_count"]
@@ -234,6 +251,7 @@ def main() -> int:
     parser.add_argument("--campaign-root", type=Path, required=True)
     parser.add_argument("--base-candidate-archive", type=Path, required=True)
     parser.add_argument("--base-behavior-archive", type=Path, required=True)
+    parser.add_argument("--winner-structural-guide", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--checkpoint-count", type=int, required=True)
     parser.add_argument("--expected-route", action="append", required=True)
@@ -242,6 +260,7 @@ def main() -> int:
         campaign_root=args.campaign_root,
         base_candidate_archive=args.base_candidate_archive,
         base_behavior_archive=args.base_behavior_archive,
+        winner_structural_guide=args.winner_structural_guide,
         output_root=args.output_root,
         checkpoint_count=args.checkpoint_count,
         expected_route_mix=_route_mix(args.expected_route),

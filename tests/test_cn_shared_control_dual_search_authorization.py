@@ -80,8 +80,15 @@ def test_freeze_binds_budget_history_and_dual_profile(tmp_path: Path) -> None:
     )
     candidate = tmp_path / "candidate.parquet"
     behavior = tmp_path / "behavior.parquet"
+    winner = tmp_path / "winner.json"
     candidate.write_bytes(b"candidate")
     behavior.write_bytes(b"behavior")
+    winner.write_text("{}", encoding="utf-8")
+    source_payload = json.loads(source.read_text(encoding="utf-8"))
+    source_payload["winner_structural_guide_sha256"] = hashlib.sha256(
+        winner.read_bytes()
+    ).hexdigest()
+    _write(source, source_payload)
     history = _write(
         tmp_path / "history.json",
         {
@@ -94,6 +101,10 @@ def test_freeze_binds_budget_history_and_dual_profile(tmp_path: Path) -> None:
             "behavior_archive": {
                 "path": str(behavior),
                 "sha256": hashlib.sha256(b"behavior").hexdigest(),
+            },
+            "winner_structural_guide": {
+                "path": str(winner),
+                "sha256": hashlib.sha256(winner.read_bytes()).hexdigest(),
             },
             "exact_identity_count": 20,
             "behavior_identity_row_count": 10,
@@ -216,6 +227,7 @@ def test_frozen_shared_authority_matches_runtime_and_preflight_hash(
                 "sha256": hashlib.sha256(behavior.read_bytes()).hexdigest(),
             },
             "winner_structural_guide": {
+                "path": str(winner),
                 "sha256": hashlib.sha256(winner.read_bytes()).hexdigest()
             },
             "reward_columns_imported": [],

@@ -108,11 +108,14 @@ def test_build_verified_partial_history_excludes_unclosed_next_checkpoint(
     incomplete.mkdir(parents=True)
     (incomplete / "route_schedule.json").write_text("{}", encoding="utf-8")
     candidate, behavior = _write_base_archives(tmp_path)
+    winner = tmp_path / "winner.json"
+    winner.write_text('{"status":"FROZEN"}', encoding="utf-8")
 
     receipt = build_verified_history(
         campaign_root=campaign,
         base_candidate_archive=candidate,
         base_behavior_archive=behavior,
+        winner_structural_guide=winner,
         output_root=tmp_path / "out",
         checkpoint_count=2,
         expected_route_mix={
@@ -127,6 +130,11 @@ def test_build_verified_partial_history_excludes_unclosed_next_checkpoint(
     assert receipt["behavior_identity_row_count"] == 3
     assert receipt["reward_rows_imported"] == 0
     assert receipt["optimizer_state_imported"] is False
+    assert receipt["winner_structural_guide_sha256"] == _sha256(winner)
+    history = json.loads(
+        Path(receipt["history_manifest"]).read_text(encoding="utf-8")
+    )
+    assert history["winner_structural_guide"]["sha256"] == _sha256(winner)
 
 
 def test_build_verified_partial_history_rejects_closed_checkpoint_beyond_boundary(
@@ -136,12 +144,15 @@ def test_build_verified_partial_history_rejects_closed_checkpoint_beyond_boundar
     prior = _write_checkpoint(campaign, 1, "GENESIS")
     _write_checkpoint(campaign, 2, prior)
     candidate, behavior = _write_base_archives(tmp_path)
+    winner = tmp_path / "winner.json"
+    winner.write_text('{"status":"FROZEN"}', encoding="utf-8")
 
     try:
         build_verified_history(
             campaign_root=campaign,
             base_candidate_archive=candidate,
             base_behavior_archive=behavior,
+            winner_structural_guide=winner,
             output_root=tmp_path / "out",
             checkpoint_count=1,
             expected_route_mix={

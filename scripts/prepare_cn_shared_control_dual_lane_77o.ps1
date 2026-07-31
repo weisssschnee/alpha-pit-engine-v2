@@ -190,6 +190,7 @@ Invoke-CheckedPython (
 ) --campaign-root $partialSearch `
   --base-candidate-archive $baseCandidate `
   --base-behavior-archive $baseBehavior `
+  --winner-structural-guide $winnerGuide `
   --output-root $historyRoot `
   --checkpoint-count 3 `
   --expected-route 'SLOW_TEMPORAL_CHANGE=1504' `

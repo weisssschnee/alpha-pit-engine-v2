@@ -61,6 +61,13 @@ def _verify_history(
             raise RuntimeError(f"history snapshot path drift: {key}")
         if str(row.get("sha256") or "") != _sha256(path):
             raise RuntimeError(f"history snapshot hash drift: {key}")
+    winner_row = dict(history.get("winner_structural_guide") or {})
+    winner_path = Path(str(winner_row.get("path") or "")).resolve()
+    if (
+        not winner_path.is_file()
+        or str(winner_row.get("sha256") or "") != _sha256(winner_path)
+    ):
+        raise RuntimeError("history snapshot winner guide drift")
     if history.get("reward_columns_imported") not in ([], None):
         raise RuntimeError("history snapshot imports reward columns")
     if bool(history.get("scheduler_state_imported")):
@@ -91,6 +98,10 @@ def freeze_authorization(
         candidate_archive=candidate_path,
         behavior_archive=behavior_path,
     )
+    if str(source.get("winner_structural_guide_sha256") or "") != str(
+        (history.get("winner_structural_guide") or {}).get("sha256") or ""
+    ):
+        raise RuntimeError("source authorization winner guide drift")
     if not bool(source.get("execution_authorized")):
         raise RuntimeError("source authorization is not executable")
     if (
