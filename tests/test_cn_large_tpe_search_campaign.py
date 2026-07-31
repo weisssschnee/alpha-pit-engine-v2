@@ -766,6 +766,17 @@ def test_winner_guided_continuation_keeps_full_12288_ask_budget() -> None:
     spec = _campaign_runtime_spec(
         WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE
     )
+    authorization = json.loads(
+        (
+            REPO_ROOT
+            / "runtime"
+            / "run_plans"
+            / (
+                "cn_winner_guided_continuation_search_v1_"
+                "authorization.json"
+            )
+        ).read_text(encoding="utf-8")
+    )
 
     assert WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_CHECKPOINTS == 8
     assert WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_RAW_ASKS == 12_288
@@ -782,6 +793,11 @@ def test_winner_guided_continuation_keeps_full_12288_ask_budget() -> None:
     }
     assert spec["maximum_raw_asks"] == 12_288
     assert spec["validation"] == "FORBIDDEN_DURING_AND_AFTER_TRANCHE"
+    assert authorization["execution_authorized"] is True
+    assert authorization["maximum_raw_asks"] == 12_288
+    assert authorization["parallel_validation_lane"] == (
+        "SEPARATE_FIXED_64_PAIR_REPORT_ONLY_REUSED_VALIDATION_NO_FEEDBACK"
+    )
 
 
 def test_zero_ask_routes_skip_optuna_tell() -> None:
