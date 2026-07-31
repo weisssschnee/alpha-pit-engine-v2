@@ -55,8 +55,19 @@ ENDING_BOOK_POLICIES = frozenset(
 )
 
 
-class AShareTerminalLiquidationError(ValueError):
+class AShareCandidateReplayBlockerError(ValueError):
+    """Base class for candidate-local outcomes that must not abort a cohort."""
+
+    blocker_code: str
+
+    def blocker_details(self) -> dict[str, Any]:
+        return {"blocker_code": self.blocker_code}
+
+
+class AShareTerminalLiquidationError(AShareCandidateReplayBlockerError):
     """A candidate-specific fail-closed terminal liquidity outcome."""
+
+    blocker_code = "FINAL_SESSION_UNLIQUIDATED_HOLDINGS"
 
     def __init__(self, remaining_holdings: list[str]) -> None:
         self.remaining_holdings = tuple(sorted(str(code) for code in remaining_holdings))
@@ -65,9 +76,19 @@ class AShareTerminalLiquidationError(ValueError):
             f"remaining={list(self.remaining_holdings)}"
         )
 
+    def blocker_details(self) -> dict[str, Any]:
+        return {
+            **super().blocker_details(),
+            "remaining_holdings": list(self.remaining_holdings),
+        }
 
-class AShareCorporateActionFractionalSharesError(ValueError):
+
+class AShareCorporateActionFractionalSharesError(
+    AShareCandidateReplayBlockerError
+):
     """Candidate-specific non-integer corporate-action holdings outcome."""
+
+    blocker_code = "CORPORATE_ACTION_FRACTIONAL_SHARES"
 
     def __init__(
         self,
@@ -87,6 +108,19 @@ class AShareCorporateActionFractionalSharesError(ValueError):
             "corporate action produced fractional shares under "
             "FAIL_CLOSED_NON_INTEGER policy"
         )
+
+    def blocker_details(self) -> dict[str, Any]:
+        return {
+            **super().blocker_details(),
+            "security_code": self.code,
+            "session_date": self.session_date,
+            "opening_shares": self.opening_shares,
+            "corporate_action_share_multiplier": self.multiplier,
+            "adjusted_shares": self.adjusted_shares,
+            "corporate_action_fractional_share_policy": (
+                "FAIL_CLOSED_NON_INTEGER"
+            ),
+        }
 
 
 @dataclass(frozen=True, slots=True)

@@ -29,6 +29,14 @@ param(
         'winner_guided_identity_manifest.json'
     ),
     [string]$QualifiedPreflightRoot = '',
+    [ValidateSet('SEARCH_EXCLUSIVE_32', 'SEARCH_DUAL_24')]
+    [string]$NodeResourceProfile = 'SEARCH_EXCLUSIVE_32',
+    [string]$NodeResourceCapacity = (
+        'runtime\run_plans\cn_alpha_node_resource_profiles_v1.json'
+    ),
+    [string]$NodeResourceStateRoot = (
+        'D:\ChengboRemote\runtime\node_resource_governor'
+    ),
     [switch]$PreflightOnly
 )
 
@@ -69,6 +77,11 @@ $split = (
 $resolvedRepo = [IO.Path]::GetFullPath($Repo)
 $resolvedRoot = [IO.Path]::GetFullPath($OutputRoot)
 $resolvedAuthorization = [IO.Path]::GetFullPath($CampaignAuthorization)
+$resolvedNodeCapacity = if ([IO.Path]::IsPathRooted($NodeResourceCapacity)) {
+    [IO.Path]::GetFullPath($NodeResourceCapacity)
+} else {
+    [IO.Path]::GetFullPath((Join-Path $resolvedRepo $NodeResourceCapacity))
+}
 $candidateArchive = [IO.Path]::GetFullPath($CandidateArchive)
 $behaviorArchive = [IO.Path]::GetFullPath($BehaviorArchive)
 $winnerGuide = [IO.Path]::GetFullPath($WinnerGuide)
@@ -97,6 +110,39 @@ if (-not (Test-Path -LiteralPath $python)) {
 
 $authorization = Get-Content -LiteralPath $resolvedAuthorization -Raw |
     ConvertFrom-Json
+$nodeCapacity = Get-Content -LiteralPath $resolvedNodeCapacity -Raw |
+    ConvertFrom-Json
+$nodeProfileProperty = $nodeCapacity.profiles.PSObject.Properties[
+    $NodeResourceProfile
+]
+if ($null -eq $nodeProfileProperty) {
+    throw "node resource profile missing: $NodeResourceProfile"
+}
+$nodeProfile = $nodeProfileProperty.Value
+$computeThreads = [int]$nodeProfile.cpu_threads
+if (
+    [string]$nodeProfile.role -ne 'SEARCH' -or
+    $computeThreads -lt 1 -or
+    $computeThreads -gt 32
+) {
+    throw "invalid search node resource profile: $NodeResourceProfile"
+}
+if ($authorization.node_resource_profiles_allowed) {
+    if (
+        $NodeResourceProfile -notin @(
+            $authorization.node_resource_profiles_allowed
+        ) -or
+        [string]$authorization.resource_profile_switch_boundary -ne
+        'BATCH_CLOSED_IMMUTABLE_ONLY'
+    ) {
+        throw "campaign authorization/resource profile mismatch"
+    }
+} elseif (
+    [int]$authorization.active_threads -ne $computeThreads -or
+    [int]$authorization.session_threads -ne $computeThreads
+) {
+    throw "legacy campaign authorization/resource profile thread mismatch"
+}
 if ($authorization.campaign_profile -notin @(
     'cn_winner_guided_large_search_v1',
     'cn_winner_guided_continuation_search_v1'
@@ -274,8 +320,13 @@ foreach ($path in $requiredPaths) {
     winner_guide_sha256 = $requiredHashes[$winnerGuide]
     cross_campaign_optimizer_state_reused = $false
     cross_campaign_reward_rows_imported = 0
-    active_threads = 32
-    session_threads = 32
+    node_resource_profile = $NodeResourceProfile
+    node_resource_capacity_path = $resolvedNodeCapacity
+    node_resource_capacity_sha256 = (
+        Get-FileHash -LiteralPath $resolvedNodeCapacity -Algorithm SHA256
+    ).Hash.ToLowerInvariant()
+    active_threads = $computeThreads
+    session_threads = $computeThreads
     active_pair_batch_size = 12
     session_pair_batch_size = 12
     evaluator_cache_cap_bytes = 8589934592
@@ -293,7 +344,7 @@ foreach ($path in $requiredPaths) {
 $env:PYTHONPATH = Join-Path $resolvedRepo 'src'
 $env:PYTHONUTF8 = '1'
 $env:CN_CAMPAIGN_REPO_SHA = $RepoSha
-$env:NUMBA_NUM_THREADS = '32'
+$env:NUMBA_NUM_THREADS = [string]$computeThreads
 $env:ARROW_NUM_THREADS = '1'
 $env:OMP_NUM_THREADS = '1'
 $env:MKL_NUM_THREADS = '1'
@@ -346,8 +397,8 @@ $campaignArgs = @(
     '--winner-structural-guide', $winnerGuide,
     '--output-root', $resolvedRoot,
     '--seed-base', [string]$authorization.seed_base,
-    '--active-threads', '32',
-    '--session-threads', '32',
+    '--active-threads', [string]$computeThreads,
+    '--session-threads', [string]$computeThreads,
     '--maximum-wall-seconds', [string]$authorization.maximum_wall_seconds
 )
 if ($PreflightOnly) {
@@ -355,16 +406,45 @@ if ($PreflightOnly) {
 }
 $stdoutPath = Join-Path $resolvedRoot 'campaign.stdout.log'
 $stderrPath = Join-Path $resolvedRoot 'campaign.stderr.log'
-$process = Start-Process -FilePath $python -ArgumentList $campaignArgs `
-    -WorkingDirectory $resolvedRepo -Wait -PassThru -WindowStyle Hidden `
-    -RedirectStandardOutput $stdoutPath `
-    -RedirectStandardError $stderrPath
+$leaseManager = Join-Path $resolvedRepo 'scripts\manage_cn_node_resource_lease.py'
+$leaseId = "search-$PID"
+$leaseReceiptRoot = Join-Path $resolvedRoot 'resource_leases'
+New-Item -ItemType Directory -Force -Path $leaseReceiptRoot | Out-Null
+$leaseReceipt = Join-Path $leaseReceiptRoot "$leaseId.json"
+& $python $leaseManager acquire `
+    --state-root $NodeResourceStateRoot `
+    --capacity-manifest $resolvedNodeCapacity `
+    --profile $NodeResourceProfile `
+    --lease-id $leaseId `
+    --owner-pid $PID `
+    --workload-id $resolvedRoot `
+    --receipt $leaseReceipt *>> $stdoutPath
+if ($LASTEXITCODE -ne 0) {
+    throw "node resource lease admission failed: $LASTEXITCODE"
+}
+$env:CN_NODE_RESOURCE_LEASE_REQUIRED = '1'
+$env:CN_NODE_RESOURCE_LEASE_RECEIPT = $leaseReceipt
+$env:CN_NODE_CPU_ENTITLEMENT = [string]$computeThreads
+$process = $null
+$processExitCode = 1
+try {
+    $process = Start-Process -FilePath $python -ArgumentList $campaignArgs `
+        -WorkingDirectory $resolvedRepo -Wait -PassThru -WindowStyle Hidden `
+        -RedirectStandardOutput $stdoutPath `
+        -RedirectStandardError $stderrPath
+    $processExitCode = $process.ExitCode
+} finally {
+    & $python $leaseManager release `
+        --state-root $NodeResourceStateRoot `
+        --lease-id $leaseId `
+        --owner-pid $PID *>> $stdoutPath
+}
 [ordered]@{
     repo_sha = $RepoSha
-    exit_code = $process.ExitCode
+    exit_code = $processExitCode
     completed_at = (Get-Date).ToUniversalTime().ToString('o')
 } | ConvertTo-Json |
     Set-Content -LiteralPath (
         Join-Path $resolvedRoot 'campaign_process_exit.json'
     ) -Encoding UTF8
-exit $process.ExitCode
+exit $processExitCode

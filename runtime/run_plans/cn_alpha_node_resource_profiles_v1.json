@@ -1,0 +1,32 @@
+{
+  "schema_version": "cn_alpha_node_resource_profiles_v1",
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "logical_cpu_threads": 32,
+  "memory_capacity_bytes": 100265193472,
+  "minimum_free_memory_bytes": 25769803776,
+  "nested_parallelism": "FORBIDDEN",
+  "profiles": {
+    "SEARCH_EXCLUSIVE_32": {
+      "role": "SEARCH",
+      "cpu_threads": 32,
+      "memory_claim_bytes": 34359738368,
+      "minimum_free_memory_bytes": 25769803776,
+      "concurrency_contract": "EXCLUSIVE_HEAVY_LANE"
+    },
+    "SEARCH_DUAL_24": {
+      "role": "SEARCH",
+      "cpu_threads": 24,
+      "memory_claim_bytes": 30064771072,
+      "minimum_free_memory_bytes": 25769803776,
+      "concurrency_contract": "SEARCH_24_PLUS_VALIDATION_8"
+    },
+    "VALIDATION_DUAL_8": {
+      "role": "VALIDATION",
+      "cpu_threads": 8,
+      "memory_claim_bytes": 21474836480,
+      "minimum_free_memory_bytes": 25769803776,
+      "concurrency_contract": "SEARCH_24_PLUS_VALIDATION_8"
+    }
+  },
+  "capacity_manifest_sha256": "62aab22c647566b81e19219808877bce7633024a62b5e71aa59a0b282e185f8e"
+}

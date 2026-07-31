@@ -380,6 +380,76 @@ def test_runtime_gate_requires_primary_host_occupancy(
     )
 
 
+def test_runtime_gate_uses_dual_lane_cpu_entitlement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    backend_root = tmp_path / "phase3cm" / "active_bar"
+    backend_root.mkdir(parents=True)
+    result = {
+        "parallelism_status": "PARALLELISM_ENGAGED",
+        "wall_seconds": 4.0,
+        "rows_processed": 100,
+        "pair_count": 1,
+        "peak_rss_bytes": 1024,
+        "phase_totals": {"checkpoint": {"wall_seconds": 0.1}},
+        "expression_audits": [{"cache_hits": 1}],
+        "pair_results": [{"pair_id": "pair.1"}],
+    }
+    (backend_root / "CN_STREAMING_BACKEND_RESULT.json").write_text(
+        json.dumps(result), encoding="utf-8"
+    )
+    events = []
+    for _ in range(3):
+        events.extend(
+            [
+                {"phase": "global_trade_time_barrier", "blocks_processed": 1},
+                {
+                    "phase": "expression_value_dag",
+                    "wall_seconds": 1.0,
+                    "cpu_seconds": 18.0,
+                },
+                {"phase": "checkpoint", "blocks_processed": 1},
+            ]
+        )
+    (backend_root / "CN_PHASE3CM_PHASE_TIMING.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in events), encoding="utf-8"
+    )
+    (backend_root / "runtime_samples.json").write_text(
+        json.dumps(
+            [
+                {
+                    "elapsed_seconds": 4.0,
+                    "available_memory_bytes": 64 * 1024**3,
+                    "system_read_bytes": 0,
+                    "system_write_bytes": 0,
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(campaign_module, "_physical_cpu_count", lambda: 16)
+    monkeypatch.setattr(campaign_module, "_logical_cpu_count", lambda: 32)
+
+    gate = _runtime_gate(
+        tmp_path,
+        {"active_bar": 24, "stock_session": 8},
+        expected_backends=("active_bar",),
+    )
+    active = gate["backends"]["active_bar"]
+
+    assert active["status"] == "PASS"
+    assert active["host_logical_cpu_occupancy"] == pytest.approx(18.0 / 32.0)
+    assert active["entitlement_cpu_occupancy"] == pytest.approx(18.0 / 24.0)
+    assert active["primary_occupancy_basis"] == (
+        "NODE_RESOURCE_LEASE_ENTITLEMENT"
+    )
+    assert active["required_primary_host_logical_cpu_occupancy"] is None
+    assert active["required_primary_entitlement_cpu_occupancy"] == pytest.approx(
+        0.75
+    )
+
+
 def test_runtime_gate_keeps_memory_headroom_failure_out_of_route_health(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

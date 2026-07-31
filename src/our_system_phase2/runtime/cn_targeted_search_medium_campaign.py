@@ -1147,9 +1147,23 @@ def _runtime_gate(
         physical_cpu_count = _physical_cpu_count()
         logical_cpu_count = _logical_cpu_count()
         host_logical_occupancy = effective_cores / max(1, logical_cpu_count)
+        entitlement_cpu_count = min(
+            int(compute_threads[backend]), max(1, logical_cpu_count)
+        )
+        entitlement_cpu_occupancy = effective_cores / max(
+            1, entitlement_cpu_count
+        )
+        full_host_entitlement = int(compute_threads[backend]) >= max(
+            1, logical_cpu_count - 2
+        )
+        primary_occupancy = (
+            host_logical_occupancy
+            if full_host_entitlement
+            else entitlement_cpu_occupancy
+        )
         primary_host_occupancy_pass = (
             backend != "active_bar"
-            or host_logical_occupancy >= MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY
+            or primary_occupancy >= MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY
         )
         blocks = _block_compute_rows(events, compute_threads[backend])
         threshold = 0.55 if backend == "active_bar" else 0.50
@@ -1214,7 +1228,7 @@ def _runtime_gate(
         peak_rss = int(result.get("peak_rss_bytes") or 0)
         full_host_native_ceiling = (
             backend == "active_bar"
-            and int(compute_threads[backend]) >= max(1, logical_cpu_count - 2)
+            and full_host_entitlement
             and normalized >= threshold
             and sustained_blocks >= 3
             and effective_cores >= 1.10 * physical_cpu_count
@@ -1276,8 +1290,22 @@ def _runtime_gate(
             "host_physical_cpu_count": physical_cpu_count,
             "host_logical_cpu_count": logical_cpu_count,
             "host_logical_cpu_occupancy": host_logical_occupancy,
+            "entitlement_cpu_count": entitlement_cpu_count,
+            "entitlement_cpu_occupancy": entitlement_cpu_occupancy,
+            "primary_occupancy_basis": (
+                "HOST_LOGICAL_CPU"
+                if full_host_entitlement
+                else "NODE_RESOURCE_LEASE_ENTITLEMENT"
+            ),
             "required_primary_host_logical_cpu_occupancy": (
-                MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY if backend == "active_bar" else None
+                MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY
+                if backend == "active_bar" and full_host_entitlement
+                else None
+            ),
+            "required_primary_entitlement_cpu_occupancy": (
+                MIN_PRIMARY_HOST_LOGICAL_OCCUPANCY
+                if backend == "active_bar" and not full_host_entitlement
+                else None
             ),
             "primary_host_occupancy_pass": primary_host_occupancy_pass,
             "normalized_cpu_utilization": normalized,

@@ -12,6 +12,11 @@ from typing import Any, Mapping
 import numpy as np
 import pandas as pd
 
+from our_system_phase2.services.execution_clock_capability import (
+    assess_candidate_field_capability,
+    load_execution_capability_manifest,
+)
+
 
 COHORT_PAIRS = 64
 PRODUCTIVE_DECISION = "TRAIN_REWARD_FOLLOWUP_READY"
@@ -446,6 +451,7 @@ def freeze_cohort(
     output_root: Path,
     cohort_pairs: int = COHORT_PAIRS,
     excluded_routes: tuple[str, ...] = (),
+    execution_capability_manifest: Path | None = None,
 ) -> dict[str, Any]:
     campaign_root = campaign_root.resolve()
     output_root = output_root.resolve()
@@ -499,6 +505,48 @@ def freeze_cohort(
         raise RuntimeError("productive primary candidate coverage drift")
     if primary_candidates["exact_identity"].duplicated().any():
         raise RuntimeError("productive primary exact-identity duplicate")
+
+    capability_payload = None
+    capability_path = None
+    if execution_capability_manifest is not None:
+        capability_path = execution_capability_manifest.resolve()
+        capability_payload = load_execution_capability_manifest(capability_path)
+    pair_capability_rows = []
+    for pair_id, members in productive_candidates.groupby("pair_id", sort=False):
+        if capability_payload is None:
+            assessment = {
+                "execution_clock": "NOT_BOUND",
+                "required_field_ids": [],
+                "missing_field_ids": [],
+                "unsupported_field_ids": [],
+                "incompatibility_reasons": {},
+                "compatible": True,
+            }
+        else:
+            assessment = assess_candidate_field_capability(
+                tuple(members["canonical_expression"].astype(str)),
+                capability_payload,
+            )
+        pair_capability_rows.append(
+            {
+                "pair_id": str(pair_id),
+                "execution_clock": assessment["execution_clock"],
+                "execution_clock_compatible": bool(assessment["compatible"]),
+                "execution_required_field_ids": json.dumps(
+                    assessment["required_field_ids"], sort_keys=True
+                ),
+                "execution_missing_field_ids": json.dumps(
+                    assessment["missing_field_ids"], sort_keys=True
+                ),
+                "execution_unsupported_field_ids": json.dumps(
+                    assessment["unsupported_field_ids"], sort_keys=True
+                ),
+                "execution_incompatibility_reasons": json.dumps(
+                    assessment["incompatibility_reasons"], sort_keys=True
+                ),
+            }
+        )
+    pair_capability = pd.DataFrame(pair_capability_rows)
 
     identity_columns = [
         "route_id",
@@ -602,6 +650,12 @@ def freeze_cohort(
             how="inner",
             validate="one_to_one",
         )
+        .merge(
+            pair_capability,
+            on="pair_id",
+            how="inner",
+            validate="one_to_one",
+        )
     )
     if len(review) != source_productive_pairs:
         raise RuntimeError("productive review evidence join drift")
@@ -618,9 +672,14 @@ def freeze_cohort(
     }
     review["train_stability_screen_reason"] = [
         (
-            "EXECUTION_CLOCK_ROUTE_EXCLUDED"
-            if str(row["route_id"]) in excluded_route_set
-            else _screen_reason(row)
+            "EXECUTION_CLOCK_FIELD_INCOMPATIBLE:"
+            + str(row["execution_incompatibility_reasons"])
+            if not bool(row["execution_clock_compatible"])
+            else (
+                "EXECUTION_CLOCK_ROUTE_EXCLUDED"
+                if str(row["route_id"]) in excluded_route_set
+                else _screen_reason(row)
+            )
         )
         for row in review.to_dict(orient="records")
     ]
@@ -738,6 +797,18 @@ def freeze_cohort(
         "cohort_pairs": cohort_pairs,
         "cohort_candidate_members": cohort_pairs * 2,
         "excluded_routes": sorted(excluded_route_set),
+        "execution_capability_manifest": (
+            {
+                "path": str(capability_path),
+                "sha256": _sha256(capability_path),
+                "execution_clock": str(
+                    capability_payload.get("execution_clock") or ""
+                ),
+                "selection_granularity": "CANDIDATE_EXPRESSION_FIELDS",
+            }
+            if capability_path is not None and capability_payload is not None
+            else None
+        ),
         "productive_definition": {
             "pair_evaluation_status": "PAIR_EVALUATED",
             "search_score": ">0",
@@ -973,12 +1044,22 @@ def main() -> int:
         action="append",
         default=[],
     )
+    parser.add_argument(
+        "--execution-capability-manifest",
+        type=Path,
+        required=True,
+        help=(
+            "Closed zero-financial candidate-level execution-clock "
+            "capability authority. Future cohort freezes may not bypass it."
+        ),
+    )
     args = parser.parse_args()
     result = freeze_cohort(
         campaign_root=args.campaign_root,
         output_root=args.output_root,
         cohort_pairs=args.cohort_pairs,
         excluded_routes=tuple(args.exclude_route),
+        execution_capability_manifest=args.execution_capability_manifest,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0

@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import platform
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -18,6 +19,7 @@ from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _run_phase3cm,
 )
 from our_system_phase2.services.a_share_executable_replay import (
+    AShareCandidateReplayBlockerError,
     AShareCorporateActionFractionalSharesError,
     AShareCorporateActionPolicy,
     AShareExecutionPolicy,
@@ -30,7 +32,13 @@ from our_system_phase2.services.a_share_tradability_guard import (
     a_share_tradability_blockers,
     build_a_share_tradability_receipt,
 )
+from our_system_phase2.services.candidate_result_schema import (
+    candidate_result_summary_frame,
+)
 from our_system_phase2.services.fixed_split_authority import FixedSplitAuthority
+from our_system_phase2.services.node_resource_governor import (
+    validate_node_resource_lease_receipt,
+)
 from our_system_phase2.services.real_market_validation import (
     evaluate_panel_expression,
 )
@@ -235,28 +243,8 @@ def _candidate_replay_exception_blocker(
         "economic_claim_authorized": False,
         "promotion_authorized": False,
     }
-    if isinstance(exc, AShareTerminalLiquidationError):
-        blocker.update(
-            {
-                "blocker_code": "FINAL_SESSION_UNLIQUIDATED_HOLDINGS",
-                "remaining_holdings": list(exc.remaining_holdings),
-            }
-        )
-        return blocker
-    if isinstance(exc, AShareCorporateActionFractionalSharesError):
-        blocker.update(
-            {
-                "blocker_code": "CORPORATE_ACTION_FRACTIONAL_SHARES",
-                "security_code": exc.code,
-                "session_date": exc.session_date,
-                "opening_shares": exc.opening_shares,
-                "corporate_action_share_multiplier": exc.multiplier,
-                "adjusted_shares": exc.adjusted_shares,
-                "corporate_action_fractional_share_policy": (
-                    "FAIL_CLOSED_NON_INTEGER"
-                ),
-            }
-        )
+    if isinstance(exc, AShareCandidateReplayBlockerError):
+        blocker.update(exc.blocker_details())
         return blocker
     raise TypeError(f"unsupported candidate replay exception: {type(exc)!r}")
 
@@ -1064,10 +1052,7 @@ def replay(
                 execution_policy=execution,
                 corporate_action_policy=corporate,
             )
-        except (
-            AShareTerminalLiquidationError,
-            AShareCorporateActionFractionalSharesError,
-        ) as exc:
+        except AShareCandidateReplayBlockerError as exc:
             blocker = _candidate_replay_exception_blocker(
                 exc,
                 candidate=candidate,
@@ -1282,7 +1267,7 @@ def replay(
     ):
         raise RuntimeError("replay candidate identity/order drift")
     candidate_results_path = output_root / "candidate_replay_results.parquet"
-    pd.DataFrame(candidate_rows).to_parquet(
+    candidate_result_summary_frame(candidate_rows).to_parquet(
         candidate_results_path,
         index=False,
     )
@@ -1951,6 +1936,21 @@ def main() -> int:
     )
 
     args = parser.parse_args()
+    if str(os.environ.get("CN_NODE_RESOURCE_LEASE_REQUIRED") or "") == "1":
+        receipt_value = str(
+            os.environ.get("CN_NODE_RESOURCE_LEASE_RECEIPT") or ""
+        ).strip()
+        entitlement = int(
+            str(os.environ.get("CN_NODE_CPU_ENTITLEMENT") or "0")
+        )
+        if not receipt_value or entitlement < 1:
+            raise RuntimeError("finalist replay node resource lease is incomplete")
+        receipt_path = Path(receipt_value)
+        validate_node_resource_lease_receipt(
+            receipt_path,
+            expected_role="VALIDATION",
+            expected_cpu_threads=entitlement,
+        )
     _configure_expected_cohort_size(args.expected_pair_count)
     if args.command == "prepare":
         result = prepare(

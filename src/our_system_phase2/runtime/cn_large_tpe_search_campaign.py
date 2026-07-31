@@ -12,6 +12,7 @@ import copy
 import json
 import math
 import multiprocessing
+import os
 import pickle
 import platform
 import statistics
@@ -66,6 +67,9 @@ from our_system_phase2.services.fixed_split_authority import (
 from our_system_phase2.services.matched_control_pairs import (
     MATCHED_OPTIMIZER_REWARD_CONTRACT,
     PAIR_TRAIN_FEEDBACK_READY,
+)
+from our_system_phase2.services.node_resource_governor import (
+    validate_node_resource_lease_receipt,
 )
 from our_system_phase2.services.optuna_tpe_search_adapter import (
     EVALUATED,
@@ -1316,6 +1320,8 @@ def _authorization_binding(
     seed_base: int,
     active_threads: int,
     session_threads: int,
+    node_resource_profile: str | None = None,
+    node_resource_capacity_sha256: str | None = None,
     preflight_only: bool = False,
 ) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8-sig"))
@@ -1378,6 +1384,26 @@ def _authorization_binding(
         "forward_2026": "SEALED",
         "promotion": "FORBIDDEN",
     }
+    allowed_node_profiles = tuple(
+        str(value)
+        for value in payload.get("node_resource_profiles_allowed") or ()
+    )
+    if allowed_node_profiles:
+        expected_common.pop("active_threads", None)
+        expected_common.pop("session_threads", None)
+        expected_common.update(
+            {
+                "node_resource_profiles_allowed": list(
+                    allowed_node_profiles
+                ),
+                "resource_profile_switch_boundary": (
+                    "BATCH_CLOSED_IMMUTABLE_ONLY"
+                ),
+                "node_resource_capacity_manifest_sha256": str(
+                    node_resource_capacity_sha256 or ""
+                ),
+            }
+        )
     if profile == PRODUCTIVITY_MEDIUM_PROFILE:
         route_caps = {
             route_id: int(count) * PRODUCTIVITY_MAXIMUM_CHECKPOINTS
@@ -1507,6 +1533,21 @@ def _authorization_binding(
     drift = [
         key for key, value in expected.items() if payload.get(key) != value
     ]
+    if allowed_node_profiles:
+        if set(allowed_node_profiles) - {
+            "SEARCH_EXCLUSIVE_32",
+            "SEARCH_DUAL_24",
+        }:
+            drift.append("node_resource_profiles_allowed")
+        if str(node_resource_profile or "") not in allowed_node_profiles:
+            drift.append("node_resource_profile")
+        topology_hash = str(
+            payload.get("resource_topology_authorization_sha256") or ""
+        )
+        topology_body = dict(payload)
+        topology_body.pop("resource_topology_authorization_sha256", None)
+        if topology_hash != _stable_hash(topology_body):
+            drift.append("resource_topology_authorization_sha256")
     if not authorization_gate:
         drift.append(
             "qualification_authorized"
@@ -2967,10 +3008,51 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError(
             f"LARGE_TPE_AUTHORIZED_ONLY_ON_77O:{platform.node()}"
         )
-    if int(args.active_threads) != 32 or int(args.session_threads) != 32:
+    if (
+        int(args.active_threads) < 1
+        or int(args.active_threads) > 32
+        or int(args.session_threads) != int(args.active_threads)
+    ):
         raise RuntimeError("LARGE_TPE_THREAD_CONTRACT_MISMATCH")
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
+    lease_receipt_value = str(
+        os.environ.get("CN_NODE_RESOURCE_LEASE_RECEIPT") or ""
+    )
+    lease_required = str(
+        os.environ.get("CN_NODE_RESOURCE_LEASE_REQUIRED") or ""
+    ) == "1"
+    node_resource_binding: dict[str, Any]
+    if lease_receipt_value:
+        lease_receipt_path = Path(lease_receipt_value).resolve()
+        lease_receipt = validate_node_resource_lease_receipt(
+            lease_receipt_path,
+            expected_role="SEARCH",
+            expected_cpu_threads=int(args.active_threads),
+        )
+        node_resource_binding = {
+            "status": "NODE_RESOURCE_LEASE_BOUND",
+            "receipt": _artifact(lease_receipt_path),
+            "profile_id": str(
+                (lease_receipt.get("lease") or {}).get("profile_id") or ""
+            ),
+            "cpu_entitlement_threads": int(
+                (lease_receipt.get("lease") or {}).get("cpu_threads") or 0
+            ),
+            "capacity_manifest_sha256": str(
+                lease_receipt.get("capacity_manifest_sha256") or ""
+            ),
+            "performance_gate_entitlement_source": "NODE_RESOURCE_LEASE",
+        }
+    elif lease_required:
+        raise RuntimeError("LARGE_TPE_NODE_RESOURCE_LEASE_MISSING")
+    else:
+        lease_receipt_path = None
+        node_resource_binding = {
+            "status": "LEGACY_UNGOVERNED_DIRECT_ENTRY",
+            "cpu_entitlement_threads": int(args.active_threads),
+            "performance_gate_entitlement_source": "LEGACY_ARGUMENT",
+        }
     authority = _authorization_binding(
         path=args.campaign_authorization.resolve(),
         candidate_archive=args.historical_candidate_archive.resolve(),
@@ -2984,7 +3066,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         seed_base=args.seed_base,
         active_threads=args.active_threads,
         session_threads=args.session_threads,
+        node_resource_profile=str(
+            node_resource_binding.get("profile_id") or ""
+        ),
+        node_resource_capacity_sha256=str(
+            node_resource_binding.get("capacity_manifest_sha256") or ""
+        ),
         preflight_only=bool(args.preflight_only),
+    )
+    node_resource_binding_path = _write_json(
+        output_root
+        / (
+            "node_resource_binding_"
+            + str((node_resource_binding.get("profile_id") or "legacy")).lower()
+            + "_"
+            + str(int(time.time_ns()))
+            + ".json"
+        ),
+        node_resource_binding,
     )
     campaign_profile = str(
         (authority.get("frozen") or {}).get("campaign_profile") or ""
@@ -4091,6 +4190,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             availability_state_path,
             gate_path,
             summary_path,
+            node_resource_binding_path,
         ]
         if policy_rows_path is not None and policy_summary_path is not None:
             manifest_paths.extend([policy_rows_path, policy_summary_path])
@@ -4109,6 +4209,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "gene_lane_manifest": _sha256(lane_manifest_path),
             "availability_index": _sha256(
                 availability_index_path
+            ),
+            "node_resource_binding": _sha256(
+                node_resource_binding_path
             ),
             "prior_checkpoint_manifest": (
                 _sha256(previous) if previous else "GENESIS"

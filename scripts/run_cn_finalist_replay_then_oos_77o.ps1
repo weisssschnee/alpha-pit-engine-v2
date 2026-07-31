@@ -14,7 +14,15 @@ param(
     [ValidateRange(1, 256)]
     [int]$ExpectedPairCount = 24,
     [ValidateRange(1, 24)]
-    [int]$ValidationThreads = 8
+    [int]$ValidationThreads = 8,
+    [ValidateSet('VALIDATION_DUAL_8')]
+    [string]$NodeResourceProfile = 'VALIDATION_DUAL_8',
+    [string]$NodeResourceCapacity = (
+        'runtime\run_plans\cn_alpha_node_resource_profiles_v1.json'
+    ),
+    [string]$NodeResourceStateRoot = (
+        'D:\ChengboRemote\runtime\node_resource_governor'
+    )
 )
 
 $ErrorActionPreference = 'Stop'
@@ -31,6 +39,11 @@ $resolvedCohort = (Resolve-Path -LiteralPath $CohortRoot).Path
 $resolvedAuthority = (Resolve-Path -LiteralPath $AuthorityRoot).Path
 $resolvedDeployment = (Resolve-Path -LiteralPath $DeploymentManifest).Path
 $resolvedRoot = [System.IO.Path]::GetFullPath($OutputRoot)
+$resolvedNodeCapacity = if ([IO.Path]::IsPathRooted($NodeResourceCapacity)) {
+    [IO.Path]::GetFullPath($NodeResourceCapacity)
+} else {
+    [IO.Path]::GetFullPath((Join-Path $resolvedRepo $NodeResourceCapacity))
+}
 
 if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
     throw "remote Python is missing: $python"
@@ -64,6 +77,21 @@ if ([string]$deployment.repo_sha -ne $RepoSha) {
 }
 if ([string]$deployment.workspace -ne $resolvedRepo) {
     throw "deployment manifest workspace drift"
+}
+$nodeCapacity = Get-Content -LiteralPath $resolvedNodeCapacity -Raw |
+    ConvertFrom-Json
+$nodeProfileProperty = $nodeCapacity.profiles.PSObject.Properties[
+    $NodeResourceProfile
+]
+if ($null -eq $nodeProfileProperty) {
+    throw "node resource profile missing: $NodeResourceProfile"
+}
+$nodeProfile = $nodeProfileProperty.Value
+if (
+    [string]$nodeProfile.role -ne 'VALIDATION' -or
+    [int]$nodeProfile.cpu_threads -ne $ValidationThreads
+) {
+    throw "validation node resource profile/thread mismatch"
 }
 
 $memory = Get-CimInstance Win32_OperatingSystem
@@ -153,6 +181,11 @@ $stderrPath = Join-Path $resolvedRoot 'replay_then_oos.stderr.log'
     pair_count = $ExpectedPairCount
     candidate_member_count = $ExpectedPairCount * 2
     validation_threads = $ValidationThreads
+    node_resource_profile = $NodeResourceProfile
+    node_resource_capacity_path = $resolvedNodeCapacity
+    node_resource_capacity_sha256 = (
+        Get-FileHash -LiteralPath $resolvedNodeCapacity -Algorithm SHA256
+    ).Hash.ToLowerInvariant()
     validation_evidence_class = (
         'REUSED_FIXED_VALIDATION_REPORT_ONLY_NO_PROMOTION'
     )
@@ -179,6 +212,25 @@ $env:OPENBLAS_NUM_THREADS = '1'
 $env:NUMEXPR_NUM_THREADS = '1'
 $env:NUMEXPR_MAX_THREADS = '1'
 $env:JOBLIB_MULTIPROCESSING = '0'
+$leaseManager = Join-Path $resolvedRepo 'scripts\manage_cn_node_resource_lease.py'
+$leaseId = "validation-$PID"
+$leaseReceiptRoot = Join-Path $resolvedRoot 'resource_leases'
+New-Item -ItemType Directory -Force -Path $leaseReceiptRoot | Out-Null
+$leaseReceipt = Join-Path $leaseReceiptRoot "$leaseId.json"
+& $python $leaseManager acquire `
+    --state-root $NodeResourceStateRoot `
+    --capacity-manifest $resolvedNodeCapacity `
+    --profile $NodeResourceProfile `
+    --lease-id $leaseId `
+    --owner-pid $PID `
+    --workload-id $resolvedRoot `
+    --receipt $leaseReceipt *>> $stdoutPath
+if ($LASTEXITCODE -ne 0) {
+    throw "node resource lease admission failed: $LASTEXITCODE"
+}
+$env:CN_NODE_RESOURCE_LEASE_REQUIRED = '1'
+$env:CN_NODE_RESOURCE_LEASE_RECEIPT = $leaseReceipt
+$env:CN_NODE_CPU_ENTITLEMENT = [string]$ValidationThreads
 
 try {
     $ErrorActionPreference = 'Continue'
@@ -313,8 +365,13 @@ try {
     } | ConvertTo-Json |
         Set-Content -LiteralPath (
             Join-Path $resolvedRoot 'process_exit.json'
-        ) -Encoding UTF8
+    ) -Encoding UTF8
     throw
+} finally {
+    & $python $leaseManager release `
+        --state-root $NodeResourceStateRoot `
+        --lease-id $leaseId `
+        --owner-pid $PID *>> $stdoutPath
 }
 
 [ordered]@{

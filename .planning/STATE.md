@@ -1379,6 +1379,36 @@ remains unchanged. The compact receipt is
   the terminal-mark accounting question but does not turn the cohort into a
   promotion-ready finalist set or authorize more search.
 
+## Shared-node alpha compute control-plane hardening (2026-07-31)
+
+- ADR 0012 accepts a common 77o resource authority for future heavy alpha work.
+  It separates resource topology from search semantics and permits only one
+  32-thread exclusive search or one explicitly authorized 24-thread search plus
+  one 8-thread validation lane. Profile changes are allowed only after a closed
+  immutable checkpoint; existing `RUN_INVALID` evidence is not reclassified.
+- The node governor uses one host-bound, self-hashed capacity manifest, an
+  atomic file-locked lease state and content-addressed receipts. Admission
+  accounts for CPU, declared memory and the 24 GiB reserve. Dead launchers do
+  not release claims while workload-bound children survive, released receipts
+  fail validation, and a bounded status command replaces persistent resource
+  inspectors.
+- Future runtime acceleration gates are entitlement-aware: full-host tasks
+  retain the host-occupancy requirement, while partial tasks are measured
+  against the CPU threads actually leased. Nested native parallelism remains
+  forbidden and the fixed 8 GiB evaluator cache is unchanged.
+- Finalist replay now persists heterogeneous candidate outcomes through an
+  explicit scalar Parquet envelope plus canonical payload JSON/SHA256. Typed
+  terminal-liquidity and corporate-action outcomes remain candidate-local;
+  unknown authority, data, schema or execution errors remain batch-fatal.
+- A zero-financial stock-session capability builder records registry coverage,
+  shard schema coverage and within-session variation. Cohort freezing checks
+  actual primary/control expressions, so incompatible candidates are identified
+  before financial replay without route-wide over-exclusion.
+- Local source verification passed 97 search/replay/control-plane tests with two
+  expected Optuna experimental warnings. No financial search, replay, OOS,
+  holdout/2026 access, optimizer import, promotion or platform/database creation
+  was performed by this hardening phase.
+
 ## Next action
 
 Do not retry or reinterpret the invalid 12,288-ask search lane. Retain only its
@@ -1392,12 +1422,19 @@ The only strict executable-train plus OOS-positive intersection is
 turnover and regime/left-tail behavior before any new finalist decision. Do not
 promote it from this single intersection.
 
-Next work is bounded finalist deduplication and economic classification, not
-another search tranche: group the OOS-positive evidence by behavior family,
-retain explicit A-share executability blockers, and freeze only a small review
-set if multiple independent mechanisms survive. Holdout/2026 access, promotion,
-a new platform/database, automatic successor search and cross-campaign reward
-memory remain unauthorized.
+First deploy and verify the accepted control plane in a clean versioned 77o
+workspace without launching financial work. For a future independently
+authorized workload, select `SEARCH_EXCLUSIVE_32` when search is the only heavy
+lane, or the exact `SEARCH_DUAL_24` plus `VALIDATION_DUAL_8` pair when both lanes
+have useful work. Generate a candidate-level execution-clock capability
+manifest before freezing any replay cohort.
+
+Research work remains bounded finalist deduplication and economic
+classification, not an automatically authorized search tranche: group the
+OOS-positive evidence by behavior family, retain explicit A-share executability
+blockers, and freeze only a small review set if multiple independent mechanisms
+survive. Holdout/2026 access, promotion, a new platform/database, automatic
+successor search and cross-campaign reward memory remain unauthorized.
 
 Do not rerun the Medium, its report-only validation, either completed
 Hybrid-only tranche or earlier availability-agency canaries. Unlimited search,
