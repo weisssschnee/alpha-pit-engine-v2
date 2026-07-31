@@ -252,7 +252,9 @@ def _candidate_replay_exception_blocker(
                 "opening_shares": exc.opening_shares,
                 "corporate_action_share_multiplier": exc.multiplier,
                 "adjusted_shares": exc.adjusted_shares,
-                "corporate_action_policy": "FAIL_CLOSED_NON_INTEGER",
+                "corporate_action_fractional_share_policy": (
+                    "FAIL_CLOSED_NON_INTEGER"
+                ),
             }
         )
         return blocker
@@ -1006,7 +1008,12 @@ def replay(
                         not str(blocker.get("security_code") or "")
                         or not str(blocker.get("session_date") or "")
                         or int(blocker.get("opening_shares") or 0) <= 0
-                        or str(blocker.get("corporate_action_policy") or "")
+                        or str(
+                            blocker.get(
+                                "corporate_action_fractional_share_policy"
+                            )
+                            or ""
+                        )
                         != "FAIL_CLOSED_NON_INTEGER"
                     )
                 elif blocker_code == "NO_EXECUTABLE_FILLS":
@@ -1086,7 +1093,7 @@ def replay(
                 "opening_shares",
                 "corporate_action_share_multiplier",
                 "adjusted_shares",
-                "corporate_action_policy",
+                "corporate_action_fractional_share_policy",
             ):
                 if key in blocker:
                     summary[key] = blocker[key]

@@ -258,5 +258,9 @@ def test_fractional_corporate_action_becomes_candidate_blocker() -> None:
     )
     assert blocker["security_code"] == "002514"
     assert blocker["adjusted_shares"] == 100.5
+    assert blocker["corporate_action_fractional_share_policy"] == (
+        "FAIL_CLOSED_NON_INTEGER"
+    )
+    assert "corporate_action_policy" not in blocker
     assert blocker["fail_closed"] is True
     assert blocker["economic_claim_authorized"] is False
