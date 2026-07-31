@@ -119,6 +119,18 @@ WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE = (
 SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
     "cn_shared_control_winner_guided_search_v1"
 )
+
+
+def _compute_threads_by_backend(
+    *, active_threads: int, session_threads: int
+) -> dict[str, int]:
+    """Bind Phase3CM native threads to the admitted runtime entitlement."""
+    return {
+        "active_bar": int(active_threads),
+        "stock_session": int(session_threads),
+    }
+
+
 WINNER_GUIDED_PROFILES = (
     WINNER_GUIDED_LARGE_SEARCH_PROFILE,
     WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
@@ -3229,7 +3241,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "active_bar": args.validation_active_label_root.resolve(),
         "stock_session": args.validation_session_label_root.resolve(),
     }
-    compute_threads = {"active_bar": 32, "stock_session": 32}
+    compute_threads = _compute_threads_by_backend(
+        active_threads=int(args.active_threads),
+        session_threads=int(args.session_threads),
+    )
     schema, schema_by_backend = materialized_schema_binding(
         field_roots=field_roots, registry=registry
     )
@@ -3244,7 +3259,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     if str(purity.get("status") or "") != "PASS":
         raise RuntimeError("SPLIT_BOUNDARY_LABEL_PURITY_FAILED")
-    runtime = _runtime_envelope(32, 32)
+    runtime = _runtime_envelope(
+        compute_threads["active_bar"],
+        compute_threads["stock_session"],
+    )
     runtime_path = _write_json(
         output_root / "runtime_envelope.json", runtime
     )

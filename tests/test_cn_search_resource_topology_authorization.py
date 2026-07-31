@@ -10,12 +10,23 @@ from scripts.freeze_cn_search_resource_topology_authorization import (
 )
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _authorization_binding,
+    _compute_threads_by_backend,
 )
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> Path:
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
+
+
+def test_phase3cm_threads_follow_dual_lane_runtime_entitlement() -> None:
+    assert _compute_threads_by_backend(
+        active_threads=24,
+        session_threads=24,
+    ) == {
+        "active_bar": 24,
+        "stock_session": 24,
+    }
 
 
 def test_topology_authorization_separates_resources_from_search_semantics(
