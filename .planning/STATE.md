@@ -1404,10 +1404,28 @@ remains unchanged. The compact receipt is
   shard schema coverage and within-session variation. Cohort freezing checks
   actual primary/control expressions, so incompatible candidates are identified
   before financial replay without route-wide over-exclusion.
-- Local source verification passed 97 search/replay/control-plane tests with two
-  expected Optuna experimental warnings. No financial search, replay, OOS,
-  holdout/2026 access, optimizer import, promotion or platform/database creation
-  was performed by this hardening phase.
+- Local source verification passed 98 search/replay/control-plane tests with two
+  expected Optuna experimental warnings. The exact versioned 77o deployment at
+  SHA `5717cbe358aa5abff3c06067798c6849439c1a4e` passed 99/99 focused tests and
+  both PowerShell launcher parse checks. Its workspace is
+  `D:\ChengboRemote\workspace\alpha_pit_compute_control_5717cbe_20260731_2205`;
+  deployment manifest SHA256 is
+  `86808f55757f3fca830881431317117867115612acd9399a2ad3a91a25b2268a`.
+- A separate zero-financial 77o qualification admitted the frozen
+  `SEARCH_DUAL_24` plus `VALIDATION_DUAL_8` profiles concurrently at exactly two
+  leases / 32 threads, rejected a simultaneous `SEARCH_EXCLUSIVE_32` request
+  with nonzero exit, then released to zero leases / zero threads. The closure
+  status is `PASS_ZERO_FINANCIAL`, closure-file SHA256 is
+  `472adde938f19befb5bb23062713ed669d307e710633a212c1a0b2187380bf5b`,
+  and the observed host matched 32 logical CPUs / 100,265,193,472 physical
+  memory bytes. Financial, validation, holdout and 2026 reads and prohibited
+  writes were all zero. The final bounded process check found no Chengbo Python
+  process or running Chengbo scheduled task.
+- No financial search, replay, OOS, holdout/2026 access, optimizer import,
+  promotion or platform/database creation was performed by this hardening and
+  deployment phase. Direct GitHub clone on 77o remained blocked by its stale
+  inherited `127.0.0.1:7890` proxy, so the exact pushed commit was deployed via
+  a SHA-verified full Git bundle without changing the node's proxy authority.
 
 ## Next action
 
@@ -1422,12 +1440,12 @@ The only strict executable-train plus OOS-positive intersection is
 turnover and regime/left-tail behavior before any new finalist decision. Do not
 promote it from this single intersection.
 
-First deploy and verify the accepted control plane in a clean versioned 77o
-workspace without launching financial work. For a future independently
-authorized workload, select `SEARCH_EXCLUSIVE_32` when search is the only heavy
-lane, or the exact `SEARCH_DUAL_24` plus `VALIDATION_DUAL_8` pair when both lanes
-have useful work. Generate a candidate-level execution-clock capability
-manifest before freezing any replay cohort.
+The accepted control plane is deployed and zero-financial-qualified in a clean
+versioned 77o workspace. For a future independently authorized workload, select
+`SEARCH_EXCLUSIVE_32` when search is the only heavy lane, or the exact
+`SEARCH_DUAL_24` plus `VALIDATION_DUAL_8` pair when both lanes have useful work.
+Generate a candidate-level execution-clock capability manifest before freezing
+any replay cohort.
 
 Research work remains bounded finalist deduplication and economic
 classification, not an automatically authorized search tranche: group the
