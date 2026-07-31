@@ -2,7 +2,7 @@
 
 Updated: 2026-07-31
 
-Current state: `CN_DUAL_LANE_SEARCH_AND_REPORT_ONLY_VALIDATION_ACTIVE`
+Current state: `CN_SEARCH_RUN_INVALID_VALIDATION_RECOVERY_ACTIVE`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -45,10 +45,20 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   `175d986dac2f68ac56a82e803b45eb5f8e73986a9b07bc797b9497317b1753c9`
   and the 54-file/3,920,983,739-byte preservation manifest SHA256 is
   `504f84d07a839949fe3123eeaba50ad27b6904fc0cbd8198a248acae771a0876`.
-  No failed financial result or optimizer state is reused and no threshold is
-  weakened. The single same-root recovery task is
-  `lanjob_20260731_123132_54145c`, regenerating checkpoint 004 from verified
-  checkpoint 003.
+  No failed financial result or optimizer state was reused and no threshold
+  was weakened. The single same-root recovery task
+  `lanjob_20260731_123132_54145c` regenerated checkpoint 004 from verified
+  checkpoint 003 but failed the same frozen stock-session acceleration gate a
+  second time: 19.9623 effective cores, 62.3822% logical CPU occupancy and
+  32/37 sustained blocks meeting threshold. Per the predeclared
+  `second_failure_policy=RUN_INVALID`, the search lane is now `RUN_INVALID`;
+  no third attempt is authorized. The second failed checkpoint is preserved at
+  `run_health_incidents\20260731T131720_checkpoint004_second_runtime_acceleration_gate_failure_run_invalid`;
+  incident SHA256 is
+  `66df4c87e16856dce543b6f9b8053cd5e1f77056674991bbfeb585618d5b8a1b`
+  and the 53-file/3,921,032,540-byte preservation manifest SHA256 is
+  `c9da906f3fa362b7d88d20a2e0386c1c1d7956427b42bf336598b60523920037`.
+  Checkpoints 001-003 remain the only accepted search evidence.
 - The isolated report-only lane originally froze 64 pairs, but its sole
   First-N pair required intraday `intraday_ret_from_open` and could not be
   represented by the stock-session replay sidecar. That attempt stopped before
@@ -57,17 +67,34 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   work and retains 63 pairs/126 members in original relative order: 39 Slow
   Temporal and 24 Slow Cross-sectional. Its selection payload SHA256 is
   `c5b2d72aaa3aa3792995db35ba45c7d29237b574e22e75967bcdbaddebbc381b`.
-  The active 8-thread task is `lanjob_20260731_102229_961008` at
-  `D:\ChengboRemote\runtime\cn_finalist_replay_then_oos_stock_session_63_dual_lane_20260731_74f46a3`,
-  deployed from SHA `74f46a33291475360f1ca5898f16af44d0dc2f64`.
+  The first 8-thread task `lanjob_20260731_102229_961008` stopped after 96/126
+  replay members because a candidate-specific non-integer corporate-action
+  holding was raised as a batch-level `ValueError`. OOS had not started and
+  there were no pair results. All 96 incomplete candidate records were moved
+  out of the active root and preserved at
+  `run_health_incidents\20260731T131228_fractional_corporate_action_batch_abort`;
+  incident SHA256 is
+  `14b42de58c02c01a4d67b25cd96daf7dd82eb03656d86e1f305fab12fac0dc74`
+  and the 99-file preservation manifest SHA256 is
+  `ee331cfad92e1c70d447d54a9c0671a21b165c925516d109e7cd8c9d1759b2aa`.
+  No incomplete replay financial result is reused.
+  SHA `99920eb6e71ceff0c29506d4a009b7f9276b8d28` keeps the unchanged
+  `FAIL_CLOSED_NON_INTEGER` corporate-action policy but records that typed
+  outcome as candidate-level
+  `CORPORATE_ACTION_FRACTIONAL_SHARES`, allowing the fixed cohort to continue.
+  Local and official 77o focused tests passed 22/22. The single recovery task
+  is `lanjob_20260731_133954_164dab` in the same output root, with deployment
+  manifest SHA256
+  `5b7e31727c7ce0cd7c10a59e1feb0b9de698f771f6f85f6943094d01104cd3c9`.
   It may read only the fixed validation split after unchanged-cohort train
   replay; it cannot write optimizer, feedback, scheduler, archive or promotion
   state and cannot affect the running search.
-- Both lanes are active on 77o in separate roots and process chains. The latest
-  bounded recovery check retained 83,499,671,552 bytes free memory with no
-  duplicate task or persistent inspector. This is execution evidence only:
-  neither a running process nor a prepared cohort is closure or promotion
-  authority.
+- Only the validation recovery lane remains active on 77o. The latest bounded
+  check showed one two-Python replay chain, zero newly reused candidate
+  records and 83,424,260,096 bytes free memory. The invalid search task and the
+  failed validation task were deleted; there is no duplicate or persistent
+  inspector. This is execution evidence only: neither a running process nor a
+  prepared cohort is closure or promotion authority.
 - Disclosure V2 is now closed in both evidence and code. Sign is
   `REJECTED_BEHAVIOR_DISCOVERY`; CSRank is
   `REJECTED_FINANCIAL_INCREMENT`; Abs is `NOT_EVALUATED`. The historical CEM
@@ -1312,28 +1339,22 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-Monitor only the two exact active 77o tasks above. For the search lane,
-independently verify each `BATCH_CLOSED_IMMUTABLE` checkpoint, the fixed route
-schedule, train-only ask/tell and reward alignment, exact/pair/behavior
-uniqueness, runtime/cache/memory gates and zero validation/holdout/2026 reads.
-For the report-only lane, verify the 63-pair unchanged cohort through replay,
-validation sidecars, OOS and root closure, with positive validation reads and
-zero holdout/2026 or prohibited writes. Validation results must never enter the
-search optimizer or alter its live schedule.
+Do not retry or reinterpret the invalid 12,288-ask search lane. Retain only its
+three verified immutable checkpoints as partial development evidence.
 
-Do not launch a third task, duplicate either lane, expand beyond 12,288 asks,
-rerun the incompatible 64th First-N pair through a stock-session evaluator,
-or authorize promotion from a running process. On a genuine code or
-infrastructure failure, preserve evidence and resume only from the last
-independently verified immutable boundary without reusing incomplete financial
-results.
+Monitor only validation recovery task `lanjob_20260731_133954_164dab`.
+Verify exactly 126 candidate and 63 pair replay records with candidate-level
+A-share blockers retained, replay closure, validation sidecars, the unchanged
+63-pair report-only OOS cohort, positive validation reads and zero
+optimizer/feedback/scheduler/archive/promotion writes or holdout/2026 reads.
+The new corporate-action blocker must remain fail-closed and must not filter
+the OOS cohort.
 
-After both roots close, report actual candidate production, behavior-family
-concentration, replay executability and report-only OOS transfer without
-forcing PASS. Then return to finalist deduplication and economic selection; do
-not automatically launch another search tranche. Holdout/2026 access,
-promotion, a new platform/database and cross-campaign reward memory remain
-unauthorized.
+At valid closure, report actual partial search production, behavior-family
+concentration, replay executability and OOS transfer without forcing PASS.
+Then return to finalist deduplication and economic selection; do not
+automatically launch another search tranche. Holdout/2026 access, promotion, a
+new platform/database and cross-campaign reward memory remain unauthorized.
 
 Do not rerun the Medium, its report-only validation, either completed
 Hybrid-only tranche or earlier availability-agency canaries. Unlimited search,
