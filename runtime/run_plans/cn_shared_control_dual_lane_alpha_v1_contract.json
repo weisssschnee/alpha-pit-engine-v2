@@ -16,7 +16,7 @@
   },
   "search_lane": {
     "campaign_id": "CN_SHARED_CONTROL_WINNER_GUIDED_SEARCH_V1_20260731",
-    "campaign_profile": "cn_winner_guided_continuation_search_v1",
+    "campaign_profile": "cn_shared_control_winner_guided_search_v1",
     "policy": "HYBRID_TPE_AVAILABILITY",
     "optimizer_initialization": "FRESH_TPE_NO_CROSS_CAMPAIGN_REWARD_OR_OPTIMIZER_STATE",
     "checkpoint_count": 8,

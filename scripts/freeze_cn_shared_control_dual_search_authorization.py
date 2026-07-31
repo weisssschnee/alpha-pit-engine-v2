@@ -9,6 +9,11 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
+SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
+    "cn_shared_control_winner_guided_search_v1"
+)
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:
@@ -94,6 +99,11 @@ def freeze_authorization(
     ):
         raise RuntimeError("dual-lane contract is not frozen")
     search = dict(contract.get("search_lane") or {})
+    if (
+        str(search.get("campaign_profile") or "")
+        != SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE
+    ):
+        raise RuntimeError("dual-lane search campaign profile drift")
     profile = dict(contract.get("shared_resource_authority") or {})
     if str(profile.get("search_profile") or "") != "SEARCH_DUAL_24":
         raise RuntimeError("dual-lane contract search profile drift")

@@ -34,6 +34,10 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_RAW_ASKS,
     WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
     WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_MIX,
+    SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_CHECKPOINTS,
+    SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_RAW_ASKS,
+    SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
+    SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_MIX,
     MAXIMUM_RAW_ASKS,
     MINIMUM_ACTUAL_EVALUATED_PAIRS,
     N_EI_CANDIDATES,
@@ -798,6 +802,25 @@ def test_winner_guided_continuation_keeps_full_12288_ask_budget() -> None:
     assert authorization["parallel_validation_lane"] == (
         "SEPARATE_FIXED_64_PAIR_REPORT_ONLY_REUSED_VALIDATION_NO_FEEDBACK"
     )
+
+
+def test_shared_control_winner_search_has_24_thread_checkpoint_budget() -> None:
+    spec = _campaign_runtime_spec(
+        SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE
+    )
+
+    assert SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_CHECKPOINTS == 8
+    assert SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_RAW_ASKS == 9_216
+    assert sum(SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_MIX.values()) == 1_152
+    assert spec["fixed_route_mix"] == {
+        "SLOW_TEMPORAL_CHANGE": 1_120,
+        "FIRSTN_PATH": 32,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+        "MARKET_REGIME_CONDITION": 0,
+        "DISCLOSURE_EVENT": 0,
+    }
+    assert spec["maximum_raw_asks"] == 9_216
+    assert spec["maximum_wall_seconds"] == 129_600
 
 
 def test_zero_ask_routes_skip_optuna_tell() -> None:

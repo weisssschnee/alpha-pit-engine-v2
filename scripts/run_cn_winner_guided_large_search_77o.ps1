@@ -145,24 +145,23 @@ if ($authorization.node_resource_profiles_allowed) {
 }
 if ($authorization.campaign_profile -notin @(
     'cn_winner_guided_large_search_v1',
-    'cn_winner_guided_continuation_search_v1'
+    'cn_winner_guided_continuation_search_v1',
+    'cn_shared_control_winner_guided_search_v1'
 )) {
     throw "campaign profile drift"
 }
 New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
 $effectiveAuthorization = $resolvedAuthorization
 if ($PreflightOnly) {
-    $qualification = Get-Content -LiteralPath $resolvedAuthorization -Raw |
-        ConvertFrom-Json
-    $qualification.status = 'ZERO_FINANCIAL_PREFLIGHT_AUTHORIZED'
-    $qualification.execution_authorized = $false
-    $qualification.financial_campaign_authorized = $false
-    $qualification.qualification_authorized = $true
     $effectiveAuthorization = Join-Path $resolvedRoot (
         'qualification_authorization.json'
     )
-    $qualification | ConvertTo-Json -Depth 12 |
-        Set-Content -LiteralPath $effectiveAuthorization -Encoding UTF8
+    & $python (Join-Path $resolvedRepo (
+        'scripts\materialize_cn_search_preflight_authorization.py'
+    )) --source $resolvedAuthorization --output $effectiveAuthorization
+    if ($LASTEXITCODE -ne 0) {
+        throw 'failed to materialize hash-valid preflight authorization'
+    }
 } elseif (
     -not [bool]$authorization.execution_authorized -or
     -not [bool]$authorization.financial_campaign_authorized

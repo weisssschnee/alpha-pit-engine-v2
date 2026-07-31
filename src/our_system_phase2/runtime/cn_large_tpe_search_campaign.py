@@ -116,9 +116,13 @@ WINNER_GUIDED_LARGE_SEARCH_PROFILE = "cn_winner_guided_large_search_v1"
 WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE = (
     "cn_winner_guided_continuation_search_v1"
 )
+SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
+    "cn_shared_control_winner_guided_search_v1"
+)
 WINNER_GUIDED_PROFILES = (
     WINNER_GUIDED_LARGE_SEARCH_PROFILE,
     WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
+    SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
 )
 ROUTE_EVALUATED_TARGETS = {
     "SLOW_TEMPORAL_CHANGE": 14_000,
@@ -274,11 +278,34 @@ WINNER_GUIDED_CONTINUATION_SEARCH_FLEXIBLE_ALLOCATION = {
 WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_CHECKPOINTS = 8
 WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_RAW_ASKS = 12_288
 WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_WALL_SECONDS = 36 * 60 * 60
+SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_MIX = {
+    "SLOW_TEMPORAL_CHANGE": 1_120,
+    "FIRSTN_PATH": 32,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0,
+}
+SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_CAPS = {
+    route_id: count * 8
+    for route_id, count in (
+        SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_MIX.items()
+    )
+}
+SHARED_CONTROL_WINNER_GUIDED_SEARCH_COVERAGE_FLOORS = dict(
+    SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_CAPS
+)
+SHARED_CONTROL_WINNER_GUIDED_SEARCH_FLEXIBLE_ALLOCATION = {
+    route_id: 0 for route_id in ROUTES
+}
+SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_CHECKPOINTS = 8
+SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_RAW_ASKS = 9_216
+SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_WALL_SECONDS = 36 * 60 * 60
 HYBRID_TRANCHE_PROFILES = (
     HYBRID_ONLY_TRANCHE_PROFILE,
     HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE,
     WINNER_GUIDED_LARGE_SEARCH_PROFILE,
     WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
+    SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
 )
 
 
@@ -439,6 +466,44 @@ def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
                 route_id: int(math.ceil(count * FRESH_EXACT_MARGIN))
                 for route_id, count in (
                     WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_CAPS.items()
+                )
+            },
+        }
+    if str(profile) == SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE:
+        return {
+            "campaign_profile": (
+                SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE
+            ),
+            "maximum_checkpoints": (
+                SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_CHECKPOINTS
+            ),
+            "asks_per_checkpoint": sum(
+                SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_MIX.values()
+            ),
+            "maximum_raw_asks": (
+                SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_RAW_ASKS
+            ),
+            "maximum_wall_seconds": (
+                SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_WALL_SECONDS
+            ),
+            "completion_mode": "FIXED_FORMAL_ASK_TRANCHE",
+            "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+            "fixed_route_mix": dict(
+                SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_MIX
+            ),
+            "coverage_floors": dict(
+                SHARED_CONTROL_WINNER_GUIDED_SEARCH_COVERAGE_FLOORS
+            ),
+            "route_formal_ask_caps": dict(
+                SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_CAPS
+            ),
+            "flexible_allocation": dict(
+                SHARED_CONTROL_WINNER_GUIDED_SEARCH_FLEXIBLE_ALLOCATION
+            ),
+            "minimum_required_fresh_exact_by_route": {
+                route_id: int(math.ceil(count * FRESH_EXACT_MARGIN))
+                for route_id, count in (
+                    SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_CAPS.items()
                 )
             },
         }
@@ -1630,8 +1695,7 @@ def _authorization_binding(
                         == HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE
                         else (
                             "WINNER_GUIDED_LARGE_SEARCH_AUTHORIZED"
-                            if profile
-                            == WINNER_GUIDED_LARGE_SEARCH_PROFILE
+                            if profile in WINNER_GUIDED_PROFILES
                             else "HYBRID_ONLY_TRANCHE_AUTHORIZED"
                         )
                     )
@@ -4357,8 +4421,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     (
                         (
                             "WINNER_GUIDED_LARGE_SEARCH_COMPLETE"
-                            if campaign_profile
-                            == WINNER_GUIDED_LARGE_SEARCH_PROFILE
+                            if campaign_profile in WINNER_GUIDED_PROFILES
                             else (
                                 "HYBRID_BOUNDED_LARGE_TRANCHE_COMPLETE"
                                 if campaign_profile
