@@ -41,19 +41,41 @@ def _stable_hash(value: Any) -> str:
 
 def _required_fields(path: Path) -> tuple[str, ...]:
     fields: set[str] = set()
-    with Path(path).open("r", encoding="utf-8-sig", newline="") as handle:
-        for row in csv.DictReader(handle):
-            expression = str(
-                row.get("expression")
-                or row.get("canonical_expression")
-                or ""
+    path = Path(path).resolve()
+    if path.suffix.lower() == ".parquet":
+        schema = set(pq.ParquetFile(path).schema_arrow.names)
+        expression_column = next(
+            (
+                column
+                for column in ("expression", "canonical_expression")
+                if column in schema
+            ),
+            None,
+        )
+        if expression_column is None:
+            raise RuntimeError(
+                "candidate parquet has no expression authority column"
             )
-            fields.update(
-                re.findall(
-                    r"\$([A-Za-z_][A-Za-z0-9_]*)",
-                    expression,
+        expressions = pq.read_table(
+            path, columns=[expression_column]
+        ).column(expression_column).to_pylist()
+    else:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            expressions = [
+                str(
+                    row.get("expression")
+                    or row.get("canonical_expression")
+                    or ""
                 )
+                for row in csv.DictReader(handle)
+            ]
+    for expression in expressions:
+        fields.update(
+            re.findall(
+                r"\$([A-Za-z_][A-Za-z0-9_]*)",
+                str(expression or ""),
             )
+        )
     return tuple(sorted(fields))
 
 

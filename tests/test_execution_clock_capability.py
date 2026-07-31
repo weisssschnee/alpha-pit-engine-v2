@@ -5,6 +5,9 @@ import json
 from pathlib import Path
 
 import pytest
+import pandas as pd
+
+from scripts.build_cn_stock_session_field_capability import _required_fields
 
 from our_system_phase2.services.execution_clock_capability import (
     ExecutionClockCapabilityDriftError,
@@ -73,3 +76,18 @@ def test_capability_authority_rejects_prohibited_side_effects(
         match="optimizer_writes",
     ):
         load_execution_capability_manifest(path)
+
+
+def test_required_fields_reads_authoritative_parquet_ledger(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "candidate_ledger.parquet"
+    pd.DataFrame(
+        {
+            "canonical_expression": [
+                "Add($lagged_daily_value, $close)",
+                "Rank($close)",
+            ]
+        }
+    ).to_parquet(path, index=False)
+    assert _required_fields(path) == ("close", "lagged_daily_value")

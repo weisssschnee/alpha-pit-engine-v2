@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import math
+import json
+import hashlib
+from pathlib import Path
 
 import pandas as pd
 
@@ -8,6 +11,7 @@ from scripts.freeze_cn_productive_keep_review_cohort import (
     HIGHER_IS_BETTER,
     LOWER_IS_BETTER,
     _deduplicate_behavior_candidates,
+    _load_excluded_cohort_pairs,
     _payload_sha256,
     _rank_candidates,
     _screen_reason,
@@ -132,3 +136,32 @@ def test_payload_hash_is_canonical() -> None:
     left = {"b": 2, "a": {"x": 1}}
     right = {"a": {"x": 1}, "b": 2}
     assert _payload_sha256(left) == _payload_sha256(right)
+
+
+def test_excluded_cohort_is_hash_verified_and_loaded(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "prior"
+    root.mkdir()
+    pairs = root / "keep_review_pairs.parquet"
+    pd.DataFrame({"pair_id": ["pair-old-1", "pair-old-2"]}).to_parquet(
+        pairs, index=False
+    )
+    artifact = {
+        "path": pairs.name,
+        "bytes": pairs.stat().st_size,
+        "sha256": hashlib.sha256(pairs.read_bytes()).hexdigest(),
+    }
+    manifest = {
+        "status": "KEEP_REVIEW_COHORT_CLOSED_IMMUTABLE",
+        "selection_payload_sha256": "selection",
+        "artifacts": [artifact],
+    }
+    manifest["manifest_payload_sha256"] = _payload_sha256(manifest)
+    (root / "keep_review_manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
+
+    pair_ids, bindings = _load_excluded_cohort_pairs((root,))
+    assert pair_ids == {"pair-old-1", "pair-old-2"}
+    assert bindings[0]["excluded_pair_count"] == 2

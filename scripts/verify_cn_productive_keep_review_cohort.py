@@ -10,6 +10,10 @@ from typing import Any, Mapping
 
 import pandas as pd
 
+from our_system_phase2.services.execution_clock_capability import (
+    load_execution_capability_manifest,
+)
+
 
 SUPPORTED_SCHEMA_VERSIONS = {
     "cn_productive_keep_review_freeze_v1",
@@ -248,6 +252,60 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
             raise RuntimeError(f"source hash changed: {path}")
         source_artifact_count += 1
 
+    excluded_pair_ids: set[str] = set()
+    for binding in contract.get("excluded_prior_cohorts") or []:
+        prior_root = Path(str(binding.get("root") or "")).resolve()
+        prior_manifest_path = Path(
+            str(binding.get("manifest") or "")
+        ).resolve()
+        if prior_manifest_path != prior_root / "keep_review_manifest.json":
+            raise RuntimeError("excluded cohort manifest path drift")
+        if (
+            not prior_manifest_path.is_file()
+            or _sha256(prior_manifest_path)
+            != str(binding.get("manifest_file_sha256") or "")
+        ):
+            raise RuntimeError("excluded cohort manifest file hash drift")
+        prior_manifest = _read_json(prior_manifest_path)
+        prior_claimed = str(
+            prior_manifest.pop("manifest_payload_sha256", "")
+        )
+        if (
+            prior_claimed
+            != str(binding.get("manifest_payload_sha256") or "")
+            or prior_claimed != _payload_sha256(prior_manifest)
+        ):
+            raise RuntimeError("excluded cohort manifest payload drift")
+        prior_pairs = set(
+            pd.read_parquet(
+                prior_root / "keep_review_pairs.parquet",
+                columns=["pair_id"],
+            )["pair_id"].astype(str)
+        )
+        if len(prior_pairs) != int(binding.get("excluded_pair_count") or 0):
+            raise RuntimeError("excluded cohort pair count drift")
+        overlap = excluded_pair_ids & prior_pairs
+        if overlap:
+            raise RuntimeError("excluded cohort bindings overlap")
+        excluded_pair_ids.update(prior_pairs)
+    if len(excluded_pair_ids) != int(
+        contract.get("excluded_prior_pair_count") or 0
+    ):
+        raise RuntimeError("excluded prior pair total drift")
+
+    capability_binding = contract.get("execution_capability_manifest")
+    if capability_binding:
+        capability_path = Path(
+            str(capability_binding.get("path") or "")
+        ).resolve()
+        if (
+            not capability_path.is_file()
+            or _sha256(capability_path)
+            != str(capability_binding.get("sha256") or "")
+        ):
+            raise RuntimeError("execution capability manifest file drift")
+        load_execution_capability_manifest(capability_path)
+
     review = pd.read_parquet(
         selection_root / "productive_review_ledger.parquet"
     )
@@ -277,6 +335,12 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         raise RuntimeError("selected behavior-signature duplicate")
     if set(pairs["review_outcome"]) != {"ALLOW_KEEP_REVIEW"}:
         raise RuntimeError("selected review outcome drift")
+    if set(pairs["pair_id"].astype(str)) & excluded_pair_ids:
+        raise RuntimeError("prior review pair selected again")
+    if capability_binding and not pairs[
+        "execution_clock_compatible"
+    ].astype(bool).all():
+        raise RuntimeError("execution-incompatible pair selected")
     if not pairs["train_stability_screen_pass"].all():
         raise RuntimeError("screen-failing pair selected")
     for column in (

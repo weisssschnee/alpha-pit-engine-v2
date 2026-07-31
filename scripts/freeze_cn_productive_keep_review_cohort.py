@@ -161,6 +161,79 @@ def _source_paths(root: Path) -> list[Path]:
     return paths
 
 
+def _load_excluded_cohort_pairs(
+    roots: tuple[Path, ...],
+) -> tuple[set[str], list[dict[str, Any]]]:
+    excluded: set[str] = set()
+    bindings: list[dict[str, Any]] = []
+    for raw_root in roots:
+        root = Path(raw_root).resolve()
+        manifest_path = root / "keep_review_manifest.json"
+        if not manifest_path.is_file():
+            raise RuntimeError(
+                f"excluded cohort manifest is missing: {manifest_path}"
+            )
+        manifest = json.loads(
+            manifest_path.read_text(encoding="utf-8-sig")
+        )
+        claimed = str(manifest.get("manifest_payload_sha256") or "")
+        body = dict(manifest)
+        body.pop("manifest_payload_sha256", None)
+        if claimed != _payload_sha256(body):
+            raise RuntimeError(
+                f"excluded cohort manifest self-hash drift: {manifest_path}"
+            )
+        if (
+            str(manifest.get("status") or "")
+            != "KEEP_REVIEW_COHORT_CLOSED_IMMUTABLE"
+        ):
+            raise RuntimeError(
+                f"excluded cohort is not immutable: {manifest_path}"
+            )
+        for artifact in manifest.get("artifacts") or []:
+            path = root / str(artifact.get("path") or "")
+            if not path.is_file():
+                raise RuntimeError(
+                    f"excluded cohort artifact missing: {path}"
+                )
+            if int(artifact.get("bytes") or -1) != path.stat().st_size:
+                raise RuntimeError(
+                    f"excluded cohort artifact size drift: {path}"
+                )
+            if str(artifact.get("sha256") or "") != _sha256(path):
+                raise RuntimeError(
+                    f"excluded cohort artifact hash drift: {path}"
+                )
+        pair_path = root / "keep_review_pairs.parquet"
+        pair_ids = set(
+            pd.read_parquet(pair_path, columns=["pair_id"])[
+                "pair_id"
+            ].astype(str)
+        )
+        if not pair_ids:
+            raise RuntimeError(f"excluded cohort has no pairs: {root}")
+        overlap = excluded & pair_ids
+        if overlap:
+            raise RuntimeError(
+                "excluded cohort pair overlap: "
+                + ",".join(sorted(overlap)[:5])
+            )
+        excluded.update(pair_ids)
+        bindings.append(
+            {
+                "root": str(root),
+                "manifest": str(manifest_path),
+                "manifest_file_sha256": _sha256(manifest_path),
+                "manifest_payload_sha256": claimed,
+                "selection_payload_sha256": str(
+                    manifest.get("selection_payload_sha256") or ""
+                ),
+                "excluded_pair_count": len(pair_ids),
+            }
+        )
+    return excluded, bindings
+
+
 def _productive_observations(observations: pd.DataFrame) -> pd.DataFrame:
     return observations[
         (observations["pair_evaluation_status"] == "PAIR_EVALUATED")
@@ -451,6 +524,7 @@ def freeze_cohort(
     output_root: Path,
     cohort_pairs: int = COHORT_PAIRS,
     excluded_routes: tuple[str, ...] = (),
+    excluded_cohort_roots: tuple[Path, ...] = (),
     execution_capability_manifest: Path | None = None,
 ) -> dict[str, Any]:
     campaign_root = campaign_root.resolve()
@@ -482,6 +556,15 @@ def freeze_cohort(
     if productive["pair_id"].duplicated().any():
         raise RuntimeError("productive pair-id duplicate")
     productive_pairs = set(productive["pair_id"].astype(str))
+    excluded_pair_ids, excluded_cohort_bindings = (
+        _load_excluded_cohort_pairs(excluded_cohort_roots)
+    )
+    outside_source = excluded_pair_ids - productive_pairs
+    if outside_source:
+        raise RuntimeError(
+            "excluded cohort contains pairs outside source campaign: "
+            + ",".join(sorted(outside_source)[:5])
+        )
 
     behavior = _load_behavior_rows(campaign_root, productive_pairs)
     rewards = _load_train_reward_rows(
@@ -672,13 +755,17 @@ def freeze_cohort(
     }
     review["train_stability_screen_reason"] = [
         (
-            "EXECUTION_CLOCK_FIELD_INCOMPATIBLE:"
-            + str(row["execution_incompatibility_reasons"])
-            if not bool(row["execution_clock_compatible"])
+            "PRIOR_REVIEW_COHORT_PAIR"
+            if str(row["pair_id"]) in excluded_pair_ids
             else (
-                "EXECUTION_CLOCK_ROUTE_EXCLUDED"
-                if str(row["route_id"]) in excluded_route_set
-                else _screen_reason(row)
+                "EXECUTION_CLOCK_FIELD_INCOMPATIBLE:"
+                + str(row["execution_incompatibility_reasons"])
+                if not bool(row["execution_clock_compatible"])
+                else (
+                    "EXECUTION_CLOCK_ROUTE_EXCLUDED"
+                    if str(row["route_id"]) in excluded_route_set
+                    else _screen_reason(row)
+                )
             )
         )
         for row in review.to_dict(orient="records")
@@ -797,6 +884,8 @@ def freeze_cohort(
         "cohort_pairs": cohort_pairs,
         "cohort_candidate_members": cohort_pairs * 2,
         "excluded_routes": sorted(excluded_route_set),
+        "excluded_prior_cohorts": excluded_cohort_bindings,
+        "excluded_prior_pair_count": len(excluded_pair_ids),
         "execution_capability_manifest": (
             {
                 "path": str(capability_path),
@@ -915,6 +1004,7 @@ def freeze_cohort(
         "train_stability_screen_hold": int(
             (~review["train_stability_screen_pass"]).sum()
         ),
+        "excluded_prior_pair_count": len(excluded_pair_ids),
         "selected_pairs": len(selected_review),
         "selected_candidate_members": len(selected_candidates),
         "selected_route_counts": selected_route_counts,
@@ -1045,6 +1135,16 @@ def main() -> int:
         default=[],
     )
     parser.add_argument(
+        "--exclude-cohort-root",
+        type=Path,
+        action="append",
+        default=[],
+        help=(
+            "Previously closed keep-review cohort whose pair IDs may not be "
+            "selected again. May be repeated."
+        ),
+    )
+    parser.add_argument(
         "--execution-capability-manifest",
         type=Path,
         required=True,
@@ -1059,6 +1159,7 @@ def main() -> int:
         output_root=args.output_root,
         cohort_pairs=args.cohort_pairs,
         excluded_routes=tuple(args.exclude_route),
+        excluded_cohort_roots=tuple(args.exclude_cohort_root),
         execution_capability_manifest=args.execution_capability_manifest,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))

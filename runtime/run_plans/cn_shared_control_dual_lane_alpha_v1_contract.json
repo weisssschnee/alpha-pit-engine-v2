@@ -1,0 +1,132 @@
+{
+  "schema_version": "cn_shared_control_dual_lane_alpha_contract_v1",
+  "status": "FROZEN_USER_AUTHORIZED_QUALIFICATION_REQUIRED_BEFORE_LAUNCH",
+  "authority_source": "CURRENT_USER_DIRECT_EXECUTION_INSTRUCTION_20260731",
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "shared_resource_authority": {
+    "capacity_manifest": "runtime/run_plans/cn_alpha_node_resource_profiles_v1.json",
+    "capacity_manifest_sha256": "62aab22c647566b81e19219808877bce7633024a62b5e71aa59a0b282e185f8e",
+    "search_profile": "SEARCH_DUAL_24",
+    "validation_profile": "VALIDATION_DUAL_8",
+    "total_cpu_threads": 32,
+    "minimum_free_memory_bytes": 25769803776,
+    "evaluator_cache_cap_bytes": 8589934592,
+    "nested_native_parallelism": "FORBIDDEN",
+    "additional_heavy_lanes": "FORBIDDEN"
+  },
+  "search_lane": {
+    "campaign_id": "CN_SHARED_CONTROL_WINNER_GUIDED_SEARCH_V1_20260731",
+    "campaign_profile": "cn_winner_guided_continuation_search_v1",
+    "policy": "HYBRID_TPE_AVAILABILITY",
+    "optimizer_initialization": "FRESH_TPE_NO_CROSS_CAMPAIGN_REWARD_OR_OPTIMIZER_STATE",
+    "checkpoint_count": 8,
+    "formal_fresh_exact_asks_per_checkpoint": 1152,
+    "maximum_formal_fresh_exact_asks": 9216,
+    "seed_base": 2026073102,
+    "fixed_route_formal_asks_per_checkpoint": {
+      "SLOW_TEMPORAL_CHANGE": 1120,
+      "FIRSTN_PATH": 32,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+      "MARKET_REGIME_CONDITION": 0,
+      "DISCLOSURE_EVENT": 0
+    },
+    "final_route_formal_ask_allocation": {
+      "SLOW_TEMPORAL_CHANGE": 8960,
+      "FIRSTN_PATH": 256,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+      "MARKET_REGIME_CONDITION": 0,
+      "DISCLOSURE_EVENT": 0
+    },
+    "known_remaining_exact_supply_lower_bound": {
+      "basis": "FINAL_SHA_PREFLIGHT_MINUS_THREE_VERIFIED_IMMUTABLE_CHECKPOINT_SCHEDULES",
+      "SLOW_TEMPORAL_CHANGE": 12305,
+      "FIRSTN_PATH": 941,
+      "total": 13246
+    },
+    "required_exact_supply_at_1_20_margin": {
+      "SLOW_TEMPORAL_CHANGE": 10752,
+      "FIRSTN_PATH": 308,
+      "total": 11060
+    },
+    "history_refresh": {
+      "merge_policy": "IDENTITY_AND_LABEL_FREE_BEHAVIOR_ONLY",
+      "include_prior_archive": true,
+      "include_verified_partial_campaign_checkpoints": [
+        "checkpoint_001",
+        "checkpoint_002",
+        "checkpoint_003"
+      ],
+      "exclude_unclosed_checkpoint_004": true,
+      "reward_rows_imported": 0,
+      "optimizer_state_imported": false,
+      "scheduler_state_imported": false
+    },
+    "throughput_contract": {
+      "maximum_wall_seconds": 129600,
+      "first_checkpoint_minimum_pair_evaluated_per_hour": 300.0,
+      "first_checkpoint_minimum_entitlement_occupancy": 0.7,
+      "projected_completion_uses_recent_pair_evaluated_ewma": true,
+      "underpowered_response": "PRESERVE_IMMUTABLE_CHECKPOINT_AND_REPLAN_NO_SILENT_CONTINUATION"
+    },
+    "pair_batch_size": 12,
+    "maximum_internal_native_draws_per_formal": 8,
+    "search_score_policy": "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1",
+    "portfolio_mode": "LONG_ONLY_TOP",
+    "shorting": "FORBIDDEN",
+    "one_way_cost_bps": 5,
+    "horizons_minutes": [1, 5, 15, 30],
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "automatic_validation": "FORBIDDEN"
+  },
+  "validation_lane": {
+    "source_campaign_root": "D:\\ChengboRemote\\runtime\\cn_hybrid_bounded_large_tranche_20260729_1030_6288d71_6144",
+    "source_productive_pairs": 2676,
+    "exclude_prior_review_cohort_root": "D:\\ChengboRemote\\runtime\\cn_productive_keep_review_64_20260729_2318_76503e0",
+    "exclude_prior_review_pair_count": 64,
+    "target_new_pair_count": 32,
+    "candidate_member_count": 64,
+    "selection_scope": "DEVELOPMENT_TRAIN_ONLY",
+    "selection_policy": "TRAIN_STABILITY_RANK_THEN_BEHAVIOR_DEDUP_WITH_EXISTING_CONCENTRATION_CAPS",
+    "execution_clock": "stock_session",
+    "execution_capability_manifest_required": true,
+    "capability_source_role": "TRAIN_LABEL_FREE_ZERO_FINANCIAL",
+    "incompatible_candidate_action": "EXCLUDE_BEFORE_FREEZE_WITH_TYPED_REASON",
+    "insufficient_compatible_supply_action": "REPLAN_BEFORE_FINANCIAL_WORK_NO_GATE_WEAKENING",
+    "replay": "STRICT_A_SHARE_EXECUTABLE_TRAIN_REPLAY",
+    "oos": "UNCHANGED_COHORT_REPORT_ONLY_VALIDATION",
+    "interstage_filtering": "FORBIDDEN",
+    "candidate_level_blockers_allowed": [
+      "FINAL_SESSION_UNLIQUIDATED_HOLDINGS",
+      "NO_EXECUTABLE_FILLS",
+      "CORPORATE_ACTION_FRACTIONAL_SHARES"
+    ],
+    "optimizer_feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "archive_write": "FORBIDDEN",
+    "promotion": "FORBIDDEN",
+    "holdout_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "lane_isolation": {
+    "separate_output_roots": true,
+    "separate_resource_leases": true,
+    "validation_results_feed_search": false,
+    "search_results_enter_running_validation": false,
+    "cross_campaign_reward_memory": false,
+    "cross_campaign_optimizer_state": false
+  },
+  "launch_gate": {
+    "exact_repo_sha_deployed": true,
+    "local_tracking_remote_sha_equal": true,
+    "zero_financial_search_supply_preflight": "REQUIRED",
+    "zero_financial_execution_clock_capability": "REQUIRED",
+    "new_cohort_exactly_frozen_and_verified": "REQUIRED",
+    "finalist_input_authority_ready": "REQUIRED",
+    "shared_resource_state_empty_before_launch": "REQUIRED",
+    "single_search_task": true,
+    "single_validation_task": true
+  },
+  "claim_boundary": "Development search, executable replay and report-only validation evidence only. Not Alpha promotion, production trading, holdout evidence or a 2026 claim."
+}
