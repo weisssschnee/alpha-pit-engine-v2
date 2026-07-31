@@ -18,6 +18,7 @@ from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _run_phase3cm,
 )
 from our_system_phase2.services.a_share_executable_replay import (
+    AShareCorporateActionFractionalSharesError,
     AShareCorporateActionPolicy,
     AShareExecutionPolicy,
     AShareFeeSchedule,
@@ -214,6 +215,48 @@ def _candidate_economic_blocker_code(
     blockers: Sequence[str],
 ) -> str | None:
     return CANDIDATE_ECONOMIC_REPLAY_BLOCKERS.get(frozenset(blockers))
+
+
+def _candidate_replay_exception_blocker(
+    exc: Exception,
+    *,
+    candidate: Mapping[str, Any],
+    input_data_sha256: str,
+) -> dict[str, Any]:
+    blocker = {
+        "schema_version": "cn_finalist_replay_blocker_v1",
+        "candidate_id": str(candidate["candidate_id"]),
+        "pair_id": str(candidate["pair_id"]),
+        "pair_member_role": str(candidate["pair_member_role"]),
+        "route_id": str(candidate["route_id"]),
+        "exact_identity": str(candidate["exact_identity"]),
+        "input_data_sha256": input_data_sha256,
+        "fail_closed": True,
+        "economic_claim_authorized": False,
+        "promotion_authorized": False,
+    }
+    if isinstance(exc, AShareTerminalLiquidationError):
+        blocker.update(
+            {
+                "blocker_code": "FINAL_SESSION_UNLIQUIDATED_HOLDINGS",
+                "remaining_holdings": list(exc.remaining_holdings),
+            }
+        )
+        return blocker
+    if isinstance(exc, AShareCorporateActionFractionalSharesError):
+        blocker.update(
+            {
+                "blocker_code": "CORPORATE_ACTION_FRACTIONAL_SHARES",
+                "security_code": exc.code,
+                "session_date": exc.session_date,
+                "opening_shares": exc.opening_shares,
+                "corporate_action_share_multiplier": exc.multiplier,
+                "adjusted_shares": exc.adjusted_shares,
+                "corporate_action_policy": "FAIL_CLOSED_NON_INTEGER",
+            }
+        )
+        return blocker
+    raise TypeError(f"unsupported candidate replay exception: {type(exc)!r}")
 
 
 def _normalize_code(value: Any) -> str:
@@ -958,6 +1001,14 @@ def replay(
                     invalid = invalid or not blocker.get(
                         "remaining_holdings"
                     )
+                elif blocker_code == "CORPORATE_ACTION_FRACTIONAL_SHARES":
+                    invalid = invalid or (
+                        not str(blocker.get("security_code") or "")
+                        or not str(blocker.get("session_date") or "")
+                        or int(blocker.get("opening_shares") or 0) <= 0
+                        or str(blocker.get("corporate_action_policy") or "")
+                        != "FAIL_CLOSED_NON_INTEGER"
+                    )
                 elif blocker_code == "NO_EXECUTABLE_FILLS":
                     receipt_blockers = a_share_tradability_blockers(
                         row.get("receipt") or {},
@@ -1006,21 +1057,15 @@ def replay(
                 execution_policy=execution,
                 corporate_action_policy=corporate,
             )
-        except AShareTerminalLiquidationError as exc:
-            blocker = {
-                "schema_version": "cn_finalist_replay_blocker_v1",
-                "candidate_id": candidate_id,
-                "pair_id": str(candidate["pair_id"]),
-                "pair_member_role": str(candidate["pair_member_role"]),
-                "route_id": str(candidate["route_id"]),
-                "exact_identity": str(candidate["exact_identity"]),
-                "blocker_code": "FINAL_SESSION_UNLIQUIDATED_HOLDINGS",
-                "remaining_holdings": list(exc.remaining_holdings),
-                "input_data_sha256": input_data_sha256,
-                "fail_closed": True,
-                "economic_claim_authorized": False,
-                "promotion_authorized": False,
-            }
+        except (
+            AShareTerminalLiquidationError,
+            AShareCorporateActionFractionalSharesError,
+        ) as exc:
+            blocker = _candidate_replay_exception_blocker(
+                exc,
+                candidate=candidate,
+                input_data_sha256=input_data_sha256,
+            )
             summary = {
                 "candidate_id": candidate_id,
                 "pair_id": str(candidate["pair_id"]),
@@ -1030,11 +1075,21 @@ def replay(
                 "candidate_replay_status": "CANDIDATE_REPLAY_BLOCKED",
                 "a_share_executable_net_reward": None,
                 "blocker_code": blocker["blocker_code"],
-                "remaining_holdings": blocker["remaining_holdings"],
                 "train_read_count": len(replay_frame),
                 "economic_claim_authorized": False,
                 "promotion_authorized": False,
             }
+            for key in (
+                "remaining_holdings",
+                "security_code",
+                "session_date",
+                "opening_shares",
+                "corporate_action_share_multiplier",
+                "adjusted_shares",
+                "corporate_action_policy",
+            ):
+                if key in blocker:
+                    summary[key] = blocker[key]
             _write_json(
                 target,
                 {
@@ -1054,7 +1109,15 @@ def replay(
                         "candidate_id": candidate_id,
                         "status": "CANDIDATE_REPLAY_BLOCKED",
                         "blocker_code": blocker["blocker_code"],
-                        "remaining_holdings": blocker["remaining_holdings"],
+                        **{
+                            key: blocker[key]
+                            for key in (
+                                "remaining_holdings",
+                                "security_code",
+                                "session_date",
+                            )
+                            if key in blocker
+                        },
                     },
                     sort_keys=True,
                 ),

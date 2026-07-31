@@ -230,3 +230,33 @@ def test_only_no_fill_receipt_is_candidate_economic_blocker() -> None:
         )
         is None
     )
+
+
+def test_fractional_corporate_action_becomes_candidate_blocker() -> None:
+    exc = subject.AShareCorporateActionFractionalSharesError(
+        code="002514",
+        session_date="2024-06-12",
+        opening_shares=100,
+        multiplier=1.005,
+        adjusted_shares=100.5,
+    )
+
+    blocker = subject._candidate_replay_exception_blocker(
+        exc,
+        candidate={
+            "candidate_id": "candidate-1",
+            "pair_id": "pair-1",
+            "pair_member_role": "primary",
+            "route_id": "SLOW_TEMPORAL_CHANGE",
+            "exact_identity": "exact-1",
+        },
+        input_data_sha256="a" * 64,
+    )
+
+    assert blocker["blocker_code"] == (
+        "CORPORATE_ACTION_FRACTIONAL_SHARES"
+    )
+    assert blocker["security_code"] == "002514"
+    assert blocker["adjusted_shares"] == 100.5
+    assert blocker["fail_closed"] is True
+    assert blocker["economic_claim_authorized"] is False

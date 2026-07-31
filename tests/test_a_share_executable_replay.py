@@ -13,6 +13,7 @@ from our_system_phase2.runtime.phase3dy_true1min_tplus1_tradable_replay import (
     panel_input_manifest_sha256,
 )
 from our_system_phase2.services.a_share_executable_replay import (
+    AShareCorporateActionFractionalSharesError,
     AShareCorporateActionPolicy,
     AShareExecutionPolicy,
     AShareFeeSchedule,
@@ -232,6 +233,33 @@ def test_replay_fails_closed_when_a_held_security_disappears() -> None:
             execution_policy=AShareExecutionPolicy(top_quantile=0.2),
             corporate_action_policy=_corporate_actions(),
         )
+
+
+def test_fractional_corporate_action_is_typed_candidate_outcome() -> None:
+    frame = _frame()
+    dates = sorted(frame["date"].unique())
+    frame.loc[
+        frame["date"].eq(dates[3]) & frame["code"].eq("B"),
+        "corporate_action_share_multiplier",
+    ] = 1.00001
+
+    with pytest.raises(
+        AShareCorporateActionFractionalSharesError
+    ) as captured:
+        run_a_share_long_only_replay(
+            frame,
+            fee_schedule=_fees(),
+            universe_policy=_universe(),
+            execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+            corporate_action_policy=_corporate_actions(),
+        )
+
+    assert captured.value.code == "B"
+    assert captured.value.session_date == str(pd.Timestamp(dates[3]).date())
+    assert captured.value.opening_shares > 0
+    assert captured.value.adjusted_shares != round(
+        captured.value.adjusted_shares
+    )
 
 
 def test_authority_receipt_verifies_actual_panel_and_universe_hashes(

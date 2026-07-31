@@ -66,6 +66,29 @@ class AShareTerminalLiquidationError(ValueError):
         )
 
 
+class AShareCorporateActionFractionalSharesError(ValueError):
+    """Candidate-specific non-integer corporate-action holdings outcome."""
+
+    def __init__(
+        self,
+        *,
+        code: str,
+        session_date: str,
+        opening_shares: int,
+        multiplier: float,
+        adjusted_shares: float,
+    ) -> None:
+        self.code = str(code)
+        self.session_date = str(session_date)
+        self.opening_shares = int(opening_shares)
+        self.multiplier = float(multiplier)
+        self.adjusted_shares = float(adjusted_shares)
+        super().__init__(
+            "corporate action produced fractional shares under "
+            "FAIL_CLOSED_NON_INTEGER policy"
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class AShareFeeSchedule:
     """Explicit cash fee schedule in basis points and CNY.
@@ -468,9 +491,12 @@ def run_a_share_long_only_replay(
             adjusted = opening_shares * multiplier
             rounded = round(adjusted)
             if not math.isclose(adjusted, rounded, rel_tol=0.0, abs_tol=1e-9):
-                raise ValueError(
-                    "corporate action produced fractional shares under "
-                    "FAIL_CLOSED_NON_INTEGER policy"
+                raise AShareCorporateActionFractionalSharesError(
+                    code=str(code),
+                    session_date=str(pd.Timestamp(date).date()),
+                    opening_shares=opening_shares,
+                    multiplier=multiplier,
+                    adjusted_shares=adjusted,
                 )
             adjusted_shares = int(rounded)
             if adjusted_shares <= 0:
