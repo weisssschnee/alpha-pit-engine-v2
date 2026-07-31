@@ -131,6 +131,41 @@ def _compute_threads_by_backend(
     }
 
 
+def _checkpoint_manifest_artifact_paths(
+    *,
+    checkpoint_root: Path,
+    checkpoint_paths: Sequence[Path],
+    campaign_inputs: Sequence[Path] = (),
+) -> list[Path]:
+    """Keep checkpoint artifacts local while validating campaign-level inputs.
+
+    Batch manifests are replayed relative to the checkpoint directory.  Shared
+    resource-lease receipts live at campaign scope and are bound through
+    ``input_hashes`` instead of being misrepresented as checkpoint artifacts.
+    """
+
+    root = Path(checkpoint_root).resolve()
+    artifacts: list[Path] = []
+    for path in checkpoint_paths:
+        source = Path(path).resolve()
+        if not source.is_relative_to(root):
+            raise RuntimeError(
+                f"checkpoint artifact escapes checkpoint root: {source}"
+            )
+        if not source.is_file():
+            raise FileNotFoundError(
+                f"checkpoint artifact is missing: {source}"
+            )
+        artifacts.append(source)
+    for path in campaign_inputs:
+        source = Path(path).resolve()
+        if not source.is_file():
+            raise FileNotFoundError(
+                f"campaign input is missing: {source}"
+            )
+    return artifacts
+
+
 WINNER_GUIDED_PROFILES = (
     WINNER_GUIDED_LARGE_SEARCH_PROFILE,
     WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
@@ -4272,7 +4307,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             availability_state_path,
             gate_path,
             summary_path,
-            node_resource_binding_path,
         ]
         if policy_rows_path is not None and policy_summary_path is not None:
             manifest_paths.extend([policy_rows_path, policy_summary_path])
@@ -4303,6 +4337,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             checkpoint_input_hashes[
                 "availability_index_resume_receipt"
             ] = _sha256(availability_resume_receipt_path)
+        manifest_paths = _checkpoint_manifest_artifact_paths(
+            checkpoint_root=root,
+            checkpoint_paths=manifest_paths,
+            campaign_inputs=[node_resource_binding_path],
+        )
         state["prior_manifest"] = _batch_manifest(
             batch_root=root,
             batch_id=checkpoint_id,

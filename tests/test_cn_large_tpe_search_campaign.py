@@ -58,6 +58,7 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     _ask_route_populations,
     _conservative_search_score,
     _campaign_runtime_spec,
+    _checkpoint_manifest_artifact_paths,
     _freeze_availability_index,
     _freeze_gene_lanes,
     _medium_policy_decision,
@@ -100,6 +101,26 @@ from our_system_phase2.services.time_series_uncertainty import (
     DAY_UNCERTAINTY_CONTRACT,
     PAIRED_DELTA_UNCERTAINTY_CONTRACT,
 )
+
+
+def test_checkpoint_manifest_artifacts_exclude_campaign_scope_inputs(
+    tmp_path: Path,
+) -> None:
+    checkpoint_root = tmp_path / "campaign" / "checkpoints" / "checkpoint_001"
+    checkpoint_root.mkdir(parents=True)
+    checkpoint_artifact = checkpoint_root / "checkpoint_summary.json"
+    checkpoint_artifact.write_text("{}", encoding="utf-8")
+    campaign_binding = tmp_path / "campaign" / "node_resource_binding.json"
+    campaign_binding.write_text("{}", encoding="utf-8")
+
+    artifacts = _checkpoint_manifest_artifact_paths(
+        checkpoint_root=checkpoint_root,
+        checkpoint_paths=[checkpoint_artifact],
+        campaign_inputs=[campaign_binding],
+    )
+
+    assert artifacts == [checkpoint_artifact.resolve()]
+    assert campaign_binding.resolve() not in artifacts
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
