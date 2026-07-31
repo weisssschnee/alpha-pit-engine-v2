@@ -1,16 +1,16 @@
-# Graph Report - alpha_pit_true1min_engine_evalreset_20260711  (2026-07-29)
+# Graph Report - alpha_pit_true1min_engine_evalreset_20260711  (2026-07-31)
 
 ## Corpus Check
-- 906 files · ~2,473,984 words
+- 945 files · ~2,519,554 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 6304 nodes · 15955 edges · 550 communities (402 shown, 148 thin omitted)
-- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 1902 edges (avg confidence: 0.76)
+- 6772 nodes · 17191 edges · 559 communities (411 shown, 148 thin omitted)
+- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 2026 edges (avg confidence: 0.76)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `edcf645c`
+- Built from commit: `a7eae163`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -518,22 +518,27 @@
 - [[_COMMUNITY_runtimerun_planscn_search_policy_qualification_20260724_receipt.json|runtime/run_plans/cn_search_policy_qualification_20260724_receipt.json]]
 - [[_COMMUNITY_OOS Burn Ledger|OOS Burn Ledger]]
 - [[_COMMUNITY_Evaluation Access Guard|Evaluation Access Guard]]
+- [[_COMMUNITY_main|main]]
+- [[_COMMUNITY_ADR 0010 Separate development feedback from finalist execution evidence|ADR 0010: Separate development feedback from finalist execution evidence]]
+- [[_COMMUNITY_ADR 0011 Use ordered-day stationary bootstrap uncertainty in Phase3CM|ADR 0011: Use ordered-day stationary bootstrap uncertainty in Phase3CM]]
+- [[_COMMUNITY_main|main]]
+- [[_COMMUNITY_frozen_replay_channel|frozen_replay_channel]]
+- [[_COMMUNITY__candidates|_candidates]]
+- [[_COMMUNITY_field_ids|field_ids]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `RegistryDrivenGenerator` - 101 edges
 2. `UnifiedCapabilityRegistry` - 90 edges
 3. `CompositionalGrammarV2` - 72 edges
-4. `evaluate_panel_expression()` - 64 edges
+4. `evaluate_panel_expression()` - 65 edges
 5. `MinuteStaticProductionProjection` - 60 edges
-6. `run()` - 55 edges
+6. `run()` - 57 edges
 7. `run()` - 49 edges
-8. `main()` - 45 edges
-9. `run_financial()` - 45 edges
-10. `main()` - 45 edges
+8. `RouteConditionalTPESearchAdapter` - 47 edges
+9. `main()` - 45 edges
+10. `run_financial()` - 45 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `main()` --calls--> `build_chip_sidecar()`  [INFERRED]
-  scripts/build_chip_sidecar.py → src/our_system_phase2/services/chip_sidecar.py
 - `test_bottleneck_reports_cost_and_four_time_blocks_when_strict_metrics_supply_them()` --calls--> `_bottleneck()`  [INFERRED]
   tests/test_cn_b1s_development_canary.py → src/our_system_phase2/runtime/cn_b1s_development_canary.py
 - `test_causal_gate_excludes_maintain_spillover_and_records_supply_clamp()` --calls--> `_causal_route_comparison()`  [INFERRED]
@@ -542,6 +547,8 @@
   tests/test_iterative_route_scheduler.py → src/our_system_phase2/runtime/cn_iterative_search_v1.py
 - `test_probe_pack_uses_route_aware_coordinates()` --calls--> `_probe_pack()`  [INFERRED]
   tests/test_iterative_behavior_probe.py → src/our_system_phase2/runtime/cn_iterative_search_v1.py
+- `test_full_behavior_row_closes_all_four_identities_by_pair()` --calls--> `_join_full_behavior_identities()`  [INFERRED]
+  tests/test_iterative_behavior_probe.py → src/our_system_phase2/runtime/cn_iterative_search_v1.py
 
 ## Import Cycles
 - None detected.
@@ -549,11 +556,11 @@
 ## Hyperedges (group relationships)
 - **Current Architecture Components** — development_data, fixed_split_authority, unified_capability_registry, feature_state_fabric, typed_temporal_program, broad_event_system, pit_fundamental_fabric, hypothesis_lanes, compositional_nline_bounded_search, candidate_submission_receipt, matched_control_pair_authority, candidate_parallel_evaluator [EXTRACTED 1.00]
 
-## Communities (550 total, 148 thin omitted)
+## Communities (559 total, 148 thin omitted)
 
 ### Community 0 - "real_market_validation.py"
-Cohesion: 0.05
-Nodes (131): _direct_semantic_checks(), _expression_cases(), main(), Any, DataFrame, Path, Smoke-test typed primitive evaluator semantics on a synthetic true-1min panel., _series_stats() (+123 more)
+Cohesion: 0.16
+Nodes (41): _attach_signal_safe_long_selection_diagnostics(), _attach_tdxgp_limit_status(), audit_expression_panel_exposure_neutrality(), _augment_market_fields(), _bucket_turnover_by_date(), _daily_group_demean_signal(), _daily_ic_spread_frame(), _daily_residualize_signal_against_controls() (+33 more)
 
 ### Community 1 - "PITGroupContract"
 Cohesion: 0.08
@@ -564,36 +571,36 @@ Cohesion: 0.09
 Nodes (53): canonical_temporal_call(), _drawdown(), _duration(), evaluate_expression_temporal_call(), evaluate_temporal_primitive(), _evaluate_temporal_primitive_canonical(), evaluate_typed_temporal_primitive(), _first_hit() (+45 more)
 
 ### Community 3 - "phase3ce1_search_memory_blocked_view.py"
-Cohesion: 0.09
-Nodes (59): _candidate_direction(), _candidate_pairwise(), _discover_panels(), _f(), _fields(), _find_matching_paren(), _fmt(), _future_returns() (+51 more)
+Cohesion: 0.07
+Nodes (74): _candidate_direction(), _candidate_pairwise(), _discover_panels(), _f(), _fields(), _find_matching_paren(), _fmt(), _future_returns() (+66 more)
 
 ### Community 4 - "chip_sidecar.py"
-Cohesion: 0.18
-Nodes (16): _BivariateRollingState, _boundaries(), _contains_mapping(), _correlation(), _event_window_kernel(), _multiscale_relation_kernel(), ndarray, _rank_kernel() (+8 more)
+Cohesion: 0.12
+Nodes (23): CacheBudgetError, Raised when one value cannot fit without violating the cache contract., _BivariateRollingState, _boundaries(), _contains_mapping(), _correlation(), _event_window_kernel(), _multiscale_relation_kernel() (+15 more)
 
 ### Community 5 - "phase3bl_bk_priority_signal_materialization.py"
 Cohesion: 0.17
 Nodes (55): _access(), _atomic_json(), contract_hash(), EvidenceError, _execution_receipt(), _freeze_pack(), freeze_resource_contract(), _git_sha() (+47 more)
 
 ### Community 6 - "typed_temporal_program.py"
-Cohesion: 0.10
-Nodes (21): LegacyParityPolicy, load_development_discovery_root_authority(), _pick(), Path, Registry-driven proposal generator for the unified CN capability system., Load the frozen ontology root scope; it grants no execution budget., _pair(), Path (+13 more)
+Cohesion: 0.09
+Nodes (19): load_development_discovery_root_authority(), _pick(), Any, Path, Registry-driven proposal generator for the unified CN capability system., Expose one scheduled attempt without searching past invalid supply., Consume a deterministic registry-route attempt stream.          The attempt inde, Load the frozen ontology root scope; it grants no execution budget. (+11 more)
 
 ### Community 7 - "phase3cm_streaming_portfolio.py"
-Cohesion: 0.11
-Nodes (51): _acquire_campaign_writer(), _arm_metrics(), _bind_reused_old_authority(), _bind_session_sample(), _close_campaign_writer(), _comparison_verdict(), _deterministic_pair_order(), _enumerate_space() (+43 more)
+Cohesion: 0.09
+Nodes (60): _acquire_campaign_writer(), _arm_metrics(), _bind_reused_old_authority(), _bind_session_sample(), _close_campaign_writer(), _comparison_verdict(), _deterministic_pair_order(), _enumerate_space() (+52 more)
 
 ### Community 8 - "freeze_cn_phase3cm_1024_resource_contract.py"
-Cohesion: 0.15
-Nodes (19): build_forward_label_shard(), build_global_continuity_forward_label_sidecars(), Any, Path, Timestamp, Exact forward-label sidecars and complete-market time-major block reads., Build aligned labels while preserving per-symbol continuity across physical shar, Read aligned per-shard sidecars and release one global time block. (+11 more)
+Cohesion: 0.07
+Nodes (46): LazyFrame, _candidate_pairs(), _key(), main(), _numeric_equal(), _optional_float(), _pair_common_support(), Any (+38 more)
 
 ### Community 9 - "main"
 Cohesion: 0.10
-Nodes (42): _atomic_csv(), _atomic_json(), _boolean(), _eligibility_audit(), main(), Any, DataFrame, Path (+34 more)
+Nodes (43): _atomic_csv(), _atomic_json(), _boolean(), _eligibility_audit(), main(), Any, DataFrame, Path (+35 more)
 
 ### Community 10 - "phase3bp_true1min_search_algorithm_smoke.py"
-Cohesion: 0.12
-Nodes (53): _add_candidate(), _aggregate_decisions(), _assert_policy_inputs_ready(), _atom_direction_expr(), _atom_inverted_expr(), _atom_magnitude_expr(), _atom_normalized_expr(), _atom_rank_expr() (+45 more)
+Cohesion: 0.13
+Nodes (52): _add_candidate(), _aggregate_decisions(), _assert_policy_inputs_ready(), _atom_direction_expr(), _atom_inverted_expr(), _atom_magnitude_expr(), _atom_normalized_expr(), _atom_rank_expr() (+44 more)
 
 ### Community 11 - "RegistryDrivenGenerator"
 Cohesion: 0.18
@@ -604,24 +611,24 @@ Cohesion: 0.08
 Nodes (46): build(), main(), _normalize_cn_code(), Any, DataFrame, Path, Build a CE2 event-derived daily panel from HFQ daily silver data.  The output, _read_hfq_root() (+38 more)
 
 ### Community 13 - "event_derived_features.py"
-Cohesion: 0.09
-Nodes (30): OrderedDict, CatCMASearchAdapter, ExactGeneSemantics, _load_catcmawm(), _optimizer_state_hash(), Any, rank_population_observations(), Minimal official CatCMAwM adapter over frozen categorical gene semantics.  The o (+22 more)
+Cohesion: 0.08
+Nodes (38): OrderedDict, CatCMASearchAdapter, ExactGeneSemantics, _load_catcmawm(), _optimizer_state_hash(), Any, rank_population_observations(), Minimal official CatCMAwM adapter over frozen categorical gene semantics.  The o (+30 more)
 
 ### Community 14 - "test_true1min_plate_aggregation.py"
-Cohesion: 0.07
-Nodes (71): Popen, prepare(), _clock_for_route(), _add_resolved_behavior_rows(), _admit_behavior_unique(), _annotate_generation_metadata(), _backend_cpu_cost(), _bind_purity() (+63 more)
+Cohesion: 0.06
+Nodes (79): Popen, _artifact(), build_snapshot(), main(), Any, Path, Build one immutable exact/behavior dedupe snapshot from prior campaigns., _read_candidate_rows() (+71 more)
 
 ### Community 15 - "strict_priority_selector.py"
 Cohesion: 0.17
 Nodes (20): _canonical_representation(), _declared_reported_change(), _declared_size(), _declared_temporal_evolution(), GeneratedCompositionalPair, _pick(), _pick_compatible_pair(), _pick_excluding() (+12 more)
 
 ### Community 16 - "run"
-Cohesion: 0.13
-Nodes (38): Matched-control pair authority, attach_pair_contract(), _behavior_identity(), build_pair_evaluation_rows(), CandidatePairAuthority, CandidatePairError, constructor_for_route(), _coordinate() (+30 more)
+Cohesion: 0.11
+Nodes (42): Matched-control pair authority, attach_pair_contract(), _behavior_identity(), build_pair_evaluation_rows(), CandidatePairError, constructor_for_route(), _coordinate(), _field_contract() (+34 more)
 
 ### Community 17 - "cn_b1s_development_canary.py"
-Cohesion: 0.17
-Nodes (21): RuntimeError, main(), Write the immutable input binding for the Phase3CM streaming repair., _artifact_record(), build_frozen_input_binding(), _fail(), FrozenInputDriftError, _git_blob_hash() (+13 more)
+Cohesion: 0.19
+Nodes (20): main(), Write the immutable input binding for the Phase3CM streaming repair., _artifact_record(), build_frozen_input_binding(), _fail(), FrozenInputDriftError, _git_blob_hash(), Any (+12 more)
 
 ### Community 18 - "matched_control_pairs.py"
 Cohesion: 0.17
@@ -632,16 +639,16 @@ Cohesion: 0.11
 Nodes (40): _behaviour_metrics(), distribution_metrics(), _flatten_stage(), _greedy_clique_clusters(), _group(), _lineage_key(), main(), _parse_mapping() (+32 more)
 
 ### Community 20 - "audit_search_collapse.py"
-Cohesion: 0.16
-Nodes (39): _combined_behavior_archive(), _enumerate_old_space(), _expression_depth(), _failure_decision(), _field_sidecars(), _formula_v4_supply_decision(), _historical_exact(), _input_artifact() (+31 more)
+Cohesion: 0.06
+Nodes (95): Exception, MultiIndex, _candidate_receipt(), _finite(), main(), _pair_results(), Any, DataFrame (+87 more)
 
 ### Community 21 - "FundamentalFieldRequest"
-Cohesion: 0.14
-Nodes (42): adaptive_comparison(), adaptive_research_diagnostics(), _admission_comparison(), apply_strict_priority_layer(), apply_typed_gate(), assign_signal_clusters(), _atomic_text(), _benchmark_increment() (+34 more)
+Cohesion: 0.13
+Nodes (44): adaptive_comparison(), adaptive_research_diagnostics(), _admission_comparison(), apply_strict_priority_layer(), apply_typed_gate(), assign_signal_clusters(), _atomic_text(), _benchmark_increment() (+36 more)
 
 ### Community 22 - "phase3cp_real_cm_small_loop.py"
 Cohesion: 0.06
-Nodes (58): _artifact_row(), _behavior_and_full_coordinate_qualification(), _historical_exact(), main(), _prior_route_comparison(), Any, Namespace, Path (+50 more)
+Nodes (57): _artifact_entry(), _canonical_manifest_hash(), _closed_campaign_authority_binding(), _drain_formal_capacity(), _layer_b_and_feasibility(), _load_successor_target_contract(), main(), _memory_sample() (+49 more)
 
 ### Community 23 - "compositional_grammar.py"
 Cohesion: 0.19
@@ -649,7 +656,7 @@ Nodes (39): _add_expression_memory_keys(), _add_memory_key(), _add_structural_me
 
 ### Community 24 - "bounded_label_free_behavior_probe"
 Cohesion: 0.14
-Nodes (41): execute(), _load_authority(), main(), Namespace, Path, Tiny 77o integration smoke for the active Core-Pack discovery authority., _restore_candidate_rows(), _admit_pairs() (+33 more)
+Nodes (42): execute(), _load_authority(), main(), prepare(), Namespace, Path, Tiny 77o integration smoke for the active Core-Pack discovery authority., _restore_candidate_rows() (+34 more)
 
 ### Community 25 - "cn_iterative_search_v1.py"
 Cohesion: 0.16
@@ -660,8 +667,8 @@ Cohesion: 0.12
 Nodes (34): _candidate_expressions(), _counter(), main(), Any, Path, Phase3CR atom/lane inventory audit.  This audit checks whether the true-1min g, _read_available_fields(), _resolve() (+26 more)
 
 ### Community 27 - "UnifiedCapabilityRegistry"
-Cohesion: 0.13
-Nodes (27): compute_disclosed_change(), compute_ttm_from_disclosed_ytd(), conservative_financial_versions(), conservative_holder_episodes(), DeterministicSessionCache, exchange_prefix(), FundamentalFieldRequest, load_development_sessions() (+19 more)
+Cohesion: 0.12
+Nodes (29): compute_disclosed_change(), compute_ttm_from_disclosed_ytd(), conservative_financial_versions(), conservative_holder_episodes(), DeterministicSessionCache, exchange_prefix(), FundamentalFieldRequest, load_development_sessions() (+21 more)
 
 ### Community 28 - "CatCMASearchAdapter"
 Cohesion: 0.15
@@ -672,20 +679,20 @@ Cohesion: 0.20
 Nodes (35): _access(), _checkpoint(), _digest(), EvidenceError, finalize_replay(), _ids(), main(), _object() (+27 more)
 
 ### Community 30 - "StreamingExpressionExecutor"
-Cohesion: 0.20
-Nodes (28): _block_boundaries(), _candidate_direction(), _evaluation_calendar(), _finalize_pairs(), _finite_float(), _json_string_list(), _load_plan(), main() (+20 more)
+Cohesion: 0.19
+Nodes (30): _block_boundaries(), _candidate_direction(), _evaluation_calendar(), _finalize_pairs(), _finite_float(), _json_string_list(), _load_plan(), main() (+22 more)
 
 ### Community 31 - "preflight_cn_phase3cm_dag_cache.py"
-Cohesion: 0.18
-Nodes (25): _build_eval_time_index(), _candidate_event_fields(), _candidate_portfolio_rows_from_frame(), _candidate_portfolio_rows_from_precomputed_time_groups(), _event_signal_positions(), _feature_matrix_cache_path(), _feature_matrix_value_bytes(), _hash_items() (+17 more)
+Cohesion: 0.11
+Nodes (46): Candidate-parallel formal evaluator, _build_eval_time_index(), _candidate_portfolio_rows_from_frame(), _candidate_portfolio_rows_from_precomputed_time_groups(), _event_signal_positions(), _feature_matrix_cache_path(), _feature_matrix_value_bytes(), _has_hard_input_blocker() (+38 more)
 
 ### Community 32 - "test_finalize_cn_phase3cm_current_kernel_146_parity.py"
-Cohesion: 0.21
-Nodes (22): _atomic_parquet(), _build_chip_shard_job(), build_chip_sidecar(), _central_directory_hash(), chip_field_specs(), _decode(), _file_sha256(), load_chip_context() (+14 more)
+Cohesion: 0.06
+Nodes (79): main(), Build the sealed-2025 sharded daily chip-distribution sidecar., assemble(), _context_fields(), _development_sessions(), _load_chip_context(), main(), materialize() (+71 more)
 
 ### Community 33 - "build_candidate_table"
-Cohesion: 0.18
-Nodes (31): as_bool(), _authority_rows(), build(), expression_fields(), _field_stats(), _flatten_stats(), _fundamental_audit(), git_head() (+23 more)
+Cohesion: 0.10
+Nodes (51): _bar_source_path(), _frame_digest(), main(), _materialize_incremental_chip_context(), _materialize_lagged_daily_context(), _progress(), Any, DataFrame (+43 more)
 
 ### Community 34 - "build_cn_feature_runtime_wiring_audit.py"
 Cohesion: 0.16
@@ -701,15 +708,15 @@ Nodes (29): _atomic_replace(), build_interval_release(), build_snapshot_release(
 
 ### Community 37 - "run_cn_phase3cm_streaming_qualification.py"
 Cohesion: 0.15
-Nodes (30): _atomic_parquet(), _build_category_job(), build_tdx_plate_market_sidecar(), _file_sha256(), _float(), _group_span_stats(), _member_encoding(), _normalize_group_id() (+22 more)
+Nodes (31): _atomic_parquet(), _build_category_job(), build_tdx_plate_market_sidecar(), discover_tdx_plate_market_archives(), _file_sha256(), _float(), _group_span_stats(), _member_encoding() (+23 more)
 
 ### Community 38 - "FrozenExecutionPlan"
-Cohesion: 0.19
-Nodes (17): Candidate submission receipt gate, _as_bool(), _as_list(), candidate_contract_payload(), candidate_payload_hash(), CandidateReceiptError, CandidateSubmissionAuthority, _expression_operators() (+9 more)
+Cohesion: 0.12
+Nodes (22): Candidate submission receipt gate, _as_bool(), _as_list(), candidate_contract_payload(), candidate_payload_hash(), CandidateSubmissionAuthority, _combined_file_hash(), _expression_operators() (+14 more)
 
 ### Community 39 - "freeze_backend_partitions"
-Cohesion: 0.21
-Nodes (30): freeze_backend_partitions(), _integer(), main(), _ordered_pairs(), Any, Path, Parse an integer without treating the valid value zero as missing., Reject absent, coerced, boolean, or non-zero sealed-access evidence. (+22 more)
+Cohesion: 0.35
+Nodes (17): freeze_backend_partitions(), _integer(), main(), _ordered_pairs(), Any, Path, Parse an integer without treating the valid value zero as missing., Reject absent, coerced, boolean, or non-zero sealed-access evidence. (+9 more)
 
 ### Community 40 - ".read"
 Cohesion: 0.23
@@ -717,7 +724,7 @@ Nodes (25): _arm_metrics(), build_baseline_population(), build_final_verdict(), 
 
 ### Community 41 - "run_signal_sketch_audit.py"
 Cohesion: 0.12
-Nodes (20): Fixed calendar split authority, _date_key(), file_sha256(), ForbiddenSplitAccessError, Any, Path, Timestamp, Single fixed-calendar split authority for formal CN evaluation runtimes.  The mo (+12 more)
+Nodes (25): Fixed calendar split authority, CandidateReceiptError, Raised when a candidate lacks a current, immutable authorization., _date_key(), file_sha256(), FixedSplitAuthority, ForbiddenSplitAccessError, Any (+17 more)
 
 ### Community 42 - ".build"
 Cohesion: 0.19
@@ -725,11 +732,11 @@ Nodes (30): _choose_codes(), cluster_and_validate(), _decode_f4(), _development_
 
 ### Community 43 - "_execute_arm_checkpoint"
 Cohesion: 0.17
-Nodes (27): CompositionalGrammarV2, optimizer_typed_supply_extension_registry(), Append-only economic hypotheses used only by optimizer gene lanes.      Legacy a, Deterministic compositional proposal interface.      Each proposal is compiled i, skeleton_registry(), TypedRouteCompiler, _call_depth(), test_all_compositional_candidates_respect_registered_depth_and_field_volume() (+19 more)
+Nodes (26): CompositionalGrammarV2, optimizer_typed_supply_extension_registry(), Append-only economic hypotheses used only by optimizer gene lanes.      Legacy a, Deterministic compositional proposal interface.      Each proposal is compiled i, skeleton_registry(), _call_depth(), test_all_compositional_candidates_respect_registered_depth_and_field_volume(), test_all_compositional_pairs_freeze_shared_support_and_maturity_alignment() (+18 more)
 
 ### Community 44 - "deterministic_signal_sketch.py"
-Cohesion: 0.15
-Nodes (27): _aggregate_horizon_kernel(), _boundaries(), _filtered_rank_quantile_pair(), _linear_quantile(), _linear_quantile_from_ordered(), _linear_quantile_pair(), _mapping_kernel(), _pearson() (+19 more)
+Cohesion: 0.12
+Nodes (32): main(), ndarray, Path, _read_csv(), _sidecars(), _top_summary(), _aggregate_horizon_kernel(), _boundaries() (+24 more)
 
 ### Community 45 - "phase3cm_streaming_telemetry.py"
 Cohesion: 0.15
@@ -745,18 +752,18 @@ Nodes (27): _boolean(), _candidate_payload(), _digest(), _index(), _json_value()
 
 ### Community 48 - "verify_cn_phase3cm_historical_256_semantic_subset.py"
 Cohesion: 0.26
-Nodes (25): _arm_score_table(), _assert_raw_phase3cm_provenance(), build_feedback_memory(), _discover_cm_tables(), _family_tables(), _group_rows(), _has_semantic_degeneracy(), _has_wrong_lag_or_corr() (+17 more)
+Nodes (24): _arm_score_table(), _assert_raw_phase3cm_provenance(), build_feedback_memory(), _discover_cm_tables(), _family_tables(), _group_rows(), _has_semantic_degeneracy(), _has_wrong_lag_or_corr() (+16 more)
 
 ### Community 49 - "multi_arm_scheduler.py"
-Cohesion: 0.10
-Nodes (33): _inputs_from_root(), main(), Any, Path, Phase3CO multi-arm scheduler smoke.  This route reads Phase3CN feedback memory, _render_md(), _resolve(), _arm_health() (+25 more)
+Cohesion: 0.14
+Nodes (26): _arm_health(), ArmProfile, _bounded_integer_allocation(), build_arm_schedule(), build_family_actions(), build_medium_campaign_schedule(), build_route_schedule(), _fit_shares() (+18 more)
 
 ### Community 50 - "build_pit_fundamental_fabric.py"
-Cohesion: 0.15
-Nodes (27): Field, _allowed_change_transforms(), _arrow_schema(), build(), main(), _observable_contract(), _parquet_cutoff_value(), Any (+19 more)
+Cohesion: 0.16
+Nodes (26): Field, _allowed_change_transforms(), _arrow_schema(), build(), main(), _observable_contract(), _parquet_cutoff_value(), Any (+18 more)
 
 ### Community 51 - "build_contract"
-Cohesion: 0.14
+Cohesion: 0.15
 Nodes (25): float64, BatchedPortfolioKernel, Any, One native call maps a complete block for all candidate members., _fixture(), _float64_bits(), _legacy_linear_quantile(), _legacy_rank_average() (+17 more)
 
 ### Community 52 - "nextgen_dark_development_canary.py"
@@ -769,11 +776,11 @@ Nodes (20): _allocate_quota(), _atomic_csv(), _development_gate(), evaluate_stri
 
 ### Community 54 - "analyze_strict_wave"
 Cohesion: 0.11
-Nodes (19): aggregate_compute_phase_parallelism(), build_phase_event(), freeze_thread_budget(), _PhaseSpan, PhaseTelemetryRecorder, Any, Path, Resource telemetry and thread-budget contracts for streaming Phase3CM. (+11 more)
+Nodes (21): aggregate_compute_phase_parallelism(), build_phase_event(), freeze_thread_budget(), _PhaseSpan, PhaseTelemetryRecorder, _process_snapshot(), Any, Path (+13 more)
 
 ### Community 55 - "main"
-Cohesion: 0.09
-Nodes (18): Construct one formula lazily from bounded typed Grammar rules., Draw lossless typed coordinates under the joint exact mask., Draw five bounded typed coordinates under the exact joint mask., Prove five-axis parity and adaptation without market or label reads., Prove parity, masking, and adaptation without financial reads., Project the authoritative joint field-pair domain losslessly., Draw a structural choice, then one unused concrete exact candidate., _structural_formula_v4_mechanical_proof() (+10 more)
+Cohesion: 0.10
+Nodes (44): _artifact(), _canonical_bytes(), _count(), _deduplicate_behavior_candidates(), freeze_cohort(), _load_behavior_rows(), _load_train_reward_rows(), main() (+36 more)
 
 ### Community 56 - "phase3cd_ast_primitive_assumption_audit.py"
 Cohesion: 0.22
@@ -805,19 +812,19 @@ Nodes (26): assert_candidate_materialization_receipts(), _binding_path(), build_
 
 ### Community 63 - "CandidateSubmissionAuthority"
 Cohesion: 0.18
-Nodes (24): Resolve latest eligible versions onto stock-session coordinates., StockSessionAsOfResolver, _finance_frame(), DataFrame, DatetimeIndex, MonkeyPatch, Path, _sessions() (+16 more)
+Nodes (23): Resolve latest eligible versions onto stock-session coordinates., StockSessionAsOfResolver, _finance_frame(), DataFrame, DatetimeIndex, MonkeyPatch, Path, _sessions() (+15 more)
 
 ### Community 64 - "finalize_cn_phase3cm_streaming_repair.py"
 Cohesion: 0.07
 Nodes (65): CandidateRecord, _copy_event_row(), enrich_pool(), _event_rows(), _expand_memory_roots(), _factor_pack_rows(), _formula_fields(), main() (+57 more)
 
 ### Community 65 - "run_canary"
-Cohesion: 0.25
-Nodes (7): 2026-07-29 report-only validation, Hybrid tranche and route contraction, A-share tradability authority boundary repair (2026-07-29), CN true1min Current State, Current accepted capabilities, Current blocker, Hard boundaries, Next action
+Cohesion: 0.12
+Nodes (15): 2026-07-29 report-only validation, Hybrid tranche and route contraction, A-share finalist input authority completion (2026-07-30), A-share tradability authority boundary repair (2026-07-29), CN true1min Current State, Current accepted capabilities, Current blocker, Development keep-review cohort freeze (2026-07-29), Fixed 24-pair executable replay and report-only OOS closure (2026-07-30) (+7 more)
 
 ### Community 66 - "cn_field_integration_completeness_audit_v1.py"
-Cohesion: 0.47
-Nodes (8): _artifact(), build_snapshot(), main(), Any, Path, Build one immutable exact/behavior dedupe snapshot from prior campaigns., _read_candidate_rows(), _sha256()
+Cohesion: 0.15
+Nodes (44): _artifact(), _board_limit_pct(), build_authority(), build_parser(), _canonical_bytes(), _cninfo_enckey(), exchange_from_code(), _fetch_dividend_with_retry() (+36 more)
 
 ### Community 67 - "phase3cn_feedback_memory_smoke.py"
 Cohesion: 0.24
@@ -832,84 +839,84 @@ Cohesion: 0.24
 Nodes (24): _best_alias_matches(), _classify(), _extract_expr_fields(), _load_assets(), _load_factor_refs(), _load_field_availability_refs(), _load_selector_refs(), main() (+16 more)
 
 ### Community 70 - "ExpressionNode"
-Cohesion: 0.13
-Nodes (40): Candidate-parallel formal evaluator, _bootstrap_days(), _bounded(), _candidate_summary(), _candidate_summary_from_reward_atoms(), _curve_rows(), _daily_returns(), _f() (+32 more)
+Cohesion: 0.20
+Nodes (25): _bounded(), _candidate_event_fields(), _candidate_summary(), _candidate_summary_from_reward_atoms(), _curve_rows(), _daily_returns(), _day_uncertainty_fields(), _f() (+17 more)
 
 ### Community 71 - "predict_dag_cache_peak"
-Cohesion: 0.27
-Nodes (23): _arm_rows(), _budget_rows(), _clean(), _family_rows(), _fit_shares(), _group(), _has_wrong_lag_or_corr(), _integer_budgets() (+15 more)
+Cohesion: 0.28
+Nodes (24): _arm_rows(), _budget_rows(), _clean(), _family_rows(), _fit_shares(), _group(), _has_wrong_lag_or_corr(), _integer_budgets() (+16 more)
 
 ### Community 72 - "stable_hash"
-Cohesion: 0.21
-Nodes (24): build_parser(), _candidate_metrics(), _daily_from_minute_frame(), _discover_panels(), _evaluate_shard(), _extract_fields(), _future_columns(), _load_followups() (+16 more)
+Cohesion: 0.18
+Nodes (29): _authority_replay_receipts(), build_parser(), _candidate_metrics(), _combined_code_sha256(), _contract_path(), _daily_from_minute_frame(), _discover_panels(), _evaluate_shard() (+21 more)
 
 ### Community 73 - "main"
 Cohesion: 0.16
 Nodes (22): _add_support_roots(), audit_generator_capacity(), audit_supplemental_generator_delta(), build_field_root_review(), build_frozen_discovery_contract(), _compound_state_root_is_supplementally_constructible(), _effective_count(), _is_previous_session_stock_regime_context() (+14 more)
 
 ### Community 74 - "Series"
-Cohesion: 0.28
-Nodes (23): stable_hash(), _artifact_index(), _build_candidates(), _build_parity(), _compare_rows(), _exercise_negative_pair_cases(), _finite(), _key() (+15 more)
+Cohesion: 0.24
+Nodes (25): stable_hash(), _artifact_index(), _build_candidates(), _build_parity(), _compare_rows(), _exercise_negative_pair_cases(), _finite(), _key() (+17 more)
 
 ### Community 75 - "phase3cs_build_true1min_sidecar_pack.py"
-Cohesion: 0.19
-Nodes (22): _average_policies(), _evaluate_bt_round(), main(), _mix_bt_unique(), Any, Path, AST-aware true-1min algorithm bakeoff.  Phase3BT is the pre-large-search algor, _recommend() (+14 more)
+Cohesion: 0.17
+Nodes (24): _panel_schema_fields(), Return fields present in every selected panel.      Candidate generation is sc, _average_policies(), _evaluate_bt_round(), main(), _mix_bt_unique(), Any, Path (+16 more)
 
 ### Community 76 - "run"
 Cohesion: 0.35
 Nodes (23): _billboard_sidecar(), build(), _date_series(), _field_contract_rows(), _hfq_sidecar(), _holder_sidecar(), main(), _market_sentiment_sidecar() (+15 more)
 
 ### Community 77 - "build_event_state_features"
-Cohesion: 0.09
-Nodes (22): Protocol, _cap_simplex(), CategoricalCEMPolicy, CEMParameters, Any, ndarray, RankWeightedCategoricalCEMPolicy, Support-gated categorical CEM over frozen decision token domains. (+14 more)
+Cohesion: 0.06
+Nodes (30): Protocol, Construct one formula lazily from bounded typed Grammar rules., _cap_simplex(), CategoricalCEMPolicy, CEMParameters, Any, ndarray, RankWeightedCategoricalCEMPolicy (+22 more)
 
 ### Community 78 - "materialize_registered_close_range_state"
-Cohesion: 0.18
-Nodes (12): _capability_payload(), _close_range_location_sign(), DeterministicFeatureCache, _frame_fingerprint(), materialize_registered_close_range_state(), Any, DataFrame, Series (+4 more)
+Cohesion: 0.08
+Nodes (41): Enum, main(), Build a versioned NEXTGEN-DARK field registry from a Parquet schema only., ChipSidecarResult, _capability_payload(), _close_range_location_sign(), DeterministicFeatureCache, FeatureStateFabric (+33 more)
 
 ### Community 79 - "field_information_census.py"
 Cohesion: 0.17
 Nodes (22): aligned_pairwise_nmi(), field_metrics(), InformationCensusPolicy, normalized_entropy(), normalized_mutual_information(), pairwise_nmi(), Any, DataFrame (+14 more)
 
 ### Community 80 - "build_frozen_input_binding"
-Cohesion: 0.15
-Nodes (12): Hashable, BoundedBlockCache, CacheBudgetError, _Entry, Any, Byte-bounded deterministic caches for streaming Phase3CM blocks., Raised when one value cannot fit without violating the cache contract., LRU cache whose byte and entry limits are hard contracts. (+4 more)
+Cohesion: 0.16
+Nodes (10): Hashable, BoundedBlockCache, _Entry, Any, Byte-bounded deterministic caches for streaming Phase3CM blocks., LRU cache whose byte and entry limits are hard contracts., _value_bytes(), test_bounded_block_cache_evicts_deterministically_by_lru() (+2 more)
 
 ### Community 81 - "prepare_cn_compositional_session_signal_panel.py"
 Cohesion: 0.23
-Nodes (22): authority_matrix(), build(), git_head(), historical_reclassification(), legacy_gated_parity(), main(), _numeric_values(), Any (+14 more)
+Nodes (21): authority_matrix(), build(), git_head(), historical_reclassification(), legacy_gated_parity(), main(), _numeric_values(), Any (+13 more)
 
 ### Community 82 - "run"
-Cohesion: 0.26
-Nodes (22): assemble(), _context_fields(), _development_sessions(), _load_chip_context(), main(), materialize(), parser(), prepare() (+14 more)
+Cohesion: 0.07
+Nodes (29): _allocate_checkpoint_asks(), _campaign_runtime_spec(), Classify absolute infeasibility separately from point-estimate risk., _route_budget_feasibility(), _DeterministicRouteAdapter, _FrozenLaneGenerator, _PairReducer, _PairSupport (+21 more)
 
 ### Community 83 - "test_cn_b1s_development_canary.py"
 Cohesion: 0.19
 Nodes (17): main(), Any, Namespace, run(), _artifact(), _freeze_candidates(), _holdout_summary(), main() (+9 more)
 
 ### Community 84 - "main"
-Cohesion: 0.21
-Nodes (22): _ast_variables(), _bin_int(), _operators(), _policy_score(), _windows(), _evaluate_round(), _external_feedback_seed_candidates(), _feedback_eligible() (+14 more)
+Cohesion: 0.22
+Nodes (21): _ast_variables(), _bin_int(), _operators(), _windows(), _evaluate_round(), _external_feedback_seed_candidates(), _feedback_eligible(), main() (+13 more)
 
 ### Community 85 - "materialize_conservative_limit_lifecycle"
-Cohesion: 0.16
-Nodes (12): Any, Minute-row-free reducer for Phase3CM portfolio and reward atoms., Accumulate only bounded statistics and daily vectors., _stable_hash(), StreamingPortfolioReducer, _fixture(), _legacy_rows(), DataFrame (+4 more)
+Cohesion: 0.15
+Nodes (14): _rank_by_eval_time_index(), PortfolioBlockResult, Any, Minute-row-free reducer for Phase3CM portfolio and reward atoms., Accumulate only bounded statistics and daily vectors., _stable_hash(), StreamingPortfolioReducer, _fixture() (+6 more)
 
 ### Community 86 - "write_checkpoint"
 Cohesion: 0.18
-Nodes (12): _arguments(), main(), Namespace, Run the frozen, performance-blind Sprint-2 event/state support audit., _repo_sha(), atomic_write_bytes(), atomic_write_json(), AtomicRecordStore (+4 more)
+Nodes (12): atomic_write_bytes(), atomic_write_json(), AtomicRecordStore, _canonical_bytes(), Any, Path, Atomic and idempotent checkpoint primitives for resumable batch work., MonkeyPatch (+4 more)
 
 ### Community 87 - "search_feedback.py"
 Cohesion: 0.21
 Nodes (20): _board_limit_pct(), _direction_features(), _episode_rows(), LimitLifecycleConfig, materialize_conservative_limit_lifecycle(), Any, DataFrame, Series (+12 more)
 
 ### Community 88 - "freeze_cn_compositional_stage_a_eligibility.py"
-Cohesion: 0.22
-Nodes (21): _atomic_json(), _atomic_json_temporary_path(), CheckpointDriftError, _decode(), _encode(), load_checkpoint(), Any, ndarray (+13 more)
+Cohesion: 0.23
+Nodes (20): _atomic_json(), _atomic_json_temporary_path(), CheckpointDriftError, _decode(), _encode(), load_checkpoint(), Any, ndarray (+12 more)
 
 ### Community 89 - "generate_initial_proposals"
-Cohesion: 0.20
-Nodes (20): _bar_source_path(), _frame_digest(), main(), _materialize_incremental_chip_context(), _materialize_lagged_daily_context(), _progress(), Any, DataFrame (+12 more)
+Cohesion: 0.14
+Nodes (29): _cached_group_layout(), _cross_section_key(), _cross_sectional_residual(), evaluate_panel_expression(), _event_age(), _event_mask(), _expression_cache_key(), _ExpressionEvaluationContext (+21 more)
 
 ### Community 90 - "FieldSpec"
 Cohesion: 0.17
@@ -920,72 +927,72 @@ Cohesion: 0.25
 Nodes (20): annotate_policy_with_external_feedback(), build_search_feedback_context(), _clean_feedback_row(), clean_optimizer_feedback_rows(), _count_blocked(), _count_exploit_allowed(), _has_holdout_columns(), _has_validation_columns() (+12 more)
 
 ### Community 92 - "StreamingPortfolioReducer"
-Cohesion: 0.18
-Nodes (21): ParquetFile, _assert_development_range(), cache_provenance(), canonical_json_hash(), initialize_cache_root(), _metadata_date_range(), Any, DataFrame (+13 more)
+Cohesion: 0.15
+Nodes (25): ParquetFile, _assert_development_range(), cache_provenance(), canonical_json_hash(), initialize_cache_root(), _metadata_date_range(), Any, DataFrame (+17 more)
 
 ### Community 93 - "tdx_plate_market_sidecar.py"
-Cohesion: 0.18
-Nodes (21): IO, main(), Build the sealed-2025 TDX plate membership PIT release., durable_flush(), Flush a stream; Windows EINVAL from fsync is non-fatal after flush., _atomic_parquet(), build_tdx_plate_release(), _decode() (+13 more)
+Cohesion: 0.14
+Nodes (30): IO, main(), Build the sealed-2025 TDX plate membership PIT release., durable_flush(), Flush a stream; Windows EINVAL from fsync is non-fatal after flush., _atomic_parquet(), build_tdx_plate_release(), _decode() (+22 more)
 
 ### Community 94 - "feature_state_fabric.py"
-Cohesion: 0.23
-Nodes (15): FeatureStateFabric, FieldRegistry, FieldSpec, _frame(), DataFrame, _registry(), test_blocked_fields_fail_closed(), test_committed_registry_covers_real_121_field_schema() (+7 more)
+Cohesion: 0.16
+Nodes (25): _artifact_row(), _behavior_and_full_coordinate_qualification(), _historical_exact(), main(), _prior_route_comparison(), Any, Namespace, Path (+17 more)
 
 ### Community 95 - "BoundedBlockCache"
-Cohesion: 0.24
-Nodes (18): _canonical_membership(), cross_sectional_group_confirmation(), membership_content_sha256(), membership_manifest(), PITGroupContract, point_in_time_membership(), Any, DataFrame (+10 more)
+Cohesion: 0.18
+Nodes (23): _canonical_membership(), cross_sectional_group_confirmation(), membership_content_sha256(), membership_manifest(), PITGroupContract, point_in_time_membership(), Any, DataFrame (+15 more)
 
 ### Community 96 - "CN Field Universe Search Exposure Audit Phase 1"
-Cohesion: 0.32
-Nodes (19): built_release(), _frame(), _manual_manifest(), DataFrame, Path, _split(), test_actual_read_role_mapping_rejects_post_preflight_contamination(), test_builder_refuses_2026_split_before_release_output() (+11 more)
+Cohesion: 0.37
+Nodes (17): built_release(), _frame(), _manual_manifest(), DataFrame, Path, _split(), test_builder_refuses_2026_split_before_release_output(), test_builder_rejects_source_manifest_bound_to_another_root() (+9 more)
 
 ### Community 97 - "main"
-Cohesion: 0.18
-Nodes (19): DataType, Scalar, build_release(), _build_shard(), _date_values(), main(), Any, Path (+11 more)
+Cohesion: 0.21
+Nodes (17): DataType, Scalar, build_release(), _build_shard(), _date_values(), main(), Any, Path (+9 more)
 
 ### Community 98 - "audit_event_state_support"
-Cohesion: 0.19
-Nodes (15): Enum, main(), Build a versioned NEXTGEN-DARK field registry from a Parquet schema only., ChipSidecarResult, ValueDomain, FieldRole, infer_field_spec(), MissingPolicy (+7 more)
+Cohesion: 0.18
+Nodes (26): expand_derived_fields(), _available_market_panel_usecols(), batch_validate_candidate_ledger(), build_forward_shadow_watchlist(), build_real_replay_feedback_objective(), build_validation_cost_report_from_ledger(), expression_validation_cost_report(), _fast_screen_decision() (+18 more)
 
 ### Community 99 - ".build"
-Cohesion: 0.07
-Nodes (65): _allocate_checkpoint_asks(), _ask_availability_aware_populations(), _ask_route_population_worker(), _ask_route_populations(), _authorization_binding(), _availability_metadata(), _availability_semantic_input_hashes(), _campaign_runtime_spec() (+57 more)
+Cohesion: 0.13
+Nodes (45): _ask_availability_aware_populations(), _ask_route_population_worker(), _ask_route_populations(), _authorization_binding(), _availability_metadata(), _availability_semantic_input_hashes(), _conservative_search_score(), _copy_behavior_archive() (+37 more)
 
 ### Community 100 - "type"
 Cohesion: 0.10
 Nodes (19): 1. Role assignment is lexical, 2. Materialization does not enforce route semantics, 3. Static generator contradicts `interaction-only`, 4. Slow-variable temporal capability is absent, 5. Sprint-2 “State” evidence is narrower than its name, 6. Broad Event is now a real, separate capability, Artifacts, Broad Event entry-pack engineering priority (+11 more)
 
 ### Community 101 - "type"
-Cohesion: 0.14
-Nodes (28): PIT Fundamental Revision Policy, _active_entity_scope(), _active_routes(), _active_source_glossary(), _active_support_unit(), _active_temporal_semantics(), _active_value_kind(), build() (+20 more)
+Cohesion: 0.29
+Nodes (17): _active_entity_scope(), _active_routes(), _active_source_glossary(), _active_support_unit(), _active_temporal_semantics(), _active_value_kind(), build(), main() (+9 more)
 
 ### Community 102 - "compile_tokens"
 Cohesion: 0.19
 Nodes (17): _benchmark_expression(), generate_initial_proposals(), _event(), _firstn(), generate_mechanism_pool(), generate_program(), mutate_program(), _orthogonal() (+9 more)
 
 ### Community 103 - "build"
-Cohesion: 0.12
-Nodes (20): _materialization_input_columns(), Include registry-declared PIT clock evidence without exposing it to candidate ge, Select one pre-frozen seed set without mutating the contract payload., _select_seed_set(), _validate_contract(), _contract(), Path, test_b1s_contract_freezes_all_requested_lanes_and_budgets() (+12 more)
+Cohesion: 0.13
+Nodes (19): _materialization_input_columns(), Include registry-declared PIT clock evidence without exposing it to candidate ge, Select one pre-frozen seed set without mutating the contract payload., _select_seed_set(), _validate_contract(), _contract(), Path, test_b1s_contract_freezes_all_requested_lanes_and_budgets() (+11 more)
 
 ### Community 104 - "main"
 Cohesion: 0.25
 Nodes (18): _align_clusters_and_union(), _as_bool(), _epoch_c_shared_stability(), _lane_economic_summary(), main(), _proposal_union_metrics(), Any, DataFrame (+10 more)
 
 ### Community 105 - "run_cn_full_field_information_research.py"
-Cohesion: 0.14
-Nodes (34): _blockers(), build_candidate_table(), _count_by_arm(), _f(), _hard_reject_reason(), _iter_decision_files(), main(), _normalize_row() (+26 more)
+Cohesion: 0.28
+Nodes (19): _blockers(), build_candidate_table(), _count_by_arm(), _f(), _hard_reject_reason(), _iter_decision_files(), main(), _normalize_row() (+11 more)
 
 ### Community 106 - "phase3ei_ban_short_lineage_audit.py"
 Cohesion: 0.20
 Nodes (18): audit_event_state_support(), _consume_frame(), _duration_histogram(), _entropy_bits(), EventSupportThresholds, _new_accumulator(), Counter, DataFrame (+10 more)
 
 ### Community 107 - "test_phase3cm_streaming_expression.py"
-Cohesion: 0.10
-Nodes (30): BlockRowLimitError, DAGCachePeakPreflight, enforce_block_row_limit(), Any, Deterministic cache-capacity preflight for the Phase3CM shared DAG.  This module, Return children actually visited by ``StreamingExpressionExecutor``.      Numeri, The materialized block exceeded its frozen cache-capacity bound., Fail before DAG allocation when a real block exceeds the preflight bound. (+22 more)
+Cohesion: 0.17
+Nodes (18): _as_list(), CandidateRoot, _contains_mapping(), MappingSubcohort, _max_lookback(), _numeric_atom(), Any, Deterministic two-level cohort and shared-DAG plan for Phase3CM streaming. (+10 more)
 
 ### Community 108 - "build_release"
 Cohesion: 0.11
-Nodes (19): items, type, items, type, items, type, type, items (+11 more)
+Nodes (19): items, type, items, type, type, items, type, items (+11 more)
 
 ### Community 109 - "finalize_cn_compositional_resource_preflight.py"
 Cohesion: 0.11
@@ -1000,8 +1007,8 @@ Cohesion: 0.27
 Nodes (17): build(), _coverage(), _heuristic_family(), _industry_specific(), _load_source(), main(), _metadata_blocked(), Any (+9 more)
 
 ### Community 112 - "build_report"
-Cohesion: 0.49
-Nodes (9): _candidate_row(), _fidelity_sample(), main(), Any, Path, _read_jsonl(), _sha256(), _write_csv() (+1 more)
+Cohesion: 0.20
+Nodes (16): _candidate_row(), _fidelity_sample(), main(), Any, Path, _read_jsonl(), _sha256(), _write_csv() (+8 more)
 
 ### Community 113 - "phase3bq_compute_allocation_benchmark.py"
 Cohesion: 0.19
@@ -1012,16 +1019,16 @@ Cohesion: 0.23
 Nodes (15): dominates(), GateDecision, hard_gate(), _limited_scalar(), objective_vector(), pareto_fronts(), prepare_objectives(), Any (+7 more)
 
 ### Community 115 - "_candidate_portfolio_rows_from_frame"
-Cohesion: 0.09
-Nodes (38): _load_production_contract(), MinuteStaticProductionProjection, Read-only optimizer projection over qualified existing Grammar lanes., Resolve the V5 surface only when the online path is requested., Expose only reusable structural choices to adaptive policy., Expose grammar rules, not preconstructed formulas, to the policy., _structural_supply_generation_audit(), _structural_v2_fresh_stream_parity() (+30 more)
+Cohesion: 0.07
+Nodes (78): _combined_behavior_archive(), _enumerate_old_space(), _expression_depth(), _failure_decision(), _field_sidecars(), _formula_v4_supply_decision(), _historical_exact(), _input_artifact() (+70 more)
 
 ### Community 116 - "test_development_only_data_access.py"
 Cohesion: 0.29
 Nodes (18): _candidate_decision(), _candidate_score(), _classify_csv(), _collect_recheck_candidates(), _digest(), _f(), _is_candidate_level_csv(), _iter_csv_rows() (+10 more)
 
 ### Community 117 - "test_supplemental_root_materialization.py"
-Cohesion: 0.09
-Nodes (34): _restore_or_initialize_availability_controller(), AvailabilityEmission, AvailabilityEntry, enumerate_authoritative_entries(), is_concrete_field_slot(), Any, Deterministic route-local exact-availability control for typed Grammar lanes.  T, Enumerate legal exact identities through the existing Grammar/compiler.      Mul (+26 more)
+Cohesion: 0.13
+Nodes (18): AvailabilityEmission, AvailabilityEntry, enumerate_authoritative_entries(), is_concrete_field_slot(), Any, Deterministic route-local exact-availability control for typed Grammar lanes.  T, Enumerate legal exact identities through the existing Grammar/compiler.      Mul, Without-replacement exact emitter with deterministic bucket fallback. (+10 more)
 
 ### Community 118 - "broad_event_semantics.py"
 Cohesion: 0.19
@@ -1068,7 +1075,7 @@ Cohesion: 0.28
 Nodes (16): _clock_registry(), _decode_f4(), _distribution(), _fidelity(), _load_workers(), main(), Any, ndarray (+8 more)
 
 ### Community 129 - "validate_expression"
-Cohesion: 0.20
+Cohesion: 0.22
 Nodes (17): _candidate_finalization_seed_map(), _order_candidate_pairs(), _phase_e_plan_pair_order(), _portfolio_continuation_payload(), Validate and return the immutable Phase E pair order.      Phase E treats the pr, Reorder whole matched pairs while preserving PRIMARY then CONTROL., Prove that the CSV rows execute the exact members named by the binding., Preserve the historically qualified table-order seed for each identity. (+9 more)
 
 ### Community 130 - "test_phase3cm_streaming_capacity.py"
@@ -1088,12 +1095,12 @@ Cohesion: 0.23
 Nodes (22): _artifact(), execute(), _finite(), _freeze_candidates(), _load_authorization(), main(), prepare(), Any (+14 more)
 
 ### Community 134 - "materialize_broad_event_episodes"
-Cohesion: 0.33
-Nodes (15): _add(), _aggregate_decisions(), _candidate_templates(), _cap_crowded_vwap(), _hash(), _lane_summary(), _load_memory_hashes(), main() (+7 more)
+Cohesion: 0.13
+Nodes (16): bootstrap_paired_delta_days(), bootstrap_sortino_days(), Any, ndarray, Frozen time-series resampling primitives shared by reward evaluators.  The estim, Estimate daily Sortino uncertainty with a stationary bootstrap., Bootstrap the mean paired daily net-return delta.      Pairing happens before re, Return the frozen expected block length for ordered daily observations. (+8 more)
 
 ### Community 135 - "normalize_candidate_schema"
-Cohesion: 0.18
-Nodes (24): _artifact_entry(), _canonical_manifest_hash(), _closed_campaign_authority_binding(), _drain_formal_capacity(), _layer_b_and_feasibility(), _load_successor_target_contract(), main(), _memory_sample() (+16 more)
+Cohesion: 0.29
+Nodes (20): build_parser(), _canonical_bytes(), _field_bindings(), freeze(), main(), _payload_sha256(), Any, ArgumentParser (+12 more)
 
 ### Community 136 - "build_full_session_coordinate_rows"
 Cohesion: 0.30
@@ -1108,12 +1115,12 @@ Cohesion: 0.18
 Nodes (22): build_parser(), _compatibility_rows(), _extract_fields(), _field_class(), _ledger_records(), _load_followups(), main(), Any (+14 more)
 
 ### Community 139 - "prepare_sidecar_base"
-Cohesion: 0.11
-Nodes (17): ReceiptContext, build_compositional_generation_epoch(), _depth(), _failure_from_exception(), GenerationEpochResult, _pair_record(), _policy_state_hash(), Any (+9 more)
+Cohesion: 0.22
+Nodes (14): build_compositional_generation_epoch(), _depth(), _failure_from_exception(), GenerationEpochResult, _pair_record(), _policy_state_hash(), Any, Feedback-dark generation and structural pre-admission for CN epoch 1. (+6 more)
 
 ### Community 140 - "main"
-Cohesion: 0.23
-Nodes (14): analyze_generator_funnel(), _as_bool(), _finite(), _median(), _normalized_entropy(), _primitive_counts(), Any, Counter (+6 more)
+Cohesion: 0.16
+Nodes (18): main(), Path, Create a reproducible Sprint-1 diagnosis from the formal B1S CANARY artifacts., _sha256(), analyze_generator_funnel(), _as_bool(), _finite(), _median() (+10 more)
 
 ### Community 141 - "run_automatic_post_train_validation"
 Cohesion: 0.28
@@ -1148,8 +1155,8 @@ Cohesion: 0.28
 Nodes (13): audit_generator_expressivity(), _audit_one_generator(), _compile_failure_category(), _depth(), _empty_route_accumulator(), _finalize_route(), _operator_signature(), Any (+5 more)
 
 ### Community 149 - "phase3ce2_typed_primitive_candidate_pack_canary.py"
-Cohesion: 0.19
-Nodes (14): attach_coordinate_row_indices(), build_full_session_coordinate_rows(), build_session_coordinate_rows(), field_partition(), Any, DataFrame, DatetimeIndex, Timestamp (+6 more)
+Cohesion: 0.14
+Nodes (11): PIT Fundamental Revision Policy, freeze_registry(), Any, Path, Authoritative typed capability registry for unified CN discovery.  The registry, Return a stable ID bound to the physical provider/release identity., source_field_id(), stable_hash() (+3 more)
 
 ### Community 150 - "phase3ds_targeted_family_repair_pack.py"
 Cohesion: 0.44
@@ -1164,23 +1171,23 @@ Cohesion: 0.33
 Nodes (12): _compare(), compare_probes(), _load_probe(), main(), normalize_portfolio_continuation(), Any, ndarray, Path (+4 more)
 
 ### Community 153 - "default_nextgen_lane_registry"
-Cohesion: 0.40
-Nodes (12): prepare_sidecar_base(), Publish a full-development stock-session coordinate base from sidecars., MonkeyPatch, Namespace, Path, _sidecar_base_fixture(), test_prepare_sidecar_base_cleans_staging_on_publish_failure(), test_prepare_sidecar_base_reads_only_coordinates_and_publishes_atomically() (+4 more)
+Cohesion: 0.27
+Nodes (15): _candidate_rows(), _flow_ratio(), _hash(), main(), Any, Path, _range_location(), _range_width() (+7 more)
 
 ### Community 154 - "build_environment_audit"
 Cohesion: 0.40
 Nodes (13): _artifact_reference(), _compact_pair_receipt(), _finalize_existing_generation(), _git(), main(), Any, Path, _route_skeleton_rows() (+5 more)
 
 ### Community 155 - "main"
-Cohesion: 0.22
-Nodes (12): ExpressionParseError, parse_expression(), _split_args(), Materialize roots into one matrix while releasing nodes after their last consume, CompileVerdict, _operator_paths(), _operators(), Any (+4 more)
+Cohesion: 0.29
+Nodes (11): ExpressionParseError, parse_expression(), _split_args(), CompileVerdict, _operator_paths(), _operators(), Any, Fail-closed compiler for registry-backed CN typed research routes. (+3 more)
 
 ### Community 156 - "main"
 Cohesion: 0.29
 Nodes (12): Any, Path, Sequential, report-only validation gate for bounded CN search campaigns., Run validation after TRAIN_COMPLETE and prove it cannot mutate train state., run_automatic_post_train_validation(), _sha256(), _snapshot(), Path (+4 more)
 
 ### Community 157 - "run_cn_phase3cm_1024_wave_77o.ps1"
-Cohesion: 0.18
+Cohesion: 0.17
 Nodes (26): assert_train_only_feedback_row(), assert_train_only_feedback_rows(), EvaluationAccessViolation, forbidden_feedback_fields(), _has_reward(), project_train_only_feedback_row(), Any, Machine-enforced evaluation-role boundaries for optimizer feedback.  Candidate-l (+18 more)
 
 ### Community 158 - "validate_contract"
@@ -1188,24 +1195,24 @@ Cohesion: 0.15
 Nodes (12): build_cn_fundamental_qualification.py, bytes, sha256, cn_fundamental_field_qualification_policy_v1.json, bytes, sha256, cn_unified_registry_merge_contract_v1.json, bytes (+4 more)
 
 ### Community 159 - "phase3aa_apply_mature_g2_selector.py"
-Cohesion: 0.23
-Nodes (12): main(), Path, _split_dates(), _candidate_fields(), main(), Path, _split_dates(), _process_snapshot() (+4 more)
+Cohesion: 0.27
+Nodes (10): main(), Path, _split_dates(), _candidate_fields(), main(), Path, _split_dates(), Path (+2 more)
 
 ### Community 160 - "phase3cf_large_search_prelaunch.py"
 Cohesion: 0.33
 Nodes (11): _atomic_json(), _json(), main(), prepare_reuse_source(), Any, Path, Create an immutable, validated session-sidecar reuse root for a wider wave., _self_hash() (+3 more)
 
 ### Community 161 - "main"
-Cohesion: 0.25
-Nodes (19): _artifact(), _atomic_csv(), _atomic_json(), build_stage_a_eligibility(), _fail(), freeze_stage_a_eligibility(), main(), Any (+11 more)
+Cohesion: 0.09
+Nodes (58): RuntimeError, _artifact(), _atomic_csv(), _atomic_json(), build_stage_a_eligibility(), _fail(), freeze_stage_a_eligibility(), main() (+50 more)
 
 ### Community 162 - "HypothesisLaneRegistry"
 Cohesion: 0.28
 Nodes (12): _candidate_pairs(), _binding(), MonkeyPatch, Path, _source_plan(), test_dag_cache_greedy_order_rejects_pair_identity_drift(), test_freezer_candidate_normalization_matches_runtime_phase_e_parser(), test_pair_union_heuristic_peak_is_not_treated_as_exact_authority() (+4 more)
 
 ### Community 163 - "test_tdx_plate_market_sidecar.py"
-Cohesion: 0.21
-Nodes (17): a_share_tradability_blockers(), a_share_tradability_ready(), development_predictive_evidence(), pair_tradability_evidence(), prefixed_tradability_evidence(), Any, Fail-closed A-share tradability evidence boundary.  Phase3CM is a development pr, Return the explicit non-authoritative evidence declaration for Phase3CM. (+9 more)
+Cohesion: 0.11
+Nodes (39): a_share_tradability_blockers(), a_share_tradability_ready(), build_a_share_tradability_receipt(), _canonical_hash(), development_predictive_evidence(), _finite(), _is_sha256(), pair_row_tradability_blockers() (+31 more)
 
 ### Community 164 - "test_nextgen_app_route.py"
 Cohesion: 0.35
@@ -1236,8 +1243,8 @@ Cohesion: 0.24
 Nodes (9): main(), build_environment_audit(), classify_legacy_hot_path(), _package_versions(), _powershell_json(), Any, Path, 77o environment and active-hot-path evidence for the Phase3CM repair. (+1 more)
 
 ### Community 171 - "phase3ce1_g2_input_gate_smoke.py"
-Cohesion: 0.21
-Nodes (14): main(), Any, Path, Rebuild exact all-shard Phase3CM rewards from completed atom chunks., _read_csv(), _read_json(), _shard_indices(), _combined_file_hash() (+6 more)
+Cohesion: 0.33
+Nodes (10): main(), Any, Path, Rebuild exact all-shard Phase3CM rewards from completed atom chunks., _read_csv(), _read_json(), _shard_indices(), _atom_rows() (+2 more)
 
 ### Community 172 - "_read_train_shard"
 Cohesion: 0.38
@@ -1264,8 +1271,8 @@ Cohesion: 0.35
 Nodes (11): _cm_reward_fixture_from_ca(), _copy_report_files(), main(), Any, Path, Phase3CN integrated feedback contract smoke.  This route does not run search o, _read_csv(), _render_md() (+3 more)
 
 ### Community 178 - "_backend_audit"
-Cohesion: 0.38
-Nodes (10): _epsilon_guard(), ExpressionNode, infer_value_domain(), _is_one(), _is_zero(), _issue(), _numeric_value(), Value-domain analysis and exact normalization for the true1min DSL. (+2 more)
+Cohesion: 0.20
+Nodes (19): analyze_expression(), _epsilon_guard(), ExpressionNode, infer_value_domain(), _is_one(), _is_zero(), _issue(), _numeric_value() (+11 more)
 
 ### Community 179 - "main"
 Cohesion: 0.29
@@ -1332,8 +1339,8 @@ Cohesion: 0.26
 Nodes (10): build(), _normalized(), Any, Path, Build the authoritative CN field inventory without performance access., _text(), true1min_plate_field_specs(), Path (+2 more)
 
 ### Community 195 - "_materialize_observations"
-Cohesion: 0.29
-Nodes (9): main(), _persist_attempt(), Path, Build external NEXTGEN plate/chip sidecars with a durable run record., Update one attempt while preserving every earlier attempt as a separate file., _sha256(), discover_tdx_plate_market_archives(), Path (+1 more)
+Cohesion: 0.33
+Nodes (8): main(), _persist_attempt(), Path, Build external NEXTGEN plate/chip sidecars with a durable run record., Update one attempt while preserving every earlier attempt as a separate file., _sha256(), Path, test_run_attempts_do_not_overwrite_prior_history()
 
 ### Community 196 - "build"
 Cohesion: 0.42
@@ -1363,17 +1370,13 @@ Nodes (8): AdmissionConfig, admit_candidates(), _dedupe_exact(), Any, Determinis
 Cohesion: 0.38
 Nodes (8): Any, Label-free behavior registry and deterministic diversity admission helpers., select_diversity_admission(), stable_order_key(), stratified_route_order(), _rows(), test_coverage_limited_rows_cannot_enter_admission(), test_diversity_admission_is_deterministic_balanced_and_reward_dark()
 
-### Community 203 - "build_broad_event_recovery_closure.py"
-Cohesion: 0.15
-Nodes (9): analyze_expression(), ExpressionSemanticAnalysis, test_event_and_orthogonal_generators_emit_semantically_valid_directions(), test_rank_denominator_is_blocked_but_epsilon_guard_is_audited(), test_redundant_abs_of_rank_is_removed_before_memory_and_search(), test_shared_typed_gate_consults_semantic_value_domain_rules(), test_sign_of_cross_sectional_rank_is_blocked_as_availability_mask(), test_sign_of_strictly_negative_rank_expression_is_also_blocked() (+1 more)
-
 ### Community 204 - "export_cnline2_field_registry.py"
-Cohesion: 0.44
-Nodes (8): _enumerate_genes(), _generator(), _lane_genes(), test_disclosure_lanes_restore_event_only_skeletons_without_payload_aliases(), test_every_open_lane_endpoint_compiles_as_one_legal_matched_pair(), test_lane_semantics_freezes_fixed_skeleton_and_active_slots(), test_skeleton_lane_surface_covers_every_primary_route_without_widening_roots(), test_state_lanes_remove_source_conflicts_and_exact_aliases_before_search()
+Cohesion: 0.24
+Nodes (15): attach_pit_trend_state_features(), build_pit_market_regime_state_frame(), _label_regime(), _limit_ratio(), MarketRegimeThresholds, _mean_positive_ratio(), Any, DataFrame (+7 more)
 
 ### Community 205 - "validate_canary_contract"
-Cohesion: 0.47
-Nodes (9): MonkeyPatch, Path, _snapshot(), test_release_builds_entry_exit_intervals_and_auditable_inventory(), test_release_supports_real_pit_cross_sectional_join(), test_snapshot_discovery_enforces_expansion_limits(), test_snapshot_discovery_hard_excludes_2026_and_unobservable_year_end(), test_snapshot_discovery_rejects_duplicate_dates() (+1 more)
+Cohesion: 0.30
+Nodes (12): _controller(), _entry(), _Generator, _genes(), _Pair, test_authoritative_enumeration_canonicalizes_semantic_aliases(), test_bucket_exhaustion_retires_without_consuming_formal_ask(), test_checkpoint_restore_preserves_next_exact_sequence_and_hash() (+4 more)
 
 ### Community 206 - "refresh"
 Cohesion: 0.22
@@ -1396,8 +1399,8 @@ Cohesion: 0.42
 Nodes (8): freeze(), _git(), main(), _mode_contract(), Any, Path, Freeze the fixed-budget CN unified capability CANARY/discovery contract., _sha256()
 
 ### Community 211 - "main"
-Cohesion: 0.27
-Nodes (13): LazyFrame, audit_sidecar_parity(), build_time_major_shard(), _digest(), _identity(), _null_digest(), _parity_aggregates(), Any (+5 more)
+Cohesion: 0.30
+Nodes (12): build_capability(), _direct_field_variation(), main(), Any, Path, Build label-free candidate field compatibility for stock-session replay., _required_fields(), _sha256() (+4 more)
 
 ### Community 212 - "field_ids"
 Cohesion: 0.36
@@ -1468,8 +1471,8 @@ Cohesion: 0.50
 Nodes (7): build_iterative_feedback_views(), Project matched-pair outcomes into V1 feedback and run-health views.      Infras, _row(), test_cost_killed_requires_matched_direction_flip(), test_evaluated_zero_matched_increment_is_auditable_no_increment(), test_feedback_views_use_matched_increments(), test_infrastructure_failure_only_enters_run_health()
 
 ### Community 229 - "ExpressionSemanticAnalysis"
-Cohesion: 0.29
-Nodes (14): _candidate_pairs(), _key(), main(), _numeric_equal(), _optional_float(), _pair_common_support(), Any, ndarray (+6 more)
+Cohesion: 0.27
+Nodes (12): CandidatePairAuthority, Authorize and revalidate immutable primary/control pair receipts., _candidate_authority(), _four_route_pairs(), Path, test_all_routes_have_authoritative_constructor_and_immutable_pair_receipt(), test_candidate_parallel_partition_never_splits_a_pair_and_is_deterministic(), test_pair_authority_rejects_pointer_route_context_and_exact_drift() (+4 more)
 
 ### Community 230 - "test_graph_artifact_maintenance.py"
 Cohesion: 0.32
@@ -1488,8 +1491,8 @@ Cohesion: 0.46
 Nodes (7): _module(), MonkeyPatch, Path, _sha256(), _source_sha256(), test_external_output_manifest_repair_is_hash_bound(), test_packaged_source_identity_requires_explicit_sha_and_code_hashes()
 
 ### Community 234 - "ADR 0003: Deterministic Development-Only Signal Sketches"
-Cohesion: 0.33
-Nodes (8): _pair_inputs(), Path, test_all_eight_routes_reach_real_phase3cm_and_pair_native_phase3cn_validation(), test_pair_feedback_blocks_missing_tradability_evidence(), test_pair_feedback_blocks_nonpositive_matched_increment_even_when_primary_is_ready(), test_pair_feedback_blocks_support_mismatch_and_missing_control_invocation(), test_pair_feedback_ready_ignores_primary_standalone_blocker_but_keeps_diagnostic(), test_phase3cn_clean_gate_blocks_primary_standalone_failure()
+Cohesion: 0.20
+Nodes (12): BlockRowLimitError, DAGCachePeakPreflight, enforce_block_row_limit(), Any, Deterministic cache-capacity preflight for the Phase3CM shared DAG.  This module, Return children actually visited by ``StreamingExpressionExecutor``.      Numeri, The materialized block exceeded its frozen cache-capacity bound., Fail before DAG allocation when a real block exceeds the preflight bound. (+4 more)
 
 ### Community 236 - "ADR 0007: Phase3CM streaming multi-candidate evaluator"
 Cohesion: 0.29
@@ -1540,8 +1543,8 @@ Cohesion: 0.48
 Nodes (6): matched_control_contract(), test_matched_controls_include_structural_and_episode_placebo(), _inputs(), test_frozen_broad_event_contract_has_two_seeds_nonzero_budgets_and_sealed_boundaries(), test_preflight_passes_only_with_episode_support_pit_controls_and_zero_forbidden_reads(), test_zero_budget_or_missing_support_cannot_be_called_generator_failure()
 
 ### Community 248 - "audit_cn_phase3cm_resume_parity.py"
-Cohesion: 0.31
-Nodes (7): classify_signal_sketch_receipts(), Any, Clock-safe input classification for compositional signal sketches., SignalSketchInputClassification, test_signal_sketch_inputs_split_intraday_and_session_clocks_without_reward(), test_signal_sketch_rejects_unmaterialized_supplemental_root(), test_signal_sketch_requires_exact_candidate_receipt_hash_injection()
+Cohesion: 0.40
+Nodes (13): _add_reused_backend_fixture(), _fixture(), Path, test_freeze_binds_a_complete_reused_backend_result(), test_freeze_creates_disjoint_complete_deterministic_partitions(), test_freeze_fails_when_candidate_table_is_incomplete(), test_freeze_fails_when_global_thread_budget_is_exceeded(), test_freeze_rejects_incomplete_or_non_integer_reused_access_evidence() (+5 more)
 
 ### Community 249 - "main"
 Cohesion: 0.52
@@ -1624,8 +1627,8 @@ Cohesion: 0.53
 Nodes (5): compute_coverage_metrics(), _coverage(), _entropy(), Any, Coverage-only metrics with an explicit ban on performance/evaluation inputs.
 
 ### Community 269 - "CN true1min Engine Mission"
-Cohesion: 0.67
-Nodes (5): _membership(), _panel(), Path, test_materialization_smoke_rejects_non_development_date(), test_materialization_smoke_writes_auditable_nonperformance_artifacts()
+Cohesion: 0.35
+Nodes (11): freeze_authorization(), main(), Any, Path, Bind a search authority to safe exclusive or dual-lane node profiles., _sha256(), _stable_hash(), Path (+3 more)
 
 ### Community 270 - "CN Full Field Information Research V1"
 Cohesion: 0.40
@@ -1668,8 +1671,8 @@ Cohesion: 0.50
 Nodes (4): main(), Any, Path, _write_json()
 
 ### Community 281 - "test_cn_search_selection_event_state_sprint2_closure.py"
-Cohesion: 0.50
-Nodes (4): main(), Path, Create a reproducible Sprint-1 diagnosis from the formal B1S CANARY artifacts., _sha256()
+Cohesion: 0.33
+Nodes (11): build_parser(), _canonical_bytes(), main(), _payload_sha256(), Any, ArgumentParser, Path, Independently verify a frozen zero-financial finalist input binding. (+3 more)
 
 ### Community 285 - "CN Matched-Control and Candidate-Parallel Formalization"
 Cohesion: 0.50
@@ -1804,8 +1807,8 @@ Cohesion: 0.67
 Nodes (3): route_id, minLength, type
 
 ### Community 323 - "exact_identity"
-Cohesion: 0.67
-Nodes (3): source_field_ids, items, type
+Cohesion: 0.36
+Nodes (11): _deduplicate_behavior_candidates(), main(), _payload_sha256(), Any, DataFrame, Path, _read_json(), _recompute_ranking() (+3 more)
 
 ### Community 324 - "frequency"
 Cohesion: 0.67
@@ -1940,50 +1943,82 @@ Cohesion: 0.29
 Nodes (6): Cache and semantics, Launch contract, Measured stock-session baseline, Runtime reality, Targeted Formula/CEM Qualification Acceleration Audit, V2 measured result
 
 ### Community 410 - "No Candidate Promotion"
-Cohesion: 0.46
-Nodes (7): _chip_zip(), MonkeyPatch, Path, test_chip_builder_enforces_archive_expansion_limits(), test_chip_builder_excludes_2026_and_writes_resumable_shards(), test_chip_builder_migrates_cached_zero_low_sentinel(), test_chip_join_is_strictly_previous_session()
+Cohesion: 0.35
+Nodes (11): _direct_semantic_checks(), _expression_cases(), main(), Any, DataFrame, Path, Smoke-test typed primitive evaluator semantics on a synthetic true-1min panel., _series_stats() (+3 more)
 
 ### Community 473 - "Typed Route Compiler"
-Cohesion: 0.48
-Nodes (6): main(), ndarray, Path, _read_csv(), _sidecars(), _top_summary()
+Cohesion: 0.50
+Nodes (11): _cohort(), Path, _release(), _session_authority(), test_all_null_or_all_blocked_st_cannot_close_ready_binding(), test_complete_frozen_inputs_can_close_zero_financial_binding(), test_existing_release_is_bound_without_inventing_missing_authorities(), test_explicit_deployment_sha_is_strictly_validated() (+3 more)
 
 ### Community 475 - "Worker/recovery paths"
-Cohesion: 0.17
-Nodes (19): Any, Evaluate canonical expressions on one complete-market time block., StreamingExpressionExecutor, _executor(), _frame(), DataFrame, test_cache_liveness_release_frees_owned_arrays_without_losing_state(), test_cache_pressure_bypasses_recomputable_last_use_nodes() (+11 more)
+Cohesion: 0.28
+Nodes (15): _executor(), _frame(), DataFrame, test_cache_liveness_release_frees_owned_arrays_without_losing_state(), test_cache_pressure_bypasses_recomputable_last_use_nodes(), test_cache_pressure_bypasses_recomputable_non_last_use_nodes(), test_intra_batch_liveness_materialization_matches_ordered_results(), test_intra_batch_liveness_stays_within_byte_cap_without_changing_values() (+7 more)
 
 ### Community 480 - "ADR 0008: Hybrid TPE plus Availability development search policy"
 Cohesion: 0.33
 Nodes (5): ADR 0008: Hybrid TPE plus Availability development search policy, Boundaries, Consequences, Context, Decision
 
 ### Community 481 - "_rank_by_eval_time_index"
-Cohesion: 0.40
-Nodes (6): ndarray, _rank_by_eval_time_index(), _rank_pct_1d_average(), _rank_pct_1d_average_numba(), _sample_positions_for_count(), _series_to_float64()
+Cohesion: 0.30
+Nodes (8): _candidate_rows(), _pair_rows(), DataFrame, test_materialize_replay_master_marks_suspension_at_last_close(), test_oos_rows_keep_every_pair_without_interstage_filter(), test_ordered_candidates_puts_primary_before_control(), test_ordered_candidates_rejects_exact_identity_collision(), test_pair_replay_keeps_terminal_liquidity_blocked_pair()
 
 ### Community 482 - "test_windows_einval_after_flush_is_not_candidate_failure"
-Cohesion: 0.47
-Nodes (5): MonkeyPatch, Path, test_atomic_json_replaces_complete_payload(), test_atomic_record_store_is_idempotent_and_conflict_safe(), test_windows_einval_after_flush_is_not_candidate_failure()
+Cohesion: 0.18
+Nodes (10): 1. One shared resource authority per compute node, 2. Resource topology is not search semantic authority, 3. Candidate result persistence uses a stable envelope, 4. Execution-clock capability is checked before financial replay, ADR 0012: Shared-node alpha compute control plane, Consequences, Context, Decision (+2 more)
 
 ### Community 483 - "ADR 0009: A-share tradability evidence boundary"
 Cohesion: 0.40
 Nodes (4): ADR 0009: A-share tradability evidence boundary, Consequences, Context, Decision
 
 ### Community 484 - "test_degenerate_expression_cannot_enter_optimizer_feedback"
-Cohesion: 0.83
-Nodes (3): _reward_row(), test_degenerate_expression_cannot_enter_optimizer_feedback(), test_family_with_many_semantic_degeneracies_is_frozen_not_exploited()
+Cohesion: 0.22
+Nodes (3): Path, test_freeze_pit_st_source_is_exact_date_and_hash_bound(), test_materialize_cli_requires_and_routes_pit_st_root()
+
+### Community 485 - "build_chip_sidecar.py"
+Cohesion: 0.44
+Nodes (8): main(), _payload_sha256(), prepare(), Any, Path, Freeze cumulative identity memory and winner structural lanes without finance., _sha256(), _write_json()
+
+### Community 550 - "main"
+Cohesion: 0.39
+Nodes (7): _inputs_from_root(), main(), Any, Path, Phase3CO multi-arm scheduler smoke.  This route reads Phase3CN feedback memory, _render_md(), _resolve()
+
+### Community 551 - "ADR 0010: Separate development feedback from finalist execution evidence"
+Cohesion: 0.29
+Nodes (6): ADR 0010: Separate development feedback from finalist execution evidence, Consequences, Context, Decision, Development search lane, Finalist execution lane
+
+### Community 552 - "ADR 0011: Use ordered-day stationary bootstrap uncertainty in Phase3CM"
+Cohesion: 0.33
+Nodes (5): ADR 0011: Use ordered-day stationary bootstrap uncertainty in Phase3CM, Consequences, Context, Decision, Matched-increment amendment
+
+### Community 553 - "main"
+Cohesion: 0.47
+Nodes (5): _arguments(), main(), Namespace, Run the frozen, performance-blind Sprint-2 event/state support audit., _repo_sha()
+
+### Community 554 - "frozen_replay_channel"
+Cohesion: 0.33
+Nodes (6): frozen_replay_channel(), frozen_replay_channels(), Return the physical channel for one registered frozen mechanism handle.      A f, List physical frozen replay channels required by an expression., UnsupportedExpressionError, test_frozen_replay_uses_independent_materialized_primary_and_control_channels()
+
+### Community 555 - "_candidates"
+Cohesion: 0.60
+Nodes (4): _candidates(), DataFrame, test_candidate_receipt_never_claims_execution_or_promotion(), test_pair_results_keep_no_fill_as_the_only_blocked_pair()
+
+### Community 556 - "field_ids"
+Cohesion: 0.67
+Nodes (3): items, type, field_ids
 
 ## Knowledge Gaps
-- **572 isolated node(s):** `$id`, `$schema`, `additionalProperties`, `required`, `type` (+567 more)
+- **595 isolated node(s):** `$id`, `$schema`, `additionalProperties`, `required`, `type` (+590 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **148 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `evaluate_panel_expression()` connect `real_market_validation.py` to `build_cn_batched_portfolio_kernel_artifacts.py`, `phase3ce1_search_memory_blocked_view.py`, `main`, `stable_hash`, `.build`, `_execute_arm_checkpoint`, `prepare_cn_compositional_session_signal_panel.py`, `matched_control_pairs.py`, `FundamentalFieldRequest`, `.read`, `Typed Route Compiler`, `compute_coverage_metrics`, `Worker/recovery paths`, `cn_iterative_search_v1.py`, `preflight_cn_phase3cm_dag_cache.py`?**
-  _High betweenness centrality (0.119) - this node is a cross-community bridge._
-- **Why does `validate_expression()` connect `SearchExposureLedger` to `finalize_cn_phase3cm_streaming_repair.py`, `build_cn_feature_runtime_wiring_audit.py`, `compile_tokens`, `phase3bp_true1min_search_algorithm_smoke.py`, `build_broad_event_recovery_closure.py`, `compute_coverage_metrics`, `FundamentalFieldRequest`, `_pair_inputs`, `cn_unified_capability_discovery.py`?**
-  _High betweenness centrality (0.068) - this node is a cross-community bridge._
-- **Why does `UnifiedCapabilityRegistry` connect `prepare_sidecar_base` to `typed_temporal_program.py`, `phase3cm_streaming_portfolio.py`, `run_automatic_post_train_validation`, `test_true1min_plate_aggregation.py`, `strict_priority_selector.py`, `event_derived_features.py`, `run`, `audit_search_collapse.py`, `generate_adaptive_proposals`, `phase3cp_real_cm_small_loop.py`, `bounded_label_free_behavior_probe`, `cn_iterative_search_v1.py`, `main`, `build_candidate_table`, `FrozenExecutionPlan`, `.read`, `run_signal_sketch_audit.py`, `phase3ce1_g2_input_gate_smoke.py`, `_execute_arm_checkpoint`, `build`, `main`, `validate_development_release`, `main`, `Series`, `export_cnline2_field_registry.py`, `prepare_cn_compositional_session_signal_panel.py`, `.build`, `type`, `_evaluate`, `validate_nextgen_dark`, `_candidate_portfolio_rows_from_frame`, `phase3dt_survivor_expansion_repair_pack.py`?**
+- **Why does `evaluate_panel_expression()` connect `generate_initial_proposals` to `real_market_validation.py`, `build_cn_batched_portfolio_kernel_artifacts.py`, `phase3ce1_search_memory_blocked_view.py`, `main`, `matched_control_pairs.py`, `audit_search_collapse.py`, `FundamentalFieldRequest`, `cn_iterative_search_v1.py`, `No Candidate Promotion`, `preflight_cn_phase3cm_dag_cache.py`, `.build`, `frozen_replay_channel`, `deterministic_signal_sketch.py`, `_execute_arm_checkpoint`, `.read`, `stable_hash`, `prepare_cn_compositional_session_signal_panel.py`, `Worker/recovery paths`, `audit_event_state_support`, `compute_coverage_metrics`?**
+  _High betweenness centrality (0.124) - this node is a cross-community bridge._
+- **Why does `analyze_expression()` connect `_backend_audit` to `test_graph_artifact_maintenance.py`, `FrozenExecutionPlan`, `phase3bp_true1min_search_algorithm_smoke.py`, `phase3ce1_g2_input_gate_smoke.py`, `build_broad_event_recovery_closure.py`, `CanonicalFundamentalMaterializer`, `SearchExposureLedger`, `verify_cn_phase3cm_historical_256_semantic_subset.py`, `main`, `compositional_grammar.py`, `generate_initial_proposals`, `main`?**
+  _High betweenness centrality (0.063) - this node is a cross-community bridge._
+- **Why does `validate_expression()` connect `SearchExposureLedger` to `finalize_cn_phase3cm_streaming_repair.py`, `build_cn_feature_runtime_wiring_audit.py`, `compile_tokens`, `phase3bp_true1min_search_algorithm_smoke.py`, `compute_coverage_metrics`, `_backend_audit`, `FundamentalFieldRequest`, `_pair_inputs`, `cn_unified_capability_discovery.py`?**
   _High betweenness centrality (0.059) - this node is a cross-community bridge._
 - **Are the 57 inferred relationships involving `RegistryDrivenGenerator` (e.g. with `_synthetic_capability_tests()` and `_build_candidates()`) actually correct?**
   _`RegistryDrivenGenerator` has 57 INFERRED edges - model-reasoned connections that need verification._
@@ -1991,5 +2026,5 @@ _Questions this graph is uniquely positioned to answer:_
   _`UnifiedCapabilityRegistry` has 18 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 35 inferred relationships involving `CompositionalGrammarV2` (e.g. with `generate()` and `build_compositional_generation_epoch()`) actually correct?**
   _`CompositionalGrammarV2` has 35 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 32 inferred relationships involving `evaluate_panel_expression()` (e.g. with `legacy_gated_parity()` and `main()`) actually correct?**
-  _`evaluate_panel_expression()` has 32 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 33 inferred relationships involving `evaluate_panel_expression()` (e.g. with `legacy_gated_parity()` and `main()`) actually correct?**
+  _`evaluate_panel_expression()` has 33 INFERRED edges - model-reasoned connections that need verification._

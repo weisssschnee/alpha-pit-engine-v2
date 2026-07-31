@@ -503,6 +503,144 @@
       }
     },
     {
+      "id": "cn_shared_node_resource_authority",
+      "label": "77o shared alpha compute resource authority",
+      "kind": "authority-slot",
+      "lifecycle": "ACTIVE",
+      "paths": [
+        "src/our_system_phase2/services/node_resource_governor.py",
+        "runtime/run_plans/cn_alpha_node_resource_profiles_v1.json",
+        "docs/adr/0012-shared-node-alpha-compute-control-plane.md"
+      ],
+      "critical": true,
+      "active_authority": true,
+      "semantic_role": "shared_node_resource_authority",
+      "authority": {
+        "path": "src/our_system_phase2/services/node_resource_governor.py",
+        "repo_ref": "feature/a-share-tradability-authority-repair",
+        "verified_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0",
+        "sha256": "a6bbae2115646830ed96143b2fb7e3913ab15e469b54762ec828d7fd1ff7dab4"
+      },
+      "contracts": [
+        {
+          "id": "shared_node_exact_entitlement_admission",
+          "type": "ADMISSION",
+          "rule": "Future heavy 77o work must hold one active host-bound lease. Authorized topology is one SEARCH_EXCLUSIVE_32 task or exactly SEARCH_DUAL_24 plus VALIDATION_DUAL_8, with the fixed 24 GiB memory reserve and no nested native parallelism.",
+          "severity": "HARD",
+          "enforced_by": "node_resource_governor and heavy launchers",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "resource_topology_not_search_semantics",
+          "type": "BOUNDARY",
+          "rule": "A resource profile may change only at BATCH_CLOSED_IMMUTABLE and cannot change Grammar, seed, route schedule, candidate identity, reward, optimizer state, sealed access or promotion authority.",
+          "severity": "HARD",
+          "enforced_by": "resource topology authorization and checkpoint node-resource binding",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "tests/test_node_resource_governor.py",
+        "evidence_sha256": "213d0f02644473181a962079ce09170dbe89d496307ee711ad11b8fa6b230e58",
+        "verified_at_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"
+      }
+    },
+    {
+      "id": "candidate_execution_clock_capability",
+      "label": "Candidate execution-clock capability gate",
+      "kind": "admission",
+      "lifecycle": "ACTIVE",
+      "paths": [
+        "src/our_system_phase2/services/execution_clock_capability.py",
+        "scripts/build_cn_stock_session_field_capability.py",
+        "scripts/freeze_cn_productive_keep_review_cohort.py",
+        "docs/adr/0012-shared-node-alpha-compute-control-plane.md"
+      ],
+      "critical": true,
+      "active_authority": true,
+      "semantic_role": "candidate_execution_clock_capability_authority",
+      "authority": {
+        "path": "src/our_system_phase2/services/execution_clock_capability.py",
+        "repo_ref": "feature/a-share-tradability-authority-repair",
+        "verified_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0",
+        "sha256": "f4c290744ea1b31348533ed05f673ac2f96f8869a1bff1f74928fca6ec54a948"
+      },
+      "contracts": [
+        {
+          "id": "candidate_level_clock_compatibility_required",
+          "type": "ADMISSION",
+          "rule": "A future finalist cohort freeze must bind a closed zero-financial capability manifest and assess the actual primary and control expression fields for registry presence, shard schema coverage and within-session observability.",
+          "severity": "HARD",
+          "enforced_by": "build_cn_stock_session_field_capability and freeze_cn_productive_keep_review_cohort",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "capability_preflight_no_labels_or_feedback",
+          "type": "BOUNDARY",
+          "rule": "Capability preflight has zero financial, validation, holdout and 2026 reads and zero optimizer, feedback, archive and promotion writes.",
+          "severity": "HARD",
+          "enforced_by": "execution capability manifest loader",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "tests/test_execution_clock_capability.py",
+        "evidence_sha256": "0598f1bed89580d77bac6dcc21e6c4898d138e16156c5c9ce5b39e9d5463f2f5",
+        "verified_at_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"
+      }
+    },
+    {
+      "id": "a_share_finalist_replay_contract",
+      "label": "A-share finalist executable replay evidence",
+      "kind": "evaluator",
+      "lifecycle": "ACTIVE",
+      "paths": [
+        "src/our_system_phase2/services/a_share_executable_replay.py",
+        "src/our_system_phase2/services/candidate_result_schema.py",
+        "scripts/run_cn_finalist_replay_then_oos.py",
+        "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
+        "docs/adr/0012-shared-node-alpha-compute-control-plane.md"
+      ],
+      "critical": true,
+      "active_authority": true,
+      "semantic_role": "finalist_execution_evidence_authority",
+      "authority": {
+        "path": "src/our_system_phase2/services/a_share_executable_replay.py",
+        "repo_ref": "feature/a-share-tradability-authority-repair",
+        "verified_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0",
+        "sha256": "b2bc6fe41f4ab4a162140ad7dc857428e982c2bd264bfee11410a882653cb9b8"
+      },
+      "contracts": [
+        {
+          "id": "candidate_local_economic_blockers",
+          "type": "EVIDENCE",
+          "rule": "Known terminal-liquidity, no-fill and fractional-corporate-action outcomes close as immutable candidate evidence; unknown identity, hash, data, schema or execution-rule errors remain batch-fatal.",
+          "severity": "HARD",
+          "enforced_by": "typed replay blocker hierarchy and stable candidate result envelope",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "replay_evidence_not_promotion",
+          "type": "BOUNDARY",
+          "rule": "Executable replay and report-only validation evidence cannot mutate development optimizer feedback, search state, archives or promotion and cannot read holdout or 2026.",
+          "severity": "HARD",
+          "enforced_by": "finalist replay runner access and write guards",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "tests/test_candidate_result_schema.py",
+        "evidence_sha256": "edf6da020865a7b093c0c335824df554883d747a044c629a1e573d2a63718039",
+        "verified_at_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"
+      }
+    },
+    {
       "id": "compositional_stage_a_route_eligibility",
       "label": "Compositional Stage A route eligibility gate",
       "kind": "admission",
@@ -1173,6 +1311,50 @@
       "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_hybrid_search_productivity_medium_20260728_receipt.json", "evidence_sha256": "11cb3f4a4a57b2ed136bc17a89d567291cdbe8ef1eb2f90cc8665aa1f9073f37", "verified_at_sha": "f4a6292a1012120fc74479da26066338099390fa"}
     },
     {
+      "id": "shared_resource_authority_to_development_search",
+      "source": "cn_shared_node_resource_authority",
+      "target": "cn_development_search_policy",
+      "relation": "admits_entitlement_bound_search_runtime",
+      "lifecycle": "ACTIVE",
+      "required": false,
+      "critical": true,
+      "contract": {"id": "search_resource_lease_required", "type": "ADMISSION", "rule": "Future 77o search execution requires an active SEARCH_EXCLUSIVE_32 or SEARCH_DUAL_24 lease; performance is measured against that entitlement and topology changes only at an immutable checkpoint.", "severity": "HARD", "enforced_by": "winner-guided launcher, node resource receipt and checkpoint binding", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_cn_search_resource_topology_authorization.py", "verified_at_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"}
+    },
+    {
+      "id": "registry_to_execution_clock_capability",
+      "source": "unified_capability_registry",
+      "target": "candidate_execution_clock_capability",
+      "relation": "supplies_candidate_visible_field_semantics",
+      "lifecycle": "ACTIVE",
+      "required": false,
+      "critical": true,
+      "contract": {"id": "registered_execution_fields_only", "type": "ADMISSION", "rule": "Candidate execution-clock assessment resolves fields through the unified registry and fails closed on missing registry or incomplete shard coverage.", "severity": "HARD", "enforced_by": "execution_clock_capability", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_cn_stock_session_field_capability.py", "verified_at_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"}
+    },
+    {
+      "id": "execution_clock_capability_to_finalist_replay",
+      "source": "candidate_execution_clock_capability",
+      "target": "a_share_finalist_replay_contract",
+      "relation": "admits_clock_compatible_frozen_cohort",
+      "lifecycle": "ACTIVE",
+      "required": false,
+      "critical": true,
+      "contract": {"id": "candidate_clock_preflight_before_replay", "type": "ADMISSION", "rule": "Future cohort freezing must reject actual primary/control expressions that cannot be represented at the replay execution clock before financial replay begins.", "severity": "HARD", "enforced_by": "capability-bound finalist freeze", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_execution_clock_capability.py", "verified_at_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"}
+    },
+    {
+      "id": "shared_resource_authority_to_finalist_replay",
+      "source": "cn_shared_node_resource_authority",
+      "target": "a_share_finalist_replay_contract",
+      "relation": "admits_validation_lane_runtime",
+      "lifecycle": "ACTIVE",
+      "required": false,
+      "critical": true,
+      "contract": {"id": "validation_resource_lease_required", "type": "ADMISSION", "rule": "Future 77o replay and report-only validation require VALIDATION_DUAL_8 and may coexist only with SEARCH_DUAL_24.", "severity": "HARD", "enforced_by": "finalist replay launcher and node resource receipt", "bypass_forbidden": true},
+      "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_node_resource_governor.py", "verified_at_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"}
+    },
+    {
       "id": "hybrid_development_search_to_streaming_evaluator",
       "source": "cn_development_search_policy",
       "target": "phase3cm_streaming_multicandidate_evaluator",
@@ -1255,6 +1437,9 @@
     {"semantic_role": "matched_pair_authority", "authoritative_component": "matched_control_pair_authority"},
     {"semantic_role": "development_predictive_evaluation_authority", "authoritative_component": "candidate_parallel_evaluator", "authority_class": "FORMAL", "decision_ref": "docs/adr/0011-phase3cm-ordered-day-uncertainty.md"},
     {"semantic_role": "train_feedback_authority", "authoritative_component": "matched_train_feedback", "authority_class": "FORMAL", "decision_ref": "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"},
-    {"semantic_role": "development_search_policy_authority", "authoritative_component": "cn_development_search_policy", "authority_class": "FORMAL", "decision_ref": "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"}
+    {"semantic_role": "development_search_policy_authority", "authoritative_component": "cn_development_search_policy", "authority_class": "FORMAL", "decision_ref": "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"},
+    {"semantic_role": "shared_node_resource_authority", "authoritative_component": "cn_shared_node_resource_authority", "authority_class": "FORMAL", "decision_ref": "docs/adr/0012-shared-node-alpha-compute-control-plane.md"},
+    {"semantic_role": "candidate_execution_clock_capability_authority", "authoritative_component": "candidate_execution_clock_capability", "authority_class": "FORMAL", "decision_ref": "docs/adr/0012-shared-node-alpha-compute-control-plane.md"},
+    {"semantic_role": "finalist_execution_evidence_authority", "authoritative_component": "a_share_finalist_replay_contract", "authority_class": "FORMAL", "decision_ref": "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"}
   ]
 }
