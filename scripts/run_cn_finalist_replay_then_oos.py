@@ -528,7 +528,7 @@ def prepare(
     )
     freeze = {
         "schema_version": "cn_finalist_replay_then_oos_freeze_v1",
-        "status": "FROZEN_UNCHANGED_24_PAIR_COHORT",
+        "status": "FROZEN_UNCHANGED_FIXED_COHORT",
         "repo_sha": str(repo_sha),
         "selection_payload_sha256": selection_hash,
         "pair_count": EXPECTED_PAIR_COUNT,
@@ -578,7 +578,7 @@ def prepare(
 def _load_freeze(path: Path) -> dict[str, Any]:
     freeze = _read_json(path)
     if str(freeze.get("status") or "") != (
-        "FROZEN_UNCHANGED_24_PAIR_COHORT"
+        "FROZEN_UNCHANGED_FIXED_COHORT"
     ):
         raise RuntimeError("finalist cohort freeze status drift")
     _verify_payload_hash(
