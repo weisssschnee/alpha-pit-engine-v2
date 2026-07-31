@@ -42,8 +42,22 @@ AUTHORIZED_HOST = "DESKTOP-77OPJ6F"
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 EXPECTED_PAIR_COUNT = 24
 EXPECTED_MEMBER_COUNT = 48
+
+
+def _configure_expected_cohort_size(pair_count: int) -> None:
+    global EXPECTED_PAIR_COUNT, EXPECTED_MEMBER_COUNT
+    if int(pair_count) <= 0:
+        raise ValueError("expected pair count must be positive")
+    EXPECTED_PAIR_COUNT = int(pair_count)
+    EXPECTED_MEMBER_COUNT = int(pair_count) * 2
+
+
 EXPECTED_ROUTES = frozenset(
-    {"SLOW_TEMPORAL_CHANGE", "SLOW_CROSS_SECTIONAL_LEVEL"}
+    {
+        "SLOW_TEMPORAL_CHANGE",
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "FIRSTN_PATH",
+    }
 )
 CANDIDATE_ECONOMIC_REPLAY_BLOCKERS = {
     frozenset({"replay_has_no_executable_fills"}): "NO_EXECUTABLE_FILLS",
@@ -1531,7 +1545,7 @@ def oos(
     if set(table_paths) != {"stock_session"}:
         raise RuntimeError("finalist OOS unexpectedly routed off stock_session")
     access_receipts = _run_phase3cm(
-        batch_id="fixed_24_replay_then_oos",
+        batch_id=f"fixed_{EXPECTED_PAIR_COUNT}_replay_then_oos",
         batch_root=evaluation_root,
         binding_path=binding_path,
         table_paths=table_paths,
@@ -1822,11 +1836,17 @@ def main() -> int:
     prepare_parser.add_argument("--registry", type=Path, required=True)
     prepare_parser.add_argument("--output-root", type=Path, required=True)
     prepare_parser.add_argument("--repo-sha", required=True)
+    prepare_parser.add_argument(
+        "--expected-pair-count", type=int, default=24
+    )
 
     replay_parser = subparsers.add_parser("replay")
     replay_parser.add_argument("--freeze-manifest", type=Path, required=True)
     replay_parser.add_argument("--train-field-root", type=Path, required=True)
     replay_parser.add_argument("--output-root", type=Path, required=True)
+    replay_parser.add_argument(
+        "--expected-pair-count", type=int, default=24
+    )
 
     oos_parser = subparsers.add_parser("oos")
     oos_parser.add_argument("--freeze-manifest", type=Path, required=True)
@@ -1843,6 +1863,9 @@ def main() -> int:
     )
     oos_parser.add_argument("--output-root", type=Path, required=True)
     oos_parser.add_argument("--threads", type=int, default=32)
+    oos_parser.add_argument(
+        "--expected-pair-count", type=int, default=24
+    )
 
     finalize_parser = subparsers.add_parser("finalize")
     finalize_parser.add_argument(
@@ -1853,8 +1876,12 @@ def main() -> int:
     finalize_parser.add_argument("--replay-root", type=Path, required=True)
     finalize_parser.add_argument("--oos-root", type=Path, required=True)
     finalize_parser.add_argument("--output-root", type=Path, required=True)
+    finalize_parser.add_argument(
+        "--expected-pair-count", type=int, default=24
+    )
 
     args = parser.parse_args()
+    _configure_expected_cohort_size(args.expected_pair_count)
     if args.command == "prepare":
         result = prepare(
             cohort_root=args.cohort_root,

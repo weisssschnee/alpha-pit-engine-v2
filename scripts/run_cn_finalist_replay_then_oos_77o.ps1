@@ -10,7 +10,11 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$AuthorityRoot,
     [Parameter(Mandatory = $true)]
-    [string]$OutputRoot
+    [string]$OutputRoot,
+    [ValidateRange(1, 256)]
+    [int]$ExpectedPairCount = 24,
+    [ValidateRange(1, 24)]
+    [int]$ValidationThreads = 8
 )
 
 $ErrorActionPreference = 'Stop'
@@ -146,8 +150,12 @@ $stderrPath = Join-Path $resolvedRoot 'replay_then_oos.stderr.log'
     cohort_root = $resolvedCohort
     authority_root = $resolvedAuthority
     output_root = $resolvedRoot
-    pair_count = 24
-    candidate_member_count = 48
+    pair_count = $ExpectedPairCount
+    candidate_member_count = $ExpectedPairCount * 2
+    validation_threads = $ValidationThreads
+    validation_evidence_class = (
+        'REUSED_FIXED_VALIDATION_REPORT_ONLY_NO_PROMOTION'
+    )
     interstage_filtering = 'FORBIDDEN'
     optimizer_feedback_write = 'FORBIDDEN'
     scheduler_write = 'FORBIDDEN'
@@ -180,7 +188,8 @@ try {
         --split-manifest $split `
         --registry $registry `
         --output-root $resolvedRoot `
-        --repo-sha $RepoSha *>> $stdoutPath
+        --repo-sha $RepoSha `
+        --expected-pair-count $ExpectedPairCount *>> $stdoutPath
     if ($LASTEXITCODE -ne 0) {
         throw "fixed finalist cohort preparation failed: $LASTEXITCODE"
     }
@@ -193,7 +202,7 @@ try {
     )
 
     $env:NUMBA_NUM_THREADS = '1'
-    $env:POLARS_MAX_THREADS = '24'
+    $env:POLARS_MAX_THREADS = [string]$ValidationThreads
     if (-not (Test-Path -LiteralPath (
         Join-Path $trainFieldRoot (
             'CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json'
@@ -218,7 +227,8 @@ try {
     & $python $runner replay `
         --freeze-manifest $freeze `
         --train-field-root $trainFieldRoot `
-        --output-root $replayRoot *>> $stdoutPath
+        --output-root $replayRoot `
+        --expected-pair-count $ExpectedPairCount *>> $stdoutPath
     if ($LASTEXITCODE -ne 0) {
         throw "A-share executable replay failed: $LASTEXITCODE"
     }
@@ -262,13 +272,13 @@ try {
             --split-manifest-hash $splitHash `
             --horizons 1,5,15,30 `
             --max-shards 16 `
-            --polars-threads 24 *>> $stdoutPath
+            --polars-threads $ValidationThreads *>> $stdoutPath
         if ($LASTEXITCODE -ne 0) {
             throw "validation session label sidecar build failed: $LASTEXITCODE"
         }
     }
 
-    $env:NUMBA_NUM_THREADS = '32'
+    $env:NUMBA_NUM_THREADS = [string]$ValidationThreads
     $env:POLARS_MAX_THREADS = '1'
     & $python $runner oos `
         --freeze-manifest $freeze `
@@ -276,7 +286,8 @@ try {
         --validation-field-root $validationFieldRoot `
         --validation-label-root $validationLabelRoot `
         --output-root $oosRoot `
-        --threads 32 *>> $stdoutPath
+        --threads $ValidationThreads `
+        --expected-pair-count $ExpectedPairCount *>> $stdoutPath
     if ($LASTEXITCODE -ne 0) {
         throw "unchanged-cohort report-only OOS failed: $LASTEXITCODE"
     }
@@ -285,7 +296,8 @@ try {
         --freeze-manifest $freeze `
         --replay-root $replayRoot `
         --oos-root $oosRoot `
-        --output-root $resolvedRoot *>> $stdoutPath
+        --output-root $resolvedRoot `
+        --expected-pair-count $ExpectedPairCount *>> $stdoutPath
     if ($LASTEXITCODE -ne 0) {
         throw "replay/OOS immutable closure failed: $LASTEXITCODE"
     }

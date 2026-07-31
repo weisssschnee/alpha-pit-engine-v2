@@ -53,6 +53,16 @@ def test_ordered_candidates_puts_primary_before_control() -> None:
     ]
 
 
+def test_expected_cohort_size_can_expand_to_64_pairs() -> None:
+    original_pairs = subject.EXPECTED_PAIR_COUNT
+    try:
+        subject._configure_expected_cohort_size(64)
+        assert subject.EXPECTED_PAIR_COUNT == 64
+        assert subject.EXPECTED_MEMBER_COUNT == 128
+    finally:
+        subject._configure_expected_cohort_size(original_pairs)
+
+
 def test_ordered_candidates_rejects_exact_identity_collision() -> None:
     candidates = _candidate_rows()
     candidates.loc[1, "exact_identity"] = candidates.loc[0, "exact_identity"]

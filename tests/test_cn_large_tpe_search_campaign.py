@@ -30,6 +30,10 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_RAW_ASKS,
     WINNER_GUIDED_LARGE_SEARCH_PROFILE,
     WINNER_GUIDED_LARGE_SEARCH_ROUTE_MIX,
+    WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_CHECKPOINTS,
+    WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_RAW_ASKS,
+    WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
+    WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_MIX,
     MAXIMUM_RAW_ASKS,
     MINIMUM_ACTUAL_EVALUATED_PAIRS,
     N_EI_CANDIDATES,
@@ -756,6 +760,28 @@ def test_winner_guided_large_search_is_bounded_and_winner_concentrated() -> None
     assert authorization["cross_campaign_optimizer_state_reused"] is False
     assert authorization["cross_campaign_reward_rows_imported"] == 0
     assert authorization["automatic_validation"] == "FORBIDDEN"
+
+
+def test_winner_guided_continuation_keeps_full_12288_ask_budget() -> None:
+    spec = _campaign_runtime_spec(
+        WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE
+    )
+
+    assert WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_CHECKPOINTS == 8
+    assert WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_RAW_ASKS == 12_288
+    assert (
+        sum(WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_MIX.values())
+        == 1_536
+    )
+    assert spec["fixed_route_mix"] == {
+        "SLOW_TEMPORAL_CHANGE": 1_504,
+        "FIRSTN_PATH": 32,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+        "MARKET_REGIME_CONDITION": 0,
+        "DISCLOSURE_EVENT": 0,
+    }
+    assert spec["maximum_raw_asks"] == 12_288
+    assert spec["validation"] == "FORBIDDEN_DURING_AND_AFTER_TRANCHE"
 
 
 def test_zero_ask_routes_skip_optuna_tell() -> None:

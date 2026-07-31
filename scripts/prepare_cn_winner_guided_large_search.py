@@ -50,6 +50,10 @@ def prepare(
     completed_campaign_root: Path,
     winner_cohort_root: Path,
     output_root: Path,
+    formal_asks_per_checkpoint: int = 768,
+    candidate_archive_name: str = (
+        "candidate_exact_archive_after_bounded_large.parquet"
+    ),
 ) -> dict[str, Any]:
     output_root.mkdir(parents=True, exist_ok=True)
     exact = set(
@@ -80,7 +84,7 @@ def prepare(
             if bool(row.get("formal_fresh_exact_ask"))
         }
         checkpoint_exact.discard("")
-        if len(checkpoint_exact) != 768:
+        if len(checkpoint_exact) != int(formal_asks_per_checkpoint):
             raise RuntimeError(
                 f"{checkpoint_root.name}: formal exact identity drift"
             )
@@ -93,9 +97,7 @@ def prepare(
             }
         )
 
-    candidate_archive = (
-        output_root / "candidate_exact_archive_after_bounded_large.parquet"
-    )
+    candidate_archive = output_root / str(candidate_archive_name)
     pq.write_table(
         pa.table({"exact_identity": sorted(exact)}),
         candidate_archive,
@@ -207,6 +209,13 @@ def main() -> int:
     )
     parser.add_argument("--winner-cohort-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument(
+        "--formal-asks-per-checkpoint", type=int, default=768
+    )
+    parser.add_argument(
+        "--candidate-archive-name",
+        default="candidate_exact_archive_after_bounded_large.parquet",
+    )
     args = parser.parse_args()
     print(
         json.dumps(
@@ -215,6 +224,8 @@ def main() -> int:
                 completed_campaign_root=args.completed_campaign_root.resolve(),
                 winner_cohort_root=args.winner_cohort_root.resolve(),
                 output_root=args.output_root.resolve(),
+                formal_asks_per_checkpoint=args.formal_asks_per_checkpoint,
+                candidate_archive_name=args.candidate_archive_name,
             ),
             ensure_ascii=False,
             sort_keys=True,

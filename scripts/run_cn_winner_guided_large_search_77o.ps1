@@ -8,6 +8,26 @@ param(
     [string]$OutputRoot,
     [Parameter(Mandatory = $true)]
     [string]$CampaignAuthorization,
+    [string]$CandidateArchive = (
+        'D:\ChengboRemote\runtime\' +
+        'cn_winner_guided_large_search_prep_20260730\' +
+        'candidate_exact_archive_after_bounded_large.parquet'
+    ),
+    [string]$BehaviorArchive = (
+        'D:\ChengboRemote\runtime\' +
+        'cn_hybrid_bounded_large_tranche_20260729_1030_6288d71_6144\' +
+        'behavior_archive.parquet'
+    ),
+    [string]$WinnerGuide = (
+        'D:\ChengboRemote\runtime\' +
+        'cn_winner_guided_large_search_prep_20260730\' +
+        'winner_structural_guide.json'
+    ),
+    [string]$HistoryManifest = (
+        'D:\ChengboRemote\runtime\' +
+        'cn_winner_guided_large_search_prep_20260730\' +
+        'winner_guided_identity_manifest.json'
+    ),
     [string]$QualifiedPreflightRoot = '',
     [switch]$PreflightOnly
 )
@@ -15,24 +35,6 @@ param(
 $ErrorActionPreference = 'Stop'
 $python = 'D:\ChengboRemote\venvs\alpha311\Scripts\python.exe'
 $deploymentManifestRoot = 'D:\ChengboRemote\runtime\manifests'
-$prepRoot = (
-    'D:\ChengboRemote\runtime\' +
-    'cn_winner_guided_large_search_prep_20260730'
-)
-$candidateArchive = Join-Path $prepRoot (
-    'candidate_exact_archive_after_bounded_large.parquet'
-)
-$winnerGuide = Join-Path $prepRoot 'winner_structural_guide.json'
-$historyManifest = Join-Path $prepRoot (
-    'winner_guided_identity_manifest.json'
-)
-$completedCampaignRoot = (
-    'D:\ChengboRemote\runtime\' +
-    'cn_hybrid_bounded_large_tranche_20260729_1030_6288d71_6144'
-)
-$behaviorArchive = Join-Path $completedCampaignRoot (
-    'behavior_archive.parquet'
-)
 $trainBase = (
     'D:\ChengboRemote\runtime\' +
     'cn_core_pack_aggressive_discovery_20260718_595c5fc\' +
@@ -67,6 +69,10 @@ $split = (
 $resolvedRepo = [IO.Path]::GetFullPath($Repo)
 $resolvedRoot = [IO.Path]::GetFullPath($OutputRoot)
 $resolvedAuthorization = [IO.Path]::GetFullPath($CampaignAuthorization)
+$candidateArchive = [IO.Path]::GetFullPath($CandidateArchive)
+$behaviorArchive = [IO.Path]::GetFullPath($BehaviorArchive)
+$winnerGuide = [IO.Path]::GetFullPath($WinnerGuide)
+$historyManifest = [IO.Path]::GetFullPath($HistoryManifest)
 if (-not $resolvedRepo.StartsWith(
     'D:\ChengboRemote\workspace\',
     [StringComparison]::OrdinalIgnoreCase
@@ -91,10 +97,10 @@ if (-not (Test-Path -LiteralPath $python)) {
 
 $authorization = Get-Content -LiteralPath $resolvedAuthorization -Raw |
     ConvertFrom-Json
-if (
-    $authorization.campaign_profile -ne
-        'cn_winner_guided_large_search_v1'
-) {
+if ($authorization.campaign_profile -notin @(
+    'cn_winner_guided_large_search_v1',
+    'cn_winner_guided_continuation_search_v1'
+)) {
     throw "campaign profile drift"
 }
 New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
@@ -200,17 +206,17 @@ if ($freeMemoryBytes -lt 24GB) {
 }
 
 $requiredHashes = [ordered]@{
-    $candidateArchive = (
-        '5a217edd05ff504755753b6dc593bbf7171d03e57995a630355782b75a19c70d'
+    $candidateArchive = [string](
+        $authorization.historical_candidate_archive_sha256
     )
-    $behaviorArchive = (
-        '6783727d8877bdacf8c6b443c5af77b61a55a179d09aae65f86a22fe3b59ced1'
+    $behaviorArchive = [string](
+        $authorization.historical_behavior_archive_sha256
     )
-    $winnerGuide = (
-        '889bf9ecd092ddf3c0d712d4c13d61615a8649c312b24e4fc8ad76883e9e8c51'
+    $winnerGuide = [string](
+        $authorization.winner_structural_guide_sha256
     )
-    $historyManifest = (
-        '429bc4459d3fff0e4cf2ade73bea77105ac27822aa6d543c857e6af4c1a55a24'
+    $historyManifest = [string](
+        $authorization.historical_manifest_sha256
     )
 }
 foreach ($entry in $requiredHashes.GetEnumerator()) {
@@ -256,17 +262,15 @@ foreach ($path in $requiredPaths) {
     output_root = $resolvedRoot
     host = $env:COMPUTERNAME
     free_memory_bytes_at_launch = $freeMemoryBytes
-    campaign_profile = 'cn_winner_guided_large_search_v1'
-    formal_asks_per_checkpoint = 1536
-    maximum_checkpoints = 8
-    maximum_formal_fresh_exact_asks = 12288
-    fixed_route_formal_asks_per_checkpoint = [ordered]@{
-        SLOW_TEMPORAL_CHANGE = 1520
-        FIRSTN_PATH = 12
-        SLOW_CROSS_SECTIONAL_LEVEL = 4
-        MARKET_REGIME_CONDITION = 0
-        DISCLOSURE_EVENT = 0
-    }
+    campaign_profile = [string]$authorization.campaign_profile
+    formal_asks_per_checkpoint = [int]$authorization.asks_per_checkpoint
+    maximum_checkpoints = [int]$authorization.maximum_checkpoints
+    maximum_formal_fresh_exact_asks = [int](
+        $authorization.maximum_raw_asks
+    )
+    fixed_route_formal_asks_per_checkpoint = (
+        $authorization.fixed_route_formal_asks_per_checkpoint
+    )
     winner_guide_sha256 = $requiredHashes[$winnerGuide]
     cross_campaign_optimizer_state_reused = $false
     cross_campaign_reward_rows_imported = 0
@@ -341,10 +345,10 @@ $campaignArgs = @(
     '--historical-archive-manifest', $historyManifest,
     '--winner-structural-guide', $winnerGuide,
     '--output-root', $resolvedRoot,
-    '--seed-base', '2026073001',
+    '--seed-base', [string]$authorization.seed_base,
     '--active-threads', '32',
     '--session-threads', '32',
-    '--maximum-wall-seconds', '129600'
+    '--maximum-wall-seconds', [string]$authorization.maximum_wall_seconds
 )
 if ($PreflightOnly) {
     $campaignArgs += '--preflight-only'

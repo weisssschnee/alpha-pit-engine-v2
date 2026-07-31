@@ -109,6 +109,13 @@ HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE = (
     "cn_hybrid_bounded_large_tranche_v1"
 )
 WINNER_GUIDED_LARGE_SEARCH_PROFILE = "cn_winner_guided_large_search_v1"
+WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE = (
+    "cn_winner_guided_continuation_search_v1"
+)
+WINNER_GUIDED_PROFILES = (
+    WINNER_GUIDED_LARGE_SEARCH_PROFILE,
+    WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
+)
 ROUTE_EVALUATED_TARGETS = {
     "SLOW_TEMPORAL_CHANGE": 14_000,
     "FIRSTN_PATH": 1_300,
@@ -241,10 +248,33 @@ WINNER_GUIDED_LARGE_SEARCH_FLEXIBLE_ALLOCATION = {
 WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_CHECKPOINTS = 8
 WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_RAW_ASKS = 12_288
 WINNER_GUIDED_LARGE_SEARCH_MAXIMUM_WALL_SECONDS = 36 * 60 * 60
+WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_MIX = {
+    "SLOW_TEMPORAL_CHANGE": 1_504,
+    "FIRSTN_PATH": 32,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0,
+}
+WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_CAPS = {
+    route_id: count * 8
+    for route_id, count in (
+        WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_MIX.items()
+    )
+}
+WINNER_GUIDED_CONTINUATION_SEARCH_COVERAGE_FLOORS = dict(
+    WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_CAPS
+)
+WINNER_GUIDED_CONTINUATION_SEARCH_FLEXIBLE_ALLOCATION = {
+    route_id: 0 for route_id in ROUTES
+}
+WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_CHECKPOINTS = 8
+WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_RAW_ASKS = 12_288
+WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_WALL_SECONDS = 36 * 60 * 60
 HYBRID_TRANCHE_PROFILES = (
     HYBRID_ONLY_TRANCHE_PROFILE,
     HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE,
     WINNER_GUIDED_LARGE_SEARCH_PROFILE,
+    WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
 )
 
 
@@ -367,6 +397,44 @@ def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
                 route_id: int(math.ceil(count * FRESH_EXACT_MARGIN))
                 for route_id, count in (
                     WINNER_GUIDED_LARGE_SEARCH_ROUTE_CAPS.items()
+                )
+            },
+        }
+    if str(profile) == WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE:
+        return {
+            "campaign_profile": (
+                WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE
+            ),
+            "maximum_checkpoints": (
+                WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_CHECKPOINTS
+            ),
+            "asks_per_checkpoint": sum(
+                WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_MIX.values()
+            ),
+            "maximum_raw_asks": (
+                WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_RAW_ASKS
+            ),
+            "maximum_wall_seconds": (
+                WINNER_GUIDED_CONTINUATION_SEARCH_MAXIMUM_WALL_SECONDS
+            ),
+            "completion_mode": "FIXED_FORMAL_ASK_TRANCHE",
+            "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+            "fixed_route_mix": dict(
+                WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_MIX
+            ),
+            "coverage_floors": dict(
+                WINNER_GUIDED_CONTINUATION_SEARCH_COVERAGE_FLOORS
+            ),
+            "route_formal_ask_caps": dict(
+                WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_CAPS
+            ),
+            "flexible_allocation": dict(
+                WINNER_GUIDED_CONTINUATION_SEARCH_FLEXIBLE_ALLOCATION
+            ),
+            "minimum_required_fresh_exact_by_route": {
+                route_id: int(math.ceil(count * FRESH_EXACT_MARGIN))
+                for route_id, count in (
+                    WINNER_GUIDED_CONTINUATION_SEARCH_ROUTE_CAPS.items()
                 )
             },
         }
@@ -1398,7 +1466,7 @@ def _authorization_binding(
             ),
             "unlimited_or_20k_search_authorized": False,
         }
-        if profile == WINNER_GUIDED_LARGE_SEARCH_PROFILE:
+        if profile in WINNER_GUIDED_PROFILES:
             if winner_structural_guide is None:
                 raise RuntimeError(
                     "WINNER_GUIDED_SEARCH_REQUIRES_STRUCTURAL_GUIDE"
@@ -1469,7 +1537,7 @@ def _authorization_binding(
         != _sha256(history_manifest).lower()
     ):
         drift.append("historical_snapshot_authorization_hashes")
-    if profile == WINNER_GUIDED_LARGE_SEARCH_PROFILE:
+    if profile in WINNER_GUIDED_PROFILES:
         if winner_structural_guide is None:
             drift.append("winner_structural_guide")
         else:
@@ -2924,7 +2992,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     campaign_spec = _campaign_runtime_spec(campaign_profile)
     winner_guide_payload: dict[str, Any] | None = None
     winner_guide_binding_path: Path | None = None
-    if campaign_profile == WINNER_GUIDED_LARGE_SEARCH_PROFILE:
+    if campaign_profile in WINNER_GUIDED_PROFILES:
         if args.winner_structural_guide is None:
             raise RuntimeError(
                 "WINNER_GUIDED_SEARCH_REQUIRES_STRUCTURAL_GUIDE"
