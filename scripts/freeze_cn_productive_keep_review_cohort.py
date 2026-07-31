@@ -445,6 +445,7 @@ def freeze_cohort(
     campaign_root: Path,
     output_root: Path,
     cohort_pairs: int = COHORT_PAIRS,
+    excluded_routes: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     campaign_root = campaign_root.resolve()
     output_root = output_root.resolve()
@@ -612,8 +613,16 @@ def freeze_cohort(
 
     for column in REQUIRED_FINITE_METRICS:
         review[column] = pd.to_numeric(review[column], errors="coerce")
+    excluded_route_set = {
+        str(route_id) for route_id in excluded_routes if str(route_id)
+    }
     review["train_stability_screen_reason"] = [
-        _screen_reason(row) for row in review.to_dict(orient="records")
+        (
+            "EXECUTION_CLOCK_ROUTE_EXCLUDED"
+            if str(row["route_id"]) in excluded_route_set
+            else _screen_reason(row)
+        )
+        for row in review.to_dict(orient="records")
     ]
     review["train_stability_screen_pass"] = (
         review["train_stability_screen_reason"] == ""
@@ -728,6 +737,7 @@ def freeze_cohort(
         "source_productive_pairs": source_productive_pairs,
         "cohort_pairs": cohort_pairs,
         "cohort_candidate_members": cohort_pairs * 2,
+        "excluded_routes": sorted(excluded_route_set),
         "productive_definition": {
             "pair_evaluation_status": "PAIR_EVALUATED",
             "search_score": ">0",
@@ -958,11 +968,17 @@ def main() -> int:
         type=int,
         default=COHORT_PAIRS,
     )
+    parser.add_argument(
+        "--exclude-route",
+        action="append",
+        default=[],
+    )
     args = parser.parse_args()
     result = freeze_cohort(
         campaign_root=args.campaign_root,
         output_root=args.output_root,
         cohort_pairs=args.cohort_pairs,
+        excluded_routes=tuple(args.exclude_route),
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0
