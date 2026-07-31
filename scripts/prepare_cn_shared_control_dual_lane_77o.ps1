@@ -201,7 +201,15 @@ Invoke-CheckedPython (
 $candidateArchive = Join-Path $historyRoot 'candidate_exact_archive.parquet'
 $behaviorArchive = Join-Path $historyRoot 'behavior_archive.parquet'
 $historyManifest = Join-Path $historyRoot 'history_manifest.json'
-$searchAuthorization = Join-Path $qualification 'search_authorization.json'
+$generatedAuthorityRoot = Join-Path $repo 'runtime\run_plans\generated'
+New-Item -ItemType Directory -Force -Path $generatedAuthorityRoot | Out-Null
+$searchAuthorization = Join-Path $generatedAuthorityRoot (
+    'cn_shared_control_dual_search_authorization_' + $RepoSha.Substring(0, 7) +
+    '.json'
+)
+if (Test-Path -LiteralPath $searchAuthorization) {
+    throw "generated search authorization already exists: $searchAuthorization"
+}
 Invoke-CheckedPython (
     Join-Path $repo 'scripts\freeze_cn_shared_control_dual_search_authorization.py'
 ) --source-authorization $sourceAuthorization `
