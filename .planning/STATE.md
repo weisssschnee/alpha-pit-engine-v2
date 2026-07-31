@@ -82,17 +82,31 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   `FAIL_CLOSED_NON_INTEGER` corporate-action policy but records that typed
   outcome as candidate-level
   `CORPORATE_ACTION_FRACTIONAL_SHARES`, allowing the fixed cohort to continue.
-  Local and official 77o focused tests passed 22/22. The single recovery task
-  is `lanjob_20260731_133954_164dab` in the same output root, with deployment
-  manifest SHA256
-  `5b7e31727c7ce0cd7c10a59e1feb0b9de698f771f6f85f6943094d01104cd3c9`.
+  Local and official 77o focused tests passed 22/22. The first recovery
+  completed all 126 candidate records (58 complete and 68 blocked) but failed
+  before pair or replay closure because the new blocker-only scalar
+  `corporate_action_policy` collided with the normal structured policy column
+  during Parquet serialization. OOS did not start. All 126 unclosed candidate
+  results were moved out of the active root and preserved at
+  `run_health_incidents\20260731T152803_candidate_summary_parquet_mixed_struct_batch_abort`;
+  incident SHA256 is
+  `227d97aa63349e173727d169ea98b786704a0c099cf95d57a8cf12e288c22dcd`
+  and the 129-file preservation manifest SHA256 is
+  `981cb6f18aed58672e0fcde5e972bee583fb778eaaf2d021e6e86823ced8ff5e`.
+  No candidate financial result is reused. SHA
+  `6a68ad06ca341a14445385b123d978616955328e` renames only that
+  blocker-specific scalar field; the replay rule and cohort are unchanged.
+  Local and official 77o focused tests again passed 22/22. The current
+  recovery task is `lanjob_20260731_153336_a7d457`, with deployment manifest
+  SHA256
+  `299cd2603431a503ba8c5ed1841522f639ad0026c22c51c417a41c5b51b3f81f`.
   It may read only the fixed validation split after unchanged-cohort train
   replay; it cannot write optimizer, feedback, scheduler, archive or promotion
   state and cannot affect the running search.
 - Only the validation recovery lane remains active on 77o. The latest bounded
-  check showed one two-Python replay chain, zero newly reused candidate
-  records and 83,424,260,096 bytes free memory. The invalid search task and the
-  failed validation task were deleted; there is no duplicate or persistent
+  check showed a fresh replay with zero candidate records reused and
+  83,294,220,288 bytes free memory. The invalid search tasks and both failed
+  validation tasks were deleted; there is no duplicate or persistent
   inspector. This is execution evidence only: neither a running process nor a
   prepared cohort is closure or promotion authority.
 - Disclosure V2 is now closed in both evidence and code. Sign is
@@ -1342,7 +1356,7 @@ remains unchanged. The compact receipt is
 Do not retry or reinterpret the invalid 12,288-ask search lane. Retain only its
 three verified immutable checkpoints as partial development evidence.
 
-Monitor only validation recovery task `lanjob_20260731_133954_164dab`.
+Monitor only validation recovery task `lanjob_20260731_153336_a7d457`.
 Verify exactly 126 candidate and 63 pair replay records with candidate-level
 A-share blockers retained, replay closure, validation sidecars, the unchanged
 63-pair report-only OOS cohort, positive validation reads and zero
