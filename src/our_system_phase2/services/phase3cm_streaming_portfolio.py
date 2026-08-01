@@ -440,6 +440,146 @@ if njit is not None:
 
 
     @njit(cache=True, parallel=True)
+    def _mapping_kernel_fused(
+        signals: np.ndarray,
+        labels: np.ndarray,
+        label_orders: np.ndarray,
+        label_order_counts: np.ndarray,
+        starts: np.ndarray,
+        ends: np.ndarray,
+        directions: np.ndarray,
+        min_obs: int,
+        top_quantile: float,
+        excess_market: bool,
+        float_scratch: np.ndarray,
+        int_scratch: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Rank once per candidate/group and map every horizon in one team."""
+
+        candidate_count = signals.shape[0]
+        horizon_count = labels.shape[0]
+        group_count = starts.shape[0]
+        selected = np.zeros(
+            (candidate_count, horizon_count, signals.shape[1]),
+            dtype=np.bool_,
+        )
+        metrics = np.full(
+            (candidate_count, horizon_count, group_count, 7),
+            np.nan,
+            dtype=np.float64,
+        )
+        for work_index in prange(candidate_count * group_count):
+            candidate = work_index // group_count
+            group = work_index - candidate * group_count
+            direction = directions[candidate]
+            start = starts[group]
+            end = ends[group]
+            signal_part = signals[candidate, start:end]
+            signal_rank, signal_order = _rank_average_with_order(signal_part)
+            group_size = end - start
+            thread_id = get_thread_id()
+            ranks = float_scratch[thread_id, 0, :group_size]
+            returns = float_scratch[thread_id, 1, :group_size]
+            return_rank = float_scratch[thread_id, 2, :group_size]
+            local_positions = int_scratch[thread_id, 0, :group_size]
+            valid_index_by_local = int_scratch[thread_id, 1, :group_size]
+            for horizon in range(horizon_count):
+                ret_part = labels[horizon, start:end]
+                valid_count = 0
+                for local in range(group_size):
+                    if np.isfinite(signal_rank[local]) and np.isfinite(
+                        ret_part[local]
+                    ):
+                        ranks[valid_count] = signal_rank[local]
+                        returns[valid_count] = ret_part[local]
+                        local_positions[valid_count] = local
+                        valid_index_by_local[local] = valid_count
+                        valid_count += 1
+                    else:
+                        valid_index_by_local[local] = -1
+                if valid_count < min_obs:
+                    continue
+                low, high = _filtered_rank_quantile_pair(
+                    signal_rank,
+                    signal_order,
+                    ret_part,
+                    valid_count,
+                    top_quantile,
+                )
+                selected_count = 0
+                selected_return_sum = 0.0
+                market_sum = 0.0
+                top_sum = 0.0
+                top_count = 0
+                bottom_sum = 0.0
+                bottom_count = 0
+                top_signal_sum = 0.0
+                bottom_signal_sum = 0.0
+                for index in range(valid_count):
+                    market_sum += returns[index]
+                    if ranks[index] >= high:
+                        top_sum += returns[index]
+                        top_signal_sum += signal_part[local_positions[index]]
+                        top_count += 1
+                    if ranks[index] <= low:
+                        bottom_sum += returns[index]
+                        bottom_signal_sum += signal_part[local_positions[index]]
+                        bottom_count += 1
+                    chosen = (
+                        ranks[index] >= high
+                        if direction > 0.0
+                        else ranks[index] <= low
+                    )
+                    if chosen:
+                        selected[
+                            candidate,
+                            horizon,
+                            start + local_positions[index],
+                        ] = True
+                        selected_count += 1
+                        selected_return_sum += returns[index]
+                if selected_count == 0 or top_count == 0 or bottom_count == 0:
+                    continue
+                market_mean = market_sum / valid_count
+                selected_mean = selected_return_sum / selected_count
+                raw_return = (
+                    selected_mean - market_mean if excess_market else selected_mean
+                )
+                label_order_count = label_order_counts[horizon, group]
+                _rank_filtered_returns_from_order(
+                    ret_part,
+                    label_orders[
+                        horizon,
+                        start : start + label_order_count,
+                    ],
+                    label_order_count,
+                    valid_index_by_local,
+                    valid_count,
+                    return_rank,
+                )
+                rank_ic_raw = _pearson(
+                    ranks[:valid_count],
+                    return_rank[:valid_count],
+                )
+                rank_ic = (
+                    rank_ic_raw * direction
+                    if np.isfinite(rank_ic_raw)
+                    else np.nan
+                )
+                metrics[candidate, horizon, group, 0] = 1.0
+                metrics[candidate, horizon, group, 1] = raw_return
+                metrics[candidate, horizon, group, 2] = market_mean
+                metrics[candidate, horizon, group, 3] = rank_ic
+                metrics[candidate, horizon, group, 4] = valid_count
+                metrics[candidate, horizon, group, 5] = selected_count
+                metrics[candidate, horizon, group, 6] = abs(
+                    top_signal_sum / top_count
+                    - bottom_signal_sum / bottom_count
+                )
+        return selected, metrics
+
+
+    @njit(cache=True, parallel=True)
     def _turnover_cost_kernel_legacy(
         selected: np.ndarray,
         metrics: np.ndarray,
@@ -806,7 +946,8 @@ if njit is not None:
 
 
 else:  # pragma: no cover
-    _mapping_kernel = _prepare_label_orders = _prepare_signal_ranks = None
+    _mapping_kernel = _mapping_kernel_fused = None
+    _prepare_label_orders = _prepare_signal_ranks = None
     _turnover_cost_horizon_kernel = _aggregate_horizon_kernel = None
 
 
@@ -965,11 +1106,6 @@ class BatchedPortfolioKernel:
         ends = prepared_block.ends
         label_orders = prepared_block.label_orders
         label_order_counts = prepared_block.label_order_counts
-        signal_ranks, signal_orders, signal_order_counts = _prepare_signal_ranks(
-            signal_array,
-            starts,
-            ends,
-        )
         max_group_size = int(np.max(ends - starts)) if len(starts) else 0
         float_scratch = np.empty(
             (self.compute_threads, 3, max_group_size),
@@ -979,11 +1115,8 @@ class BatchedPortfolioKernel:
             (self.compute_threads, 2, max_group_size),
             dtype=np.int64,
         )
-        selected, metrics = _mapping_kernel(
+        selected, metrics = _mapping_kernel_fused(
             signal_array,
-            signal_ranks,
-            signal_orders,
-            signal_order_counts,
             label_array,
             label_orders,
             label_order_counts,
@@ -1052,6 +1185,8 @@ class BatchedPortfolioKernel:
             "mapping_wall_seconds": mapping_wall,
             "mapping_cpu_seconds": mapping_cpu,
             "mapping_effective_cores": mapping_effective,
+            "mapping_kernel_mode": "FUSED_CANDIDATE_GROUP_RANK_AND_HORIZONS",
+            "mapping_parallel_launches": 1,
             "shared_label_orders_reused": shared_label_orders_reused,
             "mapping_parallelism_status": (
                 "PARALLELISM_ENGAGED"
@@ -1068,6 +1203,13 @@ class BatchedPortfolioKernel:
             ),
             "mapping_scratch_bytes": int(
                 float_scratch.nbytes + int_scratch.nbytes
+            ),
+            "legacy_signal_rank_surface_bytes_avoided": int(
+                signal_array.nbytes
+                + signal_array.size * np.dtype(np.int32).itemsize
+                + self.candidate_count
+                * len(starts)
+                * np.dtype(np.int32).itemsize
             ),
             "mapping_temporary_bytes": int(
                 selected.nbytes

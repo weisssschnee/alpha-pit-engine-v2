@@ -14,8 +14,11 @@ from our_system_phase2.services.phase3cm_streaming_portfolio import (
     _filtered_rank_quantile_pair,
     _linear_quantile,
     _linear_quantile_pair,
+    _mapping_kernel,
+    _mapping_kernel_fused,
     _pearson,
     _prepare_label_orders,
+    _prepare_signal_ranks,
     prepare_portfolio_block,
     _rank_average_with_order,
     _rank_filtered_returns_from_order,
@@ -403,6 +406,85 @@ def test_mapping_reuses_orders_without_changing_randomized_legacy_results() -> N
     np.testing.assert_allclose(
         observed.audit_mapping_metrics,
         expected_metrics,
+        rtol=0.0,
+        atol=0.0,
+        equal_nan=True,
+    )
+
+
+def test_fused_mapping_is_bit_exact_with_two_stage_mapping() -> None:
+    from numba import get_num_threads
+
+    rng = np.random.default_rng(20260802)
+    candidate_count = 5
+    group_size = 17
+    group_count = 6
+    horizon_count = 4
+    row_count = group_size * group_count
+    signals = np.round(
+        rng.normal(size=(candidate_count, row_count)),
+        decimals=2,
+    )
+    labels = np.round(
+        rng.normal(scale=0.01, size=(horizon_count, row_count)),
+        decimals=4,
+    )
+    signals[0, [1, 19, 37]] = np.nan
+    signals[1, [2, 20]] = np.inf
+    signals[4, -group_size:] = np.nan
+    labels[0, [3, 21, 39]] = np.nan
+    labels[2, [4, 22]] = -np.inf
+    starts = np.arange(0, row_count, group_size, dtype=np.int64)
+    ends = starts + group_size
+    directions = np.array([1.0, -1.0, 1.0, -1.0, 1.0])
+    label_orders, label_order_counts = _prepare_label_orders(
+        labels,
+        starts,
+        ends,
+    )
+    signal_ranks, signal_orders, signal_order_counts = _prepare_signal_ranks(
+        signals,
+        starts,
+        ends,
+    )
+    thread_count = get_num_threads()
+
+    legacy_selected, legacy_metrics = _mapping_kernel(
+        signals,
+        signal_ranks,
+        signal_orders,
+        signal_order_counts,
+        labels,
+        label_orders,
+        label_order_counts,
+        starts,
+        ends,
+        directions,
+        5,
+        0.2,
+        True,
+        np.empty((thread_count, 3, group_size), dtype=np.float64),
+        np.empty((thread_count, 2, group_size), dtype=np.int64),
+    )
+    fused_selected, fused_metrics = _mapping_kernel_fused(
+        signals,
+        labels,
+        label_orders,
+        label_order_counts,
+        starts,
+        ends,
+        directions,
+        5,
+        0.2,
+        True,
+        np.empty((thread_count, 3, group_size), dtype=np.float64),
+        np.empty((thread_count, 2, group_size), dtype=np.int64),
+    )
+
+    np.testing.assert_array_equal(fused_selected, legacy_selected)
+    np.testing.assert_allclose(
+        fused_metrics,
+        legacy_metrics,
         rtol=0.0,
         atol=0.0,
         equal_nan=True,
