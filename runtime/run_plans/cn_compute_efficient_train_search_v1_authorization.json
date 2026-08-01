@@ -132,7 +132,7 @@
   "session_pair_batch_size": 12,
   "cache_cap_bytes": 8589934592,
   "minimum_free_memory_bytes": 25769803776,
-  "validation": "FORBIDDEN_INSIDE_SEARCH_TASK",
+  "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
   "automatic_validation": "FORBIDDEN",
   "parallel_validation_lane": "SEPARATE_FROZEN_VALIDATION_DUAL_8_REPORT_ONLY_NO_FEEDBACK",
   "holdout": "SEALED",
@@ -140,5 +140,5 @@
   "promotion": "FORBIDDEN",
   "unlimited_or_20k_search_authorized": false,
   "successor_search_pre_authorized": false,
-  "resource_topology_authorization_sha256": "a6d98bf17bc3ad61239a9cb351f70d4714d2ef43341b9224e9da2fd86cbf81e2"
+  "resource_topology_authorization_sha256": "1161ce899286f4638d67284829f29bfd083b3827bc2abe594096563ac113f6d9"
 }
