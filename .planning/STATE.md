@@ -16,6 +16,48 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
+### Stock-session rank-mapping acceleration qualified (2026-08-02)
+
+- The measured `cross_sectional_rank_mapping` bottleneck is repaired at exact
+  pushed/deployed SHA
+  `5fda05835ef7dd36f6b768956ba9c72f81b2f6e7`. The Phase3CM portfolio mapper
+  now ranks once per candidate/session group and evaluates all four horizons
+  inside the same Numba/OpenMP team. Ranking, tie handling, selection,
+  rank-IC, reward and financial semantics are unchanged; pair batch 12, the
+  32-thread entitlement, 8 GiB cache and all existing runtime gates remain
+  unchanged. The old two-stage kernel remains available only as the exact
+  qualification reference.
+- Local and official 77o focused regression suites each passed 41/41. The
+  deployed workspace is
+  `D:\ChengboRemote\workspace\alpha_pit_mapping_accel_5fda058_20260802`;
+  its HEAD equals local and tracking SHA, its three changed source Git blobs
+  match the pushed commit, and deployment manifest SHA256 is
+  `8ed1fbdd32275d250d3fd1d0e2dc57594931186b2b6b6a384eefd5f2dafe9f65`.
+- The official zero-financial 77o qualification at
+  `D:\ChengboRemote\runtime\cn_stock_session_mapping_acceleration_qualification_20260802_5fda058`
+  used the representative 24-candidate x 50,352-row x 10-group x 4-horizon
+  stock-session shape for 40 alternating legacy/fused repetitions. Selected
+  masks and all mapping metrics were bit-exact. The fused kernel reached
+  30.280 effective cores versus the unchanged 16-core gate and reduced mapping
+  wall time from 0.415518 to 0.337473 seconds, a 1.23126x speedup. It also
+  avoids the representative 14,502,336-byte block-wide legacy signal-rank
+  surface.
+- Qualification status is
+  `ZERO_FINANCIAL_MAPPING_ACCELERATION_QUALIFIED`; receipt file SHA256 is
+  `e3bdaee4046aac0d9c4d598cc858e8a1e20829227238bbe48a01d24d29acb420`,
+  receipt canonical SHA256 is
+  `bbb3ee3f1fb0f0a8c6ee5cf47d712d4d2050fcae543f2ed2507d96498f44fdef`
+  and closure canonical SHA256 is
+  `4acc9b5c21edb37ef1328e0ad7d583b78acf8d99d62573946751cbd1c778684f`.
+  Independent recomputation matched both self-hashes, the declared artifact
+  size/SHA256 and every threshold. Financial, validation, holdout and 2026
+  reads and optimizer/feedback/scheduler/archive/promotion writes were zero.
+- This qualification resolves the source-level performance blocker only. It
+  does not retroactively close checkpoint 004, reclassify either rejected
+  financial attempt, change search authority or authorize a successor search.
+  No ADR or CURRENT Graph transition was required because no durable authority
+  or financial contract changed.
+
 ### Compute-efficient bounded train search terminal partial closure (2026-08-02)
 
 - The separately authorized compute-efficient train-only campaign at
@@ -1648,12 +1690,14 @@ either rejected checkpoint's financial/optimizer state as evidence. Retain only
 the independently closed checkpoints 001-003: 4,608 formal asks, 2,361
 evaluated pairs and 731 productive candidates with zero sealed reads.
 
-Before any separately authorized successor workload, repair and qualify the
-source-level stock-session `cross_sectional_rank_mapping` acceleration path;
-the observed bottleneck was about 14.855 effective cores under the 32-thread
-entitlement. Qualification must not weaken the existing acceleration,
-24 GiB-memory or 8 GiB-cache gates, and must remain zero-financial. No successor
-search, validation/OOS or promotion is currently authorized.
+The source-level stock-session `cross_sectional_rank_mapping` acceleration path
+is now independently qualified at 30.280 effective cores with bit-exact output
+and a 1.23126x wall-time speedup. This clears the measured compute blocker but
+does not authorize or start a financial workload. Any successor train search
+must be a separately frozen contract at the qualified SHA (or a later
+independently qualified descendant), must rerun a zero-financial supply and
+resource preflight, and must retain the existing acceleration, 24 GiB-memory
+and 8 GiB-cache gates. Validation/OOS and promotion remain unauthorized.
 
 Retain the already-closed 32-pair validation only as route/evidence calibration:
 20/32 were OOS-positive, but only 6/32 were replay-complete and one had a
