@@ -16,6 +16,10 @@ from our_system_phase2.services.execution_clock_capability import (
     assess_candidate_field_capability,
     load_execution_capability_manifest,
 )
+from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
+    _development_predictive_score,
+    _is_productive_candidate,
+)
 
 
 COHORT_PAIRS = 64
@@ -24,6 +28,9 @@ REVIEW_OUTCOME_ALLOW = "ALLOW_KEEP_REVIEW"
 REVIEW_OUTCOME_HOLD = "HOLD_RESEARCH"
 REVIEW_OUTCOME_REJECT_DUPLICATE = "REJECT_DUPLICATE"
 SCHEMA_VERSION = "cn_productive_keep_review_freeze_v2"
+FINALIST_FUNNEL_SCHEMA_VERSION = "cn_productive_keep_review_freeze_v3"
+LEGACY_SELECTION_MODE = "legacy_keep_review"
+FINALIST_FUNNEL_SELECTION_MODE = "finalist_funnel_v1"
 
 HIGHER_IS_BETTER = (
     "search_score",
@@ -123,7 +130,11 @@ def _count(frame: pd.DataFrame, column: str) -> dict[str, int]:
     }
 
 
-def _source_paths(root: Path) -> list[Path]:
+def _source_paths(
+    root: Path,
+    *,
+    include_pair_outcomes: bool = False,
+) -> list[Path]:
     paths = [
         root / "run_manifest.json",
         root / "final_decision.json",
@@ -142,6 +153,8 @@ def _source_paths(root: Path) -> list[Path]:
                 checkpoint / "full_behavior.parquet",
             ]
         )
+        if include_pair_outcomes:
+            paths.append(checkpoint / "pair_outcomes.parquet")
         result_paths = sorted(
             (checkpoint / "phase3cm").glob(
                 "*/CN_STREAMING_BACKEND_RESULT.json"
@@ -246,6 +259,35 @@ def _productive_observations(observations: pd.DataFrame) -> pd.DataFrame:
     ].copy()
 
 
+def _productive_pair_outcomes(root: Path) -> pd.DataFrame:
+    outcomes = pd.concat(
+        [
+            pd.read_parquet(path)
+            for path in sorted(
+                (root / "checkpoints").glob(
+                    "checkpoint_*/pair_outcomes.parquet"
+                )
+            )
+        ],
+        ignore_index=True,
+    )
+    if outcomes["pair_id"].duplicated().any():
+        raise RuntimeError("duplicate pair outcomes across checkpoints")
+    productive = outcomes[
+        [
+            _is_productive_candidate(row)
+            for row in outcomes.to_dict(orient="records")
+        ]
+    ].copy()
+    productive["search_score"] = [
+        _development_predictive_score(row)
+        for row in productive.to_dict(orient="records")
+    ]
+    if productive["search_score"].isna().any():
+        raise RuntimeError("productive pair outcome has no predictive score")
+    return productive
+
+
 def _load_train_reward_rows(
     *,
     root: Path,
@@ -310,7 +352,12 @@ def _load_train_reward_rows(
     return reward_frame
 
 
-def _load_behavior_rows(root: Path, productive_pairs: set[str]) -> pd.DataFrame:
+def _load_behavior_rows(
+    root: Path,
+    productive_pairs: set[str],
+    *,
+    include_exposure_metrics: bool = False,
+) -> pd.DataFrame:
     columns = [
         "pair_id",
         "route_id",
@@ -319,6 +366,13 @@ def _load_behavior_rows(root: Path, productive_pairs: set[str]) -> pd.DataFrame:
         "structural_family_id",
         "signal_cluster_id",
     ]
+    if include_exposure_metrics:
+        columns.extend(
+            [
+                "primary_support_rate",
+                "primary_mean_turnover",
+            ]
+        )
     frame = pd.concat(
         [
             pd.read_parquet(
@@ -404,6 +458,195 @@ def _deduplicate_behavior_candidates(
         seen_families.add(family_id)
         seen_signatures.add(signature_id)
     return ranked.loc[kept_indexes].reset_index(drop=True), rejected
+
+
+def _normalized_string_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, float) and math.isnan(value):
+        return []
+    parsed = value
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return []
+        try:
+            parsed = json.loads(stripped)
+        except json.JSONDecodeError:
+            parsed = [stripped]
+    if isinstance(parsed, np.ndarray):
+        parsed = parsed.tolist()
+    if isinstance(parsed, (list, tuple, set)):
+        return sorted({str(item) for item in parsed if str(item)})
+    return [str(parsed)]
+
+
+def _identity(prefix: str, payload: Mapping[str, Any]) -> str:
+    return f"{prefix}.{_payload_sha256(payload)[:32]}"
+
+
+def _finalist_funnel_identities(frame: pd.DataFrame) -> pd.DataFrame:
+    output = frame.copy()
+    mechanism_ids: list[str] = []
+    exposure_ids: list[str] = []
+    support_deciles: list[int] = []
+    turnover_deciles: list[int] = []
+    for row in output.to_dict(orient="records"):
+        mechanism_payload = {
+            "route_id": str(row.get("route_id") or ""),
+            "financial_hypothesis": str(
+                row.get("financial_hypothesis") or ""
+            ),
+            "operator_family": str(row.get("operator_family") or ""),
+            "skeleton_id": str(row.get("skeleton_id") or ""),
+            "source_field_ids": _normalized_string_list(
+                row.get("source_field_ids")
+            ),
+            "operator_paths": _normalized_string_list(
+                row.get("operator_paths")
+            ),
+            "event_state_family": str(
+                row.get("event_state_family") or ""
+            ),
+            "primitive_family": str(row.get("primitive_family") or ""),
+            "horizon_bucket": str(row.get("horizon_bucket") or ""),
+        }
+        support = _finite_or_none(row.get("primary_support_rate"))
+        turnover = _finite_or_none(row.get("primary_mean_turnover"))
+        support_decile = int(round(support * 10.0)) if support is not None else -1
+        turnover_decile = (
+            int(round(turnover * 10.0)) if turnover is not None else -1
+        )
+        exposure_payload = {
+            "event_state_family": str(
+                row.get("event_state_family") or ""
+            ),
+            "horizon_bucket": str(row.get("horizon_bucket") or ""),
+            "primary_support_rate_decile": support_decile,
+            "primary_behavior_turnover_decile": turnover_decile,
+        }
+        mechanism_ids.append(
+            _identity("cn.economic_mechanism", mechanism_payload)
+        )
+        exposure_ids.append(
+            _identity("cn.portfolio_exposure_family", exposure_payload)
+        )
+        support_deciles.append(support_decile)
+        turnover_deciles.append(turnover_decile)
+    output["economic_mechanism_id"] = mechanism_ids
+    output["portfolio_exposure_family_id"] = exposure_ids
+    output["primary_support_rate_decile"] = support_deciles
+    output["primary_behavior_turnover_decile"] = turnover_deciles
+    return output
+
+
+def _finite_or_none(value: Any) -> float | None:
+    try:
+        output = float(value)
+    except (TypeError, ValueError):
+        return None
+    return output if math.isfinite(output) else None
+
+
+def _deduplicate_mechanism_candidates(
+    ranked: pd.DataFrame,
+) -> tuple[pd.DataFrame, dict[str, str]]:
+    kept_indexes: list[int] = []
+    rejected: dict[str, str] = {}
+    seen: set[str] = set()
+    for index, row in ranked.iterrows():
+        pair_id = str(row["pair_id"])
+        mechanism_id = str(row["economic_mechanism_id"])
+        if mechanism_id in seen:
+            rejected[pair_id] = "ECONOMIC_MECHANISM_DUPLICATE_LOWER_RANK"
+            continue
+        kept_indexes.append(index)
+        seen.add(mechanism_id)
+    return ranked.loc[kept_indexes].reset_index(drop=True), rejected
+
+
+def _select_finalist_funnel(
+    ranked: pd.DataFrame,
+    *,
+    cohort_pairs: int,
+) -> tuple[list[str], dict[str, Any]]:
+    structural_cap = math.ceil(cohort_pairs * 0.60)
+    exposure_cap = math.ceil(cohort_pairs * 0.25)
+    route_group_count = int(ranked["route_id"].nunique())
+    signal_group_count = int(ranked["signal_cluster_id"].nunique())
+    route_cap = (
+        math.ceil(cohort_pairs * 0.75) if route_group_count >= 2 else None
+    )
+    signal_cap = (
+        math.ceil(cohort_pairs * 0.75) if signal_group_count >= 2 else None
+    )
+    selected: list[str] = []
+    selected_set: set[str] = set()
+    route_counts: Counter[str] = Counter()
+    structural_counts: Counter[str] = Counter()
+    signal_counts: Counter[str] = Counter()
+    exposure_counts: Counter[str] = Counter()
+
+    def add(row: Mapping[str, Any]) -> bool:
+        pair_id = str(row["pair_id"])
+        route_id = str(row["route_id"])
+        structural_id = str(row["structural_family_id"])
+        signal_id = str(row["signal_cluster_id"])
+        exposure_id = str(row["portfolio_exposure_family_id"])
+        if pair_id in selected_set:
+            return False
+        if route_cap is not None and route_counts[route_id] >= route_cap:
+            return False
+        if structural_counts[structural_id] >= structural_cap:
+            return False
+        if signal_cap is not None and signal_counts[signal_id] >= signal_cap:
+            return False
+        if exposure_counts[exposure_id] >= exposure_cap:
+            return False
+        selected.append(pair_id)
+        selected_set.add(pair_id)
+        route_counts[route_id] += 1
+        structural_counts[structural_id] += 1
+        signal_counts[signal_id] += 1
+        exposure_counts[exposure_id] += 1
+        return True
+
+    records = ranked.to_dict(orient="records")
+    anchor_columns = [
+        "portfolio_exposure_family_id",
+        "structural_family_id",
+    ]
+    if route_group_count >= 2:
+        anchor_columns.append("route_id")
+    if signal_group_count >= 2:
+        anchor_columns.append("signal_cluster_id")
+    for group_column in anchor_columns:
+        seen: set[str] = set()
+        for row in records:
+            if len(selected) >= cohort_pairs:
+                break
+            group_id = str(row[group_column])
+            if group_id in seen:
+                continue
+            if add(row):
+                seen.add(group_id)
+    for row in records:
+        if len(selected) >= cohort_pairs:
+            break
+        add(row)
+    if len(selected) != cohort_pairs:
+        raise RuntimeError(
+            f"finalist-funnel constrained supply {len(selected)} below "
+            f"{cohort_pairs}"
+        )
+    return selected, {
+        "route_group_count": route_group_count,
+        "signal_group_count": signal_group_count,
+        "route_cap": route_cap,
+        "structural_cap": structural_cap,
+        "signal_cap": signal_cap,
+        "exposure_cap": exposure_cap,
+    }
 
 
 def _select_with_caps(
@@ -526,6 +769,8 @@ def freeze_cohort(
     excluded_routes: tuple[str, ...] = (),
     excluded_cohort_roots: tuple[Path, ...] = (),
     execution_capability_manifest: Path | None = None,
+    selection_mode: str = LEGACY_SELECTION_MODE,
+    funnel_contract_path: Path | None = None,
 ) -> dict[str, Any]:
     campaign_root = campaign_root.resolve()
     output_root = output_root.resolve()
@@ -535,8 +780,48 @@ def freeze_cohort(
 
     if cohort_pairs <= 0:
         raise ValueError("cohort_pairs must be positive")
+    if selection_mode not in {
+        LEGACY_SELECTION_MODE,
+        FINALIST_FUNNEL_SELECTION_MODE,
+    }:
+        raise ValueError(f"unsupported selection mode: {selection_mode}")
+    finalist_funnel = selection_mode == FINALIST_FUNNEL_SELECTION_MODE
+    schema_version = (
+        FINALIST_FUNNEL_SCHEMA_VERSION if finalist_funnel else SCHEMA_VERSION
+    )
+    funnel_contract_binding = None
+    if finalist_funnel:
+        if funnel_contract_path is None:
+            raise ValueError("finalist funnel mode requires --funnel-contract")
+        resolved_funnel_contract = funnel_contract_path.resolve()
+        funnel_contract = json.loads(
+            resolved_funnel_contract.read_text(encoding="utf-8-sig")
+        )
+        claimed = str(funnel_contract.get("contract_payload_sha256") or "")
+        body = dict(funnel_contract)
+        body.pop("contract_payload_sha256", None)
+        if claimed != _payload_sha256(body):
+            raise RuntimeError("finalist funnel contract self-hash drift")
+        if (
+            str(funnel_contract.get("status") or "")
+            != "FROZEN_USER_AUTHORIZED_TRAIN_ONLY_FUNNEL"
+        ):
+            raise RuntimeError("finalist funnel contract status drift")
+        if int(
+            (funnel_contract.get("review_pool") or {}).get("target_pairs")
+            or 0
+        ) != cohort_pairs:
+            raise RuntimeError("finalist funnel target pair count drift")
+        funnel_contract_binding = {
+            "path": str(resolved_funnel_contract),
+            "file_sha256": _sha256(resolved_funnel_contract),
+            "payload_sha256": claimed,
+        }
     source_productive_pairs = _validate_source_closure(campaign_root)
-    source_paths = _source_paths(campaign_root)
+    source_paths = _source_paths(
+        campaign_root,
+        include_pair_outcomes=finalist_funnel,
+    )
     source_artifacts = [
         _source_artifact(path, root=campaign_root) for path in source_paths
     ]
@@ -547,7 +832,11 @@ def freeze_cohort(
     observations = pd.read_parquet(
         campaign_root / "observation_ledger.parquet"
     )
-    productive = _productive_observations(observations)
+    productive = (
+        _productive_pair_outcomes(campaign_root)
+        if finalist_funnel
+        else _productive_observations(observations)
+    )
     if len(productive) != source_productive_pairs:
         raise RuntimeError(
             f"expected {source_productive_pairs} productive observations, "
@@ -566,7 +855,11 @@ def freeze_cohort(
             + ",".join(sorted(outside_source)[:5])
         )
 
-    behavior = _load_behavior_rows(campaign_root, productive_pairs)
+    behavior = _load_behavior_rows(
+        campaign_root,
+        productive_pairs,
+        include_exposure_metrics=finalist_funnel,
+    )
     rewards = _load_train_reward_rows(
         root=campaign_root,
         productive=productive,
@@ -676,6 +969,51 @@ def freeze_cohort(
                 f"authority: {column}"
             )
 
+    reward_columns = [
+        "pair_id",
+        "source_checkpoint",
+        "source_backend",
+        "source_result_sha256",
+        "train_day_sortino",
+        "train_worst_horizon_day_sortino",
+        "train_median_horizon_day_sortino",
+        "train_horizon_sortino_stdev",
+        "train_day_mcmc_p25",
+        "train_day_mcmc_prob_gt_0",
+        "train_regime_count",
+        "train_regime_positive_share",
+        "train_regime_median_day_sortino",
+        "train_regime_worst_day_sortino",
+        "train_regime_stability_score",
+        "train_rank_ic_mean",
+        "train_rank_ic_hit_rate",
+        "train_rank_ic_loss",
+        "train_mean_one_way_turnover",
+    ]
+    if finalist_funnel:
+        reward_columns.extend(
+            [
+                "event_state_family",
+                "field_family",
+                "primitive_family",
+                "horizon_bucket",
+                "turnover_bucket",
+                "portfolio_mode",
+            ]
+        )
+    primary_columns = [
+        "pair_id",
+        "candidate_id",
+        "exact_identity",
+        "canonical_expression",
+        "operator_family",
+        "skeleton_id",
+        "source_field_ids",
+        "operator_paths",
+    ]
+    if finalist_funnel:
+        primary_columns.append("financial_hypothesis")
+
     review = (
         productive.drop(columns=identity_columns).merge(
             behavior,
@@ -684,46 +1022,13 @@ def freeze_cohort(
             validate="one_to_one",
         )
         .merge(
-            rewards[
-                [
-                    "pair_id",
-                    "source_checkpoint",
-                    "source_backend",
-                    "source_result_sha256",
-                    "train_day_sortino",
-                    "train_worst_horizon_day_sortino",
-                    "train_median_horizon_day_sortino",
-                    "train_horizon_sortino_stdev",
-                    "train_day_mcmc_p25",
-                    "train_day_mcmc_prob_gt_0",
-                    "train_regime_count",
-                    "train_regime_positive_share",
-                    "train_regime_median_day_sortino",
-                    "train_regime_worst_day_sortino",
-                    "train_regime_stability_score",
-                    "train_rank_ic_mean",
-                    "train_rank_ic_hit_rate",
-                    "train_rank_ic_loss",
-                    "train_mean_one_way_turnover",
-                ]
-            ],
+            rewards[reward_columns],
             on="pair_id",
             how="inner",
             validate="one_to_one",
         )
         .merge(
-            primary_candidates[
-                [
-                    "pair_id",
-                    "candidate_id",
-                    "exact_identity",
-                    "canonical_expression",
-                    "operator_family",
-                    "skeleton_id",
-                    "source_field_ids",
-                    "operator_paths",
-                ]
-            ].rename(
+            primary_candidates[primary_columns].rename(
                 columns={
                     "candidate_id": "primary_candidate_id_from_ledger",
                     "exact_identity": "primary_exact_identity",
@@ -747,6 +1052,8 @@ def freeze_cohort(
         == review["primary_candidate_id_from_ledger"].astype(str)
     ).all():
         raise RuntimeError("primary candidate identity join drift")
+    if finalist_funnel:
+        review = _finalist_funnel_identities(review)
 
     for column in REQUIRED_FINITE_METRICS:
         review[column] = pd.to_numeric(review[column], errors="coerce")
@@ -779,10 +1086,21 @@ def freeze_cohort(
     eligible, duplicate_reasons = _deduplicate_behavior_candidates(
         screen_ranked
     )
-    selected_pairs = _select_with_caps(
-        eligible,
-        cohort_pairs=cohort_pairs,
-    )
+    mechanism_duplicate_reasons: dict[str, str] = {}
+    funnel_caps: dict[str, Any] | None = None
+    if finalist_funnel:
+        eligible, mechanism_duplicate_reasons = (
+            _deduplicate_mechanism_candidates(eligible)
+        )
+        selected_pairs, funnel_caps = _select_finalist_funnel(
+            eligible,
+            cohort_pairs=cohort_pairs,
+        )
+    else:
+        selected_pairs = _select_with_caps(
+            eligible,
+            cohort_pairs=cohort_pairs,
+        )
     selected_set = set(selected_pairs)
     rank_by_pair = {
         pair_id: rank
@@ -813,6 +1131,15 @@ def freeze_cohort(
         review["train_stability_screen_pass"]
         & (review["behavior_dedup_reason"] == "")
     )
+    if finalist_funnel:
+        review["mechanism_dedup_reason"] = [
+            mechanism_duplicate_reasons.get(str(pair_id), "")
+            for pair_id in review["pair_id"]
+        ]
+        review["mechanism_dedup_pass"] = (
+            review["behavior_dedup_pass"]
+            & (review["mechanism_dedup_reason"] == "")
+        )
     review["review_outcome"] = [
         (
             REVIEW_OUTCOME_ALLOW
@@ -820,6 +1147,7 @@ def freeze_cohort(
             else (
                 REVIEW_OUTCOME_REJECT_DUPLICATE
                 if str(pair_id) in duplicate_reasons
+                or str(pair_id) in mechanism_duplicate_reasons
                 else REVIEW_OUTCOME_HOLD
             )
         )
@@ -831,6 +1159,7 @@ def freeze_cohort(
             if str(row["pair_id"]) in selected_set
             else (
                 str(row["behavior_dedup_reason"])
+                or str(row.get("mechanism_dedup_reason") or "")
                 or str(row["train_stability_screen_reason"])
                 or "VALID_BUT_OUTSIDE_FROZEN_COHORT"
             )
@@ -876,7 +1205,7 @@ def freeze_cohort(
         raise RuntimeError("selected candidate member count drift")
 
     contract = {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": schema_version,
         "status": "FROZEN_DEVELOPMENT_KEEP_REVIEW_ONLY",
         "source_campaign_root": str(campaign_root),
         "source_campaign_status": "CAMPAIGN_CLOSED",
@@ -966,6 +1295,60 @@ def freeze_cohort(
         },
         "source_artifacts": source_artifacts,
     }
+    if finalist_funnel:
+        contract["selection_mode"] = selection_mode
+        contract["funnel_contract"] = funnel_contract_binding
+        contract["productive_definition"] = {
+            "source": (
+                "CHECKPOINT_LOCAL_PAIR_OUTCOMES_BOUND_BY_IMMUTABLE_"
+                "BATCH_MANIFESTS"
+            ),
+            "pair_evaluation_status": "PAIR_EVALUATED",
+            "development_predictive_score": ">0",
+            "development_predictive_score_policy": (
+                "MIN_PRIMARY_PREDICTIVE_OR_COMPOSITE_AND_"
+                "PREDICTIVE_OR_MATCHED_TRAIN_INCREMENT"
+            ),
+            "primary_standalone_train_reward_decision": PRODUCTIVE_DECISION,
+            "observation_ledger_positive_rows_are_not_source_universe": True,
+        }
+        contract["economic_mechanism_deduplication"] = {
+            "fields": [
+                "route_id",
+                "financial_hypothesis",
+                "operator_family",
+                "skeleton_id",
+                "sorted_source_field_ids",
+                "operator_paths",
+                "event_state_family",
+                "primitive_family",
+                "horizon_bucket",
+            ],
+            "policy": "KEEP_HIGHEST_RANKED_PAIR_PER_MECHANISM",
+            "lower_ranked_outcome": REVIEW_OUTCOME_REJECT_DUPLICATE,
+            "ranking_precedes_deduplication": True,
+        }
+        contract["diversity_selection"] = {
+            "anchors": [
+                "best eligible pair per portfolio_exposure_family_id",
+                "best eligible pair per structural_family_id",
+            ],
+            "route_max_share": 0.75,
+            "route_cap_activation": "AT_LEAST_TWO_COMPATIBLE_GROUPS",
+            "structural_family_max_share": 0.60,
+            "signal_cluster_max_share": 0.75,
+            "signal_cap_activation": "AT_LEAST_TWO_COMPATIBLE_GROUPS",
+            "portfolio_exposure_family_max_share": 0.25,
+            "portfolio_exposure_family_fields": [
+                "event_state_family",
+                "horizon_bucket",
+                "primary_support_rate_decile",
+                "primary_behavior_turnover_decile",
+            ],
+            "resolved_caps": funnel_caps,
+            "caps_are_selection_contract": True,
+            "caps_are_not_runtime_stop_gates": True,
+        }
     contract["contract_payload_sha256"] = _payload_sha256(contract)
     contract_path = _write_json(
         output_root / "keep_review_contract.json", contract
@@ -983,7 +1366,7 @@ def freeze_cohort(
     )
     selected_signal_counts = _count(selected_review, "signal_cluster_id")
     summary = {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": schema_version,
         "status": "FROZEN_DEVELOPMENT_KEEP_REVIEW_ONLY",
         "source_productive_pairs": len(review),
         "behavior_family_unique": int(
@@ -1057,6 +1440,43 @@ def freeze_cohort(
             "The cohort does not authorize financial replay or a successor search.",
         ],
     }
+    if finalist_funnel:
+        summary.update(
+            {
+                "selection_mode": selection_mode,
+                "mechanism_dedup_pass": int(
+                    review["mechanism_dedup_pass"].sum()
+                ),
+                "mechanism_duplicate_rejected": len(
+                    mechanism_duplicate_reasons
+                ),
+                "mechanism_duplicate_reasons": {
+                    str(key): int(value)
+                    for key, value in Counter(
+                        mechanism_duplicate_reasons.values()
+                    ).items()
+                },
+                "economic_mechanism_unique_supply": int(
+                    review.loc[
+                        review["behavior_dedup_pass"],
+                        "economic_mechanism_id",
+                    ].nunique()
+                ),
+                "selected_economic_mechanism_unique": int(
+                    selected_review["economic_mechanism_id"].nunique()
+                ),
+                "selected_portfolio_exposure_family_counts": _count(
+                    selected_review,
+                    "portfolio_exposure_family_id",
+                ),
+                "selected_portfolio_exposure_family_unique": int(
+                    selected_review[
+                        "portfolio_exposure_family_id"
+                    ].nunique()
+                ),
+                "resolved_diversity_caps": funnel_caps,
+            }
+        )
     summary["selection_payload_sha256"] = _payload_sha256(
         {
             "pair_ids": selected_pairs,
@@ -1087,7 +1507,7 @@ def freeze_cohort(
         )
     ]
     manifest = {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": schema_version,
         "status": "KEEP_REVIEW_COHORT_CLOSED_IMMUTABLE",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "source_campaign_root": str(campaign_root),
@@ -1106,7 +1526,7 @@ def freeze_cohort(
     manifest_path = _write_json(
         output_root / "keep_review_manifest.json", manifest
     )
-    return {
+    result = {
         "output_root": str(output_root),
         "manifest_path": str(manifest_path),
         "manifest_file_sha256": _sha256(manifest_path),
@@ -1118,6 +1538,21 @@ def freeze_cohort(
         "selected_structural_family_counts": selected_structural_counts,
         "selected_signal_cluster_counts": selected_signal_counts,
     }
+    if finalist_funnel:
+        result.update(
+            {
+                "selection_mode": selection_mode,
+                "selected_economic_mechanism_unique": int(
+                    selected_review["economic_mechanism_id"].nunique()
+                ),
+                "selected_portfolio_exposure_family_counts": _count(
+                    selected_review,
+                    "portfolio_exposure_family_id",
+                ),
+                "resolved_diversity_caps": funnel_caps,
+            }
+        )
+    return result
 
 
 def main() -> int:
@@ -1153,6 +1588,19 @@ def main() -> int:
             "capability authority. Future cohort freezes may not bypass it."
         ),
     )
+    parser.add_argument(
+        "--selection-mode",
+        choices=(LEGACY_SELECTION_MODE, FINALIST_FUNNEL_SELECTION_MODE),
+        default=LEGACY_SELECTION_MODE,
+    )
+    parser.add_argument(
+        "--funnel-contract",
+        type=Path,
+        help=(
+            "Frozen train-only finalist funnel contract. Required only for "
+            "selection-mode finalist_funnel_v1."
+        ),
+    )
     args = parser.parse_args()
     result = freeze_cohort(
         campaign_root=args.campaign_root,
@@ -1161,6 +1609,8 @@ def main() -> int:
         excluded_routes=tuple(args.exclude_route),
         excluded_cohort_roots=tuple(args.exclude_cohort_root),
         execution_capability_manifest=args.execution_capability_manifest,
+        selection_mode=args.selection_mode,
+        funnel_contract_path=args.funnel_contract,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0

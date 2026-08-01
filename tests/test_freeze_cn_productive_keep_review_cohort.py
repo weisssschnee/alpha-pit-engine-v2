@@ -11,11 +11,19 @@ from scripts.freeze_cn_productive_keep_review_cohort import (
     HIGHER_IS_BETTER,
     LOWER_IS_BETTER,
     _deduplicate_behavior_candidates,
+    _deduplicate_mechanism_candidates,
+    _finalist_funnel_identities,
     _load_excluded_cohort_pairs,
     _payload_sha256,
+    _productive_pair_outcomes,
     _rank_candidates,
     _screen_reason,
+    _select_finalist_funnel,
     _select_with_caps,
+)
+from scripts.verify_cn_productive_keep_review_cohort import (
+    _recompute_finalist_identities,
+    _recompute_finalist_selection,
 )
 
 
@@ -165,3 +173,115 @@ def test_excluded_cohort_is_hash_verified_and_loaded(
     pair_ids, bindings = _load_excluded_cohort_pairs((root,))
     assert pair_ids == {"pair-old-1", "pair-old-2"}
     assert bindings[0]["excluded_pair_count"] == 2
+
+
+def test_finalist_funnel_allows_single_compatible_route_and_signal() -> None:
+    rows = []
+    for ordinal in range(320):
+        rows.append(
+            {
+                "pair_id": f"pair-final-{ordinal:03d}",
+                "route_id": "SLOW_TEMPORAL_CHANGE",
+                "structural_family_id": f"STRUCT_{ordinal % 2}",
+                "signal_cluster_id": "ONLY_SIGNAL",
+                "portfolio_exposure_family_id": f"EXPOSURE_{ordinal % 8}",
+                "economic_mechanism_id": f"MECHANISM_{ordinal:03d}",
+            }
+        )
+    ranked = pd.DataFrame(rows)
+    selected_ids, caps = _select_finalist_funnel(
+        ranked,
+        cohort_pairs=256,
+    )
+    assert len(selected_ids) == 256
+    selected = ranked[ranked["pair_id"].isin(selected_ids)]
+    assert caps["route_cap"] is None
+    assert caps["signal_cap"] is None
+    assert selected["structural_family_id"].value_counts().max() <= 154
+    assert (
+        selected["portfolio_exposure_family_id"].value_counts().max()
+        <= 64
+    )
+
+
+def test_finalist_mechanism_identity_and_dedup_are_deterministic() -> None:
+    rows = []
+    for ordinal in range(2):
+        row = {
+            "pair_id": f"pair-{ordinal}",
+            "route_id": "SLOW_TEMPORAL_CHANGE",
+            "financial_hypothesis": "same",
+            "operator_family": "difference",
+            "skeleton_id": "skeleton",
+            "source_field_ids": ["b", "a"],
+            "operator_paths": ["x", "y"],
+            "event_state_family": "none",
+            "primitive_family": "time_series",
+            "horizon_bucket": "multi_or_unknown",
+            "primary_support_rate": 0.91,
+            "primary_mean_turnover": 0.08,
+        }
+        rows.append(row)
+    identified = _finalist_funnel_identities(pd.DataFrame(rows))
+    assert identified["economic_mechanism_id"].nunique() == 1
+    assert identified["portfolio_exposure_family_id"].nunique() == 1
+    deduped, rejected = _deduplicate_mechanism_candidates(identified)
+    assert deduped["pair_id"].tolist() == ["pair-0"]
+    assert rejected == {
+        "pair-1": "ECONOMIC_MECHANISM_DUPLICATE_LOWER_RANK"
+    }
+    independently_recomputed = _recompute_finalist_identities(identified)
+    assert independently_recomputed[
+        "verify_economic_mechanism_id"
+    ].tolist() == identified["economic_mechanism_id"].tolist()
+    assert independently_recomputed[
+        "verify_portfolio_exposure_family_id"
+    ].tolist() == identified["portfolio_exposure_family_id"].tolist()
+
+
+def test_finalist_verifier_recomputes_same_selection() -> None:
+    rows = []
+    for ordinal in range(320):
+        rows.append(
+            {
+                "pair_id": f"pair-verify-{ordinal:03d}",
+                "route_id": "SLOW_TEMPORAL_CHANGE",
+                "structural_family_id": f"STRUCT_{ordinal % 2}",
+                "signal_cluster_id": "ONLY_SIGNAL",
+                "portfolio_exposure_family_id": f"EXPOSURE_{ordinal % 8}",
+                "economic_mechanism_id": f"MECHANISM_{ordinal:03d}",
+            }
+        )
+    ranked = pd.DataFrame(rows)
+    selected, caps = _select_finalist_funnel(ranked, cohort_pairs=256)
+    verified, verified_caps = _recompute_finalist_selection(
+        ranked,
+        cohort_pairs=256,
+    )
+    assert verified == selected
+    assert verified_caps == caps
+
+
+def test_productive_pair_outcomes_are_not_limited_to_optimizer_observations(
+    tmp_path: Path,
+) -> None:
+    checkpoints = tmp_path / "checkpoints"
+    for ordinal, score in enumerate((0.2, -0.1), start=1):
+        checkpoint = checkpoints / f"checkpoint_{ordinal:03d}"
+        checkpoint.mkdir(parents=True)
+        pd.DataFrame(
+            [
+                {
+                    "pair_id": f"pair-{ordinal}",
+                    "pair_evaluation_status": "PAIR_EVALUATED",
+                    "primary_composite_reward": score,
+                    "matched_train_increment": score,
+                    "primary_standalone_train_reward_decision": (
+                        "TRAIN_REWARD_FOLLOWUP_READY"
+                    ),
+                }
+            ]
+        ).to_parquet(checkpoint / "pair_outcomes.parquet", index=False)
+    productive = _productive_pair_outcomes(tmp_path)
+    assert productive["pair_id"].tolist() == ["pair-1"]
+    assert productive["search_score"].tolist() == [0.2]

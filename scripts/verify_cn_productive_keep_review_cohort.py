@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 import pandas as pd
+import numpy as np
 
 from our_system_phase2.services.execution_clock_capability import (
     load_execution_capability_manifest,
@@ -18,6 +19,7 @@ from our_system_phase2.services.execution_clock_capability import (
 SUPPORTED_SCHEMA_VERSIONS = {
     "cn_productive_keep_review_freeze_v1",
     "cn_productive_keep_review_freeze_v2",
+    "cn_productive_keep_review_freeze_v3",
 }
 HIGHER_IS_BETTER = (
     "search_score",
@@ -117,6 +119,111 @@ def _deduplicate_behavior_candidates(
     return ranked.loc[kept_indexes].reset_index(drop=True), rejected
 
 
+def _normalized_string_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, float) and math.isnan(value):
+        return []
+    parsed = value
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return []
+        try:
+            parsed = json.loads(stripped)
+        except json.JSONDecodeError:
+            parsed = [stripped]
+    if isinstance(parsed, np.ndarray):
+        parsed = parsed.tolist()
+    if isinstance(parsed, (list, tuple, set)):
+        return sorted({str(item) for item in parsed if str(item)})
+    return [str(parsed)]
+
+
+def _identity(prefix: str, payload: Mapping[str, Any]) -> str:
+    return f"{prefix}.{_payload_sha256(payload)[:32]}"
+
+
+def _finite_or_none(value: Any) -> float | None:
+    try:
+        output = float(value)
+    except (TypeError, ValueError):
+        return None
+    return output if math.isfinite(output) else None
+
+
+def _recompute_finalist_identities(frame: pd.DataFrame) -> pd.DataFrame:
+    output = frame.copy()
+    mechanism_ids: list[str] = []
+    exposure_ids: list[str] = []
+    support_deciles: list[int] = []
+    turnover_deciles: list[int] = []
+    for row in output.to_dict(orient="records"):
+        mechanism_payload = {
+            "route_id": str(row.get("route_id") or ""),
+            "financial_hypothesis": str(
+                row.get("financial_hypothesis") or ""
+            ),
+            "operator_family": str(row.get("operator_family") or ""),
+            "skeleton_id": str(row.get("skeleton_id") or ""),
+            "source_field_ids": _normalized_string_list(
+                row.get("source_field_ids")
+            ),
+            "operator_paths": _normalized_string_list(
+                row.get("operator_paths")
+            ),
+            "event_state_family": str(
+                row.get("event_state_family") or ""
+            ),
+            "primitive_family": str(row.get("primitive_family") or ""),
+            "horizon_bucket": str(row.get("horizon_bucket") or ""),
+        }
+        support = _finite_or_none(row.get("primary_support_rate"))
+        turnover = _finite_or_none(row.get("primary_mean_turnover"))
+        support_decile = int(round(support * 10.0)) if support is not None else -1
+        turnover_decile = (
+            int(round(turnover * 10.0)) if turnover is not None else -1
+        )
+        exposure_payload = {
+            "event_state_family": str(
+                row.get("event_state_family") or ""
+            ),
+            "horizon_bucket": str(row.get("horizon_bucket") or ""),
+            "primary_support_rate_decile": support_decile,
+            "primary_behavior_turnover_decile": turnover_decile,
+        }
+        mechanism_ids.append(
+            _identity("cn.economic_mechanism", mechanism_payload)
+        )
+        exposure_ids.append(
+            _identity("cn.portfolio_exposure_family", exposure_payload)
+        )
+        support_deciles.append(support_decile)
+        turnover_deciles.append(turnover_decile)
+    output["verify_economic_mechanism_id"] = mechanism_ids
+    output["verify_portfolio_exposure_family_id"] = exposure_ids
+    output["verify_primary_support_rate_decile"] = support_deciles
+    output["verify_primary_behavior_turnover_decile"] = turnover_deciles
+    return output
+
+
+def _deduplicate_mechanism_candidates(
+    ranked: pd.DataFrame,
+) -> tuple[pd.DataFrame, dict[str, str]]:
+    kept_indexes: list[int] = []
+    rejected: dict[str, str] = {}
+    seen: set[str] = set()
+    for index, row in ranked.iterrows():
+        pair_id = str(row["pair_id"])
+        mechanism_id = str(row["economic_mechanism_id"])
+        if mechanism_id in seen:
+            rejected[pair_id] = "ECONOMIC_MECHANISM_DUPLICATE_LOWER_RANK"
+            continue
+        kept_indexes.append(index)
+        seen.add(mechanism_id)
+    return ranked.loc[kept_indexes].reset_index(drop=True), rejected
+
+
 def _recompute_selection(
     ranked: pd.DataFrame,
     *,
@@ -172,6 +279,90 @@ def _recompute_selection(
             f"{cohort_pairs}"
         )
     return selected
+
+
+def _recompute_finalist_selection(
+    ranked: pd.DataFrame,
+    *,
+    cohort_pairs: int,
+) -> tuple[list[str], dict[str, Any]]:
+    structural_cap = math.ceil(cohort_pairs * 0.60)
+    exposure_cap = math.ceil(cohort_pairs * 0.25)
+    route_group_count = int(ranked["route_id"].nunique())
+    signal_group_count = int(ranked["signal_cluster_id"].nunique())
+    route_cap = (
+        math.ceil(cohort_pairs * 0.75) if route_group_count >= 2 else None
+    )
+    signal_cap = (
+        math.ceil(cohort_pairs * 0.75) if signal_group_count >= 2 else None
+    )
+    selected: list[str] = []
+    selected_set: set[str] = set()
+    route_counts: Counter[str] = Counter()
+    structural_counts: Counter[str] = Counter()
+    signal_counts: Counter[str] = Counter()
+    exposure_counts: Counter[str] = Counter()
+
+    def add(row: Mapping[str, Any]) -> bool:
+        pair_id = str(row["pair_id"])
+        route_id = str(row["route_id"])
+        structural_id = str(row["structural_family_id"])
+        signal_id = str(row["signal_cluster_id"])
+        exposure_id = str(row["portfolio_exposure_family_id"])
+        if pair_id in selected_set:
+            return False
+        if route_cap is not None and route_counts[route_id] >= route_cap:
+            return False
+        if structural_counts[structural_id] >= structural_cap:
+            return False
+        if signal_cap is not None and signal_counts[signal_id] >= signal_cap:
+            return False
+        if exposure_counts[exposure_id] >= exposure_cap:
+            return False
+        selected.append(pair_id)
+        selected_set.add(pair_id)
+        route_counts[route_id] += 1
+        structural_counts[structural_id] += 1
+        signal_counts[signal_id] += 1
+        exposure_counts[exposure_id] += 1
+        return True
+
+    rows = ranked.to_dict(orient="records")
+    anchor_columns = [
+        "portfolio_exposure_family_id",
+        "structural_family_id",
+    ]
+    if route_group_count >= 2:
+        anchor_columns.append("route_id")
+    if signal_group_count >= 2:
+        anchor_columns.append("signal_cluster_id")
+    for column in anchor_columns:
+        anchored: set[str] = set()
+        for row in rows:
+            if len(selected) >= cohort_pairs:
+                break
+            group_id = str(row[column])
+            if group_id in anchored:
+                continue
+            if add(row):
+                anchored.add(group_id)
+    for row in rows:
+        if len(selected) >= cohort_pairs:
+            break
+        add(row)
+    if len(selected) != cohort_pairs:
+        raise RuntimeError(
+            "independent finalist-funnel constrained supply below "
+            f"{cohort_pairs}"
+        )
+    return selected, {
+        "route_group_count": route_group_count,
+        "signal_group_count": signal_group_count,
+        "route_cap": route_cap,
+        "structural_cap": structural_cap,
+        "signal_cap": signal_cap,
+        "exposure_cap": exposure_cap,
+    }
 
 
 def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
@@ -305,6 +496,31 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         ):
             raise RuntimeError("execution capability manifest file drift")
         load_execution_capability_manifest(capability_path)
+    if schema_version == "cn_productive_keep_review_freeze_v3":
+        if contract.get("selection_mode") != "finalist_funnel_v1":
+            raise RuntimeError("finalist funnel selection mode drift")
+        funnel_binding = contract.get("funnel_contract") or {}
+        funnel_path = Path(str(funnel_binding.get("path") or "")).resolve()
+        if (
+            not funnel_path.is_file()
+            or _sha256(funnel_path)
+            != str(funnel_binding.get("file_sha256") or "")
+        ):
+            raise RuntimeError("finalist funnel contract file drift")
+        funnel_payload = _read_json(funnel_path)
+        funnel_claimed = str(
+            funnel_payload.pop("contract_payload_sha256", "")
+        )
+        if (
+            funnel_claimed != str(funnel_binding.get("payload_sha256") or "")
+            or funnel_claimed != _payload_sha256(funnel_payload)
+        ):
+            raise RuntimeError("finalist funnel contract payload drift")
+        if int(
+            (funnel_payload.get("review_pool") or {}).get("target_pairs")
+            or 0
+        ) != cohort_pairs:
+            raise RuntimeError("finalist funnel target drift")
 
     review = pd.read_parquet(
         selection_root / "productive_review_ledger.parquet"
@@ -369,18 +585,52 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         str(key): int(value)
         for key, value in pairs["signal_cluster_id"].value_counts().items()
     }
-    route_cap = math.ceil(cohort_pairs * 0.75)
-    structural_cap = math.ceil(cohort_pairs * 0.50)
-    signal_cap = math.ceil(cohort_pairs * 0.75)
-    if max(route_counts.values()) > route_cap:
-        raise RuntimeError("route concentration cap violated")
-    if max(structural_counts.values()) > structural_cap:
-        raise RuntimeError("structural concentration cap violated")
-    if max(signal_counts.values()) > signal_cap:
-        raise RuntimeError("signal concentration cap violated")
+    if schema_version == "cn_productive_keep_review_freeze_v3":
+        route_cap = (
+            math.ceil(cohort_pairs * 0.75)
+            if len(route_counts) >= 2
+            else None
+        )
+        structural_cap = math.ceil(cohort_pairs * 0.60)
+        signal_cap = (
+            math.ceil(cohort_pairs * 0.75)
+            if len(signal_counts) >= 2
+            else None
+        )
+        exposure_counts = {
+            str(key): int(value)
+            for key, value in pairs[
+                "portfolio_exposure_family_id"
+            ].value_counts().items()
+        }
+        exposure_cap = math.ceil(cohort_pairs * 0.25)
+        if route_cap is not None and max(route_counts.values()) > route_cap:
+            raise RuntimeError("route concentration cap violated")
+        if max(structural_counts.values()) > structural_cap:
+            raise RuntimeError("structural concentration cap violated")
+        if signal_cap is not None and max(signal_counts.values()) > signal_cap:
+            raise RuntimeError("signal concentration cap violated")
+        if max(exposure_counts.values()) > exposure_cap:
+            raise RuntimeError("portfolio exposure concentration cap violated")
+        if pairs["economic_mechanism_id"].nunique() != cohort_pairs:
+            raise RuntimeError("selected economic mechanism duplicate")
+    else:
+        exposure_counts = {}
+        route_cap = math.ceil(cohort_pairs * 0.75)
+        structural_cap = math.ceil(cohort_pairs * 0.50)
+        signal_cap = math.ceil(cohort_pairs * 0.75)
+        if max(route_counts.values()) > route_cap:
+            raise RuntimeError("route concentration cap violated")
+        if max(structural_counts.values()) > structural_cap:
+            raise RuntimeError("structural concentration cap violated")
+        if max(signal_counts.values()) > signal_cap:
+            raise RuntimeError("signal concentration cap violated")
 
     ranked = _recompute_ranking(review)
-    if schema_version == "cn_productive_keep_review_freeze_v2":
+    if schema_version in {
+        "cn_productive_keep_review_freeze_v2",
+        "cn_productive_keep_review_freeze_v3",
+    }:
         ranked, duplicate_reasons = _deduplicate_behavior_candidates(ranked)
         recorded_duplicate_reasons = {
             str(row["pair_id"]): str(row["behavior_dedup_reason"])
@@ -404,10 +654,56 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
             != expected_productive
         ):
             raise RuntimeError("legacy behavior deduplication proof drift")
-    recomputed_selection = _recompute_selection(
-        ranked,
-        cohort_pairs=cohort_pairs,
-    )
+    mechanism_duplicate_reasons: dict[str, str] = {}
+    if schema_version == "cn_productive_keep_review_freeze_v3":
+        recomputed_identities = _recompute_finalist_identities(review)
+        identity_checks = {
+            "economic_mechanism_id": "verify_economic_mechanism_id",
+            "portfolio_exposure_family_id": (
+                "verify_portfolio_exposure_family_id"
+            ),
+            "primary_support_rate_decile": (
+                "verify_primary_support_rate_decile"
+            ),
+            "primary_behavior_turnover_decile": (
+                "verify_primary_behavior_turnover_decile"
+            ),
+        }
+        for recorded, recomputed in identity_checks.items():
+            if not (
+                review[recorded].astype(str)
+                == recomputed_identities[recomputed].astype(str)
+            ).all():
+                raise RuntimeError(
+                    f"independent finalist identity mismatch: {recorded}"
+                )
+        ranked, mechanism_duplicate_reasons = (
+            _deduplicate_mechanism_candidates(ranked)
+        )
+        recorded_mechanism_reasons = {
+            str(row["pair_id"]): str(row["mechanism_dedup_reason"])
+            for row in review.loc[
+                review["mechanism_dedup_reason"].astype(str) != "",
+                ["pair_id", "mechanism_dedup_reason"],
+            ].to_dict(orient="records")
+        }
+        if mechanism_duplicate_reasons != recorded_mechanism_reasons:
+            raise RuntimeError("independent mechanism deduplication mismatch")
+        recomputed_selection, recomputed_caps = (
+            _recompute_finalist_selection(
+                ranked,
+                cohort_pairs=cohort_pairs,
+            )
+        )
+        if recomputed_caps != contract["diversity_selection"][
+            "resolved_caps"
+        ]:
+            raise RuntimeError("resolved finalist diversity cap drift")
+    else:
+        recomputed_selection = _recompute_selection(
+            ranked,
+            cohort_pairs=cohort_pairs,
+        )
     recorded_selection = (
         pairs.sort_values("keep_review_rank", kind="mergesort")["pair_id"]
         .astype(str)
@@ -436,7 +732,7 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
             "train_stability_screen_reason",
         ].value_counts().items()
     }
-    return {
+    result = {
         "status": "INDEPENDENT_VERIFICATION_PASS",
         "manifest_file_sha256": _sha256(manifest_path),
         "manifest_payload_sha256": claimed_manifest_payload,
@@ -471,6 +767,22 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         "finalist_execution_eligible": False,
         "promotion_eligible": False,
     }
+    if schema_version == "cn_productive_keep_review_freeze_v3":
+        result.update(
+            {
+                "mechanism_duplicate_rejected": len(
+                    mechanism_duplicate_reasons
+                ),
+                "selected_economic_mechanism_unique": int(
+                    pairs["economic_mechanism_id"].nunique()
+                ),
+                "selected_portfolio_exposure_family_counts": (
+                    exposure_counts
+                ),
+                "resolved_diversity_caps": recomputed_caps,
+            }
+        )
+    return result
 
 
 def main() -> int:
