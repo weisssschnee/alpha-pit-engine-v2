@@ -2,7 +2,7 @@
 
 Updated: 2026-08-01
 
-Current state: `CN_SHARED_CONTROL_DUAL_LANE_CLOSED_HOLD_RESEARCH`
+Current state: `CN_TRAIN_ONLY_FINALIST_FUNNEL_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,56 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Train-only finalist funnel closure (2026-08-01)
+
+- The deterministic finalist funnel over the closed 2,261-candidate search is
+  complete without validation, holdout or 2026 access. The independently
+  verified 256-pair review pool remains at
+  `D:\ChengboRemote\runtime\cn_train_only_finalist_review_256_20260801_ea4ca47`;
+  its manifest SHA256 is
+  `a19eaa8c7f6516c8691e0e8133b7efbff894757c4ed5afe316e7a1fc4a094030`.
+  The derived strict replay input is exactly 64 pairs/128 members with 64
+  unique economic mechanisms at
+  `D:\ChengboRemote\runtime\cn_finalist_train_replay_input_64_20260801_e05a622`;
+  its manifest SHA256 is
+  `f5c5ac396dffdf0a0172b39f7fd777acddb596158802508e0c12dd4704874379`.
+- The original single 77o task `lanjob_20260801_150436_b321cb` completed at
+  17:30 HKT with exit code zero. Strict train replay closure file SHA256 is
+  `cfa8ad50a6ee4950968a43744fe2d222d13be2e725ecb907118d9c1c5d22e32f`;
+  canonical body SHA256 is
+  `e6cf708cae8bbbde260e797f2dae89b2f4c14df4aff3912a4c9636b7e5180f6c`,
+  all 137 declared artifacts and all protected source hashes matched, and the
+  original 128 candidate/64 pair identities remained exact. The run stopped at
+  `TRAIN_REPLAY_ONLY_CLOSED`; no validation or OOS directory was created.
+- Replay completed for 32/128 candidate members and 2/64 pairs. Candidate-level
+  blockers were 89 `FINAL_SESSION_UNLIQUIDATED_HOLDINGS`, six
+  `CORPORATE_ACTION_FRACTIONAL_SHARES` and one `NO_EXECUTABLE_FILLS`. Exactly
+  one replay-complete pair had positive executable train increment. This is
+  fail-closed A-share executability evidence, not a runtime failure.
+- The train-only finalist freeze was generated and independently verified on
+  77o at exact pushed/deployed SHA
+  `2c21424cd16558ab5959e8328e9510e9db69d484`. Deployment manifest SHA256 is
+  `a5795e6d3db62cc0bc6611e5c5d2af3b60676f84e8697bada035dd1d5bc46ca1`;
+  local and 77o focused tests passed 11/11. The immutable finalist root is
+  `D:\ChengboRemote\runtime\cn_train_replay_finalists_20260801_2c21424`;
+  manifest file SHA256 is
+  `0b1ab7e0d9017b689a891494b8a1173ac69b979764ab0852c1b76f97dd65d9da`,
+  manifest payload SHA256 is
+  `11ef67e0d8bf903193e6ad8c0ac4a79434b4fe2e7a7a10ab0300a2b7126ade6d`
+  and selection payload SHA256 is
+  `a247b3e6fe457d8e756e26def506ce9608efb9621085482823a48b19a30e57ea`.
+- Per the frozen insufficient-supply rule, the finalist set contains the actual
+  smaller count of one pair and does not backfill blocked or nonpositive rows:
+  `cn.pair.7475c3bdaf4e501835a2a6301e937616`, primary
+  `cn.comp.97a36b0cd65b4e1f1c2e`, economic mechanism
+  `cn.economic_mechanism.1087d7be91d08a9e9cd8332c43a54cb9`. Its executable
+  train increment is `0.2010825771` (primary `0.6353401846`, control
+  `0.4342576076`). Independent verification receipt file SHA256 is
+  `8d61286c64ee80076f735fbfdac4cf1a75a18b76f46ed5eba8d15c0fb3735159`.
+  Financial results were not recomputed; validation/holdout/2026 reads and
+  optimizer, scheduler, archive, promotion and successor-search writes remain
+  zero or forbidden.
 
 ### Shared-control dual-lane closure (2026-08-01)
 
@@ -1497,26 +1547,24 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-The shared-control validation and 9,216-ask search lanes are both closed. Do not
-rerun either lane or automatically launch a successor search. The search added
-2,261 train-productive, identity-unique candidates, but late-checkpoint yield
-fell to 14.15%; candidate supply is no longer the binding problem.
+The shared-control validation, 9,216-ask search and bounded train-only finalist
+funnel are closed. Do not rerun them or automatically launch a successor
+search. Strict replay reduced the 64-pair input to one positive executable
+train finalist; blocked or nonpositive rows must not be backfilled merely to
+reach a target count.
 
-Next work is a bounded finalist funnel over the completed search evidence:
-deduplicate by economic mechanism and portfolio exposure in addition to the
-already-unique recorded behavior families, require train stability and the
-candidate-level execution-clock capability gate, and retain explicit A-share
-terminal-liquidity, no-fill and corporate-action blockers. Freeze only a small
-review cohort after this train-only work. Any replay and report-only OOS for
-that new cohort requires a separate immutable authorization; no search reward,
-scheduler or archive feedback may consume the existing 32-pair OOS evidence.
+The next decision is whether to authorize one separately frozen, report-only
+OOS evaluation of that single pair. Until such authorization exists, retain it
+as `HOLD_RESEARCH`; do not read validation/holdout/2026, promote it, import its
+result into search reward or scheduler state, or use the low finalist count as
+permission for another broad search. The dominant bottleneck is executable
+portfolio construction and terminal liquidity, not raw train candidate supply.
 
-Retain the closed 32-pair validation as route/evidence calibration: 20/32 were
-OOS-positive, but only 6/32 were replay-complete and only one had a positive
-strict executable train increment. That gap makes executability and economic
-mechanism the next bottleneck and prevents promotion from the OOS hit rate
-alone. Holdout/2026 access, promotion, a new platform/database, automatic
-successor search and cross-campaign reward memory remain unauthorized.
+Retain the already-closed 32-pair validation only as route/evidence calibration:
+20/32 were OOS-positive, but only 6/32 were replay-complete and one had a
+positive strict executable train increment. That historical OOS must not be
+joined adaptively to the new single finalist before a separately authorized
+report-only freeze.
 
 For any separately authorized future heavy workload, use
 `SEARCH_EXCLUSIVE_32` when search is the only lane or the exact
