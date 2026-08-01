@@ -632,10 +632,15 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         "cn_productive_keep_review_freeze_v3",
     }:
         ranked, duplicate_reasons = _deduplicate_behavior_candidates(ranked)
+        behavior_duplicate_mask = (
+            review["behavior_dedup_reason"].astype(str) != ""
+            if schema_version == "cn_productive_keep_review_freeze_v3"
+            else review["review_outcome"] == "REJECT_DUPLICATE"
+        )
         recorded_duplicate_reasons = {
             str(row["pair_id"]): str(row["behavior_dedup_reason"])
             for row in review.loc[
-                review["review_outcome"] == "REJECT_DUPLICATE",
+                behavior_duplicate_mask,
                 ["pair_id", "behavior_dedup_reason"],
             ].to_dict(orient="records")
         }
