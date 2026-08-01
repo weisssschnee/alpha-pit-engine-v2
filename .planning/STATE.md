@@ -1,6 +1,6 @@
 # CN true1min Current State
 
-Updated: 2026-08-01
+Updated: 2026-08-02
 
 Current state: `CN_SINGLE_FINALIST_REPORT_ONLY_OOS_CLOSED_HOLD_RESEARCH`
 
@@ -15,6 +15,60 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Compute-efficient bounded train search terminal partial closure (2026-08-02)
+
+- The separately authorized compute-efficient train-only campaign at
+  `D:\ChengboRemote\runtime\cn_winner_guided_large_search_compute_efficient_20260801_2110_d85ff7d_12288`
+  is terminal `RUN_INVALID` under exact pushed/deployed SHA
+  `d85ff7d6a98afc2fb0fde23608c747d134605020`. Its frozen contract remained
+  8 checkpoints x 1,536 asks, with 1,504 Slow Temporal and 32 First-N asks per
+  checkpoint, fresh TPE, the existing Availability Controller,
+  `SEARCH_EXCLUSIVE_32`, pair batch 12, an 8 GiB cache and the unchanged
+  24 GiB minimum-free-memory gate. The final-SHA zero-financial preflight had
+  17,871 fresh exact identities and zero financial, validation, holdout or 2026
+  reads.
+- Checkpoints 001-003 are independently verified
+  `BATCH_CLOSED_IMMUTABLE`. Their manifest file/payload SHA256 pairs are
+  `4d9ccad9dd437a4685a914b43b1da3a8fc896b753d8c1f1c9daec49fd7f715eb` /
+  `99052039589e03112fbe9c3e64c2cc9b7de4db91fae9f7bf9fd99e5a869b248a`,
+  `88512c816682942f1cdfecce7dd0c033811a4a9cb714185244faf0a393be9f9f` /
+  `de6a06ea9b59b1b346194a7755b2fb2f0343b3972788724e4b7f0cdb539ce471`
+  and
+  `de4f74ca7b5181a19ed486fe48027fc205a4a0b2c1dc6ec2504cde068ffe0061` /
+  `92e1a91431055d6a3d2038e69d5a4cd1504cf3ca6eb6ac02a5995f651a23474f`.
+  Every canonical self-hash, all 72 declared artifacts and the prior-manifest
+  chain passed. These accepted checkpoints contain 4,608 unique primary exact
+  asks, 2,361 evaluated pairs, 731 productive candidates and 635 accepted
+  optimizer-feedback/COMPLETE trials, with exact ask/observation/transcript and
+  score-formula parity, zero primary exact/pair/full-signature duplicates and
+  zero validation/holdout/2026 reads. The 731 productive behavior-family IDs
+  are unique and top-ten concentration is 1.368%.
+- The first checkpoint-004 attempt completed financial work but failed before
+  immutable closure on the unchanged stock-session acceleration gate. Its
+  rejected checkpoint, optimizer state and logs remain preserved at
+  `run_health_incidents\20260801T225452_checkpoint004_runtime_acceleration_gate_failure_compute_efficient`;
+  incident SHA256 is
+  `30521413afeb398716386a753cb17cf9e2e7f764c61dd0a9ceef045bd8c6f3cc`
+  and the 56-file/3,899,964,169-byte preservation manifest SHA256 is
+  `a982e37ccc4f6cfdf6716ba99ab622b5b07a913e66b450e3eaa27a4f187b4689`.
+  The same-root recovery regenerated checkpoint 004 from verified checkpoint
+  003 without reusing financial results or optimizer state, but failed the same
+  frozen gate again. Active-bar passed at 25.350 effective cores/79.22%
+  occupancy; stock-session run health passed at 21.203 effective cores/66.26%
+  occupancy, but `cross_sectional_rank_mapping` reached only about 14.855
+  effective cores and remained below the phase acceleration threshold.
+- Per the predeclared `second_failure_policy=RUN_INVALID`, no third attempt is
+  authorized. The second rejected checkpoint and logs are preserved at
+  `run_health_incidents\20260802T000003_checkpoint004_second_runtime_acceleration_gate_failure_run_invalid`;
+  incident SHA256 is
+  `e261757c3aeb7d2ee3057de4cc13f45c6617dba693305dc911805a3d14fb5a9e`
+  and the 56-file/3,900,005,058-byte preservation manifest SHA256 is
+  `837ca415d1d30facece8d3f31eace2cea11a067a037f841f490659691bad9f7c`.
+  The threshold was not weakened, failed financial/optimizer state remains
+  non-authoritative, the scheduled task was deleted and the resource lease was
+  released. Only checkpoints 001-003 are accepted evidence; the campaign has
+  no root closure and authorizes neither validation/OOS nor a successor search.
 
 ### Train-only finalist funnel closure (2026-08-01)
 
@@ -1587,15 +1641,19 @@ not be rerun. The sole strict-train-positive pair was OOS-negative and remains
 `HOLD_RESEARCH`; blocked or nonpositive rows must not be backfilled, and the
 OOS result must not enter search reward, optimizer or scheduler state.
 
-The user has now explicitly authorized one new bounded development-train
-workload to prevent 77o compute from idling. It must use the existing node
-resource authority: `SEARCH_EXCLUSIVE_32` while it is the only useful lane, or
-`SEARCH_DUAL_24` only when a separately frozen `VALIDATION_DUAL_8` workload is
-actually active. Profile changes may occur only at a
-`BATCH_CLOSED_IMMUTABLE` boundary. Freeze refreshed exact/behavior identity
-archives and pass a zero-financial supply preflight before launch; use fresh
-optimizer state and do not import OOS, replay, reward-bearing or scheduler
-state from prior campaigns.
+The separately authorized compute-efficient train campaign is terminal
+`RUN_INVALID` after the same frozen checkpoint-004 stock-session acceleration
+gate failed twice. Do not retry checkpoint 004, launch a third attempt or treat
+either rejected checkpoint's financial/optimizer state as evidence. Retain only
+the independently closed checkpoints 001-003: 4,608 formal asks, 2,361
+evaluated pairs and 731 productive candidates with zero sealed reads.
+
+Before any separately authorized successor workload, repair and qualify the
+source-level stock-session `cross_sectional_rank_mapping` acceleration path;
+the observed bottleneck was about 14.855 effective cores under the 32-thread
+entitlement. Qualification must not weaken the existing acceleration,
+24 GiB-memory or 8 GiB-cache gates, and must remain zero-financial. No successor
+search, validation/OOS or promotion is currently authorized.
 
 Retain the already-closed 32-pair validation only as route/evidence calibration:
 20/32 were OOS-positive, but only 6/32 were replay-complete and one had a
