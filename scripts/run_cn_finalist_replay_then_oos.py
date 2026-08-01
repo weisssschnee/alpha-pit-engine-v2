@@ -1786,6 +1786,16 @@ def finalize(
     _host_and_memory_gate()
     freeze_path = Path(freeze_path).resolve()
     freeze = _load_freeze(freeze_path)
+    freeze_root = freeze_path.parents[1]
+    contract_path = _resolved_artifact(
+        freeze_root, freeze["execution_contract_artifact"]
+    )
+    execution_contract = _read_json(contract_path)
+    _verify_payload_hash(
+        execution_contract,
+        field="contract_payload_sha256",
+        label="replay/OOS execution contract",
+    )
     replay_path = Path(replay_root).resolve() / "REPLAY_COMPLETE.json"
     oos_path = Path(oos_root).resolve() / "OOS_COMPLETE.json"
     replay_closure = _verify_closure(
@@ -1832,10 +1842,10 @@ def finalize(
         "selection_payload_sha256": freeze["selection_payload_sha256"],
         "pair_count": EXPECTED_PAIR_COUNT,
         "candidate_member_count": EXPECTED_MEMBER_COUNT,
-        "sequence_completed": [
-            "A_SHARE_EXECUTABLE_TRAIN_REPLAY",
-            "UNCHANGED_COHORT_REPORT_ONLY_VALIDATION",
-        ],
+        "sequence_completed": list(execution_contract["sequence"]),
+        "train_replay_recomputed": bool(
+            execution_contract.get("train_replay_recomputed", True)
+        ),
         "interstage_filter_applied": False,
         "protected_source_hashes_unchanged": True,
         "replay_closure_sha256": _sha256(replay_path),
