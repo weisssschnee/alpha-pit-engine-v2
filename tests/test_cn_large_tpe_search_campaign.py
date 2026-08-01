@@ -844,6 +844,69 @@ def test_shared_control_winner_search_has_24_thread_checkpoint_budget() -> None:
     assert spec["maximum_wall_seconds"] == 129_600
 
 
+def test_qualified_mapping_successor_search_is_single_bounded_exclusive_task() -> None:
+    spec = _campaign_runtime_spec(
+        SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE
+    )
+    authorization = json.loads(
+        (
+            REPO_ROOT
+            / "runtime"
+            / "run_plans"
+            / (
+                "cn_qualified_mapping_successor_train_search_v1_"
+                "authorization.json"
+            )
+        ).read_text(encoding="utf-8")
+    )
+    topology_body = dict(authorization)
+    topology_hash = topology_body.pop(
+        "resource_topology_authorization_sha256"
+    )
+
+    assert authorization["status"] == (
+        "EXECUTION_AUTHORIZED_AFTER_ZERO_FINANCIAL_QUALIFICATION"
+    )
+    assert authorization["authorized_task_count"] == 1
+    assert authorization["node_resource_profiles_allowed"] == [
+        "SEARCH_EXCLUSIVE_32"
+    ]
+    assert authorization["campaign_profile"] == (
+        SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE
+    )
+    assert authorization["fixed_route_formal_asks_per_checkpoint"] == (
+        spec["fixed_route_mix"]
+    )
+    assert authorization["final_route_formal_ask_allocation"] == {
+        route_id: count * spec["maximum_checkpoints"]
+        for route_id, count in spec["fixed_route_mix"].items()
+    }
+    assert authorization["maximum_raw_asks"] == 9_216
+    assert authorization["cross_campaign_optimizer_state_reused"] is False
+    assert authorization["cross_campaign_reward_rows_imported"] == 0
+    assert authorization["automatic_validation"] == "FORBIDDEN"
+    assert authorization["successor_search_pre_authorized"] is False
+    assert topology_hash == _stable_hash(topology_body)
+
+    available = authorization["refreshed_exact_supply_basis"]
+    required = authorization["required_exact_supply_at_1_20_margin"]
+    assert available["SLOW_TEMPORAL_CHANGE"] >= required[
+        "SLOW_TEMPORAL_CHANGE"
+    ]
+    assert available["FIRSTN_PATH"] >= required["FIRSTN_PATH"]
+    assert required == {
+        route_id: count
+        for route_id, count in spec[
+            "minimum_required_fresh_exact_by_route"
+        ].items()
+        if count > 0
+    }
+    assert authorization["preflight_financial_reads"] == 0
+    assert authorization["preflight_validation_reads"] == 0
+    assert authorization["preflight_holdout_reads"] == 0
+    assert authorization["preflight_forward_2026_reads"] == 0
+
+
 def test_zero_ask_routes_skip_optuna_tell() -> None:
     class StubAdapter:
         def __init__(self, *, pending: bool) -> None:

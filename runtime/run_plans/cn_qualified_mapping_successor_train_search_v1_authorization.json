@@ -1,0 +1,190 @@
+{
+  "schema_version": "cn_qualified_mapping_successor_train_search_authorization_v1",
+  "status": "EXECUTION_AUTHORIZED_AFTER_ZERO_FINANCIAL_QUALIFICATION",
+  "authority_source": "CURRENT_USER_CONTINUE_AFTER_MAPPING_QUALIFICATION_20260802",
+  "campaign_id": "CN_QUALIFIED_MAPPING_SUCCESSOR_TRAIN_SEARCH_V1_20260802",
+  "experiment_id": "20260802_cn_accelerated_successor_train_001",
+  "objective": "Run one bounded train-only Hybrid winner-guided successor search on the independently qualified stock-session mapping kernel without reusing failed checkpoint or optimizer state.",
+  "campaign_profile": "cn_shared_control_winner_guided_search_v1",
+  "qualification_authorized": true,
+  "execution_authorized": true,
+  "financial_campaign_authorized": true,
+  "single_bounded_task_authorized": true,
+  "authorized_task_count": 1,
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "accepted_development_search_policy": "HYBRID_TPE_AVAILABILITY",
+  "policy_reopened": false,
+  "optimizer": "official_optuna.samplers.TPESampler_conditional_typed_grammar",
+  "optimizer_package_version": "4.8.0",
+  "optimizer_initialization": "FRESH_TPE_ON_FROZEN_WINNER_SKELETON_LANES_NO_CROSS_CAMPAIGN_REWARD_STATE",
+  "optimizer_ask_execution": "HYBRID_TPE_AVAILABILITY_ONLY",
+  "optimizer_sampler_mode": "OFFICIAL_DEFAULT_UNIVARIATE_CONSTANT_LIAR",
+  "optimizer_multivariate": false,
+  "optimizer_group": false,
+  "optimizer_constant_liar": true,
+  "optimizer_n_ei_candidates": 24,
+  "optuna_route_workers": 5,
+  "optimizer_restore_authority": "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS",
+  "optimizer_search_score_policy": "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1",
+  "optimizer_gene_surface_version": "cn_optimizer_skeleton_lane_gene_surface_v2",
+  "routes": [
+    "SLOW_TEMPORAL_CHANGE",
+    "FIRSTN_PATH",
+    "SLOW_CROSS_SECTIONAL_LEVEL",
+    "MARKET_REGIME_CONDITION",
+    "DISCLOSURE_EVENT"
+  ],
+  "coverage_floors": {
+    "SLOW_TEMPORAL_CHANGE": 8960,
+    "FIRSTN_PATH": 256,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "route_formal_ask_caps": {
+    "SLOW_TEMPORAL_CHANGE": 8960,
+    "FIRSTN_PATH": 256,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "globally_flexible_budget": 0,
+  "flexible_allocation": {
+    "SLOW_TEMPORAL_CHANGE": 0,
+    "FIRSTN_PATH": 0,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "final_route_formal_ask_allocation": {
+    "SLOW_TEMPORAL_CHANGE": 8960,
+    "FIRSTN_PATH": 256,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "fixed_route_formal_asks_per_checkpoint": {
+    "SLOW_TEMPORAL_CHANGE": 1120,
+    "FIRSTN_PATH": 32,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "policy_arms": [
+    "HYBRID_TPE_AVAILABILITY"
+  ],
+  "policy_arm_ratio": {
+    "HYBRID_TPE_AVAILABILITY": 1.0
+  },
+  "uniform_arm": "FORBIDDEN",
+  "within_tranche_route_adaptation": "FORBIDDEN",
+  "winner_guidance_mode": "FROZEN_WINNER_SKELETON_LANES_FRESH_TPE",
+  "winner_source_selection_payload_sha256": "5ab6dbdf374d4867cf197b254cf6672d342bed54436bf153a551ae65867a3815",
+  "winner_structural_guide_sha256": "889bf9ecd092ddf3c0d712d4c13d61615a8649c312b24e4fc8ad76883e9e8c51",
+  "winner_structural_skeletons": {
+    "FIRSTN_PATH": [
+      "cn.comp.v2.firstn_path.firstn_path_state"
+    ],
+    "SLOW_CROSS_SECTIONAL_LEVEL": [
+      "cn.comp.v2.slow_cross_sectional_level.fundamental_residual"
+    ],
+    "SLOW_TEMPORAL_CHANGE": [
+      "cn.comp.v2.slow_temporal_change.change_level_interaction",
+      "cn.comp.v2.slow_temporal_change.cross_change_interaction"
+    ]
+  },
+  "cross_campaign_optimizer_state_reused": false,
+  "cross_campaign_reward_rows_imported": 0,
+  "historical_archive_policy": "IDENTITY_AND_LABEL_FREE_BEHAVIOR_ONLY_NO_REWARD_NO_SCHEDULER_STATE",
+  "historical_candidate_archive_sha256": "e5899110fc9fdd3334521c366fd3d0b88014c9cf6e0dc937e263b685771ff781",
+  "historical_behavior_archive_sha256": "c44b723a2e486307c9970bb5f0f7f17e55f86aea4d5d62c647722a7ddc0ffcaa",
+  "historical_manifest_sha256": "5c572717d1410832024d1a76731e360e8a40ec42a7289346e9b4ec7120572611",
+  "history_snapshot_exact_identity_count": 56518,
+  "history_snapshot_behavior_identity_count": 50531,
+  "history_snapshot_excludes_unclosed_checkpoint_004": true,
+  "productive_candidate_definition": "DEVELOPMENT_DIAGNOSTIC_ONLY_PAIR_EVALUATED_AND_PREDICTIVE_SCORE_POSITIVE_AND_PRIMARY_STANDALONE_READY",
+  "productive_candidate_evidence_class": "DEVELOPMENT_PREDICTIVE_NOT_TRADABILITY_OR_PROMOTION",
+  "budget_counting_unit": "FORMAL_FRESH_EXACT_ASK",
+  "maximum_checkpoints": 8,
+  "asks_per_checkpoint": 1152,
+  "maximum_raw_asks": 9216,
+  "maximum_internal_native_draws_per_formal": 8,
+  "maximum_wall_seconds": 129600,
+  "seed_base": 2026080201,
+  "first_checkpoint_minimum_pair_evaluated_per_hour": 300.0,
+  "first_checkpoint_minimum_entitlement_occupancy": 0.7,
+  "throughput_underpower_action": "PRESERVE_IMMUTABLE_CHECKPOINT_AND_REPLAN_NO_SILENT_CONTINUATION",
+  "refreshed_exact_supply_basis": {
+    "source": "FINAL_SHA_ZERO_FINANCIAL_PREFLIGHT_MINUS_ACCEPTED_CHECKPOINT_001_TO_003_EXACT_SCHEDULE",
+    "SLOW_TEMPORAL_CHANGE": 10993,
+    "FIRSTN_PATH": 685
+  },
+  "required_exact_supply_at_1_20_margin": {
+    "SLOW_TEMPORAL_CHANGE": 10752,
+    "FIRSTN_PATH": 308
+  },
+  "accepted_checkpoint_yield_evidence": {
+    "formal_asks": 4608,
+    "pair_evaluated": 2361,
+    "productive": 731,
+    "productive_per_formal_ask": 0.1586371527777778,
+    "productive_per_checkpoint": [
+      233,
+      247,
+      251
+    ],
+    "productive_behavior_family_unique": 731,
+    "top_10_productive_family_concentration": 0.013679890560875513
+  },
+  "projected_productive_candidates_diagnostic_only": 1462,
+  "estimated_wall_seconds_diagnostic_range": [
+    12600,
+    16200
+  ],
+  "node_resource_profiles_allowed": [
+    "SEARCH_EXCLUSIVE_32"
+  ],
+  "resource_profile_switch_boundary": "BATCH_CLOSED_IMMUTABLE_ONLY",
+  "node_resource_capacity_manifest_sha256": "62aab22c647566b81e19219808877bce7633024a62b5e71aa59a0b282e185f8e",
+  "resource_topology_changes_search_semantics": false,
+  "resource_topology_changes_candidate_order": false,
+  "resource_topology_changes_reward": false,
+  "validation_primary_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+  "portfolio_mode": "LONG_ONLY_TOP",
+  "shorting": "FORBIDDEN",
+  "one_way_cost_bps": 5,
+  "horizons_minutes": [
+    1,
+    5,
+    15,
+    30
+  ],
+  "active_pair_batch_size": 12,
+  "session_pair_batch_size": 12,
+  "cache_cap_bytes": 8589934592,
+  "minimum_free_memory_bytes": 25769803776,
+  "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+  "automatic_validation": "FORBIDDEN",
+  "parallel_validation_lane": "FORBIDDEN_FOR_THIS_SINGLE_EXCLUSIVE_SEARCH_TASK",
+  "holdout": "SEALED",
+  "forward_2026": "SEALED",
+  "promotion": "FORBIDDEN",
+  "unlimited_or_20k_search_authorized": false,
+  "successor_search_pre_authorized": false,
+  "preflight_financial_reads": 0,
+  "preflight_validation_reads": 0,
+  "preflight_holdout_reads": 0,
+  "preflight_forward_2026_reads": 0,
+  "source_mapping_qualification": {
+    "execution_sha": "5fda05835ef7dd36f6b768956ba9c72f81b2f6e7",
+    "status": "QUALIFIED_BIT_EXACT_ACCELERATION",
+    "effective_cores": 30.280143,
+    "wall_speedup_ratio": 1.23126,
+    "financial_reads": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "prohibited_writes": 0
+  },
+  "resource_topology_authorization_sha256": "7a43e7d865483e5ab974d9ffff4b8ff24c844b356da0b2fdb9933f7c867bf6a9"
+}
