@@ -198,9 +198,11 @@ def freeze_train_replay_finalists(
         raise RuntimeError("replay pair identity/order differs from frozen input")
     input_candidate_ids = input_candidates["candidate_id"].astype(str).tolist()
     replay_candidate_ids = replay_candidates["candidate_id"].astype(str).tolist()
-    if replay_candidate_ids != input_candidate_ids:
+    if len(set(input_candidate_ids)) != len(input_candidate_ids):
+        raise RuntimeError("duplicate replay-input candidate IDs")
+    if set(replay_candidate_ids) != set(input_candidate_ids):
         raise RuntimeError(
-            "replay candidate identity/order differs from frozen input"
+            "replay candidate identities differ from frozen input"
         )
     if len(set(replay_pair_ids)) != len(replay_pair_ids):
         raise RuntimeError("duplicate replay pair IDs")

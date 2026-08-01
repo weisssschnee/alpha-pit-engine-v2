@@ -101,7 +101,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             },
         ]
     )
-    replay_candidates = candidates.assign(
+    replay_candidates = candidates.iloc[::-1].reset_index(drop=True).assign(
         candidate_replay_status="CANDIDATE_REPLAY_COMPLETE"
     )
     replay_pair_path = replay_root / "pair_replay_results.parquet"
