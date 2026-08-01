@@ -2,7 +2,7 @@
 
 Updated: 2026-08-01
 
-Current state: `CN_TRAIN_ONLY_FINALIST_FUNNEL_CLOSED_HOLD_RESEARCH`
+Current state: `CN_SINGLE_FINALIST_REPORT_ONLY_OOS_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -65,6 +65,40 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   Financial results were not recomputed; validation/holdout/2026 reads and
   optimizer, scheduler, archive, promotion and successor-search writes remain
   zero or forbidden.
+
+### Single executable finalist report-only OOS closure (2026-08-01)
+
+- The separately authorized single-pair report-only OOS completed on 77o at
+  exact pushed/deployed SHA
+  `9d365b0b9216e9c8892653b1f3656844bf3759e0` under scheduled task
+  `ChengboLanRemote_lanjob_20260801_200219_f970a5`. The task exited zero and
+  released its `VALIDATION_DUAL_8` lease. The output root is
+  `D:\ChengboRemote\runtime\cn_single_finalist_report_only_oos_20260801_9d365b0`.
+- Root status is `REPLAY_THEN_OOS_COMPLETE_IMMUTABLE_REPORT_ONLY`; the root
+  closure file SHA256 is
+  `b6f20f80d179ee086bae2ec049febe4efc05db3e4fbf6d687922e738585fc0fc`
+  with canonical body SHA256
+  `c288b3d78b445e286ba804d526e0c930bc78f12b9f0c567538ef04e4655889f4`.
+  OOS closure file SHA256 is
+  `de3a25d6d3f04275e6415d43ea0a137243902dbd1e801aa0a43389b4eb0e041c`
+  with canonical body SHA256
+  `65869c2699e95bff1d03759206324da88e19421b3e34661bd12a857ef4096817`.
+  Independent verification matched all five root artifacts and all nine OOS
+  artifacts by size and SHA256.
+- The unchanged pair `cn.pair.7475c3bdaf4e501835a2a6301e937616`
+  evaluated without an OOS blocker but did not transfer positively. Its strict
+  executable train increment remained `0.2010825771`, while validation score
+  was `-16.46010423`; mean one-way turnover was `0.04631402`, regime-positive
+  share was zero, regime worst-day Sortino was `-0.4628121` and worst-horizon
+  day Sortino was `0.34182571`. This is negative report-only evidence, not a
+  promotion or economic claim.
+- Train replay was not recomputed, protected source hashes were unchanged,
+  validation reads were 381,649, and holdout/2026 reads plus optimizer,
+  feedback, scheduler, archive and promotion writes were zero or forbidden.
+  The backend used only about 1.65 effective cores on average for this one-pair
+  workload, so increasing validation threads would not have improved useful
+  throughput; the durable compute correction is to keep independent train work
+  on the search lane whenever it is authorized.
 
 ### Shared-control dual-lane closure (2026-08-01)
 
@@ -1547,30 +1581,34 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-The shared-control validation, 9,216-ask search and bounded train-only finalist
-funnel are closed. Do not rerun them or automatically launch a successor
-search. Strict replay reduced the 64-pair input to one positive executable
-train finalist; blocked or nonpositive rows must not be backfilled merely to
-reach a target count.
+The shared-control validation, 9,216-ask search, bounded train-only finalist
+funnel and separately authorized one-pair report-only OOS are closed and must
+not be rerun. The sole strict-train-positive pair was OOS-negative and remains
+`HOLD_RESEARCH`; blocked or nonpositive rows must not be backfilled, and the
+OOS result must not enter search reward, optimizer or scheduler state.
 
-The next decision is whether to authorize one separately frozen, report-only
-OOS evaluation of that single pair. Until such authorization exists, retain it
-as `HOLD_RESEARCH`; do not read validation/holdout/2026, promote it, import its
-result into search reward or scheduler state, or use the low finalist count as
-permission for another broad search. The dominant bottleneck is executable
-portfolio construction and terminal liquidity, not raw train candidate supply.
+The user has now explicitly authorized one new bounded development-train
+workload to prevent 77o compute from idling. It must use the existing node
+resource authority: `SEARCH_EXCLUSIVE_32` while it is the only useful lane, or
+`SEARCH_DUAL_24` only when a separately frozen `VALIDATION_DUAL_8` workload is
+actually active. Profile changes may occur only at a
+`BATCH_CLOSED_IMMUTABLE` boundary. Freeze refreshed exact/behavior identity
+archives and pass a zero-financial supply preflight before launch; use fresh
+optimizer state and do not import OOS, replay, reward-bearing or scheduler
+state from prior campaigns.
 
 Retain the already-closed 32-pair validation only as route/evidence calibration:
 20/32 were OOS-positive, but only 6/32 were replay-complete and one had a
 positive strict executable train increment. That historical OOS must not be
-joined adaptively to the new single finalist before a separately authorized
-report-only freeze.
+joined adaptively to any new search or selector.
 
-For any separately authorized future heavy workload, use
-`SEARCH_EXCLUSIVE_32` when search is the only lane or the exact
-`SEARCH_DUAL_24` plus `VALIDATION_DUAL_8` pair when both lanes have useful work.
-Generate and bind a candidate-level execution-clock capability manifest before
-freezing any replay cohort.
+The new train budget and route mix must be bounded by refreshed post-archive
+exact supply and the observed late-checkpoint yield collapse. It must not be a
+blind replay of the closed global candidate race: preserve useful winner-guided
+lanes only where supply remains material, and direct any additional coverage
+toward mechanisms not already saturated by the 2,261-candidate pool. Generate
+and bind a candidate-level execution-clock capability manifest before freezing
+any later replay cohort.
 
 Do not rerun the Medium, its report-only validation, either completed
 Hybrid-only tranche or earlier availability-agency canaries. Unlimited search,
