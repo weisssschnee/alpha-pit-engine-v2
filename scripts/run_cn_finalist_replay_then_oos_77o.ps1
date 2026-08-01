@@ -17,6 +17,7 @@ param(
     [int]$ValidationThreads = 8,
     [ValidateSet('VALIDATION_DUAL_8')]
     [string]$NodeResourceProfile = 'VALIDATION_DUAL_8',
+    [switch]$TrainReplayOnly,
     [string]$NodeResourceCapacity = (
         'runtime\run_plans\cn_alpha_node_resource_profiles_v1.json'
     ),
@@ -168,7 +169,11 @@ $stderrPath = Join-Path $resolvedRoot 'replay_then_oos.stderr.log'
 
 [ordered]@{
     schema_version = 'cn_finalist_replay_then_oos_deployment_binding_v1'
-    status = 'ACTIVE_FIXED_COHORT_REPLAY_THEN_OOS'
+    status = if ($TrainReplayOnly) {
+        'ACTIVE_FIXED_COHORT_TRAIN_REPLAY_ONLY'
+    } else {
+        'ACTIVE_FIXED_COHORT_REPLAY_THEN_OOS'
+    }
     repo_sha = $RepoSha
     workspace = $resolvedRepo
     deployment_manifest = $resolvedDeployment
@@ -196,6 +201,11 @@ $stderrPath = Join-Path $resolvedRoot 'replay_then_oos.stderr.log'
     promotion = 'FORBIDDEN'
     holdout_reads = 0
     forward_2026_reads = 0
+    automatic_report_only_oos = if ($TrainReplayOnly) {
+        'FORBIDDEN'
+    } else {
+        'AUTHORIZED'
+    }
     launched_at_utc = (Get-Date).ToUniversalTime().ToString('o')
 } | ConvertTo-Json -Depth 5 |
     Set-Content -LiteralPath (
@@ -288,6 +298,36 @@ try {
         Join-Path $replayRoot 'REPLAY_COMPLETE.json'
     ))) {
         throw "A-share executable replay did not close"
+    }
+
+    if ($TrainReplayOnly) {
+        [ordered]@{
+            schema_version = 'cn_finalist_train_replay_only_closure_v1'
+            status = 'TRAIN_REPLAY_ONLY_CLOSED'
+            repo_sha = $RepoSha
+            cohort_root = $resolvedCohort
+            authority_root = $resolvedAuthority
+            pair_count = $ExpectedPairCount
+            candidate_member_count = $ExpectedPairCount * 2
+            replay_closure = Join-Path $replayRoot 'REPLAY_COMPLETE.json'
+            replay_closure_sha256 = (
+                Get-FileHash -Algorithm SHA256 -LiteralPath (
+                    Join-Path $replayRoot 'REPLAY_COMPLETE.json'
+                )
+            ).Hash.ToLowerInvariant()
+            validation_reads = 0
+            holdout_reads = 0
+            forward_2026_reads = 0
+            automatic_report_only_oos = 'FORBIDDEN'
+            optimizer_feedback_write = 'FORBIDDEN'
+            scheduler_write = 'FORBIDDEN'
+            archive_write = 'FORBIDDEN'
+            promotion = 'FORBIDDEN'
+            closed_at_utc = (Get-Date).ToUniversalTime().ToString('o')
+        } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
+            Join-Path $resolvedRoot 'TRAIN_REPLAY_ONLY_COMPLETE.json'
+        ) -Encoding UTF8
+        return
     }
 
     if (-not (Test-Path -LiteralPath (
