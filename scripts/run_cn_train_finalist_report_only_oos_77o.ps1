@@ -206,7 +206,10 @@ $stderrPath = Join-Path $resolvedRoot 'single_finalist_oos.stderr.log'
     Join-Path $resolvedRoot 'deployment_binding.json'
 ) -Encoding UTF8
 
-$env:PYTHONPATH = Join-Path $resolvedRepo 'src'
+$env:PYTHONPATH = @(
+    $resolvedRepo,
+    (Join-Path $resolvedRepo 'src')
+) -join [IO.Path]::PathSeparator
 $env:PYTHONUTF8 = '1'
 $env:CN_CAMPAIGN_REPO_SHA = $RepoSha
 $env:ARROW_NUM_THREADS = '1'
