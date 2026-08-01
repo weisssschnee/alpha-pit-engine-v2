@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-07-31
+Updated: 2026-08-01
 
-Current state: `CN_DUAL_LANE_PARTIAL_SEARCH_INVALID_VALIDATION_CLOSED_HOLD_RESEARCH`
+Current state: `CN_SHARED_CONTROL_DUAL_LANE_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,74 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Shared-control dual-lane closure (2026-08-01)
+
+- The accepted shared-node control plane completed one isolated dual-lane cycle
+  without CPU oversubscription or cross-lane feedback. The fixed validation lane
+  closed first and was deleted; the search lane then retained the single
+  `SEARCH_DUAL_24` lease until exit. No third task, persistent inspector,
+  platform/database or holdout/2026 access was introduced.
+- The fixed 32-pair/64-member validation cohort at
+  `D:\ChengboRemote\runtime\cn_finalist_replay_then_oos_shared_dual_32_20260801_0050_840001a`
+  is independently closed and must not be rerun. Root closure file SHA256 is
+  `5945805de222e05bf61463f4780ee6cdd644b4deb255efc281fb52bb30ea4850`;
+  replay/OOS self-hashes and all 87 declared artifacts passed, pair identity
+  and order were unchanged and no interstage filtering occurred. Replay
+  completed for 27/64 candidates and 6/32 pairs, with one positive executable
+  train increment. Report-only OOS evaluated all 32 pairs and found 20 positive
+  transfers (62.5%); validation score median was `0.06184129` and p10 was
+  `-3.005524837`. Validation reads were 381,649; holdout/2026 reads and
+  optimizer, feedback, scheduler, archive and promotion writes were zero, and
+  protected source hashes were unchanged. This remains `HOLD_RESEARCH`, not
+  promotion or an economic claim.
+- The replacement shared-control search closed on 77o at exact execution SHA
+  `b6c4efaed0a04453a8891241e278d0dfdff75e62` under task
+  `lanjob_20260801_0425_dualsearch` and campaign root
+  `D:\ChengboRemote\runtime\cn_winner_guided_large_search_shared_dual_recovery_20260801_0110_1974c3a_9216`.
+  The task exited zero after eight immutable checkpoints and exactly 9,216
+  train-only formal asks with the fixed per-checkpoint Slow Temporal/First-N
+  mix 1,120/32. Fresh TPE, the existing Availability Controller and Phase3CM
+  were used; failed or cross-campaign reward/optimizer state was not imported.
+- Every checkpoint canonical hash, all 192 checkpoint-declared artifacts and
+  the prior-manifest chain independently passed. The root `run_manifest.json`
+  SHA256 is
+  `e440206b2ed87c015b345c563a2d402f863909686a0de0c4d71be095ffd9b1b9`,
+  `train_complete_manifest.json` SHA256 is
+  `d49c5a4643239513f9bdc2a1bbb8f3d49ea7e42c8a99e172cc6c686e2546c61f`,
+  and all 17 root-declared artifacts matched. There were 5,860 evaluated pairs
+  and 2,261 productive candidates; all 9,216 primary exact identities, 5,860
+  pair IDs and 5,860 full behavior signatures were unique. Ask/observation/
+  transcript coverage, development-only feedback, accepted score joins and
+  `min(primary_composite_reward, matched_train_increment)` calculations all
+  matched. Runtime gates passed at the 24-thread entitlement, pair batch stayed
+  at or below 12, cache stayed below 2.28 GB, minimum free memory exceeded
+  64.29 GB and validation/holdout/2026 reads were zero.
+- Slow Temporal supplied 5,604 evaluated and 2,252 productive candidates from
+  8,960 formal asks; First-N supplied 256 evaluated and nine productive from
+  256 asks. Overall evaluated/formal yield was 63.59% and productive/formal
+  yield was 24.53%. The derived search-score median was `-0.00120398` and p10
+  was `-0.122367934`; First-N remained materially weaker with median
+  `-0.41627747` and p10 `-0.591738175`. All 2,261 productive candidates had
+  distinct recorded behavior-family IDs and the top-ten family concentration
+  was 0.4423%, but productive yield fell from 48.52% at checkpoint 003 to
+  14.15% at checkpoint 008. This closes candidate-pool expansion and does not
+  authorize another tranche.
+- The predecessor at SHA `1974c3a55e9f03b54c51a8ea21244eaa80076ef0`
+  failed after checkpoint-001 financial work but before immutable closure
+  because a campaign-level resource binding escaped the checkpoint-local
+  artifact namespace. Its full failed root remains preserved at
+  `run_health_incidents\20260801T020946_checkpoint001_manifest_campaign_input_escape`;
+  incident SHA256 is
+  `9c8fe73229c4803f62835ead191e935996fe39840aaa88e5fff4cc208df05d73`.
+  No failed financial result or optimizer state was reused; SHA `b6c4efa`
+  changed only the manifest binding boundary.
+- The compact joint closure receipt is
+  `runtime/run_plans/cn_shared_control_dual_lane_alpha_20260801_receipt.json`;
+  its SHA256 is
+  `0ff7475148cdc08b8c1adfe6ec3ef57f11731f5425d959a0475051fb05d3fe32`.
+
+### Superseded pre-control dual-lane evidence (historical)
 
 - The user explicitly superseded the prior no-successor hold for one bounded
   dual-lane run. The active train lane is a full 12,288-formal-ask
@@ -1429,30 +1497,32 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-Do not retry or reinterpret the invalid 12,288-ask search lane. Retain only its
-three verified immutable checkpoints as partial development evidence.
+The shared-control validation and 9,216-ask search lanes are both closed. Do not
+rerun either lane or automatically launch a successor search. The search added
+2,261 train-productive, identity-unique candidates, but late-checkpoint yield
+fell to 14.15%; candidate supply is no longer the binding problem.
 
-The fixed 63-pair replay/OOS lane is closed. Retain all 35 OOS-positive pairs as
-report-only research evidence, but distinguish the 26 Slow Temporal pairs that
-were not replay-executable from the nine Slow Cross-sectional OOS positives.
-The only strict executable-train plus OOS-positive intersection is
-`cn.pair.5e25230a83e937a50805fe63712d5cb9`; classify its economic mechanism,
-turnover and regime/left-tail behavior before any new finalist decision. Do not
-promote it from this single intersection.
+Next work is a bounded finalist funnel over the completed search evidence:
+deduplicate by economic mechanism and portfolio exposure in addition to the
+already-unique recorded behavior families, require train stability and the
+candidate-level execution-clock capability gate, and retain explicit A-share
+terminal-liquidity, no-fill and corporate-action blockers. Freeze only a small
+review cohort after this train-only work. Any replay and report-only OOS for
+that new cohort requires a separate immutable authorization; no search reward,
+scheduler or archive feedback may consume the existing 32-pair OOS evidence.
 
-The accepted control plane is deployed and zero-financial-qualified in a clean
-versioned 77o workspace. For a future independently authorized workload, select
-`SEARCH_EXCLUSIVE_32` when search is the only heavy lane, or the exact
-`SEARCH_DUAL_24` plus `VALIDATION_DUAL_8` pair when both lanes have useful work.
-Generate a candidate-level execution-clock capability manifest before freezing
-any replay cohort.
-
-Research work remains bounded finalist deduplication and economic
-classification, not an automatically authorized search tranche: group the
-OOS-positive evidence by behavior family, retain explicit A-share executability
-blockers, and freeze only a small review set if multiple independent mechanisms
-survive. Holdout/2026 access, promotion, a new platform/database, automatic
+Retain the closed 32-pair validation as route/evidence calibration: 20/32 were
+OOS-positive, but only 6/32 were replay-complete and only one had a positive
+strict executable train increment. That gap makes executability and economic
+mechanism the next bottleneck and prevents promotion from the OOS hit rate
+alone. Holdout/2026 access, promotion, a new platform/database, automatic
 successor search and cross-campaign reward memory remain unauthorized.
+
+For any separately authorized future heavy workload, use
+`SEARCH_EXCLUSIVE_32` when search is the only lane or the exact
+`SEARCH_DUAL_24` plus `VALIDATION_DUAL_8` pair when both lanes have useful work.
+Generate and bind a candidate-level execution-clock capability manifest before
+freezing any replay cohort.
 
 Do not rerun the Medium, its report-only validation, either completed
 Hybrid-only tranche or earlier availability-agency canaries. Unlimited search,
