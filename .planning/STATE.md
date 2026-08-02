@@ -18,9 +18,9 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ### Full-compute bounded successor train search active (2026-08-02)
 
-- The user-authorized retry is active as exactly one 77o task,
-  `lanjob_20260802_171902_7afd26` / scheduled task
-  `ChengboLanRemote_lanjob_20260802_171902_7afd26`, at
+- The user-authorized campaign is active as exactly one same-root 77o recovery
+  task, `lanjob_20260802_184157_de3a3b` / scheduled task
+  `ChengboLanRemote_lanjob_20260802_184157_de3a3b`, at
   `D:\ChengboRemote\runtime\cn_winner_guided_large_search_full_compute_successor_20260802_1740_a81c05c_4608`.
   Exact pushed/deployed execution SHA is
   `a81c05cd9877c657a38be78d7423e2703bc76e70` in workspace
@@ -51,11 +51,36 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   was 8,655, all financial/validation/holdout/2026 reads were zero and the
   process exited zero. Supply receipt file SHA256 is
   `e5119e00058c4d0ef1dc80ea86f2edef8e72366022dede3f1445fbdf28ad91be`.
-- Initial live verification found one scheduled task, one parent/child
-  financial process chain, one `SEARCH_EXCLUSIVE_32` lease with exactly 32
-  active threads, about 84.2 GB free memory and empty campaign stderr.
-  `checkpoint_001` is active under the exact 1,120/32 Hybrid-only route
-  schedule. No second task or validation lane is authorized.
+- `checkpoint_001` is independently verified `BATCH_CLOSED_IMMUTABLE`.
+  Manifest file SHA256 is
+  `6ab905b7836f09bbaaf9e8c01536df6c61d763ca326b34974f2ef71ad2ecb424`
+  and payload SHA256 is
+  `3a850160863646d975fa4d2d3ca45fe5a619a46e4d53f42a0caf7920f2ebc328`;
+  all 24 artifacts, the Genesis link and exact 1,120/32 route schedule passed.
+  It contains 1,152 fresh primary exact asks, 595 evaluated pairs, 180
+  productive candidates and 176 accepted optimizer-feedback rows, with zero
+  exact, pair or full-signature duplicates and zero sealed reads. Active-bar
+  and stock-session reached 28.851 and 25.685 effective cores; minimum free
+  memory was 39,154,376,704 bytes.
+- The first `checkpoint_002` attempt completed financial work but remained
+  unclosed because active-bar minimum free memory fell to 18,300,313,600
+  bytes below the unchanged 24 GiB gate. Both acceleration gates passed at
+  28.944 active-bar and 26.260 stock-session effective cores. The rejected
+  checkpoint and logs are preserved at
+  `D:\ChengboRemote\runtime\run_health_incidents\20260802T175843_checkpoint002_memory_headroom_gate_failure_full_compute_successor`;
+  incident SHA256 is
+  `e0867e3e270a64d02f031bf73e47bd9713d0811404d14955ef94ae99d28b5f7a`
+  and the 57-file/1,683,339,759-byte preservation manifest SHA256 is
+  `abd7511a27f80b165e6a85d008c68730ed58fc5aff4e16135a4b0167b83df243`.
+  Failed financial results and optimizer state were not reused and no
+  threshold was weakened.
+- The original task was deleted. The one authorized same-root recovery began
+  only from immutable `checkpoint_001`; regenerated `checkpoint_002` route
+  schedule, asked population and candidate attempts exactly match the
+  preserved attempt by SHA256. Initial recovery verification found one
+  parent/child financial chain, about 83.85 GB free memory and no immutable
+  checkpoint-002 manifest yet. A second failure of the same memory gate makes
+  this campaign terminal `RUN_INVALID`; no third attempt is authorized.
 
 ### Stock-session rank-mapping acceleration qualified (2026-08-02)
 
@@ -1768,15 +1793,17 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-Monitor only the active full-compute successor task above. Independently verify
-each newly closed checkpoint manifest, all declared artifacts, prior-manifest
-chain, exact 1,120/32 route schedule, ask/tell and search-score parity, zero
-exact/pair/full-signature duplicates, productive definition, 32-thread
-entitlement, pair batches 12/24, unchanged cache/memory/acceleration gates and
-zero validation/holdout/2026 reads. On failure preserve evidence and resume
-only from the last independently closed immutable boundary without reusing
-incomplete financial or optimizer state. Do not launch a duplicate, validation
-task or another successor tranche.
+Monitor only recovery task `lanjob_20260802_184157_de3a3b` in the unchanged
+full-compute successor root. Independently verify regenerated checkpoint 002,
+then checkpoints 003-004: each canonical manifest, all declared artifacts,
+prior-manifest chain, exact 1,120/32 route schedule, ask/tell and search-score
+parity, zero exact/pair/full-signature duplicates, productive definition,
+32-thread entitlement, pair batches 12/24, unchanged cache, memory and
+acceleration gates and zero validation/holdout/2026 reads. If checkpoint 002
+fails the same memory-headroom gate again, preserve evidence and set
+`RUN_INVALID` under the predeclared second-failure policy; do not weaken the
+gate or launch a third attempt. Do not launch a duplicate, validation task or
+another successor tranche.
 
 The shared-control validation, 9,216-ask search, bounded train-only finalist
 funnel and separately authorized one-pair report-only OOS are closed and must
