@@ -12,6 +12,9 @@ from typing import Any, Mapping
 SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
     "cn_shared_control_winner_guided_search_v1"
 )
+CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
+    "cn_continuous_shared_control_winner_guided_search_v1"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -110,10 +113,10 @@ def freeze_authorization(
     ):
         raise RuntimeError("dual-lane contract is not frozen")
     search = dict(contract.get("search_lane") or {})
-    if (
-        str(search.get("campaign_profile") or "")
-        != SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE
-    ):
+    if str(search.get("campaign_profile") or "") not in {
+        SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
+        CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
+    }:
         raise RuntimeError("dual-lane search campaign profile drift")
     profile = dict(contract.get("shared_resource_authority") or {})
     if str(profile.get("search_profile") or "") != "SEARCH_DUAL_24":
@@ -127,6 +130,16 @@ def freeze_authorization(
     maximum_asks = int(search.get("maximum_formal_fresh_exact_asks") or 0)
     fixed_routes = dict(search.get("fixed_route_formal_asks_per_checkpoint") or {})
     final_routes = dict(search.get("final_route_formal_ask_allocation") or {})
+    active_pair_batch_size = int(
+        search.get("active_pair_batch_size")
+        or search.get("pair_batch_size")
+        or 12
+    )
+    session_pair_batch_size = int(
+        search.get("session_pair_batch_size") or 24
+    )
+    if active_pair_batch_size != 12 or session_pair_batch_size != 24:
+        raise RuntimeError("dual-lane pair batch geometry drift")
     if checkpoint_count * asks_per_checkpoint != maximum_asks:
         raise RuntimeError("dual-lane search checkpoint budget drift")
     if sum(int(value) for value in fixed_routes.values()) != asks_per_checkpoint:
@@ -149,14 +162,24 @@ def freeze_authorization(
         raise RuntimeError("SEARCH_DUAL_24 profile drift")
 
     payload = dict(source)
+    # The source authority may already be self-hashed.  A replacement
+    # authority must hash its new unsigned payload, not the inherited hash.
+    payload.pop("resource_topology_authorization_sha256", None)
     payload.pop("active_threads", None)
     payload.pop("session_threads", None)
+    payload.pop("history_snapshot_exact_identity_count", None)
+    payload.pop("history_snapshot_behavior_identity_count", None)
+    payload.pop("history_snapshot_excludes_unclosed_checkpoint_005", None)
     payload.update(
         {
             "schema_version": "cn_shared_control_dual_search_authorization_v1",
             "status": "EXECUTION_AUTHORIZED_AFTER_ZERO_FINANCIAL_QUALIFICATION",
             "authority_source": str(contract.get("authority_source") or ""),
             "campaign_id": str(search.get("campaign_id") or ""),
+            "experiment_id": str(
+                search.get("experiment_id") or search.get("campaign_id") or ""
+            ),
+            "objective": str(search.get("objective") or ""),
             "campaign_profile": str(search.get("campaign_profile") or ""),
             "coverage_floors": final_routes,
             "route_formal_ask_caps": final_routes,
@@ -172,6 +195,8 @@ def freeze_authorization(
                 or 0
             ),
             "seed_base": int(search.get("seed_base") or 0),
+            "active_pair_batch_size": active_pair_batch_size,
+            "session_pair_batch_size": session_pair_batch_size,
             "historical_candidate_archive_sha256": _sha256(candidate_path),
             "historical_behavior_archive_sha256": _sha256(behavior_path),
             "historical_manifest_sha256": _sha256(history_path),
@@ -206,6 +231,12 @@ def freeze_authorization(
                 "optimizer_state_imported": False,
                 "scheduler_state_imported": False,
             },
+            "history_snapshot_exact_identity_count": int(
+                history.get("exact_identity_count") or 0
+            ),
+            "history_snapshot_behavior_identity_count": int(
+                history.get("behavior_identity_row_count") or 0
+            ),
             "first_checkpoint_minimum_pair_evaluated_per_hour": float(
                 (search.get("throughput_contract") or {}).get(
                     "first_checkpoint_minimum_pair_evaluated_per_hour"

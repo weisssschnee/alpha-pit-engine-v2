@@ -135,17 +135,43 @@ def _source_paths(
     *,
     include_pair_outcomes: bool = False,
 ) -> list[Path]:
+    train_manifest_path = root / "train_complete_manifest.json"
+    if not train_manifest_path.is_file():
+        raise RuntimeError(
+            f"missing immutable source artifact: {train_manifest_path}"
+        )
+    train_manifest = json.loads(
+        train_manifest_path.read_text(encoding="utf-8-sig")
+    )
+    expected_checkpoint_count = int(
+        train_manifest.get("checkpoint_count") or 0
+    )
+    if expected_checkpoint_count <= 0:
+        raise RuntimeError("source train manifest checkpoint count is invalid")
     paths = [
         root / "run_manifest.json",
         root / "final_decision.json",
-        root / "train_complete_manifest.json",
+        train_manifest_path,
         root / "frozen_contract.json",
         root / "candidate_ledger.parquet",
         root / "observation_ledger.parquet",
     ]
-    checkpoints = sorted((root / "checkpoints").glob("checkpoint_*"))
-    if len(checkpoints) != 8:
-        raise RuntimeError(f"expected 8 immutable checkpoints, found {len(checkpoints)}")
+    checkpoints = sorted(
+        path
+        for path in (root / "checkpoints").glob("checkpoint_*")
+        if path.is_dir()
+    )
+    expected_checkpoint_names = [
+        f"checkpoint_{index:03d}"
+        for index in range(1, expected_checkpoint_count + 1)
+    ]
+    observed_checkpoint_names = [path.name for path in checkpoints]
+    if observed_checkpoint_names != expected_checkpoint_names:
+        raise RuntimeError(
+            "immutable checkpoint set does not match train manifest: "
+            f"expected {expected_checkpoint_names}, "
+            f"found {observed_checkpoint_names}"
+        )
     for checkpoint in checkpoints:
         paths.extend(
             [
@@ -570,15 +596,22 @@ def _select_finalist_funnel(
     *,
     cohort_pairs: int,
 ) -> tuple[list[str], dict[str, Any]]:
-    structural_cap = math.ceil(cohort_pairs * 0.60)
     exposure_cap = math.ceil(cohort_pairs * 0.25)
     route_group_count = int(ranked["route_id"].nunique())
+    structural_group_count = int(
+        ranked["structural_family_id"].nunique()
+    )
     signal_group_count = int(ranked["signal_cluster_id"].nunique())
     route_cap = (
         math.ceil(cohort_pairs * 0.75) if route_group_count >= 2 else None
     )
     signal_cap = (
         math.ceil(cohort_pairs * 0.75) if signal_group_count >= 2 else None
+    )
+    structural_cap = (
+        math.ceil(cohort_pairs * 0.60)
+        if structural_group_count >= 2
+        else None
     )
     selected: list[str] = []
     selected_set: set[str] = set()
@@ -597,7 +630,10 @@ def _select_finalist_funnel(
             return False
         if route_cap is not None and route_counts[route_id] >= route_cap:
             return False
-        if structural_counts[structural_id] >= structural_cap:
+        if (
+            structural_cap is not None
+            and structural_counts[structural_id] >= structural_cap
+        ):
             return False
         if signal_cap is not None and signal_counts[signal_id] >= signal_cap:
             return False
@@ -641,6 +677,7 @@ def _select_finalist_funnel(
         )
     return selected, {
         "route_group_count": route_group_count,
+        "structural_group_count": structural_group_count,
         "signal_group_count": signal_group_count,
         "route_cap": route_cap,
         "structural_cap": structural_cap,

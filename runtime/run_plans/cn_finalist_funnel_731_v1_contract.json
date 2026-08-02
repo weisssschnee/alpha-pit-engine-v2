@@ -1,0 +1,105 @@
+{
+  "schema_version": "cn_train_only_finalist_funnel_contract_v1",
+  "status": "FROZEN_USER_AUTHORIZED_TRAIN_ONLY_FUNNEL",
+  "authority_source": "CURRENT_USER_KEEP_SEARCH_RUNNING_20260802",
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "source_campaign": {
+    "root": "D:\\ChengboRemote\\runtime\\cn_winner_guided_large_search_full_compute_successor_20260802_1740_a81c05c_4608",
+    "status": "CAMPAIGN_CLOSED",
+    "run_manifest_sha256": "17422ea8db593a1b02dca75aa6b16b7c065e2be2d45db7e25b223eb8af7174ee",
+    "train_complete_manifest_sha256": "cc7d994b969b11adac810d7c8377e3b81b9068b1eec7de88f1f62e8abfafd132",
+    "final_decision_sha256": "381c1dc0efee88cde2f6c87037c5c02d09d84abee59f03bd861042e8cc45294d",
+    "candidate_ledger_sha256": "79e9c68b560a80723293aa889f04efcf609105b1b93daa3198d802d45d37c622",
+    "observation_ledger_sha256": "613faf45ad4d6e82cbb9ae49f818014cef54a8095ea2d6c66fce5d020e8e7825",
+    "behavior_archive_sha256": "e59fb45ef08b5460bf06d9a2436041df5507bbaf2e86961869d1a8816c5607a3",
+    "checkpoint_count": 4,
+    "formal_asks": 4608,
+    "evaluated_pairs": 2365,
+    "productive_pairs": 731,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "productive_source_authority": {
+    "authoritative_rows": "CHECKPOINT_LOCAL_PAIR_OUTCOMES_BOUND_BY_IMMUTABLE_BATCH_MANIFESTS",
+    "definition": "PAIR_EVALUATED_AND_DEVELOPMENT_PREDICTIVE_SCORE_POSITIVE_AND_PRIMARY_STANDALONE_READY",
+    "development_predictive_score": "MIN_PRIMARY_PREDICTIVE_OR_COMPOSITE_REWARD_AND_PREDICTIVE_OR_MATCHED_TRAIN_INCREMENT",
+    "required_productive_count": 731,
+    "root_observation_ledger_role": "OPTIMIZER_OBSERVATION_TRANSCRIPT_NOT_COMPLETE_PRODUCTIVE_UNIVERSE",
+    "count_mismatch_action": "FAIL_CLOSED"
+  },
+  "execution_clock_capability": {
+    "manifest": "D:\\ChengboRemote\\runtime\\cn_continuous_search_finalist_dual_prep_20260802_c287e76\\stock_session_capability_731.json",
+    "capability_payload_sha256": "3a70c45fccef71018082e7137b85244c4a6f8fdf272b1131c7fea5d81dbeab09",
+    "execution_clock": "stock_session",
+    "selection_granularity": "PRIMARY_AND_CONTROL_EXPRESSION_FIELDS",
+    "incompatible_action": "HOLD_RESEARCH_WITH_TYPED_FIELD_REASON",
+    "bypass": "FORBIDDEN"
+  },
+  "train_hard_screen": {
+    "source_productive_pairs": 731,
+    "rules": {
+      "all_required_train_metrics": "FINITE",
+      "matched_gross_increment": ">0",
+      "matched_net_increment": ">0",
+      "train_worst_horizon_day_sortino": ">0",
+      "train_day_uncertainty_p25_or_legacy_alias": ">0",
+      "train_regime_positive_share": ">=0.5",
+      "execution_clock_compatible": true
+    }
+  },
+  "review_pool": {
+    "target_pairs": 48,
+    "candidate_members": 96,
+    "economic_mechanism_fingerprint": {
+      "policy": "KEEP_HIGHEST_TRAIN_STABILITY_RANK_PER_FINGERPRINT"
+    },
+    "portfolio_exposure_family": {
+      "maximum_share": 0.25,
+      "maximum_pairs_at_target": 12
+    },
+    "route_and_signal_caps": {
+      "policy": "ENFORCE_ONLY_WHEN_AT_LEAST_TWO_EXECUTION_COMPATIBLE_GROUPS_EXIST"
+    },
+    "ranking": {
+      "score": "0.65*PERCENTILE_FLOOR_PLUS_0.35*PERCENTILE_MEDIAN",
+      "tie_break": "SCORE_DESC_FLOOR_DESC_MEDIAN_DESC_SEARCH_SCORE_DESC_PAIR_ID_ASC"
+    }
+  },
+  "replay_stage": {
+    "input_pairs": 32,
+    "input_selection": "TOP_TRAIN_STABILITY_ROWS_FROM_IMMUTABLE_REVIEW_POOL_WITH_SAME_MECHANISM_AND_EXPOSURE_CAPS",
+    "execution": "STRICT_A_SHARE_EXECUTABLE_TRAIN_REPLAY_ONLY",
+    "resource_profile": "VALIDATION_DUAL_8",
+    "candidate_level_blockers_allowed": [
+      "FINAL_SESSION_UNLIQUIDATED_HOLDINGS",
+      "NO_EXECUTABLE_FILLS",
+      "CORPORATE_ACTION_FRACTIONAL_SHARES"
+    ],
+    "unknown_authority_or_schema_errors": "BATCH_FATAL",
+    "interstage_filtering_before_replay": "FORBIDDEN"
+  },
+  "finalist_freeze": {
+    "target_pairs_minimum": 24,
+    "target_pairs_maximum": 32,
+    "requires_replay_complete": true,
+    "requires_positive_executable_train_increment": true,
+    "requires_mechanism_independence": true,
+    "insufficient_supply_action": "FREEZE_ACTUAL_SMALLER_COUNT_AND_REPORT_DO_NOT_BACKFILL_WITH_BLOCKED_ROWS"
+  },
+  "authority_boundary": {
+    "evidence_scope": "DEVELOPMENT_TRAIN_ONLY",
+    "financial_search": "SEPARATE_ISOLATED_LANE_ONLY",
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "optimizer_feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "search_archive_write": "FORBIDDEN",
+    "promotion": "FORBIDDEN",
+    "automatic_report_only_oos": "FORBIDDEN",
+    "cross_lane_feedback": "FORBIDDEN"
+  },
+  "claim_boundary": "Train-only finalist review and executable replay evidence. Not OOS, alpha promotion, production trading or economic claim.",
+  "contract_payload_sha256": "7408c6c7f7ae8c1df9f2b876c0d99d814b25815304b9467955d4e8fa4b91f1e1"
+}

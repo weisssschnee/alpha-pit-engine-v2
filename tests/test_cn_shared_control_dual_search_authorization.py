@@ -11,10 +11,27 @@ from scripts.materialize_cn_search_preflight_authorization import (
     materialize_authorization,
 )
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
+    CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
     SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
     _authorization_binding,
     _campaign_runtime_spec,
 )
+
+
+def test_continuous_shared_profile_is_one_full_dual_lane_checkpoint() -> None:
+    spec = _campaign_runtime_spec(
+        CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE
+    )
+    assert spec["maximum_checkpoints"] == 1
+    assert spec["asks_per_checkpoint"] == 1_152
+    assert spec["maximum_raw_asks"] == 1_152
+    assert spec["fixed_route_mix"] == {
+        "SLOW_TEMPORAL_CHANGE": 1_120,
+        "FIRSTN_PATH": 32,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+        "MARKET_REGIME_CONDITION": 0,
+        "DISCLOSURE_EVENT": 0,
+    }
 
 
 def _write(path: Path, payload: dict) -> Path:
@@ -88,6 +105,9 @@ def test_freeze_binds_budget_history_and_dual_profile(tmp_path: Path) -> None:
     source_payload["winner_structural_guide_sha256"] = hashlib.sha256(
         winner.read_bytes()
     ).hexdigest()
+    source_payload["resource_topology_authorization_sha256"] = (
+        "inherited-source-self-hash"
+    )
     _write(source, source_payload)
     history = _write(
         tmp_path / "history.json",
@@ -126,6 +146,10 @@ def test_freeze_binds_budget_history_and_dual_profile(tmp_path: Path) -> None:
     assert frozen["node_resource_profiles_allowed"] == ["SEARCH_DUAL_24"]
     assert "active_threads" not in frozen
     assert frozen["historical_snapshot"]["reward_rows_imported"] == 0
+    materialized = materialize_authorization(
+        _write(tmp_path / "materializable.json", frozen)
+    )
+    assert materialized["status"] == "ZERO_FINANCIAL_PREFLIGHT_AUTHORIZED"
 
 
 def test_frozen_shared_authority_matches_runtime_and_preflight_hash(

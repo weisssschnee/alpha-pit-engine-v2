@@ -286,15 +286,22 @@ def _recompute_finalist_selection(
     *,
     cohort_pairs: int,
 ) -> tuple[list[str], dict[str, Any]]:
-    structural_cap = math.ceil(cohort_pairs * 0.60)
     exposure_cap = math.ceil(cohort_pairs * 0.25)
     route_group_count = int(ranked["route_id"].nunique())
+    structural_group_count = int(
+        ranked["structural_family_id"].nunique()
+    )
     signal_group_count = int(ranked["signal_cluster_id"].nunique())
     route_cap = (
         math.ceil(cohort_pairs * 0.75) if route_group_count >= 2 else None
     )
     signal_cap = (
         math.ceil(cohort_pairs * 0.75) if signal_group_count >= 2 else None
+    )
+    structural_cap = (
+        math.ceil(cohort_pairs * 0.60)
+        if structural_group_count >= 2
+        else None
     )
     selected: list[str] = []
     selected_set: set[str] = set()
@@ -313,7 +320,10 @@ def _recompute_finalist_selection(
             return False
         if route_cap is not None and route_counts[route_id] >= route_cap:
             return False
-        if structural_counts[structural_id] >= structural_cap:
+        if (
+            structural_cap is not None
+            and structural_counts[structural_id] >= structural_cap
+        ):
             return False
         if signal_cap is not None and signal_counts[signal_id] >= signal_cap:
             return False
@@ -357,6 +367,7 @@ def _recompute_finalist_selection(
         )
     return selected, {
         "route_group_count": route_group_count,
+        "structural_group_count": structural_group_count,
         "signal_group_count": signal_group_count,
         "route_cap": route_cap,
         "structural_cap": structural_cap,
@@ -591,7 +602,11 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
             if len(route_counts) >= 2
             else None
         )
-        structural_cap = math.ceil(cohort_pairs * 0.60)
+        structural_cap = (
+            math.ceil(cohort_pairs * 0.60)
+            if len(structural_counts) >= 2
+            else None
+        )
         signal_cap = (
             math.ceil(cohort_pairs * 0.75)
             if len(signal_counts) >= 2
@@ -606,7 +621,10 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         exposure_cap = math.ceil(cohort_pairs * 0.25)
         if route_cap is not None and max(route_counts.values()) > route_cap:
             raise RuntimeError("route concentration cap violated")
-        if max(structural_counts.values()) > structural_cap:
+        if (
+            structural_cap is not None
+            and max(structural_counts.values()) > structural_cap
+        ):
             raise RuntimeError("structural concentration cap violated")
         if signal_cap is not None and max(signal_counts.values()) > signal_cap:
             raise RuntimeError("signal concentration cap violated")

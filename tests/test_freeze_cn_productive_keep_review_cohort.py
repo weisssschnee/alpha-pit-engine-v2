@@ -20,6 +20,7 @@ from scripts.freeze_cn_productive_keep_review_cohort import (
     _screen_reason,
     _select_finalist_funnel,
     _select_with_caps,
+    _source_paths,
 )
 from scripts.verify_cn_productive_keep_review_cohort import (
     _recompute_finalist_identities,
@@ -204,6 +205,27 @@ def test_finalist_funnel_allows_single_compatible_route_and_signal() -> None:
     )
 
 
+def test_finalist_funnel_does_not_fake_structural_diversity() -> None:
+    rows = []
+    for ordinal in range(96):
+        rows.append(
+            {
+                "pair_id": f"pair-single-structure-{ordinal:03d}",
+                "route_id": "SLOW_TEMPORAL_CHANGE",
+                "structural_family_id": "ONLY_STRUCTURE",
+                "signal_cluster_id": "ONLY_SIGNAL",
+                "portfolio_exposure_family_id": f"EXPOSURE_{ordinal % 4}",
+                "economic_mechanism_id": f"MECHANISM_{ordinal:03d}",
+            }
+        )
+    selected, caps = _select_finalist_funnel(
+        pd.DataFrame(rows), cohort_pairs=64
+    )
+    assert len(selected) == 64
+    assert caps["structural_group_count"] == 1
+    assert caps["structural_cap"] is None
+
+
 def test_finalist_mechanism_identity_and_dedup_are_deterministic() -> None:
     rows = []
     for ordinal in range(2):
@@ -285,3 +307,50 @@ def test_productive_pair_outcomes_are_not_limited_to_optimizer_observations(
     productive = _productive_pair_outcomes(tmp_path)
     assert productive["pair_id"].tolist() == ["pair-1"]
     assert productive["search_score"].tolist() == [0.2]
+
+
+def test_source_paths_bind_checkpoint_count_from_closed_train_manifest(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "train_complete_manifest.json").write_text(
+        json.dumps({"checkpoint_count": 4}), encoding="utf-8"
+    )
+    for name in (
+        "run_manifest.json",
+        "final_decision.json",
+        "frozen_contract.json",
+        "candidate_ledger.parquet",
+        "observation_ledger.parquet",
+    ):
+        (tmp_path / name).write_bytes(b"source")
+    for index in range(1, 5):
+        checkpoint = tmp_path / "checkpoints" / f"checkpoint_{index:03d}"
+        phase3cm = checkpoint / "phase3cm"
+        for backend in ("active_bar", "stock_session"):
+            result = phase3cm / backend / "CN_STREAMING_BACKEND_RESULT.json"
+            result.parent.mkdir(parents=True, exist_ok=True)
+            result.write_text("{}", encoding="utf-8")
+        for name in ("batch_manifest.json", "full_behavior.parquet"):
+            (checkpoint / name).write_bytes(b"checkpoint")
+
+    paths = _source_paths(tmp_path)
+
+    assert sum(path.name == "batch_manifest.json" for path in paths) == 4
+    assert sum(path.name == "CN_STREAMING_BACKEND_RESULT.json" for path in paths) == 8
+
+
+def test_source_paths_reject_checkpoint_set_drift(tmp_path: Path) -> None:
+    (tmp_path / "train_complete_manifest.json").write_text(
+        json.dumps({"checkpoint_count": 4}), encoding="utf-8"
+    )
+    for index in range(1, 4):
+        (tmp_path / "checkpoints" / f"checkpoint_{index:03d}").mkdir(
+            parents=True
+        )
+
+    try:
+        _source_paths(tmp_path)
+    except RuntimeError as exc:
+        assert "does not match train manifest" in str(exc)
+    else:
+        raise AssertionError("checkpoint set drift was accepted")
