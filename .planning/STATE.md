@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-02
+Updated: 2026-08-03
 
-Current state: `CN_SINGLE_FINALIST_REPORT_ONLY_OOS_CLOSED_HOLD_RESEARCH`
+Current state: `CN_CONTINUOUS_SEARCH_AND_32_PAIR_OOS_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,74 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Continuous search plus unchanged 32-pair report-only OOS closure (2026-08-03)
+
+- The user-authorized shared-control workflow is closed without promotion or
+  holdout/2026 access. Its first bounded `SEARCH_DUAL_24` continuation closed
+  1,152 fresh train-only asks with 562 evaluated pairs and 174 productive
+  candidates; its second bounded continuation closed 768 asks with 521
+  evaluated pairs and 135 productive candidates. All 309 productive rows have
+  distinct behavior-family IDs, identity duplicates were zero and sealed reads
+  were zero. The second search batch manifest file SHA256 is
+  `29aaac16048800f6768d8e619fca4cc666b28ad12367fdaeae331e3073f996cc`,
+  canonical payload SHA256 is
+  `acb324178743a7af8bc72acc5ac468bec1538654b96c4ff4d1c624b4fb03889e`,
+  all 24 artifacts passed and the root train-complete manifest SHA256 is
+  `df793f16e890508bcf6e28a6b7f6cf2155b08d7e18d73dd31adddbe5a3421e69`.
+- Strict A-share train replay over the unchanged 32-pair/64-member cohort
+  remained fully fail-closed: all 64 candidates are typed
+  `FINAL_SESSION_UNLIQUIDATED_HOLDINGS`, all 32 matched pairs are
+  `PAIR_REPLAY_BLOCKED`, and the deterministic positive-executable freeze
+  selected zero pairs without backfill. Replay executability is therefore zero
+  and must not be inferred from OOS transfer.
+- Unchanged-cohort intention-to-treat report-only OOS evaluated all 32 pairs
+  without filtering. Twenty-one were positive-transfer (65.625%); validation
+  pair-score median/p10/min were 0.051992185 / -0.08652519 / -0.14865653,
+  leaving 11 nonpositive pairs. Median one-way turnover was 0.04871005. Every
+  pair had validation regime-positive share 0.0; worst-regime day Sortino
+  median/p10/min were -0.73103355 / -0.755413956 / -0.7710099. The positive
+  aggregate transfer is therefore offset by unresolved strict executability
+  and uniformly weak regime evidence and remains `HOLD_RESEARCH`.
+- The independently verified OOS closure file SHA256 is
+  `2f345630fc77a00d75e72f18b82e5c3bd940f385c418d0b8f7f923d9b6ba39e6`;
+  the corrected root closure file/canonical SHA256 values are
+  `fad6b2ab9955d0df52546fd44b9e53f21131b3a8dd475eda090b701065982bc3` /
+  `1e4bd86a8c6ffba2a591dbf3a6518264fbd7dd2d4353bf903c9d6c558059a19c`.
+  Independent audit file SHA256 is
+  `fc5ecab57894771b60183c1dd3b18ea56d5b24c8cad7bbb6f007a437b6c55a1e`;
+  it verified 87 declared replay/OOS/root artifacts, exact pair and candidate
+  order, 12 protected source hashes, long-only next-session-open T+1 execution,
+  5 bps Phase3CM cost, horizons 1/5/15/30, 381,649 validation reads, zero
+  holdout/2026 reads and zero prohibited writes.
+- The first OOS resume at SHA `2ed4f24` failed before label closure or OOS
+  financial work because the resume branch omitted the serial Numba/eight-thread
+  Polars sidecar environment. Evidence is preserved under
+  `run_health_incidents\20260803T014658_closed_replay_oos_label_thread_env_missing`;
+  incident file SHA256 is
+  `d5da3a5e46cba510ba682ffcb9ef4e4af38b48fc9c30abb6da8baa15bdf2fd48`.
+  SHA `3881132abe9598d94677eaf68f7e3ccc51277e7c` repaired the common
+  sidecar boundary and passed local/77o focused tests 14/14 plus PowerShell
+  parse.
+- The fast repaired task exposed a separate detached-task launcher defect: it
+  was started immediately and also retained a one-minute trigger. The second
+  invocation reused the already complete identical Phase3CM result, so no
+  second financial evaluation or train replay occurred, but it overwrote
+  closure metadata. Evidence is preserved under
+  `run_health_incidents\20260803T025622_oos_fast_task_scheduled_trigger_duplicate`;
+  incident file/canonical SHA256 values are
+  `2d9f4aa08c82698e0837148a156ddae8d103034baa9b0f31215d7a1acd6a57d1` /
+  `7d20cbd0bcbd717a7d0acc4342d988c6a946c2caa06a74fe71daffab4b0fe238`.
+  The local LAN launcher now registers triggerless tasks and starts them once.
+  Project SHA `89eb321ed6087f989f3de8dc367ed09ecfa5fc5c` additionally refuses
+  closure overwrite and records closed-replay attribution explicitly; focused
+  tests passed 16/16 locally and on 77o. Root closure was then re-finalized
+  with `train_replay_recomputed=false` without changing the OOS closure or any
+  financial result artifact.
+- This evidence does not create executable finalists, authorize promotion,
+  enter validation results into search feedback, or authorize another search
+  tranche. No ADR or CURRENT Graph transition is warranted because search,
+  validation, promotion and resource authority boundaries are unchanged.
 
 ### Full-compute bounded successor train search closed (2026-08-02)
 
@@ -1836,6 +1904,16 @@ remains unchanged. The compact receipt is
   a SHA-verified full Git bundle without changing the node's proxy authority.
 
 ## Next action
+
+The continuous dual-lane search/replay/OOS workflow is closed and must not be
+rerun. Preserve the 309 new train-productive candidates as immutable search
+evidence, but do not launch another tranche automatically. The next bounded
+research action is to classify the 21 OOS-positive but strict-replay-blocked
+pairs by terminal holdings, turnover, mechanism and regime exposure, then
+decide whether the economic experiment needs an explicitly frozen liquidation
+buffer or should reject these mechanisms as non-executable. Do not weaken the
+existing flat-book/T+1 rules, backfill the zero-finalist freeze, feed OOS into
+the optimizer, or claim promotion from the 65.625% transfer rate.
 
 The full-compute successor is closed and must not be rerun. Preserve its 731
 productive train-development candidates as immutable input to the existing
