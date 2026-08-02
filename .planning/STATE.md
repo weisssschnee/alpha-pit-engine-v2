@@ -58,6 +58,56 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   No ADR or CURRENT Graph transition was required because no durable authority
   or financial contract changed.
 
+### Qualified-successor train search terminal partial closure (2026-08-02)
+
+- The separately authorized successor campaign at
+  `D:\ChengboRemote\runtime\cn_winner_guided_large_search_qualified_successor_20260802_e0a89dd_9216`
+  is terminal `RUN_INVALID` under exact pushed/deployed SHA
+  `e0a89dd811ba15dcbc702d39e3c89672a9ac8a22`. Its frozen contract remained
+  8 checkpoints x 1,152 train-only asks, with 1,120 Slow Temporal and 32
+  First-N asks per checkpoint, fresh TPE, the existing Availability
+  Controller, `SEARCH_EXCLUSIVE_32`, pair batch 12, an 8 GiB cache and the
+  unchanged 24 GiB minimum-free-memory gate. Validation, holdout and 2026
+  reads remained zero.
+- Checkpoints 001-004 are independently verified
+  `BATCH_CLOSED_IMMUTABLE`: all canonical manifest self-hashes, all 96
+  declared artifact size/SHA256 values, the prior-manifest chain and the exact
+  route schedule passed. They contain 4,608 formal fresh exact asks, 2,388
+  `PAIR_EVALUATED` rows and 708 productive candidates. The immutable-boundary
+  audit SHA256 is
+  `6cef2c89301e4caeb96d89951a4e4f109a45b8b156c0633b91f54359f4e8f474`;
+  checkpoint 004 manifest file SHA256 is
+  `3e86b212e8f07721786d9d3e997c586f477f74bfa72ec4ee439b17e1c93b26ab`.
+- The first checkpoint-005 attempt completed both financial backends but failed
+  before immutable closure because stock-session
+  `cross_sectional_rank_mapping` reached 14.356927 effective cores against the
+  unchanged 16-core acceleration gate. Its complete evidence remains under
+  `run_health_incidents\20260802T135009_checkpoint005_runtime_acceleration_gate_failure_qualified_successor`;
+  incident SHA256 is
+  `29b9e1823557636b654942f54616b3fa64472715a5e60945ffb7fe6cce222067`
+  and the 64-file/2,993,676,419-byte preservation manifest SHA256 is
+  `2f3f3ab0c3230c4f2b06503bac80b6078878effc6aa5d1a1e61e5b6785545b6e`.
+- The one authorized same-root recovery regenerated checkpoint 005 without
+  reusing the rejected financial result or optimizer state. Its route
+  schedule, asked population, Phase3CM input binding and both candidate tables
+  exactly matched the preserved first attempt by SHA256. It failed the same
+  frozen phase gate again at 15.718638 effective cores. Active-bar passed at
+  28.716 effective cores and 89.74% occupancy; stock-session run health passed
+  at 22.168 effective cores and 69.27% occupancy, memory/cache/identity gates
+  passed and sealed reads remained zero.
+- Per `second_failure_policy=RUN_INVALID`, no third attempt is authorized. The
+  second rejected checkpoint and logs remain preserved at
+  `run_health_incidents\20260802T142513_checkpoint005_second_runtime_acceleration_gate_failure_run_invalid`;
+  incident SHA256 is
+  `9d026ffd288e95f6343f6ecc824a7717addf98f110c7f7347b2ded2ae1c22469`
+  and the 63-file/2,992,287,603-byte preservation manifest SHA256 is
+  `95100d825e0007d6be08c552218f6f6068f0e341f812d5fcc6dda371127ed39a`.
+  Root `RUN_INVALID.json` file SHA256 is
+  `371debc9a2739093ce0ab3f2d55b5ceaaf8cf80dea24d8e6a80dfe348024ce43`.
+  Failed checkpoint-005 financial/optimizer state is non-authoritative; the
+  campaign has no root closure and authorizes neither validation/OOS nor a
+  successor search.
+
 ### Compute-efficient bounded train search terminal partial closure (2026-08-02)
 
 - The separately authorized compute-efficient train-only campaign at
@@ -1690,14 +1740,14 @@ either rejected checkpoint's financial/optimizer state as evidence. Retain only
 the independently closed checkpoints 001-003: 4,608 formal asks, 2,361
 evaluated pairs and 731 productive candidates with zero sealed reads.
 
-The source-level stock-session `cross_sectional_rank_mapping` acceleration path
-is now independently qualified at 30.280 effective cores with bit-exact output
-and a 1.23126x wall-time speedup. This clears the measured compute blocker but
-does not authorize or start a financial workload. Any successor train search
-must be a separately frozen contract at the qualified SHA (or a later
-independently qualified descendant), must rerun a zero-financial supply and
-resource preflight, and must retain the existing acceleration, 24 GiB-memory
-and 8 GiB-cache gates. Validation/OOS and promotion remain unauthorized.
+The separately authorized qualified-successor train search is now terminal
+`RUN_INVALID` after checkpoint 005 failed the same frozen stock-session mapping
+gate twice. Do not retry checkpoint 005, launch a third attempt or treat either
+rejected checkpoint's financial/optimizer state as evidence. Retain only the
+independently closed checkpoints 001-004: 4,608 formal asks, 2,388 evaluated
+pairs and 708 productive candidates with zero sealed reads. This partial train
+evidence does not authorize validation/OOS, promotion or another search
+contract.
 
 Retain the already-closed 32-pair validation only as route/evidence calibration:
 20/32 were OOS-positive, but only 6/32 were replay-complete and one had a
