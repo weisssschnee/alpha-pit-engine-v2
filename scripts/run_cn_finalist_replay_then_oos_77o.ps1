@@ -383,6 +383,15 @@ try {
         return
     }
 
+    foreach ($closedPath in @(
+        (Join-Path $oosRoot 'OOS_COMPLETE.json'),
+        (Join-Path $resolvedRoot 'REPLAY_THEN_OOS_COMPLETE.json')
+    )) {
+        if (Test-Path -LiteralPath $closedPath) {
+            throw "refusing to overwrite closed report-only OOS: $closedPath"
+        }
+    }
+
     # Both a full replay/OOS run and a closed-replay OOS resume enter this
     # common sidecar section. Freeze the native thread environment here so a
     # resume cannot inherit an unset or evaluator-oriented environment.
@@ -442,11 +451,17 @@ try {
         throw "unchanged-cohort report-only OOS failed: $LASTEXITCODE"
     }
 
+    $trainReplayRecomputed = if ($ResumeClosedReplayReportOnlyOos) {
+        'false'
+    } else {
+        'true'
+    }
     & $python $runner finalize `
         --freeze-manifest $freeze `
         --replay-root $replayRoot `
         --oos-root $oosRoot `
         --output-root $resolvedRoot `
+        --train-replay-recomputed $trainReplayRecomputed `
         --expected-pair-count $ExpectedPairCount *>> $stdoutPath
     if ($LASTEXITCODE -ne 0) {
         throw "replay/OOS immutable closure failed: $LASTEXITCODE"

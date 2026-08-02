@@ -26,6 +26,25 @@ def test_closed_replay_oos_resume_freezes_label_builder_threads() -> None:
     assert common_validation < label_builder
 
 
+def test_closed_replay_oos_resume_refuses_closure_overwrite() -> None:
+    launcher = Path(
+        "scripts/run_cn_finalist_replay_then_oos_77o.ps1"
+    ).read_text(encoding="utf-8")
+
+    assert "refusing to overwrite closed report-only OOS" in launcher
+    assert "--train-replay-recomputed $trainReplayRecomputed" in launcher
+    assert "$ResumeClosedReplayReportOnlyOos" in launcher
+
+
+def test_finalize_resume_override_records_no_replay_recompute() -> None:
+    assert subject._resolved_train_replay_recomputed({}, False) is False
+    assert subject._resolved_train_replay_recomputed({}, None) is True
+    assert subject._resolved_train_replay_recomputed(
+        {"train_replay_recomputed": False},
+        None,
+    ) is False
+
+
 def _candidate_rows() -> pd.DataFrame:
     rows = []
     for rank in range(1, 25):

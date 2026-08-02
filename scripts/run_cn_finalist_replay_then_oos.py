@@ -1776,12 +1776,22 @@ def _verify_closure(path: Path, *, expected_status: str) -> dict[str, Any]:
     return payload
 
 
+def _resolved_train_replay_recomputed(
+    execution_contract: dict[str, Any],
+    override: bool | None,
+) -> bool:
+    if override is not None:
+        return bool(override)
+    return bool(execution_contract.get("train_replay_recomputed", True))
+
+
 def finalize(
     *,
     freeze_path: Path,
     replay_root: Path,
     oos_root: Path,
     output_root: Path,
+    train_replay_recomputed: bool | None = None,
 ) -> dict[str, Any]:
     _host_and_memory_gate()
     freeze_path = Path(freeze_path).resolve()
@@ -1835,6 +1845,10 @@ def finalize(
     report_path = Path(oos_root).resolve() / "replay_then_oos_report.json"
     report = _read_json(report_path)
     output_root = Path(output_root).resolve()
+    replay_was_recomputed = _resolved_train_replay_recomputed(
+        execution_contract,
+        train_replay_recomputed,
+    )
     closure = {
         "schema_version": "cn_finalist_replay_then_oos_root_closure_v1",
         "status": "REPLAY_THEN_OOS_COMPLETE_IMMUTABLE_REPORT_ONLY",
@@ -1843,9 +1857,7 @@ def finalize(
         "pair_count": EXPECTED_PAIR_COUNT,
         "candidate_member_count": EXPECTED_MEMBER_COUNT,
         "sequence_completed": list(execution_contract["sequence"]),
-        "train_replay_recomputed": bool(
-            execution_contract.get("train_replay_recomputed", True)
-        ),
+        "train_replay_recomputed": replay_was_recomputed,
         "interstage_filter_applied": False,
         "protected_source_hashes_unchanged": True,
         "replay_closure_sha256": _sha256(replay_path),
@@ -1944,6 +1956,11 @@ def main() -> int:
     finalize_parser.add_argument(
         "--expected-pair-count", type=int, default=24
     )
+    finalize_parser.add_argument(
+        "--train-replay-recomputed",
+        choices=("true", "false"),
+        default=None,
+    )
 
     args = parser.parse_args()
     if str(os.environ.get("CN_NODE_RESOURCE_LEASE_REQUIRED") or "") == "1":
@@ -1992,6 +2009,11 @@ def main() -> int:
             replay_root=args.replay_root,
             oos_root=args.oos_root,
             output_root=args.output_root,
+            train_replay_recomputed=(
+                None
+                if args.train_replay_recomputed is None
+                else args.train_replay_recomputed == "true"
+            ),
         )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0
