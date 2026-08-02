@@ -8,7 +8,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from scripts.run_cn_phase3cm_streaming_qualification import _finalize_pairs
+from scripts.run_cn_phase3cm_streaming_qualification import (
+    _finalize_candidate_rewards,
+    _finalize_pairs,
+    _index_reward_atoms_by_candidate,
+)
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     ASKS_PER_CHECKPOINT,
     CAMPAIGN_PROFILE,
@@ -135,7 +139,7 @@ def test_successor_contract_is_formal_exact_bounded_not_financially_authorized()
     assert "INTRADAY_STATE_TRANSITION" not in ROUTES
     assert PAIR_BATCH_SIZES == {
         "active_bar": 12,
-        "stock_session": 12,
+        "stock_session": 24,
     }
     assert ASKS_PER_CHECKPOINT == 384
     assert MAXIMUM_RAW_ASKS == 36_864
@@ -428,6 +432,86 @@ def test_streaming_pair_outcome_preserves_primary_control_and_standalone_decisio
         "TRAIN_REWARD_FOLLOWUP_READY"
     )
     assert _conservative_search_score(rows[0]) == pytest.approx(0.2)
+
+
+def test_streaming_reward_atom_index_preserves_order_and_pair_semantics() -> None:
+    atoms = _PairReducer.reward_atoms()
+    indexed = _index_reward_atoms_by_candidate(atoms)
+
+    assert list(indexed) == ["primary-1", "control-1"]
+    assert indexed["primary-1"] == [atoms[0]]
+    assert indexed["control-1"] == [atoms[1]]
+
+    common = {
+        "candidates": [
+            {"candidate_id": "primary-1", "pair_id": "pair-1"},
+            {"candidate_id": "control-1", "pair_id": "pair-1"},
+        ],
+        "reward_rows": [
+            {
+                "candidate_id": "primary-1",
+                "optimizer_reward": 0.7,
+                "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+                "train_reward_blockers": "",
+                "train_day_uncertainty_contract": DAY_UNCERTAINTY_CONTRACT,
+            },
+            {
+                "candidate_id": "control-1",
+                "optimizer_reward": 0.5,
+                "train_reward_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+                "train_reward_blockers": "",
+                "train_day_uncertainty_contract": DAY_UNCERTAINTY_CONTRACT,
+            },
+        ],
+        "reducer": _PairReducer(),
+        "support": _PairSupport(),
+        "binding": {
+            "candidate_members": [
+                {"candidate_id": "primary-1", "receipt_hash": "primary-hash"},
+                {"candidate_id": "control-1", "receipt_hash": "control-hash"},
+            ],
+            "pairs": [{"pair_id": "pair-1", "pair_receipt_hash": "pair-hash"}],
+        },
+    }
+    legacy = _finalize_pairs(**common, reward_atom_rows=atoms)
+    indexed_result = _finalize_pairs(
+        **common,
+        reward_atoms_by_candidate=indexed,
+    )
+    assert indexed_result == legacy
+
+
+def test_parallel_candidate_finalization_preserves_candidate_order_and_values() -> None:
+    candidates = [
+        {"candidate_id": "candidate-a"},
+        {"candidate_id": "candidate-b"},
+    ]
+    seeds = {"candidate-a": 101, "candidate-b": 202}
+    atoms = {"candidate-a": [], "candidate-b": []}
+
+    serial_split, serial_rewards, serial_audit = _finalize_candidate_rewards(
+        candidates=candidates,
+        reward_atoms_by_candidate=atoms,
+        horizons=(1,),
+        finalization_seed_by_candidate_id=seeds,
+        max_workers=1,
+    )
+    parallel_split, parallel_rewards, parallel_audit = _finalize_candidate_rewards(
+        candidates=candidates,
+        reward_atoms_by_candidate=atoms,
+        horizons=(1,),
+        finalization_seed_by_candidate_id=seeds,
+        max_workers=2,
+    )
+
+    assert parallel_split == serial_split
+    assert parallel_rewards == serial_rewards
+    assert [row["candidate_id"] for row in parallel_rewards] == [
+        "candidate-a",
+        "candidate-b",
+    ]
+    assert serial_audit["finalization_worker_count"] == 1
+    assert parallel_audit["finalization_worker_count"] == 2
 
 
 class _DeterministicRouteAdapter:

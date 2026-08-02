@@ -186,7 +186,10 @@ MAXIMUM_RAW_ASKS = 36_864
 MAXIMUM_INTERNAL_NATIVE_DRAWS_PER_FORMAL = 8
 MAXIMUM_WALL_SECONDS = 7 * 24 * 60 * 60
 VALIDATION_FINALIST_PAIRS = 256
-PAIR_BATCH_SIZES = {"active_bar": 12, "stock_session": 12}
+# Active-bar work already saturates the 32-thread entitlement at 12 pairs.
+# Stock-session kernels are shorter and launch-bound, so coalesce two logical
+# batches while preserving candidate and pair order inside the frozen plan.
+PAIR_BATCH_SIZES = {"active_bar": 12, "stock_session": 24}
 MAXIMUM_CACHE_BYTES = 8 * 1024**3
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 FRESH_EXACT_MARGIN = 1.20

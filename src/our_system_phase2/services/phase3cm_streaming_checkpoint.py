@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any
 
@@ -97,10 +97,18 @@ def write_checkpoint(
     root = Path(checkpoint_root)
     root.mkdir(parents=True, exist_ok=True)
     arrays: dict[str, np.ndarray] = {}
+    # dataclasses.asdict() deep-copies every continuation ndarray before the
+    # encoder sees it.  Checkpoints are immutable snapshots at this call site,
+    # so bind fields directly and let np.savez consume the authoritative arrays
+    # once instead of duplicating the complete reducer/portfolio state.
+    payload_fields = {
+        field.name: getattr(payload, field.name)
+        for field in fields(payload)
+    }
     metadata = _encode(
         {
             "schema_version": "cn_phase3cm_streaming_checkpoint_v1",
-            **asdict(payload),
+            **payload_fields,
         },
         arrays,
     )

@@ -7,6 +7,7 @@ import json
 import math
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -627,6 +628,77 @@ def _write_json(path: Path, payload: Any) -> None:
     )
 
 
+def _index_reward_atoms_by_candidate(
+    reward_atom_rows: Sequence[Mapping[str, Any]],
+) -> dict[str, list[dict[str, Any]]]:
+    """Index reducer atoms once while preserving their canonical row order."""
+
+    indexed: dict[str, list[dict[str, Any]]] = {}
+    for raw_row in reward_atom_rows:
+        row = raw_row if isinstance(raw_row, dict) else dict(raw_row)
+        candidate_id = str(row.get("candidate_id") or "")
+        indexed.setdefault(candidate_id, []).append(row)
+    return indexed
+
+
+def _finalize_candidate_rewards(
+    *,
+    candidates: Sequence[Mapping[str, Any]],
+    reward_atoms_by_candidate: Mapping[str, Sequence[Mapping[str, Any]]],
+    horizons: tuple[int, ...],
+    finalization_seed_by_candidate_id: Mapping[str, int],
+    max_workers: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    """Summarize candidates concurrently without changing deterministic order."""
+
+    workers = min(max(1, int(max_workers)), max(1, len(candidates)))
+
+    def summarize(candidate_row: Mapping[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        candidate = dict(candidate_row)
+        candidate_id = str(candidate.get("candidate_id") or "")
+        return _candidate_summary_from_reward_atoms(
+            candidate,
+            list(reward_atoms_by_candidate.get(candidate_id, ())),
+            horizons,
+            seed=int(finalization_seed_by_candidate_id[candidate_id]),
+            rank_ic_loss_weight=6.0,
+            rank_ic_component_cap=0.35,
+            regime_stability_weight=0.08,
+            regime_component_cap=0.10,
+        )
+
+    wall_started = time.perf_counter()
+    cpu_started = time.process_time()
+    if workers == 1:
+        summaries = [summarize(candidate) for candidate in candidates]
+    else:
+        with ThreadPoolExecutor(
+            max_workers=workers,
+            thread_name_prefix="phase3cm-finalize",
+        ) as executor:
+            summaries = list(executor.map(summarize, candidates))
+    cpu_seconds = time.process_time() - cpu_started
+    wall_seconds = time.perf_counter() - wall_started
+
+    split_rows: list[dict[str, Any]] = []
+    reward_rows: list[dict[str, Any]] = []
+    for per_split, reward in summaries:
+        split_rows.extend(per_split)
+        reward_rows.append(reward)
+    return (
+        split_rows,
+        reward_rows,
+        {
+            "finalization_worker_count": workers,
+            "finalization_summary_wall_seconds": wall_seconds,
+            "finalization_summary_cpu_seconds": cpu_seconds,
+            "finalization_summary_effective_cores": (
+                cpu_seconds / wall_seconds if wall_seconds > 0.0 else 0.0
+            ),
+        },
+    )
+
+
 def _finalize_pairs(
     *,
     candidates: Sequence[Mapping[str, Any]],
@@ -637,15 +709,26 @@ def _finalize_pairs(
     evaluation_role: str = "train",
     label_free_behavior_by_candidate: Mapping[str, Mapping[str, Any]] | None = None,
     reward_atom_rows: Sequence[Mapping[str, Any]] | None = None,
+    reward_atoms_by_candidate: Mapping[str, Sequence[Mapping[str, Any]]] | None = None,
 ) -> list[dict[str, Any]]:
     reward_by_id = {str(row.get("candidate_id")): dict(row) for row in reward_rows}
     member_binding = {str(row["candidate_id"]): dict(row) for row in binding["candidate_members"]}
     pair_binding = {str(row["pair_id"]): dict(row) for row in binding["pairs"]}
     support_identity = support.identities()
-    atoms = (
-        [dict(row) for row in reward_atom_rows]
-        if reward_atom_rows is not None
-        else [dict(row) for row in reducer.reward_atoms()]
+    atoms_by_candidate = (
+        {
+            str(candidate_id): [
+                row if isinstance(row, dict) else dict(row)
+                for row in rows
+            ]
+            for candidate_id, rows in reward_atoms_by_candidate.items()
+        }
+        if reward_atoms_by_candidate is not None
+        else _index_reward_atoms_by_candidate(
+            reward_atom_rows
+            if reward_atom_rows is not None
+            else reducer.reward_atoms()
+        )
     )
     rows = []
     for pair_index in range(len(candidates) // 2):
@@ -715,7 +798,10 @@ def _finalize_pairs(
                 )
         paired_day_deltas, paired_delta_blockers = (
             paired_daily_net_deltas_from_reward_atoms(
-                atoms,
+                [
+                    *atoms_by_candidate.get(str(primary["candidate_id"]), ()),
+                    *atoms_by_candidate.get(str(control["candidate_id"]), ()),
+                ],
                 primary_candidate_id=str(primary["candidate_id"]),
                 control_candidate_id=str(control["candidate_id"]),
             )
@@ -1521,26 +1607,14 @@ def main() -> int:
 
     with telemetry.phase("candidate_pair_finalization", compute_heavy=False) as phase:
         atom_rows = reducer.reward_atoms()
-        reward_rows = []
-        split_rows = []
-        for candidate in candidates:
-            candidate_atoms = [
-                row for row in atom_rows if str(row.get("candidate_id")) == str(candidate["candidate_id"])
-            ]
-            per_split, reward = _candidate_summary_from_reward_atoms(
-                dict(candidate),
-                candidate_atoms,
-                horizons,
-                seed=finalization_seed_by_candidate_id[
-                    str(candidate.get("candidate_id") or "")
-                ],
-                rank_ic_loss_weight=6.0,
-                rank_ic_component_cap=0.35,
-                regime_stability_weight=0.08,
-                regime_component_cap=0.10,
-            )
-            split_rows.extend(per_split)
-            reward_rows.append(reward)
+        reward_atoms_by_candidate = _index_reward_atoms_by_candidate(atom_rows)
+        split_rows, reward_rows, finalization_audit = _finalize_candidate_rewards(
+            candidates=candidates,
+            reward_atoms_by_candidate=reward_atoms_by_candidate,
+            horizons=horizons,
+            finalization_seed_by_candidate_id=finalization_seed_by_candidate_id,
+            max_workers=plan.compute_threads,
+        )
         behavior_by_candidate: dict[str, dict[str, Any]] = {}
         for portfolio_batch in portfolio_batches:
             for behavior_row in portfolio_batch["label_free_behavior"].rows():
@@ -1557,6 +1631,7 @@ def main() -> int:
             evaluation_role=args.evaluation_role,
             label_free_behavior_by_candidate=behavior_by_candidate,
             reward_atom_rows=atom_rows,
+            reward_atoms_by_candidate=reward_atoms_by_candidate,
         )
         if args.evaluation_role in REPORT_ONLY_EVALUATION_ROLES:
             for reward in reward_rows:
@@ -1617,7 +1692,13 @@ def main() -> int:
                     "legacy_control_behavior_identity_role": "COMPATIBILITY_ONLY",
                 }
             )
-        phase.add(candidate_count=len(candidates), pair_count=len(pair_rows))
+        phase.add(
+            candidate_count=len(candidates),
+            pair_count=len(pair_rows),
+            reward_atom_count=len(atom_rows),
+            reward_atom_candidate_count=len(reward_atoms_by_candidate),
+            **finalization_audit,
+        )
 
     behavior_archive_path = output_root / (
         "CN_PORTFOLIO_BEHAVIOR_FULL.parquet"

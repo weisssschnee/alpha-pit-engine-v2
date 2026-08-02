@@ -30,6 +30,9 @@ OFFICIAL_REPEATS = 40
 OFFICIAL_COMPUTE_THREADS = 32
 MINIMUM_EFFECTIVE_CORES = 16.0
 MINIMUM_WALL_SPEEDUP = 1.05
+BASELINE_PAIR_BATCH_SIZE = 12
+COALESCED_PAIR_BATCH_SIZE = 24
+MINIMUM_BATCH_GEOMETRY_WALL_SPEEDUP = 1.01
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -107,7 +110,17 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument(
+        "--batch-geometry",
+        action="store_true",
+        help=(
+            "Qualify the 24-pair stock-session batch against two ordered "
+            "12-pair fused-kernel launches."
+        ),
+    )
     args = parser.parse_args()
+    if args.smoke and args.batch_geometry:
+        raise ValueError("smoke and batch-geometry modes are mutually exclusive")
 
     if args.smoke:
         candidate_count = 6
@@ -117,7 +130,11 @@ def main() -> int:
         repeats = 2
         compute_threads = min(4, int(numba.config.NUMBA_NUM_THREADS))
     else:
-        candidate_count = OFFICIAL_CANDIDATE_COUNT
+        candidate_count = (
+            2 * COALESCED_PAIR_BATCH_SIZE
+            if args.batch_geometry
+            else OFFICIAL_CANDIDATE_COUNT
+        )
         row_count = OFFICIAL_ROW_COUNT
         group_count = OFFICIAL_GROUP_COUNT
         horizon_count = OFFICIAL_HORIZON_COUNT
@@ -197,6 +214,89 @@ def main() -> int:
         np.packbits(fused_selected.reshape(-1), bitorder="little").tobytes()
         + np.nan_to_num(fused_metrics, nan=np.inf).tobytes()
     ).hexdigest()
+
+    geometry_selected_bit_exact: bool | None = None
+    geometry_metrics_bit_exact: bool | None = None
+    split_wall = 0.0
+    split_cpu = 0.0
+    coalesced_wall = 0.0
+    coalesced_cpu = 0.0
+    if args.batch_geometry:
+        baseline_candidate_count = 2 * BASELINE_PAIR_BATCH_SIZE
+        if candidate_count != 2 * baseline_candidate_count:
+            raise RuntimeError("batch geometry fixture no longer represents 24 versus 12 pairs")
+
+        def fused_slice(start: int, end: int) -> tuple[np.ndarray, np.ndarray]:
+            return _mapping_kernel_fused(
+                signals[start:end],
+                labels,
+                label_orders,
+                label_order_counts,
+                starts,
+                ends,
+                directions[start:end],
+                20,
+                0.2,
+                True,
+                fused_float,
+                fused_int,
+            )
+
+        split_selected_parts: list[np.ndarray] = []
+        split_metric_parts: list[np.ndarray] = []
+        for start in range(0, candidate_count, baseline_candidate_count):
+            selected_part, metric_part = fused_slice(
+                start,
+                start + baseline_candidate_count,
+            )
+            split_selected_parts.append(selected_part)
+            split_metric_parts.append(metric_part)
+        split_selected = np.concatenate(split_selected_parts, axis=0)
+        split_metrics = np.concatenate(split_metric_parts, axis=0)
+        geometry_selected_bit_exact = bool(
+            np.array_equal(fused_selected, split_selected)
+        )
+        geometry_metrics_bit_exact = bool(
+            np.array_equal(fused_metrics, split_metrics, equal_nan=True)
+        )
+        del split_selected, split_metrics, split_selected_parts, split_metric_parts
+
+        for repeat in range(OFFICIAL_REPEATS):
+            modes = (
+                ("split", "coalesced")
+                if repeat % 2 == 0
+                else ("coalesced", "split")
+            )
+            for mode in modes:
+                wall_start = time.perf_counter()
+                cpu_start = time.process_time()
+                if mode == "coalesced":
+                    selected, metrics = fused_slice(0, candidate_count)
+                else:
+                    selected_parts = []
+                    metric_parts = []
+                    for start in range(
+                        0,
+                        candidate_count,
+                        baseline_candidate_count,
+                    ):
+                        selected_part, metric_part = fused_slice(
+                            start,
+                            start + baseline_candidate_count,
+                        )
+                        selected_parts.append(selected_part)
+                        metric_parts.append(metric_part)
+                    selected = np.concatenate(selected_parts, axis=0)
+                    metrics = np.concatenate(metric_parts, axis=0)
+                cpu_elapsed = time.process_time() - cpu_start
+                wall_elapsed = time.perf_counter() - wall_start
+                if mode == "coalesced":
+                    coalesced_wall += wall_elapsed
+                    coalesced_cpu += cpu_elapsed
+                else:
+                    split_wall += wall_elapsed
+                    split_cpu += cpu_elapsed
+                del selected, metrics
     del (
         signal_ranks,
         signal_orders,
@@ -271,8 +371,29 @@ def main() -> int:
         fused_effective >= MINIMUM_EFFECTIVE_CORES
         and wall_speedup >= MINIMUM_WALL_SPEEDUP
     )
+    split_effective = split_cpu / split_wall if split_wall > 0.0 else None
+    coalesced_effective = (
+        coalesced_cpu / coalesced_wall if coalesced_wall > 0.0 else None
+    )
+    batch_geometry_wall_speedup = (
+        split_wall / coalesced_wall if coalesced_wall > 0.0 else None
+    )
+    batch_geometry_pass = (
+        bool(geometry_selected_bit_exact)
+        and bool(geometry_metrics_bit_exact)
+        and coalesced_effective is not None
+        and coalesced_effective >= MINIMUM_EFFECTIVE_CORES
+        and batch_geometry_wall_speedup is not None
+        and batch_geometry_wall_speedup >= MINIMUM_BATCH_GEOMETRY_WALL_SPEEDUP
+    )
     if args.smoke:
         status = "ZERO_FINANCIAL_MAPPING_SMOKE_PASS" if parity_pass else "FAIL"
+    elif args.batch_geometry:
+        status = (
+            "ZERO_FINANCIAL_STOCK_SESSION_BATCH_GEOMETRY_QUALIFIED"
+            if parity_pass and performance_pass and batch_geometry_pass
+            else "FAIL"
+        )
     else:
         status = (
             "ZERO_FINANCIAL_MAPPING_ACCELERATION_QUALIFIED"
@@ -282,7 +403,15 @@ def main() -> int:
 
     payload: dict[str, Any] = {
         "status": status,
-        "qualification_mode": "SMOKE" if args.smoke else "OFFICIAL_77O",
+        "qualification_mode": (
+            "SMOKE"
+            if args.smoke
+            else (
+                "STOCK_SESSION_BATCH_GEOMETRY_77O"
+                if args.batch_geometry
+                else "OFFICIAL_77O"
+            )
+        ),
         "contract": {
             "candidate_count": candidate_count,
             "row_count": row_count,
@@ -295,11 +424,24 @@ def main() -> int:
             ),
             "minimum_wall_speedup": None if args.smoke else MINIMUM_WALL_SPEEDUP,
             "mapping_kernel_mode": "FUSED_CANDIDATE_GROUP_RANK_AND_HORIZONS",
+            "baseline_pair_batch_size": (
+                BASELINE_PAIR_BATCH_SIZE if args.batch_geometry else None
+            ),
+            "coalesced_pair_batch_size": (
+                COALESCED_PAIR_BATCH_SIZE if args.batch_geometry else None
+            ),
+            "minimum_batch_geometry_wall_speedup": (
+                MINIMUM_BATCH_GEOMETRY_WALL_SPEEDUP
+                if args.batch_geometry
+                else None
+            ),
         },
         "parity": {
             "selected_bit_exact": selected_bit_exact,
             "metrics_bit_exact": metrics_bit_exact,
             "output_digest_sha256": output_digest,
+            "batch_geometry_selected_bit_exact": geometry_selected_bit_exact,
+            "batch_geometry_metrics_bit_exact": geometry_metrics_bit_exact,
         },
         "performance": {
             "legacy_wall_seconds": legacy_wall,
@@ -309,6 +451,17 @@ def main() -> int:
             "fused_cpu_seconds": fused_cpu,
             "fused_effective_cores": fused_effective,
             "wall_speedup": wall_speedup,
+            "split_fused_wall_seconds": split_wall if args.batch_geometry else None,
+            "split_fused_cpu_seconds": split_cpu if args.batch_geometry else None,
+            "split_fused_effective_cores": split_effective,
+            "coalesced_fused_wall_seconds": (
+                coalesced_wall if args.batch_geometry else None
+            ),
+            "coalesced_fused_cpu_seconds": (
+                coalesced_cpu if args.batch_geometry else None
+            ),
+            "coalesced_fused_effective_cores": coalesced_effective,
+            "batch_geometry_wall_speedup": batch_geometry_wall_speedup,
             "legacy_signal_rank_surface_bytes": int(
                 signals.nbytes
                 + signals.size * np.dtype(np.int32).itemsize

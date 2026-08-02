@@ -327,7 +327,7 @@ foreach ($path in $requiredPaths) {
     active_threads = $computeThreads
     session_threads = $computeThreads
     active_pair_batch_size = 12
-    session_pair_batch_size = 12
+    session_pair_batch_size = 24
     evaluator_cache_cap_bytes = 8589934592
     minimum_free_memory_bytes = 25769803776
     validation = 'FORBIDDEN_DURING_AND_AFTER_TRANCHE'
