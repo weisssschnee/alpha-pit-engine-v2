@@ -16,9 +16,9 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
-### Full-compute bounded successor train search active (2026-08-02)
+### Full-compute bounded successor train search closed (2026-08-02)
 
-- The user-authorized campaign is active as exactly one same-root 77o recovery
+- The user-authorized campaign closed under the single same-root 77o recovery
   task, `lanjob_20260802_184157_de3a3b` / scheduled task
   `ChengboLanRemote_lanjob_20260802_184157_de3a3b`, at
   `D:\ChengboRemote\runtime\cn_winner_guided_large_search_full_compute_successor_20260802_1740_a81c05c_4608`.
@@ -76,11 +76,55 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   threshold was weakened.
 - The original task was deleted. The one authorized same-root recovery began
   only from immutable `checkpoint_001`; regenerated `checkpoint_002` route
-  schedule, asked population and candidate attempts exactly match the
-  preserved attempt by SHA256. Initial recovery verification found one
-  parent/child financial chain, about 83.85 GB free memory and no immutable
-  checkpoint-002 manifest yet. A second failure of the same memory gate makes
-  this campaign terminal `RUN_INVALID`; no third attempt is authorized.
+  schedule, asked population and candidate attempts exactly matched the
+  preserved attempt by SHA256. It then closed cleanly without reusing failed
+  financial results or optimizer state and without weakening any threshold.
+- `checkpoint_002` through `checkpoint_004` are independently verified
+  `BATCH_CLOSED_IMMUTABLE`. Their manifest file/payload SHA256 pairs are
+  `f992c19c0d4e5291d31cf7f3b2af9b6e49ca72d90a55885ff1c4cfa5cf8c5155` /
+  `b31a39775bdba1083b5fe65c991a434b9abc30120a55e66c9df07af8e9cfd362`,
+  `89ef0248e1f7f1d0b5f3269e8afba999762c4656ec1e3de3835b9acb6d49a11a` /
+  `ba10871b6f7c25ffa74957f027d906b4740ffc00bd42fe4690b2fd233990191a`,
+  and
+  `89cf8773e0ec9be33c076aa0b1d3cb46c999bff175525ba0be27149095342c25` /
+  `94527950935d9fc2cd8b0af5568443d77ce7d7fc5c4576243a4cfbc13f60e276`.
+  Every canonical payload hash, all 24 declared artifacts per checkpoint and
+  every prior-manifest link passed. The root `run_manifest.json` file SHA256
+  is `17422ea8db593a1b02dca75aa6b16b7c065e2be2d45db7e25b223eb8af7174ee`;
+  all 18 declared root artifacts matched size/SHA256, and
+  `train_complete_manifest.json` file SHA256 is
+  `cc7d994b969b11adac810d7c8377e3b81b9068b1eec7de88f1f62e8abfafd132`.
+- Final accepted evidence is 4,608 unique primary exact asks, 2,365 evaluated
+  pairs and 731 productive candidates. Evaluated/formal, productive/formal and
+  productive/evaluated yields are 51.3238%, 15.8637% and 30.9091%. Slow
+  Temporal contributed 730 productive candidates from 4,480 asks; First-N
+  contributed one from 128. There are zero primary-exact, pair-ID or full
+  behavior-signature duplicates.
+- The optimizer boundary is exact in all four checkpoints: 653 accepted
+  development-feedback proposal IDs equal the `PAIR_TRAIN_FEEDBACK_READY` set,
+  local completed tells equal those counts, every finite search score equals
+  `min(primary_composite_reward, matched_train_increment)`, and there are zero
+  missing eligible scores or scores on blocked rows. Productive labels exactly
+  recompute from the frozen evaluated + positive matched increment + primary
+  standalone-ready definition.
+- Productive diversity remains high: 731 productive exact identities map to
+  730 behavior families, exact/family is 1.00137 and top-10 family
+  concentration is 1.5048%. Across evaluated rows, finite search-score median
+  and p10 are 0.00471226 and -0.012041004; matched-increment median and p10 are
+  -0.00080130 and -0.020993632. Among productive rows, matched-increment median
+  and p10 are 0.00833778 and 0.00166249.
+- Summed immutable-checkpoint wall time was 4,349.654 seconds, equivalent to
+  3,813.82 formal asks, 1,957.40 evaluated pairs and 605.01 productive
+  candidates per shared wall hour. All backends passed with 32-thread
+  entitlement; active-bar effective cores ranged 28.536-30.637 and
+  stock-session 25.685-26.474. Maximum observed evaluator cache peak was
+  1,090,239,656 bytes, accepted-checkpoint minimum free memory stayed above
+  39,154,376,704 bytes, and validation/holdout/2026 reads remained zero.
+- This closure is train-development evidence only. It does not authorize OOS,
+  promotion, automatic validation, another successor tranche or a weakened
+  memory/acceleration gate. No ADR or CURRENT Graph authority transition is
+  warranted because the accepted search policy and system boundaries did not
+  change.
 
 ### Stock-session rank-mapping acceleration qualified (2026-08-02)
 
@@ -1793,17 +1837,14 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-Monitor only recovery task `lanjob_20260802_184157_de3a3b` in the unchanged
-full-compute successor root. Independently verify regenerated checkpoint 002,
-then checkpoints 003-004: each canonical manifest, all declared artifacts,
-prior-manifest chain, exact 1,120/32 route schedule, ask/tell and search-score
-parity, zero exact/pair/full-signature duplicates, productive definition,
-32-thread entitlement, pair batches 12/24, unchanged cache, memory and
-acceleration gates and zero validation/holdout/2026 reads. If checkpoint 002
-fails the same memory-headroom gate again, preserve evidence and set
-`RUN_INVALID` under the predeclared second-failure policy; do not weaken the
-gate or launch a third attempt. Do not launch a duplicate, validation task or
-another successor tranche.
+The full-compute successor is closed and must not be rerun. Preserve its 731
+productive train-development candidates as immutable input to the existing
+behavior-family/mechanism deduplication and strict A-share train-replay funnel;
+any new bounded finalist freeze requires separate authorization and must not
+backfill blocked or nonpositive rows. Do not automatically launch validation,
+OOS, another successor tranche or a 20,000-target search. Before any later
+large search, qualify checkpoint-boundary process recycling and memory-owner
+attribution under the existing 24 GiB reserve rather than weakening the gate.
 
 The shared-control validation, 9,216-ask search, bounded train-only finalist
 funnel and separately authorized one-pair report-only OOS are closed and must
