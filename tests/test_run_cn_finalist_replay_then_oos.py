@@ -1,9 +1,29 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
 from scripts import run_cn_finalist_replay_then_oos as subject
+
+
+def test_closed_replay_oos_resume_freezes_label_builder_threads() -> None:
+    launcher = Path(
+        "scripts/run_cn_finalist_replay_then_oos_77o.ps1"
+    ).read_text(encoding="utf-8")
+    common_validation = launcher.index(
+        "# Both a full replay/OOS run and a closed-replay OOS resume"
+    )
+    label_builder = launcher.index("& $python $labelBuilder", common_validation)
+
+    assert "$env:NUMBA_NUM_THREADS = '1'" in (
+        launcher[common_validation:label_builder]
+    )
+    assert "$env:POLARS_MAX_THREADS = [string]$ValidationThreads" in (
+        launcher[common_validation:label_builder]
+    )
+    assert common_validation < label_builder
 
 
 def _candidate_rows() -> pd.DataFrame:

@@ -383,6 +383,11 @@ try {
         return
     }
 
+    # Both a full replay/OOS run and a closed-replay OOS resume enter this
+    # common sidecar section. Freeze the native thread environment here so a
+    # resume cannot inherit an unset or evaluator-oriented environment.
+    $env:NUMBA_NUM_THREADS = '1'
+    $env:POLARS_MAX_THREADS = [string]$ValidationThreads
     if (-not (Test-Path -LiteralPath (
         Join-Path $validationFieldRoot (
             'CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json'
