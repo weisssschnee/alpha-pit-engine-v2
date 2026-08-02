@@ -18,6 +18,7 @@ param(
     [ValidateSet('VALIDATION_DUAL_8')]
     [string]$NodeResourceProfile = 'VALIDATION_DUAL_8',
     [switch]$TrainReplayOnly,
+    [switch]$ResumeClosedReplayReportOnlyOos,
     [string]$NodeResourceCapacity = (
         'runtime\run_plans\cn_alpha_node_resource_profiles_v1.json'
     ),
@@ -28,6 +29,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+
+if ($TrainReplayOnly -and $ResumeClosedReplayReportOnlyOos) {
+    throw 'train-replay-only and closed-replay OOS modes are mutually exclusive'
+}
 
 if ($env:COMPUTERNAME -ne 'DESKTOP-77OPJ6F') {
     throw "this runner is authorized only on DESKTOP-77OPJ6F"
@@ -171,6 +176,8 @@ $stderrPath = Join-Path $resolvedRoot 'replay_then_oos.stderr.log'
     schema_version = 'cn_finalist_replay_then_oos_deployment_binding_v1'
     status = if ($TrainReplayOnly) {
         'ACTIVE_FIXED_COHORT_TRAIN_REPLAY_ONLY'
+    } elseif ($ResumeClosedReplayReportOnlyOos) {
+        'ACTIVE_FIXED_COHORT_CLOSED_REPLAY_REPORT_ONLY_OOS'
     } else {
         'ACTIVE_FIXED_COHORT_REPLAY_THEN_OOS'
     }
@@ -206,10 +213,15 @@ $stderrPath = Join-Path $resolvedRoot 'replay_then_oos.stderr.log'
     } else {
         'AUTHORIZED'
     }
+    train_replay_recomputed = -not $ResumeClosedReplayReportOnlyOos
     launched_at_utc = (Get-Date).ToUniversalTime().ToString('o')
 } | ConvertTo-Json -Depth 5 |
     Set-Content -LiteralPath (
-        Join-Path $resolvedRoot 'deployment_binding.json'
+        Join-Path $resolvedRoot $(if ($ResumeClosedReplayReportOnlyOos) {
+            'report_only_oos_deployment_binding.json'
+        } else {
+            'deployment_binding.json'
+        })
     ) -Encoding UTF8
 
 $env:PYTHONPATH = Join-Path $resolvedRepo 'src'
@@ -244,60 +256,101 @@ $env:CN_NODE_CPU_ENTITLEMENT = [string]$ValidationThreads
 
 try {
     $ErrorActionPreference = 'Continue'
-    & $python $runner prepare `
-        --cohort-root $resolvedCohort `
-        --authority-root $resolvedAuthority `
-        --split-manifest $split `
-        --registry $registry `
-        --output-root $resolvedRoot `
-        --repo-sha $RepoSha `
-        --expected-pair-count $ExpectedPairCount *>> $stdoutPath
-    if ($LASTEXITCODE -ne 0) {
-        throw "fixed finalist cohort preparation failed: $LASTEXITCODE"
-    }
-
     $candidateTable = Join-Path $preparedRoot (
         'finalist_stock_session_candidates.csv'
     )
     $freeze = Join-Path $preparedRoot (
         'finalist_replay_then_oos_freeze.json'
     )
-
-    $env:NUMBA_NUM_THREADS = '1'
-    $env:POLARS_MAX_THREADS = [string]$ValidationThreads
-    if (-not (Test-Path -LiteralPath (
-        Join-Path $trainFieldRoot (
-            'CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json'
+    if ($ResumeClosedReplayReportOnlyOos) {
+        $trainClosurePath = Join-Path $resolvedRoot (
+            'TRAIN_REPLAY_ONLY_COMPLETE.json'
         )
-    ))) {
-        & $python $sessionBuilder `
-            --source-root $trainMinuteRoot `
-            --evaluation-role train `
-            --output-root $trainFieldRoot `
-            --candidate-table $candidateTable `
-            --registry $registry `
-            --split-manifest $split `
-            --split-manifest-hash $splitHash `
-            --fundamental-root $fundamentalRoot `
-            --chip-root $chipRoot `
-            --max-shards 16 *>> $stdoutPath
-        if ($LASTEXITCODE -ne 0) {
-            throw "train session field sidecar build failed: $LASTEXITCODE"
+        $replayClosurePath = Join-Path $replayRoot 'REPLAY_COMPLETE.json'
+        foreach ($path in @(
+            $candidateTable,
+            $freeze,
+            $trainClosurePath,
+            $replayClosurePath,
+            (Join-Path $replayRoot 'candidate_replay_results.parquet'),
+            (Join-Path $replayRoot 'pair_replay_results.parquet')
+        )) {
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                throw "closed-replay OOS input is missing: $path"
+            }
         }
-    }
+        $trainClosure = Get-Content -LiteralPath $trainClosurePath -Raw |
+            ConvertFrom-Json
+        if (
+            [string]$trainClosure.status -ne 'TRAIN_REPLAY_ONLY_CLOSED' -or
+            [int]$trainClosure.pair_count -ne $ExpectedPairCount -or
+            [int]$trainClosure.candidate_member_count -ne (
+                $ExpectedPairCount * 2
+            ) -or
+            [int]$trainClosure.validation_reads -ne 0 -or
+            [int]$trainClosure.holdout_reads -ne 0 -or
+            [int]$trainClosure.forward_2026_reads -ne 0
+        ) {
+            throw 'train replay-only closure boundary drift'
+        }
+        $observedReplayClosureHash = (
+            Get-FileHash -LiteralPath $replayClosurePath -Algorithm SHA256
+        ).Hash.ToLowerInvariant()
+        if (
+            $observedReplayClosureHash -ne
+            [string]$trainClosure.replay_closure_sha256
+        ) {
+            throw 'closed replay hash differs from train-only closure'
+        }
+    } else {
+        & $python $runner prepare `
+            --cohort-root $resolvedCohort `
+            --authority-root $resolvedAuthority `
+            --split-manifest $split `
+            --registry $registry `
+            --output-root $resolvedRoot `
+            --repo-sha $RepoSha `
+            --expected-pair-count $ExpectedPairCount *>> $stdoutPath
+        if ($LASTEXITCODE -ne 0) {
+            throw "fixed finalist cohort preparation failed: $LASTEXITCODE"
+        }
 
-    & $python $runner replay `
-        --freeze-manifest $freeze `
-        --train-field-root $trainFieldRoot `
-        --output-root $replayRoot `
-        --expected-pair-count $ExpectedPairCount *>> $stdoutPath
-    if ($LASTEXITCODE -ne 0) {
-        throw "A-share executable replay failed: $LASTEXITCODE"
-    }
-    if (-not (Test-Path -LiteralPath (
-        Join-Path $replayRoot 'REPLAY_COMPLETE.json'
-    ))) {
-        throw "A-share executable replay did not close"
+        $env:NUMBA_NUM_THREADS = '1'
+        $env:POLARS_MAX_THREADS = [string]$ValidationThreads
+        if (-not (Test-Path -LiteralPath (
+            Join-Path $trainFieldRoot (
+                'CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json'
+            )
+        ))) {
+            & $python $sessionBuilder `
+                --source-root $trainMinuteRoot `
+                --evaluation-role train `
+                --output-root $trainFieldRoot `
+                --candidate-table $candidateTable `
+                --registry $registry `
+                --split-manifest $split `
+                --split-manifest-hash $splitHash `
+                --fundamental-root $fundamentalRoot `
+                --chip-root $chipRoot `
+                --max-shards 16 *>> $stdoutPath
+            if ($LASTEXITCODE -ne 0) {
+                throw "train session field sidecar build failed: $LASTEXITCODE"
+            }
+        }
+
+        & $python $runner replay `
+            --freeze-manifest $freeze `
+            --train-field-root $trainFieldRoot `
+            --output-root $replayRoot `
+            --expected-pair-count $ExpectedPairCount *>> $stdoutPath
+        if ($LASTEXITCODE -ne 0) {
+            throw "A-share executable replay failed: $LASTEXITCODE"
+        }
+        if (-not (Test-Path -LiteralPath (
+            Join-Path $replayRoot 'REPLAY_COMPLETE.json'
+        ))) {
+            throw "A-share executable replay did not close"
+        }
     }
 
     if ($TrainReplayOnly) {
