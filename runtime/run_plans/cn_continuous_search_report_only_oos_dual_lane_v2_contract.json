@@ -46,7 +46,7 @@
     "campaign_id": "CN_CONTINUOUS_WINNER_GUIDED_SEARCH_V2_20260803",
     "experiment_id": "20260803_cn_continuous_dual_search_002",
     "objective": "Keep a supply-safe bounded train-only winner-guided search active while the isolated strict replay lane closes and transitions to report-only OOS.",
-    "campaign_profile": "cn_continuous_shared_control_winner_guided_search_v1",
+    "campaign_profile": "cn_continuous_shared_control_winner_guided_search_v2",
     "policy": "HYBRID_TPE_AVAILABILITY",
     "optimizer_initialization": "FRESH_TPE_NO_CROSS_CAMPAIGN_REWARD_OR_OPTIMIZER_STATE",
     "checkpoint_count": 1,

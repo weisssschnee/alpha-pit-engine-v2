@@ -15,6 +15,9 @@ SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
 CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
     "cn_continuous_shared_control_winner_guided_search_v1"
 )
+SUPPLY_SAFE_CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
+    "cn_continuous_shared_control_winner_guided_search_v2"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -116,6 +119,7 @@ def freeze_authorization(
     if str(search.get("campaign_profile") or "") not in {
         SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
         CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
+        SUPPLY_SAFE_CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
     }:
         raise RuntimeError("dual-lane search campaign profile drift")
     profile = dict(contract.get("shared_resource_authority") or {})
