@@ -7,7 +7,6 @@ import json
 import math
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -647,11 +646,8 @@ def _finalize_candidate_rewards(
     reward_atoms_by_candidate: Mapping[str, Sequence[Mapping[str, Any]]],
     horizons: tuple[int, ...],
     finalization_seed_by_candidate_id: Mapping[str, int],
-    max_workers: int,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
-    """Summarize candidates concurrently without changing deterministic order."""
-
-    workers = min(max(1, int(max_workers)), max(1, len(candidates)))
+    """Summarize indexed candidates once in deterministic order."""
 
     def summarize(candidate_row: Mapping[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         candidate = dict(candidate_row)
@@ -669,14 +665,7 @@ def _finalize_candidate_rewards(
 
     wall_started = time.perf_counter()
     cpu_started = time.process_time()
-    if workers == 1:
-        summaries = [summarize(candidate) for candidate in candidates]
-    else:
-        with ThreadPoolExecutor(
-            max_workers=workers,
-            thread_name_prefix="phase3cm-finalize",
-        ) as executor:
-            summaries = list(executor.map(summarize, candidates))
+    summaries = [summarize(candidate) for candidate in candidates]
     cpu_seconds = time.process_time() - cpu_started
     wall_seconds = time.perf_counter() - wall_started
 
@@ -689,7 +678,7 @@ def _finalize_candidate_rewards(
         split_rows,
         reward_rows,
         {
-            "finalization_worker_count": workers,
+            "finalization_worker_count": 1,
             "finalization_summary_wall_seconds": wall_seconds,
             "finalization_summary_cpu_seconds": cpu_seconds,
             "finalization_summary_effective_cores": (
@@ -1613,7 +1602,6 @@ def main() -> int:
             reward_atoms_by_candidate=reward_atoms_by_candidate,
             horizons=horizons,
             finalization_seed_by_candidate_id=finalization_seed_by_candidate_id,
-            max_workers=plan.compute_threads,
         )
         behavior_by_candidate: dict[str, dict[str, Any]] = {}
         for portfolio_batch in portfolio_batches:

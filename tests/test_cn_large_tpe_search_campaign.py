@@ -481,7 +481,7 @@ def test_streaming_reward_atom_index_preserves_order_and_pair_semantics() -> Non
     assert indexed_result == legacy
 
 
-def test_parallel_candidate_finalization_preserves_candidate_order_and_values() -> None:
+def test_indexed_candidate_finalization_preserves_candidate_order_and_values() -> None:
     candidates = [
         {"candidate_id": "candidate-a"},
         {"candidate_id": "candidate-b"},
@@ -489,29 +489,19 @@ def test_parallel_candidate_finalization_preserves_candidate_order_and_values() 
     seeds = {"candidate-a": 101, "candidate-b": 202}
     atoms = {"candidate-a": [], "candidate-b": []}
 
-    serial_split, serial_rewards, serial_audit = _finalize_candidate_rewards(
+    split_rows, reward_rows, audit = _finalize_candidate_rewards(
         candidates=candidates,
         reward_atoms_by_candidate=atoms,
         horizons=(1,),
         finalization_seed_by_candidate_id=seeds,
-        max_workers=1,
-    )
-    parallel_split, parallel_rewards, parallel_audit = _finalize_candidate_rewards(
-        candidates=candidates,
-        reward_atoms_by_candidate=atoms,
-        horizons=(1,),
-        finalization_seed_by_candidate_id=seeds,
-        max_workers=2,
     )
 
-    assert parallel_split == serial_split
-    assert parallel_rewards == serial_rewards
-    assert [row["candidate_id"] for row in parallel_rewards] == [
+    assert len(split_rows) == 12
+    assert [row["candidate_id"] for row in reward_rows] == [
         "candidate-a",
         "candidate-b",
     ]
-    assert serial_audit["finalization_worker_count"] == 1
-    assert parallel_audit["finalization_worker_count"] == 2
+    assert audit["finalization_worker_count"] == 1
 
 
 class _DeterministicRouteAdapter:
