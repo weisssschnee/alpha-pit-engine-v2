@@ -16,6 +16,47 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
+### Full-compute bounded successor train search active (2026-08-02)
+
+- The user-authorized retry is active as exactly one 77o task,
+  `lanjob_20260802_171902_7afd26` / scheduled task
+  `ChengboLanRemote_lanjob_20260802_171902_7afd26`, at
+  `D:\ChengboRemote\runtime\cn_winner_guided_large_search_full_compute_successor_20260802_1740_a81c05c_4608`.
+  Exact pushed/deployed execution SHA is
+  `a81c05cd9877c657a38be78d7423e2703bc76e70` in workspace
+  `D:\ChengboRemote\workspace\alpha_pit_full_compute_successor_a81c05c_20260802_1720`;
+  deployment manifest SHA256 is
+  `d471830f4d3f84a300c434cadff71a292e4785d635680bc3fbe3f35e5bd13c5a`.
+  Local/tracking SHA equality passed and local plus official 77o focused suites
+  each passed 67/67 with PowerShell parse PASS.
+- This is a new bounded authority, not a retry of either terminal
+  `RUN_INVALID` checkpoint. The frozen budget is four checkpoints x 1,152
+  formal fresh exact asks = 4,608, with exactly 1,120 Slow Temporal and 32
+  First-N asks per checkpoint. It uses fresh TPE, the existing Availability
+  Controller, `SEARCH_EXCLUSIVE_32`, 32 threads, active pair batch 12,
+  stock-session pair batch 24, the unchanged 8 GiB cache and 24 GiB
+  minimum-free-memory gate. Reward, Grammar, seed, route mix, PIT/sealed
+  periods, long-only 5 bps execution and 1/5/15/30-minute horizons remain
+  unchanged; validation, holdout and 2026 reads are forbidden.
+- The zero-financial identity refresh verified and merged only immutable
+  qualified-successor checkpoints 001-004, explicitly excluded unclosed
+  checkpoint 005, and imported zero reward, optimizer or scheduler state. It
+  produced 65,606 exact and 52,919 label-free behavior identities; refresh
+  receipt file SHA256 is
+  `e7b3543786f1485ad9228bceb9170f62deace6dbd60fade1694ee5b1ec691a1b`.
+- Final-SHA zero-financial preflight PASS at
+  `D:\ChengboRemote\runtime\cn_winner_guided_large_search_full_compute_successor_preflight_20260802_1730_a81c05c_4608`.
+  Slow Temporal had 6,513 fresh exact identities versus 5,376 required at the
+  frozen 1.20 margin; First-N had 557 versus 154 required. Total fresh exact
+  was 8,655, all financial/validation/holdout/2026 reads were zero and the
+  process exited zero. Supply receipt file SHA256 is
+  `e5119e00058c4d0ef1dc80ea86f2edef8e72366022dede3f1445fbdf28ad91be`.
+- Initial live verification found one scheduled task, one parent/child
+  financial process chain, one `SEARCH_EXCLUSIVE_32` lease with exactly 32
+  active threads, about 84.2 GB free memory and empty campaign stderr.
+  `checkpoint_001` is active under the exact 1,120/32 Hybrid-only route
+  schedule. No second task or validation lane is authorized.
+
 ### Stock-session rank-mapping acceleration qualified (2026-08-02)
 
 - The measured `cross_sectional_rank_mapping` bottleneck is repaired at exact
@@ -1726,6 +1767,16 @@ remains unchanged. The compact receipt is
   a SHA-verified full Git bundle without changing the node's proxy authority.
 
 ## Next action
+
+Monitor only the active full-compute successor task above. Independently verify
+each newly closed checkpoint manifest, all declared artifacts, prior-manifest
+chain, exact 1,120/32 route schedule, ask/tell and search-score parity, zero
+exact/pair/full-signature duplicates, productive definition, 32-thread
+entitlement, pair batches 12/24, unchanged cache/memory/acceleration gates and
+zero validation/holdout/2026 reads. On failure preserve evidence and resume
+only from the last independently closed immutable boundary without reusing
+incomplete financial or optimizer state. Do not launch a duplicate, validation
+task or another successor tranche.
 
 The shared-control validation, 9,216-ask search, bounded train-only finalist
 funnel and separately authorized one-pair report-only OOS are closed and must
