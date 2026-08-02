@@ -146,7 +146,8 @@ if ($authorization.node_resource_profiles_allowed) {
 if ($authorization.campaign_profile -notin @(
     'cn_winner_guided_large_search_v1',
     'cn_winner_guided_continuation_search_v1',
-    'cn_shared_control_winner_guided_search_v1'
+    'cn_shared_control_winner_guided_search_v1',
+    'cn_full_compute_successor_search_v1'
 )) {
     throw "campaign profile drift"
 }

@@ -1,0 +1,166 @@
+{
+  "schema_version": "cn_full_compute_successor_train_search_authorization_v1",
+  "status": "EXECUTION_AUTHORIZED_AFTER_ZERO_FINANCIAL_PREFLIGHT",
+  "authority_source": "CURRENT_USER_RETRY_WITH_FULL_COMPUTE_20260802",
+  "campaign_id": "CN_FULL_COMPUTE_SUCCESSOR_TRAIN_SEARCH_V1_20260802",
+  "experiment_id": "20260802_cn_full_compute_successor_train_001",
+  "objective": "Run one supply-bounded train-only Hybrid winner-guided successor search on the independently qualified full-compute stock-session path without reusing any rejected checkpoint financial or optimizer state.",
+  "campaign_profile": "cn_full_compute_successor_search_v1",
+  "qualification_authorized": true,
+  "execution_authorized": true,
+  "financial_campaign_authorized": true,
+  "single_bounded_task_authorized": true,
+  "authorized_task_count": 1,
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "accepted_development_search_policy": "HYBRID_TPE_AVAILABILITY",
+  "policy_reopened": false,
+  "optimizer": "official_optuna.samplers.TPESampler_conditional_typed_grammar",
+  "optimizer_package_version": "4.8.0",
+  "optimizer_initialization": "FRESH_TPE_ON_FROZEN_WINNER_SKELETON_LANES_NO_CROSS_CAMPAIGN_REWARD_STATE",
+  "optimizer_ask_execution": "HYBRID_TPE_AVAILABILITY_ONLY",
+  "optimizer_sampler_mode": "OFFICIAL_DEFAULT_UNIVARIATE_CONSTANT_LIAR",
+  "optimizer_multivariate": false,
+  "optimizer_group": false,
+  "optimizer_constant_liar": true,
+  "optimizer_n_ei_candidates": 24,
+  "optuna_route_workers": 5,
+  "optimizer_restore_authority": "HASH_BOUND_OPTUNA_STATE_SNAPSHOT_PLUS_IMMUTABLE_TRANSCRIPTS",
+  "optimizer_search_score_policy": "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1",
+  "optimizer_gene_surface_version": "cn_optimizer_skeleton_lane_gene_surface_v2",
+  "routes": [
+    "SLOW_TEMPORAL_CHANGE",
+    "FIRSTN_PATH",
+    "SLOW_CROSS_SECTIONAL_LEVEL",
+    "MARKET_REGIME_CONDITION",
+    "DISCLOSURE_EVENT"
+  ],
+  "coverage_floors": {
+    "SLOW_TEMPORAL_CHANGE": 4480,
+    "FIRSTN_PATH": 128,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "route_formal_ask_caps": {
+    "SLOW_TEMPORAL_CHANGE": 4480,
+    "FIRSTN_PATH": 128,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "globally_flexible_budget": 0,
+  "flexible_allocation": {
+    "SLOW_TEMPORAL_CHANGE": 0,
+    "FIRSTN_PATH": 0,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "final_route_formal_ask_allocation": {
+    "SLOW_TEMPORAL_CHANGE": 4480,
+    "FIRSTN_PATH": 128,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "fixed_route_formal_asks_per_checkpoint": {
+    "SLOW_TEMPORAL_CHANGE": 1120,
+    "FIRSTN_PATH": 32,
+    "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+    "MARKET_REGIME_CONDITION": 0,
+    "DISCLOSURE_EVENT": 0
+  },
+  "policy_arms": [
+    "HYBRID_TPE_AVAILABILITY"
+  ],
+  "policy_arm_ratio": {
+    "HYBRID_TPE_AVAILABILITY": 1.0
+  },
+  "uniform_arm": "FORBIDDEN",
+  "within_tranche_route_adaptation": "FORBIDDEN",
+  "winner_guidance_mode": "FROZEN_WINNER_SKELETON_LANES_FRESH_TPE",
+  "winner_source_selection_payload_sha256": "5ab6dbdf374d4867cf197b254cf6672d342bed54436bf153a551ae65867a3815",
+  "winner_structural_guide_sha256": "889bf9ecd092ddf3c0d712d4c13d61615a8649c312b24e4fc8ad76883e9e8c51",
+  "winner_structural_skeletons": {
+    "FIRSTN_PATH": [
+      "cn.comp.v2.firstn_path.firstn_path_state"
+    ],
+    "SLOW_CROSS_SECTIONAL_LEVEL": [
+      "cn.comp.v2.slow_cross_sectional_level.fundamental_residual"
+    ],
+    "SLOW_TEMPORAL_CHANGE": [
+      "cn.comp.v2.slow_temporal_change.change_level_interaction",
+      "cn.comp.v2.slow_temporal_change.cross_change_interaction"
+    ]
+  },
+  "cross_campaign_optimizer_state_reused": false,
+  "cross_campaign_reward_rows_imported": 0,
+  "historical_archive_policy": "IDENTITY_AND_LABEL_FREE_BEHAVIOR_ONLY_NO_REWARD_NO_SCHEDULER_STATE",
+  "historical_candidate_archive_sha256": "c3ea61fbdfaecba475cc0baea00a94994e71c9cddc4a3f26ad8f008d69fe7840",
+  "historical_behavior_archive_sha256": "0b812fbbc76bda4c6204d9afd8851aa4bafbd926170c731bae96f91a46293ae8",
+  "historical_manifest_sha256": "1e2bb15e5d5668d794f48cd38620968f211e26255c591c983d0c47642cb50f98",
+  "history_snapshot_exact_identity_count": 65606,
+  "history_snapshot_behavior_identity_count": 52919,
+  "history_snapshot_excludes_unclosed_checkpoint_005": true,
+  "productive_candidate_definition": "DEVELOPMENT_DIAGNOSTIC_ONLY_PAIR_EVALUATED_AND_PREDICTIVE_SCORE_POSITIVE_AND_PRIMARY_STANDALONE_READY",
+  "productive_candidate_evidence_class": "DEVELOPMENT_PREDICTIVE_NOT_TRADABILITY_OR_PROMOTION",
+  "budget_counting_unit": "FORMAL_FRESH_EXACT_ASK",
+  "maximum_checkpoints": 4,
+  "asks_per_checkpoint": 1152,
+  "maximum_raw_asks": 4608,
+  "maximum_internal_native_draws_per_formal": 8,
+  "maximum_wall_seconds": 86400,
+  "seed_base": 2026080202,
+  "first_checkpoint_minimum_pair_evaluated_per_hour": 300.0,
+  "first_checkpoint_minimum_entitlement_occupancy": 0.7,
+  "throughput_underpower_action": "PRESERVE_IMMUTABLE_CHECKPOINT_AND_REPLAN_NO_SILENT_CONTINUATION",
+  "node_resource_profiles_allowed": [
+    "SEARCH_EXCLUSIVE_32"
+  ],
+  "resource_profile_switch_boundary": "BATCH_CLOSED_IMMUTABLE_ONLY",
+  "node_resource_capacity_manifest_sha256": "62aab22c647566b81e19219808877bce7633024a62b5e71aa59a0b282e185f8e",
+  "resource_topology_changes_search_semantics": false,
+  "resource_topology_changes_candidate_order": false,
+  "resource_topology_changes_reward": false,
+  "validation_primary_decision": "TRAIN_REWARD_FOLLOWUP_READY",
+  "portfolio_mode": "LONG_ONLY_TOP",
+  "shorting": "FORBIDDEN",
+  "one_way_cost_bps": 5,
+  "horizons_minutes": [
+    1,
+    5,
+    15,
+    30
+  ],
+  "active_pair_batch_size": 12,
+  "session_pair_batch_size": 24,
+  "cache_cap_bytes": 8589934592,
+  "minimum_free_memory_bytes": 25769803776,
+  "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+  "automatic_validation": "FORBIDDEN",
+  "parallel_validation_lane": "FORBIDDEN_FOR_THIS_SINGLE_EXCLUSIVE_SEARCH_TASK",
+  "holdout": "SEALED",
+  "forward_2026": "SEALED",
+  "promotion": "FORBIDDEN",
+  "unlimited_or_20k_search_authorized": false,
+  "successor_search_pre_authorized": false,
+  "preflight_financial_reads": 0,
+  "preflight_validation_reads": 0,
+  "preflight_holdout_reads": 0,
+  "preflight_forward_2026_reads": 0,
+  "source_full_compute_qualification": {
+    "execution_sha": "7195f9df1aaea0fe03ca80228564e456c3141628",
+    "status": "REALSHAPE_BATCH_GEOMETRY_QUALIFIED",
+    "real_shape_pairs": 1014,
+    "real_shape_rows": 201714,
+    "mapping_effective_cores": 21.567735085557544,
+    "wall_speedup_ratio": 1.28648787532698,
+    "semantic_parity": true,
+    "financial_reads_reused": false,
+    "optimizer_state_reused": false,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "resource_topology_authorization_sha256": "ec0ff70a8c0232516d55a97ec518df575561ad5027c7595ee33b56ed28ed6d14"
+}

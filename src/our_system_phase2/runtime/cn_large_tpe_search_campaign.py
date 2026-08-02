@@ -119,6 +119,9 @@ WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE = (
 SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
     "cn_shared_control_winner_guided_search_v1"
 )
+FULL_COMPUTE_SUCCESSOR_SEARCH_PROFILE = (
+    "cn_full_compute_successor_search_v1"
+)
 
 
 def _compute_threads_by_backend(
@@ -170,6 +173,7 @@ WINNER_GUIDED_PROFILES = (
     WINNER_GUIDED_LARGE_SEARCH_PROFILE,
     WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
     SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
+    FULL_COMPUTE_SUCCESSOR_SEARCH_PROFILE,
 )
 ROUTE_EVALUATED_TARGETS = {
     "SLOW_TEMPORAL_CHANGE": 14_000,
@@ -350,12 +354,29 @@ SHARED_CONTROL_WINNER_GUIDED_SEARCH_FLEXIBLE_ALLOCATION = {
 SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_CHECKPOINTS = 8
 SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_RAW_ASKS = 9_216
 SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_WALL_SECONDS = 36 * 60 * 60
+FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_MIX = dict(
+    SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_MIX
+)
+FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_CHECKPOINTS = 4
+FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_CAPS = {
+    route_id: count * FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_CHECKPOINTS
+    for route_id, count in FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_MIX.items()
+}
+FULL_COMPUTE_SUCCESSOR_SEARCH_COVERAGE_FLOORS = dict(
+    FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_CAPS
+)
+FULL_COMPUTE_SUCCESSOR_SEARCH_FLEXIBLE_ALLOCATION = {
+    route_id: 0 for route_id in ROUTES
+}
+FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_RAW_ASKS = 4_608
+FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_WALL_SECONDS = 24 * 60 * 60
 HYBRID_TRANCHE_PROFILES = (
     HYBRID_ONLY_TRANCHE_PROFILE,
     HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE,
     WINNER_GUIDED_LARGE_SEARCH_PROFILE,
     WINNER_GUIDED_CONTINUATION_SEARCH_PROFILE,
     SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
+    FULL_COMPUTE_SUCCESSOR_SEARCH_PROFILE,
 )
 
 
@@ -554,6 +575,42 @@ def _campaign_runtime_spec(profile: str) -> dict[str, Any]:
                 route_id: int(math.ceil(count * FRESH_EXACT_MARGIN))
                 for route_id, count in (
                     SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_CAPS.items()
+                )
+            },
+        }
+    if str(profile) == FULL_COMPUTE_SUCCESSOR_SEARCH_PROFILE:
+        return {
+            "campaign_profile": FULL_COMPUTE_SUCCESSOR_SEARCH_PROFILE,
+            "maximum_checkpoints": (
+                FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_CHECKPOINTS
+            ),
+            "asks_per_checkpoint": sum(
+                FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_MIX.values()
+            ),
+            "maximum_raw_asks": (
+                FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_RAW_ASKS
+            ),
+            "maximum_wall_seconds": (
+                FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_WALL_SECONDS
+            ),
+            "completion_mode": "FIXED_FORMAL_ASK_TRANCHE",
+            "validation": "FORBIDDEN_DURING_AND_AFTER_TRANCHE",
+            "fixed_route_mix": dict(
+                FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_MIX
+            ),
+            "coverage_floors": dict(
+                FULL_COMPUTE_SUCCESSOR_SEARCH_COVERAGE_FLOORS
+            ),
+            "route_formal_ask_caps": dict(
+                FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_CAPS
+            ),
+            "flexible_allocation": dict(
+                FULL_COMPUTE_SUCCESSOR_SEARCH_FLEXIBLE_ALLOCATION
+            ),
+            "minimum_required_fresh_exact_by_route": {
+                route_id: int(math.ceil(count * FRESH_EXACT_MARGIN))
+                for route_id, count in (
+                    FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_CAPS.items()
                 )
             },
         }

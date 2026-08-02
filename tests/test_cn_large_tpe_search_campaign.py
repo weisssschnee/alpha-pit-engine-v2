@@ -42,6 +42,10 @@ from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     SHARED_CONTROL_WINNER_GUIDED_SEARCH_MAXIMUM_RAW_ASKS,
     SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
     SHARED_CONTROL_WINNER_GUIDED_SEARCH_ROUTE_MIX,
+    FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_CHECKPOINTS,
+    FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_RAW_ASKS,
+    FULL_COMPUTE_SUCCESSOR_SEARCH_PROFILE,
+    FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_MIX,
     MAXIMUM_RAW_ASKS,
     MINIMUM_ACTUAL_EVALUATED_PAIRS,
     N_EI_CANDIDATES,
@@ -916,6 +920,54 @@ def test_shared_control_winner_search_has_24_thread_checkpoint_budget() -> None:
     }
     assert spec["maximum_raw_asks"] == 9_216
     assert spec["maximum_wall_seconds"] == 129_600
+
+
+def test_full_compute_successor_is_supply_bounded_but_keeps_checkpoint_fill() -> None:
+    spec = _campaign_runtime_spec(FULL_COMPUTE_SUCCESSOR_SEARCH_PROFILE)
+
+    assert FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_CHECKPOINTS == 4
+    assert FULL_COMPUTE_SUCCESSOR_SEARCH_MAXIMUM_RAW_ASKS == 4_608
+    assert sum(FULL_COMPUTE_SUCCESSOR_SEARCH_ROUTE_MIX.values()) == 1_152
+    assert spec["fixed_route_mix"] == {
+        "SLOW_TEMPORAL_CHANGE": 1_120,
+        "FIRSTN_PATH": 32,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+        "MARKET_REGIME_CONDITION": 0,
+        "DISCLOSURE_EVENT": 0,
+    }
+    assert spec["maximum_raw_asks"] == 4_608
+    assert spec["minimum_required_fresh_exact_by_route"] == {
+        "SLOW_TEMPORAL_CHANGE": 5_376,
+        "FIRSTN_PATH": 154,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+        "MARKET_REGIME_CONDITION": 0,
+        "DISCLOSURE_EVENT": 0,
+    }
+
+    authorization = json.loads(
+        (
+            REPO_ROOT
+            / "runtime"
+            / "run_plans"
+            / "cn_full_compute_successor_train_search_v1_authorization.json"
+        ).read_text(encoding="utf-8")
+    )
+    topology_body = dict(authorization)
+    topology_hash = topology_body.pop(
+        "resource_topology_authorization_sha256"
+    )
+    assert authorization["campaign_profile"] == (
+        FULL_COMPUTE_SUCCESSOR_SEARCH_PROFILE
+    )
+    assert authorization["fixed_route_formal_asks_per_checkpoint"] == (
+        spec["fixed_route_mix"]
+    )
+    assert authorization["maximum_raw_asks"] == 4_608
+    assert authorization["session_pair_batch_size"] == 24
+    assert authorization["authorized_task_count"] == 1
+    assert authorization["cross_campaign_optimizer_state_reused"] is False
+    assert authorization["cross_campaign_reward_rows_imported"] == 0
+    assert topology_hash == _stable_hash(topology_body)
 
 
 def test_qualified_mapping_successor_search_is_single_bounded_exclusive_task() -> None:
