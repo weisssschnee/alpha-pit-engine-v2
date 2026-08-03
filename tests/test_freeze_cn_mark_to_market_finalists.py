@@ -16,23 +16,32 @@ from scripts.freeze_cn_productive_keep_review_cohort import (
 )
 
 
-def _fixture(tmp_path: Path) -> Path:
+def _fixture(
+    tmp_path: Path,
+    *,
+    include_economic_mechanism: bool = True,
+    include_portfolio_exposure: bool = True,
+    all_ineligible: bool = False,
+) -> Path:
     root = tmp_path / "mtm"
     prepared = root / "prepared"
     prepared.mkdir(parents=True)
     pair_ids = ["pair-good", "pair-primary-loss", "pair-heavy", "pair-blocked"]
-    pairs = pd.DataFrame(
-        [
+    pair_rows = [
             {
                 "pair_id": pair_id,
-                "economic_mechanism_id": f"mechanism-{pair_id}",
-                "portfolio_exposure_family_id": f"exposure-{pair_id}",
                 "train_stability_score": 1.0 - index * 0.1,
                 "search_score": 0.9 - index * 0.1,
             }
             for index, pair_id in enumerate(pair_ids)
-        ]
-    )
+    ]
+    if include_economic_mechanism:
+        for row in pair_rows:
+            row["economic_mechanism_id"] = f"mechanism-{row['pair_id']}"
+    if include_portfolio_exposure:
+        for row in pair_rows:
+            row["portfolio_exposure_family_id"] = f"exposure-{row['pair_id']}"
+    pairs = pd.DataFrame(pair_rows)
     candidates = pd.DataFrame(
         [
             {
@@ -108,6 +117,8 @@ def _fixture(tmp_path: Path) -> Path:
             },
         ]
     )
+    if all_ineligible:
+        mtm_pairs["primary_mark_to_market_net_reward"] = -1.0
     mtm_candidates = candidates.assign(
         candidate_mark_to_market_status="CANDIDATE_MARK_TO_MARKET_COMPLETE"
     )
@@ -166,3 +177,31 @@ def test_mtm_freeze_requires_absolute_and_relative_economics_not_low_exposure(
     )
     heavy = review.loc[review["pair_id"].eq("pair-heavy")].iloc[0]
     assert heavy["economic_admission_blockers"] == ""
+
+
+def test_mtm_freeze_closes_zero_hold_research_without_mechanism_column(
+    tmp_path: Path,
+) -> None:
+    root = _fixture(
+        tmp_path,
+        include_economic_mechanism=False,
+        include_portfolio_exposure=False,
+        all_ineligible=True,
+    )
+    output = tmp_path / "finalists"
+    result = freeze_mark_to_market_finalists(
+        mark_to_market_root=root,
+        output_root=output,
+        generator_repo_sha="c" * 40,
+    )
+    assert result["status"] == (
+        "MTM_TRAIN_ONLY_FINALISTS_CLOSED_ZERO_HOLD_RESEARCH"
+    )
+    assert result["eligible_pairs"] == 0
+    assert result["selected_pairs"] == 0
+    assert result["selected_pair_ids"] == []
+    summary = json.loads(
+        (output / "finalist_summary.json").read_text(encoding="utf-8")
+    )
+    assert summary["selected_economic_mechanism_unique"] == 0
+    assert summary["blocked_rows_backfilled"] == 0

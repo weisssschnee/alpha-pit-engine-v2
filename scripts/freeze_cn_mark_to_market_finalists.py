@@ -99,7 +99,6 @@ def _bound_freeze(closure: Mapping[str, Any]) -> tuple[Path, dict[str, Any]]:
 def _rank_eligible(frame: pd.DataFrame) -> pd.DataFrame:
     required = {
         "pair_id",
-        "economic_mechanism_id",
         "pair_mark_to_market_status",
         "primary_mark_to_market_net_reward",
         "mark_to_market_net_increment",
@@ -112,6 +111,10 @@ def _rank_eligible(frame: pd.DataFrame) -> pd.DataFrame:
     eligible = frame[
         frame.apply(lambda row: not mark_to_market_blockers(row), axis=1)
     ].copy()
+    if not eligible.empty and "economic_mechanism_id" not in eligible.columns:
+        raise RuntimeError(
+            "MTM finalist source columns missing: ['economic_mechanism_id']"
+        )
     ranking_columns = [
         "primary_cumulative_net_return",
         "primary_mark_to_market_net_reward",
@@ -262,11 +265,12 @@ def freeze_mark_to_market_finalists(
     review["promotion_eligible"] = False
 
     output_root.mkdir(parents=True)
-    status = (
-        "MTM_TRAIN_ONLY_FINALISTS_CLOSED_TARGET_RANGE"
-        if len(selected) >= TARGET_PAIRS_MINIMUM
-        else "MTM_TRAIN_ONLY_FINALISTS_CLOSED_ACTUAL_SMALLER_NO_BACKFILL"
-    )
+    if selected.empty:
+        status = "MTM_TRAIN_ONLY_FINALISTS_CLOSED_ZERO_HOLD_RESEARCH"
+    elif len(selected) >= TARGET_PAIRS_MINIMUM:
+        status = "MTM_TRAIN_ONLY_FINALISTS_CLOSED_TARGET_RANGE"
+    else:
+        status = "MTM_TRAIN_ONLY_FINALISTS_CLOSED_ACTUAL_SMALLER_NO_BACKFILL"
     contract = {
         "schema_version": "cn_mtm_train_only_finalist_freeze_v2",
         "status": status,
@@ -314,14 +318,18 @@ def freeze_mark_to_market_finalists(
     selected_candidates.to_parquet(candidate_path, index=False)
     selection_payload = {
         "pair_ids": selected_ids,
-        "economic_mechanism_ids": selected[
-            "economic_mechanism_id"
-        ].astype(str).tolist(),
+        "economic_mechanism_ids": (
+            selected["economic_mechanism_id"].astype(str).tolist()
+            if "economic_mechanism_id" in selected.columns
+            else []
+        ),
         "mark_to_market_closure_sha256": _sha256(closure_path),
         "contract_payload_sha256": contract["contract_payload_sha256"],
     }
-    exposure_counts = Counter(
-        selected["portfolio_exposure_family_id"].astype(str)
+    exposure_counts = (
+        Counter(selected["portfolio_exposure_family_id"].astype(str))
+        if "portfolio_exposure_family_id" in selected.columns
+        else Counter()
     )
     summary = {
         "schema_version": "cn_mtm_train_only_finalist_freeze_v2",
@@ -330,8 +338,10 @@ def freeze_mark_to_market_finalists(
         "selected_pairs": len(selected),
         "selected_candidate_members": len(selected) * 2,
         "selected_pair_ids": selected_ids,
-        "selected_economic_mechanism_unique": int(
-            selected["economic_mechanism_id"].nunique()
+        "selected_economic_mechanism_unique": (
+            int(selected["economic_mechanism_id"].nunique())
+            if "economic_mechanism_id" in selected.columns
+            else 0
         ),
         "selected_portfolio_exposure_family_counts": dict(
             sorted(exposure_counts.items())
