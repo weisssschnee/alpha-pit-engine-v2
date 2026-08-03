@@ -601,18 +601,22 @@
       "paths": [
         "src/our_system_phase2/services/a_share_executable_replay.py",
         "src/our_system_phase2/services/candidate_result_schema.py",
+        "src/our_system_phase2/services/finalist_economic_admission.py",
         "scripts/run_cn_finalist_replay_then_oos.py",
+        "scripts/freeze_cn_train_replay_finalists.py",
+        "scripts/freeze_cn_mark_to_market_finalists.py",
         "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
-        "docs/adr/0012-shared-node-alpha-compute-control-plane.md"
+        "docs/adr/0012-shared-node-alpha-compute-control-plane.md",
+        "docs/adr/0013-primary-absolute-economics-and-terminal-exposure-finalist-admission.md"
       ],
       "critical": true,
       "active_authority": true,
       "semantic_role": "finalist_execution_evidence_authority",
       "authority": {
-        "path": "src/our_system_phase2/services/a_share_executable_replay.py",
+        "path": "src/our_system_phase2/services/finalist_economic_admission.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "verified_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0",
-        "sha256": "b2bc6fe41f4ab4a162140ad7dc857428e982c2bd264bfee11410a882653cb9b8"
+        "verified_sha": "b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd",
+        "sha256": "01bd673d3b1912137f3ac59b37acd1b65ca6caa16b4cd7c473d7a431c0c48a1e"
       },
       "contracts": [
         {
@@ -630,14 +634,30 @@
           "severity": "HARD",
           "enforced_by": "finalist replay runner access and write guards",
           "bypass_forbidden": true
+        },
+        {
+          "id": "primary_absolute_and_matched_economics_required",
+          "type": "ADMISSION",
+          "rule": "A train-only finalist requires positive standalone primary net reward and positive primary-minus-control net increment; relative control outperformance alone is insufficient and blocked or nonpositive rows are never backfilled.",
+          "severity": "HARD",
+          "enforced_by": "finalist_economic_admission and deterministic finalist freezes",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "mtm_terminal_exposure_budget",
+          "type": "BOUNDARY",
+          "rule": "Final-close MTM admission additionally requires both primary and control ending-holdings weights at or below 5%; passing remains train-only report-only-OOS admission and never proves strict executability or promotion.",
+          "severity": "HARD",
+          "enforced_by": "finalist_economic_admission and freeze_cn_mark_to_market_finalists",
+          "bypass_forbidden": true
         }
       ],
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "tests/test_candidate_result_schema.py",
-        "evidence_sha256": "edf6da020865a7b093c0c335824df554883d747a044c629a1e573d2a63718039",
-        "verified_at_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"
+        "evidence_ref": "tests/test_finalist_economic_admission.py",
+        "evidence_sha256": "ad51b4014bff0f339f8494d3d53ca8b549f447a28af6c021ccff17983fd59e23",
+        "verified_at_sha": "b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd"
       }
     },
     {
@@ -1440,6 +1460,6 @@
     {"semantic_role": "development_search_policy_authority", "authoritative_component": "cn_development_search_policy", "authority_class": "FORMAL", "decision_ref": "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"},
     {"semantic_role": "shared_node_resource_authority", "authoritative_component": "cn_shared_node_resource_authority", "authority_class": "FORMAL", "decision_ref": "docs/adr/0012-shared-node-alpha-compute-control-plane.md"},
     {"semantic_role": "candidate_execution_clock_capability_authority", "authoritative_component": "candidate_execution_clock_capability", "authority_class": "FORMAL", "decision_ref": "docs/adr/0012-shared-node-alpha-compute-control-plane.md"},
-    {"semantic_role": "finalist_execution_evidence_authority", "authoritative_component": "a_share_finalist_replay_contract", "authority_class": "FORMAL", "decision_ref": "docs/adr/0010-development-feedback-and-finalist-execution-separation.md"}
+    {"semantic_role": "finalist_execution_evidence_authority", "authoritative_component": "a_share_finalist_replay_contract", "authority_class": "FORMAL", "decision_ref": "docs/adr/0013-primary-absolute-economics-and-terminal-exposure-finalist-admission.md"}
   ]
 }

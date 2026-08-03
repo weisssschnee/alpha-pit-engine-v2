@@ -2,7 +2,7 @@
 
 Updated: 2026-08-03
 
-Current state: `CN_TERMINAL_LIQUIDITY_MTM_AND_BOUNDED_SEARCH_CLOSED_HOLD_RESEARCH`
+Current state: `CN_FINALIST_ABSOLUTE_ECONOMIC_ADMISSION_QUALIFIED_SEARCH_PENDING`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,26 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Primary-absolute finalist admission authority (2026-08-03)
+
+- ADR 0013 is accepted and the existing finalist execution-evidence authority
+  now rejects relative-only winners. Strict replay admission requires both a
+  positive standalone primary A-share executable net reward and a positive
+  primary-minus-control executable increment. Blocked, nonpositive and
+  duplicate-mechanism rows cannot be used as backfill.
+- A separate final-close MTM admission path applies the same two economic tests
+  and additionally requires both primary and control terminal holdings weights
+  to be at most 5% of final NAV. Passing that path remains train-only evidence
+  for a separately authorized report-only OOS run; it does not establish strict
+  executability, promotion or an economic claim.
+- Phase3CM development feedback remains unchanged under ADR 0010. Replay, MTM
+  and OOS evidence cannot mutate TPE reward, optimizer, scheduler or archive
+  state. The source authority is commit
+  `b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd`; 58 focused tests passed (10 new
+  admission/freeze tests and 48 existing search/replay/OOS regressions) plus
+  Python compilation. No 77o financial run, validation, holdout/2026 read or
+  promotion is implied by this source qualification.
 
 ### Terminal-liquidity MTM diagnostic and bounded search closure (2026-08-03)
 

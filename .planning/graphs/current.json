@@ -6,6 +6,72 @@
       "evidence": {},
       "message": "Current view is advisory; formal runtime evidence was not supplied",
       "severity": "INFO"
+    },
+    {
+      "category": "STALE",
+      "code": "RAW_GRAPH_SOURCE_CHANGED",
+      "evidence": {
+        "changed_paths": [
+          ".gitignore",
+          ".planning/STATE.md",
+          "docs/adr/0013-primary-absolute-economics-and-terminal-exposure-finalist-admission.md",
+          "runtime/run_plans/cn_compute_efficient_train_search_v1_authorization.json",
+          "runtime/run_plans/cn_continuous_search_finalist_dual_lane_v1_contract.json",
+          "runtime/run_plans/cn_continuous_search_report_only_oos_dual_lane_v2_contract.json",
+          "runtime/run_plans/cn_finalist_funnel_2261_v1_contract.json",
+          "runtime/run_plans/cn_finalist_funnel_731_v1_contract.json",
+          "runtime/run_plans/cn_full_compute_successor_train_search_v1_authorization.json",
+          "runtime/run_plans/cn_qualified_mapping_successor_train_search_v1_authorization.json",
+          "runtime/run_plans/cn_shared_control_dual_lane_alpha_20260801_receipt.json",
+          "runtime/run_plans/cn_shared_control_dual_lane_alpha_v1_contract.json",
+          "runtime/run_plans/cn_terminal_liquidity_search_continuity_v1_contract.json",
+          "scripts/build_cn_stock_session_field_capability.py",
+          "scripts/build_cn_terminal_liquidity_oos_classification.py",
+          "scripts/build_cn_verified_partial_campaign_history.py",
+          "scripts/freeze_cn_finalist_replay_cohort.py",
+          "scripts/freeze_cn_mark_to_market_finalists.py",
+          "scripts/freeze_cn_productive_keep_review_cohort.py",
+          "scripts/freeze_cn_shared_control_dual_search_authorization.py",
+          "scripts/freeze_cn_train_replay_finalists.py",
+          "scripts/materialize_cn_search_preflight_authorization.py",
+          "scripts/prepare_cn_shared_control_dual_lane_77o.ps1",
+          "scripts/prepare_cn_terminal_liquidity_search_continuity_77o.ps1",
+          "scripts/prepare_cn_train_finalist_report_only_oos.py",
+          "scripts/qualify_cn_stock_session_mapping_acceleration.py",
+          "scripts/run_cn_finalist_mark_to_market_replay.py",
+          "scripts/run_cn_finalist_mark_to_market_replay_77o.ps1",
+          "scripts/run_cn_finalist_replay_then_oos.py",
+          "scripts/run_cn_finalist_replay_then_oos_77o.ps1",
+          "scripts/run_cn_phase3cm_streaming_qualification.py",
+          "scripts/run_cn_train_finalist_report_only_oos_77o.ps1",
+          "scripts/run_cn_winner_guided_large_search_77o.ps1",
+          "scripts/verify_cn_productive_keep_review_cohort.py",
+          "scripts/verify_cn_train_replay_finalists.py",
+          "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
+          "src/our_system_phase2/services/finalist_economic_admission.py",
+          "src/our_system_phase2/services/phase3cm_streaming_checkpoint.py",
+          "src/our_system_phase2/services/phase3cm_streaming_portfolio.py",
+          "tests/test_cn_large_tpe_search_campaign.py",
+          "tests/test_cn_search_resource_topology_authorization.py",
+          "tests/test_cn_shared_control_dual_search_authorization.py",
+          "tests/test_cn_terminal_liquidity_oos_classification.py",
+          "tests/test_cn_verified_partial_campaign_history.py",
+          "tests/test_execution_clock_capability.py",
+          "tests/test_finalist_economic_admission.py",
+          "tests/test_freeze_cn_finalist_replay_cohort.py",
+          "tests/test_freeze_cn_mark_to_market_finalists.py",
+          "tests/test_freeze_cn_productive_keep_review_cohort.py",
+          "tests/test_freeze_cn_train_replay_finalists.py",
+          "tests/test_phase3cm_streaming_portfolio.py",
+          "tests/test_prepare_cn_train_finalist_report_only_oos.py",
+          "tests/test_run_cn_finalist_mark_to_market_replay.py",
+          "tests/test_run_cn_finalist_replay_then_oos.py"
+        ],
+        "raw_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0",
+        "repo_head": "b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd"
+      },
+      "message": "Raw graph predates non-overlay source changes",
+      "severity": "ERROR"
     }
   ],
   "edges": [
@@ -1464,7 +1530,7 @@
       }
     }
   ],
-  "generated_at": "2026-07-31T13:58:02.298338+00:00",
+  "generated_at": "2026-08-03T03:58:00.740623+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -3424,10 +3490,10 @@
     {
       "active_authority": true,
       "authority": {
-        "path": "src/our_system_phase2/services/a_share_executable_replay.py",
+        "path": "src/our_system_phase2/services/finalist_economic_admission.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
-        "sha256": "B2BC6FE41F4AB4A162140AD7DC857428E982C2BD264BFEE11410A882653CB9B8",
-        "verified_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"
+        "sha256": "01BD673D3B1912137F3AC59B37ACD1B65CA6CAA16B4CD7C473D7A431C0C48A1E",
+        "verified_sha": "b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd"
       },
       "color": "#2e7d32",
       "contracts": [
@@ -3448,6 +3514,24 @@
           "rule": "Executable replay and report-only validation evidence cannot mutate development optimizer feedback, search state, archives or promotion and cannot read holdout or 2026.",
           "severity": "HARD",
           "type": "BOUNDARY"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "finalist_economic_admission and deterministic finalist freezes",
+          "evidence_ref": "",
+          "id": "primary_absolute_and_matched_economics_required",
+          "rule": "A train-only finalist requires positive standalone primary net reward and positive primary-minus-control net increment; relative control outperformance alone is insufficient and blocked or nonpositive rows are never backfilled.",
+          "severity": "HARD",
+          "type": "ADMISSION"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "finalist_economic_admission and freeze_cn_mark_to_market_finalists",
+          "evidence_ref": "",
+          "id": "mtm_terminal_exposure_budget",
+          "rule": "Final-close MTM admission additionally requires both primary and control ending-holdings weights at or below 5%; passing remains train-only report-only-OOS admission and never proves strict executability or promotion.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
         }
       ],
       "critical": true,
@@ -3461,9 +3545,13 @@
       "paths": [
         "src/our_system_phase2/services/a_share_executable_replay.py",
         "src/our_system_phase2/services/candidate_result_schema.py",
+        "src/our_system_phase2/services/finalist_economic_admission.py",
         "scripts/run_cn_finalist_replay_then_oos.py",
+        "scripts/freeze_cn_train_replay_finalists.py",
+        "scripts/freeze_cn_mark_to_market_finalists.py",
         "docs/adr/0010-development-feedback-and-finalist-execution-separation.md",
-        "docs/adr/0012-shared-node-alpha-compute-control-plane.md"
+        "docs/adr/0012-shared-node-alpha-compute-control-plane.md",
+        "docs/adr/0013-primary-absolute-economics-and-terminal-exposure-finalist-admission.md"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [
@@ -3592,14 +3680,14 @@
       "required": false,
       "semantic_role": "finalist_execution_evidence_authority",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
-        "evidence_ref": "tests/test_candidate_result_schema.py",
-        "evidence_sha256": "EDF6DA020865A7B093C0C335824DF554883D747A044C629A1E573D2A63718039",
+        "checked_at": "2026-08-03T03:58:00.740623+00:00",
+        "evidence_ref": "tests/test_finalist_economic_admission.py",
+        "evidence_sha256": "AD51B4014BFF0F339F8494D3D53CA8B549F447A28AF6C021CCFF17983FD59E23",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"
+        "verified_at_sha": "b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd"
       },
       "visible_by_default": true
     },
@@ -4785,7 +4873,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "4BF0650F295FC324EEB85843EDF604850165E6A7E029000FCA307E3F929FFF94"
+    "sha256": "C407EDC32BA9509D38D9BD57D38D6B777B7AE7418B70D0C7D37A6101AEFA56A9"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -4802,15 +4890,15 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "4CD2272193684D4AA4BB0A5F568A9419C2846CA2A1041AF0647FF21AC8612721"
   },
-  "repo_head": "a7eae163163a8ac70303da52745b203c6b65ecc0",
+  "repo_head": "b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd",
   "schema_version": 1,
-  "status": "INSUFFICIENT_EVIDENCE",
+  "status": "STALE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
     "current_edges": 45,
     "current_nodes": 32,
-    "errors": 0,
+    "errors": 1,
     "runtime_edges": 0,
     "runtime_nodes": 0,
     "warnings": 0
