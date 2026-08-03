@@ -2,7 +2,7 @@
 
 Updated: 2026-08-03
 
-Current state: `CN_CONTINUOUS_SEARCH_AND_32_PAIR_OOS_CLOSED_HOLD_RESEARCH`
+Current state: `CN_TERMINAL_LIQUIDITY_MTM_AND_BOUNDED_SEARCH_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,60 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Terminal-liquidity MTM diagnostic and bounded search closure (2026-08-03)
+
+- The user-authorized shared-control continuation is closed without promotion
+  or sealed-period access. The bounded `SEARCH_DUAL_24` recovery completed one
+  train-only checkpoint with the exact Slow Temporal / Slow Cross-sectional /
+  other-route mix `144/40/0`, 184 fresh formal asks and 184 evaluated pairs.
+  Sixty-four were productive (34.7826%); all 64 productive rows had distinct
+  behavior-family IDs, accepted optimizer feedback/COMPLETE tells were 57,
+  exact/pair/full-signature duplicates were zero and validation/holdout/2026
+  reads were zero. The batch manifest file/canonical SHA256 values are
+  `a8b332d9329d1b4675a9594908308791a24c7fc58cebd4b5e0e5d6d50509bdf2` /
+  `48b68f4d47e256d529f1b20ccc0939c030d8464d88bcb8681629261c427cce1c`;
+  all 22 checkpoint artifacts and all 17 root artifacts passed independent
+  verification. The independent audit file SHA256 is
+  `639a2ea62cfe55291278d39a0e079041615514a4a8bb3e61c178701fabbe6a9d`.
+- The first search attempt failed only the unchanged stock-session
+  acceleration gate at 14.710138 effective cores versus 16.0. Its evidence is
+  preserved under
+  `run_health_incidents\20260803T095807_terminal_search_acceleration_gate_failure`;
+  incident SHA256 is
+  `a460a902a3c98452db57e0e803466200ec30acae8042e693ce0d9b0a67a7d436`.
+  The successful same-root recovery reused neither rejected financial results
+  nor optimizer state and did not weaken any gate.
+- The unchanged 32-pair/64-member terminal-liquidity cohort then completed a
+  separately bounded train-only final-close mark-to-market diagnostic. All 64
+  candidate records and all 32 pair records completed in the original order;
+  ending holdings were valued at `FINAL_PIT_CLOSE` with no fabricated terminal
+  sale or terminal sale fee. The immutable closure file/canonical SHA256 values
+  are
+  `4eac16067a51b1b19ecc98ba35b670759aae49e191ab76819b7eb695b627b647` /
+  `5273a915a9d788ec5be1af19c28caa0b8a92239c2b8cd56fe222efede9e2b4a4`;
+  all 74 declared artifacts, selection/replay bindings and identity order
+  passed. Validation/holdout/2026 reads and optimizer/feedback/scheduler/
+  archive/promotion writes were zero or forbidden.
+- Mark-to-market resolves the accounting ambiguity but does not rescue the
+  cohort economically. Only 5/32 pairs had positive primary-minus-control MTM
+  increment; the increment median/p10 were -0.278412966 / -0.549645061. No
+  primary candidate had positive standalone MTM reward; primary reward
+  median/p10 were -0.954243201 / -1.864186638. Ending-holdings weight
+  median/p90/max were 0.397880801 / 0.420949810 / 0.422067092. Only two pairs
+  were positive both on matched MTM increment and the already closed OOS
+  transfer: `cn.pair.0c464b935d4c113953059dd9c9f4e728` and
+  `cn.pair.dddacc07644bccd244895b39415342ef`. Because neither result supplies a
+  positive standalone primary economic claim, both remain diagnostic
+  `HOLD_RESEARCH`, not executable finalists.
+- Independent MTM audit file/payload SHA256 values are
+  `ae19e68a6c0117f9d42e415b9a57d63d128020a6e2117fd687929ec85b7aa99c` /
+  `5ecdddc64bb110b4a24a481ef7260e7decc9395a195e7143b85190d7cdf59bbf`.
+  The earlier cardinality- and replay-root-binding failures wrote zero
+  candidate results and remain preserved under their incident roots; neither
+  was reused. This evidence changes project conclusion but not search,
+  execution, resource or promotion authority, so no ADR or CURRENT Graph
+  transition is warranted.
 
 ### Continuous search plus unchanged 32-pair report-only OOS closure (2026-08-03)
 
@@ -1905,15 +1959,18 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-The continuous dual-lane search/replay/OOS workflow is closed and must not be
-rerun. Preserve the 309 new train-productive candidates as immutable search
-evidence, but do not launch another tranche automatically. The next bounded
-research action is to classify the 21 OOS-positive but strict-replay-blocked
-pairs by terminal holdings, turnover, mechanism and regime exposure, then
-decide whether the economic experiment needs an explicitly frozen liquidation
-buffer or should reject these mechanisms as non-executable. Do not weaken the
-existing flat-book/T+1 rules, backfill the zero-finalist freeze, feed OOS into
-the optimizer, or claim promotion from the 65.625% transfer rate.
+The terminal-liquidity classification and final-close MTM diagnostic are now
+closed and must not be rerun. Preserve the 184-ask search closure and the
+64-member MTM closure as immutable evidence. The diagnostic rejects the idea
+that forced terminal liquidation alone hid a broad executable alpha set: only
+5/32 matched increments were positive, none of the 32 primary candidates had
+positive standalone MTM reward and only two matched the already closed OOS
+positive-transfer set. Do not promote those two, backfill the zero-finalist
+freeze, feed OOS into the optimizer, weaken flat-book/T+1 rules or launch a
+successor automatically. Any later compute contract must first make a separate
+explicit decision about a primary-absolute-positive train admission criterion
+and terminal exposure budget; it must not treat control-relative positivity as
+an economic claim.
 
 The full-compute successor is closed and must not be rerun. Preserve its 731
 productive train-development candidates as immutable input to the existing
