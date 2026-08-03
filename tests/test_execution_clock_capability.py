@@ -41,6 +41,27 @@ def test_expression_fields_are_checked_per_candidate_not_route() -> None:
     ]
 
 
+def test_session_close_snapshot_of_intraday_field_is_compatible() -> None:
+    manifest = {
+        "execution_clock": "stock_session",
+        "signal_clock": "SESSION_CLOSE_T",
+        "fields": {
+            "intraday_ret_from_open": {
+                "status": "SUPPORTED",
+                "reason": "DIRECT_FIELD_FINAL_PIT_CLOSE_SNAPSHOT",
+                "session_materialization_policy": (
+                    "LAST_OBSERVED_VALUE_AT_OR_BEFORE_SESSION_CLOSE_PIT"
+                ),
+            }
+        },
+    }
+    assessed = assess_candidate_field_capability(
+        ("Sign($intraday_ret_from_open)",), manifest
+    )
+    assert assessed["compatible"] is True
+    assert assessed["unsupported_field_ids"] == []
+
+
 def test_expression_field_parser_is_deterministic() -> None:
     assert expression_field_ids("Add($b, Mul($a, $b))") == ("a", "b")
 

@@ -4458,7 +4458,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         if expected_backends and str(gate.get("status") or "") != "PASS":
             raise RuntimeError(
-                "LARGE_TPE_RUNTIME_ACCELERATION_GATE_FAILED"
+                "LARGE_TPE_RUNTIME_SEMANTIC_INTEGRITY_FAILED"
             )
         availability_state_path = _write_json(
             root / "availability_controller_state.json",
@@ -4589,6 +4589,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ),
             "minimum_free_memory_bytes": _minimum_free_memory(root),
             "runtime_gate_status": str(gate.get("status") or ""),
+            "runtime_evidence_status": str(
+                gate.get("evidence_status") or "NOT_EVALUATED"
+            ),
             "validation_reads": 0,
             "holdout_reads": 0,
             "forward_2026_reads": 0,

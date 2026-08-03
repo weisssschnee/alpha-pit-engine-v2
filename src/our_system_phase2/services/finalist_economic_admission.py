@@ -11,10 +11,11 @@ import math
 from typing import Any, Mapping
 
 
-POLICY_ID = "CN_FINALIST_ABSOLUTE_ECONOMIC_ADMISSION_V1"
+POLICY_ID = "CN_FINALIST_CONTINUOUS_BOOK_MTM_ADMISSION_V2"
 MINIMUM_PRIMARY_NET_REWARD = 0.0
 MINIMUM_MATCHED_NET_INCREMENT = 0.0
-MAXIMUM_TERMINAL_HOLDINGS_WEIGHT = 0.05
+MINIMUM_PRIMARY_CUMULATIVE_NET_RETURN = 0.0
+MINIMUM_MATCHED_CUMULATIVE_RETURN_INCREMENT = 0.0
 
 
 def _finite_float(value: Any) -> float | None:
@@ -40,11 +41,12 @@ def strict_replay_blockers(row: Mapping[str, Any]) -> tuple[str, ...]:
 
 
 def mark_to_market_blockers(row: Mapping[str, Any]) -> tuple[str, ...]:
-    """Return blockers for bounded-terminal-exposure MTM admission.
+    """Return blockers for continuous-book train MTM admission.
 
     Passing this predicate permits only train-only finalist consideration for a
     separately authorized report-only OOS run.  It does not prove strict
-    executability or authorize promotion.
+    terminal liquidation or authorize promotion.  Ending holdings are marked
+    at the final PIT close and remain diagnostics, not admission blockers.
     """
     blockers: list[str] = []
     if str(row.get("pair_mark_to_market_status") or "") != (
@@ -57,12 +59,20 @@ def mark_to_market_blockers(row: Mapping[str, Any]) -> tuple[str, ...]:
     increment = _finite_float(row.get("mark_to_market_net_increment"))
     if increment is None or increment <= MINIMUM_MATCHED_NET_INCREMENT:
         blockers.append("MATCHED_NET_INCREMENT_NOT_POSITIVE")
-    for role in ("primary", "control"):
-        weight = _finite_float(row.get(f"{role}_ending_holdings_weight"))
-        if weight is None:
-            blockers.append(f"{role.upper()}_TERMINAL_HOLDINGS_WEIGHT_MISSING")
-        elif weight > MAXIMUM_TERMINAL_HOLDINGS_WEIGHT:
-            blockers.append(f"{role.upper()}_TERMINAL_HOLDINGS_WEIGHT_EXCEEDED")
+    primary_return = _finite_float(row.get("primary_cumulative_net_return"))
+    if (
+        primary_return is None
+        or primary_return <= MINIMUM_PRIMARY_CUMULATIVE_NET_RETURN
+    ):
+        blockers.append("PRIMARY_CUMULATIVE_NET_RETURN_NOT_POSITIVE")
+    return_increment = _finite_float(
+        row.get("cumulative_net_return_increment")
+    )
+    if (
+        return_increment is None
+        or return_increment <= MINIMUM_MATCHED_CUMULATIVE_RETURN_INCREMENT
+    ):
+        blockers.append("MATCHED_CUMULATIVE_RETURN_INCREMENT_NOT_POSITIVE")
     return tuple(blockers)
 
 

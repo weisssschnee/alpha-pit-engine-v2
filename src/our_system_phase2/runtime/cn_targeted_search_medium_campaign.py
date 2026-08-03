@@ -1126,8 +1126,9 @@ def _runtime_gate(
 ) -> dict[str, Any]:
     expected = tuple(dict.fromkeys(str(backend) for backend in expected_backends))
     backends = {}
-    overall_execution = True
-    overall_run_health = True
+    overall_semantic_integrity = True
+    overall_compute_efficiency = True
+    overall_resource_headroom = True
     for backend in expected:
         backend_root = checkpoint_root / output_namespace / backend
         result_path = backend_root / "CN_STREAMING_BACKEND_RESULT.json"
@@ -1279,9 +1280,18 @@ def _runtime_gate(
         duplicate_pair_evaluations = len(pair_ids) - len(set(pair_ids))
         cache_pass = cache_hits + cache_misses > 0
         exact_once_pass = duplicate_pair_evaluations == 0
-        backend_pass = parallel and utilization_pass and cache_pass and exact_once_pass
-        overall_execution = overall_execution and backend_pass
-        overall_run_health = overall_run_health and resource_pass
+        checkpoint_pass = "checkpoint" in (result.get("phase_totals") or {})
+        semantic_integrity_pass = cache_pass and exact_once_pass and checkpoint_pass
+        compute_efficiency_pass = parallel and utilization_pass
+        overall_semantic_integrity = (
+            overall_semantic_integrity and semantic_integrity_pass
+        )
+        overall_compute_efficiency = (
+            overall_compute_efficiency and compute_efficiency_pass
+        )
+        overall_resource_headroom = (
+            overall_resource_headroom and resource_pass
+        )
         backends[backend] = {
             "allocated_compute_threads": compute_threads[backend],
             "process_cpu_seconds": compute_cpu,
@@ -1314,6 +1324,9 @@ def _runtime_gate(
             "sustained_blocks_meeting_threshold": sustained_blocks,
             "per_block_compute": blocks,
             "parallelism_engaged": parallel,
+            "compute_efficiency_status": (
+                "PASS" if compute_efficiency_pass else "DEGRADED_DIAGNOSTIC"
+            ),
             "parallelism_required_phases": sorted(parallelism_required_phases),
             "parallelism_below_measurement_resolution_phases": sorted(
                 present_parallel_phases - parallelism_required_phases
@@ -1333,6 +1346,9 @@ def _runtime_gate(
             "minimum_free_memory_bytes": minimum_free,
             "minimum_required_free_memory_bytes": MINIMUM_FREE_MEMORY_BYTES,
             "run_health_status": "PASS" if resource_pass else "MEMORY_HEADROOM_GATE_FAILED",
+            "resource_headroom_status": (
+                "PASS" if resource_pass else "DEGRADED_DIAGNOSTIC"
+            ),
             "read_throughput_bytes_per_second": read_throughput,
             "write_throughput_bytes_per_second": write_bytes / max(duration, 1.0),
             "rows_per_second": int(result.get("rows_processed") or 0) / max(float(result.get("wall_seconds") or 0.0), 1.0),
@@ -1347,25 +1363,53 @@ def _runtime_gate(
             "evaluation_cache_key_status": "BOUND_IN_FROZEN_EXECUTION_AND_DAG_PLAN",
             "duplicate_exact_pair_evaluations": duplicate_pair_evaluations,
             "exact_pair_evaluated_once": exact_once_pass,
-            "checkpoint_status": "PASS" if "checkpoint" in (result.get("phase_totals") or {}) else "FAIL",
-            "status": "PASS" if backend_pass else "FAIL",
+            "checkpoint_status": "PASS" if checkpoint_pass else "FAIL",
+            "semantic_integrity_status": (
+                "PASS" if semantic_integrity_pass else "FAIL"
+            ),
+            "status": "PASS" if semantic_integrity_pass else "FAIL",
         }
     expected_outputs_complete = set(backends) == set(expected) and bool(expected)
+    compute_evidence_pass = overall_compute_efficiency and expected_outputs_complete
+    resource_evidence_pass = overall_resource_headroom and expected_outputs_complete
+    if compute_evidence_pass and resource_evidence_pass:
+        evidence_status = "PASS"
+    elif not compute_evidence_pass and not resource_evidence_pass:
+        evidence_status = "PASS_WITH_COMPUTE_AND_RESOURCE_DEGRADED"
+    elif not compute_evidence_pass:
+        evidence_status = "PASS_WITH_COMPUTE_EFFICIENCY_DEGRADED"
+    else:
+        evidence_status = "PASS_WITH_RESOURCE_HEADROOM_DEGRADED"
     return {
-        "schema_version": "cn_medium_campaign_runtime_utilization_gate_v4",
+        "schema_version": "cn_medium_campaign_runtime_utilization_gate_v5",
         "status": (
             "PASS"
-            if overall_execution and overall_run_health and expected_outputs_complete
-            else "PASS_WITH_RUN_HEALTH_FAILURE"
-            if overall_execution and expected_outputs_complete
-            else "RUNTIME_ACCELERATION_GATE_FAILED"
+            if overall_semantic_integrity and expected_outputs_complete
+            else "RUNTIME_SEMANTIC_INTEGRITY_FAILED"
         ),
+        "semantic_integrity_status": (
+            "PASS"
+            if overall_semantic_integrity and expected_outputs_complete
+            else "FAIL"
+        ),
+        "compute_efficiency_status": (
+            "PASS" if compute_evidence_pass else "DEGRADED_DIAGNOSTIC"
+        ),
+        "resource_headroom_status": (
+            "PASS" if resource_evidence_pass else "DEGRADED_DIAGNOSTIC"
+        ),
+        "evidence_status": evidence_status,
         "expected_backends": list(expected),
         "observed_backends": list(backends),
         "backends": backends,
         "bounded_concurrency_adjustment_count": 0,
-        "second_failure_policy": "RUN_INVALID",
-        "run_health_policy": "INFRASTRUCTURE_ONLY_DOES_NOT_MUTATE_ROUTE_HEALTH",
+        "second_failure_policy": (
+            "RETRY_ONLY_SEMANTIC_OR_OUTPUT_FAILURE_NOT_DIAGNOSTIC_DEGRADATION"
+        ),
+        "run_health_policy": (
+            "POST_FINANCIAL_RESOURCE_AND_EFFICIENCY_EVIDENCE_DO_NOT_"
+            "INVALIDATE_SEMANTIC_RESULTS"
+        ),
     }
 
 
@@ -2456,7 +2500,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 compute_threads,
                 expected_backends=expected_backends,
             )
-            if gate["status"] == "RUNTIME_ACCELERATION_GATE_FAILED":
+            if gate["status"] == "RUNTIME_SEMANTIC_INTEGRITY_FAILED":
                 gate, adjustment_receipts = _bounded_runtime_adjustment(
                     initial_gate=gate,
                     checkpoint_id=checkpoint_id,
@@ -2476,7 +2520,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 checkpoint_root / "runtime_utilization_gate.json", gate
             )
             runtime_gate_status = str(gate["status"])
-            if gate["status"] not in {"PASS", "PASS_WITH_RUN_HEALTH_FAILURE"}:
+            if gate["status"] != "PASS":
                 raise RuntimeError(str(gate["status"]))
         outcomes, full_behavior = _outcome_rows(checkpoint_root)
         full_behavior = _join_full_behavior_identities(full_behavior, probe_rows)
@@ -2612,10 +2656,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ),
             "validation_trigger": "AUTOMATIC_AFTER_IMMUTABLE_TRAIN_COMPLETE",
             "runtime_gate_status": runtime_gate_status,
+            "runtime_evidence_status": (
+                json.loads(runtime_gate_path.read_text(encoding="utf-8"))
+                .get("evidence_status")
+                if runtime_gate_path is not None
+                else "NOT_EVALUATED"
+            ),
             "run_health_status": (
-                "PASS"
-                if runtime_gate_status == "PASS"
-                else "INFRASTRUCTURE_FAILURE_PRESERVED"
+                json.loads(runtime_gate_path.read_text(encoding="utf-8"))
+                .get("resource_headroom_status")
+                if runtime_gate_path is not None
+                else "NOT_EVALUATED"
             ),
             "promotion": "FORBIDDEN",
         },

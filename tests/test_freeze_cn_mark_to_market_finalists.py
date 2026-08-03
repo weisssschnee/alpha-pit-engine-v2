@@ -71,6 +71,8 @@ def _fixture(tmp_path: Path) -> Path:
                 "pair_mark_to_market_status": "PAIR_MARK_TO_MARKET_COMPLETE",
                 "primary_mark_to_market_net_reward": 0.3,
                 "mark_to_market_net_increment": 0.2,
+                "primary_cumulative_net_return": 0.08,
+                "cumulative_net_return_increment": 0.03,
                 "primary_ending_holdings_weight": 0.01,
                 "control_ending_holdings_weight": 0.02,
             },
@@ -79,6 +81,8 @@ def _fixture(tmp_path: Path) -> Path:
                 "pair_mark_to_market_status": "PAIR_MARK_TO_MARKET_COMPLETE",
                 "primary_mark_to_market_net_reward": -0.1,
                 "mark_to_market_net_increment": 0.3,
+                "primary_cumulative_net_return": -0.02,
+                "cumulative_net_return_increment": 0.04,
                 "primary_ending_holdings_weight": 0.001,
                 "control_ending_holdings_weight": 0.001,
             },
@@ -87,6 +91,8 @@ def _fixture(tmp_path: Path) -> Path:
                 "pair_mark_to_market_status": "PAIR_MARK_TO_MARKET_COMPLETE",
                 "primary_mark_to_market_net_reward": 0.4,
                 "mark_to_market_net_increment": 0.3,
+                "primary_cumulative_net_return": 0.12,
+                "cumulative_net_return_increment": 0.05,
                 "primary_ending_holdings_weight": 0.2,
                 "control_ending_holdings_weight": 0.01,
             },
@@ -95,6 +101,8 @@ def _fixture(tmp_path: Path) -> Path:
                 "pair_mark_to_market_status": "PAIR_MARK_TO_MARKET_BLOCKED",
                 "primary_mark_to_market_net_reward": None,
                 "mark_to_market_net_increment": None,
+                "primary_cumulative_net_return": None,
+                "cumulative_net_return_increment": None,
                 "primary_ending_holdings_weight": None,
                 "control_ending_holdings_weight": None,
             },
@@ -134,7 +142,7 @@ def _fixture(tmp_path: Path) -> Path:
     return root
 
 
-def test_mtm_freeze_requires_absolute_relative_and_low_exposure(
+def test_mtm_freeze_requires_absolute_and_relative_economics_not_low_exposure(
     tmp_path: Path,
 ) -> None:
     root = _fixture(tmp_path)
@@ -144,8 +152,8 @@ def test_mtm_freeze_requires_absolute_relative_and_low_exposure(
         output_root=output,
         generator_repo_sha="b" * 40,
     )
-    assert result["selected_pair_ids"] == ["pair-good"]
-    assert result["selected_pairs"] == 1
+    assert result["selected_pair_ids"] == ["pair-heavy", "pair-good"]
+    assert result["selected_pairs"] == 2
     summary = json.loads(
         (output / "finalist_summary.json").read_text(encoding="utf-8")
     )
@@ -157,6 +165,4 @@ def test_mtm_freeze_requires_absolute_relative_and_low_exposure(
         primary_loss["economic_admission_blockers"]
     )
     heavy = review.loc[review["pair_id"].eq("pair-heavy")].iloc[0]
-    assert "PRIMARY_TERMINAL_HOLDINGS_WEIGHT_EXCEEDED" in (
-        heavy["economic_admission_blockers"]
-    )
+    assert heavy["economic_admission_blockers"] == ""

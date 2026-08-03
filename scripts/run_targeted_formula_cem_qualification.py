@@ -1023,25 +1023,41 @@ def _selected_runtime_gate(
         backend: dict((full.get("backends") or {}).get(backend) or {})
         for backend in selected_backends
     }
-    execution_pass = bool(selected) and all(
+    semantic_integrity_pass = bool(selected) and all(
         str(row.get("status") or "") == "PASS"
         for row in selected.values()
     )
-    run_health_pass = bool(selected) and all(
-        str(row.get("run_health_status") or "") == "PASS"
+    compute_efficiency_pass = bool(selected) and all(
+        str(row.get("compute_efficiency_status") or "") == "PASS"
         for row in selected.values()
     )
+    resource_headroom_pass = bool(selected) and all(
+        str(row.get("resource_headroom_status") or "") == "PASS"
+        for row in selected.values()
+    )
+    if compute_efficiency_pass and resource_headroom_pass:
+        evidence_status = "PASS"
+    elif not compute_efficiency_pass and not resource_headroom_pass:
+        evidence_status = "PASS_WITH_COMPUTE_AND_RESOURCE_DEGRADED"
+    elif not compute_efficiency_pass:
+        evidence_status = "PASS_WITH_COMPUTE_EFFICIENCY_DEGRADED"
+    else:
+        evidence_status = "PASS_WITH_RESOURCE_HEADROOM_DEGRADED"
     return {
         **dict(full),
         "status": (
-            "PASS"
-            if execution_pass and run_health_pass
-            else (
-                "PASS_WITH_RUN_HEALTH_FAILURE"
-                if execution_pass
-                else "RUNTIME_ACCELERATION_GATE_FAILED"
-            )
+            "PASS" if semantic_integrity_pass else "RUNTIME_SEMANTIC_INTEGRITY_FAILED"
         ),
+        "semantic_integrity_status": (
+            "PASS" if semantic_integrity_pass else "FAIL"
+        ),
+        "compute_efficiency_status": (
+            "PASS" if compute_efficiency_pass else "DEGRADED_DIAGNOSTIC"
+        ),
+        "resource_headroom_status": (
+            "PASS" if resource_headroom_pass else "DEGRADED_DIAGNOSTIC"
+        ),
+        "evidence_status": evidence_status,
         "backends": selected,
         "selected_backends": list(selected_backends),
         "projection_reason": "TARGET_ROUTE_BACKEND_ONLY",

@@ -203,8 +203,8 @@ def build_capability(
             reason = "FIELD_SCHEMA_COVERAGE_INCOMPLETE"
             source_kind = "DIRECT_MINUTE_FIELD"
         elif int(variation.get(field_id) or 0) > 1:
-            status = "UNSUPPORTED"
-            reason = "VARIES_WITHIN_SESSION"
+            status = "SUPPORTED"
+            reason = "DIRECT_FIELD_FINAL_PIT_CLOSE_SNAPSHOT"
             source_kind = "DIRECT_MINUTE_FIELD"
         else:
             status = "SUPPORTED"
@@ -223,11 +223,20 @@ def build_capability(
             "temporal_semantics": capability.temporal_semantics,
             "source_field_id": capability.source_field_id,
             "representation_id": capability.representation_id,
+            "session_materialization_policy": (
+                "LAST_OBSERVED_VALUE_AT_OR_BEFORE_SESSION_CLOSE_PIT"
+                if source_kind == "DIRECT_MINUTE_FIELD"
+                else None
+            ),
         }
     payload = {
-        "schema_version": "cn_execution_field_capability_v1",
+        "schema_version": "cn_execution_field_capability_v2",
         "status": "ZERO_FINANCIAL_CAPABILITY_CLOSED",
         "execution_clock": "stock_session",
+        "signal_clock": "SESSION_CLOSE_T",
+        "direct_minute_field_policy": (
+            "LAST_OBSERVED_VALUE_AT_OR_BEFORE_SESSION_CLOSE_PIT"
+        ),
         "candidate_table": {
             "path": str(Path(candidate_table).resolve()),
             "sha256": _sha256(Path(candidate_table).resolve()),

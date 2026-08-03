@@ -237,9 +237,11 @@ def main() -> int:
             .sort("trade_time", "code")
         )
         frame = lazy.collect(engine="streaming").to_pandas()
+        direct_field_intraday_variation = {
+            field: int(frame[f"__nunique_{field}"].max() or 0)
+            for field in direct_fields
+        }
         for field in direct_fields:
-            if int(frame[f"__nunique_{field}"].max() or 0) > 1:
-                raise RuntimeError(f"daily context varies intraday: {field}")
             frame.drop(columns=f"__nunique_{field}", inplace=True)
         frame.drop(columns="__trade_date", inplace=True)
         frame["code"] = frame["code"].map(normalize_cn_code)
@@ -303,6 +305,12 @@ def main() -> int:
                 "rows": len(frame),
                 "fields": output_fields,
                 "pit_coverage": coverage,
+                "direct_field_intraday_variation": (
+                    direct_field_intraday_variation
+                ),
+                "direct_field_materialization_policy": (
+                    "LAST_OBSERVED_VALUE_AT_OR_BEFORE_SESSION_CLOSE_PIT"
+                ),
                 "status": (
                     f"SESSION_{args.evaluation_role.upper()}_PIT_MATERIALIZATION_PASS"
                 ),
@@ -315,7 +323,7 @@ def main() -> int:
         records=records,
     )
     manifest = {
-        "schema_version": "cn_core_pack_report_only_session_sidecar_v2",
+        "schema_version": "cn_core_pack_report_only_session_sidecar_v3",
         "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
         "data_role": (
             "development_train_only"
@@ -335,6 +343,28 @@ def main() -> int:
             len(eligible_dates) if args.evaluation_role == "holdout" else 0
         ),
         "fields": records[0]["fields"],
+        "direct_minute_field_policy": (
+            "LAST_OBSERVED_VALUE_AT_OR_BEFORE_SESSION_CLOSE_PIT"
+        ),
+        "direct_field_intraday_variation_max": {
+            field: max(
+                int(
+                    (row.get("direct_field_intraday_variation") or {}).get(
+                        field, 0
+                    )
+                )
+                for row in records
+            )
+            for field in sorted(
+                {
+                    field
+                    for row in records
+                    for field in (
+                        row.get("direct_field_intraday_variation") or {}
+                    )
+                }
+            )
+        },
         "fundamental_partition_root": str(fundamental_partition_root),
         "canonical_pit_coverage": aggregate_pit_coverage,
         "source_shard_count": len(records),

@@ -370,13 +370,20 @@ def test_runtime_gate_requires_primary_host_occupancy(
     )
     active = gate["backends"]["active_bar"]
 
-    assert active["status"] == expected_status
+    assert active["status"] == "PASS"
+    assert active["semantic_integrity_status"] == "PASS"
+    assert active["compute_efficiency_status"] == (
+        "PASS" if expected_status == "PASS" else "DEGRADED_DIAGNOSTIC"
+    )
     assert active["hot_path_bottleneck"] == expected_bottleneck
     assert active["host_logical_cpu_occupancy"] == pytest.approx(cpu_seconds / 32.0)
     assert gate["expected_backends"] == ["active_bar"]
     assert gate["observed_backends"] == ["active_bar"]
-    assert gate["status"] == (
-        "PASS" if expected_status == "PASS" else "RUNTIME_ACCELERATION_GATE_FAILED"
+    assert gate["status"] == "PASS"
+    assert gate["evidence_status"] == (
+        "PASS"
+        if expected_status == "PASS"
+        else "PASS_WITH_COMPUTE_EFFICIENCY_DEGRADED"
     )
 
 
@@ -518,13 +525,18 @@ def test_runtime_gate_keeps_memory_headroom_failure_out_of_route_health(
 
     gate = _runtime_gate(tmp_path, {"active_bar": 30, "stock_session": 2})
 
-    assert gate["status"] == "PASS_WITH_RUN_HEALTH_FAILURE"
+    assert gate["status"] == "PASS"
+    assert gate["evidence_status"] == "PASS_WITH_RESOURCE_HEADROOM_DEGRADED"
+    assert gate["resource_headroom_status"] == "DEGRADED_DIAGNOSTIC"
     assert all(row["status"] == "PASS" for row in gate["backends"].values())
     assert all(
         row["run_health_status"] == "MEMORY_HEADROOM_GATE_FAILED"
         for row in gate["backends"].values()
     )
-    assert gate["run_health_policy"] == "INFRASTRUCTURE_ONLY_DOES_NOT_MUTATE_ROUTE_HEALTH"
+    assert gate["run_health_policy"] == (
+        "POST_FINANCIAL_RESOURCE_AND_EFFICIENCY_EVIDENCE_DO_NOT_"
+        "INVALIDATE_SEMANTIC_RESULTS"
+    )
 
 
 def test_runtime_gate_ignores_subsecond_parallelism_noise(

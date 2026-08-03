@@ -17,7 +17,6 @@ from typing import Any, Mapping
 import pandas as pd
 
 from our_system_phase2.services.finalist_economic_admission import (
-    MAXIMUM_TERMINAL_HOLDINGS_WEIGHT,
     POLICY_ID,
     mark_to_market_blockers,
 )
@@ -104,8 +103,8 @@ def _rank_eligible(frame: pd.DataFrame) -> pd.DataFrame:
         "pair_mark_to_market_status",
         "primary_mark_to_market_net_reward",
         "mark_to_market_net_increment",
-        "primary_ending_holdings_weight",
-        "control_ending_holdings_weight",
+        "primary_cumulative_net_return",
+        "cumulative_net_return_increment",
     }
     missing = sorted(required.difference(frame.columns))
     if missing:
@@ -114,10 +113,12 @@ def _rank_eligible(frame: pd.DataFrame) -> pd.DataFrame:
         frame.apply(lambda row: not mark_to_market_blockers(row), axis=1)
     ].copy()
     ranking_columns = [
+        "primary_cumulative_net_return",
         "primary_mark_to_market_net_reward",
+        "cumulative_net_return_increment",
         "mark_to_market_net_increment",
     ]
-    ascending = [False, False]
+    ascending = [False, False, False, False]
     for column in (
         "train_stability_score",
         "train_stability_floor",
@@ -153,9 +154,10 @@ def freeze_mark_to_market_finalists(
         closure, field="manifest_body_sha256", label="MTM replay closure"
     )
     _verify_absolute_artifacts(closure, label="MTM replay closure")
-    if str(closure.get("status") or "") != (
-        "FINAL_CLOSE_MARK_TO_MARKET_REPLAY_CLOSED_IMMUTABLE_DIAGNOSTIC_ONLY"
-    ):
+    if str(closure.get("status") or "") not in {
+        "FINAL_CLOSE_MARK_TO_MARKET_REPLAY_CLOSED_IMMUTABLE_DIAGNOSTIC_ONLY",
+        "FINAL_CLOSE_MARK_TO_MARKET_REPLAY_CLOSED_IMMUTABLE_TRAIN_ECONOMIC_EVIDENCE",
+    }:
         raise RuntimeError("MTM replay is not immutable")
     if any(
         int(closure.get(field) or 0) != 0
@@ -266,7 +268,7 @@ def freeze_mark_to_market_finalists(
         else "MTM_TRAIN_ONLY_FINALISTS_CLOSED_ACTUAL_SMALLER_NO_BACKFILL"
     )
     contract = {
-        "schema_version": "cn_mtm_train_only_finalist_freeze_v1",
+        "schema_version": "cn_mtm_train_only_finalist_freeze_v2",
         "status": status,
         "generator_repo_sha": generator_repo_sha,
         "mark_to_market_root": str(mark_to_market_root),
@@ -280,12 +282,9 @@ def freeze_mark_to_market_finalists(
             "pair_mark_to_market_status": "PAIR_MARK_TO_MARKET_COMPLETE",
             "primary_mark_to_market_net_reward": ">0",
             "mark_to_market_net_increment": ">0",
-            "primary_ending_holdings_weight": (
-                f"<={MAXIMUM_TERMINAL_HOLDINGS_WEIGHT}"
-            ),
-            "control_ending_holdings_weight": (
-                f"<={MAXIMUM_TERMINAL_HOLDINGS_WEIGHT}"
-            ),
+            "primary_cumulative_net_return": ">0",
+            "cumulative_net_return_increment": ">0",
+            "ending_holdings_weight": "DIAGNOSTIC_ONLY_NOT_AN_ADMISSION_GATE",
             "economic_mechanism_policy": "UNIQUE",
             "blocked_backfill": "FORBIDDEN",
         },
@@ -325,7 +324,7 @@ def freeze_mark_to_market_finalists(
         selected["portfolio_exposure_family_id"].astype(str)
     )
     summary = {
-        "schema_version": "cn_mtm_train_only_finalist_freeze_v1",
+        "schema_version": "cn_mtm_train_only_finalist_freeze_v2",
         "status": status,
         "eligible_pairs": len(eligible),
         "selected_pairs": len(selected),
@@ -358,7 +357,7 @@ def freeze_mark_to_market_finalists(
         )
     ]
     manifest = {
-        "schema_version": "cn_mtm_train_only_finalist_freeze_v1",
+        "schema_version": "cn_mtm_train_only_finalist_freeze_v2",
         "status": "MTM_TRAIN_ONLY_FINALIST_FREEZE_CLOSED_IMMUTABLE",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "generator_repo_sha": generator_repo_sha,

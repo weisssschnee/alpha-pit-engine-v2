@@ -1,6 +1,6 @@
 # ADR 0013: Primary absolute economics and terminal-exposure finalist admission
 
-- Status: Accepted
+- Status: Superseded in part by ADR 0014
 - Date: 2026-08-03
 - Scope: CN train-only finalist admission after immutable A-share replay
 
@@ -92,3 +92,11 @@ must not feed back across lanes.
 Rollback requires a replacement accepted finalist-admission decision. Do not
 restore relative-only admission, feed replay economics into development TPE, or
 reinterpret MTM admission as strict execution readiness.
+
+## Supersession note
+
+ADR 0014 preserves the absolute-primary and matched-control economic tests but
+supersedes the 5% terminal-holdings veto.  A continuous long-only book is
+valued at every PIT close, including the final development session; residual
+holdings and hypothetical forced liquidation remain diagnostics rather than
+alpha-admission authority.

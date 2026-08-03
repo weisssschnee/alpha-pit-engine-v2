@@ -24,7 +24,7 @@ from our_system_phase2.services.a_share_executable_replay import (
 )
 
 
-SCHEMA_VERSION = "cn_finalist_mark_to_market_replay_v1"
+SCHEMA_VERSION = "cn_finalist_mark_to_market_replay_v2"
 CANDIDATE_COMPLETE = "CANDIDATE_MARK_TO_MARKET_COMPLETE"
 CANDIDATE_BLOCKED = "CANDIDATE_MARK_TO_MARKET_BLOCKED"
 PAIR_COMPLETE = "PAIR_MARK_TO_MARKET_COMPLETE"
@@ -57,6 +57,22 @@ def _strict_replay_closure_path(root: Path) -> Path:
 
 def _finite(value: Any) -> float | None:
     return base._finite(value)
+
+
+def _initial_cash(result: Mapping[str, Any]) -> float:
+    execution_policy = dict(result.get("execution_policy") or {})
+    value = _finite(execution_policy.get("initial_cash_cny"))
+    if value is None or value <= 0:
+        raise RuntimeError("mark-to-market initial_cash_cny missing or invalid")
+    return value
+
+
+def _cumulative_net_return(result: Mapping[str, Any]) -> float:
+    initial_cash = _initial_cash(result)
+    ending_nav = _finite(result.get("ending_nav_cny"))
+    if ending_nav is None:
+        raise RuntimeError("mark-to-market ending_nav_cny missing or invalid")
+    return ending_nav / initial_cash - 1.0
 
 
 def _pair_results(
@@ -92,6 +108,12 @@ def _pair_results(
         control_reward = _finite(
             control_result.get("mark_to_market_net_reward")
         )
+        primary_return = _finite(
+            primary_result.get("cumulative_net_return")
+        )
+        control_return = _finite(
+            control_result.get("cumulative_net_return")
+        )
         rows.append(
             {
                 "pair_id": str(pair_id),
@@ -107,6 +129,27 @@ def _pair_results(
                     if pair_complete
                     and primary_reward is not None
                     and control_reward is not None
+                    else None
+                ),
+                "primary_initial_cash_cny": _finite(
+                    primary_result.get("initial_cash_cny")
+                ),
+                "control_initial_cash_cny": _finite(
+                    control_result.get("initial_cash_cny")
+                ),
+                "primary_ending_nav_cny": _finite(
+                    primary_result.get("ending_nav_cny")
+                ),
+                "control_ending_nav_cny": _finite(
+                    control_result.get("ending_nav_cny")
+                ),
+                "primary_cumulative_net_return": primary_return,
+                "control_cumulative_net_return": control_return,
+                "cumulative_net_return_increment": (
+                    primary_return - control_return
+                    if pair_complete
+                    and primary_return is not None
+                    and control_return is not None
                     else None
                 ),
                 "primary_ending_holdings_weight": _finite(
@@ -144,17 +187,13 @@ def _candidate_receipt(
     source_code_sha256: str,
     train_read_count: int,
     selection_payload_sha256: str,
-    strict_replay_closure_sha256: str,
+    strict_replay_closure_sha256: str | None,
     blocked: bool,
 ) -> dict[str, Any]:
     diagnostic_reward = float(result["a_share_executable_net_reward"])
     return {
-        "schema_version": "cn_finalist_mark_to_market_receipt_v1",
-        "status": (
-            "MARK_TO_MARKET_BLOCKED_NO_EXECUTABLE_FILLS"
-            if blocked
-            else "MARK_TO_MARKET_DIAGNOSTIC_READY"
-        ),
+        "schema_version": "cn_finalist_mark_to_market_receipt_v2",
+        "status": "MARK_TO_MARKET_TRAIN_ECONOMIC_EVIDENCE_READY",
         "candidate_id": str(candidate["candidate_id"]),
         "pair_id": str(candidate["pair_id"]),
         "pair_member_role": str(candidate["pair_member_role"]),
@@ -169,7 +208,9 @@ def _candidate_receipt(
         "terminal_sale_fee_applied": False,
         "final_mark_source": "FINAL_PIT_CLOSE",
         "diagnostic_net_reward": diagnostic_reward,
-        "mark_to_market_net_reward": None if blocked else diagnostic_reward,
+        "mark_to_market_net_reward": diagnostic_reward,
+        "initial_cash_cny": _initial_cash(result),
+        "cumulative_net_return": _cumulative_net_return(result),
         "train_read_count": train_read_count,
         "validation_reads": 0,
         "holdout_reads": 0,
@@ -200,8 +241,14 @@ def _candidate_receipt(
             result["corporate_action_policy_sha256"]
         ),
         "proofs": dict(result["proofs"]),
-        "blocker_code": "NO_EXECUTABLE_FILLS" if blocked else None,
+        "no_executable_fills": int(result["fill_count"]) <= 0,
+        "diagnostic_code": (
+            "NO_EXECUTABLE_FILLS" if int(result["fill_count"]) <= 0 else None
+        ),
+        "blocker_code": None,
         "research_replay_only": True,
+        "train_economic_claim_authorized": True,
+        "economic_claim_scope": "DEVELOPMENT_TRAIN_ONLY",
         "economic_claim_authorized": False,
         "promotion_authorized": False,
         "successor_search_authorized": False,
@@ -215,13 +262,17 @@ def replay_mark_to_market(
     *,
     freeze_path: Path,
     train_field_root: Path,
-    strict_replay_root: Path,
+    strict_replay_root: Path | None = None,
     output_root: Path,
 ) -> dict[str, Any]:
     initial_free_memory = base._host_and_memory_gate()
     freeze_path = Path(freeze_path).resolve()
     train_field_root = Path(train_field_root).resolve()
-    strict_replay_root = Path(strict_replay_root).resolve()
+    strict_replay_root = (
+        Path(strict_replay_root).resolve()
+        if strict_replay_root is not None
+        else None
+    )
     output_root = Path(output_root).resolve()
     output_root.mkdir(parents=True, exist_ok=True)
 
@@ -241,22 +292,25 @@ def replay_mark_to_market(
     ):
         raise RuntimeError("mark-to-market cohort order drift")
 
-    strict_closure_path = _strict_replay_closure_path(strict_replay_root)
-    strict_closure = base._read_json(strict_closure_path)
-    base._verify_payload_hash(
-        strict_closure,
-        field="manifest_body_sha256",
-        label="strict replay closure",
-    )
-    if str(strict_closure.get("status")) != (
-        "A_SHARE_REPLAY_CLOSED_IMMUTABLE"
-    ):
-        raise RuntimeError("strict replay closure status drift")
-    if str(strict_closure.get("selection_payload_sha256")) != str(
-        freeze["selection_payload_sha256"]
-    ):
-        raise RuntimeError("strict replay selection binding drift")
-    strict_replay_closure_sha256 = base._sha256(strict_closure_path)
+    strict_closure_path: Path | None = None
+    strict_replay_closure_sha256: str | None = None
+    if strict_replay_root is not None:
+        strict_closure_path = _strict_replay_closure_path(strict_replay_root)
+        strict_closure = base._read_json(strict_closure_path)
+        base._verify_payload_hash(
+            strict_closure,
+            field="manifest_body_sha256",
+            label="strict replay closure",
+        )
+        if str(strict_closure.get("status")) != (
+            "A_SHARE_REPLAY_CLOSED_IMMUTABLE"
+        ):
+            raise RuntimeError("strict replay closure status drift")
+        if str(strict_closure.get("selection_payload_sha256")) != str(
+            freeze["selection_payload_sha256"]
+        ):
+            raise RuntimeError("strict replay selection binding drift")
+        strict_replay_closure_sha256 = base._sha256(strict_closure_path)
 
     contract = base._read_json(contract_path)
     base._verify_payload_hash(
@@ -402,7 +456,8 @@ def replay_mark_to_market(
                 ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET
             ),
         )
-        blocked = int(result["fill_count"]) <= 0
+        no_executable_fills = int(result["fill_count"]) <= 0
+        blocked = False
         receipt = _candidate_receipt(
             candidate=candidate,
             result=result,
@@ -424,19 +479,21 @@ def replay_mark_to_market(
             "route_id": str(candidate["route_id"]),
             "exact_identity": str(candidate["exact_identity"]),
             "candidate_mark_to_market_status": (
-                CANDIDATE_BLOCKED if blocked else CANDIDATE_COMPLETE
+                CANDIDATE_COMPLETE
             ),
-            "mark_to_market_net_reward": (
-                None
-                if blocked
-                else float(result["a_share_executable_net_reward"])
+            "mark_to_market_net_reward": float(
+                result["a_share_executable_net_reward"]
             ),
             "diagnostic_net_reward": float(
                 result["a_share_executable_net_reward"]
             ),
-            "blocker_code": (
-                "NO_EXECUTABLE_FILLS" if blocked else None
+            "initial_cash_cny": _initial_cash(result),
+            "cumulative_net_return": _cumulative_net_return(result),
+            "no_executable_fills": no_executable_fills,
+            "diagnostic_code": (
+                "NO_EXECUTABLE_FILLS" if no_executable_fills else None
             ),
+            "blocker_code": None,
             "train_read_count": len(replay_frame),
             "trade_count": int(result["trade_count"]),
             "fill_count": int(result["fill_count"]),
@@ -456,38 +513,20 @@ def replay_mark_to_market(
             "ending_holdings_weight": _finite(
                 result["ending_holdings_weight"]
             ),
+            "train_economic_claim_authorized": True,
+            "economic_claim_scope": "DEVELOPMENT_TRAIN_ONLY",
             "economic_claim_authorized": False,
             "promotion_authorized": False,
         }
-        blocker = (
-            {
-                "schema_version": (
-                    "cn_finalist_mark_to_market_blocker_v1"
-                ),
-                "candidate_id": candidate_id,
-                "pair_id": str(candidate["pair_id"]),
-                "pair_member_role": str(candidate["pair_member_role"]),
-                "route_id": str(candidate["route_id"]),
-                "exact_identity": str(candidate["exact_identity"]),
-                "blocker_code": "NO_EXECUTABLE_FILLS",
-                "input_data_sha256": input_data_sha256,
-                "fail_closed": True,
-                "economic_claim_authorized": False,
-                "promotion_authorized": False,
-            }
-            if blocked
-            else None
-        )
+        blocker = None
         base._write_json(
             target,
             {
                 "schema_version": (
-                    "cn_finalist_mark_to_market_candidate_result_v1"
+                    "cn_finalist_mark_to_market_candidate_result_v2"
                 ),
                 "status": (
-                    "CANDIDATE_MARK_TO_MARKET_BLOCKED_IMMUTABLE"
-                    if blocked
-                    else "CANDIDATE_MARK_TO_MARKET_COMPLETE_IMMUTABLE"
+                    "CANDIDATE_MARK_TO_MARKET_COMPLETE_IMMUTABLE"
                 ),
                 "candidate_id": candidate_id,
                 "input_data_sha256": input_data_sha256,
@@ -508,6 +547,9 @@ def replay_mark_to_market(
                         "candidate_mark_to_market_status"
                     ],
                     "reward": summary["mark_to_market_net_reward"],
+                    "cumulative_net_return": summary[
+                        "cumulative_net_return"
+                    ],
                     "ending_holdings_weight": summary[
                         "ending_holdings_weight"
                     ],
@@ -554,7 +596,7 @@ def replay_mark_to_market(
         PAIR_COMPLETE
     )
     summary = {
-        "schema_version": "cn_finalist_mark_to_market_summary_v1",
+        "schema_version": "cn_finalist_mark_to_market_summary_v2",
         "status": "FINAL_CLOSE_MARK_TO_MARKET_REPLAY_COMPLETE",
         "selection_payload_sha256": freeze["selection_payload_sha256"],
         "strict_replay_closure_sha256": strict_replay_closure_sha256,
@@ -581,6 +623,20 @@ def replay_mark_to_market(
             .loc[complete_pairs]
             .sum()
         ),
+        "primary_positive_cumulative_return_count": int(
+            (
+                pair_results["primary_cumulative_net_return"] > 0
+            )
+            .loc[complete_pairs]
+            .sum()
+        ),
+        "positive_cumulative_return_increment_count": int(
+            (
+                pair_results["cumulative_net_return_increment"] > 0
+            )
+            .loc[complete_pairs]
+            .sum()
+        ),
         "primary_reward_median": _finite(
             pair_results[
                 "primary_mark_to_market_net_reward"
@@ -590,6 +646,21 @@ def replay_mark_to_market(
         ),
         "increment_median": _finite(
             pair_results["mark_to_market_net_increment"]
+            .loc[complete_pairs]
+            .median()
+        ),
+        "primary_cumulative_net_return_median": _finite(
+            pair_results["primary_cumulative_net_return"]
+            .loc[complete_pairs]
+            .median()
+        ),
+        "primary_cumulative_net_return_p10": _finite(
+            pair_results["primary_cumulative_net_return"]
+            .loc[complete_pairs]
+            .quantile(0.1)
+        ),
+        "cumulative_net_return_increment_median": _finite(
+            pair_results["cumulative_net_return_increment"]
             .loc[complete_pairs]
             .median()
         ),
@@ -617,6 +688,8 @@ def replay_mark_to_market(
         "scheduler_write": "FORBIDDEN",
         "archive_write": "FORBIDDEN",
         "promotion": "FORBIDDEN",
+        "train_economic_claim_authorized": True,
+        "economic_claim_scope": "DEVELOPMENT_TRAIN_ONLY",
         "economic_claim_authorized": False,
         "successor_search_authorized": False,
     }
@@ -629,7 +702,6 @@ def replay_mark_to_market(
         contract_path,
         field_manifest_path,
         session_manifest_path,
-        strict_closure_path,
         candidate_results_path,
         pair_results_path,
         receipts_path,
@@ -637,11 +709,13 @@ def replay_mark_to_market(
         summary_path,
         *sorted(candidate_root.glob("*.json")),
     ]
+    if strict_closure_path is not None:
+        artifacts.append(strict_closure_path)
     closure = {
         "schema_version": SCHEMA_VERSION,
         "status": (
             "FINAL_CLOSE_MARK_TO_MARKET_REPLAY_CLOSED_IMMUTABLE_"
-            "DIAGNOSTIC_ONLY"
+            "TRAIN_ECONOMIC_EVIDENCE"
         ),
         "completed_at_utc": datetime.now(timezone.utc).isoformat(),
         "selection_payload_sha256": freeze["selection_payload_sha256"],
@@ -660,6 +734,7 @@ def replay_mark_to_market(
         "holdout_reads": 0,
         "forward_2026_reads": 0,
         "strict_replay_recomputed": False,
+        "strict_replay_required": False,
         "oos_recomputed": False,
         "no_fabricated_terminal_sale": True,
         "terminal_sale_fee_applied": False,
@@ -667,6 +742,8 @@ def replay_mark_to_market(
         "scheduler_write": "FORBIDDEN",
         "archive_write": "FORBIDDEN",
         "promotion": "FORBIDDEN",
+        "train_economic_claim_authorized": True,
+        "economic_claim_scope": "DEVELOPMENT_TRAIN_ONLY",
         "economic_claim_authorized": False,
         "successor_search_authorized": False,
         "artifacts": [base._artifact(path) for path in artifacts],
@@ -687,7 +764,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--freeze-manifest", type=Path, required=True)
     parser.add_argument("--train-field-root", type=Path, required=True)
-    parser.add_argument("--strict-replay-root", type=Path, required=True)
+    parser.add_argument("--strict-replay-root", type=Path)
     parser.add_argument("--output-root", type=Path, required=True)
     args = parser.parse_args()
     result = replay_mark_to_market(

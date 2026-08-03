@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 import pandas as pd
+import pytest
 
 from scripts import run_cn_finalist_mark_to_market_replay as subject
 
@@ -53,41 +54,37 @@ def test_strict_replay_closure_is_bound_below_campaign_root() -> None:
     )
 
 
-def test_pair_results_keep_no_fill_as_the_only_blocked_pair() -> None:
+def test_pair_results_include_cumulative_returns_and_diagnostic_no_fill() -> None:
     candidates = _candidates()
     candidate_rows = []
     for row in candidates.to_dict(orient="records"):
-        blocked = row["candidate_id"] == "candidate-01-control"
+        no_fill = row["candidate_id"] == "candidate-01-control"
+        cumulative_return = 0.0 if no_fill else 0.05
         candidate_rows.append(
             {
                 **row,
-                "candidate_mark_to_market_status": (
-                    subject.CANDIDATE_BLOCKED
-                    if blocked
-                    else subject.CANDIDATE_COMPLETE
-                ),
-                "mark_to_market_net_reward": None if blocked else 0.4,
+                "candidate_mark_to_market_status": subject.CANDIDATE_COMPLETE,
+                "mark_to_market_net_reward": 0.0 if no_fill else 0.4,
+                "initial_cash_cny": 1_000_000.0,
+                "ending_nav_cny": 1_000_000.0 * (1 + cumulative_return),
+                "cumulative_net_return": cumulative_return,
                 "ending_holdings_weight": 0.8,
                 "a_share_mean_one_way_turnover": 0.02,
-                "blocker_code": (
-                    "NO_EXECUTABLE_FILLS" if blocked else None
-                ),
+                "diagnostic_code": "NO_EXECUTABLE_FILLS" if no_fill else None,
+                "blocker_code": None,
             }
         )
 
     pairs = subject._pair_results(candidates, candidate_rows)
 
     assert len(pairs) == 24
-    assert pairs.iloc[0]["pair_mark_to_market_status"] == (
-        subject.PAIR_BLOCKED
-    )
-    assert pairs.iloc[0]["control_blocker_code"] == (
-        "NO_EXECUTABLE_FILLS"
-    )
-    assert pairs.iloc[1:]["pair_mark_to_market_status"].eq(
+    assert pairs["pair_mark_to_market_status"].eq(
         subject.PAIR_COMPLETE
     ).all()
     assert pairs.iloc[1:]["mark_to_market_net_increment"].eq(0.0).all()
+    assert pairs.iloc[0]["primary_cumulative_net_return"] == 0.05
+    assert pairs.iloc[0]["control_cumulative_net_return"] == 0.0
+    assert pairs.iloc[0]["cumulative_net_return_increment"] == 0.05
 
 
 def test_candidate_receipt_never_claims_execution_or_promotion() -> None:
@@ -112,6 +109,7 @@ def test_candidate_receipt_never_claims_execution_or_promotion() -> None:
         ],
         "ending_holdings_market_value_cny": 1_000_000.0,
         "ending_holdings_weight": 0.95238,
+        "execution_policy": {"initial_cash_cny": 1_000_000.0},
         "a_share_mean_one_way_turnover": 0.02,
         "fee_schedule_sha256": "a" * 64,
         "execution_policy_sha256": "b" * 64,
@@ -138,6 +136,9 @@ def test_candidate_receipt_never_claims_execution_or_promotion() -> None:
     )
     assert receipt["no_fabricated_terminal_sale"] is True
     assert receipt["terminal_sale_fee_applied"] is False
+    assert receipt["initial_cash_cny"] == 1_000_000.0
+    assert receipt["cumulative_net_return"] == pytest.approx(0.05)
+    assert receipt["train_economic_claim_authorized"] is True
     assert receipt["validation_reads"] == 0
     assert receipt["economic_claim_authorized"] is False
     assert receipt["promotion_authorized"] is False
