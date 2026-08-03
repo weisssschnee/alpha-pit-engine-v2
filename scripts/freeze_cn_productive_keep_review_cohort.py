@@ -314,6 +314,35 @@ def _productive_pair_outcomes(root: Path) -> pd.DataFrame:
     return productive
 
 
+def _productive_authority(
+    *,
+    root: Path,
+    observations: pd.DataFrame,
+) -> tuple[pd.DataFrame, str, bool]:
+    """Resolve the closed productive-pair authority.
+
+    Modern campaigns close a pair outcome for every financial evaluation,
+    including rows that are not eligible for optimizer feedback.  The
+    cumulative observation ledger is therefore only a compatibility fallback;
+    using it as the primary authority silently drops valid productive pairs.
+    """
+
+    pair_outcome_paths = sorted(
+        (root / "checkpoints").glob("checkpoint_*/pair_outcomes.parquet")
+    )
+    if pair_outcome_paths:
+        return (
+            _productive_pair_outcomes(root),
+            "IMMUTABLE_CHECKPOINT_PAIR_OUTCOMES",
+            True,
+        )
+    return (
+        _productive_observations(observations),
+        "CUMULATIVE_OBSERVATION_LEDGER_COMPATIBILITY_FALLBACK",
+        False,
+    )
+
+
 def _load_train_reward_rows(
     *,
     root: Path,
@@ -855,9 +884,20 @@ def freeze_cohort(
             "payload_sha256": claimed,
         }
     source_productive_pairs = _validate_source_closure(campaign_root)
+    observations = pd.read_parquet(
+        campaign_root / "observation_ledger.parquet"
+    )
+    (
+        productive,
+        productive_source_authority,
+        bind_pair_outcomes,
+    ) = _productive_authority(
+        root=campaign_root,
+        observations=observations,
+    )
     source_paths = _source_paths(
         campaign_root,
-        include_pair_outcomes=finalist_funnel,
+        include_pair_outcomes=bind_pair_outcomes,
     )
     source_artifacts = [
         _source_artifact(path, root=campaign_root) for path in source_paths
@@ -866,17 +906,9 @@ def freeze_cohort(
         artifact["path"]: artifact["sha256"] for artifact in source_artifacts
     }
 
-    observations = pd.read_parquet(
-        campaign_root / "observation_ledger.parquet"
-    )
-    productive = (
-        _productive_pair_outcomes(campaign_root)
-        if finalist_funnel
-        else _productive_observations(observations)
-    )
     if len(productive) != source_productive_pairs:
         raise RuntimeError(
-            f"expected {source_productive_pairs} productive observations, "
+            f"expected {source_productive_pairs} productive pairs, "
             f"found {len(productive)}"
         )
     if productive["pair_id"].duplicated().any():
@@ -1405,6 +1437,7 @@ def freeze_cohort(
     summary = {
         "schema_version": schema_version,
         "status": "FROZEN_DEVELOPMENT_KEEP_REVIEW_ONLY",
+        "productive_source_authority": productive_source_authority,
         "source_productive_pairs": len(review),
         "behavior_family_unique": int(
             review["portfolio_behavior_family_id"].nunique()
@@ -1548,6 +1581,7 @@ def freeze_cohort(
         "status": "KEEP_REVIEW_COHORT_CLOSED_IMMUTABLE",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "source_campaign_root": str(campaign_root),
+        "productive_source_authority": productive_source_authority,
         "source_hashes_unchanged": True,
         "selection_payload_sha256": summary["selection_payload_sha256"],
         "contract_payload_sha256": contract["contract_payload_sha256"],

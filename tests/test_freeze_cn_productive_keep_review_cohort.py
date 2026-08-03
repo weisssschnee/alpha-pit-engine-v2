@@ -15,6 +15,7 @@ from scripts.freeze_cn_productive_keep_review_cohort import (
     _finalist_funnel_identities,
     _load_excluded_cohort_pairs,
     _payload_sha256,
+    _productive_authority,
     _productive_pair_outcomes,
     _rank_candidates,
     _screen_reason,
@@ -307,6 +308,48 @@ def test_productive_pair_outcomes_are_not_limited_to_optimizer_observations(
     productive = _productive_pair_outcomes(tmp_path)
     assert productive["pair_id"].tolist() == ["pair-1"]
     assert productive["search_score"].tolist() == [0.2]
+
+
+def test_productive_authority_prefers_closed_pair_outcomes(
+    tmp_path: Path,
+) -> None:
+    checkpoint = tmp_path / "checkpoints" / "checkpoint_001"
+    checkpoint.mkdir(parents=True)
+    pd.DataFrame(
+        [
+            {
+                "pair_id": "pair-complete",
+                "pair_evaluation_status": "PAIR_EVALUATED",
+                "primary_composite_reward": 0.3,
+                "matched_train_increment": 0.2,
+                "primary_standalone_train_reward_decision": (
+                    "TRAIN_REWARD_FOLLOWUP_READY"
+                ),
+            }
+        ]
+    ).to_parquet(checkpoint / "pair_outcomes.parquet", index=False)
+    observations = pd.DataFrame(
+        [
+            {
+                "pair_id": "pair-complete",
+                "pair_evaluation_status": "PAIR_EVALUATED",
+                "search_score": float("nan"),
+                "matched_train_increment": 0.2,
+                "primary_standalone_train_reward_decision": (
+                    "TRAIN_REWARD_FOLLOWUP_READY"
+                ),
+            }
+        ]
+    )
+
+    productive, authority, bind_pair_outcomes = _productive_authority(
+        root=tmp_path,
+        observations=observations,
+    )
+
+    assert productive["pair_id"].tolist() == ["pair-complete"]
+    assert authority == "IMMUTABLE_CHECKPOINT_PAIR_OUTCOMES"
+    assert bind_pair_outcomes is True
 
 
 def test_source_paths_bind_checkpoint_count_from_closed_train_manifest(
