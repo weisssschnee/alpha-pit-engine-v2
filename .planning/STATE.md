@@ -19,17 +19,20 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 ### CN_ALPHA_AUTOPSY_V1 closed over immutable 32-pair evidence (2026-08-03)
 
 - The read-only autopsy closed at
-  `D:\ChengboRemote\runtime\cn_alpha_autopsy_v1_32_20260803_05c6977`
+  `D:\ChengboRemote\runtime\cn_alpha_autopsy_v1_32_20260803_77b7a24`
   over the exact unchanged 32-pair / 64-member Slow Temporal cohort with
   selection payload SHA256
   `24aa602dbcd19f02b2c6f773a3441fde78d1612e327b11039684764569b6e5c1`.
   Its manifest file/canonical SHA256 values are
-  `c8f46ba1223d17434ec34c32e92efa6271fd451c16ae4cf09743615f31d5af65` /
-  `e20e77c15c147b119b7cf9ebf707c6bec279db9a9c0d835b873f2e57ea310a85`.
+  `8e74b2796f5645ae06093480025ab168b723350e08d94cd8b68c07d99278f704` /
+  `65e596e79efbac36160d0d5c4df1405ddf268e6290a32b86df66fa430caa2eef`.
+  The closure directly binds pushed builder commit
+  `77b7a2409419b7990450198ba39618980de3a74a` and builder-source SHA256
+  `83f2a2f247febc495b905a2f0203ea2701b47b5506172694bab37809009045d4`.
   All declared output artifacts and every bound replay, OOS and train-MTM
   source closure/artifact passed independent hash verification. The separate
   verification receipt SHA256 is
-  `8b8912ae6d51caa52b443dd46e0eab096fb4149d9914e204f1aa0211a24a0d61`.
+  `cb3b6ef7da760d8b5be285cb8d05c509de5e7a38ebaa8d486a83c72d8f05373a`.
 - No search, financial replay, validation rerun, reward/evaluator change,
   holdout/2026 read, promotion write or Graph authority transition occurred.
   The autopsy only read existing immutable artifacts. Candidate-specific OOS
