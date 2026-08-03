@@ -7,6 +7,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 from typing import Any, Iterable, Mapping, Sequence
 
 import numpy as np
@@ -934,11 +935,15 @@ def build_autopsy(
     replay_oos_root: Path,
     mark_to_market_root: Path,
     output_root: Path,
+    builder_commit_sha: str,
     expected_selection_payload_sha256: str | None = None,
 ) -> dict[str, Any]:
     replay_oos_root = Path(replay_oos_root).resolve()
     mark_to_market_root = Path(mark_to_market_root).resolve()
     output_root = Path(output_root).resolve()
+    if not re.fullmatch(r"[0-9a-f]{40}", builder_commit_sha):
+        raise RuntimeError("builder commit SHA must be a lowercase 40-character Git SHA")
+    builder_source_sha256 = _sha256(Path(__file__).resolve())
     if output_root.exists() and any(output_root.iterdir()):
         raise RuntimeError(f"autopsy output root must be empty: {output_root}")
     output_root.mkdir(parents=True, exist_ok=True)
@@ -1043,6 +1048,8 @@ def build_autopsy(
             "selection_payload_sha256": selection_sha256,
             "bindings": source_public,
             "source_data_access": "READ_EXISTING_IMMUTABLE_ARTIFACTS_ONLY",
+            "builder_commit_sha": builder_commit_sha,
+            "builder_source_sha256": builder_source_sha256,
             "new_financial_evaluation": False,
             "new_validation_evaluation": False,
             "holdout_reads": 0,
@@ -1055,6 +1062,8 @@ def build_autopsy(
         "status": "CN_ALPHA_AUTOPSY_V1_CLOSED_IMMUTABLE_HOLD_RESEARCH",
         "completed_at_utc": datetime.now(timezone.utc).isoformat(),
         "selection_payload_sha256": selection_sha256,
+        "builder_commit_sha": builder_commit_sha,
+        "builder_source_sha256": builder_source_sha256,
         "pair_count": EXPECTED_PAIR_COUNT,
         "candidate_member_count": EXPECTED_MEMBER_COUNT,
         "source_data_access": "READ_EXISTING_IMMUTABLE_ARTIFACTS_ONLY",
@@ -1087,12 +1096,14 @@ def main() -> int:
     parser.add_argument("--replay-oos-root", type=Path, required=True)
     parser.add_argument("--mark-to-market-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--builder-commit-sha", required=True)
     parser.add_argument("--expected-selection-payload-sha256")
     args = parser.parse_args()
     result = build_autopsy(
         replay_oos_root=args.replay_oos_root,
         mark_to_market_root=args.mark_to_market_root,
         output_root=args.output_root,
+        builder_commit_sha=args.builder_commit_sha,
         expected_selection_payload_sha256=args.expected_selection_payload_sha256,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
