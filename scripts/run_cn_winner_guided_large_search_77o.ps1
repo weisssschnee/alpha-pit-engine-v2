@@ -150,6 +150,7 @@ if ($authorization.campaign_profile -notin @(
     'cn_continuous_shared_control_winner_guided_search_v1',
     'cn_continuous_shared_control_winner_guided_search_v2',
     'cn_terminal_liquidity_search_continuity_v1',
+    'cn_primary_absolute_economic_search_continuity_v1',
     'cn_full_compute_successor_search_v1'
 )) {
     throw "campaign profile drift"

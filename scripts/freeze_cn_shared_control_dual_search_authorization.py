@@ -21,6 +21,9 @@ SUPPLY_SAFE_CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE = (
 TERMINAL_LIQUIDITY_SEARCH_CONTINUITY_PROFILE = (
     "cn_terminal_liquidity_search_continuity_v1"
 )
+PRIMARY_ABSOLUTE_ECONOMIC_SEARCH_CONTINUITY_PROFILE = (
+    "cn_primary_absolute_economic_search_continuity_v1"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -124,11 +127,13 @@ def freeze_authorization(
         CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
         SUPPLY_SAFE_CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
         TERMINAL_LIQUIDITY_SEARCH_CONTINUITY_PROFILE,
+        PRIMARY_ABSOLUTE_ECONOMIC_SEARCH_CONTINUITY_PROFILE,
     }:
         raise RuntimeError("dual-lane search campaign profile drift")
     profile = dict(contract.get("shared_resource_authority") or {})
-    if str(profile.get("search_profile") or "") != "SEARCH_DUAL_24":
-        raise RuntimeError("dual-lane contract search profile drift")
+    selected_resource_profile = str(profile.get("search_profile") or "")
+    if selected_resource_profile not in {"SEARCH_DUAL_24", "SEARCH_EXCLUSIVE_32"}:
+        raise RuntimeError("search contract resource profile drift")
     if int(profile.get("total_cpu_threads") or 0) != 32:
         raise RuntimeError("dual-lane CPU total drift")
     checkpoint_count = int(search.get("checkpoint_count") or 0)
@@ -161,13 +166,14 @@ def freeze_authorization(
     if claimed_capacity_hash != _stable_hash(capacity_body):
         raise RuntimeError("node capacity manifest self-hash drift")
     search_profile = dict(
-        (capacity.get("profiles") or {}).get("SEARCH_DUAL_24") or {}
+        (capacity.get("profiles") or {}).get(selected_resource_profile) or {}
     )
     if (
         str(search_profile.get("role") or "") != "SEARCH"
-        or int(search_profile.get("cpu_threads") or 0) != 24
+        or int(search_profile.get("cpu_threads") or 0)
+        != (24 if selected_resource_profile == "SEARCH_DUAL_24" else 32)
     ):
-        raise RuntimeError("SEARCH_DUAL_24 profile drift")
+        raise RuntimeError("selected search resource profile drift")
 
     payload = dict(source)
     # The source authority may already be self-hashed.  A replacement
@@ -208,7 +214,7 @@ def freeze_authorization(
             "historical_candidate_archive_sha256": _sha256(candidate_path),
             "historical_behavior_archive_sha256": _sha256(behavior_path),
             "historical_manifest_sha256": _sha256(history_path),
-            "node_resource_profiles_allowed": ["SEARCH_DUAL_24"],
+            "node_resource_profiles_allowed": [selected_resource_profile],
             "resource_profile_switch_boundary": "BATCH_CLOSED_IMMUTABLE_ONLY",
             "resource_topology_changes_search_semantics": False,
             "resource_topology_changes_candidate_order": False,
@@ -259,6 +265,8 @@ def freeze_authorization(
             ),
             "parallel_validation_lane": (
                 "SEPARATE_FIXED_32_PAIR_REPORT_ONLY_NO_FEEDBACK"
+                if selected_resource_profile == "SEARCH_DUAL_24"
+                else "FORBIDDEN_FOR_THIS_SINGLE_EXCLUSIVE_SEARCH_TASK"
             ),
         }
     )

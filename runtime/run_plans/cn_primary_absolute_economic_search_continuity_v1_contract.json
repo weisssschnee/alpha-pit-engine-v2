@@ -1,0 +1,84 @@
+{
+  "schema_version": "cn_primary_absolute_economic_search_continuity_contract_v1",
+  "status": "FROZEN_USER_AUTHORIZED_QUALIFICATION_REQUIRED_BEFORE_LAUNCH",
+  "authority_source": "CURRENT_USER_CONTINUE_WITHOUT_WASTING_COMPUTE_20260803",
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "accepted_decision": "docs/adr/0013-primary-absolute-economics-and-terminal-exposure-finalist-admission.md",
+  "shared_resource_authority": {
+    "capacity_manifest": "runtime/run_plans/cn_alpha_node_resource_profiles_v1.json",
+    "search_profile": "SEARCH_EXCLUSIVE_32",
+    "validation_profile": "FORBIDDEN_DURING_THIS_SEARCH",
+    "total_cpu_threads": 32,
+    "minimum_free_memory_bytes": 25769803776,
+    "evaluator_cache_cap_bytes": 8589934592,
+    "nested_native_parallelism": "FORBIDDEN",
+    "additional_heavy_lanes": "FORBIDDEN"
+  },
+  "search_lane": {
+    "campaign_id": "CN_PRIMARY_ABSOLUTE_ECONOMIC_SEARCH_CONTINUITY_V1_20260803",
+    "experiment_id": "20260803_cn_remaining_supply_search_004",
+    "objective": "Consume the final supply-safe winner-guided train identities after repairing downstream finalist economic admission, without changing search reward or reading sealed data.",
+    "campaign_profile": "cn_primary_absolute_economic_search_continuity_v1",
+    "policy": "HYBRID_TPE_AVAILABILITY",
+    "optimizer_initialization": "FRESH_TPE_NO_CROSS_CAMPAIGN_REWARD_OR_OPTIMIZER_STATE",
+    "checkpoint_count": 1,
+    "formal_fresh_exact_asks_per_checkpoint": 288,
+    "maximum_formal_fresh_exact_asks": 288,
+    "seed_base": 2026080303,
+    "fixed_route_formal_asks_per_checkpoint": {
+      "SLOW_TEMPORAL_CHANGE": 24,
+      "FIRSTN_PATH": 256,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 8,
+      "MARKET_REGIME_CONDITION": 0,
+      "DISCLOSURE_EVENT": 0
+    },
+    "final_route_formal_ask_allocation": {
+      "SLOW_TEMPORAL_CHANGE": 24,
+      "FIRSTN_PATH": 256,
+      "SLOW_CROSS_SECTIONAL_LEVEL": 8,
+      "MARKET_REGIME_CONDITION": 0,
+      "DISCLOSURE_EVENT": 0
+    },
+    "supply_margin": 1.2,
+    "supply_basis": {
+      "SLOW_TEMPORAL_CHANGE": {
+        "expected_remaining_exact": 33,
+        "required_at_1_20_margin": 29
+      },
+      "FIRSTN_PATH": {
+        "expected_remaining_exact": 365,
+        "required_at_1_20_margin": 308,
+        "reason": "REMAINING_REGISTERED_WINNER_SKELETON_SUPPLY_WITH_PRIOR_LOW_YIELD_RETAINED_FOR_BOUNDED_COVERAGE"
+      },
+      "SLOW_CROSS_SECTIONAL_LEVEL": {
+        "expected_remaining_exact": 14,
+        "required_at_1_20_margin": 10
+      }
+    },
+    "throughput_contract": {
+      "maximum_wall_seconds": 21600,
+      "first_checkpoint_minimum_pair_evaluated_per_hour": 300.0,
+      "first_checkpoint_minimum_entitlement_occupancy": 0.7,
+      "underpowered_response": "PRESERVE_IMMUTABLE_CHECKPOINT_AND_REPLAN_NO_GATE_WEAKENING"
+    },
+    "active_pair_batch_size": 12,
+    "session_pair_batch_size": 24,
+    "maximum_internal_native_draws_per_formal": 8,
+    "search_score_policy": "MIN_PRIMARY_COMPOSITE_AND_MATCHED_INCREMENT_V1",
+    "portfolio_mode": "LONG_ONLY_TOP",
+    "shorting": "FORBIDDEN",
+    "one_way_cost_bps": 5,
+    "horizons_minutes": [1, 5, 15, 30],
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "automatic_validation": "FORBIDDEN"
+  },
+  "history_policy": {
+    "merge": "IDENTITY_PLUS_LABEL_FREE_BEHAVIOR_ONLY",
+    "reward_rows_imported": 0,
+    "optimizer_state_imported": false,
+    "scheduler_state_imported": false
+  },
+  "claim_boundary": "Development train search only. Finalist admission is downstream and separate; no validation, holdout, 2026, promotion or production-trading claim."
+}
