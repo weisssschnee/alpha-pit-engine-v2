@@ -2,7 +2,7 @@
 
 Updated: 2026-08-03
 
-Current state: `CN_FINALIST_ABSOLUTE_ECONOMIC_ADMISSION_SEARCH_CLOSED_HOLD_RESEARCH`
+Current state: `CN_CONTINUOUS_BOOK_MTM_RETEST_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,56 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Continuous-book MTM authority and full productive-supply retest closed (2026-08-03)
+
+- ADR 0014 supersedes the arbitrary terminal-flat interpretation and 5%
+  ending-holdings veto for train economic evidence. The accepted authority is
+  a continuous book valued at each daily final PIT close, with no fabricated
+  terminal sale or terminal sell fee. Ending holdings remain reported risk;
+  they are not an alpha veto. Identity, PIT, hash, sealed-data and A-share
+  execution semantics remain hard gates, while post-financial CPU occupancy
+  and free-memory observations are operational diagnostics rather than reasons
+  to erase completed economics.
+- The exact full 10-pair / 20-member productive supply from the closed
+  primary-absolute search was retested on train under this authority at
+  `D:\ChengboRemote\runtime\cn_primary_absolute_mtm_retest_10_20260803_a3ca129`.
+  All 20 candidates and all 10 pairs completed. The immutable MTM closure file
+  SHA256 is
+  `2f91bb985697e66131ba0fb71e1f44f15fb45bc62d0c9a2b66721bb13435ff66`;
+  canonical payload SHA256 is
+  `6066995c6908ad53f7bc8fdce2b40413e4620a1c988092f20265e1a2a80e64d0`,
+  and an independent audit matched all 29 declared artifacts and exact pair
+  identities. Train reads were 37,083,060; validation/holdout/2026 reads and
+  prohibited writes were zero.
+- MTM removed the false terminal-liquidation blocker but did not reveal a
+  matched economic winner. One primary had positive standalone MTM reward and
+  one had positive standalone cumulative return, but zero pairs had a positive
+  primary-minus-control MTM reward increment; only one had a positive
+  cumulative-return increment. Primary reward median was -4.326080872,
+  primary cumulative-return median/p10 were -0.382425271 / -0.701854040,
+  matched reward-increment median was -2.083945696 and matched
+  cumulative-return-increment median was -0.148460191. Ending-holdings weight
+  median/p90 were 0.050336154 / 0.397601130 and remain risk diagnostics only.
+- The deterministic finalist freeze therefore closed with exactly zero pairs,
+  no backfill and status
+  `MTM_TRAIN_ONLY_FINALISTS_CLOSED_ZERO_HOLD_RESEARCH`. Finalist manifest
+  file/payload SHA256 values are
+  `679a64c0a4a65034a219252156fd8394ebd6b746bba87cdb3dd25c42f9baeafe` /
+  `d74036e7e648a534a46e64a07242dbc382f9ed51f5bed2a768f024dacb247d0b`;
+  all five declared artifacts and the zero selected pair/candidate sets passed
+  independent verification. Because no train MTM finalist exists, report-only
+  OOS was not authorized or run.
+- Two post-financial freezer failures exposed residual funnel-only schema
+  assumptions for `economic_mechanism_id` and
+  `portfolio_exposure_family_id`; neither was a financial or alpha failure.
+  Evidence is preserved under the corresponding 19:07:50 and 19:39:38
+  `run_health_incidents` roots. SHA
+  `74baf5d71cdf846729fc6b7d4ac52e01b1e06dd5` makes empty economic outcomes
+  close honestly while still requiring mechanism identity whenever any row is
+  genuinely eligible; 25 related local and 77o tests passed. This is a
+  post-processing robustness repair, not a promotion or search-policy change,
+  so no new ADR or CURRENT Graph transition is warranted.
 
 ### Primary-absolute bounded train search closed (2026-08-03)
 
@@ -71,11 +121,12 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   positive standalone primary A-share executable net reward and a positive
   primary-minus-control executable increment. Blocked, nonpositive and
   duplicate-mechanism rows cannot be used as backfill.
-- A separate final-close MTM admission path applies the same two economic tests
-  and additionally requires both primary and control terminal holdings weights
-  to be at most 5% of final NAV. Passing that path remains train-only evidence
-  for a separately authorized report-only OOS run; it does not establish strict
-  executability, promotion or an economic claim.
+- ADR 0014 supersedes the earlier 5% terminal-holdings veto on the separate
+  final-close MTM admission path. That path still applies positive standalone
+  primary and positive matched-increment economic tests, but reports terminal
+  holdings as risk rather than rejecting alpha mechanically. Passing remains
+  train-only evidence for a separately authorized report-only OOS run; it does
+  not establish strict executability, promotion or an economic claim.
 - Phase3CM development feedback remains unchanged under ADR 0010. Replay, MTM
   and OOS evidence cannot mutate TPE reward, optimizer, scheduler or archive
   state. The source authority is commit
@@ -2026,6 +2077,16 @@ remains unchanged. The compact receipt is
   a SHA-verified full Git bundle without changing the node's proxy authority.
 
 ## Next action
+
+The continuous-book MTM retest over the complete ten-pair productive supply is
+closed and must not be rerun. It resolved the accounting objection directly:
+forced terminal liquidation and the 5% ending-book veto were removed, yet zero
+pairs retained both positive standalone primary economics and positive matched
+economics. Do not backfill, reinterpret OOS-positive historical rows as train
+winners, or launch report-only OOS for an empty finalist set. The project is
+`HOLD_RESEARCH`; any next search must be separately designed around improving
+standalone primary economic quality rather than generating more relative-only
+productives under the unchanged development reward.
 
 The terminal-liquidity classification and final-close MTM diagnostic are now
 closed and must not be rerun. Preserve the 184-ask search closure and the
