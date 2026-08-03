@@ -28,7 +28,7 @@
     "campaign_id": "CN_TERMINAL_LIQUIDITY_SEARCH_CONTINUITY_V1_20260803",
     "experiment_id": "20260803_cn_supply_safe_high_yield_search_003",
     "objective": "Consume only remaining high-density winner-guided exact supply while an isolated terminal-liquidity diagnostic uses the validation entitlement.",
-    "campaign_profile": "cn_continuous_shared_control_winner_guided_search_v2",
+    "campaign_profile": "cn_terminal_liquidity_search_continuity_v1",
     "policy": "HYBRID_TPE_AVAILABILITY",
     "optimizer_initialization": "FRESH_TPE_NO_CROSS_CAMPAIGN_REWARD_OR_OPTIMIZER_STATE",
     "checkpoint_count": 1,

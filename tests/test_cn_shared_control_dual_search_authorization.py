@@ -13,6 +13,7 @@ from scripts.materialize_cn_search_preflight_authorization import (
 from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
     CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
     SUPPLY_SAFE_CONTINUOUS_SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
+    TERMINAL_LIQUIDITY_SEARCH_CONTINUITY_PROFILE,
     SHARED_CONTROL_WINNER_GUIDED_SEARCH_PROFILE,
     _authorization_binding,
     _campaign_runtime_spec,
@@ -46,6 +47,29 @@ def test_supply_safe_continuous_profile_uses_remaining_capacity() -> None:
         "SLOW_TEMPORAL_CHANGE": 736,
         "FIRSTN_PATH": 32,
         "SLOW_CROSS_SECTIONAL_LEVEL": 0,
+        "MARKET_REGIME_CONDITION": 0,
+        "DISCLOSURE_EVENT": 0,
+    }
+
+
+def test_terminal_liquidity_continuity_profile_uses_high_density_supply() -> None:
+    spec = _campaign_runtime_spec(
+        TERMINAL_LIQUIDITY_SEARCH_CONTINUITY_PROFILE
+    )
+    assert spec["maximum_checkpoints"] == 1
+    assert spec["asks_per_checkpoint"] == 184
+    assert spec["maximum_raw_asks"] == 184
+    assert spec["fixed_route_mix"] == {
+        "SLOW_TEMPORAL_CHANGE": 144,
+        "FIRSTN_PATH": 0,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 40,
+        "MARKET_REGIME_CONDITION": 0,
+        "DISCLOSURE_EVENT": 0,
+    }
+    assert spec["minimum_required_fresh_exact_by_route"] == {
+        "SLOW_TEMPORAL_CHANGE": 173,
+        "FIRSTN_PATH": 0,
+        "SLOW_CROSS_SECTIONAL_LEVEL": 48,
         "MARKET_REGIME_CONDITION": 0,
         "DISCLOSURE_EVENT": 0,
     }
