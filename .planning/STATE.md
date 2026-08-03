@@ -2,7 +2,7 @@
 
 Updated: 2026-08-03
 
-Current state: `CN_FINALIST_ABSOLUTE_ECONOMIC_ADMISSION_QUALIFIED_SEARCH_PENDING`
+Current state: `CN_FINALIST_ABSOLUTE_ECONOMIC_ADMISSION_SEARCH_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,54 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Primary-absolute bounded train search closed (2026-08-03)
+
+- The single authorized 77o train-only search closed normally at
+  `D:\ChengboRemote\runtime\cn_winner_guided_large_search_primary_absolute_20260803_31ae22f_288`
+  under exact pushed/deployed SHA
+  `31ae22fccca7ff49f45241c385e5f3a84e18610d`. The frozen one-checkpoint
+  Slow Temporal / First-N / Slow Cross-sectional / other-route schedule was
+  exactly `24/256/8/0`, with 288 fresh formal asks, fresh TPE plus the existing
+  Availability Controller and one `SEARCH_EXCLUSIVE_32` lease.
+- The checkpoint is independently verified `BATCH_CLOSED_IMMUTABLE`.
+  Batch-manifest file/canonical SHA256 values are
+  `59d6794bf837b1b7e3edccc55c27168cd89d4ae4056a95f8474f15db4f632043` /
+  `b58e7a5088b85a140162c768147e8e455855f5af7eb3feae76f79cd44cbcac5a`;
+  all 24 checkpoint artifacts match. Root `run_manifest.json` SHA256 is
+  `bf65d54daee468f5fa650b6d84daf1a152123c8dbcf122fb85e1cb2046362d1a`,
+  all 17 declared root artifacts match, and the train-complete manifest SHA256
+  is `47594c3f301f4488e7a068eefa51a58722ca7ea0bfce63144f30b892cab292c9`.
+- Actual output was 287 evaluated pairs from 288 formal asks and 10 development
+  productive candidates. Evaluated/formal, productive/formal and
+  productive/evaluated yields were 99.6528%, 3.4722% and 3.4843%. Productive
+  route counts were 4 Slow Temporal, 5 First-N and 1 Slow Cross-sectional;
+  Market Regime and Disclosure remained zero-budget. All 10 productive rows
+  map to distinct behavior families, so exact/family is 1.0; top-10 family
+  concentration is 100% only because the entire productive set contains ten
+  families.
+- Full-train optimizer authority remained exact: 10 accepted feedback proposal
+  IDs equal the eligible READY set, local COMPLETE tells also equal 10, every
+  finite search score equals
+  `min(primary_composite_reward, matched_train_increment)`, blocked rows have no
+  score, and primary-exact, pair-ID and full-behavior-signature duplicates are
+  zero. Score median/p10 across the ten accepted feedback rows were
+  0.18424747 / -0.006097989; negative feedback remains valid development
+  feedback and is not a productive or promotion claim.
+- Runtime, acceleration and sealed-access gates passed. Active-bar and
+  stock-session effective cores were 23.7888 and 28.4238 under the 32-thread
+  entitlement; pair batches were 12/24, maximum evaluator cache peak was
+  8,588,754,144 bytes below the fixed 8 GiB cap, minimum free memory was
+  65,145,593,856 bytes, and validation/holdout/2026 reads were zero. Long-only,
+  no-shorting, 5 bps and 1/5/15/30-minute contracts remained unchanged.
+- Independent audit status is PASS. Its file/payload SHA256 values are
+  `21956d0378fae9060afee3341cab9ea30d90798dd3955ef33738620c2f688346` /
+  `705c8bfa3fc234734421061637bcd56cbac58a96800701254f2a01561d477714`.
+  This bounded run creates development evidence only: none of the ten rows has
+  yet passed ADR 0013 strict executable or MTM terminal-budget admission, no
+  validation was run, and no promotion or successor search is authorized.
+  Search, reward, execution and promotion authority did not change, so no new
+  ADR or CURRENT Graph transition is warranted.
 
 ### Primary-absolute finalist admission authority (2026-08-03)
 
