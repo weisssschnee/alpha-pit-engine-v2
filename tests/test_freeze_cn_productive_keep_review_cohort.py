@@ -20,6 +20,7 @@ from scripts.freeze_cn_productive_keep_review_cohort import (
     _rank_candidates,
     _screen_reason,
     _select_finalist_funnel,
+    _select_all_productive_retest,
     _select_with_caps,
     _source_paths,
 )
@@ -81,6 +82,16 @@ def test_small_cohort_does_not_overshoot_diversity_anchors() -> None:
     selected_ids = _select_with_caps(ranked, cohort_pairs=2)
     assert len(selected_ids) == 2
     assert selected_ids == _select_with_caps(ranked, cohort_pairs=2)
+
+
+def test_all_productive_retest_selects_complete_ranked_supply() -> None:
+    ranked = _rank_candidates(_ranking_frame().head(10))
+    selected = _select_all_productive_retest(
+        ranked,
+        cohort_pairs=10,
+        source_productive_pairs=10,
+    )
+    assert selected == ranked["pair_id"].tolist()
 
 
 def test_behavior_dedup_keeps_highest_ranked_representative() -> None:

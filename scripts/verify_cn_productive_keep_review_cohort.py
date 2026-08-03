@@ -20,6 +20,7 @@ SUPPORTED_SCHEMA_VERSIONS = {
     "cn_productive_keep_review_freeze_v1",
     "cn_productive_keep_review_freeze_v2",
     "cn_productive_keep_review_freeze_v3",
+    "cn_productive_keep_review_freeze_v4",
 }
 HIGHER_IS_BETTER = (
     "search_score",
@@ -60,8 +61,18 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def _recompute_ranking(frame: pd.DataFrame) -> pd.DataFrame:
-    ranked = frame[frame["train_stability_screen_pass"] == True].copy()  # noqa: E712
+def _recompute_ranking(
+    frame: pd.DataFrame,
+    *,
+    include_screen_holds: bool = False,
+) -> pd.DataFrame:
+    ranked = (
+        frame.copy()
+        if include_screen_holds
+        else frame[
+            frame["train_stability_screen_pass"] == True  # noqa: E712
+        ].copy()
+    )
     for column in HIGHER_IS_BETTER:
         ranked[f"{column}_verify_percentile"] = ranked[column].rank(
             method="average",
@@ -532,6 +543,11 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
             or 0
         ) != cohort_pairs:
             raise RuntimeError("finalist funnel target drift")
+    elif schema_version == "cn_productive_keep_review_freeze_v4":
+        if contract.get("selection_mode") != "all_productive_retest":
+            raise RuntimeError("all-productive retest selection mode drift")
+        if int(contract.get("source_productive_pairs") or 0) != cohort_pairs:
+            raise RuntimeError("all-productive retest source count drift")
 
     review = pd.read_parquet(
         selection_root / "productive_review_ledger.parquet"
@@ -568,7 +584,10 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         "execution_clock_compatible"
     ].astype(bool).all():
         raise RuntimeError("execution-incompatible pair selected")
-    if not pairs["train_stability_screen_pass"].all():
+    if (
+        schema_version != "cn_productive_keep_review_freeze_v4"
+        and not pairs["train_stability_screen_pass"].all()
+    ):
         raise RuntimeError("screen-failing pair selected")
     for column in (
         "financial_result_recomputed",
@@ -632,7 +651,7 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
             raise RuntimeError("portfolio exposure concentration cap violated")
         if pairs["economic_mechanism_id"].nunique() != cohort_pairs:
             raise RuntimeError("selected economic mechanism duplicate")
-    else:
+    elif schema_version != "cn_productive_keep_review_freeze_v4":
         exposure_counts = {}
         route_cap = math.ceil(cohort_pairs * 0.75)
         structural_cap = math.ceil(cohort_pairs * 0.50)
@@ -644,10 +663,16 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
         if max(signal_counts.values()) > signal_cap:
             raise RuntimeError("signal concentration cap violated")
 
-    ranked = _recompute_ranking(review)
+    ranked = _recompute_ranking(
+        review,
+        include_screen_holds=(
+            schema_version == "cn_productive_keep_review_freeze_v4"
+        ),
+    )
     if schema_version in {
         "cn_productive_keep_review_freeze_v2",
         "cn_productive_keep_review_freeze_v3",
+        "cn_productive_keep_review_freeze_v4",
     }:
         ranked, duplicate_reasons = _deduplicate_behavior_candidates(ranked)
         behavior_duplicate_mask = (
@@ -722,6 +747,10 @@ def verify(*, campaign_root: Path, selection_root: Path) -> dict[str, Any]:
             "resolved_caps"
         ]:
             raise RuntimeError("resolved finalist diversity cap drift")
+    elif schema_version == "cn_productive_keep_review_freeze_v4":
+        recomputed_selection = ranked["pair_id"].astype(str).tolist()
+        if len(recomputed_selection) != cohort_pairs:
+            raise RuntimeError("all-productive retest selection drift")
     else:
         recomputed_selection = _recompute_selection(
             ranked,

@@ -29,8 +29,10 @@ REVIEW_OUTCOME_HOLD = "HOLD_RESEARCH"
 REVIEW_OUTCOME_REJECT_DUPLICATE = "REJECT_DUPLICATE"
 SCHEMA_VERSION = "cn_productive_keep_review_freeze_v2"
 FINALIST_FUNNEL_SCHEMA_VERSION = "cn_productive_keep_review_freeze_v3"
+ALL_PRODUCTIVE_RETEST_SCHEMA_VERSION = "cn_productive_keep_review_freeze_v4"
 LEGACY_SELECTION_MODE = "legacy_keep_review"
 FINALIST_FUNNEL_SELECTION_MODE = "finalist_funnel_v1"
+ALL_PRODUCTIVE_RETEST_SELECTION_MODE = "all_productive_retest"
 
 HIGHER_IS_BETTER = (
     "search_score",
@@ -772,6 +774,25 @@ def _select_with_caps(
     return selected
 
 
+def _select_all_productive_retest(
+    ranked: pd.DataFrame,
+    *,
+    cohort_pairs: int,
+    source_productive_pairs: int,
+) -> list[str]:
+    if cohort_pairs != source_productive_pairs:
+        raise RuntimeError(
+            "all-productive retest must bind the complete productive supply"
+        )
+    pair_ids = ranked["pair_id"].astype(str).tolist()
+    if len(pair_ids) != cohort_pairs or len(set(pair_ids)) != cohort_pairs:
+        raise RuntimeError(
+            f"all-productive retest supply {len(pair_ids)} below "
+            f"{cohort_pairs}"
+        )
+    return pair_ids
+
+
 def _screen_reason(row: Mapping[str, Any]) -> str:
     missing = [
         metric
@@ -849,11 +870,21 @@ def freeze_cohort(
     if selection_mode not in {
         LEGACY_SELECTION_MODE,
         FINALIST_FUNNEL_SELECTION_MODE,
+        ALL_PRODUCTIVE_RETEST_SELECTION_MODE,
     }:
         raise ValueError(f"unsupported selection mode: {selection_mode}")
     finalist_funnel = selection_mode == FINALIST_FUNNEL_SELECTION_MODE
+    all_productive_retest = (
+        selection_mode == ALL_PRODUCTIVE_RETEST_SELECTION_MODE
+    )
     schema_version = (
-        FINALIST_FUNNEL_SCHEMA_VERSION if finalist_funnel else SCHEMA_VERSION
+        FINALIST_FUNNEL_SCHEMA_VERSION
+        if finalist_funnel
+        else (
+            ALL_PRODUCTIVE_RETEST_SCHEMA_VERSION
+            if all_productive_retest
+            else SCHEMA_VERSION
+        )
     )
     funnel_contract_binding = None
     if finalist_funnel:
@@ -1149,15 +1180,37 @@ def freeze_cohort(
     review["train_stability_screen_pass"] = (
         review["train_stability_screen_reason"] == ""
     )
-    screen_ranked = _rank_candidates(
-        review[review["train_stability_screen_pass"]].copy()
-    )
+    if all_productive_retest:
+        authority_blocked = review[
+            review["train_stability_screen_reason"].astype(str).str.startswith(
+                (
+                    "PRIOR_REVIEW_COHORT_PAIR",
+                    "EXECUTION_CLOCK_FIELD_INCOMPATIBLE",
+                    "EXECUTION_CLOCK_ROUTE_EXCLUDED",
+                )
+            )
+        ]
+        if not authority_blocked.empty:
+            raise RuntimeError(
+                "all-productive retest contains authority-ineligible pairs"
+            )
+        screen_ranked = _rank_candidates(review.copy())
+    else:
+        screen_ranked = _rank_candidates(
+            review[review["train_stability_screen_pass"]].copy()
+        )
     eligible, duplicate_reasons = _deduplicate_behavior_candidates(
         screen_ranked
     )
     mechanism_duplicate_reasons: dict[str, str] = {}
     funnel_caps: dict[str, Any] | None = None
-    if finalist_funnel:
+    if all_productive_retest:
+        selected_pairs = _select_all_productive_retest(
+            eligible,
+            cohort_pairs=cohort_pairs,
+            source_productive_pairs=source_productive_pairs,
+        )
+    elif finalist_funnel:
         eligible, mechanism_duplicate_reasons = (
             _deduplicate_mechanism_candidates(eligible)
         )
@@ -1197,8 +1250,12 @@ def freeze_cohort(
         for pair_id in review["pair_id"]
     ]
     review["behavior_dedup_pass"] = (
-        review["train_stability_screen_pass"]
-        & (review["behavior_dedup_reason"] == "")
+        (review["behavior_dedup_reason"] == "")
+        if all_productive_retest
+        else (
+            review["train_stability_screen_pass"]
+            & (review["behavior_dedup_reason"] == "")
+        )
     )
     if finalist_funnel:
         review["mechanism_dedup_reason"] = [
@@ -1224,7 +1281,11 @@ def freeze_cohort(
     ]
     review["review_reason"] = [
         (
-            f"FROZEN_{cohort_pairs}_PAIR_TRAIN_STABILITY_AND_DIVERSITY_COHORT"
+            (
+                f"FROZEN_{cohort_pairs}_PAIR_ALL_PRODUCTIVE_MTM_RETEST"
+                if all_productive_retest
+                else f"FROZEN_{cohort_pairs}_PAIR_TRAIN_STABILITY_AND_DIVERSITY_COHORT"
+            )
             if str(row["pair_id"]) in selected_set
             else (
                 str(row["behavior_dedup_reason"])
@@ -1418,6 +1479,24 @@ def freeze_cohort(
             "caps_are_selection_contract": True,
             "caps_are_not_runtime_stop_gates": True,
         }
+    elif all_productive_retest:
+        contract["selection_mode"] = selection_mode
+        contract["train_stability_screen"]["selection_authority"] = (
+            "DIAGNOSTIC_ONLY_FOR_CONTINUOUS_BOOK_MTM_RETEST"
+        )
+        contract["ranking"]["percentile_scope"] = (
+            "ALL_PRODUCTIVE_PAIRS"
+        )
+        contract["behavior_deduplication"]["scope"] = (
+            "ALL_PRODUCTIVE_PAIRS"
+        )
+        contract["diversity_selection"] = {
+            "policy": "FULL_PRODUCTIVE_SUPPLY_NO_DIVERSITY_CAP",
+            "required_selected_pairs": source_productive_pairs,
+            "caps_are_selection_contract": False,
+            "train_stability_is_diagnostic_only": True,
+            "economic_authority_deferred_to_continuous_book_mtm": True,
+        }
     contract["contract_payload_sha256"] = _payload_sha256(contract)
     contract_path = _write_json(
         output_root / "keep_review_contract.json", contract
@@ -1547,6 +1626,14 @@ def freeze_cohort(
                 "resolved_diversity_caps": funnel_caps,
             }
         )
+    elif all_productive_retest:
+        summary.update(
+            {
+                "selection_mode": selection_mode,
+                "train_stability_is_diagnostic_only": True,
+                "full_productive_supply_selected": True,
+            }
+        )
     summary["selection_payload_sha256"] = _payload_sha256(
         {
             "pair_ids": selected_pairs,
@@ -1623,6 +1710,13 @@ def freeze_cohort(
                 "resolved_diversity_caps": funnel_caps,
             }
         )
+    elif all_productive_retest:
+        result.update(
+            {
+                "selection_mode": selection_mode,
+                "full_productive_supply_selected": True,
+            }
+        )
     return result
 
 
@@ -1661,7 +1755,11 @@ def main() -> int:
     )
     parser.add_argument(
         "--selection-mode",
-        choices=(LEGACY_SELECTION_MODE, FINALIST_FUNNEL_SELECTION_MODE),
+        choices=(
+            LEGACY_SELECTION_MODE,
+            FINALIST_FUNNEL_SELECTION_MODE,
+            ALL_PRODUCTIVE_RETEST_SELECTION_MODE,
+        ),
         default=LEGACY_SELECTION_MODE,
     )
     parser.add_argument(
