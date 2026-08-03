@@ -2,7 +2,7 @@
 
 Updated: 2026-08-03
 
-Current state: `CN_CONTINUOUS_BOOK_MTM_RETEST_CLOSED_HOLD_RESEARCH`
+Current state: `CN_ALPHA_AUTOPSY_V1_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,58 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### CN_ALPHA_AUTOPSY_V1 closed over immutable 32-pair evidence (2026-08-03)
+
+- The read-only autopsy closed at
+  `D:\ChengboRemote\runtime\cn_alpha_autopsy_v1_32_20260803_05c6977`
+  over the exact unchanged 32-pair / 64-member Slow Temporal cohort with
+  selection payload SHA256
+  `24aa602dbcd19f02b2c6f773a3441fde78d1612e327b11039684764569b6e5c1`.
+  Its manifest file/canonical SHA256 values are
+  `c8f46ba1223d17434ec34c32e92efa6271fd451c16ae4cf09743615f31d5af65` /
+  `e20e77c15c147b119b7cf9ebf707c6bec279db9a9c0d835b873f2e57ea310a85`.
+  All declared output artifacts and every bound replay, OOS and train-MTM
+  source closure/artifact passed independent hash verification. The separate
+  verification receipt SHA256 is
+  `8b8912ae6d51caa52b443dd46e0eab096fb4149d9914e204f1aa0211a24a0d61`.
+- No search, financial replay, validation rerun, reward/evaluator change,
+  holdout/2026 read, promotion write or Graph authority transition occurred.
+  The autopsy only read existing immutable artifacts. Candidate-specific OOS
+  observations were 51-68 days, so this remains weak-sample research evidence.
+- Signal evidence is mixed rather than empty: 17/32 candidates were positive
+  in both train and OOS RankIC, 12 decayed from positive train RankIC to
+  nonpositive OOS RankIC, one was OOS-divergent and two failed in both. Overall
+  OOS RankIC was positive for 18/32 candidates.
+- The principal measured break is ranking preservation through portfolio
+  construction. OOS signal RankIC versus gross portfolio return had Spearman
+  `-0.1414956012`, with zero top-decile and zero top-5 retention. Gross versus
+  net portfolio return preserved rank exactly (`1.0`, full top-set retention),
+  so the modeled cost layer did not cause the cross-candidate ranking collapse.
+  Net portfolio return versus the existing validation search score was also
+  effectively unaligned (Spearman `-0.0953079179`, zero top-set retention).
+- Search/reward alignment is weak. Development search score versus existing
+  validation search score had Spearman `-0.0175953079`; train continuous-book
+  absolute MTM reward versus validation search score was `-0.2613636364`, and
+  train matched MTM increment versus validation search score was
+  `-0.3277126100`. These are diagnostic correlations against the existing
+  Phase3CM report metric, not continuous-book OOS MTM and not promotion proof.
+  Economics remain poor: 0/32 primary train MTM rewards were positive, only
+  5/32 matched train MTM increments were positive, while 21/32 existing
+  validation search scores were positive.
+- Required but unpersisted evidence is labeled
+  `UNAVAILABLE_FROM_IMMUTABLE_EVIDENCE`: top-bottom spread, average/maximum
+  position age, realized/unrealized PnL split, monetary counterfactual losses
+  by T+1/limit/suspension/liquidity and continuous-book OOS MTM. The old MTM
+  receipts also omit initial cash, so a first audit that overstated fee-addback
+  reconciliation was rejected and preserved under
+  `run_health_incidents\20260803T224000_alpha_autopsy_initial_cash_reconciliation_overclaim`
+  (incident SHA256
+  `3d3f93698e7e63cdef582429fc80188beb37b8711386015e539d691e8109430d`).
+  The accepted report does not fabricate that reconciliation.
+- The accepted decision remains `HOLD_RESEARCH`. This is a genuine evidence
+  state update, not an architecture or authority change, so no ADR or CURRENT
+  Graph transition is warranted.
 
 ### Continuous-book MTM authority and full productive-supply retest closed (2026-08-03)
 
@@ -2077,6 +2129,19 @@ remains unchanged. The compact receipt is
   a SHA-verified full Git bundle without changing the node's proxy authority.
 
 ## Next action
+
+Do not expand formula search from this evidence. The next bounded research
+action is a train-only portfolio transformation audit/optimizer over the frozen
+mechanisms: preserve each formula and its signal outputs, then vary only
+holding horizon, rebalance cadence, exit policy and position construction under
+the existing A-share/PIT/cost authority. Before any validation read, require
+material improvement in standalone continuous-book train economics and rank
+preservation from signal to gross portfolio return. In parallel, amend future
+replay receipts prospectively to persist initial cash, lot-age/realized versus
+unrealized accounting and typed blocked-order counterfactual inputs; do not
+retrofit those missing values into historical evidence. A later, separately
+frozen report-only OOS is justified only for a small train-positive portfolio
+finalist set. The current autopsy does not authorize another search tranche.
 
 The continuous-book MTM retest over the complete ten-pair productive supply is
 closed and must not be rerun. It resolved the accounting objection directly:
