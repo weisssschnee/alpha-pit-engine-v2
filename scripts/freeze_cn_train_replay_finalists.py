@@ -23,6 +23,10 @@ from scripts.freeze_cn_productive_keep_review_cohort import (
     _sha256,
     _write_json,
 )
+from our_system_phase2.services.finalist_economic_admission import (
+    POLICY_ID,
+    strict_replay_blockers,
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -73,17 +77,21 @@ def _rank_eligible(frame: pd.DataFrame) -> pd.DataFrame:
         "pair_id",
         "economic_mechanism_id",
         "a_share_replay_status",
+        "primary_a_share_executable_net_reward",
         "a_share_executable_net_increment",
     }
     missing = sorted(required.difference(frame.columns))
     if missing:
         raise RuntimeError(f"finalist source columns missing: {missing}")
-    eligible = frame[
-        (frame["a_share_replay_status"].astype(str) == "PAIR_REPLAY_COMPLETE")
-        & (frame["a_share_executable_net_increment"].astype(float) > 0.0)
-    ].copy()
-    ranking_columns = ["a_share_executable_net_increment"]
-    ascending = [False]
+    eligible_mask = frame.apply(
+        lambda row: not strict_replay_blockers(row), axis=1
+    )
+    eligible = frame[eligible_mask].copy()
+    ranking_columns = [
+        "primary_a_share_executable_net_reward",
+        "a_share_executable_net_increment",
+    ]
+    ascending = [False, False]
     for column in (
         "train_stability_score",
         "train_stability_floor",
@@ -240,6 +248,10 @@ def freeze_train_replay_finalists(
     if not (selected["a_share_executable_net_increment"].astype(float) > 0).all():
         raise RuntimeError("nonpositive executable increment entered finalists")
     if not (
+        selected["primary_a_share_executable_net_reward"].astype(float) > 0
+    ).all():
+        raise RuntimeError("nonpositive primary reward entered finalists")
+    if not (
         selected["a_share_replay_status"].astype(str)
         == "PAIR_REPLAY_COMPLETE"
     ).all():
@@ -270,6 +282,9 @@ def freeze_train_replay_finalists(
         raise RuntimeError("finalist candidate member count drift")
 
     review = source.copy()
+    review["economic_admission_blockers"] = review.apply(
+        lambda row: "|".join(strict_replay_blockers(row)), axis=1
+    )
     review["finalist_outcome"] = "NOT_ELIGIBLE_OR_OUTSIDE_MAXIMUM"
     review.loc[
         review["a_share_replay_status"].astype(str) != "PAIR_REPLAY_COMPLETE",
@@ -277,6 +292,18 @@ def freeze_train_replay_finalists(
     ] = "REPLAY_BLOCKED_NO_BACKFILL"
     review.loc[
         (review["a_share_replay_status"].astype(str) == "PAIR_REPLAY_COMPLETE")
+        & (
+            review["primary_a_share_executable_net_reward"].astype(float)
+            <= 0
+        ),
+        "finalist_outcome",
+    ] = "NONPOSITIVE_PRIMARY_ABSOLUTE_REWARD"
+    review.loc[
+        (review["a_share_replay_status"].astype(str) == "PAIR_REPLAY_COMPLETE")
+        & (
+            review["primary_a_share_executable_net_reward"].astype(float)
+            > 0
+        )
         & (review["a_share_executable_net_increment"].astype(float) <= 0),
         "finalist_outcome",
     ] = "NONPOSITIVE_EXECUTABLE_INCREMENT"
@@ -314,11 +341,14 @@ def freeze_train_replay_finalists(
         "target_pairs_maximum": maximum,
         "actual_pairs": actual_count,
         "eligibility": {
+            "policy_id": POLICY_ID,
             "a_share_replay_status": "PAIR_REPLAY_COMPLETE",
+            "primary_a_share_executable_net_reward": ">0",
             "a_share_executable_net_increment": ">0",
             "economic_mechanism_policy": "UNIQUE",
             "ranking": (
-                "executable_increment desc, train stability desc when present, "
+                "primary absolute reward desc, executable increment desc, "
+                "train stability desc when present, "
                 "search_score desc when present, pair_id asc"
             ),
             "blocked_backfill": "FORBIDDEN",

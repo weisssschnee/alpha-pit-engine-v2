@@ -43,6 +43,15 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
                 "search_score": 0.6,
             },
             {
+                "pair_id": "pair-primary-loss",
+                "economic_mechanism_id": "mechanism-primary-loss",
+                "portfolio_exposure_family_id": "exposure-primary-loss",
+                "train_stability_score": 0.95,
+                "train_stability_floor": 0.9,
+                "train_stability_median": 0.92,
+                "search_score": 0.8,
+            },
+            {
                 "pair_id": "pair-blocked",
                 "economic_mechanism_id": "mechanism-c",
                 "portfolio_exposure_family_id": "exposure-c",
@@ -87,16 +96,25 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             {
                 "pair_id": "pair-positive",
                 "a_share_replay_status": "PAIR_REPLAY_COMPLETE",
+                "primary_a_share_executable_net_reward": 0.3,
                 "a_share_executable_net_increment": 0.2,
             },
             {
                 "pair_id": "pair-negative",
                 "a_share_replay_status": "PAIR_REPLAY_COMPLETE",
+                "primary_a_share_executable_net_reward": 0.3,
                 "a_share_executable_net_increment": -0.1,
+            },
+            {
+                "pair_id": "pair-primary-loss",
+                "a_share_replay_status": "PAIR_REPLAY_COMPLETE",
+                "primary_a_share_executable_net_reward": -0.2,
+                "a_share_executable_net_increment": 0.4,
             },
             {
                 "pair_id": "pair-blocked",
                 "a_share_replay_status": "PAIR_REPLAY_BLOCKED",
+                "primary_a_share_executable_net_reward": 0.8,
                 "a_share_executable_net_increment": 0.5,
             },
         ]

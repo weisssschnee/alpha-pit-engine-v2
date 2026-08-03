@@ -14,6 +14,9 @@ from scripts.freeze_cn_productive_keep_review_cohort import (
     _sha256,
     _write_json,
 )
+from our_system_phase2.services.finalist_economic_admission import (
+    strict_replay_blockers,
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -107,11 +110,13 @@ def verify_train_replay_finalists(
         suffixes=("", "_replay"),
     )
     eligible = source[
-        (source["a_share_replay_status"].astype(str) == "PAIR_REPLAY_COMPLETE")
-        & (source["a_share_executable_net_increment"].astype(float) > 0.0)
+        source.apply(lambda row: not strict_replay_blockers(row), axis=1)
     ].copy()
-    ranking_columns = ["a_share_executable_net_increment"]
-    ascending = [False]
+    ranking_columns = [
+        "primary_a_share_executable_net_reward",
+        "a_share_executable_net_increment",
+    ]
+    ascending = [False, False]
     for column in (
         "train_stability_score",
         "train_stability_floor",
@@ -164,6 +169,11 @@ def verify_train_replay_finalists(
         finalist_pairs["a_share_executable_net_increment"].astype(float) > 0
     ).all():
         raise RuntimeError("nonpositive pair entered finalist freeze")
+    if not (
+        finalist_pairs["primary_a_share_executable_net_reward"].astype(float)
+        > 0
+    ).all():
+        raise RuntimeError("nonpositive primary reward entered finalist freeze")
     if len(finalist_candidates) != len(finalist_pairs) * 2:
         raise RuntimeError("finalist candidate member count mismatch")
     if set(finalist_candidates["pair_id"].astype(str)) != set(observed_ids):
