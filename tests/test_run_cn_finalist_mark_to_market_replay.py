@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pandas as pd
 
 from scripts import run_cn_finalist_mark_to_market_replay as subject
@@ -20,6 +22,35 @@ def _candidates() -> pd.DataFrame:
                 }
             )
     return pd.DataFrame(rows)
+
+
+def test_mark_to_market_binds_size_from_immutable_freeze(tmp_path) -> None:
+    base = subject.base
+    original_pairs = base.EXPECTED_PAIR_COUNT
+    freeze = {
+        "status": "FROZEN_UNCHANGED_FIXED_COHORT",
+        "pair_count": 32,
+        "candidate_member_count": 64,
+    }
+    freeze["manifest_body_sha256"] = base._stable_hash(freeze)
+    path = tmp_path / "freeze.json"
+    path.write_text(json.dumps(freeze), encoding="utf-8")
+
+    try:
+        loaded = subject._load_freeze_for_mark_to_market(path)
+        assert loaded["pair_count"] == 32
+        assert base.EXPECTED_PAIR_COUNT == 32
+        assert base.EXPECTED_MEMBER_COUNT == 64
+    finally:
+        base._configure_expected_cohort_size(original_pairs)
+
+
+def test_strict_replay_closure_is_bound_below_campaign_root() -> None:
+    root = subject.Path("campaign")
+    assert subject._strict_replay_closure_path(root).parts[-2:] == (
+        "replay",
+        "REPLAY_COMPLETE.json",
+    )
 
 
 def test_pair_results_keep_no_fill_as_the_only_blocked_pair() -> None:

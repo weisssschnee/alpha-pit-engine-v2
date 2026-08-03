@@ -31,6 +31,30 @@ PAIR_COMPLETE = "PAIR_MARK_TO_MARKET_COMPLETE"
 PAIR_BLOCKED = "PAIR_MARK_TO_MARKET_BLOCKED"
 
 
+def _load_freeze_for_mark_to_market(path: Path) -> dict[str, Any]:
+    """Bind replay cardinality to the immutable cohort before validation."""
+    preview = base._read_json(path)
+    base._verify_payload_hash(
+        preview,
+        field="manifest_body_sha256",
+        label="finalist cohort freeze",
+    )
+    if str(preview.get("status") or "") != (
+        "FROZEN_UNCHANGED_FIXED_COHORT"
+    ):
+        raise RuntimeError("finalist cohort freeze status drift")
+    pair_count = int(preview.get("pair_count") or 0)
+    member_count = int(preview.get("candidate_member_count") or 0)
+    if member_count != pair_count * 2:
+        raise RuntimeError("finalist cohort freeze cardinality drift")
+    base._configure_expected_cohort_size(pair_count)
+    return base._load_freeze(path)
+
+
+def _strict_replay_closure_path(root: Path) -> Path:
+    return Path(root).resolve() / "replay" / "REPLAY_COMPLETE.json"
+
+
 def _finite(value: Any) -> float | None:
     return base._finite(value)
 
@@ -201,7 +225,7 @@ def replay_mark_to_market(
     output_root = Path(output_root).resolve()
     output_root.mkdir(parents=True, exist_ok=True)
 
-    freeze = base._load_freeze(freeze_path)
+    freeze = _load_freeze_for_mark_to_market(freeze_path)
     frozen_root = freeze_path.parents[1]
     candidate_path = base._resolved_artifact(
         frozen_root,
@@ -217,7 +241,7 @@ def replay_mark_to_market(
     ):
         raise RuntimeError("mark-to-market cohort order drift")
 
-    strict_closure_path = strict_replay_root / "REPLAY_COMPLETE.json"
+    strict_closure_path = _strict_replay_closure_path(strict_replay_root)
     strict_closure = base._read_json(strict_closure_path)
     base._verify_payload_hash(
         strict_closure,
