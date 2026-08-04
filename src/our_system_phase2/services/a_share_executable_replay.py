@@ -22,6 +22,38 @@ from our_system_phase2.services.development_only_data_access import (
 
 
 REPLAY_KERNEL_VERSION = "a_share_long_only_open_rebalance_v2"
+ACCOUNTING_LEDGER_VERSION = "a_share_lot_cash_pnl_ledger_v1"
+LOT_LEDGER_COLUMNS = (
+    "lot_id",
+    "code",
+    "acquired_date",
+    "acquired_session_ordinal",
+    "sellable_date",
+    "sellable_session_ordinal",
+    "acquisition_price",
+    "original_shares",
+    "remaining_shares",
+    "disposed_shares",
+    "buy_fee_cny",
+    "original_cost_basis_cny",
+    "remaining_cost_basis_cny",
+    "realized_cost_basis_cny",
+    "corporate_action_share_delta",
+)
+LOT_CONSUMPTION_LEDGER_COLUMNS = (
+    "session_date",
+    "session_ordinal",
+    "code",
+    "lot_id",
+    "acquired_date",
+    "sellable_date",
+    "shares",
+    "price",
+    "allocated_cost_basis_cny",
+    "fill_reason",
+    "allocated_sell_fee_cny",
+    "realized_trade_pnl_cny",
+)
 REQUIRED_SESSION_COLUMNS = frozenset(
     {
         "date",
@@ -447,6 +479,151 @@ def _blocked_sell(row: Mapping[str, Any], *, tick: float) -> bool:
     )
 
 
+def _ledger_tolerance(value: float) -> float:
+    return max(1e-6, abs(float(value)) * 1e-12)
+
+
+def _active_lots(
+    lots: list[dict[str, Any]],
+    *,
+    code: str | None = None,
+) -> list[dict[str, Any]]:
+    selected = [lot for lot in lots if int(lot["remaining_shares"]) > 0]
+    if code is not None:
+        selected = [lot for lot in selected if str(lot["code"]) == str(code)]
+    return sorted(
+        selected,
+        key=lambda lot: (
+            int(lot["acquired_session_ordinal"]),
+            str(lot["lot_id"]),
+        ),
+    )
+
+
+def _lot_quantity(
+    lots: list[dict[str, Any]],
+    *,
+    code: str,
+) -> int:
+    return sum(
+        int(lot["remaining_shares"])
+        for lot in _active_lots(lots, code=code)
+    )
+
+
+def _apply_share_multiplier_to_lots(
+    lots: list[dict[str, Any]],
+    *,
+    code: str,
+    opening_shares: int,
+    adjusted_shares: int,
+    multiplier: float,
+) -> None:
+    selected = _active_lots(lots, code=code)
+    if sum(int(lot["remaining_shares"]) for lot in selected) != int(
+        opening_shares
+    ):
+        raise RuntimeError(f"opening lot quantity drift for {code}")
+    raw = [int(lot["remaining_shares"]) * float(multiplier) for lot in selected]
+    allocated = [int(math.floor(value)) for value in raw]
+    remainder = int(adjusted_shares) - sum(allocated)
+    if remainder < 0 or remainder > len(selected):
+        raise RuntimeError(f"corporate-action lot allocation failed for {code}")
+    ranked = sorted(
+        range(len(selected)),
+        key=lambda index: (
+            -(raw[index] - allocated[index]),
+            str(selected[index]["lot_id"]),
+        ),
+    )
+    for index in ranked[:remainder]:
+        allocated[index] += 1
+    for lot, shares in zip(selected, allocated, strict=True):
+        previous = int(lot["remaining_shares"])
+        lot["remaining_shares"] = int(shares)
+        lot["corporate_action_share_delta"] = int(
+            lot["corporate_action_share_delta"]
+        ) + int(shares) - previous
+    if _lot_quantity(lots, code=code) != int(adjusted_shares):
+        raise RuntimeError(f"adjusted lot quantity drift for {code}")
+
+
+def _consume_fifo_lots(
+    lots: list[dict[str, Any]],
+    *,
+    code: str,
+    shares: int,
+    session_ordinal: int,
+    session_date: str,
+    price: float,
+    sell_fee_cny: float,
+    fill_reason: str,
+) -> tuple[float, float, list[dict[str, Any]]]:
+    remaining = int(shares)
+    consumed_cost_basis = 0.0
+    consumptions: list[dict[str, Any]] = []
+    for lot in _active_lots(lots, code=code):
+        if remaining <= 0:
+            break
+        if int(lot["sellable_session_ordinal"]) > int(session_ordinal):
+            raise RuntimeError(
+                f"T+1 lot sold before sellable session: {lot['lot_id']}"
+            )
+        available = int(lot["remaining_shares"])
+        take = min(remaining, available)
+        lot_cost_basis = float(lot["remaining_cost_basis_cny"])
+        cost_basis = (
+            lot_cost_basis
+            if take == available
+            else lot_cost_basis * take / available
+        )
+        lot["remaining_shares"] = available - take
+        lot["remaining_cost_basis_cny"] = lot_cost_basis - cost_basis
+        lot["disposed_shares"] = int(lot["disposed_shares"]) + take
+        lot["realized_cost_basis_cny"] = float(
+            lot["realized_cost_basis_cny"]
+        ) + cost_basis
+        consumed_cost_basis += cost_basis
+        remaining -= take
+        consumptions.append(
+            {
+                "session_date": session_date,
+                "session_ordinal": int(session_ordinal),
+                "code": str(code),
+                "lot_id": str(lot["lot_id"]),
+                "acquired_date": str(lot["acquired_date"]),
+                "sellable_date": str(lot["sellable_date"]),
+                "shares": int(take),
+                "price": float(price),
+                "allocated_cost_basis_cny": float(cost_basis),
+                "fill_reason": str(fill_reason),
+            }
+        )
+    if remaining != 0:
+        raise RuntimeError(
+            f"lot quantity insufficient for {code}: missing={remaining}"
+        )
+    allocated_sell_fee = 0.0
+    sold_shares = int(shares)
+    for index, row in enumerate(consumptions):
+        fee = (
+            float(sell_fee_cny) - allocated_sell_fee
+            if index == len(consumptions) - 1
+            else float(sell_fee_cny) * int(row["shares"]) / sold_shares
+        )
+        allocated_sell_fee += fee
+        row["allocated_sell_fee_cny"] = float(fee)
+        row["realized_trade_pnl_cny"] = float(
+            int(row["shares"]) * float(price)
+            - float(row["allocated_cost_basis_cny"])
+            - fee
+        )
+    realized_trade_pnl = float(shares) * float(price) - float(
+        sell_fee_cny
+    ) - consumed_cost_basis
+    return consumed_cost_basis, realized_trade_pnl, consumptions
+
+
 def run_a_share_long_only_replay(
     frame: pd.DataFrame,
     *,
@@ -492,6 +669,10 @@ def run_a_share_long_only_replay(
     }
     cash = float(execution_policy.initial_cash_cny)
     holdings: dict[str, int] = {}
+    lots: list[dict[str, Any]] = []
+    lot_consumptions: list[dict[str, Any]] = []
+    daily_ledger_rows: list[dict[str, Any]] = []
+    lot_sequence = 0
     last_close: dict[str, float] = {}
     fills: list[dict[str, Any]] = []
     daily_rows: list[dict[str, Any]] = []
@@ -501,10 +682,23 @@ def run_a_share_long_only_replay(
     corporate_action_cash_cny = 0.0
     corporate_action_share_delta = 0
     terminal_liquidation_count = 0
+    cumulative_realized_trade_pnl_cny = 0.0
+    maximum_cash_identity_error_cny = 0.0
+    maximum_nav_identity_error_cny = 0.0
+    maximum_pnl_identity_error_cny = 0.0
+    maximum_lot_quantity_error = 0
 
     previous_nav = float(execution_policy.initial_cash_cny)
     for ordinal, date in enumerate(dates):
         day = by_date[pd.Timestamp(date)]
+        session_date = pd.Timestamp(date).date().isoformat()
+        opening_cash_cny = float(cash)
+        session_corporate_action_cash_cny = 0.0
+        session_sell_notional_cny = 0.0
+        session_sell_fees_cny = 0.0
+        session_buy_notional_cny = 0.0
+        session_buy_fees_cny = 0.0
+        session_realized_trade_pnl_cny = 0.0
 
         # Apply already PIT-aligned cash/share events to positions carried into
         # the session. Same-session purchases cannot receive the adjustment.
@@ -521,6 +715,7 @@ def run_a_share_long_only_replay(
                 credit = opening_shares * cash_per_share
                 cash += credit
                 corporate_action_cash_cny += credit
+                session_corporate_action_cash_cny += credit
             multiplier = float(row["corporate_action_share_multiplier"])
             adjusted = opening_shares * multiplier
             rounded = round(adjusted)
@@ -537,6 +732,13 @@ def run_a_share_long_only_replay(
                 raise ValueError("corporate action produced nonpositive shares")
             holdings[code] = adjusted_shares
             corporate_action_share_delta += adjusted_shares - opening_shares
+            _apply_share_multiplier_to_lots(
+                lots,
+                code=str(code),
+                opening_shares=opening_shares,
+                adjusted_shares=adjusted_shares,
+                multiplier=multiplier,
+            )
 
         # Delisting terminal rows are explicit cash exits, not disappearing
         # panel rows. They occur before the ordinary session rebalance.
@@ -544,12 +746,28 @@ def run_a_share_long_only_replay(
             row = day.loc[code]
             if not bool(row["is_terminal_session"]):
                 continue
-            shares = int(holdings.pop(code))
+            shares = int(holdings[code])
             price = float(row["terminal_liquidation_price"])
             notional = shares * price
             fee = fee_schedule.fee(notional, side="SELL")
+            _, realized_trade_pnl, consumptions = _consume_fifo_lots(
+                lots,
+                code=str(code),
+                shares=shares,
+                session_ordinal=ordinal,
+                session_date=session_date,
+                price=price,
+                sell_fee_cny=fee,
+                fill_reason="DELISTING_TERMINAL_LIQUIDATION",
+            )
+            lot_consumptions.extend(consumptions)
+            cumulative_realized_trade_pnl_cny += realized_trade_pnl
+            session_realized_trade_pnl_cny += realized_trade_pnl
+            holdings.pop(code)
             cash += notional - fee
             total_fees += fee
+            session_sell_notional_cny += notional
+            session_sell_fees_cny += fee
             terminal_liquidation_count += 1
             fills.append(
                 {
@@ -646,8 +864,23 @@ def run_a_share_long_only_replay(
                 continue
             notional = sell_shares * open_price
             fee = fee_schedule.fee(notional, side="SELL")
+            _, realized_trade_pnl, consumptions = _consume_fifo_lots(
+                lots,
+                code=str(code),
+                shares=sell_shares,
+                session_ordinal=ordinal,
+                session_date=session_date,
+                price=open_price,
+                sell_fee_cny=fee,
+                fill_reason="REBALANCE",
+            )
+            lot_consumptions.extend(consumptions)
+            cumulative_realized_trade_pnl_cny += realized_trade_pnl
+            session_realized_trade_pnl_cny += realized_trade_pnl
             cash += notional - fee
             total_fees += fee
+            session_sell_notional_cny += notional
+            session_sell_fees_cny += fee
             remaining = current - sell_shares
             if remaining:
                 holdings[code] = remaining
@@ -711,7 +944,33 @@ def run_a_share_long_only_replay(
             fee = fee_schedule.fee(notional, side="BUY")
             cash -= notional + fee
             total_fees += fee
+            session_buy_notional_cny += notional
+            session_buy_fees_cny += fee
             holdings[code] = int(holdings.get(code, 0)) + shares
+            if ordinal + 1 >= len(dates):
+                raise RuntimeError("final session must not create a new lot")
+            lot_sequence += 1
+            lots.append(
+                {
+                    "lot_id": f"lot-{lot_sequence:08d}",
+                    "code": str(code),
+                    "acquired_date": session_date,
+                    "acquired_session_ordinal": int(ordinal),
+                    "sellable_date": pd.Timestamp(
+                        dates[ordinal + 1]
+                    ).date().isoformat(),
+                    "sellable_session_ordinal": int(ordinal + 1),
+                    "acquisition_price": float(open_price),
+                    "original_shares": int(shares),
+                    "remaining_shares": int(shares),
+                    "disposed_shares": 0,
+                    "buy_fee_cny": float(fee),
+                    "original_cost_basis_cny": float(notional + fee),
+                    "remaining_cost_basis_cny": float(notional + fee),
+                    "realized_cost_basis_cny": 0.0,
+                    "corporate_action_share_delta": 0,
+                }
+            )
             fills.append(
                 {
                     "date": pd.Timestamp(date).date().isoformat(),
@@ -726,6 +985,7 @@ def run_a_share_long_only_replay(
             )
 
         close_nav = cash
+        marked_holdings_market_value_cny = 0.0
         for code, shares in holdings.items():
             if code not in day.index:
                 raise ValueError(
@@ -735,7 +995,166 @@ def run_a_share_long_only_replay(
             price = float(day.at[code, "close"])
             if not math.isfinite(price) or price <= 0:
                 raise ValueError(f"missing close mark for held code {code}")
-            close_nav += shares * price
+            market_value = shares * price
+            marked_holdings_market_value_cny += market_value
+            close_nav += market_value
+        active_lots = _active_lots(lots)
+        lot_codes = {str(lot["code"]) for lot in active_lots}
+        quantity_errors = {
+            code: int(holdings.get(code, 0))
+            - _lot_quantity(lots, code=code)
+            for code in set(holdings) | lot_codes
+        }
+        lot_quantity_error = max(
+            [abs(error) for error in quantity_errors.values()] or [0]
+        )
+        maximum_lot_quantity_error = max(
+            maximum_lot_quantity_error,
+            int(lot_quantity_error),
+        )
+        for lot in lots:
+            lot_balance = (
+                int(lot["original_shares"])
+                + int(lot["corporate_action_share_delta"])
+                - int(lot["disposed_shares"])
+                - int(lot["remaining_shares"])
+            )
+            if lot_balance != 0:
+                raise RuntimeError(
+                    f"lot share conservation failed: {lot['lot_id']}"
+                )
+        remaining_cost_basis_cny = sum(
+            float(lot["remaining_cost_basis_cny"])
+            for lot in active_lots
+        )
+        unrealized_pnl_cny = (
+            marked_holdings_market_value_cny - remaining_cost_basis_cny
+        )
+        net_pnl_cny = close_nav - float(execution_policy.initial_cash_cny)
+        pnl_identity_error_cny = (
+            cumulative_realized_trade_pnl_cny
+            + corporate_action_cash_cny
+            + unrealized_pnl_cny
+            - net_pnl_cny
+        )
+        cash_identity_error_cny = cash - (
+            opening_cash_cny
+            + session_corporate_action_cash_cny
+            + session_sell_notional_cny
+            - session_sell_fees_cny
+            - session_buy_notional_cny
+            - session_buy_fees_cny
+        )
+        nav_identity_error_cny = close_nav - (
+            cash + marked_holdings_market_value_cny
+        )
+        maximum_cash_identity_error_cny = max(
+            maximum_cash_identity_error_cny,
+            abs(cash_identity_error_cny),
+        )
+        maximum_nav_identity_error_cny = max(
+            maximum_nav_identity_error_cny,
+            abs(nav_identity_error_cny),
+        )
+        maximum_pnl_identity_error_cny = max(
+            maximum_pnl_identity_error_cny,
+            abs(pnl_identity_error_cny),
+        )
+        tolerance_cny = _ledger_tolerance(close_nav)
+        if abs(cash_identity_error_cny) > tolerance_cny:
+            raise RuntimeError(
+                f"cash ledger did not reconcile on {session_date}"
+            )
+        if abs(nav_identity_error_cny) > tolerance_cny:
+            raise RuntimeError(
+                f"NAV ledger did not reconcile on {session_date}"
+            )
+        if abs(pnl_identity_error_cny) > tolerance_cny:
+            raise RuntimeError(
+                f"PnL ledger did not reconcile on {session_date}"
+            )
+        if lot_quantity_error != 0:
+            raise RuntimeError(
+                f"lot quantity ledger did not reconcile on {session_date}"
+            )
+        if cash < -tolerance_cny:
+            raise RuntimeError(f"negative trading cash on {session_date}")
+        frozen_shares = sum(
+            int(lot["remaining_shares"])
+            for lot in active_lots
+            if int(lot["sellable_session_ordinal"]) > ordinal
+        )
+        sellable_shares = sum(
+            int(lot["remaining_shares"])
+            for lot in active_lots
+            if int(lot["sellable_session_ordinal"]) <= ordinal
+        )
+        share_weighted_age_numerator = sum(
+            int(lot["remaining_shares"])
+            * (ordinal - int(lot["acquired_session_ordinal"]))
+            for lot in active_lots
+        )
+        active_share_count = sum(
+            int(lot["remaining_shares"]) for lot in active_lots
+        )
+        maximum_position_age_sessions = max(
+            [
+                ordinal - int(lot["acquired_session_ordinal"])
+                for lot in active_lots
+            ]
+            or [0]
+        )
+        daily_ledger_rows.append(
+            {
+                "date": session_date,
+                "session_ordinal": int(ordinal),
+                "opening_trading_cash_cny": float(opening_cash_cny),
+                "corporate_action_cash_cny": float(
+                    session_corporate_action_cash_cny
+                ),
+                "sell_notional_cny": float(session_sell_notional_cny),
+                "sell_fees_cny": float(session_sell_fees_cny),
+                "buy_notional_cny": float(session_buy_notional_cny),
+                "buy_fees_cny": float(session_buy_fees_cny),
+                "closing_trading_cash_cny": float(cash),
+                "marked_holdings_market_value_cny": float(
+                    marked_holdings_market_value_cny
+                ),
+                "nav_cny": float(close_nav),
+                "session_realized_trade_pnl_cny": float(
+                    session_realized_trade_pnl_cny
+                ),
+                "cumulative_realized_trade_pnl_cny": float(
+                    cumulative_realized_trade_pnl_cny
+                ),
+                "cumulative_corporate_action_cash_pnl_cny": float(
+                    corporate_action_cash_cny
+                ),
+                "remaining_cost_basis_cny": float(
+                    remaining_cost_basis_cny
+                ),
+                "unrealized_pnl_cny": float(unrealized_pnl_cny),
+                "net_pnl_cny": float(net_pnl_cny),
+                "active_lot_count": int(len(active_lots)),
+                "sellable_share_count": int(sellable_shares),
+                "frozen_share_count": int(frozen_shares),
+                "share_weighted_average_position_age_sessions": (
+                    float(share_weighted_age_numerator / active_share_count)
+                    if active_share_count > 0
+                    else None
+                ),
+                "maximum_position_age_sessions": int(
+                    maximum_position_age_sessions
+                ),
+                "cash_identity_error_cny": float(
+                    cash_identity_error_cny
+                ),
+                "nav_identity_error_cny": float(nav_identity_error_cny),
+                "pnl_identity_error_cny": float(pnl_identity_error_cny),
+                "lot_quantity_error": int(lot_quantity_error),
+                "reconciliation_tolerance_cny": float(tolerance_cny),
+            }
+        )
         daily_return = close_nav / previous_nav - 1.0
         daily_rows.append(
             {
@@ -757,6 +1176,15 @@ def run_a_share_long_only_replay(
         raise AShareTerminalLiquidationError(list(holdings))
 
     daily = pd.DataFrame(daily_rows)
+    daily_ledger = pd.DataFrame(daily_ledger_rows)
+    # Keep empty ledgers serializable and schema-stable.  A no-fill candidate
+    # must still emit an auditable zero-row Parquet artifact rather than an
+    # implementation-dependent frame with no columns.
+    lot_ledger = pd.DataFrame(lots, columns=LOT_LEDGER_COLUMNS)
+    lot_consumption_ledger = pd.DataFrame(
+        lot_consumptions,
+        columns=LOT_CONSUMPTION_LEDGER_COLUMNS,
+    )
     net_returns = pd.to_numeric(daily["daily_net_return"], errors="coerce")
     reward = _sortino(net_returns)
     if reward is None or not math.isfinite(reward):
@@ -775,6 +1203,7 @@ def run_a_share_long_only_replay(
     )
     final_day = by_date[pd.Timestamp(dates[-1])]
     ending_holdings = []
+    ending_lots = []
     ending_holdings_market_value_cny = 0.0
     for code, shares in sorted(holdings.items()):
         mark_price = float(final_day.at[code, "close"])
@@ -788,7 +1217,43 @@ def run_a_share_long_only_replay(
                 "market_value_cny": market_value,
             }
         )
+    final_ordinal = len(dates) - 1
+    for lot in _active_lots(lots):
+        code = str(lot["code"])
+        mark_price = float(final_day.at[code, "close"])
+        remaining_shares = int(lot["remaining_shares"])
+        market_value = remaining_shares * mark_price
+        remaining_cost_basis = float(lot["remaining_cost_basis_cny"])
+        ending_lots.append(
+            {
+                "lot_id": str(lot["lot_id"]),
+                "code": code,
+                "acquired_date": str(lot["acquired_date"]),
+                "sellable_date": str(lot["sellable_date"]),
+                "remaining_shares": remaining_shares,
+                "remaining_cost_basis_cny": remaining_cost_basis,
+                "final_pit_close": mark_price,
+                "market_value_cny": market_value,
+                "unrealized_pnl_cny": market_value - remaining_cost_basis,
+                "position_age_sessions": int(
+                    final_ordinal - int(lot["acquired_session_ordinal"])
+                ),
+                "sellable_at_final_session": bool(
+                    int(lot["sellable_session_ordinal"]) <= final_ordinal
+                ),
+            }
+        )
     ending_nav_cny = float(daily.iloc[-1]["nav"])
+    ending_unrealized_pnl_cny = float(
+        daily_ledger.iloc[-1]["unrealized_pnl_cny"]
+    )
+    cumulative_net_pnl_cny = ending_nav_cny - float(
+        execution_policy.initial_cash_cny
+    )
+    position_ages = pd.to_numeric(
+        daily_ledger["share_weighted_average_position_age_sessions"],
+        errors="coerce",
+    ).dropna()
     return {
         "replay_kernel_version": REPLAY_KERNEL_VERSION,
         "execution_policy": asdict(execution_policy),
@@ -805,6 +1270,20 @@ def run_a_share_long_only_replay(
         },
         "universe_policy_sha256": universe_policy.payload_sha256,
         "a_share_executable_net_reward": float(reward),
+        "accounting_ledger_version": ACCOUNTING_LEDGER_VERSION,
+        "accounting_ledger_contract": {
+            "lot_disposal_method": "FIFO",
+            "sellability_clock": "NEXT_TRADING_SESSION_OPEN",
+            "buy_fee_accounting": "CAPITALIZED_IN_LOT_COST_BASIS",
+            "sell_fee_accounting": "DEDUCTED_AT_REALIZATION",
+            "corporate_action_cash_accounting": "SEPARATE_PNL_COMPONENT",
+            "corporate_action_share_accounting": (
+                "QUANTITY_ADJUSTMENT_TOTAL_COST_BASIS_UNCHANGED"
+            ),
+            "cash_scope": "TRADING_AVAILABLE_CASH_ONLY",
+            "withdrawable_cash": "NOT_MODELED",
+            "mark_source": "SESSION_FINAL_PIT_CLOSE",
+        },
         "ending_book_policy": ending_book_policy,
         "final_close_mark_to_market_diagnostic": (
             ending_book_policy
@@ -829,8 +1308,10 @@ def run_a_share_long_only_replay(
         "a_share_mean_one_way_turnover": mean_one_way_turnover,
         "ending_nav_cny": ending_nav_cny,
         "ending_cash_cny": float(cash),
+        "trading_available_cash_cny": float(cash),
         "ending_holding_count": int(len(holdings)),
         "ending_holdings": ending_holdings,
+        "ending_lots": ending_lots,
         "ending_holdings_market_value_cny": float(
             ending_holdings_market_value_cny
         ),
@@ -839,8 +1320,45 @@ def run_a_share_long_only_replay(
             if ending_nav_cny > 0
             else None
         ),
+        "cumulative_net_pnl_cny": float(cumulative_net_pnl_cny),
+        "cumulative_realized_trade_pnl_cny": float(
+            cumulative_realized_trade_pnl_cny
+        ),
+        "cumulative_corporate_action_cash_pnl_cny": float(
+            corporate_action_cash_cny
+        ),
+        "ending_unrealized_pnl_cny": ending_unrealized_pnl_cny,
+        "share_weighted_average_position_age_sessions": (
+            float(position_ages.mean()) if not position_ages.empty else None
+        ),
+        "maximum_position_age_sessions": int(
+            pd.to_numeric(
+                daily_ledger["maximum_position_age_sessions"],
+                errors="coerce",
+            ).max()
+        ),
+        "accounting_invariants": {
+            "status": "PASS",
+            "maximum_cash_identity_error_cny": float(
+                maximum_cash_identity_error_cny
+            ),
+            "maximum_nav_identity_error_cny": float(
+                maximum_nav_identity_error_cny
+            ),
+            "maximum_pnl_identity_error_cny": float(
+                maximum_pnl_identity_error_cny
+            ),
+            "maximum_lot_quantity_error": int(
+                maximum_lot_quantity_error
+            ),
+            "negative_cash_observed": False,
+            "same_session_lot_sale_observed": False,
+        },
         "daily": daily,
+        "daily_accounting_ledger": daily_ledger,
         "fills": fill_frame,
+        "lot_ledger": lot_ledger,
+        "lot_consumption_ledger": lot_consumption_ledger,
         "proofs": {
             "execution_clock_enforced": True,
             "same_bar_execution_excluded": True,

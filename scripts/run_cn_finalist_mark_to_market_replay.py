@@ -114,6 +114,18 @@ def _pair_results(
         control_return = _finite(
             control_result.get("cumulative_net_return")
         )
+        primary_realized = _finite(
+            primary_result.get("cumulative_realized_trade_pnl_cny")
+        )
+        control_realized = _finite(
+            control_result.get("cumulative_realized_trade_pnl_cny")
+        )
+        primary_unrealized = _finite(
+            primary_result.get("ending_unrealized_pnl_cny")
+        )
+        control_unrealized = _finite(
+            control_result.get("ending_unrealized_pnl_cny")
+        )
         rows.append(
             {
                 "pair_id": str(pair_id),
@@ -151,6 +163,44 @@ def _pair_results(
                     and primary_return is not None
                     and control_return is not None
                     else None
+                ),
+                "primary_cumulative_realized_trade_pnl_cny": (
+                    primary_realized
+                ),
+                "control_cumulative_realized_trade_pnl_cny": (
+                    control_realized
+                ),
+                "realized_trade_pnl_increment_cny": (
+                    primary_realized - control_realized
+                    if pair_complete
+                    and primary_realized is not None
+                    and control_realized is not None
+                    else None
+                ),
+                "primary_ending_unrealized_pnl_cny": primary_unrealized,
+                "control_ending_unrealized_pnl_cny": control_unrealized,
+                "ending_unrealized_pnl_increment_cny": (
+                    primary_unrealized - control_unrealized
+                    if pair_complete
+                    and primary_unrealized is not None
+                    and control_unrealized is not None
+                    else None
+                ),
+                "primary_average_position_age_sessions": _finite(
+                    primary_result.get(
+                        "share_weighted_average_position_age_sessions"
+                    )
+                ),
+                "control_average_position_age_sessions": _finite(
+                    control_result.get(
+                        "share_weighted_average_position_age_sessions"
+                    )
+                ),
+                "primary_maximum_position_age_sessions": _finite(
+                    primary_result.get("maximum_position_age_sessions")
+                ),
+                "control_maximum_position_age_sessions": _finite(
+                    control_result.get("maximum_position_age_sessions")
                 ),
                 "primary_ending_holdings_weight": _finite(
                     primary_result.get("ending_holdings_weight")
@@ -233,6 +283,32 @@ def _candidate_receipt(
         "a_share_mean_one_way_turnover": _finite(
             result["a_share_mean_one_way_turnover"]
         ),
+        "accounting_ledger_version": str(
+            result["accounting_ledger_version"]
+        ),
+        "accounting_ledger_contract": dict(
+            result["accounting_ledger_contract"]
+        ),
+        "accounting_invariants": dict(result["accounting_invariants"]),
+        "cumulative_net_pnl_cny": _finite(
+            result["cumulative_net_pnl_cny"]
+        ),
+        "cumulative_realized_trade_pnl_cny": _finite(
+            result["cumulative_realized_trade_pnl_cny"]
+        ),
+        "cumulative_corporate_action_cash_pnl_cny": _finite(
+            result["cumulative_corporate_action_cash_pnl_cny"]
+        ),
+        "ending_unrealized_pnl_cny": _finite(
+            result["ending_unrealized_pnl_cny"]
+        ),
+        "share_weighted_average_position_age_sessions": _finite(
+            result["share_weighted_average_position_age_sessions"]
+        ),
+        "maximum_position_age_sessions": int(
+            result["maximum_position_age_sessions"]
+        ),
+        "ending_lots": list(result["ending_lots"]),
         "fee_schedule_sha256": str(result["fee_schedule_sha256"]),
         "execution_policy_sha256": str(
             result["execution_policy_sha256"]
@@ -264,6 +340,7 @@ def replay_mark_to_market(
     train_field_root: Path,
     strict_replay_root: Path | None = None,
     output_root: Path,
+    persist_accounting_ledgers: bool = False,
 ) -> dict[str, Any]:
     initial_free_memory = base._host_and_memory_gate()
     freeze_path = Path(freeze_path).resolve()
@@ -401,6 +478,10 @@ def replay_mark_to_market(
 
     candidate_root = output_root / "candidates"
     candidate_root.mkdir(parents=True, exist_ok=True)
+    accounting_root = output_root / "accounting_ledgers"
+    accounting_artifacts: list[Path] = []
+    if persist_accounting_ledgers:
+        accounting_root.mkdir(parents=True, exist_ok=True)
     candidate_rows: list[dict[str, Any]] = []
     receipts: list[dict[str, Any]] = []
     blockers: list[dict[str, Any]] = []
@@ -456,6 +537,25 @@ def replay_mark_to_market(
                 ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET
             ),
         )
+        if persist_accounting_ledgers:
+            for suffix, result_field in (
+                ("daily", "daily_accounting_ledger"),
+                ("lots", "lot_ledger"),
+                ("consumptions", "lot_consumption_ledger"),
+            ):
+                ledger = result[result_field].copy()
+                ledger.insert(0, "candidate_id", candidate_id)
+                ledger.insert(1, "pair_id", str(candidate["pair_id"]))
+                ledger.insert(
+                    2,
+                    "pair_member_role",
+                    str(candidate["pair_member_role"]),
+                )
+                ledger_path = accounting_root / (
+                    f"{candidate_id}.{suffix}.parquet"
+                )
+                ledger.to_parquet(ledger_path, index=False)
+                accounting_artifacts.append(ledger_path)
         no_executable_fills = int(result["fill_count"]) <= 0
         blocked = False
         receipt = _candidate_receipt(
@@ -502,6 +602,51 @@ def replay_mark_to_market(
             "total_fees_cny": float(result["total_fees_cny"]),
             "a_share_mean_one_way_turnover": _finite(
                 result["a_share_mean_one_way_turnover"]
+            ),
+            "accounting_ledger_version": str(
+                result["accounting_ledger_version"]
+            ),
+            "accounting_invariants_status": str(
+                result["accounting_invariants"]["status"]
+            ),
+            "maximum_cash_identity_error_cny": _finite(
+                result["accounting_invariants"][
+                    "maximum_cash_identity_error_cny"
+                ]
+            ),
+            "maximum_nav_identity_error_cny": _finite(
+                result["accounting_invariants"][
+                    "maximum_nav_identity_error_cny"
+                ]
+            ),
+            "maximum_pnl_identity_error_cny": _finite(
+                result["accounting_invariants"][
+                    "maximum_pnl_identity_error_cny"
+                ]
+            ),
+            "maximum_lot_quantity_error": int(
+                result["accounting_invariants"][
+                    "maximum_lot_quantity_error"
+                ]
+            ),
+            "cumulative_realized_trade_pnl_cny": _finite(
+                result["cumulative_realized_trade_pnl_cny"]
+            ),
+            "cumulative_corporate_action_cash_pnl_cny": _finite(
+                result["cumulative_corporate_action_cash_pnl_cny"]
+            ),
+            "ending_unrealized_pnl_cny": _finite(
+                result["ending_unrealized_pnl_cny"]
+            ),
+            "share_weighted_average_position_age_sessions": _finite(
+                result["share_weighted_average_position_age_sessions"]
+            ),
+            "maximum_position_age_sessions": int(
+                result["maximum_position_age_sessions"]
+            ),
+            "ending_lot_count": int(len(result["ending_lots"])),
+            "accounting_ledgers_persisted": bool(
+                persist_accounting_ledgers
             ),
             "ending_nav_cny": float(result["ending_nav_cny"]),
             "ending_cash_cny": float(result["ending_cash_cny"]),
@@ -692,6 +837,14 @@ def replay_mark_to_market(
         "economic_claim_scope": "DEVELOPMENT_TRAIN_ONLY",
         "economic_claim_authorized": False,
         "successor_search_authorized": False,
+        "accounting_ledgers_persisted": bool(
+            persist_accounting_ledgers
+        ),
+        "accounting_invariants_pass_count": int(
+            pd.DataFrame(candidate_rows)["accounting_invariants_status"]
+            .eq("PASS")
+            .sum()
+        ),
     }
     summary_path = base._write_json(
         output_root / "mark_to_market_summary.json",
@@ -708,6 +861,7 @@ def replay_mark_to_market(
         blockers_path,
         summary_path,
         *sorted(candidate_root.glob("*.json")),
+        *sorted(accounting_artifacts),
     ]
     if strict_closure_path is not None:
         artifacts.append(strict_closure_path)
@@ -736,6 +890,9 @@ def replay_mark_to_market(
         "strict_replay_recomputed": False,
         "strict_replay_required": False,
         "oos_recomputed": False,
+        "accounting_ledgers_persisted": bool(
+            persist_accounting_ledgers
+        ),
         "no_fabricated_terminal_sale": True,
         "terminal_sale_fee_applied": False,
         "feedback_write": "FORBIDDEN",
@@ -766,12 +923,17 @@ def main() -> int:
     parser.add_argument("--train-field-root", type=Path, required=True)
     parser.add_argument("--strict-replay-root", type=Path)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument(
+        "--persist-accounting-ledgers",
+        action="store_true",
+    )
     args = parser.parse_args()
     result = replay_mark_to_market(
         freeze_path=args.freeze_manifest,
         train_field_root=args.train_field_root,
         strict_replay_root=args.strict_replay_root,
         output_root=args.output_root,
+        persist_accounting_ledgers=args.persist_accounting_ledgers,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0

@@ -124,6 +124,98 @@ def test_executable_replay_blocks_limit_fills_carries_sell_and_charges_full_fees
     assert b_buy_date < b_sell_date
 
 
+def test_additive_accounting_ledger_preserves_reference_and_reconciles() -> None:
+    replay = run_a_share_long_only_replay(
+        _frame(),
+        fee_schedule=_fees(),
+        universe_policy=_universe(),
+        execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+        corporate_action_policy=_corporate_actions(),
+        ending_book_policy=ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
+    )
+
+    def frame_hash(frame: pd.DataFrame) -> str:
+        records = frame.where(frame.notna(), None).to_dict(orient="records")
+        return hashlib.sha256(
+            json.dumps(
+                records,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            ).encode("utf-8")
+        ).hexdigest()
+
+    assert replay["ending_nav_cny"] == pytest.approx(1003698.4881999999)
+    assert replay["ending_cash_cny"] == pytest.approx(1706.4882000000216)
+    assert replay["total_fees_cny"] == pytest.approx(293.5118)
+    assert replay["fill_count"] == 1
+    assert replay["blocked_buy_count"] == 1
+    assert replay["blocked_sell_count"] == 1
+    assert frame_hash(replay["daily"]) == (
+        "c3eefb61bf5710862ea4b062f1bf9cb752166f9b668520e8a7d78a32f38024c5"
+    )
+    assert frame_hash(replay["fills"]) == (
+        "89490236f07ca8089c09bfba4c8553af99739ffc493573198895224400122ce5"
+    )
+    assert replay["accounting_invariants"]["status"] == "PASS"
+    assert replay["accounting_invariants"]["maximum_lot_quantity_error"] == 0
+    assert replay["cumulative_realized_trade_pnl_cny"] == 0.0
+    assert replay["ending_unrealized_pnl_cny"] == pytest.approx(
+        replay["cumulative_net_pnl_cny"]
+    )
+    assert len(replay["ending_lots"]) == 1
+    assert replay["lot_consumption_ledger"].empty
+    assert set(replay["lot_consumption_ledger"].columns) == {
+        "session_date",
+        "session_ordinal",
+        "code",
+        "lot_id",
+        "acquired_date",
+        "sellable_date",
+        "shares",
+        "price",
+        "allocated_cost_basis_cny",
+        "fill_reason",
+        "allocated_sell_fee_cny",
+        "realized_trade_pnl_cny",
+    }
+
+
+def test_fifo_lots_make_t_plus_one_sellability_explicit() -> None:
+    frame = _frame()
+    frame["open"] = (
+        pd.to_numeric(frame["up_limit_price"], errors="raise")
+        + pd.to_numeric(frame["down_limit_price"], errors="raise")
+    ) / 2.0
+    replay = run_a_share_long_only_replay(
+        frame,
+        fee_schedule=_fees(),
+        universe_policy=_universe(),
+        execution_policy=AShareExecutionPolicy(top_quantile=0.2),
+        corporate_action_policy=_corporate_actions(),
+        ending_book_policy=ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
+    )
+
+    consumptions = replay["lot_consumption_ledger"]
+    assert not consumptions.empty
+    acquired = pd.to_datetime(consumptions["acquired_date"])
+    sold = pd.to_datetime(consumptions["session_date"])
+    assert sold.gt(acquired).all()
+    assert replay["accounting_invariants"] == {
+        "status": "PASS",
+        "maximum_cash_identity_error_cny": pytest.approx(0.0, abs=1e-6),
+        "maximum_nav_identity_error_cny": pytest.approx(0.0, abs=1e-6),
+        "maximum_pnl_identity_error_cny": pytest.approx(0.0, abs=1e-6),
+        "maximum_lot_quantity_error": 0,
+        "negative_cash_observed": False,
+        "same_session_lot_sale_observed": False,
+    }
+    ledger = replay["daily_accounting_ledger"]
+    assert ledger["frozen_share_count"].gt(0).any()
+    assert ledger["lot_quantity_error"].eq(0).all()
+    assert ledger["pnl_identity_error_cny"].abs().max() <= 1e-6
+
+
 def test_fee_schedule_is_asymmetric_and_minimum_commission_is_applied() -> None:
     fees = _fees()
     buy = fees.fee(1_000.0, side="BUY")
@@ -366,6 +458,15 @@ def test_corporate_actions_apply_only_to_opening_holdings_and_end_flat() -> None
     assert replay["corporate_action_cash_cny"] > 0
     assert replay["corporate_action_share_delta"] > 0
     assert replay["ending_holding_count"] == 0
+    assert replay["accounting_invariants"]["status"] == "PASS"
+    assert replay["cumulative_corporate_action_cash_pnl_cny"] == pytest.approx(
+        replay["corporate_action_cash_cny"]
+    )
+    assert replay["ending_unrealized_pnl_cny"] == 0.0
+    assert replay["cumulative_net_pnl_cny"] == pytest.approx(
+        replay["cumulative_realized_trade_pnl_cny"]
+        + replay["cumulative_corporate_action_cash_pnl_cny"]
+    )
 
 
 def test_final_close_mark_to_market_skips_fabricated_terminal_sale() -> None:
