@@ -20,7 +20,7 @@ def test_validation_authority_builder_has_explicit_fail_closed_boundaries() -> N
     source = (PROJECT_ROOT / "scripts" / "build_cn_validation_session_authority.py").read_text(
         encoding="utf-8"
     )
-    assert "EXCLUDE_IF_ABSENT_FROM_IMMUTABLE_SSE_SZSE_SECURITY_MASTER" in source
+    assert "CORPORATE_ACTION_RAW_SNAPSHOT" in source
     assert "fillna(True)" in source
     assert '.sort("code", "date", "trade_time")' in source
     assert ".sort_by(" not in source

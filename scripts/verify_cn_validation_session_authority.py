@@ -81,7 +81,7 @@ def verify_validation_session_authority(
         authority_root / "validation_observed_sessions.parquet"
     )
     excluded = v1._read_json(
-        authority_root / "excluded_non_sse_szse_codes.json"
+        authority_root / "excluded_validation_codes.json"
     )
     for frame in (authority, observed):
         frame["date"] = pd.to_datetime(frame["date"], errors="raise").dt.normalize()
@@ -118,15 +118,24 @@ def verify_validation_session_authority(
         raise RuntimeError("validation observed ST state parity failure")
     if joined["suspended"].any():
         raise RuntimeError("observed validation session marked suspended")
-    if int(excluded["excluded_code_count"]) != int(
+    if int(excluded["excluded_non_sse_szse_code_count"]) != int(
         manifest["excluded_non_sse_szse_code_count"]
     ):
-        raise RuntimeError("validation exclusion count drift")
+        raise RuntimeError("validation exchange exclusion count drift")
     if any(
         not str(code).startswith(("4", "8", "9"))
-        for code in excluded.get("excluded_codes") or ()
+        for code in excluded.get("excluded_non_sse_szse_codes") or ()
     ):
         raise RuntimeError("validation exclusion is not BSE-family explicit")
+    if int(excluded["excluded_missing_corporate_action_source_code_count"]) != int(
+        manifest["excluded_missing_corporate_action_source_code_count"]
+    ):
+        raise RuntimeError("validation corporate-action exclusion count drift")
+    expected_total = int(excluded["excluded_non_sse_szse_code_count"]) + int(
+        excluded["excluded_missing_corporate_action_source_code_count"]
+    )
+    if int(excluded["excluded_code_count"]) != expected_total:
+        raise RuntimeError("validation total exclusion count drift")
 
     receipt = {
         "schema_version": "cn_validation_session_authority_audit_v1",
@@ -137,7 +146,12 @@ def verify_validation_session_authority(
         "authority_session_row_count": len(authority),
         "observed_session_row_count": len(observed),
         "validation_date_count": len(dates),
-        "excluded_non_sse_szse_code_count": int(excluded["excluded_code_count"]),
+        "excluded_non_sse_szse_code_count": int(
+            excluded["excluded_non_sse_szse_code_count"]
+        ),
+        "excluded_missing_corporate_action_source_code_count": int(
+            excluded["excluded_missing_corporate_action_source_code_count"]
+        ),
         "identity_calendar_status": "PASS",
         "observed_st_parity_status": "PASS",
         "source_artifact_verification_status": "PASS",

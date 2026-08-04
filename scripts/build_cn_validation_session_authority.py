@@ -206,8 +206,23 @@ def build_validation_session_authority(
         raise RuntimeError(
             "validation code absent from SSE/SZSE authority is not an explicit BSE-family exclusion"
         )
-    excluded = observed.loc[observed["code"].isin(excluded_codes)].copy()
+    excluded_exchange = observed.loc[
+        observed["code"].isin(excluded_codes)
+    ].copy()
     observed = observed.loc[observed["code"].isin(allowed_codes)].copy()
+    dividend_root = public_source_root / "cninfo_dividend_raw"
+    corporate_action_source_codes = {
+        path.stem for path in dividend_root.glob("*.json")
+    }
+    missing_action_codes = sorted(
+        set(observed["code"]) - corporate_action_source_codes
+    )
+    excluded_actions = observed.loc[
+        observed["code"].isin(missing_action_codes)
+    ].copy()
+    observed = observed.loc[
+        ~observed["code"].isin(missing_action_codes)
+    ].copy()
     if observed.empty:
         raise RuntimeError("validation authority has no SSE/SZSE observations")
 
@@ -227,11 +242,8 @@ def build_validation_session_authority(
         filters=[("date", "<=", pd.Timestamp(DATE_MAX))],
     )["date"]
     raw_payloads = []
-    dividend_root = public_source_root / "cninfo_dividend_raw"
     for code in sorted(set(observed["code"])):
         path = dividend_root / f"{code}.json"
-        if not path.is_file():
-            raise FileNotFoundError(path)
         raw_payloads.append(json.loads(path.read_text(encoding="utf-8")))
     actions, action_blockers = base.parse_dividend_actions(
         raw_payloads, date_min=DATE_MIN, date_max=DATE_MAX
@@ -252,16 +264,32 @@ def build_validation_session_authority(
 
     observed_path = output_root / "validation_observed_sessions.parquet"
     authority_path = output_root / "validation_session_authority.parquet"
-    excluded_path = output_root / "excluded_non_sse_szse_codes.json"
+    excluded_path = output_root / "excluded_validation_codes.json"
     observed.to_parquet(observed_path, index=False)
     authority.to_parquet(authority_path, index=False)
+    all_excluded_codes = sorted(set(excluded_codes) | set(missing_action_codes))
     excluded_payload = {
         "schema_version": "cn_validation_session_exclusions_v1",
-        "policy": "EXCLUDE_IF_ABSENT_FROM_IMMUTABLE_SSE_SZSE_SECURITY_MASTER",
+        "policy": (
+            "FAIL_CLOSED_IF_ABSENT_FROM_IMMUTABLE_SSE_SZSE_SECURITY_MASTER_"
+            "OR_CORPORATE_ACTION_RAW_SNAPSHOT"
+        ),
         "allowed_exchanges": list(ALLOWED_EXCHANGES),
-        "excluded_code_count": len(excluded_codes),
-        "excluded_row_count": len(excluded),
-        "excluded_codes": excluded_codes,
+        "excluded_code_count": len(all_excluded_codes),
+        "excluded_row_count": len(excluded_exchange) + len(excluded_actions),
+        "excluded_codes": all_excluded_codes,
+        "excluded_non_sse_szse_code_count": len(excluded_codes),
+        "excluded_non_sse_szse_row_count": len(excluded_exchange),
+        "excluded_non_sse_szse_codes": excluded_codes,
+        "excluded_missing_corporate_action_source_code_count": len(
+            missing_action_codes
+        ),
+        "excluded_missing_corporate_action_source_row_count": len(
+            excluded_actions
+        ),
+        "excluded_missing_corporate_action_source_codes": (
+            missing_action_codes
+        ),
     }
     excluded_path = v1._write_json(excluded_path, excluded_payload)
 
@@ -298,7 +326,14 @@ def build_validation_session_authority(
         "exact_st_session_count": len(observed) - missing_exact_st,
         "missing_exact_st_fail_closed_session_count": missing_exact_st,
         "excluded_non_sse_szse_code_count": len(excluded_codes),
-        "excluded_non_sse_szse_row_count": len(excluded),
+        "excluded_non_sse_szse_row_count": len(excluded_exchange),
+        "excluded_missing_corporate_action_source_code_count": len(
+            missing_action_codes
+        ),
+        "excluded_missing_corporate_action_source_row_count": len(
+            excluded_actions
+        ),
+        "excluded_validation_code_count": len(all_excluded_codes),
         "suspended_session_row_count": int(authority["suspended"].sum()),
         "terminal_session_row_count": int(authority["is_terminal_session"].sum()),
         "corporate_cash_event_count": int(
@@ -325,7 +360,10 @@ def build_validation_session_authority(
             "execution_clock": "NEXT_OPEN",
             "suspension": "LISTED_CALENDAR_MINUS_OBSERVED_SESSION",
             "st": "EXACT_CODE_DATE_PIT_SOURCE_FAIL_CLOSED_ON_GAP",
-            "universe": "SSE_SZSE_ONLY_EXPLICIT_BSE_EXCLUSION",
+            "universe": (
+                "SSE_SZSE_ONLY_EXPLICIT_BSE_AND_MISSING_CORPORATE_ACTION_"
+                "SOURCE_EXCLUSION"
+            ),
             "corporate_actions": "IMMUTABLE_CNINFO_RAW_EFFECTIVE_DATE",
         },
         "artifacts": artifacts,
