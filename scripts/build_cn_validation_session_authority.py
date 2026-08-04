@@ -230,13 +230,17 @@ def build_validation_session_authority(
     observed = observed.merge(
         exact_st, on=["date", "code"], how="left", validate="one_to_one"
     )
+    excluded_missing_exact_st = observed.loc[observed["is_st"].isna()].copy()
+    excluded_missing_exact_st_codes = sorted(
+        excluded_missing_exact_st["code"].astype(str).unique()
+    )
+    observed = observed.loc[observed["is_st"].notna()].copy()
+    if observed.empty:
+        raise RuntimeError("validation daily ST source covers no observed coordinates")
+    observed["is_st"] = observed["is_st"].astype(bool)
     missing_exact_st = int(observed["is_st"].isna().sum())
     if missing_exact_st:
-        raise RuntimeError(
-            "validation daily ST source is missing observed coordinates: "
-            f"{missing_exact_st}"
-        )
-    observed["is_st"] = observed["is_st"].astype(bool)
+        raise RuntimeError("validation ST coordinate exclusion left unresolved states")
 
     calendar = pd.read_parquet(
         public_source_root / "trade_calendar.parquet",
@@ -295,8 +299,10 @@ def build_validation_session_authority(
     observed_path = output_root / "validation_observed_sessions.parquet"
     authority_path = output_root / "validation_session_authority.parquet"
     excluded_path = output_root / "excluded_validation_codes.json"
+    excluded_st_path = output_root / "excluded_missing_st_coordinates.parquet"
     observed.to_parquet(observed_path, index=False)
     authority.to_parquet(authority_path, index=False)
+    excluded_missing_exact_st.to_parquet(excluded_st_path, index=False)
     all_excluded_codes = sorted(
         set(excluded_codes)
         | set(missing_action_codes)
@@ -306,7 +312,7 @@ def build_validation_session_authority(
         "schema_version": "cn_validation_session_exclusions_v1",
         "policy": (
             "FAIL_CLOSED_IF_ABSENT_FROM_IMMUTABLE_SSE_SZSE_SECURITY_MASTER_"
-            "OR_CORPORATE_ACTION_RAW_SNAPSHOT"
+            "OR_CORPORATE_ACTION_RAW_SNAPSHOT_OR_EXACT_DAILY_ST_COORDINATE"
         ),
         "allowed_exchanges": list(ALLOWED_EXCHANGES),
         "excluded_code_count": len(all_excluded_codes),
@@ -314,6 +320,7 @@ def build_validation_session_authority(
             len(excluded_exchange)
             + len(excluded_actions)
             + len(excluded_incomplete_actions)
+            + len(excluded_missing_exact_st)
         ),
         "excluded_codes": all_excluded_codes,
         "excluded_non_sse_szse_code_count": len(excluded_codes),
@@ -337,6 +344,13 @@ def build_validation_session_authority(
         "excluded_incomplete_corporate_action_source_codes": (
             incomplete_action_codes
         ),
+        "excluded_missing_exact_st_code_count": len(
+            excluded_missing_exact_st_codes
+        ),
+        "excluded_missing_exact_st_session_count": len(
+            excluded_missing_exact_st
+        ),
+        "excluded_missing_exact_st_codes": excluded_missing_exact_st_codes,
         "corporate_action_source_blockers": action_blockers,
     }
     excluded_path = v1._write_json(excluded_path, excluded_payload)
@@ -345,6 +359,7 @@ def build_validation_session_authority(
         _artifact(observed_path, output_root),
         _artifact(authority_path, output_root),
         _artifact(excluded_path, output_root),
+        _artifact(excluded_st_path, output_root),
     ]
     manifest = {
         "schema_version": SCHEMA_VERSION,
@@ -373,6 +388,12 @@ def build_validation_session_authority(
         "authority_session_row_count": len(authority),
         "exact_st_session_count": len(observed),
         "missing_exact_st_fail_closed_session_count": missing_exact_st,
+        "excluded_missing_exact_st_code_count": len(
+            excluded_missing_exact_st_codes
+        ),
+        "excluded_missing_exact_st_session_count": len(
+            excluded_missing_exact_st
+        ),
         "st_authority_session_count": int(authority["is_st"].sum()),
         "non_st_authority_session_count": non_st_authority_sessions,
         "excluded_non_sse_szse_code_count": len(excluded_codes),
@@ -417,7 +438,10 @@ def build_validation_session_authority(
             "signal_clock": "PRIOR_CLOSE",
             "execution_clock": "NEXT_OPEN",
             "suspension": "LISTED_CALENDAR_MINUS_OBSERVED_SESSION",
-            "st": "IMMUTABLE_HFQ_DAILY_EXACT_CODE_DATE_FAIL_ON_GAP",
+            "st": (
+                "IMMUTABLE_HFQ_DAILY_EXACT_CODE_DATE_"
+                "FAIL_CLOSED_COORDINATE_EXCLUSION"
+            ),
             "universe": (
                 "SSE_SZSE_ONLY_EXPLICIT_BSE_AND_MISSING_CORPORATE_ACTION_"
                 "SOURCE_OR_INCOMPLETE_ACTION_EXCLUSION"

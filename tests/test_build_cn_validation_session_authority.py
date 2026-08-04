@@ -22,7 +22,8 @@ def test_validation_authority_builder_has_explicit_fail_closed_boundaries() -> N
         encoding="utf-8"
     )
     assert "CORPORATE_ACTION_RAW_SNAPSHOT" in source
-    assert "validation daily ST source is missing observed coordinates" in source
+    assert "excluded_missing_st_coordinates.parquet" in source
+    assert "FAIL_CLOSED_COORDINATE_EXCLUSION" in source
     assert "fillna(True)" not in source
     assert "--historical-daily-st-source" in source
     assert "--expected-daily-st-source-sha256" in source
@@ -40,6 +41,8 @@ def test_validation_authority_independent_verifier_checks_sources_and_st() -> No
     assert "observed ST state parity failure" in source
     assert "validation session authority has missing ST states" in source
     assert "validation daily ST source binding drift" in source
+    assert "validation observed ST source coverage failure" in source
+    assert "validation ST coordinate exclusion has an exact source" in source
     assert verify.build.STATUS == authority.STATUS
 
 

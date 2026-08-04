@@ -96,13 +96,18 @@ def verify_validation_session_authority(
     excluded = v1._read_json(
         authority_root / "excluded_validation_codes.json"
     )
-    for frame in (authority, observed):
+    excluded_st = pd.read_parquet(
+        authority_root / "excluded_missing_st_coordinates.parquet"
+    )
+    for frame in (authority, observed, excluded_st):
         frame["date"] = pd.to_datetime(frame["date"], errors="raise").dt.normalize()
         frame["code"] = frame["code"].map(base.normalize_code)
     if authority.duplicated(["date", "code"]).any():
         raise RuntimeError("validation authority duplicate coordinates")
     if observed.duplicated(["date", "code"]).any():
         raise RuntimeError("validation observations duplicate coordinates")
+    if excluded_st.duplicated(["date", "code"]).any():
+        raise RuntimeError("validation excluded ST coordinates are duplicate")
     if set(authority["exchange"].astype(str)) - set(build.ALLOWED_EXCHANGES):
         raise RuntimeError("validation authority contains a prohibited exchange")
     dates = pd.DatetimeIndex(authority["date"].unique()).sort_values()
@@ -118,6 +123,40 @@ def verify_validation_session_authority(
         raise RuntimeError("validation observation row cardinality drift")
     if observed["is_st"].isna().any():
         raise RuntimeError("validation observation ST state is incomplete")
+    exact_st, _, _ = build._extract_exact_st(
+        source_path=daily_st_source,
+        expected_source_sha256=str(manifest["daily_st_source_sha256"]),
+        validation_dates=tuple(dates.date),
+    )
+    observed_source = observed[["date", "code", "is_st"]].merge(
+        exact_st,
+        on=["date", "code"],
+        how="left",
+        suffixes=("_observed", "_source"),
+        validate="one_to_one",
+    )
+    if observed_source["is_st_source"].isna().any():
+        raise RuntimeError("validation observed ST source coverage failure")
+    if not observed_source["is_st_observed"].eq(
+        observed_source["is_st_source"]
+    ).all():
+        raise RuntimeError("validation observed ST source value drift")
+    excluded_source = excluded_st[["date", "code"]].merge(
+        exact_st,
+        on=["date", "code"],
+        how="left",
+        validate="one_to_one",
+    )
+    if excluded_source["is_st"].notna().any():
+        raise RuntimeError("validation ST coordinate exclusion has an exact source")
+    if len(excluded_st) != int(
+        manifest["excluded_missing_exact_st_session_count"]
+    ):
+        raise RuntimeError("validation ST coordinate exclusion count drift")
+    if int(excluded_st["code"].nunique()) != int(
+        manifest["excluded_missing_exact_st_code_count"]
+    ):
+        raise RuntimeError("validation ST coordinate exclusion code drift")
     joined = observed.merge(
         authority,
         on=["date", "code"],
@@ -152,6 +191,8 @@ def verify_validation_session_authority(
         excluded["excluded_incomplete_corporate_action_source_code_count"]
     ) != int(manifest["excluded_incomplete_corporate_action_source_code_count"]):
         raise RuntimeError("validation incomplete-action exclusion count drift")
+    if int(excluded["excluded_missing_exact_st_session_count"]) != len(excluded_st):
+        raise RuntimeError("validation ST exclusion receipt drift")
     expected_total = (
         int(excluded["excluded_non_sse_szse_code_count"])
         + int(excluded["excluded_missing_corporate_action_source_code_count"])
@@ -180,7 +221,11 @@ def verify_validation_session_authority(
         ),
         "identity_calendar_status": "PASS",
         "observed_st_parity_status": "PASS",
+        "observed_st_source_parity_status": "PASS",
         "exact_st_session_count": int(manifest["exact_st_session_count"]),
+        "excluded_missing_exact_st_session_count": int(
+            manifest["excluded_missing_exact_st_session_count"]
+        ),
         "non_st_authority_session_count": int(
             manifest["non_st_authority_session_count"]
         ),
