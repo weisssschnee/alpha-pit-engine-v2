@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import platform
 import sys
+import time
 from typing import Any, Mapping
 
 import numpy as np
@@ -194,6 +195,8 @@ def _candidate_metric(
 def _baseline_parity(
     metrics: pd.DataFrame,
     baseline: pd.DataFrame,
+    *,
+    expected_member_count: int = EXPECTED_MEMBER_COUNT,
 ) -> pd.DataFrame:
     current = metrics[
         metrics["decoder_id"].eq("CURRENT_TOP20PCT_EQUAL")
@@ -225,7 +228,7 @@ def _baseline_parity(
         validate="one_to_one",
         suffixes=("_v2", "_ledger"),
     )
-    if len(merged) != EXPECTED_MEMBER_COUNT:
+    if len(merged) != int(expected_member_count):
         raise RuntimeError("decoder V2 baseline candidate parity cardinality drift")
     comparisons = {
         "ending_nav_cny": 1e-6,
@@ -480,13 +483,42 @@ def run_decoder_v2(
     builder_commit_sha: str,
     expected_selection_payload_sha256: str,
     worker_count: int = 8,
+    qualification_candidate_count: int | None = None,
 ) -> dict[str, Any]:
     if platform.node().upper() != AUTHORIZED_HOST:
         raise RuntimeError(f"decoder V2 must run on {AUTHORIZED_HOST}")
     if psutil.virtual_memory().available < MINIMUM_FREE_MEMORY_BYTES:
         raise RuntimeError("decoder V2 minimum-free-memory gate failed")
-    if int(worker_count) < 1 or int(worker_count) > 8:
-        raise ValueError("worker_count must be in [1, 8]")
+    if int(worker_count) < 1 or int(worker_count) > 32:
+        raise ValueError("worker_count must be in [1, 32]")
+    if os.environ.get("CN_NODE_RESOURCE_LEASE_REQUIRED") == "1":
+        entitlement = int(os.environ.get("CN_NODE_CPU_ENTITLEMENT") or 0)
+        if entitlement != int(worker_count):
+            raise RuntimeError("decoder V2 lease entitlement drift")
+        if int(worker_count) > 8:
+            nested = {
+                name: int(os.environ.get(name) or 0)
+                for name in (
+                    "NUMBA_NUM_THREADS",
+                    "POLARS_MAX_THREADS",
+                    "ARROW_NUM_THREADS",
+                    "OMP_NUM_THREADS",
+                    "MKL_NUM_THREADS",
+                    "OPENBLAS_NUM_THREADS",
+                    "NUMEXPR_NUM_THREADS",
+                )
+            }
+            if any(value != 1 for value in nested.values()):
+                raise RuntimeError(
+                    f"decoder V2 nested parallelism drift: {nested}"
+                )
+    qualification_mode = qualification_candidate_count is not None
+    if qualification_mode and not (
+        1 <= int(qualification_candidate_count) <= EXPECTED_MEMBER_COUNT
+    ):
+        raise ValueError(
+            "qualification_candidate_count must be in [1, 64]"
+        )
     if len(builder_commit_sha) != 40:
         raise ValueError("builder_commit_sha must be a full Git SHA")
 
@@ -536,6 +568,16 @@ def run_decoder_v2(
         "candidate_id"
     ].astype(str).tolist():
         raise RuntimeError("decoder V2 ledger candidate order drift")
+    evaluation_candidates = (
+        candidates.head(int(qualification_candidate_count)).copy()
+        if qualification_mode
+        else candidates
+    )
+    evaluation_policies = (
+        (DECODER_POLICIES[0],)
+        if qualification_mode
+        else DECODER_POLICIES
+    )
 
     contract = v1._read_json(contract_path)
     base._verify_payload_hash(
@@ -604,7 +646,7 @@ def run_decoder_v2(
             **asdict(policy),
             "payload_sha256": policy.payload_sha256,
         }
-        for policy in DECODER_POLICIES
+        for policy in evaluation_policies
     ]
     input_binding = {
         "schema_version": "cn_portfolio_decoder_v2_input_binding_v1",
@@ -624,6 +666,14 @@ def run_decoder_v2(
         "decoder_contract": decoder_contract,
         "decoder_contract_sha256": v1._stable_hash(decoder_contract),
         "worker_count": int(worker_count),
+        "run_mode": (
+            "ACCELERATION_QUALIFICATION"
+            if qualification_mode
+            else "DECODER_V2_FULL"
+        ),
+        "evaluation_candidate_ids": evaluation_candidates[
+            "candidate_id"
+        ].astype(str).tolist(),
         "validation_reads": 0,
         "holdout_reads": 0,
         "forward_2026_reads": 0,
@@ -675,7 +725,7 @@ def run_decoder_v2(
                         else {"top_k": policy.top_k}
                     ),
                 }
-                for policy in DECODER_POLICIES
+                for policy in evaluation_policies
             ),
         )
         theoretical_by_decoder = {
@@ -685,7 +735,7 @@ def run_decoder_v2(
         replay_frame = master.copy()
         replay_frame["signal"] = replay_signal
         metrics: list[dict[str, Any]] = []
-        for decoder in DECODER_POLICIES:
+        for decoder in evaluation_policies:
             result = run_a_share_long_only_replay(
                 replay_frame,
                 fee_schedule=fee,
@@ -721,28 +771,99 @@ def run_decoder_v2(
         return metrics
 
     metric_rows: list[dict[str, Any]] = []
+    started = time.perf_counter()
+    minimum_free_memory_bytes = int(psutil.virtual_memory().available)
+    maximum_process_rss_bytes = int(psutil.Process().memory_info().rss)
     with ThreadPoolExecutor(max_workers=int(worker_count)) as executor:
         futures = {
             executor.submit(evaluate_one, candidate): str(
                 candidate["candidate_id"]
             )
-            for candidate in candidates.to_dict(orient="records")
+            for candidate in evaluation_candidates.to_dict(orient="records")
         }
         for future in as_completed(futures):
             metric_rows.extend(future.result())
-            if psutil.virtual_memory().available < MINIMUM_FREE_MEMORY_BYTES:
+            available = int(psutil.virtual_memory().available)
+            minimum_free_memory_bytes = min(
+                minimum_free_memory_bytes, available
+            )
+            maximum_process_rss_bytes = max(
+                maximum_process_rss_bytes,
+                int(psutil.Process().memory_info().rss),
+            )
+            if available < MINIMUM_FREE_MEMORY_BYTES:
                 raise RuntimeError("decoder V2 runtime memory gate failed")
+    elapsed_seconds = float(time.perf_counter() - started)
     candidate_metrics = pd.DataFrame(metric_rows).sort_values(
         ["pair_id", "pair_member_role", "decoder_id"],
         kind="mergesort",
     ).reset_index(drop=True)
-    if len(candidate_metrics) != EXPECTED_MEMBER_COUNT * len(
-        DECODER_POLICIES
+    if len(candidate_metrics) != len(evaluation_candidates) * len(
+        evaluation_policies
     ):
         raise RuntimeError("decoder V2 metric cardinality drift")
     if not candidate_metrics["accounting_invariants_status"].eq("PASS").all():
         raise RuntimeError("decoder V2 accounting invariant failure")
-    parity = _baseline_parity(candidate_metrics, baseline)
+    parity = _baseline_parity(
+        candidate_metrics,
+        baseline,
+        expected_member_count=len(evaluation_candidates),
+    )
+    if qualification_mode:
+        if not parity["parity_status"].eq("PASS").all():
+            raise RuntimeError("decoder V2 qualification parity failed")
+        candidate_metrics_path = (
+            output_root / "qualification_candidate_metrics.parquet"
+        )
+        parity_path = output_root / "qualification_baseline_parity.parquet"
+        candidate_metrics.to_parquet(candidate_metrics_path, index=False)
+        parity.to_parquet(parity_path, index=False)
+        candidate_files = sorted(candidate_root.glob("*.json"))
+        artifacts = [
+            v1._artifact(path, root=output_root)
+            for path in (
+                binding_path,
+                candidate_metrics_path,
+                parity_path,
+                *candidate_files,
+            )
+        ]
+        closure = {
+            "schema_version": (
+                "cn_portfolio_decoder_v2_acceleration_qualification_v1"
+            ),
+            "status": "DECODER_V2_ACCELERATION_QUALIFICATION_COMPLETE",
+            "completed_at_utc": datetime.now(timezone.utc).isoformat(),
+            "selection_payload_sha256": selection_sha256,
+            "input_data_sha256": input_data_sha256,
+            "candidate_member_count": int(len(evaluation_candidates)),
+            "decoder_ids": [
+                policy.decoder_id for policy in evaluation_policies
+            ],
+            "worker_count": int(worker_count),
+            "elapsed_seconds": elapsed_seconds,
+            "candidates_per_hour": (
+                float(len(evaluation_candidates)) * 3600.0
+                / elapsed_seconds
+            ),
+            "minimum_free_memory_bytes": minimum_free_memory_bytes,
+            "maximum_process_rss_bytes": maximum_process_rss_bytes,
+            "baseline_parity_count": int(len(parity)),
+            "baseline_parity_status": "PASS",
+            "accounting_invariants_status": "PASS",
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+            "search_run": False,
+            "promotion_authorized": False,
+            "artifacts": artifacts,
+        }
+        closure["manifest_body_sha256"] = v1._stable_hash(closure)
+        return v1._write_json(
+            output_root
+            / "DECODER_V2_ACCELERATION_QUALIFICATION_COMPLETE.json",
+            closure,
+        )
     pairs = _pair_metrics(candidate_metrics)
     rank = _rank_preservation(candidate_metrics)
     transition = _transition_matrix(candidate_metrics)
@@ -814,6 +935,7 @@ def main() -> None:
     parser.add_argument("--builder-commit-sha", required=True)
     parser.add_argument("--expected-selection-payload-sha256", required=True)
     parser.add_argument("--worker-count", type=int, default=8)
+    parser.add_argument("--qualification-candidate-count", type=int)
     args = parser.parse_args()
     closure = run_decoder_v2(
         replay_oos_root=args.replay_oos_root,
@@ -824,6 +946,7 @@ def main() -> None:
             args.expected_selection_payload_sha256
         ),
         worker_count=args.worker_count,
+        qualification_candidate_count=args.qualification_candidate_count,
     )
     print(closure)
 

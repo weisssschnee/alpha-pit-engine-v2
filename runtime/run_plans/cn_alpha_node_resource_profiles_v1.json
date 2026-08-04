@@ -26,7 +26,14 @@
       "memory_claim_bytes": 21474836480,
       "minimum_free_memory_bytes": 25769803776,
       "concurrency_contract": "SEARCH_24_PLUS_VALIDATION_8"
+    },
+    "VALIDATION_EXCLUSIVE_32": {
+      "role": "VALIDATION",
+      "cpu_threads": 32,
+      "memory_claim_bytes": 34359738368,
+      "minimum_free_memory_bytes": 25769803776,
+      "concurrency_contract": "EXCLUSIVE_HEAVY_LANE"
     }
   },
-  "capacity_manifest_sha256": "62aab22c647566b81e19219808877bce7633024a62b5e71aa59a0b282e185f8e"
+  "capacity_manifest_sha256": "f7d250e1a9acf172bfd736f359c4a3cec464c66e923b40526735cc41d13e6c32"
 }

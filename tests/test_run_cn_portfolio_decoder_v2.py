@@ -65,6 +65,38 @@ def test_baseline_parity_accepts_exact_64_member_ledger() -> None:
     assert parity.filter(like="_delta").abs().sum().sum() == 0.0
 
 
+def test_baseline_parity_accepts_bounded_qualification_subset() -> None:
+    metrics = pd.DataFrame(
+        [
+            {
+                "candidate_id": "candidate-001",
+                "decoder_id": "CURRENT_TOP20PCT_EQUAL",
+                "ending_nav_cny": 1_000_001.0,
+                "continuous_book_net_reward": 0.1,
+                "cumulative_net_return": 0.000001,
+                "total_fees_cny": 10.0,
+                "fill_count": 2,
+                "blocked_buy_count": 0,
+                "blocked_sell_count": 0,
+                "cumulative_realized_trade_pnl_cny": 1.0,
+                "ending_unrealized_pnl_cny": 0.0,
+            }
+        ]
+    )
+    baseline = metrics.drop(columns=["decoder_id"]).rename(
+        columns={
+            "continuous_book_net_reward": "mark_to_market_net_reward"
+        }
+    )
+
+    parity = subject._baseline_parity(
+        metrics, baseline, expected_member_count=1
+    )
+
+    assert len(parity) == 1
+    assert parity["parity_status"].eq("PASS").all()
+
+
 def test_pair_metrics_keep_absolute_and_matched_axes_separate() -> None:
     frame = pd.DataFrame(
         [

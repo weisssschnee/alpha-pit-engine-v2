@@ -8,9 +8,11 @@ param(
     [Parameter(Mandatory = $true)][string]$OutputRoot,
     [Parameter(Mandatory = $true)][ValidatePattern('^[0-9a-f]{64}$')]
     [string]$SelectionPayloadSha256,
-    [ValidateSet('VALIDATION_DUAL_8')]
+    [ValidateSet('VALIDATION_DUAL_8', 'VALIDATION_EXCLUSIVE_32')]
     [string]$NodeResourceProfile = 'VALIDATION_DUAL_8',
-    [ValidateRange(1, 8)][int]$WorkerCount = 8,
+    [ValidateRange(1, 32)][int]$WorkerCount = 8,
+    [switch]$AccelerationQualification,
+    [ValidateRange(1, 64)][int]$QualificationCandidateCount = 32,
     [string]$NodeResourceCapacity = (
         'runtime\run_plans\cn_alpha_node_resource_profiles_v1.json'
     ),
@@ -90,7 +92,7 @@ if ($null -eq $profileProperty) {
 $profile = $profileProperty.Value
 if (
     [string]$profile.role -ne 'VALIDATION' -or
-    [int]$profile.cpu_threads -ne 8
+    [int]$profile.cpu_threads -ne $WorkerCount
 ) {
     throw 'decoder V2 resource profile/thread mismatch'
 }
@@ -118,7 +120,11 @@ $stdoutPath = Join-Path $resolvedRoot 'decoder_v2.stdout.log'
 $stderrPath = Join-Path $resolvedRoot 'decoder_v2.stderr.log'
 [ordered]@{
     schema_version = 'cn_portfolio_decoder_v2_deployment_binding_v1'
-    status = 'ACTIVE_TRAIN_ONLY_DIAGNOSTIC'
+    status = if ($AccelerationQualification) {
+        'ACTIVE_ACCELERATION_QUALIFICATION'
+    } else {
+        'ACTIVE_TRAIN_ONLY_DIAGNOSTIC'
+    }
     repo_sha = $RepoSha
     workspace = $resolvedRepo
     deployment_manifest = $resolvedDeployment
@@ -137,6 +143,12 @@ $stderrPath = Join-Path $resolvedRoot 'decoder_v2.stderr.log'
     output_root = $resolvedRoot
     node_resource_profile = $NodeResourceProfile
     worker_count = $WorkerCount
+    native_threads_per_candidate = 1
+    qualification_candidate_count = if ($AccelerationQualification) {
+        $QualificationCandidateCount
+    } else {
+        $null
+    }
     decoder_ids = @(
         'CURRENT_TOP20PCT_EQUAL',
         'TOPK_10_EQUAL',
@@ -158,9 +170,9 @@ $stderrPath = Join-Path $resolvedRoot 'decoder_v2.stderr.log'
 $env:PYTHONPATH = "$($resolvedRepo)\src;$resolvedRepo"
 $env:PYTHONUTF8 = '1'
 $env:CN_CAMPAIGN_REPO_SHA = $RepoSha
-$env:NUMBA_NUM_THREADS = '8'
-$env:POLARS_MAX_THREADS = '8'
-$env:ARROW_NUM_THREADS = '8'
+$env:NUMBA_NUM_THREADS = '1'
+$env:POLARS_MAX_THREADS = '1'
+$env:ARROW_NUM_THREADS = '1'
 $env:OMP_NUM_THREADS = '1'
 $env:MKL_NUM_THREADS = '1'
 $env:OPENBLAS_NUM_THREADS = '1'
@@ -185,24 +197,37 @@ if ($LASTEXITCODE -ne 0) {
 }
 $env:CN_NODE_RESOURCE_LEASE_REQUIRED = '1'
 $env:CN_NODE_RESOURCE_LEASE_RECEIPT = $leaseReceipt
-$env:CN_NODE_CPU_ENTITLEMENT = '8'
+$env:CN_NODE_CPU_ENTITLEMENT = [string]$WorkerCount
 
 try {
     $ErrorActionPreference = 'Continue'
+    $decoderArguments = @(
+        '--replay-oos-root', $resolvedReplay,
+        '--ledger-replay-root', $resolvedLedger,
+        '--output-root', $resolvedRoot,
+        '--builder-commit-sha', $RepoSha,
+        '--worker-count', [string]$WorkerCount,
+        '--expected-selection-payload-sha256', $SelectionPayloadSha256
+    )
+    if ($AccelerationQualification) {
+        $decoderArguments += @(
+            '--qualification-candidate-count',
+            [string]$QualificationCandidateCount
+        )
+    }
     & $python (Join-Path $resolvedRepo (
         'scripts\run_cn_portfolio_decoder_v2.py'
-    )) --replay-oos-root $resolvedReplay `
-       --ledger-replay-root $resolvedLedger `
-       --output-root $resolvedRoot `
-       --builder-commit-sha $RepoSha `
-       --worker-count $WorkerCount `
-       --expected-selection-payload-sha256 $SelectionPayloadSha256 `
-       *>> $stdoutPath
+    )) @decoderArguments *>> $stdoutPath
     if ($LASTEXITCODE -ne 0) {
         throw "portfolio decoder V2 failed: $LASTEXITCODE"
     }
+    $expectedClosure = if ($AccelerationQualification) {
+        'DECODER_V2_ACCELERATION_QUALIFICATION_COMPLETE.json'
+    } else {
+        'DECODER_V2_COMPLETE.json'
+    }
     if (-not (Test-Path -LiteralPath (
-        Join-Path $resolvedRoot 'DECODER_V2_COMPLETE.json'
+        Join-Path $resolvedRoot $expectedClosure
     ))) {
         throw 'portfolio decoder V2 did not close'
     }
