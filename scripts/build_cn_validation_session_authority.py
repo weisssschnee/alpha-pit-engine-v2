@@ -117,11 +117,11 @@ def _extract_exact_st(
             .filter(pl.col("trade_time").dt.date().is_in(validation_dates))
             .select("trade_time", "code", ST_FIELD)
             .with_columns(pl.col("trade_time").dt.date().alias("date"))
-            .group_by("code", "date")
+            .sort("code", "date", "trade_time")
+            .group_by("code", "date", maintain_order=True)
             .agg(
                 pl.col(ST_FIELD)
                 .drop_nulls()
-                .sort_by("trade_time")
                 .last()
                 .alias("is_st"),
                 pl.col(ST_FIELD)

@@ -20,6 +20,8 @@ def test_validation_authority_builder_has_explicit_fail_closed_boundaries() -> N
     )
     assert "EXCLUDE_IF_ABSENT_FROM_IMMUTABLE_SSE_SZSE_SECURITY_MASTER" in source
     assert "fillna(True)" in source
+    assert '.sort("code", "date", "trade_time")' in source
+    assert ".sort_by(" not in source
     assert '"holdout_reads": 0' in source
     assert '"forward_2026_reads": 0' in source
     assert '"promotion": "FORBIDDEN"' in source
