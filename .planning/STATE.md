@@ -2,7 +2,7 @@
 
 Updated: 2026-08-04
 
-Current state: `CN_PORTFOLIO_DECODER_AUTOPSY_V1_CLOSED_HOLD_RESEARCH`
+Current state: `CN_PORTFOLIO_DECODER_V2_CLOSED_TRAIN_POSITIVE_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,78 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Auditable trading ledger and accelerated CN_PORTFOLIO_DECODER_V2 closure (2026-08-04)
+
+- The frozen 32-pair / 64-member train cohort first completed a final-close
+  continuous-book replay with persisted FIFO lots, lot consumption, daily cash
+  and PnL ledgers at
+  `D:\ChengboRemote\runtime\cn_finalist_mark_to_market_replay_ledger_v1_32_20260804_6e6790d`.
+  Closure file/canonical SHA256 values are
+  `44acf0edc09a19bb420f19f1f761adba345df9b6a32ede8cfbf23653899d300a` /
+  `7328d0593a22f0fbb790017e4ddc9efff89acef5d9007a0ff9ac899ba828016e`.
+  All 266 declared artifacts, 64 candidate identities, 32 pair bindings and
+  192 accounting ledgers passed independent audit. Historical NAV, reward,
+  return, fees, fills and blockers had no mismatch. Maximum cash/NAV/PnL/lot
+  errors were `3.259629011e-09` / `0` / `2.118758857e-08` / `0`.
+  The independent audit file/canonical SHA256 values are
+  `cf8ca740e010ead2e0ab37738169214f91b822d0bd73669400228afc2403678a` /
+  `58662fb8cba09aece09c4d75736346819caf45b17c66314e7e96c909ce050855`.
+- Decoder V2 then replayed exactly three one-session mappings over the same
+  formulas, signals, candidate order, PIT data, next-open execution, T+1,
+  frozen fees and final-close mark: `CURRENT_TOP20PCT_EQUAL`,
+  `TOPK_10_EQUAL` and `TOPK_10_RANK`. The immutable diagnostic root is
+  `D:\ChengboRemote\runtime\cn_portfolio_decoder_v2_process_full_3x1_64_20260804_7051ae6`.
+  Its closure file/canonical SHA256 values are
+  `216fe608130f8cd752f00c196e7c6cdd34ba1b2907d7826921ff41ff7fd0c426` /
+  `173aafaeb54a29797fc0b1e4c66b8b70af2a8d13f673b5e24eeda98f93def967`.
+  Independent audit matched all 71 artifacts, 64 candidate receipts, 192
+  candidate metrics, 96 pair metrics, the 32-row transition matrix, all rank
+  summaries and 64/64 zero-delta baseline rows. Audit file/payload SHA256 values
+  are `a63c121c16b31fa053c036614900a1987683372520330a5d7bb4b0e6ceee7d7a` /
+  `bc024ae854fb25393d29528a161b02558a83d9d41739ce01b2c1dd5e9b1db3b2`.
+  Validation/holdout/2026 reads, search, reward/evaluator change and promotion
+  writes were zero or false throughout.
+- The existing top-20%-equal mapping remains economically negative: 0/32
+  primaries and 0/32 pairs passed the absolute-plus-matched gates; primary net
+  return median/p10 were `-0.134002815` / `-0.223560933` and matched-increment
+  median was `-0.023157311`. Its signal-to-net Spearman was `-0.087243402`.
+  The failure is therefore reproduced under the auditable ledger rather than
+  explained by terminal liquidation or accounting drift.
+- `TOPK_10_EQUAL` is the clear train-only decoder candidate. Primary net return
+  median/p10 became `0.192914684` / `0.025385922`; 29/32 primaries were
+  positive and 22/32 pairs passed both standalone and matched-return gates.
+  Matched-return increment median/p10 were `0.112225690` / `-0.119185377`.
+  Signal-to-net Spearman improved to `0.391495601`, while top-decile and top-five
+  retention remained 1/4 and 1/5. Median one-way turnover and net return per
+  turnover were `0.250063342` and `0.806681926`. Positive-return top-one/top-five
+  concentration was only `0.081168717` / `0.327439988`; median realized trade
+  PnL was CNY `164,638.58` versus ending unrealized PnL CNY `5,489.02`, so the
+  cross-candidate improvement is neither a single-winner nor ending-mark
+  artifact.
+- `TOPK_10_RANK` also improves train economics but is weaker on the joint
+  evidence: 27/32 primaries were positive and 20/32 pairs passed both gates;
+  primary return median/p10 were `0.153759475` / `-0.005651324`, matched
+  increment median/p10 were `0.083053336` / `-0.187456320`, median one-way
+  turnover was `0.265846320` and return per turnover was `0.576390983`.
+  Its signal-to-net Spearman `0.392595308` is only marginally above equal
+  weighting, with the same 1/4 and 1/5 elite retention and worse economics,
+  turnover efficiency and concentration. It is not the preferred treatment.
+- The slow validation path was replaced only after an exact-shape parity and
+  throughput qualification. The accepted 12-process, single-native-thread
+  backend produced `136.5951` candidates/hour in qualification, `8.2632x` the
+  historical eight-worker rate, with 32/32 exact parity. The full 3x1 run
+  closed in `1781.16` seconds at `129.3535` candidates/hour; minimum free memory
+  was `53,487,345,664` bytes, peak process-tree RSS was `31,104,782,336` bytes
+  and saturated-compute sample fraction was `0.87638`. This qualifies the
+  bounded process backend for this decoder shape without changing semantics or
+  weakening the 24 GiB/8 GiB gates.
+- This is development-train diagnostic evidence, not OOS alpha and not a
+  decoder authority promotion. `TOPK_10_EQUAL` may advance only through a
+  separately authorized deterministic freeze of the actual positive
+  standalone-plus-matched, mechanism-independent subset, followed by one
+  unchanged report-only OOS replay. No formula search, reward change, automatic
+  promotion, ADR or CURRENT Graph transition is authorized by this closure.
 
 ### CN_PORTFOLIO_DECODER_AUTOPSY_V1 closed over frozen train evidence (2026-08-04)
 
@@ -2179,31 +2251,24 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-Do not promote `TOPK_10_RANK` from the decoder autopsy and do not repeat the
-10-by-4 gross matrix. The next bounded research action, if separately
-authorized, is a train-only exact continuous-book shadow replay of three
-one-session mappings over the same 32 pairs: current top-20%-equal,
-top-10-equal and top-10-rank. Reuse the current A-share/PIT/cost authority and
-report net MTM, matched increment, signal-rank preservation, top-five
-retention and turnover together. Admit no decoder unless it improves the full
-ordering and elite retention without reversing exact replay ranking or buying
-the improvement through excessive turnover. Only a small unchanged
-train-positive winner set may later receive one separately frozen report-only
-OOS; otherwise remain `HOLD_RESEARCH`. Formula search, TPE/reward changes and
-new validation reads remain out of scope.
+The auditable ledger and decoder V2 3x1 replay are closed and must not be rerun.
+`TOPK_10_EQUAL` is the preferred train-only treatment: 22/32 pairs passed both
+standalone and matched net-return gates, primary median/p10 return were
+`0.192914684` / `0.025385922`, matched-increment median was `0.112225690`, and
+signal-to-net Spearman improved from `-0.087243402` to `0.391495601` without a
+single-candidate concentration artifact. This remains decoder-selection-on-
+train evidence, not OOS alpha or formal portfolio authority.
 
-Do not expand formula search from this evidence. The next bounded research
-action is a train-only portfolio transformation audit/optimizer over the frozen
-mechanisms: preserve each formula and its signal outputs, then vary only
-holding horizon, rebalance cadence, exit policy and position construction under
-the existing A-share/PIT/cost authority. Before any validation read, require
-material improvement in standalone continuous-book train economics and rank
-preservation from signal to gross portfolio return. In parallel, amend future
-replay receipts prospectively to persist initial cash, lot-age/realized versus
-unrealized accounting and typed blocked-order counterfactual inputs; do not
-retrofit those missing values into historical evidence. A later, separately
-frozen report-only OOS is justified only for a small train-positive portfolio
-finalist set. The current autopsy does not authorize another search tranche.
+If separately authorized, the next bounded action is deterministic train-only
+freezing under `TOPK_10_EQUAL`: retain only the actual positive standalone and
+positive matched-return pairs, remove duplicate economic mechanisms without
+backfill, preserve original identity/order and freeze the resulting smaller
+cohort before any validation read. One unchanged report-only continuous-book
+OOS replay may then test transfer with no feedback to search, reward, scheduler
+or archive state. If the frozen cohort fails OOS, remain `HOLD_RESEARCH`; do not
+rescue it by changing the decoder, costs, split or selection after reading OOS.
+Do not launch formula search, TPE/reward changes, exit-policy search or another
+decoder matrix from this evidence.
 
 The continuous-book MTM retest over the complete ten-pair productive supply is
 closed and must not be rerun. It resolved the accounting objection directly:
