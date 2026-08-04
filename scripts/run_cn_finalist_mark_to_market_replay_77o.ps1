@@ -10,6 +10,7 @@ param(
     [ValidateSet('VALIDATION_DUAL_8')]
     [string]$NodeResourceProfile = 'VALIDATION_DUAL_8',
     [int]$ValidationThreads = 8,
+    [switch]$PersistAccountingLedgers,
     [string]$NodeResourceCapacity = (
         'runtime\run_plans\cn_alpha_node_resource_profiles_v1.json'
     ),
@@ -135,6 +136,7 @@ $stderrPath = Join-Path $resolvedRoot 'mark_to_market.stderr.log'
     node_resource_profile = $NodeResourceProfile
     validation_threads = $ValidationThreads
     ending_book_policy = 'FINAL_PIT_CLOSE_MARK_TO_MARKET_NO_TERMINAL_SALE'
+    persist_accounting_ledgers = [bool]$PersistAccountingLedgers
     validation_reads = 0
     holdout_reads = 0
     forward_2026_reads = 0
@@ -180,12 +182,18 @@ $env:CN_NODE_CPU_ENTITLEMENT = [string]$ValidationThreads
 
 try {
     $ErrorActionPreference = 'Continue'
+    $replayArguments = @(
+        '--freeze-manifest', $resolvedFreeze,
+        '--train-field-root', $resolvedTrainFields,
+        '--strict-replay-root', $resolvedStrictReplay,
+        '--output-root', $resolvedRoot
+    )
+    if ($PersistAccountingLedgers) {
+        $replayArguments += '--persist-accounting-ledgers'
+    }
     & $python (Join-Path $resolvedRepo (
         'scripts\run_cn_finalist_mark_to_market_replay.py'
-    )) --freeze-manifest $resolvedFreeze `
-       --train-field-root $resolvedTrainFields `
-       --strict-replay-root $resolvedStrictReplay `
-       --output-root $resolvedRoot *>> $stdoutPath
+    )) @replayArguments *>> $stdoutPath
     if ($LASTEXITCODE -ne 0) {
         throw "mark-to-market replay failed: $LASTEXITCODE"
     }
