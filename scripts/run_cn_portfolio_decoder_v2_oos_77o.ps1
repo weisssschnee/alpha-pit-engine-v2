@@ -25,6 +25,26 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+function Get-SharedReadSha256 {
+    param([Parameter(Mandatory = $true)][string]$LiteralPath)
+    $share = [IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete
+    $stream = [IO.File]::Open(
+        $LiteralPath,
+        [IO.FileMode]::Open,
+        [IO.FileAccess]::Read,
+        $share
+    )
+    $sha = [Security.Cryptography.SHA256]::Create()
+    try {
+        return ([BitConverter]::ToString(
+            $sha.ComputeHash($stream)
+        ) -replace '-', '').ToLowerInvariant()
+    } finally {
+        $sha.Dispose()
+        $stream.Dispose()
+    }
+}
+
 if ($env:COMPUTERNAME -ne 'DESKTOP-77OPJ6F') {
     throw 'Decoder V2 report-only OOS is authorized only on DESKTOP-77OPJ6F'
 }
@@ -139,9 +159,7 @@ $stderrPath = Join-Path $resolvedRoot 'oos.stderr.log'
         Get-FileHash -LiteralPath $finalistManifest -Algorithm SHA256
     ).Hash.ToLowerInvariant()
     source_replay_root = $resolvedSource
-    source_contract_sha256 = (
-        Get-FileHash -LiteralPath $sourceContract -Algorithm SHA256
-    ).Hash.ToLowerInvariant()
+    source_contract_sha256 = Get-SharedReadSha256 -LiteralPath $sourceContract
     selection_payload_sha256 = $SelectionPayloadSha256
     decoder_id = 'TOPK_10_EQUAL'
     decoder_policy_sha256 = $DecoderPolicySha256

@@ -95,6 +95,8 @@ def test_remote_launcher_binds_qualified_process_profile() -> None:
     assert "[int]$WorkerCount = 32" in script
     assert "[int]$ExecutorWorkerCount = 12" in script
     assert "$env:OMP_NUM_THREADS = '1'" in script
+    assert "function Get-SharedReadSha256" in script
+    assert "[IO.FileShare]::ReadWrite" in script
     assert "minimum_free_memory_bytes" in script
     assert "interstage_filter_applied = $false" in script
     assert "promotion = 'FORBIDDEN'" in script
