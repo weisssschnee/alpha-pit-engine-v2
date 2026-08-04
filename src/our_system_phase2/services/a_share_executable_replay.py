@@ -306,6 +306,59 @@ class AShareExecutionPolicy:
 
 
 @dataclass(frozen=True, slots=True)
+class ASharePortfolioDecoderPolicy:
+    """Optional target-book mapping for train-only decoder diagnostics.
+
+    The default replay path does not construct this policy and therefore keeps
+    the existing top-quantile/equal-weight behavior byte-for-byte.  Explicit
+    policies vary only selection and target weights; the signal, execution
+    clock, T+1 constraint, costs and continuous-book accounting stay frozen.
+    """
+
+    decoder_id: str
+    selection: str
+    weighting: str
+    top_fraction: float | None = None
+    top_k: int | None = None
+    target_refresh_clock: str = "EACH_SESSION_OPEN_FROM_PRIOR_CLOSE_SIGNAL"
+    session_end_policy: str = "FINAL_CLOSE_MARK_NO_FORCED_SALE"
+
+    def validate(self) -> None:
+        if not str(self.decoder_id).strip():
+            raise ValueError("decoder_id is required")
+        if self.selection == "TOP_FRACTION":
+            if self.top_k is not None:
+                raise ValueError("TOP_FRACTION cannot also set top_k")
+            if self.top_fraction is None or not 0 < float(
+                self.top_fraction
+            ) <= 1:
+                raise ValueError("top_fraction must be in (0, 1]")
+        elif self.selection == "TOP_K":
+            if self.top_fraction is not None:
+                raise ValueError("TOP_K cannot also set top_fraction")
+            if self.top_k is None or int(self.top_k) <= 0:
+                raise ValueError("top_k must be positive")
+        else:
+            raise ValueError(f"unsupported decoder selection: {self.selection}")
+        if self.weighting not in {"EQUAL", "LINEAR_DESCENDING_RANK"}:
+            raise ValueError(f"unsupported decoder weighting: {self.weighting}")
+        if (
+            self.target_refresh_clock
+            != "EACH_SESSION_OPEN_FROM_PRIOR_CLOSE_SIGNAL"
+        ):
+            raise ValueError("target_refresh_clock drift")
+        if self.session_end_policy != "FINAL_CLOSE_MARK_NO_FORCED_SALE":
+            raise ValueError("session_end_policy drift")
+
+    @property
+    def payload_sha256(self) -> str:
+        self.validate()
+        return canonical_json_hash(
+            {"schema_version": "a_share_portfolio_decoder_policy_v1", **asdict(self)}
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class AShareCorporateActionPolicy:
     """Frozen timing and accounting semantics for finalist replay.
 
@@ -479,6 +532,59 @@ def _blocked_sell(row: Mapping[str, Any], *, tick: float) -> bool:
     )
 
 
+def _portfolio_targets(
+    pool: pd.DataFrame,
+    *,
+    execution_policy: AShareExecutionPolicy,
+    decoder_policy: ASharePortfolioDecoderPolicy | None,
+) -> tuple[list[str], dict[str, float] | None]:
+    """Return ordered target codes and optional normalized target weights.
+
+    ``None`` weights preserve the legacy equal-target arithmetic exactly.
+    Explicit equal-weight policies also use the same per-name division at the
+    call site; rank weights are normalized here and bound by policy hash.
+    """
+
+    if pool.empty or pool["signal"].nunique(dropna=True) < 2:
+        return [], None if decoder_policy is None else {}
+    ranked = pool.reset_index(drop=True).sort_values(
+        ["signal", "code"],
+        ascending=[False, True],
+        kind="mergesort",
+    )
+    if decoder_policy is None:
+        count = max(
+            1,
+            int(
+                math.ceil(
+                    len(ranked) * float(execution_policy.top_quantile)
+                )
+            ),
+        )
+        return ranked.head(count)["code"].astype(str).tolist(), None
+    decoder_policy.validate()
+    if decoder_policy.selection == "TOP_FRACTION":
+        count = max(
+            1,
+            int(
+                math.ceil(
+                    len(ranked) * float(decoder_policy.top_fraction)
+                )
+            ),
+        )
+    else:
+        count = min(len(ranked), int(decoder_policy.top_k or 0))
+    desired_codes = ranked.head(count)["code"].astype(str).tolist()
+    if decoder_policy.weighting == "EQUAL":
+        return desired_codes, None
+    raw = np.arange(count, 0, -1, dtype=float)
+    normalized = raw / float(raw.sum())
+    return desired_codes, {
+        code: float(weight)
+        for code, weight in zip(desired_codes, normalized, strict=True)
+    }
+
+
 def _ledger_tolerance(value: float) -> float:
     return max(1e-6, abs(float(value)) * 1e-12)
 
@@ -631,6 +737,7 @@ def run_a_share_long_only_replay(
     universe_policy: AShareUniversePolicy,
     execution_policy: AShareExecutionPolicy,
     corporate_action_policy: AShareCorporateActionPolicy,
+    portfolio_decoder_policy: ASharePortfolioDecoderPolicy | None = None,
     ending_book_policy: str = ENDING_BOOK_REQUIRE_FLAT_FINAL_OPEN,
 ) -> dict[str, Any]:
     """Replay close-t signals at next-session open with real inventory.
@@ -645,6 +752,8 @@ def run_a_share_long_only_replay(
     universe_policy.validate()
     execution_policy.validate()
     corporate_action_policy.validate()
+    if portfolio_decoder_policy is not None:
+        portfolio_decoder_policy.validate()
     if ending_book_policy not in ENDING_BOOK_POLICIES:
         raise ValueError(
             "ending_book_policy must be one of "
@@ -788,29 +897,18 @@ def run_a_share_long_only_replay(
                 last_close[str(code)] = close
 
         desired_codes: list[str] = []
+        desired_weights: dict[str, float] | None = None
         if ordinal > 0 and ordinal < len(dates) - 1:
             signal_day = by_date[pd.Timestamp(dates[ordinal - 1])]
             pool = signal_day[
                 signal_day["promotion_universe_eligible"]
                 & signal_day["signal"].notna()
             ]
-            if not pool.empty and pool["signal"].nunique(dropna=True) >= 2:
-                count = max(
-                    1,
-                    int(
-                        math.ceil(
-                            len(pool) * float(execution_policy.top_quantile)
-                        )
-                    ),
-                )
-                desired_codes = (
-                    pool.reset_index(drop=True).sort_values(
-                        ["signal", "code"], ascending=[False, True]
-                    )
-                    .head(count)["code"]
-                    .astype(str)
-                    .tolist()
-                )
+            desired_codes, desired_weights = _portfolio_targets(
+                pool,
+                execution_policy=execution_policy,
+                decoder_policy=portfolio_decoder_policy,
+            )
         desired_set = set(desired_codes)
         final_close_mark_only = (
             ending_book_policy
@@ -829,9 +927,17 @@ def run_a_share_long_only_replay(
             if not math.isfinite(price) or price <= 0:
                 raise ValueError(f"missing executable/mark price for held code {code}")
             open_nav += shares * price
-        target_value = (
+        equal_target_value = (
             open_nav / len(desired_codes) if desired_codes else 0.0
         )
+        target_values = {
+            code: (
+                open_nav * float(desired_weights[code])
+                if desired_weights is not None
+                else equal_target_value
+            )
+            for code in desired_codes
+        }
 
         # Sell first. All positions were acquired on an earlier session because
         # buys occur only after this loop, so same-session sales are impossible.
@@ -852,7 +958,7 @@ def run_a_share_long_only_replay(
             if lot <= 0:
                 raise ValueError(f"invalid lot size for {code}: {lot}")
             target_shares = (
-                int(target_value / open_price // lot * lot)
+                int(target_values[code] / open_price // lot * lot)
                 if code in desired_set and open_price > 0
                 else 0
             )
@@ -919,7 +1025,9 @@ def run_a_share_long_only_replay(
             )
             if lot <= 0:
                 raise ValueError(f"invalid lot size for {code}: {lot}")
-            target_shares = int(target_value / open_price // lot * lot)
+            target_shares = int(
+                target_values[code] / open_price // lot * lot
+            )
             buy_shares = max(0, target_shares - int(holdings.get(code, 0)))
             if buy_shares > 0:
                 buy_orders.append((code, buy_shares, open_price, lot))
@@ -1258,6 +1366,18 @@ def run_a_share_long_only_replay(
         "replay_kernel_version": REPLAY_KERNEL_VERSION,
         "execution_policy": asdict(execution_policy),
         "execution_policy_sha256": execution_policy.payload_sha256,
+        **(
+            {
+                "portfolio_decoder_policy": asdict(
+                    portfolio_decoder_policy
+                ),
+                "portfolio_decoder_policy_sha256": (
+                    portfolio_decoder_policy.payload_sha256
+                ),
+            }
+            if portfolio_decoder_policy is not None
+            else {}
+        ),
         "corporate_action_policy": asdict(corporate_action_policy),
         "corporate_action_policy_sha256": (
             corporate_action_policy.payload_sha256

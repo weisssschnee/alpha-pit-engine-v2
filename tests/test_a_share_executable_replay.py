@@ -17,8 +17,10 @@ from our_system_phase2.services.a_share_executable_replay import (
     AShareCorporateActionPolicy,
     AShareExecutionPolicy,
     AShareFeeSchedule,
+    ASharePortfolioDecoderPolicy,
     AShareUniversePolicy,
     ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
+    _portfolio_targets,
     run_a_share_long_only_replay,
 )
 from our_system_phase2.services.a_share_tradability_guard import (
@@ -214,6 +216,62 @@ def test_fifo_lots_make_t_plus_one_sellability_explicit() -> None:
     assert ledger["frozen_share_count"].gt(0).any()
     assert ledger["lot_quantity_error"].eq(0).all()
     assert ledger["pnl_identity_error_cny"].abs().max() <= 1e-6
+
+
+def test_explicit_current_decoder_preserves_legacy_replay_exactly() -> None:
+    common = {
+        "fee_schedule": _fees(),
+        "universe_policy": _universe(),
+        "execution_policy": AShareExecutionPolicy(top_quantile=0.2),
+        "corporate_action_policy": _corporate_actions(),
+        "ending_book_policy": ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
+    }
+    legacy = run_a_share_long_only_replay(_frame(), **common)
+    explicit = run_a_share_long_only_replay(
+        _frame(),
+        **common,
+        portfolio_decoder_policy=ASharePortfolioDecoderPolicy(
+            decoder_id="CURRENT_TOP20PCT_EQUAL",
+            selection="TOP_FRACTION",
+            top_fraction=0.2,
+            weighting="EQUAL",
+        ),
+    )
+
+    pd.testing.assert_frame_equal(legacy["daily"], explicit["daily"])
+    pd.testing.assert_frame_equal(legacy["fills"], explicit["fills"])
+    assert legacy["ending_nav_cny"] == explicit["ending_nav_cny"]
+    assert legacy["total_fees_cny"] == explicit["total_fees_cny"]
+    assert "portfolio_decoder_policy" not in legacy
+    assert explicit["portfolio_decoder_policy"]["decoder_id"] == (
+        "CURRENT_TOP20PCT_EQUAL"
+    )
+
+
+def test_top10_rank_decoder_uses_deterministic_descending_weights() -> None:
+    pool = pd.DataFrame(
+        {
+            "code": [f"{index:06d}" for index in range(12)],
+            "signal": [float(index) for index in range(12)],
+        }
+    )
+    selected, weights = _portfolio_targets(
+        pool,
+        execution_policy=AShareExecutionPolicy(),
+        decoder_policy=ASharePortfolioDecoderPolicy(
+            decoder_id="TOPK_10_RANK",
+            selection="TOP_K",
+            top_k=10,
+            weighting="LINEAR_DESCENDING_RANK",
+        ),
+    )
+
+    assert selected == [f"{index:06d}" for index in range(11, 1, -1)]
+    assert weights is not None
+    assert sum(weights.values()) == pytest.approx(1.0)
+    assert list(weights.values()) == pytest.approx(
+        [rank / 55.0 for rank in range(10, 0, -1)]
+    )
 
 
 def test_fee_schedule_is_asymmetric_and_minimum_commission_is_applied() -> None:

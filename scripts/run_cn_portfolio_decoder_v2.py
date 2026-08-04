@@ -1,0 +1,832 @@
+from __future__ import annotations
+
+import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import asdict
+from datetime import datetime, timezone
+import json
+import math
+import os
+from pathlib import Path
+import platform
+import sys
+from typing import Any, Mapping
+
+import numpy as np
+import pandas as pd
+import psutil
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from scripts import build_cn_portfolio_decoder_autopsy_v1 as v1
+from scripts import run_cn_finalist_mark_to_market_replay as mtm
+from scripts import run_cn_finalist_replay_then_oos as base
+from our_system_phase2.services.a_share_executable_replay import (
+    AShareCorporateActionPolicy,
+    AShareExecutionPolicy,
+    AShareFeeSchedule,
+    ASharePortfolioDecoderPolicy,
+    AShareUniversePolicy,
+    ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
+    _prepare_sessions,
+    run_a_share_long_only_replay,
+)
+
+
+SCHEMA_VERSION = "cn_portfolio_decoder_v2"
+EXPECTED_PAIR_COUNT = 32
+EXPECTED_MEMBER_COUNT = 64
+MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
+AUTHORIZED_HOST = "DESKTOP-77OPJ6F"
+DECODER_POLICIES = (
+    ASharePortfolioDecoderPolicy(
+        decoder_id="CURRENT_TOP20PCT_EQUAL",
+        selection="TOP_FRACTION",
+        top_fraction=0.20,
+        weighting="EQUAL",
+    ),
+    ASharePortfolioDecoderPolicy(
+        decoder_id="TOPK_10_EQUAL",
+        selection="TOP_K",
+        top_k=10,
+        weighting="EQUAL",
+    ),
+    ASharePortfolioDecoderPolicy(
+        decoder_id="TOPK_10_RANK",
+        selection="TOP_K",
+        top_k=10,
+        weighting="LINEAR_DESCENDING_RANK",
+    ),
+)
+
+
+def _finite(value: Any) -> float | None:
+    try:
+        rendered = float(value)
+    except (TypeError, ValueError):
+        return None
+    return rendered if math.isfinite(rendered) else None
+
+
+def _hash_frame(frame: pd.DataFrame) -> str:
+    records = frame.astype(object).where(frame.notna(), None).to_dict(
+        orient="records"
+    )
+    return v1._stable_hash(records)
+
+
+def _top_set(frame: pd.DataFrame, column: str, count: int) -> set[str]:
+    ranked = frame.dropna(subset=[column]).sort_values(
+        [column, "candidate_id"],
+        ascending=[False, True],
+        kind="mergesort",
+    )
+    return set(ranked.head(count)["candidate_id"].astype(str))
+
+
+def _candidate_metric(
+    *,
+    candidate: Mapping[str, Any],
+    decoder: ASharePortfolioDecoderPolicy,
+    result: Mapping[str, Any],
+    signal_rank_ic_mean: float | None,
+    theoretical_gross_mean: float | None,
+) -> dict[str, Any]:
+    initial_cash = float(result["execution_policy"]["initial_cash_cny"])
+    cumulative_return = float(result["ending_nav_cny"]) / initial_cash - 1.0
+    turnover = _finite(result["a_share_mean_one_way_turnover"])
+    return {
+        "pair_id": str(candidate["pair_id"]),
+        "candidate_id": str(candidate["candidate_id"]),
+        "pair_member_role": str(candidate["pair_member_role"]),
+        "route_id": str(candidate["route_id"]),
+        "exact_identity": str(candidate["exact_identity"]),
+        "decoder_id": decoder.decoder_id,
+        "decoder_policy_sha256": result[
+            "portfolio_decoder_policy_sha256"
+        ],
+        "signal_rank_ic_mean": signal_rank_ic_mean,
+        "theoretical_one_session_gross_return_mean": theoretical_gross_mean,
+        "continuous_book_net_reward": float(
+            result["a_share_executable_net_reward"]
+        ),
+        "ending_nav_cny": float(result["ending_nav_cny"]),
+        "cumulative_net_return": cumulative_return,
+        "cumulative_net_pnl_cny": float(result["cumulative_net_pnl_cny"]),
+        "cumulative_realized_trade_pnl_cny": float(
+            result["cumulative_realized_trade_pnl_cny"]
+        ),
+        "cumulative_corporate_action_cash_pnl_cny": float(
+            result["cumulative_corporate_action_cash_pnl_cny"]
+        ),
+        "ending_unrealized_pnl_cny": float(
+            result["ending_unrealized_pnl_cny"]
+        ),
+        "total_fees_cny": float(result["total_fees_cny"]),
+        "mean_one_way_turnover": turnover,
+        "net_return_per_turnover": (
+            cumulative_return / turnover
+            if turnover is not None and turnover > 0
+            else None
+        ),
+        "ending_holdings_weight": _finite(
+            result["ending_holdings_weight"]
+        ),
+        "share_weighted_average_position_age_sessions": _finite(
+            result["share_weighted_average_position_age_sessions"]
+        ),
+        "maximum_position_age_sessions": int(
+            result["maximum_position_age_sessions"]
+        ),
+        "fill_count": int(result["fill_count"]),
+        "trade_count": int(result["trade_count"]),
+        "blocked_buy_count": int(result["blocked_buy_count"]),
+        "blocked_sell_count": int(result["blocked_sell_count"]),
+        "ending_holding_count": int(result["ending_holding_count"]),
+        "accounting_invariants_status": str(
+            result["accounting_invariants"]["status"]
+        ),
+        "maximum_cash_identity_error_cny": float(
+            result["accounting_invariants"][
+                "maximum_cash_identity_error_cny"
+            ]
+        ),
+        "maximum_nav_identity_error_cny": float(
+            result["accounting_invariants"][
+                "maximum_nav_identity_error_cny"
+            ]
+        ),
+        "maximum_pnl_identity_error_cny": float(
+            result["accounting_invariants"][
+                "maximum_pnl_identity_error_cny"
+            ]
+        ),
+        "maximum_lot_quantity_error": int(
+            result["accounting_invariants"]["maximum_lot_quantity_error"]
+        ),
+        "daily_sha256": _hash_frame(result["daily"]),
+        "fills_sha256": _hash_frame(result["fills"]),
+        "daily_accounting_ledger_sha256": _hash_frame(
+            result["daily_accounting_ledger"]
+        ),
+        "lot_ledger_sha256": _hash_frame(result["lot_ledger"]),
+        "lot_consumption_ledger_sha256": _hash_frame(
+            result["lot_consumption_ledger"]
+        ),
+        "signal_clock": "SESSION_CLOSE_T",
+        "execution_clock": "NEXT_SESSION_OPEN_T_PLUS_1",
+        "target_refresh_clock": decoder.target_refresh_clock,
+        "session_end_policy": decoder.session_end_policy,
+        "fixed_decoder_horizon_sessions": 1,
+        "horizon_interpretation": (
+            "DAILY_TARGET_REFRESH_WITH_FINAL_CLOSE_MARK_AND_NO_FORCED_SALE"
+        ),
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "promotion_authorized": False,
+    }
+
+
+def _baseline_parity(
+    metrics: pd.DataFrame,
+    baseline: pd.DataFrame,
+) -> pd.DataFrame:
+    current = metrics[
+        metrics["decoder_id"].eq("CURRENT_TOP20PCT_EQUAL")
+    ].copy()
+    expected_columns = {
+        "candidate_id",
+        "ending_nav_cny",
+        "mark_to_market_net_reward",
+        "cumulative_net_return",
+        "total_fees_cny",
+        "fill_count",
+        "blocked_buy_count",
+        "blocked_sell_count",
+        "cumulative_realized_trade_pnl_cny",
+        "ending_unrealized_pnl_cny",
+    }
+    missing = sorted(expected_columns - set(baseline.columns))
+    if missing:
+        raise RuntimeError(f"ledger baseline fields missing: {missing}")
+    ledger = baseline[list(expected_columns)].rename(
+        columns={
+            "mark_to_market_net_reward": "continuous_book_net_reward"
+        }
+    )
+    merged = current.merge(
+        ledger,
+        on="candidate_id",
+        how="inner",
+        validate="one_to_one",
+        suffixes=("_v2", "_ledger"),
+    )
+    if len(merged) != EXPECTED_MEMBER_COUNT:
+        raise RuntimeError("decoder V2 baseline candidate parity cardinality drift")
+    comparisons = {
+        "ending_nav_cny": 1e-6,
+        "cumulative_net_return": 1e-12,
+        "total_fees_cny": 1e-6,
+        "fill_count": 0.0,
+        "blocked_buy_count": 0.0,
+        "blocked_sell_count": 0.0,
+        "cumulative_realized_trade_pnl_cny": 1e-6,
+        "ending_unrealized_pnl_cny": 1e-6,
+    }
+    comparisons["continuous_book_net_reward"] = 1e-12
+    mismatch_columns: list[str] = []
+    for name, tolerance in comparisons.items():
+        left = pd.to_numeric(merged[f"{name}_v2"], errors="coerce")
+        right = pd.to_numeric(merged[f"{name}_ledger"], errors="coerce")
+        delta = left - right
+        merged[f"{name}_delta"] = delta
+        if delta.abs().gt(tolerance).any() or left.isna().ne(right.isna()).any():
+            mismatch_columns.append(name)
+    merged["parity_status"] = (
+        "PASS" if not mismatch_columns else "FAIL"
+    )
+    if mismatch_columns:
+        raise RuntimeError(
+            f"decoder V2 baseline parity mismatch: {mismatch_columns}"
+        )
+    return merged
+
+
+def _pair_metrics(candidate_metrics: pd.DataFrame) -> pd.DataFrame:
+    primary = candidate_metrics[
+        candidate_metrics["pair_member_role"].eq("PRIMARY")
+    ].copy()
+    control = candidate_metrics[
+        candidate_metrics["pair_member_role"].eq("CONTROL")
+    ].copy()
+    keys = ["pair_id", "decoder_id"]
+    value_columns = [
+        "candidate_id",
+        "continuous_book_net_reward",
+        "cumulative_net_return",
+        "cumulative_realized_trade_pnl_cny",
+        "ending_unrealized_pnl_cny",
+        "total_fees_cny",
+        "mean_one_way_turnover",
+        "net_return_per_turnover",
+    ]
+    primary = primary[keys + ["route_id", *value_columns]].rename(
+        columns={name: f"primary_{name}" for name in value_columns}
+    )
+    control = control[keys + value_columns].rename(
+        columns={name: f"control_{name}" for name in value_columns}
+    )
+    merged = primary.merge(
+        control,
+        on=keys,
+        how="inner",
+        validate="one_to_one",
+    )
+    for name in (
+        "continuous_book_net_reward",
+        "cumulative_net_return",
+        "cumulative_realized_trade_pnl_cny",
+        "ending_unrealized_pnl_cny",
+    ):
+        merged[f"matched_{name}_increment"] = (
+            pd.to_numeric(merged[f"primary_{name}"], errors="coerce")
+            - pd.to_numeric(merged[f"control_{name}"], errors="coerce")
+        )
+    merged["primary_absolute_positive"] = (
+        merged["primary_cumulative_net_return"] > 0
+    )
+    merged["matched_increment_positive"] = (
+        merged["matched_cumulative_net_return_increment"] > 0
+    )
+    merged["both_economic_gates_positive"] = (
+        merged["primary_absolute_positive"]
+        & merged["matched_increment_positive"]
+    )
+    merged["promotion_authorized"] = False
+    return merged
+
+
+def _rank_preservation(candidate_metrics: pd.DataFrame) -> pd.DataFrame:
+    primary = candidate_metrics[
+        candidate_metrics["pair_member_role"].eq("PRIMARY")
+    ].copy()
+    rows: list[dict[str, Any]] = []
+    for decoder_id, group in primary.groupby("decoder_id", sort=True):
+        n = len(group)
+        top_decile_count = max(1, int(math.ceil(n * 0.10)))
+        signal_top_decile = _top_set(
+            group, "signal_rank_ic_mean", top_decile_count
+        )
+        net_top_decile = _top_set(
+            group, "cumulative_net_return", top_decile_count
+        )
+        signal_top5 = _top_set(group, "signal_rank_ic_mean", min(5, n))
+        net_top5 = _top_set(group, "cumulative_net_return", min(5, n))
+        positive = pd.to_numeric(
+            group["cumulative_net_return"], errors="coerce"
+        ).clip(lower=0.0)
+        positive_total = float(positive.sum())
+        ordered_positive = positive.sort_values(ascending=False)
+        rows.append(
+            {
+                "decoder_id": str(decoder_id),
+                "primary_candidate_count": int(n),
+                "signal_to_net_mtm_spearman": v1._rank_correlation(
+                    pd.to_numeric(
+                        group["signal_rank_ic_mean"], errors="coerce"
+                    ).to_numpy(dtype=float),
+                    pd.to_numeric(
+                        group["cumulative_net_return"], errors="coerce"
+                    ).to_numpy(dtype=float),
+                ),
+                "top_decile_retention": (
+                    len(signal_top_decile & net_top_decile)
+                    / max(1, top_decile_count)
+                ),
+                "top5_retention": (
+                    len(signal_top5 & net_top5) / max(1, len(signal_top5))
+                ),
+                "positive_primary_count": int(positive.gt(0).sum()),
+                "positive_return_top1_contribution": (
+                    float(ordered_positive.head(1).sum() / positive_total)
+                    if positive_total > 0
+                    else None
+                ),
+                "positive_return_top5_contribution": (
+                    float(ordered_positive.head(5).sum() / positive_total)
+                    if positive_total > 0
+                    else None
+                ),
+                "median_net_return_per_turnover": _finite(
+                    pd.to_numeric(
+                        group["net_return_per_turnover"], errors="coerce"
+                    ).median()
+                ),
+                "evidence_scope": "DEVELOPMENT_TRAIN_ONLY",
+            }
+        )
+    result = pd.DataFrame(rows)
+    baseline = result[
+        result["decoder_id"].eq("CURRENT_TOP20PCT_EQUAL")
+    ].iloc[0]
+    result["top5_retention_at_least_baseline"] = (
+        result["top5_retention"] >= float(baseline["top5_retention"])
+    )
+    baseline_spearman = _finite(baseline["signal_to_net_mtm_spearman"])
+    result["signal_to_net_spearman_above_baseline"] = (
+        pd.to_numeric(
+            result["signal_to_net_mtm_spearman"], errors="coerce"
+        ).gt(baseline_spearman)
+        if baseline_spearman is not None
+        else False
+    )
+    return result
+
+
+def _transition_matrix(candidate_metrics: pd.DataFrame) -> pd.DataFrame:
+    primary = candidate_metrics[
+        candidate_metrics["pair_member_role"].eq("PRIMARY")
+    ][
+        [
+            "candidate_id",
+            "pair_id",
+            "route_id",
+            "signal_rank_ic_mean",
+            "decoder_id",
+            "cumulative_net_return",
+            "continuous_book_net_reward",
+            "mean_one_way_turnover",
+            "cumulative_realized_trade_pnl_cny",
+            "ending_unrealized_pnl_cny",
+        ]
+    ].copy()
+    wide = primary.pivot(
+        index=["candidate_id", "pair_id", "route_id", "signal_rank_ic_mean"],
+        columns="decoder_id",
+        values=[
+            "cumulative_net_return",
+            "continuous_book_net_reward",
+            "mean_one_way_turnover",
+            "cumulative_realized_trade_pnl_cny",
+            "ending_unrealized_pnl_cny",
+        ],
+    )
+    wide.columns = [f"{metric}__{decoder}" for metric, decoder in wide.columns]
+    wide = wide.reset_index()
+    baseline = "cumulative_net_return__CURRENT_TOP20PCT_EQUAL"
+    for decoder in ("TOPK_10_EQUAL", "TOPK_10_RANK"):
+        wide[f"cumulative_net_return_delta__{decoder}"] = (
+            wide[f"cumulative_net_return__{decoder}"] - wide[baseline]
+        )
+    return wide
+
+
+def _report(
+    *,
+    selection_sha256: str,
+    rank: pd.DataFrame,
+    pairs: pd.DataFrame,
+) -> str:
+    lines = [
+        "# CN_PORTFOLIO_DECODER_V2",
+        "",
+        f"- Frozen selection: `{selection_sha256}` (32 pairs / 64 members).",
+        "- Scope: development train only; no search, reward change, validation, holdout or 2026 reads.",
+        "- All three treatments use the same close-T signal, next-session-open execution, T+1 inventory, fees and continuous-book final-close MTM.",
+        "- One-session means daily target refresh from the latest available prior-close signal. It does not fabricate a same-session sale; unchanged holdings may remain as older lots and their ages are reported.",
+        "",
+        "| decoder | signal-net Spearman | top-decile retention | top-5 retention | positive primary | both economic gates | top1 positive contribution | top5 positive contribution |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for row in rank.sort_values("decoder_id").to_dict(orient="records"):
+        both = int(
+            pairs[
+                pairs["decoder_id"].eq(str(row["decoder_id"]))
+            ]["both_economic_gates_positive"].sum()
+        )
+        def rendered(value: Any) -> str:
+            number = _finite(value)
+            return "NA" if number is None else f"{number:.6f}"
+        lines.append(
+            "| {decoder} | {spearman} | {decile:.3f} | {top5:.3f} | {positive} | {both} | {top1} | {top5c} |".format(
+                decoder=row["decoder_id"],
+                spearman=rendered(row["signal_to_net_mtm_spearman"]),
+                decile=float(row["top_decile_retention"]),
+                top5=float(row["top5_retention"]),
+                positive=int(row["positive_primary_count"]),
+                both=both,
+                top1=rendered(row["positive_return_top1_contribution"]),
+                top5c=rendered(row["positive_return_top5_contribution"]),
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "No decoder is automatically promoted. A decoder can advance only if standalone and matched net MTM are positive, information retention is not worse than baseline, and gains are not a one-candidate concentration artifact.",
+        ]
+    )
+    return "\n".join(lines) + "\n"
+
+
+def run_decoder_v2(
+    *,
+    replay_oos_root: Path,
+    ledger_replay_root: Path,
+    output_root: Path,
+    builder_commit_sha: str,
+    expected_selection_payload_sha256: str,
+    worker_count: int = 8,
+) -> dict[str, Any]:
+    if platform.node().upper() != AUTHORIZED_HOST:
+        raise RuntimeError(f"decoder V2 must run on {AUTHORIZED_HOST}")
+    if psutil.virtual_memory().available < MINIMUM_FREE_MEMORY_BYTES:
+        raise RuntimeError("decoder V2 minimum-free-memory gate failed")
+    if int(worker_count) < 1 or int(worker_count) > 8:
+        raise ValueError("worker_count must be in [1, 8]")
+    if len(builder_commit_sha) != 40:
+        raise ValueError("builder_commit_sha must be a full Git SHA")
+
+    replay_oos_root = Path(replay_oos_root).resolve()
+    ledger_replay_root = Path(ledger_replay_root).resolve()
+    output_root = Path(output_root).resolve()
+    freeze_path = replay_oos_root / "prepared" / "finalist_replay_then_oos_freeze.json"
+    train_field_root = replay_oos_root / "sidecars" / "train_session_fields"
+    freeze = mtm._load_freeze_for_mark_to_market(freeze_path)
+    selection_sha256 = str(freeze["selection_payload_sha256"])
+    if selection_sha256 != expected_selection_payload_sha256:
+        raise RuntimeError("decoder V2 selection payload drift")
+    if (
+        int(freeze["pair_count"]) != EXPECTED_PAIR_COUNT
+        or int(freeze["candidate_member_count"]) != EXPECTED_MEMBER_COUNT
+    ):
+        raise RuntimeError("decoder V2 frozen cohort cardinality drift")
+
+    ledger_closure_path = ledger_replay_root / "MARK_TO_MARKET_REPLAY_COMPLETE.json"
+    ledger_closure = v1._verify_manifest_artifacts(
+        ledger_closure_path,
+        allowed_statuses=(
+            "FINAL_CLOSE_MARK_TO_MARKET_REPLAY_CLOSED_IMMUTABLE_DIAGNOSTIC_ONLY",
+            "FINAL_CLOSE_MARK_TO_MARKET_REPLAY_CLOSED_IMMUTABLE_TRAIN_ECONOMIC_EVIDENCE",
+        ),
+    )
+    if str(ledger_closure["selection_payload_sha256"]) != selection_sha256:
+        raise RuntimeError("decoder V2 ledger selection drift")
+    if not bool(ledger_closure.get("persist_accounting_ledgers")):
+        raise RuntimeError("decoder V2 requires persisted accounting ledgers")
+
+    frozen_root = freeze_path.parents[1]
+    candidate_path = base._resolved_artifact(
+        frozen_root, freeze["candidate_artifact"]
+    )
+    contract_path = base._resolved_artifact(
+        frozen_root, freeze["execution_contract_artifact"]
+    )
+    candidates = pd.read_parquet(candidate_path).where(pd.notna, None)
+    if candidates["candidate_id"].astype(str).tolist() != list(
+        freeze["candidate_ids"]
+    ):
+        raise RuntimeError("decoder V2 candidate identity/order drift")
+    baseline_path = ledger_replay_root / "candidate_mark_to_market_results.parquet"
+    baseline = pd.read_parquet(baseline_path)
+    if baseline["candidate_id"].astype(str).tolist() != candidates[
+        "candidate_id"
+    ].astype(str).tolist():
+        raise RuntimeError("decoder V2 ledger candidate order drift")
+
+    contract = v1._read_json(contract_path)
+    base._verify_payload_hash(
+        contract,
+        field="contract_payload_sha256",
+        label="decoder V2 execution contract",
+    )
+    field_manifest, field_manifest_path = base._validate_sidecar(
+        train_field_root,
+        evaluation_role="train",
+        split_hash=str(contract["split_manifest_sha256"]),
+    )
+    field_frame = base._load_field_frame(train_field_root, field_manifest)
+    if not field_frame["trade_time"].dt.strftime("%H:%M:%S").eq(
+        "15:00:00"
+    ).all():
+        raise RuntimeError("decoder V2 sidecar contains intraday clocks")
+    session_manifest_path = Path(
+        str(contract["session_authority_manifest"])
+    ).resolve()
+    session_path = Path(str(contract["session_authority_path"])).resolve()
+    if v1._sha256(session_manifest_path) != str(
+        contract["session_authority_manifest_sha256"]
+    ):
+        raise RuntimeError("decoder V2 session manifest drift")
+    session_authority = pd.read_parquet(session_path)
+    master, observed_index, authority_index = base._materialize_replay_master(
+        field_frame, session_authority
+    )
+    universe_raw = dict(contract["universe_policy"])
+    universe_raw["allowed_exchanges"] = tuple(
+        universe_raw["allowed_exchanges"]
+    )
+    universe = AShareUniversePolicy(**universe_raw)
+    fee = AShareFeeSchedule(**dict(contract["fee_schedule"]))
+    execution = AShareExecutionPolicy(**dict(contract["execution_policy"]))
+    corporate = AShareCorporateActionPolicy(
+        **dict(contract["corporate_action_policy"])
+    )
+    prepared_master = _prepare_sessions(
+        master.assign(signal=0.0), universe_policy=universe
+    ).drop(columns=["signal"])
+    prepared_index = pd.MultiIndex.from_frame(prepared_master[["date", "code"]])
+    if set(prepared_index) != set(authority_index):
+        raise RuntimeError("decoder V2 session coordinate drift")
+    future_returns = v1.forward_open_to_close_returns(
+        prepared_master, horizons=(1,)
+    )
+    codes = prepared_master["code"].astype(str).to_numpy()
+    dates = pd.to_datetime(prepared_master["date"]).to_numpy()
+    eligible = prepared_master[
+        "promotion_universe_eligible"
+    ].astype(bool).to_numpy()
+    date_order = np.argsort(dates, kind="mergesort")
+    sorted_dates = dates[date_order]
+    boundaries = np.flatnonzero(
+        np.r_[True, sorted_dates[1:] != sorted_dates[:-1], True]
+    )
+    date_groups = [
+        date_order[start:end]
+        for start, end in zip(boundaries[:-1], boundaries[1:])
+    ]
+
+    decoder_contract = [
+        {
+            **asdict(policy),
+            "payload_sha256": policy.payload_sha256,
+        }
+        for policy in DECODER_POLICIES
+    ]
+    input_binding = {
+        "schema_version": "cn_portfolio_decoder_v2_input_binding_v1",
+        "selection_payload_sha256": selection_sha256,
+        "freeze_sha256": v1._sha256(freeze_path),
+        "candidate_sha256": v1._sha256(candidate_path),
+        "contract_sha256": v1._sha256(contract_path),
+        "train_field_manifest_sha256": v1._sha256(field_manifest_path),
+        "session_authority_manifest_sha256": v1._sha256(
+            session_manifest_path
+        ),
+        "session_authority_sha256": v1._sha256(session_path),
+        "ledger_closure_sha256": v1._sha256(ledger_closure_path),
+        "ledger_candidate_results_sha256": v1._sha256(baseline_path),
+        "builder_commit_sha": builder_commit_sha,
+        "builder_source_sha256": v1._sha256(Path(__file__).resolve()),
+        "decoder_contract": decoder_contract,
+        "decoder_contract_sha256": v1._stable_hash(decoder_contract),
+        "worker_count": int(worker_count),
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "search_run": False,
+        "reward_changed": False,
+        "evaluator_changed": False,
+        "promotion_authorized": False,
+    }
+    input_data_sha256 = v1._stable_hash(input_binding)
+    output_root.mkdir(parents=True, exist_ok=True)
+    binding_path = v1._write_json(output_root / "input_binding.json", input_binding)
+    candidate_root = output_root / "candidates"
+    candidate_root.mkdir(exist_ok=True)
+
+    def evaluate_one(candidate: Mapping[str, Any]) -> list[dict[str, Any]]:
+        candidate_id = str(candidate["candidate_id"])
+        target = candidate_root / f"{candidate_id}.json"
+        signal_field = pd.to_numeric(
+            base.evaluate_panel_expression(
+                field_frame,
+                str(candidate["expression"]),
+                cache={},
+                data_role="development",
+            ),
+            errors="coerce",
+        )
+        signal_series = pd.Series(
+            signal_field.to_numpy(), index=observed_index
+        )
+        aligned_signal = signal_series.reindex(prepared_index).to_numpy(
+            dtype=float
+        )
+        theoretical = v1.evaluate_candidate_decoder_matrix(
+            candidate=candidate,
+            signal=aligned_signal,
+            codes=codes,
+            dates=dates,
+            eligible=eligible,
+            future_returns=future_returns,
+            date_groups=date_groups,
+            decoders=tuple(
+                {
+                    "decoder_id": policy.decoder_id,
+                    "selection": policy.selection,
+                    "weighting": policy.weighting,
+                    **(
+                        {"top_fraction": policy.top_fraction}
+                        if policy.top_fraction is not None
+                        else {"top_k": policy.top_k}
+                    ),
+                }
+                for policy in DECODER_POLICIES
+            ),
+        )
+        theoretical_by_decoder = {
+            str(row["decoder_id"]): row for row in theoretical
+        }
+        replay_signal = signal_series.reindex(authority_index).to_numpy()
+        replay_frame = master.copy()
+        replay_frame["signal"] = replay_signal
+        metrics: list[dict[str, Any]] = []
+        for decoder in DECODER_POLICIES:
+            result = run_a_share_long_only_replay(
+                replay_frame,
+                fee_schedule=fee,
+                universe_policy=universe,
+                execution_policy=execution,
+                corporate_action_policy=corporate,
+                portfolio_decoder_policy=decoder,
+                ending_book_policy=ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
+            )
+            theory = theoretical_by_decoder[decoder.decoder_id]
+            metrics.append(
+                _candidate_metric(
+                    candidate=candidate,
+                    decoder=decoder,
+                    result=result,
+                    signal_rank_ic_mean=_finite(
+                        theory["signal_rank_ic_mean"]
+                    ),
+                    theoretical_gross_mean=_finite(
+                        theory["gross_forward_return_mean"]
+                    ),
+                )
+            )
+        payload = {
+            "schema_version": "cn_portfolio_decoder_v2_candidate_v1",
+            "status": "DECODER_V2_CANDIDATE_CLOSED_IMMUTABLE",
+            "candidate_id": candidate_id,
+            "input_data_sha256": input_data_sha256,
+            "metrics": metrics,
+        }
+        payload["payload_sha256"] = v1._stable_hash(payload)
+        v1._write_json(target, payload)
+        return metrics
+
+    metric_rows: list[dict[str, Any]] = []
+    with ThreadPoolExecutor(max_workers=int(worker_count)) as executor:
+        futures = {
+            executor.submit(evaluate_one, candidate): str(
+                candidate["candidate_id"]
+            )
+            for candidate in candidates.to_dict(orient="records")
+        }
+        for future in as_completed(futures):
+            metric_rows.extend(future.result())
+            if psutil.virtual_memory().available < MINIMUM_FREE_MEMORY_BYTES:
+                raise RuntimeError("decoder V2 runtime memory gate failed")
+    candidate_metrics = pd.DataFrame(metric_rows).sort_values(
+        ["pair_id", "pair_member_role", "decoder_id"],
+        kind="mergesort",
+    ).reset_index(drop=True)
+    if len(candidate_metrics) != EXPECTED_MEMBER_COUNT * len(
+        DECODER_POLICIES
+    ):
+        raise RuntimeError("decoder V2 metric cardinality drift")
+    if not candidate_metrics["accounting_invariants_status"].eq("PASS").all():
+        raise RuntimeError("decoder V2 accounting invariant failure")
+    parity = _baseline_parity(candidate_metrics, baseline)
+    pairs = _pair_metrics(candidate_metrics)
+    rank = _rank_preservation(candidate_metrics)
+    transition = _transition_matrix(candidate_metrics)
+
+    candidate_metrics_path = output_root / "decoder_candidate_metrics.parquet"
+    pair_metrics_path = output_root / "decoder_pair_metrics.parquet"
+    rank_path = output_root / "decoder_rank_preservation.parquet"
+    transition_path = output_root / "candidate_transition_matrix.parquet"
+    parity_path = output_root / "baseline_ledger_parity.parquet"
+    candidate_metrics.to_parquet(candidate_metrics_path, index=False)
+    pairs.to_parquet(pair_metrics_path, index=False)
+    rank.to_parquet(rank_path, index=False)
+    transition.to_parquet(transition_path, index=False)
+    parity.to_parquet(parity_path, index=False)
+    report_path = output_root / "CN_PORTFOLIO_DECODER_V2.md"
+    report_path.write_text(
+        _report(selection_sha256=selection_sha256, rank=rank, pairs=pairs),
+        encoding="utf-8",
+    )
+
+    candidate_files = sorted(candidate_root.glob("*.json"))
+    artifacts = [
+        v1._artifact(path, root=output_root)
+        for path in (
+            binding_path,
+            candidate_metrics_path,
+            pair_metrics_path,
+            rank_path,
+            transition_path,
+            parity_path,
+            report_path,
+            *candidate_files,
+        )
+    ]
+    closure = {
+        "schema_version": SCHEMA_VERSION,
+        "status": "CN_PORTFOLIO_DECODER_V2_CLOSED_IMMUTABLE_DIAGNOSTIC_ONLY",
+        "completed_at_utc": datetime.now(timezone.utc).isoformat(),
+        "selection_payload_sha256": selection_sha256,
+        "input_data_sha256": input_data_sha256,
+        "pair_count": EXPECTED_PAIR_COUNT,
+        "candidate_member_count": EXPECTED_MEMBER_COUNT,
+        "decoder_count": len(DECODER_POLICIES),
+        "candidate_metric_count": int(len(candidate_metrics)),
+        "pair_metric_count": int(len(pairs)),
+        "baseline_parity_count": int(len(parity)),
+        "baseline_parity_status": "PASS",
+        "accounting_invariants_status": "PASS",
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "search_run": False,
+        "reward_changed": False,
+        "evaluator_changed": False,
+        "promotion_authorized": False,
+        "artifacts": artifacts,
+    }
+    closure["manifest_body_sha256"] = v1._stable_hash(closure)
+    return v1._write_json(
+        output_root / "DECODER_V2_COMPLETE.json", closure
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--replay-oos-root", required=True, type=Path)
+    parser.add_argument("--ledger-replay-root", required=True, type=Path)
+    parser.add_argument("--output-root", required=True, type=Path)
+    parser.add_argument("--builder-commit-sha", required=True)
+    parser.add_argument("--expected-selection-payload-sha256", required=True)
+    parser.add_argument("--worker-count", type=int, default=8)
+    args = parser.parse_args()
+    closure = run_decoder_v2(
+        replay_oos_root=args.replay_oos_root,
+        ledger_replay_root=args.ledger_replay_root,
+        output_root=args.output_root,
+        builder_commit_sha=args.builder_commit_sha,
+        expected_selection_payload_sha256=(
+            args.expected_selection_payload_sha256
+        ),
+        worker_count=args.worker_count,
+    )
+    print(closure)
+
+
+if __name__ == "__main__":
+    main()
