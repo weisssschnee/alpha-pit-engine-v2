@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-04
+Updated: 2026-08-05
 
-Current state: `CN_PORTFOLIO_DECODER_V2_CLOSED_TRAIN_POSITIVE_HOLD_RESEARCH`
+Current state: `CN_DECODER_V2_TOPK10_EQUAL_ADAPTIVE_OOS_POSITIVE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,71 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Frozen TOPK_10_EQUAL adaptive report-only validation OOS closure (2026-08-05)
+
+- The train-only `TOPK_10_EQUAL` freeze is immutable at
+  `D:\ChengboRemote\runtime\cn_decoder_v2_train_finalists_topk10_equal_22_20260805_e6d585d`:
+  22 mechanism-distinct pairs / 44 members in original order, with no backfill
+  and selection payload SHA256
+  `bb01b09328c7ef6919367326ddcd5aa02b1f21c5b17db8c895079d3b42f5c8c9`.
+- The first apparently closed all-zero OOS was invalidated rather than treated
+  as an alpha result. Its validation authority had classified every row as ST
+  after consuming an all-null field. The complete invalid output and audit are
+  preserved at
+  `D:\ChengboRemote\runtime\run_health_incidents\20260805T022504_decoder_oos_zero_eligible_st_authority_invalid`;
+  incident/preservation-manifest SHA256 values are
+  `666a37da4bc0cff69b3aed4e47d20894068487f3bc77ea57cee31c00bca39220` /
+  `e18c9b3ae9f61c6490299341142530c73139b8df6bfeb5ba5ffc0982840a956d`.
+  No invalid candidate result was reused.
+- The corrected authority binds the immutable 2025 daily HFQ ST source at
+  SHA256 `7060dd78cde6b826157f10c03541a4c302d11fe3213517236dc893393c071e68`.
+  It retains 370,972 exact observed ST coordinates, conservatively excludes
+  only 278 sparse source-gap coordinates, and contains 362,442 non-ST authority
+  sessions. The authority root is
+  `D:\ChengboRemote\runtime\cn_decoder_v2_validation_session_authority_v2_recovery2_20260805_6eb643d`;
+  manifest file/payload SHA256 values are
+  `2a8addb3f37762e635a1219b0cbeb7d587424da1316c2a7df377e6fb305f4d9c` /
+  `76f092eaf86a3b7297196d8781f3f57cf49f3b7b70203d21c0864d46b5d6437e`.
+  Independent audit SHA256 is
+  `95868cd8405cc6abf65d534b34de540642f29738e6450938a34eaf28e06d1fc1`.
+- The unchanged accelerated OOS then closed at
+  `D:\ChengboRemote\runtime\cn_decoder_v2_topk10_equal_report_only_oos_22_recovery4_20260805_6eb643d`.
+  Closure file/payload SHA256 values are
+  `457c1dce5176f9f795e0827e07c8ceca6cce7f06b1939f04029ae992f617729e` /
+  `5ac70d791f4aad03259a8cdbf44dfbed83eab58a0a88609cedf53ec35a6824b4`;
+  independent audit SHA256 is
+  `395d5aa96aee00e5581536cc4b02f5d8ec71f3088f8e52036da02182b38cc373`.
+  All 44 candidates / 22 pairs, canonical self-hashes, pair recomputation,
+  identities/order and accounting invariants passed. The run used 362,193
+  eligible sessions and produced 31,312 fills. Validation reads were 756,720;
+  holdout/2026 reads and optimizer, scheduler, archive and promotion writes
+  were zero.
+- Absolute transfer is strong within this adaptive validation slice: all 22
+  primary candidates had positive net return and positive continuous-book net
+  reward. Primary cumulative net return median/p10 were `0.090252051` /
+  `0.045685622`; reward median/p10 were `2.622437181` / `1.379451569`.
+  Median one-way turnover was `0.284526945`, median net return per turnover was
+  `0.284322043`, median daily-return p10 was `-0.013708211`, and the worst
+  observed primary daily return was `-0.032239356`.
+- Relative alpha is narrower: 11/22 matched return increments were positive,
+  10/22 matched reward increments were positive, and 10/22 pairs passed all
+  four absolute-plus-relative reward-and-return gates. Matched return increment
+  median/p10 were `0.001166406` / `-0.059396143`; matched reward increment
+  median/p10 were `-0.094704456` / `-1.908352168`. Positive-return top-one and
+  top-five concentration were `0.079972824` / `0.362554957`, so the absolute
+  result is not carried by one outlier.
+- High ending exposure is not being mistaken for a forced sale: ending holdings
+  weight median was `0.963235946`, while median realized trade PnL was CNY
+  `86,283.80` versus median ending unrealized PnL CNY `7,277.97`. Final-close
+  holdings remain marked without a fabricated terminal sale or terminal fee.
+  Cross-layer ranking remains weak: train decoder to OOS net-return Spearman was
+  `0.110107284` with 2/5 top-five retention, while train search score to OOS
+  return was `-0.047995483`. The result supports a small economic survivor set,
+  not the current search reward as a reliable selector.
+- This is `ADAPTIVE_REPORT_ONLY_VALIDATION_OOS`, not untouched confirmatory
+  holdout evidence and not promotion authority. The accepted state is therefore
+  positive research evidence with promotion held, not a production-alpha claim.
 
 ### Auditable trading ledger and accelerated CN_PORTFOLIO_DECODER_V2 closure (2026-08-04)
 
@@ -2251,24 +2316,17 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-The auditable ledger and decoder V2 3x1 replay are closed and must not be rerun.
-`TOPK_10_EQUAL` is the preferred train-only treatment: 22/32 pairs passed both
-standalone and matched net-return gates, primary median/p10 return were
-`0.192914684` / `0.025385922`, matched-increment median was `0.112225690`, and
-signal-to-net Spearman improved from `-0.087243402` to `0.391495601` without a
-single-candidate concentration artifact. This remains decoder-selection-on-
-train evidence, not OOS alpha or formal portfolio authority.
-
-If separately authorized, the next bounded action is deterministic train-only
-freezing under `TOPK_10_EQUAL`: retain only the actual positive standalone and
-positive matched-return pairs, remove duplicate economic mechanisms without
-backfill, preserve original identity/order and freeze the resulting smaller
-cohort before any validation read. One unchanged report-only continuous-book
-OOS replay may then test transfer with no feedback to search, reward, scheduler
-or archive state. If the frozen cohort fails OOS, remain `HOLD_RESEARCH`; do not
-rescue it by changing the decoder, costs, split or selection after reading OOS.
-Do not launch formula search, TPE/reward changes, exit-policy search or another
-decoder matrix from this evidence.
+The frozen 22-pair `TOPK_10_EQUAL` adaptive report-only validation OOS is closed
+and must not be rerun. It produced 10 pairs that passed all four absolute and
+matched reward/return gates, but the same validation evidence used to report
+them cannot now select and revalidate them without adaptation bias. Do not feed
+this OOS result into search, TPE, reward, scheduler or archive state and do not
+promote the decoder or candidates from this evidence alone. If separately
+authorized, the next bounded action is to freeze the ten reported survivors
+exactly as a research cohort and test them once on a genuinely untouched
+confirmatory split or forward shadow portfolio, with no backfill or post-read
+tuning. Until that evidence exists, retain
+`CN_DECODER_V2_TOPK10_EQUAL_ADAPTIVE_OOS_POSITIVE_HOLD_PROMOTION`.
 
 The continuous-book MTM retest over the complete ten-pair productive supply is
 closed and must not be rerun. It resolved the accounting objection directly:
