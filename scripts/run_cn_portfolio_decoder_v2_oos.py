@@ -388,7 +388,7 @@ def _evaluate_candidate(
             context["field_frame"],
             str(candidate["expression"]),
             cache={},
-            data_role="validation",
+            data_role="validation_report_only",
         ),
         errors="coerce",
     )

@@ -298,6 +298,23 @@ def test_typed_temporal_requires_development_role_and_declared_types() -> None:
 
     with pytest.raises(PermissionError, match="development-only"):
         evaluate_typed_temporal_primitive(frame, "Delta", typed, [1], data_role="forward")
+    with pytest.raises(PermissionError, match="development-only"):
+        evaluate_typed_temporal_primitive(frame, "Delta", typed, [1], data_role="validation")
+    report_only = evaluate_typed_temporal_primitive(
+        frame,
+        "Delta",
+        typed,
+        [1],
+        data_role="validation_report_only",
+    )
+    development = evaluate_typed_temporal_primitive(
+        frame,
+        "Delta",
+        typed,
+        [1],
+        data_role="development",
+    )
+    pd.testing.assert_series_equal(report_only.values, development.values)
     with pytest.raises(TypeError, match="requires boolean"):
         evaluate_typed_temporal_primitive(
             frame,

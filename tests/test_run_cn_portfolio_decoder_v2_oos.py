@@ -112,3 +112,8 @@ def test_oos_contract_is_one_decoder_and_report_only() -> None:
     assert oos.POLICY.top_k == 10
     assert oos.POLICY.weighting == "EQUAL"
     assert oos.EVIDENCE_SCOPE == "ADAPTIVE_REPORT_ONLY_VALIDATION_OOS"
+    source = (PROJECT_ROOT / "scripts" / "run_cn_portfolio_decoder_v2_oos.py").read_text(
+        encoding="utf-8"
+    )
+    assert 'data_role="validation_report_only"' in source
+    assert 'data_role="validation"' not in source
