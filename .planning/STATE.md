@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-03
+Updated: 2026-08-04
 
-Current state: `CN_ALPHA_AUTOPSY_V1_CLOSED_HOLD_RESEARCH`
+Current state: `CN_PORTFOLIO_DECODER_AUTOPSY_V1_CLOSED_HOLD_RESEARCH`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,52 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### CN_PORTFOLIO_DECODER_AUTOPSY_V1 closed over frozen train evidence (2026-08-04)
+
+- The decoder autopsy closed at
+  `D:\ChengboRemote\runtime\cn_portfolio_decoder_autopsy_v1_32_20260804_3e67d1e`
+  over the unchanged 32-pair / 64-member cohort with selection payload SHA256
+  `24aa602dbcd19f02b2c6f773a3441fde78d1612e327b11039684764569b6e5c1`.
+  The closure file/canonical SHA256 values are
+  `1203101eacf63bed50736d34c921178e447b2f7fe79804b7043fdc536d6a43c9` /
+  `598b56aa54e275067069fcff46254d80d3147d0e6796d55361647af7c0ab4ad0`.
+  Its canonical self-hash and all 71 declared artifacts passed independent
+  verification. The metric tables contain exactly 2,560 candidate rows, 1,280
+  pair rows and 40 rank-preservation rows, with 64 candidates, 32 pairs, ten
+  decoders, four holding-session values and zero duplicate composite keys.
+- The current executable decoder canary reproduced the immutable replay
+  exactly: ending NAV, fees, trade/fill counts and typed blocked-buy/sell counts
+  all had zero delta. Input identity sets and pair/member bindings match the
+  frozen cohort; no candidate was filtered or added. No search, reward or
+  evaluator change, validation/holdout/2026 read, archive/promotion write or
+  Graph authority transition occurred.
+- The sidecar has one 15:00 row per stock/session. Therefore the historical
+  stock-session `horizon_min=1/5/15/30` labels are session shifts here, not true
+  minute clocks. The accepted report names them holding sessions and does not
+  make a minute-horizon claim.
+- The current top-20%-equal decoder at one session does not preserve the full
+  signal ordering (signal-to-gross Spearman `-0.08431085`) but retains 2/4 of
+  the signal top decile and 3/5 of the signal top five. It is also the only
+  tested mapping with material positive agreement to the existing exact MTM
+  ordering: gross-to-existing-MTM reward/NAV Spearman values are
+  `0.37719941` / `0.43071848`. At 5/15/30 sessions its signal-to-gross
+  Spearman values are `-0.05681818` / `-0.28005865` / `-0.17925220`, with
+  zero top-five retention at every longer holding period.
+- `TOPK_10_RANK` at one session has the highest observed signal-to-gross
+  Spearman, `0.32917889`, but this is only marginal train evidence
+  (`p=0.06581495`, n=32). It retains only 1/4 of the signal top decile and 1/5
+  of the top five, reverses against existing MTM reward ordering
+  (`-0.27089443`) and raises median target one-way turnover from the current
+  decoder's `0.07144072` to `0.34337234`. It therefore does not dominate the
+  current decoder and is not promoted. The other tested Top-K/rank/softmax
+  mappings also failed to win full-order preservation, elite retention and
+  existing-replay agreement simultaneously.
+- The 1,249/1,280 positive absolute-and-matched cells are theoretical gross
+  train diagnostics (next-open entry and final-close mark), not executable net
+  PnL or finalist evidence. The accepted state remains `HOLD_RESEARCH`: the
+  autopsy localizes a real decoder/horizon mismatch but does not authorize a
+  portfolio authority change, report-only OOS or more formula search.
 
 ### CN_ALPHA_AUTOPSY_V1 closed over immutable 32-pair evidence (2026-08-03)
 
@@ -2132,6 +2178,19 @@ remains unchanged. The compact receipt is
   a SHA-verified full Git bundle without changing the node's proxy authority.
 
 ## Next action
+
+Do not promote `TOPK_10_RANK` from the decoder autopsy and do not repeat the
+10-by-4 gross matrix. The next bounded research action, if separately
+authorized, is a train-only exact continuous-book shadow replay of three
+one-session mappings over the same 32 pairs: current top-20%-equal,
+top-10-equal and top-10-rank. Reuse the current A-share/PIT/cost authority and
+report net MTM, matched increment, signal-rank preservation, top-five
+retention and turnover together. Admit no decoder unless it improves the full
+ordering and elite retention without reversing exact replay ranking or buying
+the improvement through excessive turnover. Only a small unchanged
+train-positive winner set may later receive one separately frozen report-only
+OOS; otherwise remain `HOLD_RESEARCH`. Formula search, TPE/reward changes and
+new validation reads remain out of scope.
 
 Do not expand formula search from this evidence. The next bounded research
 action is a train-only portfolio transformation audit/optimizer over the frozen
