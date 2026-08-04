@@ -33,6 +33,34 @@ def test_decoder_v2_uses_closed_ledger_manifest_field() -> None:
         )
 
 
+def test_process_executor_contract_is_bounded_by_cpu_entitlement() -> None:
+    assert (
+        subject._validate_executor_contract(
+            execution_backend="PROCESS_POOL",
+            entitlement_worker_count=32,
+            executor_worker_count=12,
+        )
+        == "PROCESS_POOL"
+    )
+    with pytest.raises(ValueError, match="cannot exceed"):
+        subject._validate_executor_contract(
+            execution_backend="PROCESS_POOL",
+            entitlement_worker_count=8,
+            executor_worker_count=12,
+        )
+    with pytest.raises(ValueError, match="execution_backend"):
+        subject._validate_executor_contract(
+            execution_backend="UNBOUNDED",
+            entitlement_worker_count=32,
+            executor_worker_count=12,
+        )
+
+
+def test_uninitialized_process_worker_fails_closed() -> None:
+    with pytest.raises(RuntimeError, match="was not initialized"):
+        subject._evaluate_candidate_in_process({"candidate_id": "candidate-1"})
+
+
 def test_baseline_parity_accepts_exact_64_member_ledger() -> None:
     metrics = []
     baseline = []

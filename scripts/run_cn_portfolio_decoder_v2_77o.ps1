@@ -11,8 +11,15 @@ param(
     [ValidateSet('VALIDATION_DUAL_8', 'VALIDATION_EXCLUSIVE_32')]
     [string]$NodeResourceProfile = 'VALIDATION_DUAL_8',
     [ValidateRange(1, 32)][int]$WorkerCount = 8,
+    [ValidateSet('THREAD_POOL', 'PROCESS_POOL')]
+    [string]$ExecutionBackend = 'PROCESS_POOL',
+    [ValidateRange(1, 32)][int]$ExecutorWorkerCount = 8,
     [switch]$AccelerationQualification,
     [ValidateRange(1, 64)][int]$QualificationCandidateCount = 32,
+    [ValidateRange(0.000001, 1000000.0)]
+    [double]$QualificationBaselineCandidatesPerHour = 16.53051836148971,
+    [ValidateRange(1.000001, 1000.0)]
+    [double]$QualificationMinimumSpeedupRatio = 1.5,
     [string]$NodeResourceCapacity = (
         'runtime\run_plans\cn_alpha_node_resource_profiles_v1.json'
     ),
@@ -96,6 +103,9 @@ if (
 ) {
     throw 'decoder V2 resource profile/thread mismatch'
 }
+if ($ExecutorWorkerCount -gt $WorkerCount) {
+    throw 'decoder V2 executor workers exceed admitted CPU entitlement'
+}
 $freeBytes = [int64](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory * 1024
 if ($freeBytes -lt [int64]24 * 1024 * 1024 * 1024) {
     throw "free memory below 24 GiB gate: $freeBytes"
@@ -143,9 +153,25 @@ $stderrPath = Join-Path $resolvedRoot 'decoder_v2.stderr.log'
     output_root = $resolvedRoot
     node_resource_profile = $NodeResourceProfile
     worker_count = $WorkerCount
-    native_threads_per_candidate = 1
+    execution_backend = $ExecutionBackend
+    executor_worker_count = $ExecutorWorkerCount
+    native_threads_per_executor_worker = 1
     qualification_candidate_count = if ($AccelerationQualification) {
         $QualificationCandidateCount
+    } else {
+        $null
+    }
+    qualification_baseline_candidates_per_hour = if (
+        $AccelerationQualification
+    ) {
+        $QualificationBaselineCandidatesPerHour
+    } else {
+        $null
+    }
+    qualification_minimum_speedup_ratio = if (
+        $AccelerationQualification
+    ) {
+        $QualificationMinimumSpeedupRatio
     } else {
         $null
     }
@@ -207,12 +233,18 @@ try {
         '--output-root', $resolvedRoot,
         '--builder-commit-sha', $RepoSha,
         '--worker-count', [string]$WorkerCount,
+        '--execution-backend', $ExecutionBackend,
+        '--executor-worker-count', [string]$ExecutorWorkerCount,
         '--expected-selection-payload-sha256', $SelectionPayloadSha256
     )
     if ($AccelerationQualification) {
         $decoderArguments += @(
             '--qualification-candidate-count',
-            [string]$QualificationCandidateCount
+            [string]$QualificationCandidateCount,
+            '--qualification-baseline-candidates-per-hour',
+            [string]$QualificationBaselineCandidatesPerHour,
+            '--qualification-minimum-speedup-ratio',
+            [string]$QualificationMinimumSpeedupRatio
         )
     }
     & $python (Join-Path $resolvedRepo (

@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import (
+    FIRST_COMPLETED,
+    ProcessPoolExecutor,
+    ThreadPoolExecutor,
+    wait,
+)
 from dataclasses import asdict
 from datetime import datetime, timezone
+import gc
 import json
 import math
 import os
@@ -63,6 +69,11 @@ DECODER_POLICIES = (
     ),
 )
 
+EXECUTION_BACKENDS = ("THREAD_POOL", "PROCESS_POOL")
+_PROCESS_WORKER_CONTEXT: dict[str, Any] | None = None
+_PROCESS_WORKER_CANDIDATE_ROOT: Path | None = None
+_PROCESS_WORKER_INPUT_DATA_SHA256: str | None = None
+
 
 def _finite(value: Any) -> float | None:
     try:
@@ -93,6 +104,125 @@ def _require_persisted_accounting_ledgers(
 ) -> None:
     if not bool(ledger_closure.get("accounting_ledgers_persisted")):
         raise RuntimeError("decoder V2 requires persisted accounting ledgers")
+
+
+def _validate_executor_contract(
+    *,
+    execution_backend: str,
+    entitlement_worker_count: int,
+    executor_worker_count: int,
+) -> str:
+    backend = str(execution_backend).upper()
+    if backend not in EXECUTION_BACKENDS:
+        raise ValueError(
+            f"execution_backend must be one of {EXECUTION_BACKENDS}"
+        )
+    if int(entitlement_worker_count) < 1 or int(entitlement_worker_count) > 32:
+        raise ValueError("worker_count must be in [1, 32]")
+    if int(executor_worker_count) < 1:
+        raise ValueError("executor_worker_count must be positive")
+    if int(executor_worker_count) > int(entitlement_worker_count):
+        raise ValueError(
+            "executor_worker_count cannot exceed the admitted CPU entitlement"
+        )
+    return backend
+
+
+def _load_evaluation_context(
+    *,
+    contract_path: Path,
+    train_field_root: Path,
+    qualification_mode: bool,
+) -> dict[str, Any]:
+    contract = v1._read_json(contract_path)
+    base._verify_payload_hash(
+        contract,
+        field="contract_payload_sha256",
+        label="decoder V2 execution contract",
+    )
+    field_manifest, field_manifest_path = base._validate_sidecar(
+        train_field_root,
+        evaluation_role="train",
+        split_hash=str(contract["split_manifest_sha256"]),
+    )
+    field_frame = base._load_field_frame(train_field_root, field_manifest)
+    if not field_frame["trade_time"].dt.strftime("%H:%M:%S").eq(
+        "15:00:00"
+    ).all():
+        raise RuntimeError("decoder V2 sidecar contains intraday clocks")
+    session_manifest_path = Path(
+        str(contract["session_authority_manifest"])
+    ).resolve()
+    session_path = Path(str(contract["session_authority_path"])).resolve()
+    if v1._sha256(session_manifest_path) != str(
+        contract["session_authority_manifest_sha256"]
+    ):
+        raise RuntimeError("decoder V2 session manifest drift")
+    session_authority = pd.read_parquet(session_path)
+    master, observed_index, authority_index = base._materialize_replay_master(
+        field_frame, session_authority
+    )
+    universe_raw = dict(contract["universe_policy"])
+    universe_raw["allowed_exchanges"] = tuple(
+        universe_raw["allowed_exchanges"]
+    )
+    universe = AShareUniversePolicy(**universe_raw)
+    fee = AShareFeeSchedule(**dict(contract["fee_schedule"]))
+    execution = AShareExecutionPolicy(**dict(contract["execution_policy"]))
+    corporate = AShareCorporateActionPolicy(
+        **dict(contract["corporate_action_policy"])
+    )
+    prepared_master = _prepare_sessions(
+        master.assign(signal=0.0), universe_policy=universe
+    ).drop(columns=["signal"])
+    prepared_index = pd.MultiIndex.from_frame(
+        prepared_master[["date", "code"]]
+    )
+    if set(prepared_index) != set(authority_index):
+        raise RuntimeError("decoder V2 session coordinate drift")
+    future_returns = v1.forward_open_to_close_returns(
+        prepared_master, horizons=(1,)
+    )
+    codes = prepared_master["code"].astype(str).to_numpy()
+    dates = pd.to_datetime(prepared_master["date"]).to_numpy()
+    eligible = prepared_master[
+        "promotion_universe_eligible"
+    ].astype(bool).to_numpy()
+    date_order = np.argsort(dates, kind="mergesort")
+    sorted_dates = dates[date_order]
+    boundaries = np.flatnonzero(
+        np.r_[True, sorted_dates[1:] != sorted_dates[:-1], True]
+    )
+    date_groups = [
+        date_order[start:end]
+        for start, end in zip(boundaries[:-1], boundaries[1:])
+    ]
+    evaluation_policies = (
+        (DECODER_POLICIES[0],)
+        if qualification_mode
+        else DECODER_POLICIES
+    )
+    return {
+        "contract": contract,
+        "field_manifest_path": field_manifest_path,
+        "session_manifest_path": session_manifest_path,
+        "session_path": session_path,
+        "field_frame": field_frame,
+        "master": master,
+        "observed_index": observed_index,
+        "authority_index": authority_index,
+        "prepared_index": prepared_index,
+        "future_returns": future_returns,
+        "codes": codes,
+        "dates": dates,
+        "eligible": eligible,
+        "date_groups": date_groups,
+        "universe": universe,
+        "fee": fee,
+        "execution": execution,
+        "corporate": corporate,
+        "evaluation_policies": evaluation_policies,
+    }
 
 
 def _candidate_metric(
@@ -197,6 +327,147 @@ def _candidate_metric(
         "forward_2026_reads": 0,
         "promotion_authorized": False,
     }
+
+
+def _evaluate_candidate_with_context(
+    candidate: Mapping[str, Any],
+    *,
+    context: Mapping[str, Any],
+    candidate_root: Path,
+    input_data_sha256: str,
+) -> list[dict[str, Any]]:
+    candidate_id = str(candidate["candidate_id"])
+    target = candidate_root / f"{candidate_id}.json"
+    signal_field = pd.to_numeric(
+        base.evaluate_panel_expression(
+            context["field_frame"],
+            str(candidate["expression"]),
+            cache={},
+            data_role="development",
+        ),
+        errors="coerce",
+    )
+    signal_series = pd.Series(
+        signal_field.to_numpy(), index=context["observed_index"]
+    )
+    aligned_signal = signal_series.reindex(
+        context["prepared_index"]
+    ).to_numpy(dtype=float)
+    theoretical = v1.evaluate_candidate_decoder_matrix(
+        candidate=candidate,
+        signal=aligned_signal,
+        codes=context["codes"],
+        dates=context["dates"],
+        eligible=context["eligible"],
+        future_returns=context["future_returns"],
+        date_groups=context["date_groups"],
+        decoders=tuple(
+            {
+                "decoder_id": policy.decoder_id,
+                "selection": policy.selection,
+                "weighting": policy.weighting,
+                **(
+                    {"top_fraction": policy.top_fraction}
+                    if policy.top_fraction is not None
+                    else {"top_k": policy.top_k}
+                ),
+            }
+            for policy in context["evaluation_policies"]
+        ),
+    )
+    theoretical_by_decoder = {
+        str(row["decoder_id"]): row for row in theoretical
+    }
+    replay_signal = signal_series.reindex(
+        context["authority_index"]
+    ).to_numpy()
+    replay_frame = context["master"].copy()
+    replay_frame["signal"] = replay_signal
+    metrics: list[dict[str, Any]] = []
+    for decoder in context["evaluation_policies"]:
+        result = run_a_share_long_only_replay(
+            replay_frame,
+            fee_schedule=context["fee"],
+            universe_policy=context["universe"],
+            execution_policy=context["execution"],
+            corporate_action_policy=context["corporate"],
+            portfolio_decoder_policy=decoder,
+            ending_book_policy=ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
+        )
+        theory = theoretical_by_decoder[decoder.decoder_id]
+        metrics.append(
+            _candidate_metric(
+                candidate=candidate,
+                decoder=decoder,
+                result=result,
+                signal_rank_ic_mean=_finite(theory["signal_rank_ic_mean"]),
+                theoretical_gross_mean=_finite(
+                    theory["gross_forward_return_mean"]
+                ),
+            )
+        )
+    payload = {
+        "schema_version": "cn_portfolio_decoder_v2_candidate_v1",
+        "status": "DECODER_V2_CANDIDATE_CLOSED_IMMUTABLE",
+        "candidate_id": candidate_id,
+        "input_data_sha256": input_data_sha256,
+        "metrics": metrics,
+    }
+    payload["payload_sha256"] = v1._stable_hash(payload)
+    v1._write_json(target, payload)
+    return metrics
+
+
+def _initialize_process_worker(
+    contract_path: str,
+    train_field_root: str,
+    qualification_mode: bool,
+    candidate_root: str,
+    input_data_sha256: str,
+) -> None:
+    global _PROCESS_WORKER_CONTEXT
+    global _PROCESS_WORKER_CANDIDATE_ROOT
+    global _PROCESS_WORKER_INPUT_DATA_SHA256
+    _PROCESS_WORKER_CONTEXT = _load_evaluation_context(
+        contract_path=Path(contract_path),
+        train_field_root=Path(train_field_root),
+        qualification_mode=bool(qualification_mode),
+    )
+    _PROCESS_WORKER_CANDIDATE_ROOT = Path(candidate_root)
+    _PROCESS_WORKER_INPUT_DATA_SHA256 = str(input_data_sha256)
+
+
+def _evaluate_candidate_in_process(
+    candidate: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    if (
+        _PROCESS_WORKER_CONTEXT is None
+        or _PROCESS_WORKER_CANDIDATE_ROOT is None
+        or _PROCESS_WORKER_INPUT_DATA_SHA256 is None
+    ):
+        raise RuntimeError("decoder V2 process worker was not initialized")
+    return _evaluate_candidate_with_context(
+        candidate,
+        context=_PROCESS_WORKER_CONTEXT,
+        candidate_root=_PROCESS_WORKER_CANDIDATE_ROOT,
+        input_data_sha256=_PROCESS_WORKER_INPUT_DATA_SHA256,
+    )
+
+
+def _resource_snapshot() -> tuple[int, int, int]:
+    process = psutil.Process()
+    parent_rss = int(process.memory_info().rss)
+    tree_rss = parent_rss
+    for child in process.children(recursive=True):
+        try:
+            tree_rss += int(child.memory_info().rss)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    return (
+        int(psutil.virtual_memory().available),
+        parent_rss,
+        tree_rss,
+    )
 
 
 def _baseline_parity(
@@ -490,14 +761,23 @@ def run_decoder_v2(
     builder_commit_sha: str,
     expected_selection_payload_sha256: str,
     worker_count: int = 8,
+    execution_backend: str = "THREAD_POOL",
+    executor_worker_count: int | None = None,
     qualification_candidate_count: int | None = None,
+    qualification_baseline_candidates_per_hour: float | None = None,
+    qualification_minimum_speedup_ratio: float = 1.5,
 ) -> dict[str, Any]:
     if platform.node().upper() != AUTHORIZED_HOST:
         raise RuntimeError(f"decoder V2 must run on {AUTHORIZED_HOST}")
     if psutil.virtual_memory().available < MINIMUM_FREE_MEMORY_BYTES:
         raise RuntimeError("decoder V2 minimum-free-memory gate failed")
-    if int(worker_count) < 1 or int(worker_count) > 32:
-        raise ValueError("worker_count must be in [1, 32]")
+    if executor_worker_count is None:
+        executor_worker_count = int(worker_count)
+    execution_backend = _validate_executor_contract(
+        execution_backend=execution_backend,
+        entitlement_worker_count=int(worker_count),
+        executor_worker_count=int(executor_worker_count),
+    )
     if os.environ.get("CN_NODE_RESOURCE_LEASE_REQUIRED") == "1":
         entitlement = int(os.environ.get("CN_NODE_CPU_ENTITLEMENT") or 0)
         if entitlement != int(worker_count):
@@ -526,6 +806,18 @@ def run_decoder_v2(
         raise ValueError(
             "qualification_candidate_count must be in [1, 64]"
         )
+    if qualification_mode:
+        if (
+            qualification_baseline_candidates_per_hour is None
+            or float(qualification_baseline_candidates_per_hour) <= 0
+        ):
+            raise ValueError(
+                "qualification baseline candidates/hour must be positive"
+            )
+        if float(qualification_minimum_speedup_ratio) <= 1.0:
+            raise ValueError(
+                "qualification minimum speedup ratio must exceed 1.0"
+            )
     if len(builder_commit_sha) != 40:
         raise ValueError("builder_commit_sha must be a full Git SHA")
 
@@ -579,73 +871,16 @@ def run_decoder_v2(
         if qualification_mode
         else candidates
     )
-    evaluation_policies = (
-        (DECODER_POLICIES[0],)
-        if qualification_mode
-        else DECODER_POLICIES
+    evaluation_context = _load_evaluation_context(
+        contract_path=contract_path,
+        train_field_root=train_field_root,
+        qualification_mode=qualification_mode,
     )
-
-    contract = v1._read_json(contract_path)
-    base._verify_payload_hash(
-        contract,
-        field="contract_payload_sha256",
-        label="decoder V2 execution contract",
-    )
-    field_manifest, field_manifest_path = base._validate_sidecar(
-        train_field_root,
-        evaluation_role="train",
-        split_hash=str(contract["split_manifest_sha256"]),
-    )
-    field_frame = base._load_field_frame(train_field_root, field_manifest)
-    if not field_frame["trade_time"].dt.strftime("%H:%M:%S").eq(
-        "15:00:00"
-    ).all():
-        raise RuntimeError("decoder V2 sidecar contains intraday clocks")
-    session_manifest_path = Path(
-        str(contract["session_authority_manifest"])
-    ).resolve()
-    session_path = Path(str(contract["session_authority_path"])).resolve()
-    if v1._sha256(session_manifest_path) != str(
-        contract["session_authority_manifest_sha256"]
-    ):
-        raise RuntimeError("decoder V2 session manifest drift")
-    session_authority = pd.read_parquet(session_path)
-    master, observed_index, authority_index = base._materialize_replay_master(
-        field_frame, session_authority
-    )
-    universe_raw = dict(contract["universe_policy"])
-    universe_raw["allowed_exchanges"] = tuple(
-        universe_raw["allowed_exchanges"]
-    )
-    universe = AShareUniversePolicy(**universe_raw)
-    fee = AShareFeeSchedule(**dict(contract["fee_schedule"]))
-    execution = AShareExecutionPolicy(**dict(contract["execution_policy"]))
-    corporate = AShareCorporateActionPolicy(
-        **dict(contract["corporate_action_policy"])
-    )
-    prepared_master = _prepare_sessions(
-        master.assign(signal=0.0), universe_policy=universe
-    ).drop(columns=["signal"])
-    prepared_index = pd.MultiIndex.from_frame(prepared_master[["date", "code"]])
-    if set(prepared_index) != set(authority_index):
-        raise RuntimeError("decoder V2 session coordinate drift")
-    future_returns = v1.forward_open_to_close_returns(
-        prepared_master, horizons=(1,)
-    )
-    codes = prepared_master["code"].astype(str).to_numpy()
-    dates = pd.to_datetime(prepared_master["date"]).to_numpy()
-    eligible = prepared_master[
-        "promotion_universe_eligible"
-    ].astype(bool).to_numpy()
-    date_order = np.argsort(dates, kind="mergesort")
-    sorted_dates = dates[date_order]
-    boundaries = np.flatnonzero(
-        np.r_[True, sorted_dates[1:] != sorted_dates[:-1], True]
-    )
-    date_groups = [
-        date_order[start:end]
-        for start, end in zip(boundaries[:-1], boundaries[1:])
-    ]
+    evaluation_policies = evaluation_context["evaluation_policies"]
+    contract = evaluation_context["contract"]
+    field_manifest_path = evaluation_context["field_manifest_path"]
+    session_manifest_path = evaluation_context["session_manifest_path"]
+    session_path = evaluation_context["session_path"]
 
     decoder_contract = [
         {
@@ -672,6 +907,19 @@ def run_decoder_v2(
         "decoder_contract": decoder_contract,
         "decoder_contract_sha256": v1._stable_hash(decoder_contract),
         "worker_count": int(worker_count),
+        "execution_backend": execution_backend,
+        "executor_worker_count": int(executor_worker_count),
+        "native_threads_per_executor_worker": 1,
+        "qualification_baseline_candidates_per_hour": (
+            float(qualification_baseline_candidates_per_hour)
+            if qualification_mode
+            else None
+        ),
+        "qualification_minimum_speedup_ratio": (
+            float(qualification_minimum_speedup_ratio)
+            if qualification_mode
+            else None
+        ),
         "run_mode": (
             "ACCELERATION_QUALIFICATION"
             if qualification_mode
@@ -694,112 +942,93 @@ def run_decoder_v2(
     candidate_root = output_root / "candidates"
     candidate_root.mkdir(exist_ok=True)
 
-    def evaluate_one(candidate: Mapping[str, Any]) -> list[dict[str, Any]]:
-        candidate_id = str(candidate["candidate_id"])
-        target = candidate_root / f"{candidate_id}.json"
-        signal_field = pd.to_numeric(
-            base.evaluate_panel_expression(
-                field_frame,
-                str(candidate["expression"]),
-                cache={},
-                data_role="development",
-            ),
-            errors="coerce",
-        )
-        signal_series = pd.Series(
-            signal_field.to_numpy(), index=observed_index
-        )
-        aligned_signal = signal_series.reindex(prepared_index).to_numpy(
-            dtype=float
-        )
-        theoretical = v1.evaluate_candidate_decoder_matrix(
-            candidate=candidate,
-            signal=aligned_signal,
-            codes=codes,
-            dates=dates,
-            eligible=eligible,
-            future_returns=future_returns,
-            date_groups=date_groups,
-            decoders=tuple(
-                {
-                    "decoder_id": policy.decoder_id,
-                    "selection": policy.selection,
-                    "weighting": policy.weighting,
-                    **(
-                        {"top_fraction": policy.top_fraction}
-                        if policy.top_fraction is not None
-                        else {"top_k": policy.top_k}
-                    ),
-                }
-                for policy in evaluation_policies
-            ),
-        )
-        theoretical_by_decoder = {
-            str(row["decoder_id"]): row for row in theoretical
-        }
-        replay_signal = signal_series.reindex(authority_index).to_numpy()
-        replay_frame = master.copy()
-        replay_frame["signal"] = replay_signal
-        metrics: list[dict[str, Any]] = []
-        for decoder in evaluation_policies:
-            result = run_a_share_long_only_replay(
-                replay_frame,
-                fee_schedule=fee,
-                universe_policy=universe,
-                execution_policy=execution,
-                corporate_action_policy=corporate,
-                portfolio_decoder_policy=decoder,
-                ending_book_policy=ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
-            )
-            theory = theoretical_by_decoder[decoder.decoder_id]
-            metrics.append(
-                _candidate_metric(
-                    candidate=candidate,
-                    decoder=decoder,
-                    result=result,
-                    signal_rank_ic_mean=_finite(
-                        theory["signal_rank_ic_mean"]
-                    ),
-                    theoretical_gross_mean=_finite(
-                        theory["gross_forward_return_mean"]
-                    ),
-                )
-            )
-        payload = {
-            "schema_version": "cn_portfolio_decoder_v2_candidate_v1",
-            "status": "DECODER_V2_CANDIDATE_CLOSED_IMMUTABLE",
-            "candidate_id": candidate_id,
-            "input_data_sha256": input_data_sha256,
-            "metrics": metrics,
-        }
-        payload["payload_sha256"] = v1._stable_hash(payload)
-        v1._write_json(target, payload)
-        return metrics
-
     metric_rows: list[dict[str, Any]] = []
+    candidate_records = evaluation_candidates.to_dict(orient="records")
+    if execution_backend == "PROCESS_POOL":
+        del evaluation_context
+        gc.collect()
     started = time.perf_counter()
-    minimum_free_memory_bytes = int(psutil.virtual_memory().available)
-    maximum_process_rss_bytes = int(psutil.Process().memory_info().rss)
-    with ThreadPoolExecutor(max_workers=int(worker_count)) as executor:
+    (
+        minimum_free_memory_bytes,
+        maximum_process_rss_bytes,
+        maximum_process_tree_rss_bytes,
+    ) = _resource_snapshot()
+    host_cpu_samples: list[float] = []
+    psutil.cpu_percent(interval=None)
+    if execution_backend == "PROCESS_POOL":
+        executor = ProcessPoolExecutor(
+            max_workers=int(executor_worker_count),
+            initializer=_initialize_process_worker,
+            initargs=(
+                str(contract_path),
+                str(train_field_root),
+                bool(qualification_mode),
+                str(candidate_root),
+                input_data_sha256,
+            ),
+        )
+        submit = lambda candidate: executor.submit(  # noqa: E731
+            _evaluate_candidate_in_process, candidate
+        )
+    else:
+        executor = ThreadPoolExecutor(max_workers=int(executor_worker_count))
+        submit = lambda candidate: executor.submit(  # noqa: E731
+            _evaluate_candidate_with_context,
+            candidate,
+            context=evaluation_context,
+            candidate_root=candidate_root,
+            input_data_sha256=input_data_sha256,
+        )
+    with executor:
         futures = {
-            executor.submit(evaluate_one, candidate): str(
-                candidate["candidate_id"]
-            )
-            for candidate in evaluation_candidates.to_dict(orient="records")
+            submit(candidate): str(candidate["candidate_id"])
+            for candidate in candidate_records
         }
-        for future in as_completed(futures):
-            metric_rows.extend(future.result())
-            available = int(psutil.virtual_memory().available)
+        pending = set(futures)
+        while pending:
+            completed, pending = wait(
+                pending,
+                timeout=2.0,
+                return_when=FIRST_COMPLETED,
+            )
+            for future in completed:
+                metric_rows.extend(future.result())
+            available, parent_rss, tree_rss = _resource_snapshot()
             minimum_free_memory_bytes = min(
                 minimum_free_memory_bytes, available
             )
             maximum_process_rss_bytes = max(
                 maximum_process_rss_bytes,
-                int(psutil.Process().memory_info().rss),
+                parent_rss,
             )
+            maximum_process_tree_rss_bytes = max(
+                maximum_process_tree_rss_bytes,
+                tree_rss,
+            )
+            host_cpu_samples.append(float(psutil.cpu_percent(interval=None)))
             if available < MINIMUM_FREE_MEMORY_BYTES:
+                for future in pending:
+                    future.cancel()
                 raise RuntimeError("decoder V2 runtime memory gate failed")
     elapsed_seconds = float(time.perf_counter() - started)
+    logical_cpu_count = int(psutil.cpu_count(logical=True) or 1)
+    host_cpu_mean_percent = (
+        float(np.mean(host_cpu_samples)) if host_cpu_samples else 0.0
+    )
+    effective_cores = host_cpu_mean_percent * logical_cpu_count / 100.0
+    saturation_threshold_percent = (
+        70.0 * int(executor_worker_count) / logical_cpu_count
+    )
+    saturated_compute_sample_fraction = (
+        float(
+            np.mean(
+                np.asarray(host_cpu_samples, dtype=float)
+                >= saturation_threshold_percent
+            )
+        )
+        if host_cpu_samples
+        else 0.0
+    )
     candidate_metrics = pd.DataFrame(metric_rows).sort_values(
         ["pair_id", "pair_member_role", "decoder_id"],
         kind="mergesort",
@@ -834,6 +1063,12 @@ def run_decoder_v2(
                 *candidate_files,
             )
         ]
+        candidates_per_hour = (
+            float(len(evaluation_candidates)) * 3600.0 / elapsed_seconds
+        )
+        speedup_ratio = candidates_per_hour / float(
+            qualification_baseline_candidates_per_hour
+        )
         closure = {
             "schema_version": (
                 "cn_portfolio_decoder_v2_acceleration_qualification_v1"
@@ -847,13 +1082,35 @@ def run_decoder_v2(
                 policy.decoder_id for policy in evaluation_policies
             ],
             "worker_count": int(worker_count),
+            "execution_backend": execution_backend,
+            "executor_worker_count": int(executor_worker_count),
+            "native_threads_per_executor_worker": 1,
             "elapsed_seconds": elapsed_seconds,
-            "candidates_per_hour": (
-                float(len(evaluation_candidates)) * 3600.0
-                / elapsed_seconds
+            "candidates_per_hour": candidates_per_hour,
+            "qualification_baseline_candidates_per_hour": float(
+                qualification_baseline_candidates_per_hour
+            ),
+            "qualification_minimum_speedup_ratio": float(
+                qualification_minimum_speedup_ratio
+            ),
+            "qualification_observed_speedup_ratio": speedup_ratio,
+            "throughput_qualification_status": (
+                "PASS"
+                if speedup_ratio
+                >= float(qualification_minimum_speedup_ratio)
+                else "FAIL"
             ),
             "minimum_free_memory_bytes": minimum_free_memory_bytes,
             "maximum_process_rss_bytes": maximum_process_rss_bytes,
+            "maximum_process_tree_rss_bytes": (
+                maximum_process_tree_rss_bytes
+            ),
+            "logical_cpu_count": logical_cpu_count,
+            "host_cpu_mean_percent": host_cpu_mean_percent,
+            "effective_cores": effective_cores,
+            "saturated_compute_sample_fraction": (
+                saturated_compute_sample_fraction
+            ),
             "baseline_parity_count": int(len(parity)),
             "baseline_parity_status": "PASS",
             "accounting_invariants_status": "PASS",
@@ -918,6 +1175,23 @@ def run_decoder_v2(
         "baseline_parity_count": int(len(parity)),
         "baseline_parity_status": "PASS",
         "accounting_invariants_status": "PASS",
+        "worker_count": int(worker_count),
+        "execution_backend": execution_backend,
+        "executor_worker_count": int(executor_worker_count),
+        "native_threads_per_executor_worker": 1,
+        "elapsed_seconds": elapsed_seconds,
+        "candidates_per_hour": (
+            float(len(evaluation_candidates)) * 3600.0 / elapsed_seconds
+        ),
+        "minimum_free_memory_bytes": minimum_free_memory_bytes,
+        "maximum_process_rss_bytes": maximum_process_rss_bytes,
+        "maximum_process_tree_rss_bytes": maximum_process_tree_rss_bytes,
+        "logical_cpu_count": logical_cpu_count,
+        "host_cpu_mean_percent": host_cpu_mean_percent,
+        "effective_cores": effective_cores,
+        "saturated_compute_sample_fraction": (
+            saturated_compute_sample_fraction
+        ),
         "validation_reads": 0,
         "holdout_reads": 0,
         "forward_2026_reads": 0,
@@ -941,7 +1215,19 @@ def main() -> None:
     parser.add_argument("--builder-commit-sha", required=True)
     parser.add_argument("--expected-selection-payload-sha256", required=True)
     parser.add_argument("--worker-count", type=int, default=8)
+    parser.add_argument(
+        "--execution-backend",
+        choices=EXECUTION_BACKENDS,
+        default="THREAD_POOL",
+    )
+    parser.add_argument("--executor-worker-count", type=int)
     parser.add_argument("--qualification-candidate-count", type=int)
+    parser.add_argument(
+        "--qualification-baseline-candidates-per-hour", type=float
+    )
+    parser.add_argument(
+        "--qualification-minimum-speedup-ratio", type=float, default=1.5
+    )
     args = parser.parse_args()
     closure = run_decoder_v2(
         replay_oos_root=args.replay_oos_root,
@@ -952,7 +1238,15 @@ def main() -> None:
             args.expected_selection_payload_sha256
         ),
         worker_count=args.worker_count,
+        execution_backend=args.execution_backend,
+        executor_worker_count=args.executor_worker_count,
         qualification_candidate_count=args.qualification_candidate_count,
+        qualification_baseline_candidates_per_hour=(
+            args.qualification_baseline_candidates_per_hour
+        ),
+        qualification_minimum_speedup_ratio=(
+            args.qualification_minimum_speedup_ratio
+        ),
     )
     print(closure)
 
