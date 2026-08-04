@@ -131,8 +131,14 @@ def verify_validation_session_authority(
         manifest["excluded_missing_corporate_action_source_code_count"]
     ):
         raise RuntimeError("validation corporate-action exclusion count drift")
-    expected_total = int(excluded["excluded_non_sse_szse_code_count"]) + int(
-        excluded["excluded_missing_corporate_action_source_code_count"]
+    if int(
+        excluded["excluded_incomplete_corporate_action_source_code_count"]
+    ) != int(manifest["excluded_incomplete_corporate_action_source_code_count"]):
+        raise RuntimeError("validation incomplete-action exclusion count drift")
+    expected_total = (
+        int(excluded["excluded_non_sse_szse_code_count"])
+        + int(excluded["excluded_missing_corporate_action_source_code_count"])
+        + int(excluded["excluded_incomplete_corporate_action_source_code_count"])
     )
     if int(excluded["excluded_code_count"]) != expected_total:
         raise RuntimeError("validation total exclusion count drift")
@@ -151,6 +157,9 @@ def verify_validation_session_authority(
         ),
         "excluded_missing_corporate_action_source_code_count": int(
             excluded["excluded_missing_corporate_action_source_code_count"]
+        ),
+        "excluded_incomplete_corporate_action_source_code_count": int(
+            excluded["excluded_incomplete_corporate_action_source_code_count"]
         ),
         "identity_calendar_status": "PASS",
         "observed_st_parity_status": "PASS",

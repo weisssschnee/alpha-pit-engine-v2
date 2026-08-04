@@ -249,10 +249,36 @@ def build_validation_session_authority(
         raw_payloads, date_min=DATE_MIN, date_max=DATE_MAX
     )
     if action_blockers:
-        raise RuntimeError(
-            "validation corporate-action source is incomplete: "
-            + ",".join(action_blockers[:20])
+        incomplete_action_codes = sorted(
+            {
+                base.normalize_code(blocker.rsplit(":", 1)[-1])
+                for blocker in action_blockers
+            }
         )
+        if not set(incomplete_action_codes).issubset(set(observed["code"])):
+            raise RuntimeError("corporate-action blocker code is outside validation")
+        excluded_incomplete_actions = observed.loc[
+            observed["code"].isin(incomplete_action_codes)
+        ].copy()
+        observed = observed.loc[
+            ~observed["code"].isin(incomplete_action_codes)
+        ].copy()
+        raw_payloads = [
+            payload
+            for payload in raw_payloads
+            if base.normalize_code(payload["code"]) not in incomplete_action_codes
+        ]
+        actions, remaining_blockers = base.parse_dividend_actions(
+            raw_payloads, date_min=DATE_MIN, date_max=DATE_MAX
+        )
+        if remaining_blockers:
+            raise RuntimeError(
+                "validation corporate-action blocker exclusion failed: "
+                + ",".join(remaining_blockers[:20])
+            )
+    else:
+        incomplete_action_codes = []
+        excluded_incomplete_actions = observed.iloc[0:0].copy()
     authority = base.materialize_session_authority(
         observed=observed[["date", "code", "open", "close", "is_st"]],
         security_master=allowed_master,
@@ -267,7 +293,11 @@ def build_validation_session_authority(
     excluded_path = output_root / "excluded_validation_codes.json"
     observed.to_parquet(observed_path, index=False)
     authority.to_parquet(authority_path, index=False)
-    all_excluded_codes = sorted(set(excluded_codes) | set(missing_action_codes))
+    all_excluded_codes = sorted(
+        set(excluded_codes)
+        | set(missing_action_codes)
+        | set(incomplete_action_codes)
+    )
     excluded_payload = {
         "schema_version": "cn_validation_session_exclusions_v1",
         "policy": (
@@ -276,7 +306,11 @@ def build_validation_session_authority(
         ),
         "allowed_exchanges": list(ALLOWED_EXCHANGES),
         "excluded_code_count": len(all_excluded_codes),
-        "excluded_row_count": len(excluded_exchange) + len(excluded_actions),
+        "excluded_row_count": (
+            len(excluded_exchange)
+            + len(excluded_actions)
+            + len(excluded_incomplete_actions)
+        ),
         "excluded_codes": all_excluded_codes,
         "excluded_non_sse_szse_code_count": len(excluded_codes),
         "excluded_non_sse_szse_row_count": len(excluded_exchange),
@@ -290,6 +324,16 @@ def build_validation_session_authority(
         "excluded_missing_corporate_action_source_codes": (
             missing_action_codes
         ),
+        "excluded_incomplete_corporate_action_source_code_count": len(
+            incomplete_action_codes
+        ),
+        "excluded_incomplete_corporate_action_source_row_count": len(
+            excluded_incomplete_actions
+        ),
+        "excluded_incomplete_corporate_action_source_codes": (
+            incomplete_action_codes
+        ),
+        "corporate_action_source_blockers": action_blockers,
     }
     excluded_path = v1._write_json(excluded_path, excluded_payload)
 
@@ -333,6 +377,12 @@ def build_validation_session_authority(
         "excluded_missing_corporate_action_source_row_count": len(
             excluded_actions
         ),
+        "excluded_incomplete_corporate_action_source_code_count": len(
+            incomplete_action_codes
+        ),
+        "excluded_incomplete_corporate_action_source_row_count": len(
+            excluded_incomplete_actions
+        ),
         "excluded_validation_code_count": len(all_excluded_codes),
         "suspended_session_row_count": int(authority["suspended"].sum()),
         "terminal_session_row_count": int(authority["is_terminal_session"].sum()),
@@ -362,7 +412,7 @@ def build_validation_session_authority(
             "st": "EXACT_CODE_DATE_PIT_SOURCE_FAIL_CLOSED_ON_GAP",
             "universe": (
                 "SSE_SZSE_ONLY_EXPLICIT_BSE_AND_MISSING_CORPORATE_ACTION_"
-                "SOURCE_EXCLUSION"
+                "SOURCE_OR_INCOMPLETE_ACTION_EXCLUSION"
             ),
             "corporate_actions": "IMMUTABLE_CNINFO_RAW_EFFECTIVE_DATE",
         },
