@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pandas as pd
+
 from scripts import build_cn_validation_session_authority as authority
 from scripts import verify_cn_validation_session_authority as verify
 
@@ -34,3 +36,12 @@ def test_validation_authority_independent_verifier_checks_sources_and_st() -> No
     assert "verify_source_snapshot" in source
     assert "observed ST state parity failure" in source
     assert verify.build.STATUS == authority.STATUS
+
+
+def test_exact_st_source_gaps_remain_explicit_for_fail_closed_merge() -> None:
+    result = authority._normalize_exact_st_allowing_gaps(
+        pd.Series([0, 1, None])
+    )
+    assert result.iloc[0] == False  # noqa: E712
+    assert result.iloc[1] == True  # noqa: E712
+    assert pd.isna(result.iloc[2])

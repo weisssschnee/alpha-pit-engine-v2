@@ -38,6 +38,16 @@ def _artifact(path: Path, root: Path) -> dict[str, Any]:
     }
 
 
+def _normalize_exact_st_allowing_gaps(values: pd.Series) -> pd.Series:
+    """Normalize observed ST values while retaining source gaps for blocking."""
+
+    normalized = pd.Series(pd.NA, index=values.index, dtype="boolean")
+    known = values.notna()
+    if known.any():
+        normalized.loc[known] = base._normalize_pit_st(values.loc[known])
+    return normalized
+
+
 def _load_field_sessions(
     *, field_manifest_path: Path, expected_sha256: str
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
@@ -140,7 +150,9 @@ def _extract_exact_st(
             raise RuntimeError(f"validation ST state varies intraday: {source_path}")
         grouped["code"] = grouped["code"].map(base.normalize_code)
         grouped["date"] = pd.to_datetime(grouped["date"], errors="raise").dt.normalize()
-        grouped["is_st"] = base._normalize_pit_st(grouped["is_st"])
+        grouped["is_st"] = _normalize_exact_st_allowing_gaps(
+            grouped["is_st"]
+        )
         source_rows = int(grouped["source_rows"].sum())
         total_source_rows += source_rows
         receipts.append(
