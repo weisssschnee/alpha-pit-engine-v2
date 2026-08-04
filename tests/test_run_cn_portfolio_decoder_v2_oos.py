@@ -5,6 +5,9 @@ import pandas as pd
 from scripts import run_cn_portfolio_decoder_v2_oos as oos
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
 def _metric(candidate_id: str, pair_id: str, role: str, value: float) -> dict:
     return {
         "pair_id": pair_id,
@@ -85,9 +88,9 @@ def test_daily_distribution_reports_left_tail_and_quarterly_regime() -> None:
 
 
 def test_remote_launcher_binds_qualified_process_profile() -> None:
-    script = Path("scripts/run_cn_portfolio_decoder_v2_oos_77o.ps1").read_text(
-        encoding="utf-8"
-    )
+    script = (
+        PROJECT_ROOT / "scripts" / "run_cn_portfolio_decoder_v2_oos_77o.ps1"
+    ).read_text(encoding="utf-8")
     assert "VALIDATION_EXCLUSIVE_32" in script
     assert "[int]$WorkerCount = 32" in script
     assert "[int]$ExecutorWorkerCount = 12" in script
