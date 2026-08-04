@@ -117,3 +117,6 @@ def test_oos_contract_is_one_decoder_and_report_only() -> None:
     )
     assert 'data_role="validation_report_only"' in source
     assert 'data_role="validation"' not in source
+    assert "validation prepared universe has no eligible sessions" in source
+    assert "prepared_eligible_session_count" in source
+    assert "total_fill_count" in source

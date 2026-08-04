@@ -22,7 +22,7 @@ from scripts import build_cn_finalist_session_authority as base
 from scripts import build_cn_portfolio_decoder_autopsy_v1 as v1
 
 
-SCHEMA_VERSION = "cn_validation_session_authority_v1"
+SCHEMA_VERSION = "cn_validation_session_authority_v2"
 STATUS = "VALIDATION_SESSION_AUTHORITY_CLOSED_IMMUTABLE"
 ALLOWED_EXCHANGES = ("SSE", "SZSE")
 DATE_MIN = "2025-07-08"
@@ -106,70 +106,63 @@ def _load_field_sessions(
 
 
 def _extract_exact_st(
-    *, field_manifest: dict[str, Any], validation_dates: tuple[Any, ...]
-) -> tuple[pd.DataFrame, list[dict[str, Any]], int]:
-    parts: list[pd.DataFrame] = []
-    receipts: list[dict[str, Any]] = []
-    total_source_rows = 0
-    for shard in field_manifest.get("shards") or ():
-        source_path = Path(str(shard["source_path"])).resolve()
-        observed_source_sha = v1._sha256(source_path)
-        if observed_source_sha != str(shard["source_sha256"]):
-            raise RuntimeError(f"validation ST source hash drift: {source_path}")
-        schema = set(pl.scan_parquet(source_path).collect_schema().names())
-        required = {"trade_time", "code", ST_FIELD}
-        if not required.issubset(schema):
-            raise RuntimeError(
-                f"validation ST source lacks {sorted(required - schema)}: {source_path}"
-            )
-        grouped = (
-            pl.scan_parquet(source_path, low_memory=True)
-            .filter(pl.col("trade_time").dt.date().is_in(validation_dates))
-            .select("trade_time", "code", ST_FIELD)
-            .with_columns(pl.col("trade_time").dt.date().alias("date"))
-            .sort("code", "date", "trade_time")
-            .group_by("code", "date", maintain_order=True)
-            .agg(
-                pl.col(ST_FIELD)
-                .drop_nulls()
-                .last()
-                .alias("is_st"),
-                pl.col(ST_FIELD)
-                .drop_nulls()
-                .n_unique()
-                .alias("st_intraday_nunique"),
-                pl.len().alias("source_rows"),
-            )
-            .sort("date", "code")
-            .collect(engine="streaming")
-            .to_pandas()
+    *,
+    source_path: Path,
+    expected_source_sha256: str,
+    validation_dates: tuple[Any, ...],
+) -> tuple[pd.DataFrame, dict[str, Any], int]:
+    source_path = source_path.resolve()
+    if not source_path.is_file():
+        raise RuntimeError(f"validation daily ST source missing: {source_path}")
+    observed_source_sha = v1._sha256(source_path)
+    if observed_source_sha != expected_source_sha256:
+        raise RuntimeError("validation daily ST source hash drift")
+    schema = set(pl.scan_parquet(source_path).collect_schema().names())
+    required = {"date", "code", "name", "is_st"}
+    if not required.issubset(schema):
+        raise RuntimeError(
+            f"validation daily ST source lacks {sorted(required - schema)}"
         )
-        if grouped.empty:
-            raise RuntimeError(f"validation ST source selected no rows: {source_path}")
-        if int(grouped["st_intraday_nunique"].max()) > 1:
-            raise RuntimeError(f"validation ST state varies intraday: {source_path}")
-        grouped["code"] = grouped["code"].map(base.normalize_code)
-        grouped["date"] = pd.to_datetime(grouped["date"], errors="raise").dt.normalize()
-        grouped["is_st"] = _normalize_exact_st_allowing_gaps(
-            grouped["is_st"]
-        )
-        source_rows = int(grouped["source_rows"].sum())
-        total_source_rows += source_rows
-        receipts.append(
-            {
-                "source_shard": int(shard["source_shard"]),
-                "source_path": str(source_path),
-                "source_sha256": observed_source_sha,
-                "selected_source_rows": source_rows,
-                "selected_session_rows": len(grouped),
-            }
-        )
-        parts.append(grouped[["date", "code", "is_st"]])
-    exact = pd.concat(parts, ignore_index=True)
-    exact = exact.sort_values(["date", "code"], kind="mergesort").reset_index(drop=True)
+    date_values = tuple(sorted(str(value)[:10] for value in validation_dates))
+    exact = (
+        pl.scan_parquet(source_path, low_memory=True)
+        .filter(pl.col("date").is_in(date_values))
+        .select("date", "code", "name", "is_st")
+        .sort("date", "code")
+        .collect(engine="streaming")
+        .to_pandas()
+    )
+    if exact.empty:
+        raise RuntimeError("validation daily ST source selected no rows")
+    exact["date"] = pd.to_datetime(exact["date"], errors="raise").dt.normalize()
+    exact["code"] = exact["code"].map(base.normalize_code)
     if exact.duplicated(["date", "code"]).any():
-        raise RuntimeError("validation ST sources contain duplicate coordinates")
-    return exact, receipts, total_source_rows
+        raise RuntimeError("validation daily ST source has duplicate coordinates")
+    selected_dates = tuple(
+        pd.DatetimeIndex(exact["date"].unique()).sort_values().date
+    )
+    expected_dates = tuple(
+        pd.DatetimeIndex(validation_dates).sort_values().date
+    )
+    if selected_dates != expected_dates:
+        raise RuntimeError("validation daily ST source calendar drift")
+    exact["is_st"] = _normalize_exact_st_allowing_gaps(exact["is_st"])
+    if exact["is_st"].isna().any():
+        raise RuntimeError("validation daily ST source contains unknown ST state")
+    exact["is_st"] = exact["is_st"].astype(bool)
+    receipt = {
+        "source_path": str(source_path),
+        "source_sha256": observed_source_sha,
+        "source_bytes": source_path.stat().st_size,
+        "source_date_min": DATE_MIN,
+        "source_date_max": DATE_MAX,
+        "selected_source_rows": len(exact),
+        "selected_security_count": int(exact["code"].nunique()),
+        "selected_date_count": int(exact["date"].nunique()),
+        "selected_st_session_count": int(exact["is_st"].sum()),
+        "selected_non_st_session_count": int((~exact["is_st"]).sum()),
+    }
+    return exact[["date", "code", "is_st"]], receipt, len(exact)
 
 
 def build_validation_session_authority(
@@ -179,6 +172,8 @@ def build_validation_session_authority(
     output_root: Path,
     expected_field_manifest_sha256: str,
     expected_source_manifest_sha256: str,
+    historical_daily_st_source: Path,
+    expected_daily_st_source_sha256: str,
     builder_commit_sha: str,
 ) -> dict[str, Any]:
     public_source_root = public_source_root.resolve()
@@ -227,15 +222,21 @@ def build_validation_session_authority(
         raise RuntimeError("validation authority has no SSE/SZSE observations")
 
     dates = tuple(pd.DatetimeIndex(observed["date"].unique()).date)
-    exact_st, st_receipts, st_source_rows = _extract_exact_st(
-        field_manifest=field_manifest,
+    exact_st, st_receipt, st_source_rows = _extract_exact_st(
+        source_path=historical_daily_st_source,
+        expected_source_sha256=expected_daily_st_source_sha256,
         validation_dates=dates,
     )
     observed = observed.merge(
         exact_st, on=["date", "code"], how="left", validate="one_to_one"
     )
     missing_exact_st = int(observed["is_st"].isna().sum())
-    observed["is_st"] = observed["is_st"].fillna(True).astype(bool)
+    if missing_exact_st:
+        raise RuntimeError(
+            "validation daily ST source is missing observed coordinates: "
+            f"{missing_exact_st}"
+        )
+    observed["is_st"] = observed["is_st"].astype(bool)
 
     calendar = pd.read_parquet(
         public_source_root / "trade_calendar.parquet",
@@ -287,6 +288,9 @@ def build_validation_session_authority(
         date_min=DATE_MIN,
         date_max=DATE_MAX,
     )
+    non_st_authority_sessions = int((~authority["is_st"].astype(bool)).sum())
+    if non_st_authority_sessions <= 0:
+        raise RuntimeError("validation authority has no non-ST sessions")
 
     observed_path = output_root / "validation_observed_sessions.parquet"
     authority_path = output_root / "validation_session_authority.parquet"
@@ -367,8 +371,10 @@ def build_validation_session_authority(
         "observed_session_row_count": len(observed),
         "authority_security_count": int(authority["code"].nunique()),
         "authority_session_row_count": len(authority),
-        "exact_st_session_count": len(observed) - missing_exact_st,
+        "exact_st_session_count": len(observed),
         "missing_exact_st_fail_closed_session_count": missing_exact_st,
+        "st_authority_session_count": int(authority["is_st"].sum()),
+        "non_st_authority_session_count": non_st_authority_sessions,
         "excluded_non_sse_szse_code_count": len(excluded_codes),
         "excluded_non_sse_szse_row_count": len(excluded_exchange),
         "excluded_missing_corporate_action_source_code_count": len(
@@ -404,12 +410,14 @@ def build_validation_session_authority(
         "public_source_snapshot_verified_artifact_count": int(
             source_receipt["artifact_count"]
         ),
-        "st_source_receipts": st_receipts,
+        "daily_st_source": str(historical_daily_st_source.resolve()),
+        "daily_st_source_sha256": expected_daily_st_source_sha256,
+        "daily_st_source_receipt": st_receipt,
         "policies": {
             "signal_clock": "PRIOR_CLOSE",
             "execution_clock": "NEXT_OPEN",
             "suspension": "LISTED_CALENDAR_MINUS_OBSERVED_SESSION",
-            "st": "EXACT_CODE_DATE_PIT_SOURCE_FAIL_CLOSED_ON_GAP",
+            "st": "IMMUTABLE_HFQ_DAILY_EXACT_CODE_DATE_FAIL_ON_GAP",
             "universe": (
                 "SSE_SZSE_ONLY_EXPLICIT_BSE_AND_MISSING_CORPORATE_ACTION_"
                 "SOURCE_OR_INCOMPLETE_ACTION_EXCLUSION"
@@ -440,6 +448,8 @@ def main() -> int:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--expected-field-manifest-sha256", required=True)
     parser.add_argument("--expected-source-manifest-sha256", required=True)
+    parser.add_argument("--historical-daily-st-source", type=Path, required=True)
+    parser.add_argument("--expected-daily-st-source-sha256", required=True)
     parser.add_argument("--builder-commit-sha", required=True)
     args = parser.parse_args()
     result = build_validation_session_authority(
@@ -448,6 +458,8 @@ def main() -> int:
         output_root=args.output_root,
         expected_field_manifest_sha256=args.expected_field_manifest_sha256,
         expected_source_manifest_sha256=args.expected_source_manifest_sha256,
+        historical_daily_st_source=args.historical_daily_st_source,
+        expected_daily_st_source_sha256=args.expected_daily_st_source_sha256,
         builder_commit_sha=args.builder_commit_sha,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))

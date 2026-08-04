@@ -17,6 +17,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts import build_cn_portfolio_decoder_autopsy_v1 as v1
+from scripts import build_cn_validation_session_authority as validation_authority
 from scripts import freeze_cn_decoder_v2_finalists as freeze
 from scripts import run_cn_portfolio_decoder_v2_oos as oos
 
@@ -76,6 +77,19 @@ def verify_oos(
         closure.get("validation_session_authority_manifest_sha256")
     ):
         raise RuntimeError("OOS validation session authority binding drift")
+    authority_manifest = v1._read_json(authority_manifest_path)
+    authority_body = dict(authority_manifest)
+    authority_hash = str(authority_body.pop("manifest_payload_sha256", ""))
+    if not authority_hash or v1._stable_hash(authority_body) != authority_hash:
+        raise RuntimeError("OOS validation session authority self-hash drift")
+    if authority_manifest.get("schema_version") != validation_authority.SCHEMA_VERSION:
+        raise RuntimeError("OOS validation session authority schema drift")
+    if int(authority_manifest.get("missing_exact_st_fail_closed_session_count", -1)) != 0:
+        raise RuntimeError("OOS validation session authority has missing ST states")
+    if int(authority_manifest.get("non_st_authority_session_count") or 0) <= 0:
+        raise RuntimeError("OOS validation session authority has no non-ST sessions")
+    if int(closure.get("prepared_eligible_session_count") or 0) <= 0:
+        raise RuntimeError("OOS closure has no eligible validation sessions")
     if int(closure.get("minimum_free_memory_bytes") or 0) < (
         oos.MINIMUM_FREE_MEMORY_BYTES
     ):
@@ -158,6 +172,10 @@ def verify_oos(
         "pair_count": len(pair_metrics),
         "candidate_member_count": len(candidate_metrics),
         "candidate_self_hash_count": len(candidate_files),
+        "prepared_eligible_session_count": int(
+            closure["prepared_eligible_session_count"]
+        ),
+        "total_fill_count": int(closure["total_fill_count"]),
         "candidate_accounting_invariants_status": "PASS",
         "pair_recomputation_status": "PASS",
         "identity_order_status": "PASS",

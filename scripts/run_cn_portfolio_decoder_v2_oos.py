@@ -32,6 +32,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts import build_cn_portfolio_decoder_autopsy_v1 as v1
+from scripts import build_cn_validation_session_authority as validation_authority
 from scripts import freeze_cn_decoder_v2_finalists as freeze
 from scripts import run_cn_finalist_replay_then_oos as base
 from scripts import run_cn_portfolio_decoder_v2 as train_v2
@@ -218,6 +219,7 @@ def _load_validation_context(
     ):
         raise RuntimeError("validation session authority self-hash drift")
     required_session = {
+        "schema_version": validation_authority.SCHEMA_VERSION,
         "status": "VALIDATION_SESSION_AUTHORITY_CLOSED_IMMUTABLE",
         "evaluation_role": "validation",
         "data_role": "validation_report_only",
@@ -235,6 +237,14 @@ def _load_validation_context(
         raise RuntimeError(
             "validation session authority drift: " + ",".join(session_drift)
         )
+    if int(session_manifest.get("missing_exact_st_fail_closed_session_count", -1)) != 0:
+        raise RuntimeError("validation session authority has missing ST states")
+    if int(session_manifest.get("exact_st_session_count", -1)) != int(
+        session_manifest.get("observed_session_row_count", -2)
+    ):
+        raise RuntimeError("validation session authority ST coverage drift")
+    if int(session_manifest.get("non_st_authority_session_count") or 0) <= 0:
+        raise RuntimeError("validation session authority has no non-ST sessions")
     for artifact in session_manifest.get("artifacts") or ():
         artifact_path = validation_session_authority_root / str(artifact["path"])
         if (
@@ -276,6 +286,8 @@ def _load_validation_context(
     codes = prepared_master["code"].astype(str).to_numpy()
     dates = pd.to_datetime(prepared_master["date"]).to_numpy()
     eligible = prepared_master["promotion_universe_eligible"].astype(bool).to_numpy()
+    if not eligible.any():
+        raise RuntimeError("validation prepared universe has no eligible sessions")
     date_order = np.argsort(dates, kind="mergesort")
     sorted_dates = dates[date_order]
     boundaries = np.flatnonzero(
@@ -669,6 +681,7 @@ def run_oos(
     validation_field_reads = int(context["validation_field_reads"])
     validation_authority_reads = int(context["validation_authority_reads"])
     validation_reads = int(context["validation_reads"])
+    prepared_eligible_session_count = int(np.asarray(context["eligible"]).sum())
     if validation_reads <= 0:
         raise RuntimeError("Decoder V2 OOS has no validation reads")
 
@@ -707,6 +720,7 @@ def run_oos(
         "builder_commit_sha": builder_commit_sha,
         "builder_source_sha256": v1._sha256(Path(__file__).resolve()),
         "validation_reads": validation_reads,
+        "prepared_eligible_session_count": prepared_eligible_session_count,
         "validation_field_reads": validation_field_reads,
         "validation_authority_reads": validation_authority_reads,
         "holdout_reads": 0,
@@ -782,6 +796,7 @@ def run_oos(
         str
     ).tolist():
         raise RuntimeError("OOS pair metric order drift")
+    total_fill_count = int(candidate_metrics["fill_count"].sum())
 
     candidate_path = output_root / "oos_candidate_metrics.parquet"
     pair_path = output_root / "oos_pair_metrics.parquet"
@@ -794,6 +809,8 @@ def run_oos(
         "selection_payload_sha256": expected_selection_payload_sha256,
         "pair_count": EXPECTED_PAIR_COUNT,
         "candidate_member_count": EXPECTED_MEMBER_COUNT,
+        "prepared_eligible_session_count": prepared_eligible_session_count,
+        "total_fill_count": total_fill_count,
         "decoder_id": DECODER_ID,
         "decoder_policy_sha256": POLICY.payload_sha256,
         "interstage_filter_applied": False,

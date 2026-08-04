@@ -46,6 +46,14 @@ def verify_validation_session_authority(
         raise RuntimeError("validation session authority drift: " + ",".join(drift))
     if int(manifest.get("validation_reads") or 0) <= 0:
         raise RuntimeError("validation session authority has no validation reads")
+    if int(manifest.get("missing_exact_st_fail_closed_session_count", -1)) != 0:
+        raise RuntimeError("validation session authority has missing ST states")
+    if int(manifest.get("exact_st_session_count", -1)) != int(
+        manifest.get("observed_session_row_count", -2)
+    ):
+        raise RuntimeError("validation session authority ST coverage drift")
+    if int(manifest.get("non_st_authority_session_count") or 0) <= 0:
+        raise RuntimeError("validation session authority has no non-ST sessions")
     if list(manifest.get("columns") or ()) != list(base.SESSION_AUTHORITY_COLUMNS):
         raise RuntimeError("validation session authority column drift")
     for artifact in manifest.get("artifacts") or ():
@@ -73,6 +81,11 @@ def verify_validation_session_authority(
         manifest["public_source_snapshot_manifest_sha256"]
     ):
         raise RuntimeError("public source snapshot binding drift")
+    daily_st_source = Path(str(manifest["daily_st_source"])).resolve()
+    if not daily_st_source.is_file():
+        raise RuntimeError("validation daily ST source is missing")
+    if v1._sha256(daily_st_source) != str(manifest["daily_st_source_sha256"]):
+        raise RuntimeError("validation daily ST source binding drift")
 
     authority = pd.read_parquet(
         authority_root / "validation_session_authority.parquet"
@@ -104,7 +117,7 @@ def verify_validation_session_authority(
     if len(observed) != int(manifest["observed_session_row_count"]):
         raise RuntimeError("validation observation row cardinality drift")
     if observed["is_st"].isna().any():
-        raise RuntimeError("validation observation ST state is not fail-closed")
+        raise RuntimeError("validation observation ST state is incomplete")
     joined = observed.merge(
         authority,
         on=["date", "code"],
@@ -116,6 +129,10 @@ def verify_validation_session_authority(
         raise RuntimeError("validation observations are absent from authority")
     if not joined["is_st_observed"].eq(joined["is_st_authority"]).all():
         raise RuntimeError("validation observed ST state parity failure")
+    if int((~authority["is_st"].astype(bool)).sum()) != int(
+        manifest["non_st_authority_session_count"]
+    ):
+        raise RuntimeError("validation non-ST session count drift")
     if joined["suspended"].any():
         raise RuntimeError("observed validation session marked suspended")
     if int(excluded["excluded_non_sse_szse_code_count"]) != int(
@@ -163,6 +180,11 @@ def verify_validation_session_authority(
         ),
         "identity_calendar_status": "PASS",
         "observed_st_parity_status": "PASS",
+        "exact_st_session_count": int(manifest["exact_st_session_count"]),
+        "non_st_authority_session_count": int(
+            manifest["non_st_authority_session_count"]
+        ),
+        "daily_st_source_sha256": str(manifest["daily_st_source_sha256"]),
         "source_artifact_verification_status": "PASS",
         "validation_reads": int(manifest["validation_reads"]),
         "holdout_reads": 0,
