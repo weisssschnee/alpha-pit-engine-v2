@@ -23,6 +23,16 @@ def test_decoder_v2_contract_is_exact_three_by_one() -> None:
     )
 
 
+def test_decoder_v2_uses_closed_ledger_manifest_field() -> None:
+    subject._require_persisted_accounting_ledgers(
+        {"accounting_ledgers_persisted": True}
+    )
+    with pytest.raises(RuntimeError, match="persisted accounting ledgers"):
+        subject._require_persisted_accounting_ledgers(
+            {"persist_accounting_ledgers": True}
+        )
+
+
 def test_baseline_parity_accepts_exact_64_member_ledger() -> None:
     metrics = []
     baseline = []

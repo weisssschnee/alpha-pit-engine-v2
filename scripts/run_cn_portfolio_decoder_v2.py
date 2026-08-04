@@ -88,6 +88,13 @@ def _top_set(frame: pd.DataFrame, column: str, count: int) -> set[str]:
     return set(ranked.head(count)["candidate_id"].astype(str))
 
 
+def _require_persisted_accounting_ledgers(
+    ledger_closure: Mapping[str, Any],
+) -> None:
+    if not bool(ledger_closure.get("accounting_ledgers_persisted")):
+        raise RuntimeError("decoder V2 requires persisted accounting ledgers")
+
+
 def _candidate_metric(
     *,
     candidate: Mapping[str, Any],
@@ -547,8 +554,7 @@ def run_decoder_v2(
     )
     if str(ledger_closure["selection_payload_sha256"]) != selection_sha256:
         raise RuntimeError("decoder V2 ledger selection drift")
-    if not bool(ledger_closure.get("persist_accounting_ledgers")):
-        raise RuntimeError("decoder V2 requires persisted accounting ledgers")
+    _require_persisted_accounting_ledgers(ledger_closure)
 
     frozen_root = freeze_path.parents[1]
     candidate_path = base._resolved_artifact(
