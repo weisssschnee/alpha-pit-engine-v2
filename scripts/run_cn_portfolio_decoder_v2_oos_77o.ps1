@@ -5,6 +5,7 @@ param(
     [Parameter(Mandatory = $true)][string]$DeploymentManifest,
     [Parameter(Mandatory = $true)][string]$FinalistRoot,
     [Parameter(Mandatory = $true)][string]$SourceReplayRoot,
+    [Parameter(Mandatory = $true)][string]$ValidationSessionAuthorityRoot,
     [Parameter(Mandatory = $true)][string]$OutputRoot,
     [Parameter(Mandatory = $true)][ValidatePattern('^[0-9a-f]{64}$')]
     [string]$SelectionPayloadSha256,
@@ -54,6 +55,9 @@ $resolvedRepo = [IO.Path]::GetFullPath($Repo)
 $resolvedDeployment = (Resolve-Path -LiteralPath $DeploymentManifest).Path
 $resolvedFinalist = (Resolve-Path -LiteralPath $FinalistRoot).Path
 $resolvedSource = (Resolve-Path -LiteralPath $SourceReplayRoot).Path
+$resolvedValidationAuthority = (
+    Resolve-Path -LiteralPath $ValidationSessionAuthorityRoot
+).Path
 $resolvedRoot = [IO.Path]::GetFullPath($OutputRoot)
 $resolvedCapacity = if ([IO.Path]::IsPathRooted($NodeResourceCapacity)) {
     [IO.Path]::GetFullPath($NodeResourceCapacity)
@@ -81,6 +85,7 @@ foreach ($path in @(
     $resolvedDeployment,
     $resolvedFinalist,
     $resolvedSource,
+    $resolvedValidationAuthority,
     $resolvedCapacity
 )) {
     if (-not (Test-Path -LiteralPath $path)) {
@@ -131,11 +136,15 @@ $fieldManifest = Join-Path $resolvedSource (
 $labelManifest = Join-Path $resolvedSource (
     'sidecars\validation_session_labels\CN_FORWARD_LABEL_SIDECAR_MANIFEST.json'
 )
+$validationAuthorityManifest = Join-Path $resolvedValidationAuthority (
+    'validation_session_authority_manifest.json'
+)
 foreach ($path in @(
     $finalistManifest,
     $sourceContract,
     $fieldManifest,
-    $labelManifest
+    $labelManifest,
+    $validationAuthorityManifest
 )) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "immutable OOS input missing: $path"
@@ -160,6 +169,12 @@ $stderrPath = Join-Path $resolvedRoot 'oos.stderr.log'
     ).Hash.ToLowerInvariant()
     source_replay_root = $resolvedSource
     source_contract_sha256 = Get-SharedReadSha256 -LiteralPath $sourceContract
+    validation_session_authority_root = $resolvedValidationAuthority
+    validation_session_authority_manifest_sha256 = (
+        Get-FileHash `
+            -LiteralPath $validationAuthorityManifest `
+            -Algorithm SHA256
+    ).Hash.ToLowerInvariant()
     selection_payload_sha256 = $SelectionPayloadSha256
     decoder_id = 'TOPK_10_EQUAL'
     decoder_policy_sha256 = $DecoderPolicySha256
@@ -226,6 +241,7 @@ try {
     )) `
         --finalist-root $resolvedFinalist `
         --source-replay-root $resolvedSource `
+        --validation-session-authority-root $resolvedValidationAuthority `
         --output-root $resolvedRoot `
         --builder-commit-sha $RepoSha `
         --expected-selection-payload-sha256 $SelectionPayloadSha256 `

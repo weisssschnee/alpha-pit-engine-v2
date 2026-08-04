@@ -25,12 +25,16 @@ def verify_oos(
     *,
     oos_root: Path,
     finalist_root: Path,
+    validation_session_authority_root: Path,
     output_root: Path,
     expected_selection_payload_sha256: str,
     expected_decoder_policy_sha256: str,
 ) -> dict[str, Any]:
     oos_root = Path(oos_root).resolve()
     finalist_root = Path(finalist_root).resolve()
+    validation_session_authority_root = Path(
+        validation_session_authority_root
+    ).resolve()
     output_root = Path(output_root).resolve()
     output_root.mkdir(parents=True, exist_ok=False)
 
@@ -64,6 +68,14 @@ def verify_oos(
         raise RuntimeError("OOS closure drift: " + ",".join(drift))
     if int(closure.get("validation_reads") or 0) <= 0:
         raise RuntimeError("OOS closure has no validation reads")
+    authority_manifest_path = (
+        validation_session_authority_root
+        / "validation_session_authority_manifest.json"
+    )
+    if v1._sha256(authority_manifest_path) != str(
+        closure.get("validation_session_authority_manifest_sha256")
+    ):
+        raise RuntimeError("OOS validation session authority binding drift")
     if int(closure.get("minimum_free_memory_bytes") or 0) < (
         oos.MINIMUM_FREE_MEMORY_BYTES
     ):
@@ -167,6 +179,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--oos-root", type=Path, required=True)
     parser.add_argument("--finalist-root", type=Path, required=True)
+    parser.add_argument(
+        "--validation-session-authority-root", type=Path, required=True
+    )
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--expected-selection-payload-sha256", required=True)
     parser.add_argument("--expected-decoder-policy-sha256", required=True)
@@ -174,6 +189,9 @@ def main() -> int:
     result = verify_oos(
         oos_root=args.oos_root,
         finalist_root=args.finalist_root,
+        validation_session_authority_root=(
+            args.validation_session_authority_root
+        ),
         output_root=args.output_root,
         expected_selection_payload_sha256=(
             args.expected_selection_payload_sha256

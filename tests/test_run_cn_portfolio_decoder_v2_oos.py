@@ -102,6 +102,8 @@ def test_remote_launcher_binds_qualified_process_profile() -> None:
     assert "promotion = 'FORBIDDEN'" in script
     assert "--expected-selection-payload-sha256" in script
     assert "--expected-decoder-policy-sha256" in script
+    assert "ValidationSessionAuthorityRoot" in script
+    assert "--validation-session-authority-root" in script
 
 
 def test_oos_contract_is_one_decoder_and_report_only() -> None:

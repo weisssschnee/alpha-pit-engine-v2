@@ -172,7 +172,11 @@ def _load_finalists(
 
 
 def _load_validation_context(
-    *, source_contract_path: Path, validation_field_root: Path, validation_label_root: Path
+    *,
+    source_contract_path: Path,
+    validation_field_root: Path,
+    validation_label_root: Path,
+    validation_session_authority_root: Path,
 ) -> dict[str, Any]:
     contract = v1._read_json(source_contract_path)
     base._verify_payload_hash(
@@ -199,12 +203,52 @@ def _load_validation_context(
     if len(validation_dates) != int(field_manifest["eligible_validation_date_count"]):
         raise RuntimeError("validation sidecar calendar count drift")
 
-    session_manifest_path = Path(str(contract["session_authority_manifest"])).resolve()
-    session_path = Path(str(contract["session_authority_path"])).resolve()
-    if v1._sha256(session_manifest_path) != str(
-        contract["session_authority_manifest_sha256"]
+    session_manifest_path = (
+        validation_session_authority_root.resolve()
+        / "validation_session_authority_manifest.json"
+    )
+    session_manifest = v1._read_json(session_manifest_path)
+    session_manifest_body = dict(session_manifest)
+    declared_session_hash = str(
+        session_manifest_body.pop("manifest_payload_sha256", "")
+    )
+    if (
+        not declared_session_hash
+        or v1._stable_hash(session_manifest_body) != declared_session_hash
     ):
-        raise RuntimeError("validation session manifest drift")
+        raise RuntimeError("validation session authority self-hash drift")
+    required_session = {
+        "status": "VALIDATION_SESSION_AUTHORITY_CLOSED_IMMUTABLE",
+        "evaluation_role": "validation",
+        "data_role": "validation_report_only",
+        "field_manifest_sha256": v1._sha256(field_manifest_path),
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "promotion": "FORBIDDEN",
+    }
+    session_drift = [
+        key
+        for key, value in required_session.items()
+        if session_manifest.get(key) != value
+    ]
+    if session_drift:
+        raise RuntimeError(
+            "validation session authority drift: " + ",".join(session_drift)
+        )
+    for artifact in session_manifest.get("artifacts") or ():
+        artifact_path = validation_session_authority_root / str(artifact["path"])
+        if (
+            not artifact_path.is_file()
+            or artifact_path.stat().st_size != int(artifact["bytes"])
+            or v1._sha256(artifact_path) != str(artifact["sha256"])
+        ):
+            raise RuntimeError(
+                f"validation session authority artifact drift: {artifact_path}"
+            )
+    session_path = (
+        validation_session_authority_root.resolve()
+        / "validation_session_authority.parquet"
+    )
     session_authority = pd.read_parquet(session_path)
     session_dates = pd.to_datetime(session_authority["date"], errors="raise").dt.normalize()
     session_authority = session_authority[session_dates.isin(validation_dates)].copy()
@@ -241,6 +285,10 @@ def _load_validation_context(
         date_order[start:end]
         for start, end in zip(boundaries[:-1], boundaries[1:])
     ]
+    validation_field_reads = int(field_manifest["validation_reads"])
+    validation_authority_reads = int(
+        session_manifest["authority_session_row_count"]
+    )
     return {
         "contract": contract,
         "field_manifest": field_manifest,
@@ -248,6 +296,7 @@ def _load_validation_context(
         "field_manifest_path": field_manifest_path,
         "label_manifest_path": label_manifest_path,
         "session_manifest_path": session_manifest_path,
+        "session_manifest": session_manifest,
         "session_path": session_path,
         "field_frame": field_frame,
         "master": master,
@@ -263,6 +312,9 @@ def _load_validation_context(
         "fee": fee,
         "execution": execution,
         "corporate": corporate,
+        "validation_field_reads": validation_field_reads,
+        "validation_authority_reads": validation_authority_reads,
+        "validation_reads": validation_field_reads + validation_authority_reads,
     }
 
 
@@ -379,7 +431,7 @@ def _evaluate_candidate(
     if str(result["portfolio_decoder_policy_sha256"]) != POLICY.payload_sha256:
         raise RuntimeError("OOS decoder policy hash drift")
     result = dict(result)
-    result["validation_reads"] = int(context["field_manifest"]["validation_reads"])
+    result["validation_reads"] = int(context["validation_reads"])
     metric = _candidate_metric(
         candidate=candidate,
         result=result,
@@ -402,6 +454,7 @@ def _initialize_worker(
     source_contract_path: str,
     validation_field_root: str,
     validation_label_root: str,
+    validation_session_authority_root: str,
     candidate_root: str,
     input_data_sha256: str,
 ) -> None:
@@ -410,6 +463,9 @@ def _initialize_worker(
         source_contract_path=Path(source_contract_path),
         validation_field_root=Path(validation_field_root),
         validation_label_root=Path(validation_label_root),
+        validation_session_authority_root=Path(
+            validation_session_authority_root
+        ),
     )
     _PROCESS_CANDIDATE_ROOT = Path(candidate_root)
     _PROCESS_INPUT_HASH = str(input_data_sha256)
@@ -544,6 +600,7 @@ def run_oos(
     *,
     finalist_root: Path,
     source_replay_root: Path,
+    validation_session_authority_root: Path,
     output_root: Path,
     builder_commit_sha: str,
     expected_selection_payload_sha256: str,
@@ -583,6 +640,9 @@ def run_oos(
 
     finalist_root = Path(finalist_root).resolve()
     source_replay_root = Path(source_replay_root).resolve()
+    validation_session_authority_root = Path(
+        validation_session_authority_root
+    ).resolve()
     output_root = Path(output_root).resolve()
     manifest, finalist_contract, pairs, candidates = _load_finalists(
         finalist_root=finalist_root,
@@ -600,12 +660,15 @@ def run_oos(
         source_contract_path=source_contract_path,
         validation_field_root=validation_field_root,
         validation_label_root=validation_label_root,
+        validation_session_authority_root=validation_session_authority_root,
     )
     field_manifest_path = context["field_manifest_path"]
     label_manifest_path = context["label_manifest_path"]
     session_manifest_path = context["session_manifest_path"]
     session_path = context["session_path"]
-    validation_reads = int(context["field_manifest"]["validation_reads"])
+    validation_field_reads = int(context["validation_field_reads"])
+    validation_authority_reads = int(context["validation_authority_reads"])
+    validation_reads = int(context["validation_reads"])
     if validation_reads <= 0:
         raise RuntimeError("Decoder V2 OOS has no validation reads")
 
@@ -623,6 +686,9 @@ def run_oos(
         "validation_label_manifest_sha256": v1._sha256(label_manifest_path),
         "session_authority_manifest_sha256": v1._sha256(session_manifest_path),
         "session_authority_sha256": v1._sha256(session_path),
+        "validation_session_authority_root": str(
+            validation_session_authority_root
+        ),
         "decoder_contract": {
             **asdict(POLICY),
             "payload_sha256": POLICY.payload_sha256,
@@ -641,6 +707,8 @@ def run_oos(
         "builder_commit_sha": builder_commit_sha,
         "builder_source_sha256": v1._sha256(Path(__file__).resolve()),
         "validation_reads": validation_reads,
+        "validation_field_reads": validation_field_reads,
+        "validation_authority_reads": validation_authority_reads,
         "holdout_reads": 0,
         "forward_2026_reads": 0,
         "optimizer_feedback_write": "FORBIDDEN",
@@ -669,6 +737,7 @@ def run_oos(
             str(source_contract_path),
             str(validation_field_root),
             str(validation_label_root),
+            str(validation_session_authority_root),
             str(candidate_root),
             input_data_sha256,
         ),
@@ -830,6 +899,11 @@ def run_oos(
         "maximum_process_tree_rss_bytes": int(maximum_tree_rss),
         "host_cpu_mean_percent": _finite(np.mean(cpu_samples)),
         "validation_reads": validation_reads,
+        "validation_field_reads": validation_field_reads,
+        "validation_authority_reads": validation_authority_reads,
+        "validation_session_authority_manifest_sha256": v1._sha256(
+            session_manifest_path
+        ),
         "holdout_reads": 0,
         "forward_2026_reads": 0,
         "optimizer_feedback_write": "FORBIDDEN",
@@ -870,6 +944,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--finalist-root", type=Path, required=True)
     parser.add_argument("--source-replay-root", type=Path, required=True)
+    parser.add_argument(
+        "--validation-session-authority-root", type=Path, required=True
+    )
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--builder-commit-sha", required=True)
     parser.add_argument("--expected-selection-payload-sha256", required=True)
@@ -880,6 +957,9 @@ def main() -> int:
     result = run_oos(
         finalist_root=args.finalist_root,
         source_replay_root=args.source_replay_root,
+        validation_session_authority_root=(
+            args.validation_session_authority_root
+        ),
         output_root=args.output_root,
         builder_commit_sha=args.builder_commit_sha,
         expected_selection_payload_sha256=(
