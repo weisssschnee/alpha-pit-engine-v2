@@ -1,0 +1,69 @@
+{
+  "access_decision": {
+    "forward_b_access": "NOT_AUTHORIZED",
+    "forward_b_state": "SEALED",
+    "historical_challenge_2023_state": "SPENT",
+    "reason": "The unchanged fixed-ten cohort produced zero positive standalone primary returns and zero all-four economic survivors on the independently verified 2023 backward-OOT challenge. Spending the last sealed Forward-B asset would not be justified by this evidence."
+  },
+  "artifact_verification": {
+    "authority_source_and_shard_artifacts_verified": 308,
+    "candidate_records_verified": 20,
+    "closure_artifacts_verified": 24,
+    "pair_rows_verified": 10,
+    "status": "PASS"
+  },
+  "challenge_root": "D:\\ChengboRemote\\runtime\\cn_fixed10_historical_challenge_2023_20260806_d1b2e36",
+  "closure_file_sha256": "8701b0acbf99a398594cd25ac5328d8d89741fb0bbcbcda02525f81ee0aa8af4",
+  "closure_payload_sha256": "677fa24f6ff4ab421b9e75a12a2151d88296021eef7dfe6667864315a37a1eea",
+  "economics": {
+    "all_four_economic_gates_positive_count": 0,
+    "matched_cumulative_return_increment_median": -0.05304541301356358,
+    "matched_cumulative_return_increment_p10": -0.11176320303154269,
+    "matched_return_increment_positive_count": 4,
+    "matched_reward_increment_positive_count": 4,
+    "pair_count": 10,
+    "primary_cumulative_return_median": -0.19560077297470052,
+    "primary_cumulative_return_p10": -0.2838578812824059,
+    "primary_return_positive_count": 0,
+    "primary_reward_positive_count": 0
+  },
+  "evidence_scope": "ONE_SHOT_BACKWARD_OOT_2023_FIXED10_REPORT_ONLY",
+  "fee_authority": {
+    "mode": "HISTORICAL_DATED_STAMP_DUTY",
+    "periods": [
+      {
+        "effective_end": "2023-08-27",
+        "effective_start": "2023-01-01",
+        "sell_stamp_duty_bps": 10.0
+      },
+      {
+        "effective_end": "2025-12-31",
+        "effective_start": "2023-08-28",
+        "sell_stamp_duty_bps": 5.0
+      }
+    ],
+    "status": "PASS"
+  },
+  "input_identity": {
+    "candidate_member_count": 20,
+    "decoder_policy_sha256": "4eeafe15b9b6af521101b5abef42f98a2c93bd9453305e6485a64d853f4782ce",
+    "exact_identity_and_order": "PASS",
+    "pair_count": 10,
+    "selection_payload_sha256": "7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77"
+  },
+  "payload_sha256": "5b7aec12dee0c03a6a49cef9b53d448dbdb03db5052439aec55cf42b2149d14f",
+  "promotion": "HOLD_PROMOTION",
+  "provenance": {
+    "builder_commit_sha": "d1b2e3628120e5b1d08892ee4ba6cc1d603243ee",
+    "financial_results_reused": false,
+    "forward_b_reads": 0,
+    "historical_challenge_reads": 2383217,
+    "holdout_reads": 0,
+    "optimizer_feedback_write": "FORBIDDEN",
+    "forward_2026_reads": 0,
+    "promotion_write": "FORBIDDEN",
+    "validation_reads": 0
+  },
+  "schema_version": "cn_fixed10_historical_challenge_2023_outcome_v1",
+  "status": "INDEPENDENT_AUDIT_PASS_FORWARD_B_REMAINS_SEALED"
+}

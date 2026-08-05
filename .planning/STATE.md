@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-05
+Updated: 2026-08-06
 
-Current state: `HISTORICAL_CHALLENGE_2023_SPENT_EXECUTION_PENDING_FORWARD_B_SEALED_HOLD_PROMOTION`
+Current state: `HISTORICAL_CHALLENGE_2023_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,7 +16,38 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
-### 2023 historical challenge spent and execution pending; Forward-B sealed (2026-08-05)
+### Fixed-ten 2023 historical challenge negative; Forward-B remains sealed (2026-08-06)
+
+- The unchanged fixed ten pairs completed the one-shot backward-OOT 2023
+  challenge at exact pushed/deployed SHA
+  `d1b2e3628120e5b1d08892ee4ba6cc1d603243ee`. The task exited zero and
+  released its `VALIDATION_EXCLUSIVE_32` lease. The immutable closure at
+  `D:\ChengboRemote\runtime\cn_fixed10_historical_challenge_2023_20260806_d1b2e36`
+  has file/canonical SHA256 values
+  `8701b0acbf99a398594cd25ac5328d8d89741fb0bbcbcda02525f81ee0aa8af4` /
+  `677fa24f6ff4ab421b9e75a12a2151d88296021eef7dfe6667864315a37a1eea`.
+- Independent audit verified all 24 closure artifacts, 308 authority/source/
+  shard artifacts, 20 immutable candidate records, ten pair rows, exact
+  identity/order and all accounting invariants. The dated statutory fee
+  authority applied 10 bps sell stamp duty through 2023-08-27 and 5 bps from
+  2023-08-28. Historical reads were 2,383,217; validation, holdout and
+  forward-2026 reads were zero, and optimizer, scheduler, archive and
+  promotion writes remained forbidden.
+- Economic transfer failed for the fixed cohort. Zero of ten primaries had
+  positive standalone reward or cumulative net return; four had positive
+  matched reward/return increments, but zero passed all four economic gates.
+  Primary cumulative return median/p10 were `-0.195600773` / `-0.283857881`;
+  matched return increment median/p10 were `-0.053045413` / `-0.111763203`.
+  This is accepted negative backward-OOT evidence, not an infrastructure
+  failure and not a reason to reinterpret adaptive-validation positives as
+  confirmed alpha.
+- The independent decision is therefore not to spend the last sealed
+  Forward-B asset on this cohort. Forward-B remains performance-unopened and
+  no search, replacement, backfill, tuning, validation, promotion or automatic
+  successor run is authorized. The compact outcome receipt is
+  `runtime/run_plans/cn_fixed10_historical_challenge_2023_outcome_20260806.json`.
+
+### 2023 historical challenge freeze and pre-execution state (2026-08-05; superseded)
 
 - The unchanged fixed ten pairs are prospectively bound to the immutable
   `2023_1min.zip` archive before any price row read. The archive is
