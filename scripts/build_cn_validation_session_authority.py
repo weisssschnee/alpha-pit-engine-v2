@@ -49,24 +49,39 @@ def _normalize_exact_st_allowing_gaps(values: pd.Series) -> pd.Series:
 
 
 def _load_field_sessions(
-    *, field_manifest_path: Path, expected_sha256: str
+    *,
+    field_manifest_path: Path,
+    expected_sha256: str,
+    evaluation_role: str = "validation",
+    date_min: str = DATE_MIN,
+    date_max: str = DATE_MAX,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     field_manifest_path = field_manifest_path.resolve()
     if v1._sha256(field_manifest_path) != expected_sha256:
         raise RuntimeError("validation field manifest hash drift")
     manifest = v1._read_json(field_manifest_path)
+    data_role = f"{evaluation_role}_report_only"
     required = {
         "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
-        "evaluation_role": "validation",
-        "data_role": "validation_report_only",
+        "evaluation_role": evaluation_role,
+        "data_role": data_role,
         "holdout_reads": 0,
-        "forward_2026_reads": 0,
     }
     drift = [key for key, value in required.items() if manifest.get(key) != value]
     if drift:
         raise RuntimeError("validation field manifest drift: " + ",".join(drift))
-    if int(manifest.get("validation_reads") or 0) <= 0:
-        raise RuntimeError("validation field manifest has no validation reads")
+    role_reads_key = (
+        "forward_2026_reads"
+        if evaluation_role == "forward_2026"
+        else f"{evaluation_role}_reads"
+    )
+    if int(manifest.get(role_reads_key) or 0) <= 0:
+        raise RuntimeError(f"{evaluation_role} field manifest has no role reads")
+    for other_key in {"validation_reads", "holdout_reads", "forward_2026_reads"} - {
+        role_reads_key
+    }:
+        if int(manifest.get(other_key) or 0) != 0:
+            raise RuntimeError(f"{evaluation_role} field manifest crossed {other_key}")
     shards = list(manifest.get("shards") or ())
     if len(shards) != int(manifest.get("source_shard_count") or -1):
         raise RuntimeError("validation field shard cardinality drift")
@@ -97,9 +112,10 @@ def _load_field_sessions(
         raise RuntimeError("validation field aggregate row drift")
     dates = pd.DatetimeIndex(observed["date"].unique()).sort_values()
     if (
-        dates[0] != pd.Timestamp(DATE_MIN)
-        or dates[-1] != pd.Timestamp(DATE_MAX)
-        or len(dates) != int(manifest.get("eligible_validation_date_count") or -1)
+        dates[0] != pd.Timestamp(date_min)
+        or dates[-1] != pd.Timestamp(date_max)
+        or len(dates)
+        != int(manifest.get(f"eligible_{evaluation_role}_date_count") or -1)
     ):
         raise RuntimeError("validation field date boundary drift")
     return observed, manifest
@@ -110,6 +126,9 @@ def _extract_exact_st(
     source_path: Path,
     expected_source_sha256: str,
     validation_dates: tuple[Any, ...],
+    evaluation_role: str = "validation",
+    date_min: str = DATE_MIN,
+    date_max: str = DATE_MAX,
 ) -> tuple[pd.DataFrame, dict[str, Any], int]:
     source_path = source_path.resolve()
     if not source_path.is_file():
@@ -154,8 +173,8 @@ def _extract_exact_st(
         "source_path": str(source_path),
         "source_sha256": observed_source_sha,
         "source_bytes": source_path.stat().st_size,
-        "source_date_min": DATE_MIN,
-        "source_date_max": DATE_MAX,
+        "source_date_min": date_min,
+        "source_date_max": date_max,
         "selected_source_rows": len(exact),
         "selected_security_count": int(exact["code"].nunique()),
         "selected_date_count": int(exact["date"].nunique()),
@@ -175,6 +194,12 @@ def build_validation_session_authority(
     historical_daily_st_source: Path,
     expected_daily_st_source_sha256: str,
     builder_commit_sha: str,
+    evaluation_role: str = "validation",
+    date_min: str = DATE_MIN,
+    date_max: str = DATE_MAX,
+    schema_version: str = SCHEMA_VERSION,
+    status: str = STATUS,
+    evidence_scope: str = "ADAPTIVE_REPORT_ONLY_VALIDATION_OOS_INPUT",
 ) -> dict[str, Any]:
     public_source_root = public_source_root.resolve()
     output_root = output_root.resolve()
@@ -183,6 +208,14 @@ def build_validation_session_authority(
     observed, field_manifest = _load_field_sessions(
         field_manifest_path=field_manifest_path,
         expected_sha256=expected_field_manifest_sha256,
+        evaluation_role=evaluation_role,
+        date_min=date_min,
+        date_max=date_max,
+    )
+    role_reads_key = (
+        "forward_2026_reads"
+        if evaluation_role == "forward_2026"
+        else f"{evaluation_role}_reads"
     )
     source_receipt = base.verify_source_snapshot(public_source_root)
     if source_receipt["manifest_file_sha256"] != expected_source_manifest_sha256:
@@ -226,6 +259,9 @@ def build_validation_session_authority(
         source_path=historical_daily_st_source,
         expected_source_sha256=expected_daily_st_source_sha256,
         validation_dates=dates,
+        evaluation_role=evaluation_role,
+        date_min=date_min,
+        date_max=date_max,
     )
     observed = observed.merge(
         exact_st, on=["date", "code"], how="left", validate="one_to_one"
@@ -244,14 +280,14 @@ def build_validation_session_authority(
 
     calendar = pd.read_parquet(
         public_source_root / "trade_calendar.parquet",
-        filters=[("date", "<=", pd.Timestamp(DATE_MAX))],
+        filters=[("date", "<=", pd.Timestamp(date_max))],
     )["date"]
     raw_payloads = []
     for code in sorted(set(observed["code"])):
         path = dividend_root / f"{code}.json"
         raw_payloads.append(json.loads(path.read_text(encoding="utf-8")))
     actions, action_blockers = base.parse_dividend_actions(
-        raw_payloads, date_min=DATE_MIN, date_max=DATE_MAX
+        raw_payloads, date_min=date_min, date_max=date_max
     )
     if action_blockers:
         incomplete_action_codes = sorted(
@@ -274,7 +310,7 @@ def build_validation_session_authority(
             if base.normalize_code(payload["code"]) not in incomplete_action_codes
         ]
         actions, remaining_blockers = base.parse_dividend_actions(
-            raw_payloads, date_min=DATE_MIN, date_max=DATE_MAX
+            raw_payloads, date_min=date_min, date_max=date_max
         )
         if remaining_blockers:
             raise RuntimeError(
@@ -289,16 +325,17 @@ def build_validation_session_authority(
         security_master=allowed_master,
         trade_calendar=calendar,
         actions=actions,
-        date_min=DATE_MIN,
-        date_max=DATE_MAX,
+        date_min=date_min,
+        date_max=date_max,
     )
     non_st_authority_sessions = int((~authority["is_st"].astype(bool)).sum())
     if non_st_authority_sessions <= 0:
         raise RuntimeError("validation authority has no non-ST sessions")
 
-    observed_path = output_root / "validation_observed_sessions.parquet"
-    authority_path = output_root / "validation_session_authority.parquet"
-    excluded_path = output_root / "excluded_validation_codes.json"
+    artifact_prefix = evaluation_role
+    observed_path = output_root / f"{artifact_prefix}_observed_sessions.parquet"
+    authority_path = output_root / f"{artifact_prefix}_session_authority.parquet"
+    excluded_path = output_root / f"excluded_{artifact_prefix}_codes.json"
     excluded_st_path = output_root / "excluded_missing_st_coordinates.parquet"
     observed.to_parquet(observed_path, index=False)
     authority.to_parquet(authority_path, index=False)
@@ -309,7 +346,7 @@ def build_validation_session_authority(
         | set(incomplete_action_codes)
     )
     excluded_payload = {
-        "schema_version": "cn_validation_session_exclusions_v1",
+        "schema_version": f"cn_{evaluation_role}_session_exclusions_v1",
         "policy": (
             "FAIL_CLOSED_IF_ABSENT_FROM_IMMUTABLE_SSE_SZSE_SECURITY_MASTER_"
             "OR_CORPORATE_ACTION_RAW_SNAPSHOT_OR_EXACT_DAILY_ST_COORDINATE"
@@ -362,21 +399,47 @@ def build_validation_session_authority(
         _artifact(excluded_st_path, output_root),
     ]
     manifest = {
-        "schema_version": SCHEMA_VERSION,
-        "status": STATUS,
+        "schema_version": schema_version,
+        "status": status,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "builder_commit_sha": builder_commit_sha,
-        "evaluation_role": "validation",
-        "data_role": "validation_report_only",
-        "evidence_scope": "ADAPTIVE_REPORT_ONLY_VALIDATION_OOS_INPUT",
-        "date_min": DATE_MIN,
-        "date_max": DATE_MAX,
-        "validation_date_count": int(authority["date"].nunique()),
-        "validation_field_rows_read": int(field_manifest["validation_reads"]),
-        "validation_st_source_rows_read": st_source_rows,
-        "validation_reads": int(field_manifest["validation_reads"]) + st_source_rows,
-        "holdout_reads": 0,
-        "forward_2026_reads": 0,
+        "evaluation_role": evaluation_role,
+        "data_role": f"{evaluation_role}_report_only",
+        "evidence_scope": evidence_scope,
+        "date_min": date_min,
+        "date_max": date_max,
+        "evaluation_date_count": int(authority["date"].nunique()),
+        f"{evaluation_role}_date_count": int(authority["date"].nunique()),
+        "validation_date_count": (
+            int(authority["date"].nunique())
+            if evaluation_role == "validation"
+            else 0
+        ),
+        "field_rows_read": int(field_manifest[role_reads_key]),
+        "st_source_rows_read": st_source_rows,
+        "validation_field_rows_read": (
+            int(field_manifest[role_reads_key])
+            if evaluation_role == "validation"
+            else 0
+        ),
+        "validation_st_source_rows_read": (
+            st_source_rows if evaluation_role == "validation" else 0
+        ),
+        "validation_reads": (
+            int(field_manifest[role_reads_key]) + st_source_rows
+            if evaluation_role == "validation"
+            else 0
+        ),
+        "holdout_reads": (
+            int(field_manifest[role_reads_key]) + st_source_rows
+            if evaluation_role == "holdout"
+            else 0
+        ),
+        "forward_2026_reads": (
+            int(field_manifest[role_reads_key]) + st_source_rows
+            if evaluation_role == "forward_2026"
+            else 0
+        ),
         "optimizer_feedback_write": "FORBIDDEN",
         "scheduler_write": "FORBIDDEN",
         "archive_write": "FORBIDDEN",
@@ -452,16 +515,17 @@ def build_validation_session_authority(
     }
     manifest["manifest_payload_sha256"] = v1._stable_hash(manifest)
     manifest_path = v1._write_json(
-        output_root / "validation_session_authority_manifest.json", manifest
+        output_root / f"{artifact_prefix}_session_authority_manifest.json", manifest
     )
     return {
-        "status": STATUS,
+        "status": status,
         "manifest": str(manifest_path),
         "manifest_file_sha256": v1._sha256(manifest_path),
         "manifest_payload_sha256": manifest["manifest_payload_sha256"],
         "authority_session_row_count": len(authority),
         "excluded_non_sse_szse_code_count": len(excluded_codes),
         "validation_reads": manifest["validation_reads"],
+        "forward_2026_reads": manifest["forward_2026_reads"],
     }
 
 

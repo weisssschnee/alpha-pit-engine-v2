@@ -110,7 +110,7 @@ def main() -> int:
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument(
         "--evaluation-role",
-        choices=("train", "validation", "holdout"),
+        choices=("train", "validation", "holdout", "forward_2026"),
         default="validation",
     )
     parser.add_argument("--split-manifest", type=Path, required=True)
@@ -342,6 +342,11 @@ def main() -> int:
         "eligible_holdout_date_count": (
             len(eligible_dates) if args.evaluation_role == "holdout" else 0
         ),
+        "eligible_forward_2026_date_count": (
+            len(eligible_dates)
+            if args.evaluation_role == "forward_2026"
+            else 0
+        ),
         "fields": records[0]["fields"],
         "direct_minute_field_policy": (
             "LAST_OBSERVED_VALUE_AT_OR_BEFORE_SESSION_CLOSE_PIT"
@@ -384,7 +389,11 @@ def main() -> int:
             if args.evaluation_role == "holdout"
             else 0
         ),
-        "forward_2026_reads": 0,
+        "forward_2026_reads": (
+            sum(int(row["rows"]) for row in records)
+            if args.evaluation_role == "forward_2026"
+            else 0
+        ),
         "feedback_write": "FORBIDDEN",
         "scheduler_write": "FORBIDDEN",
         "archive_write": "FORBIDDEN",

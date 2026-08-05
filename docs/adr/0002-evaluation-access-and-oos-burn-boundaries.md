@@ -92,6 +92,35 @@ candidate selection or adaptive search feedback.
 Runtime evidence is
 `runtime/run_plans/cn_hybrid_bounded_large_tranche_p07_20260729_receipt.json`.
 
+## 2026-08-05 one-shot forward-confirmation addendum
+
+The user explicitly authorized spending the sole unopened 2026 forward asset
+for one intention-to-treat confirmation of the already frozen ten-pair cohort.
+This is a destructive evidence-boundary transition, not a new search,
+selector fit, or promotion decision.
+
+- The cohort is fixed at ten pairs / twenty members in original finalist order
+  `2/6/7/8/9/10/11/15/18/21`, selection payload SHA256
+  `7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77`.
+- The forward calendar is fixed at the 63 sessions from 2026-01-05 through
+  2026-04-10. No replacement, backfill, post-freeze filtering or tuning is
+  permitted after forward values are opened.
+- The execution policy remains `TOPK_10_EQUAL`, prior-close signal,
+  next-open execution, A-share T+1, frozen fees and final-close MTM without a
+  fabricated terminal sale.
+- The run is report-only. Validation and holdout reads, optimizer/search
+  feedback, scheduler, archive and automatic promotion writes remain
+  forbidden.
+- The forward asset becomes project-level `spent` on the first financial row
+  read regardless of success, failure or economic outcome. A failed run may
+  be recovered only from a pre-read boundary or from immutable artifacts that
+  do not change the cohort, data, policy or result.
+- Any positive result remains `HOLD_PROMOTION` until a separate explicit
+  authority decision; this addendum itself authorizes no live deployment.
+
+The pre-read authorization contract is
+`runtime/run_plans/cn_fixed10_forward_2026_one_shot_authorization.json`.
+
 ## Evidence
 
 - `runtime/run_plans/evaluation_data_roles_v1.json`

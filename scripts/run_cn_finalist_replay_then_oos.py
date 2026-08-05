@@ -658,7 +658,6 @@ def _validate_sidecar(
         "evaluation_role": evaluation_role,
         "split_manifest_hash": split_hash,
         "holdout_reads": 0,
-        "forward_2026_reads": 0,
         "feedback_write": "FORBIDDEN",
         "scheduler_write": "FORBIDDEN",
         "archive_write": "FORBIDDEN",
@@ -683,8 +682,27 @@ def _validate_sidecar(
     if evaluation_role == "train":
         if int(manifest.get("validation_reads") or 0) != 0:
             raise RuntimeError("train field sidecar read validation")
-    elif int(manifest.get("validation_reads") or 0) <= 0:
-        raise RuntimeError("validation field sidecar has no validation reads")
+        if int(manifest.get("forward_2026_reads") or 0) != 0:
+            raise RuntimeError("train field sidecar read forward 2026")
+    elif evaluation_role == "validation":
+        if int(manifest.get("validation_reads") or 0) <= 0:
+            raise RuntimeError("validation field sidecar has no validation reads")
+    elif evaluation_role == "holdout":
+        if int(manifest.get("validation_reads") or 0) != 0:
+            raise RuntimeError("holdout field sidecar read validation")
+        if int(manifest.get("holdout_reads") or 0) <= 0:
+            raise RuntimeError("holdout field sidecar has no holdout reads")
+    elif evaluation_role == "forward_2026":
+        if int(manifest.get("validation_reads") or 0) != 0:
+            raise RuntimeError("forward field sidecar read validation")
+        if int(manifest.get("forward_2026_reads") or 0) <= 0:
+            raise RuntimeError("forward field sidecar has no forward 2026 reads")
+    else:
+        raise RuntimeError(f"unsupported field sidecar role: {evaluation_role}")
+    if evaluation_role != "forward_2026" and int(
+        manifest.get("forward_2026_reads") or 0
+    ) != 0:
+        raise RuntimeError(f"{evaluation_role} field sidecar read forward 2026")
     fields = set(manifest.get("fields") or ())
     if not {"open", "close"}.issubset(fields):
         raise RuntimeError("field sidecar lacks open/close replay prices")
@@ -705,8 +723,9 @@ def _load_field_frame(
         pd.read_parquet(Path(str(row["output_path"])).resolve())
         for row in manifest.get("shards") or ()
     ]
-    if len(frames) != 16:
-        raise RuntimeError("replay requires exactly 16 field sidecar shards")
+    expected_shards = int(manifest.get("source_shard_count") or -1)
+    if not frames or len(frames) != expected_shards:
+        raise RuntimeError("replay field sidecar shard cardinality drift")
     frame = pd.concat(frames, ignore_index=True, copy=False)
     frame["code"] = frame["code"].map(_normalize_code)
     frame["trade_time"] = pd.to_datetime(
@@ -1383,16 +1402,16 @@ def _validate_label_sidecar(
     root: Path,
     *,
     split_hash: str,
+    evaluation_role: str = "validation",
 ) -> tuple[dict[str, Any], Path]:
     path = Path(root).resolve() / "CN_FORWARD_LABEL_SIDECAR_MANIFEST.json"
     manifest = _read_json(path)
     required = {
         "status": "GLOBAL_SYMBOL_CONTINUITY_LABEL_SIDECARS_READY",
-        "evaluation_role": "validation",
-        "data_role": "validation_report_only",
+        "evaluation_role": evaluation_role,
+        "data_role": f"{evaluation_role}_report_only",
         "split_manifest_hash": split_hash,
         "holdout_reads": 0,
-        "forward_2026_reads": 0,
     }
     drift = [
         key
@@ -1401,10 +1420,27 @@ def _validate_label_sidecar(
     ]
     if drift:
         raise RuntimeError(
-            "validation label sidecar drift: " + ",".join(drift)
+            f"{evaluation_role} label sidecar drift: " + ",".join(drift)
         )
-    if int(manifest.get("validation_reads") or 0) <= 0:
-        raise RuntimeError("validation label sidecar has no validation reads")
+    if evaluation_role == "forward_2026":
+        if int(manifest.get("validation_reads") or 0) != 0:
+            raise RuntimeError("forward label sidecar read validation")
+        if int(manifest.get("forward_2026_reads") or 0) <= 0:
+            raise RuntimeError("forward label sidecar has no forward 2026 reads")
+    elif evaluation_role == "validation":
+        if int(manifest.get("validation_reads") or 0) <= 0:
+            raise RuntimeError("validation label sidecar has no validation reads")
+    elif evaluation_role == "holdout":
+        if int(manifest.get("validation_reads") or 0) != 0:
+            raise RuntimeError("holdout label sidecar read validation")
+        if int(manifest.get("holdout_reads") or 0) <= 0:
+            raise RuntimeError("holdout label sidecar has no holdout reads")
+    else:
+        raise RuntimeError(f"unsupported label sidecar role: {evaluation_role}")
+    if evaluation_role != "forward_2026" and int(
+        manifest.get("forward_2026_reads") or 0
+    ) != 0:
+        raise RuntimeError(f"{evaluation_role} label sidecar read forward 2026")
     return manifest, path
 
 

@@ -1,0 +1,75 @@
+{
+  "schema_version": "cn_fixed10_forward_2026_one_shot_authorization_v1",
+  "status": "AUTHORIZED_ZERO_FINANCIAL_PREFLIGHT",
+  "authorized_at_utc": "2026-08-05T03:11:21.965Z",
+  "authorization_source": "current_user_instruction_go_do_it_after_explicit_forward_2026_boundary_explanation",
+  "claim_under_test": "UNCHANGED_FIXED10_ADAPTIVE_VALIDATION_SURVIVORS_TRANSFER_TO_UNTOUCHED_2026_FORWARD",
+  "confirmation_access_count": "EXACTLY_ONE",
+  "access_state_before_run": "UNBURNED_RESERVED",
+  "burn_transition": "SPENT_ON_FIRST_FORWARD_FINANCIAL_ROW_READ_REGARDLESS_OF_RUN_OUTCOME",
+  "cohort": {
+    "local_root": "G:\\Chengbo\\runtime\\cn_fixed_survivor_confirmatory_input_10_20260805_bec2de0",
+    "remote_root": "D:\\ChengboRemote\\runtime\\cn_fixed_survivor_confirmatory_input_10_20260805_bec2de0",
+    "closure_file_sha256": "98738f695614a15a83e188eb209844f75dc4e4d724e2a2cfcd762676f2c9829b",
+    "manifest_payload_sha256": "71d642f61ec79dc8d289e64180d3a305e5f511d7fdce071b7061b8bc091cf865",
+    "selection_payload_sha256": "7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77",
+    "pair_count": 10,
+    "candidate_member_count": 20,
+    "source_finalist_orders": [2, 6, 7, 8, 9, 10, 11, 15, 18, 21],
+    "replacement": "FORBIDDEN",
+    "backfill": "FORBIDDEN",
+    "post_freeze_filtering": "FORBIDDEN"
+  },
+  "forward_asset": {
+    "remote_root": "D:\\ChengboRemote\\data\\stock_1min_2026_parquet_by_date_complete_20260710",
+    "file_count": 63,
+    "total_bytes": 1517219879,
+    "first_trade_date": "2026-01-05",
+    "last_trade_date": "2026-04-10",
+    "split_manifest": "runtime/run_plans/cn_fixed10_forward_2026_split_manifest.csv",
+    "split_manifest_sha256": "200290efbee38001c2e9087fa332a11d28ff6c676ac44a1fd3b8fbd392283dea",
+    "optimizer_usage": "report_only",
+    "preflight_forward_financial_rows_read": 0
+  },
+  "session_authority_sources": {
+    "public_source_root": "D:\\ChengboRemote\\runtime\\cn_finalist_public_sources_20260730_eee0d41",
+    "public_source_manifest_sha256": "0c06baa7c24109ea8a1064a291565ce6352ab2a0ca32f20f6cc257261e25514d",
+    "trade_calendar_forward_date_count": 63,
+    "daily_st_local_source": "G:\\Project_V7_Rotation\\data\\cn_public_enrichment\\cn_local_minute_daily_silver_v1_20260531\\hfq_daily_2026\\hfq_daily_2026.parquet",
+    "daily_st_source_sha256": "611769438f2d018ad1e3e2e6e0c23e3cde9593193a17b4cb113f08b6b45fa173",
+    "daily_st_source_date_min": "2026-01-05",
+    "daily_st_source_date_max": "2026-05-14"
+  },
+  "execution_contract": {
+    "remote_path": "D:\\ChengboRemote\\runtime\\cn_finalist_strict_train_replay_continuous_dual_32_20260802_2340_023363c\\prepared\\replay_then_oos_execution_contract.json",
+    "sha256": "23d756eeda5341c9a87091c3b6a420d6314acdb6399c4bd64ee046df96552ec9",
+    "decoder_id": "TOPK_10_EQUAL",
+    "decoder_policy_sha256": "4eeafe15b9b6af521101b5abef42f98a2c93bd9453305e6485a64d853f4782ce",
+    "signal_clock": "PRIOR_CLOSE",
+    "execution_clock": "NEXT_OPEN",
+    "t_plus_one": true,
+    "ending_book": "FINAL_CLOSE_MARK_NO_FORCED_SALE"
+  },
+  "resource_contract": {
+    "host": "DESKTOP-77OPJ6F",
+    "profile": "VALIDATION_EXCLUSIVE_32",
+    "cpu_entitlement": 32,
+    "executor_workers": 12,
+    "native_threads_per_worker": 1,
+    "minimum_free_memory_bytes": 25769803776,
+    "cache_authority_bytes": 8589934592
+  },
+  "forbidden": {
+    "tuning": true,
+    "cohort_mutation": true,
+    "interstage_filtering": true,
+    "search_feedback": true,
+    "optimizer_write": true,
+    "scheduler_write": true,
+    "archive_write": true,
+    "automatic_promotion": true,
+    "validation_or_holdout_read": true
+  },
+  "execution_sha_policy": "EXACT_PUSHED_SHA_RECORDED_IN_DEPLOYMENT_AND_CLOSURE",
+  "promotion_state_after_run": "HOLD_PROMOTION_PENDING_EXPLICIT_DECISION"
+}

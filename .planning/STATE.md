@@ -2,7 +2,7 @@
 
 Updated: 2026-08-05
 
-Current state: `FIXED10_CONFIRMATION_COHORT_FROZEN_FORWARD_AUTHORIZATION_REQUIRED`
+Current state: `FIXED10_FORWARD_2026_AUTHORIZED_ZERO_READ_PREFLIGHT_COMPLETE`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,28 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Fixed-ten one-shot 2026 forward confirmation authorized (2026-08-05)
+
+- The user explicitly authorized spending the sole unopened 2026 forward
+  asset once for the unchanged ten-pair intention-to-treat cohort. The cohort
+  remains exactly finalist orders `2/6/7/8/9/10/11/15/18/21`, selection
+  payload SHA256
+  `7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77`;
+  replacement, backfill, post-freeze filtering and tuning remain forbidden.
+- The zero-financial preflight bound 63 source parquet files / 1,517,219,879
+  bytes over 2026-01-05 through 2026-04-10, an exact 63-date exchange
+  calendar, the existing A-share execution policy and `TOPK_10_EQUAL` decoder.
+  The local preparation receipt is
+  `G:\Chengbo\runtime\cn_fixed10_forward_2026_zero_read_preflight_20260805_a8fdbdb\PREPARED_ZERO_READ.json`,
+  SHA256
+  `9e0911ba619e5e72e2a8f67e2eb732baca7ac30ead85805196520265f18c5b9a`;
+  it read zero forward financial rows and zero validation/holdout rows.
+- ADR 0002 now records the one-shot destructive boundary: the asset becomes
+  project-level spent on its first forward financial row read regardless of
+  success or failure. No result may flow to search, optimizer, scheduler,
+  archive or automatic promotion. Promotion remains held pending a separate
+  explicit decision.
 
 ### Fixed ten-survivor confirmation cohort frozen; 2025 target rejected as spent (2026-08-05)
 
