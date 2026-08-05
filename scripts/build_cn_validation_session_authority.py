@@ -146,10 +146,12 @@ def _extract_exact_st(
         raise RuntimeError(
             f"validation daily ST source lacks {sorted(required - schema)}"
         )
-    date_values = tuple(sorted(str(value)[:10] for value in validation_dates))
+    date_values = tuple(
+        sorted(pd.Timestamp(value).date() for value in validation_dates)
+    )
     exact = (
         pl.scan_parquet(source_path, low_memory=True)
-        .filter(pl.col("date").is_in(date_values))
+        .filter(pl.col("date").cast(pl.Date, strict=True).is_in(date_values))
         .select("date", "code", "name", "is_st")
         .sort("date", "code")
         .collect(engine="streaming")

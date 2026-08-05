@@ -89,3 +89,30 @@ def test_exact_st_source_is_hash_bound_complete_and_normalized(tmp_path: Path) -
             expected_source_sha256="0" * 64,
             validation_dates=dates,
         )
+
+
+def test_exact_st_source_accepts_datetime_parquet_dates(tmp_path: Path) -> None:
+    source_path = tmp_path / "daily_st_datetime.parquet"
+    pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2023-01-03", "2023-01-04"]),
+            "code": ["000001", "000001"],
+            "name": ["A", "A"],
+            "is_st": [False, False],
+        }
+    ).to_parquet(source_path, index=False)
+    source_sha256 = authority.v1._sha256(source_path)
+    dates = tuple(pd.to_datetime(["2023-01-03", "2023-01-04"]).date)
+
+    exact, receipt, source_rows = authority._extract_exact_st(
+        source_path=source_path,
+        expected_source_sha256=source_sha256,
+        validation_dates=dates,
+        evaluation_role="historical_challenge",
+        date_min="2023-01-03",
+        date_max="2023-01-04",
+    )
+
+    assert source_rows == 2
+    assert exact["date"].tolist() == list(pd.to_datetime(dates))
+    assert receipt["selected_date_count"] == 2
