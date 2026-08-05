@@ -1,0 +1,30 @@
+{
+  "schema_version": "cn_historical_challenge_access_transition_v1",
+  "status": "HISTORICAL_CHALLENGE_2023_ACCESS_STARTED_ASSET_SPENT",
+  "transition_at_utc": "2026-08-05T13:08:39.9827187Z",
+  "authorization_path": "runtime/run_plans/cn_historical_challenge_2023_authorization.json",
+  "authorization_file_sha256": "7ed17df4bf71c1bf29850f2448ad6cc7a78edc5121a00fe682c81918c155c2d7",
+  "authorization_contract_payload_sha256": "7307889cd890364c20eec3c8888b0f964a79373d052e5b57d13a919526c48893",
+  "asset_id": "historical_challenge_2023_b05e2ca0",
+  "data_role_after_transition": "spent",
+  "cohort_selection_payload_sha256": "7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77",
+  "pair_count": 10,
+  "candidate_member_count": 20,
+  "first_authorized_read_sequence": [
+    "package_and_stage_exact_2023_daily_st_source",
+    "full_2023_archive_sessionization",
+    "fixed10_report_only_historical_challenge"
+  ],
+  "replacement": "FORBIDDEN",
+  "backfill": "FORBIDDEN",
+  "post_read_filtering": "FORBIDDEN",
+  "optimizer_feedback_write": "FORBIDDEN",
+  "scheduler_write": "FORBIDDEN",
+  "archive_write": "FORBIDDEN",
+  "automatic_promotion": "FORBIDDEN",
+  "forward_b_reads": 0,
+  "validation_reads": 0,
+  "holdout_reads": 0,
+  "forward_2026_reads": 0,
+  "access_payload_sha256": "3943298896b10ae28a6b6a9f2a17445c2dda3d83633d3d6e09b270dd29cebcdc"
+}

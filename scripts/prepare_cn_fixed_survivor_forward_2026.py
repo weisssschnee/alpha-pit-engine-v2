@@ -38,13 +38,13 @@ def prepare(
     candidates.to_csv(candidate_csv, index=False)
     pairs.to_parquet(pair_path, index=False)
     receipt = {
-        "schema_version": "cn_fixed10_forward_2026_preparation_v1",
-        "status": "FIXED10_FORWARD_2026_ZERO_READ_PREPARED",
+        "schema_version": f"cn_fixed10_{forward.RUN_MODE}_preparation_v1",
+        "status": f"FIXED10_{forward.RUN_MODE.upper()}_ZERO_READ_PREPARED",
         "prepared_at_utc": datetime.now(timezone.utc).isoformat(),
         "builder_commit_sha": builder_commit_sha,
         "selection_payload_sha256": expected_selection_payload_sha256,
         "authorization_file_sha256": expected_authorization_sha256,
-        "forward_split_manifest_sha256": expected_forward_split_sha256,
+        "split_manifest_sha256": expected_forward_split_sha256,
         "cohort_manifest_payload_sha256": manifest["manifest_payload_sha256"],
         "cohort_contract_payload_sha256": contract["contract_payload_sha256"],
         "pair_count": len(pairs),
@@ -55,6 +55,7 @@ def prepare(
         "validation_reads": 0,
         "holdout_reads": 0,
         "forward_2026_reads": 0,
+        "historical_challenge_reads": 0,
         "replacement": "FORBIDDEN",
         "backfill": "FORBIDDEN",
         "post_freeze_filtering": "FORBIDDEN",
@@ -73,6 +74,7 @@ def prepare(
         "pair_count": len(pairs),
         "candidate_member_count": len(candidates),
         "forward_2026_reads": 0,
+        "historical_challenge_reads": 0,
     }
 
 

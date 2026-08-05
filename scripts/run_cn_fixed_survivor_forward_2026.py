@@ -42,16 +42,47 @@ from our_system_phase2.services.a_share_executable_replay import (
 )
 
 
-SCHEMA_VERSION = "cn_fixed10_forward_2026_confirmation_v1"
-STATUS = "FIXED10_FORWARD_2026_CONFIRMATION_CLOSED_IMMUTABLE"
 EXPECTED_PAIR_COUNT = 10
 EXPECTED_MEMBER_COUNT = 20
-EXPECTED_DATE_COUNT = 63
 AUTHORIZED_HOST = "DESKTOP-77OPJ6F"
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
-EVALUATION_ROLE = "forward_2026"
-DATA_ROLE = "forward_2026_report_only"
-EVIDENCE_SCOPE = "ONE_SHOT_FORWARD_2026_CONFIRMATION_REPORT_ONLY"
+RUN_MODE = os.environ.get("CN_FIXED10_RUN_MODE", "forward_2026")
+if RUN_MODE == "historical_challenge":
+    SCHEMA_VERSION = "cn_fixed10_historical_challenge_2023_v1"
+    STATUS = "FIXED10_HISTORICAL_CHALLENGE_2023_CLOSED_IMMUTABLE"
+    REPORT_STATUS = "FIXED10_HISTORICAL_CHALLENGE_2023_COMPLETE"
+    CANDIDATE_STATUS = "HISTORICAL_CHALLENGE_CANDIDATE_CLOSED_IMMUTABLE"
+    EXPECTED_DATE_COUNT: int | None = None
+    EVALUATION_ROLE = "historical_challenge"
+    DATA_ROLE = "historical_challenge_report_only"
+    EVIDENCE_SCOPE = "ONE_SHOT_BACKWARD_OOT_2023_FIXED10_REPORT_ONLY"
+    SESSION_SCHEMA_VERSION = "cn_historical_challenge_session_authority_v1"
+    SESSION_STATUS = "HISTORICAL_CHALLENGE_SESSION_AUTHORITY_COMPLETE"
+    READS_FIELD = "historical_challenge_reads"
+    DATE_COUNT_FIELD = "historical_challenge_date_count"
+    ARTIFACT_PREFIX = "historical_challenge_2023"
+    COMPLETE_FILENAME = "HISTORICAL_CHALLENGE_2023_COMPLETE.json"
+    ACCESS_STATE = "SPENT_BY_THIS_ONE_SHOT_HISTORICAL_CHALLENGE"
+    PROJECT_STATE_AFTER_RUN = "HOLD_RESEARCH_WEAK_BACKWARD_OOT_EVIDENCE"
+elif RUN_MODE == "forward_2026":
+    SCHEMA_VERSION = "cn_fixed10_forward_2026_confirmation_v1"
+    STATUS = "FIXED10_FORWARD_2026_CONFIRMATION_CLOSED_IMMUTABLE"
+    REPORT_STATUS = "FIXED10_FORWARD_2026_CONFIRMATION_COMPLETE"
+    CANDIDATE_STATUS = "FORWARD_2026_CANDIDATE_CLOSED_IMMUTABLE"
+    EXPECTED_DATE_COUNT = 63
+    EVALUATION_ROLE = "forward_2026"
+    DATA_ROLE = "forward_2026_report_only"
+    EVIDENCE_SCOPE = "ONE_SHOT_FORWARD_2026_CONFIRMATION_REPORT_ONLY"
+    SESSION_SCHEMA_VERSION = forward_authority.SCHEMA_VERSION
+    SESSION_STATUS = forward_authority.STATUS
+    READS_FIELD = "forward_2026_reads"
+    DATE_COUNT_FIELD = "forward_2026_date_count"
+    ARTIFACT_PREFIX = "forward_2026"
+    COMPLETE_FILENAME = "FORWARD_2026_COMPLETE.json"
+    ACCESS_STATE = "SPENT_BY_THIS_ONE_SHOT_RUN"
+    PROJECT_STATE_AFTER_RUN = "HOLD_PROMOTION_PENDING_EXPLICIT_DECISION"
+else:
+    raise RuntimeError(f"unsupported fixed-ten run mode: {RUN_MODE}")
 POLICY = oos.POLICY
 
 _PROCESS_CONTEXT: dict[str, Any] | None = None
@@ -147,8 +178,46 @@ def _verify_authorization(
 ) -> dict[str, Any]:
     path = path.resolve()
     if v1._sha256(path) != expected_sha256:
-        raise RuntimeError("forward authorization file hash drift")
+        raise RuntimeError(f"{RUN_MODE} authorization file hash drift")
     authorization = v1._read_json(path)
+    if RUN_MODE == "historical_challenge":
+        _verify_self_hash(
+            authorization,
+            "contract_payload_sha256",
+            "historical challenge authorization",
+        )
+        required = {
+            "schema_version": "cn_historical_challenge_authorization_v1",
+            "status": "HISTORICAL_CHALLENGE_2023_FIXED_TEN_AUTHORIZED_UNOPENED",
+            "asset_id": "historical_challenge_2023_b05e2ca0",
+            "source_archive_sha256": (
+                "b05e2ca0b732821edf48a065c88b402d5c173b6a6b1266e0407bef8d9a546923"
+            ),
+            "fixed_cohort_selection_payload_sha256": (
+                expected_selection_payload_sha256
+            ),
+            "fixed_pairs": EXPECTED_PAIR_COUNT,
+            "fixed_members": EXPECTED_MEMBER_COUNT,
+            "performance_rows_read_before_freeze": 0,
+            "access_count": "exactly_one_report_only_challenge",
+            "replacement": "FORBIDDEN",
+            "backfill": "FORBIDDEN",
+            "post_read_filtering": "FORBIDDEN",
+            "optimizer_feedback_write": "FORBIDDEN",
+            "scheduler_write": "FORBIDDEN",
+            "archive_write": "FORBIDDEN",
+            "automatic_promotion": "FORBIDDEN",
+            "validation_holdout_forward_b_and_2026_reads": "FORBIDDEN",
+        }
+        drift = [
+            key for key, expected in required.items()
+            if authorization.get(key) != expected
+        ]
+        if drift:
+            raise RuntimeError(
+                "historical challenge authorization drift: " + ",".join(drift)
+            )
+        return authorization
     if authorization.get("status") != "AUTHORIZED_ZERO_FINANCIAL_PREFLIGHT":
         raise RuntimeError("forward authorization status drift")
     if authorization.get("confirmation_access_count") != "EXACTLY_ONE":
@@ -192,26 +261,27 @@ def _load_forward_context(
     )
     field_frame = base._load_field_frame(field_root, field_manifest)
     if not field_frame["trade_time"].dt.strftime("%H:%M:%S").eq("15:00:00").all():
-        raise RuntimeError("forward sidecar contains intraday clocks")
-    forward_dates = set(pd.to_datetime(field_frame["date"]).dt.normalize())
-    if (
-        len(forward_dates) != EXPECTED_DATE_COUNT
-        or len(forward_dates)
-        != int(field_manifest["eligible_forward_2026_date_count"])
-    ):
-        raise RuntimeError("forward sidecar calendar count drift")
+        raise RuntimeError(f"{RUN_MODE} sidecar contains intraday clocks")
+    evaluation_dates = set(pd.to_datetime(field_frame["date"]).dt.normalize())
+    if len(evaluation_dates) != int(field_manifest[f"eligible_{EVALUATION_ROLE}_date_count"]):
+        raise RuntimeError(f"{RUN_MODE} sidecar calendar count drift")
+    if EXPECTED_DATE_COUNT is not None and len(evaluation_dates) != EXPECTED_DATE_COUNT:
+        raise RuntimeError(f"{RUN_MODE} sidecar expected-date count drift")
+    if RUN_MODE == "historical_challenge" and not 200 <= len(evaluation_dates) < 250:
+        raise RuntimeError("historical challenge evidence ceiling/calendar drift")
 
     session_authority_root = session_authority_root.resolve()
     session_manifest_path = (
-        session_authority_root / "forward_2026_session_authority_manifest.json"
+        session_authority_root
+        / f"{EVALUATION_ROLE}_session_authority_manifest.json"
     )
     session_manifest = v1._read_json(session_manifest_path)
     _verify_self_hash(
         session_manifest, "manifest_payload_sha256", "forward session authority"
     )
     required_session = {
-        "schema_version": forward_authority.SCHEMA_VERSION,
-        "status": forward_authority.STATUS,
+        "schema_version": SESSION_SCHEMA_VERSION,
+        "status": SESSION_STATUS,
         "evaluation_role": EVALUATION_ROLE,
         "data_role": DATA_ROLE,
         "field_manifest_sha256": v1._sha256(field_manifest_path),
@@ -224,9 +294,9 @@ def _load_forward_context(
         if session_manifest.get(key) != value
     ]
     if drift:
-        raise RuntimeError("forward session authority drift: " + ",".join(drift))
-    if int(session_manifest.get("forward_2026_reads") or 0) <= 0:
-        raise RuntimeError("forward session authority has no forward reads")
+        raise RuntimeError(f"{RUN_MODE} session authority drift: " + ",".join(drift))
+    if int(session_manifest.get(READS_FIELD) or 0) <= 0:
+        raise RuntimeError(f"{RUN_MODE} session authority has no role reads")
     if int(session_manifest.get("missing_exact_st_fail_closed_session_count", -1)) != 0:
         raise RuntimeError("forward session authority has missing ST states")
     for artifact in session_manifest.get("artifacts") or ():
@@ -237,12 +307,14 @@ def _load_forward_context(
             or v1._sha256(artifact_path) != str(artifact["sha256"])
         ):
             raise RuntimeError(f"forward authority artifact drift: {artifact_path}")
-    session_path = session_authority_root / "forward_2026_session_authority.parquet"
+    session_path = (
+        session_authority_root / f"{EVALUATION_ROLE}_session_authority.parquet"
+    )
     session_authority = pd.read_parquet(session_path)
     session_dates = pd.to_datetime(session_authority["date"], errors="raise").dt.normalize()
-    session_authority = session_authority[session_dates.isin(forward_dates)].copy()
-    if set(pd.to_datetime(session_authority["date"]).dt.normalize()) != forward_dates:
-        raise RuntimeError("forward session authority calendar drift")
+    session_authority = session_authority[session_dates.isin(evaluation_dates)].copy()
+    if set(pd.to_datetime(session_authority["date"]).dt.normalize()) != evaluation_dates:
+        raise RuntimeError(f"{RUN_MODE} session authority calendar drift")
     master, observed_index, authority_index = base._materialize_replay_master(
         field_frame, session_authority
     )
@@ -273,7 +345,7 @@ def _load_forward_context(
     date_groups = [
         order[start:end] for start, end in zip(boundaries[:-1], boundaries[1:])
     ]
-    field_reads = int(field_manifest["forward_2026_reads"])
+    field_reads = int(field_manifest[READS_FIELD])
     authority_reads = int(session_manifest["authority_session_row_count"])
     return {
         "contract": contract,
@@ -299,7 +371,8 @@ def _load_forward_context(
         "corporate": corporate,
         "field_reads": field_reads,
         "authority_reads": authority_reads,
-        "forward_2026_reads": field_reads + authority_reads,
+        "evaluation_date_count": len(evaluation_dates),
+        READS_FIELD: field_reads + authority_reads,
     }
 
 
@@ -323,7 +396,14 @@ def _candidate_metric(
             "evidence_scope": EVIDENCE_SCOPE,
             "validation_reads": 0,
             "holdout_reads": 0,
-            "forward_2026_reads": int(result["forward_2026_reads"]),
+            "forward_2026_reads": (
+                int(result[READS_FIELD]) if READS_FIELD == "forward_2026_reads" else 0
+            ),
+            "historical_challenge_reads": (
+                int(result[READS_FIELD])
+                if READS_FIELD == "historical_challenge_reads"
+                else 0
+            ),
             "optimizer_feedback_write": "FORBIDDEN",
             "scheduler_write": "FORBIDDEN",
             "archive_write": "FORBIDDEN",
@@ -381,13 +461,13 @@ def _evaluate_candidate(
         ending_book_policy=ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
     )
     if str(result["portfolio_decoder_policy_sha256"]) != POLICY.payload_sha256:
-        raise RuntimeError("forward decoder policy hash drift")
+        raise RuntimeError(f"{RUN_MODE} decoder policy hash drift")
     result = dict(result)
-    result["forward_2026_reads"] = int(context["forward_2026_reads"])
+    result[READS_FIELD] = int(context[READS_FIELD])
     metric = _candidate_metric(candidate, result, theoretical)
     payload = {
         "schema_version": SCHEMA_VERSION,
-        "status": "FORWARD_2026_CANDIDATE_CLOSED_IMMUTABLE",
+        "status": CANDIDATE_STATUS,
         "candidate_id": candidate_id,
         "input_data_sha256": input_data_sha256,
         "metric": metric,
@@ -422,7 +502,7 @@ def _initialize_worker(
 
 def _evaluate_in_worker(candidate: Mapping[str, Any]) -> dict[str, Any]:
     if _PROCESS_CONTEXT is None or _PROCESS_CANDIDATE_ROOT is None or _PROCESS_INPUT_HASH is None:
-        raise RuntimeError("forward worker is not initialized")
+        raise RuntimeError(f"{RUN_MODE} worker is not initialized")
     return _evaluate_candidate(
         candidate,
         context=_PROCESS_CONTEXT,
@@ -532,10 +612,10 @@ def run_forward_confirmation(
     executor_worker_count: int,
 ) -> dict[str, Any]:
     if platform.node().upper() != AUTHORIZED_HOST:
-        raise RuntimeError(f"forward confirmation must run on {AUTHORIZED_HOST}")
+        raise RuntimeError(f"{RUN_MODE} must run on {AUTHORIZED_HOST}")
     initial_free = int(psutil.virtual_memory().available)
     if initial_free < MINIMUM_FREE_MEMORY_BYTES:
-        raise RuntimeError("forward confirmation minimum-free-memory gate failed")
+        raise RuntimeError(f"{RUN_MODE} minimum-free-memory gate failed")
     train_v2._validate_executor_contract(
         execution_backend="PROCESS_POOL",
         entitlement_worker_count=int(worker_count),
@@ -543,7 +623,7 @@ def run_forward_confirmation(
     )
     if os.environ.get("CN_NODE_RESOURCE_LEASE_REQUIRED") == "1":
         if int(os.environ.get("CN_NODE_CPU_ENTITLEMENT") or 0) != int(worker_count):
-            raise RuntimeError("forward confirmation lease entitlement drift")
+            raise RuntimeError(f"{RUN_MODE} lease entitlement drift")
         nested = {
             key: int(os.environ.get(key) or 0)
             for key in (
@@ -553,7 +633,7 @@ def run_forward_confirmation(
             )
         }
         if any(value != 1 for value in nested.values()):
-            raise RuntimeError(f"forward nested parallelism drift: {nested}")
+            raise RuntimeError(f"{RUN_MODE} nested parallelism drift: {nested}")
     if len(builder_commit_sha) != 40:
         raise ValueError("builder_commit_sha must be a full Git SHA")
     if POLICY.payload_sha256 != expected_decoder_policy_sha256:
@@ -577,12 +657,16 @@ def run_forward_confirmation(
         session_authority_root=session_authority_root,
         split_hash=expected_forward_split_sha256,
     )
-    if int(context["forward_2026_reads"]) <= 0:
-        raise RuntimeError("forward confirmation has no forward reads")
+    if int(context[READS_FIELD]) <= 0:
+        raise RuntimeError(f"{RUN_MODE} has no role reads")
     if int(context["field_manifest"].get("validation_reads") or 0) != 0:
-        raise RuntimeError("forward confirmation read validation")
+        raise RuntimeError(f"{RUN_MODE} read validation")
     if int(context["field_manifest"].get("holdout_reads") or 0) != 0:
-        raise RuntimeError("forward confirmation read holdout")
+        raise RuntimeError(f"{RUN_MODE} read holdout")
+    if RUN_MODE == "historical_challenge":
+        if int(context["field_manifest"].get("forward_2026_reads") or 0) != 0:
+            raise RuntimeError("historical challenge read forward_2026")
+    context_date_count = int(context["evaluation_date_count"])
 
     output_root = output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=False)
@@ -600,7 +684,7 @@ def run_forward_confirmation(
             "contract_payload_sha256"
         ],
         "execution_contract_sha256": expected_execution_contract_sha256,
-        "forward_split_manifest_sha256": expected_forward_split_sha256,
+        "split_manifest_sha256": expected_forward_split_sha256,
         "field_manifest_sha256": v1._sha256(context["field_manifest_path"]),
         "label_manifest_sha256": v1._sha256(context["label_manifest_path"]),
         "session_authority_manifest_sha256": v1._sha256(
@@ -623,7 +707,14 @@ def run_forward_confirmation(
         "builder_source_sha256": v1._sha256(Path(__file__).resolve()),
         "validation_reads": 0,
         "holdout_reads": 0,
-        "forward_2026_reads": int(context["forward_2026_reads"]),
+        "forward_2026_reads": (
+            int(context[READS_FIELD]) if READS_FIELD == "forward_2026_reads" else 0
+        ),
+        "historical_challenge_reads": (
+            int(context[READS_FIELD])
+            if READS_FIELD == "historical_challenge_reads"
+            else 0
+        ),
         "optimizer_feedback_write": "FORBIDDEN",
         "scheduler_write": "FORBIDDEN",
         "archive_write": "FORBIDDEN",
@@ -665,7 +756,7 @@ def run_forward_confirmation(
             if minimum_free < MINIMUM_FREE_MEMORY_BYTES:
                 for future in pending:
                     future.cancel()
-                raise RuntimeError("forward confirmation runtime memory gate failed")
+                raise RuntimeError(f"{RUN_MODE} runtime memory gate failed")
             for future in completed:
                 metrics.append(future.result())
     elapsed = float(time.perf_counter() - started)
@@ -677,17 +768,17 @@ def run_forward_confirmation(
         columns="_order"
     ).reset_index(drop=True)
     if candidate_metrics["candidate_id"].astype(str).tolist() != expected_ids:
-        raise RuntimeError("forward candidate order drift")
+        raise RuntimeError(f"{RUN_MODE} candidate order drift")
     if len(candidate_metrics) != EXPECTED_MEMBER_COUNT:
-        raise RuntimeError("forward candidate metric count drift")
+        raise RuntimeError(f"{RUN_MODE} candidate metric count drift")
     if not candidate_metrics["accounting_invariants_status"].eq("PASS").all():
-        raise RuntimeError("forward accounting invariants failed")
+        raise RuntimeError(f"{RUN_MODE} accounting invariants failed")
     pair_metrics = _pair_metrics(pairs, candidate_metrics)
     if pair_metrics["pair_id"].astype(str).tolist() != pairs["pair_id"].astype(str).tolist():
-        raise RuntimeError("forward pair order drift")
+        raise RuntimeError(f"{RUN_MODE} pair order drift")
 
-    candidate_path = output_root / "forward_2026_candidate_metrics.parquet"
-    pair_path = output_root / "forward_2026_pair_metrics.parquet"
+    candidate_path = output_root / f"{ARTIFACT_PREFIX}_candidate_metrics.parquet"
+    pair_path = output_root / f"{ARTIFACT_PREFIX}_pair_metrics.parquet"
     candidate_metrics.to_parquet(candidate_path, index=False)
     pair_metrics.to_parquet(pair_path, index=False)
     all_four = int(pair_metrics["all_four_economic_gates_positive"].sum())
@@ -697,11 +788,11 @@ def run_forward_confirmation(
     sorted_positive = positive_returns.sort_values(ascending=False)
     report = {
         "schema_version": SCHEMA_VERSION,
-        "status": "FIXED10_FORWARD_2026_CONFIRMATION_COMPLETE",
+        "status": REPORT_STATUS,
         "evidence_scope": EVIDENCE_SCOPE,
         "pair_count": EXPECTED_PAIR_COUNT,
         "candidate_member_count": EXPECTED_MEMBER_COUNT,
-        "forward_trade_date_count": EXPECTED_DATE_COUNT,
+        DATE_COUNT_FIELD: int(context_date_count),
         "decoder_id": POLICY.decoder_id,
         "decoder_policy_sha256": POLICY.payload_sha256,
         "intention_to_treat": True,
@@ -753,10 +844,10 @@ def run_forward_confirmation(
         "positive_return_top5_contribution_share": (
             float(sorted_positive.head(5).sum() / positive_sum) if positive_sum > 0 else None
         ),
-        "train_search_score_to_forward_return_spearman": oos._spearman(
+        f"train_search_score_to_{ARTIFACT_PREFIX}_return_spearman": oos._spearman(
             pair_metrics, "train_search_score", "primary_cumulative_net_return"
         ),
-        "train_decoder_to_forward_return_spearman": oos._spearman(
+        f"train_decoder_to_{ARTIFACT_PREFIX}_return_spearman": oos._spearman(
             pair_metrics,
             "train_decoder_primary_cumulative_net_return",
             "primary_cumulative_net_return",
@@ -772,15 +863,20 @@ def run_forward_confirmation(
         "validation_reads": 0,
         "holdout_reads": 0,
         "forward_2026_reads": int(input_binding["forward_2026_reads"]),
-        "forward_asset_access_state": "SPENT_BY_THIS_ONE_SHOT_RUN",
+        "historical_challenge_reads": int(
+            input_binding["historical_challenge_reads"]
+        ),
+        "evaluation_asset_access_state": ACCESS_STATE,
         "optimizer_feedback_write": "FORBIDDEN",
         "scheduler_write": "FORBIDDEN",
         "archive_write": "FORBIDDEN",
         "promotion": "FORBIDDEN",
         "promotion_authorized": False,
-        "project_state_after_run": "HOLD_PROMOTION_PENDING_EXPLICIT_DECISION",
+        "project_state_after_run": PROJECT_STATE_AFTER_RUN,
     }
-    report_path = v1._write_json(output_root / "forward_2026_report.json", report)
+    report_path = v1._write_json(
+        output_root / f"{ARTIFACT_PREFIX}_report.json", report
+    )
     artifacts = [
         v1._artifact(path, root=output_root)
         for path in (
@@ -796,7 +892,7 @@ def run_forward_confirmation(
         "artifacts": artifacts,
     }
     closure["manifest_body_sha256"] = v1._stable_hash(closure)
-    closure_path = v1._write_json(output_root / "FORWARD_2026_COMPLETE.json", closure)
+    closure_path = v1._write_json(output_root / COMPLETE_FILENAME, closure)
     return {
         **report,
         "closure_path": str(closure_path),

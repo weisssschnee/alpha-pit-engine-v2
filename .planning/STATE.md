@@ -2,7 +2,7 @@
 
 Updated: 2026-08-05
 
-Current state: `HISTORICAL_CHALLENGE_2023_AUTHORIZED_UNOPENED_FORWARD_B_SEALED_HOLD_PROMOTION`
+Current state: `HISTORICAL_CHALLENGE_2023_SPENT_EXECUTION_PENDING_FORWARD_B_SEALED_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,7 +16,7 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
-### 2023 historical challenge authorized unopened; Forward-B sealed (2026-08-05)
+### 2023 historical challenge spent and execution pending; Forward-B sealed (2026-08-05)
 
 - The unchanged fixed ten pairs are prospectively bound to the immutable
   `2023_1min.zip` archive before any price row read. The archive is
@@ -25,6 +25,22 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   5,035 SH/SZ entries and no Beijing Exchange entries. This is a backward
   out-of-time historical challenge, not forward confirmation; the no-BJ
   coverage and single-year horizon cap its evidence grade at weak.
+- p03 has now crossed the destructive access boundary. The access transition
+  receipt is
+  `runtime/run_plans/cn_historical_challenge_2023_access_started.json`,
+  canonical payload SHA256
+  `3943298896b10ae28a6b6a9f2a17445c2dda3d83633d3d6e09b270dd29cebcdc`.
+  The 2023 challenge asset is therefore project-level `spent` regardless of
+  execution success. No candidate or economic result exists yet.
+- The exact 4,008,027,005-byte archive was transferred to 77o through 60
+  independently hash-matched chunks and reassembled to the original SHA256
+  `b05e2ca0b732821edf48a065c88b402d5c173b6a6b1266e0407bef8d9a546923`.
+  The exact 242-file daily/ST source and immutable fixed-ten cohort were also
+  staged. The p03 implementation keeps the unchanged `TOPK_10_EQUAL`
+  decoder, next-open/T+1/final-close-MTM ledger, one
+  `VALIDATION_EXCLUSIVE_32` lease and 12 single-thread worker processes;
+  31 focused tests plus Python compilation and PowerShell parse passed before
+  deployment.
 - The separate TDX LC1 `FORWARD_B` window, 2026-04-13 through 2026-05-14,
   remains performance-unopened and is not authorized to run. Its metadata-only
   reservation binds inventory SHA256
@@ -37,10 +53,11 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   2026-01-05 through 2026-04-10 asset is now explicitly `spent`, matching the
   access and burn ledgers. Historical challenge, Forward-B, spent 2026 and the
   adaptive 2025 assets remain separate evidence budgets.
-- p01 is a zero-performance-read authority freeze. The next phase first
+- p01 was a zero-performance-read authority freeze. p02 then
   qualifies archive conversion and accelerated replay semantics on already
   spent/development data. Only after exact parity may the 2023 challenge be
-  opened. Search, OOS feedback, promotion and Forward-B access remain held.
+  opened. The 2023 asset is now spent for the authorized p03 run. Search, OOS
+  feedback, promotion and Forward-B access remain held.
 - p02 conversion and parity qualification is now closed at exact pushed and
   deployed SHA `7f44713b9cf12de74e5ea9c3d6421d507ba3784b` with 16/16
   focused tests passing on 77o. A 12-process real-shape 2024 canary produced
