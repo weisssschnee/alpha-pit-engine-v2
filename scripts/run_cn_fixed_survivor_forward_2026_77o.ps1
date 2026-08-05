@@ -155,10 +155,11 @@ $sourceFiles = @(Get-ChildItem -LiteralPath $resolvedMinute -File -Filter '*.par
 $splitRows = @(Import-Csv -LiteralPath $split)
 $sourceDates = @($sourceFiles | ForEach-Object { $_.BaseName.Replace('date=', '') })
 $splitDates = @($splitRows | ForEach-Object { ([datetime]$_.trade_date).ToString('yyyyMMdd') })
+$dateDifferences = @(Compare-Object $sourceDates $splitDates)
 if (
     $sourceFiles.Count -ne 63 -or
     $splitRows.Count -ne 63 -or
-    (Compare-Object $sourceDates $splitDates).Count -ne 0 -or
+    $dateDifferences.Count -ne 0 -or
     [int64](($sourceFiles | Measure-Object Length -Sum).Sum) -ne 1517219879
 ) {
     throw 'forward source metadata/calendar drift before financial read'

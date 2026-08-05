@@ -150,3 +150,5 @@ def test_forward_runner_and_launcher_bind_one_shot_boundaries() -> None:
     assert "--evaluation-role forward_2026" in launcher
     assert "--max-shards 63" in launcher
     assert "preflight_forward_financial_rows_read = 0" in launcher
+    assert "$dateDifferences = @(Compare-Object $sourceDates $splitDates)" in launcher
+    assert "$dateDifferences.Count -ne 0" in launcher
