@@ -2,7 +2,7 @@
 
 Updated: 2026-08-05
 
-Current state: `CN_ALPHA_SELECTION_DIAGNOSTIC_CLOSED_NO_RANKER_FREEZE_HOLD_PROMOTION`
+Current state: `FIXED10_CONFIRMATION_COHORT_FROZEN_FORWARD_AUTHORIZATION_REQUIRED`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,34 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Fixed ten-survivor confirmation cohort frozen; 2025 target rejected as spent (2026-08-05)
+
+- The exact ten adaptive-validation all-four survivors are frozen in original
+  finalist order `2/6/7/8/9/10/11/15/18/21`, with no replacement, backfill or
+  post-freeze filtering. The immutable cohort root is
+  `G:\Chengbo\runtime\cn_fixed_survivor_confirmatory_input_10_20260805_bec2de0`;
+  manifest file/canonical SHA256 values are
+  `98738f695614a15a83e188eb209844f75dc4e4d724e2a2cfcd762676f2c9829b` /
+  `71d642f61ec79dc8d289e64180d3a305e5f511d7fdce071b7061b8bc091cf865`,
+  and the selection payload SHA256 is
+  `7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77`.
+  Independent verification passed with receipt file/payload SHA256 values
+  `b7e787a29a221808bb0bb2ae01b523e63a8427da474ee59e1c9e9fb9f9fc2f23` /
+  `54d225068d87fc0e801dd15fd1af1885152359f0a1aa718b4f5691380ab4e89e`.
+- This freeze tests the current cohort only and creates no selector authority.
+  It read no holdout market/label row and no 2026 row. The initially proposed
+  48-date 2025 target was rejected during preflight because ADR 0002 and the
+  burn ledger already classify the entire 2025 validation and holdout calendar
+  as project-level `spent`. A different candidate cohort does not make those
+  dates genuinely untouched, and no second 2025 holdout run was launched.
+- The only registered unburned time asset is the separate 2026 forward asset.
+  It remains unopened and reserved for one explicitly authorized final forward
+  evaluation. Confirmation execution, sidecar construction and deployment are
+  paused until that destructive evidence-boundary choice is explicitly made.
+  Promotion remains held regardless of the eventual one-shot result. Compact
+  preflight evidence is in
+  `runtime/run_plans/cn_fixed_survivor_confirmation_preflight_20260805.json`.
 
 ### CN_ALPHA_SELECTION_DIAGNOSTIC_V1 closed without ranker freeze (2026-08-05)
 

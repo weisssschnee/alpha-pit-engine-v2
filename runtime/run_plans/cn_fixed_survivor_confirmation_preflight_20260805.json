@@ -1,0 +1,54 @@
+{
+  "schema_version": "cn_fixed_survivor_confirmation_preflight_v1",
+  "status": "BLOCKED_EXISTING_2025_HOLDOUT_SPENT_AWAITING_FORWARD_AUTHORIZATION",
+  "recorded_at": "2026-08-05",
+  "confirmation_claim": "FIXED_CURRENT_ALPHA_COHORT_SURVIVES_GENUINELY_UNTOUCHED_CONFIRMATION",
+  "cohort": {
+    "root": "G:\\Chengbo\\runtime\\cn_fixed_survivor_confirmatory_input_10_20260805_bec2de0",
+    "manifest_file_sha256": "98738f695614a15a83e188eb209844f75dc4e4d724e2a2cfcd762676f2c9829b",
+    "manifest_payload_sha256": "71d642f61ec79dc8d289e64180d3a305e5f511d7fdce071b7061b8bc091cf865",
+    "selection_payload_sha256": "7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77",
+    "pair_count": 10,
+    "candidate_member_count": 20,
+    "source_finalist_orders": [2, 6, 7, 8, 9, 10, 11, 15, 18, 21],
+    "replacement": "FORBIDDEN",
+    "backfill": "FORBIDDEN",
+    "post_freeze_filtering": "FORBIDDEN",
+    "selector_claim_authorized": false
+  },
+  "independent_verification": {
+    "status": "PASS_INDEPENDENT_FIXED_SURVIVOR_CONFIRMATORY_FREEZE",
+    "receipt_file_sha256": "b7e787a29a221808bb0bb2ae01b523e63a8427da474ee59e1c9e9fb9f9fc2f23",
+    "receipt_payload_sha256": "54d225068d87fc0e801dd15fd1af1885152359f0a1aa718b4f5691380ab4e89e"
+  },
+  "rejected_target": {
+    "asset": "global_split_manifest_holdout",
+    "split_manifest_sha256": "fab9fb17642595456e10c4ad44357193f2dcdc1d39edd785b8298fbe9ca22241",
+    "date_count": 48,
+    "date_min": "2025-10-27",
+    "date_max": "2025-12-31",
+    "project_data_role": "spent",
+    "burn_ledger_sha256": "cc7490cc6af5e2a204bf9b17a17b879ac2a2da3397231e43fc4e00450c38f665",
+    "adr_0002_sha256": "520fc217d52e04424bc6cf1f6cd0c0d229ecdd2795a8867fbc0c08802a5437af",
+    "reason": "Candidate novelty does not restore project-level untouched status after candidate-level results were reported and manually viewed.",
+    "execution_launched": false
+  },
+  "remaining_registered_untouched_asset": {
+    "asset": "separate_2026_true1min_asset",
+    "data_role": "forward",
+    "burn_status": "unburned_reserved",
+    "allowed_use": "one_authorized_final_forward_evaluation_only",
+    "explicit_authorization_required_before_read": true
+  },
+  "access_and_write_receipt": {
+    "financial_recomputed": false,
+    "validation_rows_read": 0,
+    "holdout_market_or_label_rows_read": 0,
+    "forward_2026_rows_read": 0,
+    "optimizer_feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "archive_write": "FORBIDDEN",
+    "promotion_write": "FORBIDDEN"
+  },
+  "next_action": "Obtain explicit authorization to spend the single reserved 2026 forward asset on the unchanged fixed ten-pair intention-to-treat cohort, or keep it sealed and stop confirmation. Do not substitute the spent 2025 holdout or relabel a new stock pool on spent dates as untouched."
+}
