@@ -1,0 +1,75 @@
+{
+  "schema_version": "cn_historical_challenge_conversion_parity_qualification_v1",
+  "status": "CONVERSION_AND_PARITY_QUALIFIED",
+  "generated_at_utc": "2026-08-05T10:52:06.5394843Z",
+  "repo_sha": "7f44713b9cf12de74e5ea9c3d6421d507ba3784b",
+  "deployment": {
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_historical_challenge_7f44713_20260805",
+    "manifest_sha256": "fa19016530d669806cbff3b97890ef6d6a4e4adaa8887027352367fecb57ed70",
+    "package_sha256": "a01cbddc4e34e19dbd3221bfee236dbf3cd65736ea6098a54ba4423fa27882a5",
+    "local_tracking_remote_sha_equal": true,
+    "remote_focused_tests": "16_PASSED"
+  },
+  "development_only_2024_sessionization": {
+    "archive_sha256": "d6ca59de100d5662fd1d93ff98ee618c3a5185f940c34eaa1609d53c563a4e41",
+    "archive_bytes": 4243807242,
+    "selected_security_count": 32,
+    "session_row_count": 7744,
+    "date_count": 242,
+    "worker_count": 12,
+    "observed_end_to_end_wall_seconds": 28.8,
+    "manifest_file_sha256": "e36c046985031a63359c5218227424077c60ca5cc30b55b235602999243a1d0e",
+    "manifest_payload_sha256": "f33c4d7d03a0b7165f5f288de400558605bb1889f8a04159ffca60c51e926e9f"
+  },
+  "development_only_2024_daily_st": {
+    "source_file_count": 242,
+    "row_count": 1293882,
+    "security_count": 5433,
+    "st_row_count": 29924,
+    "worker_count": 12,
+    "observed_end_to_end_wall_seconds": 22.8,
+    "performance_columns_read": [],
+    "manifest_file_sha256": "d62c05147bfc0589ca849b465b15ee7180e353f6adbfcdcfb74537275866224d",
+    "manifest_payload_sha256": "1f331ceb70e0002e7808b32928a99d28346df8f4b583987ba825b8d61932d329",
+    "artifact_sha256": "19a9ec79aa9aa9c1a0d0ea40b92cfdaaf701fe620075b80a991fc48b67f038d4"
+  },
+  "official_release_parity": {
+    "status": "SESSIONIZED_ARCHIVE_PARITY_PASS",
+    "reference_root": "D:\\ChengboRemote\\data\\cn_true1min_development_only_release_v1_20260712_77o",
+    "reference_shard_count": 16,
+    "coordinate_count": 7744,
+    "security_count": 32,
+    "date_count": 242,
+    "open_max_absolute_difference": 0.0,
+    "high_max_absolute_difference": 0.0,
+    "low_max_absolute_difference": 0.0,
+    "close_max_absolute_difference": 0.0,
+    "volume_max_absolute_difference": 0.0,
+    "amount_max_absolute_difference": 1194.0,
+    "amount_tolerance": {
+      "absolute": 256.0,
+      "relative": 0.000001,
+      "reason": "OFFICIAL_RELEASE_FLOAT_AGGREGATION"
+    },
+    "receipt_file_sha256": "bbeb017645138e8b16a7ca32261f39e11852d4325b1774b5f700d42571cb0c4d",
+    "receipt_payload_sha256": "b764420c6b432c22e58ce87a2f80e83cead43101cb80a67b1c1f638b9f774b05",
+    "canonical_self_hash_pass": true,
+    "resource_profile": "VALIDATION_EXCLUSIVE_32",
+    "admitted_cpu_threads": 32,
+    "polars_threads": 24,
+    "observed_wall_seconds": 221.2,
+    "lease_released": true
+  },
+  "boundaries": {
+    "historical_2023_performance_rows_read": 0,
+    "forward_b_performance_rows_read": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "optimizer_feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "promotion": "FORBIDDEN"
+  },
+  "manifest_payload_sha256": "6c967be88536d7aa524df353883a1719ef1da1ed375e298e297dc0b540b31878",
+  "decision": "AUTHORIZE_ONE_FIXED_TEN_2023_REPORT_ONLY_CHALLENGE_WITHOUT_ADAPTIVE_FEEDBACK"
+}

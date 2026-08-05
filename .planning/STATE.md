@@ -41,6 +41,22 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   qualifies archive conversion and accelerated replay semantics on already
   spent/development data. Only after exact parity may the 2023 challenge be
   opened. Search, OOS feedback, promotion and Forward-B access remain held.
+- p02 conversion and parity qualification is now closed at exact pushed and
+  deployed SHA `7f44713b9cf12de74e5ea9c3d6421d507ba3784b` with 16/16
+  focused tests passing on 77o. A 12-process real-shape 2024 canary produced
+  7,744 sessions for 32 complete-year securities; all 7,744 coordinates and
+  open/high/low/close/volume values matched the official development release.
+  Amount matched the frozen float-aggregation tolerance (maximum absolute
+  difference 1,194; relative tolerance 1e-6). The canonical parity receipt
+  file/payload SHA256 are
+  `bbeb017645138e8b16a7ca32261f39e11852d4325b1774b5f700d42571cb0c4d` /
+  `b764420c6b432c22e58ce87a2f80e83cead43101cb80a67b1c1f638b9f774b05`.
+- The 2024 exact daily-ST builder separately closed 1,293,882 identity/ST rows
+  from 242 sessions with 12 workers and no performance columns read. p02 used
+  only spent/development 2024 data: 2023 challenge, Forward-B, validation,
+  holdout and 2026 performance reads remain zero. p03 may now perform exactly
+  one full 2023 conversion and unchanged fixed-ten report-only challenge; it
+  must not add search, tune from challenge results or release Forward-B.
 
 
 ### Fixed-ten 2026 forward asset spent without confirmation result (2026-08-05)
