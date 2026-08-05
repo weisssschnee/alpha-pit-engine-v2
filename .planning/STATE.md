@@ -2,7 +2,7 @@
 
 Updated: 2026-08-05
 
-Current state: `CN_DECODER_V2_TOPK10_EQUAL_ADAPTIVE_OOS_POSITIVE_HOLD_PROMOTION`
+Current state: `CN_ALPHA_SELECTION_DIAGNOSTIC_CLOSED_NO_RANKER_FREEZE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,46 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### CN_ALPHA_SELECTION_DIAGNOSTIC_V1 closed without ranker freeze (2026-08-05)
+
+- The diagnostic bound the immutable 32-pair train Decoder V2 cohort, the
+  exact 22-pair train finalist freeze and the already spent adaptive-validation
+  OOS. It performed no financial recomputation and no new validation, holdout
+  or 2026 reads. The formal root is
+  `G:\Chengbo\runtime\cn_alpha_selection_diagnostic_v1_32_20260805_8b16135`;
+  closure file/canonical SHA256 values are
+  `212c1f6e4390594a2815b434a7cecd587d7c73c6ecf8a2f458b9c9afc5f132fa` /
+  `2e0b4da81cb564be5af42d78ef4afe50f7c07414cd7feff3382eb43e60cd8177`.
+  The independent audit at
+  `G:\Chengbo\runtime\cn_alpha_selection_diagnostic_v1_independent_audit_20260805_dc5631e`
+  passed with file/canonical SHA256 values
+  `fd33de33734f8b3697e617ba9f0b3311734fbbd52e29d79fe6b1ef01e9f47101` /
+  `09441435bb8099bff2075e2c9af82a39dc70b221d1f1a3655b941b17e4aadd42`.
+- Labels were not fabricated. The labeled analysis universe is exactly the 22
+  train-frozen pairs: 10 `ADAPTIVE_VALIDATION_SURVIVOR` and 12
+  `ADAPTIVE_VALIDATION_ABSOLUTE_ONLY_RELATIVE_INCOMPLETE`. The remaining ten
+  rows are `TRAIN_SCREEN_REJECT_OOS_LABEL_MISSING`; they were used only for
+  train covariate-shift analysis and were never imputed as OOS negatives.
+- No univariate train-visible feature survived multiplicity correction. The
+  largest predeclared direction-adjusted effect was train regime stability
+  (rank-biserial `0.45`, raw p `0.0805752`, BH-FDR `0.5317964`). The post-hoc
+  descriptive leader, realized-PnL share, captured 7/10 survivors in a top-10
+  ranking (`1.54x` enrichment, hypergeometric tail `0.0456061`), but it was not
+  a preregistered ranker and creates no selector authority.
+- None of the four preregistered heuristics passed the immutable freeze gate of
+  at least 6/10 top-10 survivors, strict improvement over current search score
+  and leave-one-out minimum 5. The conservative three-axis floor was best at
+  5/10 with leave-one-out minimum 5 and Spearman `-0.013575` versus OOS matched
+  return increment. Current search score, train decoder economic floor and the
+  equal three-axis ranker captured 4/10, 4/10 and 3/10 respectively.
+- Therefore no `VALIDATION_INFORMED_EXPERIMENTAL_RANKER` was frozen and no
+  prospective selector search is authorized from this result. Promotion
+  remains held. The next bounded action is to freeze the exact ten reported
+  adaptive-validation survivors without backfill and evaluate that fixed
+  intention-to-treat cohort once on a separately bound genuinely untouched
+  confirmatory split. This tests the existing alpha cohort, not selector
+  generalization.
 
 ### Frozen TOPK_10_EQUAL adaptive report-only validation OOS closure (2026-08-05)
 

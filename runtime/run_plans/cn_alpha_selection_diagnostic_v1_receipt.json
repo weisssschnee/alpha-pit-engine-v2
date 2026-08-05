@@ -1,0 +1,59 @@
+{
+  "schema_version": "cn_alpha_selection_diagnostic_v1_receipt",
+  "status": "CLOSED_IMMUTABLE_HOLD_RESEARCH_NO_RANKER_FREEZE",
+  "contract_file_sha256": "69f44b2d9331eaae021aba6eda7453a468007ce10e696f3038f3a8666ee8578c",
+  "builder_commit_sha": "8b16135c86539b30d606d65912949037cb3e2d8d",
+  "auditor_commit_sha": "dc5631e560a27c9ce935894b15c4c2219aaa2b8e",
+  "diagnostic_root": "G:\\Chengbo\\runtime\\cn_alpha_selection_diagnostic_v1_32_20260805_8b16135",
+  "diagnostic_manifest_file_sha256": "212c1f6e4390594a2815b434a7cecd587d7c73c6ecf8a2f458b9c9afc5f132fa",
+  "diagnostic_manifest_body_sha256": "2e0b4da81cb564be5af42d78ef4afe50f7c07414cd7feff3382eb43e60cd8177",
+  "independent_audit_root": "G:\\Chengbo\\runtime\\cn_alpha_selection_diagnostic_v1_independent_audit_20260805_dc5631e",
+  "independent_audit_file_sha256": "fd33de33734f8b3697e617ba9f0b3311734fbbd52e29d79fe6b1ef01e9f47101",
+  "independent_audit_body_sha256": "09441435bb8099bff2075e2c9af82a39dc70b221d1f1a3655b941b17e4aadd42",
+  "population": {
+    "source_pairs": 32,
+    "labeled_pairs": 22,
+    "adaptive_validation_survivors": 10,
+    "adaptive_validation_absolute_only_relative_incomplete": 12,
+    "unlabeled_train_screen_rejects": 10,
+    "unlabeled_negative_imputation": false
+  },
+  "diagnostic_findings": {
+    "minimum_univariate_bh_fdr": 0.531796412123694,
+    "largest_predeclared_direction_adjusted_effect_feature": "train_regime_stability_score",
+    "largest_predeclared_direction_adjusted_rank_biserial": 0.45,
+    "largest_effect_raw_p": 0.08057521395813547,
+    "best_post_hoc_single_feature_top10": "realized_pnl_share",
+    "best_post_hoc_single_feature_top10_survivors": 7,
+    "best_post_hoc_single_feature_top10_enrichment": 1.54,
+    "best_post_hoc_single_feature_hypergeometric_tail": 0.04560609668968802,
+    "best_post_hoc_single_feature_authority": "DIAGNOSTIC_ONLY_NOT_A_RANKER"
+  },
+  "predeclared_ranker_gate": {
+    "minimum_top10_survivors": 6,
+    "must_strictly_beat_current_search_score": true,
+    "minimum_leave_one_out_top10_survivors": 5,
+    "current_search_score_top10_survivors": 4,
+    "train_decoder_economic_floor_top10_survivors": 4,
+    "three_axis_equal_rank_top10_survivors": 3,
+    "conservative_three_axis_floor_top10_survivors": 5,
+    "conservative_three_axis_floor_leave_one_out_minimum": 5,
+    "passing_ranker_count": 0,
+    "decision": "HOLD_RESEARCH_NO_RANKER_FREEZE"
+  },
+  "authority_boundary": {
+    "experimental_ranker_frozen": false,
+    "ranker_authority_created": false,
+    "search_authorized_by_this_receipt": false,
+    "promotion_authorized": false,
+    "graph_authority_changed": false,
+    "new_financial_reads": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "optimizer_feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "archive_write": "FORBIDDEN"
+  },
+  "next_bounded_action": "Freeze the exact ten adaptive-validation survivors without backfill and evaluate them once as intention-to-treat on a separately bound genuinely untouched confirmatory split. Do not launch prospective selector search because no predeclared ranker qualified."
+}
