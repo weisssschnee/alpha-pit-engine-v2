@@ -149,6 +149,8 @@ def test_forward_runner_and_launcher_bind_one_shot_boundaries() -> None:
     assert '"optimizer_feedback_write": "FORBIDDEN"' in runner
     assert '"promotion": "FORBIDDEN"' in runner
     assert "VALIDATION_EXCLUSIVE_32" in launcher
+    assert "$deployment.PSObject.Properties['remote_workspace']" in launcher
+    assert "[string]$deployment.remote_workspace" in launcher
     assert "[int]$ExecutorWorkerCount = 12" in launcher
     assert "forward_access_started.json" in launcher
     assert "--evaluation-role forward_2026" in launcher

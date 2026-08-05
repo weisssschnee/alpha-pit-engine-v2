@@ -100,6 +100,8 @@ def test_access_transition_and_launcher_preserve_forward_b_seal() -> None:
     assert "$env:CN_FIXED10_RUN_MODE = 'historical_challenge'" in launcher
     assert "[int]$ExecutorWorkerCount = 12" in launcher
     assert "VALIDATION_EXCLUSIVE_32" in launcher
+    assert "$deployment.PSObject.Properties['remote_workspace']" in launcher
+    assert "[string]$deployment.remote_workspace" in launcher
     assert "--evaluation-role historical_challenge" in launcher
     assert "forward_b_reads = 0" in launcher
     assert "HISTORICAL_CHALLENGE_2023_COMPLETE.json" in launcher

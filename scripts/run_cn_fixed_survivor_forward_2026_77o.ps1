@@ -133,9 +133,14 @@ if ($LASTEXITCODE -ne 0 -or $dirty.Count -ne 0) {
 }
 $deployment = Get-Content -LiteralPath $resolvedDeployment -Raw |
     ConvertFrom-Json
+$deploymentWorkspace = if ($null -ne $deployment.PSObject.Properties['remote_workspace']) {
+    [string]$deployment.remote_workspace
+} else {
+    [string]$deployment.workspace
+}
 if (
     [string]$deployment.repo_sha -ne $RepoSha -or
-    [string]$deployment.workspace -ne $resolvedRepo
+    $deploymentWorkspace -ne $resolvedRepo
 ) {
     throw 'forward deployment manifest binding drift'
 }
