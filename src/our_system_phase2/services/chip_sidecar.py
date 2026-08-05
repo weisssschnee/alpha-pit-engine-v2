@@ -62,6 +62,7 @@ def load_chip_context(
     allowed_codes: set[str],
     fields: Sequence[str],
     maximum_observable_time: str,
+    data_role: str = "development",
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Load only requested PIT chip rows under a sealed-2026 cutoff."""
     root = Path(root)
@@ -69,9 +70,10 @@ def load_chip_context(
     unknown = sorted(set(requested) - set(CHIP_FIELDS.values()))
     if unknown:
         raise ValueError(f"unknown chip fields: {unknown}")
-    maximum = pd.Timestamp(maximum_observable_time)
-    if maximum >= FORWARD_SEALED_FROM:
-        raise PermissionError("chip maximum observable time cannot enter sealed 2026")
+    maximum = validate_chip_context_role(
+        data_role=data_role,
+        maximum_observable_time=maximum_observable_time,
+    )
     manifest_path = root / "chip_sidecar_manifest_v1.json"
     if not manifest_path.exists():
         raise FileNotFoundError(f"chip sidecar manifest missing: {manifest_path}")
@@ -108,7 +110,26 @@ def load_chip_context(
         "shard_count": len(paths),
         "loaded_row_count": len(chip),
         "maximum_observable_time": maximum_observable_time,
+        "data_role": data_role,
     }
+
+
+def validate_chip_context_role(
+    *,
+    data_role: str,
+    maximum_observable_time: str,
+) -> pd.Timestamp:
+    """Validate the chip observation boundary before any forward source read."""
+    allowed_roles = {"development", "forward_2026_report_only"}
+    if data_role not in allowed_roles:
+        raise PermissionError(f"chip PIT context rejects data role: {data_role}")
+    maximum = pd.Timestamp(maximum_observable_time)
+    enters_forward = maximum >= FORWARD_SEALED_FROM
+    if enters_forward and data_role != "forward_2026_report_only":
+        raise PermissionError("chip maximum observable time cannot enter sealed 2026")
+    if not enters_forward and data_role == "forward_2026_report_only":
+        raise PermissionError("forward chip role requires a 2026 observation boundary")
+    return maximum
 
 
 def _decode(payload: bytes) -> tuple[str, str]:
@@ -486,8 +507,6 @@ def point_in_time_chip_context(
     fields: Sequence[str],
     data_role: str,
 ) -> pd.DataFrame:
-    if data_role != "development":
-        raise PermissionError("chip PIT context is development-only")
     required_bars = {"code", "trade_time"}
     required_chip = {"code", "source_session", *fields}
     if not required_bars <= set(bars.columns):
@@ -498,8 +517,17 @@ def point_in_time_chip_context(
     left["_original_code"] = left["code"].astype(str)
     left["code"] = left["code"].map(_normalize_code)
     left["trade_time"] = pd.to_datetime(left["trade_time"], errors="coerce", format="mixed")
-    if left["trade_time"].isna().any() or left["trade_time"].ge(FORWARD_SEALED_FROM).any():
-        raise ValueError("chip PIT context cannot use invalid or sealed 2026 trade_time")
+    if left["trade_time"].isna().any():
+        raise ValueError("chip PIT context cannot use invalid trade_time")
+    validate_chip_context_role(
+        data_role=data_role,
+        maximum_observable_time=str(left["trade_time"].max()),
+    )
+    if (
+        data_role == "forward_2026_report_only"
+        and left["trade_time"].lt(FORWARD_SEALED_FROM).any()
+    ):
+        raise ValueError("forward chip role cannot mix pre-2026 trade_time")
     left["_exec_session"] = left["trade_time"].dt.normalize()
     left["_row_id"] = np.arange(len(left))
     right = chip[["code", "source_session", *fields]].copy()
@@ -507,6 +535,8 @@ def point_in_time_chip_context(
     right["source_session"] = pd.to_datetime(
         right["source_session"], errors="coerce", format="mixed"
     ).dt.normalize()
+    if right["source_session"].ge(FORWARD_SEALED_FROM).any():
+        raise PermissionError("chip PIT context exposes sealed 2026 source session")
     pieces: list[pd.DataFrame] = []
     for code, rows in left.groupby("code", sort=False):
         source = right[right["code"].eq(code)].sort_values("source_session")

@@ -5,6 +5,10 @@ import pytest
 
 from scripts import build_cn_validation_session_authority as session
 from scripts import run_cn_fixed_survivor_forward_2026 as forward
+from our_system_phase2.services.chip_sidecar import (
+    point_in_time_chip_context,
+    validate_chip_context_role,
+)
 from our_system_phase2.services.typed_temporal_program import (
     TemporalInput,
     evaluate_typed_temporal_primitive,
@@ -152,3 +156,46 @@ def test_forward_runner_and_launcher_bind_one_shot_boundaries() -> None:
     assert "preflight_forward_financial_rows_read = 0" in launcher
     assert "$dateDifferences = @(Compare-Object $sourceDates $splitDates)" in launcher
     assert "$dateDifferences.Count -ne 0" in launcher
+
+    sidecar_builder = (
+        PROJECT_ROOT / "scripts" / "build_cn_core_pack_validation_session_sidecar.py"
+    ).read_text(encoding="utf-8")
+    role_check = sidecar_builder.index("validate_chip_context_role(")
+    first_forward_scan = sidecar_builder.index("allowed_codes = set(")
+    assert role_check < first_forward_scan
+    assert "data_role=chip_data_role" in sidecar_builder
+
+
+def test_forward_chip_role_uses_only_pre_2026_source_sessions() -> None:
+    maximum = validate_chip_context_role(
+        data_role="forward_2026_report_only",
+        maximum_observable_time="2026-04-10 15:00:00",
+    )
+    assert maximum == pd.Timestamp("2026-04-10 15:00:00")
+    with pytest.raises(PermissionError, match="cannot enter sealed 2026"):
+        validate_chip_context_role(
+            data_role="development",
+            maximum_observable_time="2026-04-10 15:00:00",
+        )
+
+    bars = pd.DataFrame(
+        {
+            "code": ["000001"],
+            "trade_time": pd.to_datetime(["2026-01-05 15:00:00"]),
+        }
+    )
+    chip = pd.DataFrame(
+        {
+            "code": ["000001"],
+            "source_session": pd.to_datetime(["2025-12-31"]),
+            "chip_cost_p50": [10.5],
+        }
+    )
+    joined = point_in_time_chip_context(
+        bars,
+        chip,
+        fields=("chip_cost_p50",),
+        data_role="forward_2026_report_only",
+    )
+    assert joined["chip_cost_p50"].tolist() == [10.5]
+    assert joined["chip_source_session"].tolist() == [pd.Timestamp("2025-12-31")]

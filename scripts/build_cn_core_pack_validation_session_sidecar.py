@@ -17,6 +17,7 @@ from our_system_phase2.services.chip_sidecar import (
     CHIP_FIELDS,
     load_chip_context,
     point_in_time_chip_context,
+    validate_chip_context_role,
 )
 from our_system_phase2.services.fundamental_representations import (
     CanonicalFundamentalMaterializer,
@@ -137,6 +138,15 @@ def main() -> int:
         )
     sessions = pd.DatetimeIndex(pd.to_datetime(eligible_dates))
     maximum_observable_time = str(sessions.max() + pd.Timedelta(hours=15))
+    chip_data_role = (
+        "forward_2026_report_only"
+        if args.evaluation_role == "forward_2026"
+        else "development"
+    )
+    validate_chip_context_role(
+        data_role=chip_data_role,
+        maximum_observable_time=maximum_observable_time,
+    )
 
     required_fields = _required_fields(args.candidate_table.resolve())
     chip_fields = tuple(
@@ -195,6 +205,7 @@ def main() -> int:
         allowed_codes={normalize_cn_code(value) for value in allowed_codes},
         fields=chip_fields,
         maximum_observable_time=maximum_observable_time,
+        data_role=chip_data_role,
     )
 
     output_root = args.output_root.resolve()
@@ -263,7 +274,7 @@ def main() -> int:
                 frame[["code", "trade_time"]],
                 chip_context,
                 fields=chip_fields,
-                data_role="development",
+                data_role=chip_data_role,
             )
             frame["chip_source_session"] = joined[
                 "chip_source_session"
