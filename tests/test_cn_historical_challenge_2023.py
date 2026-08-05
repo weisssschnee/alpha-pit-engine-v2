@@ -43,6 +43,39 @@ def test_historical_authorization_and_role_are_fail_closed(monkeypatch) -> None:
         importlib.reload(module)
 
 
+def test_historical_fee_schedule_uses_the_statutory_2023_transition(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("CN_FIXED10_RUN_MODE", "historical_challenge")
+    module = importlib.reload(fixed10)
+    try:
+        schedule, mode = module._fee_schedule_for_run(
+            {
+                "commission_bps": 3.0,
+                "minimum_commission_cny": 5.0,
+                "exchange_handling_bps": 0.541,
+                "transfer_fee_bps": 0.1,
+                "sell_stamp_duty_bps": 5.0,
+                "effective_start": "2023-08-28",
+                "effective_end": "2025-12-31",
+                "source_reference": "frozen research fee authority",
+            },
+            evaluation_dates=set(
+                pd.to_datetime(["2023-01-03", "2023-12-29"]).normalize()
+            ),
+        )
+        assert mode == "HISTORICAL_DATED_STAMP_DUTY"
+        assert schedule.effective_start == "2023-01-01"
+        assert schedule.fee(
+            100_000.0, side="SELL", trade_date="2023-08-25"
+        ) - schedule.fee(
+            100_000.0, side="SELL", trade_date="2023-08-28"
+        ) == pytest.approx(50.0)
+    finally:
+        monkeypatch.delenv("CN_FIXED10_RUN_MODE")
+        importlib.reload(module)
+
+
 def test_historical_split_freezes_every_observed_date_without_filtering(
     tmp_path: Path,
 ) -> None:

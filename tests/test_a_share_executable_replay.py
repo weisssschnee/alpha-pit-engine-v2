@@ -286,6 +286,50 @@ def test_fee_schedule_is_asymmetric_and_minimum_commission_is_applied() -> None:
         fees.fee(1_000.0, side="UNKNOWN")
 
 
+def test_dated_sell_stamp_duty_changes_at_the_frozen_effective_date() -> None:
+    fees = AShareFeeSchedule(
+        **{
+            **asdict(_fees()),
+            "effective_start": "2023-01-01",
+            "sell_stamp_duty_periods": (
+                {
+                    "effective_start": "2023-01-01",
+                    "effective_end": "2023-08-27",
+                    "sell_stamp_duty_bps": 10.0,
+                    "source_reference": "official_pre_reduction_rate",
+                },
+                {
+                    "effective_start": "2023-08-28",
+                    "effective_end": "2025-12-31",
+                    "sell_stamp_duty_bps": 5.0,
+                    "source_reference": "official_reduction_notice",
+                },
+            ),
+        }
+    )
+
+    before = fees.fee(100_000.0, side="SELL", trade_date="2023-08-25")
+    after = fees.fee(100_000.0, side="SELL", trade_date="2023-08-28")
+    assert before - after == pytest.approx(50.0)
+    with pytest.raises(ValueError, match="requires trade_date"):
+        fees.fee(100_000.0, side="SELL")
+
+    broken = AShareFeeSchedule(
+        **{
+            **asdict(fees),
+            "sell_stamp_duty_periods": (
+                asdict(fees)["sell_stamp_duty_periods"][0],
+                {
+                    **asdict(fees)["sell_stamp_duty_periods"][1],
+                    "effective_start": "2023-08-29",
+                },
+            ),
+        }
+    )
+    with pytest.raises(ValueError, match="gap or overlap"):
+        broken.validate()
+
+
 def test_replay_receipt_binds_reward_and_survives_outer_row_projection() -> None:
     replay = run_a_share_long_only_replay(
         _frame(),

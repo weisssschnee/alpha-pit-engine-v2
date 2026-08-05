@@ -84,10 +84,67 @@ elif RUN_MODE == "forward_2026":
 else:
     raise RuntimeError(f"unsupported fixed-ten run mode: {RUN_MODE}")
 POLICY = oos.POLICY
+HISTORICAL_STAMP_DUTY_SOURCE_BEFORE_REDUCTION = (
+    "https://tianjin.chinatax.gov.cn/11200000000/0300/030005/"
+    "p20220725150235434.shtml"
+)
+HISTORICAL_STAMP_DUTY_SOURCE_REDUCTION = (
+    "https://fgk.chinatax.gov.cn/zcfgk/c102416/c5211343/content.html"
+)
 
 _PROCESS_CONTEXT: dict[str, Any] | None = None
 _PROCESS_CANDIDATE_ROOT: Path | None = None
 _PROCESS_INPUT_HASH: str | None = None
+
+
+def _fee_schedule_for_run(
+    raw_schedule: Mapping[str, Any],
+    *,
+    evaluation_dates: set[pd.Timestamp],
+) -> tuple[AShareFeeSchedule, str]:
+    raw = dict(raw_schedule)
+    if RUN_MODE != "historical_challenge":
+        return AShareFeeSchedule(**raw), "FROZEN_SINGLE_PERIOD"
+
+    if not evaluation_dates:
+        raise RuntimeError("historical challenge fee authority has no dates")
+    date_min = min(evaluation_dates)
+    date_max = max(evaluation_dates)
+    if date_min.year != 2023 or date_max.year != 2023:
+        raise RuntimeError("historical challenge fee authority year drift")
+    if (
+        str(raw.get("effective_start")) != "2023-08-28"
+        or float(raw.get("sell_stamp_duty_bps", math.nan)) != 5.0
+        or pd.Timestamp(raw.get("effective_end")).normalize() < date_max
+        or raw.get("sell_stamp_duty_periods")
+    ):
+        raise RuntimeError("historical challenge base fee contract drift")
+
+    raw["effective_start"] = "2023-01-01"
+    raw["sell_stamp_duty_periods"] = (
+        {
+            "effective_start": "2023-01-01",
+            "effective_end": "2023-08-27",
+            "sell_stamp_duty_bps": 10.0,
+            "source_reference": HISTORICAL_STAMP_DUTY_SOURCE_BEFORE_REDUCTION,
+        },
+        {
+            "effective_start": "2023-08-28",
+            "effective_end": str(raw["effective_end"]),
+            "sell_stamp_duty_bps": 5.0,
+            "source_reference": HISTORICAL_STAMP_DUTY_SOURCE_REDUCTION,
+        },
+    )
+    raw["source_reference"] = "; ".join(
+        (
+            str(raw["source_reference"]),
+            HISTORICAL_STAMP_DUTY_SOURCE_BEFORE_REDUCTION,
+            HISTORICAL_STAMP_DUTY_SOURCE_REDUCTION,
+        )
+    )
+    schedule = AShareFeeSchedule(**raw)
+    schedule.validate()
+    return schedule, "HISTORICAL_DATED_STAMP_DUTY"
 
 
 def _verify_self_hash(payload: Mapping[str, Any], field: str, label: str) -> None:
@@ -322,7 +379,10 @@ def _load_forward_context(
     universe_raw = dict(contract["universe_policy"])
     universe_raw["allowed_exchanges"] = tuple(universe_raw["allowed_exchanges"])
     universe = AShareUniversePolicy(**universe_raw)
-    fee = AShareFeeSchedule(**dict(contract["fee_schedule"]))
+    fee, fee_schedule_mode = _fee_schedule_for_run(
+        dict(contract["fee_schedule"]),
+        evaluation_dates=evaluation_dates,
+    )
     execution = AShareExecutionPolicy(**dict(contract["execution_policy"]))
     corporate = AShareCorporateActionPolicy(**dict(contract["corporate_action_policy"]))
     prepared_master = _prepare_sessions(
@@ -367,6 +427,7 @@ def _load_forward_context(
         "date_groups": date_groups,
         "universe": universe,
         "fee": fee,
+        "fee_schedule_mode": fee_schedule_mode,
         "execution": execution,
         "corporate": corporate,
         "field_reads": field_reads,
@@ -684,6 +745,9 @@ def run_forward_confirmation(
             "contract_payload_sha256"
         ],
         "execution_contract_sha256": expected_execution_contract_sha256,
+        "fee_schedule_mode": str(context["fee_schedule_mode"]),
+        "fee_schedule_payload_sha256": context["fee"].payload_sha256,
+        "fee_schedule": asdict(context["fee"]),
         "split_manifest_sha256": expected_forward_split_sha256,
         "field_manifest_sha256": v1._sha256(context["field_manifest_path"]),
         "label_manifest_sha256": v1._sha256(context["label_manifest_path"]),

@@ -172,6 +172,41 @@ class AShareFeeSchedule:
     effective_start: str
     effective_end: str
     source_reference: str
+    sell_stamp_duty_periods: tuple[Mapping[str, Any], ...] = ()
+
+    def _normalized_stamp_duty_periods(
+        self,
+    ) -> list[tuple[pd.Timestamp, pd.Timestamp, float, str]]:
+        periods: list[tuple[pd.Timestamp, pd.Timestamp, float, str]] = []
+        for raw in self.sell_stamp_duty_periods:
+            if not isinstance(raw, Mapping):
+                raise ValueError("sell stamp-duty period must be a mapping")
+            required = {
+                "effective_start",
+                "effective_end",
+                "sell_stamp_duty_bps",
+                "source_reference",
+            }
+            if set(raw) != required:
+                raise ValueError("sell stamp-duty period fields drift")
+            try:
+                start = pd.Timestamp(raw["effective_start"]).normalize()
+                end = pd.Timestamp(raw["effective_end"]).normalize()
+                rate = float(raw["sell_stamp_duty_bps"])
+            except (TypeError, ValueError) as exc:
+                raise ValueError("sell stamp-duty period is invalid") from exc
+            source = str(raw["source_reference"])
+            if (
+                pd.isna(start)
+                or pd.isna(end)
+                or start > end
+                or not math.isfinite(rate)
+                or rate < 0
+                or not source
+            ):
+                raise ValueError("sell stamp-duty period is invalid")
+            periods.append((start, end, rate, source))
+        return sorted(periods, key=lambda row: row[0])
 
     def validate(self) -> None:
         numeric = {
@@ -195,15 +230,45 @@ class AShareFeeSchedule:
             raise ValueError("fee schedule effective_start exceeds effective_end")
         if not self.source_reference:
             raise ValueError("fee schedule source_reference is required")
+        periods = self._normalized_stamp_duty_periods()
+        if periods:
+            if periods[0][0] != effective_start or periods[-1][1] != effective_end:
+                raise ValueError("sell stamp-duty periods do not cover fee schedule")
+            for previous, current in zip(periods, periods[1:]):
+                if current[0] != previous[1] + pd.Timedelta(days=1):
+                    raise ValueError("sell stamp-duty periods contain a gap or overlap")
+            if not math.isclose(
+                periods[-1][2],
+                float(self.sell_stamp_duty_bps),
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ):
+                raise ValueError(
+                    "sell_stamp_duty_bps must equal the latest dated period"
+                )
 
     @property
     def payload_sha256(self) -> str:
         self.validate()
+        payload = asdict(self)
+        if self.sell_stamp_duty_periods:
+            schema_version = "a_share_fee_schedule_v2"
+        else:
+            # Preserve every existing frozen v1 hash.  The optional dated
+            # authority must not rewrite legacy single-period identities.
+            schema_version = "a_share_fee_schedule_v1"
+            payload.pop("sell_stamp_duty_periods")
         return canonical_json_hash(
-            {"schema_version": "a_share_fee_schedule_v1", **asdict(self)}
+            {"schema_version": schema_version, **payload}
         )
 
-    def fee(self, notional: float, *, side: str) -> float:
+    def fee(
+        self,
+        notional: float,
+        *,
+        side: str,
+        trade_date: Any | None = None,
+    ) -> float:
         value = float(notional)
         if value <= 0:
             return 0.0
@@ -217,8 +282,25 @@ class AShareFeeSchedule:
         shared = value * (
             float(self.exchange_handling_bps) + float(self.transfer_fee_bps)
         ) / 10_000.0
+        stamp_rate = float(self.sell_stamp_duty_bps)
+        periods = self._normalized_stamp_duty_periods()
+        if normalized_side == "SELL" and periods:
+            if trade_date is None:
+                raise ValueError("dated sell stamp-duty schedule requires trade_date")
+            try:
+                normalized_date = pd.Timestamp(trade_date).normalize()
+            except (TypeError, ValueError) as exc:
+                raise ValueError("trade_date is invalid") from exc
+            matches = [
+                rate
+                for start, end, rate, _ in periods
+                if start <= normalized_date <= end
+            ]
+            if len(matches) != 1:
+                raise ValueError("trade_date is outside sell stamp-duty schedule")
+            stamp_rate = matches[0]
         stamp = (
-            value * float(self.sell_stamp_duty_bps) / 10_000.0
+            value * stamp_rate / 10_000.0
             if normalized_side == "SELL"
             else 0.0
         )
@@ -858,7 +940,9 @@ def run_a_share_long_only_replay(
             shares = int(holdings[code])
             price = float(row["terminal_liquidation_price"])
             notional = shares * price
-            fee = fee_schedule.fee(notional, side="SELL")
+            fee = fee_schedule.fee(
+                notional, side="SELL", trade_date=session_date
+            )
             _, realized_trade_pnl, consumptions = _consume_fifo_lots(
                 lots,
                 code=str(code),
@@ -969,7 +1053,9 @@ def run_a_share_long_only_replay(
                 blocked_sell_count += 1
                 continue
             notional = sell_shares * open_price
-            fee = fee_schedule.fee(notional, side="SELL")
+            fee = fee_schedule.fee(
+                notional, side="SELL", trade_date=session_date
+            )
             _, realized_trade_pnl, consumptions = _consume_fifo_lots(
                 lots,
                 code=str(code),
@@ -1034,7 +1120,9 @@ def run_a_share_long_only_replay(
 
         required_cash = sum(
             shares * price
-            + fee_schedule.fee(shares * price, side="BUY")
+            + fee_schedule.fee(
+                shares * price, side="BUY", trade_date=session_date
+            )
             for _, shares, price, _ in buy_orders
         )
         scale = min(1.0, cash / required_cash) if required_cash > 0 else 0.0
@@ -1042,14 +1130,18 @@ def run_a_share_long_only_replay(
             shares = int(raw_shares * scale // lot * lot)
             while shares > 0:
                 notional = shares * open_price
-                fee = fee_schedule.fee(notional, side="BUY")
+                fee = fee_schedule.fee(
+                    notional, side="BUY", trade_date=session_date
+                )
                 if notional + fee <= cash + 1e-9:
                     break
                 shares -= lot
             if shares <= 0:
                 continue
             notional = shares * open_price
-            fee = fee_schedule.fee(notional, side="BUY")
+            fee = fee_schedule.fee(
+                notional, side="BUY", trade_date=session_date
+            )
             cash -= notional + fee
             total_fees += fee
             session_buy_notional_cny += notional
