@@ -5,9 +5,11 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from scripts import build_cn_historical_challenge_split_manifest as split_builder
 from scripts import build_cn_portfolio_decoder_autopsy_v1 as v1
+from scripts import run_cn_finalist_replay_then_oos as replay
 from scripts import run_cn_fixed_survivor_forward_2026 as fixed10
 
 
@@ -106,3 +108,70 @@ def test_access_transition_and_launcher_preserve_forward_b_seal() -> None:
     assert "forward_b_reads = 0" in launcher
     assert "HISTORICAL_CHALLENGE_2023_COMPLETE.json" in launcher
     assert "optimizer_feedback_write = 'FORBIDDEN'" in launcher
+
+
+def test_historical_sidecars_are_role_bound_and_cross_read_fail_closed(
+    tmp_path: Path,
+) -> None:
+    field_root = tmp_path / "fields"
+    label_root = tmp_path / "labels"
+    field_root.mkdir()
+    label_root.mkdir()
+    split_hash = "a" * 64
+    field_manifest = {
+        "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
+        "evaluation_role": "historical_challenge",
+        "data_role": "historical_challenge_report_only",
+        "split_manifest_hash": split_hash,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "historical_challenge_reads": 2,
+        "feedback_write": "FORBIDDEN",
+        "scheduler_write": "FORBIDDEN",
+        "archive_write": "FORBIDDEN",
+        "promotion": "FORBIDDEN",
+        "fields": ["open", "close"],
+        "shards": [],
+    }
+    label_manifest = {
+        "status": "GLOBAL_SYMBOL_CONTINUITY_LABEL_SIDECARS_READY",
+        "evaluation_role": "historical_challenge",
+        "data_role": "historical_challenge_report_only",
+        "split_manifest_hash": split_hash,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "historical_challenge_reads": 2,
+    }
+    v1._write_json(
+        field_root / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json",
+        field_manifest,
+    )
+    v1._write_json(
+        label_root / "CN_FORWARD_LABEL_SIDECAR_MANIFEST.json",
+        label_manifest,
+    )
+
+    replay._validate_sidecar(
+        field_root,
+        evaluation_role="historical_challenge",
+        split_hash=split_hash,
+    )
+    replay._validate_label_sidecar(
+        label_root,
+        evaluation_role="historical_challenge",
+        split_hash=split_hash,
+    )
+
+    field_manifest["validation_reads"] = 1
+    v1._write_json(
+        field_root / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json",
+        field_manifest,
+    )
+    with pytest.raises(RuntimeError, match="read validation"):
+        replay._validate_sidecar(
+            field_root,
+            evaluation_role="historical_challenge",
+            split_hash=split_hash,
+        )

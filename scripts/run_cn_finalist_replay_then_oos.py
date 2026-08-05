@@ -697,6 +697,13 @@ def _validate_sidecar(
             raise RuntimeError("forward field sidecar read validation")
         if int(manifest.get("forward_2026_reads") or 0) <= 0:
             raise RuntimeError("forward field sidecar has no forward 2026 reads")
+    elif evaluation_role == "historical_challenge":
+        if int(manifest.get("validation_reads") or 0) != 0:
+            raise RuntimeError("historical challenge field sidecar read validation")
+        if int(manifest.get("historical_challenge_reads") or 0) <= 0:
+            raise RuntimeError(
+                "historical challenge field sidecar has no historical reads"
+            )
     else:
         raise RuntimeError(f"unsupported field sidecar role: {evaluation_role}")
     if evaluation_role != "forward_2026" and int(
@@ -1435,6 +1442,13 @@ def _validate_label_sidecar(
             raise RuntimeError("holdout label sidecar read validation")
         if int(manifest.get("holdout_reads") or 0) <= 0:
             raise RuntimeError("holdout label sidecar has no holdout reads")
+    elif evaluation_role == "historical_challenge":
+        if int(manifest.get("validation_reads") or 0) != 0:
+            raise RuntimeError("historical challenge label sidecar read validation")
+        if int(manifest.get("historical_challenge_reads") or 0) <= 0:
+            raise RuntimeError(
+                "historical challenge label sidecar has no historical reads"
+            )
     else:
         raise RuntimeError(f"unsupported label sidecar role: {evaluation_role}")
     if evaluation_role != "forward_2026" and int(
