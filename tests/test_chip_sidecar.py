@@ -111,7 +111,7 @@ def test_chip_join_is_strictly_previous_session() -> None:
         point_in_time_chip_context(
             sealed, chip, fields=["chip_cost_p50"], data_role="development"
         )
-    except ValueError as exc:
+    except PermissionError as exc:
         assert "sealed 2026" in str(exc)
     else:
         raise AssertionError("sealed 2026 chip join should fail")
