@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from scripts import build_cn_alpha_selection_diagnostic_v1 as subject
+from scripts import audit_cn_alpha_selection_diagnostic_v1 as independent_audit
 
 
 def _sha256(path: Path) -> str:
@@ -163,6 +164,11 @@ def _synthetic_inputs(root: Path) -> tuple[Path, Path]:
             {"ranker_id": "THREE_AXIS_EQUAL_RANK"},
             {"ranker_id": "CONSERVATIVE_THREE_AXIS_FLOOR"},
         ],
+        "experimental_ranker_freeze_gate": {
+            "minimum_top10_survivor_count": 6,
+            "must_strictly_beat_current_search_score_top10": True,
+            "leave_one_out_top10_survivor_count_minimum": 5,
+        },
     }
     contract_path = root / "contract.json"
     _write_json(contract_path, contract)
@@ -210,6 +216,14 @@ def test_build_and_verify_never_imputes_unlabeled_oos(tmp_path: Path) -> None:
     assert ceiling["scope"] == "22_LABELED_ADAPTIVE_VALIDATION_PAIRS_ONLY"
     assert ceiling["full_32_known_survivor_rate_lower_bound"] == 10 / 32
     assert ceiling["full_32_logical_survivor_rate_upper_bound_if_all_unlabeled_survive"] == 20 / 32
+    audit = independent_audit.audit(
+        contract_path=contract_path,
+        input_root=input_root,
+        output_root=output_root,
+        audit_root=tmp_path / "independent_audit",
+        auditor_commit_sha="test-auditor-sha",
+    )
+    assert audit["status"] == "PASS"
 
 
 def test_quality_percentile_fails_closed_on_missing() -> None:
