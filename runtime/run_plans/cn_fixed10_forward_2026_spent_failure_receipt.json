@@ -1,0 +1,82 @@
+{
+  "schema_version": "cn_fixed10_forward_2026_spent_failure_receipt_v1",
+  "status": "FORWARD_2026_SPENT_RUN_FAILED_NO_CONFIRMATION_RESULT",
+  "attempted_at_utc": "2026-08-05T04:08:13.1817759Z",
+  "claim_under_test": "UNCHANGED_FIXED10_ADAPTIVE_VALIDATION_SURVIVORS_TRANSFER_TO_UNTOUCHED_2026_FORWARD",
+  "execution": {
+    "task_id": "lanjob_20260805_120811_fixed10fwd",
+    "task_name": "ChengboLanRemote_lanjob_20260805_120811_fixed10fwd",
+    "execution_sha": "0d2650839638250354d86fbb2073c89a6de3890b",
+    "deployment_manifest_sha256": "cbaa744738509c49c74a933db55caedf585d5b399e1b36a9bbd6bd2b33a16f2a",
+    "output_root": "D:\\ChengboRemote\\runtime\\cn_fixed10_forward_2026_confirmation_10_20260805_1f999bd",
+    "forward_access_marker_sha256": "e260181d458b42a3c7ac05beca4b5027516817b5ffe35bc218b07f0acd4981d6"
+  },
+  "cohort": {
+    "selection_payload_sha256": "7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77",
+    "pair_count": 10,
+    "candidate_member_count": 20,
+    "source_finalist_orders": [2, 6, 7, 8, 9, 10, 11, 15, 18, 21],
+    "replacement": "FORBIDDEN",
+    "backfill": "FORBIDDEN",
+    "post_freeze_filtering": "FORBIDDEN"
+  },
+  "forward_asset": {
+    "first_trade_date": "2026-01-05",
+    "last_trade_date": "2026-04-10",
+    "trade_date_count": 63,
+    "state_after_attempt": "SPENT",
+    "positive_forward_row_access": true,
+    "retry_authorized": false
+  },
+  "failure": {
+    "stage": "FORWARD_FIELD_SIDECAR_ALLOWED_CODE_COLLECTION_THEN_CHIP_CONTEXT_GUARD",
+    "reason": "chip maximum observable time cannot enter sealed 2026",
+    "field_sidecar_written": false,
+    "label_sidecar_written": false,
+    "candidate_result_count": 0,
+    "pair_result_count": 0,
+    "confirmation_closure_written": false,
+    "financial_results_reused": false
+  },
+  "economics": {
+    "status": "UNAVAILABLE_RUN_FAILED",
+    "absolute_return_available": false,
+    "matched_increment_available": false,
+    "uncertainty_available": false,
+    "forward_survivor_count_available": false
+  },
+  "evidence": {
+    "remote_incident_root": "D:\\ChengboRemote\\runtime\\run_health_incidents\\20260805T120814_fixed10_forward_chip_guard_after_forward_access",
+    "incident_sha256": "74d77425c2eb122343ee10568107c9138fdcdcb744927d03c9165166335960bc",
+    "preservation_manifest_sha256": "c1488121537f9f26270c1dc387aa4a5f29edd8043cf7984986edafc3c11dc985",
+    "independent_audit_root": "G:\\Chengbo\\runtime\\cn_fixed10_forward_2026_independent_failure_audit_20260805",
+    "independent_audit_file_sha256": "7f8df8270b237474de70e9b2363c7123d8c659b63535c7a0cb2d3907351841b6",
+    "independent_audit_payload_sha256": "f4d23b3e6f8eec318ab7b4c1c7164cb02f9175e61ad39f233e67dfe6c7f272da"
+  },
+  "pre_access_incidents": [
+    {
+      "cause": "scheduled task direct invocation exited before output root",
+      "incident_sha256": "74dd5d821e8ebb25ebd9362e9c01f8b7291d83b52211853d4218389a86419474",
+      "preservation_manifest_sha256": "4ee66abd7749ecc42edd08d616677d51d93cb8c0bed511e515e1d6ed743c93dd",
+      "forward_rows_read": 0
+    },
+    {
+      "cause": "strict-mode empty Compare-Object Count access",
+      "incident_sha256": "12d2a54f170f3efdcd438626395915b4470997e1ac3eed4cc2df5dbdc714892b",
+      "preservation_manifest_sha256": "bdc97ab7529fc2ef8ee3ea539f9590486f7ff912af0aa974cd2b67d55cd62159",
+      "forward_rows_read": 0
+    }
+  ],
+  "remediation": {
+    "commit_sha": "635ace825e6f2b1b5e884f3b0cfb9eeb4acad5b0",
+    "description": "forward chip role is explicit and its compatibility is checked before forward source rows are scanned",
+    "focused_tests": "91/91 PASS",
+    "current_asset_rerun_authorized": false
+  },
+  "validation_reads": 0,
+  "holdout_reads": 0,
+  "optimizer_feedback_write": "FORBIDDEN",
+  "scheduler_write": "FORBIDDEN",
+  "archive_write": "FORBIDDEN",
+  "promotion": "HOLD_PROMOTION"
+}

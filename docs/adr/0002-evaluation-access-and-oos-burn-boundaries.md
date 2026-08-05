@@ -121,6 +121,16 @@ selector fit, or promotion decision.
 The pre-read authorization contract is
 `runtime/run_plans/cn_fixed10_forward_2026_one_shot_authorization.json`.
 
+The authorized attempt opened forward row coordinates on 2026-08-05 while
+constructing the field-sidecar allowed-code universe, then failed at the legacy
+chip-context 2026 guard before any candidate or pair result. The 2026 asset is
+therefore `spent`, confirmation economics are unavailable, retry is forbidden
+and promotion remains held. Commit
+`635ace825e6f2b1b5e884f3b0cfb9eeb4acad5b0` moves explicit forward-chip role
+qualification ahead of future forward source scanning; this remediation does
+not reopen the spent asset. The outcome receipt is
+`runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json`.
+
 ## Evidence
 
 - `runtime/run_plans/evaluation_data_roles_v1.json`

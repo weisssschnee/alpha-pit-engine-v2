@@ -2,7 +2,7 @@
 
 Updated: 2026-08-05
 
-Current state: `FIXED10_FORWARD_2026_AUTHORIZED_ZERO_READ_PREFLIGHT_COMPLETE`
+Current state: `FORWARD_2026_SPENT_CONFIRMATION_INVALID_NO_ECONOMICS_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,36 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Fixed-ten 2026 forward asset spent without confirmation result (2026-08-05)
+
+- The explicitly authorized one-shot fixed-ten forward attempt opened 2026
+  source rows while deriving the allowed-code universe, then failed before
+  field-sidecar closure because the legacy chip loader rejected a 2026 maximum
+  observable time. Under ADR 0002 the 63-session asset is now project-level
+  `spent`; no retry, replacement, backfill, tuning or alternate cohort is
+  authorized.
+- This is an infrastructure-invalid confirmation attempt, not an economic
+  rejection of the ten pairs. It produced zero candidate results, zero pair
+  results and no `FORWARD_2026_COMPLETE` closure, so absolute return, matched
+  increment, uncertainty and survivor counts are all unavailable. Promotion
+  remains `HOLD_PROMOTION`.
+- Complete evidence is preserved at
+  `D:\ChengboRemote\runtime\run_health_incidents\20260805T120814_fixed10_forward_chip_guard_after_forward_access`;
+  incident/preservation-manifest SHA256 values are
+  `74d77425c2eb122343ee10568107c9138fdcdcb744927d03c9165166335960bc` /
+  `c1488121537f9f26270c1dc387aa4a5f29edd8043cf7984986edafc3c11dc985`.
+  The independent failure audit at
+  `G:\Chengbo\runtime\cn_fixed10_forward_2026_independent_failure_audit_20260805`
+  passed with file/payload SHA256 values
+  `7f8df8270b237474de70e9b2363c7123d8c659b63535c7a0cb2d3907351841b6` /
+  `f4d23b3e6f8eec318ab7b4c1c7164cb02f9175e61ad39f233e67dfe6c7f272da`.
+- Commit `635ace825e6f2b1b5e884f3b0cfb9eeb4acad5b0` adds an explicit
+  forward-report-only chip role and moves its compatibility check ahead of
+  forward source scanning; focused synthetic and regression tests passed
+  91/91. This repairs future execution safety but does not authorize reopening
+  the spent 2026 asset. The compact outcome receipt is
+  `runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json`.
 
 ### Fixed-ten one-shot 2026 forward confirmation authorized (2026-08-05)
 
@@ -58,12 +88,10 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   burn ledger already classify the entire 2025 validation and holdout calendar
   as project-level `spent`. A different candidate cohort does not make those
   dates genuinely untouched, and no second 2025 holdout run was launched.
-- The only registered unburned time asset is the separate 2026 forward asset.
-  It remains unopened and reserved for one explicitly authorized final forward
-  evaluation. Confirmation execution, sidecar construction and deployment are
-  paused until that destructive evidence-boundary choice is explicitly made.
-  Promotion remains held regardless of the eventual one-shot result. Compact
-  preflight evidence is in
+- At freeze time the only registered unburned time asset was the separate 2026
+  forward asset. It has since been opened and classified as spent after the
+  infrastructure-invalid attempt recorded in the current section above.
+  Promotion remains held. Compact preflight evidence is in
   `runtime/run_plans/cn_fixed_survivor_confirmation_preflight_20260805.json`.
 
 ### CN_ALPHA_SELECTION_DIAGNOSTIC_V1 closed without ranker freeze (2026-08-05)
