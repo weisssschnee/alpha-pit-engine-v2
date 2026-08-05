@@ -1,0 +1,33 @@
+{
+  "schema_version": "cn_evaluation_asset_freeze_v1",
+  "status": "ZERO_PERFORMANCE_READ_ASSET_AUTHORITY_FROZEN",
+  "frozen_at_utc": "2026-08-05T08:09:45.095153+00:00",
+  "generator_repo_sha": "024bebddf5e9a5a3a628f4508b81b736cae5374c",
+  "fixed_cohort_selection_payload_sha256": "7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77",
+  "historical_challenge_performance_rows_read": 0,
+  "forward_b_performance_rows_read": 0,
+  "spent_2026_asset_reopened": false,
+  "artifacts": [
+    {
+      "path": "runtime/run_plans/cn_historical_challenge_2023_authorization.json",
+      "sha256": "7ed17df4bf71c1bf29850f2448ad6cc7a78edc5121a00fe682c81918c155c2d7",
+      "canonical_payload_sha256": "7307889cd890364c20eec3c8888b0f964a79373d052e5b57d13a919526c48893"
+    },
+    {
+      "path": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
+      "sha256": "d8d97930973f19efc3932d6a7f48adfcc101a9d381aa5f657d941960eb6b81b7",
+      "canonical_payload_sha256": "ceb96c6b7f61cdb31559617d0b8f8d1a4467344ba7c1f5e8d609466329765ad1"
+    },
+    {
+      "path": "runtime/run_plans/evaluation_data_roles_v1.json",
+      "sha256": "1cb1ec7736fc84cf87bb1dae9155f1eea19129306572a5acda8163faa8391f9a"
+    },
+    {
+      "path": "runtime/run_plans/evaluation_access_ledger_v1.csv",
+      "sha256": "8bfb2952aaa2d23ededb6238cd1b46a39dbbe524d781d1aeb1010f3bc41244a7"
+    }
+  ],
+  "graph_projection_status": "CURRENT_REFRESHED_RAW_STALE_GRAPHIFYY_NOT_INSTALLED",
+  "next_authorized_action": "qualify 2023 archive conversion and accelerated replay parity using only development or spent data before first 2023 performance-row read",
+  "manifest_payload_sha256": "049e430f7402b576854a7366f57b8e69e4f762d62349095221afd26645977e7d"
+}

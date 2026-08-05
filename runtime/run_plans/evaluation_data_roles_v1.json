@@ -1,6 +1,6 @@
 {
-  "registry_version": "evaluation_data_roles_v1_20260711",
-  "effective_date": "2026-07-11",
+  "registry_version": "evaluation_data_roles_v1_20260805",
+  "effective_date": "2026-08-05",
   "default_deny": true,
   "roles": {
     "development": {
@@ -13,8 +13,10 @@
       "may_update_search_memory_or_scheduler": true
     },
     "challenge": {
-      "assigned_assets": [],
-      "status": "reserved_unassigned",
+      "assigned_assets": [
+        "historical_challenge_2023_b05e2ca0"
+      ],
+      "status": "fixed_cohort_report_only_authorized_unopened",
       "automated_optimizer_access": "forbidden",
       "candidate_level_access": "batch_gate_only_after_hypothesis_freeze",
       "may_update_search_memory_or_scheduler": false
@@ -28,22 +30,45 @@
     "spent": {
       "assigned_assets": [
         "phase3ga_true1min_2024_2025_global_split_manifest.csv:validation",
-        "phase3ga_true1min_2024_2025_global_split_manifest.csv:holdout"
+        "phase3ga_true1min_2024_2025_global_split_manifest.csv:holdout",
+        "separate_2026_true1min_asset"
       ],
-      "date_count": 121,
-      "reason": "candidate-level results were reported and manually inspected; validation also influenced canary selection",
+      "date_count": 184,
+      "reason": "2025 validation and holdout were inspected; the 63-session 2026 asset was burned when the authorized fixed-ten attempt opened row coordinates before an infrastructure guard failure",
       "allowed_access": "forensic_or_aggregate_reporting_only",
       "candidate_selection_or_feature_design": "forbidden",
       "may_update_search_memory_or_scheduler": false
     },
     "forward": {
       "assigned_assets": [
-        "separate_2026_true1min_asset"
+        "forward_b_tdx_lc1_20260413_20260514_f69cc84f"
       ],
-      "status": "performance_unexposed_and_reserved",
+      "status": "performance_unexposed_reserved_not_authorized",
       "performance_accessed_during_evalreset": false,
       "search_or_reward_access": "forbidden",
       "may_update_search_memory_or_scheduler": false
+    }
+  },
+  "asset_states": {
+    "separate_2026_true1min_asset": {
+      "current_role": "spent",
+      "start_date": "2026-01-05",
+      "end_date": "2026-04-10",
+      "date_count": 63,
+      "status": "burned_incomplete_no_retry",
+      "evidence": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json"
+    },
+    "historical_challenge_2023_b05e2ca0": {
+      "current_role": "challenge",
+      "status": "authorized_unopened_fixed_ten_report_only",
+      "performance_rows_read": 0,
+      "contract": "runtime/run_plans/cn_historical_challenge_2023_authorization.json"
+    },
+    "forward_b_tdx_lc1_20260413_20260514_f69cc84f": {
+      "current_role": "forward",
+      "status": "reserved_sealed_not_authorized_for_performance_access",
+      "performance_rows_read": 0,
+      "contract": "runtime/run_plans/cn_forward_b_reservation_20260805.json"
     }
   },
   "feedback_boundary": {

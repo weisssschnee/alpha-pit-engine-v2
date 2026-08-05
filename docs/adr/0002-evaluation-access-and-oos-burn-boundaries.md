@@ -131,6 +131,36 @@ qualification ahead of future forward source scanning; this remediation does
 not reopen the spent asset. The outcome receipt is
 `runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json`.
 
+## 2026-08-05 Historical-Challenge and Forward-B Addendum
+
+The role registry previously contradicted the accepted access and burn ledgers:
+it still described `separate_2026_true1min_asset` as reserved even though its
+2026-01-05 through 2026-04-10 rows had been opened. The registry now records
+that asset as `spent`, with forensic reporting only and no retry.
+
+Two different unused assets are intentionally kept separate:
+
+- `historical_challenge_2023_b05e2ca0` is an earlier, backward out-of-time
+  SH/SZ challenge. It is bound to the unchanged fixed ten pairs and
+  `TOPK_10_EQUAL` before any price row is opened. Its first performance-row
+  read burns the challenge for exactly one report-only run. It may diagnose
+  temporal robustness but cannot by itself provide forward-confirmation or
+  promotion authority; the missing Beijing Exchange coverage and a single
+  sub-250-session year cap the evidence grade at weak.
+- `forward_b_tdx_lc1_20260413_20260514_f69cc84f` is a separately inventoried
+  2026-04-13 through 2026-05-14 forward asset. It remains sealed and is not
+  authorized for performance access. The same fixed ten is recorded as the
+  intended cohort so a later decision cannot substitute survivors after seeing
+  the historical challenge. Only an explicit post-challenge workflow replan
+  may authorize its one report-only use; release is never automatic.
+
+Neither asset may update search reward, optimizer feedback, scheduler, archive
+or promotion state. Conversion qualification must establish exact semantic
+parity on already spent or development data before the historical challenge is
+opened. The governing contracts are
+`runtime/run_plans/cn_historical_challenge_2023_authorization.json` and
+`runtime/run_plans/cn_forward_b_reservation_20260805.json`.
+
 ## Evidence
 
 - `runtime/run_plans/evaluation_data_roles_v1.json`

@@ -2,7 +2,7 @@
 
 Updated: 2026-08-05
 
-Current state: `FORWARD_2026_SPENT_CONFIRMATION_INVALID_NO_ECONOMICS_HOLD_PROMOTION`
+Current state: `HISTORICAL_CHALLENGE_2023_AUTHORIZED_UNOPENED_FORWARD_B_SEALED_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,33 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### 2023 historical challenge authorized unopened; Forward-B sealed (2026-08-05)
+
+- The unchanged fixed ten pairs are prospectively bound to the immutable
+  `2023_1min.zip` archive before any price row read. The archive is
+  4,008,027,005 bytes with SHA256
+  `b05e2ca0b732821edf48a065c88b402d5c173b6a6b1266e0407bef8d9a546923`,
+  5,035 SH/SZ entries and no Beijing Exchange entries. This is a backward
+  out-of-time historical challenge, not forward confirmation; the no-BJ
+  coverage and single-year horizon cap its evidence grade at weak.
+- The separate TDX LC1 `FORWARD_B` window, 2026-04-13 through 2026-05-14,
+  remains performance-unopened and is not authorized to run. Its metadata-only
+  reservation binds inventory SHA256
+  `f69cc84f51f9fa094431a81e2ac28d6f901040de6f78383f2228b5959a77b819`,
+  5,516 eligible stock-like files / 2,190,935,104 bytes and the same fixed ten
+  intended cohort. It may be considered only after independent 2023 challenge
+  audit and an explicit workflow replan; no automatic release or substitution
+  is permitted.
+- The role registry drift is corrected: the previously opened 63-session
+  2026-01-05 through 2026-04-10 asset is now explicitly `spent`, matching the
+  access and burn ledgers. Historical challenge, Forward-B, spent 2026 and the
+  adaptive 2025 assets remain separate evidence budgets.
+- p01 is a zero-performance-read authority freeze. The next phase first
+  qualifies archive conversion and accelerated replay semantics on already
+  spent/development data. Only after exact parity may the 2023 challenge be
+  opened. Search, OOS feedback, promotion and Forward-B access remain held.
+
 
 ### Fixed-ten 2026 forward asset spent without confirmation result (2026-08-05)
 

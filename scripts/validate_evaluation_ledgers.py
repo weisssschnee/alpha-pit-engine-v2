@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,19 @@ REQUIRED_ROLES = {"development", "challenge", "sealed", "spent", "forward"}
 def _read_csv(path: Path) -> list[dict[str, str]]:
     with path.open("r", encoding="utf-8-sig", newline="") as fh:
         return [dict(row) for row in csv.DictReader(fh)]
+
+
+def _verify_contract(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    claimed = str(payload.get("contract_payload_sha256") or "")
+    body = dict(payload)
+    body.pop("contract_payload_sha256", None)
+    actual = hashlib.sha256(
+        json.dumps(body, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    if not claimed or claimed != actual:
+        raise RuntimeError(f"contract self-hash mismatch: {path}")
+    return payload
 
 
 def validate_ledgers(role_registry: Path, access_ledger: Path, burn_ledger: Path) -> dict[str, Any]:
@@ -50,6 +64,22 @@ def validate_ledgers(role_registry: Path, access_ledger: Path, burn_ledger: Path
     boundary = registry.get("feedback_boundary", {})
     if boundary.get("allowed_role") != "development" or boundary.get("allowed_optimizer_split") != "train":
         raise RuntimeError("feedback boundary must be development/train only")
+    asset_states = registry.get("asset_states", {})
+    spent_forward = asset_states.get("separate_2026_true1min_asset", {})
+    if spent_forward.get("current_role") != "spent":
+        raise RuntimeError("the opened 2026-01-05..2026-04-10 asset must remain spent")
+    historical_challenge = asset_states.get("historical_challenge_2023_b05e2ca0", {})
+    if historical_challenge.get("current_role") != "challenge" or historical_challenge.get("performance_rows_read") != 0:
+        raise RuntimeError("the 2023 challenge must be registered and unopened before authorization")
+    forward_b = asset_states.get("forward_b_tdx_lc1_20260413_20260514_f69cc84f", {})
+    if forward_b.get("current_role") != "forward" or forward_b.get("performance_rows_read") != 0:
+        raise RuntimeError("Forward-B must remain registered and performance-unopened")
+    challenge_contract = _verify_contract(role_registry.parent / "cn_historical_challenge_2023_authorization.json")
+    forward_b_contract = _verify_contract(role_registry.parent / "cn_forward_b_reservation_20260805.json")
+    if challenge_contract.get("performance_rows_read_before_freeze") != 0:
+        raise RuntimeError("2023 challenge contract must be frozen before performance access")
+    if forward_b_contract.get("performance_access_authorized") is not False:
+        raise RuntimeError("Forward-B reservation must not authorize performance access")
     return {
         "registry_version": registry.get("registry_version"),
         "role_count": len(roles),
@@ -57,6 +87,10 @@ def validate_ledgers(role_registry: Path, access_ledger: Path, burn_ledger: Path
         "burn_count": len(burns),
         "forward_access_violation_count": 0,
         "validation_holdout_spent_records": 2,
+        "spent_forward_2026_registered": True,
+        "historical_challenge_2023_registered": True,
+        "forward_b_registered": True,
+        "contract_self_hashes_verified": 2,
     }
 
 

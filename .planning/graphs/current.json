@@ -14,26 +14,54 @@
         "changed_paths": [
           ".gitignore",
           ".planning/STATE.md",
+          "docs/adr/0002-evaluation-access-and-oos-burn-boundaries.md",
           "docs/adr/0013-primary-absolute-economics-and-terminal-exposure-finalist-admission.md",
+          "docs/adr/0014-continuous-book-mtm-and-operational-evidence-severity.md",
+          "docs/audits/cn_overcontrol_failure_audit_20260803.md",
+          "runtime/run_plans/cn_alpha_node_resource_profiles_v1.json",
+          "runtime/run_plans/cn_alpha_selection_diagnostic_v1_contract.json",
+          "runtime/run_plans/cn_alpha_selection_diagnostic_v1_receipt.json",
           "runtime/run_plans/cn_compute_efficient_train_search_v1_authorization.json",
           "runtime/run_plans/cn_continuous_search_finalist_dual_lane_v1_contract.json",
           "runtime/run_plans/cn_continuous_search_report_only_oos_dual_lane_v2_contract.json",
           "runtime/run_plans/cn_finalist_funnel_2261_v1_contract.json",
           "runtime/run_plans/cn_finalist_funnel_731_v1_contract.json",
+          "runtime/run_plans/cn_fixed10_forward_2026_one_shot_authorization.json",
+          "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
+          "runtime/run_plans/cn_fixed10_forward_2026_split_manifest.csv",
+          "runtime/run_plans/cn_fixed_survivor_confirmation_preflight_20260805.json",
+          "runtime/run_plans/cn_forward_b_reservation_20260805.json",
           "runtime/run_plans/cn_full_compute_successor_train_search_v1_authorization.json",
+          "runtime/run_plans/cn_historical_challenge_2023_authorization.json",
+          "runtime/run_plans/cn_primary_absolute_economic_search_continuity_v1_contract.json",
           "runtime/run_plans/cn_qualified_mapping_successor_train_search_v1_authorization.json",
           "runtime/run_plans/cn_shared_control_dual_lane_alpha_20260801_receipt.json",
           "runtime/run_plans/cn_shared_control_dual_lane_alpha_v1_contract.json",
           "runtime/run_plans/cn_terminal_liquidity_search_continuity_v1_contract.json",
+          "runtime/run_plans/evaluation_access_ledger_v1.csv",
+          "runtime/run_plans/evaluation_data_roles_v1.json",
+          "runtime/run_plans/oos_burn_ledger_v1.csv",
+          "scripts/audit_cn_alpha_selection_diagnostic_v1.py",
+          "scripts/audit_cn_fixed_survivor_forward_2026_failure.py",
+          "scripts/build_cn_alpha_autopsy_v1.py",
+          "scripts/build_cn_alpha_selection_diagnostic_v1.py",
+          "scripts/build_cn_core_pack_validation_session_sidecar.py",
+          "scripts/build_cn_forward_2026_session_authority.py",
+          "scripts/build_cn_phase3cm_forward_label_sidecars.py",
+          "scripts/build_cn_portfolio_decoder_autopsy_v1.py",
           "scripts/build_cn_stock_session_field_capability.py",
           "scripts/build_cn_terminal_liquidity_oos_classification.py",
+          "scripts/build_cn_validation_session_authority.py",
           "scripts/build_cn_verified_partial_campaign_history.py",
+          "scripts/freeze_cn_adaptive_validation_survivors.py",
+          "scripts/freeze_cn_decoder_v2_finalists.py",
           "scripts/freeze_cn_finalist_replay_cohort.py",
           "scripts/freeze_cn_mark_to_market_finalists.py",
           "scripts/freeze_cn_productive_keep_review_cohort.py",
           "scripts/freeze_cn_shared_control_dual_search_authorization.py",
           "scripts/freeze_cn_train_replay_finalists.py",
           "scripts/materialize_cn_search_preflight_authorization.py",
+          "scripts/prepare_cn_fixed_survivor_forward_2026.py",
           "scripts/prepare_cn_shared_control_dual_lane_77o.ps1",
           "scripts/prepare_cn_terminal_liquidity_search_continuity_77o.ps1",
           "scripts/prepare_cn_train_finalist_report_only_oos.py",
@@ -42,22 +70,51 @@
           "scripts/run_cn_finalist_mark_to_market_replay_77o.ps1",
           "scripts/run_cn_finalist_replay_then_oos.py",
           "scripts/run_cn_finalist_replay_then_oos_77o.ps1",
+          "scripts/run_cn_fixed_survivor_forward_2026.py",
+          "scripts/run_cn_fixed_survivor_forward_2026_77o.ps1",
           "scripts/run_cn_phase3cm_streaming_qualification.py",
+          "scripts/run_cn_portfolio_decoder_autopsy_v1_77o.ps1",
+          "scripts/run_cn_portfolio_decoder_v2.py",
+          "scripts/run_cn_portfolio_decoder_v2_77o.ps1",
+          "scripts/run_cn_portfolio_decoder_v2_oos.py",
+          "scripts/run_cn_portfolio_decoder_v2_oos_77o.ps1",
           "scripts/run_cn_train_finalist_report_only_oos_77o.ps1",
           "scripts/run_cn_winner_guided_large_search_77o.ps1",
+          "scripts/run_targeted_formula_cem_qualification.py",
+          "scripts/validate_evaluation_ledgers.py",
+          "scripts/verify_cn_adaptive_validation_survivors.py",
+          "scripts/verify_cn_alpha_selection_diagnostic_v1.py",
+          "scripts/verify_cn_decoder_v2_finalists.py",
+          "scripts/verify_cn_portfolio_decoder_v2_oos.py",
           "scripts/verify_cn_productive_keep_review_cohort.py",
           "scripts/verify_cn_train_replay_finalists.py",
+          "scripts/verify_cn_validation_session_authority.py",
           "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
+          "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py",
+          "src/our_system_phase2/services/a_share_executable_replay.py",
+          "src/our_system_phase2/services/chip_sidecar.py",
           "src/our_system_phase2/services/finalist_economic_admission.py",
           "src/our_system_phase2/services/phase3cm_streaming_checkpoint.py",
           "src/our_system_phase2/services/phase3cm_streaming_portfolio.py",
+          "src/our_system_phase2/services/typed_temporal_program.py",
+          "tests/test_a_share_executable_replay.py",
+          "tests/test_build_cn_alpha_autopsy_v1.py",
+          "tests/test_build_cn_alpha_selection_diagnostic_v1.py",
+          "tests/test_build_cn_validation_session_authority.py",
+          "tests/test_chip_sidecar.py",
+          "tests/test_cn_fixed_survivor_forward_2026.py",
           "tests/test_cn_large_tpe_search_campaign.py",
+          "tests/test_cn_portfolio_decoder_autopsy_v1.py",
           "tests/test_cn_search_resource_topology_authorization.py",
           "tests/test_cn_shared_control_dual_search_authorization.py",
+          "tests/test_cn_targeted_search_medium_campaign.py",
           "tests/test_cn_terminal_liquidity_oos_classification.py",
           "tests/test_cn_verified_partial_campaign_history.py",
+          "tests/test_evaluation_ledgers.py",
           "tests/test_execution_clock_capability.py",
           "tests/test_finalist_economic_admission.py",
+          "tests/test_freeze_cn_adaptive_validation_survivors.py",
+          "tests/test_freeze_cn_decoder_v2_finalists.py",
           "tests/test_freeze_cn_finalist_replay_cohort.py",
           "tests/test_freeze_cn_mark_to_market_finalists.py",
           "tests/test_freeze_cn_productive_keep_review_cohort.py",
@@ -65,10 +122,13 @@
           "tests/test_phase3cm_streaming_portfolio.py",
           "tests/test_prepare_cn_train_finalist_report_only_oos.py",
           "tests/test_run_cn_finalist_mark_to_market_replay.py",
-          "tests/test_run_cn_finalist_replay_then_oos.py"
+          "tests/test_run_cn_finalist_replay_then_oos.py",
+          "tests/test_run_cn_portfolio_decoder_v2.py",
+          "tests/test_run_cn_portfolio_decoder_v2_oos.py",
+          "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0",
-        "repo_head": "b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd"
+        "repo_head": "024bebddf5e9a5a3a628f4508b81b736cae5374c"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -1295,10 +1355,10 @@
       "color": "#c62828",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "evaluation_access_guard",
+        "enforced_by": "evaluation role and burn ledgers",
         "evidence_ref": "",
-        "id": "forward_search_forbidden",
-        "rule": "2026 forward data cannot influence search policy.",
+        "id": "spent_forward_search_forbidden",
+        "rule": "The spent 2026 Jan-Apr asset cannot influence search policy.",
         "severity": "HARD",
         "type": "BOUNDARY"
       },
@@ -1310,29 +1370,29 @@
       "id": "forward_to_search_forbidden",
       "lifecycle": "FORBIDDEN",
       "line_style": "dotted",
-      "relation": "search_policy",
+      "relation": "spent_asset_search_reuse",
       "required": false,
       "source": "forward_2026",
       "target": "formal_search",
       "validation": {
-        "checked_at": "2026-07-15T06:57:15.960384+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
-        "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
+        "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
+        "evidence_sha256": "7864C42732E3B3E6399F15C2569D7677589157930FA5A76CDF979944C3382246",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_at_sha": null
       }
     },
     {
       "color": "#c62828",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "evaluation_access_guard",
+        "enforced_by": "evaluation role and burn ledgers",
         "evidence_ref": "",
-        "id": "forward_memory_forbidden",
-        "rule": "2026 forward data cannot update scheduler or memory.",
+        "id": "spent_forward_memory_forbidden",
+        "rule": "The spent 2026 Jan-Apr asset cannot update scheduler or memory.",
         "severity": "HARD",
         "type": "BOUNDARY"
       },
@@ -1344,19 +1404,155 @@
       "id": "forward_to_memory_forbidden",
       "lifecycle": "FORBIDDEN",
       "line_style": "dotted",
-      "relation": "adaptive_memory_update",
+      "relation": "spent_asset_adaptive_memory_update",
       "required": false,
       "source": "forward_2026",
       "target": "cross_epoch_memory",
       "validation": {
-        "checked_at": "2026-07-15T06:57:15.960384+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
-        "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
+        "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
+        "evidence_sha256": "7864C42732E3B3E6399F15C2569D7677589157930FA5A76CDF979944C3382246",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#c62828",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "historical challenge authorization",
+        "evidence_ref": "",
+        "id": "historical_challenge_feedback_forbidden",
+        "rule": "The 2023 challenge cannot enter search reward, candidate selection or tuning.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": true,
+      "id": "historical_challenge_to_search_forbidden",
+      "lifecycle": "FORBIDDEN",
+      "line_style": "dotted",
+      "relation": "challenge_feedback",
+      "required": false,
+      "source": "historical_challenge_2023",
+      "target": "formal_search",
+      "validation": {
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
+        "evidence_ref": "runtime/run_plans/cn_historical_challenge_2023_authorization.json",
+        "evidence_sha256": "7ED17DF4BF71C1BF29850F2448AD6CC7A78EDC5121A00FE682C81918C155C2D7",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#c62828",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "historical challenge authorization",
+        "evidence_ref": "",
+        "id": "historical_challenge_memory_forbidden",
+        "rule": "The 2023 challenge cannot update scheduler, archive or persistent memory.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": true,
+      "id": "historical_challenge_to_memory_forbidden",
+      "lifecycle": "FORBIDDEN",
+      "line_style": "dotted",
+      "relation": "challenge_memory_update",
+      "required": false,
+      "source": "historical_challenge_2023",
+      "target": "cross_epoch_memory",
+      "validation": {
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
+        "evidence_ref": "runtime/run_plans/cn_historical_challenge_2023_authorization.json",
+        "evidence_sha256": "7ED17DF4BF71C1BF29850F2448AD6CC7A78EDC5121A00FE682C81918C155C2D7",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#c62828",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "Forward-B reservation",
+        "evidence_ref": "",
+        "id": "forward_b_search_forbidden",
+        "rule": "Sealed Forward-B cannot influence search policy or candidate choice.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": true,
+      "id": "forward_b_to_search_forbidden",
+      "lifecycle": "FORBIDDEN",
+      "line_style": "dotted",
+      "relation": "sealed_forward_search_access",
+      "required": false,
+      "source": "forward_b_2026",
+      "target": "formal_search",
+      "validation": {
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
+        "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
+        "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#c62828",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "Forward-B reservation",
+        "evidence_ref": "",
+        "id": "forward_b_memory_forbidden",
+        "rule": "Sealed Forward-B cannot update scheduler, archive or memory.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": true,
+      "id": "forward_b_to_memory_forbidden",
+      "lifecycle": "FORBIDDEN",
+      "line_style": "dotted",
+      "relation": "sealed_forward_memory_update",
+      "required": false,
+      "source": "forward_b_2026",
+      "target": "cross_epoch_memory",
+      "validation": {
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
+        "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
+        "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": null
       }
     },
     {
@@ -1530,7 +1726,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-03T03:58:00.740623+00:00",
+  "generated_at": "2026-08-05T08:28:32.246953+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -1555,6 +1751,8 @@
         "sha256": "F7C0B441C0AAF4FA4A2F5B3FE45474A961463B9728ABAC282419FB33789675D6",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1585,7 +1783,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -1597,13 +1795,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/fixed_split_authority.py",
         "repo_ref": "",
         "sha256": "2E26054A33ADD857A18FF7952D46BD3A4D2D9A407832DB380A4C08971F9FAACB",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "fixed_split_authority",
+          "authority_class": "",
+          "semantic_role": "split_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1647,7 +1853,7 @@
       "required": false,
       "semantic_role": "split_authority",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -1659,13 +1865,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json",
         "repo_ref": "",
         "sha256": "D34B6FCCC721A9F9866B067418C0740F2CF5CEB00C003A7B57D279008AE32258",
         "verified_sha": "8a0be0c307e6382ac602172eb19083e46c18f045"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "cn_field_master_registry",
+          "authority_class": "",
+          "semantic_role": "complete_field_universe_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1713,7 +1927,7 @@
       "required": true,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
@@ -1725,13 +1939,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/unified_capability_registry.py",
         "repo_ref": "",
         "sha256": "6E3F74C26FC6BBEBEF8E38808D219418C4F05079474CCC8163330C7D817B60A0",
         "verified_sha": "947a2988b720a42ed319fdcfc0eddbfdde9be496"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "unified_capability_registry",
+          "authority_class": "",
+          "semantic_role": "field_route_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -1798,7 +2020,7 @@
       "required": true,
       "semantic_role": "field_route_authority",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
         "evidence_sha256": "4855AE00D975C5E05066CF21F73C6FA3DC08A15280DD9AD145D5EA5F30B1CF7F",
         "level": "STATIC_VERIFIED",
@@ -1812,6 +2034,13 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "1,683 FIELD UNIVERSE",
+        "450 TYPED CAPABILITIES",
+        "NO PERFORMANCE",
+        "NO OOS"
+      ],
       "color": "#f9a825",
       "contracts": [],
       "critical": false,
@@ -1846,7 +2075,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -1860,6 +2089,15 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "421 CAPABILITY METRICS",
+        "284 FUNDAMENTAL REPRESENTATIONS",
+        "4,931 WITHIN-CONTEXT NMI PAIRS",
+        "PLATE NOT EVALUATED",
+        "NO PERFORMANCE",
+        "NO OOS"
+      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -1948,7 +2186,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_field_information_census.py",
         "evidence_sha256": "837FE2F72EAAFDE1703B699031850EDB1E3770A4C0602AE018FE93FE1F46B87D",
         "level": "STATIC_VERIFIED",
@@ -1962,6 +2200,16 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "272 REPRESENTATIVES",
+        "62 TRUE1MIN",
+        "204 FUNDAMENTAL",
+        "6 CHIP",
+        "EXPLORATORY",
+        "NOT SEARCH AUTHORITY",
+        "NO PERFORMANCE"
+      ],
       "color": "#f9a825",
       "contracts": [],
       "critical": false,
@@ -2004,7 +2252,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2018,6 +2266,15 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "466,944 STRUCTURAL ATTEMPTS",
+        "42,189 ROUTE-LEVEL EXACT IDENTITIES",
+        "264/272 CORE ROOTS",
+        "8 HELD",
+        "NO PERFORMANCE",
+        "NO OOS"
+      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -2085,7 +2342,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "runtime/cn_core_pack_generator_capacity_v1_20260718/run_manifest.json",
         "evidence_sha256": "09C12C713CABE838DAE5A27DBC53709C7F6D277C2E8ADA810E64D855B10E0891",
         "level": "STATIC_VERIFIED",
@@ -2097,13 +2354,28 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "runtime/run_plans/cn_core_pack_development_discovery_v1.json",
         "repo_ref": "",
         "sha256": "A986BB2D38D8C4716E85F8561ACC3551622AEA06EC27FF6326E1EE19FA132B27",
         "verified_sha": "81f481a6b7120498e06a8e7adeaf9291411d4adc"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "core_pack_development_discovery_contract",
+          "authority_class": "",
+          "semantic_role": "development_discovery_proposal_root_ontology_authority"
+        }
+      ],
+      "claim_badges": [
+        "ACTIVE ONTOLOGY ROOT AUTHORITY",
+        "CAMPAIGN BUDGET REQUIRED",
+        "PLATE DISABLED",
+        "POST-TRAIN VALIDATION REPORT-ONLY",
+        "2026 SEALED",
+        "NO PROMOTION"
+      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2236,7 +2508,7 @@
       "required": true,
       "semantic_role": "development_discovery_proposal_root_ontology_authority",
       "validation": {
-        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "evidence_sha256": "80D89B1C5AFD4438F0BCAC4D994DBFD73D26E24A74A5A60B52D3B39F2F612FA9",
         "level": "STATIC_VERIFIED",
@@ -2250,6 +2522,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2319,7 +2593,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2333,6 +2607,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2406,7 +2682,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2420,6 +2696,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2473,7 +2751,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2485,13 +2763,28 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/pit_fundamental_fabric.py",
         "repo_ref": "",
         "sha256": "DCBEA382D2B2875FB5D93837B23EECE67576410F8B98CE69E6DCA0CAFEADD16C",
         "verified_sha": "1cfdf640ec30b9072410558d01da7618cbe684ac"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "pit_fundamental_fabric",
+          "authority_class": "",
+          "semantic_role": "pit_fundamental_observable_episode_authority"
+        }
+      ],
+      "claim_badges": [
+        "4 DISCLOSURE ROOT RECEIPTS",
+        "1,852,463 DEVELOPMENT STOCK-SESSIONS",
+        "CURRENT-SNAPSHOT AS-OF ONLY",
+        "NO REVISION REPLAY",
+        "NO PERFORMANCE",
+        "NO OOS"
+      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -2629,7 +2922,7 @@
       "required": false,
       "semantic_role": "pit_fundamental_observable_episode_authority",
       "validation": {
-        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_pit_fundamental_fabric.py",
         "evidence_sha256": "20617E5E750049057A210DDE3451559B55388D7AD869605D0E9839E461A24769",
         "level": "STATIC_VERIFIED",
@@ -2643,6 +2936,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [],
       "critical": false,
@@ -2674,7 +2969,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2693,6 +2988,15 @@
         "sha256": "2D2FF2E4AB958DC9ADB48745FE09D2D48DD38085669B3DF1FB477812BD83D1EE",
         "verified_sha": "54ce73e59e486c186fa8b6b5a4ad0a944d1f5f9c"
       },
+      "authority_bindings": [],
+      "claim_badges": [
+        "CATCMA QUALITY FAIL",
+        "SCALE READINESS FAIL",
+        "STATE EXACT SPACE EXHAUSTED",
+        "DEVELOPMENT ONLY",
+        "LONG-ONLY TOP",
+        "NO PROMOTION"
+      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -3085,7 +3389,7 @@
       "required": true,
       "semantic_role": "bounded_development_iterative_search_capability",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "runtime/run_plans/cn_search_policy_qualification_20260724_receipt.json",
         "evidence_sha256": "959804532BA654090AD505F9754972990CA16D039FD4BF3D83BD92B7536084F7",
         "level": "PARTIAL",
@@ -3104,6 +3408,21 @@
         "sha256": "8385AD64836149D358361AAC5B044E2058954F653799E3CF1EF8A2A471324CE4",
         "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "cn_development_search_policy",
+          "authority_class": "FORMAL",
+          "semantic_role": "development_search_policy_authority"
+        }
+      ],
+      "claim_badges": [
+        "HYBRID POLICY ACCEPTED",
+        "DEVELOPMENT TRAIN ONLY",
+        "UNIFORM BASELINE RETAINED",
+        "NO VALIDATION",
+        "NO CANDIDATE PROMOTION",
+        "EXECUTABLE REPLAY SEPARATE"
+      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3252,7 +3571,7 @@
       "required": false,
       "semantic_role": "development_search_policy_authority",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
         "evidence_sha256": "766418E2F69E660790D95552AA5C4D2DB44CD4A36D0C5F746710B8D45A7DE823",
         "level": "STATIC_VERIFIED",
@@ -3271,6 +3590,14 @@
         "sha256": "A6BBAE2115646830ED96143B2FB7E3913AB15E469B54762EC828D7FD1FF7DAB4",
         "verified_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "cn_shared_node_resource_authority",
+          "authority_class": "FORMAL",
+          "semantic_role": "shared_node_resource_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3357,7 +3684,7 @@
       "required": false,
       "semantic_role": "shared_node_resource_authority",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_node_resource_governor.py",
         "evidence_sha256": "213D0F02644473181A962079CE09170DBE89D496307EE711AD11B8FA6B230E58",
         "level": "STATIC_VERIFIED",
@@ -3376,6 +3703,14 @@
         "sha256": "F4C290744EA1B31348533ED05F673AC2F96F8869A1BFF1F74928FCA6EC54A948",
         "verified_sha": "a7eae163163a8ac70303da52745b203c6b65ecc0"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "candidate_execution_clock_capability",
+          "authority_class": "FORMAL",
+          "semantic_role": "candidate_execution_clock_capability_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3476,7 +3811,7 @@
       "required": false,
       "semantic_role": "candidate_execution_clock_capability_authority",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_execution_clock_capability.py",
         "evidence_sha256": "0598F1BED89580D77BAC6DCC21E6C4898D138E16156C5C9CE5B39E9D5463F2F5",
         "level": "STATIC_VERIFIED",
@@ -3495,6 +3830,14 @@
         "sha256": "01BD673D3B1912137F3AC59B37ACD1B65CA6CAA16B4CD7C473D7A431C0C48A1E",
         "verified_sha": "b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "a_share_finalist_replay_contract",
+          "authority_class": "FORMAL",
+          "semantic_role": "finalist_execution_evidence_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3680,7 +4023,7 @@
       "required": false,
       "semantic_role": "finalist_execution_evidence_authority",
       "validation": {
-        "checked_at": "2026-08-03T03:58:00.740623+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_finalist_economic_admission.py",
         "evidence_sha256": "AD51B4014BFF0F339F8494D3D53CA8B549F447A28AF6C021CCFF17983FD59E23",
         "level": "STATIC_VERIFIED",
@@ -3694,6 +4037,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#f9a825",
       "contracts": [
         {
@@ -3742,7 +4087,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "runtime/run_plans/cn_compositional_stage_a_route_eligibility_v1.json",
         "evidence_sha256": "278BBD69ECC791D4649D0FBA48D53FE4BA511A80D7F69EA5B406A75E5046AE13",
         "level": "STATIC_VERIFIED",
@@ -3754,13 +4099,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/candidate_submission_receipt.py",
         "repo_ref": "",
         "sha256": "A8BD94F43A2A7C58705C925FDF6FF8269C07042E58110CE296CB37BB85D9C02C",
         "verified_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "candidate_submission_receipt",
+          "authority_class": "",
+          "semantic_role": "candidate_identity_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3818,7 +4171,7 @@
       "required": false,
       "semantic_role": "candidate_identity_authority",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json",
         "evidence_sha256": "115218107C43C1B7CB9FB3E0039DA8261CB45E07CF4177915B21172DDA69632D",
         "level": "STATIC_VERIFIED",
@@ -3830,13 +4183,21 @@
       "visible_by_default": true
     },
     {
-      "active_authority": true,
+      "active_authority": false,
       "authority": {
         "path": "src/our_system_phase2/services/matched_control_pairs.py",
         "repo_ref": "feature/a-share-tradability-authority-repair",
         "sha256": "9E1441EB6FFA87C0CE79467976237B21E6EC80230F8644F86F12B95CCEF2292C",
         "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "matched_control_pair_authority",
+          "authority_class": "",
+          "semantic_role": "matched_pair_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -3926,7 +4287,7 @@
       "required": false,
       "semantic_role": "matched_pair_authority",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_pair_native_feedback_all_routes.py",
         "evidence_sha256": "EB5CE3343FAED6159142C5FB28FEA1C78B657801484A8F0F3996184994E78BF5",
         "level": "STATIC_VERIFIED",
@@ -3945,6 +4306,14 @@
         "sha256": "379253940690E6F4540ECE34B0922444591FBB44E8237F94D6580E36FE8B36E4",
         "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "candidate_parallel_evaluator",
+          "authority_class": "FORMAL",
+          "semantic_role": "development_predictive_evaluation_authority"
+        }
+      ],
+      "claim_badges": [],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -4111,7 +4480,7 @@
       "required": false,
       "semantic_role": "development_predictive_evaluation_authority",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_phase3cm_bootstrap.py",
         "evidence_sha256": "C68A46B830230E2D98DFB22A638FDF34AE346271F4AF7BB4BE45FB51F3EA64B5",
         "level": "STATIC_VERIFIED",
@@ -4130,6 +4499,17 @@
         "sha256": "A380422DD9CB31C9035CF1C22CE1538A5536864243B88933798A2BD3692935F5",
         "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       },
+      "authority_bindings": [],
+      "claim_badges": [
+        "LONG-ONLY TOP",
+        "SHORTING DISABLED",
+        "MINUTE SAMPLE QUALIFIED",
+        "4.97X SAMPLE SPEED",
+        "PAIR DELTA != STANDALONE SORTINO",
+        "WEAK NOT SEALED OOS",
+        "NO PROMOTION",
+        "A-SHARE TRADABILITY UNPROVEN"
+      ],
       "color": "#2e7d32",
       "contracts": [
         {
@@ -4365,7 +4745,7 @@
       "required": false,
       "semantic_role": "active_development_evaluation_implementation",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
         "evidence_sha256": "766418E2F69E660790D95552AA5C4D2DB44CD4A36D0C5F746710B8D45A7DE823",
         "level": "STATIC_VERIFIED",
@@ -4384,6 +4764,18 @@
         "sha256": "9D19012826B3DA2B518D79250554C7A47047FB1F4B77C955E84C62AC899EE788",
         "verified_sha": "0e1004b7266a88e616bd6036126e6f777e474295"
       },
+      "authority_bindings": [
+        {
+          "authoritative_component": "matched_train_feedback",
+          "authority_class": "FORMAL",
+          "semantic_role": "train_feedback_authority"
+        }
+      ],
+      "claim_badges": [
+        "DEVELOPMENT TRAIN ONLY",
+        "EXECUTABLE REPLAY SEPARATE",
+        "NO ECONOMIC CLAIM"
+      ],
       "color": "#f9a825",
       "contracts": [
         {
@@ -4473,7 +4865,7 @@
       "required": false,
       "semantic_role": "train_feedback_authority",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "tests/test_evaluation_access_guard.py",
         "evidence_sha256": "4F2921AA8AD2F7041C36CA7888260696067E846C9807FF7712BCCC79F7C4F982",
         "level": "STATIC_VERIFIED",
@@ -4487,6 +4879,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [],
       "critical": false,
@@ -4533,7 +4927,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:56:26.186384+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -4547,6 +4941,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -4603,7 +4999,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -4617,76 +5013,154 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "SPENT",
+        "NO RETRY",
+        "NO ECONOMIC RESULT"
+      ],
       "color": "#c62828",
       "contracts": [
         {
           "bypass_forbidden": true,
-          "enforced_by": "evaluation_access_guard",
+          "enforced_by": "evaluation role registry, access ledger and burn ledger",
           "evidence_ref": "",
-          "id": "forward_sealed",
-          "rule": "2026 forward data cannot be read by evaluation, search policy, scheduler or memory.",
+          "id": "spent_forward_no_reuse",
+          "rule": "The opened 2026-01-05 through 2026-04-10 asset is spent after an infrastructure-invalid fixed-ten attempt and cannot be retried, repurposed for selection, or used by search, scheduler or memory.",
           "severity": "HARD",
           "type": "BOUNDARY"
         }
       ],
       "critical": true,
-      "evidence": "STATIC",
+      "evidence": "DECLARED",
       "expires_at": "",
       "id": "forward_2026",
-      "kind": "sealed-boundary",
-      "label": "2026 forward data",
+      "kind": "spent-boundary",
+      "label": "Spent 2026 Jan-Apr forward asset",
       "lifecycle": "FORBIDDEN",
       "owner": "",
       "paths": [
-        "src/our_system_phase2/services/evaluation_access_guard.py"
+        "runtime/run_plans/evaluation_data_roles_v1.json",
+        "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json"
       ],
       "promotion_requirements": [],
-      "raw_node_ids": [
-        "src_our_system_phase2_services_evaluation_access_guard",
-        "src_our_system_phase2_services_evaluation_access_guard_assert_train_only_feedback_row",
-        "src_our_system_phase2_services_evaluation_access_guard_assert_train_only_feedback_rows",
-        "src_our_system_phase2_services_evaluation_access_guard_evaluation_access_guard",
-        "src_our_system_phase2_services_evaluation_access_guard_evaluationaccessviolation",
-        "src_our_system_phase2_services_evaluation_access_guard_forbidden_feedback_fields",
-        "src_our_system_phase2_services_evaluation_access_guard_has_reward",
-        "src_our_system_phase2_services_evaluation_access_guard_project_train_only_feedback_row",
-        "src_our_system_phase2_services_evaluation_access_guard_rationale_1",
-        "src_our_system_phase2_services_evaluation_access_guard_rationale_129",
-        "src_our_system_phase2_services_evaluation_access_guard_rationale_38",
-        "src_our_system_phase2_services_evaluation_access_guard_rationale_42",
-        "src_our_system_phase2_services_evaluation_access_guard_rationale_69",
-        "tests_test_evaluation_access_guard",
-        "tests_test_evaluation_access_guard_reward_row",
-        "tests_test_evaluation_access_guard_test_clean_feedback_helper_has_no_raw_oos_bypass",
-        "tests_test_evaluation_access_guard_test_feedback_memory_rejects_missing_candidate_receipt_authority",
-        "tests_test_evaluation_access_guard_test_feedback_memory_rejects_raw_provenance_laundering",
-        "tests_test_evaluation_access_guard_test_feedback_memory_writes_train_only_schema",
-        "tests_test_evaluation_access_guard_test_phase3cn_rejects_invalid_pair_or_shard_fallback",
-        "tests_test_evaluation_access_guard_test_projection_allows_development_reward_without_finalist_replay",
-        "tests_test_evaluation_access_guard_test_projection_physically_removes_candidate_level_oos_fields",
-        "tests_test_evaluation_access_guard_test_projection_rejects_missing_split_and_role",
-        "tests_test_evaluation_access_guard_test_projection_rejects_non_train_optimizer_reward",
-        "tests_test_evaluation_access_guard_test_scheduler_rejects_candidate_level_oos_columns",
-        "tests_test_evaluation_access_guard_test_search_feedback_rejects_raw_candidate_level_oos_payload",
-        "tests_test_evaluation_access_guard_write_csv"
-      ],
+      "raw_node_ids": [],
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-31T13:56:13.761292+00:00",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
-        "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
+        "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
+        "evidence_sha256": "7864C42732E3B3E6399F15C2569D7677589157930FA5A76CDF979944C3382246",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "verified_at_sha": null
       },
       "visible_by_default": true
     },
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "UNOPENED",
+        "BACKWARD OOT",
+        "SH/SZ ONLY",
+        "NO PROMOTION"
+      ],
+      "color": "#f9a825",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "historical challenge authorization and evaluation access ledger",
+          "evidence_ref": "",
+          "id": "historical_challenge_fixed_ten_only",
+          "rule": "The immutable 2023 archive may be opened once only for the unchanged fixed ten after converter parity; no replacement, feedback, filtering or promotion is allowed.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        }
+      ],
+      "critical": true,
+      "evidence": "DECLARED",
+      "expires_at": "",
+      "id": "historical_challenge_2023",
+      "kind": "challenge-boundary",
+      "label": "Fixed-ten 2023 historical challenge",
+      "lifecycle": "EXPERIMENTAL",
+      "owner": "",
+      "paths": [
+        "runtime/run_plans/cn_historical_challenge_2023_authorization.json"
+      ],
+      "promotion_requirements": [],
+      "raw_node_ids": [],
+      "required": false,
+      "semantic_role": "",
+      "validation": {
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
+        "evidence_ref": "runtime/run_plans/cn_historical_challenge_2023_authorization.json",
+        "evidence_sha256": "7ED17DF4BF71C1BF29850F2448AD6CC7A78EDC5121A00FE682C81918C155C2D7",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": null
+      },
+      "visible_by_default": true
+    },
+    {
+      "active_authority": false,
+      "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "SEALED",
+        "PERFORMANCE UNOPENED",
+        "EXPLICIT REPLAN REQUIRED"
+      ],
+      "color": "#c62828",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "Forward-B reservation and evaluation access ledger",
+          "evidence_ref": "",
+          "id": "forward_b_sealed_until_replan",
+          "rule": "Forward-B remains sealed; only an explicit post-challenge workflow replan may authorize one unchanged-cohort report-only use, with no automatic release, feedback or promotion.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        }
+      ],
+      "critical": true,
+      "evidence": "DECLARED",
+      "expires_at": "",
+      "id": "forward_b_2026",
+      "kind": "sealed-boundary",
+      "label": "Sealed 2026 Apr-May Forward-B",
+      "lifecycle": "FORBIDDEN",
+      "owner": "",
+      "paths": [
+        "runtime/run_plans/cn_forward_b_reservation_20260805.json"
+      ],
+      "promotion_requirements": [],
+      "raw_node_ids": [],
+      "required": false,
+      "semantic_role": "",
+      "validation": {
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
+        "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
+        "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": null
+      },
+      "visible_by_default": true
+    },
+    {
+      "active_authority": false,
+      "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -4713,7 +5187,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -4727,6 +5201,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -4779,7 +5255,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
         "evidence_sha256": "B5928F51E8FFFECFDAC4CE6CB72BDF97214B5F3A243F81E11F6A3320F457391E",
         "level": "STATIC_VERIFIED",
@@ -4793,6 +5269,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#757575",
       "contracts": [
         {
@@ -4819,7 +5297,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -4833,6 +5311,8 @@
     {
       "active_authority": false,
       "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [],
       "color": "#c62828",
       "contracts": [
         {
@@ -4859,7 +5339,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-07-29T09:23:52.330525+00:00",
+        "checked_at": "2026-08-05T08:28:32.246953+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "evidence_sha256": "3FE05E4656F093EF053ECC85D290631266A9644673CD34D7F8AB1842A91E4CF1",
         "level": "STATIC_VERIFIED",
@@ -4873,7 +5353,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "C407EDC32BA9509D38D9BD57D38D6B777B7AE7418B70D0C7D37A6101AEFA56A9"
+    "sha256": "070C69CF9407BBAFEFA3FF26DFE1CAE9C8E09C5B6DE65FF8E7043C461E7F6011"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -4890,14 +5370,81 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "4CD2272193684D4AA4BB0A5F568A9419C2846CA2A1041AF0647FF21AC8612721"
   },
-  "repo_head": "b2bc6c9157e822bef75fdd66e4d60dfe6436b5bd",
+  "repo_head": "024bebddf5e9a5a3a628f4508b81b736cae5374c",
   "schema_version": 1,
+  "semantic_authorities": [
+    {
+      "authoritative_component": "candidate_execution_clock_capability",
+      "authority_class": "FORMAL",
+      "semantic_role": "candidate_execution_clock_capability_authority"
+    },
+    {
+      "authoritative_component": "candidate_submission_receipt",
+      "authority_class": "",
+      "semantic_role": "candidate_identity_authority"
+    },
+    {
+      "authoritative_component": "cn_field_master_registry",
+      "authority_class": "",
+      "semantic_role": "complete_field_universe_authority"
+    },
+    {
+      "authoritative_component": "core_pack_development_discovery_contract",
+      "authority_class": "",
+      "semantic_role": "development_discovery_proposal_root_ontology_authority"
+    },
+    {
+      "authoritative_component": "candidate_parallel_evaluator",
+      "authority_class": "FORMAL",
+      "semantic_role": "development_predictive_evaluation_authority"
+    },
+    {
+      "authoritative_component": "cn_development_search_policy",
+      "authority_class": "FORMAL",
+      "semantic_role": "development_search_policy_authority"
+    },
+    {
+      "authoritative_component": "unified_capability_registry",
+      "authority_class": "",
+      "semantic_role": "field_route_authority"
+    },
+    {
+      "authoritative_component": "a_share_finalist_replay_contract",
+      "authority_class": "FORMAL",
+      "semantic_role": "finalist_execution_evidence_authority"
+    },
+    {
+      "authoritative_component": "matched_control_pair_authority",
+      "authority_class": "",
+      "semantic_role": "matched_pair_authority"
+    },
+    {
+      "authoritative_component": "pit_fundamental_fabric",
+      "authority_class": "",
+      "semantic_role": "pit_fundamental_observable_episode_authority"
+    },
+    {
+      "authoritative_component": "cn_shared_node_resource_authority",
+      "authority_class": "FORMAL",
+      "semantic_role": "shared_node_resource_authority"
+    },
+    {
+      "authoritative_component": "fixed_split_authority",
+      "authority_class": "",
+      "semantic_role": "split_authority"
+    },
+    {
+      "authoritative_component": "matched_train_feedback",
+      "authority_class": "FORMAL",
+      "semantic_role": "train_feedback_authority"
+    }
+  ],
   "status": "STALE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 45,
-    "current_nodes": 32,
+    "current_edges": 49,
+    "current_nodes": 34,
     "errors": 1,
     "runtime_edges": 0,
     "runtime_nodes": 0,

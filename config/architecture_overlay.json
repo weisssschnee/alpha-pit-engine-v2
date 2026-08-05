@@ -1008,26 +1008,77 @@
     },
     {
       "id": "forward_2026",
-      "label": "2026 forward data",
-      "kind": "sealed-boundary",
+      "label": "Spent 2026 Jan-Apr forward asset",
+      "kind": "spent-boundary",
       "lifecycle": "FORBIDDEN",
-      "paths": ["src/our_system_phase2/services/evaluation_access_guard.py"],
+      "paths": [
+        "runtime/run_plans/evaluation_data_roles_v1.json",
+        "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json"
+      ],
       "critical": true,
+      "claim_badges": ["SPENT", "NO RETRY", "NO ECONOMIC RESULT"],
       "contracts": [
         {
-          "id": "forward_sealed",
+          "id": "spent_forward_no_reuse",
           "type": "BOUNDARY",
-          "rule": "2026 forward data cannot be read by evaluation, search policy, scheduler or memory.",
+          "rule": "The opened 2026-01-05 through 2026-04-10 asset is spent after an infrastructure-invalid fixed-ten attempt and cannot be retried, repurposed for selection, or used by search, scheduler or memory.",
           "severity": "HARD",
-          "enforced_by": "evaluation_access_guard",
+          "enforced_by": "evaluation role registry, access ledger and burn ledger",
           "bypass_forbidden": true
         }
       ],
       "validation": {
         "level": "STATIC_VERIFIED",
         "result": "PASS",
-        "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json",
-        "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
+        "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json"
+      }
+    },
+    {
+      "id": "historical_challenge_2023",
+      "label": "Fixed-ten 2023 historical challenge",
+      "kind": "challenge-boundary",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": ["runtime/run_plans/cn_historical_challenge_2023_authorization.json"],
+      "critical": true,
+      "claim_badges": ["UNOPENED", "BACKWARD OOT", "SH/SZ ONLY", "NO PROMOTION"],
+      "contracts": [
+        {
+          "id": "historical_challenge_fixed_ten_only",
+          "type": "BOUNDARY",
+          "rule": "The immutable 2023 archive may be opened once only for the unchanged fixed ten after converter parity; no replacement, feedback, filtering or promotion is allowed.",
+          "severity": "HARD",
+          "enforced_by": "historical challenge authorization and evaluation access ledger",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/run_plans/cn_historical_challenge_2023_authorization.json"
+      }
+    },
+    {
+      "id": "forward_b_2026",
+      "label": "Sealed 2026 Apr-May Forward-B",
+      "kind": "sealed-boundary",
+      "lifecycle": "FORBIDDEN",
+      "paths": ["runtime/run_plans/cn_forward_b_reservation_20260805.json"],
+      "critical": true,
+      "claim_badges": ["SEALED", "PERFORMANCE UNOPENED", "EXPLICIT REPLAN REQUIRED"],
+      "contracts": [
+        {
+          "id": "forward_b_sealed_until_replan",
+          "type": "BOUNDARY",
+          "rule": "Forward-B remains sealed; only an explicit post-challenge workflow replan may authorize one unchanged-cohort report-only use, with no automatic release, feedback or promotion.",
+          "severity": "HARD",
+          "enforced_by": "Forward-B reservation and evaluation access ledger",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json"
       }
     },
     {
@@ -1439,8 +1490,12 @@
       "contract": {"id": "validation_memory_forbidden", "type": "BOUNDARY", "rule": "Report-only evaluation cannot update scheduler or persistent memory.", "severity": "HARD", "enforced_by": "evaluation_access_guard", "bypass_forbidden": true},
       "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}
     },
-    {"id": "forward_to_search_forbidden", "source": "forward_2026", "target": "formal_search", "relation": "search_policy", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "forward_search_forbidden", "type": "BOUNDARY", "rule": "2026 forward data cannot influence search policy.", "severity": "HARD", "enforced_by": "evaluation_access_guard", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},
-    {"id": "forward_to_memory_forbidden", "source": "forward_2026", "target": "cross_epoch_memory", "relation": "adaptive_memory_update", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "forward_memory_forbidden", "type": "BOUNDARY", "rule": "2026 forward data cannot update scheduler or memory.", "severity": "HARD", "enforced_by": "evaluation_access_guard", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},
+    {"id": "forward_to_search_forbidden", "source": "forward_2026", "target": "formal_search", "relation": "spent_asset_search_reuse", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "spent_forward_search_forbidden", "type": "BOUNDARY", "rule": "The spent 2026 Jan-Apr asset cannot influence search policy.", "severity": "HARD", "enforced_by": "evaluation role and burn ledgers", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json"}},
+    {"id": "forward_to_memory_forbidden", "source": "forward_2026", "target": "cross_epoch_memory", "relation": "spent_asset_adaptive_memory_update", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "spent_forward_memory_forbidden", "type": "BOUNDARY", "rule": "The spent 2026 Jan-Apr asset cannot update scheduler or memory.", "severity": "HARD", "enforced_by": "evaluation role and burn ledgers", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json"}},
+    {"id": "historical_challenge_to_search_forbidden", "source": "historical_challenge_2023", "target": "formal_search", "relation": "challenge_feedback", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "historical_challenge_feedback_forbidden", "type": "BOUNDARY", "rule": "The 2023 challenge cannot enter search reward, candidate selection or tuning.", "severity": "HARD", "enforced_by": "historical challenge authorization", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_historical_challenge_2023_authorization.json"}},
+    {"id": "historical_challenge_to_memory_forbidden", "source": "historical_challenge_2023", "target": "cross_epoch_memory", "relation": "challenge_memory_update", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "historical_challenge_memory_forbidden", "type": "BOUNDARY", "rule": "The 2023 challenge cannot update scheduler, archive or persistent memory.", "severity": "HARD", "enforced_by": "historical challenge authorization", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_historical_challenge_2023_authorization.json"}},
+    {"id": "forward_b_to_search_forbidden", "source": "forward_b_2026", "target": "formal_search", "relation": "sealed_forward_search_access", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "forward_b_search_forbidden", "type": "BOUNDARY", "rule": "Sealed Forward-B cannot influence search policy or candidate choice.", "severity": "HARD", "enforced_by": "Forward-B reservation", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json"}},
+    {"id": "forward_b_to_memory_forbidden", "source": "forward_b_2026", "target": "cross_epoch_memory", "relation": "sealed_forward_memory_update", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "forward_b_memory_forbidden", "type": "BOUNDARY", "rule": "Sealed Forward-B cannot update scheduler, archive or memory.", "severity": "HARD", "enforced_by": "Forward-B reservation", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json"}},
     {"id": "evaluator_to_search_forbidden", "source": "candidate_parallel_evaluator", "target": "formal_search", "relation": "engineering_qualification", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "qualification_not_authorization", "type": "BOUNDARY", "rule": "Matched-control qualification does not start formal search or promotion.", "severity": "HARD", "enforced_by": "formal_search_freeze", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},
     {"id": "streaming_evaluator_to_search_forbidden", "source": "phase3cm_streaming_multicandidate_evaluator", "target": "formal_search", "relation": "qualification_not_execution_authority", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "streaming_stage_a_not_authorized", "type": "BOUNDARY", "rule": "Resource readiness and evaluator qualification do not authorize strict Stage A, candidate promotion or forward opening.", "severity": "HARD", "enforced_by": "formal_search_freeze", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_DECISION.json", "verified_at_sha": "a59c3956e078cd7c7861a57ec3d1d78b724c13c1"}},
     {"id": "feedback_to_memory_forbidden", "source": "matched_train_feedback", "target": "cross_epoch_memory", "relation": "persistent_write", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "no_cross_epoch_write", "type": "BOUNDARY", "rule": "This engineering run cannot persist adaptive memory across epochs or sprints.", "severity": "HARD", "enforced_by": "memory_write_gate", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},

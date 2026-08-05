@@ -16,3 +16,7 @@ def test_committed_evaluation_ledgers_are_internally_consistent() -> None:
     assert summary["role_count"] == 5
     assert summary["forward_access_violation_count"] == 0
     assert summary["validation_holdout_spent_records"] == 2
+    assert summary["spent_forward_2026_registered"] is True
+    assert summary["historical_challenge_2023_registered"] is True
+    assert summary["forward_b_registered"] is True
+    assert summary["contract_self_hashes_verified"] == 2
