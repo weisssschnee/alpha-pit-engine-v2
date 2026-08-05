@@ -120,7 +120,11 @@ def validate_chip_context_role(
     maximum_observable_time: str,
 ) -> pd.Timestamp:
     """Validate the chip observation boundary before any forward source read."""
-    allowed_roles = {"development", "forward_2026_report_only"}
+    allowed_roles = {
+        "development",
+        "forward_2026_report_only",
+        "historical_challenge_report_only",
+    }
     if data_role not in allowed_roles:
         raise PermissionError(f"chip PIT context rejects data role: {data_role}")
     maximum = pd.Timestamp(maximum_observable_time)

@@ -65,7 +65,6 @@ def _load_field_sessions(
         "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
         "evaluation_role": evaluation_role,
         "data_role": data_role,
-        "holdout_reads": 0,
     }
     drift = [key for key, value in required.items() if manifest.get(key) != value]
     if drift:
@@ -77,7 +76,12 @@ def _load_field_sessions(
     )
     if int(manifest.get(role_reads_key) or 0) <= 0:
         raise RuntimeError(f"{evaluation_role} field manifest has no role reads")
-    for other_key in {"validation_reads", "holdout_reads", "forward_2026_reads"} - {
+    for other_key in {
+        "validation_reads",
+        "holdout_reads",
+        "forward_2026_reads",
+        "historical_challenge_reads",
+    } - {
         role_reads_key
     }:
         if int(manifest.get(other_key) or 0) != 0:
@@ -440,6 +444,11 @@ def build_validation_session_authority(
             if evaluation_role == "forward_2026"
             else 0
         ),
+        "historical_challenge_reads": (
+            int(field_manifest[role_reads_key]) + st_source_rows
+            if evaluation_role == "historical_challenge"
+            else 0
+        ),
         "optimizer_feedback_write": "FORBIDDEN",
         "scheduler_write": "FORBIDDEN",
         "archive_write": "FORBIDDEN",
@@ -526,6 +535,7 @@ def build_validation_session_authority(
         "excluded_non_sse_szse_code_count": len(excluded_codes),
         "validation_reads": manifest["validation_reads"],
         "forward_2026_reads": manifest["forward_2026_reads"],
+        "historical_challenge_reads": manifest["historical_challenge_reads"],
     }
 
 
@@ -539,6 +549,19 @@ def main() -> int:
     parser.add_argument("--historical-daily-st-source", type=Path, required=True)
     parser.add_argument("--expected-daily-st-source-sha256", required=True)
     parser.add_argument("--builder-commit-sha", required=True)
+    parser.add_argument(
+        "--evaluation-role",
+        choices=("validation", "holdout", "forward_2026", "historical_challenge"),
+        default="validation",
+    )
+    parser.add_argument("--date-min", default=DATE_MIN)
+    parser.add_argument("--date-max", default=DATE_MAX)
+    parser.add_argument("--schema-version", default=SCHEMA_VERSION)
+    parser.add_argument("--status", default=STATUS)
+    parser.add_argument(
+        "--evidence-scope",
+        default="ADAPTIVE_REPORT_ONLY_VALIDATION_OOS_INPUT",
+    )
     args = parser.parse_args()
     result = build_validation_session_authority(
         field_manifest_path=args.field_manifest,
@@ -549,6 +572,12 @@ def main() -> int:
         historical_daily_st_source=args.historical_daily_st_source,
         expected_daily_st_source_sha256=args.expected_daily_st_source_sha256,
         builder_commit_sha=args.builder_commit_sha,
+        evaluation_role=args.evaluation_role,
+        date_min=args.date_min,
+        date_max=args.date_max,
+        schema_version=args.schema_version,
+        status=args.status,
+        evidence_scope=args.evidence_scope,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0

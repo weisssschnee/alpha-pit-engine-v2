@@ -111,7 +111,13 @@ def main() -> int:
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument(
         "--evaluation-role",
-        choices=("train", "validation", "holdout", "forward_2026"),
+        choices=(
+            "train",
+            "validation",
+            "holdout",
+            "forward_2026",
+            "historical_challenge",
+        ),
         default="validation",
     )
     parser.add_argument("--split-manifest", type=Path, required=True)
@@ -141,7 +147,11 @@ def main() -> int:
     chip_data_role = (
         "forward_2026_report_only"
         if args.evaluation_role == "forward_2026"
-        else "development"
+        else (
+            "historical_challenge_report_only"
+            if args.evaluation_role == "historical_challenge"
+            else "development"
+        )
     )
     validate_chip_context_role(
         data_role=chip_data_role,
@@ -200,13 +210,22 @@ def main() -> int:
         .collect(engine="streaming")["code"]
         .to_list()
     )
-    chip_context, chip_receipt = load_chip_context(
-        args.chip_root.resolve(),
-        allowed_codes={normalize_cn_code(value) for value in allowed_codes},
-        fields=chip_fields,
-        maximum_observable_time=maximum_observable_time,
-        data_role=chip_data_role,
-    )
+    if chip_fields:
+        chip_context, chip_receipt = load_chip_context(
+            args.chip_root.resolve(),
+            allowed_codes={normalize_cn_code(value) for value in allowed_codes},
+            fields=chip_fields,
+            maximum_observable_time=maximum_observable_time,
+            data_role=chip_data_role,
+        )
+    else:
+        chip_context = pd.DataFrame()
+        chip_receipt = {
+            "data_role": chip_data_role,
+            "loaded_row_count": 0,
+            "requested_fields": [],
+            "source_read": "SKIPPED_NO_REQUIRED_CHIP_FIELDS",
+        }
 
     output_root = args.output_root.resolve()
     output_root.mkdir(parents=True, exist_ok=True)
@@ -358,6 +377,11 @@ def main() -> int:
             if args.evaluation_role == "forward_2026"
             else 0
         ),
+        "eligible_historical_challenge_date_count": (
+            len(eligible_dates)
+            if args.evaluation_role == "historical_challenge"
+            else 0
+        ),
         "fields": records[0]["fields"],
         "direct_minute_field_policy": (
             "LAST_OBSERVED_VALUE_AT_OR_BEFORE_SESSION_CLOSE_PIT"
@@ -403,6 +427,11 @@ def main() -> int:
         "forward_2026_reads": (
             sum(int(row["rows"]) for row in records)
             if args.evaluation_role == "forward_2026"
+            else 0
+        ),
+        "historical_challenge_reads": (
+            sum(int(row["rows"]) for row in records)
+            if args.evaluation_role == "historical_challenge"
             else 0
         ),
         "feedback_write": "FORBIDDEN",

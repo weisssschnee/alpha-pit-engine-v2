@@ -29,7 +29,13 @@ def _split_dates(
     *,
     evaluation_role: str,
 ) -> tuple[str, ...]:
-    if evaluation_role not in {"train", "validation", "holdout", "forward_2026"}:
+    if evaluation_role not in {
+        "train",
+        "validation",
+        "holdout",
+        "forward_2026",
+        "historical_challenge",
+    }:
         raise ValueError(f"unsupported evaluation role: {evaluation_role}")
     if hashlib.sha256(path.read_bytes()).hexdigest() != str(expected_sha256):
         raise RuntimeError("split manifest hash drift")
@@ -59,7 +65,13 @@ def main() -> int:
     parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument(
         "--evaluation-role",
-        choices=("train", "validation", "holdout", "forward_2026"),
+        choices=(
+            "train",
+            "validation",
+            "holdout",
+            "forward_2026",
+            "historical_challenge",
+        ),
         default="train",
     )
     parser.add_argument("--pattern", default="*.parquet")
@@ -125,6 +137,7 @@ def main() -> int:
         "eligible_validation_date_count": len(eligible_dates) if args.evaluation_role == "validation" else 0,
         "eligible_holdout_date_count": len(eligible_dates) if args.evaluation_role == "holdout" else 0,
         "eligible_forward_2026_date_count": len(eligible_dates) if args.evaluation_role == "forward_2026" else 0,
+        "eligible_historical_challenge_date_count": len(eligible_dates) if args.evaluation_role == "historical_challenge" else 0,
         "validation_reads": (
             int(build.get("source_rows") or 0)
             if args.evaluation_role == "validation"
@@ -138,6 +151,11 @@ def main() -> int:
         "forward_2026_reads": (
             int(build.get("source_rows") or 0)
             if args.evaluation_role == "forward_2026"
+            else 0
+        ),
+        "historical_challenge_reads": (
+            int(build.get("source_rows") or 0)
+            if args.evaluation_role == "historical_challenge"
             else 0
         ),
         "build_wall_seconds": max(0.0, after_all.wall_seconds - before_all.wall_seconds),

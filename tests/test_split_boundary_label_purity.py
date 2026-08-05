@@ -32,7 +32,8 @@ def test_streaming_calendar_supports_sequential_report_only_validation(tmp_path:
         "trade_date,split,optimizer_usage\n"
         "2025-01-02,train,allowed\n"
         "2025-07-08,validation,report_only\n"
-        "2025-10-20,holdout,report_only\n",
+        "2025-10-20,holdout,report_only\n"
+        "2023-01-03,historical_challenge,report_only\n",
         encoding="utf-8",
     )
     binding = {"split_manifest_hash": hashlib.sha256(split_path.read_bytes()).hexdigest()}
@@ -68,6 +69,11 @@ def test_streaming_calendar_supports_sequential_report_only_validation(tmp_path:
         binding["split_manifest_hash"],
         evaluation_role="holdout",
     ) == ("2025-10-20",)
+    assert _label_split_dates(
+        split_path,
+        binding["split_manifest_hash"],
+        evaluation_role="historical_challenge",
+    ) == ("2023-01-03",)
 
 
 def test_train_only_terminal_nulls_are_bound_as_purged_crossings(tmp_path: Path) -> None:

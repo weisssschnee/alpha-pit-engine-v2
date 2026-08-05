@@ -199,3 +199,16 @@ def test_forward_chip_role_uses_only_pre_2026_source_sessions() -> None:
     )
     assert joined["chip_cost_p50"].tolist() == [10.5]
     assert joined["chip_source_session"].tolist() == [pd.Timestamp("2025-12-31")]
+
+
+def test_historical_challenge_chip_role_is_explicitly_report_only() -> None:
+    maximum = validate_chip_context_role(
+        data_role="historical_challenge_report_only",
+        maximum_observable_time="2023-12-29 15:00:00",
+    )
+    assert maximum == pd.Timestamp("2023-12-29 15:00:00")
+    with pytest.raises(PermissionError, match="cannot enter sealed 2026"):
+        validate_chip_context_role(
+            data_role="historical_challenge_report_only",
+            maximum_observable_time="2026-01-05 15:00:00",
+        )

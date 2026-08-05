@@ -19,7 +19,12 @@ import pandas as pd
 
 TEMPORAL_REGISTRY_VERSION = "nextgen_dark_typed_temporal_v1"
 _AUTHORIZED_EVALUATION_ROLES = frozenset(
-    {"development", "validation_report_only", "forward_2026_report_only"}
+    {
+        "development",
+        "validation_report_only",
+        "forward_2026_report_only",
+        "historical_challenge_report_only",
+    }
 )
 
 
@@ -501,7 +506,7 @@ def evaluate_typed_temporal_primitive(
     if data_role not in _AUTHORIZED_EVALUATION_ROLES:
         raise PermissionError(
             "typed temporal evaluation is development-only unless explicitly "
-            "validation_report_only or forward_2026_report_only"
+            "an explicitly authorized report-only role"
         )
     spec = primitive_contract(name)
     _validate_temporal_signature(spec, len(inputs), params)

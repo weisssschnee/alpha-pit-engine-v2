@@ -28,9 +28,11 @@ def test_validation_authority_builder_has_explicit_fail_closed_boundaries() -> N
     assert "--historical-daily-st-source" in source
     assert "--expected-daily-st-source-sha256" in source
     assert ".sort_by(" not in source
-    assert '"holdout_reads": 0' in source
+    assert '"holdout_reads"' in source
     assert 'evaluation_role: str = "validation"' in source
     assert 'if evaluation_role == "forward_2026"' in source
+    assert '"historical_challenge_reads"' in source
+    assert '"--evaluation-role"' in source
     assert '"promotion": "FORBIDDEN"' in source
 
 
