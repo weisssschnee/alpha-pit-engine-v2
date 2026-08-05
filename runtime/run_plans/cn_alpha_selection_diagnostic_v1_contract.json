@@ -1,0 +1,288 @@
+{
+  "schema_version": "cn_alpha_selection_diagnostic_v1_contract",
+  "status": "ACTIVE_ZERO_FINANCIAL_READ_DIAGNOSTIC_CONTRACT",
+  "experiment_id": "cn-alpha-selection-diagnostic-v1-20260805",
+  "created_at": "2026-08-05T10:32:14.9856986+08:00",
+  "builder_base_commit_sha": "9f447f3a6a1fd59179907cfe2cadcfaee4688e58",
+  "authority_boundary": {
+    "purpose": "Diagnose whether train-visible features enrich adaptive-validation survivors without fitting a statistical model or creating selection authority.",
+    "evidence_class": "POST_HOC_ADAPTIVE_VALIDATION_DIAGNOSTIC",
+    "financial_result_recomputed": false,
+    "new_financial_reads": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "forward_2026_reads": 0,
+    "optimizer_feedback_write": "FORBIDDEN",
+    "scheduler_write": "FORBIDDEN",
+    "archive_write": "FORBIDDEN",
+    "promotion_write": "FORBIDDEN",
+    "search_launch": "FORBIDDEN",
+    "decoder_change": "FORBIDDEN",
+    "reward_change": "FORBIDDEN",
+    "graph_authority_change": "FORBIDDEN"
+  },
+  "source_roots": {
+    "decoder_train_root": "D:\\ChengboRemote\\runtime\\cn_portfolio_decoder_v2_process_full_3x1_64_20260804_7051ae6",
+    "decoder_closure_file_sha256": "216fe608130f8cd752f00c196e7c6cdd34ba1b2907d7826921ff41ff7fd0c426",
+    "decoder_closure_payload_sha256": "173aafaeb54a29797fc0b1e4c66b8b70af2a8d13f673b5e24eeda98f93def967",
+    "source_32_pair_selection_payload_sha256": "24aa602dbcd19f02b2c6f773a3441fde78d1612e327b11039684764569b6e5c1",
+    "train_finalist_root": "D:\\ChengboRemote\\runtime\\cn_decoder_v2_train_finalists_topk10_equal_22_20260805_e6d585d",
+    "train_finalist_manifest_file_sha256": "7fb1097bdd9e22140fcd1b649954b011f3c9266d00165b402a92b4e29eb2ae02",
+    "train_finalist_manifest_payload_sha256": "5a33c55ebc8dd34f66fc9bc6e59eaa8d1faad75af9eb746c850a93a25e273a71",
+    "train_finalist_selection_payload_sha256": "bb01b09328c7ef6919367326ddcd5aa02b1f21c5b17db8c895079d3b42f5c8c9",
+    "adaptive_validation_oos_root": "D:\\ChengboRemote\\runtime\\cn_decoder_v2_topk10_equal_report_only_oos_22_recovery4_20260805_6eb643d",
+    "adaptive_validation_oos_closure_file_sha256": "457c1dce5176f9f795e0827e07c8ceca6cce7f06b1939f04029ae992f617729e",
+    "adaptive_validation_oos_closure_payload_sha256": "5ac70d791f4aad03259a8cdbf44dfbed83eab58a0a88609cedf53ec35a6824b4"
+  },
+  "source_artifacts": [
+    {
+      "scope": "decoder",
+      "name": "decoder_candidate_metrics.parquet",
+      "sha256": "a90815b2672dfb7ec62b20667c049cdf479820187a9898577dbc2002540fabda"
+    },
+    {
+      "scope": "decoder",
+      "name": "decoder_pair_metrics.parquet",
+      "sha256": "98904d7047e6f9db8ba29a9bea1b6ba1513c9db29f13cc8c26838e11b81cc89b"
+    },
+    {
+      "scope": "decoder",
+      "name": "decoder_rank_preservation.parquet",
+      "sha256": "3242be534f7f123394f14b9c38563e026eca2a6664416e2d96f5459b9fb4eba7"
+    },
+    {
+      "scope": "decoder",
+      "name": "candidate_transition_matrix.parquet",
+      "sha256": "b6df73d623995b0124c9970df67a314daddb13e1a4e54b430be7992e97d65669"
+    },
+    {
+      "scope": "freeze",
+      "name": "finalist_review_ledger.parquet",
+      "sha256": "2d4149071925b3faf96897655126eabc7c697a7a8715d80161a27bedb26a5a3e"
+    },
+    {
+      "scope": "freeze",
+      "name": "finalist_pairs.parquet",
+      "sha256": "5cc591856cdb4b71cbd26e96027cff179c118c429a0c921536e38b5d1c7c72e3"
+    },
+    {
+      "scope": "oos",
+      "name": "oos_pair_metrics.parquet",
+      "sha256": "a6c9f2780945f93ca28d1c0e538bf33ba4cf7e1f8afbddba79b5dc768d80603c"
+    },
+    {
+      "scope": "oos",
+      "name": "oos_candidate_metrics.parquet",
+      "sha256": "ec7bf295dd41a54b07496e567fe4fd11b781ab4630a8390a97ef25d2c0c0f8c1"
+    }
+  ],
+  "population": {
+    "source_pair_count": 32,
+    "labeled_pair_count": 22,
+    "unlabeled_pair_count": 10,
+    "group_a": {
+      "name": "ADAPTIVE_VALIDATION_SURVIVOR",
+      "count": 10,
+      "definition": "The pair was train-frozen, evaluated on adaptive report-only validation, and passed all four absolute and matched reward and return gates.",
+      "confirmatory_claim_authorized": false
+    },
+    "group_b": {
+      "name": "ADAPTIVE_VALIDATION_ABSOLUTE_ONLY_RELATIVE_INCOMPLETE",
+      "count": 12,
+      "definition": "The pair was train-frozen and had positive primary absolute validation economics but did not pass all four relative and absolute gates.",
+      "failure_label_authorized": false
+    },
+    "group_c": {
+      "name": "TRAIN_SCREEN_REJECT_OOS_LABEL_MISSING",
+      "count": 10,
+      "definition": "The pair failed train-only TOPK_10_EQUAL economic admission and was never evaluated on this adaptive validation slice.",
+      "oos_negative_imputation": "FORBIDDEN"
+    },
+    "labeled_analysis_universe": "GROUP_A_PLUS_GROUP_B_ONLY",
+    "full_32_pair_survivor_rate_claim": "FORBIDDEN",
+    "known_survivor_lower_bound": 0.3125,
+    "logical_survivor_upper_bound_if_all_unlabeled_survive": 0.625
+  },
+  "allowed_train_visible_numeric_features": [
+    "search_score",
+    "primary_composite_reward",
+    "matched_train_increment",
+    "matched_gross_increment",
+    "matched_net_increment",
+    "matched_trading_cost_difference",
+    "primary_support_rate",
+    "primary_mean_turnover",
+    "train_day_sortino",
+    "train_worst_horizon_day_sortino",
+    "train_median_horizon_day_sortino",
+    "train_horizon_sortino_stdev",
+    "train_day_mcmc_p25",
+    "train_day_mcmc_prob_gt_0",
+    "train_regime_positive_share",
+    "train_regime_worst_day_sortino",
+    "train_regime_stability_score",
+    "train_rank_ic_mean",
+    "train_rank_ic_hit_rate",
+    "train_mean_one_way_turnover",
+    "primary_continuous_book_net_reward",
+    "primary_cumulative_net_return",
+    "primary_cumulative_realized_trade_pnl_cny",
+    "primary_ending_unrealized_pnl_cny",
+    "primary_total_fees_cny",
+    "primary_mean_one_way_turnover",
+    "primary_net_return_per_turnover",
+    "matched_continuous_book_net_reward_increment",
+    "matched_cumulative_net_return_increment"
+  ],
+  "allowed_train_visible_categorical_features": [
+    "route_id",
+    "event_state_family",
+    "field_family",
+    "primitive_family",
+    "horizon_bucket",
+    "turnover_bucket",
+    "portfolio_mode",
+    "economic_mechanism_id",
+    "portfolio_exposure_family_id",
+    "structural_family_id",
+    "signal_cluster_id",
+    "portfolio_behavior_family_id"
+  ],
+  "allowed_derived_train_features": {
+    "realized_pnl_share": "primary_cumulative_realized_trade_pnl_cny / (abs(primary_cumulative_realized_trade_pnl_cny) + abs(primary_ending_unrealized_pnl_cny))",
+    "train_signal_to_decoder_rank_displacement": "absolute percentile-rank difference between train_rank_ic_mean and TOPK_10_EQUAL primary_cumulative_net_return within the frozen 32-pair cohort",
+    "decoder_absolute_and_matched_margin_floor": "minimum of primary_cumulative_net_return and matched_cumulative_net_return_increment",
+    "decoder_reward_absolute_and_matched_margin_floor": "minimum of primary_continuous_book_net_reward and matched_continuous_book_net_reward_increment"
+  },
+  "unavailable_or_forbidden_predictors": {
+    "signal_entropy": "UNAVAILABLE_IN_BOUND_SOURCE_ARTIFACTS",
+    "candidate_level_decoder_retention": "UNAVAILABLE_AS_AN_AUTHORIZED_CANDIDATE_METRIC",
+    "oos_metrics_as_predictors": "FORBIDDEN",
+    "group_label_as_predictor": "FORBIDDEN",
+    "holdout_or_2026_features": "FORBIDDEN",
+    "future_candidate_outcomes": "FORBIDDEN"
+  },
+  "label_columns": [
+    "all_four_economic_gates_positive",
+    "matched_continuous_book_net_reward_increment",
+    "matched_cumulative_net_return_increment",
+    "primary_continuous_book_net_reward",
+    "primary_cumulative_net_return"
+  ],
+  "diagnostic_plan": {
+    "numeric_group_summary": [
+      "count",
+      "median",
+      "p25",
+      "p75",
+      "bootstrap_median_ci95"
+    ],
+    "labeled_a_vs_b_tests": [
+      "rank_biserial_effect_size",
+      "two_sided_mann_whitney_u",
+      "benjamini_hochberg_fdr"
+    ],
+    "fixed_bootstrap_seed": 20260805,
+    "bootstrap_iterations": 10000,
+    "fixed_precision_k": [
+      5,
+      10,
+      15,
+      20
+    ],
+    "fixed_labeled_quartiles": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "random_precision_baseline": "HYPERGEOMETRIC_10_SURVIVORS_IN_22_LABELED_PAIRS",
+    "selection_ceiling_scope": "22_LABELED_PAIRS_ONLY",
+    "unlabeled_analysis": [
+      "train_feature_distribution_shift",
+      "train_screen_sensitivity",
+      "missing_label_coverage_bounds"
+    ],
+    "model_fitting": "FORBIDDEN",
+    "threshold_optimization": "FORBIDDEN",
+    "feature_direction_flipping_after_label_read": "FORBIDDEN"
+  },
+  "predeclared_feature_directions": {
+    "higher_is_better": [
+      "search_score",
+      "primary_composite_reward",
+      "matched_train_increment",
+      "matched_gross_increment",
+      "matched_net_increment",
+      "primary_support_rate",
+      "train_day_sortino",
+      "train_worst_horizon_day_sortino",
+      "train_median_horizon_day_sortino",
+      "train_day_mcmc_p25",
+      "train_day_mcmc_prob_gt_0",
+      "train_regime_positive_share",
+      "train_regime_worst_day_sortino",
+      "train_regime_stability_score",
+      "train_rank_ic_mean",
+      "train_rank_ic_hit_rate",
+      "primary_continuous_book_net_reward",
+      "primary_cumulative_net_return",
+      "primary_net_return_per_turnover",
+      "matched_continuous_book_net_reward_increment",
+      "matched_cumulative_net_return_increment",
+      "realized_pnl_share",
+      "decoder_absolute_and_matched_margin_floor",
+      "decoder_reward_absolute_and_matched_margin_floor"
+    ],
+    "lower_is_better": [
+      "matched_trading_cost_difference",
+      "primary_mean_turnover",
+      "train_horizon_sortino_stdev",
+      "train_mean_one_way_turnover",
+      "primary_total_fees_cny",
+      "primary_mean_one_way_turnover",
+      "train_signal_to_decoder_rank_displacement"
+    ]
+  },
+  "predeclared_ranking_heuristics": [
+    {
+      "ranker_id": "CURRENT_SEARCH_SCORE_BASELINE",
+      "definition": "descending percentile rank of search_score"
+    },
+    {
+      "ranker_id": "TRAIN_DECODER_ECONOMIC_FLOOR",
+      "definition": "descending percentile rank of decoder_absolute_and_matched_margin_floor"
+    },
+    {
+      "ranker_id": "THREE_AXIS_EQUAL_RANK",
+      "definition": "equal-weight mean of descending percentile ranks for train_rank_ic_hit_rate, decoder_absolute_and_matched_margin_floor, and primary_net_return_per_turnover"
+    },
+    {
+      "ranker_id": "CONSERVATIVE_THREE_AXIS_FLOOR",
+      "definition": "minimum of descending percentile ranks for train_regime_stability_score, decoder_absolute_and_matched_margin_floor, and primary_net_return_per_turnover"
+    }
+  ],
+  "experimental_ranker_freeze_gate": {
+    "selection_universe": "22_LABELED_PAIRS_ONLY_FOR_DIAGNOSTIC_COMPARISON",
+    "candidate_rankers_fixed_before_execution": true,
+    "minimum_top10_survivor_count": 6,
+    "must_strictly_beat_current_search_score_top10": true,
+    "leave_one_out_top10_survivor_count_minimum": 5,
+    "maximum_ranker_count_frozen": 1,
+    "if_no_gate_passes": "HOLD_RESEARCH_NO_RANKER_FREEZE",
+    "authority_class_if_frozen": "VALIDATION_INFORMED_EXPERIMENTAL_RANKER",
+    "promotion_authorized": false
+  },
+  "required_outputs": [
+    "input_binding.json",
+    "candidate_diagnosis.parquet",
+    "numeric_feature_diagnostics.parquet",
+    "feature_precision_at_k.parquet",
+    "feature_quartile_enrichment.parquet",
+    "categorical_enrichment.parquet",
+    "selection_ceiling.json",
+    "ranker_comparison.parquet",
+    "unlabeled_shift_diagnostics.parquet",
+    "CN_ALPHA_SELECTION_DIAGNOSTIC_V1.md",
+    "SELECTION_DIAGNOSTIC_COMPLETE.json"
+  ]
+}
