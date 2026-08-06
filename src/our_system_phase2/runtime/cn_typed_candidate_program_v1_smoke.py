@@ -365,7 +365,7 @@ def verify_program_v1_smoke(
     return audit
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
     build = subparsers.add_parser("build")
@@ -378,7 +378,7 @@ def main() -> int:
     verify.add_argument("--registry", type=Path, required=True)
     verify.add_argument("--root-contract", type=Path, required=True)
     verify.add_argument("--audit-output", type=Path, required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.command == "build":
         payload = build_program_v1_smoke(
             output_root=args.output_root,

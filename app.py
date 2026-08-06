@@ -60,6 +60,7 @@ ROUTES: dict[str, str] = {
     "cn-route-supply-closure": "scripts.run_cn_route_supply_closure",
     "cn-candidate-representation-v0-preflight": "our_system_phase2.runtime.cn_candidate_representation_v0_preflight",
     "cn-fixed-stratified-production-v0": "our_system_phase2.runtime.cn_fixed_stratified_production_v0",
+    "cn-typed-candidate-program-v1-smoke": "our_system_phase2.runtime.cn_typed_candidate_program_v1_smoke",
     "cn-core-pack-authority-smoke": "scripts.run_cn_core_pack_authority_smoke",
     "build-development-only-true1min-release": "our_system_phase2.runtime.build_development_only_true1min_release",
 }

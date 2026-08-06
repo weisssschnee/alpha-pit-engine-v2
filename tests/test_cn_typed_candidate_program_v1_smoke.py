@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from app import ROUTES
 from our_system_phase2.runtime.cn_typed_candidate_program_v1_smoke import (
     AUDIT_STATUS,
     SMOKE_STATUS,
@@ -17,6 +18,12 @@ REGISTRY = (
     / "unified_capability_registry.json"
 )
 ROOT_CONTRACT = REPO / "runtime/run_plans/cn_core_pack_development_discovery_v1.json"
+
+
+def test_smoke_is_registered_on_the_repository_entrypoint() -> None:
+    assert ROUTES["cn-typed-candidate-program-v1-smoke"] == (
+        "our_system_phase2.runtime.cn_typed_candidate_program_v1_smoke"
+    )
 
 
 def test_zero_financial_smoke_and_independent_verifier_close_all_artifacts(tmp_path) -> None:
