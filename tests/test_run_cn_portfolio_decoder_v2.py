@@ -61,6 +61,49 @@ def test_uninitialized_process_worker_fails_closed() -> None:
         subject._evaluate_candidate_in_process({"candidate_id": "candidate-1"})
 
 
+def test_execution_price_sidecar_attaches_only_on_exact_coordinate_and_close_parity(
+    tmp_path,
+) -> None:
+    feature = pd.DataFrame(
+        {
+            "trade_time": pd.to_datetime(
+                ["2025-01-02 15:00", "2025-01-03 15:00"]
+            ),
+            "date": pd.to_datetime(["2025-01-02", "2025-01-03"]),
+            "code": ["000001", "000001"],
+            "close": [10.5, 11.5],
+        }
+    )
+    price_path = tmp_path / "price.parquet"
+    pd.DataFrame(
+        {
+            "trade_time": pd.to_datetime(
+                ["2025-01-02 15:00", "2025-01-03 15:00"]
+            ),
+            "code": ["000001", "000001"],
+            "open": [10.0, 11.0],
+            "close": [10.5, 11.5],
+        }
+    ).to_parquet(price_path, index=False)
+    manifest = {
+        "source_shard_count": 1,
+        "shards": [{"output_path": str(price_path)}],
+    }
+
+    observed = subject._attach_execution_prices(feature, manifest)
+
+    assert observed["open"].tolist() == [10.0, 11.0]
+
+    drifted = pd.read_parquet(price_path)
+    drifted.loc[1, "close"] = 11.4
+    drifted.to_parquet(price_path, index=False)
+    with pytest.raises(RuntimeError, match="close parity drift"):
+        subject._attach_execution_prices(
+            feature.drop(columns=["open"]),
+            manifest,
+        )
+
+
 def test_baseline_parity_accepts_exact_64_member_ledger() -> None:
     metrics = []
     baseline = []

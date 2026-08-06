@@ -10,6 +10,7 @@ from scripts.run_cn_joint_program_phase_b_v0 import (
     _parity_differences,
     _self_hashed,
     _template_summary,
+    _validate_phase_b_execution_price_sidecar,
     _validate_phase_b_materialized_sidecar,
     _validate_frozen_execution_contract,
     _verify_checkpoint,
@@ -186,5 +187,56 @@ def test_phase_b_accepts_only_exact_legacy_development_sidecar(
         ).hexdigest(),
         expected_manifest_payload_sha256=manifest["manifest_hash"],
     )
+    assert observed == manifest
+    assert observed_path == manifest_path
+
+
+def test_phase_b_accepts_exact_development_execution_price_sidecar(
+    tmp_path: Path,
+) -> None:
+    shards = []
+    for ordinal in range(16):
+        path = tmp_path / f"price_{ordinal:02d}.parquet"
+        path.write_bytes(f"price-{ordinal}".encode("utf-8"))
+        shards.append(
+            {
+                "output_path": str(path),
+                "output_bytes": path.stat().st_size,
+                "output_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "rows": 1,
+            }
+        )
+    manifest = {
+        "schema_version": "cn_core_pack_report_only_session_sidecar_v2",
+        "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
+        "evaluation_role": "train",
+        "data_role": "development_train_only",
+        "split_manifest_hash": "s" * 64,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "feedback_write": "FORBIDDEN",
+        "scheduler_write": "FORBIDDEN",
+        "archive_write": "FORBIDDEN",
+        "promotion": "FORBIDDEN",
+        "source_shard_count": 16,
+        "sidecar_rows": 16,
+        "source_rows": 16,
+        "fields": ["trade_time", "code", "open", "close"],
+        "shards": shards,
+    }
+    manifest_path = _write_json(
+        tmp_path / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json",
+        manifest,
+    )
+
+    observed, observed_path = _validate_phase_b_execution_price_sidecar(
+        tmp_path,
+        split_manifest_sha256="s" * 64,
+        expected_manifest_file_sha256=hashlib.sha256(
+            manifest_path.read_bytes()
+        ).hexdigest(),
+    )
+
     assert observed == manifest
     assert observed_path == manifest_path

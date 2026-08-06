@@ -71,6 +71,9 @@ ACCEPTED_FIELD_MANIFEST_FILE_SHA256 = (
 ACCEPTED_FIELD_MANIFEST_PAYLOAD_SHA256 = (
     "de720e48b4d23a1dc2e110b4f1cf5c3bc7e9d19a97ee8f7027700649c8410b98"
 )
+ACCEPTED_PRICE_MANIFEST_FILE_SHA256 = (
+    "04cb634b6137449fe822ab2337c5c596002bc347f54ad030db835c2698093cc3"
+)
 DECODER = ASharePortfolioDecoderPolicy(
     decoder_id="TOPK_10_EQUAL",
     selection="TOP_K",
@@ -229,7 +232,46 @@ def _validate_phase_b_materialized_sidecar(
     return manifest, manifest_path
 
 
-def _load_context(contract_path: Path, train_field_root: Path) -> dict[str, Any]:
+def _validate_phase_b_execution_price_sidecar(
+    train_price_root: Path,
+    *,
+    split_manifest_sha256: str,
+    expected_manifest_file_sha256: str = ACCEPTED_PRICE_MANIFEST_FILE_SHA256,
+) -> tuple[dict[str, Any], Path]:
+    root = Path(train_price_root).resolve()
+    manifest, manifest_path = decoder_v2.base._validate_sidecar(
+        root,
+        evaluation_role="train",
+        split_hash=split_manifest_sha256,
+    )
+    if _sha256(manifest_path) != expected_manifest_file_sha256:
+        raise RuntimeError("accepted Phase B price manifest file hash drift")
+    shards = list(manifest.get("shards") or ())
+    if len(shards) != 16:
+        raise RuntimeError("accepted Phase B price shard cardinality drift")
+    observed_rows = 0
+    for shard in shards:
+        path = Path(str(shard["output_path"])).resolve()
+        if not path.is_relative_to(root):
+            raise RuntimeError("accepted Phase B price shard escapes its root")
+        observed_rows += int(shard["rows"])
+        if path.stat().st_size != int(shard["output_bytes"]):
+            raise RuntimeError(f"accepted Phase B price shard size drift: {path}")
+    if (
+        observed_rows != int(manifest.get("sidecar_rows") or -1)
+        or observed_rows != int(manifest.get("source_rows") or -1)
+    ):
+        raise RuntimeError("accepted Phase B price row-count drift")
+    return manifest, manifest_path
+
+
+def _load_context(
+    contract_path: Path,
+    train_field_root: Path,
+    train_price_root: Path,
+    price_manifest: Mapping[str, Any],
+    price_manifest_path: Path,
+) -> dict[str, Any]:
     contract = _read_json(contract_path)
     decoder_v2.base._verify_payload_hash(
         contract,
@@ -247,6 +289,9 @@ def _load_context(contract_path: Path, train_field_root: Path) -> dict[str, Any]
         qualification_mode=True,
         validated_field_manifest=field_manifest,
         validated_field_manifest_path=field_manifest_path,
+        execution_price_root=train_price_root,
+        validated_execution_price_manifest=price_manifest,
+        validated_execution_price_manifest_path=price_manifest_path,
     )
     for key in (
         "prepared_index",
@@ -264,12 +309,21 @@ def _load_context(contract_path: Path, train_field_root: Path) -> dict[str, Any]
 def _initialize_worker(
     contract_path: str,
     train_field_root: str,
+    train_price_root: str,
+    price_manifest: Mapping[str, Any],
+    price_manifest_path: str,
     registry_path: str,
     input_hash: str,
     windows: Sequence[Mapping[str, Any]],
 ) -> None:
     global _WORKER_CONTEXT, _WORKER_REGISTRY, _WORKER_INPUT_HASH, _WORKER_WINDOWS
-    _WORKER_CONTEXT = _load_context(Path(contract_path), Path(train_field_root))
+    _WORKER_CONTEXT = _load_context(
+        Path(contract_path),
+        Path(train_field_root),
+        Path(train_price_root),
+        price_manifest,
+        Path(price_manifest_path),
+    )
     _WORKER_REGISTRY = UnifiedCapabilityRegistry.read(Path(registry_path))
     _WORKER_INPUT_HASH = str(input_hash)
     _WORKER_WINDOWS = tuple(dict(row) for row in windows)
@@ -827,6 +881,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("Phase B frozen schedule ordinal drift")
     contract_path = args.execution_contract.resolve()
     train_field_root = args.train_field_root.resolve()
+    train_price_root = args.train_price_root.resolve()
     registry_path = args.registry.resolve()
     capacity_path = args.node_resource_capacity.resolve()
     for path in (contract_path, registry_path, capacity_path):
@@ -834,6 +889,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             raise FileNotFoundError(path)
     if not train_field_root.is_dir():
         raise FileNotFoundError(train_field_root)
+    if not train_price_root.is_dir():
+        raise FileNotFoundError(train_price_root)
     execution_contract = _read_json(contract_path)
     decoder_v2.base._verify_payload_hash(
         execution_contract,
@@ -845,6 +902,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         split_manifest_sha256=str(execution_contract["split_manifest_sha256"]),
         verify_shards=True,
     )
+    price_manifest, price_manifest_path = (
+        _validate_phase_b_execution_price_sidecar(
+            train_price_root,
+            split_manifest_sha256=str(
+                execution_contract["split_manifest_sha256"]
+            ),
+        )
+    )
+    if int(field_manifest["sidecar_rows"]) != int(
+        price_manifest["sidecar_rows"]
+    ):
+        raise RuntimeError("Phase B feature/price row-count drift")
     capacity = _read_json(capacity_path)
     capacity_body = dict(capacity)
     capacity_expected = str(capacity_body.pop("capacity_manifest_sha256", ""))
@@ -883,6 +952,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     ):
         raise RuntimeError("Phase B train field root binding drift")
+    normalized_price_root = str(train_price_root).replace("/", "\\").lower()
+    if any(
+        token in normalized_price_root
+        for token in (
+            "validation",
+            "holdout",
+            "historical_challenge_2023",
+            "forward_b",
+            "forward_2026",
+        )
+    ):
+        raise RuntimeError("Phase B train price root is not development-only")
     windows = tuple(dict(row) for row in run_contract["development_subwindows"])
     input_binding = _self_hashed(
         {
@@ -903,6 +984,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "train_field_manifest_payload_sha256": str(
                 field_manifest["manifest_hash"]
             ),
+            "train_price_root": str(train_price_root),
+            "train_price_manifest_sha256": _sha256(price_manifest_path),
+            "train_price_manifest_payload_sha256": stable_hash(price_manifest),
             "registry_sha256": _sha256(registry_path),
             "node_resource_capacity_sha256": _sha256(capacity_path),
             "decoder_policy": {
@@ -997,6 +1081,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             initargs=(
                 str(contract_path),
                 str(train_field_root),
+                str(train_price_root),
+                price_manifest,
+                str(price_manifest_path),
                 str(registry_path),
                 input_hash,
                 windows,
@@ -1227,6 +1314,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--phase-b-freeze-root", required=True, type=Path)
     parser.add_argument("--execution-contract", required=True, type=Path)
     parser.add_argument("--train-field-root", required=True, type=Path)
+    parser.add_argument("--train-price-root", required=True, type=Path)
     parser.add_argument("--registry", required=True, type=Path)
     parser.add_argument("--node-resource-capacity", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)

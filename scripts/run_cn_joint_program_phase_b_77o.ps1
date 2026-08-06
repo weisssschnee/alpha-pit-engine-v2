@@ -6,6 +6,7 @@ param(
     [Parameter(Mandatory = $true)][string]$PhaseBFreezeRoot,
     [Parameter(Mandatory = $true)][string]$ExecutionContract,
     [Parameter(Mandatory = $true)][string]$TrainFieldRoot,
+    [Parameter(Mandatory = $true)][string]$TrainPriceRoot,
     [Parameter(Mandatory = $true)][string]$OutputRoot,
     [ValidateRange(1, 32)][int]$ExecutorWorkerCount = 12,
     [string]$Registry = (
@@ -55,6 +56,7 @@ $resolvedDeployment = (Resolve-Path -LiteralPath $DeploymentManifest).Path
 $resolvedFreeze = (Resolve-Path -LiteralPath $PhaseBFreezeRoot).Path
 $resolvedContract = (Resolve-Path -LiteralPath $ExecutionContract).Path
 $resolvedFields = (Resolve-Path -LiteralPath $TrainFieldRoot).Path
+$resolvedPrices = (Resolve-Path -LiteralPath $TrainPriceRoot).Path
 $resolvedRoot = [IO.Path]::GetFullPath($OutputRoot)
 $resolvedRegistry = if ([IO.Path]::IsPathRooted($Registry)) {
     [IO.Path]::GetFullPath($Registry)
@@ -88,6 +90,7 @@ foreach ($path in @(
     $resolvedFreeze,
     $resolvedContract,
     $resolvedFields,
+    $resolvedPrices,
     $resolvedRegistry,
     $resolvedCapacity
 )) {
@@ -135,7 +138,10 @@ $freezeClosure = Join-Path $resolvedFreeze (
 $fieldManifest = Join-Path $resolvedFields (
     'CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json'
 )
-foreach ($path in @($freezeClosure, $fieldManifest)) {
+$priceManifest = Join-Path $resolvedPrices (
+    'CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json'
+)
+foreach ($path in @($freezeClosure, $fieldManifest, $priceManifest)) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "immutable Phase B input missing: $path"
     }
@@ -156,6 +162,7 @@ $stderrPath = Join-Path $resolvedRoot 'joint_program_phase_b.stderr.log'
     execution_contract = $resolvedContract
     execution_contract_sha256 = Get-SharedReadSha256 $resolvedContract
     train_field_root = $resolvedFields
+    train_price_root = $resolvedPrices
     output_root = $resolvedRoot
     node_resource_profile = 'VALIDATION_EXCLUSIVE_32'
     entitlement_threads = 32
@@ -215,6 +222,7 @@ try {
         --phase-b-freeze-root $resolvedFreeze `
         --execution-contract $resolvedContract `
         --train-field-root $resolvedFields `
+        --train-price-root $resolvedPrices `
         --registry $resolvedRegistry `
         --node-resource-capacity $resolvedCapacity `
         --output-root $resolvedRoot `

@@ -75,6 +75,56 @@ _PROCESS_WORKER_CANDIDATE_ROOT: Path | None = None
 _PROCESS_WORKER_INPUT_DATA_SHA256: str | None = None
 
 
+def _attach_execution_prices(
+    field_frame: pd.DataFrame,
+    price_manifest: Mapping[str, Any],
+) -> pd.DataFrame:
+    price_frames = [
+        pd.read_parquet(
+            Path(str(row["output_path"])).resolve(),
+            columns=["trade_time", "code", "open", "close"],
+        )
+        for row in price_manifest.get("shards") or ()
+    ]
+    if not price_frames or len(price_frames) != int(
+        price_manifest.get("source_shard_count") or -1
+    ):
+        raise RuntimeError("execution price shard cardinality drift")
+    price_frame = pd.concat(price_frames, ignore_index=True, copy=False)
+    price_frame["code"] = price_frame["code"].map(base._normalize_code)
+    price_frame["trade_time"] = pd.to_datetime(
+        price_frame["trade_time"], errors="raise"
+    )
+    price_frame["date"] = price_frame["trade_time"].dt.normalize()
+    price_frame = price_frame.sort_values(
+        ["code", "trade_time"], kind="mergesort"
+    ).reset_index(drop=True)
+    if price_frame.duplicated(["date", "code"]).any():
+        raise RuntimeError("execution price sidecar has duplicate coordinates")
+    field_index = pd.MultiIndex.from_frame(field_frame[["date", "code"]])
+    price_index = pd.MultiIndex.from_frame(price_frame[["date", "code"]])
+    if not field_index.equals(price_index):
+        raise RuntimeError("execution price/feature coordinate drift")
+    feature_close = pd.to_numeric(
+        field_frame["close"], errors="coerce"
+    ).to_numpy()
+    price_close = pd.to_numeric(
+        price_frame["close"], errors="coerce"
+    ).to_numpy()
+    if not np.allclose(
+        feature_close,
+        price_close,
+        rtol=0.0,
+        atol=0.0,
+        equal_nan=True,
+    ):
+        raise RuntimeError("execution price/feature close parity drift")
+    field_frame["open"] = pd.to_numeric(
+        price_frame["open"], errors="coerce"
+    ).to_numpy()
+    return field_frame
+
+
 def _finite(value: Any) -> float | None:
     try:
         rendered = float(value)
@@ -135,6 +185,9 @@ def _load_evaluation_context(
     qualification_mode: bool,
     validated_field_manifest: Mapping[str, Any] | None = None,
     validated_field_manifest_path: Path | None = None,
+    execution_price_root: Path | None = None,
+    validated_execution_price_manifest: Mapping[str, Any] | None = None,
+    validated_execution_price_manifest_path: Path | None = None,
 ) -> dict[str, Any]:
     contract = v1._read_json(contract_path)
     base._verify_payload_hash(
@@ -162,6 +215,25 @@ def _load_evaluation_context(
         if field_manifest_path != expected_manifest_path:
             raise RuntimeError("validated field manifest path/root drift")
     field_frame = base._load_field_frame(train_field_root, field_manifest)
+    price_override_values = (
+        execution_price_root,
+        validated_execution_price_manifest,
+        validated_execution_price_manifest_path,
+    )
+    if any(value is not None for value in price_override_values):
+        if not all(value is not None for value in price_override_values):
+            raise RuntimeError("execution price sidecar override is incomplete")
+        price_root = Path(execution_price_root).resolve()
+        price_manifest = dict(validated_execution_price_manifest)
+        price_manifest_path = Path(
+            validated_execution_price_manifest_path
+        ).resolve()
+        expected_price_manifest_path = (
+            price_root / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
+        )
+        if price_manifest_path != expected_price_manifest_path:
+            raise RuntimeError("execution price manifest path/root drift")
+        field_frame = _attach_execution_prices(field_frame, price_manifest)
     if not field_frame["trade_time"].dt.strftime("%H:%M:%S").eq(
         "15:00:00"
     ).all():
