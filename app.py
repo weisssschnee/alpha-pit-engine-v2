@@ -58,6 +58,7 @@ ROUTES: dict[str, str] = {
     "cn-search-policy-qualification": "our_system_phase2.runtime.cn_search_policy_qualification",
     "cn-large-tpe-search-campaign": "our_system_phase2.runtime.cn_large_tpe_search_campaign",
     "cn-route-supply-closure": "scripts.run_cn_route_supply_closure",
+    "cn-candidate-representation-v0-preflight": "our_system_phase2.runtime.cn_candidate_representation_v0_preflight",
     "cn-core-pack-authority-smoke": "scripts.run_cn_core_pack_authority_smoke",
     "build-development-only-true1min-release": "our_system_phase2.runtime.build_development_only_true1min_release",
 }

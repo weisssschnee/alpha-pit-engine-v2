@@ -28,7 +28,6 @@ class TemplateContractV0:
     route_id: str
     template_version: str
     sampling_kind: str
-    new_generation_allowed: bool
 
     def __post_init__(self) -> None:
         if self.template_id != self.route_id:
@@ -49,7 +48,6 @@ TEMPLATE_CONTRACTS_V0: dict[str, TemplateContractV0] = {
             if route_id == BROAD_EVENT_TEMPLATE_ID
             else "DETERMINISTIC_UNIFORM_ATTEMPT_STREAM"
         ),
-        new_generation_allowed=route_id != BROAD_EVENT_TEMPLATE_ID,
     )
     for route_id in ROUTE_IDS
 }

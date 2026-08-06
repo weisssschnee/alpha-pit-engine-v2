@@ -16,8 +16,10 @@ from our_system_phase2.services.candidate_representation_v0 import (
 from our_system_phase2.services.fixed_stratified_candidate_sampling import (
     build_fixed_stratified_plan_v0,
     generate_fixed_stratified_epoch_v0,
+    verify_fixed_stratified_plan_v0,
 )
 from our_system_phase2.services.unified_capability_registry import (
+    ROUTE_IDS,
     UnifiedCapabilityRegistry,
     stable_hash,
 )
@@ -77,6 +79,10 @@ def _line_count(path: Path) -> int:
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     with path.open("r", encoding="utf-8") as handle:
         return [json.loads(line) for line in handle if line.strip()]
+
+
+def _read_json(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _artifact(root: Path, path: Path, *, row_count: int | None) -> dict[str, Any]:
@@ -258,6 +264,128 @@ def verify_candidate_representation_v0_preflight(
     }
     if observed != expected:
         raise RuntimeError("V0 preflight compatible row/spec binding mismatch")
+    plan = _read_json(root / "fixed_stratified_plan_v0.json")
+    try:
+        verify_fixed_stratified_plan_v0(plan)
+    except ValueError as exc:
+        raise RuntimeError(f"V0 preflight plan invalid: {exc}") from exc
+    if str(plan.get("plan_hash") or "") != str(
+        closure.get("plan_hash") or ""
+    ):
+        raise RuntimeError("V0 preflight plan/closure binding mismatch")
+    if str(plan.get("registry_hash") or "") != str(
+        closure.get("registry_payload_hash") or ""
+    ):
+        raise RuntimeError("V0 preflight registry binding mismatch")
+    if str(plan.get("root_scope_hash") or "") != str(
+        closure.get("root_scope_hash") or ""
+    ):
+        raise RuntimeError("V0 preflight root-scope binding mismatch")
+    broad_hash = str(
+        dict(plan.get("frozen_inventory_hashes") or {}).get(
+            BROAD_EVENT_TEMPLATE_ID
+        )
+        or ""
+    )
+    if broad_hash != str(
+        closure.get("broad_event_frozen_inventory_hash") or ""
+    ):
+        raise RuntimeError("V0 preflight Broad Event binding mismatch")
+
+    summary = _read_json(root / "summary_v0.json")
+    waterfall = _read_json(root / "template_waterfall_v0.json")
+    ledger = _read_jsonl(root / "generation_ledger_v0.jsonl")
+    if [str(row.get("template_id") or "") for row in waterfall] != list(
+        ROUTE_IDS
+    ):
+        raise RuntimeError("V0 preflight waterfall template order drift")
+    if any(
+        str(row.get("template_id") or "")
+        != str(row.get("route_id") or "")
+        for row in waterfall
+    ):
+        raise RuntimeError("V0 preflight waterfall template alias drift")
+    quotas = {
+        str(key): int(value)
+        for key, value in dict(plan["template_attempt_quotas"]).items()
+    }
+    waterfall_by_route = {
+        str(row["route_id"]): row for row in waterfall
+    }
+    if any(
+        int(waterfall_by_route[route_id].get("scheduled") or 0)
+        != quotas[route_id]
+        for route_id in ROUTE_IDS
+    ):
+        raise RuntimeError("V0 preflight waterfall quota drift")
+    if any(
+        int(row.get("legal_control_valid") or 0)
+        > min(
+            int(row.get("primary_legal") or 0),
+            int(row.get("control_valid") or 0),
+        )
+        for row in waterfall
+    ):
+        raise RuntimeError("V0 preflight joint-valid counter impossible")
+    ledger_counts = {
+        route_id: sum(
+            str(row.get("route_id") or "") == route_id for row in ledger
+        )
+        for route_id in ROUTE_IDS
+    }
+    if ledger_counts != quotas:
+        raise RuntimeError("V0 preflight generation-ledger quota drift")
+    if any(
+        str(row.get("template_id") or "")
+        != str(row.get("route_id") or "")
+        for row in ledger
+    ):
+        raise RuntimeError("V0 preflight ledger template alias drift")
+    if any(
+        bool(row.get(key))
+        for row in ledger
+        for key in (
+            "optimizer_feedback_eligible",
+            "budget_reallocation_eligible",
+            "shared_tpe_credit",
+            "optimizer_feedback_accessed",
+            "dynamic_budget_reallocation_allowed",
+            "underfill_spillover_allowed",
+        )
+    ):
+        raise RuntimeError("V0 preflight ledger enabled adaptation")
+    if any(
+        str(row.get("template_id") or "")
+        != str(row.get("route_id") or "")
+        or bool(row.get("optimizer_feedback_eligible"))
+        or bool(row.get("dynamic_budget_reallocation_eligible"))
+        for row in rows
+    ):
+        raise RuntimeError("V0 preflight compatible row authority drift")
+    summary_flags = (
+        "economic_evaluator_accessed",
+        "optimizer_feedback_accessed",
+        "shared_tpe_credit",
+        "dynamic_budget_reallocation_allowed",
+        "underfill_spillover_allowed",
+        "promotion_authorized",
+    )
+    if any(bool(summary.get(key)) for key in summary_flags):
+        raise RuntimeError("V0 preflight summary enabled forbidden authority")
+    if int(summary.get("scheduled_attempts") or -1) != sum(quotas.values()):
+        raise RuntimeError("V0 preflight summary scheduled count drift")
+    if int(summary.get("attempted") or -1) != len(ledger):
+        raise RuntimeError("V0 preflight summary attempted count drift")
+    if int(summary.get("legal_control_valid_attempts") or -1) != sum(
+        int(row.get("legal_control_valid") or 0) for row in waterfall
+    ):
+        raise RuntimeError("V0 preflight summary joint-valid count drift")
+    if int(summary.get("candidate_spec_count") or -1) != len(specs):
+        raise RuntimeError("V0 preflight summary spec count drift")
+    if int(summary.get("compatible_candidate_row_count") or -1) != len(
+        rows
+    ):
+        raise RuntimeError("V0 preflight summary row count drift")
     forbidden = (
         "shared_tpe_credit",
         "optimizer_feedback_accessed",
@@ -287,20 +415,25 @@ def _parse_seeds(value: str) -> tuple[int, ...]:
     return output
 
 
-def main() -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--registry", type=Path, required=True)
-    parser.add_argument("--root-contract", type=Path, required=True)
+    parser.add_argument("--registry", type=Path)
+    parser.add_argument("--root-contract", type=Path)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--quota-per-template", type=int, default=32)
     parser.add_argument("--seeds", type=_parse_seeds, default=(1729, 2718, 31415, 65537))
     parser.add_argument("--verify-only", action="store_true")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.verify_only:
         closure = verify_candidate_representation_v0_preflight(
             args.output_root
         )
     else:
+        if args.registry is None or args.root_contract is None:
+            parser.error(
+                "--registry and --root-contract are required unless "
+                "--verify-only is used"
+            )
         closure = build_candidate_representation_v0_preflight(
             registry_path=args.registry,
             root_contract_path=args.root_contract,

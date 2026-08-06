@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -16,6 +17,7 @@ from our_system_phase2.services.fixed_stratified_candidate_sampling import (
     build_fixed_stratified_plan_v0,
     generate_fixed_stratified_epoch_v0,
     iter_fixed_stratified_attempts_v0,
+    verify_fixed_stratified_plan_v0,
 )
 from our_system_phase2.services.compositional_grammar import (
     CompositionalGrammarV2,
@@ -23,6 +25,7 @@ from our_system_phase2.services.compositional_grammar import (
 from our_system_phase2.services.unified_capability_registry import (
     ROUTE_IDS,
     UnifiedCapabilityRegistry,
+    stable_hash,
 )
 
 
@@ -47,6 +50,15 @@ def _registry_and_allowlists() -> tuple[
     return registry, allowlists
 
 
+def _broad_inventory_hash(registry: UnifiedCapabilityRegistry) -> str:
+    return stable_hash(
+        [
+            row.to_dict()
+            for row in registry.fields_for_route(BROAD_EVENT_TEMPLATE_ID)
+        ]
+    )
+
+
 def test_v0_representation_covers_eight_registry_templates_without_new_authority() -> None:
     assert tuple(TEMPLATE_CONTRACTS_V0) == ROUTE_IDS
     assert len(TEMPLATE_CONTRACTS_V0) == 8
@@ -57,9 +69,9 @@ def test_v0_representation_covers_eight_registry_templates_without_new_authority
     assert TEMPLATE_CONTRACTS_V0[BROAD_EVENT_TEMPLATE_ID].sampling_kind == (
         "FROZEN_REPLAY_INVENTORY"
     )
-    assert (
-        TEMPLATE_CONTRACTS_V0[BROAD_EVENT_TEMPLATE_ID].new_generation_allowed
-        is False
+    assert not hasattr(
+        TEMPLATE_CONTRACTS_V0[BROAD_EVENT_TEMPLATE_ID],
+        "new_generation_allowed",
     )
 
 
@@ -139,6 +151,26 @@ def test_fixed_plan_is_balanced_self_hashed_and_has_no_credit_or_spillover() -> 
     assert len({row["attempt_id"] for row in attempts}) == len(attempts)
 
 
+def test_rehashed_plan_cannot_drift_seed_or_template_contract() -> None:
+    registry, _ = _registry_and_allowlists()
+    plan = build_fixed_stratified_plan_v0(
+        template_attempt_quotas={template_id: 2 for template_id in ROUTE_IDS},
+        seeds=(1729, 2718),
+        registry_hash=registry.registry_hash,
+        root_scope_hash="a" * 64,
+        frozen_inventory_hashes={
+            BROAD_EVENT_TEMPLATE_ID: _broad_inventory_hash(registry)
+        },
+    )
+    plan["seeds"] = [1729, 1729]
+    plan["plan_hash"] = stable_hash(
+        {key: value for key, value in plan.items() if key != "plan_hash"}
+    )
+
+    with pytest.raises(ValueError, match="seeds are not frozen uniquely"):
+        verify_fixed_stratified_plan_v0(plan)
+
+
 def test_broad_event_positive_quota_requires_frozen_inventory_binding() -> None:
     registry, _ = _registry_and_allowlists()
     quotas = {template_id: 1 for template_id in ROUTE_IDS}
@@ -159,7 +191,7 @@ def test_zero_financial_v0_epoch_materializes_all_eight_templates() -> None:
         registry_hash=registry.registry_hash,
         root_scope_hash="a" * 64,
         frozen_inventory_hashes={
-            BROAD_EVENT_TEMPLATE_ID: registry.registry_hash
+            BROAD_EVENT_TEMPLATE_ID: _broad_inventory_hash(registry)
         },
     )
     result = generate_fixed_stratified_epoch_v0(
@@ -195,3 +227,79 @@ def test_zero_financial_v0_epoch_materializes_all_eight_templates() -> None:
         for row in result.candidate_rows
     )
     assert all(row["control_valid"] for row in result.waterfall)
+    assert result.summary["legal_control_valid_attempts"] == sum(
+        row["legal_control_valid"] for row in result.waterfall
+    )
+    assert all(
+        row["production_evidence_state"]
+        == "NOT_EVALUATED_ZERO_FINANCIAL_PREFLIGHT"
+        and row["pair_evaluated"] is None
+        and row["development_productive"] is None
+        for row in result.waterfall
+    )
+
+
+def test_epoch_rejects_a_tampered_broad_event_inventory_binding() -> None:
+    registry, allowlists = _registry_and_allowlists()
+    plan = build_fixed_stratified_plan_v0(
+        template_attempt_quotas={template_id: 1 for template_id in ROUTE_IDS},
+        seeds=(1729,),
+        registry_hash=registry.registry_hash,
+        root_scope_hash="a" * 64,
+        frozen_inventory_hashes={BROAD_EVENT_TEMPLATE_ID: "b" * 64},
+    )
+
+    with pytest.raises(ValueError, match="inventory binding mismatch"):
+        generate_fixed_stratified_epoch_v0(
+            registry,
+            plan=plan,
+            route_root_allowlist=allowlists,
+        )
+
+
+def test_joint_legal_control_counter_is_the_attempt_intersection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    registry, allowlists = _registry_and_allowlists()
+
+    class CrossFailureGrammar:
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            pass
+
+        def propose(
+            self, route_id: str, *, attempt_index: int, seed: int
+        ) -> SimpleNamespace:
+            del attempt_index, seed
+            primary_legal = ROUTE_IDS.index(route_id) < 4
+            return SimpleNamespace(
+                primary={
+                    "candidate_id": f"primary-{route_id}",
+                    "pair_id": f"pair-{route_id}",
+                    "legal": primary_legal,
+                },
+                control={"legal": not primary_legal},
+            )
+
+    monkeypatch.setattr(
+        "our_system_phase2.services.fixed_stratified_candidate_sampling."
+        "CompositionalGrammarV2",
+        CrossFailureGrammar,
+    )
+    plan = build_fixed_stratified_plan_v0(
+        template_attempt_quotas={template_id: 1 for template_id in ROUTE_IDS},
+        seeds=(1729,),
+        registry_hash=registry.registry_hash,
+        root_scope_hash="a" * 64,
+        frozen_inventory_hashes={
+            BROAD_EVENT_TEMPLATE_ID: _broad_inventory_hash(registry)
+        },
+    )
+    result = generate_fixed_stratified_epoch_v0(
+        registry,
+        plan=plan,
+        route_root_allowlist=allowlists,
+    )
+
+    assert sum(row["primary_legal"] for row in result.waterfall) == 4
+    assert sum(row["control_valid"] for row in result.waterfall) == 4
+    assert result.summary["legal_control_valid_attempts"] == 0

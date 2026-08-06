@@ -50,6 +50,29 @@ def _plan_payload(plan: Mapping[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in plan.items() if key != "plan_hash"}
 
 
+def _template_contract_records() -> dict[str, dict[str, str]]:
+    return {
+        template_id: {
+            "template_id": contract.template_id,
+            "route_id": contract.route_id,
+            "template_version": contract.template_version,
+            "sampling_kind": contract.sampling_kind,
+        }
+        for template_id, contract in TEMPLATE_CONTRACTS_V0.items()
+    }
+
+
+def _broad_event_inventory_hash(
+    registry: UnifiedCapabilityRegistry,
+) -> str:
+    return stable_hash(
+        [
+            row.to_dict()
+            for row in registry.fields_for_route(BROAD_EVENT_TEMPLATE_ID)
+        ]
+    )
+
+
 def build_fixed_stratified_plan_v0(
     *,
     template_attempt_quotas: Mapping[str, int],
@@ -105,16 +128,7 @@ def build_fixed_stratified_plan_v0(
             root_scope_hash, field="root_scope_hash"
         ),
         "frozen_inventory_hashes": inventories,
-        "template_contracts": {
-            template_id: {
-                "template_id": contract.template_id,
-                "route_id": contract.route_id,
-                "template_version": contract.template_version,
-                "sampling_kind": contract.sampling_kind,
-                "new_generation_allowed": contract.new_generation_allowed,
-            }
-            for template_id, contract in TEMPLATE_CONTRACTS_V0.items()
-        },
+        "template_contracts": _template_contract_records(),
         "shared_tpe_study": False,
         "shared_tpe_credit": False,
         "optimizer_feedback_accessed": False,
@@ -127,7 +141,7 @@ def build_fixed_stratified_plan_v0(
     return plan
 
 
-def _verify_plan(plan: Mapping[str, Any]) -> None:
+def verify_fixed_stratified_plan_v0(plan: Mapping[str, Any]) -> None:
     if str(plan.get("schema_version") or "") != FIXED_STRATIFIED_PLAN_VERSION:
         raise ValueError("fixed stratified plan version mismatch")
     if str(plan.get("policy_id") or "") != FIXED_STRATIFIED_POLICY_ID:
@@ -136,6 +150,35 @@ def _verify_plan(plan: Mapping[str, Any]) -> None:
         raise ValueError("fixed stratified plan hash mismatch")
     if set(dict(plan.get("template_attempt_quotas") or {})) != set(ROUTE_IDS):
         raise ValueError("fixed stratified plan template coverage drift")
+    quotas = {
+        str(key): int(value)
+        for key, value in dict(plan["template_attempt_quotas"]).items()
+    }
+    if any(value < 0 for value in quotas.values()):
+        raise ValueError("fixed stratified plan contains a negative quota")
+    seeds = tuple(int(value) for value in plan.get("seeds") or ())
+    if not seeds or tuple(sorted(set(seeds))) != seeds:
+        raise ValueError("fixed stratified plan seeds are not frozen uniquely")
+    if any(value % len(seeds) for value in quotas.values()):
+        raise ValueError("fixed stratified plan quota/seed balance drift")
+    if dict(plan.get("template_contracts") or {}) != _template_contract_records():
+        raise ValueError("fixed stratified plan template contract drift")
+    if str(plan.get("top_level_scheduling_key") or "") != "route_id":
+        raise ValueError("fixed stratified plan scheduling-key drift")
+    if str(plan.get("template_id_contract") or "") != (
+        "IDENTICAL_TO_ROUTE_ID_NO_SECOND_AUTHORITY"
+    ):
+        raise ValueError("fixed stratified plan template alias drift")
+    _require_sha256(str(plan.get("registry_hash") or ""), field="registry_hash")
+    _require_sha256(str(plan.get("root_scope_hash") or ""), field="root_scope_hash")
+    inventories = dict(plan.get("frozen_inventory_hashes") or {})
+    if set(inventories) - {BROAD_EVENT_TEMPLATE_ID}:
+        raise ValueError("fixed stratified plan has unknown frozen inventory")
+    if quotas[BROAD_EVENT_TEMPLATE_ID] > 0:
+        _require_sha256(
+            str(inventories.get(BROAD_EVENT_TEMPLATE_ID) or ""),
+            field="Broad Event frozen inventory",
+        )
     forbidden_true = (
         "shared_tpe_study",
         "shared_tpe_credit",
@@ -152,7 +195,7 @@ def _verify_plan(plan: Mapping[str, Any]) -> None:
 def iter_fixed_stratified_attempts_v0(
     plan: Mapping[str, Any],
 ) -> Iterator[dict[str, Any]]:
-    _verify_plan(plan)
+    verify_fixed_stratified_plan_v0(plan)
     seeds = tuple(int(value) for value in plan["seeds"])
     quotas = {
         str(key): int(value)
@@ -176,7 +219,6 @@ def iter_fixed_stratified_attempts_v0(
                     "route_id": template_id,
                     "template_version": contract.template_version,
                     "sampling_kind": contract.sampling_kind,
-                    "new_generation_allowed": contract.new_generation_allowed,
                     "seed": seed,
                     "route_attempt_index": route_attempt_index,
                     "sampler_id": FIXED_STRATIFIED_POLICY_ID,
@@ -194,9 +236,18 @@ def generate_fixed_stratified_epoch_v0(
 ) -> FixedStratifiedEpochResultV0:
     """Materialize a zero-financial eight-template production-supply epoch."""
 
-    _verify_plan(plan)
+    verify_fixed_stratified_plan_v0(plan)
     if str(plan.get("registry_hash") or "") != registry.registry_hash:
         raise ValueError("fixed stratified plan registry binding mismatch")
+    expected_broad_inventory_hash = _broad_event_inventory_hash(registry)
+    observed_broad_inventory_hash = str(
+        dict(plan.get("frozen_inventory_hashes") or {}).get(
+            BROAD_EVENT_TEMPLATE_ID
+        )
+        or ""
+    )
+    if observed_broad_inventory_hash != expected_broad_inventory_hash:
+        raise ValueError("Broad Event frozen inventory binding mismatch")
     grammar = CompositionalGrammarV2(
         registry,
         route_root_allowlist=route_root_allowlist,
@@ -246,6 +297,8 @@ def generate_fixed_stratified_epoch_v0(
             counter["primary_legal"] += 1
         if control_legal:
             counter["control_valid"] += 1
+        if primary_legal and control_legal:
+            counter["legal_control_valid"] += 1
         if not primary_legal or not control_legal:
             counter["legal_or_control_failed"] += 1
             ledger.append(
@@ -337,11 +390,11 @@ def generate_fixed_stratified_epoch_v0(
                 "route_id": template_id,
                 "template_version": contract.template_version,
                 "sampling_kind": contract.sampling_kind,
-                "new_generation_allowed": contract.new_generation_allowed,
                 "scheduled": scheduled,
                 "attempted": int(counter["attempted"]),
                 "primary_legal": int(counter["primary_legal"]),
                 "control_valid": int(counter["control_valid"]),
+                "legal_control_valid": int(counter["legal_control_valid"]),
                 "primary_exact_unique": unique,
                 "pair_unique": int(counter["pair_unique"]),
                 "candidate_specs": unique * 2,
@@ -351,10 +404,13 @@ def generate_fixed_stratified_epoch_v0(
                     counter["legal_or_control_failed"]
                 ),
                 "underfill": scheduled - unique,
-                "pair_evaluated": 0,
-                "development_productive": 0,
-                "standalone_positive": 0,
-                "matched_positive": 0,
+                "production_evidence_state": (
+                    "NOT_EVALUATED_ZERO_FINANCIAL_PREFLIGHT"
+                ),
+                "pair_evaluated": None,
+                "development_productive": None,
+                "standalone_positive": None,
+                "matched_positive": None,
                 "behavior_family_unique": None,
                 "candidate_per_wall_hour": None,
                 "productive_per_core_hour": None,
@@ -367,8 +423,7 @@ def generate_fixed_stratified_epoch_v0(
         "scheduled_attempts": sum(row["scheduled"] for row in waterfall),
         "attempted": sum(row["attempted"] for row in waterfall),
         "legal_control_valid_attempts": sum(
-            min(row["primary_legal"], row["control_valid"])
-            for row in waterfall
+            row["legal_control_valid"] for row in waterfall
         ),
         "primary_exact_unique": sum(
             row["primary_exact_unique"] for row in waterfall
