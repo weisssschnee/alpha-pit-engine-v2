@@ -13,6 +13,7 @@ from our_system_phase2.runtime.cn_fixed_stratified_production_v0 import (
     build_materialization_underfill_gate_v0,
     build_route_production_metrics_v0,
     require_fresh_output_root_v0,
+    require_receipt_identity_order_v0,
     require_zero_prohibited_reads_v0,
     screen_materialized_candidate_rows_v0,
     verify_fixed_stratified_production_v0,
@@ -191,6 +192,32 @@ def test_verifier_accepts_declared_zero_byte_artifact(
     )
     with pytest.raises(RuntimeError, match="artifact checks passed"):
         verify_fixed_stratified_production_v0(tmp_path)
+
+
+def test_receipt_order_preserves_candidates_and_canonicalizes_pairs() -> None:
+    candidates = [
+        {"candidate_id": "candidate-b"},
+        {"candidate_id": "candidate-b-control"},
+        {"candidate_id": "candidate-a"},
+        {"candidate_id": "candidate-a-control"},
+    ]
+    pairs = [{"pair_id": "pair-b"}, {"pair_id": "pair-a"}]
+    require_receipt_identity_order_v0(
+        route_id="MINUTE_STATIC",
+        expected_candidate_rows=candidates,
+        expected_pairs=pairs,
+        candidate_receipts=candidates,
+        pair_receipts=[{"pair_id": "pair-a"}, {"pair_id": "pair-b"}],
+    )
+
+    with pytest.raises(RuntimeError, match="pair receipt canonical order"):
+        require_receipt_identity_order_v0(
+            route_id="MINUTE_STATIC",
+            expected_candidate_rows=candidates,
+            expected_pairs=pairs,
+            candidate_receipts=candidates,
+            pair_receipts=[{"pair_id": "pair-b"}, {"pair_id": "pair-a"}],
+        )
 
 
 def test_production_boundary_rejects_any_nested_prohibited_read() -> None:

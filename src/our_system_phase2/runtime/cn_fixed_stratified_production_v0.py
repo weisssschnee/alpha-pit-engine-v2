@@ -288,6 +288,36 @@ def _declared_shard_rows(payload: Any, root: Path) -> dict[Path, dict[str, Any]]
     return rows
 
 
+def require_receipt_identity_order_v0(
+    *,
+    route_id: str,
+    expected_candidate_rows: Sequence[Mapping[str, Any]],
+    expected_pairs: Sequence[Mapping[str, Any]],
+    candidate_receipts: Sequence[Mapping[str, Any]],
+    pair_receipts: Sequence[Mapping[str, Any]],
+) -> None:
+    expected_candidate_ids = [
+        str(row["candidate_id"]) for row in expected_candidate_rows
+    ]
+    observed_candidate_ids = [
+        str(row.get("candidate_id") or "") for row in candidate_receipts
+    ]
+    if observed_candidate_ids != expected_candidate_ids:
+        raise RuntimeError(
+            f"fixed-stratified candidate receipt order drift: {route_id}"
+        )
+    expected_pair_receipt_ids = sorted(
+        str(row["pair_id"]) for row in expected_pairs
+    )
+    observed_pair_receipt_ids = [
+        str(row.get("pair_id") or "") for row in pair_receipts
+    ]
+    if observed_pair_receipt_ids != expected_pair_receipt_ids:
+        raise RuntimeError(
+            f"fixed-stratified pair receipt canonical order drift: {route_id}"
+        )
+
+
 def _manifest_inventory(
     *, path: Path, root: Path, expected_file_sha256: str | None = None
 ) -> tuple[dict[str, Any], dict[Path, dict[str, Any]]]:
@@ -1161,14 +1191,13 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
             )
         candidate_receipts = _read_jsonl(root / candidate_receipt_relative)
         pair_receipts = _read_jsonl(root / pair_receipt_relative)
-        if [str(row.get("candidate_id") or "") for row in candidate_receipts] != [
-            str(row["candidate_id"]) for row in expected_rows
-        ] or [str(row.get("pair_id") or "") for row in pair_receipts] != [
-            str(row["pair_id"]) for row in expected_pairs
-        ]:
-            raise RuntimeError(
-                f"fixed-stratified candidate receipt order drift: {route_id}"
-            )
+        require_receipt_identity_order_v0(
+            route_id=route_id,
+            expected_candidate_rows=expected_rows,
+            expected_pairs=expected_pairs,
+            candidate_receipts=candidate_receipts,
+            pair_receipts=pair_receipts,
+        )
         receipt_hash_by_id = {
             str(row["candidate_id"]): str(row.get("receipt_hash") or "")
             for row in candidate_receipts
