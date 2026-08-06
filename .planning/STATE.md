@@ -16,6 +16,46 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
+### Candidate Representation V0 fixed-stratified train production evidence accepted (2026-08-06)
+
+- The bounded train-only V0 canary kept all eight template budgets fixed at 32
+  attempts with no shared TPE credit, optimizer feedback, dynamic reallocation,
+  replacement or cross-template spillover. Execution used exact SHA
+  `f1b93620f21679329081e499d86b8a8c8b0da9d5`; the post-closure verifier fixes
+  are exact pushed SHA `64fb42788630fe79213e291245595a1909c98b14`.
+- The frozen 229-pair / 458-member cohort passed a prefinancial materialization
+  screen with 180 compatible pairs and 49 incompatible pairs. Compatible counts
+  in registry order were `32/32/32/24/28/32/0/0`; the 49 incompatible pairs were
+  seven Slow Temporal, 31 Intraday State Transition and 11 Broad Event pairs.
+  The two zero-materialized strata are structural capacity observations, not
+  measured economic failures, and no missing slot was reassigned.
+- Per-route evaluated/productive counts were `31/0`, `18/2`, `23/7`, `22/11`,
+  `20/4`, `24/1`, `0/0`, `0/0`. Across all strata, 138 pairs were evaluated and
+  25 were development-productive in 2,508.25 seconds, or
+  `198.06638094288846` evaluated pairs/hour versus the frozen `57.25` floor.
+  Minimum observed free memory was 69,055,098,880 bytes, above the unchanged
+  24 GiB gate.
+- The first post-closure self-check failed only because the verifier rejected
+  legitimate zero-byte evidence files and then assumed frozen input order for
+  backend-canonical pair receipts. The financial root was not rerun or reused
+  as an incomplete boundary. The incident is preserved with SHA256
+  `546d4c2944fd448a75f2afbdae0779afa62ef4d6be0da2170903783d53e281f4`;
+  the corrected pushed verifier independently passed the existing complete root.
+- Immutable evidence root:
+  `D:\ChengboRemote\runtime\cn_fixed_stratified_production_v0_8x32_20260806_f1b9362`.
+  Closure file/canonical SHA256 values are
+  `bda072cc965db1f915fd7495b47e91b862917d061534a396831d3ed7c287fc9f` /
+  `bc81007a9ee8842ad1d9fcb844332c723cb6499a344bb61ede200e2030d4964e`;
+  all 150 declared artifacts passed. Independent audit file/canonical SHA256
+  values are `20bae4c61706edadf830cef9d42c796bec81912dbec07736d7362224192a4b2e` /
+  `e1839aa2fc1babbd85588b36484ff8d213f589588102e94f0f90c9bf19de158c`.
+  Validation, holdout, forward-2026 and sealed reads were zero, and no promotion
+  authority changed.
+- This is the first real production-rate observation, not authority for an
+  adaptive allocator. Rate comparisons are incomplete for two templates and
+  based on one frozen tranche; dynamic budget allocation therefore remains
+  deferred.
+
 ### Candidate Representation V0 fixed-stratified supply preflight accepted (2026-08-06)
 
 - Candidate semantics are unified across the existing eight registry routes;
@@ -2559,15 +2599,16 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-Do not dynamically reweight the eight V0 strata from the zero-financial supply
-preflight. If separately authorized, the next bounded experiment is one
-train-only production-rate canary over the already frozen 229 unique pairs,
-using the existing evaluator and fixed decoder/execution/cost authorities. It
-must report per-template evaluated, productive, standalone-positive,
-matched-positive, behavior-family diversity, candidate/hour and productive/
-core-hour without shared TPE credit, cross-template feedback, quota spillover,
-validation/OOS/Forward-B access or promotion. Only that real production
-evidence may support a later budget-allocation decision.
+The first fixed-stratified V0 production-rate canary is closed and must not be
+rerun. Do not dynamically reweight the eight strata from this one tranche:
+Intraday State Transition and Broad Event still have zero materialized coverage,
+so their recorded zero rates are structural unknowns rather than economic
+productivity. If separately authorized, first repair and independently qualify
+materialization coverage for those two templates without changing semantics;
+then run one prospective fixed-stratified cohort with the same no-credit,
+no-spillover policy. Only comparable multi-template production evidence from a
+future frozen cohort may support freezing a dynamic budget allocator. Do not
+adapt or rescore the completed cohort.
 
 The frozen 22-pair `TOPK_10_EQUAL` adaptive report-only validation OOS is closed
 and must not be rerun. It produced 10 pairs that passed all four absolute and
