@@ -117,16 +117,16 @@ if ($status.Count -ne 0) {
 }
 
 $manifest = Get-Content -LiteralPath $resolvedManifest -Raw | ConvertFrom-Json
-$manifestSha = [string](
-    if ($manifest.head) { $manifest.head } else { $manifest.repo_sha }
-)
-$manifestWorkspace = [string](
-    if ($manifest.workspace) {
-        $manifest.workspace
-    } else {
-        $manifest.remote_workspace
-    }
-)
+$manifestSha = if ($manifest.head) {
+    [string]$manifest.head
+} else {
+    [string]$manifest.repo_sha
+}
+$manifestWorkspace = if ($manifest.workspace) {
+    [string]$manifest.workspace
+} else {
+    [string]$manifest.remote_workspace
+}
 if (
     $manifestSha.ToLowerInvariant() -ne $RepoSha.ToLowerInvariant() -or
     [IO.Path]::GetFullPath($manifestWorkspace) -ne $resolvedRepo

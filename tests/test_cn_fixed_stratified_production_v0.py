@@ -279,3 +279,15 @@ def test_data_inventory_requires_every_consumed_shard_declaration(
                 "stock_session": roots["session_label"],
             },
         )
+
+
+def test_remote_wrapper_uses_windows_powershell51_safe_manifest_fallback() -> None:
+    wrapper = (
+        Path(__file__).parents[1]
+        / "scripts"
+        / "run_cn_fixed_stratified_production_v0_77o.ps1"
+    ).read_text(encoding="utf-8")
+    assert "$manifestSha = if ($manifest.head)" in wrapper
+    assert "$manifestWorkspace = if ($manifest.workspace)" in wrapper
+    assert "$manifestSha = [string](" not in wrapper
+    assert "$manifestWorkspace = [string](" not in wrapper
