@@ -456,6 +456,8 @@ def build_route_production_metrics_v0(
     route_id: str,
     scheduled_attempts: int,
     unique_pairs: int,
+    frozen_unique_pairs: int | None = None,
+    materialization_incompatible_pairs: int = 0,
     outcomes: Sequence[Mapping[str, Any]],
     behavior_rows: Sequence[Mapping[str, Any]],
     wall_seconds: float,
@@ -490,14 +492,35 @@ def build_route_production_metrics_v0(
         and str(row.get("portfolio_behavior_family_id") or "")
     }
     wall_hours = max(float(wall_seconds) / 3600.0, 1e-12)
+    frozen_pairs = (
+        int(unique_pairs)
+        if frozen_unique_pairs is None
+        else int(frozen_unique_pairs)
+    )
+    incompatible_pairs = int(materialization_incompatible_pairs)
+    if (
+        int(unique_pairs) < 0
+        or incompatible_pairs < 0
+        or frozen_pairs != int(unique_pairs) + incompatible_pairs
+    ):
+        raise ValueError("fixed-stratified materialization counts are invalid")
     return {
         "route_id": route_id,
         "template_id": route_id,
         "backend": _clock_for_route(route_id),
         "scheduled_attempts": int(scheduled_attempts),
-        "primary_exact_unique": int(unique_pairs),
-        "supply_underfill": int(scheduled_attempts) - int(unique_pairs),
-        "production_evidence_state": "TRAIN_ONLY_EVALUATED",
+        "primary_exact_unique": frozen_pairs,
+        "materialized_pair_compatible": int(unique_pairs),
+        "materialization_incompatible": incompatible_pairs,
+        "supply_underfill": int(scheduled_attempts) - frozen_pairs,
+        "total_prefinancial_underfill": (
+            int(scheduled_attempts) - int(unique_pairs)
+        ),
+        "production_evidence_state": (
+            "TRAIN_ONLY_EVALUATED"
+            if int(unique_pairs) > 0
+            else "PREFINANCIAL_MATERIALIZATION_UNDERFILL"
+        ),
         "pair_evaluated": len(evaluated),
         "evaluator_fill_ratio": len(evaluated) / max(1, int(unique_pairs)),
         "standalone_positive": int(standalone_positive),
@@ -513,6 +536,147 @@ def build_route_production_metrics_v0(
         "productive_per_entitled_core_hour": (
             productive / max(wall_hours * int(compute_threads), 1e-12)
         ),
+    }
+
+
+def screen_materialized_candidate_rows_v0(
+    *,
+    candidate_rows: Sequence[Mapping[str, Any]],
+    schema_by_backend: Mapping[str, set[str]],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Screen frozen pairs without replacement or cross-template spillover."""
+
+    pairs: dict[str, list[dict[str, Any]]] = {}
+    pair_order: list[str] = []
+    for source in candidate_rows:
+        row = dict(source)
+        pair_id = str(row.get("pair_id") or "")
+        if not pair_id:
+            raise RuntimeError("fixed-stratified materialization pair id missing")
+        if pair_id not in pairs:
+            pairs[pair_id] = []
+            pair_order.append(pair_id)
+        pairs[pair_id].append(row)
+
+    compatible_rows: list[dict[str, Any]] = []
+    pair_screen: list[dict[str, Any]] = []
+    route_counts = {
+        route_id: {
+            "route_id": route_id,
+            "backend": _clock_for_route(route_id),
+            "frozen_pairs": 0,
+            "materialized_pair_compatible": 0,
+            "materialization_incompatible": 0,
+        }
+        for route_id in ROUTE_IDS
+    }
+    for pair_id in pair_order:
+        members = pairs[pair_id]
+        roles = [str(row.get("pair_member_role") or "") for row in members]
+        route_ids = {str(row.get("route_id") or "") for row in members}
+        if len(members) != 2 or roles != ["PRIMARY", "CONTROL"]:
+            raise RuntimeError(
+                f"fixed-stratified materialization pair shape drift: {pair_id}"
+            )
+        if len(route_ids) != 1:
+            raise RuntimeError(
+                f"fixed-stratified materialization route drift: {pair_id}"
+            )
+        route_id = next(iter(route_ids))
+        if route_id not in route_counts:
+            raise RuntimeError(
+                f"fixed-stratified materialization route unknown: {route_id}"
+            )
+        backend = _clock_for_route(route_id)
+        materialized = set(schema_by_backend.get(backend) or set())
+        required: set[str] = set()
+        for member in members:
+            for key in (
+                "declared_field_ids",
+                "field_ids",
+                "condition_field_ids",
+            ):
+                required.update(str(value) for value in (member.get(key) or ()))
+        missing = sorted(required - materialized)
+        compatible = not missing
+        route_counts[route_id]["frozen_pairs"] += 1
+        count_key = (
+            "materialized_pair_compatible"
+            if compatible
+            else "materialization_incompatible"
+        )
+        route_counts[route_id][count_key] += 1
+        pair_screen.append(
+            {
+                "pair_id": pair_id,
+                "route_id": route_id,
+                "backend": backend,
+                "candidate_ids": [
+                    str(row.get("candidate_id") or "") for row in members
+                ],
+                "required_field_ids": sorted(required),
+                "missing_field_ids": missing,
+                "status": (
+                    "MATERIALIZED_PAIR_COMPATIBLE"
+                    if compatible
+                    else "MATERIALIZATION_INCOMPATIBLE_FIXED_UNDERFILL"
+                ),
+                "replacement_allowed": False,
+                "cross_template_spillover_allowed": False,
+            }
+        )
+        if compatible:
+            compatible_rows.extend(members)
+
+    route_waterfall = [route_counts[route_id] for route_id in ROUTE_IDS]
+    if any(row["frozen_pairs"] < 1 for row in route_waterfall):
+        raise RuntimeError("fixed-stratified materialization route absent")
+    payload: dict[str, Any] = {
+        "schema_version": "cn_fixed_stratified_materialization_screen_v1",
+        "status": "FIXED_COHORT_MATERIALIZATION_SCREEN_COMPLETE",
+        "frozen_candidate_member_count": len(candidate_rows),
+        "frozen_pair_count": len(pair_order),
+        "materialized_candidate_member_count": len(compatible_rows),
+        "materialized_pair_count": len(compatible_rows) // 2,
+        "materialization_incompatible_pair_count": (
+            len(pair_order) - len(compatible_rows) // 2
+        ),
+        "route_waterfall": route_waterfall,
+        "pair_screen": pair_screen,
+        "replacement_allowed": False,
+        "cross_template_spillover_allowed": False,
+        "dynamic_budget_reallocation_allowed": False,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    payload["screen_payload_sha256"] = stable_hash(payload)
+    return compatible_rows, payload
+
+
+def build_materialization_underfill_gate_v0(
+    *, route_id: str, minimum_free_memory_bytes: int
+) -> dict[str, Any]:
+    """Record a fixed stratum with no materialized pairs as evidence, not failure."""
+
+    return {
+        "schema_version": "cn_fixed_stratified_prefinancial_gate_v1",
+        "route_id": route_id,
+        "backend": _clock_for_route(route_id),
+        "evidence_status": "PREFINANCIAL_MATERIALIZATION_UNDERFILL",
+        "semantic_integrity_status": "PASS",
+        "resource_headroom_status": "PASS",
+        "compute_efficiency_status": (
+            "NOT_APPLICABLE_NO_MATERIALIZED_FIXED_PAIRS"
+        ),
+        "minimum_free_memory_bytes": int(minimum_free_memory_bytes),
+        "backends": {},
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "replacement_allowed": False,
+        "cross_template_spillover_allowed": False,
+        "dynamic_budget_reallocation_allowed": False,
     }
 
 
@@ -604,6 +768,7 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
     for closure_key, relative_path in (
         ("input_binding", "input_binding.json"),
         ("materialized_schema_binding", "materialized_schema_binding.json"),
+        ("materialization_screen", "materialization_screen.json"),
         ("split_boundary_purity", "split_boundary_purity.json"),
         ("data_input_inventory", "data_input_inventory.json"),
         ("production_summary", "production_summary.json"),
@@ -617,7 +782,12 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
     purity = _read_bound_json(
         root, artifact_by_path, "split_boundary_purity.json"
     )
-    _read_bound_json(root, artifact_by_path, "materialized_schema_binding.json")
+    schema_binding = _read_bound_json(
+        root, artifact_by_path, "materialized_schema_binding.json"
+    )
+    materialization_screen = _read_bound_json(
+        root, artifact_by_path, "materialization_screen.json"
+    )
     if str(purity.get("status") or "") != "PASS":
         raise RuntimeError("fixed-stratified split purity evidence drift")
     binding_body = dict(input_binding)
@@ -764,9 +934,13 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
         raise RuntimeError("fixed-stratified production route order drift")
     if any(
         str(row.get("production_evidence_state") or "")
-        != "TRAIN_ONLY_EVALUATED"
+        != (
+            "TRAIN_ONLY_EVALUATED"
+            if int(row.get("materialized_pair_compatible") or 0) > 0
+            else "PREFINANCIAL_MATERIALIZATION_UNDERFILL"
+        )
         or int(row.get("pair_evaluated") or 0)
-        > int(row.get("primary_exact_unique") or 0)
+        > int(row.get("materialized_pair_compatible") or 0)
         for row in waterfall
     ):
         raise RuntimeError("fixed-stratified production waterfall invalid")
@@ -789,6 +963,40 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
     preflight_candidate_rows = _read_jsonl(
         preflight_root / "compatible_candidate_rows_v0.jsonl"
     )
+    schema_by_backend = {
+        backend: set(
+            (schema_binding.get("backends") or {})
+            .get(backend, {})
+            .get("materialized_field_ids")
+            or ()
+        )
+        for backend in ("active_bar", "stock_session")
+    }
+    materialized_candidate_rows, expected_screen = (
+        screen_materialized_candidate_rows_v0(
+            candidate_rows=preflight_candidate_rows,
+            schema_by_backend=schema_by_backend,
+        )
+    )
+    screen_body = dict(materialization_screen)
+    screen_hash = str(screen_body.pop("screen_payload_sha256", ""))
+    if (
+        screen_hash != stable_hash(screen_body)
+        or materialization_screen != expected_screen
+        or screen_hash
+        != str(input_binding.get("materialization_screen_payload_sha256") or "")
+        or _sha256(root / "materialization_screen.json")
+        != str(input_binding.get("materialization_screen_file_sha256") or "")
+        or int(input_binding.get("candidate_member_count") or 0)
+        != len(preflight_candidate_rows)
+        or int(input_binding.get("pair_count") or 0)
+        != len({str(row["pair_id"]) for row in preflight_candidate_rows})
+        or int(input_binding.get("materialized_candidate_member_count") or 0)
+        != len(materialized_candidate_rows)
+        or int(input_binding.get("materialized_pair_count") or 0)
+        != len({str(row["pair_id"]) for row in materialized_candidate_rows})
+    ):
+        raise RuntimeError("fixed-stratified materialization screen drift")
     concatenated_outcomes: list[dict[str, Any]] = []
     concatenated_behavior: list[dict[str, Any]] = []
     for metrics in waterfall:
@@ -819,7 +1027,11 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
         recomputed = build_route_production_metrics_v0(
             route_id=route_id,
             scheduled_attempts=int(metrics["scheduled_attempts"]),
-            unique_pairs=int(metrics["primary_exact_unique"]),
+            unique_pairs=int(metrics["materialized_pair_compatible"]),
+            frozen_unique_pairs=int(metrics["primary_exact_unique"]),
+            materialization_incompatible_pairs=int(
+                metrics["materialization_incompatible"]
+            ),
             outcomes=outcomes,
             behavior_rows=behavior_rows,
             wall_seconds=float(metrics["wall_seconds"]),
@@ -831,11 +1043,49 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
                     f"fixed-stratified route metric drift: {route_id}:{key}"
                 )
         supply = supply_by_route[route_id]
+        if int(metrics.get("primary_exact_unique") or 0) != int(
+            supply.get("primary_exact_unique") or 0
+        ):
+            raise RuntimeError(
+                f"fixed-stratified supply unique drift: {route_id}"
+            )
         for key in SUPPLY_METRIC_KEYS:
             if metrics.get(key) != supply.get(key):
                 raise RuntimeError(
                     f"fixed-stratified supply metric drift: {route_id}:{key}"
                 )
+        expected_rows = [
+            row
+            for row in materialized_candidate_rows
+            if str(row.get("route_id") or "") == route_id
+        ]
+        if not expected_rows:
+            gate = _read_bound_json(
+                root, artifact_by_path, f"{route_relative}/runtime_gate.json"
+            )
+            expected_gate = build_materialization_underfill_gate_v0(
+                route_id=route_id,
+                minimum_free_memory_bytes=int(
+                    metrics["minimum_free_memory_bytes_so_far"]
+                ),
+            )
+            if (
+                gate != expected_gate
+                or gate != (summary.get("runtime_gates") or {}).get(route_id)
+                or outcomes
+                or behavior_rows
+                or int(metrics.get("pair_evaluated") or 0) != 0
+                or int(metrics.get("maximum_evaluator_cache_bytes") or 0) != 0
+                or list(metrics.get("access_receipts") or ())
+                or any(
+                    path.startswith(f"{route_relative}/phase3cm/")
+                    for path in artifact_by_path
+                )
+            ):
+                raise RuntimeError(
+                    f"fixed-stratified materialization-only evidence drift: {route_id}"
+                )
+            continue
         route_binding = _read_bound_json(
             root,
             artifact_by_path,
@@ -854,11 +1104,6 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
             raise RuntimeError(
                 f"fixed-stratified route binding drift: {route_id}"
             )
-        expected_rows = [
-            row
-            for row in preflight_candidate_rows
-            if str(row.get("route_id") or "") == route_id
-        ]
         expected_members = [
             {
                 "pair_id": str(row["pair_id"]),
@@ -959,7 +1204,7 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
             != "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
             or str(result.get("evaluation_role") or "") != "train"
             or int(result.get("pair_count") or 0)
-            != int(metrics["primary_exact_unique"])
+            != int(metrics["materialized_pair_compatible"])
             or maximum_cache_bytes != int(metrics["maximum_evaluator_cache_bytes"])
             or maximum_cache_bytes > CACHE_CAP_BYTES
         ):
@@ -1081,9 +1326,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     data_inventory_path = _write_json(
         root / "data_input_inventory.json", data_inventory
     )
-    schema, _ = materialized_schema_binding(
+    schema, schema_by_backend = materialized_schema_binding(
         field_roots=field_roots,
         registry=registry,
+    )
+    materialized_candidate_rows, materialization_screen = (
+        screen_materialized_candidate_rows_v0(
+            candidate_rows=candidate_rows,
+            schema_by_backend=schema_by_backend,
+        )
     )
     purity = audit_split_boundary_label_purity(
         split=split,
@@ -1093,6 +1344,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if str(purity.get("status") or "") != "PASS":
         raise RuntimeError("fixed-stratified production split purity failed")
     schema_path = _write_json(root / "materialized_schema_binding.json", schema)
+    materialization_screen_path = _write_json(
+        root / "materialization_screen.json", materialization_screen
+    )
     purity_path = _write_json(root / "split_boundary_purity.json", purity)
     source_binding = {
         "schema_version": "cn_fixed_stratified_production_v0_input_binding",
@@ -1126,6 +1380,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "label_roots": {key: str(value) for key, value in label_roots.items()},
         "candidate_member_count": len(candidate_rows),
         "pair_count": len({str(row["pair_id"]) for row in candidate_rows}),
+        "materialized_candidate_member_count": len(materialized_candidate_rows),
+        "materialized_pair_count": len(
+            {str(row["pair_id"]) for row in materialized_candidate_rows}
+        ),
+        "materialization_screen_file_sha256": _sha256(
+            materialization_screen_path
+        ),
+        "materialization_screen_payload_sha256": materialization_screen[
+            "screen_payload_sha256"
+        ],
         "route_order": list(ROUTE_IDS),
         "compute_threads": int(args.compute_threads),
         "maximum_wall_seconds": int(args.maximum_wall_seconds),
@@ -1166,18 +1430,84 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     minimum_free_memory = initial_free_memory
 
     for route_id in ROUTE_IDS:
-        route_rows = [
+        frozen_route_rows = [
             row for row in candidate_rows if str(row.get("route_id")) == route_id
+        ]
+        route_rows = [
+            row
+            for row in materialized_candidate_rows
+            if str(row.get("route_id")) == route_id
         ]
         route_pair_count = len({str(row["pair_id"]) for row in route_rows})
         expected_unique = int(supply_by_route[route_id]["primary_exact_unique"])
         if (
-            len(route_rows) != expected_unique * 2
-            or route_pair_count != expected_unique
+            len(frozen_route_rows) != expected_unique * 2
+            or len({str(row["pair_id"]) for row in frozen_route_rows})
+            != expected_unique
         ):
             raise RuntimeError(f"fixed-stratified route supply drift: {route_id}")
+        screen_route = next(
+            row
+            for row in materialization_screen["route_waterfall"]
+            if str(row["route_id"]) == route_id
+        )
+        if route_pair_count != int(
+            screen_route["materialized_pair_compatible"]
+        ):
+            raise RuntimeError(
+                f"fixed-stratified route materialization drift: {route_id}"
+            )
         route_root = root / "routes" / route_id.lower()
         route_started = time.monotonic()
+        backend = _clock_for_route(route_id)
+        if route_pair_count == 0:
+            route_root.mkdir(parents=True, exist_ok=True)
+            minimum_free_memory = min(
+                minimum_free_memory, int(psutil.virtual_memory().available)
+            )
+            if minimum_free_memory < MINIMUM_FREE_MEMORY_BYTES:
+                raise RuntimeError(
+                    "fixed-stratified production memory gate failed"
+                )
+            route_wall = time.monotonic() - route_started
+            metrics = build_route_production_metrics_v0(
+                route_id=route_id,
+                scheduled_attempts=int(supply_by_route[route_id]["scheduled"]),
+                unique_pairs=0,
+                frozen_unique_pairs=expected_unique,
+                materialization_incompatible_pairs=int(
+                    screen_route["materialization_incompatible"]
+                ),
+                outcomes=(),
+                behavior_rows=(),
+                wall_seconds=route_wall,
+                compute_threads=int(args.compute_threads),
+            )
+            for key in SUPPLY_METRIC_KEYS:
+                metrics[key] = supply_by_route[route_id][key]
+            gate = build_materialization_underfill_gate_v0(
+                route_id=route_id,
+                minimum_free_memory_bytes=minimum_free_memory,
+            )
+            metrics["runtime_gate_evidence_status"] = str(
+                gate["evidence_status"]
+            )
+            metrics["compute_efficiency_status"] = str(
+                gate["compute_efficiency_status"]
+            )
+            metrics["observed_process_cpu_seconds"] = 0.0
+            metrics["observed_effective_compute_cores"] = 0.0
+            metrics["productive_per_observed_cpu_hour"] = 0.0
+            metrics["maximum_evaluator_cache_bytes"] = 0
+            metrics["minimum_free_memory_bytes_so_far"] = minimum_free_memory
+            metrics["access_receipts"] = []
+            _write_json(route_root / "route_production_metrics.json", metrics)
+            _write_json(route_root / "runtime_gate.json", gate)
+            _write_jsonl(route_root / "outcomes.jsonl", ())
+            _write_jsonl(route_root / "behavior_rows.jsonl", ())
+            route_metrics.append(metrics)
+            route_gates[route_id] = gate
+            continue
         binding_path, table_paths = _context_and_binding(
             batch_root=route_root,
             candidates=route_rows,
@@ -1188,7 +1518,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         binding = _forbid_state_writes(binding_path)
         require_zero_prohibited_reads_v0(binding)
-        backend = _clock_for_route(route_id)
         receipts = _run_phase3cm_monitored(
             checkpoint_id=f"fixed_v0_{route_id.lower()}",
             checkpoint_root=route_root,
@@ -1221,7 +1550,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             str(backend_result.get("status") or "")
             != "CN_PHASE3CM_STREAMING_BACKEND_COMPLETED"
             or str(backend_result.get("evaluation_role") or "") != "train"
-            or int(backend_result.get("pair_count") or 0) != expected_unique
+            or int(backend_result.get("pair_count") or 0) != route_pair_count
         ):
             raise RuntimeError(
                 f"fixed-stratified backend result authority drift: {route_id}"
@@ -1242,7 +1571,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         metrics = build_route_production_metrics_v0(
             route_id=route_id,
             scheduled_attempts=int(supply_by_route[route_id]["scheduled"]),
-            unique_pairs=expected_unique,
+            unique_pairs=route_pair_count,
+            frozen_unique_pairs=expected_unique,
+            materialization_incompatible_pairs=int(
+                screen_route["materialization_incompatible"]
+            ),
             outcomes=outcomes,
             behavior_rows=behavior_rows,
             wall_seconds=route_wall,
@@ -1366,6 +1699,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "output_root": str(root),
         "input_binding": _artifact(source_binding_path, root=root),
         "materialized_schema_binding": _artifact(schema_path, root=root),
+        "materialization_screen": _artifact(
+            materialization_screen_path, root=root
+        ),
         "split_boundary_purity": _artifact(purity_path, root=root),
         "data_input_inventory": _artifact(data_inventory_path, root=root),
         "production_summary": _artifact(summary_path, root=root),

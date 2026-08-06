@@ -10,9 +10,11 @@ from our_system_phase2.runtime.cn_fixed_stratified_production_v0 import (
     _require_execution_authority,
     _require_sidecar_authority,
     build_data_input_inventory_v0,
+    build_materialization_underfill_gate_v0,
     build_route_production_metrics_v0,
     require_fresh_output_root_v0,
     require_zero_prohibited_reads_v0,
+    screen_materialized_candidate_rows_v0,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
@@ -55,6 +57,9 @@ def test_route_metrics_distinguish_evaluation_yield_and_economic_yield() -> None
 
     assert row["production_evidence_state"] == "TRAIN_ONLY_EVALUATED"
     assert row["pair_evaluated"] == 2
+    assert row["primary_exact_unique"] == 2
+    assert row["materialized_pair_compatible"] == 2
+    assert row["materialization_incompatible"] == 0
     assert row["evaluator_fill_ratio"] == 1.0
     assert row["standalone_positive"] == 2
     assert row["matched_positive"] == 1
@@ -65,6 +70,93 @@ def test_route_metrics_distinguish_evaluation_yield_and_economic_yield() -> None
         40.0
     )
     assert row["productive_per_entitled_core_hour"] == pytest.approx(1 / 3.2)
+
+
+def test_materialization_screen_preserves_fixed_underfill_without_spillover() -> None:
+    def pair_rows(pair_id: str, route_id: str, field_id: str) -> list[dict]:
+        return [
+            {
+                "pair_id": pair_id,
+                "pair_member_role": role,
+                "candidate_id": f"{pair_id}-{role.lower()}",
+                "route_id": route_id,
+                "declared_field_ids": [field_id],
+                "field_ids": [field_id],
+                "condition_field_ids": [],
+            }
+            for role in ("PRIMARY", "CONTROL")
+        ]
+
+    rows = [
+        *pair_rows("pair-session-ok", "SLOW_TEMPORAL_CHANGE", "session_ok"),
+        *pair_rows(
+            "pair-session-missing",
+            "SLOW_TEMPORAL_CHANGE",
+            "session_missing",
+        ),
+    ]
+    for route_id in (
+        "MINUTE_STATIC",
+        "FIRSTN_PATH",
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "MARKET_REGIME_CONDITION",
+        "INTRADAY_STATE_TRANSITION",
+        "DISCLOSURE_EVENT",
+        "BROAD_EVENT_FROZEN_ENTRY",
+    ):
+        rows.extend(pair_rows(f"pair-{route_id}", route_id, "shared_ok"))
+
+    compatible, screen = screen_materialized_candidate_rows_v0(
+        candidate_rows=rows,
+        schema_by_backend={
+            "active_bar": {"shared_ok"},
+            "stock_session": {"shared_ok", "session_ok"},
+        },
+    )
+
+    assert len(compatible) == len(rows) - 2
+    assert all(
+        row["pair_id"] != "pair-session-missing" for row in compatible
+    )
+    slow = next(
+        row
+        for row in screen["route_waterfall"]
+        if row["route_id"] == "SLOW_TEMPORAL_CHANGE"
+    )
+    assert slow["frozen_pairs"] == 2
+    assert slow["materialized_pair_compatible"] == 1
+    assert slow["materialization_incompatible"] == 1
+    assert screen["replacement_allowed"] is False
+    assert screen["cross_template_spillover_allowed"] is False
+    assert screen["dynamic_budget_reallocation_allowed"] is False
+
+
+def test_zero_materialized_stratum_is_reportable_without_backend_launch() -> None:
+    row = build_route_production_metrics_v0(
+        route_id="BROAD_EVENT_FROZEN_ENTRY",
+        scheduled_attempts=32,
+        unique_pairs=0,
+        frozen_unique_pairs=11,
+        materialization_incompatible_pairs=11,
+        outcomes=(),
+        behavior_rows=(),
+        wall_seconds=0.25,
+        compute_threads=32,
+    )
+    gate = build_materialization_underfill_gate_v0(
+        route_id="BROAD_EVENT_FROZEN_ENTRY",
+        minimum_free_memory_bytes=64 * 1024**3,
+    )
+
+    assert row["production_evidence_state"] == (
+        "PREFINANCIAL_MATERIALIZATION_UNDERFILL"
+    )
+    assert row["primary_exact_unique"] == 11
+    assert row["materialized_pair_compatible"] == 0
+    assert row["materialization_incompatible"] == 11
+    assert row["total_prefinancial_underfill"] == 32
+    assert gate["semantic_integrity_status"] == "PASS"
+    assert gate["backends"] == {}
 
 
 def test_production_boundary_rejects_any_nested_prohibited_read() -> None:
