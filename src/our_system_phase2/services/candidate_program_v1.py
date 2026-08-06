@@ -202,6 +202,9 @@ _ROUTE_GENERATION_RECEIPT_KEYS = frozenset(
         "attempt_index",
         "declared_field_ids",
         "proposal_route_root_field_ids",
+        "generation_lane",
+        "categorical_genes",
+        "formula_extension_id",
         "is_matched_control",
         "exact_identity",
         "canonical_identity",
@@ -230,6 +233,8 @@ def registered_field_unit_signature_v1(field_id: str) -> str:
         raise ValueError(
             f"registered field lacks Candidate Program V1 unit authority: {field_id}"
         ) from exc
+
+
 _NON_SEMANTIC_FRAGMENTS = (
     "reward",
     "return",
@@ -334,7 +339,6 @@ def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
         "seed",
         "attempt_index",
         "declared_field_ids",
-        "proposal_route_root_field_ids",
         "exact_identity",
         "canonical_identity",
     }
@@ -344,25 +348,34 @@ def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
         if key not in candidate
         or candidate[key] is None
         or candidate[key] == ""
-        or (
-            key != "proposal_route_root_field_ids"
-            and candidate[key] in ([], ())
-        )
+        or candidate[key] in ([], ())
     )
     if missing:
         raise ValueError(f"route candidate lacks generation receipt fields: {missing}")
+    categorical_genes = dict(candidate.get("categorical_genes") or {})
+    generator_version = str(candidate["generator_version"])
+    generation_lane = (
+        "CATEGORICAL_GENES"
+        if categorical_genes
+        else "SUPPLEMENTAL"
+        if generator_version == "cn_typed_compositional_supplemental_v1"
+        else "BASE_ATTEMPT"
+    )
     body = {
         "receipt_version": ROUTE_GENERATION_RECEIPT_VERSION,
         "candidate_id": str(candidate["candidate_id"]),
-        "generator_version": str(candidate["generator_version"]),
+        "generator_version": generator_version,
         "route_id": str(candidate["route_id"]),
         "skeleton_id": str(candidate["skeleton_id"]),
         "seed": int(candidate["seed"]),
         "attempt_index": int(candidate["attempt_index"]),
         "declared_field_ids": list(map(str, candidate["declared_field_ids"])),
         "proposal_route_root_field_ids": list(
-            map(str, candidate["proposal_route_root_field_ids"])
+            map(str, candidate.get("proposal_route_root_field_ids") or ())
         ),
+        "generation_lane": generation_lane,
+        "categorical_genes": _canonicalize(categorical_genes),
+        "formula_extension_id": str(candidate.get("extension_id") or ""),
         "is_matched_control": bool(candidate.get("is_matched_control")),
         "exact_identity": str(candidate["exact_identity"]),
         "canonical_identity": str(candidate["canonical_identity"]),
@@ -1860,11 +1873,29 @@ class ProgramCompilerV1:
                 else None
             ),
         )
-        replay_pair = replay_grammar.propose(
-            str(generation_receipt["route_id"]),
-            attempt_index=int(generation_receipt["attempt_index"]),
-            seed=int(generation_receipt["seed"]),
-        )
+        generation_lane = str(generation_receipt["generation_lane"])
+        if generation_lane == "CATEGORICAL_GENES":
+            replay_pair = replay_grammar.propose_from_categorical_genes(
+                str(generation_receipt["route_id"]),
+                genes=dict(generation_receipt["categorical_genes"]),
+                formula_extension_id=str(
+                    generation_receipt["formula_extension_id"]
+                ),
+            )
+        elif generation_lane == "SUPPLEMENTAL":
+            replay_pair = replay_grammar.propose_supplemental(
+                str(generation_receipt["route_id"]),
+                attempt_index=int(generation_receipt["attempt_index"]),
+                seed=int(generation_receipt["seed"]),
+            )
+        elif generation_lane == "BASE_ATTEMPT":
+            replay_pair = replay_grammar.propose(
+                str(generation_receipt["route_id"]),
+                attempt_index=int(generation_receipt["attempt_index"]),
+                seed=int(generation_receipt["seed"]),
+            )
+        else:
+            raise ValueError("route generation receipt has unknown generation lane")
         regenerated = dict(
             replay_pair.control
             if bool(generation_receipt["is_matched_control"])

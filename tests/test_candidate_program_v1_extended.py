@@ -181,6 +181,48 @@ def test_legacy_route_preserves_registry_session_lags(program_context) -> None:
     assert set(clock["field_requirements"]) == set(candidate["field_ids"])
 
 
+def test_existing_categorical_and_supplemental_generation_lanes_replay(program_context) -> None:
+    registry, grammar, _, _ = program_context
+    lane = grammar.categorical_gene_space(
+        "FIRSTN_PATH",
+        skeleton_id="cn.comp.v2.firstn_path.firstn_path_state",
+    )
+    genes = {
+        slot: str(values[0])
+        for slot, values in lane["ordered_categories_by_slot"].items()
+    }
+    categorical = dict(
+        grammar.propose_from_categorical_genes(
+            "FIRSTN_PATH", genes=genes
+        ).primary
+    )
+    categorical_program = legacy_candidate_program_v1(
+        categorical, portfolio_contract=PORTFOLIO_CONTRACT_V1
+    )
+    categorical_compiled = ProgramCompilerV1(registry).compile(
+        categorical_program
+    )
+    assert categorical_compiled.legacy_component_verdicts[0][
+        "candidate_id"
+    ] == categorical["candidate_id"]
+
+    supplemental_grammar = CompositionalGrammarV2(registry)
+    supplemental = dict(
+        supplemental_grammar.propose_supplemental(
+            "SLOW_CROSS_SECTIONAL_LEVEL", attempt_index=0, seed=1729
+        ).primary
+    )
+    supplemental_program = legacy_candidate_program_v1(
+        supplemental, portfolio_contract=PORTFOLIO_CONTRACT_V1
+    )
+    supplemental_compiled = ProgramCompilerV1(registry).compile(
+        supplemental_program
+    )
+    assert supplemental_compiled.legacy_component_verdicts[0][
+        "candidate_id"
+    ] == supplemental["candidate_id"]
+
+
 def test_multifield_windows_and_market_condition_do_not_rank_market_payload(program_context) -> None:
     registry, _, _, fixtures = program_context
     b = fixtures["B_MULTI_TIMESCALE_FINANCING"].program
