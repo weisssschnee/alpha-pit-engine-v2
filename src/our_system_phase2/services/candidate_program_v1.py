@@ -571,6 +571,7 @@ class CompiledCandidateProgramV1:
     ordered_node_ids: tuple[str, ...]
     output_node_ids: Mapping[str, str]
     output_expressions: Mapping[str, str]
+    joint_clock_contract: Mapping[str, Any]
     node_execution_plan: tuple[Mapping[str, Any], ...]
     physical_leaf_ids: tuple[str, ...]
     external_adapter_requirements: tuple[str, ...]
@@ -903,10 +904,35 @@ def _validate_node_semantics(
         field = registry.resolve(str(node.parameters["field_id"]))
         if "BROAD_EVENT_FROZEN_ENTRY" not in field.allowed_routes:
             raise ValueError("frozen Broad Event field lacks registered replay route")
+        mechanism = dict((field.metadata or {}).get("frozen_mechanism") or {})
+        if str(node.parameters["frozen_mechanism_id"]) != str(
+            mechanism.get("mechanism_id") or ""
+        ):
+            raise ValueError("frozen Broad Event mechanism is not registry-authorized")
+        if str(node.parameters["frozen_behavior_cluster_id"]) != str(
+            mechanism.get("behavior_cluster_id") or ""
+        ):
+            raise ValueError("frozen Broad Event behavior cluster is not registry-authorized")
+        registered_inventory_hash = stable_hash(
+            [row.to_dict() for row in registry.fields_for_route("BROAD_EVENT_FROZEN_ENTRY")]
+        )
+        if str(node.parameters["frozen_inventory_hash"]) != registered_inventory_hash:
+            raise ValueError("frozen Broad Event inventory hash is not registry-authorized")
 
     if node.node_type in {"CSRANK", "CS_ZSCORE", "WINSORIZE", "TOP_QUANTILE_MASK"}:
-        if len(parents) != 1 or parents[0].entity_scope != "STOCK":
+        if (
+            len(parents) != 1
+            or parents[0].entity_scope != "STOCK"
+            or parents[0].output_semantic_type not in NUMERIC_SEMANTIC_TYPES
+        ):
             raise ValueError("market/group payload may not enter direct stock cross-sectional mapping")
+        expected_output_types = (
+            {"STOCK_MASK"}
+            if node.node_type == "TOP_QUANTILE_MASK"
+            else {"STOCK_VALUE", "STOCK_SCORE"}
+        )
+        if node.entity_scope != "STOCK" or node.output_semantic_type not in expected_output_types:
+            raise ValueError("stock cross-sectional operator has incompatible output type")
     if node.node_type in {
         "LAG",
         "DELTA",
@@ -969,7 +995,15 @@ def _validate_node_semantics(
     if node.node_type in {"TRANSITION", "STATE_PERSISTENCE"} and len(parents) != 1:
         raise ValueError("transition/state-persistence requires exactly one input")
     if node.node_type in {"ADD", "SUBTRACT", "MIN", "MAX"}:
-        if len(parents) < 2 or len({parent.unit_signature for parent in parents}) != 1:
+        if (
+            len(parents) < 2
+            or not all(
+                parent.output_semantic_type in NUMERIC_SEMANTIC_TYPES
+                for parent in parents
+            )
+            or node.output_semantic_type not in NUMERIC_SEMANTIC_TYPES
+            or len({parent.unit_signature for parent in parents}) != 1
+        ):
             raise ValueError("add/subtract/min/max require identical units")
         if node.unit_signature != parents[0].unit_signature:
             raise ValueError("arithmetic output unit drift")
@@ -1017,7 +1051,10 @@ def _validate_node_semantics(
         if (
             len(parents) != 2
             or parents[0].entity_scope != "STOCK"
+            or parents[0].output_semantic_type not in NUMERIC_SEMANTIC_TYPES
             or parents[1].entity_scope not in {"INDUSTRY", "PLATE"}
+            or node.entity_scope != "STOCK"
+            or node.output_semantic_type not in {"STOCK_VALUE", "STOCK_SCORE"}
         ):
             raise ValueError("within-group rank requires stock values and a PIT group key")
     if node.node_type == "CONDITIONAL_SWITCH":
@@ -1034,7 +1071,13 @@ def _validate_node_semantics(
         "SIZE_NEUTRALIZE",
         "INDUSTRY_NEUTRALIZE",
     }:
-        if len(parents) < 2 or parents[0].entity_scope != "STOCK":
+        if (
+            len(parents) < 2
+            or parents[0].entity_scope != "STOCK"
+            or parents[0].output_semantic_type not in NUMERIC_SEMANTIC_TYPES
+            or node.entity_scope != "STOCK"
+            or node.output_semantic_type not in {"STOCK_VALUE", "STOCK_SCORE"}
+        ):
             raise ValueError("residualization requires stock payload plus controls")
         if node.unit_signature != parents[0].unit_signature:
             raise ValueError("residualization must preserve payload units")
@@ -1254,6 +1297,21 @@ class ProgramCompilerV1:
             raise ValueError(
                 f"joint clock references missing nodes: {unknown_clock_nodes}"
             )
+        frozen_nodes = [
+            node for node in spec.nodes if node.node_type == "FROZEN_BROAD_EVENT_REF"
+        ]
+        expected_frozen_references = sorted(
+            value
+            for node in frozen_nodes
+            for value in (
+                str(node.parameters.get("field_id") or ""),
+                str(node.parameters.get("frozen_inventory_hash") or ""),
+            )
+        )
+        if sorted(spec.frozen_component_references) != expected_frozen_references:
+            raise ValueError(
+                "candidate frozen-component references do not exactly bind replay inventory"
+            )
 
         verdicts: list[dict[str, Any]] = []
         legacy_candidates: list[dict[str, Any]] = []
@@ -1376,6 +1434,9 @@ class ProgramCompilerV1:
                 key: expressions[node_id]
                 for key, node_id in asdict(spec.outputs).items()
             },
+            joint_clock_contract=_canonicalize(
+                asdict(spec.joint_clock_contract)
+            ),
             node_execution_plan=tuple(execution_plan),
             physical_leaf_ids=tuple(sorted(physical_leaves)),
             external_adapter_requirements=tuple(

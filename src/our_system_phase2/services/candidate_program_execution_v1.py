@@ -8,13 +8,17 @@ continuous-book ledger remain owned by the existing replay kernel.
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
 
 from our_system_phase2.services.candidate_program_v1 import (
     CompiledCandidateProgramV1,
+    JointClockContractV1,
+)
+from our_system_phase2.services.candidate_program_clock_v1 import (
+    resolve_joint_clock_coordinates_v1,
 )
 from our_system_phase2.services.real_market_validation import (
     evaluate_panel_expression,
@@ -26,7 +30,11 @@ def apply_compiled_candidate_program_v1(
     compiled: CompiledCandidateProgramV1,
     *,
     data_role: str,
-    field_lags: Mapping[str, int] | None = None,
+    field_lags: Mapping[str, int],
+    joint_clock_component_rows: Mapping[
+        str, Sequence[Mapping[str, Any]]
+    ],
+    coordinate_id_column: str = "program_coordinate_id",
 ) -> pd.DataFrame:
     """Materialize program outputs without creating a second evaluator."""
 
@@ -41,13 +49,41 @@ def apply_compiled_candidate_program_v1(
     }
     if set(expressions) != required:
         raise ValueError("compiled program lacks the exact four output expressions")
+    contract = JointClockContractV1(**dict(compiled.joint_clock_contract))
+    expected_clock_nodes = set(contract.component_clock_node_ids)
+    if set(joint_clock_component_rows) != expected_clock_nodes:
+        raise ValueError(
+            "execution requires exact joint-clock rows for every declared component"
+        )
+    if coordinate_id_column not in output.columns:
+        raise ValueError("execution frame lacks the bound program coordinate id")
+    joint_clock = resolve_joint_clock_coordinates_v1(
+        contract, joint_clock_component_rows
+    )
+    clock_by_coordinate = {
+        str(row["coordinate_id"]): row for row in joint_clock
+    }
+    frame_coordinates = output[coordinate_id_column].astype(str)
+    unbound_coordinates = sorted(
+        set(frame_coordinates) - set(clock_by_coordinate)
+    )
+    if unbound_coordinates:
+        raise ValueError(
+            "execution frame contains coordinates absent from joint-clock authority"
+        )
+    joint_eligible = frame_coordinates.map(
+        lambda value: bool(clock_by_coordinate[value]["eligible"])
+    )
+    joint_eligible_from = frame_coordinates.map(
+        lambda value: clock_by_coordinate[value]["joint_eligible_from"]
+    )
 
     score = pd.to_numeric(
         evaluate_panel_expression(
             output,
             expressions["stock_score_node_id"],
             cache=cache,
-            field_lags=dict(field_lags or {}),
+            field_lags=dict(field_lags),
             data_role=data_role,
         ),
         errors="coerce",
@@ -57,7 +93,7 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["eligibility_mask_node_id"],
             cache=cache,
-            field_lags=dict(field_lags or {}),
+            field_lags=dict(field_lags),
             data_role=data_role,
         ),
         errors="coerce",
@@ -67,7 +103,7 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["exposure_multiplier_node_id"],
             cache=cache,
-            field_lags=dict(field_lags or {}),
+            field_lags=dict(field_lags),
             data_role=data_role,
         ),
         errors="coerce",
@@ -77,13 +113,14 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["veto_mask_node_id"],
             cache=cache,
-            field_lags=dict(field_lags or {}),
+            field_lags=dict(field_lags),
             data_role=data_role,
         ),
         errors="coerce",
     )
     eligible = (
-        score.notna()
+        joint_eligible
+        & score.notna()
         & eligibility.gt(0.0)
         & exposure.notna()
         & exposure.ge(0.0)
@@ -101,6 +138,8 @@ def apply_compiled_candidate_program_v1(
     output["program_eligibility_mask"] = eligibility
     output["program_exposure_multiplier"] = exposure
     output["program_veto_mask"] = veto
+    output["program_joint_eligible"] = joint_eligible
+    output["program_joint_eligible_from"] = joint_eligible_from
     output["program_eligible"] = final_eligible
     output["signal"] = final_signal.replace([np.inf, -np.inf], np.nan)
     output["universe_eligible"] = final_eligible

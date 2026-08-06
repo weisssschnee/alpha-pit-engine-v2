@@ -10,6 +10,7 @@ from our_system_phase2.services.candidate_materialization_requirements import (
 from our_system_phase2.services.candidate_program_v1 import TypedNodeSpec
 from our_system_phase2.services.unified_capability_registry import (
     UnifiedCapabilityRegistry,
+    stable_hash,
 )
 
 
@@ -207,6 +208,21 @@ class FrozenBroadEventComponentAdapter:
         field = self.registry.resolve(field_id)
         if "BROAD_EVENT_FROZEN_ENTRY" not in field.allowed_routes:
             raise ValueError("field is not a frozen Broad Event reference")
+        mechanism = dict((field.metadata or {}).get("frozen_mechanism") or {})
+        if frozen_mechanism_id != str(mechanism.get("mechanism_id") or ""):
+            raise ValueError("frozen Broad Event mechanism is not registry-authorized")
+        if frozen_behavior_cluster_id != str(
+            mechanism.get("behavior_cluster_id") or ""
+        ):
+            raise ValueError("frozen Broad Event behavior cluster is not registry-authorized")
+        registered_inventory_hash = stable_hash(
+            [
+                row.to_dict()
+                for row in self.registry.fields_for_route("BROAD_EVENT_FROZEN_ENTRY")
+            ]
+        )
+        if frozen_inventory_hash != registered_inventory_hash:
+            raise ValueError("frozen Broad Event inventory hash is not registry-authorized")
         if output_semantic_type not in {
             "STOCK_VALUE",
             "STOCK_MASK",

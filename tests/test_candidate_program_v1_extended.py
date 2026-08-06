@@ -18,6 +18,7 @@ from our_system_phase2.services.a_share_executable_replay import (
     run_a_share_long_only_replay,
 )
 from our_system_phase2.services.candidate_program_adapters_v1 import (
+    FrozenBroadEventComponentAdapter,
     IntradayStateComponentAdapter,
 )
 from our_system_phase2.services.candidate_program_clock_v1 import (
@@ -53,6 +54,31 @@ REGISTRY_PATH = (
     / "unified_capability_registry.json"
 )
 ROOT_CONTRACT = REPO / "runtime/run_plans/cn_core_pack_development_discovery_v1.json"
+
+
+def _bind_synthetic_joint_clock(frame, compiled):
+    bound = frame.copy()
+    bound["program_coordinate_id"] = [f"row-{index}" for index in range(len(bound))]
+    rows = {}
+    for node_id in compiled.joint_clock_contract["component_clock_node_ids"]:
+        component = []
+        for index, source in bound.iterrows():
+            observed = pd.Timestamp(source["date"]) + pd.Timedelta(hours=15)
+            action = pd.Timestamp(source["date"]) + pd.Timedelta(days=1, hours=9, minutes=30)
+            component.append(
+                {
+                    "coordinate_id": f"row-{index}",
+                    "observable_at": observed.isoformat(),
+                    "mature_at": observed.isoformat(),
+                    "action_session": action.isoformat(),
+                    "source_lag": 0,
+                    "revision_policy": "NO_FUTURE_REVISION",
+                    "support_present": True,
+                    "eligible": True,
+                }
+            )
+        rows[node_id] = component
+    return bound, rows
 
 
 @pytest.fixture(scope="module")
@@ -278,6 +304,113 @@ def test_controls_are_deterministic_type_preserving_and_wrong_lag_is_diagnostic(
         )
 
 
+def test_control_operation_semantics_are_enforced_and_base_payload_is_real(program_context) -> None:
+    _, _, _, fixtures = program_context
+    primary = fixtures["B_MULTI_TIMESCALE_FINANCING"].program
+    level_operation = primary.matched_control_plan.operations[0]
+    target = level_operation.target_node_ids[0]
+    base_only = replace(
+        primary,
+        matched_control_plan=replace(
+            primary.matched_control_plan,
+            operations=(
+                MatchedControlOperationV1(
+                    operation="BASE_PAYLOAD_ONLY",
+                    target_node_ids=(),
+                    replacement={
+                        "nodes": {target: level_operation.replacement["node"]},
+                        "base_payload_authority": "financing_net_buy",
+                    },
+                ),
+            ),
+        ),
+    )
+    pair = construct_matched_control_program_v1(base_only)
+    assert len(pair.control.nodes) < len(primary.nodes)
+    assert pair.control.semantic_program_hash != primary.semantic_program_hash
+
+    mislabeled = replace(
+        primary,
+        matched_control_plan=replace(
+            primary.matched_control_plan,
+            operations=(replace(level_operation, operation="REMOVE_GATE"),),
+        ),
+    )
+    with pytest.raises(ValueError, match="must target a GATE"):
+        construct_matched_control_program_v1(mislabeled)
+
+    retained_subgraph = replace(
+        primary,
+        matched_control_plan=replace(
+            primary.matched_control_plan,
+            operations=(replace(level_operation, operation="ABLATE_SUBGRAPH"),),
+        ),
+    )
+    with pytest.raises(ValueError, match="may not retain the ablated subgraph"):
+        construct_matched_control_program_v1(retained_subgraph)
+
+
+def test_semantic_type_checks_reject_mask_arithmetic_and_bad_cs_output(program_context) -> None:
+    registry, _, _, fixtures = program_context
+    primary = fixtures["B_MULTI_TIMESCALE_FINANCING"].program
+    identity = next(node for node in primary.nodes if node.node_id == "eligibility_identity")
+    bad_arithmetic = TypedNodeSpec(
+        node_id="bad_mask_add",
+        node_type="ADD",
+        input_node_ids=(identity.node_id, identity.node_id),
+        parameters={},
+        output_semantic_type="STOCK_VALUE",
+        entity_scope="STOCK",
+        temporal_semantics={"kind": "FIXED_PROGRAM_OPERATOR"},
+        observable_clock=identity.observable_clock,
+        maturity=identity.maturity,
+        unit_signature="boolean",
+        support_unit=identity.support_unit,
+    )
+    with pytest.raises(ValueError, match="require identical units"):
+        ProgramCompilerV1(registry).compile(
+            replace(primary, nodes=primary.nodes + (bad_arithmetic,))
+        )
+
+    score = next(node for node in primary.nodes if node.node_id == "final_score")
+    bad_cross_section = replace(
+        score, node_id="bad_cs_output", output_semantic_type="MARKET_VALUE"
+    )
+    with pytest.raises(ValueError, match="incompatible output type"):
+        ProgramCompilerV1(registry).compile(
+            replace(primary, nodes=primary.nodes + (bad_cross_section,))
+        )
+
+
+def test_frozen_broad_event_binding_must_match_registry_inventory(program_context) -> None:
+    registry, _, _, fixtures = program_context
+    primary = fixtures["F_FROZEN_BROAD_EVENT_GATE"].program
+    frozen = next(
+        node for node in primary.nodes if node.node_type == "FROZEN_BROAD_EVENT_REF"
+    )
+    spoofed = replace(
+        frozen,
+        parameters={**dict(frozen.parameters), "frozen_mechanism_id": "spoofed"},
+    )
+    with pytest.raises(ValueError, match="mechanism is not registry-authorized"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                primary,
+                nodes=tuple(spoofed if node.node_id == frozen.node_id else node for node in primary.nodes),
+            )
+        )
+    with pytest.raises(ValueError, match="inventory hash is not registry-authorized"):
+        FrozenBroadEventComponentAdapter(registry).adapt(
+            node_id="bad_frozen",
+            field_id=str(frozen.parameters["field_id"]),
+            frozen_mechanism_id=str(frozen.parameters["frozen_mechanism_id"]),
+            frozen_behavior_cluster_id=str(
+                frozen.parameters["frozen_behavior_cluster_id"]
+            ),
+            frozen_inventory_hash="0" * 64,
+        )
+
+
 def test_intraday_adapter_uses_real_expression_leaves(program_context) -> None:
     _, grammar, _, _ = program_context
     candidate = dict(
@@ -341,11 +474,20 @@ def test_authorized_joint_fixtures_execute_on_typed_synthetic_panel(program_cont
         "F_FROZEN_BROAD_EVENT_GATE",
     ):
         compiled = ProgramCompilerV1(registry).compile(fixtures[fixture_id].program)
+        bound_frame, clock_rows = _bind_synthetic_joint_clock(frame, compiled)
         first = apply_compiled_candidate_program_v1(
-            frame, compiled, data_role="development"
+            bound_frame,
+            compiled,
+            data_role="development",
+            field_lags={},
+            joint_clock_component_rows=clock_rows,
         )
         second = apply_compiled_candidate_program_v1(
-            frame, compiled, data_role="development"
+            bound_frame,
+            compiled,
+            data_role="development",
+            field_lags={},
+            joint_clock_component_rows=clock_rows,
         )
         pd.testing.assert_series_equal(first["signal"], second["signal"])
         assert np.isfinite(first["signal"].dropna()).all()
@@ -399,13 +541,48 @@ def _fees() -> AShareFeeSchedule:
     )
 
 
+def test_execution_enforces_compiled_joint_clock_before_signal(program_context) -> None:
+    registry, _, legacy, fixtures = program_context
+    compiled = ProgramCompilerV1(registry).compile(fixtures["A_LEGACY_PARITY"].program)
+    frame, _ = _synthetic_replay_frame(legacy["canonical_expression"])
+    bound, clock_rows = _bind_synthetic_joint_clock(frame, compiled)
+    component_id = compiled.joint_clock_contract["component_clock_node_ids"][0]
+    late_row = dict(clock_rows[component_id][0])
+    late_row["mature_at"] = "2099-01-01T00:00:00"
+    clock_rows[component_id][0] = late_row
+    output = apply_compiled_candidate_program_v1(
+        bound,
+        compiled,
+        data_role="development",
+        field_lags={},
+        joint_clock_component_rows=clock_rows,
+    )
+    assert output.loc[0, "program_joint_eligible"] == np.bool_(False)
+    assert pd.isna(output.loc[0, "signal"])
+    assert output.loc[1:, "program_joint_eligible"].all()
+
+    with pytest.raises(ValueError, match="exact joint-clock rows"):
+        apply_compiled_candidate_program_v1(
+            bound,
+            compiled,
+            data_role="development",
+            field_lags={},
+            joint_clock_component_rows={},
+        )
+
+
 def test_legacy_program_signal_rank_and_replay_are_exactly_identical(program_context) -> None:
     registry, _, legacy, fixtures = program_context
     compiled = ProgramCompilerV1(registry).compile(fixtures["A_LEGACY_PARITY"].program)
     frame, legacy_signal = _synthetic_replay_frame(legacy["canonical_expression"])
     legacy_frame = frame.assign(signal=legacy_signal)
+    bound_frame, clock_rows = _bind_synthetic_joint_clock(frame, compiled)
     wrapped = apply_compiled_candidate_program_v1(
-        frame, compiled, data_role="development"
+        bound_frame,
+        compiled,
+        data_role="development",
+        field_lags={},
+        joint_clock_component_rows=clock_rows,
     )
     pd.testing.assert_series_equal(
         legacy_signal, wrapped["signal"], check_names=False, check_exact=True
