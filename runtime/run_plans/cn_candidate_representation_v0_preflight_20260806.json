@@ -1,0 +1,106 @@
+{
+  "schema_version": "cn_candidate_representation_v0_preflight_receipt_v1",
+  "status": "FIXED_STRATIFIED_V0_ZERO_FINANCIAL_PREFLIGHT_ACCEPTED",
+  "recorded_at": "2026-08-06",
+  "current_source_sha": "1f94ef2255081a745b553b046afcfdb617982aeb",
+  "preflight_execution_sha": "69ad0a93f69d26658d74f1724996db1986fa5c09",
+  "policy_id": "TEMPLATE_STRATIFIED_FIXED_NO_CROSS_TEMPLATE_CREDIT_V0",
+  "template_id_contract": "IDENTICAL_TO_ROUTE_ID_NO_SECOND_AUTHORITY",
+  "template_attempt_quota": 32,
+  "seeds": [
+    1729,
+    2718,
+    31415,
+    65537
+  ],
+  "scheduled_attempts": 256,
+  "attempted": 256,
+  "legal_control_valid_attempts": 256,
+  "primary_exact_unique": 229,
+  "candidate_members": 458,
+  "template_waterfall": [
+    {
+      "route_id": "MINUTE_STATIC",
+      "attempted": 32,
+      "primary_exact_unique": 32,
+      "underfill": 0
+    },
+    {
+      "route_id": "FIRSTN_PATH",
+      "attempted": 32,
+      "primary_exact_unique": 32,
+      "underfill": 0
+    },
+    {
+      "route_id": "SLOW_CROSS_SECTIONAL_LEVEL",
+      "attempted": 32,
+      "primary_exact_unique": 32,
+      "underfill": 0
+    },
+    {
+      "route_id": "SLOW_TEMPORAL_CHANGE",
+      "attempted": 32,
+      "primary_exact_unique": 31,
+      "underfill": 1
+    },
+    {
+      "route_id": "DISCLOSURE_EVENT",
+      "attempted": 32,
+      "primary_exact_unique": 28,
+      "underfill": 4
+    },
+    {
+      "route_id": "MARKET_REGIME_CONDITION",
+      "attempted": 32,
+      "primary_exact_unique": 32,
+      "underfill": 0
+    },
+    {
+      "route_id": "INTRADAY_STATE_TRANSITION",
+      "attempted": 32,
+      "primary_exact_unique": 31,
+      "underfill": 1
+    },
+    {
+      "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+      "attempted": 32,
+      "primary_exact_unique": 11,
+      "underfill": 21,
+      "sampling_kind": "FROZEN_REPLAY_INVENTORY"
+    }
+  ],
+  "root": "G:\\Chengbo\\runtime\\cn_candidate_representation_v0_preflight_8x32_20260806_69ad0a9",
+  "closure_file_sha256": "8ff20659ddd350d9a769f8f8ced4aa3e7b2a6d0cb817fa6bc9cd520a15232d02",
+  "closure_payload_sha256": "35e30a06d1739ccdf3a3eaa8d30098e6f67bc20699cb139ba1240b265ffd4435",
+  "plan_sha256": "1f470ca6ac8b2b7dc153da6fbe6440809d590b9d6d13d1e91139c988ec630990",
+  "plan_payload_sha256": "4cdb88c6649d321644b491edc9661496f8da1fb3a9807ddaa95d69e657e7b041",
+  "broad_event_frozen_inventory_sha256": "d99699a5826c7bbf459b19fe8708c865c232012518863f18d6f105879022b5ce",
+  "shared_tpe_study": false,
+  "shared_tpe_credit": false,
+  "optimizer_feedback_accessed": false,
+  "dynamic_budget_reallocation_allowed": false,
+  "underfill_spillover_allowed": false,
+  "economic_evaluator_accessed": false,
+  "production_evidence_state": "NOT_EVALUATED_ZERO_FINANCIAL_PREFLIGHT",
+  "financial_read_count": 0,
+  "validation_read_count": 0,
+  "holdout_read_count": 0,
+  "forward_2026_read_count": 0,
+  "sealed_data_read_count": 0,
+  "promotion_authorized": false,
+  "focused_tests": {
+    "passed": 57,
+    "warnings": 2
+  },
+  "full_suite_baseline": {
+    "passed": 1045,
+    "skipped": 4,
+    "failed": 6,
+    "failure_scope": "pre_existing_resource_topology_delivery_graph_and_nextgen_artifact_drift"
+  },
+  "review": {
+    "standards": "CLEAN",
+    "spec": "CLEAN"
+  },
+  "decision": "DO_NOT_ALLOCATE_DYNAMIC_BUDGET_UNTIL_BOUNDED_TRAIN_ONLY_PRODUCTION_EVIDENCE_EXISTS"
+}

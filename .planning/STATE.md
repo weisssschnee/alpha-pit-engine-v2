@@ -16,6 +16,40 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
+### Candidate Representation V0 fixed-stratified supply preflight accepted (2026-08-06)
+
+- Candidate semantics are unified across the existing eight registry routes;
+  `template_id` is exactly the existing `route_id` and creates no second
+  scheduler or generator-eligibility authority. V0 uses fixed per-template
+  quotas, four frozen seeds and deterministic attempt order. Shared TPE study
+  or credit, optimizer feedback, dynamic budget reallocation and underfill
+  spillover are all disabled.
+- The zero-financial preflight ran 32 attempts in each of the eight strata
+  (256 total) and independently reverified its closure at current source SHA
+  `1f94ef2255081a745b553b046afcfdb617982aeb`. All 256 attempts had a legal
+  primary and valid matched control; 229 unique pairs / 458 candidate members
+  remained after exact-identity and pair deduplication. Validation, holdout,
+  forward-2026 and all sealed reads were zero.
+- Unique pair supply by route was `32/32/32/31/28/32/31/11` in registry order.
+  The frozen Broad Event inventory produced only 11 unique pairs from its fixed
+  quota, with 21 duplicate underfill attempts. Those slots were intentionally
+  not transferred to another route. This is an observed supply constraint,
+  not poor economic productivity and not permission to alter V0 quotas.
+- Economic production fields are explicitly unavailable (`null`) with state
+  `NOT_EVALUATED_ZERO_FINANCIAL_PREFLIGHT`; no false zero productivity was
+  recorded. Dynamic allocation remains deferred until a separately bounded
+  train-only evaluation supplies actual evaluated/productive/standalone/
+  matched/behavior/throughput observations for every stratum.
+- Formal receipt:
+  `runtime/run_plans/cn_candidate_representation_v0_preflight_20260806.json`.
+  Immutable evidence root:
+  `G:\Chengbo\runtime\cn_candidate_representation_v0_preflight_8x32_20260806_69ad0a9`;
+  closure file/canonical SHA256 values are
+  `8ff20659ddd350d9a769f8f8ced4aa3e7b2a6d0cb817fa6bc9cd520a15232d02` /
+  `35e30a06d1739ccdf3a3eaa8d30098e6f67bc20699cb139ba1240b265ffd4435`.
+  This capability changes neither the negative 2023 result nor
+  `HOLD_PROMOTION`; Forward-B remains sealed.
+
 ### Fixed-ten 2023 historical challenge negative; Forward-B remains sealed (2026-08-06)
 
 - The unchanged fixed ten pairs completed the one-shot backward-OOT 2023
@@ -2524,6 +2558,16 @@ remains unchanged. The compact receipt is
   a SHA-verified full Git bundle without changing the node's proxy authority.
 
 ## Next action
+
+Do not dynamically reweight the eight V0 strata from the zero-financial supply
+preflight. If separately authorized, the next bounded experiment is one
+train-only production-rate canary over the already frozen 229 unique pairs,
+using the existing evaluator and fixed decoder/execution/cost authorities. It
+must report per-template evaluated, productive, standalone-positive,
+matched-positive, behavior-family diversity, candidate/hour and productive/
+core-hour without shared TPE credit, cross-template feedback, quota spillover,
+validation/OOS/Forward-B access or promotion. Only that real production
+evidence may support a later budget-allocation decision.
 
 The frozen 22-pair `TOPK_10_EQUAL` adaptive report-only validation OOS is closed
 and must not be rerun. It produced 10 pairs that passed all four absolute and
