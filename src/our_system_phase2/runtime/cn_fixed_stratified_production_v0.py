@@ -748,7 +748,14 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
         target = (root / str(artifact.get("path") or "")).resolve()
         if not target.is_relative_to(root) or not target.is_file():
             raise RuntimeError("fixed-stratified production artifact missing")
-        if target.stat().st_size != int(artifact.get("bytes") or -1):
+        declared_bytes = artifact.get("bytes")
+        if isinstance(declared_bytes, bool) or not isinstance(
+            declared_bytes, int
+        ):
+            raise RuntimeError(
+                "fixed-stratified production artifact size invalid"
+            )
+        if target.stat().st_size != declared_bytes:
             raise RuntimeError("fixed-stratified production artifact size drift")
         if _sha256(target) != str(artifact.get("sha256") or ""):
             raise RuntimeError("fixed-stratified production artifact hash drift")

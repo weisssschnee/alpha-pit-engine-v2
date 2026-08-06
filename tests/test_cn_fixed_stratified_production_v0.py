@@ -15,6 +15,7 @@ from our_system_phase2.runtime.cn_fixed_stratified_production_v0 import (
     require_fresh_output_root_v0,
     require_zero_prohibited_reads_v0,
     screen_materialized_candidate_rows_v0,
+    verify_fixed_stratified_production_v0,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
@@ -157,6 +158,39 @@ def test_zero_materialized_stratum_is_reportable_without_backend_launch() -> Non
     assert row["total_prefinancial_underfill"] == 32
     assert gate["semantic_integrity_status"] == "PASS"
     assert gate["backends"] == {}
+
+
+def test_verifier_accepts_declared_zero_byte_artifact(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    empty = tmp_path / "empty.jsonl"
+    empty.write_bytes(b"")
+    closure = {
+        "status": "FIXED_STRATIFIED_PRODUCTION_V0_COMPLETE",
+        "artifact_count": 1,
+        "artifacts": [
+            {
+                "path": empty.name,
+                "bytes": 0,
+                "sha256": hashlib.sha256(b"").hexdigest(),
+            }
+        ],
+    }
+    closure["closure_payload_sha256"] = stable_hash(closure)
+    (tmp_path / "FIXED_STRATIFIED_PRODUCTION_V0_COMPLETE.json").write_text(
+        json.dumps(closure), encoding="utf-8"
+    )
+
+    def stop_after_artifact_checks(*_args: object, **_kwargs: object) -> dict:
+        raise RuntimeError("artifact checks passed")
+
+    monkeypatch.setattr(
+        "our_system_phase2.runtime.cn_fixed_stratified_production_v0."
+        "_read_bound_json",
+        stop_after_artifact_checks,
+    )
+    with pytest.raises(RuntimeError, match="artifact checks passed"):
+        verify_fixed_stratified_production_v0(tmp_path)
 
 
 def test_production_boundary_rejects_any_nested_prohibited_read() -> None:
