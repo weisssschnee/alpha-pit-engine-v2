@@ -18,7 +18,7 @@ from our_system_phase2.services.candidate_materialization_requirements import (
     PhysicalLeafResolution,
     resolve_required_physical_leaves,
 )
-from our_system_phase2.services.compositional_grammar import route_clock_contract
+from our_system_phase2.services.compositional_grammar import resolve_skeleton_spec
 from our_system_phase2.services.phase3cm_streaming_dag import (
     SharedMultiCandidateDAGPlan,
 )
@@ -1651,6 +1651,7 @@ class ProgramCompilerV1:
             "field_ids",
             "source_field_ids",
             "representation_ids",
+            "skeleton_id",
             "clock_contract",
             "maturity_contract",
         )
@@ -1699,13 +1700,17 @@ class ProgramCompilerV1:
             raise ValueError(f"{node.node_type} support-unit drift")
         if node.maturity != verdict.maturity_rule:
             raise ValueError(f"{node.node_type} maturity drift")
-        expected_clock, expected_maturity_contract = route_clock_contract(
-            verdict.route_id
-        )
+        skeleton = resolve_skeleton_spec(str(candidate["skeleton_id"]))
+        if skeleton.route_id != verdict.route_id:
+            raise ValueError(f"{node.node_type} candidate skeleton-route drift")
+        expected_clock = skeleton.clock_contract
+        expected_maturity_contract = skeleton.maturity_contract
         if str(candidate["clock_contract"]) != expected_clock:
             raise ValueError(f"{node.node_type} candidate observable-clock drift")
         if str(candidate["maturity_contract"]) != expected_maturity_contract:
             raise ValueError(f"{node.node_type} candidate maturity-contract drift")
+        if str(candidate.get("unit_signature") or "") != skeleton.unit_signature:
+            raise ValueError(f"{node.node_type} candidate unit-signature drift")
         if node.observable_clock != expected_clock:
             raise ValueError(f"{node.node_type} observable-clock drift")
         if node.node_type == "STATE_REPRESENTATION":
@@ -1731,7 +1736,7 @@ class ProgramCompilerV1:
                 "output_semantic_type": "STOCK_SCORE",
                 "entity_scope": "STOCK",
                 "unit_signature": str(
-                    candidate.get("unit_signature") or "dimensionless"
+                    skeleton.unit_signature
                 ),
                 "temporal_semantics": {
                     "kind": "LEGACY_TYPED_ROUTE_EXPRESSION",

@@ -182,17 +182,6 @@ _ROUTE_CLOCKS = {
         "registered frozen episode maturity",
     ),
 }
-
-
-def route_clock_contract(route_id: str) -> tuple[str, str]:
-    """Return the frozen route-skeleton observable and maturity clocks."""
-
-    try:
-        return _ROUTE_CLOCKS[str(route_id)]
-    except KeyError as exc:
-        raise ValueError(f"unknown typed route clock contract: {route_id}") from exc
-
-
 _DECLARATIONS: dict[str, tuple[tuple[str, str, tuple[str, ...], str, str, int], ...]] = {
     "MINUTE_STATIC": (
         ("normalized_level", "cross-sectional normalization exposes relative minute state", ("PRIMARY",), "dimensionless", "magnitude_to_sign", 3),
@@ -432,6 +421,28 @@ def supplemental_skeleton_registry() -> dict[str, tuple[SkeletonSpec, ...]]:
             for name, hypothesis, roles, unit_signature, ablation, maximum_depth in rows
         )
     return output
+
+
+def resolve_skeleton_spec(skeleton_id: str) -> SkeletonSpec:
+    """Resolve one frozen skeleton contract across all append-only registries."""
+
+    target = str(skeleton_id)
+    matches = [
+        skeleton
+        for registry in (
+            skeleton_registry(),
+            optimizer_typed_supply_extension_registry(),
+            supplemental_skeleton_registry(),
+        )
+        for rows in registry.values()
+        for skeleton in rows
+        if skeleton.skeleton_id == target
+    ]
+    if len(matches) != 1:
+        raise ValueError(
+            f"typed skeleton authority must resolve exactly once: {target} ({len(matches)})"
+        )
+    return matches[0]
 
 
 def _pick(rows: Sequence[CapabilityField], index: int, seed: int, salt: str) -> CapabilityField:

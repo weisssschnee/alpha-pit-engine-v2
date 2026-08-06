@@ -818,6 +818,29 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
             )
         )
 
+    spoofed_unit_candidate = {
+        **dict(legacy.parameters["candidate"]),
+        "unit_signature": "cubic_meters",
+    }
+    spoofed_unit = replace(
+        legacy,
+        parameters={
+            **dict(legacy.parameters),
+            "candidate": spoofed_unit_candidate,
+        },
+        unit_signature="cubic_meters",
+    )
+    with pytest.raises(ValueError, match="candidate unit-signature drift"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                program,
+                nodes=tuple(
+                    spoofed_unit if node.node_id == legacy.node_id else node
+                    for node in program.nodes
+                ),
+            )
+        )
+
 
 def test_authorized_joint_fixtures_execute_on_typed_synthetic_panel(program_context) -> None:
     registry, _, _, fixtures = program_context
