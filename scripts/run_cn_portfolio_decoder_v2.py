@@ -75,6 +75,19 @@ _PROCESS_WORKER_CANDIDATE_ROOT: Path | None = None
 _PROCESS_WORKER_INPUT_DATA_SHA256: str | None = None
 
 
+def _execution_price_coordinate_code(value: Any) -> str:
+    """Normalize exchange-suffixed and bare A-share codes for sidecar joins."""
+
+    text = base._normalize_code(value).upper()
+    if (
+        len(text) == 9
+        and text[:6].isdigit()
+        and text[6:] in {".SZ", ".SH", ".BJ"}
+    ):
+        return text[:6]
+    return text
+
+
 def _attach_execution_prices(
     field_frame: pd.DataFrame,
     price_manifest: Mapping[str, Any],
@@ -101,8 +114,34 @@ def _attach_execution_prices(
     ).reset_index(drop=True)
     if price_frame.duplicated(["date", "code"]).any():
         raise RuntimeError("execution price sidecar has duplicate coordinates")
-    field_index = pd.MultiIndex.from_frame(field_frame[["date", "code"]])
-    price_index = pd.MultiIndex.from_frame(price_frame[["date", "code"]])
+    field_coordinate_codes = field_frame["code"].map(
+        _execution_price_coordinate_code
+    )
+    price_coordinate_codes = price_frame["code"].map(
+        _execution_price_coordinate_code
+    )
+    field_coordinates = pd.DataFrame(
+        {
+            "date": field_frame["date"].to_numpy(),
+            "code": field_coordinate_codes.to_numpy(),
+        }
+    )
+    price_coordinates = pd.DataFrame(
+        {
+            "date": price_frame["date"].to_numpy(),
+            "code": price_coordinate_codes.to_numpy(),
+        }
+    )
+    if field_coordinates.duplicated(["date", "code"]).any():
+        raise RuntimeError(
+            "feature sidecar has duplicate canonical execution coordinates"
+        )
+    if price_coordinates.duplicated(["date", "code"]).any():
+        raise RuntimeError(
+            "execution price sidecar has duplicate canonical coordinates"
+        )
+    field_index = pd.MultiIndex.from_frame(field_coordinates)
+    price_index = pd.MultiIndex.from_frame(price_coordinates)
     if not field_index.equals(price_index):
         raise RuntimeError("execution price/feature coordinate drift")
     feature_close = pd.to_numeric(
@@ -122,6 +161,11 @@ def _attach_execution_prices(
     field_frame["open"] = pd.to_numeric(
         price_frame["open"], errors="coerce"
     ).to_numpy()
+    # Keep downstream session-authority joins on the already accepted
+    # execution-price identifier convention. The canonical equality gate above
+    # proves this is formatting-only (for example 000001.SZ versus 000001),
+    # not a positional or universe-changing join.
+    field_frame["code"] = price_frame["code"].to_numpy()
     return field_frame
 
 
