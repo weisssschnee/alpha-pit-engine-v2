@@ -1,0 +1,129 @@
+{
+  "compiled_program_hash": "7de2eca98d72c30b5ce351da3ed6facb72e4b6e966688e98a662481e2ff8b0fa",
+  "compiler_semantics_version": "cn_program_compiler_adapter_v1",
+  "complexity_report": {
+    "complexity_policy_hash": "39fc03d103be2f2eb1e9507a7b7124f7772513d62a42dfec7fdb04495b8ce950",
+    "conditional_switch_count": 0,
+    "context_field_leaves": 0,
+    "effective_nodes": 4,
+    "estimated_cost": 4,
+    "event_join_cost": 0,
+    "event_sources": 0,
+    "gate_veto_depth": 0,
+    "program_depth": 1,
+    "residualize_count": 0,
+    "stock_field_leaves": 0,
+    "window_kinds": 0
+  },
+  "component_clock_requirements": {
+    "legacy_score": {
+      "field_requirements": {
+        "amount": {
+          "maturity": "0 bars",
+          "observable_clock": "bar_close",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_lag": 0,
+          "source_lag_unit": "bars"
+        }
+      },
+      "maturity_contract": "bar_close",
+      "observable_clock_contract": "bar_close",
+      "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+      "source_lag": 0,
+      "source_lag_unit": "bars"
+    }
+  },
+  "external_adapter_requirements": [],
+  "field_lags": {},
+  "joint_clock_contract": {
+    "action_session_policy": "EXISTING_CANDIDATE_ACTION_SESSION",
+    "component_clock_node_ids": [
+      "legacy_score"
+    ],
+    "joint_eligible_from_policy": "ROW_WISE_MAX_REQUIRED_COMPONENT_MATURITY",
+    "joint_support_policy": "REQUIRED_COMPONENT_ELIGIBILITY_INTERSECTION",
+    "missing_component_policy": "FAIL_CLOSED_REQUIRED_COMPONENT",
+    "pit_guard_version": "LEGACY_ROUTE_GUARD"
+  },
+  "legacy_component_verdicts": [
+    {
+      "candidate_id": "cn.comp.df3358df6c93405cb9a3",
+      "canonical_expression": "CSRank(ZScore($amount))",
+      "canonical_identity": "c4411f5b9e415811794f9ab5abf885849e5edde4e28b1bbfafa649162622bec7",
+      "decision": "ALLOW",
+      "exact_identity": "a92ea4e84f5c1d71e4b938e6349ef7057c9d46a812e4b30a90f9df6b23ddc3bd",
+      "node_id": "legacy_score",
+      "route_id": "MINUTE_STATIC"
+    }
+  ],
+  "node_execution_plan": [
+    {
+      "compiled_expression": "1",
+      "entity_scope": "CONSTANT",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "bar_close",
+      "node_id": "eligibility_identity",
+      "node_type": "CONSTANT",
+      "observable_clock": "bar_close",
+      "output_semantic_type": "STOCK_MASK"
+    },
+    {
+      "compiled_expression": "1.0",
+      "entity_scope": "CONSTANT",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "bar_close",
+      "node_id": "exposure_identity",
+      "node_type": "CONSTANT",
+      "observable_clock": "bar_close",
+      "output_semantic_type": "STOCK_MULTIPLIER"
+    },
+    {
+      "compiled_expression": "CSRank(ZScore($amount))",
+      "entity_scope": "STOCK",
+      "execution_phase": 10,
+      "input_node_ids": [],
+      "maturity": "bar_close",
+      "node_id": "legacy_score",
+      "node_type": "LEGACY_CANDIDATE_COMPONENT",
+      "observable_clock": "bar_close",
+      "output_semantic_type": "STOCK_SCORE"
+    },
+    {
+      "compiled_expression": "0",
+      "entity_scope": "CONSTANT",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "bar_close",
+      "node_id": "veto_identity",
+      "node_type": "CONSTANT",
+      "observable_clock": "bar_close",
+      "output_semantic_type": "STOCK_MASK"
+    }
+  ],
+  "ordered_node_ids": [
+    "eligibility_identity",
+    "exposure_identity",
+    "legacy_score",
+    "veto_identity"
+  ],
+  "output_expressions": {
+    "eligibility_mask_node_id": "1",
+    "exposure_multiplier_node_id": "1.0",
+    "stock_score_node_id": "CSRank(ZScore($amount))",
+    "veto_mask_node_id": "0"
+  },
+  "output_node_ids": {
+    "eligibility_mask_node_id": "eligibility_identity",
+    "exposure_multiplier_node_id": "exposure_identity",
+    "stock_score_node_id": "legacy_score",
+    "veto_mask_node_id": "veto_identity"
+  },
+  "physical_leaf_ids": [
+    "amount"
+  ],
+  "program_id": "cn.program.169cf8705af2ebbdefd889ee830a3173",
+  "semantic_program_hash": "169cf8705af2ebbdefd889ee830a3173bfbb1f37fbcd064cb5443616a14ac49b",
+  "shared_dag_plan_hash": "ba4149135ec5a43be24673a96b35831f9d15538b7988c555d38c4cec4cd38856"
+}

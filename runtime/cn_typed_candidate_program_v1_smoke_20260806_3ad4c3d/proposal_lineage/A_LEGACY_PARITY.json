@@ -1,0 +1,10 @@
+{
+  "attempt": 0,
+  "generation_source": "CN_TYPED_CANDIDATE_PROGRAM_V1",
+  "proposal_instance_hash": "e665a05bad1f665d762c49b7dd4e0b57e9d73ae033441db4809702ac49a051c2",
+  "proposal_parent": "",
+  "sampler": "FIXED_GOLDEN_FIXTURE_V1",
+  "seed": 1729,
+  "semantic_program_hash": "169cf8705af2ebbdefd889ee830a3173bfbb1f37fbcd064cb5443616a14ac49b",
+  "template_stratum_id": "MANUAL_FIXTURE"
+}

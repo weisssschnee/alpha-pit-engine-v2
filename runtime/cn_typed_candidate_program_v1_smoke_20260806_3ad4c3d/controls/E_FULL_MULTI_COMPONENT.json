@@ -1,0 +1,11 @@
+{
+  "control_compiled_program_hash": "e97d6d0dc7746135343de66b013f3ea2926024e2f3367a8b63b8aa8a4f1f2afa",
+  "control_pair_payload_sha256": "a8e43621cd416814006965671f386599570b166c107c06013b58565cccdc0259",
+  "control_program_id": "cn.program.82b4768ce94fb40e05a0bb5e0b080ff8",
+  "control_semantic_program_hash": "82b4768ce94fb40e05a0bb5e0b080ff8e0bfc9ae0a3f7c9438c002815742547c",
+  "diagnostic_only": false,
+  "fixture_id": "E_FULL_MULTI_COMPONENT",
+  "pair_id": "cn.program_pair.3f25f0a1724ea271af581e300a57432a",
+  "primary_program_id": "cn.program.23a78a54a4dda55a7840c831f4dc0e9d",
+  "primary_semantic_program_hash": "23a78a54a4dda55a7840c831f4dc0e9de1c86ce859036311b5cccdab72493354"
+}

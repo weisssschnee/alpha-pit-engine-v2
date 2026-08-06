@@ -1,0 +1,760 @@
+{
+  "blocker_code": "",
+  "explanation_zh": "Fixture B 仅在上涨家数超过下跌家数且炸板密度低时进入组合；市场字段不直接参与股票横截面排序。",
+  "fixture_id": "C_MARKET_CONDITIONED",
+  "fixture_order": 2,
+  "fixture_payload_sha256": "9163d050556ac5e7dd0295de9bafb363219cad8904980e9a85e813c96004f90e",
+  "performance_claim_allowed": false,
+  "program": {
+    "compiler_semantics_version": "cn_program_compiler_adapter_v1",
+    "complexity_budget": {
+      "maximum_conditional_switch_count": 2,
+      "maximum_context_field_leaves": 6,
+      "maximum_effective_nodes": 48,
+      "maximum_estimated_cost": 128,
+      "maximum_event_join_cost": 8,
+      "maximum_event_sources": 3,
+      "maximum_gate_veto_depth": 3,
+      "maximum_program_depth": 12,
+      "maximum_residualize_count": 2,
+      "maximum_stock_field_leaves": 12,
+      "maximum_window_kinds": 6,
+      "policy_id": "CN_TYPED_PROGRAM_COMPLEXITY_CONSERVATIVE_V1"
+    },
+    "complexity_policy_hash": "39fc03d103be2f2eb1e9507a7b7124f7772513d62a42dfec7fdb04495b8ce950",
+    "frozen_component_references": [],
+    "joint_clock_contract": {
+      "action_session_policy": "PRIOR_CLOSE_SIGNAL_NEXT_OPEN_ACTION",
+      "component_clock_node_ids": [
+        "financing_net_buy",
+        "financing_balance_ratio",
+        "float_market_cap",
+        "turnover_ratio",
+        "market_up_count",
+        "market_down_count",
+        "market_board_count"
+      ],
+      "joint_eligible_from_policy": "ROW_WISE_MAX_REQUIRED_COMPONENT_MATURITY",
+      "joint_support_policy": "REQUIRED_COMPONENT_ELIGIBILITY_INTERSECTION",
+      "missing_component_policy": "FAIL_CLOSED_REQUIRED_COMPONENT",
+      "pit_guard_version": "CN_TYPED_PROGRAM_JOINT_CLOCK_V1"
+    },
+    "legacy_component_provenance": [],
+    "matched_control_plan": {
+      "control_constructor_id": "CN_TYPED_PROGRAM_LEVEL_REPLACEMENT_V1",
+      "operations": [
+        {
+          "diagnostic_only": false,
+          "operation": "REPLACE_WITH_LEVEL",
+          "replacement": {
+            "node": {
+              "component_route_provenance": [
+                "SLOW_TEMPORAL_CHANGE"
+              ],
+              "entity_scope": "STOCK",
+              "input_node_ids": [
+                "financing_net_buy"
+              ],
+              "maturity": "prior_close",
+              "node_id": "net_buy_short_long",
+              "node_type": "ROLLING_MEAN",
+              "observable_clock": "prior_close",
+              "output_semantic_type": "STOCK_VALUE",
+              "parameters": {
+                "window": 5
+              },
+              "source_lineage": [
+                "cn.rep.3bc4097320f5811957fe024cd5d9ab84",
+                "cn.sf.186d68406e6cd10856039b75bc9a3146"
+              ],
+              "support_unit": "stock-session cross-section",
+              "temporal_semantics": {
+                "kind": "FIXED_PROGRAM_OPERATOR",
+                "uses_future_revision": false
+              },
+              "unit_signature": "yuan"
+            }
+          },
+          "target_node_ids": [
+            "net_buy_short_long"
+          ]
+        }
+      ],
+      "pair_maturity_policy": "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT",
+      "pair_support_policy": "PRIMARY_CONTROL_EXACT_COORDINATE_INTERSECTION",
+      "portfolio_contract_unchanged": true
+    },
+    "nodes": [
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "prior_close",
+        "node_id": "board_threshold",
+        "node_type": "CONSTANT",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "SCALAR",
+        "parameters": {
+          "value": 30.0
+        },
+        "source_lineage": [],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_CROSS_SECTIONAL_LEVEL",
+          "SLOW_TEMPORAL_CHANGE"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [
+          "scaled_short_long",
+          "financing_balance_ratio"
+        ],
+        "maturity": "prior_close",
+        "node_id": "decongested_feature",
+        "node_type": "SUBTRACT",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {},
+        "source_lineage": [
+          "cn.rep.332f64d8262ab2abf6cdbbb90827f316",
+          "cn.rep.3bc4097320f5811957fe024cd5d9ab84",
+          "cn.rep.71d7d649f92989042bf35280d99d9b09",
+          "cn.sf.110a6284eff4d8ed5cc8f17a0057d742",
+          "cn.sf.186d68406e6cd10856039b75bc9a3146",
+          "cn.sf.2cd13addabe837f7b86c6f302ca9d873"
+        ],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "prior_close",
+        "node_id": "eligibility_identity",
+        "node_type": "CONSTANT",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_MASK",
+        "parameters": {
+          "value": true
+        },
+        "source_lineage": [],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT",
+          "uses_future_revision": false
+        },
+        "unit_signature": "boolean"
+      },
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "prior_close",
+        "node_id": "exposure_identity",
+        "node_type": "CONSTANT",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_MULTIPLIER",
+        "parameters": {
+          "value": 1.0
+        },
+        "source_lineage": [],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_CROSS_SECTIONAL_LEVEL",
+          "SLOW_TEMPORAL_CHANGE"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [
+          "residual_feature"
+        ],
+        "maturity": "prior_close",
+        "node_id": "final_score",
+        "node_type": "CSRANK",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_SCORE",
+        "parameters": {},
+        "source_lineage": [
+          "cn.rep.332f64d8262ab2abf6cdbbb90827f316",
+          "cn.rep.3bc4097320f5811957fe024cd5d9ab84",
+          "cn.rep.71d7d649f92989042bf35280d99d9b09",
+          "cn.rep.ce1a159e1374e5b5b2028ad4d1a737fb",
+          "cn.sf.110a6284eff4d8ed5cc8f17a0057d742",
+          "cn.sf.186d68406e6cd10856039b75bc9a3146",
+          "cn.sf.2cd13addabe837f7b86c6f302ca9d873",
+          "cn.sf.cc4fd7b343b9e8f35217f25e482d77b5"
+        ],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_CROSS_SECTIONAL_LEVEL"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [],
+        "maturity": "1 sessions",
+        "node_id": "financing_balance_ratio",
+        "node_type": "STOCK_FIELD",
+        "observable_clock": "previous_session",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {
+          "execution_adapter_id": "UNIFIED_REGISTERED_STOCK_CONTEXT",
+          "field_id": "ctx_rzrq_rzyezb",
+          "pit_status": "PIT_VERSIONED_HISTORY",
+          "representation_id": "cn.rep.332f64d8262ab2abf6cdbbb90827f316",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_field_id": "cn.sf.2cd13addabe837f7b86c6f302ca9d873",
+          "source_lag": 1,
+          "source_lag_unit": "sessions"
+        },
+        "source_lineage": [
+          "cn.sf.2cd13addabe837f7b86c6f302ca9d873",
+          "cn.rep.332f64d8262ab2abf6cdbbb90827f316"
+        ],
+        "support_unit": "stock-session cross-section",
+        "temporal_semantics": {
+          "kind": "PREVIOUS_SESSION_STOCK_CONTEXT",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_lag": 1,
+          "source_lag_unit": "sessions",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_TEMPORAL_CHANGE"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [],
+        "maturity": "1 sessions",
+        "node_id": "financing_net_buy",
+        "node_type": "STOCK_FIELD",
+        "observable_clock": "previous_session",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {
+          "execution_adapter_id": "UNIFIED_REGISTERED_STOCK_CONTEXT",
+          "field_id": "ctx_rzrq_rzjme",
+          "pit_status": "PIT_VERSIONED_HISTORY",
+          "representation_id": "cn.rep.3bc4097320f5811957fe024cd5d9ab84",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_field_id": "cn.sf.186d68406e6cd10856039b75bc9a3146",
+          "source_lag": 1,
+          "source_lag_unit": "sessions"
+        },
+        "source_lineage": [
+          "cn.sf.186d68406e6cd10856039b75bc9a3146",
+          "cn.rep.3bc4097320f5811957fe024cd5d9ab84"
+        ],
+        "support_unit": "stock-session cross-section",
+        "temporal_semantics": {
+          "kind": "PREVIOUS_SESSION_STOCK_CONTEXT",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_lag": 1,
+          "source_lag_unit": "sessions",
+          "uses_future_revision": false
+        },
+        "unit_signature": "yuan"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_CROSS_SECTIONAL_LEVEL"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [],
+        "maturity": "1 sessions",
+        "node_id": "float_market_cap",
+        "node_type": "STOCK_FIELD",
+        "observable_clock": "previous_session",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {
+          "execution_adapter_id": "UNIFIED_REGISTERED_STOCK_CONTEXT",
+          "field_id": "ctx_hfq_float_market_cap_yuan",
+          "pit_status": "PIT_VERSIONED_HISTORY",
+          "representation_id": "cn.rep.71d7d649f92989042bf35280d99d9b09",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_field_id": "cn.sf.110a6284eff4d8ed5cc8f17a0057d742",
+          "source_lag": 1,
+          "source_lag_unit": "sessions"
+        },
+        "source_lineage": [
+          "cn.sf.110a6284eff4d8ed5cc8f17a0057d742",
+          "cn.rep.71d7d649f92989042bf35280d99d9b09"
+        ],
+        "support_unit": "stock-session cross-section",
+        "temporal_semantics": {
+          "kind": "PREVIOUS_SESSION_STOCK_CONTEXT",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_lag": 1,
+          "source_lag_unit": "sessions",
+          "uses_future_revision": false
+        },
+        "unit_signature": "yuan"
+      },
+      {
+        "component_route_provenance": [
+          "MARKET_REGIME_CONDITION"
+        ],
+        "entity_scope": "MARKET",
+        "input_node_ids": [
+          "market_board_count",
+          "board_threshold"
+        ],
+        "maturity": "prior_close",
+        "node_id": "low_board_density",
+        "node_type": "LIMIT_DENSITY",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "MARKET_MASK",
+        "parameters": {
+          "comparison": "LEFT_LT_RIGHT"
+        },
+        "source_lineage": [
+          "cn.rep.c4b0cc327badf344c9c55407441f2e08",
+          "cn.sf.76ee65c36ddf54363d93d38faaf702a9"
+        ],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "boolean"
+      },
+      {
+        "component_route_provenance": [
+          "MARKET_REGIME_CONDITION"
+        ],
+        "entity_scope": "MARKET",
+        "input_node_ids": [],
+        "maturity": "1 sessions",
+        "node_id": "market_board_count",
+        "node_type": "MARKET_FIELD",
+        "observable_clock": "previous_session",
+        "output_semantic_type": "MARKET_VALUE",
+        "parameters": {
+          "execution_adapter_id": "EXISTING_MARKET_CONDITION_BROADCAST",
+          "field_id": "ctx_sent_zb_num",
+          "pit_status": "PIT_VERSIONED_HISTORY",
+          "representation_id": "cn.rep.c4b0cc327badf344c9c55407441f2e08",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_field_id": "cn.sf.76ee65c36ddf54363d93d38faaf702a9",
+          "source_lag": 1,
+          "source_lag_unit": "sessions"
+        },
+        "source_lineage": [
+          "cn.sf.76ee65c36ddf54363d93d38faaf702a9",
+          "cn.rep.c4b0cc327badf344c9c55407441f2e08"
+        ],
+        "support_unit": "market-time block",
+        "temporal_semantics": {
+          "kind": "PREVIOUS_SESSION_MARKET_STATE",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_lag": 1,
+          "source_lag_unit": "sessions",
+          "uses_future_revision": false
+        },
+        "unit_signature": "count"
+      },
+      {
+        "component_route_provenance": [
+          "MARKET_REGIME_CONDITION"
+        ],
+        "entity_scope": "MARKET",
+        "input_node_ids": [
+          "market_up_count",
+          "market_down_count"
+        ],
+        "maturity": "prior_close",
+        "node_id": "market_breadth_gate",
+        "node_type": "STATE",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "MARKET_MASK",
+        "parameters": {
+          "comparison": "LEFT_GT_RIGHT"
+        },
+        "source_lineage": [
+          "cn.rep.8a0bb21faa00b2b5594cadfda67ee5b1",
+          "cn.rep.d8c6f1d7029e14929a63b4fcfc07a67e",
+          "cn.sf.c5050c71558a5b5cc88417b64e8fbc9e",
+          "cn.sf.e2f11d5129b1712f34240d5c2cd2cb93"
+        ],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "boolean"
+      },
+      {
+        "component_route_provenance": [
+          "MARKET_REGIME_CONDITION"
+        ],
+        "entity_scope": "MARKET",
+        "input_node_ids": [
+          "market_breadth_gate",
+          "low_board_density"
+        ],
+        "maturity": "prior_close",
+        "node_id": "market_condition",
+        "node_type": "INTERSECT",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "MARKET_MASK",
+        "parameters": {},
+        "source_lineage": [
+          "cn.rep.8a0bb21faa00b2b5594cadfda67ee5b1",
+          "cn.rep.c4b0cc327badf344c9c55407441f2e08",
+          "cn.rep.d8c6f1d7029e14929a63b4fcfc07a67e",
+          "cn.sf.76ee65c36ddf54363d93d38faaf702a9",
+          "cn.sf.c5050c71558a5b5cc88417b64e8fbc9e",
+          "cn.sf.e2f11d5129b1712f34240d5c2cd2cb93"
+        ],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "boolean"
+      },
+      {
+        "component_route_provenance": [
+          "MARKET_REGIME_CONDITION"
+        ],
+        "entity_scope": "MARKET",
+        "input_node_ids": [],
+        "maturity": "1 sessions",
+        "node_id": "market_down_count",
+        "node_type": "MARKET_FIELD",
+        "observable_clock": "previous_session",
+        "output_semantic_type": "MARKET_VALUE",
+        "parameters": {
+          "execution_adapter_id": "EXISTING_MARKET_CONDITION_BROADCAST",
+          "field_id": "ctx_sent_down_num",
+          "pit_status": "PIT_VERSIONED_HISTORY",
+          "representation_id": "cn.rep.8a0bb21faa00b2b5594cadfda67ee5b1",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_field_id": "cn.sf.c5050c71558a5b5cc88417b64e8fbc9e",
+          "source_lag": 1,
+          "source_lag_unit": "sessions"
+        },
+        "source_lineage": [
+          "cn.sf.c5050c71558a5b5cc88417b64e8fbc9e",
+          "cn.rep.8a0bb21faa00b2b5594cadfda67ee5b1"
+        ],
+        "support_unit": "market-time block",
+        "temporal_semantics": {
+          "kind": "PREVIOUS_SESSION_MARKET_STATE",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_lag": 1,
+          "source_lag_unit": "sessions",
+          "uses_future_revision": false
+        },
+        "unit_signature": "count"
+      },
+      {
+        "component_route_provenance": [
+          "MARKET_REGIME_CONDITION"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [
+          "eligibility_identity",
+          "market_condition"
+        ],
+        "maturity": "prior_close",
+        "node_id": "market_eligibility",
+        "node_type": "FILTER",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_MASK",
+        "parameters": {},
+        "source_lineage": [
+          "cn.rep.8a0bb21faa00b2b5594cadfda67ee5b1",
+          "cn.rep.c4b0cc327badf344c9c55407441f2e08",
+          "cn.rep.d8c6f1d7029e14929a63b4fcfc07a67e",
+          "cn.sf.76ee65c36ddf54363d93d38faaf702a9",
+          "cn.sf.c5050c71558a5b5cc88417b64e8fbc9e",
+          "cn.sf.e2f11d5129b1712f34240d5c2cd2cb93"
+        ],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "boolean"
+      },
+      {
+        "component_route_provenance": [
+          "MARKET_REGIME_CONDITION"
+        ],
+        "entity_scope": "MARKET",
+        "input_node_ids": [],
+        "maturity": "1 sessions",
+        "node_id": "market_up_count",
+        "node_type": "MARKET_FIELD",
+        "observable_clock": "previous_session",
+        "output_semantic_type": "MARKET_VALUE",
+        "parameters": {
+          "execution_adapter_id": "EXISTING_MARKET_CONDITION_BROADCAST",
+          "field_id": "ctx_sent_up_num",
+          "pit_status": "PIT_VERSIONED_HISTORY",
+          "representation_id": "cn.rep.d8c6f1d7029e14929a63b4fcfc07a67e",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_field_id": "cn.sf.e2f11d5129b1712f34240d5c2cd2cb93",
+          "source_lag": 1,
+          "source_lag_unit": "sessions"
+        },
+        "source_lineage": [
+          "cn.sf.e2f11d5129b1712f34240d5c2cd2cb93",
+          "cn.rep.d8c6f1d7029e14929a63b4fcfc07a67e"
+        ],
+        "support_unit": "market-time block",
+        "temporal_semantics": {
+          "kind": "PREVIOUS_SESSION_MARKET_STATE",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_lag": 1,
+          "source_lag_unit": "sessions",
+          "uses_future_revision": false
+        },
+        "unit_signature": "count"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_TEMPORAL_CHANGE"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [
+          "financing_net_buy"
+        ],
+        "maturity": "prior_close",
+        "node_id": "net_buy_short_long",
+        "node_type": "SHORT_LONG_SPREAD",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {
+          "long_window": 20,
+          "short_window": 5
+        },
+        "source_lineage": [
+          "cn.rep.3bc4097320f5811957fe024cd5d9ab84",
+          "cn.sf.186d68406e6cd10856039b75bc9a3146"
+        ],
+        "support_unit": "stock-session cross-section",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "yuan"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_TEMPORAL_CHANGE"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [
+          "financing_net_buy"
+        ],
+        "maturity": "prior_close",
+        "node_id": "net_buy_slope_20",
+        "node_type": "SLOPE",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {
+          "window": 20
+        },
+        "source_lineage": [
+          "cn.rep.3bc4097320f5811957fe024cd5d9ab84",
+          "cn.sf.186d68406e6cd10856039b75bc9a3146"
+        ],
+        "support_unit": "stock-session cross-section",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "yuan"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_TEMPORAL_CHANGE"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [
+          "financing_net_buy"
+        ],
+        "maturity": "prior_close",
+        "node_id": "net_buy_slope_5",
+        "node_type": "SLOPE",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {
+          "window": 5
+        },
+        "source_lineage": [
+          "cn.rep.3bc4097320f5811957fe024cd5d9ab84",
+          "cn.sf.186d68406e6cd10856039b75bc9a3146"
+        ],
+        "support_unit": "stock-session cross-section",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "yuan"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_CROSS_SECTIONAL_LEVEL",
+          "SLOW_TEMPORAL_CHANGE"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [
+          "decongested_feature",
+          "float_market_cap",
+          "turnover_ratio"
+        ],
+        "maturity": "prior_close",
+        "node_id": "residual_feature",
+        "node_type": "RESIDUALIZE",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {},
+        "source_lineage": [
+          "cn.rep.332f64d8262ab2abf6cdbbb90827f316",
+          "cn.rep.3bc4097320f5811957fe024cd5d9ab84",
+          "cn.rep.71d7d649f92989042bf35280d99d9b09",
+          "cn.rep.ce1a159e1374e5b5b2028ad4d1a737fb",
+          "cn.sf.110a6284eff4d8ed5cc8f17a0057d742",
+          "cn.sf.186d68406e6cd10856039b75bc9a3146",
+          "cn.sf.2cd13addabe837f7b86c6f302ca9d873",
+          "cn.sf.cc4fd7b343b9e8f35217f25e482d77b5"
+        ],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_CROSS_SECTIONAL_LEVEL",
+          "SLOW_TEMPORAL_CHANGE"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [
+          "net_buy_short_long",
+          "float_market_cap"
+        ],
+        "maturity": "prior_close",
+        "node_id": "scaled_short_long",
+        "node_type": "SAFE_DIVIDE",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {
+          "floor": 1.0
+        },
+        "source_lineage": [
+          "cn.rep.3bc4097320f5811957fe024cd5d9ab84",
+          "cn.rep.71d7d649f92989042bf35280d99d9b09",
+          "cn.sf.110a6284eff4d8ed5cc8f17a0057d742",
+          "cn.sf.186d68406e6cd10856039b75bc9a3146"
+        ],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [
+          "SLOW_CROSS_SECTIONAL_LEVEL"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [],
+        "maturity": "1 sessions",
+        "node_id": "turnover_ratio",
+        "node_type": "STOCK_FIELD",
+        "observable_clock": "previous_session",
+        "output_semantic_type": "STOCK_VALUE",
+        "parameters": {
+          "execution_adapter_id": "UNIFIED_REGISTERED_STOCK_CONTEXT",
+          "field_id": "ctx_hfq_turnover_ratio",
+          "pit_status": "PIT_VERSIONED_HISTORY",
+          "representation_id": "cn.rep.ce1a159e1374e5b5b2028ad4d1a737fb",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_field_id": "cn.sf.cc4fd7b343b9e8f35217f25e482d77b5",
+          "source_lag": 1,
+          "source_lag_unit": "sessions"
+        },
+        "source_lineage": [
+          "cn.sf.cc4fd7b343b9e8f35217f25e482d77b5",
+          "cn.rep.ce1a159e1374e5b5b2028ad4d1a737fb"
+        ],
+        "support_unit": "stock-session cross-section",
+        "temporal_semantics": {
+          "kind": "PREVIOUS_SESSION_STOCK_CONTEXT",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_lag": 1,
+          "source_lag_unit": "sessions",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "prior_close",
+        "node_id": "veto_identity",
+        "node_type": "CONSTANT",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_MASK",
+        "parameters": {
+          "value": false
+        },
+        "source_lineage": [],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT",
+          "uses_future_revision": false
+        },
+        "unit_signature": "boolean"
+      }
+    ],
+    "outputs": {
+      "eligibility_mask_node_id": "market_eligibility",
+      "exposure_multiplier_node_id": "exposure_identity",
+      "stock_score_node_id": "final_score",
+      "veto_mask_node_id": "veto_identity"
+    },
+    "portfolio_contract": {
+      "decoder_id": "TOPK_10_EQUAL",
+      "execution": "PRIOR_CLOSE_SIGNAL_NEXT_OPEN_T_PLUS_1",
+      "fees": "EXISTING_FROZEN_A_SHARE_FEES",
+      "ledger": "EXISTING_CONTINUOUS_BOOK_FINAL_CLOSE_MTM",
+      "tradability": "EXISTING_A_SHARE_TRADABILITY"
+    },
+    "program_id": "cn.program.6a7430c1afbe89ebf575a8491108f020",
+    "schema_version": "cn_typed_candidate_program_v1",
+    "semantic_program_hash": "6a7430c1afbe89ebf575a8491108f020602c6dae9592b4c37d01612a8923cedf"
+  },
+  "status": "COMPILE_READY"
+}

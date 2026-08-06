@@ -1,0 +1,11 @@
+{
+  "control_compiled_program_hash": "f3a833dad21dcf2bf1d3fce1dd01dec9fa6da2b9e35467c05effe8f6aa4f7fcf",
+  "control_pair_payload_sha256": "cc5692a75ca4e31918aa269370f9a242d9a5e9a4a6ab553a88ef8010bdae22a1",
+  "control_program_id": "cn.program.18aeed1aa5235d42ee0682b14d0dfdac",
+  "control_semantic_program_hash": "18aeed1aa5235d42ee0682b14d0dfdac41bcad85ad1d69c758c553cd76dc844b",
+  "diagnostic_only": false,
+  "fixture_id": "B_MULTI_TIMESCALE_FINANCING",
+  "pair_id": "cn.program_pair.5eb102ceb7932ab6a85a4a4495463150",
+  "primary_program_id": "cn.program.3749238fd7f513089c12e1a25d5a0829",
+  "primary_semantic_program_hash": "3749238fd7f513089c12e1a25d5a0829b76ffdcb3886cfdeb61a4d042798560c"
+}

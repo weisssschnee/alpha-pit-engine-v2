@@ -1,0 +1,129 @@
+{
+  "compile_ready_count": 5,
+  "compiled_rows": [
+    {
+      "compiled_program_hash": "7de2eca98d72c30b5ce351da3ed6facb72e4b6e966688e98a662481e2ff8b0fa",
+      "external_adapter_requirements": [],
+      "fixture_id": "A_LEGACY_PARITY",
+      "physical_leaf_ids": [
+        "amount"
+      ],
+      "program_id": "cn.program.169cf8705af2ebbdefd889ee830a3173",
+      "semantic_program_hash": "169cf8705af2ebbdefd889ee830a3173bfbb1f37fbcd064cb5443616a14ac49b"
+    },
+    {
+      "compiled_program_hash": "897ef31cc7710b2a914a08ed6a6f3992e470456134971c04bca8a35a3e4ce9d7",
+      "external_adapter_requirements": [],
+      "fixture_id": "B_MULTI_TIMESCALE_FINANCING",
+      "physical_leaf_ids": [
+        "ctx_hfq_float_market_cap_yuan",
+        "ctx_hfq_turnover_ratio",
+        "ctx_rzrq_rzjme",
+        "ctx_rzrq_rzyezb"
+      ],
+      "program_id": "cn.program.3749238fd7f513089c12e1a25d5a0829",
+      "semantic_program_hash": "3749238fd7f513089c12e1a25d5a0829b76ffdcb3886cfdeb61a4d042798560c"
+    },
+    {
+      "compiled_program_hash": "9613dfc20bf15f3b525602eb4bc4be266d479ae023e09b4210aa67c609854102",
+      "external_adapter_requirements": [],
+      "fixture_id": "C_MARKET_CONDITIONED",
+      "physical_leaf_ids": [
+        "ctx_hfq_float_market_cap_yuan",
+        "ctx_hfq_turnover_ratio",
+        "ctx_rzrq_rzjme",
+        "ctx_rzrq_rzyezb",
+        "ctx_sent_down_num",
+        "ctx_sent_up_num",
+        "ctx_sent_zb_num"
+      ],
+      "program_id": "cn.program.6a7430c1afbe89ebf575a8491108f020",
+      "semantic_program_hash": "6a7430c1afbe89ebf575a8491108f020602c6dae9592b4c37d01612a8923cedf"
+    },
+    {
+      "compiled_program_hash": "62303c3dbda2a7b0a1fedcb095aa1f170b9efebed980ae9225badd0d8dcdb44d",
+      "external_adapter_requirements": [],
+      "fixture_id": "E_FULL_MULTI_COMPONENT",
+      "physical_leaf_ids": [
+        "ctx_hfq_float_market_cap_yuan",
+        "ctx_hfq_turnover_ratio",
+        "ctx_holder_holder_num_change",
+        "ctx_rzrq_rzjme",
+        "ctx_rzrq_rzyezb",
+        "ctx_sent_down_num",
+        "ctx_sent_up_num",
+        "ctx_sent_zb_num",
+        "fund_disclosure_holder_pulse"
+      ],
+      "program_id": "cn.program.23a78a54a4dda55a7840c831f4dc0e9d",
+      "semantic_program_hash": "23a78a54a4dda55a7840c831f4dc0e9de1c86ce859036311b5cccdab72493354"
+    },
+    {
+      "compiled_program_hash": "c0562df5a98569fa624585189b851ea7d31a1f6d1aabe2ec6ec1726e4bb76bda",
+      "external_adapter_requirements": [
+        "FROZEN_BROAD_EVENT_INVENTORY_BINDING",
+        "broad_event_01166fdd6c3a2aab__frozen_primary_replay"
+      ],
+      "fixture_id": "F_FROZEN_BROAD_EVENT_GATE",
+      "physical_leaf_ids": [
+        "amount"
+      ],
+      "program_id": "cn.program.18663abfd058396467cca7a25ab78f56",
+      "semantic_program_hash": "18663abfd058396467cca7a25ab78f56a7f3c5a98705543c1325809537941e71"
+    }
+  ],
+  "fail_closed_count": 1,
+  "fixture_count": 6,
+  "fixture_rows": [
+    {
+      "blocker_code": "",
+      "fixture_id": "A_LEGACY_PARITY",
+      "fixture_payload_sha256": "c1e6fd070f77d1e13dc4e76665207d7af591795ea77851389b6d07cb54f9e8f2",
+      "status": "COMPILE_READY"
+    },
+    {
+      "blocker_code": "",
+      "fixture_id": "B_MULTI_TIMESCALE_FINANCING",
+      "fixture_payload_sha256": "7034a69974225e310f9c33f83bb69f8dfd06bd30188f09e456aca8e67f503d6b",
+      "status": "COMPILE_READY"
+    },
+    {
+      "blocker_code": "",
+      "fixture_id": "C_MARKET_CONDITIONED",
+      "fixture_payload_sha256": "9163d050556ac5e7dd0295de9bafb363219cad8904980e9a85e813c96004f90e",
+      "status": "COMPILE_READY"
+    },
+    {
+      "blocker_code": "BILLBOARD_EPISODE_AUTHORITY_NOT_REGISTERED",
+      "fixture_id": "D_BILLBOARD_EVENT",
+      "fixture_payload_sha256": "089cbf40b40dee3ec1f843d2571c174c40f7d969bf3267b94f468894337b18e5",
+      "status": "BLOCKED_FAIL_CLOSED"
+    },
+    {
+      "blocker_code": "",
+      "fixture_id": "E_FULL_MULTI_COMPONENT",
+      "fixture_payload_sha256": "a3395cd536b918c7efc5f2ad39d68b2f5bea0d93e4cc276cb78debd210bc187c",
+      "status": "COMPILE_READY"
+    },
+    {
+      "blocker_code": "",
+      "fixture_id": "F_FROZEN_BROAD_EVENT_GATE",
+      "fixture_payload_sha256": "4b3216d2ec626abfd029a93c19d1dbc4b71514f0c676503cb68b0b7eb6d50ecb",
+      "status": "COMPILE_READY"
+    }
+  ],
+  "legacy_candidate_id": "cn.comp.df3358df6c93405cb9a3",
+  "legacy_exact_identity": "a92ea4e84f5c1d71e4b938e6349ef7057c9d46a812e4b30a90f9df6b23ddc3bd",
+  "matched_control_pair_count": 3,
+  "performance_claim_allowed": false,
+  "portfolio_decoder_id": "TOPK_10_EQUAL",
+  "prospective_64_pair_joint_smoke_qualified": false,
+  "prospective_blockers": [
+    "BILLBOARD_EPISODE_AUTHORITY_NOT_REGISTERED"
+  ],
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "repo_sha": "3ad4c3dd7005d9eafb5f16a1ef5573fb818bdddf",
+  "schema_version": "cn_typed_candidate_program_v1_smoke_summary_v1",
+  "status": "CN_TYPED_CANDIDATE_PROGRAM_V1_SMOKE_COMPLETE",
+  "summary_payload_sha256": "98ffb278cb0fdfa3ff2a2bac839f46d3620712143497edca4c911bcb07e03da0"
+}

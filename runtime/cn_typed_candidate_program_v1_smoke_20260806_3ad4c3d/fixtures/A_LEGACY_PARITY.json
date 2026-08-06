@@ -1,0 +1,241 @@
+{
+  "blocker_code": "",
+  "explanation_zh": "单一既有 route 候选；程序层不得改变其身份或执行语义。",
+  "fixture_id": "A_LEGACY_PARITY",
+  "fixture_order": 0,
+  "fixture_payload_sha256": "c1e6fd070f77d1e13dc4e76665207d7af591795ea77851389b6d07cb54f9e8f2",
+  "performance_claim_allowed": false,
+  "program": {
+    "compiler_semantics_version": "cn_program_compiler_adapter_v1",
+    "complexity_budget": {
+      "maximum_conditional_switch_count": 2,
+      "maximum_context_field_leaves": 6,
+      "maximum_effective_nodes": 48,
+      "maximum_estimated_cost": 128,
+      "maximum_event_join_cost": 8,
+      "maximum_event_sources": 3,
+      "maximum_gate_veto_depth": 3,
+      "maximum_program_depth": 12,
+      "maximum_residualize_count": 2,
+      "maximum_stock_field_leaves": 12,
+      "maximum_window_kinds": 6,
+      "policy_id": "CN_TYPED_PROGRAM_COMPLEXITY_CONSERVATIVE_V1"
+    },
+    "complexity_policy_hash": "39fc03d103be2f2eb1e9507a7b7124f7772513d62a42dfec7fdb04495b8ce950",
+    "frozen_component_references": [],
+    "joint_clock_contract": {
+      "action_session_policy": "EXISTING_CANDIDATE_ACTION_SESSION",
+      "component_clock_node_ids": [
+        "legacy_score"
+      ],
+      "joint_eligible_from_policy": "ROW_WISE_MAX_REQUIRED_COMPONENT_MATURITY",
+      "joint_support_policy": "REQUIRED_COMPONENT_ELIGIBILITY_INTERSECTION",
+      "missing_component_policy": "FAIL_CLOSED_REQUIRED_COMPONENT",
+      "pit_guard_version": "LEGACY_ROUTE_GUARD"
+    },
+    "legacy_component_provenance": [
+      "a92ea4e84f5c1d71e4b938e6349ef7057c9d46a812e4b30a90f9df6b23ddc3bd"
+    ],
+    "matched_control_plan": {
+      "control_constructor_id": "cn_compositional_same_fields_minute_static_v2",
+      "operations": [],
+      "pair_maturity_policy": "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT",
+      "pair_support_policy": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+      "portfolio_contract_unchanged": true
+    },
+    "nodes": [
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "bar_close",
+        "node_id": "eligibility_identity",
+        "node_type": "CONSTANT",
+        "observable_clock": "bar_close",
+        "output_semantic_type": "STOCK_MASK",
+        "parameters": {
+          "value": true
+        },
+        "source_lineage": [],
+        "support_unit": "stock-minute cross-section",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT"
+        },
+        "unit_signature": "boolean"
+      },
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "bar_close",
+        "node_id": "exposure_identity",
+        "node_type": "CONSTANT",
+        "observable_clock": "bar_close",
+        "output_semantic_type": "STOCK_MULTIPLIER",
+        "parameters": {
+          "value": 1.0
+        },
+        "source_lineage": [],
+        "support_unit": "stock-minute cross-section",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT"
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [
+          "MINUTE_STATIC"
+        ],
+        "entity_scope": "STOCK",
+        "generation_receipt": {
+          "attempt_index": 0,
+          "candidate_id": "cn.comp.df3358df6c93405cb9a3",
+          "canonical_identity": "c4411f5b9e415811794f9ab5abf885849e5edde4e28b1bbfafa649162622bec7",
+          "categorical_genes": {},
+          "constructor_profile": "",
+          "declared_field_ids": [
+            "amount"
+          ],
+          "exact_identity": "a92ea4e84f5c1d71e4b938e6349ef7057c9d46a812e4b30a90f9df6b23ddc3bd",
+          "formula_extension_id": "",
+          "generation_lane": "BASE_ATTEMPT",
+          "generation_receipt_hash": "eefac21b2ef832a57e086f4ae75bbec82be2283fcf4cadac67bf97eba939b358",
+          "generator_authority": "",
+          "generator_version": "cn_typed_compositional_grammar_v2",
+          "identity_generator_version": "cn_typed_compositional_grammar_v2",
+          "is_matched_control": false,
+          "matched_control_id": "cn.comp.df3358df6c93405cb9a3.control",
+          "pair_id": "cn.pair.e4904150e8970337278c7e05789f4d19",
+          "proposal_route_root_field_ids": [
+            "amount",
+            "intraday_ret_from_open",
+            "open",
+            "pct_chg",
+            "ret_1m",
+            "vwap"
+          ],
+          "receipt_version": "cn_route_generation_receipt_v1",
+          "route_id": "MINUTE_STATIC",
+          "seed": 1729,
+          "skeleton_id": "cn.comp.v2.minute_static.normalized_level"
+        },
+        "input_node_ids": [],
+        "maturity": "bar_close",
+        "node_id": "legacy_score",
+        "node_type": "LEGACY_CANDIDATE_COMPONENT",
+        "observable_clock": "bar_close",
+        "output_semantic_type": "STOCK_SCORE",
+        "parameters": {
+          "candidate": {
+            "access_roles": [
+              "development"
+            ],
+            "allow_behavior_equivalence": false,
+            "canonical_expression": "CSRank(ZScore($amount))",
+            "canonical_identity": "c4411f5b9e415811794f9ab5abf885849e5edde4e28b1bbfafa649162622bec7",
+            "clock_contract": "bar_close",
+            "condition_field_ids": [],
+            "control_ablation_rule": "magnitude_to_sign",
+            "control_constructor_id": "cn_compositional_same_fields_minute_static_v2",
+            "declared_field_ids": [
+              "amount"
+            ],
+            "exact_identity": "a92ea4e84f5c1d71e4b938e6349ef7057c9d46a812e4b30a90f9df6b23ddc3bd",
+            "exposure_ledger_required": true,
+            "expression": "CSRank(ZScore($amount))",
+            "field_ids": [
+              "amount"
+            ],
+            "financial_hypothesis": "cross-sectional normalization exposes relative minute state",
+            "input_roles": [
+              "PRIMARY"
+            ],
+            "is_matched_control": false,
+            "legal": true,
+            "maturity_contract": "bar_close",
+            "maturity_contract_registered": false,
+            "maturity_rule": "bar_close",
+            "maximum_depth": 3,
+            "operator_family": "ZScore",
+            "operator_paths": [
+              "root:CSRank",
+              "root.CSRank[0]:ZScore"
+            ],
+            "outer_mapping": "cross_sectional",
+            "pair_mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+            "pair_maturity_alignment_policy": "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT",
+            "pair_member_role": "PRIMARY",
+            "pair_support_alignment_policy": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+            "proposal_origin": "typed_compositional_grammar_v2",
+            "representation_ids": [
+              "cn.rep.e1a6c7e4ed4d3bdd8b53a3bda3fa28d9"
+            ],
+            "requires_intrabar_order": false,
+            "route_id": "MINUTE_STATIC",
+            "search_role": "PRIMARY_SEARCH",
+            "skeleton_id": "cn.comp.v2.minute_static.normalized_level",
+            "source_field_ids": [
+              "cn.sf.621923f2d222470d1900a03583de5059"
+            ],
+            "support_unit": "stock-minute cross-section",
+            "typed_route_decision": "ALLOW",
+            "typed_route_reason": "registry, PIT, unit, route, maturity, control and access contracts passed",
+            "typed_route_rejection_code": "",
+            "unit_signature": "dimensionless",
+            "uses_future_revision": false,
+            "vote_policy": "ONE_SUPPORT_UNIT_ONE_VOTE"
+          },
+          "physical_leaf_ids": [
+            "amount"
+          ]
+        },
+        "source_lineage": [
+          "cn.rep.e1a6c7e4ed4d3bdd8b53a3bda3fa28d9",
+          "cn.sf.621923f2d222470d1900a03583de5059"
+        ],
+        "support_unit": "stock-minute cross-section",
+        "temporal_semantics": {
+          "kind": "LEGACY_TYPED_ROUTE_EXPRESSION",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "bar_close",
+        "node_id": "veto_identity",
+        "node_type": "CONSTANT",
+        "observable_clock": "bar_close",
+        "output_semantic_type": "STOCK_MASK",
+        "parameters": {
+          "value": false
+        },
+        "source_lineage": [],
+        "support_unit": "stock-minute cross-section",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT"
+        },
+        "unit_signature": "boolean"
+      }
+    ],
+    "outputs": {
+      "eligibility_mask_node_id": "eligibility_identity",
+      "exposure_multiplier_node_id": "exposure_identity",
+      "stock_score_node_id": "legacy_score",
+      "veto_mask_node_id": "veto_identity"
+    },
+    "portfolio_contract": {
+      "decoder_id": "TOPK_10_EQUAL",
+      "execution": "PRIOR_CLOSE_SIGNAL_NEXT_OPEN_T_PLUS_1",
+      "fees": "EXISTING_FROZEN_A_SHARE_FEES",
+      "ledger": "EXISTING_CONTINUOUS_BOOK_FINAL_CLOSE_MTM",
+      "tradability": "EXISTING_A_SHARE_TRADABILITY"
+    },
+    "program_id": "cn.program.169cf8705af2ebbdefd889ee830a3173",
+    "schema_version": "cn_typed_candidate_program_v1",
+    "semantic_program_hash": "169cf8705af2ebbdefd889ee830a3173bfbb1f37fbcd064cb5443616a14ac49b"
+  },
+  "status": "COMPILE_READY"
+}

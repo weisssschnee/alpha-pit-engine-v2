@@ -1,0 +1,11 @@
+{
+  "control_compiled_program_hash": "d939d1c76ea598f56408be21911f3178015958f3c05cf306918b39dcc222e3bd",
+  "control_pair_payload_sha256": "249d237939855de715f7ae71267896c80d07a8b7cf2e4ceccbadc91165d4c9c4",
+  "control_program_id": "cn.program.0b2c79ecced55eb532e072c25c59008f",
+  "control_semantic_program_hash": "0b2c79ecced55eb532e072c25c59008ff552ed932d3dff1ea852015c682ac9e5",
+  "diagnostic_only": false,
+  "fixture_id": "C_MARKET_CONDITIONED",
+  "pair_id": "cn.program_pair.b851f4ea84a6a111acd4b52e2dd4f200",
+  "primary_program_id": "cn.program.6a7430c1afbe89ebf575a8491108f020",
+  "primary_semantic_program_hash": "6a7430c1afbe89ebf575a8491108f020602c6dae9592b4c37d01612a8923cedf"
+}

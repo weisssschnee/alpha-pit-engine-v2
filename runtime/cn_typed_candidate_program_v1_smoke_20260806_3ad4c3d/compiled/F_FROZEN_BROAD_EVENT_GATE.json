@@ -1,0 +1,168 @@
+{
+  "compiled_program_hash": "c0562df5a98569fa624585189b851ea7d31a1f6d1aabe2ec6ec1726e4bb76bda",
+  "compiler_semantics_version": "cn_program_compiler_adapter_v1",
+  "complexity_report": {
+    "complexity_policy_hash": "39fc03d103be2f2eb1e9507a7b7124f7772513d62a42dfec7fdb04495b8ce950",
+    "conditional_switch_count": 0,
+    "context_field_leaves": 0,
+    "effective_nodes": 6,
+    "estimated_cost": 6,
+    "event_join_cost": 0,
+    "event_sources": 1,
+    "gate_veto_depth": 0,
+    "program_depth": 2,
+    "residualize_count": 0,
+    "stock_field_leaves": 0,
+    "window_kinds": 0
+  },
+  "component_clock_requirements": {
+    "frozen_broad_event_gate": {
+      "field_requirements": {},
+      "maturity_contract": "registered_episode_maturity",
+      "observable_clock_contract": "episode_maturity_time",
+      "revision_policy": "FROZEN_INVENTORY_NO_FUTURE_REVISION",
+      "source_lag": 0,
+      "source_lag_unit": "episodes"
+    },
+    "legacy_base_score": {
+      "field_requirements": {
+        "amount": {
+          "maturity": "0 bars",
+          "observable_clock": "bar_close",
+          "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+          "source_lag": 0,
+          "source_lag_unit": "bars"
+        }
+      },
+      "maturity_contract": "bar_close",
+      "observable_clock_contract": "bar_close",
+      "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+      "source_lag": 0,
+      "source_lag_unit": "bars"
+    }
+  },
+  "external_adapter_requirements": [
+    "FROZEN_BROAD_EVENT_INVENTORY_BINDING",
+    "broad_event_01166fdd6c3a2aab__frozen_primary_replay"
+  ],
+  "field_lags": {},
+  "joint_clock_contract": {
+    "action_session_policy": "PRIOR_CLOSE_SIGNAL_NEXT_OPEN_ACTION",
+    "component_clock_node_ids": [
+      "legacy_base_score",
+      "frozen_broad_event_gate"
+    ],
+    "joint_eligible_from_policy": "ROW_WISE_MAX_REQUIRED_COMPONENT_MATURITY",
+    "joint_support_policy": "REQUIRED_COMPONENT_ELIGIBILITY_INTERSECTION",
+    "missing_component_policy": "FAIL_CLOSED_REQUIRED_COMPONENT",
+    "pit_guard_version": "CN_TYPED_PROGRAM_JOINT_CLOCK_V1"
+  },
+  "legacy_component_verdicts": [
+    {
+      "candidate_id": "cn.comp.df3358df6c93405cb9a3",
+      "canonical_expression": "CSRank(ZScore($amount))",
+      "canonical_identity": "c4411f5b9e415811794f9ab5abf885849e5edde4e28b1bbfafa649162622bec7",
+      "decision": "ALLOW",
+      "exact_identity": "a92ea4e84f5c1d71e4b938e6349ef7057c9d46a812e4b30a90f9df6b23ddc3bd",
+      "node_id": "legacy_base_score",
+      "route_id": "MINUTE_STATIC"
+    }
+  ],
+  "node_execution_plan": [
+    {
+      "compiled_expression": "1",
+      "entity_scope": "CONSTANT",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "prior_close",
+      "node_id": "eligibility_identity",
+      "node_type": "CONSTANT",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_MASK"
+    },
+    {
+      "compiled_expression": "1.0",
+      "entity_scope": "CONSTANT",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "prior_close",
+      "node_id": "exposure_identity",
+      "node_type": "CONSTANT",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_MULTIPLIER"
+    },
+    {
+      "compiled_expression": "FrozenMechanismReplay($broad_event_01166fdd6c3a2aab)",
+      "entity_scope": "STOCK",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "registered_episode_maturity",
+      "node_id": "frozen_broad_event_gate",
+      "node_type": "FROZEN_BROAD_EVENT_REF",
+      "observable_clock": "episode_maturity_time",
+      "output_semantic_type": "STOCK_MASK"
+    },
+    {
+      "compiled_expression": "MaskIntersect(1,FrozenMechanismReplay($broad_event_01166fdd6c3a2aab))",
+      "entity_scope": "STOCK",
+      "execution_phase": 7,
+      "input_node_ids": [
+        "eligibility_identity",
+        "frozen_broad_event_gate"
+      ],
+      "maturity": "prior_close",
+      "node_id": "frozen_event_eligibility",
+      "node_type": "FILTER",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_MASK"
+    },
+    {
+      "compiled_expression": "CSRank(ZScore($amount))",
+      "entity_scope": "STOCK",
+      "execution_phase": 10,
+      "input_node_ids": [],
+      "maturity": "bar_close",
+      "node_id": "legacy_base_score",
+      "node_type": "LEGACY_CANDIDATE_COMPONENT",
+      "observable_clock": "bar_close",
+      "output_semantic_type": "STOCK_SCORE"
+    },
+    {
+      "compiled_expression": "0",
+      "entity_scope": "CONSTANT",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "prior_close",
+      "node_id": "veto_identity",
+      "node_type": "CONSTANT",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_MASK"
+    }
+  ],
+  "ordered_node_ids": [
+    "eligibility_identity",
+    "exposure_identity",
+    "frozen_broad_event_gate",
+    "frozen_event_eligibility",
+    "legacy_base_score",
+    "veto_identity"
+  ],
+  "output_expressions": {
+    "eligibility_mask_node_id": "MaskIntersect(1,FrozenMechanismReplay($broad_event_01166fdd6c3a2aab))",
+    "exposure_multiplier_node_id": "1.0",
+    "stock_score_node_id": "CSRank(ZScore($amount))",
+    "veto_mask_node_id": "0"
+  },
+  "output_node_ids": {
+    "eligibility_mask_node_id": "frozen_event_eligibility",
+    "exposure_multiplier_node_id": "exposure_identity",
+    "stock_score_node_id": "legacy_base_score",
+    "veto_mask_node_id": "veto_identity"
+  },
+  "physical_leaf_ids": [
+    "amount"
+  ],
+  "program_id": "cn.program.18663abfd058396467cca7a25ab78f56",
+  "semantic_program_hash": "18663abfd058396467cca7a25ab78f56a7f3c5a98705543c1325809537941e71",
+  "shared_dag_plan_hash": "ba4149135ec5a43be24673a96b35831f9d15538b7988c555d38c4cec4cd38856"
+}

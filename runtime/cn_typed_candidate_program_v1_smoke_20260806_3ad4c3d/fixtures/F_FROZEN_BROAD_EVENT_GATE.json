@@ -1,0 +1,315 @@
+{
+  "blocker_code": "",
+  "explanation_zh": "既有冻结 Broad Event 仅作为旧横截面 score 的 eligibility gate；不生成新机制，也不获得 discovery credit。",
+  "fixture_id": "F_FROZEN_BROAD_EVENT_GATE",
+  "fixture_order": 5,
+  "fixture_payload_sha256": "4b3216d2ec626abfd029a93c19d1dbc4b71514f0c676503cb68b0b7eb6d50ecb",
+  "performance_claim_allowed": false,
+  "program": {
+    "compiler_semantics_version": "cn_program_compiler_adapter_v1",
+    "complexity_budget": {
+      "maximum_conditional_switch_count": 2,
+      "maximum_context_field_leaves": 6,
+      "maximum_effective_nodes": 48,
+      "maximum_estimated_cost": 128,
+      "maximum_event_join_cost": 8,
+      "maximum_event_sources": 3,
+      "maximum_gate_veto_depth": 3,
+      "maximum_program_depth": 12,
+      "maximum_residualize_count": 2,
+      "maximum_stock_field_leaves": 12,
+      "maximum_window_kinds": 6,
+      "policy_id": "CN_TYPED_PROGRAM_COMPLEXITY_CONSERVATIVE_V1"
+    },
+    "complexity_policy_hash": "39fc03d103be2f2eb1e9507a7b7124f7772513d62a42dfec7fdb04495b8ce950",
+    "frozen_component_references": [
+      "broad_event_01166fdd6c3a2aab",
+      "d99699a5826c7bbf459b19fe8708c865c232012518863f18d6f105879022b5ce"
+    ],
+    "joint_clock_contract": {
+      "action_session_policy": "PRIOR_CLOSE_SIGNAL_NEXT_OPEN_ACTION",
+      "component_clock_node_ids": [
+        "legacy_base_score",
+        "frozen_broad_event_gate"
+      ],
+      "joint_eligible_from_policy": "ROW_WISE_MAX_REQUIRED_COMPONENT_MATURITY",
+      "joint_support_policy": "REQUIRED_COMPONENT_ELIGIBILITY_INTERSECTION",
+      "missing_component_policy": "FAIL_CLOSED_REQUIRED_COMPONENT",
+      "pit_guard_version": "CN_TYPED_PROGRAM_JOINT_CLOCK_V1"
+    },
+    "legacy_component_provenance": [
+      "a92ea4e84f5c1d71e4b938e6349ef7057c9d46a812e4b30a90f9df6b23ddc3bd"
+    ],
+    "matched_control_plan": {
+      "control_constructor_id": "LEGACY_REGISTERED_CONTROL_PLUS_FROZEN_GATE",
+      "operations": [],
+      "pair_maturity_policy": "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT",
+      "pair_support_policy": "PRIMARY_CONTROL_EXACT_COORDINATE_INTERSECTION",
+      "portfolio_contract_unchanged": true
+    },
+    "nodes": [
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "prior_close",
+        "node_id": "eligibility_identity",
+        "node_type": "CONSTANT",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_MASK",
+        "parameters": {
+          "value": true
+        },
+        "source_lineage": [],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT",
+          "uses_future_revision": false
+        },
+        "unit_signature": "boolean"
+      },
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "prior_close",
+        "node_id": "exposure_identity",
+        "node_type": "CONSTANT",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_MULTIPLIER",
+        "parameters": {
+          "value": 1.0
+        },
+        "source_lineage": [],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [
+          "BROAD_EVENT_FROZEN_ENTRY"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [],
+        "maturity": "registered_episode_maturity",
+        "node_id": "frozen_broad_event_gate",
+        "node_type": "FROZEN_BROAD_EVENT_REF",
+        "observable_clock": "episode_maturity_time",
+        "output_semantic_type": "STOCK_MASK",
+        "parameters": {
+          "discovery_budget_eligible": false,
+          "dynamic_credit_eligible": false,
+          "execution_adapter_id": "EXISTING_FROZEN_BROAD_EVENT_REPLAY",
+          "field_id": "broad_event_01166fdd6c3a2aab",
+          "frozen_behavior_cluster_id": "a53f40d0b7af17531956",
+          "frozen_inventory_hash": "d99699a5826c7bbf459b19fe8708c865c232012518863f18d6f105879022b5ce",
+          "frozen_mechanism_id": "01166fdd6c3a2aab",
+          "is_matched_control": false,
+          "pit_status": "PIT_VERSIONED_HISTORY",
+          "representation_id": "cn.rep.13d2e66902ff873b3130ca2973b0fb00",
+          "revision_policy": "FROZEN_INVENTORY_NO_FUTURE_REVISION",
+          "source_field_id": "cn.sf.16770ae20629139dfe4db0f44729f34c",
+          "source_lag": 0,
+          "source_lag_unit": "episodes"
+        },
+        "source_lineage": [
+          "cn.sf.16770ae20629139dfe4db0f44729f34c",
+          "cn.rep.13d2e66902ff873b3130ca2973b0fb00"
+        ],
+        "support_unit": "event episode",
+        "temporal_semantics": {
+          "kind": "FROZEN_EPISODE_REPLAY",
+          "revision_policy": "FROZEN_INVENTORY_NO_FUTURE_REVISION",
+          "source_lag": 0,
+          "source_lag_unit": "episodes",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [
+          "BROAD_EVENT_FROZEN_ENTRY"
+        ],
+        "entity_scope": "STOCK",
+        "input_node_ids": [
+          "eligibility_identity",
+          "frozen_broad_event_gate"
+        ],
+        "maturity": "prior_close",
+        "node_id": "frozen_event_eligibility",
+        "node_type": "FILTER",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_MASK",
+        "parameters": {},
+        "source_lineage": [
+          "cn.rep.13d2e66902ff873b3130ca2973b0fb00",
+          "cn.sf.16770ae20629139dfe4db0f44729f34c"
+        ],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "FIXED_PROGRAM_OPERATOR",
+          "uses_future_revision": false
+        },
+        "unit_signature": "boolean"
+      },
+      {
+        "component_route_provenance": [
+          "MINUTE_STATIC"
+        ],
+        "entity_scope": "STOCK",
+        "generation_receipt": {
+          "attempt_index": 0,
+          "candidate_id": "cn.comp.df3358df6c93405cb9a3",
+          "canonical_identity": "c4411f5b9e415811794f9ab5abf885849e5edde4e28b1bbfafa649162622bec7",
+          "categorical_genes": {},
+          "constructor_profile": "",
+          "declared_field_ids": [
+            "amount"
+          ],
+          "exact_identity": "a92ea4e84f5c1d71e4b938e6349ef7057c9d46a812e4b30a90f9df6b23ddc3bd",
+          "formula_extension_id": "",
+          "generation_lane": "BASE_ATTEMPT",
+          "generation_receipt_hash": "eefac21b2ef832a57e086f4ae75bbec82be2283fcf4cadac67bf97eba939b358",
+          "generator_authority": "",
+          "generator_version": "cn_typed_compositional_grammar_v2",
+          "identity_generator_version": "cn_typed_compositional_grammar_v2",
+          "is_matched_control": false,
+          "matched_control_id": "cn.comp.df3358df6c93405cb9a3.control",
+          "pair_id": "cn.pair.e4904150e8970337278c7e05789f4d19",
+          "proposal_route_root_field_ids": [
+            "amount",
+            "intraday_ret_from_open",
+            "open",
+            "pct_chg",
+            "ret_1m",
+            "vwap"
+          ],
+          "receipt_version": "cn_route_generation_receipt_v1",
+          "route_id": "MINUTE_STATIC",
+          "seed": 1729,
+          "skeleton_id": "cn.comp.v2.minute_static.normalized_level"
+        },
+        "input_node_ids": [],
+        "maturity": "bar_close",
+        "node_id": "legacy_base_score",
+        "node_type": "LEGACY_CANDIDATE_COMPONENT",
+        "observable_clock": "bar_close",
+        "output_semantic_type": "STOCK_SCORE",
+        "parameters": {
+          "candidate": {
+            "access_roles": [
+              "development"
+            ],
+            "allow_behavior_equivalence": false,
+            "canonical_expression": "CSRank(ZScore($amount))",
+            "canonical_identity": "c4411f5b9e415811794f9ab5abf885849e5edde4e28b1bbfafa649162622bec7",
+            "clock_contract": "bar_close",
+            "condition_field_ids": [],
+            "control_ablation_rule": "magnitude_to_sign",
+            "control_constructor_id": "cn_compositional_same_fields_minute_static_v2",
+            "declared_field_ids": [
+              "amount"
+            ],
+            "exact_identity": "a92ea4e84f5c1d71e4b938e6349ef7057c9d46a812e4b30a90f9df6b23ddc3bd",
+            "exposure_ledger_required": true,
+            "expression": "CSRank(ZScore($amount))",
+            "field_ids": [
+              "amount"
+            ],
+            "financial_hypothesis": "cross-sectional normalization exposes relative minute state",
+            "input_roles": [
+              "PRIMARY"
+            ],
+            "is_matched_control": false,
+            "legal": true,
+            "maturity_contract": "bar_close",
+            "maturity_contract_registered": false,
+            "maturity_rule": "bar_close",
+            "maximum_depth": 3,
+            "operator_family": "ZScore",
+            "operator_paths": [
+              "root:CSRank",
+              "root.CSRank[0]:ZScore"
+            ],
+            "outer_mapping": "cross_sectional",
+            "pair_mapping_portfolio_contract": "SAME_FULL_SHARD_UNIVERSE|SAME_TRADE_TIMES|SAME_SPLIT_ROLES|SAME_HORIZONS|SAME_SUPPORT_COORDINATES|SAME_PORTFOLIO_MODE|SAME_COST_ASSUMPTIONS",
+            "pair_maturity_alignment_policy": "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT",
+            "pair_member_role": "PRIMARY",
+            "pair_support_alignment_policy": "PRIMARY_CONTROL_FINITE_INTERSECTION_AT_SHARED_COORDINATE",
+            "proposal_origin": "typed_compositional_grammar_v2",
+            "representation_ids": [
+              "cn.rep.e1a6c7e4ed4d3bdd8b53a3bda3fa28d9"
+            ],
+            "requires_intrabar_order": false,
+            "route_id": "MINUTE_STATIC",
+            "search_role": "PRIMARY_SEARCH",
+            "skeleton_id": "cn.comp.v2.minute_static.normalized_level",
+            "source_field_ids": [
+              "cn.sf.621923f2d222470d1900a03583de5059"
+            ],
+            "support_unit": "stock-minute cross-section",
+            "typed_route_decision": "ALLOW",
+            "typed_route_reason": "registry, PIT, unit, route, maturity, control and access contracts passed",
+            "typed_route_rejection_code": "",
+            "unit_signature": "dimensionless",
+            "uses_future_revision": false,
+            "vote_policy": "ONE_SUPPORT_UNIT_ONE_VOTE"
+          },
+          "physical_leaf_ids": [
+            "amount"
+          ]
+        },
+        "source_lineage": [
+          "cn.rep.e1a6c7e4ed4d3bdd8b53a3bda3fa28d9",
+          "cn.sf.621923f2d222470d1900a03583de5059"
+        ],
+        "support_unit": "stock-minute cross-section",
+        "temporal_semantics": {
+          "kind": "LEGACY_TYPED_ROUTE_EXPRESSION",
+          "uses_future_revision": false
+        },
+        "unit_signature": "dimensionless"
+      },
+      {
+        "component_route_provenance": [],
+        "entity_scope": "CONSTANT",
+        "input_node_ids": [],
+        "maturity": "prior_close",
+        "node_id": "veto_identity",
+        "node_type": "CONSTANT",
+        "observable_clock": "prior_close",
+        "output_semantic_type": "STOCK_MASK",
+        "parameters": {
+          "value": false
+        },
+        "source_lineage": [],
+        "support_unit": "stock-session",
+        "temporal_semantics": {
+          "kind": "IDENTITY_OUTPUT",
+          "uses_future_revision": false
+        },
+        "unit_signature": "boolean"
+      }
+    ],
+    "outputs": {
+      "eligibility_mask_node_id": "frozen_event_eligibility",
+      "exposure_multiplier_node_id": "exposure_identity",
+      "stock_score_node_id": "legacy_base_score",
+      "veto_mask_node_id": "veto_identity"
+    },
+    "portfolio_contract": {
+      "decoder_id": "TOPK_10_EQUAL",
+      "execution": "PRIOR_CLOSE_SIGNAL_NEXT_OPEN_T_PLUS_1",
+      "fees": "EXISTING_FROZEN_A_SHARE_FEES",
+      "ledger": "EXISTING_CONTINUOUS_BOOK_FINAL_CLOSE_MTM",
+      "tradability": "EXISTING_A_SHARE_TRADABILITY"
+    },
+    "program_id": "cn.program.18663abfd058396467cca7a25ab78f56",
+    "schema_version": "cn_typed_candidate_program_v1",
+    "semantic_program_hash": "18663abfd058396467cca7a25ab78f56a7f3c5a98705543c1325809537941e71"
+  },
+  "status": "COMPILE_READY"
+}

@@ -1,0 +1,19 @@
+{
+  "access_ledger_payload_sha256": "2a3558b18a96b0c4632a3fb9062951b1c46d0f23ddf6cddd89680bc9f19eed76",
+  "authorized_metadata_reads": [
+    "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\field_registry\\cn_unified_capability_registry_v3_20260717\\unified_capability_registry.json",
+    "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711\\runtime\\run_plans\\cn_core_pack_development_discovery_v1.json"
+  ],
+  "financial_evaluation_executed": false,
+  "forward_2026_reads": 0,
+  "forward_b_reads": 0,
+  "historical_2023_reads": 0,
+  "holdout_reads": 0,
+  "label_reads": 0,
+  "market_reads": 0,
+  "optimizer_writes": 0,
+  "promotion_writes": 0,
+  "scheduler_writes": 0,
+  "schema_version": "cn_typed_candidate_program_v1_access_ledger_v1",
+  "validation_reads": 0
+}

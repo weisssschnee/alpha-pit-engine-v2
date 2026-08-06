@@ -1,0 +1,10 @@
+{
+  "blocker_code": "BILLBOARD_EPISODE_AUTHORITY_NOT_REGISTERED",
+  "explanation_zh": "龙虎榜 FirstHit/EventAge/去重事件设想被冻结，但当前 registry 没有龙虎榜 episode authority，不能把每日状态列冒充事件生命周期。",
+  "fixture_id": "D_BILLBOARD_EVENT",
+  "fixture_order": 3,
+  "fixture_payload_sha256": "089cbf40b40dee3ec1f843d2571c174c40f7d969bf3267b94f468894337b18e5",
+  "performance_claim_allowed": false,
+  "program": null,
+  "status": "BLOCKED_FAIL_CLOSED"
+}

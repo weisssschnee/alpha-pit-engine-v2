@@ -1,0 +1,284 @@
+{
+  "compiled_program_hash": "897ef31cc7710b2a914a08ed6a6f3992e470456134971c04bca8a35a3e4ce9d7",
+  "compiler_semantics_version": "cn_program_compiler_adapter_v1",
+  "complexity_report": {
+    "complexity_policy_hash": "39fc03d103be2f2eb1e9507a7b7124f7772513d62a42dfec7fdb04495b8ce950",
+    "conditional_switch_count": 0,
+    "context_field_leaves": 0,
+    "effective_nodes": 14,
+    "estimated_cost": 14,
+    "event_join_cost": 0,
+    "event_sources": 0,
+    "gate_veto_depth": 0,
+    "program_depth": 6,
+    "residualize_count": 1,
+    "stock_field_leaves": 4,
+    "window_kinds": 2
+  },
+  "component_clock_requirements": {
+    "financing_balance_ratio": {
+      "field_requirements": {},
+      "maturity_contract": "1 sessions",
+      "observable_clock_contract": "previous_session",
+      "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+      "source_lag": 1,
+      "source_lag_unit": "sessions"
+    },
+    "financing_net_buy": {
+      "field_requirements": {},
+      "maturity_contract": "1 sessions",
+      "observable_clock_contract": "previous_session",
+      "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+      "source_lag": 1,
+      "source_lag_unit": "sessions"
+    },
+    "float_market_cap": {
+      "field_requirements": {},
+      "maturity_contract": "1 sessions",
+      "observable_clock_contract": "previous_session",
+      "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+      "source_lag": 1,
+      "source_lag_unit": "sessions"
+    },
+    "turnover_ratio": {
+      "field_requirements": {},
+      "maturity_contract": "1 sessions",
+      "observable_clock_contract": "previous_session",
+      "revision_policy": "REGISTRY_PIT_VERSIONED_HISTORY_NO_FUTURE_REVISION",
+      "source_lag": 1,
+      "source_lag_unit": "sessions"
+    }
+  },
+  "external_adapter_requirements": [],
+  "field_lags": {
+    "ctx_hfq_float_market_cap_yuan": 1,
+    "ctx_hfq_turnover_ratio": 1,
+    "ctx_rzrq_rzjme": 1,
+    "ctx_rzrq_rzyezb": 1
+  },
+  "joint_clock_contract": {
+    "action_session_policy": "PRIOR_CLOSE_SIGNAL_NEXT_OPEN_ACTION",
+    "component_clock_node_ids": [
+      "financing_net_buy",
+      "financing_balance_ratio",
+      "float_market_cap",
+      "turnover_ratio"
+    ],
+    "joint_eligible_from_policy": "ROW_WISE_MAX_REQUIRED_COMPONENT_MATURITY",
+    "joint_support_policy": "REQUIRED_COMPONENT_ELIGIBILITY_INTERSECTION",
+    "missing_component_policy": "FAIL_CLOSED_REQUIRED_COMPONENT",
+    "pit_guard_version": "CN_TYPED_PROGRAM_JOINT_CLOCK_V1"
+  },
+  "legacy_component_verdicts": [],
+  "node_execution_plan": [
+    {
+      "compiled_expression": "1",
+      "entity_scope": "CONSTANT",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "prior_close",
+      "node_id": "eligibility_identity",
+      "node_type": "CONSTANT",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_MASK"
+    },
+    {
+      "compiled_expression": "1.0",
+      "entity_scope": "CONSTANT",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "prior_close",
+      "node_id": "exposure_identity",
+      "node_type": "CONSTANT",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_MULTIPLIER"
+    },
+    {
+      "compiled_expression": "$ctx_rzrq_rzyezb",
+      "entity_scope": "STOCK",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "1 sessions",
+      "node_id": "financing_balance_ratio",
+      "node_type": "STOCK_FIELD",
+      "observable_clock": "previous_session",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "$ctx_rzrq_rzjme",
+      "entity_scope": "STOCK",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "1 sessions",
+      "node_id": "financing_net_buy",
+      "node_type": "STOCK_FIELD",
+      "observable_clock": "previous_session",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "$ctx_hfq_float_market_cap_yuan",
+      "entity_scope": "STOCK",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "1 sessions",
+      "node_id": "float_market_cap",
+      "node_type": "STOCK_FIELD",
+      "observable_clock": "previous_session",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "Sub(Slope($ctx_rzrq_rzjme,5),Slope($ctx_rzrq_rzjme,20))",
+      "entity_scope": "STOCK",
+      "execution_phase": 3,
+      "input_node_ids": [
+        "financing_net_buy"
+      ],
+      "maturity": "prior_close",
+      "node_id": "net_buy_short_long",
+      "node_type": "SHORT_LONG_SPREAD",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "Slope($ctx_rzrq_rzjme,20)",
+      "entity_scope": "STOCK",
+      "execution_phase": 3,
+      "input_node_ids": [
+        "financing_net_buy"
+      ],
+      "maturity": "prior_close",
+      "node_id": "net_buy_slope_20",
+      "node_type": "SLOPE",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "Slope($ctx_rzrq_rzjme,5)",
+      "entity_scope": "STOCK",
+      "execution_phase": 3,
+      "input_node_ids": [
+        "financing_net_buy"
+      ],
+      "maturity": "prior_close",
+      "node_id": "net_buy_slope_5",
+      "node_type": "SLOPE",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "SafeDiv(Sub(Slope($ctx_rzrq_rzjme,5),Slope($ctx_rzrq_rzjme,20)),$ctx_hfq_float_market_cap_yuan,1.0)",
+      "entity_scope": "STOCK",
+      "execution_phase": 9,
+      "input_node_ids": [
+        "net_buy_short_long",
+        "float_market_cap"
+      ],
+      "maturity": "prior_close",
+      "node_id": "scaled_short_long",
+      "node_type": "SAFE_DIVIDE",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "Sub(SafeDiv(Sub(Slope($ctx_rzrq_rzjme,5),Slope($ctx_rzrq_rzjme,20)),$ctx_hfq_float_market_cap_yuan,1.0),$ctx_rzrq_rzyezb)",
+      "entity_scope": "STOCK",
+      "execution_phase": 9,
+      "input_node_ids": [
+        "scaled_short_long",
+        "financing_balance_ratio"
+      ],
+      "maturity": "prior_close",
+      "node_id": "decongested_feature",
+      "node_type": "SUBTRACT",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "$ctx_hfq_turnover_ratio",
+      "entity_scope": "STOCK",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "1 sessions",
+      "node_id": "turnover_ratio",
+      "node_type": "STOCK_FIELD",
+      "observable_clock": "previous_session",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "CSResidual(CSResidual(Sub(SafeDiv(Sub(Slope($ctx_rzrq_rzjme,5),Slope($ctx_rzrq_rzjme,20)),$ctx_hfq_float_market_cap_yuan,1.0),$ctx_rzrq_rzyezb),$ctx_hfq_float_market_cap_yuan),$ctx_hfq_turnover_ratio)",
+      "entity_scope": "STOCK",
+      "execution_phase": 10,
+      "input_node_ids": [
+        "decongested_feature",
+        "float_market_cap",
+        "turnover_ratio"
+      ],
+      "maturity": "prior_close",
+      "node_id": "residual_feature",
+      "node_type": "RESIDUALIZE",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_VALUE"
+    },
+    {
+      "compiled_expression": "CSRank(CSResidual(CSResidual(Sub(SafeDiv(Sub(Slope($ctx_rzrq_rzjme,5),Slope($ctx_rzrq_rzjme,20)),$ctx_hfq_float_market_cap_yuan,1.0),$ctx_rzrq_rzyezb),$ctx_hfq_float_market_cap_yuan),$ctx_hfq_turnover_ratio))",
+      "entity_scope": "STOCK",
+      "execution_phase": 10,
+      "input_node_ids": [
+        "residual_feature"
+      ],
+      "maturity": "prior_close",
+      "node_id": "final_score",
+      "node_type": "CSRANK",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_SCORE"
+    },
+    {
+      "compiled_expression": "0",
+      "entity_scope": "CONSTANT",
+      "execution_phase": 1,
+      "input_node_ids": [],
+      "maturity": "prior_close",
+      "node_id": "veto_identity",
+      "node_type": "CONSTANT",
+      "observable_clock": "prior_close",
+      "output_semantic_type": "STOCK_MASK"
+    }
+  ],
+  "ordered_node_ids": [
+    "eligibility_identity",
+    "exposure_identity",
+    "financing_balance_ratio",
+    "financing_net_buy",
+    "float_market_cap",
+    "net_buy_short_long",
+    "net_buy_slope_20",
+    "net_buy_slope_5",
+    "scaled_short_long",
+    "decongested_feature",
+    "turnover_ratio",
+    "residual_feature",
+    "final_score",
+    "veto_identity"
+  ],
+  "output_expressions": {
+    "eligibility_mask_node_id": "1",
+    "exposure_multiplier_node_id": "1.0",
+    "stock_score_node_id": "CSRank(CSResidual(CSResidual(Sub(SafeDiv(Sub(Slope($ctx_rzrq_rzjme,5),Slope($ctx_rzrq_rzjme,20)),$ctx_hfq_float_market_cap_yuan,1.0),$ctx_rzrq_rzyezb),$ctx_hfq_float_market_cap_yuan),$ctx_hfq_turnover_ratio))",
+    "veto_mask_node_id": "0"
+  },
+  "output_node_ids": {
+    "eligibility_mask_node_id": "eligibility_identity",
+    "exposure_multiplier_node_id": "exposure_identity",
+    "stock_score_node_id": "final_score",
+    "veto_mask_node_id": "veto_identity"
+  },
+  "physical_leaf_ids": [
+    "ctx_hfq_float_market_cap_yuan",
+    "ctx_hfq_turnover_ratio",
+    "ctx_rzrq_rzjme",
+    "ctx_rzrq_rzyezb"
+  ],
+  "program_id": "cn.program.3749238fd7f513089c12e1a25d5a0829",
+  "semantic_program_hash": "3749238fd7f513089c12e1a25d5a0829b76ffdcb3886cfdeb61a4d042798560c",
+  "shared_dag_plan_hash": ""
+}

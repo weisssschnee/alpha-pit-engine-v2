@@ -1,0 +1,112 @@
+{
+  "artifact_count": 21,
+  "artifacts": [
+    {
+      "relative_path": "access_ledger.json",
+      "sha256": "b1329b54b7ead742acdf86f5c59340af6fa4081f97c39a2ca5272c4405ab5864",
+      "size": 838
+    },
+    {
+      "relative_path": "compiled/A_LEGACY_PARITY.json",
+      "sha256": "7e239d33fffeccf87d4230dc52f2e6bba12178f926918a51b39ef2e9d49f704f",
+      "size": 4406
+    },
+    {
+      "relative_path": "compiled/B_MULTI_TIMESCALE_FINANCING.json",
+      "sha256": "b15816ade5c323264fa19bb34baa7e87245e43379b4b85f2c9110580640e52ac",
+      "size": 9902
+    },
+    {
+      "relative_path": "compiled/C_MARKET_CONDITIONED.json",
+      "sha256": "37aefa760ca191a8aa7a768b784fd2aa6129a90d38900f1c49550e3238e3fdb3",
+      "size": 14693
+    },
+    {
+      "relative_path": "compiled/E_FULL_MULTI_COMPONENT.json",
+      "sha256": "f84db573c2a01a1a658f4beacdead4617a8ad97fa477f895d426e1957a0e6c2a",
+      "size": 19672
+    },
+    {
+      "relative_path": "compiled/F_FROZEN_BROAD_EVENT_GATE.json",
+      "sha256": "349f62005cccc54f8019268eea93a0717546e935c08467dbefcde45c152d521d",
+      "size": 5971
+    },
+    {
+      "relative_path": "controls/B_MULTI_TIMESCALE_FINANCING.json",
+      "sha256": "1c036b724346311f4cdb45a5bb9f2f994be4e87d2714d9333a3017dae38c4f33",
+      "size": 706
+    },
+    {
+      "relative_path": "controls/C_MARKET_CONDITIONED.json",
+      "sha256": "bb5c88bb057d5adc4568703d6fc8ce2268a2f1711d399f525f94823c78628a5a",
+      "size": 699
+    },
+    {
+      "relative_path": "controls/E_FULL_MULTI_COMPONENT.json",
+      "sha256": "222b2add5b2856b8d8e51029659313db275ce5b078c930de8f5d76e833c1223f",
+      "size": 701
+    },
+    {
+      "relative_path": "fixtures/A_LEGACY_PARITY.json",
+      "sha256": "7b4e7cb658cd01f65b189c7e17e087dbdb97bf0f5d29e5e0d9369d2d6ef67954",
+      "size": 9805
+    },
+    {
+      "relative_path": "fixtures/B_MULTI_TIMESCALE_FINANCING.json",
+      "sha256": "06ad2b16a53d3f8c010e88bdd1aa8c94db6bf463420396cf2945399afbf64751",
+      "size": 18816
+    },
+    {
+      "relative_path": "fixtures/C_MARKET_CONDITIONED.json",
+      "sha256": "52ec839bde55a9cade4c15daec230fe7a908e963b993ab4cdab760e7483eb65b",
+      "size": 27734
+    },
+    {
+      "relative_path": "fixtures/D_BILLBOARD_EVENT.json",
+      "sha256": "68323a122c9808b325197c53eaab747681c3681d75905fc081c6ca7dca37a78a",
+      "size": 512
+    },
+    {
+      "relative_path": "fixtures/E_FULL_MULTI_COMPONENT.json",
+      "sha256": "5b19f0dccbeb579d29ea28e15ded95fbc62c222d2ae0446e177d21bfabe2e967",
+      "size": 36842
+    },
+    {
+      "relative_path": "fixtures/F_FROZEN_BROAD_EVENT_GATE.json",
+      "sha256": "669f648d20fb922b4053aab75f581177d477c143ded1ec7da875435293d472ae",
+      "size": 12769
+    },
+    {
+      "relative_path": "proposal_lineage/A_LEGACY_PARITY.json",
+      "sha256": "d554dd4048536cf98a4c6d4ade2db20610bbef9f0705c3bd2b58d7686f2077b4",
+      "size": 400
+    },
+    {
+      "relative_path": "proposal_lineage/B_MULTI_TIMESCALE_FINANCING.json",
+      "sha256": "c7bf832c64d75bb7f4196044db146cc1b26808fa6e50e400ec70fb41e66d9b67",
+      "size": 400
+    },
+    {
+      "relative_path": "proposal_lineage/C_MARKET_CONDITIONED.json",
+      "sha256": "e017041f36866e27432db0640bcdf68c44c8288ffa1502bb1086db7405b52b94",
+      "size": 400
+    },
+    {
+      "relative_path": "proposal_lineage/E_FULL_MULTI_COMPONENT.json",
+      "sha256": "dc19791ba3dad8e8d4a512c440f4d3e1b9911eb3c50021f3f01aea9c21be0b1e",
+      "size": 400
+    },
+    {
+      "relative_path": "proposal_lineage/F_FROZEN_BROAD_EVENT_GATE.json",
+      "sha256": "1549220a6ab15cb82378dab4039c255ce6bc137b887faae1f40146e97f017c55",
+      "size": 400
+    },
+    {
+      "relative_path": "summary.json",
+      "sha256": "d793bfd0e95390b2660a2801a2d476cd544acc17bd86763b511f0663ce6f3dfa",
+      "size": 5173
+    }
+  ],
+  "manifest_payload_sha256": "1caaca3c5e8e87c8bf9bb611df17f6fd0ada4d04e19ece93a362e82e49c45f21",
+  "schema_version": "cn_typed_candidate_program_v1_artifact_manifest_v1"
+}

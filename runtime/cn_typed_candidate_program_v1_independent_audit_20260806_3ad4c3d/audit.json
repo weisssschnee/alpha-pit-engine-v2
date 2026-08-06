@@ -1,0 +1,23 @@
+{
+  "all_declared_artifacts_verified": true,
+  "artifact_count_verified": 21,
+  "audit_payload_sha256": "dfe08d08a6db1cced44d2040210f50e998c39a2887e4d216bc9df254962633ce",
+  "closure_file_sha256": "49f267d03e06c7f6b51911abb1be3a0d3f2c31ba775280598c80f9b3cef33c45",
+  "closure_payload_sha256": "43057a328009caedc9290b6e83295f9e59a2aca265e6392712241b985351f9c6",
+  "compile_ready_count_verified": 5,
+  "fail_closed_fixture_count_verified": 1,
+  "fixture_identity_order_verified": [
+    "A_LEGACY_PARITY",
+    "B_MULTI_TIMESCALE_FINANCING",
+    "C_MARKET_CONDITIONED",
+    "D_BILLBOARD_EVENT",
+    "E_FULL_MULTI_COMPONENT",
+    "F_FROZEN_BROAD_EVENT_GATE"
+  ],
+  "manifest_file_sha256": "939fe0c96c9f308af5b05ea63f1a2824a235f43f0250ea5971a6d51ac34dc319",
+  "manifest_payload_sha256": "1caaca3c5e8e87c8bf9bb611df17f6fd0ada4d04e19ece93a362e82e49c45f21",
+  "matched_controls_recomputed": 3,
+  "schema_version": "cn_typed_candidate_program_v1_independent_audit_v1",
+  "status": "CN_TYPED_CANDIDATE_PROGRAM_V1_INDEPENDENT_AUDIT_PASS",
+  "zero_financial_and_sealed_reads_verified": true
+}

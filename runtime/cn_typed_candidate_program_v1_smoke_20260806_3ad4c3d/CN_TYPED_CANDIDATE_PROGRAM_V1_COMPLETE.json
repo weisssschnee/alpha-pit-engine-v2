@@ -1,0 +1,15 @@
+{
+  "artifact_count": 21,
+  "blocked_fixture_count": 1,
+  "closure_payload_sha256": "43057a328009caedc9290b6e83295f9e59a2aca265e6392712241b985351f9c6",
+  "compile_ready_count": 5,
+  "financial_evaluation_executed": false,
+  "fixture_count": 6,
+  "manifest_file_sha256": "939fe0c96c9f308af5b05ea63f1a2824a235f43f0250ea5971a6d51ac34dc319",
+  "manifest_payload_sha256": "1caaca3c5e8e87c8bf9bb611df17f6fd0ada4d04e19ece93a362e82e49c45f21",
+  "market_label_validation_holdout_historical_forward_reads": 0,
+  "registry_hash": "7aecfd9423cd47684460ad6f485a82fb5c29ea02c36a7e488134b33ecb98dae3",
+  "repo_sha": "3ad4c3dd7005d9eafb5f16a1ef5573fb818bdddf",
+  "schema_version": "cn_typed_candidate_program_v1_closure_v1",
+  "status": "CN_TYPED_CANDIDATE_PROGRAM_V1_SMOKE_COMPLETE"
+}
