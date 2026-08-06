@@ -35,6 +35,9 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
 from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
 )
+from our_system_phase2.services.candidate_materialization_requirements import (
+    resolve_required_physical_leaves,
+)
 from our_system_phase2.services.node_resource_governor import (
     validate_node_resource_lease_receipt,
 )
@@ -569,10 +572,11 @@ def build_route_production_metrics_v0(
     }
 
 
-def screen_materialized_candidate_rows_v0(
+def _screen_materialized_candidate_rows_v0(
     *,
     candidate_rows: Sequence[Mapping[str, Any]],
     schema_by_backend: Mapping[str, set[str]],
+    legacy_identity_as_physical: bool,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Screen frozen pairs without replacement or cross-template spillover."""
 
@@ -620,13 +624,28 @@ def screen_materialized_candidate_rows_v0(
         backend = _clock_for_route(route_id)
         materialized = set(schema_by_backend.get(backend) or set())
         required: set[str] = set()
+        logical_identities: set[str] = set()
+        external_adapter_requirements: set[str] = set()
+        resolution_strategies: set[str] = set()
         for member in members:
-            for key in (
-                "declared_field_ids",
-                "field_ids",
-                "condition_field_ids",
-            ):
-                required.update(str(value) for value in (member.get(key) or ()))
+            if legacy_identity_as_physical:
+                for key in (
+                    "declared_field_ids",
+                    "field_ids",
+                    "condition_field_ids",
+                ):
+                    required.update(
+                        str(value) for value in (member.get(key) or ())
+                    )
+                resolution_strategies.add("LEGACY_IDENTITY_AS_PHYSICAL")
+            else:
+                resolution = resolve_required_physical_leaves(member)
+                required.update(resolution.physical_leaf_ids)
+                logical_identities.update(resolution.logical_identity_ids)
+                external_adapter_requirements.update(
+                    resolution.external_adapter_requirements
+                )
+                resolution_strategies.add(resolution.resolution_strategy)
         missing = sorted(required - materialized)
         compatible = not missing
         route_counts[route_id]["frozen_pairs"] += 1
@@ -636,25 +655,36 @@ def screen_materialized_candidate_rows_v0(
             else "materialization_incompatible"
         )
         route_counts[route_id][count_key] += 1
-        pair_screen.append(
-            {
-                "pair_id": pair_id,
-                "route_id": route_id,
-                "backend": backend,
-                "candidate_ids": [
-                    str(row.get("candidate_id") or "") for row in members
-                ],
-                "required_field_ids": sorted(required),
-                "missing_field_ids": missing,
-                "status": (
-                    "MATERIALIZED_PAIR_COMPATIBLE"
-                    if compatible
-                    else "MATERIALIZATION_INCOMPATIBLE_FIXED_UNDERFILL"
-                ),
-                "replacement_allowed": False,
-                "cross_template_spillover_allowed": False,
-            }
-        )
+        pair_screen_row = {
+            "pair_id": pair_id,
+            "route_id": route_id,
+            "backend": backend,
+            "candidate_ids": [
+                str(row.get("candidate_id") or "") for row in members
+            ],
+            "required_field_ids": sorted(required),
+            "missing_field_ids": missing,
+            "status": (
+                "MATERIALIZED_PAIR_COMPATIBLE"
+                if compatible
+                else "MATERIALIZATION_INCOMPATIBLE_FIXED_UNDERFILL"
+            ),
+            "replacement_allowed": False,
+            "cross_template_spillover_allowed": False,
+        }
+        if not legacy_identity_as_physical:
+            pair_screen_row.update(
+                {
+                    "logical_identity_ids": sorted(logical_identities),
+                    "external_adapter_requirements": sorted(
+                        external_adapter_requirements
+                    ),
+                    "physical_leaf_resolution_strategies": sorted(
+                        resolution_strategies
+                    ),
+                }
+            )
+        pair_screen.append(pair_screen_row)
         if compatible:
             compatible_rows.extend(members)
 
@@ -662,7 +692,11 @@ def screen_materialized_candidate_rows_v0(
     if any(row["frozen_pairs"] < 1 for row in route_waterfall):
         raise RuntimeError("fixed-stratified materialization route absent")
     payload: dict[str, Any] = {
-        "schema_version": "cn_fixed_stratified_materialization_screen_v1",
+        "schema_version": (
+            "cn_fixed_stratified_materialization_screen_v1"
+            if legacy_identity_as_physical
+            else "cn_fixed_stratified_materialization_screen_v2"
+        ),
         "status": "FIXED_COHORT_MATERIALIZATION_SCREEN_COMPLETE",
         "frozen_candidate_member_count": len(candidate_rows),
         "frozen_pair_count": len(pair_order),
@@ -682,6 +716,20 @@ def screen_materialized_candidate_rows_v0(
     }
     payload["screen_payload_sha256"] = stable_hash(payload)
     return compatible_rows, payload
+
+
+def screen_materialized_candidate_rows_v0(
+    *,
+    candidate_rows: Sequence[Mapping[str, Any]],
+    schema_by_backend: Mapping[str, set[str]],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Screen V0 rows using physical leaves while preserving V0 identities."""
+
+    return _screen_materialized_candidate_rows_v0(
+        candidate_rows=candidate_rows,
+        schema_by_backend=schema_by_backend,
+        legacy_identity_as_physical=False,
+    )
 
 
 def build_materialization_underfill_gate_v0(
@@ -1009,10 +1057,15 @@ def verify_fixed_stratified_production_v0(output_root: Path) -> dict[str, Any]:
         )
         for backend in ("active_bar", "stock_session")
     }
+    legacy_screen = (
+        str(materialization_screen.get("schema_version") or "")
+        == "cn_fixed_stratified_materialization_screen_v1"
+    )
     materialized_candidate_rows, expected_screen = (
-        screen_materialized_candidate_rows_v0(
+        _screen_materialized_candidate_rows_v0(
             candidate_rows=preflight_candidate_rows,
             schema_by_backend=schema_by_backend,
+            legacy_identity_as_physical=legacy_screen,
         )
     )
     screen_body = dict(materialization_screen)

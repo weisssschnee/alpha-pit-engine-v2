@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from our_system_phase2.runtime.cn_fixed_stratified_production_v0 import (
+    _screen_materialized_candidate_rows_v0,
     _require_execution_authority,
     _require_sidecar_authority,
     build_data_input_inventory_v0,
@@ -17,6 +18,9 @@ from our_system_phase2.runtime.cn_fixed_stratified_production_v0 import (
     require_zero_prohibited_reads_v0,
     screen_materialized_candidate_rows_v0,
     verify_fixed_stratified_production_v0,
+)
+from our_system_phase2.services.candidate_materialization_requirements import (
+    resolve_required_physical_leaves,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
@@ -76,8 +80,9 @@ def test_route_metrics_distinguish_evaluation_yield_and_economic_yield() -> None
 
 def test_materialization_screen_preserves_fixed_underfill_without_spillover() -> None:
     def pair_rows(pair_id: str, route_id: str, field_id: str) -> list[dict]:
-        return [
-            {
+        rows = []
+        for role in ("PRIMARY", "CONTROL"):
+            row = {
                 "pair_id": pair_id,
                 "pair_member_role": role,
                 "candidate_id": f"{pair_id}-{role.lower()}",
@@ -86,8 +91,20 @@ def test_materialization_screen_preserves_fixed_underfill_without_spillover() ->
                 "field_ids": [field_id],
                 "condition_field_ids": [],
             }
-            for role in ("PRIMARY", "CONTROL")
-        ]
+            if route_id == "BROAD_EVENT_FROZEN_ENTRY":
+                row.update(
+                    {
+                        "canonical_expression": (
+                            f"FrozenMechanismReplay($broad_event_{field_id})"
+                            if role == "PRIMARY"
+                            else f"MatchedControlReplay($broad_event_{field_id})"
+                        ),
+                        "frozen_mechanism_id": field_id,
+                        "frozen_behavior_cluster_id": "cluster-1",
+                    }
+                )
+            rows.append(row)
+        return rows
 
     rows = [
         *pair_rows("pair-session-ok", "SLOW_TEMPORAL_CHANGE", "session_ok"),
@@ -131,6 +148,132 @@ def test_materialization_screen_preserves_fixed_underfill_without_spillover() ->
     assert screen["replacement_allowed"] is False
     assert screen["cross_template_spillover_allowed"] is False
     assert screen["dynamic_budget_reallocation_allowed"] is False
+
+
+def test_materialization_screen_uses_intraday_state_source_physical_leaves() -> None:
+    rows = []
+    for route_id in (
+        "MINUTE_STATIC",
+        "FIRSTN_PATH",
+        "SLOW_CROSS_SECTIONAL_LEVEL",
+        "SLOW_TEMPORAL_CHANGE",
+        "DISCLOSURE_EVENT",
+        "MARKET_REGIME_CONDITION",
+        "BROAD_EVENT_FROZEN_ENTRY",
+    ):
+        for role in ("PRIMARY", "CONTROL"):
+            row = {
+                "pair_id": f"pair-{route_id}",
+                "pair_member_role": role,
+                "candidate_id": f"candidate-{route_id}-{role}",
+                "route_id": route_id,
+                "canonical_expression": "CSRank($shared_ok)",
+            }
+            if route_id == "BROAD_EVENT_FROZEN_ENTRY":
+                row.update(
+                    {
+                        "canonical_expression": (
+                            "FrozenMechanismReplay($broad_event_abc)"
+                            if role == "PRIMARY"
+                            else "MatchedControlReplay($broad_event_abc)"
+                        ),
+                        "frozen_mechanism_id": "abc",
+                        "frozen_behavior_cluster_id": "cluster-1",
+                    }
+                )
+            rows.append(row)
+    for role in ("PRIMARY", "CONTROL"):
+        rows.append(
+            {
+                "pair_id": "pair-state",
+                "pair_member_role": role,
+                "candidate_id": f"candidate-state-{role}",
+                "route_id": "INTRADAY_STATE_TRANSITION",
+                "canonical_expression": (
+                    "CSRank(Mul($state_intraday_return_sign,$ret_1m))"
+                ),
+                "declared_field_ids": [
+                    "state_intraday_return_sign",
+                    "ret_1m",
+                ],
+                "source_field_ids": ["cn.sf.lineage-only"],
+                "representation_ids": ["cn.rep.identity-only"],
+                "claimed_state_field_id": "state_intraday_return_sign",
+                "state_source_expression": "Sign($intraday_ret_from_open)",
+            }
+        )
+
+    compatible, screen = screen_materialized_candidate_rows_v0(
+        candidate_rows=rows,
+        schema_by_backend={
+            "active_bar": {"shared_ok", "ret_1m", "intraday_ret_from_open"},
+            "stock_session": {"shared_ok"},
+        },
+    )
+
+    assert len(compatible) == len(rows)
+    state = next(row for row in screen["pair_screen"] if row["pair_id"] == "pair-state")
+    assert state["required_field_ids"] == ["intraday_ret_from_open", "ret_1m"]
+    assert "state_intraday_return_sign" in state["logical_identity_ids"]
+    assert "cn.rep.identity-only" in state["logical_identity_ids"]
+    broad = next(
+        row
+        for row in screen["pair_screen"]
+        if row["route_id"] == "BROAD_EVENT_FROZEN_ENTRY"
+    )
+    assert broad["required_field_ids"] == []
+    assert "FROZEN_BROAD_EVENT_INVENTORY_BINDING" in broad[
+        "external_adapter_requirements"
+    ]
+
+
+def test_materialization_resolution_fails_closed_for_unbound_broad_event() -> None:
+    with pytest.raises(ValueError, match="frozen mechanism"):
+        resolve_required_physical_leaves(
+            {
+                "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+                "canonical_expression": (
+                    "FrozenMechanismReplay($broad_event_missing)"
+                ),
+            }
+        )
+
+
+def test_legacy_materialization_screen_shape_remains_reproducible() -> None:
+    rows = [
+        {
+            "pair_id": f"legacy-{route_id}",
+            "pair_member_role": role,
+            "candidate_id": f"legacy-{route_id}-{role}",
+            "route_id": route_id,
+            "declared_field_ids": ["amount"],
+            "source_field_ids": ["cn.sf.not-a-column"],
+        }
+        for route_id in (
+            "MINUTE_STATIC",
+            "FIRSTN_PATH",
+            "SLOW_CROSS_SECTIONAL_LEVEL",
+            "SLOW_TEMPORAL_CHANGE",
+            "DISCLOSURE_EVENT",
+            "MARKET_REGIME_CONDITION",
+            "INTRADAY_STATE_TRANSITION",
+            "BROAD_EVENT_FROZEN_ENTRY",
+        )
+        for role in ("PRIMARY", "CONTROL")
+    ]
+
+    compatible, screen = _screen_materialized_candidate_rows_v0(
+        candidate_rows=rows,
+        schema_by_backend={
+            "active_bar": {"amount"},
+            "stock_session": {"amount"},
+        },
+        legacy_identity_as_physical=True,
+    )
+
+    assert len(compatible) == len(rows)
+    assert screen["schema_version"] == "cn_fixed_stratified_materialization_screen_v1"
+    assert "logical_identity_ids" not in screen["pair_screen"][0]
 
 
 def test_zero_materialized_stratum_is_reportable_without_backend_launch() -> None:
