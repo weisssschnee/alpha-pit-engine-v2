@@ -9,6 +9,7 @@ from our_system_phase2.services.candidate_materialization_requirements import (
 )
 from our_system_phase2.services.candidate_program_v1 import (
     TypedNodeSpec,
+    registered_field_unit_signature_v1,
     route_generation_receipt_v1,
 )
 from our_system_phase2.services.unified_capability_registry import (
@@ -30,6 +31,11 @@ def _registered_field_node(
     extra_parameters: Mapping[str, Any] | None = None,
 ) -> TypedNodeSpec:
     field = registry.resolve(field_id)
+    authoritative_unit = registered_field_unit_signature_v1(field_id)
+    if unit_signature != authoritative_unit:
+        raise ValueError(
+            f"field unit is not Candidate Program V1-authorized: {field_id}"
+        )
     if field.pit_status == "PIT_CONTRACT_UNRESOLVED":
         raise ValueError(f"field has unresolved PIT contract: {field_id}")
     if route_id not in field.allowed_routes:

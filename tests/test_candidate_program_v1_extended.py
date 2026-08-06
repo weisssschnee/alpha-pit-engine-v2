@@ -31,6 +31,7 @@ from our_system_phase2.services.candidate_program_execution_v1 import (
     apply_compiled_candidate_program_v1,
 )
 from our_system_phase2.services.candidate_program_fixtures_v1 import (
+    PORTFOLIO_CONTRACT_V1,
     build_golden_program_fixtures_v1,
 )
 from our_system_phase2.services.candidate_program_v1 import (
@@ -38,9 +39,12 @@ from our_system_phase2.services.candidate_program_v1 import (
     ProgramCompilerV1,
     ProgramOutputSpec,
     TypedNodeSpec,
+    legacy_candidate_program_v1,
+    route_generation_receipt_v1,
 )
 from our_system_phase2.services.compositional_grammar import (
     CompositionalGrammarV2,
+    compositional_candidate_id,
     resolve_skeleton_spec,
 )
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
@@ -156,6 +160,27 @@ def test_joint_clock_exactly_covers_every_output_dependent_leaf(program_context)
         ProgramCompilerV1(registry).compile(incomplete)
 
 
+def test_legacy_route_preserves_registry_session_lags(program_context) -> None:
+    registry, grammar, _, _ = program_context
+    candidate = dict(
+        grammar.propose(
+            "SLOW_CROSS_SECTIONAL_LEVEL", attempt_index=0, seed=1729
+        ).primary
+    )
+    program = legacy_candidate_program_v1(
+        candidate, portfolio_contract=PORTFOLIO_CONTRACT_V1
+    )
+    compiled = ProgramCompilerV1(registry).compile(program)
+    expected_lags = {
+        field_id: int(registry.resolve(field_id).source_lag)
+        for field_id in candidate["field_ids"]
+    }
+    assert compiled.field_lags == expected_lags
+    clock = compiled.component_clock_requirements["legacy_score"]
+    assert clock["source_lag"] == max(expected_lags.values())
+    assert set(clock["field_requirements"]) == set(candidate["field_ids"])
+
+
 def test_multifield_windows_and_market_condition_do_not_rank_market_payload(program_context) -> None:
     registry, _, _, fixtures = program_context
     b = fixtures["B_MULTI_TIMESCALE_FINANCING"].program
@@ -188,6 +213,27 @@ def test_multifield_windows_and_market_condition_do_not_rank_market_payload(prog
         outputs=replace(c.outputs, stock_score_node_id=direct_rank.node_id),
     )
     with pytest.raises(ValueError, match="may not enter direct stock"):
+        ProgramCompilerV1(registry).compile(invalid)
+
+
+def test_registered_numeric_leaf_cannot_spoof_mask_or_boolean_unit(program_context) -> None:
+    registry, _, _, fixtures = program_context
+    program = fixtures["B_MULTI_TIMESCALE_FINANCING"].program
+    turnover = next(node for node in program.nodes if node.node_id == "turnover_ratio")
+    spoofed = replace(
+        turnover,
+        output_semantic_type="STOCK_MASK",
+        unit_signature="boolean",
+    )
+    invalid = replace(
+        program,
+        nodes=tuple(
+            spoofed if node.node_id == turnover.node_id else node
+            for node in program.nodes
+        ),
+        outputs=replace(program.outputs, eligibility_mask_node_id=turnover.node_id),
+    )
+    with pytest.raises(ValueError, match="registered V1 authority"):
         ProgramCompilerV1(registry).compile(invalid)
 
 
@@ -837,7 +883,7 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
         },
         observable_clock="same_bar_close",
     )
-    with pytest.raises(ValueError, match="candidate observable-clock drift"):
+    with pytest.raises(ValueError, match="drift"):
         ProgramCompilerV1(registry).compile(
             replace(
                 program,
@@ -860,7 +906,7 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
         },
         unit_signature="cubic_meters",
     )
-    with pytest.raises(ValueError, match="candidate unit-signature drift"):
+    with pytest.raises(ValueError, match="drift"):
         ProgramCompilerV1(registry).compile(
             replace(
                 program,
@@ -914,6 +960,41 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
                 program,
                 nodes=tuple(
                     fully_relabeled if node.node_id == legacy.node_id else node
+                    for node in program.nodes
+                ),
+            )
+        )
+
+    forged_candidate = dict(fully_relabeled_candidate)
+    forged_candidate["candidate_id"] = compositional_candidate_id(
+        generator_version=str(forged_candidate["generator_version"]),
+        route_id=str(forged_candidate["route_id"]),
+        skeleton_id=str(forged_candidate["skeleton_id"]),
+        seed=int(legacy.generation_receipt["seed"]),
+        attempt_index=int(legacy.generation_receipt["attempt_index"]),
+        field_ids=tuple(map(str, forged_candidate["declared_field_ids"])),
+        is_control=bool(forged_candidate.get("is_matched_control")),
+    )
+    forged_candidate.update(
+        {
+            "seed": int(legacy.generation_receipt["seed"]),
+            "attempt_index": int(legacy.generation_receipt["attempt_index"]),
+            "proposal_route_root_field_ids": list(
+                legacy.generation_receipt["proposal_route_root_field_ids"]
+            ),
+        }
+    )
+    forged = replace(
+        legacy,
+        parameters={**dict(legacy.parameters), "candidate": forged_candidate},
+        generation_receipt=route_generation_receipt_v1(forged_candidate),
+    )
+    with pytest.raises(ValueError, match="deterministic grammar replay drift"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                program,
+                nodes=tuple(
+                    forged if node.node_id == legacy.node_id else node
                     for node in program.nodes
                 ),
             )

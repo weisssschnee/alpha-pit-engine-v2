@@ -19,6 +19,7 @@ from our_system_phase2.services.candidate_materialization_requirements import (
     resolve_required_physical_leaves,
 )
 from our_system_phase2.services.compositional_grammar import (
+    CompositionalGrammarV2,
     compositional_candidate_id,
     resolve_skeleton_spec,
 )
@@ -175,6 +176,7 @@ _NON_SEMANTIC_EXACT_KEYS = frozenset(
         "attempt_index",
         "attempt_id",
         "route_attempt_index",
+        "proposal_route_root_field_ids",
         "sampler",
         "sampler_id",
         "proposal_parent",
@@ -199,11 +201,35 @@ _ROUTE_GENERATION_RECEIPT_KEYS = frozenset(
         "seed",
         "attempt_index",
         "declared_field_ids",
+        "proposal_route_root_field_ids",
         "is_matched_control",
         "exact_identity",
         "canonical_identity",
     }
 )
+
+REGISTERED_FIELD_UNIT_AUTHORITY_V1 = {
+    "ctx_rzrq_rzjme": "yuan",
+    "ctx_rzrq_rzyezb": "dimensionless",
+    "ctx_hfq_float_market_cap_yuan": "yuan",
+    "ctx_hfq_turnover_ratio": "dimensionless",
+    "ctx_sent_up_num": "count",
+    "ctx_sent_down_num": "count",
+    "ctx_sent_zb_num": "count",
+    "ctx_holder_holder_num_change": "dimensionless",
+    "fund_disclosure_holder_pulse": "boolean",
+}
+
+
+def registered_field_unit_signature_v1(field_id: str) -> str:
+    """Return the frozen V1 unit authority; unknown fields stay fail-closed."""
+
+    try:
+        return REGISTERED_FIELD_UNIT_AUTHORITY_V1[str(field_id)]
+    except KeyError as exc:
+        raise ValueError(
+            f"registered field lacks Candidate Program V1 unit authority: {field_id}"
+        ) from exc
 _NON_SEMANTIC_FRAGMENTS = (
     "reward",
     "return",
@@ -308,6 +334,7 @@ def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
         "seed",
         "attempt_index",
         "declared_field_ids",
+        "proposal_route_root_field_ids",
         "exact_identity",
         "canonical_identity",
     }
@@ -317,8 +344,10 @@ def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
         if key not in candidate
         or candidate[key] is None
         or candidate[key] == ""
-        or candidate[key] == []
-        or candidate[key] == ()
+        or (
+            key != "proposal_route_root_field_ids"
+            and candidate[key] in ([], ())
+        )
     )
     if missing:
         raise ValueError(f"route candidate lacks generation receipt fields: {missing}")
@@ -331,6 +360,9 @@ def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
         "seed": int(candidate["seed"]),
         "attempt_index": int(candidate["attempt_index"]),
         "declared_field_ids": list(map(str, candidate["declared_field_ids"])),
+        "proposal_route_root_field_ids": list(
+            map(str, candidate["proposal_route_root_field_ids"])
+        ),
         "is_matched_control": bool(candidate.get("is_matched_control")),
         "exact_identity": str(candidate["exact_identity"]),
         "canonical_identity": str(candidate["canonical_identity"]),
@@ -1021,6 +1053,22 @@ def _validate_node_semantics(
         if expected_scope and field.entity_scope.upper() != expected_scope:
             raise ValueError(
                 f"program field {field_id} has wrong entity scope for {node.node_type}"
+            )
+        expected_semantic_type = {
+            "STOCK_FIELD": "STOCK_VALUE",
+            "MARKET_FIELD": "MARKET_VALUE",
+            "INDUSTRY_FIELD": "GROUP_VALUE",
+            "PLATE_FIELD": "GROUP_VALUE",
+            "EVENT_EPISODE": "EVENT_EPISODE",
+        }[node.node_type]
+        expected_unit_signature = registered_field_unit_signature_v1(field_id)
+        if node.output_semantic_type != expected_semantic_type:
+            raise ValueError(
+                "program field semantic type drifts from registered V1 authority"
+            )
+        if node.unit_signature != expected_unit_signature:
+            raise ValueError(
+                "program field unit signature drifts from registered V1 authority"
             )
         if not field.search_eligible and node.node_type != "EVENT_EPISODE":
             raise ValueError(f"program field is not generator-eligible: {field_id}")
@@ -1801,6 +1849,61 @@ class ProgramCompilerV1:
                 f"{node.node_type} candidate generation receipt drift: "
                 f"{receipt_binding_drift}"
             )
+        route_root_field_ids = tuple(
+            map(str, generation_receipt["proposal_route_root_field_ids"])
+        )
+        replay_grammar = CompositionalGrammarV2(
+            self.registry,
+            route_root_allowlist=(
+                {str(generation_receipt["route_id"]): route_root_field_ids}
+                if route_root_field_ids
+                else None
+            ),
+        )
+        replay_pair = replay_grammar.propose(
+            str(generation_receipt["route_id"]),
+            attempt_index=int(generation_receipt["attempt_index"]),
+            seed=int(generation_receipt["seed"]),
+        )
+        regenerated = dict(
+            replay_pair.control
+            if bool(generation_receipt["is_matched_control"])
+            else replay_pair.primary
+        )
+        regeneration_keys = (
+            "candidate_id",
+            "route_id",
+            "expression",
+            "canonical_expression",
+            "exact_identity",
+            "canonical_identity",
+            "declared_field_ids",
+            "field_ids",
+            "source_field_ids",
+            "representation_ids",
+            "skeleton_id",
+            "financial_hypothesis",
+            "input_roles",
+            "control_ablation_rule",
+            "maximum_depth",
+            "search_role",
+            "clock_contract",
+            "maturity_contract",
+            "unit_signature",
+            "support_unit",
+            "is_matched_control",
+        )
+        regeneration_drift = sorted(
+            key
+            for key in regeneration_keys
+            if _canonicalize(candidate.get(key))
+            != _canonicalize(regenerated.get(key))
+        )
+        if regeneration_drift:
+            raise ValueError(
+                f"{node.node_type} deterministic grammar replay drift: "
+                f"{regeneration_drift}"
+            )
         expected_exact = str(candidate["exact_identity"])
         if verdict.exact_identity != expected_exact:
             raise ValueError(f"{node.node_type} exact identity drift")
@@ -1973,21 +2076,81 @@ class ProgramCompilerV1:
         component_clock_requirements: dict[str, dict[str, Any]] = {}
         for node_id in spec.joint_clock_contract.component_clock_node_ids:
             clock_node = by_id[node_id]
+            legacy_field_contracts = []
+            if clock_node.node_type == "LEGACY_CANDIDATE_COMPONENT":
+                legacy_candidate = dict(
+                    clock_node.parameters.get("candidate") or {}
+                )
+                legacy_field_contracts = [
+                    self.registry.resolve(str(field_id))
+                    for field_id in legacy_candidate.get("field_ids") or ()
+                ]
+            legacy_lag_units = {
+                str(field.source_lag_unit).lower()
+                for field in legacy_field_contracts
+            }
+            legacy_lags = [
+                int(field.source_lag) for field in legacy_field_contracts
+            ]
             component_clock_requirements[node_id] = {
                 "observable_clock_contract": clock_node.observable_clock,
                 "maturity_contract": clock_node.maturity,
-                "source_lag": clock_node.parameters.get("source_lag", 0),
+                "source_lag": (
+                    max(legacy_lags, default=0)
+                    if legacy_field_contracts
+                    else clock_node.parameters.get("source_lag", 0)
+                ),
                 "source_lag_unit": str(
-                    clock_node.parameters.get("source_lag_unit") or "sessions"
+                    next(iter(legacy_lag_units))
+                    if len(legacy_lag_units) == 1
+                    else "mixed_per_field"
+                    if legacy_field_contracts
+                    else clock_node.parameters.get("source_lag_unit") or "sessions"
                 ),
                 "revision_policy": str(
-                    clock_node.parameters.get("revision_policy")
+                    "|".join(
+                        sorted(
+                            {
+                                str(field.revision_policy)
+                                for field in legacy_field_contracts
+                            }
+                        )
+                    )
+                    if legacy_field_contracts
+                    else clock_node.parameters.get("revision_policy")
                     or clock_node.temporal_semantics.get("revision_policy")
                     or "NO_FUTURE_REVISION"
                 ),
+                "field_requirements": {
+                    str(field.field_id): {
+                        "source_lag": int(field.source_lag),
+                        "source_lag_unit": str(field.source_lag_unit),
+                        "revision_policy": str(field.revision_policy),
+                        "observable_clock": str(field.observable_clock),
+                        "maturity": str(field.maturity_rule),
+                    }
+                    for field in legacy_field_contracts
+                },
             }
         field_lags: dict[str, int] = {}
         for node in spec.nodes:
+            if node.node_type == "LEGACY_CANDIDATE_COMPONENT":
+                legacy_candidate = dict(node.parameters.get("candidate") or {})
+                for legacy_field_id in legacy_candidate.get("field_ids") or ():
+                    legacy_field = self.registry.resolve(str(legacy_field_id))
+                    legacy_lag_unit = str(legacy_field.source_lag_unit).lower()
+                    if legacy_lag_unit in {
+                        "session",
+                        "sessions",
+                    }:
+                        field_lags[str(legacy_field.field_id)] = int(
+                            legacy_field.source_lag
+                        )
+                    elif int(legacy_field.source_lag) != 0:
+                        raise ValueError(
+                            "legacy route leaf has unsupported nonzero non-session field lag"
+                        )
+                continue
             field_id = str(node.parameters.get("field_id") or "")
             source_lag_unit = str(
                 node.parameters.get("source_lag_unit") or ""

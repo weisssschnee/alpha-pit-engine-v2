@@ -1478,6 +1478,9 @@ class CompositionalGrammarV2:
             "operator_family": operator_family,
             "seed": int(seed),
             "attempt_index": int(attempt_index),
+            "proposal_route_root_field_ids": sorted(
+                self._route_root_allowlist.get(route_id, ())
+            ),
             "proposal_origin": "typed_compositional_grammar_v2",
             "matched_control_id": matched_control_id,
             "declared_field_ids": [field.field_id for field in fields],
