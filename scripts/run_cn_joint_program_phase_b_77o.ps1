@@ -22,6 +22,29 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+function Get-SharedReadSha256 {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $stream = [IO.FileStream]::new(
+        $Path,
+        [IO.FileMode]::Open,
+        [IO.FileAccess]::Read,
+        [IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete
+    )
+    try {
+        $hasher = [Security.Cryptography.SHA256]::Create()
+        try {
+            return (
+                [BitConverter]::ToString($hasher.ComputeHash($stream))
+            ).Replace('-', '').ToLowerInvariant()
+        } finally {
+            $hasher.Dispose()
+        }
+    } finally {
+        $stream.Dispose()
+    }
+}
+
 if ($env:COMPUTERNAME -ne 'DESKTOP-77OPJ6F') {
     throw 'joint-program Phase B is authorized only on DESKTOP-77OPJ6F'
 }
@@ -127,17 +150,11 @@ $stderrPath = Join-Path $resolvedRoot 'joint_program_phase_b.stderr.log'
     repo_sha = $RepoSha
     workspace = $resolvedRepo
     deployment_manifest = $resolvedDeployment
-    deployment_manifest_sha256 = (
-        Get-FileHash -LiteralPath $resolvedDeployment -Algorithm SHA256
-    ).Hash.ToLowerInvariant()
+    deployment_manifest_sha256 = Get-SharedReadSha256 $resolvedDeployment
     phase_b_freeze_root = $resolvedFreeze
-    phase_b_freeze_closure_sha256 = (
-        Get-FileHash -LiteralPath $freezeClosure -Algorithm SHA256
-    ).Hash.ToLowerInvariant()
+    phase_b_freeze_closure_sha256 = Get-SharedReadSha256 $freezeClosure
     execution_contract = $resolvedContract
-    execution_contract_sha256 = (
-        Get-FileHash -LiteralPath $resolvedContract -Algorithm SHA256
-    ).Hash.ToLowerInvariant()
+    execution_contract_sha256 = Get-SharedReadSha256 $resolvedContract
     train_field_root = $resolvedFields
     output_root = $resolvedRoot
     node_resource_profile = 'VALIDATION_EXCLUSIVE_32'
