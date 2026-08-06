@@ -27,6 +27,29 @@ ROOT_CONTRACT = (
 )
 
 
+def _rehash_artifact_and_closure(root: Path, artifact_name: str) -> None:
+    artifact_path = root / artifact_name
+    closure_path = root / CLOSURE_NAME
+    closure = json.loads(closure_path.read_text(encoding="utf-8"))
+    artifact = next(
+        row for row in closure["artifacts"] if row["path"] == artifact_name
+    )
+    artifact["sha256"] = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    artifact["bytes"] = artifact_path.stat().st_size
+    closure["closure_payload_sha256"] = stable_hash(
+        {
+            key: value
+            for key, value in closure.items()
+            if key != "closure_payload_sha256"
+        }
+    )
+    closure_path.write_text(
+        json.dumps(closure, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
 def test_zero_financial_preflight_writes_and_verifies_immutable_artifacts(
     tmp_path: Path,
 ) -> None:
@@ -88,27 +111,32 @@ def test_preflight_verifier_rejects_adaptation_hidden_in_candidate_rows(
         encoding="utf-8",
         newline="\n",
     )
-    closure_path = root / CLOSURE_NAME
-    closure = json.loads(closure_path.read_text(encoding="utf-8"))
-    artifact = next(
-        row
-        for row in closure["artifacts"]
-        if row["path"] == "compatible_candidate_rows_v0.jsonl"
+    _rehash_artifact_and_closure(root, rows_path.name)
+
+    with pytest.raises(RuntimeError, match="row authority drift"):
+        verify_candidate_representation_v0_preflight(root)
+
+
+def test_preflight_verifier_rejects_prohibited_reads_hidden_in_summary(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "preflight"
+    build_candidate_representation_v0_preflight(
+        registry_path=REGISTRY,
+        root_contract_path=ROOT_CONTRACT,
+        output_root=root,
+        quota_per_template=1,
+        seeds=(1729,),
     )
-    artifact["sha256"] = hashlib.sha256(rows_path.read_bytes()).hexdigest()
-    artifact["bytes"] = rows_path.stat().st_size
-    closure["closure_payload_sha256"] = stable_hash(
-        {
-            key: value
-            for key, value in closure.items()
-            if key != "closure_payload_sha256"
-        }
-    )
-    closure_path.write_text(
-        json.dumps(closure, indent=2, sort_keys=True) + "\n",
+    summary_path = root / "summary_v0.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["validation_read_count"] = 1
+    summary_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
         newline="\n",
     )
+    _rehash_artifact_and_closure(root, summary_path.name)
 
-    with pytest.raises(RuntimeError, match="row authority drift"):
+    with pytest.raises(RuntimeError, match="summary recorded prohibited reads"):
         verify_candidate_representation_v0_preflight(root)

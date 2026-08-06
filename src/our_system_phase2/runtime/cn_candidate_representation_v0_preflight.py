@@ -372,6 +372,14 @@ def verify_candidate_representation_v0_preflight(
     )
     if any(bool(summary.get(key)) for key in summary_flags):
         raise RuntimeError("V0 preflight summary enabled forbidden authority")
+    summary_read_counts = (
+        "sealed_data_read_count",
+        "validation_read_count",
+        "holdout_read_count",
+        "forward_2026_read_count",
+    )
+    if any(int(summary.get(key) or 0) for key in summary_read_counts):
+        raise RuntimeError("V0 preflight summary recorded prohibited reads")
     if int(summary.get("scheduled_attempts") or -1) != sum(quotas.values()):
         raise RuntimeError("V0 preflight summary scheduled count drift")
     if int(summary.get("attempted") or -1) != len(ledger):
