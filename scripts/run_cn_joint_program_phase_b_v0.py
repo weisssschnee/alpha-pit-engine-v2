@@ -387,6 +387,25 @@ def _parity_differences(
     return [field for field in PARITY_FIELDS if wrapper.get(field) != legacy.get(field)]
 
 
+def _validate_frozen_execution_contract(
+    run_contract: Mapping[str, Any],
+    *,
+    execution_contract_sha256: str,
+    capacity_manifest_sha256: str,
+    executor_workers: int,
+) -> None:
+    if (
+        str(run_contract.get("portfolio_decoder_id") or "") != "TOPK_10_EQUAL"
+        or str(run_contract.get("executor_backend") or "") != "PROCESS_POOL"
+        or int(run_contract.get("executor_workers") or 0) != executor_workers
+        or str(run_contract.get("execution_contract_snapshot_file_sha256") or "")
+        != execution_contract_sha256
+        or str(run_contract.get("node_resource_capacity_manifest_sha256") or "")
+        != capacity_manifest_sha256
+    ):
+        raise RuntimeError("Phase B frozen execution contract drift")
+
+
 def _evaluate_record(
     record: Mapping[str, Any], target_path: str
 ) -> dict[str, Any]:
@@ -729,16 +748,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise RuntimeError("Phase B process resource contract drift")
     run_contract = _read_json(freeze_root / "phase_b_run_contract.json")
-    if (
-        str(run_contract.get("portfolio_decoder_id") or "") != "TOPK_10_EQUAL"
-        or str(run_contract.get("execution_backend") or "") != "PROCESS_POOL"
-        or int(run_contract.get("executor_workers") or 0) != 12
-        or _sha256(contract_path)
-        != str(run_contract.get("execution_contract_snapshot_file_sha256") or "")
-        or str(capacity.get("capacity_manifest_sha256") or "")
-        != str(run_contract.get("node_resource_capacity_manifest_sha256") or "")
-    ):
-        raise RuntimeError("Phase B frozen execution contract drift")
+    _validate_frozen_execution_contract(
+        run_contract,
+        execution_contract_sha256=_sha256(contract_path),
+        capacity_manifest_sha256=str(capacity.get("capacity_manifest_sha256") or ""),
+        executor_workers=int(args.executor_workers),
+    )
     normalized_field_root = str(train_field_root).replace("/", "\\").lower()
     if (
         normalized_field_root

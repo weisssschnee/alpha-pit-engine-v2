@@ -9,6 +9,7 @@ from scripts.run_cn_joint_program_phase_b_v0 import (
     _parity_differences,
     _self_hashed,
     _template_summary,
+    _validate_frozen_execution_contract,
     _verify_checkpoint,
     _write_json,
 )
@@ -117,3 +118,18 @@ def test_phase_b_parity_reports_exact_field_drift() -> None:
     assert _parity_differences(left, right) == []
     right["ending_nav_cny"] = 99.0
     assert _parity_differences(left, right) == ["ending_nav_cny"]
+
+
+def test_phase_b_frozen_execution_contract_uses_emitted_executor_key() -> None:
+    _validate_frozen_execution_contract(
+        {
+            "portfolio_decoder_id": "TOPK_10_EQUAL",
+            "executor_backend": "PROCESS_POOL",
+            "executor_workers": 12,
+            "execution_contract_snapshot_file_sha256": "a" * 64,
+            "node_resource_capacity_manifest_sha256": "b" * 64,
+        },
+        execution_contract_sha256="a" * 64,
+        capacity_manifest_sha256="b" * 64,
+        executor_workers=12,
+    )
