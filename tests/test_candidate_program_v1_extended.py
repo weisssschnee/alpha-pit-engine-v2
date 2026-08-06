@@ -1292,6 +1292,33 @@ def test_legacy_program_signal_rank_and_replay_are_exactly_identical(program_con
     )
     assert wrapped["program_eligible"].equals(legacy_signal.notna())
 
+    materialized = frame.copy()
+    materialized["trade_time"] = pd.to_datetime(materialized["date"]) + pd.Timedelta(
+        hours=15
+    )
+    sidecar_wrapped = apply_compiled_candidate_program_v1(
+        materialized,
+        compiled,
+        data_role="development",
+        materialized_sidecar_clock_column="trade_time",
+        materialized_sidecar_authority="PIT_MATERIALIZED_FIELD_SIDECAR",
+    )
+    pd.testing.assert_series_equal(
+        legacy_signal,
+        sidecar_wrapped["signal"],
+        check_names=False,
+        check_exact=True,
+    )
+    assert sidecar_wrapped["program_eligible"].equals(legacy_signal.notna())
+    with pytest.raises(ValueError, match="authority is not accepted"):
+        apply_compiled_candidate_program_v1(
+            materialized,
+            compiled,
+            data_role="development",
+            materialized_sidecar_clock_column="trade_time",
+            materialized_sidecar_authority="UNBOUND",
+        )
+
     common = {
         "fee_schedule": _fees(),
         "universe_policy": AShareUniversePolicy(

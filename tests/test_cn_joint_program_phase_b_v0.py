@@ -81,6 +81,16 @@ def _materialization_test_inputs(
         lambda **_: (
             compatible_pair_ids,
             {"screen_payload_sha256": "c" * 64},
+            {
+                "backends": {
+                    "stock_session": {
+                        "root": (
+                            "D:/ChengboRemote/runtime/development/"
+                            "session_time_major_train_v1"
+                        )
+                    }
+                }
+            },
         ),
     )
     return paths

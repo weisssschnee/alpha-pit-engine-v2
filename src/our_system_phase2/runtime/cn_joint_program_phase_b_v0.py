@@ -276,7 +276,7 @@ def _materialized_pair_ids(
     production_closure_path: Path,
     materialized_schema_path: Path,
     materialization_screen_path: Path,
-) -> tuple[set[str], dict[str, Any]]:
+) -> tuple[set[str], dict[str, Any], dict[str, Any]]:
     if _sha256(production_closure_path) != FIXED_V0_PRODUCTION_CLOSURE_FILE_SHA256:
         raise ValueError("fixed-V0 production closure file hash drift")
     closure = _read_json(production_closure_path)
@@ -334,7 +334,7 @@ def _materialized_pair_ids(
     }
     if len(compatible) != 180:
         raise ValueError("fixed-V0 compatible pair identity count drift")
-    return compatible, screen
+    return compatible, screen, schema
 
 
 def _regenerate_compatible_components(
@@ -604,11 +604,30 @@ def build_phase_b_prefinancial_freeze_v0(
     if float(ACCELERATION_BASIS["qualified_speedup"]) < 1.5:
         raise ValueError("accepted acceleration basis lacks minimum speedup")
 
-    compatible_pair_ids, accepted_materialization_screen = _materialized_pair_ids(
+    (
+        compatible_pair_ids,
+        accepted_materialization_screen,
+        accepted_materialized_schema,
+    ) = _materialized_pair_ids(
         production_closure_path=fixed_v0_production_closure_snapshot_path.resolve(),
         materialized_schema_path=materialized_schema_snapshot_path.resolve(),
         materialization_screen_path=materialization_screen_snapshot_path.resolve(),
     )
+    accepted_remote_session_root = str(
+        (
+            accepted_materialized_schema.get("backends", {}).get(
+                "stock_session", {}
+            )
+        ).get("root")
+        or ""
+    )
+    if (
+        accepted_remote_session_root.replace("/", "\\").lower()
+        != remote_train_session_field_root.replace("/", "\\").lower()
+    ):
+        raise ValueError(
+            "remote train session field root is not the accepted materialized root"
+        )
     components, source_closure = _regenerate_compatible_components(
         registry=registry,
         source_preflight_root=source_preflight_root.resolve(),
@@ -646,6 +665,7 @@ def build_phase_b_prefinancial_freeze_v0(
                 materialization_screen_snapshot_path.resolve()
             ),
             "accepted_materialized_pair_count": len(compatible_pair_ids),
+            "accepted_stock_session_field_root": accepted_remote_session_root,
             "accepted_materialization_screen_payload_sha256": str(
                 accepted_materialization_screen["screen_payload_sha256"]
             ),

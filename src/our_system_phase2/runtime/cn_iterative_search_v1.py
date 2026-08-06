@@ -1021,6 +1021,7 @@ def _batch_manifest(
     input_hashes: Mapping[str, str],
     paths: Sequence[Path],
     access_receipts: Sequence[Mapping[str, Any]],
+    evaluation_name: str = "full-coordinate development Phase3CM pair evaluation",
 ) -> Path:
     artifacts = [_artifact(path, root=batch_root) for path in paths]
     manifest: dict[str, Any] = {
@@ -1034,7 +1035,7 @@ def _batch_manifest(
         "holdout_reads": 0,
         "forward_2026_reads": 0,
         "promotion": "FORBIDDEN",
-        "evaluation_name": "full-coordinate development Phase3CM pair evaluation",
+        "evaluation_name": str(evaluation_name),
     }
     manifest["manifest_payload_hash"] = _stable_hash(manifest)
     return _write_json(batch_root / "batch_manifest.json", manifest)
