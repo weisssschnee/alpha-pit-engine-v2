@@ -445,6 +445,32 @@ def resolve_skeleton_spec(skeleton_id: str) -> SkeletonSpec:
     return matches[0]
 
 
+def compositional_candidate_id(
+    *,
+    generator_version: str,
+    route_id: str,
+    skeleton_id: str,
+    seed: int,
+    attempt_index: int,
+    field_ids: Sequence[str],
+    is_control: bool,
+) -> str:
+    """Recompute the existing reward-free compositional proposal identity."""
+
+    digest = stable_hash(
+        {
+            "grammar": str(generator_version),
+            "route": str(route_id),
+            "skeleton": str(skeleton_id),
+            "seed": int(seed),
+            "attempt": int(attempt_index),
+            "fields": [str(field_id) for field_id in field_ids],
+        }
+    )[:20]
+    primary_id = f"cn.comp.{digest}"
+    return primary_id + ".control" if is_control else primary_id
+
+
 def _pick(rows: Sequence[CapabilityField], index: int, seed: int, salt: str) -> CapabilityField:
     if not rows:
         raise ValueError(f"CONTROL_CONSTRUCTION_UNRESOLVED: empty field pool for {salt}")
@@ -1439,6 +1465,7 @@ class CompositionalGrammarV2:
         fields: Sequence[CapabilityField],
         condition_fields: Sequence[CapabilityField] = (),
         seed: int,
+        attempt_index: int,
         is_control: bool,
         generator_version: str = GRAMMAR_VERSION,
         extra: dict[str, Any] | None = None,
@@ -1450,6 +1477,7 @@ class CompositionalGrammarV2:
             "expression": expression,
             "operator_family": operator_family,
             "seed": int(seed),
+            "attempt_index": int(attempt_index),
             "proposal_origin": "typed_compositional_grammar_v2",
             "matched_control_id": matched_control_id,
             "declared_field_ids": [field.field_id for field in fields],
@@ -1493,18 +1521,24 @@ class CompositionalGrammarV2:
         extra: dict[str, Any] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         unique_fields = tuple({field.field_id: field for field in fields}.values())
-        digest = stable_hash(
-            {
-                "grammar": str(generator_version),
-                "route": skeleton.route_id,
-                "skeleton": skeleton.skeleton_id,
-                "seed": int(seed),
-                "attempt": int(attempt_index),
-                "fields": [field.field_id for field in unique_fields],
-            }
-        )[:20]
-        primary_id = f"cn.comp.{digest}"
-        control_id = primary_id + ".control"
+        primary_id = compositional_candidate_id(
+            generator_version=str(generator_version),
+            route_id=skeleton.route_id,
+            skeleton_id=skeleton.skeleton_id,
+            seed=seed,
+            attempt_index=attempt_index,
+            field_ids=[field.field_id for field in unique_fields],
+            is_control=False,
+        )
+        control_id = compositional_candidate_id(
+            generator_version=str(generator_version),
+            route_id=skeleton.route_id,
+            skeleton_id=skeleton.skeleton_id,
+            seed=seed,
+            attempt_index=attempt_index,
+            field_ids=[field.field_id for field in unique_fields],
+            is_control=True,
+        )
         primary = self._base(
             candidate_id=primary_id,
             matched_control_id=control_id,
@@ -1515,6 +1549,7 @@ class CompositionalGrammarV2:
             fields=unique_fields,
             condition_fields=condition_fields,
             seed=seed,
+            attempt_index=attempt_index,
             is_control=False,
             generator_version=generator_version,
             extra=extra,
@@ -1529,6 +1564,7 @@ class CompositionalGrammarV2:
             fields=unique_fields,
             condition_fields=condition_fields,
             seed=seed,
+            attempt_index=attempt_index,
             is_control=True,
             generator_version=generator_version,
             extra=extra,

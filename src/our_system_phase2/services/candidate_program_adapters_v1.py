@@ -7,7 +7,10 @@ from typing import Any, Mapping
 from our_system_phase2.services.candidate_materialization_requirements import (
     resolve_required_physical_leaves,
 )
-from our_system_phase2.services.candidate_program_v1 import TypedNodeSpec
+from our_system_phase2.services.candidate_program_v1 import (
+    TypedNodeSpec,
+    route_generation_receipt_v1,
+)
 from our_system_phase2.services.unified_capability_registry import (
     UnifiedCapabilityRegistry,
     stable_hash,
@@ -159,6 +162,7 @@ class DisclosureEpisodeAdapter:
 
 class IntradayStateComponentAdapter:
     def adapt(self, *, node_id: str, candidate: Mapping[str, Any]) -> TypedNodeSpec:
+        generation_receipt = route_generation_receipt_v1(candidate)
         resolution = resolve_required_physical_leaves(candidate)
         if resolution.route_id != "INTRADAY_STATE_TRANSITION":
             raise ValueError("intraday state adapter requires the registered route")
@@ -190,6 +194,7 @@ class IntradayStateComponentAdapter:
             support_unit=str(candidate.get("support_unit") or "stock-minute"),
             source_lineage=tuple(resolution.logical_identity_ids),
             component_route_provenance=("INTRADAY_STATE_TRANSITION",),
+            generation_receipt=generation_receipt,
         )
 
 
@@ -272,6 +277,7 @@ class FrozenBroadEventComponentAdapter:
 
 class LegacyRouteComponentAdapter:
     def adapt(self, *, node_id: str, candidate: Mapping[str, Any]) -> TypedNodeSpec:
+        generation_receipt = route_generation_receipt_v1(candidate)
         route_id = str(candidate.get("route_id") or "")
         if not route_id:
             raise ValueError("legacy route component lacks route_id")
@@ -293,4 +299,5 @@ class LegacyRouteComponentAdapter:
             support_unit=str(candidate.get("support_unit") or "UNSPECIFIED"),
             source_lineage=tuple(resolution.logical_identity_ids),
             component_route_provenance=(route_id,),
+            generation_receipt=generation_receipt,
         )

@@ -18,7 +18,10 @@ from our_system_phase2.services.candidate_materialization_requirements import (
     PhysicalLeafResolution,
     resolve_required_physical_leaves,
 )
-from our_system_phase2.services.compositional_grammar import resolve_skeleton_spec
+from our_system_phase2.services.compositional_grammar import (
+    compositional_candidate_id,
+    resolve_skeleton_spec,
+)
 from our_system_phase2.services.phase3cm_streaming_dag import (
     SharedMultiCandidateDAGPlan,
 )
@@ -169,6 +172,7 @@ _NON_SEMANTIC_EXACT_KEYS = frozenset(
     {
         "seed",
         "attempt",
+        "attempt_index",
         "attempt_id",
         "route_attempt_index",
         "sampler",
@@ -181,6 +185,23 @@ _NON_SEMANTIC_EXACT_KEYS = frozenset(
         "optimizer_reward",
         "portfolio_behavior_family_id",
         "portfolio_behavior_signature_id",
+    }
+)
+
+ROUTE_GENERATION_RECEIPT_VERSION = "cn_route_generation_receipt_v1"
+_ROUTE_GENERATION_RECEIPT_KEYS = frozenset(
+    {
+        "receipt_version",
+        "candidate_id",
+        "generator_version",
+        "route_id",
+        "skeleton_id",
+        "seed",
+        "attempt_index",
+        "declared_field_ids",
+        "is_matched_control",
+        "exact_identity",
+        "canonical_identity",
     }
 )
 _NON_SEMANTIC_FRAGMENTS = (
@@ -276,6 +297,60 @@ def _strip_nonsemantic_metadata(value: Any) -> Any:
     return _canonicalize(value)
 
 
+def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
+    """Build the non-semantic receipt needed to reproduce route proposal identity."""
+
+    required = {
+        "candidate_id",
+        "generator_version",
+        "route_id",
+        "skeleton_id",
+        "seed",
+        "attempt_index",
+        "declared_field_ids",
+        "exact_identity",
+        "canonical_identity",
+    }
+    missing = sorted(
+        key
+        for key in required
+        if key not in candidate
+        or candidate[key] is None
+        or candidate[key] == ""
+        or candidate[key] == []
+        or candidate[key] == ()
+    )
+    if missing:
+        raise ValueError(f"route candidate lacks generation receipt fields: {missing}")
+    body = {
+        "receipt_version": ROUTE_GENERATION_RECEIPT_VERSION,
+        "candidate_id": str(candidate["candidate_id"]),
+        "generator_version": str(candidate["generator_version"]),
+        "route_id": str(candidate["route_id"]),
+        "skeleton_id": str(candidate["skeleton_id"]),
+        "seed": int(candidate["seed"]),
+        "attempt_index": int(candidate["attempt_index"]),
+        "declared_field_ids": list(map(str, candidate["declared_field_ids"])),
+        "is_matched_control": bool(candidate.get("is_matched_control")),
+        "exact_identity": str(candidate["exact_identity"]),
+        "canonical_identity": str(candidate["canonical_identity"]),
+    }
+    return {**body, "generation_receipt_hash": stable_hash(body)}
+
+
+def _validate_route_generation_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
+    normalized = dict(receipt)
+    allowed = _ROUTE_GENERATION_RECEIPT_KEYS | {"generation_receipt_hash"}
+    if set(normalized) != allowed:
+        raise ValueError("route generation receipt fields are incomplete or unexpected")
+    body = {key: normalized[key] for key in sorted(_ROUTE_GENERATION_RECEIPT_KEYS)}
+    if str(normalized.get("receipt_version") or "") != ROUTE_GENERATION_RECEIPT_VERSION:
+        raise ValueError("route generation receipt version mismatch")
+    if str(normalized.get("generation_receipt_hash") or "") != stable_hash(body):
+        raise ValueError("route generation receipt self-hash mismatch")
+    return _canonicalize(normalized)
+
+
 @dataclass(frozen=True, slots=True)
 class ComplexityBudgetV1:
     maximum_effective_nodes: int = 48
@@ -320,6 +395,7 @@ class TypedNodeSpec:
     support_unit: str
     source_lineage: tuple[str, ...] = ()
     component_route_provenance: tuple[str, ...] = ()
+    generation_receipt: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not _NODE_ID_RE.fullmatch(self.node_id):
@@ -343,6 +419,8 @@ class TypedNodeSpec:
         missing = sorted(key for key, value in required.items() if not value)
         if missing:
             raise ValueError(f"program node lacks typed contracts: {missing}")
+        if self.generation_receipt:
+            _validate_route_generation_receipt(self.generation_receipt)
 
     def semantic_payload(self) -> dict[str, Any]:
         return {
@@ -363,6 +441,14 @@ class TypedNodeSpec:
             ),
         }
 
+    def record_payload(self) -> dict[str, Any]:
+        payload = self.semantic_payload()
+        if self.generation_receipt:
+            payload["generation_receipt"] = _validate_route_generation_receipt(
+                self.generation_receipt
+            )
+        return payload
+
     @classmethod
     def from_record(cls, record: Mapping[str, Any]) -> "TypedNodeSpec":
         return cls(
@@ -381,6 +467,7 @@ class TypedNodeSpec:
             component_route_provenance=tuple(
                 map(str, record.get("component_route_provenance") or ())
             ),
+            generation_receipt=dict(record.get("generation_receipt") or {}),
         )
 
 
@@ -533,8 +620,13 @@ class CandidateProgramSpecV1:
         return "cn.program." + self.semantic_program_hash[:32]
 
     def to_record(self) -> dict[str, Any]:
+        payload = self.semantic_payload()
+        payload["nodes"] = [
+            node.record_payload()
+            for node in sorted(self.nodes, key=lambda item: item.node_id)
+        ]
         return {
-            **self.semantic_payload(),
+            **payload,
             "program_id": self.program_id,
             "semantic_program_hash": self.semantic_program_hash,
         }
@@ -1520,6 +1612,7 @@ def legacy_candidate_program_v1(
 ) -> CandidateProgramSpecV1:
     """Wrap one old candidate without changing its identity or expression."""
 
+    generation_receipt = route_generation_receipt_v1(candidate)
     component = _strip_nonsemantic_metadata(candidate)
     candidate_id = str(component.get("candidate_id") or "")
     route_id = str(component.get("route_id") or "")
@@ -1549,6 +1642,7 @@ def legacy_candidate_program_v1(
         support_unit=support,
         source_lineage=tuple(resolution.logical_identity_ids),
         component_route_provenance=(route_id,),
+        generation_receipt=generation_receipt,
     )
     nodes = (
         score,
@@ -1628,6 +1722,13 @@ class ProgramCompilerV1:
         candidate = dict(node.parameters.get("candidate") or {})
         if not candidate:
             raise ValueError(f"{node.node_type} lacks its authoritative candidate binding")
+        if node.node_type == "STATE_REPRESENTATION" and bool(
+            candidate.get("state_materialization_required")
+        ):
+            raise ValueError(
+                "STATE_REPRESENTATION requires a runtime-verified materialization "
+                "receipt authority that Candidate Program V1 does not yet accept"
+            )
         verdict = self.typed_route_compiler.compile(candidate)
         if not verdict.legal:
             raise ValueError(
@@ -1646,22 +1747,59 @@ class ProgramCompilerV1:
         if verdict.canonical_expression != expected_canonical:
             raise ValueError(f"{node.node_type} canonical expression drift")
         required_receipt_keys = (
+            "candidate_id",
+            "generator_version",
             "exact_identity",
             "canonical_identity",
+            "declared_field_ids",
             "field_ids",
             "source_field_ids",
             "representation_ids",
             "skeleton_id",
+            "financial_hypothesis",
+            "input_roles",
+            "control_ablation_rule",
+            "maximum_depth",
+            "search_role",
             "clock_contract",
             "maturity_contract",
         )
         missing_receipt_keys = tuple(
-            key for key in required_receipt_keys if not candidate.get(key)
+            key
+            for key in required_receipt_keys
+            if key not in candidate
+            or candidate[key] is None
+            or candidate[key] == ""
+            or candidate[key] == []
+            or candidate[key] == ()
         )
         if missing_receipt_keys:
             raise ValueError(
                 f"{node.node_type} lacks required route receipt bindings: "
                 f"{missing_receipt_keys}"
+            )
+        generation_receipt = _validate_route_generation_receipt(
+            node.generation_receipt
+        )
+        generation_binding = {
+            "candidate_id": str(candidate["candidate_id"]),
+            "generator_version": str(candidate["generator_version"]),
+            "route_id": str(candidate.get("route_id") or ""),
+            "skeleton_id": str(candidate["skeleton_id"]),
+            "declared_field_ids": list(map(str, candidate["declared_field_ids"])),
+            "is_matched_control": bool(candidate.get("is_matched_control")),
+            "exact_identity": str(candidate["exact_identity"]),
+            "canonical_identity": str(candidate["canonical_identity"]),
+        }
+        receipt_binding_drift = sorted(
+            key
+            for key, value in generation_binding.items()
+            if _canonicalize(generation_receipt[key]) != _canonicalize(value)
+        )
+        if receipt_binding_drift:
+            raise ValueError(
+                f"{node.node_type} candidate generation receipt drift: "
+                f"{receipt_binding_drift}"
             )
         expected_exact = str(candidate["exact_identity"])
         if verdict.exact_identity != expected_exact:
@@ -1703,6 +1841,34 @@ class ProgramCompilerV1:
         skeleton = resolve_skeleton_spec(str(candidate["skeleton_id"]))
         if skeleton.route_id != verdict.route_id:
             raise ValueError(f"{node.node_type} candidate skeleton-route drift")
+        skeleton_receipt = {
+            "financial_hypothesis": skeleton.financial_hypothesis,
+            "input_roles": list(skeleton.input_roles),
+            "control_ablation_rule": skeleton.control_ablation_rule,
+            "maximum_depth": skeleton.maximum_depth,
+            "search_role": skeleton.search_role,
+        }
+        skeleton_receipt_drift = sorted(
+            key
+            for key, value in skeleton_receipt.items()
+            if _canonicalize(candidate[key]) != _canonicalize(value)
+        )
+        if skeleton_receipt_drift:
+            raise ValueError(
+                f"{node.node_type} candidate skeleton receipt drift: "
+                f"{skeleton_receipt_drift}"
+            )
+        expected_candidate_id = compositional_candidate_id(
+            generator_version=str(generation_receipt["generator_version"]),
+            route_id=verdict.route_id,
+            skeleton_id=skeleton.skeleton_id,
+            seed=int(generation_receipt["seed"]),
+            attempt_index=int(generation_receipt["attempt_index"]),
+            field_ids=tuple(map(str, generation_receipt["declared_field_ids"])),
+            is_control=bool(generation_receipt["is_matched_control"]),
+        )
+        if str(candidate.get("candidate_id") or "") != expected_candidate_id:
+            raise ValueError(f"{node.node_type} candidate generation identity drift")
         expected_clock = skeleton.clock_contract
         expected_maturity_contract = skeleton.maturity_contract
         if str(candidate["clock_contract"]) != expected_clock:
@@ -1785,6 +1951,25 @@ class ProgramCompilerV1:
             raise ValueError(
                 f"joint clock references missing nodes: {unknown_clock_nodes}"
             )
+        reachable_node_ids: set[str] = set()
+        pending_node_ids = list(asdict(spec.outputs).values())
+        while pending_node_ids:
+            reachable_node_id = str(pending_node_ids.pop())
+            if reachable_node_id in reachable_node_ids:
+                continue
+            reachable_node_ids.add(reachable_node_id)
+            pending_node_ids.extend(by_id[reachable_node_id].input_node_ids)
+        required_clock_node_ids = {
+            node_id
+            for node_id in reachable_node_ids
+            if by_id[node_id].node_type in LEAF_NODE_TYPES
+            and by_id[node_id].node_type != "CONSTANT"
+        }
+        declared_clock_node_ids = tuple(
+            map(str, spec.joint_clock_contract.component_clock_node_ids)
+        )
+        if len(declared_clock_node_ids) != len(set(declared_clock_node_ids)):
+            raise ValueError("joint clock component coverage contains duplicates")
         component_clock_requirements: dict[str, dict[str, Any]] = {}
         for node_id in spec.joint_clock_contract.component_clock_node_ids:
             clock_node = by_id[node_id]
@@ -1934,6 +2119,12 @@ class ProgramCompilerV1:
                     "exact_identity": verdict.exact_identity,
                     "decision": verdict.decision,
                 }
+            )
+        if set(declared_clock_node_ids) != required_clock_node_ids:
+            raise ValueError(
+                "joint clock must exactly cover all output-dependent economic leaves: "
+                f"required={sorted(required_clock_node_ids)}, "
+                f"declared={sorted(declared_clock_node_ids)}"
             )
         shared_plan_hash = ""
         if legacy_candidates:

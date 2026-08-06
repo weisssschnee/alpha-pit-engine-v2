@@ -39,7 +39,10 @@ from our_system_phase2.services.candidate_program_v1 import (
     ProgramOutputSpec,
     TypedNodeSpec,
 )
-from our_system_phase2.services.compositional_grammar import CompositionalGrammarV2
+from our_system_phase2.services.compositional_grammar import (
+    CompositionalGrammarV2,
+    resolve_skeleton_spec,
+)
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 from our_system_phase2.services.real_market_validation import frozen_replay_channel
 from our_system_phase2.services.unified_capability_registry import (
@@ -137,6 +140,20 @@ def test_all_golden_fixtures_are_explicit_and_authorized_ones_compile(program_co
         frozen.external_adapter_requirements
     )
     assert not any(value.startswith("broad_event_") for value in frozen.physical_leaf_ids)
+
+
+def test_joint_clock_exactly_covers_every_output_dependent_leaf(program_context) -> None:
+    registry, _, _, fixtures = program_context
+    program = fixtures["B_MULTI_TIMESCALE_FINANCING"].program
+    incomplete = replace(
+        program,
+        joint_clock_contract=replace(
+            program.joint_clock_contract,
+            component_clock_node_ids=("financing_balance_ratio",),
+        ),
+    )
+    with pytest.raises(ValueError, match="exactly cover"):
+        ProgramCompilerV1(registry).compile(incomplete)
 
 
 def test_multifield_windows_and_market_condition_do_not_rank_market_payload(program_context) -> None:
@@ -737,6 +754,19 @@ def test_intraday_adapter_cannot_bypass_route_or_leaf_authority(program_context)
                 replace(carrier, nodes=carrier.nodes + (drifted,))
             )
 
+    unmaterialized = {
+        **candidate,
+        "state_materialization_required": True,
+        "state_materialization_authority": "NOT_RUNTIME_VERIFIED",
+    }
+    unmaterialized_node = IntradayStateComponentAdapter().adapt(
+        node_id="unmaterialized_state", candidate=unmaterialized
+    )
+    with pytest.raises(ValueError, match="runtime-verified materialization"):
+        ProgramCompilerV1(registry).compile(
+            replace(carrier, nodes=carrier.nodes + (unmaterialized_node,))
+        )
+
 
 def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context) -> None:
     registry, _, _, fixtures = program_context
@@ -836,6 +866,54 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
                 program,
                 nodes=tuple(
                     spoofed_unit if node.node_id == legacy.node_id else node
+                    for node in program.nodes
+                ),
+            )
+        )
+
+    alternative = resolve_skeleton_spec(
+        "cn.comp.v2.minute_static.liquidity_volatility_interaction"
+    )
+    relabeled_candidate = {
+        **dict(legacy.parameters["candidate"]),
+        "skeleton_id": alternative.skeleton_id,
+    }
+    relabeled = replace(
+        legacy,
+        parameters={**dict(legacy.parameters), "candidate": relabeled_candidate},
+    )
+    with pytest.raises(ValueError, match="generation receipt drift"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                program,
+                nodes=tuple(
+                    relabeled if node.node_id == legacy.node_id else node
+                    for node in program.nodes
+                ),
+            )
+        )
+
+    fully_relabeled_candidate = {
+        **relabeled_candidate,
+        "financial_hypothesis": alternative.financial_hypothesis,
+        "input_roles": list(alternative.input_roles),
+        "control_ablation_rule": alternative.control_ablation_rule,
+        "maximum_depth": alternative.maximum_depth,
+        "search_role": alternative.search_role,
+    }
+    fully_relabeled = replace(
+        legacy,
+        parameters={
+            **dict(legacy.parameters),
+            "candidate": fully_relabeled_candidate,
+        },
+    )
+    with pytest.raises(ValueError, match="generation receipt drift"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                program,
+                nodes=tuple(
+                    fully_relabeled if node.node_id == legacy.node_id else node
                     for node in program.nodes
                 ),
             )

@@ -89,7 +89,13 @@ def test_semantic_identity_is_order_invariant_and_lineage_reward_free(
     assert first.semantic_program_hash == second.semantic_program_hash
     assert first.program_id == second.program_id
     assert "train_reward" not in json.dumps(first.to_record(), sort_keys=True)
-    assert "\"seed\"" not in json.dumps(first.to_record(), sort_keys=True)
+    assert "\"seed\"" not in json.dumps(first.semantic_payload(), sort_keys=True)
+    legacy_record = next(
+        node
+        for node in first.to_record()["nodes"]
+        if node["node_id"] == "legacy_score"
+    )
+    assert legacy_record["generation_receipt"]["seed"] == 1
     restored = CandidateProgramSpecV1.from_record(first.to_record())
     assert restored.semantic_program_hash == first.semantic_program_hash
     lineage_a = ProposalLineageV1(
