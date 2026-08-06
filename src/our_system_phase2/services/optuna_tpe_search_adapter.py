@@ -14,6 +14,10 @@ import math
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from our_system_phase2.services.source_route_sampling_phase_v0 import (
+    source_sampling_phase_v0,
+)
+
 
 EXPECTED_OPTUNA_VERSION = "4.8.0"
 EVALUATED = "EVALUATED"
@@ -321,6 +325,11 @@ class RouteConditionalTPESearchAdapter:
         }
         if ask_kind:
             row["optimizer_ask_kind"] = str(ask_kind)
+        row["source_sampling_phase"] = source_sampling_phase_v0(
+            optimizer_ask_kind=str(ask_kind or ""),
+            trial_number=int(trial.number),
+            n_startup_trials=self.n_startup_trials,
+        )
         if metadata:
             overlap = set(row) & set(metadata)
             if overlap:
@@ -819,6 +828,7 @@ class RouteConditionalTPESearchAdapter:
                 "typed_pair_compatible",
                 "optimizer_policy_id",
                 "optimizer_ask_kind",
+                "source_sampling_phase",
             }
             for ordinal, source in enumerate(asked):
                 ask_kind = str(

@@ -46,17 +46,21 @@ def _replacement_for_operation(
     return node
 
 
-def _assert_type_preserving(primary: TypedNodeSpec, control: TypedNodeSpec) -> None:
-    fields = (
+def _assert_type_preserving(
+    operation: MatchedControlOperationV1,
+    primary: TypedNodeSpec,
+    control: TypedNodeSpec,
+) -> None:
+    fields = [
         "output_semantic_type",
         "entity_scope",
         "observable_clock",
         "maturity",
         "unit_signature",
         "support_unit",
-        "source_lineage",
-        "component_route_provenance",
-    )
+    ]
+    if operation.operation != "BASE_PAYLOAD_ONLY":
+        fields.extend(("source_lineage", "component_route_provenance"))
     drift = [
         field_name
         for field_name in fields
@@ -209,7 +213,9 @@ def construct_matched_control_program_v1(
             if target_node_id not in nodes:
                 raise ValueError(f"matched-control target is absent: {target_node_id}")
             replacement = _replacement_for_operation(operation, target_node_id)
-            _assert_type_preserving(nodes[target_node_id], replacement)
+            _assert_type_preserving(
+                operation, nodes[target_node_id], replacement
+            )
             _assert_operation_semantics(
                 operation, nodes[target_node_id], replacement, nodes
             )

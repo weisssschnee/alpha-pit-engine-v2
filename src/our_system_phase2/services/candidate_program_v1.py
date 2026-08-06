@@ -131,6 +131,15 @@ COMBINATION_NODE_TYPES = frozenset(
         "CONDITIONAL_SWITCH",
     }
 )
+PROGRAM_WRAPPER_NODE_TYPES = frozenset(
+    {
+        "PROGRAM_SCORE_COMBINE",
+        "PROGRAM_SCORE_TO_MASK",
+        "PROGRAM_SCORE_GATE",
+        "PROGRAM_MASK_FILTER",
+        "PROGRAM_SCORE_WITH_SUPPORT",
+    }
+)
 NODE_TYPES = (
     LEAF_NODE_TYPES
     | TEMPORAL_NODE_TYPES
@@ -138,6 +147,7 @@ NODE_TYPES = (
     | EVENT_NODE_TYPES
     | STATE_NODE_TYPES
     | COMBINATION_NODE_TYPES
+    | PROGRAM_WRAPPER_NODE_TYPES
 )
 
 SEMANTIC_TYPES = frozenset(
@@ -283,6 +293,11 @@ NODE_EXECUTION_PHASE = {
     **{node_type: 10 for node_type in CROSS_SECTIONAL_NODE_TYPES},
 }
 NODE_EXECUTION_PHASE["LEGACY_CANDIDATE_COMPONENT"] = 10
+NODE_EXECUTION_PHASE["PROGRAM_SCORE_COMBINE"] = 11
+NODE_EXECUTION_PHASE["PROGRAM_SCORE_TO_MASK"] = 11
+NODE_EXECUTION_PHASE["PROGRAM_SCORE_GATE"] = 12
+NODE_EXECUTION_PHASE["PROGRAM_MASK_FILTER"] = 12
+NODE_EXECUTION_PHASE["PROGRAM_SCORE_WITH_SUPPORT"] = 13
 
 NUMERIC_SEMANTIC_TYPES = frozenset(
     {
@@ -1013,6 +1028,41 @@ def _node_expression(
             f"ConditionalSwitch({parent_expressions[0]},"
             f"{parent_expressions[1]},{parent_expressions[2]})"
         )
+    if node.node_type == "PROGRAM_SCORE_COMBINE":
+        operation = str(node.parameters.get("operation") or "")
+        operators = {
+            "ADD": "Add",
+            "SUBTRACT": "Sub",
+            "MIN": "PointwiseMin",
+            "MAX": "PointwiseMax",
+        }
+        if operation not in operators or len(parent_expressions) != 2:
+            raise ValueError("program score combine requires one legal binary operation")
+        return (
+            f"{operators[operation]}(CSRank({parent_expressions[0]}),"
+            f"CSRank({parent_expressions[1]}))"
+        )
+    if node.node_type == "PROGRAM_SCORE_TO_MASK":
+        mode = str(node.parameters.get("mode") or "")
+        if mode == "POSITIVE":
+            return f"Positive({parent_expressions[0]})"
+        if mode == "TOP_QUANTILE":
+            top_fraction = float(node.parameters.get("top_fraction") or 0.5)
+            if not 0.0 < top_fraction <= 1.0:
+                raise ValueError("program score mask top_fraction must be in (0,1]")
+            return f"TopQuantileMask({parent_expressions[0]},{top_fraction})"
+        raise ValueError("program score mask requires a legal mode")
+    if node.node_type == "PROGRAM_SCORE_GATE":
+        return f"Mul({parent_expressions[0]},{parent_expressions[1]})"
+    if node.node_type == "PROGRAM_MASK_FILTER":
+        expression = parent_expressions[0]
+        for parent in parent_expressions[1:]:
+            expression = f"MaskIntersect({expression},{parent})"
+        return expression
+    if node.node_type == "PROGRAM_SCORE_WITH_SUPPORT":
+        if len(parent_expressions) < 2:
+            raise ValueError("program score support binding requires components")
+        return parent_expressions[0]
     if node.node_type in {
         "EVENT_WINDOW",
         "PRE_EVENT_PATH",
@@ -1609,6 +1659,75 @@ def _validate_node_semantics(
             raise ValueError("residualization requires stock payload plus controls")
         if node.unit_signature != parents[0].unit_signature:
             raise ValueError("residualization must preserve payload units")
+    if node.node_type == "PROGRAM_SCORE_COMBINE":
+        if (
+            len(parents) != 2
+            or not all(
+                parent.output_semantic_type == "STOCK_SCORE"
+                and parent.entity_scope == "STOCK"
+                for parent in parents
+            )
+            or node.output_semantic_type != "STOCK_SCORE"
+            or node.entity_scope != "STOCK"
+            or node.unit_signature != "dimensionless"
+        ):
+            raise ValueError("program score combine requires two stock scores")
+        if str(node.parameters.get("operation") or "") not in {
+            "ADD",
+            "SUBTRACT",
+            "MIN",
+            "MAX",
+        }:
+            raise ValueError("program score combine operation is not registered")
+    if node.node_type == "PROGRAM_SCORE_TO_MASK":
+        if (
+            len(parents) != 1
+            or parents[0].output_semantic_type != "STOCK_SCORE"
+            or parents[0].entity_scope != "STOCK"
+            or node.output_semantic_type != "STOCK_MASK"
+            or node.entity_scope != "STOCK"
+            or node.unit_signature != "boolean"
+            or str(node.parameters.get("mode") or "")
+            not in {"POSITIVE", "TOP_QUANTILE"}
+        ):
+            raise ValueError("program score-to-mask contracts are incompatible")
+    if node.node_type == "PROGRAM_SCORE_GATE":
+        if (
+            len(parents) != 2
+            or parents[0].output_semantic_type != "STOCK_SCORE"
+            or parents[0].entity_scope != "STOCK"
+            or parents[1].output_semantic_type
+            not in {"STOCK_MASK", "STOCK_MULTIPLIER"}
+            or node.output_semantic_type != "STOCK_SCORE"
+            or node.entity_scope != "STOCK"
+            or node.unit_signature != parents[0].unit_signature
+        ):
+            raise ValueError("program score gate contracts are incompatible")
+    if node.node_type == "PROGRAM_MASK_FILTER":
+        if (
+            len(parents) < 2
+            or not all(
+                parent.output_semantic_type == "STOCK_MASK"
+                for parent in parents
+            )
+            or node.output_semantic_type != "STOCK_MASK"
+            or node.entity_scope != "STOCK"
+            or node.unit_signature != "boolean"
+        ):
+            raise ValueError("program mask filter contracts are incompatible")
+    if node.node_type == "PROGRAM_SCORE_WITH_SUPPORT":
+        if (
+            len(parents) < 2
+            or not all(
+                parent.output_semantic_type == "STOCK_SCORE"
+                and parent.entity_scope == "STOCK"
+                for parent in parents
+            )
+            or node.output_semantic_type != "STOCK_SCORE"
+            or node.entity_scope != "STOCK"
+            or node.unit_signature != parents[0].unit_signature
+        ):
+            raise ValueError("program score support binding is incompatible")
     if node.node_type == "INDUSTRY_NEUTRALIZE":
         if (
             len(parents) != 2
