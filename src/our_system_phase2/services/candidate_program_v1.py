@@ -15,12 +15,16 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping, Sequence
 
 from our_system_phase2.services.candidate_materialization_requirements import (
+    PhysicalLeafResolution,
     resolve_required_physical_leaves,
 )
 from our_system_phase2.services.phase3cm_streaming_dag import (
     SharedMultiCandidateDAGPlan,
 )
-from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
+from our_system_phase2.services.typed_route_compiler import (
+    CompileVerdict,
+    TypedRouteCompiler,
+)
 from our_system_phase2.services.typed_primitive_gate import expression_fields
 from our_system_phase2.services.unified_capability_registry import (
     ROUTE_IDS,
@@ -1521,13 +1525,17 @@ def legacy_candidate_program_v1(
     if not candidate_id or route_id not in ROUTE_IDS:
         raise ValueError("legacy component requires a registered candidate and route")
     clock = str(component.get("clock_contract") or component.get("maturity_rule") or "UNSPECIFIED")
-    maturity = str(component.get("maturity_contract") or component.get("maturity_rule") or clock)
+    maturity = str(component.get("maturity_rule") or component.get("maturity_contract") or clock)
     support = str(component.get("support_unit") or "UNSPECIFIED")
+    resolution = resolve_required_physical_leaves(component)
     score = TypedNodeSpec(
         node_id="legacy_score",
         node_type="LEGACY_CANDIDATE_COMPONENT",
         input_node_ids=(),
-        parameters={"candidate": component},
+        parameters={
+            "candidate": component,
+            "physical_leaf_ids": list(resolution.physical_leaf_ids),
+        },
         output_semantic_type="STOCK_SCORE",
         entity_scope="STOCK",
         temporal_semantics={"kind": "LEGACY_TYPED_ROUTE_EXPRESSION"},
@@ -1535,7 +1543,7 @@ def legacy_candidate_program_v1(
         maturity=maturity,
         unit_signature=str(component.get("unit_signature") or "dimensionless"),
         support_unit=support,
-        source_lineage=tuple(map(str, component.get("source_field_ids") or ())),
+        source_lineage=tuple(resolution.logical_identity_ids),
         component_route_provenance=(route_id,),
     )
     nodes = (
@@ -1604,6 +1612,72 @@ class ProgramCompilerV1:
     def __init__(self, registry: UnifiedCapabilityRegistry) -> None:
         self.registry = registry
         self.typed_route_compiler = TypedRouteCompiler(registry)
+
+    def _compile_route_bound_leaf(
+        self,
+        node: TypedNodeSpec,
+        *,
+        expected_route_id: str | None = None,
+    ) -> tuple[dict[str, Any], CompileVerdict, PhysicalLeafResolution]:
+        """Revalidate an adapted leaf against the existing route authority."""
+
+        candidate = dict(node.parameters.get("candidate") or {})
+        if not candidate:
+            raise ValueError(f"{node.node_type} lacks its authoritative candidate binding")
+        verdict = self.typed_route_compiler.compile(candidate)
+        if not verdict.legal:
+            raise ValueError(
+                f"{node.node_type} rejected by TypedRouteCompiler: "
+                f"{verdict.rejection_code}:{verdict.reason}"
+            )
+        if expected_route_id and verdict.route_id != expected_route_id:
+            raise ValueError(
+                f"{node.node_type} must bind route {expected_route_id}, got {verdict.route_id}"
+            )
+        expected_canonical = str(
+            candidate.get("canonical_expression")
+            or candidate.get("expression")
+            or ""
+        )
+        if verdict.canonical_expression != expected_canonical:
+            raise ValueError(f"{node.node_type} canonical expression drift")
+        expected_exact = str(candidate.get("exact_identity") or "")
+        if expected_exact and verdict.exact_identity != expected_exact:
+            raise ValueError(f"{node.node_type} exact identity drift")
+        expected_canonical_id = str(candidate.get("canonical_identity") or "")
+        if expected_canonical_id and verdict.canonical_identity != expected_canonical_id:
+            raise ValueError(f"{node.node_type} canonical identity drift")
+        for key, authoritative in (
+            ("field_ids", verdict.field_ids),
+            ("source_field_ids", verdict.source_field_ids),
+            ("representation_ids", verdict.representation_ids),
+        ):
+            declared = candidate.get(key)
+            if declared is not None and tuple(sorted(map(str, declared))) != tuple(
+                sorted(map(str, authoritative))
+            ):
+                raise ValueError(f"{node.node_type} {key} drift")
+        resolution = resolve_required_physical_leaves(candidate)
+        if tuple(sorted(map(str, node.parameters.get("physical_leaf_ids") or ()))) != tuple(
+            resolution.physical_leaf_ids
+        ):
+            raise ValueError(f"{node.node_type} physical leaf binding drift")
+        if tuple(sorted(node.source_lineage)) != tuple(resolution.logical_identity_ids):
+            raise ValueError(f"{node.node_type} source lineage drift")
+        if tuple(node.component_route_provenance) != (verdict.route_id,):
+            raise ValueError(f"{node.node_type} route provenance drift")
+        if node.support_unit != verdict.support_unit:
+            raise ValueError(f"{node.node_type} support-unit drift")
+        if node.maturity != verdict.maturity_rule:
+            raise ValueError(f"{node.node_type} maturity drift")
+        expected_clock = str(
+            candidate.get("clock_contract")
+            or candidate.get("maturity_contract")
+            or verdict.maturity_rule
+        )
+        if node.observable_clock != expected_clock:
+            raise ValueError(f"{node.node_type} observable-clock drift")
+        return candidate, verdict, resolution
 
     def compile(self, spec: CandidateProgramSpecV1) -> CompiledCandidateProgramV1:
         order = _topological_order(spec.nodes)
@@ -1692,6 +1766,17 @@ class ProgramCompilerV1:
             _validate_node_semantics(node, parents, self.registry)
             parent_expressions = [expressions[parent] for parent in node.input_node_ids]
             expression = _node_expression(node, parent_expressions)
+            route_leaf_binding = None
+            if node.node_type == "STATE_REPRESENTATION":
+                route_leaf_binding = self._compile_route_bound_leaf(
+                    node,
+                    expected_route_id="INTRADAY_STATE_TRANSITION",
+                )
+                candidate, _, _ = route_leaf_binding
+                if expression != str(candidate.get("state_source_expression") or ""):
+                    raise ValueError("STATE_REPRESENTATION source expression drift")
+            elif node.node_type == "LEGACY_CANDIDATE_COMPONENT":
+                route_leaf_binding = self._compile_route_bound_leaf(node)
             expressions[node_id] = expression
             execution_plan.append(
                 {
@@ -1715,7 +1800,8 @@ class ProgramCompilerV1:
             }:
                 physical_leaves.add(str(node.parameters["field_id"]))
             elif node.node_type == "STATE_REPRESENTATION":
-                physical_leaves.update(expression_fields(expression))
+                assert route_leaf_binding is not None
+                physical_leaves.update(route_leaf_binding[2].physical_leaf_ids)
             elif node.node_type == "FROZEN_BROAD_EVENT_REF":
                 resolution = resolve_required_physical_leaves(
                     {
@@ -1733,35 +1819,16 @@ class ProgramCompilerV1:
                     resolution.external_adapter_requirements
                 )
             elif node.node_type == "LEGACY_CANDIDATE_COMPONENT":
-                resolution = resolve_required_physical_leaves(
-                    dict(node.parameters.get("candidate") or {})
-                )
+                assert route_leaf_binding is not None
+                resolution = route_leaf_binding[2]
                 physical_leaves.update(resolution.physical_leaf_ids)
                 external_requirements.update(
                     resolution.external_adapter_requirements
                 )
             if node.node_type != "LEGACY_CANDIDATE_COMPONENT":
                 continue
-            candidate = dict(node.parameters.get("candidate") or {})
-            verdict = self.typed_route_compiler.compile(candidate)
-            if not verdict.legal:
-                raise ValueError(
-                    "legacy component rejected by TypedRouteCompiler: "
-                    f"{verdict.rejection_code}:{verdict.reason}"
-                )
-            expected_canonical = str(
-                candidate.get("canonical_expression")
-                or candidate.get("expression")
-                or ""
-            )
-            if verdict.canonical_expression != expected_canonical:
-                raise ValueError("legacy component canonical expression drift")
-            expected_exact = str(candidate.get("exact_identity") or "")
-            if expected_exact and verdict.exact_identity != expected_exact:
-                raise ValueError("legacy component exact identity drift")
-            expected_canonical_id = str(candidate.get("canonical_identity") or "")
-            if expected_canonical_id and verdict.canonical_identity != expected_canonical_id:
-                raise ValueError("legacy component canonical identity drift")
+            assert route_leaf_binding is not None
+            candidate, verdict, _ = route_leaf_binding
             row = dict(candidate)
             row.update(
                 {

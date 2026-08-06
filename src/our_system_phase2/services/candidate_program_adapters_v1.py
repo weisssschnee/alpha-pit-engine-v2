@@ -176,6 +176,7 @@ class IntradayStateComponentAdapter:
             node_type="STATE_REPRESENTATION",
             input_node_ids=(),
             parameters={
+                "candidate": dict(candidate),
                 "state_source_expression": expression,
                 "physical_leaf_ids": list(resolution.physical_leaf_ids),
                 "execution_adapter_id": "EXISTING_INTRADAY_STATE_EXPRESSION",
@@ -274,11 +275,15 @@ class LegacyRouteComponentAdapter:
         route_id = str(candidate.get("route_id") or "")
         if not route_id:
             raise ValueError("legacy route component lacks route_id")
+        resolution = resolve_required_physical_leaves(candidate)
         return TypedNodeSpec(
             node_id=node_id,
             node_type="LEGACY_CANDIDATE_COMPONENT",
             input_node_ids=(),
-            parameters={"candidate": dict(candidate)},
+            parameters={
+                "candidate": dict(candidate),
+                "physical_leaf_ids": list(resolution.physical_leaf_ids),
+            },
             output_semantic_type="STOCK_SCORE",
             entity_scope="STOCK",
             temporal_semantics={"kind": "LEGACY_TYPED_ROUTE_EXPRESSION", "uses_future_revision": False},
@@ -286,6 +291,6 @@ class LegacyRouteComponentAdapter:
             maturity=str(candidate.get("maturity_rule") or "UNSPECIFIED"),
             unit_signature=str(candidate.get("unit_signature") or "dimensionless"),
             support_unit=str(candidate.get("support_unit") or "UNSPECIFIED"),
-            source_lineage=tuple(map(str, candidate.get("source_field_ids") or ())),
+            source_lineage=tuple(resolution.logical_identity_ids),
             component_route_provenance=(route_id,),
         )

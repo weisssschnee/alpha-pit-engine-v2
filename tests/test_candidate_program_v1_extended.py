@@ -668,7 +668,7 @@ def test_frozen_broad_event_binding_must_match_registry_inventory(program_contex
 
 
 def test_intraday_adapter_uses_real_expression_leaves(program_context) -> None:
-    _, grammar, _, _ = program_context
+    registry, grammar, _, fixtures = program_context
     candidate = dict(
         grammar.propose(
             "INTRADAY_STATE_TRANSITION", attempt_index=0, seed=1729
@@ -680,6 +680,88 @@ def test_intraday_adapter_uses_real_expression_leaves(program_context) -> None:
     assert node.parameters["state_source_expression"]
     assert node.parameters["physical_leaf_ids"]
     assert not any(value.startswith("state_") for value in node.parameters["physical_leaf_ids"])
+    carrier = fixtures["C_MARKET_CONDITIONED"].program
+    ProgramCompilerV1(registry).compile(
+        replace(carrier, nodes=carrier.nodes + (node,))
+    )
+
+
+def test_intraday_adapter_cannot_bypass_route_or_leaf_authority(program_context) -> None:
+    registry, grammar, _, fixtures = program_context
+    candidate = dict(
+        grammar.propose(
+            "INTRADAY_STATE_TRANSITION", attempt_index=0, seed=1729
+        ).primary
+    )
+    node = IntradayStateComponentAdapter().adapt(
+        node_id="intraday_state", candidate=candidate
+    )
+    carrier = fixtures["C_MARKET_CONDITIONED"].program
+
+    fake_candidate = dict(candidate)
+    for key in ("expression", "canonical_expression", "state_source_expression"):
+        fake_candidate[key] = str(fake_candidate[key]).replace(
+            "$intraday_ret_from_open", "$not_registered_anywhere"
+        )
+    fake = replace(
+        node,
+        parameters={
+            **dict(node.parameters),
+            "candidate": fake_candidate,
+            "state_source_expression": fake_candidate["state_source_expression"],
+            "physical_leaf_ids": ["not_registered_anywhere", "ret_1m"],
+        },
+    )
+    with pytest.raises(ValueError, match="UNKNOWN_FIELD_ID"):
+        ProgramCompilerV1(registry).compile(
+            replace(carrier, nodes=carrier.nodes + (fake,))
+        )
+
+    drifts = (
+        replace(
+            node,
+            parameters={**dict(node.parameters), "physical_leaf_ids": ["ret_1m"]},
+        ),
+        replace(node, source_lineage=("cn.sf.spoofed",)),
+        replace(node, component_route_provenance=("MINUTE_STATIC",)),
+        replace(node, observable_clock="same_bar_close"),
+        replace(node, maturity="same_bar_close"),
+    )
+    for drifted in drifts:
+        with pytest.raises(ValueError, match="drift"):
+            ProgramCompilerV1(registry).compile(
+                replace(carrier, nodes=carrier.nodes + (drifted,))
+            )
+
+
+def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context) -> None:
+    registry, _, _, fixtures = program_context
+    program = fixtures["A_LEGACY_PARITY"].program
+    legacy = next(
+        node for node in program.nodes if node.node_type == "LEGACY_CANDIDATE_COMPONENT"
+    )
+    ProgramCompilerV1(registry).compile(program)
+    drifts = (
+        replace(legacy, source_lineage=("cn.sf.spoofed",)),
+        replace(legacy, component_route_provenance=("SLOW_TEMPORAL_CHANGE",)),
+        replace(legacy, observable_clock="same_bar_close"),
+        replace(legacy, maturity="same_bar_close"),
+        replace(
+            legacy,
+            parameters={**dict(legacy.parameters), "physical_leaf_ids": ["ret_1m"]},
+        ),
+    )
+    for drifted in drifts:
+        with pytest.raises(ValueError, match="drift"):
+            ProgramCompilerV1(registry).compile(
+                replace(
+                    program,
+                    nodes=tuple(
+                        drifted if node.node_id == legacy.node_id else node
+                        for node in program.nodes
+                    ),
+                )
+            )
 
 
 def test_authorized_joint_fixtures_execute_on_typed_synthetic_panel(program_context) -> None:
