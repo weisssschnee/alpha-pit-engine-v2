@@ -966,6 +966,44 @@ def evaluate_panel_expression(
         lower = grouped.transform(lambda item: item.quantile(0.01))
         upper = grouped.transform(lambda item: item.quantile(0.99))
         return store(value.clip(lower=lower, upper=upper))
+    if name_lower == "selfquantile" and len(args) == 2:
+        value = pd.to_numeric(evaluate_child(args[0]), errors="coerce")
+        window = int(float(args[1]))
+        if window <= 1:
+            raise UnsupportedExpressionError("selfquantile_window_must_exceed_one")
+        result = pd.Series(np.nan, index=frame.index, dtype=float)
+        for index in frame.groupby("code", sort=False).groups.values():
+            part = value.loc[index]
+            result.loc[index] = part.rolling(
+                window, min_periods=window
+            ).apply(
+                lambda values: float(
+                    pd.Series(values).rank(method="average", pct=True).iloc[-1]
+                ),
+                raw=False,
+            )
+        return store(result)
+    if name_lower == "topquantilemask" and len(args) == 2:
+        value = evaluate_child(args[0])
+        top_fraction = float(args[1])
+        if not 0.0 < top_fraction <= 1.0:
+            raise UnsupportedExpressionError("topquantilemask_fraction_out_of_range")
+        cross_key = _cross_section_key(frame, evaluation_context)
+        cross_layout = _cached_group_layout(
+            frame, "cross_section", cross_key, context=evaluation_context
+        )
+        ranks = fast_rank_pct_by_group(value, cross_key, layout=cross_layout)
+        return store(
+            ranks.ge(1.0 - top_fraction).astype(float).where(ranks.notna())
+        )
+    if name_lower == "withingrouprank" and len(args) == 2:
+        value = pd.to_numeric(evaluate_child(args[0]), errors="coerce")
+        group = evaluate_child(args[1])
+        cross_key = _cross_section_key(frame, evaluation_context)
+        keys = pd.MultiIndex.from_arrays(
+            [cross_key, group], names=["cross_section", "within_group"]
+        )
+        return store(value.groupby(keys, sort=False).rank(method="average", pct=True))
     if name_lower == "csresidual" and len(args) == 2:
         left = evaluate_child(args[0])
         right = evaluate_child(args[1])
@@ -1087,6 +1125,38 @@ def evaluate_panel_expression(
         )
         denominator = right.replace(0, np.nan)
         return store(left / denominator)
+
+    if name_lower in {"pointwisemin", "pointwisemax"} and len(args) == 2:
+        left = evaluate_child(args[0])
+        right = evaluate_child(args[1])
+        values = pd.concat([left, right], axis=1)
+        return store(
+            values.min(axis=1, skipna=False)
+            if name_lower == "pointwisemin"
+            else values.max(axis=1, skipna=False)
+        )
+    if name_lower in {"maskintersect", "maskunion"} and len(args) == 2:
+        left = pd.to_numeric(evaluate_child(args[0]), errors="coerce")
+        right = pd.to_numeric(evaluate_child(args[1]), errors="coerce")
+        valid = left.notna() & right.notna()
+        result = (
+            (left.gt(0.0) & right.gt(0.0))
+            if name_lower == "maskintersect"
+            else (left.gt(0.0) | right.gt(0.0))
+        )
+        return store(result.astype(float).where(valid))
+    if name_lower == "conditionalswitch" and len(args) == 3:
+        condition = pd.to_numeric(evaluate_child(args[0]), errors="coerce")
+        when_true = evaluate_child(args[1])
+        when_false = evaluate_child(args[2])
+        result = when_false.copy()
+        result.loc[condition.gt(0.0)] = when_true.loc[condition.gt(0.0)]
+        return store(result.where(condition.notna()))
+    if name_lower == "repeatedeventsuppression" and len(args) == 1:
+        event = pd.to_numeric(evaluate_child(args[0]), errors="coerce")
+        previous = event.groupby(frame["code"], sort=False).shift(1)
+        first = event.gt(0.0) & previous.fillna(0.0).le(0.0)
+        return store(first.astype(float).where(event.notna()))
 
     if name_lower == "safediv" and len(args) == 3:
         left = evaluate_child(args[0])

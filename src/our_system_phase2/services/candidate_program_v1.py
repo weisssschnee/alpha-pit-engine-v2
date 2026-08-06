@@ -14,10 +14,14 @@ import re
 from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping, Sequence
 
+from our_system_phase2.services.candidate_materialization_requirements import (
+    resolve_required_physical_leaves,
+)
 from our_system_phase2.services.phase3cm_streaming_dag import (
     SharedMultiCandidateDAGPlan,
 )
 from our_system_phase2.services.typed_route_compiler import TypedRouteCompiler
+from our_system_phase2.services.typed_primitive_gate import expression_fields
 from our_system_phase2.services.unified_capability_registry import (
     ROUTE_IDS,
     UnifiedCapabilityRegistry,
@@ -181,6 +185,43 @@ _NON_SEMANTIC_FRAGMENTS = (
     "blocker",
     "behavior_family",
     "evaluation_result",
+)
+
+NODE_EXECUTION_PHASE = {
+    **{node_type: 1 for node_type in LEAF_NODE_TYPES},
+    **{node_type: 3 for node_type in TEMPORAL_NODE_TYPES},
+    **{node_type: 4 for node_type in EVENT_NODE_TYPES},
+    **{node_type: 5 for node_type in STATE_NODE_TYPES},
+    "VETO": 6,
+    "FILTER": 7,
+    "INTERSECT": 7,
+    "UNION": 7,
+    "GATE": 7,
+    "MODULATE": 8,
+    "MULTIPLY": 8,
+    "ADD": 9,
+    "SUBTRACT": 9,
+    "SAFE_DIVIDE": 9,
+    "MIN": 9,
+    "MAX": 9,
+    "CONDITIONAL_SWITCH": 9,
+    **{node_type: 10 for node_type in CROSS_SECTIONAL_NODE_TYPES},
+}
+NODE_EXECUTION_PHASE["LEGACY_CANDIDATE_COMPONENT"] = 10
+
+NUMERIC_SEMANTIC_TYPES = frozenset(
+    {
+        "STOCK_VALUE",
+        "STOCK_SCORE",
+        "STOCK_MULTIPLIER",
+        "MARKET_VALUE",
+        "GROUP_VALUE",
+        "STATE_VALUE",
+        "SCALAR",
+    }
+)
+MASK_SEMANTIC_TYPES = frozenset(
+    {"STOCK_MASK", "MARKET_MASK", "GROUP_MASK"}
 )
 
 
@@ -486,7 +527,12 @@ class CandidateProgramSpecV1:
         )
         control_record = dict(record.get("matched_control_plan") or {})
         operations = tuple(
-            MatchedControlOperationV1(**dict(item))
+            MatchedControlOperationV1(
+                operation=str(item.get("operation") or ""),
+                target_node_ids=tuple(map(str, item.get("target_node_ids") or ())),
+                replacement=dict(item.get("replacement") or {}),
+                diagnostic_only=bool(item.get("diagnostic_only", False)),
+            )
             for item in control_record.pop("operations", ())
         )
         control = MatchedControlPlanV1(operations=operations, **control_record)
@@ -524,6 +570,11 @@ class CompiledCandidateProgramV1:
     semantic_program_hash: str
     ordered_node_ids: tuple[str, ...]
     output_node_ids: Mapping[str, str]
+    output_expressions: Mapping[str, str]
+    node_execution_plan: tuple[Mapping[str, Any], ...]
+    physical_leaf_ids: tuple[str, ...]
+    external_adapter_requirements: tuple[str, ...]
+    complexity_report: Mapping[str, Any]
     legacy_component_verdicts: tuple[Mapping[str, Any], ...]
     shared_dag_plan_hash: str
     compiler_semantics_version: str
@@ -575,6 +626,485 @@ def _program_depth(nodes: Sequence[TypedNodeSpec], order: Sequence[str]) -> int:
             (depth[parent] for parent in node.input_node_ids), default=0
         )
     return max(depth.values(), default=0)
+
+
+def _node_parameter_int(node: TypedNodeSpec, key: str) -> int:
+    value = int(node.parameters.get(key) or 0)
+    if value <= 0:
+        raise ValueError(f"program node {node.node_id} requires positive {key}")
+    return value
+
+
+def _node_expression(
+    node: TypedNodeSpec,
+    parent_expressions: Sequence[str],
+) -> str:
+    """Compile one typed node to the existing panel-expression DSL."""
+
+    if node.node_type in {
+        "STOCK_FIELD",
+        "MARKET_FIELD",
+        "INDUSTRY_FIELD",
+        "PLATE_FIELD",
+        "EVENT_EPISODE",
+    }:
+        field_id = str(node.parameters.get("field_id") or "")
+        if not field_id:
+            raise ValueError(f"program field node {node.node_id} lacks field_id")
+        return f"${field_id}"
+    if node.node_type == "STATE_REPRESENTATION":
+        expression = str(node.parameters.get("state_source_expression") or "")
+        if not expression:
+            raise ValueError("state representation requires a source expression")
+        return expression
+    if node.node_type == "LEGACY_CANDIDATE_COMPONENT":
+        candidate = dict(node.parameters.get("candidate") or {})
+        expression = str(
+            candidate.get("canonical_expression")
+            or candidate.get("expression")
+            or ""
+        )
+        if not expression:
+            raise ValueError("legacy component lacks its canonical expression")
+        return expression
+    if node.node_type == "FROZEN_BROAD_EVENT_REF":
+        field_id = str(node.parameters.get("field_id") or "")
+        operator = (
+            "MatchedControlReplay"
+            if bool(node.parameters.get("is_matched_control"))
+            else "FrozenMechanismReplay"
+        )
+        if not field_id:
+            raise ValueError("frozen Broad Event node lacks field_id")
+        return f"{operator}(${field_id})"
+    if node.node_type == "CONSTANT":
+        value = node.parameters.get("value")
+        if isinstance(value, bool):
+            return "1" if value else "0"
+        if isinstance(value, (int, float)):
+            return str(value)
+        raise ValueError("program constant must be boolean or numeric")
+
+    unary_windows = {
+        "LAG": "Delay",
+        "DELTA": "Delta",
+        "SLOPE": "Slope",
+        "ACCELERATION": "Acceleration",
+        "ROLLING_MEAN": "Mean",
+        "ROLLING_STD": "Std",
+        "SELF_QUANTILE": "SelfQuantile",
+        "PERSISTENCE": "Persistence",
+        "FIRST_HIT": "FirstHit",
+        "EVENT_COUNT": "EventCount",
+    }
+    if node.node_type in unary_windows:
+        return (
+            f"{unary_windows[node.node_type]}({parent_expressions[0]},"
+            f"{_node_parameter_int(node, 'window')})"
+        )
+    if node.node_type == "SELF_ZSCORE":
+        window = _node_parameter_int(node, "window")
+        minimum_ratio = float(node.parameters.get("minimum_valid_ratio") or 0.6)
+        return f"MaskedZScore({parent_expressions[0]},{window},{minimum_ratio})"
+    if node.node_type in {"STATE_AGE", "TIME_SINCE", "EVENT_AGE"}:
+        operator = "StateAge" if node.node_type == "STATE_AGE" else "EventAge"
+        return f"{operator}({parent_expressions[0]})"
+    if node.node_type == "SHORT_LONG_SPREAD":
+        short = _node_parameter_int(node, "short_window")
+        long = _node_parameter_int(node, "long_window")
+        if short >= long:
+            raise ValueError("short-long spread requires short_window < long_window")
+        return (
+            f"Sub(Slope({parent_expressions[0]},{short}),"
+            f"Slope({parent_expressions[0]},{long}))"
+        )
+
+    unary = {
+        "CSRANK": "CSRank",
+        "CS_ZSCORE": "ZScore",
+        "WINSORIZE": "Winsorize",
+        "TOP_QUANTILE_MASK": "TopQuantileMask",
+        "EVENT_DIRECTION": "Sign",
+        "REPEATED_EVENT_SUPPRESSION": "RepeatedEventSuppression",
+        "STATE": "Positive",
+        "STATE_PERSISTENCE": "StateAge",
+        "BREADTH_RATIO": "Positive",
+        "LIMIT_DENSITY": "Positive",
+        "LIQUIDITY_STATE": "Positive",
+        "VOLATILITY_STATE": "Positive",
+        "VETO": "Positive",
+    }
+    comparison_state_types = {
+        "STATE",
+        "BREADTH_RATIO",
+        "LIMIT_DENSITY",
+        "LIQUIDITY_STATE",
+        "VOLATILITY_STATE",
+    }
+    if node.node_type in unary and not (
+        node.node_type in comparison_state_types and len(parent_expressions) == 2
+    ):
+        if node.node_type == "TOP_QUANTILE_MASK":
+            quantile = float(node.parameters.get("top_fraction") or 0.1)
+            if not 0.0 < quantile <= 1.0:
+                raise ValueError("top quantile mask requires top_fraction in (0,1]")
+            return f"TopQuantileMask({parent_expressions[0]},{quantile})"
+        return f"{unary[node.node_type]}({parent_expressions[0]})"
+    if node.node_type in comparison_state_types and len(parent_expressions) == 2:
+        comparison = str(node.parameters.get("comparison") or "LEFT_GT_RIGHT")
+        if comparison == "LEFT_GT_RIGHT":
+            return f"Positive(Sub({parent_expressions[0]},{parent_expressions[1]}))"
+        if comparison == "LEFT_LT_RIGHT":
+            return f"Positive(Sub({parent_expressions[1]},{parent_expressions[0]}))"
+        raise ValueError(f"unsupported state comparison: {comparison}")
+    if node.node_type == "TRANSITION":
+        return (
+            f"Transition({parent_expressions[0]},"
+            f"{node.parameters.get('from_state')},{node.parameters.get('to_state')})"
+        )
+    if node.node_type in {
+        "RESIDUALIZE",
+        "SIZE_NEUTRALIZE",
+        "INDUSTRY_NEUTRALIZE",
+    }:
+        expression = parent_expressions[0]
+        for control in parent_expressions[1:]:
+            expression = f"CSResidual({expression},{control})"
+        return expression
+    if node.node_type == "WITHIN_GROUP_RANK":
+        return f"WithinGroupRank({parent_expressions[0]},{parent_expressions[1]})"
+    binary = {
+        "ADD": "Add",
+        "SUBTRACT": "Sub",
+        "MULTIPLY": "Mul",
+        "MIN": "PointwiseMin",
+        "MAX": "PointwiseMax",
+        "EPISODE_INTERSECT": "MaskIntersect",
+        "EPISODE_UNION": "MaskUnion",
+        "INTERSECT": "MaskIntersect",
+        "UNION": "MaskUnion",
+    }
+    if node.node_type in binary:
+        expression = parent_expressions[0]
+        for parent in parent_expressions[1:]:
+            expression = f"{binary[node.node_type]}({expression},{parent})"
+        return expression
+    if node.node_type == "SAFE_DIVIDE":
+        floor = float(node.parameters.get("floor") or 1e-6)
+        return f"SafeDiv({parent_expressions[0]},{parent_expressions[1]},{floor})"
+    if node.node_type in {"GATE", "MODULATE"}:
+        return f"Mul({parent_expressions[0]},{parent_expressions[1]})"
+    if node.node_type == "FILTER":
+        expression = parent_expressions[0]
+        for parent in parent_expressions[1:]:
+            expression = f"MaskIntersect({expression},{parent})"
+        return expression
+    if node.node_type == "CONDITIONAL_SWITCH":
+        return (
+            f"ConditionalSwitch({parent_expressions[0]},"
+            f"{parent_expressions[1]},{parent_expressions[2]})"
+        )
+    if node.node_type in {
+        "EVENT_WINDOW",
+        "PRE_EVENT_PATH",
+        "POST_EVENT_STATE",
+    }:
+        pre = int(node.parameters.get("pre") or 0)
+        post = int(node.parameters.get("post") or 0)
+        return (
+            f"EventWindow({parent_expressions[0]},"
+            f"{parent_expressions[1]},{pre},{post})"
+        )
+    raise ValueError(
+        f"program node {node.node_id} has no existing-evaluator lowering: "
+        f"{node.node_type}"
+    )
+
+
+def _validate_node_semantics(
+    node: TypedNodeSpec,
+    parents: Sequence[TypedNodeSpec],
+    registry: UnifiedCapabilityRegistry,
+) -> None:
+    if bool(node.temporal_semantics.get("uses_future_revision")) or bool(
+        node.parameters.get("uses_future_revision")
+    ):
+        raise ValueError("program node attempts to use a future revision")
+    if bool(node.parameters.get("fabricates_intrabar_order")):
+        raise ValueError("program node attempts to fabricate intrabar order")
+    if bool(node.parameters.get("online_adaptive_parameter")):
+        raise ValueError("program node contains online adaptive parameters")
+    if node.node_type in LEAF_NODE_TYPES and node.input_node_ids:
+        raise ValueError(f"leaf node {node.node_id} may not have inputs")
+    if node.node_type not in LEAF_NODE_TYPES and not parents:
+        raise ValueError(f"operator node {node.node_id} requires inputs")
+    if any(
+        NODE_EXECUTION_PHASE[parent.node_type] > NODE_EXECUTION_PHASE[node.node_type]
+        for parent in parents
+    ):
+        raise ValueError("program dependency violates fixed semantic phase order")
+
+    if node.node_type in {
+        "STOCK_FIELD",
+        "MARKET_FIELD",
+        "INDUSTRY_FIELD",
+        "PLATE_FIELD",
+        "EVENT_EPISODE",
+    }:
+        field_id = str(node.parameters.get("field_id") or "")
+        try:
+            field = registry.resolve(field_id)
+        except KeyError as exc:
+            raise ValueError(f"program field is not registered: {field_id}") from exc
+        expected_scope = {
+            "STOCK_FIELD": "STOCK",
+            "MARKET_FIELD": "MARKET",
+            "INDUSTRY_FIELD": "INDUSTRY",
+            "PLATE_FIELD": "PLATE",
+        }.get(node.node_type)
+        if expected_scope and field.entity_scope.upper() != expected_scope:
+            raise ValueError(
+                f"program field {field_id} has wrong entity scope for {node.node_type}"
+            )
+        if not field.search_eligible and node.node_type != "EVENT_EPISODE":
+            raise ValueError(f"program field is not generator-eligible: {field_id}")
+        if node.component_route_provenance and not set(
+            node.component_route_provenance
+        ).issubset(field.allowed_routes):
+            raise ValueError("program field route provenance is not registry-authorized")
+        if node.node_type in {"INDUSTRY_FIELD", "PLATE_FIELD"} and str(
+            node.parameters.get("capability_status") or ""
+        ) != "PIT_MATERIALIZATION_AUTHORIZED":
+            raise ValueError(
+                f"{node.node_type} remains fail-closed without PIT materialization authority"
+            )
+    if node.node_type == "EVENT_EPISODE":
+        if str(node.parameters.get("vote_policy") or "") != "ONE_EPISODE_ONE_VOTE":
+            raise ValueError("event episode requires one-episode-one-vote")
+        if not node.parameters.get("observable_cutoff") or not node.parameters.get(
+            "registered_action_delay"
+        ):
+            raise ValueError("event episode requires cutoff and action delay")
+        if bool(node.parameters.get("latched_observation_as_lifecycle")):
+            raise ValueError("latched observation may not masquerade as lifecycle state")
+    if node.node_type == "FROZEN_BROAD_EVENT_REF":
+        required = (
+            "field_id",
+            "frozen_mechanism_id",
+            "frozen_behavior_cluster_id",
+            "frozen_inventory_hash",
+        )
+        if any(not node.parameters.get(key) for key in required):
+            raise ValueError("frozen Broad Event node lacks inventory binding")
+        if bool(node.parameters.get("discovery_budget_eligible")) or bool(
+            node.parameters.get("dynamic_credit_eligible")
+        ):
+            raise ValueError("frozen Broad Event may not receive discovery credit")
+        field = registry.resolve(str(node.parameters["field_id"]))
+        if "BROAD_EVENT_FROZEN_ENTRY" not in field.allowed_routes:
+            raise ValueError("frozen Broad Event field lacks registered replay route")
+
+    if node.node_type in {"CSRANK", "CS_ZSCORE", "WINSORIZE", "TOP_QUANTILE_MASK"}:
+        if len(parents) != 1 or parents[0].entity_scope != "STOCK":
+            raise ValueError("market/group payload may not enter direct stock cross-sectional mapping")
+    if node.node_type in {
+        "LAG",
+        "DELTA",
+        "SLOPE",
+        "ACCELERATION",
+        "ROLLING_MEAN",
+        "ROLLING_STD",
+        "SELF_ZSCORE",
+        "SELF_QUANTILE",
+        "SHORT_LONG_SPREAD",
+    }:
+        if len(parents) != 1 or parents[0].output_semantic_type not in NUMERIC_SEMANTIC_TYPES:
+            raise ValueError("temporal operators require exactly one numeric input")
+    if node.node_type == "PERSISTENCE":
+        if len(parents) != 1 or parents[0].output_semantic_type not in (
+            MASK_SEMANTIC_TYPES | {"EVENT_EPISODE", "STATE_VALUE"}
+        ):
+            raise ValueError("persistence requires one typed state/event input")
+    if node.node_type in {"STATE_AGE", "TIME_SINCE"}:
+        if len(parents) != 1 or parents[0].output_semantic_type not in (
+            MASK_SEMANTIC_TYPES | {"EVENT_EPISODE", "STATE_VALUE"}
+        ):
+            raise ValueError("age/time-since requires one typed state/event input")
+    if node.node_type in {"FIRST_HIT", "EVENT_AGE", "EVENT_COUNT", "EVENT_DIRECTION", "REPEATED_EVENT_SUPPRESSION"}:
+        if len(parents) != 1:
+            raise ValueError("unary event operator requires exactly one input")
+        if node.node_type != "EVENT_DIRECTION" and parents[0].output_semantic_type not in (
+            MASK_SEMANTIC_TYPES | {"EVENT_EPISODE", "STATE_VALUE"}
+        ):
+            raise ValueError("event operator requires typed episode/state input")
+    if node.node_type in {"EVENT_WINDOW", "PRE_EVENT_PATH", "POST_EVENT_STATE"}:
+        if len(parents) != 2:
+            raise ValueError("event-window operator requires payload and episode inputs")
+        if (
+            parents[0].output_semantic_type not in NUMERIC_SEMANTIC_TYPES
+            or parents[1].output_semantic_type not in (
+                MASK_SEMANTIC_TYPES | {"EVENT_EPISODE", "STATE_VALUE"}
+            )
+        ):
+            raise ValueError("event-window inputs have incompatible semantic types")
+    if node.node_type in {"EPISODE_INTERSECT", "EPISODE_UNION"}:
+        if len(parents) < 2 or not all(
+            parent.output_semantic_type in (
+                MASK_SEMANTIC_TYPES | {"EVENT_EPISODE"}
+            )
+            for parent in parents
+        ):
+            raise ValueError("episode set operator requires at least two inputs")
+    if node.node_type in {
+        "STATE",
+        "BREADTH_RATIO",
+        "LIMIT_DENSITY",
+        "LIQUIDITY_STATE",
+        "VOLATILITY_STATE",
+    }:
+        if len(parents) not in {1, 2} or not all(
+            parent.output_semantic_type in NUMERIC_SEMANTIC_TYPES for parent in parents
+        ):
+            raise ValueError("state operator requires one numeric input or a numeric comparison")
+    if node.node_type in {"TRANSITION", "STATE_PERSISTENCE"} and len(parents) != 1:
+        raise ValueError("transition/state-persistence requires exactly one input")
+    if node.node_type in {"ADD", "SUBTRACT", "MIN", "MAX"}:
+        if len(parents) < 2 or len({parent.unit_signature for parent in parents}) != 1:
+            raise ValueError("add/subtract/min/max require identical units")
+        if node.unit_signature != parents[0].unit_signature:
+            raise ValueError("arithmetic output unit drift")
+    if node.node_type == "MULTIPLY":
+        if len(parents) < 2 or not all(
+            parent.output_semantic_type in NUMERIC_SEMANTIC_TYPES for parent in parents
+        ):
+            raise ValueError("multiply requires numeric inputs")
+        substantive = [
+            parent.unit_signature
+            for parent in parents
+            if parent.unit_signature not in {"dimensionless", "boolean"}
+        ]
+        if substantive and node.unit_signature not in {substantive[0], "*".join(substantive)}:
+            raise ValueError("multiply output unit drift")
+    if node.node_type == "SAFE_DIVIDE":
+        if len(parents) != 2 or not all(
+            parent.output_semantic_type in NUMERIC_SEMANTIC_TYPES for parent in parents
+        ):
+            raise ValueError("safe divide requires two numeric inputs")
+        expected = (
+            "dimensionless"
+            if parents[0].unit_signature == parents[1].unit_signature
+            else parents[0].unit_signature
+            if parents[1].unit_signature == "dimensionless"
+            else f"{parents[0].unit_signature}/{parents[1].unit_signature}"
+        )
+        if node.unit_signature != expected:
+            raise ValueError("safe divide output unit drift")
+    if node.node_type in {"GATE", "MODULATE"}:
+        if len(parents) != 2 or parents[1].output_semantic_type not in (
+            MASK_SEMANTIC_TYPES | {"STOCK_MULTIPLIER", "SCALAR"}
+        ):
+            raise ValueError("gate/modulate requires a typed mask or multiplier")
+        if node.unit_signature != parents[0].unit_signature:
+            raise ValueError("gate/modulate must preserve payload units")
+    if node.node_type == "VETO" and len(parents) != 1:
+        raise ValueError("veto requires exactly one mask input")
+    if node.node_type in {"FILTER", "INTERSECT", "UNION"} and len(parents) < 2:
+        raise ValueError("filter/set operators require at least two mask inputs")
+    if node.node_type in {"FILTER", "VETO", "INTERSECT", "UNION"}:
+        if not all(parent.output_semantic_type in MASK_SEMANTIC_TYPES for parent in parents):
+            raise ValueError("filter/veto/set operators require mask inputs")
+    if node.node_type == "WITHIN_GROUP_RANK":
+        if (
+            len(parents) != 2
+            or parents[0].entity_scope != "STOCK"
+            or parents[1].entity_scope not in {"INDUSTRY", "PLATE"}
+        ):
+            raise ValueError("within-group rank requires stock values and a PIT group key")
+    if node.node_type == "CONDITIONAL_SWITCH":
+        if len(parents) != 3 or parents[0].output_semantic_type not in MASK_SEMANTIC_TYPES:
+            raise ValueError("conditional switch requires mask, true and false inputs")
+        if (
+            parents[1].output_semantic_type != parents[2].output_semantic_type
+            or parents[1].unit_signature != parents[2].unit_signature
+            or node.unit_signature != parents[1].unit_signature
+        ):
+            raise ValueError("conditional switch branches must preserve type and unit")
+    if node.node_type in {
+        "RESIDUALIZE",
+        "SIZE_NEUTRALIZE",
+        "INDUSTRY_NEUTRALIZE",
+    }:
+        if len(parents) < 2 or parents[0].entity_scope != "STOCK":
+            raise ValueError("residualization requires stock payload plus controls")
+        if node.unit_signature != parents[0].unit_signature:
+            raise ValueError("residualization must preserve payload units")
+
+
+def _complexity_report(
+    spec: CandidateProgramSpecV1,
+    order: Sequence[str],
+) -> dict[str, Any]:
+    by_id = {node.node_id: node for node in spec.nodes}
+    windows = {
+        int(value)
+        for node in spec.nodes
+        for key, value in node.parameters.items()
+        if "window" in str(key).lower()
+        and isinstance(value, (int, float))
+        and int(value) > 0
+    }
+    gate_depth: dict[str, int] = {}
+    for node_id in order:
+        node = by_id[node_id]
+        gate_depth[node_id] = (
+            (1 if node.node_type in {"GATE", "VETO"} else 0)
+            + max((gate_depth[parent] for parent in node.input_node_ids), default=0)
+        )
+    report = {
+        "effective_nodes": len(spec.nodes),
+        "program_depth": _program_depth(spec.nodes, order),
+        "stock_field_leaves": sum(node.node_type == "STOCK_FIELD" for node in spec.nodes),
+        "context_field_leaves": sum(
+            node.node_type in {"MARKET_FIELD", "INDUSTRY_FIELD", "PLATE_FIELD"}
+            for node in spec.nodes
+        ),
+        "event_sources": sum(
+            node.node_type in {"EVENT_EPISODE", "FROZEN_BROAD_EVENT_REF"}
+            for node in spec.nodes
+        ),
+        "window_kinds": len(windows),
+        "gate_veto_depth": max(gate_depth.values(), default=0),
+        "residualize_count": sum(node.node_type == "RESIDUALIZE" for node in spec.nodes),
+        "conditional_switch_count": sum(
+            node.node_type == "CONDITIONAL_SWITCH" for node in spec.nodes
+        ),
+        "event_join_cost": sum(
+            int(node.parameters.get("estimated_join_cost") or 1)
+            for node in spec.nodes
+            if node.node_type in EVENT_NODE_TYPES
+        ),
+        "estimated_cost": sum(
+            int(node.parameters.get("estimated_cost") or 1) for node in spec.nodes
+        ),
+        "complexity_policy_hash": spec.complexity_budget.policy_hash,
+    }
+    limits = {
+        "effective_nodes": spec.complexity_budget.maximum_effective_nodes,
+        "program_depth": spec.complexity_budget.maximum_program_depth,
+        "stock_field_leaves": spec.complexity_budget.maximum_stock_field_leaves,
+        "context_field_leaves": spec.complexity_budget.maximum_context_field_leaves,
+        "event_sources": spec.complexity_budget.maximum_event_sources,
+        "window_kinds": spec.complexity_budget.maximum_window_kinds,
+        "gate_veto_depth": spec.complexity_budget.maximum_gate_veto_depth,
+        "residualize_count": spec.complexity_budget.maximum_residualize_count,
+        "conditional_switch_count": spec.complexity_budget.maximum_conditional_switch_count,
+        "event_join_cost": spec.complexity_budget.maximum_event_join_cost,
+        "estimated_cost": spec.complexity_budget.maximum_estimated_cost,
+    }
+    exceeded = sorted(key for key, limit in limits.items() if int(report[key]) > int(limit))
+    if exceeded:
+        raise ValueError(f"candidate program exceeds complexity budget: {exceeded}")
+    return report
 
 
 def _constant_node(
@@ -701,11 +1231,8 @@ class ProgramCompilerV1:
 
     def compile(self, spec: CandidateProgramSpecV1) -> CompiledCandidateProgramV1:
         order = _topological_order(spec.nodes)
-        if len(spec.nodes) > spec.complexity_budget.maximum_effective_nodes:
-            raise ValueError("candidate program exceeds node-count budget")
-        if _program_depth(spec.nodes, order) > spec.complexity_budget.maximum_program_depth:
-            raise ValueError("candidate program exceeds depth budget")
         by_id = {node.node_id: node for node in spec.nodes}
+        complexity = _complexity_report(spec, order)
         output_types = {
             "stock_score_node_id": {"STOCK_SCORE", "STOCK_VALUE"},
             "eligibility_mask_node_id": {"STOCK_MASK"},
@@ -730,7 +1257,64 @@ class ProgramCompilerV1:
 
         verdicts: list[dict[str, Any]] = []
         legacy_candidates: list[dict[str, Any]] = []
-        for node in spec.nodes:
+        expressions: dict[str, str] = {}
+        execution_plan: list[dict[str, Any]] = []
+        physical_leaves: set[str] = set()
+        external_requirements: set[str] = set()
+        for node_id in order:
+            node = by_id[node_id]
+            parents = [by_id[parent] for parent in node.input_node_ids]
+            _validate_node_semantics(node, parents, self.registry)
+            parent_expressions = [expressions[parent] for parent in node.input_node_ids]
+            expression = _node_expression(node, parent_expressions)
+            expressions[node_id] = expression
+            execution_plan.append(
+                {
+                    "node_id": node.node_id,
+                    "node_type": node.node_type,
+                    "execution_phase": int(NODE_EXECUTION_PHASE[node.node_type]),
+                    "input_node_ids": list(node.input_node_ids),
+                    "compiled_expression": expression,
+                    "output_semantic_type": node.output_semantic_type,
+                    "entity_scope": node.entity_scope,
+                    "observable_clock": node.observable_clock,
+                    "maturity": node.maturity,
+                }
+            )
+            if node.node_type in {
+                "STOCK_FIELD",
+                "MARKET_FIELD",
+                "INDUSTRY_FIELD",
+                "PLATE_FIELD",
+                "EVENT_EPISODE",
+            }:
+                physical_leaves.add(str(node.parameters["field_id"]))
+            elif node.node_type == "STATE_REPRESENTATION":
+                physical_leaves.update(expression_fields(expression))
+            elif node.node_type == "FROZEN_BROAD_EVENT_REF":
+                resolution = resolve_required_physical_leaves(
+                    {
+                        "route_id": "BROAD_EVENT_FROZEN_ENTRY",
+                        "canonical_expression": expression,
+                        "frozen_mechanism_id": node.parameters.get(
+                            "frozen_mechanism_id"
+                        ),
+                        "frozen_behavior_cluster_id": node.parameters.get(
+                            "frozen_behavior_cluster_id"
+                        ),
+                    }
+                )
+                external_requirements.update(
+                    resolution.external_adapter_requirements
+                )
+            elif node.node_type == "LEGACY_CANDIDATE_COMPONENT":
+                resolution = resolve_required_physical_leaves(
+                    dict(node.parameters.get("candidate") or {})
+                )
+                physical_leaves.update(resolution.physical_leaf_ids)
+                external_requirements.update(
+                    resolution.external_adapter_requirements
+                )
             if node.node_type != "LEGACY_CANDIDATE_COMPONENT":
                 continue
             candidate = dict(node.parameters.get("candidate") or {})
@@ -788,6 +1372,16 @@ class ProgramCompilerV1:
             semantic_program_hash=spec.semantic_program_hash,
             ordered_node_ids=order,
             output_node_ids=asdict(spec.outputs),
+            output_expressions={
+                key: expressions[node_id]
+                for key, node_id in asdict(spec.outputs).items()
+            },
+            node_execution_plan=tuple(execution_plan),
+            physical_leaf_ids=tuple(sorted(physical_leaves)),
+            external_adapter_requirements=tuple(
+                sorted(external_requirements)
+            ),
+            complexity_report=complexity,
             legacy_component_verdicts=tuple(verdicts),
             shared_dag_plan_hash=shared_plan_hash,
             compiler_semantics_version=PROGRAM_COMPILER_SEMANTICS_VERSION,
