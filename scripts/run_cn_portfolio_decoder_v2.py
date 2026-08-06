@@ -133,6 +133,8 @@ def _load_evaluation_context(
     contract_path: Path,
     train_field_root: Path,
     qualification_mode: bool,
+    validated_field_manifest: Mapping[str, Any] | None = None,
+    validated_field_manifest_path: Path | None = None,
 ) -> dict[str, Any]:
     contract = v1._read_json(contract_path)
     base._verify_payload_hash(
@@ -140,11 +142,25 @@ def _load_evaluation_context(
         field="contract_payload_sha256",
         label="decoder V2 execution contract",
     )
-    field_manifest, field_manifest_path = base._validate_sidecar(
-        train_field_root,
-        evaluation_role="train",
-        split_hash=str(contract["split_manifest_sha256"]),
-    )
+    if (validated_field_manifest is None) != (
+        validated_field_manifest_path is None
+    ):
+        raise RuntimeError("validated field manifest override is incomplete")
+    if validated_field_manifest is None:
+        field_manifest, field_manifest_path = base._validate_sidecar(
+            train_field_root,
+            evaluation_role="train",
+            split_hash=str(contract["split_manifest_sha256"]),
+        )
+    else:
+        field_manifest = dict(validated_field_manifest)
+        field_manifest_path = Path(validated_field_manifest_path).resolve()
+        expected_manifest_path = (
+            Path(train_field_root).resolve()
+            / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
+        )
+        if field_manifest_path != expected_manifest_path:
+            raise RuntimeError("validated field manifest path/root drift")
     field_frame = base._load_field_frame(train_field_root, field_manifest)
     if not field_frame["trade_time"].dt.strftime("%H:%M:%S").eq(
         "15:00:00"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
 from our_system_phase2.runtime.cn_iterative_search_v1 import _batch_manifest
@@ -9,6 +10,7 @@ from scripts.run_cn_joint_program_phase_b_v0 import (
     _parity_differences,
     _self_hashed,
     _template_summary,
+    _validate_phase_b_materialized_sidecar,
     _validate_frozen_execution_contract,
     _verify_checkpoint,
     _write_json,
@@ -133,3 +135,56 @@ def test_phase_b_frozen_execution_contract_uses_emitted_executor_key() -> None:
         capacity_manifest_sha256="b" * 64,
         executor_workers=12,
     )
+
+
+def test_phase_b_accepts_only_exact_legacy_development_sidecar(
+    tmp_path: Path,
+) -> None:
+    shards = []
+    for ordinal in range(16):
+        path = tmp_path / f"shard_{ordinal:02d}.parquet"
+        path.write_bytes(f"shard-{ordinal}".encode("utf-8"))
+        shards.append(
+            {
+                "status": "TIME_MAJOR_SHARD_READY",
+                "split_manifest_hash": "s" * 64,
+                "output_path": str(path),
+                "output_bytes": path.stat().st_size,
+                "output_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "rows": 1,
+            }
+        )
+    manifest = _self_hashed(
+        {
+            "schema_version": (
+                "cn_development_time_major_execution_layout_manifest_v2_train_only"
+            ),
+            "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
+            "data_role": "development_train_only",
+            "split_manifest_hash": "s" * 64,
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "forward_2026_reads": 0,
+            "source_shard_count": 16,
+            "sidecar_rows": 16,
+            "source_rows": 16,
+            "fields": ["trade_time", "code", "open", "close"],
+            "shards": shards,
+        },
+        "manifest_hash",
+    )
+    manifest_path = _write_json(
+        tmp_path / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json",
+        manifest,
+    )
+    observed, observed_path = _validate_phase_b_materialized_sidecar(
+        tmp_path,
+        split_manifest_sha256="s" * 64,
+        verify_shards=True,
+        expected_manifest_file_sha256=hashlib.sha256(
+            manifest_path.read_bytes()
+        ).hexdigest(),
+        expected_manifest_payload_sha256=manifest["manifest_hash"],
+    )
+    assert observed == manifest
+    assert observed_path == manifest_path

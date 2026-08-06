@@ -65,6 +65,12 @@ MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 EXPECTED_RECORDS = 64
 RECORDS_PER_CHECKPOINT = 8
 CHECKPOINT_COUNT = 8
+ACCEPTED_FIELD_MANIFEST_FILE_SHA256 = (
+    "f13126a9052082123d3ae5f31125800603affdf4c61e10878ec46962c1d5ea59"
+)
+ACCEPTED_FIELD_MANIFEST_PAYLOAD_SHA256 = (
+    "de720e48b4d23a1dc2e110b4f1cf5c3bc7e9d19a97ee8f7027700649c8410b98"
+)
 DECODER = ASharePortfolioDecoderPolicy(
     decoder_id="TOPK_10_EQUAL",
     selection="TOP_K",
@@ -142,11 +148,105 @@ def _compiled(
     return compiled
 
 
+def _validate_phase_b_materialized_sidecar(
+    train_field_root: Path,
+    *,
+    split_manifest_sha256: str,
+    verify_shards: bool,
+    expected_manifest_file_sha256: str = ACCEPTED_FIELD_MANIFEST_FILE_SHA256,
+    expected_manifest_payload_sha256: str = ACCEPTED_FIELD_MANIFEST_PAYLOAD_SHA256,
+) -> tuple[dict[str, Any], Path]:
+    root = Path(train_field_root).resolve()
+    manifest_path = root / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
+    if _sha256(manifest_path) != expected_manifest_file_sha256:
+        raise RuntimeError("accepted Phase B field manifest file hash drift")
+    manifest = _read_json(manifest_path)
+    body = dict(manifest)
+    observed_payload_hash = str(body.pop("manifest_hash", ""))
+    if (
+        observed_payload_hash != expected_manifest_payload_sha256
+        or stable_hash(body) != observed_payload_hash
+    ):
+        raise RuntimeError("accepted Phase B field manifest self-hash drift")
+    required = {
+        "schema_version": (
+            "cn_development_time_major_execution_layout_manifest_v2_train_only"
+        ),
+        "status": "TIME_MAJOR_LAYOUT_PARITY_PASS",
+        "data_role": "development_train_only",
+        "split_manifest_hash": split_manifest_sha256,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "forward_2026_reads": 0,
+        "source_shard_count": 16,
+    }
+    drift = [
+        key for key, value in required.items() if manifest.get(key) != value
+    ]
+    if drift:
+        raise RuntimeError(
+            "accepted Phase B development sidecar drift: " + ",".join(drift)
+        )
+    later_authority_fields = {
+        "evaluation_role",
+        "feedback_write",
+        "scheduler_write",
+        "archive_write",
+        "promotion",
+    }
+    if later_authority_fields.intersection(manifest):
+        raise RuntimeError("accepted Phase B sidecar schema revision drift")
+    if not {"trade_time", "code", "open", "close"}.issubset(
+        set(manifest.get("fields") or ())
+    ):
+        raise RuntimeError("accepted Phase B field sidecar lacks replay fields")
+    shards = list(manifest.get("shards") or ())
+    if len(shards) != 16:
+        raise RuntimeError("accepted Phase B field shard cardinality drift")
+    observed_rows = 0
+    for shard in shards:
+        path = Path(str(shard["output_path"])).resolve()
+        if not path.is_relative_to(root):
+            raise RuntimeError("accepted Phase B field shard escapes its root")
+        if (
+            str(shard.get("status") or "") != "TIME_MAJOR_SHARD_READY"
+            or str(shard.get("split_manifest_hash") or "")
+            != split_manifest_sha256
+        ):
+            raise RuntimeError("accepted Phase B field shard authority drift")
+        observed_rows += int(shard["rows"])
+        if verify_shards and (
+            not path.is_file()
+            or path.stat().st_size != int(shard["output_bytes"])
+            or _sha256(path) != str(shard["output_sha256"])
+        ):
+            raise RuntimeError(f"accepted Phase B field shard hash drift: {path}")
+    if (
+        observed_rows != int(manifest.get("sidecar_rows") or -1)
+        or observed_rows != int(manifest.get("source_rows") or -1)
+    ):
+        raise RuntimeError("accepted Phase B field row-count drift")
+    return manifest, manifest_path
+
+
 def _load_context(contract_path: Path, train_field_root: Path) -> dict[str, Any]:
+    contract = _read_json(contract_path)
+    decoder_v2.base._verify_payload_hash(
+        contract,
+        field="contract_payload_sha256",
+        label="joint-program Phase B execution contract",
+    )
+    field_manifest, field_manifest_path = _validate_phase_b_materialized_sidecar(
+        train_field_root,
+        split_manifest_sha256=str(contract["split_manifest_sha256"]),
+        verify_shards=False,
+    )
     context = decoder_v2._load_evaluation_context(
         contract_path=contract_path,
         train_field_root=train_field_root,
         qualification_mode=True,
+        validated_field_manifest=field_manifest,
+        validated_field_manifest_path=field_manifest_path,
     )
     for key in (
         "prepared_index",
@@ -734,6 +834,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             raise FileNotFoundError(path)
     if not train_field_root.is_dir():
         raise FileNotFoundError(train_field_root)
+    execution_contract = _read_json(contract_path)
+    decoder_v2.base._verify_payload_hash(
+        execution_contract,
+        field="contract_payload_sha256",
+        label="joint-program Phase B execution contract",
+    )
+    field_manifest, field_manifest_path = _validate_phase_b_materialized_sidecar(
+        train_field_root,
+        split_manifest_sha256=str(execution_contract["split_manifest_sha256"]),
+        verify_shards=True,
+    )
     capacity = _read_json(capacity_path)
     capacity_body = dict(capacity)
     capacity_expected = str(capacity_body.pop("capacity_manifest_sha256", ""))
@@ -788,6 +899,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "phase_b_uniform_schedule_sha256": _sha256(schedule_path),
             "execution_contract_sha256": _sha256(contract_path),
             "train_field_root": str(train_field_root),
+            "train_field_manifest_sha256": _sha256(field_manifest_path),
+            "train_field_manifest_payload_sha256": str(
+                field_manifest["manifest_hash"]
+            ),
             "registry_sha256": _sha256(registry_path),
             "node_resource_capacity_sha256": _sha256(capacity_path),
             "decoder_policy": {
