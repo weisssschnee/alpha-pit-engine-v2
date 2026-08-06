@@ -177,8 +177,14 @@ def test_phase_b_prefinancial_freeze_is_exact_uniform_64_and_replays(
     assert [
         row["session_count"] for row in contract["development_subwindows"]
     ] == [121, 121, 122]
-    assert contract["executor_workers"] == 12
+    assert contract["executor_workers"] == 10
     assert contract["entitlement_threads"] == 32
+    assert contract["acceleration_basis"]["failed_executor_workers"] == 12
+    assert contract["acceleration_basis"]["recovery_executor_workers"] == 10
+    assert not contract["acceleration_basis"][
+        "failed_financial_results_reused"
+    ]
+    assert not contract["acceleration_basis"]["memory_threshold_weakened"]
 
 
 def test_phase_b_prefinancial_verifier_rejects_schedule_tampering(

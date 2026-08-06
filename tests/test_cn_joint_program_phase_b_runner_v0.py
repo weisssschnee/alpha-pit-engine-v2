@@ -128,13 +128,13 @@ def test_phase_b_frozen_execution_contract_uses_emitted_executor_key() -> None:
         {
             "portfolio_decoder_id": "TOPK_10_EQUAL",
             "executor_backend": "PROCESS_POOL",
-            "executor_workers": 12,
+            "executor_workers": 10,
             "execution_contract_snapshot_file_sha256": "a" * 64,
             "node_resource_capacity_manifest_sha256": "b" * 64,
         },
         execution_contract_sha256="a" * 64,
         capacity_manifest_sha256="b" * 64,
-        executor_workers=12,
+        executor_workers=10,
     )
 
 

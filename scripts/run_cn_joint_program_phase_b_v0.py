@@ -30,6 +30,7 @@ from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _batch_manifest,
 )
 from our_system_phase2.runtime.cn_joint_program_phase_b_v0 import (
+    EXECUTOR_WORKERS,
     FREEZE_CLOSURE_NAME,
     TEMPLATE_ORDER,
     verify_phase_b_prefinancial_freeze_v0,
@@ -924,7 +925,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         int(profile.get("cpu_threads") or 0) != 32
         or int(profile.get("minimum_free_memory_bytes") or 0)
         != MINIMUM_FREE_MEMORY_BYTES
-        or int(args.executor_workers) != 12
+        or int(args.executor_workers) != EXECUTOR_WORKERS
     ):
         raise RuntimeError("Phase B process resource contract drift")
     run_contract = _read_json(freeze_root / "phase_b_run_contract.json")

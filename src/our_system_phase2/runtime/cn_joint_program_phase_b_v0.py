@@ -82,7 +82,7 @@ MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 CACHE_CAP_BYTES = 8 * 1024**3
 RESOURCE_PROFILE = "VALIDATION_EXCLUSIVE_32"
 ENTITLEMENT_THREADS = 32
-EXECUTOR_WORKERS = 12
+EXECUTOR_WORKERS = 10
 NATIVE_THREADS_PER_WORKER = 1
 
 # Reuse the accepted decoder-process qualification.  This is an execution
@@ -103,6 +103,17 @@ ACCELERATION_BASIS = {
     "qualified_speedup": 8.263205947706915,
     "minimum_observed_free_memory_bytes": 53552918528,
     "maximum_process_tree_rss_bytes": 31133659136,
+    "exact_shape_memory_failure_incident": (
+        "D:\\ChengboRemote\\runtime\\run_health_incidents\\"
+        "20260807T044736_joint_program_phase_b_exact_shape_memory_gate_failure"
+    ),
+    "exact_shape_memory_failure_incident_sha256": (
+        "2849e6c4203bba647d4d43d84afda99a5a26549e0f46d145d1154de46a628963"
+    ),
+    "failed_executor_workers": 12,
+    "recovery_executor_workers": EXECUTOR_WORKERS,
+    "failed_financial_results_reused": False,
+    "memory_threshold_weakened": False,
 }
 FIXED_V0_PRODUCTION_CLOSURE_FILE_SHA256 = (
     "bda072cc965db1f915fd7495b47e91b862917d061534a396831d3ed7c287fc9f"

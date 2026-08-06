@@ -8,7 +8,7 @@ param(
     [Parameter(Mandatory = $true)][string]$TrainFieldRoot,
     [Parameter(Mandatory = $true)][string]$TrainPriceRoot,
     [Parameter(Mandatory = $true)][string]$OutputRoot,
-    [ValidateRange(1, 32)][int]$ExecutorWorkerCount = 12,
+    [ValidateRange(1, 32)][int]$ExecutorWorkerCount = 10,
     [string]$Registry = (
         'runtime\field_registry\cn_unified_capability_registry_v3_20260717\unified_capability_registry.json'
     ),
@@ -125,8 +125,8 @@ if (
 ) {
     throw 'joint-program Phase B resource profile drift'
 }
-if ($ExecutorWorkerCount -ne 12) {
-    throw 'joint-program Phase B executor worker count is frozen at 12'
+if ($ExecutorWorkerCount -ne 10) {
+    throw 'joint-program Phase B executor worker count is frozen at 10'
 }
 $freeBytes = [int64](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory * 1024
 if ($freeBytes -lt [int64]24 * 1024 * 1024 * 1024) {
