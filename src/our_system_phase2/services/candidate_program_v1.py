@@ -875,6 +875,33 @@ def _validate_node_semantics(
         for parent in parents
     ):
         raise ValueError("program dependency violates fixed semantic phase order")
+    if parents:
+        expected_source_lineage = tuple(
+            sorted(
+                {
+                    identity
+                    for parent in parents
+                    for identity in parent.source_lineage
+                }
+            )
+        )
+        expected_route_provenance = tuple(
+            sorted(
+                {
+                    route
+                    for parent in parents
+                    for route in parent.component_route_provenance
+                }
+            )
+        )
+        if tuple(sorted(node.source_lineage)) != expected_source_lineage:
+            raise ValueError(
+                "operator source lineage must equal the parent lineage union"
+            )
+        if tuple(sorted(node.component_route_provenance)) != expected_route_provenance:
+            raise ValueError(
+                "operator route provenance must equal the parent route union"
+            )
 
     if node.node_type in {
         "STOCK_FIELD",
@@ -900,10 +927,15 @@ def _validate_node_semantics(
             )
         if not field.search_eligible and node.node_type != "EVENT_EPISODE":
             raise ValueError(f"program field is not generator-eligible: {field_id}")
-        if node.component_route_provenance and not set(
+        if not node.component_route_provenance or not set(
             node.component_route_provenance
         ).issubset(field.allowed_routes):
             raise ValueError("program field route provenance is not registry-authorized")
+        if tuple(node.source_lineage) != (
+            field.source_field_id,
+            field.representation_id,
+        ):
+            raise ValueError("program field source lineage is not registry-authorized")
         if node.node_type in {"INDUSTRY_FIELD", "PLATE_FIELD"} and str(
             node.parameters.get("capability_status") or ""
         ) != "PIT_MATERIALIZATION_AUTHORIZED":
@@ -978,6 +1010,15 @@ def _validate_node_semantics(
         field = registry.resolve(str(node.parameters["field_id"]))
         if "BROAD_EVENT_FROZEN_ENTRY" not in field.allowed_routes:
             raise ValueError("frozen Broad Event field lacks registered replay route")
+        if tuple(node.component_route_provenance) != (
+            "BROAD_EVENT_FROZEN_ENTRY",
+        ) or tuple(node.source_lineage) != (
+            field.source_field_id,
+            field.representation_id,
+        ):
+            raise ValueError(
+                "frozen Broad Event provenance is not registry-authorized"
+            )
         mechanism = dict((field.metadata or {}).get("frozen_mechanism") or {})
         if str(node.parameters["frozen_mechanism_id"]) != str(
             mechanism.get("mechanism_id") or ""
@@ -1074,9 +1115,7 @@ def _validate_node_semantics(
             node.output_semantic_type != parent.output_semantic_type
             or node.entity_scope != parent.entity_scope
             or node.unit_signature != expected_unit
-            or not _support_unit_matches_entity(
-                node.entity_scope, node.support_unit
-            )
+            or node.support_unit != parent.support_unit
         ):
             raise ValueError(
                 "temporal operator output must preserve typed coordinate contracts"

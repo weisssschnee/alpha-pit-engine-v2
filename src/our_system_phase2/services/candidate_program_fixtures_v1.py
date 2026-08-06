@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Mapping
 
 from our_system_phase2.services.candidate_program_adapters_v1 import (
@@ -90,6 +90,7 @@ def _operator(
     parameters: Mapping[str, Any] | None = None,
     source_lineage: tuple[str, ...] = (),
     provenance: tuple[str, ...] = (),
+    support_unit: str = "stock-session",
 ) -> TypedNodeSpec:
     return TypedNodeSpec(
         node_id=node_id,
@@ -102,10 +103,48 @@ def _operator(
         observable_clock="prior_close",
         maturity="prior_close",
         unit_signature=unit,
-        support_unit="stock-session",
+        support_unit=support_unit,
         source_lineage=source_lineage,
         component_route_provenance=provenance,
     )
+
+
+def _bind_operator_provenance(
+    nodes: tuple[TypedNodeSpec, ...],
+) -> tuple[TypedNodeSpec, ...]:
+    """Derive every operator's lineage and stratum provenance from its parents."""
+
+    bound: dict[str, TypedNodeSpec] = {}
+    output: list[TypedNodeSpec] = []
+    for node in nodes:
+        if not node.input_node_ids:
+            updated = node
+        else:
+            parents = [bound[parent_id] for parent_id in node.input_node_ids]
+            updated = replace(
+                node,
+                source_lineage=tuple(
+                    sorted(
+                        {
+                            identity
+                            for parent in parents
+                            for identity in parent.source_lineage
+                        }
+                    )
+                ),
+                component_route_provenance=tuple(
+                    sorted(
+                        {
+                            route
+                            for parent in parents
+                            for route in parent.component_route_provenance
+                        }
+                    )
+                ),
+            )
+        bound[updated.node_id] = updated
+        output.append(updated)
+    return tuple(output)
 
 
 def _control_plan(short_node: TypedNodeSpec) -> MatchedControlPlanV1:
@@ -118,6 +157,7 @@ def _control_plan(short_node: TypedNodeSpec) -> MatchedControlPlanV1:
         parameters={"window": 5},
         source_lineage=short_node.source_lineage,
         provenance=short_node.component_route_provenance,
+        support_unit=short_node.support_unit,
     )
     return MatchedControlPlanV1(
         control_constructor_id="CN_TYPED_PROGRAM_LEVEL_REPLACEMENT_V1",
@@ -145,6 +185,7 @@ def _program(
     legacy: tuple[str, ...] = (),
     frozen: tuple[str, ...] = (),
 ) -> CandidateProgramSpecV1:
+    nodes = _bind_operator_provenance(nodes)
     return CandidateProgramSpecV1(
         schema_version=PROGRAM_SCHEMA_VERSION,
         nodes=nodes,
@@ -173,7 +214,10 @@ def _fixture_b_nodes(
 ) -> tuple[tuple[TypedNodeSpec, ...], TypedNodeSpec]:
     adapter = FundamentalRepresentationAdapter(registry)
     net_buy = adapter.adapt(
-        node_id="financing_net_buy", field_id="ctx_rzrq_rzjme", unit_signature="yuan"
+        node_id="financing_net_buy",
+        field_id="ctx_rzrq_rzjme",
+        route_id="SLOW_TEMPORAL_CHANGE",
+        unit_signature="yuan",
     )
     balance_ratio = adapter.adapt(
         node_id="financing_balance_ratio",
@@ -195,15 +239,18 @@ def _fixture_b_nodes(
     slope_5 = _operator(
         "net_buy_slope_5", "SLOPE", (net_buy.node_id,), unit="yuan",
         parameters={"window": 5}, source_lineage=lineage, provenance=provenance,
+        support_unit=net_buy.support_unit,
     )
     slope_20 = _operator(
         "net_buy_slope_20", "SLOPE", (net_buy.node_id,), unit="yuan",
         parameters={"window": 20}, source_lineage=lineage, provenance=provenance,
+        support_unit=net_buy.support_unit,
     )
     short_long = _operator(
         "net_buy_short_long", "SHORT_LONG_SPREAD", (net_buy.node_id,), unit="yuan",
         parameters={"short_window": 5, "long_window": 20},
         source_lineage=lineage, provenance=provenance,
+        support_unit=net_buy.support_unit,
     )
     scaled = _operator(
         "scaled_short_long", "SAFE_DIVIDE", (short_long.node_id, float_cap.node_id),
@@ -219,7 +266,7 @@ def _fixture_b_nodes(
     score = _operator(
         "final_score", "CSRANK", (residual.node_id,), output_type="STOCK_SCORE"
     )
-    return (
+    bound_nodes = _bind_operator_provenance(
         (
             net_buy,
             balance_ratio,
@@ -232,8 +279,11 @@ def _fixture_b_nodes(
             decongested,
             residual,
             score,
-        ),
-        short_long,
+        )
+    )
+    return (
+        bound_nodes,
+        next(node for node in bound_nodes if node.node_id == short_long.node_id),
     )
 
 

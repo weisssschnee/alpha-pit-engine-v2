@@ -162,6 +162,8 @@ def test_multifield_windows_and_market_condition_do_not_rank_market_payload(prog
         maturity="prior_close",
         unit_signature="dimensionless",
         support_unit="stock-session",
+        source_lineage=market_node.source_lineage,
+        component_route_provenance=market_node.component_route_provenance,
     )
     invalid = replace(
         c,
@@ -175,10 +177,24 @@ def test_multifield_windows_and_market_condition_do_not_rank_market_payload(prog
 def test_type_unit_future_and_unregistered_plate_fail_closed(program_context) -> None:
     registry, _, _, fixtures = program_context
     b = fixtures["B_MULTI_TIMESCALE_FINANCING"].program
+    scaled = next(node for node in b.nodes if node.node_id == "scaled_short_long")
+    float_cap = next(node for node in b.nodes if node.node_id == "float_market_cap")
     mismatch = replace(
         b,
         nodes=tuple(
-            replace(node, input_node_ids=("scaled_short_long", "float_market_cap"))
+            replace(
+                node,
+                input_node_ids=(scaled.node_id, float_cap.node_id),
+                source_lineage=tuple(
+                    sorted(set(scaled.source_lineage) | set(float_cap.source_lineage))
+                ),
+                component_route_provenance=tuple(
+                    sorted(
+                        set(scaled.component_route_provenance)
+                        | set(float_cap.component_route_provenance)
+                    )
+                ),
+            )
             if node.node_id == "decongested_feature"
             else node
             for node in b.nodes
@@ -227,6 +243,23 @@ def test_type_unit_future_and_unregistered_plate_fail_closed(program_context) ->
                 ),
             )
         )
+
+    for spoofed_leaf, message in (
+        (replace(registered, source_lineage=("cn.sf.forged",)), "source lineage"),
+        (replace(registered, component_route_provenance=()), "route provenance"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            ProgramCompilerV1(registry).compile(
+                replace(
+                    b,
+                    nodes=tuple(
+                        spoofed_leaf
+                        if node.node_id == registered.node_id
+                        else node
+                        for node in b.nodes
+                    ),
+                )
+            )
 
     plate = TypedNodeSpec(
         node_id="unauthorized_plate",
@@ -509,6 +542,8 @@ def test_semantic_type_checks_reject_mask_arithmetic_and_bad_cs_output(program_c
         maturity=net_buy.maturity,
         unit_signature="yuan",
         support_unit=net_buy.support_unit,
+        source_lineage=net_buy.source_lineage,
+        component_route_provenance=net_buy.component_route_provenance,
     )
     with pytest.raises(ValueError, match="multiply requires numeric inputs"):
         ProgramCompilerV1(registry).compile(
@@ -537,6 +572,8 @@ def test_semantic_type_checks_reject_mask_arithmetic_and_bad_cs_output(program_c
         maturity=net_buy.maturity,
         unit_signature="cubic_meters",
         support_unit="event",
+        source_lineage=net_buy.source_lineage,
+        component_route_provenance=net_buy.component_route_provenance,
     )
     with pytest.raises(ValueError, match="preserve typed coordinate contracts"):
         ProgramCompilerV1(registry).compile(
@@ -548,6 +585,19 @@ def test_semantic_type_checks_reject_mask_arithmetic_and_bad_cs_output(program_c
                     eligibility_mask_node_id=primary.outputs.eligibility_mask_node_id,
                     exposure_multiplier_node_id=primary.outputs.exposure_multiplier_node_id,
                     veto_mask_node_id=primary.outputs.veto_mask_node_id,
+                ),
+            )
+        )
+
+    slope = next(node for node in primary.nodes if node.node_id == "net_buy_slope_5")
+    fake_support = replace(slope, support_unit="fake-stock-century")
+    with pytest.raises(ValueError, match="preserve typed coordinate contracts"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                primary,
+                nodes=tuple(
+                    fake_support if node.node_id == slope.node_id else node
+                    for node in primary.nodes
                 ),
             )
         )
