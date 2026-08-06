@@ -174,6 +174,9 @@ _NON_SEMANTIC_EXACT_KEYS = frozenset(
         "seed",
         "attempt",
         "attempt_index",
+        "candidate_id",
+        "matched_control_id",
+        "pair_id",
         "attempt_id",
         "route_attempt_index",
         "proposal_route_root_field_ids",
@@ -195,7 +198,10 @@ _ROUTE_GENERATION_RECEIPT_KEYS = frozenset(
     {
         "receipt_version",
         "candidate_id",
+        "matched_control_id",
+        "pair_id",
         "generator_version",
+        "identity_generator_version",
         "route_id",
         "skeleton_id",
         "seed",
@@ -333,6 +339,8 @@ def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
 
     required = {
         "candidate_id",
+        "matched_control_id",
+        "pair_id",
         "generator_version",
         "route_id",
         "skeleton_id",
@@ -354,6 +362,9 @@ def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError(f"route candidate lacks generation receipt fields: {missing}")
     categorical_genes = dict(candidate.get("categorical_genes") or {})
     generator_version = str(candidate["generator_version"])
+    identity_generator_version = str(
+        candidate.get("identity_generator_version") or generator_version
+    )
     generation_lane = (
         "CATEGORICAL_GENES"
         if categorical_genes
@@ -364,7 +375,10 @@ def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
     body = {
         "receipt_version": ROUTE_GENERATION_RECEIPT_VERSION,
         "candidate_id": str(candidate["candidate_id"]),
+        "matched_control_id": str(candidate["matched_control_id"]),
+        "pair_id": str(candidate["pair_id"]),
         "generator_version": generator_version,
+        "identity_generator_version": identity_generator_version,
         "route_id": str(candidate["route_id"]),
         "skeleton_id": str(candidate["skeleton_id"]),
         "seed": int(candidate["seed"]),
@@ -1675,8 +1689,8 @@ def legacy_candidate_program_v1(
 
     generation_receipt = route_generation_receipt_v1(candidate)
     component = _strip_nonsemantic_metadata(candidate)
-    candidate_id = str(component.get("candidate_id") or "")
-    route_id = str(component.get("route_id") or "")
+    candidate_id = str(candidate.get("candidate_id") or "")
+    route_id = str(candidate.get("route_id") or "")
     if not candidate_id or route_id not in ROUTE_IDS:
         raise ValueError("legacy component requires a registered candidate and route")
     clock = str(component.get("clock_contract") or component.get("maturity_rule") or "UNSPECIFIED")
@@ -1761,7 +1775,7 @@ def legacy_candidate_program_v1(
                 or "MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT"
             ),
         ),
-        legacy_component_provenance=(candidate_id,),
+        legacy_component_provenance=(str(component["exact_identity"]),),
     )
 
 
@@ -1783,6 +1797,19 @@ class ProgramCompilerV1:
         candidate = dict(node.parameters.get("candidate") or {})
         if not candidate:
             raise ValueError(f"{node.node_type} lacks its authoritative candidate binding")
+        generation_receipt = _validate_route_generation_receipt(
+            node.generation_receipt
+        )
+        declared_candidate_id = str(candidate.get("candidate_id") or "")
+        if declared_candidate_id and declared_candidate_id != str(
+            generation_receipt["candidate_id"]
+        ):
+            raise ValueError(f"{node.node_type} candidate generation receipt drift")
+        candidate["candidate_id"] = str(generation_receipt["candidate_id"])
+        candidate["matched_control_id"] = str(
+            generation_receipt["matched_control_id"]
+        )
+        candidate["pair_id"] = str(generation_receipt["pair_id"])
         if node.node_type == "STATE_REPRESENTATION" and bool(
             candidate.get("state_materialization_required")
         ):
@@ -1808,7 +1835,6 @@ class ProgramCompilerV1:
         if verdict.canonical_expression != expected_canonical:
             raise ValueError(f"{node.node_type} canonical expression drift")
         required_receipt_keys = (
-            "candidate_id",
             "generator_version",
             "exact_identity",
             "canonical_identity",
@@ -1839,11 +1865,7 @@ class ProgramCompilerV1:
                 f"{node.node_type} lacks required route receipt bindings: "
                 f"{missing_receipt_keys}"
             )
-        generation_receipt = _validate_route_generation_receipt(
-            node.generation_receipt
-        )
         generation_binding = {
-            "candidate_id": str(candidate["candidate_id"]),
             "generator_version": str(candidate["generator_version"]),
             "route_id": str(candidate.get("route_id") or ""),
             "skeleton_id": str(candidate["skeleton_id"]),
@@ -1935,6 +1957,12 @@ class ProgramCompilerV1:
                 f"{node.node_type} deterministic grammar replay drift: "
                 f"{regeneration_drift}"
             )
+        if str(generation_receipt["identity_generator_version"]) != str(
+            regenerated["generator_version"]
+        ):
+            raise ValueError(
+                f"{node.node_type} identity-generator version drift"
+            )
         expected_exact = str(candidate["exact_identity"])
         if verdict.exact_identity != expected_exact:
             raise ValueError(f"{node.node_type} exact identity drift")
@@ -1993,7 +2021,9 @@ class ProgramCompilerV1:
                 f"{skeleton_receipt_drift}"
             )
         expected_candidate_id = compositional_candidate_id(
-            generator_version=str(generation_receipt["generator_version"]),
+            generator_version=str(
+                generation_receipt["identity_generator_version"]
+            ),
             route_id=verdict.route_id,
             skeleton_id=skeleton.skeleton_id,
             seed=int(generation_receipt["seed"]),
@@ -2001,7 +2031,7 @@ class ProgramCompilerV1:
             field_ids=tuple(map(str, generation_receipt["declared_field_ids"])),
             is_control=bool(generation_receipt["is_matched_control"]),
         )
-        if str(candidate.get("candidate_id") or "") != expected_candidate_id:
+        if str(generation_receipt["candidate_id"]) != expected_candidate_id:
             raise ValueError(f"{node.node_type} candidate generation identity drift")
         expected_clock = skeleton.clock_contract
         expected_maturity_contract = skeleton.maturity_contract
@@ -2213,7 +2243,6 @@ class ProgramCompilerV1:
             raise ValueError(
                 "candidate frozen-component references do not exactly bind replay inventory"
             )
-
         verdicts: list[dict[str, Any]] = []
         legacy_candidates: list[dict[str, Any]] = []
         expressions: dict[str, str] = {}
@@ -2313,6 +2342,13 @@ class ProgramCompilerV1:
                     "exact_identity": verdict.exact_identity,
                     "decision": verdict.decision,
                 }
+            )
+        expected_legacy_provenance = sorted(
+            str(row["exact_identity"]) for row in legacy_candidates
+        )
+        if sorted(spec.legacy_component_provenance) != expected_legacy_provenance:
+            raise ValueError(
+                "legacy component provenance does not exactly bind semantic identities"
             )
         if set(declared_clock_node_ids) != required_clock_node_ids:
             raise ValueError(

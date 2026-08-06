@@ -517,7 +517,7 @@ def build_golden_program_fixtures_v1(
                 pair_support_policy="PRIMARY_CONTROL_EXACT_COORDINATE_INTERSECTION",
                 pair_maturity_policy="MAX_PRIMARY_CONTROL_MATURITY_BEFORE_SHARED_SUPPORT",
             ),
-            legacy=(str(legacy_candidate.get("candidate_id") or ""),),
+            legacy=(str(legacy_candidate.get("exact_identity") or ""),),
             frozen=(frozen_field.field_id, frozen_inventory_hash),
         ),
     )

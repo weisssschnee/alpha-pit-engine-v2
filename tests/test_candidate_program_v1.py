@@ -14,7 +14,10 @@ from our_system_phase2.services.candidate_program_v1 import (
     TypedNodeSpec,
     legacy_candidate_program_v1,
 )
-from our_system_phase2.services.compositional_grammar import CompositionalGrammarV2
+from our_system_phase2.services.compositional_grammar import (
+    CompositionalGrammarV2,
+    compositional_candidate_id,
+)
 from our_system_phase2.services.unified_capability_registry import (
     UnifiedCapabilityRegistry,
 )
@@ -74,13 +77,33 @@ def test_semantic_identity_is_order_invariant_and_lineage_reward_free(
     legacy_candidate: tuple[UnifiedCapabilityRegistry, dict],
 ) -> None:
     _, candidate = legacy_candidate
+    first_candidate = {**candidate, "seed": 1, "train_reward": 999.0}
+    first_candidate["candidate_id"] = compositional_candidate_id(
+        generator_version=str(first_candidate["generator_version"]),
+        route_id=str(first_candidate["route_id"]),
+        skeleton_id=str(first_candidate["skeleton_id"]),
+        seed=1,
+        attempt_index=int(first_candidate["attempt_index"]),
+        field_ids=tuple(map(str, first_candidate["declared_field_ids"])),
+        is_control=False,
+    )
+    second_candidate = {**candidate, "seed": 999, "train_reward": -10.0}
+    second_candidate["candidate_id"] = compositional_candidate_id(
+        generator_version=str(second_candidate["generator_version"]),
+        route_id=str(second_candidate["route_id"]),
+        skeleton_id=str(second_candidate["skeleton_id"]),
+        seed=999,
+        attempt_index=int(second_candidate["attempt_index"]),
+        field_ids=tuple(map(str, second_candidate["declared_field_ids"])),
+        is_control=False,
+    )
     first = legacy_candidate_program_v1(
-        {**candidate, "seed": 1, "train_reward": 999.0},
+        first_candidate,
         portfolio_contract=PORTFOLIO,
     )
     second = replace(
         legacy_candidate_program_v1(
-            {**candidate, "seed": 999, "train_reward": -10.0},
+            second_candidate,
             portfolio_contract=PORTFOLIO,
         ),
         nodes=tuple(reversed(first.nodes)),

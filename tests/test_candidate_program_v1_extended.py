@@ -52,6 +52,11 @@ from our_system_phase2.services.real_market_validation import frozen_replay_chan
 from our_system_phase2.services.unified_capability_registry import (
     UnifiedCapabilityRegistry,
 )
+from our_system_phase2.services.unified_discovery_generators import (
+    COMPOSITIONAL_GENERATOR_VERSION,
+    COMPOSITIONAL_V2_PROFILE,
+    RegistryDrivenGenerator,
+)
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -183,7 +188,15 @@ def test_legacy_route_preserves_registry_session_lags(program_context) -> None:
 
 def test_existing_categorical_and_supplemental_generation_lanes_replay(program_context) -> None:
     registry, grammar, _, _ = program_context
-    lane = grammar.categorical_gene_space(
+    allowlists = json.loads(ROOT_CONTRACT.read_text(encoding="utf-8"))[
+        "route_root_allowlists"
+    ]
+    production_generator = RegistryDrivenGenerator(
+        registry,
+        constructor_profile=COMPOSITIONAL_V2_PROFILE,
+        route_root_allowlist=allowlists,
+    )
+    lane = production_generator.categorical_gene_space(
         "FIRSTN_PATH",
         skeleton_id="cn.comp.v2.firstn_path.firstn_path_state",
     )
@@ -192,9 +205,13 @@ def test_existing_categorical_and_supplemental_generation_lanes_replay(program_c
         for slot, values in lane["ordered_categories_by_slot"].items()
     }
     categorical = dict(
-        grammar.propose_from_categorical_genes(
+        production_generator.propose_categorical_genes(
             "FIRSTN_PATH", genes=genes
-        ).primary
+        ).candidate
+    )
+    assert categorical["generator_version"] == COMPOSITIONAL_GENERATOR_VERSION
+    assert categorical["identity_generator_version"] == (
+        "cn_typed_compositional_grammar_v2"
     )
     categorical_program = legacy_candidate_program_v1(
         categorical, portfolio_contract=PORTFOLIO_CONTRACT_V1
@@ -1021,6 +1038,8 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
         {
             "seed": int(legacy.generation_receipt["seed"]),
             "attempt_index": int(legacy.generation_receipt["attempt_index"]),
+            "matched_control_id": legacy.generation_receipt["matched_control_id"],
+            "pair_id": legacy.generation_receipt["pair_id"],
             "proposal_route_root_field_ids": list(
                 legacy.generation_receipt["proposal_route_root_field_ids"]
             ),

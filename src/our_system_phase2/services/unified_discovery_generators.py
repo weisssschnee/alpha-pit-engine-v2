@@ -164,6 +164,7 @@ class RegistryDrivenGenerator:
         shared = {
             "generator_authority": "RegistryDrivenGenerator",
             "generator_version": self.generator_version,
+            "identity_generator_version": str(pair.primary["generator_version"]),
             "constructor_profile": self.constructor_profile,
         }
         return GeneratedPair(
@@ -246,12 +247,14 @@ class RegistryDrivenGenerator:
                 **pair.primary,
                 "generator_authority": "RegistryDrivenGenerator",
                 "generator_version": self.generator_version,
+                "identity_generator_version": str(pair.primary["generator_version"]),
                 "constructor_profile": self.constructor_profile,
             }
             control = {
                 **pair.control,
                 "generator_authority": "RegistryDrivenGenerator",
                 "generator_version": self.generator_version,
+                "identity_generator_version": str(pair.control["generator_version"]),
                 "constructor_profile": self.constructor_profile,
             }
             return GeneratedPair(primary, control)
