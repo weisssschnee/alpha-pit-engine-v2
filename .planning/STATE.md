@@ -2,7 +2,7 @@
 
 Updated: 2026-08-06
 
-Current state: `HISTORICAL_CHALLENGE_2023_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
+Current state: `HISTORICAL_CHALLENGE_2023_NEGATIVE_TYPED_PROGRAM_V1_QUALIFIED_FORWARD_B_SEALED_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,42 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Typed Candidate Program V1 non-formal representation qualified (2026-08-06)
+
+- `CN_TYPED_CANDIDATE_PROGRAM_V1` is now a qualified experimental
+  representation/compiler layer for heterogeneous multi-component candidates.
+  It reuses the unified capability registry, existing typed route compiler,
+  candidate/pair receipt gates, Phase3CM shared DAG/evaluator and frozen
+  `TOPK_10_EQUAL` portfolio authority; it creates no second generator,
+  scheduler, evaluator, reward or promotion authority.
+- Whole-program identity is reward/runtime/attempt independent and binds the
+  component semantic identities, four explicit outputs, joint clock, matched
+  control, portfolio contract and frozen component references. Proposal lineage
+  remains separately self-hashed. Deterministic grammar replay rejects forged
+  candidate, matched-control, pair or generator-provenance receipts, while the
+  same candidate reached through the raw grammar or production registry wrapper
+  has the same program identity.
+- The fixed smoke at exact implementation SHA
+  `3ad4c3dd7005d9eafb5f16a1ef5573fb818bdddf` closed all six golden fixtures in
+  fixed order: five compiled and the unregistered Billboard episode failed
+  closed. All 21 declared artifacts verified; the manifest file/payload SHA256
+  values are `939fe0c96c9f308af5b05ea63f1a2824a235f43f0250ea5971a6d51ac34dc319` /
+  `1caaca3c5e8e87c8bf9bb611df17f6fd0ada4d04e19ece93a362e82e49c45f21`.
+  Closure file/payload SHA256 values are
+  `49f267d03e06c7f6b51911abb1be3a0d3f2c31ba775280598c80f9b3cef33c45` /
+  `43057a328009caedc9290b6e83295f9e59a2aca265e6392712241b985351f9c6`.
+- Independent audit status is
+  `CN_TYPED_CANDIDATE_PROGRAM_V1_INDEPENDENT_AUDIT_PASS`, payload SHA256
+  `dfe08d08a6db1cced44d2040210f50e998c39a2887e4d216bc9df254962633ce`.
+  Full focused regression passed 176/176 and both independent review axes were
+  CLEAN. Financial evaluation and validation, holdout, historical, forward-2026
+  and Forward-B reads were zero.
+- This qualification does not claim alpha, production productivity, formal
+  search admission or promotion. The existing eight-template V0 fixed-strata
+  policy remains unchanged with no unified TPE credit. Plate, industry and
+  Billboard materialization remain fail closed; Broad Event remains frozen
+  reference only.
 
 ### Candidate Representation V0 fixed-stratified train production evidence accepted (2026-08-06)
 
@@ -2598,6 +2634,14 @@ remains unchanged. The compact receipt is
   a SHA-verified full Git bundle without changing the node's proxy authority.
 
 ## Next action
+
+Do not rebuild the registry, route compiler, DAG/evaluator, portfolio decoder or
+fixed-stratified scheduler around Candidate Program V1. The qualified V1 layer
+is non-formal and zero-financial. Any later program search requires a separate
+bounded authorization, keeps all eight template budgets fixed without shared
+TPE credit, and must first satisfy the same PIT, joint-clock, matched-control,
+identity and materialization gates. It grants no permission to open Forward-B,
+rerun historical challenge evidence or promote a candidate.
 
 The first fixed-stratified V0 production-rate canary is closed and must not be
 rerun. Do not dynamically reweight the eight strata from this one tranche:

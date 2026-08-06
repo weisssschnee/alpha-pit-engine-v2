@@ -1173,6 +1173,59 @@
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json",
         "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"
       }
+    },
+    {
+      "id": "cn_typed_candidate_program_v1",
+      "label": "CN Typed Candidate Program V1",
+      "kind": "experimental-representation",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "src/our_system_phase2/services/candidate_program_v1.py",
+        "src/our_system_phase2/services/candidate_program_execution_v1.py",
+        "src/our_system_phase2/services/candidate_program_controls_v1.py",
+        "src/our_system_phase2/services/candidate_program_clock_v1.py",
+        "runtime/cn_typed_candidate_program_v1_smoke_20260806_3ad4c3d/CN_TYPED_CANDIDATE_PROGRAM_V1_COMPLETE.json"
+      ],
+      "critical": true,
+      "semantic_role": "typed_candidate_program_representation",
+      "authority": {
+        "path": "src/our_system_phase2/services/candidate_program_v1.py",
+        "verified_sha": "3ad4c3dd7005d9eafb5f16a1ef5573fb818bdddf"
+      },
+      "contracts": [
+        {
+          "id": "typed_program_reuses_existing_authorities",
+          "type": "BOUNDARY",
+          "rule": "Candidate Program V1 is a typed representation/compiler adapter over the existing registry, route compiler, receipts, Phase3CM DAG/evaluator and TOPK_10_EQUAL portfolio policy; it is not a second search or evaluation authority.",
+          "severity": "HARD",
+          "enforced_by": "ProgramCompilerV1 and candidate program smoke verifier",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "typed_program_identity_and_clock_fail_closed",
+          "type": "ADMISSION",
+          "rule": "Program identity excludes proposal/runtime/reward lineage while deterministic generation replay, exact joint-clock coverage, PIT maturity and matched-control bindings must pass before compilation.",
+          "severity": "HARD",
+          "enforced_by": "ProgramCompilerV1",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "typed_program_zero_financial_claim_ceiling",
+          "type": "BOUNDARY",
+          "rule": "The V1 smoke qualifies representation and compilation only; it authorizes no search, financial evaluation, OOS, Forward-B access, alpha claim or promotion.",
+          "severity": "HARD",
+          "enforced_by": "CN_TYPED_CANDIDATE_PROGRAM_V1 smoke access ledger and ADR 0015",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json",
+        "evidence_sha256": "9810e97a78f2bd5750d7c52aadefc239851a3aaa9cf799ffc32c076c12a088c0",
+        "verified_at_sha": "b1ed8ae222dded95ce3a2a9ffe0b31f698a4820a"
+      },
+      "claim_badges": ["NON_FORMAL", "ZERO FINANCIAL", "NO OOS", "NO PROMOTION"]
     }
   ],
   "edges": [
@@ -1499,6 +1552,9 @@
     {"id": "evaluator_to_search_forbidden", "source": "candidate_parallel_evaluator", "target": "formal_search", "relation": "engineering_qualification", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "qualification_not_authorization", "type": "BOUNDARY", "rule": "Matched-control qualification does not start formal search or promotion.", "severity": "HARD", "enforced_by": "formal_search_freeze", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},
     {"id": "streaming_evaluator_to_search_forbidden", "source": "phase3cm_streaming_multicandidate_evaluator", "target": "formal_search", "relation": "qualification_not_execution_authority", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "streaming_stage_a_not_authorized", "type": "BOUNDARY", "rule": "Resource readiness and evaluator qualification do not authorize strict Stage A, candidate promotion or forward opening.", "severity": "HARD", "enforced_by": "formal_search_freeze", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_phase3cm_streaming_repair_20260716/CN_PHASE3CM_STREAMING_REPAIR_DECISION.json", "verified_at_sha": "a59c3956e078cd7c7861a57ec3d1d78b724c13c1"}},
     {"id": "feedback_to_memory_forbidden", "source": "matched_train_feedback", "target": "cross_epoch_memory", "relation": "persistent_write", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "no_cross_epoch_write", "type": "BOUNDARY", "rule": "This engineering run cannot persist adaptive memory across epochs or sprints.", "severity": "HARD", "enforced_by": "memory_write_gate", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_RUN_MANIFEST.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},
+    {"id": "registry_to_typed_candidate_program_v1", "source": "unified_capability_registry", "target": "cn_typed_candidate_program_v1", "relation": "authorizes_registered_typed_leaves_and_route_compilation", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "typed_program_registry_authority_reused", "type": "AUTHORITY", "rule": "Candidate Program V1 may reference only fields, representations and routes accepted by the existing unified registry and TypedRouteCompiler.", "severity": "HARD", "enforced_by": "ProgramCompilerV1", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json", "evidence_sha256": "9810e97a78f2bd5750d7c52aadefc239851a3aaa9cf799ffc32c076c12a088c0", "verified_at_sha": "b1ed8ae222dded95ce3a2a9ffe0b31f698a4820a"}},
+    {"id": "typed_candidate_program_v1_to_receipt", "source": "cn_typed_candidate_program_v1", "target": "candidate_submission_receipt", "relation": "preserves_existing_candidate_and_pair_identity_contracts", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "typed_program_receipt_compatibility", "type": "ADMISSION", "rule": "Legacy component members retain deterministic candidate, matched-control and pair identity and remain subject to the existing receipt gates.", "severity": "HARD", "enforced_by": "generation receipt replay and candidate_submission_receipt_gate", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json", "evidence_sha256": "9810e97a78f2bd5750d7c52aadefc239851a3aaa9cf799ffc32c076c12a088c0", "verified_at_sha": "b1ed8ae222dded95ce3a2a9ffe0b31f698a4820a"}},
+    {"id": "typed_candidate_program_v1_to_phase3cm", "source": "cn_typed_candidate_program_v1", "target": "phase3cm_streaming_multicandidate_evaluator", "relation": "compiles_into_existing_shared_dag_evaluation_contract", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "typed_program_no_second_evaluator", "type": "BOUNDARY", "rule": "Typed programs compile into the existing Phase3CM shared-DAG/evaluator contract; the V1 smoke performs no financial evaluation and grants no execution authority.", "severity": "HARD", "enforced_by": "ProgramCompilerV1 and SharedMultiCandidateDAGPlan", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json", "evidence_sha256": "9810e97a78f2bd5750d7c52aadefc239851a3aaa9cf799ffc32c076c12a088c0", "verified_at_sha": "b1ed8ae222dded95ce3a2a9ffe0b31f698a4820a"}},
     {"id": "shard_to_feedback_forbidden", "source": "shard_parallel_evaluation", "target": "matched_train_feedback", "relation": "shard_local_reward", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "shard_feedback_unreachable", "type": "BOUNDARY", "rule": "Shard-local portfolio rewards cannot reach Phase3CN.", "severity": "HARD", "enforced_by": "formal_shard_parallel_removal", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},
     {"id": "mean_shard_to_feedback_forbidden", "source": "mean_shard_reward_fallback", "target": "matched_train_feedback", "relation": "mean_shard_reward", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "mean_shard_feedback_unreachable", "type": "BOUNDARY", "rule": "Mean-of-shard reward fallback cannot reach Phase3CN.", "severity": "HARD", "enforced_by": "phase3cn_matched_source_gate", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}}
   ],
@@ -1515,6 +1571,7 @@
     {"semantic_role": "development_search_policy_authority", "authoritative_component": "cn_development_search_policy", "authority_class": "FORMAL", "decision_ref": "docs/adr/0008-hybrid-tpe-availability-development-search-policy.md"},
     {"semantic_role": "shared_node_resource_authority", "authoritative_component": "cn_shared_node_resource_authority", "authority_class": "FORMAL", "decision_ref": "docs/adr/0012-shared-node-alpha-compute-control-plane.md"},
     {"semantic_role": "candidate_execution_clock_capability_authority", "authoritative_component": "candidate_execution_clock_capability", "authority_class": "FORMAL", "decision_ref": "docs/adr/0012-shared-node-alpha-compute-control-plane.md"},
-    {"semantic_role": "finalist_execution_evidence_authority", "authoritative_component": "a_share_finalist_replay_contract", "authority_class": "FORMAL", "decision_ref": "docs/adr/0013-primary-absolute-economics-and-terminal-exposure-finalist-admission.md"}
+    {"semantic_role": "finalist_execution_evidence_authority", "authoritative_component": "a_share_finalist_replay_contract", "authority_class": "FORMAL", "decision_ref": "docs/adr/0013-primary-absolute-economics-and-terminal-exposure-finalist-admission.md"},
+    {"semantic_role": "typed_candidate_program_representation", "authoritative_component": "cn_typed_candidate_program_v1", "authority_class": "NON_FORMAL", "decision_ref": "docs/adr/0015-typed-candidate-program-representation.md"}
   ]
 }
