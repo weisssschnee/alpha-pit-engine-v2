@@ -99,6 +99,14 @@ class CapabilityField:
     matched_control_required: bool = False
     metadata: Mapping[str, Any] | None = None
 
+    @property
+    def revision_policy(self) -> str:
+        """Deterministic no-future revision authority derived from PIT status."""
+
+        if self.pit_status == "PIT_CONTRACT_UNRESOLVED":
+            return "PIT_CONTRACT_UNRESOLVED"
+        return f"REGISTRY_{self.pit_status}_NO_FUTURE_REVISION"
+
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "CapabilityField":
         known = {

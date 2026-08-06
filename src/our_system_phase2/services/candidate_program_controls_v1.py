@@ -11,6 +11,7 @@ from our_system_phase2.services.candidate_program_v1 import (
     MatchedControlOperationV1,
     NUMERIC_SEMANTIC_TYPES,
     TypedNodeSpec,
+    typed_node_execution_signature_v1,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
 
@@ -139,16 +140,32 @@ def _assert_operation_semantics(
         raise ValueError(
             "REPLACE_WITH_PLACEBO requires a deterministic placebo authority"
         )
+    if operation.operation == "REPLACE_WITH_PLACEBO" and (
+        typed_node_execution_signature_v1(primary)
+        == typed_node_execution_signature_v1(control)
+    ):
+        raise ValueError(
+            "REPLACE_WITH_PLACEBO must change compiled execution semantics"
+        )
     if operation.operation == "REPLACE_WITH_WRONG_LAG_CONTROL":
         wrong_lag = control.parameters.get("wrong_lag_sessions")
         if (
             not operation.diagnostic_only
             or not isinstance(wrong_lag, int)
             or isinstance(wrong_lag, bool)
-            or wrong_lag == 0
+            or wrong_lag <= 0
+            or control.node_type != "LAG"
+            or int(control.parameters.get("window") or 0) != wrong_lag
         ):
             raise ValueError(
-                "wrong-lag control requires a nonzero diagnostic lag shift"
+                "wrong-lag control requires an explicit positive diagnostic LAG"
+            )
+        if (
+            typed_node_execution_signature_v1(primary)
+            == typed_node_execution_signature_v1(control)
+        ):
+            raise ValueError(
+                "wrong-lag control must change compiled execution semantics"
             )
     if operation.operation == "BASE_PAYLOAD_ONLY" and not bool(
         operation.replacement.get("base_payload_authority")

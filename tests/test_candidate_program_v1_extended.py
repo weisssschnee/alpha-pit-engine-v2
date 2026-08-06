@@ -199,6 +199,35 @@ def test_type_unit_future_and_unregistered_plate_fail_closed(program_context) ->
     with pytest.raises(ValueError, match="future revision"):
         ProgramCompilerV1(registry).compile(future)
 
+    registered = next(
+        node for node in b.nodes if node.node_id == "financing_net_buy"
+    )
+    spoofed_clock = replace(
+        registered,
+        parameters={
+            **dict(registered.parameters),
+            "source_lag": 0,
+            "revision_policy": "NO_FUTURE_REVISION",
+        },
+        temporal_semantics={
+            **dict(registered.temporal_semantics),
+            "source_lag": 0,
+            "revision_policy": "NO_FUTURE_REVISION",
+        },
+        observable_clock="same_bar_close",
+        maturity="same_bar_close",
+    )
+    with pytest.raises(ValueError, match="drifts from registry authority"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                b,
+                nodes=tuple(
+                    spoofed_clock if node.node_id == registered.node_id else node
+                    for node in b.nodes
+                ),
+            )
+        )
+
     plate = TypedNodeSpec(
         node_id="unauthorized_plate",
         node_type="PLATE_FIELD",
@@ -370,7 +399,7 @@ def test_control_operation_semantics_are_enforced_and_base_payload_is_real(progr
     for operation_name, message, diagnostic_only in (
         ("ABLATE_NODE", "typed identity constant", False),
         ("REPLACE_WITH_PLACEBO", "deterministic placebo authority", False),
-        ("REPLACE_WITH_WRONG_LAG_CONTROL", "nonzero diagnostic lag shift", True),
+        ("REPLACE_WITH_WRONG_LAG_CONTROL", "explicit positive diagnostic LAG", True),
     ):
         mislabeled_control = replace(
             primary,
@@ -387,6 +416,53 @@ def test_control_operation_semantics_are_enforced_and_base_payload_is_real(progr
         )
         with pytest.raises(ValueError, match=message):
             construct_matched_control_program_v1(mislabeled_control)
+
+    slope = next(node for node in primary.nodes if node.node_id == "net_buy_slope_5")
+    same_placebo = {
+        **slope.semantic_payload(),
+        "parameters": {
+            **dict(slope.parameters),
+            "placebo_authority": "synthetic_test_authority",
+            "placebo_id": "same_execution_fake",
+            "deterministic_placebo": True,
+        },
+    }
+    fake_placebo = replace(
+        primary,
+        matched_control_plan=replace(
+            primary.matched_control_plan,
+            operations=(
+                MatchedControlOperationV1(
+                    operation="REPLACE_WITH_PLACEBO",
+                    target_node_ids=(slope.node_id,),
+                    replacement={"node": same_placebo},
+                ),
+            ),
+        ),
+    )
+    with pytest.raises(ValueError, match="change compiled execution semantics"):
+        construct_matched_control_program_v1(fake_placebo)
+
+    same_wrong_lag = {
+        **slope.semantic_payload(),
+        "parameters": {**dict(slope.parameters), "wrong_lag_sessions": 99},
+    }
+    fake_wrong_lag = replace(
+        primary,
+        matched_control_plan=replace(
+            primary.matched_control_plan,
+            operations=(
+                MatchedControlOperationV1(
+                    operation="REPLACE_WITH_WRONG_LAG_CONTROL",
+                    target_node_ids=(slope.node_id,),
+                    replacement={"node": same_wrong_lag},
+                    diagnostic_only=True,
+                ),
+            ),
+        ),
+    )
+    with pytest.raises(ValueError, match="explicit positive diagnostic LAG"):
+        construct_matched_control_program_v1(fake_wrong_lag)
 
 
 def test_semantic_type_checks_reject_mask_arithmetic_and_bad_cs_output(program_context) -> None:
@@ -437,6 +513,43 @@ def test_semantic_type_checks_reject_mask_arithmetic_and_bad_cs_output(program_c
     with pytest.raises(ValueError, match="multiply requires numeric inputs"):
         ProgramCompilerV1(registry).compile(
             replace(primary, nodes=primary.nodes + (bad_multiply,))
+        )
+
+    bad_multiply_unit = replace(
+        bad_multiply,
+        node_id="bad_multiply_unit",
+        output_semantic_type="STOCK_VALUE",
+    )
+    with pytest.raises(ValueError, match="multiply output unit drift"):
+        ProgramCompilerV1(registry).compile(
+            replace(primary, nodes=primary.nodes + (bad_multiply_unit,))
+        )
+
+    bad_lag_output = TypedNodeSpec(
+        node_id="bad_lag_output",
+        node_type="LAG",
+        input_node_ids=(net_buy.node_id,),
+        parameters={"window": 1},
+        output_semantic_type="STOCK_SCORE",
+        entity_scope="MARKET",
+        temporal_semantics={"kind": "FIXED_PROGRAM_OPERATOR"},
+        observable_clock=net_buy.observable_clock,
+        maturity=net_buy.maturity,
+        unit_signature="cubic_meters",
+        support_unit="event",
+    )
+    with pytest.raises(ValueError, match="preserve typed coordinate contracts"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                primary,
+                nodes=primary.nodes + (bad_lag_output,),
+                outputs=ProgramOutputSpec(
+                    stock_score_node_id=bad_lag_output.node_id,
+                    eligibility_mask_node_id=primary.outputs.eligibility_mask_node_id,
+                    exposure_multiplier_node_id=primary.outputs.exposure_multiplier_node_id,
+                    veto_mask_node_id=primary.outputs.veto_mask_node_id,
+                ),
+            )
         )
 
     bad_filter = TypedNodeSpec(

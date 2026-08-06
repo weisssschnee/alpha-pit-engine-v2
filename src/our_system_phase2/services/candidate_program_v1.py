@@ -225,6 +225,21 @@ MASK_SEMANTIC_TYPES = frozenset(
 )
 
 
+def _support_unit_matches_entity(entity_scope: str, support_unit: str) -> bool:
+    normalized = str(support_unit).lower()
+    required_fragments = {
+        "STOCK": ("stock",),
+        "MARKET": ("market",),
+        "INDUSTRY": ("industry", "group"),
+        "PLATE": ("plate", "group"),
+        "EVENT": ("event", "episode", "disclosure"),
+        "CONSTANT": ("constant",),
+    }.get(entity_scope, ())
+    return bool(required_fragments) and any(
+        fragment in normalized for fragment in required_fragments
+    )
+
+
 def _canonicalize(value: Any) -> Any:
     if isinstance(value, Mapping):
         return {
@@ -822,6 +837,22 @@ def _node_expression(
     )
 
 
+def typed_node_execution_signature_v1(node: TypedNodeSpec) -> str:
+    """Hash only the semantics consumed by the existing expression evaluator."""
+
+    parent_expressions = tuple(
+        f"@parent:{parent_id}" for parent_id in node.input_node_ids
+    )
+    return stable_hash(
+        {
+            "compiled_expression": _node_expression(node, parent_expressions),
+            "output_semantic_type": node.output_semantic_type,
+            "entity_scope": node.entity_scope,
+            "unit_signature": node.unit_signature,
+        }
+    )
+
+
 def _validate_node_semantics(
     node: TypedNodeSpec,
     parents: Sequence[TypedNodeSpec],
@@ -879,6 +910,49 @@ def _validate_node_semantics(
             raise ValueError(
                 f"{node.node_type} remains fail-closed without PIT materialization authority"
             )
+        authoritative_contract = {
+            "observable_clock": field.observable_clock,
+            "maturity": field.maturity_rule,
+            "source_lag": field.source_lag,
+            "source_lag_unit": field.source_lag_unit,
+            "revision_policy": field.revision_policy,
+            "pit_status": field.pit_status,
+            "support_unit": field.support_unit,
+            "source_field_id": field.source_field_id,
+            "representation_id": field.representation_id,
+            "temporal_kind": field.temporal_semantics,
+        }
+        declared_contract = {
+            "observable_clock": node.observable_clock,
+            "maturity": node.maturity,
+            "source_lag": node.parameters.get("source_lag"),
+            "source_lag_unit": node.parameters.get("source_lag_unit"),
+            "revision_policy": node.parameters.get("revision_policy"),
+            "pit_status": node.parameters.get("pit_status"),
+            "support_unit": node.support_unit,
+            "source_field_id": node.parameters.get("source_field_id"),
+            "representation_id": node.parameters.get("representation_id"),
+            "temporal_kind": node.temporal_semantics.get("kind"),
+        }
+        drift = sorted(
+            key
+            for key, value in authoritative_contract.items()
+            if str(declared_contract.get(key)) != str(value)
+        )
+        temporal_lag_drift = sorted(
+            key
+            for key, value in {
+                "source_lag": field.source_lag,
+                "source_lag_unit": field.source_lag_unit,
+                "revision_policy": field.revision_policy,
+            }.items()
+            if str(node.temporal_semantics.get(key)) != str(value)
+        )
+        if drift or temporal_lag_drift:
+            raise ValueError(
+                "program field contract drifts from registry authority: "
+                f"declared={drift}, temporal={temporal_lag_drift}"
+            )
     if node.node_type == "EVENT_EPISODE":
         if str(node.parameters.get("vote_policy") or "") != "ONE_EPISODE_ONE_VOTE":
             raise ValueError("event episode requires one-episode-one-vote")
@@ -918,6 +992,50 @@ def _validate_node_semantics(
         )
         if str(node.parameters["frozen_inventory_hash"]) != registered_inventory_hash:
             raise ValueError("frozen Broad Event inventory hash is not registry-authorized")
+        frozen_contract = {
+            "observable_clock": field.observable_clock,
+            "maturity": field.maturity_rule,
+            "source_lag": field.source_lag,
+            "source_lag_unit": field.source_lag_unit,
+            "revision_policy": "FROZEN_INVENTORY_NO_FUTURE_REVISION",
+            "pit_status": field.pit_status,
+            "support_unit": field.support_unit,
+            "source_field_id": field.source_field_id,
+            "representation_id": field.representation_id,
+            "temporal_kind": "FROZEN_EPISODE_REPLAY",
+            "temporal_source_lag": field.source_lag,
+            "temporal_source_lag_unit": field.source_lag_unit,
+            "temporal_revision_policy": "FROZEN_INVENTORY_NO_FUTURE_REVISION",
+        }
+        frozen_declared = {
+            "observable_clock": node.observable_clock,
+            "maturity": node.maturity,
+            "source_lag": node.parameters.get("source_lag"),
+            "source_lag_unit": node.parameters.get("source_lag_unit"),
+            "revision_policy": node.parameters.get("revision_policy"),
+            "pit_status": node.parameters.get("pit_status"),
+            "support_unit": node.support_unit,
+            "source_field_id": node.parameters.get("source_field_id"),
+            "representation_id": node.parameters.get("representation_id"),
+            "temporal_kind": node.temporal_semantics.get("kind"),
+            "temporal_source_lag": node.temporal_semantics.get("source_lag"),
+            "temporal_source_lag_unit": node.temporal_semantics.get(
+                "source_lag_unit"
+            ),
+            "temporal_revision_policy": node.temporal_semantics.get(
+                "revision_policy"
+            ),
+        }
+        frozen_drift = sorted(
+            key
+            for key, value in frozen_contract.items()
+            if str(frozen_declared.get(key)) != str(value)
+        )
+        if frozen_drift:
+            raise ValueError(
+                "frozen Broad Event contract drifts from registry authority: "
+                f"{frozen_drift}"
+            )
 
     if node.node_type in {"CSRANK", "CS_ZSCORE", "WINSORIZE", "TOP_QUANTILE_MASK"}:
         if (
@@ -946,16 +1064,49 @@ def _validate_node_semantics(
     }:
         if len(parents) != 1 or parents[0].output_semantic_type not in NUMERIC_SEMANTIC_TYPES:
             raise ValueError("temporal operators require exactly one numeric input")
+        parent = parents[0]
+        expected_unit = (
+            "dimensionless"
+            if node.node_type in {"SELF_ZSCORE", "SELF_QUANTILE"}
+            else parent.unit_signature
+        )
+        if (
+            node.output_semantic_type != parent.output_semantic_type
+            or node.entity_scope != parent.entity_scope
+            or node.unit_signature != expected_unit
+            or not _support_unit_matches_entity(
+                node.entity_scope, node.support_unit
+            )
+        ):
+            raise ValueError(
+                "temporal operator output must preserve typed coordinate contracts"
+            )
     if node.node_type == "PERSISTENCE":
         if len(parents) != 1 or parents[0].output_semantic_type not in (
             MASK_SEMANTIC_TYPES | {"EVENT_EPISODE", "STATE_VALUE"}
         ):
             raise ValueError("persistence requires one typed state/event input")
+        if (
+            node.output_semantic_type != "STATE_VALUE"
+            or node.entity_scope
+            not in {parents[0].entity_scope, "STOCK" if parents[0].entity_scope == "EVENT" else parents[0].entity_scope}
+            or node.unit_signature != "dimensionless"
+            or node.support_unit != parents[0].support_unit
+        ):
+            raise ValueError("persistence output contracts are incompatible")
     if node.node_type in {"STATE_AGE", "TIME_SINCE"}:
         if len(parents) != 1 or parents[0].output_semantic_type not in (
             MASK_SEMANTIC_TYPES | {"EVENT_EPISODE", "STATE_VALUE"}
         ):
             raise ValueError("age/time-since requires one typed state/event input")
+        if (
+            node.output_semantic_type != "STATE_VALUE"
+            or node.entity_scope
+            not in {parents[0].entity_scope, "STOCK" if parents[0].entity_scope == "EVENT" else parents[0].entity_scope}
+            or node.unit_signature != "sessions"
+            or node.support_unit != parents[0].support_unit
+        ):
+            raise ValueError("age/time-since output contracts are incompatible")
     if node.node_type in {"FIRST_HIT", "EVENT_AGE", "EVENT_COUNT", "EVENT_DIRECTION", "REPEATED_EVENT_SUPPRESSION"}:
         if len(parents) != 1:
             raise ValueError("unary event operator requires exactly one input")
@@ -963,6 +1114,45 @@ def _validate_node_semantics(
             MASK_SEMANTIC_TYPES | {"EVENT_EPISODE", "STATE_VALUE"}
         ):
             raise ValueError("event operator requires typed episode/state input")
+        parent = parents[0]
+        compatible_entities = {
+            parent.entity_scope,
+            "STOCK" if parent.entity_scope == "EVENT" else parent.entity_scope,
+        }
+        if node.node_type in {"FIRST_HIT", "REPEATED_EVENT_SUPPRESSION"}:
+            expected_mask = {
+                "STOCK": "STOCK_MASK",
+                "MARKET": "MARKET_MASK",
+                "INDUSTRY": "GROUP_MASK",
+                "PLATE": "GROUP_MASK",
+            }.get(node.entity_scope)
+            valid_output = (
+                node.output_semantic_type == expected_mask
+                and node.unit_signature == "boolean"
+            )
+        elif node.node_type == "EVENT_AGE":
+            valid_output = (
+                node.output_semantic_type == "STATE_VALUE"
+                and node.unit_signature == "sessions"
+            )
+        elif node.node_type == "EVENT_COUNT":
+            valid_output = (
+                node.output_semantic_type == "STATE_VALUE"
+                and node.unit_signature == "count"
+            )
+        else:
+            valid_output = (
+                node.output_semantic_type in NUMERIC_SEMANTIC_TYPES
+                and node.unit_signature == "dimensionless"
+            )
+        if (
+            not valid_output
+            or node.entity_scope not in compatible_entities
+            or not _support_unit_matches_entity(
+                node.entity_scope, node.support_unit
+            )
+        ):
+            raise ValueError("unary event output contracts are incompatible")
     if node.node_type in {"EVENT_WINDOW", "PRE_EVENT_PATH", "POST_EVENT_STATE"}:
         if len(parents) != 2:
             raise ValueError("event-window operator requires payload and episode inputs")
@@ -973,6 +1163,14 @@ def _validate_node_semantics(
             )
         ):
             raise ValueError("event-window inputs have incompatible semantic types")
+        payload = parents[0]
+        if (
+            node.output_semantic_type != payload.output_semantic_type
+            or node.entity_scope != payload.entity_scope
+            or node.unit_signature != payload.unit_signature
+            or node.support_unit != payload.support_unit
+        ):
+            raise ValueError("event-window output must preserve payload contracts")
     if node.node_type in {"EPISODE_INTERSECT", "EPISODE_UNION"}:
         if len(parents) < 2 or not all(
             parent.output_semantic_type in (
@@ -981,6 +1179,17 @@ def _validate_node_semantics(
             for parent in parents
         ):
             raise ValueError("episode set operator requires at least two inputs")
+        if (
+            len({parent.output_semantic_type for parent in parents}) != 1
+            or len({parent.entity_scope for parent in parents}) != 1
+            or len({parent.unit_signature for parent in parents}) != 1
+            or len({parent.support_unit for parent in parents}) != 1
+            or node.output_semantic_type != parents[0].output_semantic_type
+            or node.entity_scope != parents[0].entity_scope
+            or node.unit_signature != parents[0].unit_signature
+            or node.support_unit != parents[0].support_unit
+        ):
+            raise ValueError("episode set output contracts are incompatible")
     if node.node_type in {
         "STATE",
         "BREADTH_RATIO",
@@ -992,8 +1201,44 @@ def _validate_node_semantics(
             parent.output_semantic_type in NUMERIC_SEMANTIC_TYPES for parent in parents
         ):
             raise ValueError("state operator requires one numeric input or a numeric comparison")
-    if node.node_type in {"TRANSITION", "STATE_PERSISTENCE"} and len(parents) != 1:
-        raise ValueError("transition/state-persistence requires exactly one input")
+        expected_mask = {
+            "STOCK": "STOCK_MASK",
+            "MARKET": "MARKET_MASK",
+            "INDUSTRY": "GROUP_MASK",
+            "PLATE": "GROUP_MASK",
+        }.get(node.entity_scope)
+        if (
+            node.output_semantic_type != expected_mask
+            or node.entity_scope != parents[0].entity_scope
+            or node.unit_signature != "boolean"
+        ):
+            raise ValueError("state operator output contracts are incompatible")
+    if node.node_type in {"TRANSITION", "STATE_PERSISTENCE"}:
+        if len(parents) != 1:
+            raise ValueError("transition/state-persistence requires exactly one input")
+        parent = parents[0]
+        if node.node_type == "TRANSITION":
+            expected_mask = {
+                "STOCK": "STOCK_MASK",
+                "MARKET": "MARKET_MASK",
+                "INDUSTRY": "GROUP_MASK",
+                "PLATE": "GROUP_MASK",
+            }.get(node.entity_scope)
+            valid_output = (
+                node.output_semantic_type == expected_mask
+                and node.unit_signature == "boolean"
+            )
+        else:
+            valid_output = (
+                node.output_semantic_type == "STATE_VALUE"
+                and node.unit_signature == "sessions"
+            )
+        if (
+            not valid_output
+            or node.entity_scope != parent.entity_scope
+            or node.support_unit != parent.support_unit
+        ):
+            raise ValueError("transition/state-persistence output contracts are incompatible")
     if node.node_type in {"ADD", "SUBTRACT", "MIN", "MAX"}:
         if (
             len(parents) < 2
@@ -1023,7 +1268,7 @@ def _validate_node_semantics(
             for parent in parents
             if parent.unit_signature not in {"dimensionless", "boolean"}
         ]
-        if substantive and node.unit_signature not in {substantive[0], "*".join(substantive)}:
+        if substantive and node.unit_signature != "*".join(substantive):
             raise ValueError("multiply output unit drift")
     if node.node_type == "SAFE_DIVIDE":
         if (
