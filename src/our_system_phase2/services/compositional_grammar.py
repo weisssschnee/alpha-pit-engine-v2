@@ -184,6 +184,15 @@ _ROUTE_CLOCKS = {
 }
 
 
+def route_clock_contract(route_id: str) -> tuple[str, str]:
+    """Return the frozen route-skeleton observable and maturity clocks."""
+
+    try:
+        return _ROUTE_CLOCKS[str(route_id)]
+    except KeyError as exc:
+        raise ValueError(f"unknown typed route clock contract: {route_id}") from exc
+
+
 _DECLARATIONS: dict[str, tuple[tuple[str, str, tuple[str, ...], str, str, int], ...]] = {
     "MINUTE_STATIC": (
         ("normalized_level", "cross-sectional normalization exposes relative minute state", ("PRIMARY",), "dimensionless", "magnitude_to_sign", 3),

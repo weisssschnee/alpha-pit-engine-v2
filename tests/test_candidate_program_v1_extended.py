@@ -726,6 +726,10 @@ def test_intraday_adapter_cannot_bypass_route_or_leaf_authority(program_context)
         replace(node, component_route_provenance=("MINUTE_STATIC",)),
         replace(node, observable_clock="same_bar_close"),
         replace(node, maturity="same_bar_close"),
+        replace(node, output_semantic_type="STOCK_SCORE"),
+        replace(node, entity_scope="MARKET"),
+        replace(node, unit_signature="cubic_meters"),
+        replace(node, temporal_semantics={"kind": "SPOOFED"}),
     )
     for drifted in drifts:
         with pytest.raises(ValueError, match="drift"):
@@ -746,6 +750,10 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
         replace(legacy, component_route_provenance=("SLOW_TEMPORAL_CHANGE",)),
         replace(legacy, observable_clock="same_bar_close"),
         replace(legacy, maturity="same_bar_close"),
+        replace(legacy, output_semantic_type="STOCK_VALUE"),
+        replace(legacy, entity_scope="MARKET"),
+        replace(legacy, unit_signature="cubic_meters"),
+        replace(legacy, temporal_semantics={"kind": "SPOOFED"}),
         replace(
             legacy,
             parameters={**dict(legacy.parameters), "physical_leaf_ids": ["ret_1m"]},
@@ -762,6 +770,53 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
                     ),
                 )
             )
+
+    missing_receipt = dict(legacy.parameters["candidate"])
+    for key in (
+        "exact_identity",
+        "canonical_identity",
+        "source_field_ids",
+        "representation_ids",
+    ):
+        missing_receipt.pop(key, None)
+    omitted = replace(
+        legacy,
+        parameters={**dict(legacy.parameters), "candidate": missing_receipt},
+        source_lineage=(),
+    )
+    with pytest.raises(ValueError, match="required route receipt bindings"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                program,
+                nodes=tuple(
+                    omitted if node.node_id == legacy.node_id else node
+                    for node in program.nodes
+                ),
+            )
+        )
+
+    spoofed_clock_candidate = {
+        **dict(legacy.parameters["candidate"]),
+        "clock_contract": "same_bar_close",
+    }
+    spoofed_clock = replace(
+        legacy,
+        parameters={
+            **dict(legacy.parameters),
+            "candidate": spoofed_clock_candidate,
+        },
+        observable_clock="same_bar_close",
+    )
+    with pytest.raises(ValueError, match="candidate observable-clock drift"):
+        ProgramCompilerV1(registry).compile(
+            replace(
+                program,
+                nodes=tuple(
+                    spoofed_clock if node.node_id == legacy.node_id else node
+                    for node in program.nodes
+                ),
+            )
+        )
 
 
 def test_authorized_joint_fixtures_execute_on_typed_synthetic_panel(program_context) -> None:

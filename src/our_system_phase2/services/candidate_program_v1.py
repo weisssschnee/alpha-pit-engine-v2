@@ -18,6 +18,7 @@ from our_system_phase2.services.candidate_materialization_requirements import (
     PhysicalLeafResolution,
     resolve_required_physical_leaves,
 )
+from our_system_phase2.services.compositional_grammar import route_clock_contract
 from our_system_phase2.services.phase3cm_streaming_dag import (
     SharedMultiCandidateDAGPlan,
 )
@@ -1538,7 +1539,10 @@ def legacy_candidate_program_v1(
         },
         output_semantic_type="STOCK_SCORE",
         entity_scope="STOCK",
-        temporal_semantics={"kind": "LEGACY_TYPED_ROUTE_EXPRESSION"},
+        temporal_semantics={
+            "kind": "LEGACY_TYPED_ROUTE_EXPRESSION",
+            "uses_future_revision": False,
+        },
         observable_clock=clock,
         maturity=maturity,
         unit_signature=str(component.get("unit_signature") or "dimensionless"),
@@ -1641,19 +1645,36 @@ class ProgramCompilerV1:
         )
         if verdict.canonical_expression != expected_canonical:
             raise ValueError(f"{node.node_type} canonical expression drift")
-        expected_exact = str(candidate.get("exact_identity") or "")
-        if expected_exact and verdict.exact_identity != expected_exact:
+        required_receipt_keys = (
+            "exact_identity",
+            "canonical_identity",
+            "field_ids",
+            "source_field_ids",
+            "representation_ids",
+            "clock_contract",
+            "maturity_contract",
+        )
+        missing_receipt_keys = tuple(
+            key for key in required_receipt_keys if not candidate.get(key)
+        )
+        if missing_receipt_keys:
+            raise ValueError(
+                f"{node.node_type} lacks required route receipt bindings: "
+                f"{missing_receipt_keys}"
+            )
+        expected_exact = str(candidate["exact_identity"])
+        if verdict.exact_identity != expected_exact:
             raise ValueError(f"{node.node_type} exact identity drift")
-        expected_canonical_id = str(candidate.get("canonical_identity") or "")
-        if expected_canonical_id and verdict.canonical_identity != expected_canonical_id:
+        expected_canonical_id = str(candidate["canonical_identity"])
+        if verdict.canonical_identity != expected_canonical_id:
             raise ValueError(f"{node.node_type} canonical identity drift")
         for key, authoritative in (
             ("field_ids", verdict.field_ids),
             ("source_field_ids", verdict.source_field_ids),
             ("representation_ids", verdict.representation_ids),
         ):
-            declared = candidate.get(key)
-            if declared is not None and tuple(sorted(map(str, declared))) != tuple(
+            declared = candidate[key]
+            if tuple(sorted(map(str, declared))) != tuple(
                 sorted(map(str, authoritative))
             ):
                 raise ValueError(f"{node.node_type} {key} drift")
@@ -1662,7 +1683,15 @@ class ProgramCompilerV1:
             resolution.physical_leaf_ids
         ):
             raise ValueError(f"{node.node_type} physical leaf binding drift")
-        if tuple(sorted(node.source_lineage)) != tuple(resolution.logical_identity_ids):
+        authoritative_lineage = set(map(str, verdict.source_field_ids)) | set(
+            map(str, verdict.representation_ids)
+        )
+        if verdict.route_id == "INTRADAY_STATE_TRANSITION":
+            authoritative_lineage.add(str(candidate.get("claimed_state_field_id") or ""))
+        authoritative_lineage.discard("")
+        if tuple(resolution.logical_identity_ids) != tuple(sorted(authoritative_lineage)):
+            raise ValueError(f"{node.node_type} candidate lineage receipt drift")
+        if tuple(sorted(node.source_lineage)) != tuple(sorted(authoritative_lineage)):
             raise ValueError(f"{node.node_type} source lineage drift")
         if tuple(node.component_route_provenance) != (verdict.route_id,):
             raise ValueError(f"{node.node_type} route provenance drift")
@@ -1670,13 +1699,60 @@ class ProgramCompilerV1:
             raise ValueError(f"{node.node_type} support-unit drift")
         if node.maturity != verdict.maturity_rule:
             raise ValueError(f"{node.node_type} maturity drift")
-        expected_clock = str(
-            candidate.get("clock_contract")
-            or candidate.get("maturity_contract")
-            or verdict.maturity_rule
+        expected_clock, expected_maturity_contract = route_clock_contract(
+            verdict.route_id
         )
+        if str(candidate["clock_contract"]) != expected_clock:
+            raise ValueError(f"{node.node_type} candidate observable-clock drift")
+        if str(candidate["maturity_contract"]) != expected_maturity_contract:
+            raise ValueError(f"{node.node_type} candidate maturity-contract drift")
         if node.observable_clock != expected_clock:
             raise ValueError(f"{node.node_type} observable-clock drift")
+        if node.node_type == "STATE_REPRESENTATION":
+            typed_contract = {
+                "output_semantic_type": "STATE_VALUE",
+                "entity_scope": "STOCK",
+                "unit_signature": "state",
+                "temporal_semantics": {
+                    "kind": "EXISTING_INTRADAY_STATE",
+                    "uses_future_revision": False,
+                },
+            }
+        else:
+            if verdict.route_id in {
+                "INTRADAY_STATE_TRANSITION",
+                "BROAD_EVENT_FROZEN_ENTRY",
+            }:
+                raise ValueError(
+                    "LEGACY_CANDIDATE_COMPONENT may not replace a dedicated "
+                    f"{verdict.route_id} adapter"
+                )
+            typed_contract = {
+                "output_semantic_type": "STOCK_SCORE",
+                "entity_scope": "STOCK",
+                "unit_signature": str(
+                    candidate.get("unit_signature") or "dimensionless"
+                ),
+                "temporal_semantics": {
+                    "kind": "LEGACY_TYPED_ROUTE_EXPRESSION",
+                    "uses_future_revision": False,
+                },
+            }
+        declared_typed_contract = {
+            "output_semantic_type": node.output_semantic_type,
+            "entity_scope": node.entity_scope,
+            "unit_signature": node.unit_signature,
+            "temporal_semantics": _canonicalize(dict(node.temporal_semantics)),
+        }
+        typed_drift = sorted(
+            key
+            for key, value in typed_contract.items()
+            if declared_typed_contract[key] != _canonicalize(value)
+        )
+        if typed_drift:
+            raise ValueError(
+                f"{node.node_type} typed execution contract drift: {typed_drift}"
+            )
         return candidate, verdict, resolution
 
     def compile(self, spec: CandidateProgramSpecV1) -> CompiledCandidateProgramV1:
