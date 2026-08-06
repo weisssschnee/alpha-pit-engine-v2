@@ -204,6 +204,11 @@ def test_existing_categorical_and_supplemental_generation_lanes_replay(program_c
         slot: str(values[0])
         for slot, values in lane["ordered_categories_by_slot"].items()
     }
+    raw_categorical = dict(
+        grammar.propose_from_categorical_genes(
+            "FIRSTN_PATH", genes=genes
+        ).primary
+    )
     categorical = dict(
         production_generator.propose_categorical_genes(
             "FIRSTN_PATH", genes=genes
@@ -213,15 +218,35 @@ def test_existing_categorical_and_supplemental_generation_lanes_replay(program_c
     assert categorical["identity_generator_version"] == (
         "cn_typed_compositional_grammar_v2"
     )
+    raw_program = legacy_candidate_program_v1(
+        raw_categorical, portfolio_contract=PORTFOLIO_CONTRACT_V1
+    )
     categorical_program = legacy_candidate_program_v1(
         categorical, portfolio_contract=PORTFOLIO_CONTRACT_V1
     )
+    assert raw_program.program_id == categorical_program.program_id
+    assert raw_program.semantic_program_hash == categorical_program.semantic_program_hash
     categorical_compiled = ProgramCompilerV1(registry).compile(
         categorical_program
     )
     assert categorical_compiled.legacy_component_verdicts[0][
         "candidate_id"
     ] == categorical["candidate_id"]
+
+    for drift in (
+        {"matched_control_id": "cn.comp.forged.control"},
+        {"pair_id": "cn.pair.forged"},
+        {"generator_version": "forged_trusted_wrapper_v99"},
+    ):
+        with pytest.raises(
+            ValueError,
+            match="deterministic grammar replay drift|unregistered generator provenance",
+        ):
+            tampered_program = legacy_candidate_program_v1(
+                {**categorical, **drift},
+                portfolio_contract=PORTFOLIO_CONTRACT_V1,
+            )
+            ProgramCompilerV1(registry).compile(tampered_program)
 
     supplemental_grammar = CompositionalGrammarV2(registry)
     supplemental = dict(
@@ -1026,7 +1051,9 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
 
     forged_candidate = dict(fully_relabeled_candidate)
     forged_candidate["candidate_id"] = compositional_candidate_id(
-        generator_version=str(forged_candidate["generator_version"]),
+        generator_version=str(
+            legacy.generation_receipt["identity_generator_version"]
+        ),
         route_id=str(forged_candidate["route_id"]),
         skeleton_id=str(forged_candidate["skeleton_id"]),
         seed=int(legacy.generation_receipt["seed"]),
@@ -1040,6 +1067,16 @@ def test_legacy_leaf_contract_is_bound_to_existing_route_verdict(program_context
             "attempt_index": int(legacy.generation_receipt["attempt_index"]),
             "matched_control_id": legacy.generation_receipt["matched_control_id"],
             "pair_id": legacy.generation_receipt["pair_id"],
+            "generator_authority": legacy.generation_receipt[
+                "generator_authority"
+            ],
+            "generator_version": legacy.generation_receipt["generator_version"],
+            "identity_generator_version": legacy.generation_receipt[
+                "identity_generator_version"
+            ],
+            "constructor_profile": legacy.generation_receipt[
+                "constructor_profile"
+            ],
             "proposal_route_root_field_ids": list(
                 legacy.generation_receipt["proposal_route_root_field_ids"]
             ),

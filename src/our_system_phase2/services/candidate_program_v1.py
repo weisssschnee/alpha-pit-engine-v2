@@ -20,6 +20,8 @@ from our_system_phase2.services.candidate_materialization_requirements import (
 )
 from our_system_phase2.services.compositional_grammar import (
     CompositionalGrammarV2,
+    GRAMMAR_VERSION,
+    SUPPLEMENTAL_GRAMMAR_VERSION,
     compositional_candidate_id,
     resolve_skeleton_spec,
 )
@@ -35,6 +37,10 @@ from our_system_phase2.services.unified_capability_registry import (
     ROUTE_IDS,
     UnifiedCapabilityRegistry,
     stable_hash,
+)
+from our_system_phase2.services.unified_discovery_generators import (
+    COMPOSITIONAL_GENERATOR_VERSION,
+    COMPOSITIONAL_V2_PROFILE,
 )
 
 
@@ -177,6 +183,10 @@ _NON_SEMANTIC_EXACT_KEYS = frozenset(
         "candidate_id",
         "matched_control_id",
         "pair_id",
+        "generator_authority",
+        "generator_version",
+        "identity_generator_version",
+        "constructor_profile",
         "attempt_id",
         "route_attempt_index",
         "proposal_route_root_field_ids",
@@ -200,8 +210,10 @@ _ROUTE_GENERATION_RECEIPT_KEYS = frozenset(
         "candidate_id",
         "matched_control_id",
         "pair_id",
+        "generator_authority",
         "generator_version",
         "identity_generator_version",
+        "constructor_profile",
         "route_id",
         "skeleton_id",
         "seed",
@@ -377,8 +389,10 @@ def route_generation_receipt_v1(candidate: Mapping[str, Any]) -> dict[str, Any]:
         "candidate_id": str(candidate["candidate_id"]),
         "matched_control_id": str(candidate["matched_control_id"]),
         "pair_id": str(candidate["pair_id"]),
+        "generator_authority": str(candidate.get("generator_authority") or ""),
         "generator_version": generator_version,
         "identity_generator_version": identity_generator_version,
+        "constructor_profile": str(candidate.get("constructor_profile") or ""),
         "route_id": str(candidate["route_id"]),
         "skeleton_id": str(candidate["skeleton_id"]),
         "seed": int(candidate["seed"]),
@@ -407,6 +421,29 @@ def _validate_route_generation_receipt(receipt: Mapping[str, Any]) -> dict[str, 
         raise ValueError("route generation receipt version mismatch")
     if str(normalized.get("generation_receipt_hash") or "") != stable_hash(body):
         raise ValueError("route generation receipt self-hash mismatch")
+    provenance = (
+        str(normalized["generator_authority"]),
+        str(normalized["generator_version"]),
+        str(normalized["identity_generator_version"]),
+        str(normalized["constructor_profile"]),
+    )
+    registered = {
+        ("", GRAMMAR_VERSION, GRAMMAR_VERSION, ""),
+        (
+            "",
+            SUPPLEMENTAL_GRAMMAR_VERSION,
+            SUPPLEMENTAL_GRAMMAR_VERSION,
+            "",
+        ),
+        (
+            "RegistryDrivenGenerator",
+            COMPOSITIONAL_GENERATOR_VERSION,
+            GRAMMAR_VERSION,
+            COMPOSITIONAL_V2_PROFILE,
+        ),
+    }
+    if provenance not in registered:
+        raise ValueError("route generation receipt has unregistered generator provenance")
     return _canonicalize(normalized)
 
 
@@ -1810,6 +1847,13 @@ class ProgramCompilerV1:
             generation_receipt["matched_control_id"]
         )
         candidate["pair_id"] = str(generation_receipt["pair_id"])
+        for provenance_key in (
+            "generator_authority",
+            "generator_version",
+            "identity_generator_version",
+            "constructor_profile",
+        ):
+            candidate[provenance_key] = str(generation_receipt[provenance_key])
         if node.node_type == "STATE_REPRESENTATION" and bool(
             candidate.get("state_materialization_required")
         ):
@@ -1835,7 +1879,6 @@ class ProgramCompilerV1:
         if verdict.canonical_expression != expected_canonical:
             raise ValueError(f"{node.node_type} canonical expression drift")
         required_receipt_keys = (
-            "generator_version",
             "exact_identity",
             "canonical_identity",
             "declared_field_ids",
@@ -1866,7 +1909,6 @@ class ProgramCompilerV1:
                 f"{missing_receipt_keys}"
             )
         generation_binding = {
-            "generator_version": str(candidate["generator_version"]),
             "route_id": str(candidate.get("route_id") or ""),
             "skeleton_id": str(candidate["skeleton_id"]),
             "declared_field_ids": list(map(str, candidate["declared_field_ids"])),
@@ -1925,6 +1967,8 @@ class ProgramCompilerV1:
         )
         regeneration_keys = (
             "candidate_id",
+            "matched_control_id",
+            "pair_id",
             "route_id",
             "expression",
             "canonical_expression",
