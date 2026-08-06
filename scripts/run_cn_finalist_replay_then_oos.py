@@ -787,11 +787,24 @@ def _materialize_replay_master(
         "code",
         sort=False,
     )["close"].ffill()
-    open_values = pd.Series(
-        pd.to_numeric(field_frame["open"], errors="coerce").to_numpy(),
-        index=observed_index,
-    )
-    authority["open"] = open_values.reindex(authority_index).to_numpy()
+    if "open" in field_frame.columns:
+        open_values = pd.Series(
+            pd.to_numeric(field_frame["open"], errors="coerce").to_numpy(),
+            index=observed_index,
+        )
+        authority["open"] = open_values.reindex(authority_index).to_numpy()
+    elif "open" in authority.columns:
+        # Some accepted development layouts persist only close plus feature
+        # fields.  Their immutable session authority remains the owner of the
+        # next-open execution price, so preserve that value instead of
+        # requiring the field sidecar to duplicate it.
+        authority["open"] = pd.to_numeric(
+            authority["open"], errors="coerce"
+        )
+    else:
+        raise RuntimeError(
+            "replay open is absent from both field sidecar and session authority"
+        )
     # A suspension has no executable open.  The replay kernel still needs a
     # finite inventory mark before it can block the sell, so use the last
     # observable close rather than carrying an unrelated prior-session open.

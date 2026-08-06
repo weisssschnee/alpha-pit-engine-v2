@@ -157,6 +157,49 @@ def test_materialize_replay_master_marks_suspension_at_last_close() -> None:
     assert suspended["close"] == 10.5
 
 
+def test_materialize_replay_master_uses_session_authority_open() -> None:
+    fields = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2025-01-02", "2025-01-03"]),
+            "trade_time": pd.to_datetime(
+                ["2025-01-02 15:00", "2025-01-03 15:00"]
+            ),
+            "code": ["000001", "000001"],
+            "close": [10.5, 11.5],
+            "x": [1.0, 2.0],
+        }
+    )
+    authority = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2025-01-02", "2025-01-03"]),
+            "code": ["000001", "000001"],
+            "open": [10.0, 11.0],
+            "security_type": ["A_SHARE"] * 2,
+            "exchange": ["SZSE"] * 2,
+            "universe_eligible": [True] * 2,
+            "listing_age_sessions": [100, 101],
+            "is_st": [False] * 2,
+            "is_delisting": [False] * 2,
+            "suspended": [False] * 2,
+            "up_limit_price": [11.0, 12.1],
+            "down_limit_price": [9.0, 9.9],
+            "corporate_action_cash_per_share": [0.0] * 2,
+            "corporate_action_share_multiplier": [1.0] * 2,
+            "is_terminal_session": [False] * 2,
+            "terminal_liquidation_price": [0.0] * 2,
+        }
+    )
+
+    master, observed, all_sessions = subject._materialize_replay_master(
+        fields,
+        authority,
+    )
+
+    assert len(observed) == 2
+    assert len(all_sessions) == 2
+    assert master["open"].tolist() == [10.0, 11.0]
+
+
 def test_oos_rows_keep_every_pair_without_interstage_filter() -> None:
     candidates = _candidate_rows()
     result = {
