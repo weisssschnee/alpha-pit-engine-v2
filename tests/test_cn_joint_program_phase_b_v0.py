@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+import our_system_phase2.runtime.cn_joint_program_phase_b_v0 as phase_b_runtime
+
 from our_system_phase2.runtime.cn_candidate_representation_v0_preflight import (
     build_candidate_representation_v0_preflight,
 )
@@ -53,7 +55,38 @@ def _execution_contract(path: Path) -> Path:
     return path
 
 
-def _build(tmp_path: Path) -> Path:
+def _materialization_test_inputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, source: Path
+) -> tuple[Path, Path, Path]:
+    paths = tuple(
+        tmp_path / name
+        for name in (
+            "fixed_v0_closure.json",
+            "materialized_schema.json",
+            "materialization_screen.json",
+        )
+    )
+    for path in paths:
+        path.write_text("{}\n", encoding="utf-8")
+    source_rows = [
+        json.loads(line)
+        for line in (source / "compatible_candidate_rows_v0.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    compatible_pair_ids = {str(row["pair_id"]) for row in source_rows}
+    monkeypatch.setattr(
+        phase_b_runtime,
+        "_materialized_pair_ids",
+        lambda **_: (
+            compatible_pair_ids,
+            {"screen_payload_sha256": "c" * 64},
+        ),
+    )
+    return paths
+
+
+def _build(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     phase_a = tmp_path / "phase_a"
     build_phase_a_v0(
         output_root=phase_a,
@@ -69,6 +102,9 @@ def _build(tmp_path: Path) -> Path:
         quota_per_template=8,
         seeds=(1729,),
     )
+    closure_snapshot, schema_snapshot, screen_snapshot = (
+        _materialization_test_inputs(tmp_path, monkeypatch, source)
+    )
     output = tmp_path / "phase_b_freeze"
     closure = build_phase_b_prefinancial_freeze_v0(
         output_root=output,
@@ -80,6 +116,9 @@ def _build(tmp_path: Path) -> Path:
         execution_contract_snapshot_path=_execution_contract(
             tmp_path / "execution_contract.json"
         ),
+        fixed_v0_production_closure_snapshot_path=closure_snapshot,
+        materialized_schema_snapshot_path=schema_snapshot,
+        materialization_screen_snapshot_path=screen_snapshot,
         node_resource_profiles_path=NODE_PROFILES,
         repo_sha="a" * 40,
         remote_train_session_field_root=(
@@ -91,9 +130,9 @@ def _build(tmp_path: Path) -> Path:
 
 
 def test_phase_b_prefinancial_freeze_is_exact_uniform_64_and_replays(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    root = _build(tmp_path)
+    root = _build(tmp_path, monkeypatch)
     closure = verify_phase_b_prefinancial_freeze_v0(root)
     assert closure["main_record_count"] == 64
     assert closure["base_parity_record_count"] == 8
@@ -133,9 +172,9 @@ def test_phase_b_prefinancial_freeze_is_exact_uniform_64_and_replays(
 
 
 def test_phase_b_prefinancial_verifier_rejects_schedule_tampering(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    root = _build(tmp_path)
+    root = _build(tmp_path, monkeypatch)
     schedule = root / "phase_b_uniform_schedule.jsonl"
     rows = schedule.read_text(encoding="utf-8").splitlines()
     first = json.loads(rows[0])
@@ -147,7 +186,7 @@ def test_phase_b_prefinancial_verifier_rejects_schedule_tampering(
 
 
 def test_phase_b_execution_snapshot_rejects_prohibited_asset_binding(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     phase_a = tmp_path / "phase_a"
     build_phase_a_v0(
@@ -170,6 +209,9 @@ def test_phase_b_execution_snapshot_rejects_prohibited_asset_binding(
     payload["session_authority_path"] = "D:/Forward_B/session.parquet"
     payload["contract_payload_sha256"] = stable_hash(payload)
     execution_path.write_text(json.dumps(payload), encoding="utf-8")
+    closure_snapshot, schema_snapshot, screen_snapshot = (
+        _materialization_test_inputs(tmp_path, monkeypatch, source)
+    )
     with pytest.raises(ValueError, match="prohibited asset"):
         build_phase_b_prefinancial_freeze_v0(
             output_root=tmp_path / "phase_b_freeze",
@@ -179,6 +221,9 @@ def test_phase_b_execution_snapshot_rejects_prohibited_asset_binding(
             root_contract_path=ROOT_CONTRACT,
             split_manifest_path=SPLIT,
             execution_contract_snapshot_path=execution_path,
+            fixed_v0_production_closure_snapshot_path=closure_snapshot,
+            materialized_schema_snapshot_path=schema_snapshot,
+            materialization_screen_snapshot_path=screen_snapshot,
             node_resource_profiles_path=NODE_PROFILES,
             repo_sha="b" * 40,
             remote_train_session_field_root=(

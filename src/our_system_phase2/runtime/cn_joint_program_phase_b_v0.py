@@ -104,6 +104,12 @@ ACCELERATION_BASIS = {
     "minimum_observed_free_memory_bytes": 53552918528,
     "maximum_process_tree_rss_bytes": 31133659136,
 }
+FIXED_V0_PRODUCTION_CLOSURE_FILE_SHA256 = (
+    "bda072cc965db1f915fd7495b47e91b862917d061534a396831d3ed7c287fc9f"
+)
+FIXED_V0_PRODUCTION_CLOSURE_PAYLOAD_SHA256 = (
+    "bc81007a9ee8842ad1d9fcb844332c723cb6499a344bb61ede200e2030d4964e"
+)
 
 
 def _write_json(path: Path, payload: Any) -> Path:
@@ -265,11 +271,78 @@ def _development_windows(split_manifest: Path) -> dict[str, Any]:
     }
 
 
+def _materialized_pair_ids(
+    *,
+    production_closure_path: Path,
+    materialized_schema_path: Path,
+    materialization_screen_path: Path,
+) -> tuple[set[str], dict[str, Any]]:
+    if _sha256(production_closure_path) != FIXED_V0_PRODUCTION_CLOSURE_FILE_SHA256:
+        raise ValueError("fixed-V0 production closure file hash drift")
+    closure = _read_json(production_closure_path)
+    closure_body = dict(closure)
+    closure_expected = str(closure_body.pop("closure_payload_sha256", ""))
+    if (
+        closure_expected != stable_hash(closure_body)
+        or closure_expected != FIXED_V0_PRODUCTION_CLOSURE_PAYLOAD_SHA256
+        or str(closure.get("status") or "")
+        != "FIXED_STRATIFIED_PRODUCTION_V0_COMPLETE"
+    ):
+        raise ValueError("fixed-V0 production closure canonical drift")
+    bound_schema = dict(closure.get("materialized_schema_binding") or {})
+    bound_screen = dict(closure.get("materialization_screen") or {})
+    if (
+        _sha256(materialized_schema_path) != str(bound_schema.get("sha256") or "")
+        or materialized_schema_path.stat().st_size
+        != int(bound_schema.get("bytes") or 0)
+    ):
+        raise ValueError("fixed-V0 materialized schema snapshot drift")
+    if (
+        _sha256(materialization_screen_path)
+        != str(bound_screen.get("sha256") or "")
+        or materialization_screen_path.stat().st_size
+        != int(bound_screen.get("bytes") or 0)
+    ):
+        raise ValueError("fixed-V0 materialization screen snapshot drift")
+    schema = _read_json(materialized_schema_path)
+    if (
+        str(schema.get("status") or "")
+        != "SCHEMA_FIRST_COMPATIBLE_POOLS_BOUND"
+        or int(schema.get("validation_reads") or 0)
+        or int(schema.get("holdout_reads") or 0)
+        or int(schema.get("forward_2026_reads") or 0)
+    ):
+        raise ValueError("fixed-V0 materialized schema authority drift")
+    screen = _read_json(materialization_screen_path)
+    screen_body = dict(screen)
+    screen_expected = str(screen_body.pop("screen_payload_sha256", ""))
+    if (
+        screen_expected != stable_hash(screen_body)
+        or str(screen.get("status") or "")
+        != "FIXED_COHORT_MATERIALIZATION_SCREEN_COMPLETE"
+        or int(screen.get("materialized_pair_count") or 0) != 180
+        or int(screen.get("frozen_pair_count") or 0) != 229
+        or int(screen.get("validation_reads") or 0)
+        or int(screen.get("holdout_reads") or 0)
+        or int(screen.get("forward_2026_reads") or 0)
+    ):
+        raise ValueError("fixed-V0 materialization screen canonical drift")
+    compatible = {
+        str(row["pair_id"])
+        for row in screen["pair_screen"]
+        if str(row.get("status") or "") == "MATERIALIZED_PAIR_COMPATIBLE"
+    }
+    if len(compatible) != 180:
+        raise ValueError("fixed-V0 compatible pair identity count drift")
+    return compatible, screen
+
+
 def _regenerate_compatible_components(
     *,
     registry: UnifiedCapabilityRegistry,
     source_preflight_root: Path,
     root_contract_path: Path,
+    compatible_pair_ids: set[str],
 ) -> tuple[list[ProgramSourceComponentV0], dict[str, Any]]:
     closure = verify_candidate_representation_v0_preflight(source_preflight_root)
     plan = _read_json(source_preflight_root / "fixed_stratified_plan_v0.json")
@@ -281,17 +354,20 @@ def _regenerate_compatible_components(
         plan=plan,
         route_root_allowlist=root_authority["route_root_allowlists"],
     )
-    compatible_rows = _read_jsonl(
+    source_rows = _read_jsonl(
         source_preflight_root / "compatible_candidate_rows_v0.jsonl"
     )
-    compatible_by_id = {
-        str(row["candidate_id"]): row for row in compatible_rows
+    source_by_id = {
+        str(row["candidate_id"]): row for row in source_rows
     }
     raw_by_id = {
         str(row["candidate_id"]): dict(row) for row in regenerated.candidate_rows
     }
-    if set(compatible_by_id) - set(raw_by_id):
-        raise ValueError("compatible preflight rows are absent from regenerated supply")
+    if set(source_by_id) - set(raw_by_id):
+        raise ValueError("source preflight rows are absent from regenerated supply")
+    regenerated_pair_ids = {str(row["pair_id"]) for row in regenerated.candidate_rows}
+    if compatible_pair_ids - regenerated_pair_ids:
+        raise ValueError("materialization screen references absent regenerated pairs")
     components: list[ProgramSourceComponentV0] = []
     seen_component_ids: set[str] = set()
     primary_rows = [
@@ -300,12 +376,12 @@ def _regenerate_compatible_components(
     for primary in primary_rows:
         candidate_id = str(primary["candidate_id"])
         control_id = str(primary["matched_control_id"])
-        if candidate_id not in compatible_by_id or control_id not in compatible_by_id:
+        if str(primary["pair_id"]) not in compatible_pair_ids:
             continue
         control = raw_by_id[control_id]
         for raw, accepted in (
-            (primary, compatible_by_id[candidate_id]),
-            (control, compatible_by_id[control_id]),
+            (primary, source_by_id[candidate_id]),
+            (control, source_by_id[control_id]),
         ):
             protected = (
                 "candidate_id",
@@ -320,8 +396,8 @@ def _regenerate_compatible_components(
                 raise ValueError("compatible component identity drift")
         role = ROUTE_ROLE[str(primary["route_id"])]
         proposal_id = str(
-            compatible_by_id[candidate_id].get("candidate_proposal_v0_hash")
-            or compatible_by_id[candidate_id].get("candidate_spec_v0_hash")
+            source_by_id[candidate_id].get("candidate_proposal_v0_hash")
+            or source_by_id[candidate_id].get("candidate_spec_v0_hash")
             or candidate_id
         )
         component = ProgramSourceComponentV0(
@@ -463,6 +539,9 @@ def build_phase_b_prefinancial_freeze_v0(
     root_contract_path: Path,
     split_manifest_path: Path,
     execution_contract_snapshot_path: Path,
+    fixed_v0_production_closure_snapshot_path: Path,
+    materialized_schema_snapshot_path: Path,
+    materialization_screen_snapshot_path: Path,
     node_resource_profiles_path: Path,
     repo_sha: str,
     remote_train_session_field_root: str,
@@ -525,10 +604,16 @@ def build_phase_b_prefinancial_freeze_v0(
     if float(ACCELERATION_BASIS["qualified_speedup"]) < 1.5:
         raise ValueError("accepted acceleration basis lacks minimum speedup")
 
+    compatible_pair_ids, accepted_materialization_screen = _materialized_pair_ids(
+        production_closure_path=fixed_v0_production_closure_snapshot_path.resolve(),
+        materialized_schema_path=materialized_schema_snapshot_path.resolve(),
+        materialization_screen_path=materialization_screen_snapshot_path.resolve(),
+    )
     components, source_closure = _regenerate_compatible_components(
         registry=registry,
         source_preflight_root=source_preflight_root.resolve(),
         root_contract_path=root_contract_path.resolve(),
+        compatible_pair_ids=compatible_pair_ids,
     )
     pool_records = [_component_record(component) for component in components]
     role_counts = {
@@ -550,6 +635,19 @@ def build_phase_b_prefinancial_freeze_v0(
             ),
             "source_preflight_closure_payload_sha256": str(
                 source_closure["closure_payload_sha256"]
+            ),
+            "fixed_v0_production_closure_snapshot_file_sha256": _sha256(
+                fixed_v0_production_closure_snapshot_path.resolve()
+            ),
+            "materialized_schema_snapshot_file_sha256": _sha256(
+                materialized_schema_snapshot_path.resolve()
+            ),
+            "materialization_screen_snapshot_file_sha256": _sha256(
+                materialization_screen_snapshot_path.resolve()
+            ),
+            "accepted_materialized_pair_count": len(compatible_pair_ids),
+            "accepted_materialization_screen_payload_sha256": str(
+                accepted_materialization_screen["screen_payload_sha256"]
             ),
             "registry_hash": registry.registry_hash,
             "role_targets": ROLE_TARGETS,
@@ -907,6 +1005,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     freeze.add_argument("--root-contract", type=Path, required=True)
     freeze.add_argument("--split-manifest", type=Path, required=True)
     freeze.add_argument("--execution-contract-snapshot", type=Path, required=True)
+    freeze.add_argument(
+        "--fixed-v0-production-closure-snapshot", type=Path, required=True
+    )
+    freeze.add_argument("--materialized-schema-snapshot", type=Path, required=True)
+    freeze.add_argument(
+        "--materialization-screen-snapshot", type=Path, required=True
+    )
     freeze.add_argument("--node-resource-profiles", type=Path, required=True)
     freeze.add_argument("--repo-sha", required=True)
     freeze.add_argument("--remote-train-session-field-root", required=True)
@@ -922,6 +1027,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             root_contract_path=args.root_contract,
             split_manifest_path=args.split_manifest,
             execution_contract_snapshot_path=args.execution_contract_snapshot,
+            fixed_v0_production_closure_snapshot_path=(
+                args.fixed_v0_production_closure_snapshot
+            ),
+            materialized_schema_snapshot_path=args.materialized_schema_snapshot,
+            materialization_screen_snapshot_path=(
+                args.materialization_screen_snapshot
+            ),
             node_resource_profiles_path=args.node_resource_profiles,
             repo_sha=args.repo_sha,
             remote_train_session_field_root=args.remote_train_session_field_root,
