@@ -572,6 +572,8 @@ class CompiledCandidateProgramV1:
     output_node_ids: Mapping[str, str]
     output_expressions: Mapping[str, str]
     joint_clock_contract: Mapping[str, Any]
+    component_clock_requirements: Mapping[str, Mapping[str, Any]]
+    field_lags: Mapping[str, int]
     node_execution_plan: tuple[Mapping[str, Any], ...]
     physical_leaf_ids: tuple[str, ...]
     external_adapter_requirements: tuple[str, ...]
@@ -763,15 +765,13 @@ def _node_expression(
             f"Transition({parent_expressions[0]},"
             f"{node.parameters.get('from_state')},{node.parameters.get('to_state')})"
         )
-    if node.node_type in {
-        "RESIDUALIZE",
-        "SIZE_NEUTRALIZE",
-        "INDUSTRY_NEUTRALIZE",
-    }:
+    if node.node_type in {"RESIDUALIZE", "SIZE_NEUTRALIZE"}:
         expression = parent_expressions[0]
         for control in parent_expressions[1:]:
             expression = f"CSResidual({expression},{control})"
         return expression
+    if node.node_type == "INDUSTRY_NEUTRALIZE":
+        return f"WithinGroupDemean({parent_expressions[0]},{parent_expressions[1]})"
     if node.node_type == "WITHIN_GROUP_RANK":
         return f"WithinGroupRank({parent_expressions[0]},{parent_expressions[1]})"
     binary = {
@@ -1008,8 +1008,14 @@ def _validate_node_semantics(
         if node.unit_signature != parents[0].unit_signature:
             raise ValueError("arithmetic output unit drift")
     if node.node_type == "MULTIPLY":
-        if len(parents) < 2 or not all(
-            parent.output_semantic_type in NUMERIC_SEMANTIC_TYPES for parent in parents
+        if (
+            len(parents) < 2
+            or not all(
+                parent.output_semantic_type in NUMERIC_SEMANTIC_TYPES
+                for parent in parents
+            )
+            or node.output_semantic_type not in NUMERIC_SEMANTIC_TYPES
+            or node.entity_scope != parents[0].entity_scope
         ):
             raise ValueError("multiply requires numeric inputs")
         substantive = [
@@ -1020,8 +1026,14 @@ def _validate_node_semantics(
         if substantive and node.unit_signature not in {substantive[0], "*".join(substantive)}:
             raise ValueError("multiply output unit drift")
     if node.node_type == "SAFE_DIVIDE":
-        if len(parents) != 2 or not all(
-            parent.output_semantic_type in NUMERIC_SEMANTIC_TYPES for parent in parents
+        if (
+            len(parents) != 2
+            or not all(
+                parent.output_semantic_type in NUMERIC_SEMANTIC_TYPES
+                for parent in parents
+            )
+            or node.output_semantic_type not in NUMERIC_SEMANTIC_TYPES
+            or node.entity_scope != parents[0].entity_scope
         ):
             raise ValueError("safe divide requires two numeric inputs")
         expected = (
@@ -1034,8 +1046,12 @@ def _validate_node_semantics(
         if node.unit_signature != expected:
             raise ValueError("safe divide output unit drift")
     if node.node_type in {"GATE", "MODULATE"}:
-        if len(parents) != 2 or parents[1].output_semantic_type not in (
-            MASK_SEMANTIC_TYPES | {"STOCK_MULTIPLIER", "SCALAR"}
+        if (
+            len(parents) != 2
+            or parents[1].output_semantic_type
+            not in (MASK_SEMANTIC_TYPES | {"STOCK_MULTIPLIER", "SCALAR"})
+            or node.output_semantic_type != parents[0].output_semantic_type
+            or node.entity_scope != parents[0].entity_scope
         ):
             raise ValueError("gate/modulate requires a typed mask or multiplier")
         if node.unit_signature != parents[0].unit_signature:
@@ -1045,7 +1061,28 @@ def _validate_node_semantics(
     if node.node_type in {"FILTER", "INTERSECT", "UNION"} and len(parents) < 2:
         raise ValueError("filter/set operators require at least two mask inputs")
     if node.node_type in {"FILTER", "VETO", "INTERSECT", "UNION"}:
-        if not all(parent.output_semantic_type in MASK_SEMANTIC_TYPES for parent in parents):
+        expected_mask_type = {
+            "STOCK": "STOCK_MASK",
+            "MARKET": "MARKET_MASK",
+            "INDUSTRY": "GROUP_MASK",
+            "PLATE": "GROUP_MASK",
+        }.get(node.entity_scope)
+        allowed_parent_entities = {
+            "STOCK": ENTITY_SCOPES,
+            "MARKET": {"MARKET", "CONSTANT"},
+            "INDUSTRY": {"INDUSTRY", "MARKET", "CONSTANT"},
+            "PLATE": {"PLATE", "MARKET", "CONSTANT"},
+        }.get(node.entity_scope, set())
+        if (
+            not all(
+                parent.output_semantic_type in MASK_SEMANTIC_TYPES
+                for parent in parents
+            )
+            or node.output_semantic_type != expected_mask_type
+            or not all(
+                parent.entity_scope in allowed_parent_entities for parent in parents
+            )
+        ):
             raise ValueError("filter/veto/set operators require mask inputs")
     if node.node_type == "WITHIN_GROUP_RANK":
         if (
@@ -1062,15 +1099,13 @@ def _validate_node_semantics(
             raise ValueError("conditional switch requires mask, true and false inputs")
         if (
             parents[1].output_semantic_type != parents[2].output_semantic_type
+            or node.output_semantic_type != parents[1].output_semantic_type
+            or node.entity_scope != parents[1].entity_scope
             or parents[1].unit_signature != parents[2].unit_signature
             or node.unit_signature != parents[1].unit_signature
         ):
             raise ValueError("conditional switch branches must preserve type and unit")
-    if node.node_type in {
-        "RESIDUALIZE",
-        "SIZE_NEUTRALIZE",
-        "INDUSTRY_NEUTRALIZE",
-    }:
+    if node.node_type in {"RESIDUALIZE", "SIZE_NEUTRALIZE"}:
         if (
             len(parents) < 2
             or parents[0].entity_scope != "STOCK"
@@ -1081,6 +1116,20 @@ def _validate_node_semantics(
             raise ValueError("residualization requires stock payload plus controls")
         if node.unit_signature != parents[0].unit_signature:
             raise ValueError("residualization must preserve payload units")
+    if node.node_type == "INDUSTRY_NEUTRALIZE":
+        if (
+            len(parents) != 2
+            or parents[0].entity_scope != "STOCK"
+            or parents[0].output_semantic_type not in NUMERIC_SEMANTIC_TYPES
+            or parents[1].entity_scope != "INDUSTRY"
+            or parents[1].output_semantic_type != "GROUP_VALUE"
+            or node.entity_scope != "STOCK"
+            or node.output_semantic_type not in {"STOCK_VALUE", "STOCK_SCORE"}
+            or node.unit_signature != parents[0].unit_signature
+        ):
+            raise ValueError(
+                "industry neutralization requires stock values and a PIT industry key"
+            )
 
 
 def _complexity_report(
@@ -1297,6 +1346,40 @@ class ProgramCompilerV1:
             raise ValueError(
                 f"joint clock references missing nodes: {unknown_clock_nodes}"
             )
+        component_clock_requirements: dict[str, dict[str, Any]] = {}
+        for node_id in spec.joint_clock_contract.component_clock_node_ids:
+            clock_node = by_id[node_id]
+            component_clock_requirements[node_id] = {
+                "observable_clock_contract": clock_node.observable_clock,
+                "maturity_contract": clock_node.maturity,
+                "source_lag": clock_node.parameters.get("source_lag", 0),
+                "source_lag_unit": str(
+                    clock_node.parameters.get("source_lag_unit") or "sessions"
+                ),
+                "revision_policy": str(
+                    clock_node.parameters.get("revision_policy")
+                    or clock_node.temporal_semantics.get("revision_policy")
+                    or "NO_FUTURE_REVISION"
+                ),
+            }
+        field_lags: dict[str, int] = {}
+        for node in spec.nodes:
+            field_id = str(node.parameters.get("field_id") or "")
+            source_lag_unit = str(
+                node.parameters.get("source_lag_unit") or ""
+            ).lower()
+            source_lag = node.parameters.get("source_lag")
+            if not field_id or source_lag is None or source_lag_unit not in {
+                "session",
+                "sessions",
+            }:
+                continue
+            lag = int(source_lag)
+            if lag < 0:
+                raise ValueError("compiled field lag may not be negative")
+            if field_id in field_lags and field_lags[field_id] != lag:
+                raise ValueError("program field has conflicting lag contracts")
+            field_lags[field_id] = lag
         frozen_nodes = [
             node for node in spec.nodes if node.node_type == "FROZEN_BROAD_EVENT_REF"
         ]
@@ -1437,6 +1520,10 @@ class ProgramCompilerV1:
             joint_clock_contract=_canonicalize(
                 asdict(spec.joint_clock_contract)
             ),
+            component_clock_requirements=_canonicalize(
+                component_clock_requirements
+            ),
+            field_lags=dict(sorted(field_lags.items())),
             node_execution_plan=tuple(execution_plan),
             physical_leaf_ids=tuple(sorted(physical_leaves)),
             external_adapter_requirements=tuple(

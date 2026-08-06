@@ -61,6 +61,7 @@ def _bind_synthetic_joint_clock(frame, compiled):
     bound["program_coordinate_id"] = [f"row-{index}" for index in range(len(bound))]
     rows = {}
     for node_id in compiled.joint_clock_contract["component_clock_node_ids"]:
+        requirement = compiled.component_clock_requirements[node_id]
         component = []
         for index, source in bound.iterrows():
             observed = pd.Timestamp(source["date"]) + pd.Timedelta(hours=15)
@@ -71,8 +72,13 @@ def _bind_synthetic_joint_clock(frame, compiled):
                     "observable_at": observed.isoformat(),
                     "mature_at": observed.isoformat(),
                     "action_session": action.isoformat(),
-                    "source_lag": 0,
-                    "revision_policy": "NO_FUTURE_REVISION",
+                    "source_lag": requirement["source_lag"],
+                    "source_lag_unit": requirement["source_lag_unit"],
+                    "revision_policy": requirement["revision_policy"],
+                    "observable_clock_contract": requirement[
+                        "observable_clock_contract"
+                    ],
+                    "maturity_contract": requirement["maturity_contract"],
                     "support_present": True,
                     "eligible": True,
                 }
@@ -224,7 +230,10 @@ def test_joint_clock_uses_coordinate_max_and_fails_closed_when_missing_or_late(p
                     "mature_at": "2024-01-02 15:00",
                     "action_session": "2024-01-03 09:30",
                     "source_lag": 1,
+                    "source_lag_unit": "sessions",
                     "revision_policy": "NO_FUTURE_REVISION",
+                    "observable_clock_contract": "prior_close",
+                    "maturity_contract": "prior_close",
                     "support_present": True,
                     "eligible": True,
                 },
@@ -234,7 +243,10 @@ def test_joint_clock_uses_coordinate_max_and_fails_closed_when_missing_or_late(p
                     "mature_at": "2024-01-02 15:00",
                     "action_session": "2024-01-03 09:30",
                     "source_lag": 1,
+                    "source_lag_unit": "sessions",
                     "revision_policy": "NO_FUTURE_REVISION",
+                    "observable_clock_contract": "prior_close",
+                    "maturity_contract": "prior_close",
                     "support_present": True,
                     "eligible": True,
                 },
@@ -246,7 +258,10 @@ def test_joint_clock_uses_coordinate_max_and_fails_closed_when_missing_or_late(p
                     "mature_at": "2024-01-03 08:30",
                     "action_session": "2024-01-03 09:30",
                     "source_lag": 0,
+                    "source_lag_unit": "sessions",
                     "revision_policy": "REGISTERED_EPISODE",
+                    "observable_clock_contract": "prior_close",
+                    "maturity_contract": "prior_close",
                     "support_present": True,
                     "eligible": True,
                 },
@@ -256,7 +271,10 @@ def test_joint_clock_uses_coordinate_max_and_fails_closed_when_missing_or_late(p
                     "mature_at": "2024-01-03 10:00",
                     "action_session": "2024-01-03 09:30",
                     "source_lag": 0,
+                    "source_lag_unit": "sessions",
                     "revision_policy": "REGISTERED_EPISODE",
+                    "observable_clock_contract": "prior_close",
+                    "maturity_contract": "prior_close",
                     "support_present": True,
                     "eligible": True,
                 },
@@ -349,6 +367,27 @@ def test_control_operation_semantics_are_enforced_and_base_payload_is_real(progr
     with pytest.raises(ValueError, match="may not retain the ablated subgraph"):
         construct_matched_control_program_v1(retained_subgraph)
 
+    for operation_name, message, diagnostic_only in (
+        ("ABLATE_NODE", "typed identity constant", False),
+        ("REPLACE_WITH_PLACEBO", "deterministic placebo authority", False),
+        ("REPLACE_WITH_WRONG_LAG_CONTROL", "nonzero diagnostic lag shift", True),
+    ):
+        mislabeled_control = replace(
+            primary,
+            matched_control_plan=replace(
+                primary.matched_control_plan,
+                operations=(
+                    replace(
+                        level_operation,
+                        operation=operation_name,
+                        diagnostic_only=diagnostic_only,
+                    ),
+                ),
+            ),
+        )
+        with pytest.raises(ValueError, match=message):
+            construct_matched_control_program_v1(mislabeled_control)
+
 
 def test_semantic_type_checks_reject_mask_arithmetic_and_bad_cs_output(program_context) -> None:
     registry, _, _, fixtures = program_context
@@ -380,6 +419,60 @@ def test_semantic_type_checks_reject_mask_arithmetic_and_bad_cs_output(program_c
         ProgramCompilerV1(registry).compile(
             replace(primary, nodes=primary.nodes + (bad_cross_section,))
         )
+
+    net_buy = next(node for node in primary.nodes if node.node_id == "financing_net_buy")
+    bad_multiply = TypedNodeSpec(
+        node_id="bad_multiply_output",
+        node_type="MULTIPLY",
+        input_node_ids=(net_buy.node_id, net_buy.node_id),
+        parameters={},
+        output_semantic_type="STOCK_MASK",
+        entity_scope="STOCK",
+        temporal_semantics={"kind": "FIXED_PROGRAM_OPERATOR"},
+        observable_clock=net_buy.observable_clock,
+        maturity=net_buy.maturity,
+        unit_signature="yuan",
+        support_unit=net_buy.support_unit,
+    )
+    with pytest.raises(ValueError, match="multiply requires numeric inputs"):
+        ProgramCompilerV1(registry).compile(
+            replace(primary, nodes=primary.nodes + (bad_multiply,))
+        )
+
+    bad_filter = TypedNodeSpec(
+        node_id="bad_filter_output",
+        node_type="FILTER",
+        input_node_ids=(identity.node_id, identity.node_id),
+        parameters={},
+        output_semantic_type="STOCK_VALUE",
+        entity_scope="STOCK",
+        temporal_semantics={"kind": "FIXED_PROGRAM_OPERATOR"},
+        observable_clock=identity.observable_clock,
+        maturity=identity.maturity,
+        unit_signature="boolean",
+        support_unit=identity.support_unit,
+    )
+    with pytest.raises(ValueError, match="require mask inputs"):
+        ProgramCompilerV1(registry).compile(
+            replace(primary, nodes=primary.nodes + (bad_filter,))
+        )
+
+
+def test_industry_neutralization_uses_group_demeaning_not_numeric_residualization() -> None:
+    frame = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2024-01-02"] * 4),
+            "code": ["a", "b", "c", "d"],
+            "value": [1.0, 3.0, 10.0, 14.0],
+            "industry": ["i1", "i1", "i2", "i2"],
+        }
+    )
+    actual = evaluate_panel_expression(
+        frame,
+        "WithinGroupDemean($value,$industry)",
+        data_role="development",
+    )
+    assert actual.tolist() == [-1.0, 1.0, -2.0, 2.0]
 
 
 def test_frozen_broad_event_binding_must_match_registry_inventory(program_context) -> None:
@@ -479,14 +572,12 @@ def test_authorized_joint_fixtures_execute_on_typed_synthetic_panel(program_cont
             bound_frame,
             compiled,
             data_role="development",
-            field_lags={},
             joint_clock_component_rows=clock_rows,
         )
         second = apply_compiled_candidate_program_v1(
             bound_frame,
             compiled,
             data_role="development",
-            field_lags={},
             joint_clock_component_rows=clock_rows,
         )
         pd.testing.assert_series_equal(first["signal"], second["signal"])
@@ -554,7 +645,6 @@ def test_execution_enforces_compiled_joint_clock_before_signal(program_context) 
         bound,
         compiled,
         data_role="development",
-        field_lags={},
         joint_clock_component_rows=clock_rows,
     )
     assert output.loc[0, "program_joint_eligible"] == np.bool_(False)
@@ -566,8 +656,36 @@ def test_execution_enforces_compiled_joint_clock_before_signal(program_context) 
             bound,
             compiled,
             data_role="development",
-            field_lags={},
             joint_clock_component_rows={},
+        )
+
+    _, drifted_rows = _bind_synthetic_joint_clock(frame, compiled)
+    drifted_rows[component_id][0] = {
+        **drifted_rows[component_id][0],
+        "source_lag": int(
+            compiled.component_clock_requirements[component_id]["source_lag"]
+        )
+        + 1,
+    }
+    with pytest.raises(ValueError, match="component contract drift"):
+        apply_compiled_candidate_program_v1(
+            bound,
+            compiled,
+            data_role="development",
+            joint_clock_component_rows=drifted_rows,
+        )
+
+    _, future_rows = _bind_synthetic_joint_clock(frame, compiled)
+    future_rows[component_id][0] = {
+        **future_rows[component_id][0],
+        "revision_policy": "FUTURE_REVISION_ALLOWED",
+    }
+    with pytest.raises(ValueError, match="future revision"):
+        apply_compiled_candidate_program_v1(
+            bound,
+            compiled,
+            data_role="development",
+            joint_clock_component_rows=future_rows,
         )
 
 
@@ -581,7 +699,6 @@ def test_legacy_program_signal_rank_and_replay_are_exactly_identical(program_con
         bound_frame,
         compiled,
         data_role="development",
-        field_lags={},
         joint_clock_component_rows=clock_rows,
     )
     pd.testing.assert_series_equal(

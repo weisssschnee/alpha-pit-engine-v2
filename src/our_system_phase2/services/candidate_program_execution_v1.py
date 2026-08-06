@@ -30,7 +30,6 @@ def apply_compiled_candidate_program_v1(
     compiled: CompiledCandidateProgramV1,
     *,
     data_role: str,
-    field_lags: Mapping[str, int],
     joint_clock_component_rows: Mapping[
         str, Sequence[Mapping[str, Any]]
     ],
@@ -58,7 +57,9 @@ def apply_compiled_candidate_program_v1(
     if coordinate_id_column not in output.columns:
         raise ValueError("execution frame lacks the bound program coordinate id")
     joint_clock = resolve_joint_clock_coordinates_v1(
-        contract, joint_clock_component_rows
+        contract,
+        joint_clock_component_rows,
+        component_requirements=compiled.component_clock_requirements,
     )
     clock_by_coordinate = {
         str(row["coordinate_id"]): row for row in joint_clock
@@ -83,7 +84,7 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["stock_score_node_id"],
             cache=cache,
-            field_lags=dict(field_lags),
+            field_lags=dict(compiled.field_lags),
             data_role=data_role,
         ),
         errors="coerce",
@@ -93,7 +94,7 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["eligibility_mask_node_id"],
             cache=cache,
-            field_lags=dict(field_lags),
+            field_lags=dict(compiled.field_lags),
             data_role=data_role,
         ),
         errors="coerce",
@@ -103,7 +104,7 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["exposure_multiplier_node_id"],
             cache=cache,
-            field_lags=dict(field_lags),
+            field_lags=dict(compiled.field_lags),
             data_role=data_role,
         ),
         errors="coerce",
@@ -113,7 +114,7 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["veto_mask_node_id"],
             cache=cache,
-            field_lags=dict(field_lags),
+            field_lags=dict(compiled.field_lags),
             data_role=data_role,
         ),
         errors="coerce",

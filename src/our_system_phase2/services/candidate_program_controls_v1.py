@@ -117,6 +117,39 @@ def _assert_operation_semantics(
             raise ValueError(
                 "ABLATE_SUBGRAPH replacement may not retain the ablated subgraph"
             )
+        if (
+            control.node_type != "CONSTANT"
+            or control.input_node_ids
+            or not bool(control.parameters.get("ablation_identity"))
+        ):
+            raise ValueError(
+                "ABLATE_SUBGRAPH requires an explicit typed identity constant"
+            )
+    if operation.operation == "ABLATE_NODE" and (
+        control.node_type != "CONSTANT"
+        or control.input_node_ids
+        or not bool(control.parameters.get("ablation_identity"))
+    ):
+        raise ValueError("ABLATE_NODE requires an explicit typed identity constant")
+    if operation.operation == "REPLACE_WITH_PLACEBO" and (
+        not str(control.parameters.get("placebo_authority") or "")
+        or not str(control.parameters.get("placebo_id") or "")
+        or not bool(control.parameters.get("deterministic_placebo"))
+    ):
+        raise ValueError(
+            "REPLACE_WITH_PLACEBO requires a deterministic placebo authority"
+        )
+    if operation.operation == "REPLACE_WITH_WRONG_LAG_CONTROL":
+        wrong_lag = control.parameters.get("wrong_lag_sessions")
+        if (
+            not operation.diagnostic_only
+            or not isinstance(wrong_lag, int)
+            or isinstance(wrong_lag, bool)
+            or wrong_lag == 0
+        ):
+            raise ValueError(
+                "wrong-lag control requires a nonzero diagnostic lag shift"
+            )
     if operation.operation == "BASE_PAYLOAD_ONLY" and not bool(
         operation.replacement.get("base_payload_authority")
     ):

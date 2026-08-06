@@ -891,6 +891,19 @@ def evaluate_panel_expression(
             _evaluation_context=evaluation_context,
         )
 
+    def evaluate_group_key(child_expression: str) -> pd.Series:
+        child_expression = child_expression.strip()
+        if not child_expression.startswith("$"):
+            return evaluate_child(child_expression)
+        column = FIELD_ALIASES.get(child_expression[1:], child_expression[1:])
+        if column not in frame.columns:
+            raise UnsupportedExpressionError(f"missing_field:{column}")
+        series = frame[column]
+        lag = int((field_lags or {}).get(column, 0))
+        if lag > 0:
+            series = series.groupby(frame["code"], sort=False).shift(lag)
+        return series
+
     if expression.startswith("$"):
         column = expression[1:]
         column = FIELD_ALIASES.get(column, column)
@@ -998,12 +1011,19 @@ def evaluate_panel_expression(
         )
     if name_lower == "withingrouprank" and len(args) == 2:
         value = pd.to_numeric(evaluate_child(args[0]), errors="coerce")
-        group = evaluate_child(args[1])
+        group = evaluate_group_key(args[1])
         cross_key = _cross_section_key(frame, evaluation_context)
-        keys = pd.MultiIndex.from_arrays(
-            [cross_key, group], names=["cross_section", "within_group"]
+        return store(
+            value.groupby([cross_key, group], sort=False).rank(
+                method="average", pct=True
+            )
         )
-        return store(value.groupby(keys, sort=False).rank(method="average", pct=True))
+    if name_lower == "withingroupdemean" and len(args) == 2:
+        value = pd.to_numeric(evaluate_child(args[0]), errors="coerce")
+        group = evaluate_group_key(args[1])
+        cross_key = _cross_section_key(frame, evaluation_context)
+        group_mean = value.groupby([cross_key, group], sort=False).transform("mean")
+        return store(value - group_mean)
     if name_lower == "csresidual" and len(args) == 2:
         left = evaluate_child(args[0])
         right = evaluate_child(args[1])

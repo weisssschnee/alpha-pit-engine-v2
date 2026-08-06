@@ -12,6 +12,8 @@ from our_system_phase2.services.candidate_program_v1 import JointClockContractV1
 def resolve_joint_clock_coordinates_v1(
     contract: JointClockContractV1,
     component_rows: Mapping[str, Sequence[Mapping[str, Any]]],
+    *,
+    component_requirements: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Intersect required component support and take row-wise latest maturity."""
 
@@ -19,6 +21,10 @@ def resolve_joint_clock_coordinates_v1(
     unknown = sorted(set(component_rows) - set(required))
     if unknown:
         raise ValueError(f"joint clock received undeclared components: {unknown}")
+    if component_requirements is not None and set(component_requirements) != set(
+        required
+    ):
+        raise ValueError("joint clock requirements must bind every declared component")
     indexed: dict[str, dict[str, dict[str, Any]]] = {}
     all_coordinates: set[str] = set()
     for node_id in required:
@@ -29,6 +35,56 @@ def resolve_joint_clock_coordinates_v1(
             coordinate_id = str(row.get("coordinate_id") or "")
             if not coordinate_id or coordinate_id in by_coordinate:
                 raise ValueError("joint clock coordinates must be unique and non-empty")
+            required_fields = {
+                "observable_at",
+                "mature_at",
+                "action_session",
+                "source_lag",
+                "source_lag_unit",
+                "revision_policy",
+                "observable_clock_contract",
+                "maturity_contract",
+                "support_present",
+                "eligible",
+            }
+            missing_fields = sorted(required_fields - set(row))
+            if missing_fields:
+                raise ValueError(
+                    f"joint clock component row lacks contracts: {missing_fields}"
+                )
+            revision_policy = str(row["revision_policy"] or "")
+            if not revision_policy or bool(row.get("uses_future_revision")) or (
+                "FUTURE_REVISION" in revision_policy.upper()
+                and not revision_policy.upper().startswith("NO_FUTURE_REVISION")
+                and "NO_FUTURE_REVISION" not in revision_policy.upper()
+            ):
+                raise ValueError("joint clock component attempts a future revision")
+            if component_requirements is not None:
+                requirement = dict(component_requirements[node_id])
+                contract_fields = (
+                    "observable_clock_contract",
+                    "maturity_contract",
+                    "source_lag",
+                    "source_lag_unit",
+                    "revision_policy",
+                )
+                drift = [
+                    key
+                    for key in contract_fields
+                    if str(row.get(key)) != str(requirement.get(key))
+                ]
+                if drift:
+                    raise ValueError(
+                        f"joint clock component contract drift for {node_id}: {drift}"
+                    )
+            observable_at = pd.Timestamp(row["observable_at"])
+            mature_at = pd.Timestamp(row["mature_at"])
+            action_at = pd.Timestamp(row["action_session"])
+            if mature_at < observable_at:
+                raise ValueError("joint clock maturity precedes observability")
+            row["eligible"] = bool(row["eligible"]) and max(
+                observable_at, mature_at
+            ) <= action_at
             by_coordinate[coordinate_id] = row
             all_coordinates.add(coordinate_id)
         indexed[node_id] = by_coordinate
