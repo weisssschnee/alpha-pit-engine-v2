@@ -196,7 +196,7 @@ def _validate_phase_b_materialized_sidecar(
     }
     if later_authority_fields.intersection(manifest):
         raise RuntimeError("accepted Phase B sidecar schema revision drift")
-    if not {"trade_time", "code", "open", "close"}.issubset(
+    if not {"trade_time", "code", "close"}.issubset(
         set(manifest.get("fields") or ())
     ):
         raise RuntimeError("accepted Phase B field sidecar lacks replay fields")

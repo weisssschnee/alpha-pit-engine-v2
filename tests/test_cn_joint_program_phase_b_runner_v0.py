@@ -168,7 +168,7 @@ def test_phase_b_accepts_only_exact_legacy_development_sidecar(
             "source_shard_count": 16,
             "sidecar_rows": 16,
             "source_rows": 16,
-            "fields": ["trade_time", "code", "open", "close"],
+            "fields": ["trade_time", "code", "close"],
             "shards": shards,
         },
         "manifest_hash",
