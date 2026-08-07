@@ -696,6 +696,15 @@ def _session_augmentation(
             "fundamental": {str(value) for value in receipt.get("fundamental_fields") or ()},
             "chip": {str(value) for value in receipt.get("chip_fields") or ()},
             "bar_context": {str(value) for value in receipt.get("bar_context_fields") or ()},
+            "market_context": {
+                str(value) for value in receipt.get("market_context_fields") or ()
+            },
+            "session_close_stock": {
+                str(value) for value in receipt.get("session_close_stock_fields") or ()
+            },
+            "session_close_market": {
+                str(value) for value in receipt.get("session_close_market_fields") or ()
+            },
         }
         added_flat = set().union(*added_groups.values())
         if sum(len(values) for values in added_groups.values()) != len(added_flat):

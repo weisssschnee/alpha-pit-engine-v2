@@ -556,6 +556,7 @@ def build_phase_b_prefinancial_freeze_v0(
     node_resource_profiles_path: Path,
     repo_sha: str,
     remote_train_session_field_root: str,
+    program_materialization_preflight_path: Path | None = None,
 ) -> dict[str, Any]:
     root = output_root.resolve()
     if root.exists() and any(root.iterdir()):
@@ -632,13 +633,79 @@ def build_phase_b_prefinancial_freeze_v0(
         ).get("root")
         or ""
     )
-    if (
-        accepted_remote_session_root.replace("/", "\\").lower()
-        != remote_train_session_field_root.replace("/", "\\").lower()
-    ):
-        raise ValueError(
-            "remote train session field root is not the accepted materialized root"
+    program_materialization_preflight: dict[str, Any] | None = None
+    program_materialization_preflight_file_sha256 = ""
+    if program_materialization_preflight_path is None:
+        if (
+            accepted_remote_session_root.replace("/", "\\").lower()
+            != remote_train_session_field_root.replace("/", "\\").lower()
+        ):
+            raise ValueError(
+                "remote train session field root is not the accepted materialized root"
+            )
+    else:
+        program_materialization_preflight_path = (
+            program_materialization_preflight_path.resolve()
         )
+        program_materialization_preflight_file_sha256 = _sha256(
+            program_materialization_preflight_path
+        )
+        program_materialization_preflight = _read_json(
+            program_materialization_preflight_path
+        )
+        preflight_body = dict(program_materialization_preflight)
+        preflight_claimed = str(preflight_body.pop("closure_sha256", ""))
+        if preflight_claimed != stable_hash(preflight_body):
+            raise ValueError("program materialization preflight self-hash drift")
+        if (
+            str(program_materialization_preflight.get("status") or "")
+            != "PROGRAM_MATERIALIZATION_PREFLIGHT_COMPLETE"
+            or not bool(
+                program_materialization_preflight.get(
+                    "required_equals_materializable_equals_program_covered"
+                )
+            )
+            or not bool(program_materialization_preflight.get("lag_applied_exactly_once"))
+            or bool(program_materialization_preflight.get("financial_evaluation_executed"))
+            or any(
+                int(program_materialization_preflight.get(key) or 0)
+                for key in (
+                    "validation_reads",
+                    "holdout_reads",
+                    "historical_2023_reads",
+                    "forward_b_reads",
+                    "forward_2026_reads",
+                )
+            )
+        ):
+            raise ValueError("program materialization preflight authority drift")
+        output_manifest_path = str(
+            (program_materialization_preflight.get("output_manifest") or {}).get(
+                "path"
+            )
+            or ""
+        )
+        preflight_output_root = (
+            str(Path(output_manifest_path).parent) if output_manifest_path else ""
+        )
+        if (
+            preflight_output_root.replace("/", "\\").lower()
+            != remote_train_session_field_root.replace("/", "\\").lower()
+        ):
+            raise ValueError("program materialization preflight/output root binding drift")
+        source_manifest_path = str(
+            (program_materialization_preflight.get("source_manifest") or {}).get("path")
+            or ""
+        )
+        accepted_manifest_path = str(
+            Path(accepted_remote_session_root)
+            / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
+        )
+        if (
+            source_manifest_path.replace("/", "\\").lower()
+            != accepted_manifest_path.replace("/", "\\").lower()
+        ):
+            raise ValueError("program materialization preflight/source root binding drift")
     components, source_closure = _regenerate_compatible_components(
         registry=registry,
         source_preflight_root=source_preflight_root.resolve(),
@@ -677,6 +744,9 @@ def build_phase_b_prefinancial_freeze_v0(
             ),
             "accepted_materialized_pair_count": len(compatible_pair_ids),
             "accepted_stock_session_field_root": accepted_remote_session_root,
+            "program_materialized_stock_session_field_root": (
+                remote_train_session_field_root
+            ),
             "accepted_materialization_screen_payload_sha256": str(
                 accepted_materialization_screen["screen_payload_sha256"]
             ),
@@ -759,6 +829,17 @@ def build_phase_b_prefinancial_freeze_v0(
         root / "program_proposal_receipts.jsonl",
         (row["proposal_receipt"] for row in schedule),
     )
+    program_materialization_preflight_copy_path: Path | None = None
+    if program_materialization_preflight is not None:
+        if (
+            str(program_materialization_preflight["schedule"]["sha256"])
+            != _sha256(schedule_path)
+        ):
+            raise ValueError("program materialization preflight/schedule hash drift")
+        program_materialization_preflight_copy_path = _write_json(
+            root / "program_materialization_preflight.json",
+            program_materialization_preflight,
+        )
 
     windows = _development_windows(split_manifest_path.resolve())
     prefinancial_contract = _self_hashed(
@@ -780,6 +861,34 @@ def build_phase_b_prefinancial_freeze_v0(
                 execution_contract["contract_payload_sha256"]
             ),
             "remote_train_session_field_root": remote_train_session_field_root,
+            "program_materialization_preflight": (
+                {
+                    "source_path": str(program_materialization_preflight_path),
+                    "source_file_sha256": (
+                        program_materialization_preflight_file_sha256
+                    ),
+                    "copied_path": str(program_materialization_preflight_copy_path),
+                    "copied_file_sha256": _sha256(
+                        program_materialization_preflight_copy_path
+                    ),
+                    "closure_sha256": str(
+                        program_materialization_preflight["closure_sha256"]
+                    ),
+                    "output_manifest_file_sha256": str(
+                        program_materialization_preflight["output_manifest"][
+                            "file_sha256"
+                        ]
+                    ),
+                    "output_manifest_payload_sha256": str(
+                        program_materialization_preflight["output_manifest"][
+                            "payload_sha256"
+                        ]
+                    ),
+                }
+                if program_materialization_preflight is not None
+                and program_materialization_preflight_copy_path is not None
+                else None
+            ),
             "session_authority_manifest": str(
                 execution_contract["session_authority_manifest"]
             ),
@@ -1046,6 +1155,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     freeze.add_argument("--node-resource-profiles", type=Path, required=True)
     freeze.add_argument("--repo-sha", required=True)
     freeze.add_argument("--remote-train-session-field-root", required=True)
+    freeze.add_argument("--program-materialization-preflight", type=Path)
     verify = subparsers.add_parser("verify-freeze")
     verify.add_argument("--phase-b-freeze-root", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -1068,6 +1178,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             node_resource_profiles_path=args.node_resource_profiles,
             repo_sha=args.repo_sha,
             remote_train_session_field_root=args.remote_train_session_field_root,
+            program_materialization_preflight_path=(
+                args.program_materialization_preflight
+            ),
         )
     else:
         closure = verify_phase_b_prefinancial_freeze_v0(args.phase_b_freeze_root)

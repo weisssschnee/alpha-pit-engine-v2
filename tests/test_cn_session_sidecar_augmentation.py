@@ -8,6 +8,8 @@ import pytest
 from scripts.augment_cn_phase3cm_session_time_major_sidecar import (
     _materialize_incremental_chip_context,
     _materialize_lagged_daily_context,
+    _materialize_market_session_context,
+    _materialize_stock_session_close,
 )
 
 
@@ -117,3 +119,85 @@ def test_incremental_chip_context_fails_on_source_session_drift() -> None:
             chip,
             fields=["chip_cost_p95"],
         )
+
+
+def _joint_program_bar_root(tmp_path, *, market_values: list[float]):
+    root = tmp_path / "joint_release"
+    shard = root / "shard_00"
+    shard.mkdir(parents=True)
+    (root / "development_only_release_manifest.json").write_text(
+        json.dumps({"forbidden_roles_present": [], "forward_2026_present": False}),
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "code": ["000001.SZ", "000001.SZ", "000002.SZ", "000002.SZ"],
+            "trade_time": pd.to_datetime(
+                [
+                    "2024-01-02 09:31",
+                    "2024-01-02 15:00",
+                    "2024-01-02 09:31",
+                    "2024-01-02 15:00",
+                ]
+            ),
+            "ctx_sent_uplimit_num": market_values,
+            "intraday_ret_from_open": [0.01, 0.04, -0.01, 0.02],
+        }
+    ).to_parquet(shard / "raw.parquet", index=False)
+    return root
+
+
+def test_market_session_context_broadcasts_one_registered_market_value(tmp_path) -> None:
+    frame = pd.DataFrame(
+        {
+            "code": ["000001.SZ", "000002.SZ"],
+            "trade_time": pd.to_datetime(["2024-01-02 15:00"] * 2),
+        }
+    )
+    output, evidence = _materialize_market_session_context(
+        frame,
+        fields=["ctx_sent_uplimit_num"],
+        bar_source_root=_joint_program_bar_root(tmp_path, market_values=[7.0] * 4),
+        shard_index=0,
+    )
+
+    assert output["ctx_sent_uplimit_num"].tolist() == [7.0, 7.0]
+    assert evidence["entity_scope"] == "MARKET"
+    assert evidence["lag_reapplied"] is False
+
+
+def test_market_session_context_fails_on_cross_sectional_scope_drift(tmp_path) -> None:
+    frame = pd.DataFrame(
+        {
+            "code": ["000001.SZ", "000002.SZ"],
+            "trade_time": pd.to_datetime(["2024-01-02 15:00"] * 2),
+        }
+    )
+    with pytest.raises(ValueError, match="not constant"):
+        _materialize_market_session_context(
+            frame,
+            fields=["ctx_sent_uplimit_num"],
+            bar_source_root=_joint_program_bar_root(
+                tmp_path, market_values=[7.0, 7.0, 8.0, 8.0]
+            ),
+            shard_index=0,
+        )
+
+
+def test_stock_session_close_uses_exact_last_bar_per_stock(tmp_path) -> None:
+    frame = pd.DataFrame(
+        {
+            "code": ["000001.SZ", "000002.SZ"],
+            "trade_time": pd.to_datetime(["2024-01-02 15:00"] * 2),
+        }
+    )
+    output, evidence = _materialize_stock_session_close(
+        frame,
+        fields=["intraday_ret_from_open"],
+        bar_source_root=_joint_program_bar_root(tmp_path, market_values=[7.0] * 4),
+        shard_index=0,
+    )
+
+    assert output["intraday_ret_from_open"].tolist() == [0.04, 0.02]
+    assert evidence["entity_scope"] == "STOCK"
+    assert evidence["lag_reapplied"] is False

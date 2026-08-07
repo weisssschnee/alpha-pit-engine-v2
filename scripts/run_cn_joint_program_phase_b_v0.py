@@ -272,6 +272,8 @@ def _load_context(
     train_price_root: Path,
     price_manifest: Mapping[str, Any],
     price_manifest_path: Path,
+    field_manifest_file_sha256: str,
+    field_manifest_payload_sha256: str,
 ) -> dict[str, Any]:
     contract = _read_json(contract_path)
     decoder_v2.base._verify_payload_hash(
@@ -283,6 +285,8 @@ def _load_context(
         train_field_root,
         split_manifest_sha256=str(contract["split_manifest_sha256"]),
         verify_shards=False,
+        expected_manifest_file_sha256=field_manifest_file_sha256,
+        expected_manifest_payload_sha256=field_manifest_payload_sha256,
     )
     context = decoder_v2._load_evaluation_context(
         contract_path=contract_path,
@@ -316,6 +320,8 @@ def _initialize_worker(
     registry_path: str,
     input_hash: str,
     windows: Sequence[Mapping[str, Any]],
+    field_manifest_file_sha256: str,
+    field_manifest_payload_sha256: str,
 ) -> None:
     global _WORKER_CONTEXT, _WORKER_REGISTRY, _WORKER_INPUT_HASH, _WORKER_WINDOWS
     _WORKER_CONTEXT = _load_context(
@@ -324,6 +330,8 @@ def _initialize_worker(
         Path(train_price_root),
         price_manifest,
         Path(price_manifest_path),
+        field_manifest_file_sha256,
+        field_manifest_payload_sha256,
     )
     _WORKER_REGISTRY = UnifiedCapabilityRegistry.read(Path(registry_path))
     _WORKER_INPUT_HASH = str(input_hash)
@@ -898,10 +906,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         field="contract_payload_sha256",
         label="joint-program Phase B execution contract",
     )
+    run_contract = _read_json(freeze_root / "phase_b_run_contract.json")
+    materialization_binding = run_contract.get("program_materialization_preflight")
+    if materialization_binding is None:
+        field_manifest_file_sha256 = ACCEPTED_FIELD_MANIFEST_FILE_SHA256
+        field_manifest_payload_sha256 = ACCEPTED_FIELD_MANIFEST_PAYLOAD_SHA256
+    elif isinstance(materialization_binding, Mapping):
+        field_manifest_file_sha256 = str(
+            materialization_binding.get("output_manifest_file_sha256") or ""
+        )
+        field_manifest_payload_sha256 = str(
+            materialization_binding.get("output_manifest_payload_sha256") or ""
+        )
+        if len(field_manifest_file_sha256) != 64 or len(field_manifest_payload_sha256) != 64:
+            raise RuntimeError("program materialization manifest hash binding drift")
+    else:
+        raise RuntimeError("program materialization run-contract binding is invalid")
     field_manifest, field_manifest_path = _validate_phase_b_materialized_sidecar(
         train_field_root,
         split_manifest_sha256=str(execution_contract["split_manifest_sha256"]),
         verify_shards=True,
+        expected_manifest_file_sha256=field_manifest_file_sha256,
+        expected_manifest_payload_sha256=field_manifest_payload_sha256,
     )
     price_manifest, price_manifest_path = (
         _validate_phase_b_execution_price_sidecar(
@@ -928,7 +954,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or int(args.executor_workers) != EXECUTOR_WORKERS
     ):
         raise RuntimeError("Phase B process resource contract drift")
-    run_contract = _read_json(freeze_root / "phase_b_run_contract.json")
     _validate_frozen_execution_contract(
         run_contract,
         execution_contract_sha256=_sha256(contract_path),
@@ -1088,6 +1113,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 str(registry_path),
                 input_hash,
                 windows,
+                field_manifest_file_sha256,
+                field_manifest_payload_sha256,
             ),
         ) as executor:
             futures = {}

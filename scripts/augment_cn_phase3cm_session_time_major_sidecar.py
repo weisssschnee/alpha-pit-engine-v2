@@ -146,6 +146,129 @@ def _materialize_lagged_daily_context(
     }
 
 
+def _materialize_market_session_context(
+    frame: pd.DataFrame,
+    *,
+    fields: list[str],
+    bar_source_root: Path,
+    shard_index: int,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Broadcast registered pre-lagged MARKET state to stock-session rows."""
+
+    if not fields:
+        return frame, {}
+    manifest_path = bar_source_root / "development_only_release_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    if manifest.get("forbidden_roles_present") or bool(manifest.get("forward_2026_present")):
+        raise PermissionError("bar context source contains forbidden or sealed roles")
+    source = _bar_source_path(bar_source_root, shard_index)
+    source_schema = set(pl.read_parquet_schema(source))
+    missing = sorted(set(fields) - source_schema)
+    if missing:
+        raise ValueError(f"market context source fields are missing: {missing}")
+
+    aggregations: list[pl.Expr] = []
+    for field in fields:
+        aggregations.extend(
+            (
+                pl.col(field).sort_by("trade_time").last().alias(field),
+                pl.col(field).drop_nulls().n_unique().alias(f"__nunique_{field}"),
+            )
+        )
+    daily = (
+        pl.scan_parquet(source)
+        .select("trade_time", *fields)
+        .with_columns(pl.col("trade_time").dt.date().alias("__session_date"))
+        .group_by("__session_date")
+        .agg(*aggregations)
+        .collect(engine="streaming")
+    )
+    variation = {field: int(daily[f"__nunique_{field}"].max() or 0) for field in fields}
+    invalid = {field: count for field, count in variation.items() if count > 1}
+    if invalid:
+        raise ValueError(f"market context is not constant within a session: {invalid}")
+    daily = daily.select("__session_date", *fields).with_columns(
+        (pl.col("__session_date").cast(pl.Datetime("us")) + pl.duration(hours=15)).alias(
+            "trade_time"
+        )
+    )
+    context = daily.select("trade_time", *fields).to_pandas()
+    if context.duplicated(["trade_time"]).any():
+        raise ValueError("market context has duplicate session coordinates")
+    output = frame.merge(
+        context,
+        on=["trade_time"],
+        how="left",
+        validate="many_to_one",
+        sort=False,
+    )
+    return output, {
+        "source": str(source),
+        "source_sha256": _sha256(source),
+        "fields": fields,
+        "entity_scope": "MARKET",
+        "session_value_digest": _frame_digest(context, ["trade_time", *fields]),
+        "session_count": len(context),
+        "maximum_intraday_cross_sectional_unique_values": variation,
+        "join_policy": "same_session_1500_broadcast_of_pre_lagged_market_state",
+        "lag_reapplied": False,
+    }
+
+
+def _materialize_stock_session_close(
+    frame: pd.DataFrame,
+    *,
+    fields: list[str],
+    bar_source_root: Path,
+    shard_index: int,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Reduce registered STOCK BAR_VALUE fields to the exact session close row."""
+
+    if not fields:
+        return frame, {}
+    manifest_path = bar_source_root / "development_only_release_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    if manifest.get("forbidden_roles_present") or bool(manifest.get("forward_2026_present")):
+        raise PermissionError("bar value source contains forbidden or sealed roles")
+    source = _bar_source_path(bar_source_root, shard_index)
+    source_schema = set(pl.read_parquet_schema(source))
+    missing = sorted(set(fields) - source_schema)
+    if missing:
+        raise ValueError(f"stock session-close source fields are missing: {missing}")
+
+    daily = (
+        pl.scan_parquet(source)
+        .select("code", "trade_time", *fields)
+        .with_columns(pl.col("trade_time").dt.date().alias("__session_date"))
+        .group_by("code", "__session_date")
+        .agg(*(pl.col(field).sort_by("trade_time").last().alias(field) for field in fields))
+        .collect(engine="streaming")
+        .with_columns(
+            (pl.col("__session_date").cast(pl.Datetime("us")) + pl.duration(hours=15)).alias(
+                "trade_time"
+            )
+        )
+    )
+    context = daily.select("code", "trade_time", *fields).to_pandas()
+    if context.duplicated(["code", "trade_time"]).any():
+        raise ValueError("stock session-close context has duplicate stock-session coordinates")
+    output = frame.merge(
+        context,
+        on=["code", "trade_time"],
+        how="left",
+        validate="one_to_one",
+        sort=False,
+    )
+    return output, {
+        "source": str(source),
+        "source_sha256": _sha256(source),
+        "fields": fields,
+        "entity_scope": "STOCK",
+        "join_policy": "same_stock_same_session_exact_last_bar_value_at_1500",
+        "lag_reapplied": False,
+    }
+
+
 def _materialize_incremental_chip_context(
     frame: pd.DataFrame,
     chip: pd.DataFrame,
@@ -244,6 +367,9 @@ def main() -> int:
     sessions = _sessions(args.split_manifest)
     registry = UnifiedCapabilityRegistry.read(args.registry)
     bar_context_fields: list[str] = []
+    market_context_fields: list[str] = []
+    session_close_stock_fields: list[str] = []
+    session_close_market_fields: list[str] = []
     fundamental_fields: list[str] = []
     for field_id in sorted(set(missing_fields) - set(chip_fields)):
         capability = registry.resolve(field_id)
@@ -252,10 +378,42 @@ def main() -> int:
             and capability.temporal_semantics == "PREVIOUS_SESSION_STOCK_CONTEXT"
         ):
             bar_context_fields.append(field_id)
+        elif (
+            capability.entity_scope == "MARKET"
+            and capability.source_family == "lagged_daily_context"
+            and capability.temporal_semantics == "PREVIOUS_SESSION_MARKET_STATE"
+            and capability.observable_clock == "previous_session"
+            and capability.source_lag == 1
+            and capability.source_lag_unit == "sessions"
+        ):
+            market_context_fields.append(field_id)
+        elif (
+            capability.entity_scope == "STOCK"
+            and capability.source_family == "raw_1min"
+            and capability.temporal_semantics == "BAR_VALUE"
+            and capability.observable_clock == "bar_close"
+            and capability.source_lag == 0
+            and capability.source_lag_unit == "bars"
+        ):
+            session_close_stock_fields.append(field_id)
+        elif (
+            capability.entity_scope == "MARKET"
+            and capability.source_family == "raw_1min"
+            and capability.temporal_semantics == "BAR_VALUE"
+            and capability.observable_clock == "bar_close"
+            and capability.source_lag == 0
+            and capability.source_lag_unit == "bars"
+        ):
+            session_close_market_fields.append(field_id)
         else:
             fundamental_fields.append(field_id)
-    if bar_context_fields and args.bar_source_root is None:
-        raise PermissionError("lagged daily context fields require --bar-source-root")
+    if (
+        bar_context_fields
+        or market_context_fields
+        or session_close_stock_fields
+        or session_close_market_fields
+    ) and args.bar_source_root is None:
+        raise PermissionError("registered bar/context fields require --bar-source-root")
     _progress(
         args.progress_log,
         "ROUTES_CLASSIFIED",
@@ -263,6 +421,9 @@ def main() -> int:
         fundamental_field_count=len(fundamental_fields),
         chip_field_count=len(chip_fields),
         bar_context_field_count=len(bar_context_fields),
+        market_context_field_count=len(market_context_fields),
+        session_close_stock_field_count=len(session_close_stock_fields),
+        session_close_market_field_count=len(session_close_market_fields),
     )
 
     specs: dict[str, dict[str, Any]] = {}
@@ -289,6 +450,9 @@ def main() -> int:
     coordinate_index = pd.MultiIndex.from_frame(coordinates)
     coverage: dict[str, float] = {}
     bar_context_input: dict[str, Any] = {}
+    market_context_input: dict[str, Any] = {}
+    session_close_stock_input: dict[str, Any] = {}
+    session_close_market_input: dict[str, Any] = {}
     if bar_context_fields:
         _progress(args.progress_log, "BAR_CONTEXT_START", started=started)
         frame, bar_context_input = _materialize_lagged_daily_context(
@@ -300,6 +464,42 @@ def main() -> int:
         for field_id in bar_context_fields:
             coverage[field_id] = round(float(frame[field_id].notna().mean()), 8)
         _progress(args.progress_log, "BAR_CONTEXT_END", started=started)
+
+    if market_context_fields:
+        _progress(args.progress_log, "MARKET_CONTEXT_START", started=started)
+        frame, market_context_input = _materialize_market_session_context(
+            frame,
+            fields=market_context_fields,
+            bar_source_root=args.bar_source_root,
+            shard_index=int(args.shard_index),
+        )
+        for field_id in market_context_fields:
+            coverage[field_id] = round(float(frame[field_id].notna().mean()), 8)
+        _progress(args.progress_log, "MARKET_CONTEXT_END", started=started)
+
+    if session_close_stock_fields:
+        _progress(args.progress_log, "STOCK_SESSION_CLOSE_START", started=started)
+        frame, session_close_stock_input = _materialize_stock_session_close(
+            frame,
+            fields=session_close_stock_fields,
+            bar_source_root=args.bar_source_root,
+            shard_index=int(args.shard_index),
+        )
+        for field_id in session_close_stock_fields:
+            coverage[field_id] = round(float(frame[field_id].notna().mean()), 8)
+        _progress(args.progress_log, "STOCK_SESSION_CLOSE_END", started=started)
+
+    if session_close_market_fields:
+        _progress(args.progress_log, "MARKET_SESSION_CLOSE_START", started=started)
+        frame, session_close_market_input = _materialize_market_session_context(
+            frame,
+            fields=session_close_market_fields,
+            bar_source_root=args.bar_source_root,
+            shard_index=int(args.shard_index),
+        )
+        for field_id in session_close_market_fields:
+            coverage[field_id] = round(float(frame[field_id].notna().mean()), 8)
+        _progress(args.progress_log, "MARKET_SESSION_CLOSE_END", started=started)
 
     for ordinal, field_id in enumerate(fundamental_fields, start=1):
         _progress(
@@ -382,6 +582,12 @@ def main() -> int:
         "chip_fields": chip_fields,
         "bar_context_fields": bar_context_fields,
         "bar_context_source": bar_context_input,
+        "market_context_fields": market_context_fields,
+        "market_context_source": market_context_input,
+        "session_close_stock_fields": session_close_stock_fields,
+        "session_close_stock_source": session_close_stock_input,
+        "session_close_market_fields": session_close_market_fields,
+        "session_close_market_source": session_close_market_input,
         "coverage": coverage,
         "chip_sidecar": chip_input,
         "validation_reads": 0,
