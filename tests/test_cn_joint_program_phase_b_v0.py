@@ -19,6 +19,9 @@ from our_system_phase2.runtime.cn_joint_program_phase_b_v0 import (
     verify_phase_b_prefinancial_freeze_v0,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
+from our_system_phase2.services.candidate_materialization_requirements import (
+    resolve_required_physical_leaves,
+)
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -96,6 +99,31 @@ def _materialization_test_inputs(
     return paths
 
 
+def _information_metrics(path: Path, source: Path) -> Path:
+    fields: set[str] = set()
+    for line in (source / "compatible_candidate_rows_v0.jsonl").read_text(
+        encoding="utf-8"
+    ).splitlines():
+        fields.update(
+            resolve_required_physical_leaves(json.loads(line)).physical_leaf_ids
+        )
+    payload = [
+        {
+            "field_id": field_id,
+            "coverage": 1.0,
+            "finite_count": 100,
+            "row_count": 100,
+            "information_qualified": True,
+            "information_status": "TEST_QUALIFIED",
+        }
+        for field_id in sorted(fields)
+    ]
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return path
+
+
 def _build(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     phase_a = tmp_path / "phase_a"
     build_phase_a_v0(
@@ -129,6 +157,9 @@ def _build(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         fixed_v0_production_closure_snapshot_path=closure_snapshot,
         materialized_schema_snapshot_path=schema_snapshot,
         materialization_screen_snapshot_path=screen_snapshot,
+        information_metrics_path=_information_metrics(
+            tmp_path / "information_metrics.json", source
+        ),
         node_resource_profiles_path=NODE_PROFILES,
         repo_sha="a" * 40,
         remote_train_session_field_root=(
@@ -240,6 +271,9 @@ def test_phase_b_execution_snapshot_rejects_prohibited_asset_binding(
             fixed_v0_production_closure_snapshot_path=closure_snapshot,
             materialized_schema_snapshot_path=schema_snapshot,
             materialization_screen_snapshot_path=screen_snapshot,
+            information_metrics_path=_information_metrics(
+                tmp_path / "information_metrics.json", source
+            ),
             node_resource_profiles_path=NODE_PROFILES,
             repo_sha="b" * 40,
             remote_train_session_field_root=(

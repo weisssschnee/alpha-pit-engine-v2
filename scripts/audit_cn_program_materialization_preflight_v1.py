@@ -15,6 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from our_system_phase2.services.candidate_program_materialization_v1 import (
+    verify_program_information_coverage_v1,
     verify_program_materialization_plan_v1,
 )
 from our_system_phase2.services.unified_capability_registry import stable_hash
@@ -50,6 +51,8 @@ def audit(root: Path, output: Path) -> dict[str, Any]:
         raise ValueError("program materialization exact coverage did not pass")
     if not bool(closure.get("lag_applied_exactly_once")):
         raise ValueError("program materialization lag-once gate did not pass")
+    if not bool(closure.get("all_required_fields_information_qualified")):
+        raise ValueError("program materialization information coverage did not pass")
     if bool(closure.get("financial_evaluation_executed")) or any(
         int(closure.get(key) or 0)
         for key in (
@@ -103,6 +106,31 @@ def audit(root: Path, output: Path) -> dict[str, Any]:
         or str(plan["plan_sha256"]) != str(closure["materialization_plan"]["payload_sha256"])
     ):
         raise ValueError("program materialization plan binding drift")
+    information_path = Path(closure["information_coverage"]["path"]).resolve()
+    information = _read(information_path)
+    verify_program_information_coverage_v1(information)
+    if (
+        information_path.parent != root
+        or _sha256(information_path)
+        != str(closure["information_coverage"]["file_sha256"])
+        or str(information["information_coverage_sha256"])
+        != str(closure["information_coverage"]["payload_sha256"])
+        or set(information["required_field_ids"]) != required
+    ):
+        raise ValueError("program information coverage binding drift")
+    metrics_authority = dict(information["information_metrics_authority"])
+    metrics_path = Path(str(metrics_authority["path"])).resolve()
+    if (
+        not metrics_path.is_file()
+        or _sha256(metrics_path) != str(metrics_authority["file_sha256"])
+        or str(metrics_authority["file_sha256"])
+        != str(
+            closure["information_coverage"][
+                "information_metrics_authority_file_sha256"
+            ]
+        )
+    ):
+        raise ValueError("program information metrics authority drift")
     fixtures_path = Path(closure["template_fixtures"]["path"]).resolve()
     fixtures = _read(fixtures_path)
     _verify_hash(fixtures, "fixture_sha256", "program materialization fixtures")
@@ -138,6 +166,9 @@ def audit(root: Path, output: Path) -> dict[str, Any]:
         "shard_count": len(shards),
         "sidecar_rows": rows,
         "required_physical_leaf_count": len(required),
+        "information_qualified_field_count": int(
+            information["required_field_count"]
+        ),
         "added_field_ids": list(closure["added_field_ids"]),
         "template_fixture_count": int(fixtures["template_count"]),
         "required_equals_materializable_equals_program_covered": True,

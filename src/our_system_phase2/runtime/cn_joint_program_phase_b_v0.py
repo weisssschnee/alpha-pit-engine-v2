@@ -26,6 +26,12 @@ from our_system_phase2.runtime.cn_joint_program_phase_a_v0 import verify_phase_a
 from our_system_phase2.services.candidate_program_controls_v1 import (
     construct_matched_control_program_v1,
 )
+from our_system_phase2.services.candidate_materialization_requirements import (
+    resolve_required_physical_leaves,
+)
+from our_system_phase2.services.candidate_program_materialization_v1 import (
+    resolve_program_information_coverage_v1,
+)
 from our_system_phase2.services.candidate_program_proposal_v0 import (
     DEFAULT_COMBINATION_POLICY,
     PROGRAM_TEMPLATE_COMPONENTS,
@@ -427,6 +433,112 @@ def _regenerate_compatible_components(
     return components, closure
 
 
+def _screen_information_qualified_components(
+    components: Sequence[ProgramSourceComponentV0],
+    *,
+    information_metrics: Sequence[Mapping[str, Any]],
+    authority_path: str,
+    authority_file_sha256: str,
+    authority_relative_path: str | None = None,
+) -> tuple[list[ProgramSourceComponentV0], dict[str, Any]]:
+    """Reject physically non-informative components before schedule sampling."""
+
+    accepted: list[ProgramSourceComponentV0] = []
+    component_rows: list[dict[str, Any]] = []
+    for component in components:
+        primary = resolve_required_physical_leaves(component.primary)
+        control = resolve_required_physical_leaves(component.control)
+        required = sorted(
+            set(primary.physical_leaf_ids) | set(control.physical_leaf_ids)
+        )
+        coverage = resolve_program_information_coverage_v1(
+            required,
+            information_metrics=information_metrics,
+            authority_path=authority_path,
+            authority_file_sha256=authority_file_sha256,
+        )
+        rejected_fields = list(coverage["missing_information_metric_field_ids"])
+        rejected_fields.extend(coverage["unqualified_information_field_ids"])
+        rejected_fields = sorted(set(rejected_fields))
+        status = (
+            "INFORMATION_QUALIFIED_COMPONENT"
+            if not rejected_fields
+            else "INFORMATION_REJECTED_COMPONENT"
+        )
+        if not rejected_fields:
+            accepted.append(component)
+        component_rows.append(
+            {
+                "component_id": component.component_id,
+                "pair_id": str(component.primary["pair_id"]),
+                "route_id": component.route_id,
+                "role": component.role,
+                "status": status,
+                "primary_physical_leaf_ids": list(primary.physical_leaf_ids),
+                "control_physical_leaf_ids": list(control.physical_leaf_ids),
+                "required_physical_leaf_ids": required,
+                "rejected_field_ids": rejected_fields,
+                "rejected_field_metrics": [
+                    row
+                    for row in coverage["field_metrics"]
+                    if str(row["field_id"]) in rejected_fields
+                ],
+            }
+        )
+
+    before_role_counts = {
+        role: sum(component.role == role for component in components)
+        for role in ROLE_TARGETS
+    }
+    after_role_counts = {
+        role: sum(component.role == role for component in accepted)
+        for role in ROLE_TARGETS
+    }
+    before_route_counts = {
+        route: sum(component.route_id == route for component in components)
+        for route in ROUTE_ROLE
+    }
+    after_route_counts = {
+        route: sum(component.route_id == route for component in accepted)
+        for route in ROUTE_ROLE
+    }
+    report = _self_hashed(
+        {
+            "schema_version": "cn_joint_program_component_information_screen_v1",
+            "status": "JOINT_PROGRAM_COMPONENT_INFORMATION_SCREEN_COMPLETE",
+            "information_metrics_authority": {
+                "path": authority_path,
+                "relative_path": authority_relative_path,
+                "file_sha256": authority_file_sha256,
+            },
+            "component_count_before_screen": len(components),
+            "component_count_after_screen": len(accepted),
+            "rejected_component_count": len(components) - len(accepted),
+            "role_counts_before_screen": before_role_counts,
+            "role_counts_after_screen": after_role_counts,
+            "route_counts_before_screen": before_route_counts,
+            "route_counts_after_screen": after_route_counts,
+            "accepted_component_ids": [row.component_id for row in accepted],
+            "rejected_components": [
+                row
+                for row in component_rows
+                if row["status"] == "INFORMATION_REJECTED_COMPONENT"
+            ],
+            "component_screen": component_rows,
+            "semantic_substitution_used": False,
+            "adaptive_feedback_used": False,
+            "financial_evaluation_executed": False,
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "historical_2023_reads": 0,
+            "forward_b_reads": 0,
+            "forward_2026_reads": 0,
+        },
+        "information_screen_sha256",
+    )
+    return accepted, report
+
+
 def _policy_for_ordinal(ordinal: int) -> dict[str, str]:
     return {
         **DEFAULT_COMBINATION_POLICY,
@@ -553,6 +665,7 @@ def build_phase_b_prefinancial_freeze_v0(
     fixed_v0_production_closure_snapshot_path: Path,
     materialized_schema_snapshot_path: Path,
     materialization_screen_snapshot_path: Path,
+    information_metrics_path: Path,
     node_resource_profiles_path: Path,
     repo_sha: str,
     remote_train_session_field_root: str,
@@ -666,6 +779,11 @@ def build_phase_b_prefinancial_freeze_v0(
                 )
             )
             or not bool(program_materialization_preflight.get("lag_applied_exactly_once"))
+            or not bool(
+                program_materialization_preflight.get(
+                    "all_required_fields_information_qualified"
+                )
+            )
             or bool(program_materialization_preflight.get("financial_evaluation_executed"))
             or any(
                 int(program_materialization_preflight.get(key) or 0)
@@ -679,6 +797,18 @@ def build_phase_b_prefinancial_freeze_v0(
             )
         ):
             raise ValueError("program materialization preflight authority drift")
+        preflight_information = dict(
+            program_materialization_preflight.get("information_coverage") or {}
+        )
+        if str(
+            preflight_information.get(
+                "information_metrics_authority_file_sha256"
+            )
+            or ""
+        ) != _sha256(information_metrics_path.resolve()):
+            raise ValueError(
+                "program materialization preflight/information authority drift"
+            )
         output_manifest_path = str(
             (program_materialization_preflight.get("output_manifest") or {}).get(
                 "path"
@@ -712,6 +842,26 @@ def build_phase_b_prefinancial_freeze_v0(
         root_contract_path=root_contract_path.resolve(),
         compatible_pair_ids=compatible_pair_ids,
     )
+    information_metrics_path = information_metrics_path.resolve()
+    information_metrics = _read_json(information_metrics_path)
+    if not isinstance(information_metrics, list):
+        raise ValueError("information metrics authority must be a row list")
+    information_metrics_snapshot_path = (
+        root / "capability_information_metrics.snapshot.json"
+    )
+    information_metrics_snapshot_path.write_bytes(information_metrics_path.read_bytes())
+    if _sha256(information_metrics_snapshot_path) != _sha256(information_metrics_path):
+        raise RuntimeError("information metrics snapshot copy drift")
+    components, information_screen = _screen_information_qualified_components(
+        components,
+        information_metrics=information_metrics,
+        authority_path=str(information_metrics_path),
+        authority_file_sha256=_sha256(information_metrics_path),
+        authority_relative_path=information_metrics_snapshot_path.name,
+    )
+    information_screen_path = _write_json(
+        root / "component_information_coverage_screen.json", information_screen
+    )
     pool_records = [_component_record(component) for component in components]
     role_counts = {
         role: sum(1 for component in components if component.role == role)
@@ -741,6 +891,19 @@ def build_phase_b_prefinancial_freeze_v0(
             ),
             "materialization_screen_snapshot_file_sha256": _sha256(
                 materialization_screen_snapshot_path.resolve()
+            ),
+            "information_metrics_authority_file_sha256": _sha256(
+                information_metrics_path
+            ),
+            "information_metrics_snapshot_file_sha256": _sha256(
+                information_metrics_snapshot_path
+            ),
+            "information_screen_file_sha256": _sha256(information_screen_path),
+            "information_screen_sha256": str(
+                information_screen["information_screen_sha256"]
+            ),
+            "information_rejected_component_count": int(
+                information_screen["rejected_component_count"]
             ),
             "accepted_materialized_pair_count": len(compatible_pair_ids),
             "accepted_stock_session_field_root": accepted_remote_session_root,
@@ -907,6 +1070,22 @@ def build_phase_b_prefinancial_freeze_v0(
             "component_pool_manifest_sha256": pool_manifest[
                 "component_pool_manifest_sha256"
             ],
+            "information_metrics_authority_path": str(information_metrics_path),
+            "information_metrics_authority_file_sha256": _sha256(
+                information_metrics_path
+            ),
+            "information_metrics_snapshot_relative_path": (
+                information_metrics_snapshot_path.name
+            ),
+            "information_metrics_snapshot_file_sha256": _sha256(
+                information_metrics_snapshot_path
+            ),
+            "component_information_screen_file_sha256": _sha256(
+                information_screen_path
+            ),
+            "component_information_screen_sha256": str(
+                information_screen["information_screen_sha256"]
+            ),
             "component_pool_file_sha256": _sha256(pool_path),
             "program_schedule_file_sha256": _sha256(schedule_path),
             "program_proposal_receipt_file_sha256": _sha256(proposal_receipt_path),
@@ -980,6 +1159,12 @@ def build_phase_b_prefinancial_freeze_v0(
             "phase_a_status": str(phase_a["status"]),
             "component_role_counts": role_counts,
             "component_role_underfill": pool_manifest["role_underfill"],
+            "information_rejected_component_count": int(
+                information_screen["rejected_component_count"]
+            ),
+            "information_rejected_components": list(
+                information_screen["rejected_components"]
+            ),
             "session_executable_component_counts": {
                 role: len(pool) for role, pool in executable_pools.items()
             },
@@ -1024,6 +1209,12 @@ def build_phase_b_prefinancial_freeze_v0(
             "artifact_manifest": _artifact(manifest_path, root=root),
             "component_pool_manifest": _artifact(pool_manifest_path, root=root),
             "source_component_pool": _artifact(pool_path, root=root),
+            "component_information_coverage_screen": _artifact(
+                information_screen_path, root=root
+            ),
+            "information_metrics_snapshot": _artifact(
+                information_metrics_snapshot_path, root=root
+            ),
             "phase_b_run_contract": _artifact(contract_path, root=root),
             "phase_b_uniform_schedule": _artifact(schedule_path, root=root),
             "program_proposal_receipts": _artifact(proposal_receipt_path, root=root),
@@ -1077,6 +1268,143 @@ def verify_phase_b_prefinancial_freeze_v0(root: Path) -> dict[str, Any]:
     component_by_id = {component.component_id: component for component in components}
     if len(component_by_id) != len(components):
         raise ValueError("Phase B component pool identity duplication")
+    information_screen = _read_json(
+        root / "component_information_coverage_screen.json"
+    )
+    information_body = dict(information_screen)
+    information_expected = str(
+        information_body.pop("information_screen_sha256", "")
+    )
+    if information_expected != stable_hash(information_body):
+        raise ValueError("Phase B information screen self-hash mismatch")
+    if (
+        str(information_screen.get("status") or "")
+        != "JOINT_PROGRAM_COMPONENT_INFORMATION_SCREEN_COMPLETE"
+        or bool(information_screen.get("financial_evaluation_executed"))
+        or any(
+            int(information_screen.get(key) or 0)
+            for key in (
+                "validation_reads",
+                "holdout_reads",
+                "historical_2023_reads",
+                "forward_b_reads",
+                "forward_2026_reads",
+            )
+        )
+    ):
+        raise ValueError("Phase B information screen authority drift")
+    information_authority = dict(
+        information_screen.get("information_metrics_authority") or {}
+    )
+    information_relative_path = str(
+        information_authority.get("relative_path") or ""
+    )
+    information_authority_path = (
+        root / information_relative_path
+        if information_relative_path
+        else Path(str(information_authority.get("path") or ""))
+    ).resolve()
+    if (
+        not information_authority_path.is_file()
+        or (
+            information_relative_path
+            and not information_authority_path.is_relative_to(root)
+        )
+        or _sha256(information_authority_path)
+        != str(information_authority.get("file_sha256") or "")
+    ):
+        raise ValueError("Phase B information metrics authority drift")
+    information_metrics = _read_json(information_authority_path)
+    if not isinstance(information_metrics, list):
+        raise ValueError("Phase B information metrics authority is not a row list")
+    metrics_by_field = {
+        str(row.get("field_id") or ""): row for row in information_metrics
+    }
+    if len(metrics_by_field) != len(information_metrics) or "" in metrics_by_field:
+        raise ValueError("Phase B information metrics identity drift")
+    component_screen = list(information_screen.get("component_screen") or [])
+    for row in component_screen:
+        primary_fields = list(row.get("primary_physical_leaf_ids") or [])
+        control_fields = list(row.get("control_physical_leaf_ids") or [])
+        required_fields = list(row.get("required_physical_leaf_ids") or [])
+        if required_fields != sorted(set(primary_fields) | set(control_fields)):
+            raise ValueError("Phase B information-screen physical leaf drift")
+        rejected_fields = sorted(
+            field_id
+            for field_id in required_fields
+            if (
+                field_id not in metrics_by_field
+                or float(metrics_by_field[field_id].get("coverage") or 0.0) <= 0.0
+                or int(metrics_by_field[field_id].get("finite_count") or 0) <= 0
+                or not bool(metrics_by_field[field_id].get("information_qualified"))
+            )
+        )
+        if rejected_fields != list(row.get("rejected_field_ids") or []):
+            raise ValueError("Phase B information-screen field verdict drift")
+        expected_status = (
+            "INFORMATION_REJECTED_COMPONENT"
+            if rejected_fields
+            else "INFORMATION_QUALIFIED_COMPONENT"
+        )
+        if str(row.get("status") or "") != expected_status:
+            raise ValueError("Phase B information-screen component verdict drift")
+    expected_accepted_ids = [
+        str(row["component_id"])
+        for row in component_screen
+        if row["status"] == "INFORMATION_QUALIFIED_COMPONENT"
+    ]
+    expected_rejected = [
+        row
+        for row in component_screen
+        if row["status"] == "INFORMATION_REJECTED_COMPONENT"
+    ]
+    expected_role_before = {
+        role: sum(str(row.get("role") or "") == role for row in component_screen)
+        for role in ROLE_TARGETS
+    }
+    expected_role_after = {
+        role: sum(
+            str(row.get("role") or "") == role
+            and row["status"] == "INFORMATION_QUALIFIED_COMPONENT"
+            for row in component_screen
+        )
+        for role in ROLE_TARGETS
+    }
+    expected_route_before = {
+        route: sum(
+            str(row.get("route_id") or "") == route for row in component_screen
+        )
+        for route in ROUTE_ROLE
+    }
+    expected_route_after = {
+        route: sum(
+            str(row.get("route_id") or "") == route
+            and row["status"] == "INFORMATION_QUALIFIED_COMPONENT"
+            for row in component_screen
+        )
+        for route in ROUTE_ROLE
+    }
+    if (
+        list(information_screen.get("accepted_component_ids") or [])
+        != expected_accepted_ids
+        or list(information_screen.get("rejected_components") or [])
+        != expected_rejected
+        or int(information_screen.get("rejected_component_count", -1))
+        != len(expected_rejected)
+        or dict(information_screen.get("role_counts_before_screen") or {})
+        != expected_role_before
+        or dict(information_screen.get("role_counts_after_screen") or {})
+        != expected_role_after
+        or dict(information_screen.get("route_counts_before_screen") or {})
+        != expected_route_before
+        or dict(information_screen.get("route_counts_after_screen") or {})
+        != expected_route_after
+    ):
+        raise ValueError("Phase B information-screen population drift")
+    if list(information_screen.get("accepted_component_ids") or []) != [
+        component.component_id for component in components
+    ]:
+        raise ValueError("Phase B information-screen component binding drift")
     schedule = _read_jsonl(root / "phase_b_uniform_schedule.jsonl")
     if len(schedule) != 64:
         raise ValueError("Phase B schedule record count drift")
@@ -1152,6 +1480,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     freeze.add_argument(
         "--materialization-screen-snapshot", type=Path, required=True
     )
+    freeze.add_argument("--information-metrics", type=Path, required=True)
     freeze.add_argument("--node-resource-profiles", type=Path, required=True)
     freeze.add_argument("--repo-sha", required=True)
     freeze.add_argument("--remote-train-session-field-root", required=True)
@@ -1175,6 +1504,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             materialization_screen_snapshot_path=(
                 args.materialization_screen_snapshot
             ),
+            information_metrics_path=args.information_metrics,
             node_resource_profiles_path=args.node_resource_profiles,
             repo_sha=args.repo_sha,
             remote_train_session_field_root=args.remote_train_session_field_root,

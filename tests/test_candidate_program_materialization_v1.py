@@ -8,7 +8,9 @@ import pytest
 from our_system_phase2.services.candidate_program_materialization_v1 import (
     ADAPTER_MARKET_PRELAGGED_BROADCAST,
     ADAPTER_STOCK_SESSION_CLOSE,
+    resolve_program_information_coverage_v1,
     resolve_program_materialization_plan_v1,
+    verify_program_information_coverage_v1,
     verify_program_materialization_plan_v1,
 )
 from our_system_phase2.services.unified_capability_registry import (
@@ -97,3 +99,43 @@ def test_plan_self_hash_is_fail_closed() -> None:
 
     with pytest.raises(ValueError, match="self-hash drift"):
         verify_program_materialization_plan_v1(tampered)
+
+
+def test_information_coverage_gate_is_exact_and_fail_closed() -> None:
+    metrics = [
+        {
+            "field_id": "close",
+            "coverage": 1.0,
+            "finite_count": 100,
+            "row_count": 100,
+            "information_qualified": True,
+            "information_status": "EVALUATED_DEVELOPMENT_ONLY",
+        },
+        {
+            "field_id": "ctx_zls_df_num",
+            "coverage": 0.0,
+            "finite_count": 0,
+            "row_count": 100,
+            "information_qualified": False,
+            "information_status": "EVALUATED_DEVELOPMENT_ONLY",
+        },
+    ]
+    report = resolve_program_information_coverage_v1(
+        ["close"],
+        information_metrics=metrics,
+        authority_path="capability_information_metrics.json",
+        authority_file_sha256="a" * 64,
+    )
+    verify_program_information_coverage_v1(report)
+    assert report["all_required_fields_information_qualified"]
+
+    rejected = resolve_program_information_coverage_v1(
+        ["close", "ctx_zls_df_num"],
+        information_metrics=metrics,
+        authority_path="capability_information_metrics.json",
+        authority_file_sha256="a" * 64,
+    )
+    assert rejected["unqualified_information_field_ids"] == ["ctx_zls_df_num"]
+    assert not rejected["all_required_fields_information_qualified"]
+    with pytest.raises(ValueError, match="did not pass"):
+        verify_program_information_coverage_v1(rejected)

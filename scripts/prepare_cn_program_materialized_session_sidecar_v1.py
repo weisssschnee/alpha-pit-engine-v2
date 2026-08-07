@@ -44,7 +44,9 @@ from our_system_phase2.services.candidate_program_materialization_v1 import (
     ADAPTER_MARKET_PRELAGGED_BROADCAST,
     ADAPTER_STOCK_PRELAGGED_SESSION,
     ADAPTER_STOCK_SESSION_CLOSE,
+    resolve_program_information_coverage_v1,
     resolve_program_materialization_plan_v1,
+    verify_program_information_coverage_v1,
     verify_program_materialization_plan_v1,
 )
 from our_system_phase2.services.candidate_program_v1 import (
@@ -60,6 +62,7 @@ from our_system_phase2.services.unified_capability_registry import (
 
 SOURCE_MANIFEST_NAME = "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
 PLAN_NAME = "PROGRAM_MATERIALIZATION_PLAN_V1.json"
+INFORMATION_COVERAGE_NAME = "PROGRAM_INFORMATION_COVERAGE_V1.json"
 FIXTURE_NAME = "PROGRAM_MATERIALIZATION_TEMPLATE_FIXTURES_V1.json"
 ARTIFACT_MANIFEST_NAME = "ARTIFACT_MANIFEST.json"
 CLOSURE_NAME = "PROGRAM_MATERIALIZATION_PREFLIGHT_V1.json"
@@ -285,10 +288,8 @@ def _template_fixtures(
     *,
     records: Sequence[Mapping[str, Any]],
     registry: UnifiedCapabilityRegistry,
-    sidecar_path: Path,
+    sidecar_paths: Sequence[Path],
 ) -> dict[str, Any]:
-    frame = pd.read_parquet(sidecar_path)
-    frame["trade_time"] = pd.to_datetime(frame["trade_time"], errors="raise")
     compiler = ProgramCompilerV1(registry)
     selected: dict[str, Mapping[str, Any]] = {}
     for record in records:
@@ -298,16 +299,38 @@ def _template_fixtures(
         record = selected[template_id]
         program = CandidateProgramSpecV1.from_record(dict(record["primary_program"]))
         compiled = compiler.compile(program)
-        output = apply_compiled_candidate_program_v1(
-            frame,
-            compiled,
-            data_role="development",
-            materialized_sidecar_clock_column="trade_time",
-            materialized_sidecar_authority="PIT_MATERIALIZED_FIELD_SIDECAR",
-        )
-        joint_eligible = int(output["program_joint_eligible"].sum())
-        finite_scores = int(np.isfinite(pd.to_numeric(output["program_stock_score"], errors="coerce")).sum())
-        if len(output) != len(frame) or joint_eligible <= 0 or finite_scores <= 0:
+        frame: pd.DataFrame | None = None
+        output: pd.DataFrame | None = None
+        joint_eligible = 0
+        finite_scores = 0
+        fixture_shard = -1
+        for fixture_shard, sidecar_path in enumerate(sidecar_paths):
+            frame = pd.read_parquet(sidecar_path)
+            frame["trade_time"] = pd.to_datetime(
+                frame["trade_time"], errors="raise"
+            )
+            output = apply_compiled_candidate_program_v1(
+                frame,
+                compiled,
+                data_role="development",
+                materialized_sidecar_clock_column="trade_time",
+                materialized_sidecar_authority="PIT_MATERIALIZED_FIELD_SIDECAR",
+            )
+            joint_eligible = int(output["program_joint_eligible"].sum())
+            finite_scores = int(
+                np.isfinite(
+                    pd.to_numeric(output["program_stock_score"], errors="coerce")
+                ).sum()
+            )
+            if len(output) == len(frame) and joint_eligible > 0 and finite_scores > 0:
+                break
+        if (
+            frame is None
+            or output is None
+            or len(output) != len(frame)
+            or joint_eligible <= 0
+            or finite_scores <= 0
+        ):
             raise RuntimeError(f"program materialization fixture has no executable support: {template_id}")
         fixture: dict[str, Any] = {
             "template_id": template_id,
@@ -318,6 +341,7 @@ def _template_fixtures(
             "row_count": len(output),
             "joint_eligible_rows": joint_eligible,
             "finite_score_rows": finite_scores,
+            "fixture_shard_index": fixture_shard,
             "lag_application_count": 0,
             "materialized_sidecar_lag_reapplied": False,
             "status": "PROGRAM_APPLY_PASS",
@@ -367,6 +391,7 @@ def prepare(
     *,
     schedule_path: Path,
     registry_path: Path,
+    information_metrics_path: Path,
     source_root: Path,
     bar_source_root: Path,
     output_root: Path,
@@ -412,6 +437,22 @@ def prepare(
     )
     verify_program_materialization_plan_v1(plan)
     plan_path = _write_json(output_root / PLAN_NAME, plan)
+    information_metrics_path = Path(information_metrics_path).resolve()
+    information_metrics = json.loads(
+        information_metrics_path.read_text(encoding="utf-8-sig")
+    )
+    if not isinstance(information_metrics, list):
+        raise ValueError("information metrics authority must be a row list")
+    information_coverage = resolve_program_information_coverage_v1(
+        plan["required_physical_leaf_ids"],
+        information_metrics=information_metrics,
+        authority_path=str(information_metrics_path),
+        authority_file_sha256=_sha256(information_metrics_path),
+    )
+    information_coverage_path = _write_json(
+        output_root / INFORMATION_COVERAGE_NAME, information_coverage
+    )
+    verify_program_information_coverage_v1(information_coverage)
 
     shards = list(source_manifest["shards"])
     receipts: list[dict[str, Any]] = []
@@ -527,6 +568,16 @@ def prepare(
                 "file_sha256": _sha256(plan_path),
                 "payload_sha256": plan["plan_sha256"],
             },
+            "program_information_coverage": {
+                "path": str(information_coverage_path),
+                "file_sha256": _sha256(information_coverage_path),
+                "payload_sha256": information_coverage[
+                    "information_coverage_sha256"
+                ],
+                "information_metrics_authority_file_sha256": _sha256(
+                    information_metrics_path
+                ),
+            },
             "validation_reads": 0,
             "holdout_reads": 0,
             "forward_2026_reads": 0,
@@ -538,7 +589,7 @@ def prepare(
     fixtures = _template_fixtures(
         records=records,
         registry=registry,
-        sidecar_path=Path(manifest_shards[0]["output_path"]),
+        sidecar_paths=[Path(row["output_path"]) for row in manifest_shards],
     )
     if int(fixtures["template_count"]) != len(Counter(record["template_id"] for record in records)):
         raise RuntimeError("program materialization fixture template coverage drift")
@@ -546,6 +597,7 @@ def prepare(
 
     artifact_paths = [
         plan_path,
+        information_coverage_path,
         manifest_path,
         fixture_path,
         *[Path(row["receipt_path"]) for row in receipts],
@@ -600,6 +652,8 @@ def prepare(
                 "payload_sha256": manifest["manifest_hash"],
             },
             "materialization_plan": manifest["program_materialization_plan"],
+            "information_coverage": manifest["program_information_coverage"],
+            "all_required_fields_information_qualified": True,
             "template_fixtures": {
                 "path": str(fixture_path),
                 "file_sha256": _sha256(fixture_path),
@@ -641,6 +695,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--schedule", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)
+    parser.add_argument("--information-metrics", type=Path, required=True)
     parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument("--bar-source-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
@@ -652,6 +707,7 @@ def main() -> int:
     result = prepare(
         schedule_path=args.schedule,
         registry_path=args.registry,
+        information_metrics_path=args.information_metrics,
         source_root=args.source_root,
         bar_source_root=args.bar_source_root,
         output_root=args.output_root,

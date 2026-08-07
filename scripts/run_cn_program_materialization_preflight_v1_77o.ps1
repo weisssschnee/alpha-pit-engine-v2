@@ -11,6 +11,9 @@ param(
     [string]$Registry = (
         'runtime\field_registry\cn_unified_capability_registry_v3_20260717\unified_capability_registry.json'
     ),
+    [string]$InformationMetrics = (
+        'runtime\cn_full_field_information_research_v1_20260717\capability_information_metrics.json'
+    ),
     [string]$NodeResourceCapacity = (
         'runtime\run_plans\cn_alpha_node_resource_profiles_v1.json'
     ),
@@ -63,6 +66,11 @@ $resolvedCapacity = if ([IO.Path]::IsPathRooted($NodeResourceCapacity)) {
 } else {
     [IO.Path]::GetFullPath((Join-Path $resolvedRepo $NodeResourceCapacity))
 }
+$resolvedInformationMetrics = if ([IO.Path]::IsPathRooted($InformationMetrics)) {
+    [IO.Path]::GetFullPath($InformationMetrics)
+} else {
+    [IO.Path]::GetFullPath((Join-Path $resolvedRepo $InformationMetrics))
+}
 if (-not $resolvedRepo.StartsWith('D:\ChengboRemote\workspace\', [StringComparison]::OrdinalIgnoreCase)) {
     throw "unexpected repo path: $resolvedRepo"
 }
@@ -89,6 +97,7 @@ foreach ($path in @(
     $resolvedBars,
     $barManifest,
     $resolvedRegistry,
+    $resolvedInformationMetrics,
     $resolvedCapacity
 )) {
     if (-not (Test-Path -LiteralPath $path)) {
@@ -140,6 +149,8 @@ $stderrPath = Join-Path $resolvedRoot 'program_materialization.stderr.log'
     schedule_sha256 = Get-SharedReadSha256 $schedule
     source_field_root = $resolvedFields
     source_field_manifest_sha256 = Get-SharedReadSha256 $fieldManifest
+    information_metrics = $resolvedInformationMetrics
+    information_metrics_sha256 = Get-SharedReadSha256 $resolvedInformationMetrics
     development_bar_root = $resolvedBars
     development_bar_manifest_sha256 = Get-SharedReadSha256 $barManifest
     output_root = $resolvedRoot
@@ -201,6 +212,7 @@ try {
     )) `
         --schedule $schedule `
         --registry $resolvedRegistry `
+        --information-metrics $resolvedInformationMetrics `
         --source-root $resolvedFields `
         --bar-source-root $resolvedBars `
         --output-root $resolvedRoot `

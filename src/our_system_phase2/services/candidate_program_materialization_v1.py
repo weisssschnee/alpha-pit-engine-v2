@@ -20,6 +20,8 @@ from our_system_phase2.services.unified_capability_registry import (
 
 PLAN_SCHEMA_VERSION = "cn_candidate_program_materialization_plan_v1"
 PLAN_STATUS = "PROGRAM_MATERIALIZATION_PLAN_COMPLETE"
+INFORMATION_COVERAGE_SCHEMA_VERSION = "cn_program_information_coverage_v1"
+INFORMATION_COVERAGE_STATUS = "PROGRAM_INFORMATION_COVERAGE_COMPLETE"
 
 ADAPTER_ALREADY_MATERIALIZED = "PIT_MATERIALIZED_FIELD_SIDECAR"
 ADAPTER_STOCK_PRELAGGED_SESSION = "STOCK_SESSION_PRELAGGED_CONTEXT"
@@ -30,6 +32,145 @@ ADAPTER_MARKET_SESSION_CLOSE_BROADCAST = "MARKET_SESSION_CLOSE_BROADCAST_FROM_RA
 
 def _strings(values: Iterable[Any]) -> tuple[str, ...]:
     return tuple(sorted({str(value) for value in values if str(value)}))
+
+
+def resolve_program_information_coverage_v1(
+    required_field_ids: Iterable[str],
+    *,
+    information_metrics: Sequence[Mapping[str, Any]],
+    authority_path: str,
+    authority_file_sha256: str,
+) -> dict[str, Any]:
+    """Bind required physical leaves to development-only information evidence.
+
+    Registry eligibility answers whether a field is legal.  This gate answers
+    the separate physical question: whether the already-qualified development
+    source contains at least one finite observation for every required leaf.
+    It is intentionally reward-free and must run before sidecar writes or any
+    financial evaluation.
+    """
+
+    required = _strings(required_field_ids)
+    if len(authority_file_sha256) != 64:
+        raise ValueError("program information coverage authority hash is invalid")
+    metrics_by_field: dict[str, Mapping[str, Any]] = {}
+    duplicates: set[str] = set()
+    for raw in information_metrics:
+        field_id = str(raw.get("field_id") or "")
+        if not field_id:
+            raise ValueError("information metric lacks field identity")
+        if field_id in metrics_by_field:
+            duplicates.add(field_id)
+        metrics_by_field[field_id] = raw
+    if duplicates:
+        raise ValueError(f"duplicate information metrics: {sorted(duplicates)}")
+
+    rows: list[dict[str, Any]] = []
+    missing: list[str] = []
+    unqualified: list[str] = []
+    for field_id in required:
+        metric = metrics_by_field.get(field_id)
+        if metric is None:
+            missing.append(field_id)
+            rows.append(
+                {
+                    "field_id": field_id,
+                    "metric_present": False,
+                    "information_qualified": False,
+                    "coverage": None,
+                    "finite_count": None,
+                    "gate_passed": False,
+                    "failure_reasons": ["MISSING_INFORMATION_METRIC"],
+                }
+            )
+            continue
+        reasons: list[str] = []
+        coverage = float(metric.get("coverage") or 0.0)
+        finite_count = int(metric.get("finite_count") or 0)
+        information_qualified = bool(metric.get("information_qualified"))
+        if coverage <= 0.0:
+            reasons.append("NONPOSITIVE_COVERAGE")
+        if finite_count <= 0:
+            reasons.append("NONPOSITIVE_FINITE_COUNT")
+        if not information_qualified:
+            reasons.append("INFORMATION_NOT_QUALIFIED")
+        if reasons:
+            unqualified.append(field_id)
+        rows.append(
+            {
+                "field_id": field_id,
+                "metric_present": True,
+                "information_qualified": information_qualified,
+                "information_status": str(metric.get("information_status") or ""),
+                "coverage": coverage,
+                "finite_count": finite_count,
+                "row_count": int(metric.get("row_count") or 0),
+                "gate_passed": not reasons,
+                "failure_reasons": reasons,
+            }
+        )
+
+    payload: dict[str, Any] = {
+        "schema_version": INFORMATION_COVERAGE_SCHEMA_VERSION,
+        "status": INFORMATION_COVERAGE_STATUS,
+        "information_metrics_authority": {
+            "path": authority_path,
+            "file_sha256": authority_file_sha256,
+        },
+        "required_field_count": len(required),
+        "required_field_ids": list(required),
+        "field_metrics": rows,
+        "missing_information_metric_field_ids": missing,
+        "unqualified_information_field_ids": unqualified,
+        "all_required_fields_information_qualified": not missing and not unqualified,
+        "financial_evaluation_executed": False,
+        "validation_reads": 0,
+        "holdout_reads": 0,
+        "historical_2023_reads": 0,
+        "forward_b_reads": 0,
+        "forward_2026_reads": 0,
+    }
+    payload["information_coverage_sha256"] = stable_hash(payload)
+    return payload
+
+
+def verify_program_information_coverage_v1(report: Mapping[str, Any]) -> None:
+    body = dict(report)
+    claimed = str(body.pop("information_coverage_sha256", ""))
+    if len(claimed) != 64 or stable_hash(body) != claimed:
+        raise ValueError("program information coverage self-hash drift")
+    if (
+        body.get("schema_version") != INFORMATION_COVERAGE_SCHEMA_VERSION
+        or body.get("status") != INFORMATION_COVERAGE_STATUS
+    ):
+        raise ValueError("program information coverage authority drift")
+    if not bool(body.get("all_required_fields_information_qualified")):
+        raise ValueError("program information coverage did not pass")
+    required = list(body.get("required_field_ids") or [])
+    metrics = list(body.get("field_metrics") or [])
+    if int(body.get("required_field_count") or 0) != len(required):
+        raise ValueError("program information coverage field-count drift")
+    if required != sorted(set(required)) or [row.get("field_id") for row in metrics] != required:
+        raise ValueError("program information coverage field identity drift")
+    if any(not bool(row.get("gate_passed")) for row in metrics):
+        raise ValueError("program information coverage contains a failed field")
+    if body.get("missing_information_metric_field_ids") or body.get(
+        "unqualified_information_field_ids"
+    ):
+        raise ValueError("program information coverage contains unresolved fields")
+    if any(
+        int(body.get(key) or 0)
+        for key in (
+            "validation_reads",
+            "holdout_reads",
+            "historical_2023_reads",
+            "forward_b_reads",
+            "forward_2026_reads",
+        )
+    ):
+        raise PermissionError("program information coverage records prohibited reads")
+    if bool(body.get("financial_evaluation_executed")):
+        raise PermissionError("program information coverage performed financial evaluation")
 
 
 def _compiled_dependencies(
