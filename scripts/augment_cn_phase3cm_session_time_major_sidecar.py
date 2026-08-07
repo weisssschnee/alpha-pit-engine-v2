@@ -192,7 +192,12 @@ def _materialize_market_session_context(
             "trade_time"
         )
     )
-    context = daily.select("trade_time", *fields).to_pandas()
+    context = (
+        daily.select("trade_time", *fields)
+        .sort("trade_time")
+        .to_pandas()
+        .reset_index(drop=True)
+    )
     if context.duplicated(["trade_time"]).any():
         raise ValueError("market context has duplicate session coordinates")
     output = frame.merge(
