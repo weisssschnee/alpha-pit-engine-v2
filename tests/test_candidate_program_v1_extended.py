@@ -186,6 +186,64 @@ def test_legacy_route_preserves_registry_session_lags(program_context) -> None:
     assert set(clock["field_requirements"]) == set(candidate["field_ids"])
 
 
+def test_materialized_legacy_wrapper_does_not_reapply_registry_lags(
+    program_context,
+) -> None:
+    registry, grammar, _, _ = program_context
+    candidate = dict(
+        grammar.propose(
+            "SLOW_CROSS_SECTIONAL_LEVEL", attempt_index=0, seed=1729
+        ).primary
+    )
+    program = legacy_candidate_program_v1(
+        candidate, portfolio_contract=PORTFOLIO_CONTRACT_V1
+    )
+    compiled = ProgramCompilerV1(registry).compile(program)
+    assert any(int(value) > 0 for value in compiled.field_lags.values())
+
+    rng = np.random.default_rng(1729)
+    dates = pd.date_range("2024-01-02", periods=8, freq="B")
+    rows = []
+    for date in dates:
+        for code_index in range(12):
+            row = {
+                "date": date,
+                "trade_time": date + pd.Timedelta(hours=15),
+                "code": f"{code_index:06d}",
+                "universe_eligible": True,
+            }
+            for field_id in candidate["field_ids"]:
+                row[field_id] = float(rng.normal())
+            rows.append(row)
+    frame = pd.DataFrame(rows)
+    direct = evaluate_panel_expression(
+        frame,
+        candidate["canonical_expression"],
+        data_role="development",
+    )
+    double_lagged = evaluate_panel_expression(
+        frame,
+        candidate["canonical_expression"],
+        field_lags=dict(compiled.field_lags),
+        data_role="development",
+    )
+    assert not direct.equals(double_lagged)
+
+    wrapped = apply_compiled_candidate_program_v1(
+        frame,
+        compiled,
+        data_role="development",
+        materialized_sidecar_clock_column="trade_time",
+        materialized_sidecar_authority="PIT_MATERIALIZED_FIELD_SIDECAR",
+    )
+    pd.testing.assert_series_equal(
+        direct,
+        wrapped["signal"],
+        check_names=False,
+        check_exact=True,
+    )
+
+
 def test_existing_categorical_and_supplemental_generation_lanes_replay(program_context) -> None:
     registry, grammar, _, _ = program_context
     allowlists = json.loads(ROOT_CONTRACT.read_text(encoding="utf-8"))[

@@ -115,12 +115,23 @@ def apply_compiled_candidate_program_v1(
             lambda value: value.isoformat() if pd.notna(value) else None
         )
 
+    # A PIT materialized sidecar has already applied each registered source lag
+    # before writing the field value at its trade coordinate.  Reapplying the
+    # compiler's raw-field lags here would shift the same information twice and
+    # break legacy-wrapper parity.  Explicit component-clock rows, by contrast,
+    # bind raw observations and still require the compiled lags.
+    effective_field_lags = (
+        {}
+        if materialized_sidecar_clock_column is not None
+        else dict(compiled.field_lags)
+    )
+
     score = pd.to_numeric(
         evaluate_panel_expression(
             output,
             expressions["stock_score_node_id"],
             cache=cache,
-            field_lags=dict(compiled.field_lags),
+            field_lags=effective_field_lags,
             data_role=data_role,
         ),
         errors="coerce",
@@ -130,7 +141,7 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["eligibility_mask_node_id"],
             cache=cache,
-            field_lags=dict(compiled.field_lags),
+            field_lags=effective_field_lags,
             data_role=data_role,
         ),
         errors="coerce",
@@ -140,7 +151,7 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["exposure_multiplier_node_id"],
             cache=cache,
-            field_lags=dict(compiled.field_lags),
+            field_lags=effective_field_lags,
             data_role=data_role,
         ),
         errors="coerce",
@@ -150,7 +161,7 @@ def apply_compiled_candidate_program_v1(
             output,
             expressions["veto_mask_node_id"],
             cache=cache,
-            field_lags=dict(compiled.field_lags),
+            field_lags=effective_field_lags,
             data_role=data_role,
         ),
         errors="coerce",
