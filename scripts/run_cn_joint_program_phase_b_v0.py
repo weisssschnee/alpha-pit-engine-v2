@@ -1024,6 +1024,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "records_per_checkpoint": RECORDS_PER_CHECKPOINT,
             "executor_backend": "PROCESS_POOL",
             "executor_workers": int(args.executor_workers),
+            "executor_lifecycle": "CHECKPOINT_SCOPED_RECYCLE",
+            "maximum_inflight_records": RECORDS_PER_CHECKPOINT,
             "native_threads_per_worker": 1,
             "validation_reads": 0,
             "holdout_reads": 0,
@@ -1087,90 +1089,89 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for index in range(closed_checkpoints + 1, CHECKPOINT_COUNT)
     ):
         raise RuntimeError("Phase B checkpoint chain contains a gap")
-    remaining = schedule[closed_checkpoints * RECORDS_PER_CHECKPOINT :]
-    minimum_free, maximum_parent_rss, maximum_tree_rss = _resource_snapshot()
+    boundary_free, maximum_parent_rss, maximum_tree_rss = _resource_snapshot()
+    minimum_boundary_free = boundary_free
+    minimum_observed_free = boundary_free
     host_cpu_samples: list[float] = []
     psutil.cpu_percent(interval=None)
     started = time.perf_counter()
-    completed_ordinals = {
-        int(row["main_record_ordinal"]) for row in records
-    }
-    if remaining:
+    if closed_checkpoints < CHECKPOINT_COUNT:
         inflight_root.mkdir(parents=True, exist_ok=True)
-        for index in range(closed_checkpoints, CHECKPOINT_COUNT):
-            (inflight_root / f"checkpoint_{index + 1:03d}" / "records").mkdir(
-                parents=True, exist_ok=True
-            )
-        with ProcessPoolExecutor(
-            max_workers=int(args.executor_workers),
-            initializer=_initialize_worker,
-            initargs=(
-                str(contract_path),
-                str(train_field_root),
-                str(train_price_root),
-                price_manifest,
-                str(price_manifest_path),
-                str(registry_path),
-                input_hash,
-                windows,
-                field_manifest_file_sha256,
-                field_manifest_payload_sha256,
-            ),
-        ) as executor:
+        for checkpoint_index in range(closed_checkpoints, CHECKPOINT_COUNT):
+            checkpoint_id = f"checkpoint_{checkpoint_index + 1:03d}"
+            checkpoint_rows = schedule[
+                checkpoint_index * RECORDS_PER_CHECKPOINT :
+                (checkpoint_index + 1) * RECORDS_PER_CHECKPOINT
+            ]
+            checkpoint_inflight = inflight_root / checkpoint_id
+            record_root = checkpoint_inflight / "records"
+            record_root.mkdir(parents=True, exist_ok=True)
+            checkpoint_ordinals = {
+                int(row["main_record_ordinal"]) for row in checkpoint_rows
+            }
+            completed_ordinals: set[int] = set()
             futures = {}
-            for row in remaining:
-                ordinal = int(row["main_record_ordinal"])
-                checkpoint_index = ordinal // RECORDS_PER_CHECKPOINT
-                target = (
-                    inflight_root
-                    / f"checkpoint_{checkpoint_index + 1:03d}"
-                    / "records"
-                    / f"record_{ordinal:04d}.json"
-                )
-                futures[executor.submit(_evaluate_record, row, str(target))] = ordinal
-            pending = set(futures)
-            next_to_close = closed_checkpoints
-            while pending:
-                done, pending = wait(
-                    pending, timeout=2.0, return_when=FIRST_COMPLETED
-                )
-                for future in done:
-                    payload = future.result()
-                    completed_ordinals.add(int(payload["main_record_ordinal"]))
-                available, parent_rss, tree_rss = _resource_snapshot()
-                minimum_free = min(minimum_free, available)
-                maximum_parent_rss = max(maximum_parent_rss, parent_rss)
-                maximum_tree_rss = max(maximum_tree_rss, tree_rss)
-                host_cpu_samples.append(float(psutil.cpu_percent(interval=None)))
-                if available < MINIMUM_FREE_MEMORY_BYTES:
-                    for future in pending:
-                        future.cancel()
-                    raise RuntimeError("Phase B runtime memory gate failed")
-                while next_to_close < CHECKPOINT_COUNT:
-                    checkpoint_ordinals = set(
-                        range(
-                            next_to_close * RECORDS_PER_CHECKPOINT,
-                            (next_to_close + 1) * RECORDS_PER_CHECKPOINT,
+            with ProcessPoolExecutor(
+                max_workers=min(int(args.executor_workers), len(checkpoint_rows)),
+                initializer=_initialize_worker,
+                initargs=(
+                    str(contract_path),
+                    str(train_field_root),
+                    str(train_price_root),
+                    price_manifest,
+                    str(price_manifest_path),
+                    str(registry_path),
+                    input_hash,
+                    windows,
+                    field_manifest_file_sha256,
+                    field_manifest_payload_sha256,
+                ),
+            ) as executor:
+                for row in checkpoint_rows:
+                    ordinal = int(row["main_record_ordinal"])
+                    target = record_root / f"record_{ordinal:04d}.json"
+                    futures[
+                        executor.submit(_evaluate_record, row, str(target))
+                    ] = ordinal
+                pending = set(futures)
+                while pending:
+                    done, pending = wait(
+                        pending, timeout=2.0, return_when=FIRST_COMPLETED
+                    )
+                    for future in done:
+                        payload = future.result()
+                        completed_ordinals.add(
+                            int(payload["main_record_ordinal"])
                         )
+                    available, parent_rss, tree_rss = _resource_snapshot()
+                    minimum_observed_free = min(minimum_observed_free, available)
+                    maximum_parent_rss = max(maximum_parent_rss, parent_rss)
+                    maximum_tree_rss = max(maximum_tree_rss, tree_rss)
+                    host_cpu_samples.append(
+                        float(psutil.cpu_percent(interval=None))
                     )
-                    if not checkpoint_ordinals.issubset(completed_ordinals):
-                        break
-                    checkpoint_id = f"checkpoint_{next_to_close + 1:03d}"
-                    checkpoint_rows = schedule[
-                        next_to_close * RECORDS_PER_CHECKPOINT :
-                        (next_to_close + 1) * RECORDS_PER_CHECKPOINT
-                    ]
-                    previous_manifest = _close_checkpoint(
-                        inflight_root / checkpoint_id,
-                        checkpoints_root / checkpoint_id,
-                        checkpoint_id=checkpoint_id,
-                        previous_manifest=previous_manifest,
-                        input_hash=input_hash,
-                        freeze_closure_sha256=_sha256(freeze_root / FREEZE_CLOSURE_NAME),
-                        schedule_file_sha256=_sha256(schedule_path),
-                        schedule_rows=checkpoint_rows,
-                    )
-                    next_to_close += 1
+            available, parent_rss, tree_rss = _resource_snapshot()
+            minimum_observed_free = min(minimum_observed_free, available)
+            minimum_boundary_free = min(minimum_boundary_free, available)
+            maximum_parent_rss = max(maximum_parent_rss, parent_rss)
+            maximum_tree_rss = max(maximum_tree_rss, tree_rss)
+            host_cpu_samples.append(float(psutil.cpu_percent(interval=None)))
+            if available < MINIMUM_FREE_MEMORY_BYTES:
+                raise RuntimeError("Phase B runtime memory gate failed")
+            if completed_ordinals != checkpoint_ordinals:
+                raise RuntimeError(
+                    f"Phase B checkpoint completion drift: {checkpoint_id}"
+                )
+            previous_manifest = _close_checkpoint(
+                checkpoint_inflight,
+                checkpoints_root / checkpoint_id,
+                checkpoint_id=checkpoint_id,
+                previous_manifest=previous_manifest,
+                input_hash=input_hash,
+                freeze_closure_sha256=_sha256(freeze_root / FREEZE_CLOSURE_NAME),
+                schedule_file_sha256=_sha256(schedule_path),
+                schedule_rows=checkpoint_rows,
+            )
         if inflight_root.exists() and not any(inflight_root.iterdir()):
             inflight_root.rmdir()
     elapsed = float(time.perf_counter() - started)
@@ -1236,16 +1237,26 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     resource = _self_hashed(
         {
             "schema_version": "cn_joint_program_phase_b_resource_summary_v0",
-            "status": "PASS" if minimum_free >= MINIMUM_FREE_MEMORY_BYTES else "FAIL",
+            "status": (
+                "PASS"
+                if minimum_boundary_free >= MINIMUM_FREE_MEMORY_BYTES
+                else "FAIL"
+            ),
             "wall_seconds": elapsed,
             "main_records_per_hour": EXPECTED_RECORDS / max(elapsed / 3600.0, 1e-12),
-            "minimum_free_memory_bytes": minimum_free,
+            "minimum_free_memory_bytes": minimum_boundary_free,
+            "minimum_observed_free_memory_bytes": minimum_observed_free,
             "maximum_parent_rss_bytes": maximum_parent_rss,
             "maximum_process_tree_rss_bytes": maximum_tree_rss,
             "mean_host_cpu_percent": cpu_mean,
             "mean_effective_cores": cpu_mean * logical_cpu / 100.0,
             "logical_cpu_count": logical_cpu,
             "executor_workers": int(args.executor_workers),
+            "effective_workers_per_checkpoint": min(
+                int(args.executor_workers), RECORDS_PER_CHECKPOINT
+            ),
+            "executor_lifecycle": "CHECKPOINT_SCOPED_RECYCLE",
+            "maximum_inflight_records": RECORDS_PER_CHECKPOINT,
             "native_threads_per_worker": 1,
         },
         "resource_summary_payload_sha256",
@@ -1324,7 +1335,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ),
             "artifact_manifest": _artifact(manifest_path, root=root),
             "artifact_count": len(manifest["artifacts"]),
-            "minimum_free_memory_bytes": minimum_free,
+            "minimum_free_memory_bytes": minimum_boundary_free,
+            "minimum_observed_free_memory_bytes": minimum_observed_free,
             "validation_reads": 0,
             "holdout_reads": 0,
             "historical_2023_reads": 0,

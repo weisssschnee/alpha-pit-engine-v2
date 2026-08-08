@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 import hashlib
+import inspect
 from pathlib import Path
 
 from our_system_phase2.runtime.cn_iterative_search_v1 import _batch_manifest
 from our_system_phase2.runtime.cn_joint_program_phase_b_v0 import TEMPLATE_ORDER
 from scripts.run_cn_joint_program_phase_b_v0 import (
     _parity_differences,
+    run,
     _self_hashed,
     _template_summary,
     _validate_phase_b_execution_price_sidecar,
@@ -16,6 +18,27 @@ from scripts.run_cn_joint_program_phase_b_v0 import (
     _verify_checkpoint,
     _write_json,
 )
+
+
+def test_phase_b_recycles_process_pool_at_each_checkpoint_boundary() -> None:
+    source = inspect.getsource(run)
+    checkpoint_loop = source.index(
+        "for checkpoint_index in range(closed_checkpoints, CHECKPOINT_COUNT):"
+    )
+    process_pool = source.index("with ProcessPoolExecutor(", checkpoint_loop)
+    resource_gate = source.index(
+        "if available < MINIMUM_FREE_MEMORY_BYTES:", process_pool
+    )
+    checkpoint_close = source.index(
+        "previous_manifest = _close_checkpoint(", resource_gate
+    )
+
+    assert checkpoint_loop < process_pool < resource_gate < checkpoint_close
+    assert "for row in checkpoint_rows:" in source[process_pool:resource_gate]
+    assert "for row in remaining:" not in source
+    assert '"executor_lifecycle": "CHECKPOINT_SCOPED_RECYCLE"' in source
+    assert '"maximum_inflight_records": RECORDS_PER_CHECKPOINT' in source
+    assert '"minimum_observed_free_memory_bytes": minimum_observed_free' in source
 
 
 def _closed_record(ordinal: int, template_id: str) -> dict:
