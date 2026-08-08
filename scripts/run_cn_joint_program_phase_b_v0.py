@@ -39,6 +39,7 @@ from our_system_phase2.runtime.cn_unified_capability_discovery import (
     _behavior_identity,
 )
 from our_system_phase2.services.a_share_executable_replay import (
+    AShareCandidateReplayBlockerError,
     ASharePortfolioDecoderPolicy,
     ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
     run_a_share_long_only_replay,
@@ -86,6 +87,9 @@ _WORKER_CONTEXT: dict[str, Any] | None = None
 _WORKER_REGISTRY: UnifiedCapabilityRegistry | None = None
 _WORKER_INPUT_HASH: str | None = None
 _WORKER_WINDOWS: tuple[Mapping[str, Any], ...] = ()
+
+PAIR_REPLAY_COMPLETE = "PAIR_REPLAY_COMPLETE"
+PAIR_REPLAY_BLOCKED = "PAIR_REPLAY_BLOCKED"
 
 
 def _sha256(path: Path) -> str:
@@ -589,18 +593,43 @@ def _evaluate_record(
         compiled_key="control_compiled",
         registry=_WORKER_REGISTRY,
     )
-    primary = _evaluate_compiled(
-        primary_compiled,
-        context=_WORKER_CONTEXT,
-        windows=_WORKER_WINDOWS,
-    )
-    control = _evaluate_compiled(
-        control_compiled,
-        context=_WORKER_CONTEXT,
-        windows=_WORKER_WINDOWS,
-    )
+    primary: dict[str, Any] | None = None
+    control: dict[str, Any] | None = None
+    replay_blocker: dict[str, Any] | None = None
+    try:
+        primary = _evaluate_compiled(
+            primary_compiled,
+            context=_WORKER_CONTEXT,
+            windows=_WORKER_WINDOWS,
+        )
+    except AShareCandidateReplayBlockerError as exc:
+        replay_blocker = {
+            "leg": "PRIMARY",
+            "fail_closed": True,
+            "economic_claim_authorized": False,
+            "promotion_authorized": False,
+            **exc.blocker_details(),
+        }
+    if replay_blocker is None:
+        try:
+            control = _evaluate_compiled(
+                control_compiled,
+                context=_WORKER_CONTEXT,
+                windows=_WORKER_WINDOWS,
+            )
+        except AShareCandidateReplayBlockerError as exc:
+            replay_blocker = {
+                "leg": "BASE_CONTROL",
+                "fail_closed": True,
+                "economic_claim_authorized": False,
+                "promotion_authorized": False,
+                **exc.blocker_details(),
+            }
     parity: dict[str, Any] | None = None
-    if str(schedule["record_kind"]) == "BASE_WRAPPER_PARITY":
+    if (
+        replay_blocker is None
+        and str(schedule["record_kind"]) == "BASE_WRAPPER_PARITY"
+    ):
         legacy_primary = _evaluate_legacy(
             dict(schedule["legacy_primary_candidate"]),
             context=_WORKER_CONTEXT,
@@ -625,18 +654,34 @@ def _evaluate_record(
             "legacy_primary": legacy_primary,
             "legacy_control": legacy_control,
         }
-    increment = float(primary["continuous_book_net_reward"]) - float(
-        control["continuous_book_net_reward"]
+    replay_complete = replay_blocker is None
+    increment = (
+        float(primary["continuous_book_net_reward"])
+        - float(control["continuous_book_net_reward"])
+        if replay_complete and primary is not None and control is not None
+        else None
     )
-    return_increment = float(primary["cumulative_net_return"]) - float(
-        control["cumulative_net_return"]
+    return_increment = (
+        float(primary["cumulative_net_return"])
+        - float(control["cumulative_net_return"])
+        if replay_complete and primary is not None and control is not None
+        else None
     )
-    search_score = min(float(primary["continuous_book_net_reward"]), increment)
-    blockers: list[str] = []
-    if int(primary["fill_count"]) == 0:
-        blockers.append("NO_EXECUTABLE_FILLS")
-    if str(primary["behavior_identity"]) == str(control["behavior_identity"]):
-        blockers.append("BEHAVIOR_EQUIVALENT_TO_BASE")
+    search_score = (
+        min(float(primary["continuous_book_net_reward"]), float(increment))
+        if replay_complete and primary is not None and increment is not None
+        else None
+    )
+    blockers: list[str] = (
+        [str(replay_blocker["blocker_code"])]
+        if replay_blocker is not None
+        else []
+    )
+    if replay_complete and primary is not None and control is not None:
+        if int(primary["fill_count"]) == 0:
+            blockers.append("NO_EXECUTABLE_FILLS")
+        if str(primary["behavior_identity"]) == str(control["behavior_identity"]):
+            blockers.append("BEHAVIOR_EQUIVALENT_TO_BASE")
     payload = _self_hashed(
         {
             "schema_version": "cn_joint_program_phase_b_record_v0",
@@ -659,14 +704,21 @@ def _evaluate_record(
             "physical_ready": True,
             "dag_ready": True,
             "semantic_noop": False,
+            "replay_status": (
+                PAIR_REPLAY_COMPLETE if replay_complete else PAIR_REPLAY_BLOCKED
+            ),
+            "replay_blocker": replay_blocker,
             "primary": primary,
             "base_control": control,
             "matched_net_reward_increment": increment,
             "matched_cumulative_return_increment": return_increment,
             "search_score": search_score,
             "productive": bool(
-                float(primary["continuous_book_net_reward"]) > 0.0
-                and increment > 0.0
+                replay_complete
+                and primary is not None
+                and increment is not None
+                and float(primary["continuous_book_net_reward"]) > 0.0
+                and float(increment) > 0.0
             ),
             "blockers": blockers,
             "base_wrapper_parity": parity,
@@ -720,6 +772,10 @@ def _verify_record(
     ):
         raise RuntimeError(f"record identity drift: {path}")
     return row
+
+
+def _record_replay_complete(row: Mapping[str, Any]) -> bool:
+    return str(row.get("replay_status") or PAIR_REPLAY_COMPLETE) == PAIR_REPLAY_COMPLETE
 
 
 def _verify_checkpoint(
@@ -798,9 +854,18 @@ def _close_checkpoint(
             "record_count": len(records),
             "template_id": str(records[0]["template_id"]),
             "productive_count": sum(bool(row["productive"]) for row in records),
-            "replay_complete_count": len(records),
+            "replay_complete_count": sum(
+                _record_replay_complete(row) for row in records
+            ),
+            "replay_blocked_count": sum(
+                not _record_replay_complete(row) for row in records
+            ),
             "behavior_unique": len(
-                {str(row["primary"]["behavior_identity"]) for row in records}
+                {
+                    str(row["primary"]["behavior_identity"])
+                    for row in records
+                    if _record_replay_complete(row)
+                }
             ),
             "validation_reads": 0,
             "holdout_reads": 0,
@@ -837,10 +902,14 @@ def _template_summary(records: Sequence[Mapping[str, Any]]) -> list[dict[str, An
     output: list[dict[str, Any]] = []
     for template_id in TEMPLATE_ORDER:
         rows = [row for row in records if str(row["template_id"]) == template_id]
-        scores = [float(row["search_score"]) for row in rows]
-        increments = [float(row["matched_net_reward_increment"]) for row in rows]
+        complete_rows = [row for row in rows if _record_replay_complete(row)]
+        scores = [float(row["search_score"]) for row in complete_rows]
+        increments = [
+            float(row["matched_net_reward_increment"]) for row in complete_rows
+        ]
         primary_rewards = [
-            float(row["primary"]["continuous_book_net_reward"]) for row in rows
+            float(row["primary"]["continuous_book_net_reward"])
+            for row in complete_rows
         ]
         output.append(
             {
@@ -852,18 +921,26 @@ def _template_summary(records: Sequence[Mapping[str, Any]]) -> list[dict[str, An
                 "compile_pass": sum(str(row["compile_status"]) == "PASS" for row in rows),
                 "physical_ready": sum(bool(row["physical_ready"]) for row in rows),
                 "dag_ready": sum(bool(row["dag_ready"]) for row in rows),
-                "replay_complete": len(rows),
+                "replay_complete": len(complete_rows),
+                "replay_blocked": len(rows) - len(complete_rows),
                 "behavior_unique": len(
-                    {str(row["primary"]["behavior_identity"]) for row in rows}
+                    {
+                        str(row["primary"]["behavior_identity"])
+                        for row in complete_rows
+                    }
                 ),
-                "economic_rows_complete": len(rows),
+                "economic_rows_complete": len(complete_rows),
                 "semantic_noop": sum(bool(row["semantic_noop"]) for row in rows),
                 "productive": sum(bool(row["productive"]) for row in rows),
                 "positive_primary_reward": sum(value > 0.0 for value in primary_rewards),
                 "positive_matched_increment": sum(value > 0.0 for value in increments),
-                "median_primary_reward": statistics.median(primary_rewards),
-                "median_matched_increment": statistics.median(increments),
-                "median_search_score": statistics.median(scores),
+                "median_primary_reward": (
+                    statistics.median(primary_rewards) if primary_rewards else None
+                ),
+                "median_matched_increment": (
+                    statistics.median(increments) if increments else None
+                ),
+                "median_search_score": statistics.median(scores) if scores else None,
             }
         )
     return output
@@ -1317,20 +1394,32 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ),
             "enhanced_replay_complete": sum(
                 str(row["record_kind"]) == "ENHANCED_FULL_BASE_PAIR"
+                and _record_replay_complete(row)
                 for row in records
+            ),
+            "replay_blocked_count": sum(
+                not _record_replay_complete(row) for row in records
             ),
             "productive_count": sum(bool(row["productive"]) for row in records),
             "behavior_unique": len(
-                {str(row["primary"]["behavior_identity"]) for row in records}
+                {
+                    str(row["primary"]["behavior_identity"])
+                    for row in records
+                    if _record_replay_complete(row)
+                }
             ),
             "semantic_noop_count": sum(bool(row["semantic_noop"]) for row in records),
             "control_mismatch_count": sum(
                 not bool(row["control_contract_valid"]) for row in records
             ),
             "ledger_mismatch_count": sum(
-                str(row["primary"]["accounting_invariants"]["status"]) != "PASS"
-                or str(row["base_control"]["accounting_invariants"]["status"])
-                != "PASS"
+                _record_replay_complete(row)
+                and (
+                    str(row["primary"]["accounting_invariants"]["status"])
+                    != "PASS"
+                    or str(row["base_control"]["accounting_invariants"]["status"])
+                    != "PASS"
+                )
                 for row in records
             ),
             "artifact_manifest": _artifact(manifest_path, root=root),

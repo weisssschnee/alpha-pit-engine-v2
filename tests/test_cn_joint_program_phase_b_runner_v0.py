@@ -5,6 +5,13 @@ import hashlib
 import inspect
 from pathlib import Path
 
+import pytest
+
+from our_system_phase2.services.a_share_executable_replay import (
+    AShareCorporateActionFractionalSharesError,
+)
+from scripts import run_cn_joint_program_phase_b_v0 as phase_b_runner
+
 from our_system_phase2.runtime.cn_iterative_search_v1 import _batch_manifest
 from our_system_phase2.runtime.cn_joint_program_phase_b_v0 import TEMPLATE_ORDER
 from scripts.run_cn_joint_program_phase_b_v0 import (
@@ -62,6 +69,8 @@ def _closed_record(ordinal: int, template_id: str) -> dict:
             "physical_ready": True,
             "dag_ready": True,
             "semantic_noop": False,
+            "replay_status": "PAIR_REPLAY_COMPLETE",
+            "replay_blocker": None,
             "primary": {
                 "behavior_identity": f"behavior-{ordinal}",
                 "continuous_book_net_reward": 0.01,
@@ -94,6 +103,101 @@ def test_phase_b_template_summary_preserves_exact_uniform_quota() -> None:
     assert all(row["economic_rows_complete"] == 8 for row in summary)
     assert all(row["semantic_unique"] == 8 for row in summary)
     assert all(row["behavior_unique"] == 8 for row in summary)
+
+
+def test_phase_b_template_summary_excludes_candidate_local_blocker_economics() -> None:
+    records = [
+        _closed_record(template_ordinal * 8 + offset, template_id)
+        for template_ordinal, template_id in enumerate(TEMPLATE_ORDER)
+        for offset in range(8)
+    ]
+    blocked = records[29]
+    blocked.update(
+        {
+            "replay_status": "PAIR_REPLAY_BLOCKED",
+            "replay_blocker": {
+                "leg": "BASE_CONTROL",
+                "blocker_code": "CORPORATE_ACTION_FRACTIONAL_SHARES",
+            },
+            "base_control": None,
+            "matched_net_reward_increment": None,
+            "search_score": None,
+            "productive": False,
+            "blockers": ["CORPORATE_ACTION_FRACTIONAL_SHARES"],
+        }
+    )
+
+    summary = {
+        row["template_id"]: row for row in _template_summary(records)
+    }["BASE_EVENT"]
+    assert summary["program_proposed"] == 8
+    assert summary["replay_complete"] == 7
+    assert summary["replay_blocked"] == 1
+    assert summary["economic_rows_complete"] == 7
+    assert summary["productive"] == 7
+
+
+def test_phase_b_worker_closes_candidate_local_blocker_record(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(phase_b_runner, "_WORKER_CONTEXT", {})
+    monkeypatch.setattr(phase_b_runner, "_WORKER_REGISTRY", object())
+    monkeypatch.setattr(phase_b_runner, "_WORKER_INPUT_HASH", "a" * 64)
+    monkeypatch.setattr(phase_b_runner, "_WORKER_WINDOWS", ())
+    monkeypatch.setattr(
+        phase_b_runner,
+        "_compiled",
+        lambda schedule, *, program_key, compiled_key, registry: program_key,
+    )
+
+    def evaluate(compiled, *, context, windows):
+        if compiled == "control_program":
+            raise AShareCorporateActionFractionalSharesError(
+                code="000001.SZ",
+                session_date="2024-01-02",
+                opening_shares=100,
+                multiplier=1.001,
+                adjusted_shares=100.1,
+            )
+        return {
+            "behavior_identity": "primary-behavior",
+            "continuous_book_net_reward": 0.01,
+            "cumulative_net_return": 0.02,
+            "fill_count": 3,
+        }
+
+    monkeypatch.setattr(phase_b_runner, "_evaluate_compiled", evaluate)
+    target = tmp_path / "record_0029.json"
+    payload = phase_b_runner._evaluate_record(
+        {
+            "semantic_noop": False,
+            "primary_program": {"program_id": "primary"},
+            "primary_compiled": {},
+            "control_program": {"program_id": "control"},
+            "control_compiled": {},
+            "main_record_ordinal": 29,
+            "template_id": "BASE_EVENT",
+            "record_kind": "ENHANCED_FULL_BASE_PAIR",
+            "schedule_record_sha256": "b" * 64,
+            "pair_id": "pair-29",
+            "proposal_receipt": {"proposal_receipt_sha256": "c" * 64},
+        },
+        str(target),
+    )
+
+    assert target.is_file()
+    assert payload["replay_status"] == "PAIR_REPLAY_BLOCKED"
+    assert payload["replay_blocker"]["leg"] == "BASE_CONTROL"
+    assert (
+        payload["replay_blocker"]["blocker_code"]
+        == "CORPORATE_ACTION_FRACTIONAL_SHARES"
+    )
+    assert payload["primary"]["behavior_identity"] == "primary-behavior"
+    assert payload["base_control"] is None
+    assert payload["matched_net_reward_increment"] is None
+    assert payload["search_score"] is None
+    assert payload["productive"] is False
+    assert payload["blockers"] == ["CORPORATE_ACTION_FRACTIONAL_SHARES"]
 
 
 def test_phase_b_checkpoint_chain_replays_only_complete_records(

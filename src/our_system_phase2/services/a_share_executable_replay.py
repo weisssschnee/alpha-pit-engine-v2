@@ -114,6 +114,9 @@ class AShareTerminalLiquidationError(AShareCandidateReplayBlockerError):
             "remaining_holdings": list(self.remaining_holdings),
         }
 
+    def __reduce__(self) -> tuple[Any, tuple[list[str]]]:
+        return (type(self), (list(self.remaining_holdings),))
+
 
 class AShareCorporateActionFractionalSharesError(
     AShareCandidateReplayBlockerError
@@ -153,6 +156,34 @@ class AShareCorporateActionFractionalSharesError(
                 "FAIL_CLOSED_NON_INTEGER"
             ),
         }
+
+    def __reduce__(self) -> tuple[Any, tuple[str, str, int, float, float]]:
+        return (
+            _restore_fractional_shares_error,
+            (
+                self.code,
+                self.session_date,
+                self.opening_shares,
+                self.multiplier,
+                self.adjusted_shares,
+            ),
+        )
+
+
+def _restore_fractional_shares_error(
+    code: str,
+    session_date: str,
+    opening_shares: int,
+    multiplier: float,
+    adjusted_shares: float,
+) -> AShareCorporateActionFractionalSharesError:
+    return AShareCorporateActionFractionalSharesError(
+        code=code,
+        session_date=session_date,
+        opening_shares=opening_shares,
+        multiplier=multiplier,
+        adjusted_shares=adjusted_shares,
+    )
 
 
 @dataclass(frozen=True, slots=True)

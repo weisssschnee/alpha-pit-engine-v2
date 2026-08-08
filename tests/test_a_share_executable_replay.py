@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pickle
 from dataclasses import asdict
 import hashlib
 import json
@@ -18,6 +19,7 @@ from our_system_phase2.services.a_share_executable_replay import (
     AShareExecutionPolicy,
     AShareFeeSchedule,
     ASharePortfolioDecoderPolicy,
+    AShareTerminalLiquidationError,
     AShareUniversePolicy,
     ENDING_BOOK_FINAL_CLOSE_MARK_TO_MARKET,
     _portfolio_targets,
@@ -454,6 +456,23 @@ def test_fractional_corporate_action_is_typed_candidate_outcome() -> None:
     assert captured.value.adjusted_shares != round(
         captured.value.adjusted_shares
     )
+
+
+def test_candidate_replay_blocker_exceptions_pickle_without_detail_loss() -> None:
+    fractional = AShareCorporateActionFractionalSharesError(
+        code="000001.SZ",
+        session_date="2024-01-02",
+        opening_shares=100,
+        multiplier=1.001,
+        adjusted_shares=100.1,
+    )
+    liquidation = AShareTerminalLiquidationError(["000002.SZ", "000001.SZ"])
+
+    for blocker in (fractional, liquidation):
+        restored = pickle.loads(pickle.dumps(blocker))
+        assert type(restored) is type(blocker)
+        assert str(restored) == str(blocker)
+        assert restored.blocker_details() == blocker.blocker_details()
 
 
 def test_authority_receipt_verifies_actual_panel_and_universe_hashes(
