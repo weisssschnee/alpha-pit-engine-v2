@@ -1634,6 +1634,68 @@
       }
     },
     {
+      "color": "#f9a825",
+      "contract": null,
+      "critical": false,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "joint_program_phase_b_derived_from_typed_program_v1",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "derived_from",
+      "required": false,
+      "source": "cn_joint_program_rolling_search_v0_phase_b",
+      "target": "cn_typed_candidate_program_v1",
+      "validation": {
+        "checked_at": "2026-08-09T03:14:16.150091+00:00",
+        "evidence_ref": "",
+        "evidence_sha256": null,
+        "level": "NOT_REQUIRED",
+        "notes": [],
+        "profile": "",
+        "result": "NOT_REQUIRED",
+        "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#f9a825",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "authority-slot promotion gate",
+        "evidence_ref": "",
+        "id": "joint_program_nonformal_candidate_only",
+        "rule": "Phase B completion and a later Phase C experiment remain non-formal candidates for development search policy and cannot replace the accepted Hybrid TPE plus Availability authority without a separate ADR and promotion decision.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "joint_program_phase_b_candidate_for_development_search_policy",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "candidate_for",
+      "required": false,
+      "source": "cn_joint_program_rolling_search_v0_phase_b",
+      "target": "cn_development_search_policy",
+      "validation": {
+        "checked_at": "2026-08-09T03:19:25.792200+00:00",
+        "evidence_ref": "runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json",
+        "evidence_sha256": "5A09E569219DC78557C8780688B0D351E350262BB54B62EF0365ADC5CCC3DD54",
+        "level": "PARTIAL",
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
+        "profile": "",
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": "81204709779a4bf955320807f35c78ad9ae5f917"
+      }
+    },
+    {
       "color": "#c62828",
       "contract": {
         "bypass_forbidden": true,
@@ -1702,7 +1764,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-06T13:23:02.613408+00:00",
+  "generated_at": "2026-08-09T03:19:25.792200+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -4008,6 +4070,7 @@
         "src_our_system_phase2_services_a_share_executable_replay_asharecorporateactionfractionalshareserror",
         "src_our_system_phase2_services_a_share_executable_replay_asharecorporateactionfractionalshareserror_blocker_details",
         "src_our_system_phase2_services_a_share_executable_replay_asharecorporateactionfractionalshareserror_init",
+        "src_our_system_phase2_services_a_share_executable_replay_asharecorporateactionfractionalshareserror_reduce",
         "src_our_system_phase2_services_a_share_executable_replay_asharecorporateactionpolicy",
         "src_our_system_phase2_services_a_share_executable_replay_asharecorporateactionpolicy_payload_sha256",
         "src_our_system_phase2_services_a_share_executable_replay_asharecorporateactionpolicy_validate",
@@ -4025,6 +4088,7 @@
         "src_our_system_phase2_services_a_share_executable_replay_ashareterminalliquidationerror",
         "src_our_system_phase2_services_a_share_executable_replay_ashareterminalliquidationerror_blocker_details",
         "src_our_system_phase2_services_a_share_executable_replay_ashareterminalliquidationerror_init",
+        "src_our_system_phase2_services_a_share_executable_replay_ashareterminalliquidationerror_reduce",
         "src_our_system_phase2_services_a_share_executable_replay_ashareuniversepolicy",
         "src_our_system_phase2_services_a_share_executable_replay_ashareuniversepolicy_payload_sha256",
         "src_our_system_phase2_services_a_share_executable_replay_ashareuniversepolicy_validate",
@@ -4037,13 +4101,14 @@
         "src_our_system_phase2_services_a_share_executable_replay_prepare_sessions",
         "src_our_system_phase2_services_a_share_executable_replay_rationale_1",
         "src_our_system_phase2_services_a_share_executable_replay_rationale_100",
-        "src_our_system_phase2_services_a_share_executable_replay_rationale_121",
-        "src_our_system_phase2_services_a_share_executable_replay_rationale_160",
-        "src_our_system_phase2_services_a_share_executable_replay_rationale_392",
-        "src_our_system_phase2_services_a_share_executable_replay_rationale_445",
-        "src_our_system_phase2_services_a_share_executable_replay_rationale_623",
-        "src_our_system_phase2_services_a_share_executable_replay_rationale_825",
+        "src_our_system_phase2_services_a_share_executable_replay_rationale_124",
+        "src_our_system_phase2_services_a_share_executable_replay_rationale_191",
+        "src_our_system_phase2_services_a_share_executable_replay_rationale_423",
+        "src_our_system_phase2_services_a_share_executable_replay_rationale_476",
+        "src_our_system_phase2_services_a_share_executable_replay_rationale_654",
+        "src_our_system_phase2_services_a_share_executable_replay_rationale_856",
         "src_our_system_phase2_services_a_share_executable_replay_rationale_91",
+        "src_our_system_phase2_services_a_share_executable_replay_restore_fractional_shares_error",
         "src_our_system_phase2_services_a_share_executable_replay_run_a_share_long_only_replay",
         "src_our_system_phase2_services_a_share_executable_replay_sortino",
         "src_our_system_phase2_services_a_share_executable_replay_truthy",
@@ -4067,6 +4132,7 @@
         "tests_test_a_share_executable_replay_frame",
         "tests_test_a_share_executable_replay_test_additive_accounting_ledger_preserves_reference_and_reconciles",
         "tests_test_a_share_executable_replay_test_authority_receipt_verifies_actual_panel_and_universe_hashes",
+        "tests_test_a_share_executable_replay_test_candidate_replay_blocker_exceptions_pickle_without_detail_loss",
         "tests_test_a_share_executable_replay_test_corporate_actions_apply_only_to_opening_holdings_and_end_flat",
         "tests_test_a_share_executable_replay_test_dated_sell_stamp_duty_changes_at_the_frozen_effective_date",
         "tests_test_a_share_executable_replay_test_delisting_terminal_liquidation_is_explicit_and_fee_charged",
@@ -4107,6 +4173,7 @@
         "tests_test_run_cn_finalist_replay_then_oos_test_finalize_resume_override_records_no_replay_recompute",
         "tests_test_run_cn_finalist_replay_then_oos_test_fractional_corporate_action_becomes_candidate_blocker",
         "tests_test_run_cn_finalist_replay_then_oos_test_materialize_replay_master_marks_suspension_at_last_close",
+        "tests_test_run_cn_finalist_replay_then_oos_test_materialize_replay_master_uses_session_authority_open",
         "tests_test_run_cn_finalist_replay_then_oos_test_only_no_fill_receipt_is_candidate_economic_blocker",
         "tests_test_run_cn_finalist_replay_then_oos_test_oos_rows_keep_every_pair_without_interstage_filter",
         "tests_test_run_cn_finalist_replay_then_oos_test_ordered_candidates_puts_primary_before_control",
@@ -4116,7 +4183,7 @@
       "required": false,
       "semantic_role": "finalist_execution_evidence_authority",
       "validation": {
-        "checked_at": "2026-08-06T13:23:02.613408+00:00",
+        "checked_at": "2026-08-09T03:19:25.792200+00:00",
         "evidence_ref": "tests/test_finalist_economic_admission.py",
         "evidence_sha256": "AD51B4014BFF0F339F8494D3D53CA8B549F447A28AF6C021CCFF17983FD59E23",
         "level": "STATIC_VERIFIED",
@@ -5530,13 +5597,13 @@
         "src_our_system_phase2_services_candidate_program_controls_v1_operation_target_ids",
         "src_our_system_phase2_services_candidate_program_controls_v1_programmatchedpairv1",
         "src_our_system_phase2_services_candidate_program_controls_v1_rationale_1",
-        "src_our_system_phase2_services_candidate_program_controls_v1_rationale_197",
+        "src_our_system_phase2_services_candidate_program_controls_v1_rationale_201",
         "src_our_system_phase2_services_candidate_program_controls_v1_reachable_node_ids",
         "src_our_system_phase2_services_candidate_program_controls_v1_replacement_for_operation",
         "src_our_system_phase2_services_candidate_program_execution_v1",
         "src_our_system_phase2_services_candidate_program_execution_v1_apply_compiled_candidate_program_v1",
         "src_our_system_phase2_services_candidate_program_execution_v1_rationale_1",
-        "src_our_system_phase2_services_candidate_program_execution_v1_rationale_38",
+        "src_our_system_phase2_services_candidate_program_execution_v1_rationale_40",
         "src_our_system_phase2_services_candidate_program_v1",
         "src_our_system_phase2_services_candidate_program_v1_candidateprogramspecv1",
         "src_our_system_phase2_services_candidate_program_v1_candidateprogramspecv1_from_record",
@@ -5573,13 +5640,13 @@
         "src_our_system_phase2_services_candidate_program_v1_proposallineagev1_post_init",
         "src_our_system_phase2_services_candidate_program_v1_proposallineagev1_to_record",
         "src_our_system_phase2_services_candidate_program_v1_rationale_1",
-        "src_our_system_phase2_services_candidate_program_v1_rationale_1034",
-        "src_our_system_phase2_services_candidate_program_v1_rationale_1725",
-        "src_our_system_phase2_services_candidate_program_v1_rationale_1820",
-        "src_our_system_phase2_services_candidate_program_v1_rationale_1832",
-        "src_our_system_phase2_services_candidate_program_v1_rationale_246",
-        "src_our_system_phase2_services_candidate_program_v1_rationale_350",
-        "src_our_system_phase2_services_candidate_program_v1_rationale_853",
+        "src_our_system_phase2_services_candidate_program_v1_rationale_1084",
+        "src_our_system_phase2_services_candidate_program_v1_rationale_1844",
+        "src_our_system_phase2_services_candidate_program_v1_rationale_1939",
+        "src_our_system_phase2_services_candidate_program_v1_rationale_1951",
+        "src_our_system_phase2_services_candidate_program_v1_rationale_256",
+        "src_our_system_phase2_services_candidate_program_v1_rationale_365",
+        "src_our_system_phase2_services_candidate_program_v1_rationale_868",
         "src_our_system_phase2_services_candidate_program_v1_registered_field_unit_signature_v1",
         "src_our_system_phase2_services_candidate_program_v1_route_generation_receipt_v1",
         "src_our_system_phase2_services_candidate_program_v1_strip_nonsemantic_metadata",
@@ -5604,7 +5671,7 @@
       "required": false,
       "semantic_role": "typed_candidate_program_representation",
       "validation": {
-        "checked_at": "2026-08-06T13:23:02.613408+00:00",
+        "checked_at": "2026-08-09T03:19:25.792200+00:00",
         "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json",
         "evidence_sha256": "9810E97A78F2BD5750D7C52AADEFC239851A3AAA9CF799FFC32C076C12A088C0",
         "level": "STATIC_VERIFIED",
@@ -5614,11 +5681,71 @@
         "verified_at_sha": "b1ed8ae222dded95ce3a2a9ffe0b31f698a4820a"
       },
       "visible_by_default": true
+    },
+    {
+      "active_authority": false,
+      "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "DEVELOPMENT PILOT PASS",
+        "PHASE C BOUNDED",
+        "NO OOS",
+        "NO PROMOTION"
+      ],
+      "color": "#f9a825",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "CN Joint Program Phase B closure and independent final audit",
+          "evidence_ref": "",
+          "id": "joint_program_phase_b_exact_uniform_evidence",
+          "rule": "Phase B evidence is admissible only from the exact 64-record uniform development schedule, eight immutable checkpoint chains, BASE compiled-versus-legacy parity, matched controls, accounting invariants and zero sealed reads.",
+          "severity": "HARD",
+          "type": "EVIDENCE"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "Phase B outcome receipt and future Phase C prefinancial freeze",
+          "evidence_ref": "",
+          "id": "joint_program_phase_c_development_only_ceiling",
+          "rule": "The accepted Phase B result may seed only one separately frozen campaign-local development Phase C experiment; it cannot change formal search authority, export cross-campaign credit, consume OOS or Forward-B evidence, or promote candidates.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        }
+      ],
+      "critical": true,
+      "evidence": "DECLARED",
+      "expires_at": "",
+      "id": "cn_joint_program_rolling_search_v0_phase_b",
+      "kind": "experimental-search",
+      "label": "CN Joint Program Phase B development pilot",
+      "lifecycle": "EXPERIMENTAL",
+      "owner": "",
+      "paths": [
+        "runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json"
+      ],
+      "promotion_requirements": [],
+      "raw_node_ids": [],
+      "required": false,
+      "semantic_role": "",
+      "validation": {
+        "checked_at": "2026-08-09T03:19:25.792200+00:00",
+        "evidence_ref": "runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json",
+        "evidence_sha256": "5A09E569219DC78557C8780688B0D351E350262BB54B62EF0365ADC5CCC3DD54",
+        "level": "PARTIAL",
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
+        "profile": "",
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": "81204709779a4bf955320807f35c78ad9ae5f917"
+      },
+      "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "C0014F6D446838A29352F50E0871320A26880D5CA9FB48AB6B702B31F8D5B459"
+    "sha256": "D511A9C4A2EFDA58EA8123CE9562659AA3159E2C97BBEBA6205604980BC50C79"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -5629,13 +5756,13 @@
     }
   ],
   "raw": {
-    "built_at_commit": "b1ed8ae222dded95ce3a2a9ffe0b31f698a4820a",
-    "edge_count": 19781,
-    "node_count": 7761,
+    "built_at_commit": "81204709779a4bf955320807f35c78ad9ae5f917",
+    "edge_count": 20513,
+    "node_count": 7990,
     "path": ".planning/graphs/graph.json",
-    "sha256": "53845DD5CF7B4422EF715B32DE5C2BDCD306D4C56E9A626ED6DC3864396B74AF"
+    "sha256": "A0836FEAA5633152FC9E26977B876E68CD09D54653DB7F3A1E8565D3F4954FBB"
   },
-  "repo_head": "b1ed8ae222dded95ce3a2a9ffe0b31f698a4820a",
+  "repo_head": "81204709779a4bf955320807f35c78ad9ae5f917",
   "schema_version": 1,
   "semantic_authorities": [
     {
@@ -5713,8 +5840,8 @@
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 52,
-    "current_nodes": 35,
+    "current_edges": 54,
+    "current_nodes": 36,
     "errors": 0,
     "runtime_edges": 0,
     "runtime_nodes": 0,
