@@ -8,6 +8,9 @@ param(
     [Parameter(Mandatory = $true)][string]$BarSourceRoot,
     [Parameter(Mandatory = $true)][string]$OutputRoot,
     [ValidateRange(1, 32)][int]$WorkerCount = 10,
+    [string]$ProgramSchedule = '',
+    [ValidateRange(1, 4096)][int]$ExpectedRecords = 64,
+    [ValidateRange(1, 512)][int]$ExpectedTemplateQuota = 8,
     [string]$Registry = (
         'runtime\field_registry\cn_unified_capability_registry_v3_20260717\unified_capability_registry.json'
     ),
@@ -83,7 +86,18 @@ if (-not $resolvedRoot.StartsWith(
 if (Test-Path -LiteralPath $resolvedRoot) {
     throw "program materialization output root must be fresh: $resolvedRoot"
 }
-$schedule = Join-Path $resolvedFreeze 'phase_b_uniform_schedule.jsonl'
+$schedule = if ([string]::IsNullOrWhiteSpace($ProgramSchedule)) {
+    Join-Path $resolvedFreeze 'phase_b_uniform_schedule.jsonl'
+} else {
+    (Resolve-Path -LiteralPath $ProgramSchedule).Path
+}
+$acceptedScheduleShape = (
+    ($ExpectedRecords -eq 64 -and $ExpectedTemplateQuota -eq 8) -or
+    ($ExpectedRecords -eq 256 -and $ExpectedTemplateQuota -eq 32)
+)
+if (-not $acceptedScheduleShape) {
+    throw 'program materialization schedule shape is not authorized'
+}
 $fieldManifest = Join-Path $resolvedFields 'CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json'
 $barManifest = Join-Path $resolvedBars 'development_only_release_manifest.json'
 foreach ($path in @(
@@ -147,6 +161,8 @@ $stderrPath = Join-Path $resolvedRoot 'program_materialization.stderr.log'
     phase_b_freeze_root = $resolvedFreeze
     schedule = $schedule
     schedule_sha256 = Get-SharedReadSha256 $schedule
+    expected_records = $ExpectedRecords
+    expected_template_quota = $ExpectedTemplateQuota
     source_field_root = $resolvedFields
     source_field_manifest_sha256 = Get-SharedReadSha256 $fieldManifest
     information_metrics = $resolvedInformationMetrics
@@ -218,8 +234,8 @@ try {
         --output-root $resolvedRoot `
         --workers $WorkerCount `
         --minimum-free-memory-bytes ([int64]24 * 1024 * 1024 * 1024) `
-        --expected-records 64 `
-        --expected-template-quota 8 *>> $stdoutPath
+        --expected-records $ExpectedRecords `
+        --expected-template-quota $ExpectedTemplateQuota *>> $stdoutPath
     if ($LASTEXITCODE -ne 0) {
         throw "program materialization preflight failed: $LASTEXITCODE"
     }

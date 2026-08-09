@@ -79,6 +79,10 @@ RECORDS_PER_CHECKPOINT = 8
 CHECKPOINT_COUNT = EXPECTED_RECORDS // RECORDS_PER_CHECKPOINT
 MAX_VARIANTS_PER_BASE_PER_TEMPLATE = 4
 MIN_BASE_IDENTITIES_PER_TEMPLATE = 16
+MATERIALIZATION_RECORDS_PER_TEMPLATE = 32
+MATERIALIZATION_SCHEDULE_RECORDS = (
+    len(TEMPLATE_ORDER) * MATERIALIZATION_RECORDS_PER_TEMPLATE
+)
 
 TEMPORAL_POLICIES = ("ADD", "SUBTRACT", "MIN", "MAX")
 MARKET_POLICIES = ("GATE", "FILTER", "VETO", "MODULATE")
@@ -422,6 +426,138 @@ def _build_reservoir(
                 f"Phase C raw reservoir underfilled for {template_id}: {observed}/{target}"
             )
     return records, compile_fixtures
+
+
+def build_phase_c_materialization_schedule_v0(
+    *,
+    registry: UnifiedCapabilityRegistry,
+    pools: Mapping[str, Sequence[ProgramSourceComponentV0]],
+) -> tuple[dict[str, Any], ...]:
+    """Compile an exact zero-financial schedule covering every executable component."""
+
+    adapter = CandidateProgramProposalAdapterV0(registry)
+    compiler = ProgramCompilerV1(registry)
+    rows: list[dict[str, Any]] = []
+    covered: dict[str, set[str]] = {
+        role: set() for role in ("base", "temporal", "market", "event")
+    }
+    for template_id in TEMPLATE_ORDER:
+        for template_ordinal in range(MATERIALIZATION_RECORDS_PER_TEMPLATE):
+            components = {
+                role: tuple(pools[role])[template_ordinal % len(tuple(pools[role]))]
+                for role in PROGRAM_TEMPLATE_COMPONENTS[template_id]
+            }
+            policy, _ = _raw_cursor_after_policy_axes(
+                template_id,
+                template_ordinal,
+                len(tuple(pools["base"])),
+            )
+            program = adapter.compose(
+                template_id,
+                base_component=components["base"],
+                temporal_component=components.get("temporal"),
+                market_component=components.get("market"),
+                event_component=components.get("event"),
+                combination_policy=policy,
+            )
+            if template_id == "BASE":
+                control = legacy_candidate_program_v1(
+                    components["base"].control,
+                    portfolio_contract=adapter.portfolio_contract,
+                )
+            else:
+                control = construct_matched_control_program_v1(program).control
+            for role, component in components.items():
+                covered[role].add(component.component_id)
+            record = {
+                "schema_version": "cn_joint_program_phase_c_materialization_schedule_record_v0",
+                "main_record_ordinal": len(rows),
+                "template_id": template_id,
+                "template_record_ordinal": template_ordinal,
+                "component_ids": {
+                    role: component.component_id
+                    for role, component in sorted(components.items())
+                },
+                "combination_policy": dict(policy),
+                "primary_program": program.to_record(),
+                "control_program": control.to_record(),
+                "primary_compiled": compiler.compile(program).to_record(),
+                "control_compiled": compiler.compile(control).to_record(),
+                "financial_evaluation_executed": False,
+                "validation_reads": 0,
+                "holdout_reads": 0,
+                "historical_2023_reads": 0,
+                "forward_b_reads": 0,
+                "forward_2026_reads": 0,
+            }
+            record["schedule_record_sha256"] = stable_hash(record)
+            rows.append(record)
+    if len(rows) != MATERIALIZATION_SCHEDULE_RECORDS:
+        raise RuntimeError("Phase C materialization schedule cardinality drift")
+    for role, pool in pools.items():
+        expected = {component.component_id for component in pool}
+        if covered[role] != expected:
+            raise ValueError(
+                f"Phase C materialization schedule misses {role} components: "
+                f"{sorted(expected - covered[role])}"
+            )
+    return tuple(rows)
+
+
+def write_phase_c_materialization_schedule_v0(
+    *,
+    output_root: Path,
+    phase_b_freeze_root: Path,
+    registry_path: Path,
+    repo_sha: str,
+) -> dict[str, Any]:
+    root = output_root.resolve()
+    if root.exists():
+        raise FileExistsError(f"Phase C materialization schedule root exists: {root}")
+    root.mkdir(parents=True)
+    phase_b_freeze_root = phase_b_freeze_root.resolve()
+    verify_phase_b_prefinancial_freeze_v0(phase_b_freeze_root)
+    registry = UnifiedCapabilityRegistry.read(registry_path.resolve())
+    component_rows = _session_executable_component_rows(
+        _read_jsonl(phase_b_freeze_root / "source_component_pool.jsonl")
+    )
+    pools = _pool_by_role(component_rows)
+    schedule = build_phase_c_materialization_schedule_v0(
+        registry=registry,
+        pools=pools,
+    )
+    schedule_path = _write_jsonl(
+        root / "phase_c_materialization_schedule.jsonl", schedule
+    )
+    closure = _self_hashed(
+        {
+            "schema_version": "cn_joint_program_phase_c_materialization_schedule_v0",
+            "status": "PHASE_C_MATERIALIZATION_SCHEDULE_COMPLETE",
+            "repo_sha": str(repo_sha),
+            "schedule": _artifact(schedule_path, root=root),
+            "record_count": len(schedule),
+            "records_per_template": MATERIALIZATION_RECORDS_PER_TEMPLATE,
+            "template_counts": {
+                template_id: MATERIALIZATION_RECORDS_PER_TEMPLATE
+                for template_id in TEMPLATE_ORDER
+            },
+            "component_count": len(component_rows),
+            "component_role_counts": {
+                role: len(pool) for role, pool in pools.items()
+            },
+            "all_session_executable_components_covered": True,
+            "financial_evaluation_executed": False,
+            "validation_reads": 0,
+            "holdout_reads": 0,
+            "historical_2023_reads": 0,
+            "forward_b_reads": 0,
+            "forward_2026_reads": 0,
+        },
+        "closure_sha256",
+    )
+    return _read_json(
+        _write_json(root / "PHASE_C_MATERIALIZATION_SCHEDULE_COMPLETE.json", closure)
+    )
 
 
 def build_phase_c_component_materialization_plan_v0(
@@ -1116,6 +1252,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     freeze.add_argument("--registry", type=Path, required=True)
     freeze.add_argument("--accepted-field-manifest", type=Path, required=True)
     freeze.add_argument("--repo-sha", required=True)
+    materialization = subparsers.add_parser("materialization-schedule")
+    materialization.add_argument("--output-root", type=Path, required=True)
+    materialization.add_argument("--phase-b-freeze-root", type=Path, required=True)
+    materialization.add_argument("--registry", type=Path, required=True)
+    materialization.add_argument("--repo-sha", required=True)
     verify = subparsers.add_parser("verify-freeze")
     verify.add_argument("--phase-c-freeze-root", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -1127,6 +1268,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             phase_b_outcome_path=args.phase_b_outcome,
             registry_path=args.registry,
             accepted_field_manifest_path=args.accepted_field_manifest,
+            repo_sha=str(args.repo_sha),
+        )
+    elif args.command == "materialization-schedule":
+        closure = write_phase_c_materialization_schedule_v0(
+            output_root=args.output_root,
+            phase_b_freeze_root=args.phase_b_freeze_root,
+            registry_path=args.registry,
             repo_sha=str(args.repo_sha),
         )
     else:
