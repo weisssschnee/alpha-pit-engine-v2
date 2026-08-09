@@ -262,3 +262,29 @@ def test_factorized_bandit_uses_fixed_40_40_20_arms_and_exact_replay(
             generation_arm="UNIFORM_FRESH",
         )
         bandit.observe(base_receipt, matched_increment=1.0)
+
+
+def test_factorized_bandit_whole_program_score_is_bounded_and_read_only(
+    program_context,
+) -> None:
+    registry, components = program_context
+    adapter = CandidateProgramProposalAdapterV0(registry)
+    program = _compose(adapter, components, "BASE_TEMPORAL")
+    receipt = adapter.build_receipt(
+        program_template_id="BASE_TEMPORAL",
+        program=program,
+        components=[components["base"], components["temporal"]],
+        combination_policy=None,
+        batch_id="batch_001",
+        ask_ordinal=0,
+        generation_arm="UNIFORM_FRESH",
+    )
+    bandit = ProgramFactorizedBanditV0("campaign-1")
+    for _ in range(8):
+        bandit.observe(receipt, matched_increment=1000.0)
+    before = bandit.snapshot()
+    score = bandit.score_receipt(receipt)
+    assert score["factorized_signal_available"] is True
+    assert score["eligible_factor_count"] > 0
+    assert -1.0 <= score["factorized_score"] <= 1.0
+    assert bandit.snapshot() == before

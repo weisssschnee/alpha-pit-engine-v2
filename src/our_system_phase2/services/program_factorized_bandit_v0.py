@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import math
 from statistics import median
 from typing import Any, Mapping, Sequence
 
@@ -148,6 +149,30 @@ class ProgramFactorizedBanditV0:
                 ),
             )
         )
+
+    def score_receipt(self, receipt: ProgramProposalReceiptV0) -> dict[str, Any]:
+        """Return a bounded, auditable whole-program exploitation score.
+
+        Individual factors retain their existing support gates and shrinkage.
+        ``tanh`` bounds every contribution before averaging, so a single
+        component or interaction cannot dominate the proposal score.  The
+        method is selection-only; it does not mutate bandit state.
+        """
+
+        factor_rows = [self.factor_score(key) for key in self._factor_keys(receipt)]
+        eligible = [row for row in factor_rows if bool(row["exploit_eligible"])]
+        bounded = [math.tanh(float(row["weighted_score"])) for row in eligible]
+        return {
+            "program_template_id": receipt.program_template_id,
+            "semantic_program_hash": receipt.semantic_program_hash,
+            "eligible_factor_count": len(eligible),
+            "factor_count": len(factor_rows),
+            "factorized_signal_available": bool(eligible),
+            "factorized_score": (
+                float(sum(bounded) / len(bounded)) if bounded else 0.0
+            ),
+            "factors": factor_rows,
+        }
 
     def snapshot(self) -> dict[str, Any]:
         payload = {
