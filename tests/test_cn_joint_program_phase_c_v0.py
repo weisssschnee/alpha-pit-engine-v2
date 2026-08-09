@@ -119,6 +119,15 @@ def test_phase_c_materialization_schedule_binds_pair_identity_for_resolver() -> 
     )
     assert len(rows) == 256
     assert all(row["pair_id"] for row in rows)
+    base_rows = [row for row in rows if row["template_id"] == "BASE"]
+    assert len(base_rows) == 32
+    assert all(row["legacy_primary_candidate"] for row in base_rows)
+    assert all(row["legacy_control_candidate"] for row in base_rows)
+    assert all(
+        "legacy_primary_candidate" not in row
+        for row in rows
+        if row["template_id"] != "BASE"
+    )
     assert all(
         stable_hash(
             {

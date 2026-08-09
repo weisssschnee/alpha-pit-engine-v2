@@ -494,6 +494,17 @@ def build_phase_c_materialization_schedule_v0(
                 "forward_b_reads": 0,
                 "forward_2026_reads": 0,
             }
+            if template_id == "BASE":
+                record.update(
+                    {
+                        "legacy_primary_candidate": dict(
+                            components["base"].primary
+                        ),
+                        "legacy_control_candidate": dict(
+                            components["base"].control
+                        ),
+                    }
+                )
             record["schedule_record_sha256"] = stable_hash(record)
             rows.append(record)
     if len(rows) != MATERIALIZATION_SCHEDULE_RECORDS:
