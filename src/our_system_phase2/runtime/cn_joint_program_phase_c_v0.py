@@ -465,8 +465,11 @@ def build_phase_c_materialization_schedule_v0(
                     components["base"].control,
                     portfolio_contract=adapter.portfolio_contract,
                 )
+                pair_id = str(components["base"].primary["pair_id"])
             else:
-                control = construct_matched_control_program_v1(program).control
+                matched = construct_matched_control_program_v1(program)
+                control = matched.control
+                pair_id = matched.pair_id
             for role, component in components.items():
                 covered[role].add(component.component_id)
             record = {
@@ -474,6 +477,7 @@ def build_phase_c_materialization_schedule_v0(
                 "main_record_ordinal": len(rows),
                 "template_id": template_id,
                 "template_record_ordinal": template_ordinal,
+                "pair_id": pair_id,
                 "component_ids": {
                     role: component.component_id
                     for role, component in sorted(components.items())
