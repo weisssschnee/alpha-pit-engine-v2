@@ -1262,6 +1262,42 @@
         "verified_at_sha": "81204709779a4bf955320807f35c78ad9ae5f917"
       },
       "claim_badges": ["DEVELOPMENT PILOT PASS", "PHASE C BOUNDED", "NO OOS", "NO PROMOTION"]
+    },
+    {
+      "id": "cn_joint_program_rolling_search_v0_phase_c",
+      "label": "CN Joint Program Phase C factorized allocator campaign",
+      "kind": "experimental-search",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "runtime/run_plans/cn_joint_program_phase_c_outcome_20260810.json"
+      ],
+      "critical": true,
+      "contracts": [
+        {
+          "id": "joint_program_phase_c_exact_development_evidence",
+          "type": "EVIDENCE",
+          "rule": "Phase C evidence is admissible only from the exact 512-record development campaign, 64 immutable checkpoint and bandit chains, frozen arm quotas, matched controls, accounting invariants, resource gates and zero sealed reads.",
+          "severity": "HARD",
+          "enforced_by": "CN Joint Program Phase C closure and independent final audit",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "joint_program_phase_c_phase_d_hold",
+          "type": "BOUNDARY",
+          "rule": "The factorized allocator did not qualify over uniform on productive rate, absolute economics, stability, turnover efficiency and blocker risk; Phase D launch, allocator promotion, cross-campaign credit and sealed-data feedback remain forbidden.",
+          "severity": "HARD",
+          "enforced_by": "Phase C outcome receipt and authority-slot promotion gate",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "RUNTIME_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "runtime/run_plans/cn_joint_program_phase_c_outcome_20260810.json",
+        "evidence_sha256": "41fe5de37ca165ba2edf167746b14aa8672d5439e9cade74fbcf3c7632aec822",
+        "verified_at_sha": "6915b24de9f46a77639c19bd99cdc6527721da6d"
+      },
+      "claim_badges": ["DEVELOPMENT CLOSED", "PHASE D HOLD", "NO OOS", "NO PROMOTION"]
     }
   ],
   "edges": [
@@ -1593,6 +1629,8 @@
     {"id": "typed_candidate_program_v1_to_phase3cm", "source": "cn_typed_candidate_program_v1", "target": "phase3cm_streaming_multicandidate_evaluator", "relation": "compiles_into_existing_shared_dag_evaluation_contract", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "typed_program_no_second_evaluator", "type": "BOUNDARY", "rule": "Typed programs compile into the existing Phase3CM shared-DAG/evaluator contract; the V1 smoke performs no financial evaluation and grants no execution authority.", "severity": "HARD", "enforced_by": "ProgramCompilerV1 and SharedMultiCandidateDAGPlan", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "runtime/cn_typed_candidate_program_v1_independent_audit_20260806_3ad4c3d/audit.json", "evidence_sha256": "9810e97a78f2bd5750d7c52aadefc239851a3aaa9cf799ffc32c076c12a088c0", "verified_at_sha": "b1ed8ae222dded95ce3a2a9ffe0b31f698a4820a"}},
     {"id": "joint_program_phase_b_derived_from_typed_program_v1", "source": "cn_joint_program_rolling_search_v0_phase_b", "target": "cn_typed_candidate_program_v1", "relation": "derived_from", "lifecycle": "EXPERIMENTAL", "required": false},
     {"id": "joint_program_phase_b_candidate_for_development_search_policy", "source": "cn_joint_program_rolling_search_v0_phase_b", "target": "cn_development_search_policy", "relation": "candidate_for", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "joint_program_nonformal_candidate_only", "type": "BOUNDARY", "rule": "Phase B completion and a later Phase C experiment remain non-formal candidates for development search policy and cannot replace the accepted Hybrid TPE plus Availability authority without a separate ADR and promotion decision.", "severity": "HARD", "enforced_by": "authority-slot promotion gate", "bypass_forbidden": true}, "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json", "evidence_sha256": "5a09e569219dc78557c8780688b0d351e350262bb54b62ef0365adc5ccc3dd54", "verified_at_sha": "81204709779a4bf955320807f35c78ad9ae5f917"}},
+    {"id": "joint_program_phase_c_derived_from_phase_b", "source": "cn_joint_program_rolling_search_v0_phase_c", "target": "cn_joint_program_rolling_search_v0_phase_b", "relation": "derived_from", "lifecycle": "EXPERIMENTAL", "required": false},
+    {"id": "joint_program_phase_c_not_qualified_for_development_search_policy", "source": "cn_joint_program_rolling_search_v0_phase_c", "target": "cn_development_search_policy", "relation": "not_qualified_for", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "joint_program_phase_c_no_allocator_promotion", "type": "BOUNDARY", "rule": "The accepted Phase C run closes development evidence but does not authorize the factorized allocator, Phase D, candidate promotion, search-policy replacement or any sealed-data read.", "severity": "HARD", "enforced_by": "Phase C final audit and authority-slot promotion gate", "bypass_forbidden": true}, "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_joint_program_phase_c_outcome_20260810.json", "evidence_sha256": "41fe5de37ca165ba2edf167746b14aa8672d5439e9cade74fbcf3c7632aec822", "verified_at_sha": "6915b24de9f46a77639c19bd99cdc6527721da6d"}},
     {"id": "shard_to_feedback_forbidden", "source": "shard_parallel_evaluation", "target": "matched_train_feedback", "relation": "shard_local_reward", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "shard_feedback_unreachable", "type": "BOUNDARY", "rule": "Shard-local portfolio rewards cannot reach Phase3CN.", "severity": "HARD", "enforced_by": "formal_shard_parallel_removal", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},
     {"id": "mean_shard_to_feedback_forbidden", "source": "mean_shard_reward_fallback", "target": "matched_train_feedback", "relation": "mean_shard_reward", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "mean_shard_feedback_unreachable", "type": "BOUNDARY", "rule": "Mean-of-shard reward fallback cannot reach Phase3CN.", "severity": "HARD", "enforced_by": "phase3cn_matched_source_gate", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}}
   ],

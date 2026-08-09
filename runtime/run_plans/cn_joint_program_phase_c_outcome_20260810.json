@@ -1,0 +1,60 @@
+{
+  "accounting_invariants": "PASS",
+  "arm_counts": {
+    "FACTORIZED_EXPLOIT": 168,
+    "NOVELTY_RESERVE": 84,
+    "UNIFORM_FRESH": 260
+  },
+  "builder_repo_sha": "336b108f66ade8a18c9415d21f32cf6418d69d4a",
+  "checkpoint_count": 64,
+  "closure_file_sha256": "890480de62b7475ebdfbba09843ba25b6760789d43647782f26e474b97e4a057",
+  "closure_payload_sha256": "1761e7e6a7c3101a961a60b83e51947757caf669b4dc6d5232417727b8746437",
+  "decision": "HOLD_PHASE_D_NO_LAUNCH",
+  "decision_basis": {
+    "factorized_exploit_all_four_positive_rate_delta_vs_uniform": -0.0025688597117168865,
+    "factorized_exploit_blocked_rate_delta_vs_uniform": 0.1488095238095238,
+    "factorized_exploit_matched_return_positive_rate_delta_vs_uniform": 0.2174611103182531,
+    "factorized_exploit_matched_reward_positive_rate_delta_vs_uniform": 0.15887683744826608,
+    "factorized_exploit_median_primary_return_delta_vs_uniform": -0.1272411908923443,
+    "factorized_exploit_median_primary_reward_delta_vs_uniform": -0.43262772600977584,
+    "factorized_exploit_median_return_per_turnover_delta_vs_uniform": -2.970486778571753,
+    "factorized_exploit_primary_return_positive_rate_delta_vs_uniform": -0.24461253032681596,
+    "factorized_exploit_primary_reward_positive_rate_delta_vs_uniform": -0.24422006564863707,
+    "factorized_exploit_productive_rate_delta_vs_uniform": -0.022584558298843982,
+    "factorized_exploit_three_window_positive_rate_delta_vs_uniform": -0.049878692735835596,
+    "novelty_reserve_productive_rate": 0.6506024096385542
+  },
+  "evidence_class": "DEVELOPMENT_ONLY_ADAPTIVE_SELECTOR_EXPERIMENT",
+  "final_audit_file_sha256": "65e3174c8a0048e17e5fcdafa1823e8cc8f2dd25005c41b8ceec0c9f861c201b",
+  "final_audit_payload_sha256": "60d0ecc7d768b4ef0813951691124574b12955838d719fa3a168617698019288",
+  "final_audit_root": "D:\\ChengboRemote\\runtime\\cn_joint_program_phase_c_final_audit_20260810_6915b24",
+  "finalizer_repo_sha": "6915b24de9f46a77639c19bd99cdc6527721da6d",
+  "minimum_checkpoint_boundary_free_memory_bytes": 84860440576,
+  "next_action": {
+    "authorization": "REQUIRES_SEPARATE_FRESH_FREEZE",
+    "objective": "Prospectively compare a revised allocator objective that penalizes weak standalone economics, turnover inefficiency and replay-blocker risk while preserving fixed UNIFORM_FRESH and NOVELTY_RESERVE floors.",
+    "prohibited": [
+      "launch Phase D",
+      "promote the factorized allocator",
+      "reuse Phase C financial records as new financial evidence",
+      "read validation, holdout, spent-2023, Forward-B or 2026 data"
+    ]
+  },
+  "outcome_payload_sha256": "1eea0dacba0a41912ba97d462ab25a9df469c82d1d65054373b10f05e983aeb0",
+  "output_root": "D:\\ChengboRemote\\runtime\\cn_joint_program_rolling_search_v0_phase_c_factorized_512_20260809_336b108_10w",
+  "phase_d_launched": false,
+  "record_count": 512,
+  "replay_blocked_count": 30,
+  "replay_complete_count": 482,
+  "research_bias_decision": "HOLD_RESEARCH",
+  "root_finalization_recovery": true,
+  "schema_version": "cn_joint_program_phase_c_outcome_v0",
+  "sealed_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "holdout": 0,
+    "spent_2023": 0,
+    "validation": 0
+  },
+  "status": "PHASE_C_CLOSED_PHASE_D_HELD"
+}

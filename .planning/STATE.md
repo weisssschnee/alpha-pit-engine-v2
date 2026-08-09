@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-09
+Updated: 2026-08-10
 
-Current state: `JOINT_PROGRAM_PHASE_B_DEVELOPMENT_QUALIFIED_PHASE_C_BOUNDED_AUTHORIZED_NO_LAUNCH_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
+Current state: `JOINT_PROGRAM_PHASE_C_DEVELOPMENT_CLOSED_FACTORIZED_EXPLOIT_NOT_QUALIFIED_PHASE_D_HOLD_NO_LAUNCH_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,53 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Joint Program Rolling Search V0 Phase C closed; factorized exploit not qualified and Phase D held (2026-08-10)
+
+- The exact development-only Phase C campaign closed 64/64 immutable
+  checkpoints and 512/512 records. Checkpoint construction used exact pushed
+  SHA `336b108f66ade8a18c9415d21f32cf6418d69d4a`; a metadata-only root
+  finalization recovery at exact pushed SHA
+  `6915b24de9f46a77639c19bd99cdc6527721da6d` reran zero financial records.
+  Closure file/payload SHA256 values are
+  `890480de62b7475ebdfbba09843ba25b6760789d43647782f26e474b97e4a057` /
+  `1761e7e6a7c3101a961a60b83e51947757caf669b4dc6d5232417727b8746437`.
+- The campaign contains exactly 260 `UNIFORM_FRESH`, 168
+  `FACTORIZED_EXPLOIT` and 84 `NOVELTY_RESERVE` asks. All seven enhanced
+  templates retain exact per-template quotas 28/24/12, while all 64 BASE
+  parity asks remain uniform. The campaign-local bandit chain is intact across
+  all 64 checkpoints: 512 feedback records, 421 updates, 51 initial and 472
+  final observations, zero validation feedback and zero cross-campaign import.
+- Exact replay closure is 482 complete and 30 fail-closed blocked records.
+  All blocked rows are `CORPORATE_ACTION_FRACTIONAL_SHARES`, carry no search
+  score or matched economic claim and remain excluded from economic summaries.
+  Accounting invariants passed for every available leg; zero validation,
+  holdout, spent-2023, Forward-B or 2026 reads occurred. The 24 GiB checkpoint
+  boundary gate passed with 84,860,440,576 bytes minimum free memory.
+- The factorized arm did not improve the decision metrics over uniform among
+  enhanced complete replays. Its productive-rate and all-four-positive deltas
+  were `-0.022585` and `-0.002569`; primary reward/return positive-rate deltas
+  were `-0.244220` / `-0.244613`; three-window-positive delta was `-0.049879`;
+  median primary reward/return deltas were `-0.432628` / `-0.127241`; median
+  return-per-turnover delta was `-2.970487`; and blocked-rate delta was
+  `+0.148810`.
+- Factorized exploit did improve matched-control reward/return positive rates
+  by `+0.158877` / `+0.217461`, but this relative gain came with weaker
+  standalone economics, stability, turnover efficiency and blocker incidence.
+  `NOVELTY_RESERVE`, not factorized exploit, had the strongest development-only
+  productive rate (`0.650602`). This is useful allocator-diagnostic evidence,
+  not OOS or promotion evidence.
+- Final independent audit status is PASS for structure, hashes, checkpoint and
+  bandit chains, accounting, blocker taxonomy, resources and zero-read gates;
+  its file/payload SHA256 values are
+  `65e3174c8a0048e17e5fcdafa1823e8cc8f2dd25005c41b8ceec0c9f861c201b` /
+  `60d0ecc7d768b4ef0813951691124574b12955838d719fa3a168617698019288`.
+  Research-bias status is `HOLD_RESEARCH`: this was one adaptive development
+  campaign with no validation, OOS or untouched confirmation claim.
+- Decision: `HOLD_PHASE_D_NO_LAUNCH`. Phase C remains non-formal evidence and
+  does not replace the accepted development search policy. Compact receipt:
+  `runtime/run_plans/cn_joint_program_phase_c_outcome_20260810.json`, payload
+  SHA256 `1eea0dacba0a41912ba97d462ab25a9df469c82d1d65054373b10f05e983aeb0`.
 
 ### Joint Program Rolling Search V0 Phase B qualified; bounded development-only Phase C authorized but not launched (2026-08-09)
 
@@ -2687,14 +2734,15 @@ remains unchanged. The compact receipt is
 
 ## Next action
 
-Do not rerun Phase A, the materialization preflight, the uniform Phase B pilot
-or any preserved recovery incident. The next authorized project action is one
-zero-financial Phase C freeze that binds the accepted Phase B outcome and a
-bounded campaign-local allocation budget with nonzero exploration. Only after
-that freeze and its independent audit may a fresh development-only Phase C run
-start. Phase C remains experimental and non-formal: no validation/holdout,
-spent-2023, Forward-B or 2026 reads, no cross-campaign memory, no shared
-route-TPE authority change, no automatic successor and no promotion.
+Do not rerun Phase A, the materialization preflight, the uniform Phase B pilot,
+Phase C or any preserved recovery incident. Phase D is held and no successor
+run is authorized. If separately authorized, the next experiment must first
+freeze a revised allocator objective that explicitly accounts for standalone
+absolute economics, turnover efficiency and replay-blocker risk while
+preserving fixed `UNIFORM_FRESH` and `NOVELTY_RESERVE` floors. It must be a
+fresh prospective development comparison: Phase C financial records cannot be
+reused as new evidence, validation/holdout/spent-2023/Forward-B/2026 remain
+sealed, and no allocator/search-policy promotion is implied.
 
 Do not rebuild the registry, route compiler, DAG/evaluator, portfolio decoder or
 fixed-stratified scheduler around Candidate Program V1. The qualified V1 layer
