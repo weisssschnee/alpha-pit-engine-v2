@@ -278,3 +278,48 @@ def test_phase_c_worker_relabels_phase_b_payload_atomically(
     assert payload["adaptive_template_credit_used"] is True
     assert target.is_file()
     assert not target.with_suffix(".phase_b.tmp.json").exists()
+
+
+def _base_root_record(*, blocked: bool, parity_status: str | None = "PASS") -> dict:
+    return {
+        "record_kind": "BASE_WRAPPER_PARITY",
+        "replay_status": (
+            runner.PAIR_REPLAY_BLOCKED if blocked else runner.PAIR_REPLAY_COMPLETE
+        ),
+        "base_wrapper_parity": (
+            None if parity_status is None else {"status": parity_status}
+        ),
+        "replay_blocker": (
+            {
+                "blocker_code": "CORPORATE_ACTION_FRACTIONAL_SHARES",
+                "economic_claim_authorized": False,
+                "promotion_authorized": False,
+            }
+            if blocked
+            else None
+        ),
+    }
+
+
+def test_phase_c_root_parity_counts_complete_and_fail_closed_base_rows() -> None:
+    records = [
+        _base_root_record(blocked=False),
+        _base_root_record(blocked=True, parity_status=None),
+        {"record_kind": "ENHANCED_FULL_BASE_PAIR"},
+    ]
+    assert runner._verify_base_parity_root_gate(records) == (1, 1)
+
+
+@pytest.mark.parametrize(
+    "record",
+    [
+        _base_root_record(blocked=False, parity_status=None),
+        _base_root_record(blocked=False, parity_status="FAIL"),
+        _base_root_record(blocked=True, parity_status="PASS"),
+    ],
+)
+def test_phase_c_root_parity_rejects_invalid_complete_or_blocked_claims(
+    record: dict,
+) -> None:
+    with pytest.raises(RuntimeError):
+        runner._verify_base_parity_root_gate([record])

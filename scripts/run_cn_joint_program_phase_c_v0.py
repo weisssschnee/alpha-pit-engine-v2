@@ -915,12 +915,57 @@ def _verify_run_contract(
         raise RuntimeError("Phase C frozen run contract drift: " + ",".join(drift))
 
 
+def _verify_base_parity_root_gate(
+    records: Sequence[Mapping[str, Any]],
+) -> tuple[int, int]:
+    parity_pass = 0
+    replay_blocked = 0
+    for row in records:
+        if str(row["record_kind"]) != "BASE_WRAPPER_PARITY":
+            continue
+        replay_status = str(row["replay_status"])
+        parity = row.get("base_wrapper_parity")
+        if replay_status == PAIR_REPLAY_COMPLETE:
+            if not isinstance(parity, Mapping) or str(parity.get("status")) != "PASS":
+                raise RuntimeError("Phase C BASE parity root gate failed")
+            parity_pass += 1
+            continue
+        if replay_status == PAIR_REPLAY_BLOCKED:
+            blocker = row.get("replay_blocker")
+            if (
+                parity is not None
+                or not isinstance(blocker, Mapping)
+                or bool(blocker.get("economic_claim_authorized"))
+                or bool(blocker.get("promotion_authorized"))
+            ):
+                raise RuntimeError("Phase C blocked BASE root gate failed")
+            replay_blocked += 1
+            continue
+        raise RuntimeError("Phase C BASE replay status root gate failed")
+    return parity_pass, replay_blocked
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     if platform.node().upper() != AUTHORIZED_HOST:
         raise RuntimeError(
             f"Phase C financial comparison is authorized only on {AUTHORIZED_HOST}"
         )
     root = args.output_root.resolve()
+    recovery_from_sha = str(
+        getattr(args, "root_finalization_recovery_from_repo_sha", "") or ""
+    )
+    recovery_incident_arg = getattr(args, "root_finalization_incident", None)
+    recovery_deployment_arg = getattr(
+        args, "root_finalization_deployment_manifest", None
+    )
+    recovery_mode = bool(recovery_from_sha)
+    if recovery_mode != bool(recovery_incident_arg) or recovery_mode != bool(
+        recovery_deployment_arg
+    ):
+        raise RuntimeError("Phase C root-finalization recovery binding is incomplete")
+    checkpoint_builder_sha = (
+        recovery_from_sha if recovery_mode else str(args.builder_commit_sha)
+    )
     freeze_root = args.phase_c_freeze_root.resolve()
     freeze = verify_phase_c_prefinancial_freeze_v0(freeze_root)
     contract = _read_json(freeze_root / "phase_c_run_contract.json")
@@ -1056,7 +1101,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         {
             "schema_version": "cn_joint_program_phase_c_input_binding_v0",
             "status": "JOINT_PROGRAM_PHASE_C_INPUTS_BOUND",
-            "runner_repo_sha": str(args.builder_commit_sha),
+            "runner_repo_sha": checkpoint_builder_sha,
             "freeze_repo_sha": str(freeze["repo_sha"]),
             "phase_c_prefinancial_closure_file_sha256": _sha256(
                 freeze_root / FREEZE_CLOSURE_NAME
@@ -1113,6 +1158,79 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "input_binding_sha256",
     )
     input_hash = str(input_binding["input_binding_sha256"])
+    recovery_binding_path: Path | None = None
+    recovery_binding: dict[str, Any] | None = None
+    if recovery_mode:
+        if len(recovery_from_sha) != 40:
+            raise RuntimeError("Phase C checkpoint-builder SHA is not full length")
+        if not root.is_dir() or (root / CLOSURE_NAME).exists():
+            raise RuntimeError("Phase C root-finalization recovery root is not eligible")
+        checkpoints = root / "checkpoints"
+        if any(
+            not (
+                checkpoints
+                / f"checkpoint_{checkpoint_index + 1:03d}"
+                / "batch_manifest.json"
+            ).is_file()
+            for checkpoint_index in range(CHECKPOINT_COUNT)
+        ):
+            raise RuntimeError(
+                "Phase C root-finalization recovery requires all immutable checkpoints"
+            )
+        inflight = root / "inflight"
+        if inflight.exists() and any(inflight.rglob("*.json")):
+            raise RuntimeError("Phase C root-finalization recovery found inflight results")
+        recovery_incident = Path(recovery_incident_arg).resolve()
+        incident_payload = _read_json(recovery_incident)
+        incident_body = dict(incident_payload)
+        incident_hash = str(incident_body.pop("incident_payload_sha256", ""))
+        if (
+            incident_hash != stable_hash(incident_body)
+            or str(incident_payload.get("output_root", "")).replace("/", "\\").lower()
+            != str(root).replace("/", "\\").lower()
+            or int(incident_payload.get("closed_checkpoint_count", 0))
+            != CHECKPOINT_COUNT
+            or int(incident_payload.get("closed_record_count", 0))
+            != EXPECTED_RECORDS
+        ):
+            raise RuntimeError("Phase C root-finalization incident binding drift")
+        recovery_deployment = Path(recovery_deployment_arg).resolve()
+        deployment_payload = _read_json(recovery_deployment)
+        if (
+            str(deployment_payload.get("repo_sha", "")) != str(args.builder_commit_sha)
+            or str(deployment_payload.get("remote_workspace", "")).replace(
+                "/", "\\"
+            ).lower()
+            != str(PROJECT_ROOT).replace("/", "\\").lower()
+        ):
+            raise RuntimeError("Phase C root-finalizer deployment binding drift")
+        recovery_binding = _self_hashed(
+            {
+                "schema_version": "cn_joint_program_phase_c_root_finalization_recovery_v0",
+                "status": "ROOT_FINALIZATION_RECOVERY_BOUND",
+                "checkpoint_builder_repo_sha": checkpoint_builder_sha,
+                "root_finalizer_repo_sha": str(args.builder_commit_sha),
+                "deployment_manifest": str(recovery_deployment),
+                "deployment_manifest_file_sha256": _sha256(recovery_deployment),
+                "incident": str(recovery_incident),
+                "incident_file_sha256": _sha256(recovery_incident),
+                "incident_payload_sha256": incident_hash,
+                "closed_checkpoint_count": CHECKPOINT_COUNT,
+                "closed_record_count": EXPECTED_RECORDS,
+                "financial_evaluation_executed": False,
+                "incomplete_results_reused": False,
+                "validation_reads": 0,
+                "holdout_reads": 0,
+                "historical_2023_reads": 0,
+                "forward_b_reads": 0,
+                "forward_2026_reads": 0,
+            },
+            "recovery_binding_sha256",
+        )
+        recovery_binding_path = root / "root_finalization_recovery_binding.json"
+        if recovery_binding_path.is_file():
+            if _read_json(recovery_binding_path) != recovery_binding:
+                raise RuntimeError("Phase C root-finalization recovery receipt drift")
     if root.exists():
         existing = root / "input_binding.json"
         if existing.is_file():
@@ -1136,6 +1254,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     else:
         root.mkdir(parents=True)
         _write_json(root / "input_binding.json", input_binding)
+    if recovery_binding_path is not None and not recovery_binding_path.is_file():
+        assert recovery_binding is not None
+        _write_json(recovery_binding_path, recovery_binding)
     catalog_path = root / "catalog_preflight.json"
     if catalog_path.is_file():
         if _read_json(catalog_path) != catalog_report:
@@ -1367,12 +1488,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     schedules.sort(key=lambda row: int(row["main_record_ordinal"]))
     if len(records) != EXPECTED_RECORDS or len(schedules) != EXPECTED_RECORDS:
         raise RuntimeError("Phase C root result count drift")
-    if any(
-        str(row["base_wrapper_parity"]["status"]) != "PASS"
-        for row in records
-        if str(row["record_kind"]) == "BASE_WRAPPER_PARITY"
-    ):
-        raise RuntimeError("Phase C BASE parity root gate failed")
+    base_parity_pass, base_parity_blocked = _verify_base_parity_root_gate(records)
     for template_id in ENHANCED_TEMPLATE_ORDER:
         template_schedules = [
             row for row in schedules if str(row["template_id"]) == template_id
@@ -1497,6 +1613,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         blocker_path,
         resource_path,
         access_path,
+        *([recovery_binding_path] if recovery_binding_path is not None else []),
         *checkpoint_manifests,
     ]
     manifest = _self_hashed(
@@ -1512,15 +1629,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "schema_version": "cn_joint_program_phase_c_closure_v0",
             "status": STATUS,
             "output_root": str(root),
-            "runner_repo_sha": str(args.builder_commit_sha),
+            "runner_repo_sha": checkpoint_builder_sha,
+            "root_finalizer_repo_sha": str(args.builder_commit_sha),
+            "root_finalization_recovery": recovery_mode,
             "phase_c_input_binding_sha256": input_hash,
             "record_count": len(records),
             "checkpoint_count": len(checkpoint_manifests),
-            "base_parity_pass": sum(
-                str(row["record_kind"]) == "BASE_WRAPPER_PARITY"
-                and str(row["base_wrapper_parity"]["status"]) == "PASS"
-                for row in records
-            ),
+            "base_parity_pass": base_parity_pass,
+            "base_parity_blocked": base_parity_blocked,
             "enhanced_replay_complete": sum(
                 str(row["record_kind"]) == "ENHANCED_FULL_BASE_PAIR"
                 and phase_b._record_replay_complete(row)
@@ -1573,6 +1689,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--node-resource-capacity", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
     parser.add_argument("--builder-commit-sha", required=True)
+    parser.add_argument("--root-finalization-recovery-from-repo-sha")
+    parser.add_argument("--root-finalization-incident", type=Path)
+    parser.add_argument("--root-finalization-deployment-manifest", type=Path)
     parser.add_argument("--executor-workers", type=int, default=10)
     args = parser.parse_args(argv)
     if len(str(args.builder_commit_sha)) != 40:
