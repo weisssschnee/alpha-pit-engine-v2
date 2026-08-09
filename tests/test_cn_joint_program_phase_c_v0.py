@@ -8,9 +8,22 @@ from our_system_phase2.runtime.cn_joint_program_phase_c_v0 import (
     ENHANCED_TEMPLATE_ORDER,
     EXPECTED_RECORDS,
     TEMPLATE_ORDER,
+    _artifact_binding_path,
+    _artifact_binding_size,
     build_phase_c_ask_plan_v0,
     phase_c_generation_arm_v0,
 )
+
+
+def test_artifact_binding_accepts_both_phase_b_and_phase_c_schemas() -> None:
+    assert _artifact_binding_path({"path": "ARTIFACT_MANIFEST.json"}) == (
+        "ARTIFACT_MANIFEST.json"
+    )
+    assert _artifact_binding_size({"bytes": 17}) == 17
+    assert _artifact_binding_path({"relative_path": "summary.json"}) == (
+        "summary.json"
+    )
+    assert _artifact_binding_size({"size_bytes": 23}) == 23
 
 
 def test_phase_c_ask_plan_freezes_exact_512_and_arm_quotas() -> None:

@@ -144,6 +144,22 @@ def _verify_self_hash(payload: Mapping[str, Any], key: str, label: str) -> None:
         raise ValueError(f"{label} self-hash drift")
 
 
+def _artifact_binding_path(binding: Mapping[str, Any]) -> str:
+    value = str(binding.get("relative_path") or binding.get("path") or "")
+    if not value:
+        raise ValueError("artifact binding lacks a relative path")
+    return value
+
+
+def _artifact_binding_size(binding: Mapping[str, Any]) -> int:
+    value = binding.get("size_bytes")
+    if value is None:
+        value = binding.get("bytes")
+    if value is None or int(value) < 0:
+        raise ValueError("artifact binding lacks a valid size")
+    return int(value)
+
+
 def phase_c_generation_arm_v0(
     template_id: str, template_record_ordinal: int
 ) -> str:
@@ -644,18 +660,18 @@ def _verify_phase_b_outcome(
         != str(outcome["closure"]["payload_sha256"])
     ):
         raise ValueError("Phase B accepted result binding drift")
-    manifest_path = phase_b_result_root / str(
-        closure["artifact_manifest"]["relative_path"]
+    manifest_path = phase_b_result_root / _artifact_binding_path(
+        closure["artifact_manifest"]
     )
     if _sha256(manifest_path) != str(closure["artifact_manifest"]["sha256"]):
         raise ValueError("Phase B result artifact manifest file drift")
     manifest = _read_json(manifest_path)
     _verify_self_hash(manifest, "artifact_manifest_sha256", "Phase B artifact manifest")
     for artifact in manifest["artifacts"]:
-        path = phase_b_result_root / str(artifact["relative_path"])
+        path = phase_b_result_root / _artifact_binding_path(artifact)
         if (
             not path.is_file()
-            or path.stat().st_size != int(artifact["size_bytes"])
+            or path.stat().st_size != _artifact_binding_size(artifact)
             or _sha256(path) != str(artifact["sha256"])
         ):
             raise ValueError(f"Phase B accepted artifact drift: {path}")
