@@ -1,0 +1,130 @@
+{
+  "schema_version": "cn_joint_program_rolling_search_v0_phase_b_outcome_v1",
+  "status": "CN_JOINT_PROGRAM_ROLLING_SEARCH_V0_PHASE_B_ACCEPTED",
+  "runner_repo_sha": "bd771fdd911e8c16a976b9c6c26ede6d464fef18",
+  "phase_b_root": "D:\\ChengboRemote\\runtime\\cn_joint_program_rolling_search_v0_phase_b_blocker_safe_recovery_20260809_bd771fd_10w",
+  "closure": {
+    "file_sha256": "14623ebc131b84660bd131b11268e40433ea1f219d1ed77caff2eb6ab147106a",
+    "payload_sha256": "0765c684c3f67ab592eb1006dbd1a5dd6e96dad7825fef251ac0d4f6ee36f3cf",
+    "artifact_manifest_file_sha256": "8a53c78ab6e49f807112c9d728d5bd4fd075fe42e079e379f315e80949b90354"
+  },
+  "independent_audit": {
+    "path": "D:\\ChengboRemote\\runtime\\cn_joint_program_phase_b_final_audit_v2_20260809_bd771fd\\audit.json",
+    "file_sha256": "baae7a4f03073b8b9499336379f9c3a6370b6d5b92743d3b41e3b49db2d09dc8",
+    "payload_sha256": "12d6700c02d0a71388392120af3d235a598618c7a33a0f07b7eb6907843e1543",
+    "checks_executed": 3582,
+    "failure_count": 0,
+    "status": "CN_JOINT_PROGRAM_PHASE_B_FINAL_INDEPENDENT_AUDIT_PASS"
+  },
+  "coverage": {
+    "record_count": 64,
+    "checkpoint_count": 8,
+    "records_per_template": 8,
+    "base_parity_pass": 8,
+    "replay_complete_count": 62,
+    "replay_blocked_count": 2,
+    "productive_count": 23,
+    "behavior_unique": 59,
+    "semantic_noop_count": 0
+  },
+  "template_productivity": [
+    {
+      "template_id": "BASE",
+      "replay_complete": 8,
+      "replay_blocked": 0,
+      "productive": 3,
+      "median_matched_increment": 0.01914416199131541
+    },
+    {
+      "template_id": "BASE_TEMPORAL",
+      "replay_complete": 8,
+      "replay_blocked": 0,
+      "productive": 1,
+      "median_matched_increment": -0.44792304039905584
+    },
+    {
+      "template_id": "BASE_MARKET",
+      "replay_complete": 8,
+      "replay_blocked": 0,
+      "productive": 3,
+      "median_matched_increment": -0.030967058743575304
+    },
+    {
+      "template_id": "BASE_EVENT",
+      "replay_complete": 7,
+      "replay_blocked": 1,
+      "productive": 4,
+      "median_matched_increment": 1.419578856089742
+    },
+    {
+      "template_id": "BASE_TEMPORAL_MARKET",
+      "replay_complete": 8,
+      "replay_blocked": 0,
+      "productive": 1,
+      "median_matched_increment": 0.05136335862304206
+    },
+    {
+      "template_id": "BASE_TEMPORAL_EVENT",
+      "replay_complete": 8,
+      "replay_blocked": 0,
+      "productive": 5,
+      "median_matched_increment": 0.03448055181364623
+    },
+    {
+      "template_id": "BASE_MARKET_EVENT",
+      "replay_complete": 8,
+      "replay_blocked": 0,
+      "productive": 6,
+      "median_matched_increment": 1.0044806294322035
+    },
+    {
+      "template_id": "BASE_TEMPORAL_MARKET_EVENT",
+      "replay_complete": 7,
+      "replay_blocked": 1,
+      "productive": 0,
+      "median_matched_increment": -1.1475694647666415
+    }
+  ],
+  "blocker_counts": {
+    "BEHAVIOR_EQUIVALENT_TO_BASE": 1,
+    "CORPORATE_ACTION_FRACTIONAL_SHARES": 2,
+    "NO_EXECUTABLE_FILLS": 3
+  },
+  "maximum_accounting_errors": {
+    "maximum_cash_identity_error_cny": 5.093170329928398e-10,
+    "maximum_nav_identity_error_cny": 2.3283064365386963e-10,
+    "maximum_pnl_identity_error_cny": 4.0745362639427185e-09,
+    "maximum_lot_quantity_error": 0
+  },
+  "resources": {
+    "executor_lifecycle": "CHECKPOINT_SCOPED_RECYCLE",
+    "executor_workers": 10,
+    "effective_workers_per_checkpoint": 8,
+    "checkpoint_boundary_minimum_free_memory_bytes": 86099345408,
+    "in_pool_minimum_observed_free_memory_bytes_telemetry_only": 23734984704,
+    "main_records_per_hour": 201.54463442171567,
+    "resource_gate_status": "PASS"
+  },
+  "phase_c_decision": {
+    "decision": "AUTHORIZE_BOUNDED_DEVELOPMENT_ONLY_PHASE_C_NO_LAUNCH_IN_THIS_WORKFLOW",
+    "rationale": "All eight templates now have comparable real development-only supply and economic observations, exact identity/control/accounting closure, and materially differentiated productivity. This is sufficient to test the already implemented campaign-local factorized allocator, but not to promote it or export credit across campaigns.",
+    "required_next_boundary": "Freeze one bounded Phase C campaign binding this accepted Phase B evidence, unchanged route-local TPE authorities, nonzero exploration, immutable checkpoints, checkpoint-scoped resources, and zero sealed reads before execution.",
+    "forbidden": [
+      "validation_or_holdout_feedback",
+      "spent_2023_or_forward_b_or_2026_reads",
+      "cross_campaign_reward_memory",
+      "shared_route_tpe_credit_rewrite",
+      "candidate_promotion",
+      "automatic_phase_c_launch_from_this_receipt"
+    ]
+  },
+  "sealed_reads": {
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "promotion": "HOLD_PROMOTION",
+  "receipt_payload_sha256": "610f49c36e3e25081a8fec731ef26965f6763e26b3689387cd7f59d4c49b4ce6"
+}

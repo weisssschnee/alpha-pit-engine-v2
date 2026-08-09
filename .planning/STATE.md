@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-06
+Updated: 2026-08-09
 
-Current state: `HISTORICAL_CHALLENGE_2023_NEGATIVE_TYPED_PROGRAM_V1_QUALIFIED_FORWARD_B_SEALED_HOLD_PROMOTION`
+Current state: `JOINT_PROGRAM_PHASE_B_DEVELOPMENT_QUALIFIED_PHASE_C_BOUNDED_AUTHORIZED_NO_LAUNCH_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,58 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Joint Program Rolling Search V0 Phase B qualified; bounded development-only Phase C authorized but not launched (2026-08-09)
+
+- The exact frozen 64-record uniform pilot closed at pushed/deployed runner SHA
+  `bd771fdd911e8c16a976b9c6c26ede6d464fef18`: eight immutable
+  checkpoint-scoped PROCESS_POOL chains, eight records for every one of the
+  eight joint templates, 8/8 BASE compiled-versus-legacy parity, 62 complete
+  Full/Base replays, two fail-closed candidate-local replay blockers, 23
+  productive records, 59 behavior identities and zero semantic no-ops.
+- Independent audit executed 3,582 exact checks with zero failures. It verified
+  every canonical/file/artifact hash, the GENESIS-to-checkpoint-008 manifest
+  chain, exact frozen identity/order, controls, accounting, blocker taxonomy,
+  productivity summaries, checkpoint-boundary resource gates and zero
+  validation, holdout, spent-2023, Forward-B or 2026 reads. The accepted audit
+  file/payload SHA256 values are
+  `baae7a4f03073b8b9499336379f9c3a6370b6d5b92743d3b41e3b49db2d09dc8` /
+  `12d6700c02d0a71388392120af3d235a598618c7a33a0f07b7eb6907843e1543`.
+  Closure file/payload SHA256 values are
+  `14623ebc131b84660bd131b11268e40433ea1f219d1ed77caff2eb6ab147106a` /
+  `0765c684c3f67ab592eb1006dbd1a5dd6e96dad7825fef251ac0d4f6ee36f3cf`.
+- Real development-only template productivity is now comparable. Productive
+  counts / median matched increments were: BASE `3/8 / +0.0191`,
+  BASE_TEMPORAL `1/8 / -0.4479`, BASE_MARKET `3/8 / -0.0310`,
+  BASE_EVENT `4/7 / +1.4196`, BASE_TEMPORAL_MARKET `1/8 / +0.0514`,
+  BASE_TEMPORAL_EVENT `5/8 / +0.0345`, BASE_MARKET_EVENT
+  `6/8 / +1.0045`, and BASE_TEMPORAL_MARKET_EVENT `0/7 / -1.1476`.
+  These differences are evidence for a bounded campaign-local allocation test,
+  not proof that event-bearing templates generalize.
+- Candidate-local corporate-action failures remain fail closed rather than
+  aborting the process pool. Ordinal 29 is an immutable
+  `PAIR_REPLAY_BLOCKED` record for `CORPORATE_ACTION_FRACTIONAL_SHARES` on the
+  `BASE_CONTROL` leg under unchanged `FAIL_CLOSED_NON_INTEGER`; it carries no
+  matched economic claim or search score. Maximum cash/NAV/PnL/lot accounting
+  errors were `5.093170329928398e-10` / `2.3283064365386963e-10` /
+  `4.0745362639427185e-09` / `0`.
+- Checkpoint-scoped recycling passed the unchanged 24 GiB boundary gate with
+  86,099,345,408 bytes minimum free memory and 201.5446 records/hour. The
+  23,734,984,704-byte in-pool low watermark is telemetry only; enforcement is
+  deliberately sampled after each eight-record pool exits and before its
+  checkpoint seals.
+- Decision: authorize one separately frozen, bounded, development-only Phase C
+  using the already implemented campaign-local factorized allocator. Phase C
+  is not launched by this closure. It must bind this exact Phase B receipt,
+  retain nonzero exploration, unchanged route-local TPE and financial/resource
+  authorities, immutable checkpoints and zero sealed reads. It may not export
+  reward credit across campaigns, rewrite shared route TPE authority, open
+  Forward-B, consume OOS feedback or promote candidates/search policy. Compact
+  receipt:
+  `runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json`,
+  file/payload SHA256
+  `5a09e569219dc78557c8780688b0d351e350262bb54b62ef0365adc5ccc3dd54` /
+  `610f49c36e3e25081a8fec731ef26965f6763e26b3689387cd7f59d4c49b4ce6`.
 
 ### Typed Candidate Program V1 non-formal representation qualified (2026-08-06)
 
@@ -2634,6 +2686,15 @@ remains unchanged. The compact receipt is
   a SHA-verified full Git bundle without changing the node's proxy authority.
 
 ## Next action
+
+Do not rerun Phase A, the materialization preflight, the uniform Phase B pilot
+or any preserved recovery incident. The next authorized project action is one
+zero-financial Phase C freeze that binds the accepted Phase B outcome and a
+bounded campaign-local allocation budget with nonzero exploration. Only after
+that freeze and its independent audit may a fresh development-only Phase C run
+start. Phase C remains experimental and non-formal: no validation/holdout,
+spent-2023, Forward-B or 2026 reads, no cross-campaign memory, no shared
+route-TPE authority change, no automatic successor and no promotion.
 
 Do not rebuild the registry, route compiler, DAG/evaluator, portfolio decoder or
 fixed-stratified scheduler around Candidate Program V1. The qualified V1 layer
