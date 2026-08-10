@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from pathlib import Path
 
 from scripts import run_cn_joint_program_allocator_repair_canary_v0 as runner
 from our_system_phase2.runtime.cn_joint_program_allocator_repair_canary_v0 import (
@@ -182,3 +183,14 @@ def test_freeze_decision_gates_are_numeric_and_unambiguous() -> None:
         "enhanced_template_improvement_metric": "all_four_positive_rate",
         "enhanced_template_blocked_rate_worsening_allowed": False,
     }
+
+
+def test_launcher_uses_reused_engine_bootstrap_allowlisted_log_names() -> None:
+    launcher = (
+        Path(__file__).resolve().parents[1]
+        / "scripts"
+        / "run_cn_joint_program_allocator_repair_canary_77o.ps1"
+    ).read_text(encoding="utf-8")
+    assert "joint_program_phase_c.stdout.log" in launcher
+    assert "joint_program_phase_c.stderr.log" in launcher
+    assert "allocator_repair_canary.stdout.log" not in launcher

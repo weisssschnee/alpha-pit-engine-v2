@@ -153,8 +153,10 @@ foreach ($path in @($freezeClosure, $fieldManifest, $priceManifest)) {
 }
 
 New-Item -ItemType Directory -Path $resolvedRoot | Out-Null
-$stdoutPath = Join-Path $resolvedRoot 'allocator_repair_canary.stdout.log'
-$stderrPath = Join-Path $resolvedRoot 'allocator_repair_canary.stderr.log'
+# The reused Phase-C execution engine fail-closes bootstrap roots against these
+# exact allowlisted log names before it writes input_binding.json.
+$stdoutPath = Join-Path $resolvedRoot 'joint_program_phase_c.stdout.log'
+$stderrPath = Join-Path $resolvedRoot 'joint_program_phase_c.stderr.log'
 [ordered]@{
     schema_version = 'cn_joint_program_allocator_repair_deployment_binding_v0'
     status = 'ACTIVE_DEVELOPMENT_ONLY_ALLOCATOR_REPAIR_CANARY'
