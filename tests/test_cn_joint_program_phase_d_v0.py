@@ -116,6 +116,7 @@ def test_phase_d_runner_and_launcher_keep_telemetry_without_24_gib_fail() -> Non
         PROJECT_ROOT / "scripts" / "run_cn_joint_program_phase_d_77o.ps1"
     ).read_text(encoding="utf-8")
     assert "VALIDATION_EXCLUSIVE_32_PHASE_D_TELEMETRY" in launcher
+    assert "node_resource_governor_phase_d_v0" in launcher
     assert "fixed_24_gib_hard_gate_applied = $false" in launcher
     assert "free_memory_bytes_at_launch" in launcher
     assert "free memory below 24 GiB gate" not in launcher

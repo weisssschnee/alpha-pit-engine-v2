@@ -16,7 +16,7 @@ param(
         'runtime\run_plans\cn_alpha_node_resource_profiles_phase_d_v0.json'
     ),
     [string]$NodeResourceStateRoot = (
-        'D:\ChengboRemote\runtime\node_resource_governor'
+        'D:\ChengboRemote\runtime\node_resource_governor_phase_d_v0'
     )
 )
 
