@@ -6,6 +6,27 @@
       "evidence": {},
       "message": "Current view is advisory; formal runtime evidence was not supplied",
       "severity": "INFO"
+    },
+    {
+      "category": "STALE",
+      "code": "RAW_GRAPH_SOURCE_CHANGED",
+      "evidence": {
+        "changed_paths": [
+          "scripts/audit_cn_joint_program_allocator_repair_freeze_v0.py",
+          "scripts/run_cn_joint_program_allocator_repair_canary_77o.ps1",
+          "scripts/run_cn_joint_program_allocator_repair_canary_v0.py",
+          "scripts/run_cn_joint_program_phase_c_v0.py",
+          "src/our_system_phase2/runtime/cn_joint_program_allocator_repair_canary_v0.py",
+          "src/our_system_phase2/runtime/cn_joint_program_phase_c_v0.py",
+          "src/our_system_phase2/services/candidate_program_proposal_v0.py",
+          "src/our_system_phase2/services/program_allocator_repair_bandit_v0.py",
+          "tests/test_cn_joint_program_allocator_repair_canary_v0.py"
+        ],
+        "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
+        "repo_head": "86df3ae8d96dfab1d4bbcdcfeb5b2856d63791de"
+      },
+      "message": "Raw graph predates non-overlay source changes",
+      "severity": "ERROR"
     }
   ],
   "edges": [
@@ -1758,6 +1779,66 @@
       }
     },
     {
+      "color": "#f9a825",
+      "contract": null,
+      "critical": false,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "allocator_repair_canary_derived_from_phase_c",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "derived_from",
+      "required": false,
+      "source": "cn_joint_program_allocator_repair_canary_v0",
+      "target": "cn_joint_program_rolling_search_v0_phase_c",
+      "validation": {
+        "checked_at": "2026-08-10T01:57:07.290207+00:00",
+        "evidence_ref": "",
+        "evidence_sha256": null,
+        "level": "NOT_REQUIRED",
+        "notes": [],
+        "profile": "",
+        "result": "NOT_REQUIRED",
+        "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#f9a825",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "development-search authority slot and allocator-repair final audit",
+        "evidence_ref": "",
+        "id": "allocator_repair_canary_nonformal_candidate_only",
+        "rule": "The 256-record allocator repair is a non-formal development experiment; its completion cannot replace Hybrid TPE plus Availability, promote candidates, open sealed data or launch Phase D without a separate accepted decision.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "allocator_repair_canary_candidate_for_development_search_policy",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "candidate_for",
+      "required": false,
+      "source": "cn_joint_program_allocator_repair_canary_v0",
+      "target": "cn_development_search_policy",
+      "validation": {
+        "checked_at": "2026-08-10T01:57:07.290207+00:00",
+        "evidence_ref": "tests/test_cn_joint_program_allocator_repair_canary_v0.py",
+        "evidence_sha256": "28ABC3C7932BDD73A68E3E7E05A693AD42E4125BC22E5FAB90937BF4A5D11B21",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": null
+      }
+    },
+    {
       "color": "#c62828",
       "contract": {
         "bypass_forbidden": true,
@@ -1826,7 +1907,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-09T20:19:20.432175+00:00",
+  "generated_at": "2026-08-10T01:57:07.290207+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -6017,11 +6098,70 @@
         "verified_at_sha": "f649507ec3002161735085dde3f16fd2b1a379bc"
       },
       "visible_by_default": true
+    },
+    {
+      "active_authority": false,
+      "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "DEVELOPMENT CANARY",
+        "RUN NOT YET CLOSED",
+        "NO OOS",
+        "NO PROMOTION"
+      ],
+      "color": "#f9a825",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "allocator-repair prefinancial freeze, checkpoint runner and independent audit",
+          "evidence_ref": "",
+          "id": "allocator_repair_exact_prospective_development_evidence",
+          "rule": "Allocator-repair evidence is admissible only from the separately frozen 256-record development canary, fixed per-template arm floors, fresh reservoir, immutable checkpoint chains, unchanged financial/resource authorities and zero sealed reads; Phase C financial rows are diagnosis only and cannot be reused as new evidence.",
+          "severity": "HARD",
+          "type": "EVIDENCE"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "allocator-repair run contract and development-search authority slot",
+          "evidence_ref": "",
+          "id": "allocator_repair_no_authority_or_phase_d_launch",
+          "rule": "The canary cannot change formal development search policy, reallocate fixed arm budgets, read validation, holdout, spent-2023, Forward-B or 2026 data, promote candidates or launch Phase D.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        }
+      ],
+      "critical": true,
+      "evidence": "DECLARED",
+      "expires_at": "",
+      "id": "cn_joint_program_allocator_repair_canary_v0",
+      "kind": "experimental-search",
+      "label": "CN Joint Program allocator repair canary V0",
+      "lifecycle": "EXPERIMENTAL",
+      "owner": "",
+      "paths": [
+        "src/our_system_phase2/services/program_allocator_repair_bandit_v0.py",
+        "scripts/run_cn_joint_program_allocator_repair_canary_v0.py"
+      ],
+      "promotion_requirements": [],
+      "raw_node_ids": [],
+      "required": false,
+      "semantic_role": "",
+      "validation": {
+        "checked_at": "2026-08-10T01:57:07.290207+00:00",
+        "evidence_ref": "tests/test_cn_joint_program_allocator_repair_canary_v0.py",
+        "evidence_sha256": "28ABC3C7932BDD73A68E3E7E05A693AD42E4125BC22E5FAB90937BF4A5D11B21",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": null
+      },
+      "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "7C2FE77C98248FA8F2D5DC7F7921F9980676445E75C0C17C22862B048DE7CB16"
+    "sha256": "78A50C1EAD1FF09AA104823FF86397D275DAF8DE8CE741FC8CF4650577A2B0D2"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -6038,7 +6178,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "f649507ec3002161735085dde3f16fd2b1a379bc",
+  "repo_head": "86df3ae8d96dfab1d4bbcdcfeb5b2856d63791de",
   "schema_version": 1,
   "semantic_authorities": [
     {
@@ -6112,13 +6252,13 @@
       "semantic_role": "typed_candidate_program_representation"
     }
   ],
-  "status": "INSUFFICIENT_EVIDENCE",
+  "status": "STALE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 56,
-    "current_nodes": 37,
-    "errors": 0,
+    "current_edges": 58,
+    "current_nodes": 38,
+    "errors": 1,
     "runtime_edges": 0,
     "runtime_nodes": 0,
     "warnings": 0

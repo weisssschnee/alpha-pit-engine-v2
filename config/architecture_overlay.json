@@ -1298,6 +1298,41 @@
         "verified_at_sha": "f649507ec3002161735085dde3f16fd2b1a379bc"
       },
       "claim_badges": ["DEVELOPMENT CLOSED", "PHASE D HOLD", "NO OOS", "NO PROMOTION"]
+    },
+    {
+      "id": "cn_joint_program_allocator_repair_canary_v0",
+      "label": "CN Joint Program allocator repair canary V0",
+      "kind": "experimental-search",
+      "lifecycle": "EXPERIMENTAL",
+      "paths": [
+        "src/our_system_phase2/services/program_allocator_repair_bandit_v0.py",
+        "scripts/run_cn_joint_program_allocator_repair_canary_v0.py"
+      ],
+      "critical": true,
+      "contracts": [
+        {
+          "id": "allocator_repair_exact_prospective_development_evidence",
+          "type": "EVIDENCE",
+          "rule": "Allocator-repair evidence is admissible only from the separately frozen 256-record development canary, fixed per-template arm floors, fresh reservoir, immutable checkpoint chains, unchanged financial/resource authorities and zero sealed reads; Phase C financial rows are diagnosis only and cannot be reused as new evidence.",
+          "severity": "HARD",
+          "enforced_by": "allocator-repair prefinancial freeze, checkpoint runner and independent audit",
+          "bypass_forbidden": true
+        },
+        {
+          "id": "allocator_repair_no_authority_or_phase_d_launch",
+          "type": "BOUNDARY",
+          "rule": "The canary cannot change formal development search policy, reallocate fixed arm budgets, read validation, holdout, spent-2023, Forward-B or 2026 data, promote candidates or launch Phase D.",
+          "severity": "HARD",
+          "enforced_by": "allocator-repair run contract and development-search authority slot",
+          "bypass_forbidden": true
+        }
+      ],
+      "validation": {
+        "level": "STATIC_VERIFIED",
+        "result": "PASS",
+        "evidence_ref": "tests/test_cn_joint_program_allocator_repair_canary_v0.py"
+      },
+      "claim_badges": ["DEVELOPMENT CANARY", "RUN NOT YET CLOSED", "NO OOS", "NO PROMOTION"]
     }
   ],
   "edges": [
@@ -1631,6 +1666,8 @@
     {"id": "joint_program_phase_b_candidate_for_development_search_policy", "source": "cn_joint_program_rolling_search_v0_phase_b", "target": "cn_development_search_policy", "relation": "candidate_for", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "joint_program_nonformal_candidate_only", "type": "BOUNDARY", "rule": "Phase B completion and a later Phase C experiment remain non-formal candidates for development search policy and cannot replace the accepted Hybrid TPE plus Availability authority without a separate ADR and promotion decision.", "severity": "HARD", "enforced_by": "authority-slot promotion gate", "bypass_forbidden": true}, "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json", "evidence_sha256": "5a09e569219dc78557c8780688b0d351e350262bb54b62ef0365adc5ccc3dd54", "verified_at_sha": "81204709779a4bf955320807f35c78ad9ae5f917"}},
     {"id": "joint_program_phase_c_derived_from_phase_b", "source": "cn_joint_program_rolling_search_v0_phase_c", "target": "cn_joint_program_rolling_search_v0_phase_b", "relation": "derived_from", "lifecycle": "EXPERIMENTAL", "required": false},
     {"id": "joint_program_phase_c_not_qualified_for_development_search_policy", "source": "cn_joint_program_rolling_search_v0_phase_c", "target": "cn_development_search_policy", "relation": "not_qualified_for", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "joint_program_phase_c_no_allocator_promotion", "type": "BOUNDARY", "rule": "The accepted Phase C run closes development evidence but does not authorize the factorized allocator, Phase D, candidate promotion, search-policy replacement or any sealed-data read.", "severity": "HARD", "enforced_by": "Phase C final audit and authority-slot promotion gate", "bypass_forbidden": true}, "validation": {"level": "RUNTIME_VERIFIED", "result": "PASS", "evidence_ref": "runtime/run_plans/cn_joint_program_phase_c_outcome_20260810.json", "evidence_sha256": "41fe5de37ca165ba2edf167746b14aa8672d5439e9cade74fbcf3c7632aec822", "verified_at_sha": "f649507ec3002161735085dde3f16fd2b1a379bc"}},
+    {"id": "allocator_repair_canary_derived_from_phase_c", "source": "cn_joint_program_allocator_repair_canary_v0", "target": "cn_joint_program_rolling_search_v0_phase_c", "relation": "derived_from", "lifecycle": "EXPERIMENTAL", "required": false},
+    {"id": "allocator_repair_canary_candidate_for_development_search_policy", "source": "cn_joint_program_allocator_repair_canary_v0", "target": "cn_development_search_policy", "relation": "candidate_for", "lifecycle": "EXPERIMENTAL", "required": false, "critical": true, "contract": {"id": "allocator_repair_canary_nonformal_candidate_only", "type": "BOUNDARY", "rule": "The 256-record allocator repair is a non-formal development experiment; its completion cannot replace Hybrid TPE plus Availability, promote candidates, open sealed data or launch Phase D without a separate accepted decision.", "severity": "HARD", "enforced_by": "development-search authority slot and allocator-repair final audit", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "tests/test_cn_joint_program_allocator_repair_canary_v0.py"}},
     {"id": "shard_to_feedback_forbidden", "source": "shard_parallel_evaluation", "target": "matched_train_feedback", "relation": "shard_local_reward", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "shard_feedback_unreachable", "type": "BOUNDARY", "rule": "Shard-local portfolio rewards cannot reach Phase3CN.", "severity": "HARD", "enforced_by": "formal_shard_parallel_removal", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}},
     {"id": "mean_shard_to_feedback_forbidden", "source": "mean_shard_reward_fallback", "target": "matched_train_feedback", "relation": "mean_shard_reward", "lifecycle": "FORBIDDEN", "forbidden": true, "critical": true, "contract": {"id": "mean_shard_feedback_unreachable", "type": "BOUNDARY", "rule": "Mean-of-shard reward fallback cannot reach Phase3CN.", "severity": "HARD", "enforced_by": "phase3cn_matched_source_gate", "bypass_forbidden": true}, "validation": {"level": "STATIC_VERIFIED", "result": "PASS", "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_SHARD_PARALLEL_FORMAL_REMOVAL_AUDIT.json", "verified_at_sha": "06b15d447d76a474d13fcfdef57c49501b2dc062"}}
   ],

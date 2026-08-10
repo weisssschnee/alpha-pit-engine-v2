@@ -64,6 +64,7 @@ CLOSURE_NAME = "CN_JOINT_PROGRAM_PHASE_C_COMPLETE.json"
 MINIMUM_FREE_MEMORY_BYTES = 24 * 1024**3
 MAX_VARIANTS_PER_BASE_PER_TEMPLATE = 4
 MIN_BASE_IDENTITIES_PER_TEMPLATE = 16
+CATALOG_MIN_RECORDS_PER_TEMPLATE = 64
 PAIR_REPLAY_COMPLETE = phase_b.PAIR_REPLAY_COMPLETE
 PAIR_REPLAY_BLOCKED = phase_b.PAIR_REPLAY_BLOCKED
 
@@ -239,7 +240,7 @@ def _build_catalog(
         else:
             rejected.append(entry)
     for template_id, entries in by_template.items():
-        quota = 64
+        quota = CATALOG_MIN_RECORDS_PER_TEMPLATE
         base_ids = {str(entry["base_component_id"]) for entry in entries}
         if len(entries) < quota or len(base_ids) < MIN_BASE_IDENTITIES_PER_TEMPLATE:
             raise RuntimeError(

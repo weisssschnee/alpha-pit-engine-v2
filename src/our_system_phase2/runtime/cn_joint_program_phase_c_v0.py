@@ -343,19 +343,27 @@ def _build_reservoir(
     *,
     registry: UnifiedCapabilityRegistry,
     pools: Mapping[str, Sequence[ProgramSourceComponentV0]],
+    base_record_count: int = BASE_RECORDS,
+    enhanced_record_count: int = RAW_RESERVOIR_PER_ENHANCED_TEMPLATE,
+    raw_ordinal_offset: int = 0,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    if int(base_record_count) <= 0 or int(enhanced_record_count) <= 0:
+        raise ValueError("reservoir record counts must be positive")
+    if int(raw_ordinal_offset) < 0:
+        raise ValueError("reservoir raw ordinal offset must be non-negative")
     adapter = CandidateProgramProposalAdapterV0(registry)
     compiler = ProgramCompilerV1(registry)
     records: list[dict[str, Any]] = []
     compile_fixtures: list[dict[str, Any]] = []
     for template_id in TEMPLATE_ORDER:
         target = (
-            BASE_RECORDS
+            int(base_record_count)
             if template_id == "BASE"
-            else RAW_RESERVOIR_PER_ENHANCED_TEMPLATE
+            else int(enhanced_record_count)
         )
         seen: set[str] = set()
-        raw_cursor = 0
+        raw_cursor = int(raw_ordinal_offset)
+        attempts = 0
         template_record_count = 0
         maximum_attempts = target * 16
         while (
@@ -364,7 +372,7 @@ def _build_reservoir(
                 if template_id == "BASE"
                 else len(seen) < target
             )
-            and raw_cursor < maximum_attempts
+            and attempts < maximum_attempts
         ):
             components = _components_for_raw_ordinal(
                 template_id, pools, raw_cursor
@@ -380,6 +388,7 @@ def _build_reservoir(
             )
             combination_hash = str(record["raw_combination_sha256"])
             raw_cursor += 1
+            attempts += 1
             if template_id != "BASE" and combination_hash in seen:
                 continue
             seen.add(combination_hash)
