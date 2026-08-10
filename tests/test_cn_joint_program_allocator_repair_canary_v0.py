@@ -4,6 +4,10 @@ from collections import Counter
 from pathlib import Path
 
 from scripts import run_cn_joint_program_allocator_repair_canary_v0 as runner
+from scripts.audit_cn_joint_program_allocator_repair_canary_v0 import (
+    arm_metrics_v0,
+    evaluate_decision_gates_v0,
+)
 from our_system_phase2.runtime.cn_joint_program_allocator_repair_canary_v0 import (
     DECISION_GATES,
     ENHANCED_TEMPLATE_ORDER,
@@ -194,3 +198,59 @@ def test_launcher_uses_reused_engine_bootstrap_allowlisted_log_names() -> None:
     assert "joint_program_phase_c.stdout.log" in launcher
     assert "joint_program_phase_c.stderr.log" in launcher
     assert "allocator_repair_canary.stdout.log" not in launcher
+
+
+def test_final_audit_metrics_treat_blockers_as_zero_credit_risk() -> None:
+    complete = _record()
+    complete.update({"productive": True})
+    blocked = _record(blocked=True)
+    blocked.update({"productive": False})
+    metrics = arm_metrics_v0([complete, blocked])
+    assert metrics["record_count"] == 2
+    assert metrics["replay_blocked_count"] == 1
+    assert metrics["blocked_rate"] == 0.5
+    assert metrics["productive_rate"] == 0.5
+    assert metrics["primary_reward_positive_rate"] == 0.5
+
+
+def test_final_audit_gate_decision_is_exactly_frozen() -> None:
+    uniform = {
+        "productive_rate": 0.40,
+        "all_four_positive_rate": 0.20,
+        "primary_reward_positive_rate": 0.50,
+        "primary_return_positive_rate": 0.50,
+        "three_window_positive_rate": 0.40,
+        "median_return_per_turnover": 0.10,
+        "blocked_rate": 0.10,
+    }
+    revised = dict(uniform)
+    revised.update(
+        {
+            "productive_rate": 0.46,
+            "all_four_positive_rate": 0.21,
+            "three_window_positive_rate": 0.41,
+            "median_return_per_turnover": 0.11,
+            "blocked_rate": 0.09,
+        }
+    )
+    template_metrics = {
+        template_id: {
+            "UNIFORM_FRESH": {
+                "all_four_positive_rate": 0.2,
+                "blocked_rate": 0.1,
+            },
+            "REVISED_EXPLOIT": {
+                "all_four_positive_rate": 0.3 if index < 4 else 0.2,
+                "blocked_rate": 0.1,
+            },
+        }
+        for index, template_id in enumerate(ENHANCED_TEMPLATE_ORDER)
+    }
+    decision = evaluate_decision_gates_v0(
+        revised=revised,
+        uniform=uniform,
+        template_metrics=template_metrics,
+        gates=DECISION_GATES,
+    )
+    assert decision["all_gates_pass"] is True
+    assert decision["improved_enhanced_template_count"] == 4
