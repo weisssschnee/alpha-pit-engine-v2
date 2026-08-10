@@ -4,6 +4,7 @@ from collections import Counter
 
 from scripts import run_cn_joint_program_allocator_repair_canary_v0 as runner
 from our_system_phase2.runtime.cn_joint_program_allocator_repair_canary_v0 import (
+    DECISION_GATES,
     ENHANCED_TEMPLATE_ORDER,
     EXPECTED_RECORDS,
     TEMPLATE_ORDER,
@@ -166,3 +167,18 @@ def test_runner_contract_configuration_declares_256_shape() -> None:
     assert runner.EXPECTED_RECORDS == 256
     assert runner.CHECKPOINT_COUNT == 32
     assert runner.MIN_BASE_IDENTITIES_PER_TEMPLATE == 16
+
+
+def test_freeze_decision_gates_are_numeric_and_unambiguous() -> None:
+    assert DECISION_GATES == {
+        "productive_rate_delta_vs_uniform_minimum": 0.05,
+        "all_four_positive_rate_delta_vs_uniform_minimum": 1e-12,
+        "primary_reward_positive_rate_delta_vs_uniform_minimum": -0.02,
+        "primary_return_positive_rate_delta_vs_uniform_minimum": -0.02,
+        "three_window_positive_rate_delta_vs_uniform_minimum": 0.0,
+        "median_return_per_turnover_delta_vs_uniform_minimum": 0.0,
+        "blocked_rate_delta_vs_uniform_maximum": 0.0,
+        "minimum_improved_enhanced_templates": 4,
+        "enhanced_template_improvement_metric": "all_four_positive_rate",
+        "enhanced_template_blocked_rate_worsening_allowed": False,
+    }

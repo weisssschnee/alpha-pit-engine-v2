@@ -65,6 +65,18 @@ EXPERIMENT_SEED_SHA256 = stable_hash(
     {"experiment_id": CAMPAIGN_ID, "batch_id": BATCH_ID, "version": 0}
 )
 RAW_ORDINAL_OFFSET = int(EXPERIMENT_SEED_SHA256[:8], 16)
+DECISION_GATES = {
+    "productive_rate_delta_vs_uniform_minimum": 0.05,
+    "all_four_positive_rate_delta_vs_uniform_minimum": 1e-12,
+    "primary_reward_positive_rate_delta_vs_uniform_minimum": -0.02,
+    "primary_return_positive_rate_delta_vs_uniform_minimum": -0.02,
+    "three_window_positive_rate_delta_vs_uniform_minimum": 0.0,
+    "median_return_per_turnover_delta_vs_uniform_minimum": 0.0,
+    "blocked_rate_delta_vs_uniform_maximum": 0.0,
+    "minimum_improved_enhanced_templates": 4,
+    "enhanced_template_improvement_metric": "all_four_positive_rate",
+    "enhanced_template_blocked_rate_worsening_allowed": False,
+}
 
 
 def generation_arm_v0(template_id: str, template_record_ordinal: int) -> str:
@@ -358,15 +370,7 @@ def build_prefinancial_freeze_v0(
             "cache_cap_bytes": CACHE_CAP_BYTES,
             "records_per_checkpoint": RECORDS_PER_CHECKPOINT,
             "checkpoint_count": CHECKPOINT_COUNT,
-            "decision_gates": {
-                "productive_rate_delta_vs_uniform_minimum": 0.05,
-                "all_four_positive_rate_strictly_above_uniform": True,
-                "primary_positive_rates_materially_worse_allowed": False,
-                "three_window_stability_worse_allowed": False,
-                "turnover_efficiency_worse_allowed": False,
-                "blocker_rate_worse_allowed": False,
-                "minimum_improved_enhanced_templates": 4,
-            },
+            "decision_gates": dict(DECISION_GATES),
             "incomplete_financial_result_reuse": False,
             "financial_evaluation_executed": False,
             "validation_reads": 0,
