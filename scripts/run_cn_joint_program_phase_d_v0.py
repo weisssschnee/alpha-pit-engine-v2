@@ -126,6 +126,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--root-finalization-recovery-from-repo-sha")
     parser.add_argument("--root-finalization-incident", type=Path)
     parser.add_argument("--root-finalization-deployment-manifest", type=Path)
+    parser.add_argument("--checkpoint-recovery-from-repo-sha")
+    parser.add_argument("--checkpoint-recovery-incident", type=Path)
+    parser.add_argument("--checkpoint-recovery-diagnostic-audit", type=Path)
+    parser.add_argument("--checkpoint-recovery-deployment-manifest", type=Path)
     parser.add_argument("--executor-workers", type=int, default=10)
     args = parser.parse_args(argv)
     if len(str(args.builder_commit_sha)) != 40:

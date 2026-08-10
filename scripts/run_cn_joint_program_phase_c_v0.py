@@ -67,6 +67,7 @@ MIN_BASE_IDENTITIES_PER_TEMPLATE = 16
 CATALOG_MIN_RECORDS_PER_TEMPLATE = 64
 PAIR_REPLAY_COMPLETE = phase_b.PAIR_REPLAY_COMPLETE
 PAIR_REPLAY_BLOCKED = phase_b.PAIR_REPLAY_BLOCKED
+CHECKPOINT_RECOVERY_EXECUTOR_MODE = "FRESH_SINGLE_WORKER_PROCESS_PER_RECORD"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -964,8 +965,38 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         recovery_deployment_arg
     ):
         raise RuntimeError("Phase C root-finalization recovery binding is incomplete")
+    checkpoint_recovery_from_sha = str(
+        getattr(args, "checkpoint_recovery_from_repo_sha", "") or ""
+    )
+    checkpoint_recovery_incident_arg = getattr(
+        args, "checkpoint_recovery_incident", None
+    )
+    checkpoint_recovery_diagnostic_audit_arg = getattr(
+        args, "checkpoint_recovery_diagnostic_audit", None
+    )
+    checkpoint_recovery_deployment_arg = getattr(
+        args, "checkpoint_recovery_deployment_manifest", None
+    )
+    checkpoint_recovery_mode = bool(checkpoint_recovery_from_sha)
+    if len(
+        {
+            bool(checkpoint_recovery_from_sha),
+            bool(checkpoint_recovery_incident_arg),
+            bool(checkpoint_recovery_diagnostic_audit_arg),
+            bool(checkpoint_recovery_deployment_arg),
+        }
+    ) != 1:
+        raise RuntimeError("Phase C checkpoint recovery binding is incomplete")
+    if recovery_mode and checkpoint_recovery_mode:
+        raise RuntimeError("Phase C recovery modes are mutually exclusive")
     checkpoint_builder_sha = (
-        recovery_from_sha if recovery_mode else str(args.builder_commit_sha)
+        recovery_from_sha
+        if recovery_mode
+        else (
+            checkpoint_recovery_from_sha
+            if checkpoint_recovery_mode
+            else str(args.builder_commit_sha)
+        )
     )
     freeze_root = args.phase_c_freeze_root.resolve()
     freeze = verify_phase_c_prefinancial_freeze_v0(freeze_root)
@@ -1319,6 +1350,126 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise RuntimeError("Phase C checkpoint chain contains a gap")
 
+    checkpoint_recovery_binding_path: Path | None = None
+    checkpoint_recovery_binding: dict[str, Any] | None = None
+    if checkpoint_recovery_mode:
+        if len(checkpoint_recovery_from_sha) != 40:
+            raise RuntimeError("Phase C checkpoint-builder SHA is not full length")
+        if not root.is_dir() or (root / CLOSURE_NAME).exists():
+            raise RuntimeError("Phase C checkpoint recovery root is not eligible")
+        if closed_checkpoints < 1 or closed_checkpoints >= CHECKPOINT_COUNT:
+            raise RuntimeError("Phase C checkpoint recovery boundary is not partial")
+        if inflight_root.exists() and any(inflight_root.iterdir()):
+            raise RuntimeError("Phase C checkpoint recovery found inflight results")
+
+        checkpoint_recovery_incident = Path(
+            checkpoint_recovery_incident_arg
+        ).resolve()
+        incident_payload = _read_json(checkpoint_recovery_incident)
+        incident_body = dict(incident_payload)
+        incident_hash = str(incident_body.pop("incident_payload_sha256", ""))
+        if (
+            incident_hash != stable_hash(incident_body)
+            or str(incident_payload.get("output_root", "")).replace(
+                "/", "\\"
+            ).lower()
+            != str(root).replace("/", "\\").lower()
+            or int(incident_payload.get("closed_checkpoint_count", -1))
+            != closed_checkpoints
+            or bool(incident_payload.get("incomplete_results_reused"))
+        ):
+            raise RuntimeError("Phase C checkpoint recovery incident binding drift")
+
+        diagnostic_audit = Path(
+            checkpoint_recovery_diagnostic_audit_arg
+        ).resolve()
+        diagnostic_payload = _read_json(diagnostic_audit)
+        diagnostic_body = dict(diagnostic_payload)
+        diagnostic_hash = str(diagnostic_body.pop("audit_payload_sha256", ""))
+        if (
+            diagnostic_hash != stable_hash(diagnostic_body)
+            or str(diagnostic_payload.get("status", "")) != "PASS"
+            or str(diagnostic_payload.get("classification", ""))
+            != "PARALLEL_PROCESS_LIFECYCLE_OR_NATIVE_CONCURRENCY"
+            or str(diagnostic_payload.get("accepted_root", "")).replace(
+                "/", "\\"
+            ).lower()
+            != str(root).replace("/", "\\").lower()
+            or str(diagnostic_payload.get("runner_repo_sha", ""))
+            != checkpoint_recovery_from_sha
+            or int(diagnostic_payload.get("record_count", 0)) != RECORDS_PER_CHECKPOINT
+            or bool(diagnostic_payload.get("diagnostic_financial_results_reusable"))
+            or bool(diagnostic_payload.get("financial_results_reused"))
+            or any(
+                int(diagnostic_payload.get(key, 0))
+                for key in (
+                    "validation_reads",
+                    "holdout_reads",
+                    "historical_2023_reads",
+                    "forward_b_reads",
+                    "forward_2026_reads",
+                )
+            )
+        ):
+            raise RuntimeError("Phase C checkpoint diagnostic binding drift")
+
+        checkpoint_recovery_deployment = Path(
+            checkpoint_recovery_deployment_arg
+        ).resolve()
+        deployment_payload = _read_json(checkpoint_recovery_deployment)
+        if (
+            str(deployment_payload.get("repo_sha", ""))
+            != str(args.builder_commit_sha)
+            or str(deployment_payload.get("remote_workspace", "")).replace(
+                "/", "\\"
+            ).lower()
+            != str(PROJECT_ROOT).replace("/", "\\").lower()
+        ):
+            raise RuntimeError("Phase C checkpoint recovery deployment binding drift")
+
+        checkpoint_recovery_binding = _self_hashed(
+            {
+                "schema_version": "cn_joint_program_phase_c_checkpoint_recovery_v0",
+                "status": "CHECKPOINT_RECOVERY_BOUND",
+                "checkpoint_builder_repo_sha": checkpoint_recovery_from_sha,
+                "checkpoint_recovery_repo_sha": str(args.builder_commit_sha),
+                "deployment_manifest": str(checkpoint_recovery_deployment),
+                "deployment_manifest_file_sha256": _sha256(
+                    checkpoint_recovery_deployment
+                ),
+                "incident": str(checkpoint_recovery_incident),
+                "incident_file_sha256": _sha256(checkpoint_recovery_incident),
+                "incident_payload_sha256": incident_hash,
+                "diagnostic_audit": str(diagnostic_audit),
+                "diagnostic_audit_file_sha256": _sha256(diagnostic_audit),
+                "diagnostic_audit_payload_sha256": diagnostic_hash,
+                "closed_checkpoint_count": closed_checkpoints,
+                "closed_record_count": closed_checkpoints * RECORDS_PER_CHECKPOINT,
+                "first_recovered_checkpoint": closed_checkpoints + 1,
+                "executor_mode": CHECKPOINT_RECOVERY_EXECUTOR_MODE,
+                "executor_worker_authority": int(args.executor_workers),
+                "effective_concurrent_workers": 1,
+                "max_tasks_per_child": 1,
+                "financial_results_reused": False,
+                "diagnostic_financial_results_reused": False,
+                "incomplete_results_reused": False,
+                "validation_reads": 0,
+                "holdout_reads": 0,
+                "historical_2023_reads": 0,
+                "forward_b_reads": 0,
+                "forward_2026_reads": 0,
+            },
+            "recovery_binding_sha256",
+        )
+        checkpoint_recovery_binding_path = root / "checkpoint_recovery_binding.json"
+        if checkpoint_recovery_binding_path.is_file():
+            if _read_json(checkpoint_recovery_binding_path) != checkpoint_recovery_binding:
+                raise RuntimeError("Phase C checkpoint recovery receipt drift")
+        else:
+            _write_json(
+                checkpoint_recovery_binding_path, checkpoint_recovery_binding
+            )
+
     if closed_checkpoints < CHECKPOINT_COUNT:
         inflight_root.mkdir(parents=True, exist_ok=True)
         for checkpoint_index in range(closed_checkpoints, CHECKPOINT_COUNT):
@@ -1352,10 +1503,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             cpu_samples: list[float] = []
             psutil.cpu_percent(interval=None)
             started = time.perf_counter()
-            with ProcessPoolExecutor(
-                max_workers=min(int(args.executor_workers), len(checkpoint_schedules)),
-                initializer=_initialize_worker,
-                initargs=(
+            executor_options: dict[str, Any] = {
+                "max_workers": min(
+                    int(args.executor_workers), len(checkpoint_schedules)
+                ),
+                "initializer": _initialize_worker,
+                "initargs": (
                     str(execution_contract_path),
                     str(train_field_root),
                     str(train_price_root),
@@ -1367,7 +1520,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     field_manifest_file_sha256,
                     field_manifest_payload_sha256,
                 ),
-            ) as executor:
+            }
+            if checkpoint_recovery_mode:
+                executor_options.update(
+                    {"max_workers": 1, "max_tasks_per_child": 1}
+                )
+            with ProcessPoolExecutor(**executor_options) as executor:
                 for schedule in checkpoint_schedules:
                     ordinal = int(schedule["main_record_ordinal"])
                     target = record_root / f"record_{ordinal:04d}.json"
@@ -1574,8 +1732,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "mean_effective_cores": cpu_mean * logical_cpu / 100.0,
             "logical_cpu_count": logical_cpu,
             "executor_workers": int(args.executor_workers),
-            "effective_workers_per_checkpoint": min(int(args.executor_workers), RECORDS_PER_CHECKPOINT),
-            "executor_lifecycle": "CHECKPOINT_SCOPED_RECYCLE",
+            "effective_workers_per_checkpoint": (
+                1
+                if checkpoint_recovery_mode
+                else min(int(args.executor_workers), RECORDS_PER_CHECKPOINT)
+            ),
+            "executor_lifecycle": (
+                CHECKPOINT_RECOVERY_EXECUTOR_MODE
+                if checkpoint_recovery_mode
+                else "CHECKPOINT_SCOPED_RECYCLE"
+            ),
             "maximum_inflight_records": RECORDS_PER_CHECKPOINT,
             "native_threads_per_worker": 1,
         },
@@ -1620,6 +1786,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         resource_path,
         access_path,
         *([recovery_binding_path] if recovery_binding_path is not None else []),
+        *(
+            [checkpoint_recovery_binding_path]
+            if checkpoint_recovery_binding_path is not None
+            else []
+        ),
         *checkpoint_manifests,
     ]
     manifest = _self_hashed(
@@ -1638,6 +1809,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "runner_repo_sha": checkpoint_builder_sha,
             "root_finalizer_repo_sha": str(args.builder_commit_sha),
             "root_finalization_recovery": recovery_mode,
+            "checkpoint_recovery": checkpoint_recovery_mode,
+            "checkpoint_recovery_executor_mode": (
+                CHECKPOINT_RECOVERY_EXECUTOR_MODE
+                if checkpoint_recovery_mode
+                else None
+            ),
+            "checkpoint_recovery_from_checkpoint": (
+                int(checkpoint_recovery_binding["first_recovered_checkpoint"])
+                if checkpoint_recovery_binding is not None
+                else None
+            ),
             "phase_c_input_binding_sha256": input_hash,
             "record_count": len(records),
             "checkpoint_count": len(checkpoint_manifests),
@@ -1698,6 +1880,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--root-finalization-recovery-from-repo-sha")
     parser.add_argument("--root-finalization-incident", type=Path)
     parser.add_argument("--root-finalization-deployment-manifest", type=Path)
+    parser.add_argument("--checkpoint-recovery-from-repo-sha")
+    parser.add_argument("--checkpoint-recovery-incident", type=Path)
+    parser.add_argument("--checkpoint-recovery-diagnostic-audit", type=Path)
+    parser.add_argument("--checkpoint-recovery-deployment-manifest", type=Path)
     parser.add_argument("--executor-workers", type=int, default=10)
     args = parser.parse_args(argv)
     if len(str(args.builder_commit_sha)) != 40:

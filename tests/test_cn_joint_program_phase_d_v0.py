@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+import inspect
 import json
 from pathlib import Path
 
@@ -130,6 +131,31 @@ def test_shared_engine_accepts_capacity_hash_from_frozen_contract() -> None:
     ).read_text(encoding="utf-8")
     assert 'contract.get("node_resource_capacity_file_sha256")' in source
     assert 'contract.get("resource_profile")' in source
+
+
+def test_phase_d_checkpoint_recovery_is_evidence_bound_and_single_child() -> None:
+    shared_source = (
+        PROJECT_ROOT / "scripts" / "run_cn_joint_program_phase_c_v0.py"
+    ).read_text(encoding="utf-8")
+    phase_d_source = (
+        PROJECT_ROOT / "scripts" / "run_cn_joint_program_phase_d_v0.py"
+    ).read_text(encoding="utf-8")
+    assert "--checkpoint-recovery-from-repo-sha" in phase_d_source
+    assert "--checkpoint-recovery-incident" in phase_d_source
+    assert "--checkpoint-recovery-diagnostic-audit" in phase_d_source
+    assert "--checkpoint-recovery-deployment-manifest" in phase_d_source
+    assert '"max_workers": 1, "max_tasks_per_child": 1' in shared_source
+    assert "diagnostic_financial_results_reused" in shared_source
+    assert "incomplete_results_reused" in shared_source
+    assert "CHECKPOINT_RECOVERY_EXECUTOR_MODE" in shared_source
+
+
+def test_phase_d_audit_separates_builder_and_recovery_finalizer_sha() -> None:
+    from scripts.audit_cn_joint_program_phase_d_v0 import audit
+
+    parameters = inspect.signature(audit).parameters
+    assert "expected_runner_repo_sha" in parameters
+    assert "expected_root_finalizer_repo_sha" in parameters
 
 
 def test_phase_d_decision_fails_matched_return_or_one_template_blocker() -> None:

@@ -177,6 +177,7 @@ def audit(
     root: Path,
     freeze: Path,
     expected_runner_repo_sha: str,
+    expected_root_finalizer_repo_sha: str,
     audit_repo_sha: str,
 ) -> dict[str, Any]:
     phase_d._configure_engine()
@@ -197,7 +198,8 @@ def audit(
         or int(closure["record_count"]) != EXPECTED_RECORDS
         or int(closure["checkpoint_count"]) != CHECKPOINT_COUNT
         or str(closure["runner_repo_sha"]) != expected_runner_repo_sha
-        or str(closure["root_finalizer_repo_sha"]) != expected_runner_repo_sha
+        or str(closure["root_finalizer_repo_sha"])
+        != expected_root_finalizer_repo_sha
         or closure.get("free_memory_enforcement") != FREE_MEMORY_ENFORCEMENT
         or bool(closure.get("fixed_24_gib_hard_gate_applied"))
         or not bool(closure.get("memory_telemetry_recorded"))
@@ -209,6 +211,24 @@ def audit(
     root_manifest = _read_json(root / "ARTIFACT_MANIFEST.json")
     _verify_self_hash(root_manifest, "artifact_manifest_sha256", "root manifest")
     _verify_artifacts(root, root_manifest)
+    checkpoint_recovery = bool(closure.get("checkpoint_recovery"))
+    if checkpoint_recovery:
+        recovery = _read_json(root / "checkpoint_recovery_binding.json")
+        _verify_self_hash(recovery, "recovery_binding_sha256", "checkpoint recovery")
+        if (
+            str(recovery.get("checkpoint_builder_repo_sha"))
+            != expected_runner_repo_sha
+            or str(recovery.get("checkpoint_recovery_repo_sha"))
+            != expected_root_finalizer_repo_sha
+            or str(recovery.get("executor_mode"))
+            != engine.CHECKPOINT_RECOVERY_EXECUTOR_MODE
+            or int(recovery.get("effective_concurrent_workers", 0)) != 1
+            or int(recovery.get("max_tasks_per_child", 0)) != 1
+            or bool(recovery.get("financial_results_reused"))
+            or bool(recovery.get("diagnostic_financial_results_reused"))
+            or bool(recovery.get("incomplete_results_reused"))
+        ):
+            raise RuntimeError("Phase D checkpoint recovery contract drift")
     input_hash = str(closure["phase_c_input_binding_sha256"])
     asks = _read_jsonl(freeze / "phase_c_ask_plan.jsonl")
     if len(asks) != EXPECTED_RECORDS:
@@ -299,6 +319,14 @@ def audit(
         )
     ):
         raise PermissionError("Phase D root sealed read")
+    resource = _read_json(root / "resource_summary.json")
+    _verify_self_hash(resource, "resource_summary_payload_sha256", "resource summary")
+    if checkpoint_recovery and (
+        int(resource.get("effective_workers_per_checkpoint", 0)) != 1
+        or str(resource.get("executor_lifecycle"))
+        != engine.CHECKPOINT_RECOVERY_EXECUTOR_MODE
+    ):
+        raise RuntimeError("Phase D checkpoint recovery resource summary drift")
 
     compared = [
         row for row in records if str(row["template_id"]) in IMPROVED_TEMPLATES
@@ -355,7 +383,9 @@ def audit(
         "result_root": str(root),
         "freeze_root": str(freeze),
         "runner_repo_sha": expected_runner_repo_sha,
+        "root_finalizer_repo_sha": expected_root_finalizer_repo_sha,
         "audit_repo_sha": audit_repo_sha,
+        "checkpoint_recovery": checkpoint_recovery,
         "closure_file_sha256": _sha256(closure_path),
         "closure_payload_sha256": str(closure["closure_payload_sha256"]),
         "checkpoint_count": CHECKPOINT_COUNT,
@@ -400,12 +430,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--freeze-root", required=True, type=Path)
     parser.add_argument("--audit-root", required=True, type=Path)
     parser.add_argument("--expected-runner-repo-sha", required=True)
+    parser.add_argument("--expected-root-finalizer-repo-sha")
     parser.add_argument("--audit-repo-sha", required=True)
     args = parser.parse_args(argv)
     if len(args.expected_runner_repo_sha) != 40:
         parser.error("expected-runner-repo-sha must be a full Git SHA")
     if len(args.audit_repo_sha) != 40:
         parser.error("audit-repo-sha must be a full Git SHA")
+    expected_root_finalizer_repo_sha = (
+        args.expected_root_finalizer_repo_sha or args.expected_runner_repo_sha
+    )
+    if len(expected_root_finalizer_repo_sha) != 40:
+        parser.error("expected-root-finalizer-repo-sha must be a full Git SHA")
     audit_root = args.audit_root.resolve()
     if audit_root.exists():
         raise FileExistsError(f"Phase D audit root must be fresh: {audit_root}")
@@ -414,6 +450,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.root.resolve(),
         args.freeze_root.resolve(),
         args.expected_runner_repo_sha,
+        expected_root_finalizer_repo_sha,
         args.audit_repo_sha,
     )
     payload["audit_script_sha256"] = _sha256(Path(__file__).resolve())
