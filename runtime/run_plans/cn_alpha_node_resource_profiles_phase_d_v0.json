@@ -1,0 +1,19 @@
+{
+  "schema_version": "cn_alpha_node_resource_profiles_phase_d_v0",
+  "authorized_host": "DESKTOP-77OPJ6F",
+  "logical_cpu_threads": 32,
+  "memory_capacity_bytes": 100265193472,
+  "minimum_free_memory_bytes": 1,
+  "free_memory_enforcement": "TELEMETRY_ONLY_NO_FIXED_24_GIB_HARD_FAIL",
+  "nested_parallelism": "FORBIDDEN",
+  "profiles": {
+    "VALIDATION_EXCLUSIVE_32_PHASE_D_TELEMETRY": {
+      "role": "VALIDATION",
+      "cpu_threads": 32,
+      "memory_claim_bytes": 1,
+      "minimum_free_memory_bytes": 1,
+      "concurrency_contract": "EXCLUSIVE_HEAVY_LANE"
+    }
+  },
+  "capacity_manifest_sha256": "6bbc8856cf2dea12c2bfb940a3b7fa08465cb9d24de3fad945aee23638779792"
+}

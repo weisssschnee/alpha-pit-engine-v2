@@ -77,6 +77,12 @@ DECISION_GATES = {
     "enhanced_template_improvement_metric": "all_four_positive_rate",
     "enhanced_template_blocked_rate_worsening_allowed": False,
 }
+RUN_CONTRACT_SCHEMA = "cn_joint_program_allocator_repair_run_contract_v0"
+ACCESS_SCHEMA = "cn_joint_program_allocator_repair_access_v0"
+SUMMARY_SCHEMA = "cn_joint_program_allocator_repair_summary_v0"
+SUMMARY_STATUS = "ALLOCATOR_REPAIR_PREFINANCIAL_READY"
+ARTIFACT_MANIFEST_SCHEMA = "cn_joint_program_allocator_repair_artifacts_v0"
+BANDIT_FEEDBACK_SOURCE = "PHASE_B_AND_CURRENT_CANARY_DEVELOPMENT_ONLY"
 
 
 def generation_arm_v0(template_id: str, template_record_ordinal: int) -> str:
@@ -203,6 +209,7 @@ def build_prefinancial_freeze_v0(
     registry_path: Path,
     accepted_field_manifest_path: Path,
     repo_sha: str,
+    additional_parent_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     root = output_root.resolve()
     if root.exists():
@@ -235,6 +242,30 @@ def build_prefinancial_freeze_v0(
     component_rows = phase_c._session_executable_component_rows(source_rows)
     pools = phase_c._pool_by_role(component_rows)
     asks = list(build_ask_plan_v0())
+    template_quotas = Counter(str(row["template_id"]) for row in asks)
+    enhanced_arm_quotas_by_template = {
+        template_id: {
+            arm: sum(
+                str(row["template_id"]) == template_id
+                and str(row["generation_arm"]) == arm
+                for row in asks
+            )
+            for arm in ("UNIFORM_FRESH", "REVISED_EXPLOIT", "NOVELTY_RESERVE")
+        }
+        for template_id in ENHANCED_TEMPLATE_ORDER
+    }
+    uniform_baseline_floor = min(
+        quotas["UNIFORM_FRESH"]
+        for quotas in enhanced_arm_quotas_by_template.values()
+    )
+    common_enhanced_arm_quotas = next(
+        iter(enhanced_arm_quotas_by_template.values())
+    )
+    if any(
+        quotas != common_enhanced_arm_quotas
+        for quotas in enhanced_arm_quotas_by_template.values()
+    ):
+        common_enhanced_arm_quotas = None
     reservoir, fixtures = phase_c._build_reservoir(
         registry=registry,
         pools=pools,
@@ -281,9 +312,20 @@ def build_prefinancial_freeze_v0(
     materialization_path = phase_c._write_json(
         root / "phase_c_materialization_plan.json", materialization
     )
+    parent_evidence = dict(additional_parent_evidence or {})
+    reserved_contract_keys = {
+        "schema_version",
+        "status",
+        "repo_sha",
+        "campaign_id",
+        "batch_id",
+        "run_contract_sha256",
+    }
+    if reserved_contract_keys.intersection(parent_evidence):
+        raise ValueError("allocator-repair additional parent evidence overrides authority")
     contract = phase_c._self_hashed(
         {
-            "schema_version": "cn_joint_program_allocator_repair_run_contract_v0",
+            "schema_version": RUN_CONTRACT_SCHEMA,
             "status": "ALLOCATOR_REPAIR_INPUTS_FROZEN_BEFORE_FINANCIAL_READ",
             "repo_sha": str(repo_sha),
             "campaign_id": CAMPAIGN_ID,
@@ -336,13 +378,10 @@ def build_prefinancial_freeze_v0(
             "base_parity_record_count": BASE_RECORDS,
             "enhanced_template_record_count": ENHANCED_RECORDS_PER_TEMPLATE,
             "template_order": list(TEMPLATE_ORDER),
-            "template_quotas": {template_id: 32 for template_id in TEMPLATE_ORDER},
-            "enhanced_arm_quotas": {
-                "UNIFORM_FRESH": 12,
-                "REVISED_EXPLOIT": 12,
-                "NOVELTY_RESERVE": 8,
-            },
-            "initial_uniform_baseline_per_enhanced_template": 12,
+            "template_quotas": dict(sorted(template_quotas.items())),
+            "enhanced_arm_quotas": common_enhanced_arm_quotas,
+            "enhanced_arm_quotas_by_template": enhanced_arm_quotas_by_template,
+            "initial_uniform_baseline_per_enhanced_template": uniform_baseline_floor,
             "raw_reservoir_per_enhanced_template": RAW_RESERVOIR_PER_ENHANCED_TEMPLATE,
             "maximum_variants_per_base_per_template": (
                 MAX_VARIANTS_PER_BASE_PER_TEMPLATE
@@ -356,7 +395,7 @@ def build_prefinancial_freeze_v0(
             "selection_hierarchy": list(OUTCOME_FIELDS),
             "blocked_positive_credit": False,
             "blocked_risk_observation": True,
-            "bandit_feedback_source": "PHASE_B_AND_CURRENT_CANARY_DEVELOPMENT_ONLY",
+            "bandit_feedback_source": BANDIT_FEEDBACK_SOURCE,
             "cross_campaign_optimizer_state_import": False,
             "route_local_tpe_authority_unchanged": True,
             "portfolio_decoder_id": "TOPK_10_EQUAL",
@@ -383,13 +422,14 @@ def build_prefinancial_freeze_v0(
             "archive_write": False,
             "promotion_write": False,
             "automatic_phase_d_launch": False,
+            **parent_evidence,
         },
         "run_contract_sha256",
     )
     contract_path = phase_c._write_json(root / "phase_c_run_contract.json", contract)
     access = phase_c._self_hashed(
         {
-            "schema_version": "cn_joint_program_allocator_repair_access_v0",
+            "schema_version": ACCESS_SCHEMA,
             "financial_evaluation_executed": False,
             "market_price_rows_read": 0,
             "label_rows_read": 0,
@@ -407,8 +447,8 @@ def build_prefinancial_freeze_v0(
     access_path = phase_c._write_json(root / "access_ledger.json", access)
     summary = phase_c._self_hashed(
         {
-            "schema_version": "cn_joint_program_allocator_repair_summary_v0",
-            "status": "ALLOCATOR_REPAIR_PREFINANCIAL_READY",
+            "schema_version": SUMMARY_SCHEMA,
+            "status": SUMMARY_STATUS,
             "main_record_count": EXPECTED_RECORDS,
             "checkpoint_count": CHECKPOINT_COUNT,
             "reservoir_record_count": len(reservoir),
@@ -439,7 +479,7 @@ def build_prefinancial_freeze_v0(
     ]
     manifest = phase_c._self_hashed(
         {
-            "schema_version": "cn_joint_program_allocator_repair_artifacts_v0",
+            "schema_version": ARTIFACT_MANIFEST_SCHEMA,
             "artifacts": [phase_c._artifact(path, root=root) for path in artifacts],
         },
         "artifact_manifest_sha256",
@@ -499,11 +539,15 @@ def verify_prefinancial_freeze_v0(root: Path) -> dict[str, Any]:
     counts = Counter(
         (str(row["template_id"]), str(row["generation_arm"])) for row in asks
     )
+    expected_counts = Counter(
+        (str(row["template_id"]), str(row["generation_arm"]))
+        for row in build_ask_plan_v0()
+    )
     for template_id in ENHANCED_TEMPLATE_ORDER:
-        if {
-            arm: counts[(template_id, arm)]
+        if any(
+            counts[(template_id, arm)] != expected_counts[(template_id, arm)]
             for arm in ("UNIFORM_FRESH", "REVISED_EXPLOIT", "NOVELTY_RESERVE")
-        } != {"UNIFORM_FRESH": 12, "REVISED_EXPLOIT": 12, "NOVELTY_RESERVE": 8}:
+        ):
             raise ValueError("allocator-repair enhanced arm quota drift")
     reservoir = phase_c._read_jsonl(root / "phase_c_raw_program_reservoir.jsonl")
     reservoir_counts = Counter(str(row["template_id"]) for row in reservoir)

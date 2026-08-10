@@ -1053,9 +1053,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     capacity_expected = str(capacity_body.pop("capacity_manifest_sha256", ""))
     if capacity_expected != stable_hash(capacity_body):
         raise RuntimeError("node resource capacity self-hash drift")
-    if _sha256(capacity_path) != str(phase_b_input["node_resource_capacity_sha256"]):
-        raise RuntimeError("Phase C node resource authority differs from Phase B")
-    profile = dict(capacity.get("profiles", {}).get("VALIDATION_EXCLUSIVE_32") or {})
+    expected_capacity_file_sha256 = str(
+        contract.get("node_resource_capacity_file_sha256")
+        or phase_b_input["node_resource_capacity_sha256"]
+    )
+    if _sha256(capacity_path) != expected_capacity_file_sha256:
+        raise RuntimeError("Phase C node resource authority differs from frozen contract")
+    resource_profile = str(contract.get("resource_profile") or "VALIDATION_EXCLUSIVE_32")
+    profile = dict(capacity.get("profiles", {}).get(resource_profile) or {})
     if (
         int(profile.get("cpu_threads") or 0) != 32
         or int(profile.get("minimum_free_memory_bytes") or 0)
