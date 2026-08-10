@@ -2,7 +2,7 @@
 
 Updated: 2026-08-10
 
-Current state: `JOINT_PROGRAM_PHASE_C_DEVELOPMENT_CLOSED_FACTORIZED_EXPLOIT_NOT_QUALIFIED_PHASE_D_HOLD_NO_LAUNCH_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
+Current state: `JOINT_PROGRAM_ALLOCATOR_REPAIR_CANARY_DEVELOPMENT_QUALIFIED_PHASE_D_ELIGIBLE_NO_LAUNCH_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,52 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Joint Program allocator repair canary closed; Phase D eligible but not launched (2026-08-10)
+
+- The separately frozen development-only allocator repair canary closed 32/32
+  immutable checkpoints and 256/256 records at exact pushed/deployed runner SHA
+  `05a2d342d81970eaa6f1d9a63c597a9e5583308f`. Its arm counts are exactly
+  116 `UNIFORM_FRESH`, 84 `REVISED_EXPLOIT` and 56 `NOVELTY_RESERVE`; the
+  decision comparison uses equal 84-record enhanced-template samples for
+  revised exploit and uniform. It imports 56 Phase-B seed observations and
+  reuses zero Phase-C financial records.
+- The root closure file/payload SHA256 values are
+  `44c97f1e829b6ee2c0120d27ff9e2b2386b2b9a611b2e437b973b314895e0896` /
+  `e465a03ee588780d2f39cb6cde37820676cc8b1cef97b27ce82b1f93c2b73475`.
+  The 24 GiB checkpoint-boundary gate passed with 84,633,890,816 bytes
+  minimum free memory; validation, holdout, spent-2023, Forward-B and 2026
+  reads are all zero, and Phase D was not launched.
+- The independent audit at exact pushed SHA
+  `3f15b474f3bb403c7fb1fcce7661c0287cc311f2` passed structure, schedule,
+  checkpoint/bandit chains, controls, accounting, blockers, resources and
+  zero-read gates. Audit file/payload SHA256 values are
+  `6247ca58d8beff8cd2aa5940524dc6aeadcf6ae3f007784e79b16690343864cc` /
+  `e2599862dd39c1b1a0cbd166af558894a045e70eb944c1bf83a60a106d68e2eb`.
+- All eight frozen numeric decision gates passed. Revised exploit minus
+  enhanced uniform improved productive rate by `+0.154762`, all-four-positive
+  rate by `+0.011905`, primary reward/return positive rates by
+  `+0.142857` / `+0.142857`, three-window-positive rate by `+0.166667`,
+  median return per turnover by `+0.799000`, and blocker rate by `-0.083333`.
+  Four of seven enhanced templates met the frozen template-improvement rule.
+- The qualification is deliberately narrow. Revised exploit's matched-return
+  increment mean/median were worse than uniform by `-0.052245` / `-0.064628`,
+  and `BASE_MARKET`, `BASE_TEMPORAL_MARKET` and
+  `BASE_TEMPORAL_MARKET_EVENT` did not improve; the last had a
+  `-0.416667` all-four-positive-rate delta. `NOVELTY_RESERVE` showed strong
+  descriptive development rates but had only 56 records and was not the
+  frozen Phase-D decision comparator.
+- Decision: `PHASE_D_ELIGIBLE_NO_LAUNCH`. This is development-only evidence,
+  not OOS, promotion or formal search-policy authority. Compact receipt:
+  `runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json`,
+  file/payload SHA256
+  `013166235cfc6b92d07c5d241b42eccbbeb2d0462caa5c106750b7937e768317` /
+  `8d28f30ad90776674fad6b7745b003a59dd8d36937ca16ee80e6f7f56a18b7fb`.
+- Curated CURRENT now carries this runtime-verified experimental evidence. RAW
+  Graph remains stale at `f649507ec3002161735085dde3f16fd2b1a379bc`
+  because its configured DeepSeek refresh is externally blocked by the
+  previously recorded 402 insufficient-balance response; no RAW refresh was
+  accepted or substituted.
 
 ### Joint Program Rolling Search V0 Phase C closed; factorized exploit not qualified and Phase D held (2026-08-10)
 
@@ -2735,14 +2781,15 @@ remains unchanged. The compact receipt is
 ## Next action
 
 Do not rerun Phase A, the materialization preflight, the uniform Phase B pilot,
-Phase C or any preserved recovery incident. Phase D is held and no successor
-run is authorized. If separately authorized, the next experiment must first
-freeze a revised allocator objective that explicitly accounts for standalone
-absolute economics, turnover efficiency and replay-blocker risk while
-preserving fixed `UNIFORM_FRESH` and `NOVELTY_RESERVE` floors. It must be a
-fresh prospective development comparison: Phase C financial records cannot be
-reused as new evidence, validation/holdout/spent-2023/Forward-B/2026 remain
-sealed, and no allocator/search-policy promotion is implied.
+Phase C, the allocator repair canary or any preserved recovery incident. The
+revised allocator is eligible for a separately authorized Phase D, but Phase D
+has not been launched and this workflow grants no launch authority. Any Phase D
+proposal must first freeze a fresh prospective confirmation with unchanged
+sealed-data and financial/resource authorities, fixed exploration floors,
+explicit matched-return downside gates and template-stratified stopping rules.
+Canary and Phase C financial records cannot be reused as new evidence;
+validation/holdout/spent-2023/Forward-B/2026 remain sealed, and no allocator or
+search-policy promotion is implied.
 
 Do not rebuild the registry, route compiler, DAG/evaluator, portfolio decoder or
 fixed-stratified scheduler around Candidate Program V1. The qualified V1 layer
