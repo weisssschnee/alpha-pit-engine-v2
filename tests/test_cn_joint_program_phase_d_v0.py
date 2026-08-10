@@ -5,6 +5,9 @@ import inspect
 import json
 from pathlib import Path
 
+import pytest
+
+from scripts import run_cn_joint_program_phase_c_v0 as shared_runner
 from scripts import run_cn_joint_program_phase_d_v0 as runner
 from scripts.audit_cn_joint_program_phase_d_v0 import evaluate_decision_gates_v0
 from our_system_phase2.runtime.cn_joint_program_phase_d_v0 import (
@@ -148,6 +151,36 @@ def test_phase_d_checkpoint_recovery_is_evidence_bound_and_single_child() -> Non
     assert "diagnostic_financial_results_reused" in shared_source
     assert "incomplete_results_reused" in shared_source
     assert "CHECKPOINT_RECOVERY_EXECUTOR_MODE" in shared_source
+
+
+def test_checkpoint_recovery_accepts_real_preserved_incident_boundary_shape() -> None:
+    root = r"D:\ChengboRemote\runtime\cn_joint_program_phase_d_accepted"
+    assert shared_runner._resolve_checkpoint_recovery_incident_boundary(
+        {"root": root, "accepted_checkpoint_count": 54}
+    ) == (root, 54)
+    assert shared_runner._resolve_checkpoint_recovery_incident_boundary(
+        {"output_root": root, "closed_checkpoint_count": 54}
+    ) == (root, 54)
+
+
+def test_checkpoint_recovery_rejects_conflicting_incident_boundaries() -> None:
+    with pytest.raises(RuntimeError, match="incident boundary drift"):
+        shared_runner._resolve_checkpoint_recovery_incident_boundary(
+            {
+                "root": r"D:\accepted",
+                "output_root": r"D:\other",
+                "accepted_checkpoint_count": 54,
+                "closed_checkpoint_count": 54,
+            }
+        )
+    with pytest.raises(RuntimeError, match="incident boundary drift"):
+        shared_runner._resolve_checkpoint_recovery_incident_boundary(
+            {
+                "root": r"D:\accepted",
+                "accepted_checkpoint_count": 54,
+                "closed_checkpoint_count": 53,
+            }
+        )
 
 
 def test_phase_d_audit_separates_builder_and_recovery_finalizer_sha() -> None:

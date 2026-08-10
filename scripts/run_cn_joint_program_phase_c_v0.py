@@ -104,6 +104,35 @@ def _sha256(path: Path) -> str:
     return phase_b._sha256(path)
 
 
+def _resolve_checkpoint_recovery_incident_boundary(
+    payload: Mapping[str, Any],
+) -> tuple[str, int]:
+    root_values = [
+        str(payload[key])
+        for key in ("output_root", "root")
+        if payload.get(key) not in (None, "")
+    ]
+    normalized_roots = {
+        value.replace("/", "\\").lower() for value in root_values
+    }
+    count_values: list[int] = []
+    for key in ("closed_checkpoint_count", "accepted_checkpoint_count"):
+        value = payload.get(key)
+        if value is None:
+            continue
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise RuntimeError("Phase C checkpoint recovery incident boundary drift")
+        count_values.append(value)
+    if (
+        not root_values
+        or len(normalized_roots) != 1
+        or not count_values
+        or len(set(count_values)) != 1
+    ):
+        raise RuntimeError("Phase C checkpoint recovery incident boundary drift")
+    return root_values[0], count_values[0]
+
+
 def _component_from_row(row: Mapping[str, Any]) -> ProgramSourceComponentV0:
     component = ProgramSourceComponentV0(
         role=str(row["role"]),
@@ -1368,14 +1397,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         incident_payload = _read_json(checkpoint_recovery_incident)
         incident_body = dict(incident_payload)
         incident_hash = str(incident_body.pop("incident_payload_sha256", ""))
+        incident_root, incident_checkpoint_count = (
+            _resolve_checkpoint_recovery_incident_boundary(incident_payload)
+        )
         if (
             incident_hash != stable_hash(incident_body)
-            or str(incident_payload.get("output_root", "")).replace(
-                "/", "\\"
-            ).lower()
+            or incident_root.replace("/", "\\").lower()
             != str(root).replace("/", "\\").lower()
-            or int(incident_payload.get("closed_checkpoint_count", -1))
-            != closed_checkpoints
+            or incident_checkpoint_count != closed_checkpoints
             or bool(incident_payload.get("incomplete_results_reused"))
         ):
             raise RuntimeError("Phase C checkpoint recovery incident binding drift")
