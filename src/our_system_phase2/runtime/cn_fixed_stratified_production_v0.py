@@ -18,6 +18,7 @@ import psutil
 
 from our_system_phase2.services.project_control_admission import (
     consume_active_admission,
+    verify_consumed_admission_target,
 )
 
 from our_system_phase2.runtime.cn_candidate_representation_v0_preflight import (
@@ -1839,7 +1840,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    consume_active_admission("cn-fixed-stratified-production-v0")
+    admission = consume_active_admission(
+        "cn-fixed-stratified-production-v0",
+        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY", "RECOVERY"},
+    )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--preflight-root", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)
@@ -1855,6 +1859,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--required-pairs-per-hour", type=float, default=57.25)
     parser.add_argument("--verify-only", action="store_true")
     args = parser.parse_args(argv)
+    verify_consumed_admission_target(admission, output_root=args.output_root)
     if args.verify_only:
         closure = verify_fixed_stratified_production_v0(args.output_root)
     else:

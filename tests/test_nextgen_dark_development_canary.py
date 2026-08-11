@@ -174,5 +174,5 @@ def test_canary_rejects_missing_independent_authorization(tmp_path: Path) -> Non
         "0" * 40,
     ]
 
-    with pytest.raises(PermissionError, match="authorization token"):
+    with pytest.raises(PermissionError, match="DIRECT_HIGH_COST"):
         main(arguments)

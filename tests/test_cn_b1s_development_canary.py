@@ -414,7 +414,7 @@ def test_three_admission_strategies_respect_fixed_cap() -> None:
 
 
 def test_b1s_rejects_wrong_authorization_before_inputs(tmp_path: Path) -> None:
-    with pytest.raises(PermissionError, match="authorization token"):
+    with pytest.raises(PermissionError, match="DIRECT_HIGH_COST"):
         main(
             [
                 "--panel-root", str(tmp_path),

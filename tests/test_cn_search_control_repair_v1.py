@@ -26,12 +26,14 @@ from our_system_phase2.services.project_control_admission import (
     TECHNICAL_RECOVERY,
     TRUST_SCHEMA_VERSION,
     ProjectControlDenied,
+    activate_admission,
     build_execution_request,
     consume_active_admission,
     materialize_admission,
     project_control_receipt_sha256,
     sha256_file,
     validate_admission,
+    verify_consumed_admission_target,
 )
 
 
@@ -67,6 +69,8 @@ def _trust_config(root: Path) -> Path:
         "project_id": PROJECT_ID,
         "repository_path": str(REPO),
         "trusted_harness_runs_root": str(trusted_root),
+        "trust_model": "HARNESS_RUNS_ROOT_IS_AUTHORITY_STORE",
+        "cryptographic_receipt_signature": "UNAVAILABLE_IN_EXISTING_HARNESS",
     }
     payload["trust_payload_sha256"] = _stable_hash(payload)
     return _write_json(root / "trust.json", payload)
@@ -77,6 +81,7 @@ def _request(
     action: str,
     campaign_id: str,
     target_run_id: str,
+    target_output_root: Path,
     repo_sha: str,
     expires_at: str = "2099-01-01T00:00:00+00:00",
     parent_project_control_run_id: str = "",
@@ -94,6 +99,7 @@ def _request(
         requested_action=action,
         target_campaign_id=campaign_id,
         target_run_id=target_run_id,
+        target_output_root=target_output_root,
         repo_sha=repo_sha,
         expires_at=expires_at,
         parent_project_control_run_id=parent_project_control_run_id,
@@ -117,6 +123,7 @@ def _run_record(
     action: str = ACTION_LAUNCH,
     campaign_id: str = "cn-large-tpe-search-campaign",
     target_run_id: str = "target-1",
+    target_output_root: Path | None = None,
     repo_sha: str = REPO_SHA,
     preflight_verdict: str = "PROCEED",
     execution_allowed: bool = True,
@@ -130,6 +137,9 @@ def _run_record(
         action=action,
         campaign_id=campaign_id,
         target_run_id=target_run_id,
+        target_output_root=(
+            target_output_root or (root / f"output-{target_run_id}")
+        ).resolve(),
         repo_sha=repo_sha,
         expires_at=expires_at,
         **request_fields,
@@ -156,6 +166,19 @@ def _run_record(
         "schema_version": 1,
         "project_id": PROJECT_ID,
         "repository_path": str(REPO),
+        "primary_branch": "feature/a-share-tradability-authority-repair",
+        "project_instructions": ["AGENTS.md"],
+        "architecture_docs": [],
+        "setup_commands": [],
+        "test_commands": [],
+        "build_commands": [],
+        "smoke_test_commands": [],
+        "allowed_paths": ["**"],
+        "protected_paths": [],
+        "sensitive_files": [],
+        "environment_requirements": {},
+        "git_policy": {},
+        "worktree_policy": {},
     }
     receipts = [
         {
@@ -198,6 +221,7 @@ def _run_record(
         "run_id": run_id,
         "task_id": task_id,
         "project_id": PROJECT_ID,
+        "session_id": "synthetic-control-review",
         "code_base_sha": repo_sha,
         "worktree": {
             "path": str(root / "synthetic-worktree"),
@@ -207,9 +231,21 @@ def _run_record(
         "automatic_execution_allowed": execution_allowed,
         "automatic_continuation_allowed": continuation_allowed,
         "project_control": receipts,
+        "started_at": "2026-08-11T00:00:00+00:00",
+        "finished_at": None,
+        "status": "ready",
+        "commands_executed": [],
+        "files_changed": [],
+        "checks_executed": [],
+        "evidence_references": [],
+        "failure_class": None,
+        "handoff_reference": None,
     }
     _write_json(run_root / "task_spec.json", task)
     _write_json(run_root / "project_profile.json", profile)
+    (run_root / "execution_context.md").write_text(
+        "# Synthetic Harness execution context\n", encoding="utf-8"
+    )
     return _write_json(run_root / "run_record.json", record)
 
 
@@ -302,6 +338,9 @@ def _validate(
     action: str,
     target_run_id: str = "target-1",
 ) -> dict:
+    target_output_root = json.loads(path.read_text(encoding="utf-8"))[
+        "target_output_root"
+    ]
     return validate_admission(
         path,
         trust_config_path=trust_config,
@@ -311,6 +350,7 @@ def _validate(
         expected_actions={action},
         expected_target_campaign_id="cn-large-tpe-search-campaign",
         expected_target_run_id=target_run_id,
+        expected_target_output_root=target_output_root,
     )
 
 
@@ -600,6 +640,9 @@ def test_receipt_action_project_run_and_repo_binding_drift_denies(
             "expected_actions": {ACTION_LAUNCH},
             "expected_target_campaign_id": "cn-large-tpe-search-campaign",
             "expected_target_run_id": "target-1",
+            "expected_target_output_root": json.loads(
+                admission.read_text(encoding="utf-8")
+            )["target_output_root"],
         }
         expected.update(kwargs)
         with pytest.raises(ProjectControlDenied, match=pattern):
@@ -650,6 +693,24 @@ def test_2023_launcher_denies_before_archive_hash_or_output_creation() -> None:
 
 
 def test_every_high_cost_module_has_in_process_admission_gate() -> None:
+    assert set(repo_app.HIGH_COST_ROUTE_ACTIONS) == {
+        "phase3cp-real-cm-small-loop",
+        "phase3cf-large-search-prelaunch",
+        "nextgen-dark-development-canary",
+        "cn-b1s-development-canary",
+        "cn-iterative-search-v1-canary",
+        "cn-targeted-search-medium-campaign",
+        "cn-large-tpe-search-campaign",
+        "cn-fixed-stratified-production-v0",
+    }
+    assert repo_app.HIGH_COST_ROUTE_ACTIONS["phase3cf-large-search-prelaunch"] == {
+        ACTION_FREEZE
+    }
+    assert all(
+        ACTION_FREEZE not in actions
+        for route, actions in repo_app.HIGH_COST_ROUTE_ACTIONS.items()
+        if route != "phase3cf-large-search-prelaunch"
+    )
     for route, module_path in repo_app.ROUTES.items():
         if route not in repo_app.HIGH_COST_ROUTE_ACTIONS:
             continue
@@ -662,17 +723,41 @@ def test_every_high_cost_module_has_in_process_admission_gate() -> None:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
             and node.name == "main"
         )
-        first = main.body[0]
-        assert isinstance(first, ast.Expr)
+        first = (
+            main.body[2]
+            if route == "cn-iterative-search-v1-canary"
+            else main.body[0]
+        )
+        assert isinstance(first, ast.Assign)
         assert isinstance(first.value, ast.Call)
         assert isinstance(first.value.func, ast.Name)
         assert first.value.func.id == "consume_active_admission"
         assert ast.literal_eval(first.value.args[0]) == route
+        parse_index = next(
+            index
+            for index, statement in enumerate(main.body)
+            if isinstance(statement, ast.Assign)
+            and isinstance(statement.value, ast.Call)
+            and isinstance(statement.value.func, ast.Attribute)
+            and statement.value.func.attr == "parse_args"
+        )
+        target_check = main.body[parse_index + 1]
+        assert isinstance(target_check, ast.Expr)
+        assert isinstance(target_check.value, ast.Call)
+        assert isinstance(target_check.value.func, ast.Name)
+        assert target_check.value.func.id == "verify_consumed_admission_target"
 
     with pytest.raises(
         ProjectControlDenied, match="DIRECT_HIGH_COST_MODULE_EXECUTION_FORBIDDEN"
     ):
-        consume_active_admission("cn-large-tpe-search-campaign")
+        consume_active_admission(
+            "cn-large-tpe-search-campaign", {ACTION_LAUNCH}
+        )
+
+    with pytest.raises(TypeError):
+        activate_admission(  # type: ignore[call-arg]
+            {"status": "PROJECT_CONTROL_ADMISSION_ELIGIBLE"}
+        )
 
 
 def test_high_cost_entry_denies_before_route_import(monkeypatch) -> None:
@@ -694,7 +779,13 @@ def test_high_cost_entry_consumes_valid_target_bound_admission(
     monkeypatch, tmp_path: Path
 ) -> None:
     trust = _trust_config(tmp_path)
-    child = _run_record(tmp_path, trust_config=trust, run_id="entry-control")
+    target_output_root = (tmp_path / "target-output").resolve()
+    child = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="entry-control",
+        target_output_root=target_output_root,
+    )
     admission = _materialize(
         tmp_path,
         trust_config=trust,
@@ -707,8 +798,11 @@ def test_high_cost_entry_consumes_valid_target_bound_admission(
         loaded.append(route)
 
         def admitted_main(_passthrough):
-            proof = consume_active_admission(route)
+            proof = consume_active_admission(route, {ACTION_LAUNCH})
             assert proof["target_run_id"] == "target-1"
+            verify_consumed_admission_target(
+                proof, output_root=target_output_root
+            )
             return 0
 
         return admitted_main
@@ -728,8 +822,31 @@ def test_high_cost_entry_consumes_valid_target_bound_admission(
                 str(admission),
                 "--project-control-admission-sha256",
                 sha256_file(admission),
+                "--",
+                "--output-root",
+                str(target_output_root),
             ]
         )
         == 0
     )
+    assert loaded == ["cn-large-tpe-search-campaign"]
+
+    with pytest.raises(SystemExit) as exc:
+        repo_app.main(
+            [
+                "cn-large-tpe-search-campaign",
+                "--requested-action",
+                ACTION_LAUNCH,
+                "--target-run-id",
+                "target-1",
+                "--project-control-admission",
+                str(admission),
+                "--project-control-admission-sha256",
+                sha256_file(admission),
+                "--",
+                "--output-root",
+                str(tmp_path / "different-output"),
+            ]
+        )
+    assert exc.value.code == 2
     assert loaded == ["cn-large-tpe-search-campaign"]

@@ -26,6 +26,7 @@ import pandas as pd
 
 from our_system_phase2.services.project_control_admission import (
     consume_active_admission,
+    verify_consumed_admission_target,
 )
 
 from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import (
@@ -1571,7 +1572,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    consume_active_admission("cn-iterative-search-v1-canary")
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments == ["--synthetic-rules-only"]:
+        proof = _synthetic_feedback_proof()
+        print(json.dumps(proof, ensure_ascii=False, sort_keys=True))
+        return 0 if proof["status"] == "PASS" else 1
+    admission = consume_active_admission(
+        "cn-iterative-search-v1-canary",
+        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY", "RECOVERY"},
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument("--synthetic-rules-only", action="store_true")
     parser.add_argument("--registry", type=Path)
@@ -1585,7 +1594,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--seed-base", type=int, default=2026072101)
     parser.add_argument("--active-threads", type=int, default=11)
     parser.add_argument("--session-threads", type=int, default=2)
-    args = parser.parse_args(argv)
+    args = parser.parse_args(arguments)
+    verify_consumed_admission_target(admission, output_root=args.output_root)
     if args.synthetic_rules_only:
         proof = _synthetic_feedback_proof()
         print(json.dumps(proof, ensure_ascii=False, sort_keys=True))

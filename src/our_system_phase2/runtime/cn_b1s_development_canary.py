@@ -20,6 +20,11 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
+from our_system_phase2.services.project_control_admission import (
+    consume_active_admission,
+    verify_consumed_admission_target,
+)
+
 from our_system_phase2.runtime.nextgen_dark_development_canary import (
     CONTEXT_FIELDS,
     EPS,
@@ -1893,6 +1898,10 @@ def _select_seed_set(contract: Mapping[str, Any], seed_set: str | None) -> dict[
 
 
 def main(argv: list[str] | None = None) -> int:
+    admission = consume_active_admission(
+        "cn-b1s-development-canary",
+        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY", "RECOVERY"},
+    )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[3])
     parser.add_argument("--panel-root", type=Path, required=True)
@@ -1909,6 +1918,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--frozen-sha", required=True)
     parser.add_argument("--seed-set", default=None)
     args = parser.parse_args(argv)
+    verify_consumed_admission_target(admission, output_root=args.output_root)
 
     repo = args.repo.resolve()
     if args.authorization != AUTHORIZATION:

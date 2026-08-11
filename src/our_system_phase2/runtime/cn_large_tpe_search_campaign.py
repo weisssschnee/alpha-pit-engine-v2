@@ -28,6 +28,7 @@ import pandas as pd
 
 from our_system_phase2.services.project_control_admission import (
     consume_active_admission,
+    verify_consumed_admission_target,
 )
 
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
@@ -5037,7 +5038,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    consume_active_admission("cn-large-tpe-search-campaign")
+    admission = consume_active_admission(
+        "cn-large-tpe-search-campaign",
+        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY", "RECOVERY"},
+    )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--campaign-authorization", type=Path, required=True
@@ -5089,6 +5093,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--preflight-only", action="store_true")
     args = parser.parse_args(argv)
+    verify_consumed_admission_target(admission, output_root=args.output_root)
     result = run(args)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0

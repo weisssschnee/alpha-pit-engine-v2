@@ -24,6 +24,11 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from our_system_phase2.services.project_control_admission import (
+    consume_active_admission,
+    verify_consumed_admission_target,
+)
+
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import (
     _fields,
     _future_returns,
@@ -630,6 +635,10 @@ def _record_output(record: dict[str, Any], path: Path, purpose: str, stage: str)
 
 
 def main(argv: list[str] | None = None) -> int:
+    admission = consume_active_admission(
+        "nextgen-dark-development-canary",
+        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY", "RECOVERY"},
+    )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[3])
     parser.add_argument("--panel-root", type=Path, required=True)
@@ -647,6 +656,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--authorization", required=True)
     parser.add_argument("--frozen-sha", required=True)
     args = parser.parse_args(argv)
+    verify_consumed_admission_target(admission, output_root=args.output_root)
 
     repo = args.repo.resolve()
     if args.authorization != AUTHORIZATION:

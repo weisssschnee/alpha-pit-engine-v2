@@ -24,7 +24,6 @@ from our_system_phase2.services.project_control_admission import (
     ProjectControlDenied,
     activate_admission,
     clear_active_admission,
-    validate_admission,
 )
 
 PROJECT_CONTROL_TRUST_CONFIG = (
@@ -104,9 +103,15 @@ RETIRED_ROUTES: dict[str, str] = {
 # so a denial cannot initialize an evaluator, read market data, or create output.
 HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
     "phase3cp-real-cm-small-loop": frozenset(
-        {ACTION_FREEZE, ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+        {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
     ),
     "phase3cf-large-search-prelaunch": frozenset({ACTION_FREEZE}),
+    "nextgen-dark-development-canary": frozenset(
+        {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+    ),
+    "cn-b1s-development-canary": frozenset(
+        {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+    ),
     "cn-iterative-search-v1-canary": frozenset(
         {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
     ),
@@ -114,7 +119,7 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
         {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
     ),
     "cn-large-tpe-search-campaign": frozenset(
-        {ACTION_FREEZE, ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+        {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
     ),
     "cn-fixed-stratified-production-v0": frozenset(
         {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
@@ -158,11 +163,28 @@ def _git_head() -> str:
     return completed.stdout.strip()
 
 
+def _explicit_output_root(passthrough: list[str]) -> Path:
+    values: list[str] = []
+    for index, value in enumerate(passthrough):
+        if value == "--output-root":
+            if index + 1 >= len(passthrough):
+                raise ProjectControlDenied("--output-root value missing")
+            values.append(passthrough[index + 1])
+        elif value.startswith("--output-root="):
+            values.append(value.split("=", 1)[1])
+    if len(values) != 1 or not values[0]:
+        raise ProjectControlDenied(
+            "high-cost route requires exactly one explicit --output-root after --"
+        )
+    return Path(values[0]).expanduser().resolve()
+
+
 def _validate_high_cost_route_admission(
     *,
     route: str,
     requested_action: str,
     target_run_id: str,
+    passthrough: list[str],
     admission_path: Path | None,
     admission_sha256: str,
 ) -> dict[str, object] | None:
@@ -181,7 +203,8 @@ def _validate_high_cost_route_admission(
         )
     if requested_action not in expected_actions:
         raise ProjectControlDenied("requested action is not valid for this route")
-    return validate_admission(
+    output_root = _explicit_output_root(passthrough)
+    return activate_admission(
         admission_path,
         trust_config_path=PROJECT_CONTROL_TRUST_CONFIG,
         expected_admission_file_sha256=admission_sha256,
@@ -190,6 +213,7 @@ def _validate_high_cost_route_admission(
         expected_actions={requested_action},
         expected_target_campaign_id=route,
         expected_target_run_id=target_run_id,
+        expected_target_output_root=output_root,
     )
 
 
@@ -225,14 +249,13 @@ def main(argv: list[str] | None = None) -> int:
             route=parsed.route,
             requested_action=parsed.requested_action,
             target_run_id=parsed.target_run_id,
+            passthrough=passthrough,
             admission_path=parsed.project_control_admission,
             admission_sha256=parsed.project_control_admission_sha256,
         )
     except (ProjectControlDenied, subprocess.CalledProcessError) as exc:
         parser.error(f"project-control admission denied before route import: {exc}")
 
-    if admission_proof is not None:
-        activate_admission(admission_proof)
     try:
         main_func = _load_main(parsed.route)
         try:

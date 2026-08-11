@@ -25,6 +25,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--action", choices=sorted(ALLOWED_ACTIONS), required=True)
     parser.add_argument("--target-campaign-id", required=True)
     parser.add_argument("--target-run-id", required=True)
+    parser.add_argument("--target-output-root", type=Path, required=True)
     parser.add_argument("--repo-sha", required=True)
     parser.add_argument("--expires-at", required=True)
     parser.add_argument("--parent-project-control-run-id", default="")
@@ -42,6 +43,7 @@ def main(argv: list[str] | None = None) -> int:
         requested_action=args.action,
         target_campaign_id=args.target_campaign_id,
         target_run_id=args.target_run_id,
+        target_output_root=args.target_output_root,
         repo_sha=args.repo_sha,
         expires_at=args.expires_at,
         parent_project_control_run_id=args.parent_project_control_run_id,

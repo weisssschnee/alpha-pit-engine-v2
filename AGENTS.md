@@ -43,10 +43,12 @@ Disallowed by default:
 - High-cost freeze, launch, successor, retry, and technical-recovery actions
   must enter through an `app.py` route that consumes a Project Control
   admission derived from the trusted Harness root and bound in its task request
-  to the exact project, repo SHA, action, campaign, run and expiry. An arbitrary
-  receipt path, caller-supplied hash or generic `PROCEED` is not authority.
+  to the exact project, repo SHA, action, campaign, run, absolute output root
+  and expiry. An arbitrary receipt path, caller-supplied hash or generic
+  `PROCEED` is not authority.
   Every high-cost module must also consume the one-use route capability before
-  argument parsing or data access, so direct module invocation is denied.
+  argument parsing and recheck its parsed output root before data access, so
+  direct invocation and admission reuse for another output are denied.
   Project Control governs admission only; it cannot select alpha or overrule
   observed economic results.
 - Treat BZ fragment replay as a diagnostic slice replay, not the search reward.

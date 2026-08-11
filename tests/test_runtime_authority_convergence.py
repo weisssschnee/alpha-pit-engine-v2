@@ -23,6 +23,7 @@ from our_system_phase2.services.fixed_split_authority import (
     FixedSplitAuthority,
     SplitAuthorityError,
 )
+from our_system_phase2.services.project_control_admission import ProjectControlDenied
 from our_system_phase2.services.unified_capability_registry import UnifiedCapabilityRegistry, stable_hash
 from our_system_phase2.services.unified_discovery_generators import RegistryDrivenGenerator
 
@@ -68,7 +69,7 @@ def test_formal_worker_and_serial_entrypoints_fail_without_manifest_and_receipts
     assert "phase3dv-budget-pool-self-deepen-pack" in app.RETIRED_ROUTES
     with pytest.raises(SystemExit):
         phase3cm_main([])
-    with pytest.raises(SystemExit):
+    with pytest.raises(ProjectControlDenied, match="DIRECT_HIGH_COST"):
         phase3cp_main([])
 
 
@@ -84,7 +85,7 @@ def test_formal_symbol_shard_parallel_portfolio_has_no_cli_route(
 ) -> None:
     shard_root = tmp_path / "shards"
     shard_root.mkdir()
-    with pytest.raises(SystemExit):
+    with pytest.raises(ProjectControlDenied, match="DIRECT_HIGH_COST"):
         phase3cp_main(
             [
                 "--co-root", str(tmp_path),

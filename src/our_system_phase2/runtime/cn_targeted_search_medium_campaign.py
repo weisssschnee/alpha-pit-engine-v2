@@ -25,6 +25,7 @@ import pyarrow.parquet as pq
 
 from our_system_phase2.services.project_control_admission import (
     consume_active_admission,
+    verify_consumed_admission_target,
 )
 
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
@@ -2804,7 +2805,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    consume_active_admission("cn-targeted-search-medium-campaign")
+    admission = consume_active_admission(
+        "cn-targeted-search-medium-campaign",
+        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY", "RECOVERY"},
+    )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--campaign-profile",
@@ -2835,6 +2839,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--active-threads", type=int, default=30)
     parser.add_argument("--session-threads", type=int, default=2)
     args = parser.parse_args(argv)
+    verify_consumed_admission_target(admission, output_root=args.output_root)
     result = run(args)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if str(result["status"]).startswith("CAMPAIGN_CLOSED") else 1

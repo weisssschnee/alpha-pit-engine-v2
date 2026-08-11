@@ -15,6 +15,7 @@ from typing import Any
 
 from our_system_phase2.services.project_control_admission import (
     consume_active_admission,
+    verify_consumed_admission_target,
 )
 
 
@@ -388,7 +389,9 @@ def build_prelaunch(
 
 
 def main(argv: list[str] | None = None) -> int:
-    consume_active_admission("phase3cf-large-search-prelaunch")
+    admission = consume_active_admission(
+        "phase3cf-large-search-prelaunch", {"FREEZE_HIGH_COST_CAMPAIGN"}
+    )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
@@ -398,6 +401,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--local-shard-root", type=Path, default=DEFAULT_LOCAL_SHARD_ROOT)
     parser.add_argument("--company-shard-root", type=Path, default=DEFAULT_COMPANY_SHARD_ROOT)
     args = parser.parse_args(argv)
+    verify_consumed_admission_target(admission, output_root=args.output_root)
     summary = build_prelaunch(
         output_root=args.output_root,
         report_root=args.report_root,

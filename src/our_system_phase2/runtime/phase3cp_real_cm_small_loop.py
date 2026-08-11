@@ -29,6 +29,7 @@ import pyarrow.parquet as pq
 
 from our_system_phase2.services.project_control_admission import (
     consume_active_admission,
+    verify_consumed_admission_target,
 )
 
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import (
@@ -1661,7 +1662,10 @@ def _render_md(summary: dict[str, Any]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    consume_active_admission("phase3cp-real-cm-small-loop")
+    admission = consume_active_admission(
+        "phase3cp-real-cm-small-loop",
+        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY", "RECOVERY"},
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument("--co-root", type=Path, default=DEFAULT_CO_ROOT)
     parser.add_argument("--arm-budget-table", type=Path)
@@ -1733,6 +1737,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--memory-root", type=Path, action="append", default=[])
     parser.add_argument("--memory-glob", action="append", default=DEFAULT_MEMORY_GLOBS)
     args = parser.parse_args(argv)
+    verify_consumed_admission_target(admission, output_root=args.output_root)
 
     co_root = _resolve(args.co_root)
     shard_root = _resolve(args.shard_root)

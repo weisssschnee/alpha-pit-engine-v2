@@ -110,6 +110,12 @@ def load_trust_config(
     )
     if payload.get("project_id") != expected_project_id:
         raise ProjectControlDenied("Project Control trust project drift")
+    if (
+        payload.get("trust_model") != "HARNESS_RUNS_ROOT_IS_AUTHORITY_STORE"
+        or payload.get("cryptographic_receipt_signature")
+        != "UNAVAILABLE_IN_EXISTING_HARNESS"
+    ):
+        raise ProjectControlDenied("Project Control trust model drift")
     trusted_root = Path(str(payload.get("trusted_harness_runs_root") or "")).resolve()
     repository_path = Path(str(payload.get("repository_path") or "")).resolve()
     if not trusted_root.is_dir():
@@ -135,6 +141,13 @@ def _parse_expiry(value: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
+def _canonical_output_root(value: str | Path) -> str:
+    path = Path(str(value)).expanduser()
+    if not path.is_absolute():
+        raise ProjectControlDenied("execution target output root must be absolute")
+    return str(path.resolve())
+
+
 def _validate_request_shape(
     request: dict[str, Any], *, allow_expired: bool = False
 ) -> dict[str, Any]:
@@ -155,6 +168,10 @@ def _validate_request_shape(
         request.get("target_run_id") or ""
     ):
         raise ProjectControlDenied("target campaign/run identity missing")
+    if request.get("target_output_root") != _canonical_output_root(
+        str(request.get("target_output_root") or "")
+    ):
+        raise ProjectControlDenied("execution target output root drift")
     if not allow_expired and _parse_expiry(
         str(request.get("expires_at") or "")
     ) <= datetime.now(timezone.utc):
@@ -167,6 +184,7 @@ def build_execution_request(
     requested_action: str,
     target_campaign_id: str,
     target_run_id: str,
+    target_output_root: str | Path,
     repo_sha: str,
     expires_at: str,
     parent_project_control_run_id: str = "",
@@ -188,6 +206,7 @@ def build_execution_request(
         "requested_action": str(requested_action).upper(),
         "target_campaign_id": str(target_campaign_id),
         "target_run_id": str(target_run_id),
+        "target_output_root": _canonical_output_root(target_output_root),
         "repo_sha": str(repo_sha),
         "expires_at": str(expires_at),
         "parent_project_control_run_id": str(parent_project_control_run_id),
@@ -230,6 +249,36 @@ def _load_harness_bundle(
     profile_path, profile = _read_json(
         run_root / "project_profile.json", "Harness project profile"
     )
+    required_record_fields = {
+        "schema_version", "run_id", "task_id", "project_id", "session_id",
+        "code_base_sha", "worktree", "started_at", "status",
+        "commands_executed", "files_changed", "checks_executed",
+        "evidence_references", "failure_class", "handoff_reference",
+    }
+    required_task_fields = {
+        "schema_version", "task_id", "project_id", "objective", "background",
+        "in_scope", "out_of_scope", "constraints", "expected_artifacts",
+        "acceptance_checks", "risk_level", "execution_mode", "stop_conditions",
+    }
+    required_profile_fields = {
+        "schema_version", "project_id", "repository_path", "primary_branch",
+        "project_instructions", "architecture_docs", "setup_commands",
+        "test_commands", "build_commands", "smoke_test_commands",
+        "allowed_paths", "protected_paths", "sensitive_files",
+        "environment_requirements", "git_policy", "worktree_policy",
+    }
+    if (
+        record.get("schema_version") != 1
+        or not required_record_fields.issubset(record)
+        or task.get("schema_version") != 1
+        or not required_task_fields.issubset(task)
+        or profile.get("schema_version") != 1
+        or not required_profile_fields.issubset(profile)
+    ):
+        raise ProjectControlDenied("Harness bundle schema drift")
+    execution_context_path = run_root / "execution_context.md"
+    if not execution_context_path.is_file():
+        raise ProjectControlDenied("Harness execution context missing")
     request = _validate_request_shape(
         dict(task.get("execution_request") or {}),
         allow_expired=allow_expired_request,
@@ -266,6 +315,8 @@ def _load_harness_bundle(
         "task_spec_file_sha256": sha256_file(task_path),
         "project_profile_path": str(profile_path),
         "project_profile_file_sha256": sha256_file(profile_path),
+        "execution_context_path": str(execution_context_path.resolve()),
+        "execution_context_file_sha256": sha256_file(execution_context_path),
         "record": record,
         "request": request,
     }
@@ -297,6 +348,9 @@ def _receipt_binding(bundle: dict[str, Any], phase: str) -> dict[str, Any]:
         "code_base_sha": str(record.get("code_base_sha") or ""),
         "task_spec_file_sha256": bundle["task_spec_file_sha256"],
         "project_profile_file_sha256": bundle["project_profile_file_sha256"],
+        "execution_context_file_sha256": bundle[
+            "execution_context_file_sha256"
+        ],
         "execution_request_payload_sha256": bundle["request"][
             "request_payload_sha256"
         ],
@@ -328,6 +382,7 @@ def _validate_source(
     expected_action: str | None,
     expected_target_campaign_id: str | None,
     expected_target_run_id: str | None,
+    expected_target_output_root: str | Path | None,
     allow_expired_request: bool = False,
 ) -> dict[str, Any]:
     bundle = _load_harness_bundle(
@@ -354,6 +409,12 @@ def _validate_source(
         and request["target_run_id"] != expected_target_run_id
     ):
         raise ProjectControlDenied("target run drift")
+    if (
+        expected_target_output_root is not None
+        and request["target_output_root"]
+        != _canonical_output_root(expected_target_output_root)
+    ):
+        raise ProjectControlDenied("target output root drift")
     receipt = dict(binding["receipt"])
     if phase == "PREFLIGHT":
         if receipt.get("verdict") != "PROCEED" or binding["automatic_allowed"] is not True:
@@ -367,6 +428,10 @@ def _validate_source(
         "task_spec_file_sha256": bundle["task_spec_file_sha256"],
         "project_profile_path": bundle["project_profile_path"],
         "project_profile_file_sha256": bundle["project_profile_file_sha256"],
+        "execution_context_path": bundle["execution_context_path"],
+        "execution_context_file_sha256": bundle[
+            "execution_context_file_sha256"
+        ],
         "receipt_sha256": observed_hash,
         "request": request,
         **binding,
@@ -406,6 +471,7 @@ def materialize_admission(
         expected_action=action,
         expected_target_campaign_id=str(target_campaign_id),
         expected_target_run_id=str(target_run_id),
+        expected_target_output_root=None,
     )
     request = dict(child["request"])
     parent = None
@@ -423,6 +489,7 @@ def materialize_admission(
                 request.get("parent_target_campaign_id") or ""
             ),
             expected_target_run_id=str(request.get("parent_target_run_id") or ""),
+            expected_target_output_root=None,
         )
         if (
             str(request.get("parent_project_control_run_id") or "")
@@ -461,6 +528,7 @@ def materialize_admission(
             expected_actions=ORIGINAL_EXECUTION_ACTIONS,
             expected_target_campaign_id=str(target_campaign_id),
             expected_target_run_id=str(target_run_id),
+            expected_target_output_root=str(request["target_output_root"]),
             _allow_expired_request=True,
         )
         incident = {
@@ -490,6 +558,7 @@ def materialize_admission(
         "requested_action": action,
         "target_campaign_id": str(target_campaign_id),
         "target_run_id": str(target_run_id),
+        "target_output_root": str(request["target_output_root"]),
         "repo_sha": str(repo_sha),
         "trust_config_path": str(Path(trust_config_path).resolve()),
         "trust_config_file_sha256": trust["trust_config_file_sha256"],
@@ -521,6 +590,7 @@ def validate_admission(
     expected_actions: Collection[str],
     expected_target_campaign_id: str,
     expected_target_run_id: str,
+    expected_target_output_root: str | Path,
     _allow_expired_request: bool = False,
 ) -> dict[str, Any]:
     """Consume and revalidate a trusted, immutable admission before route import."""
@@ -556,6 +626,9 @@ def validate_admission(
         raise ProjectControlDenied("target campaign drift")
     if payload.get("target_run_id") != expected_target_run_id:
         raise ProjectControlDenied("target run drift")
+    canonical_output_root = _canonical_output_root(expected_target_output_root)
+    if payload.get("target_output_root") != canonical_output_root:
+        raise ProjectControlDenied("target output root drift")
     child_payload = dict(payload.get("project_control_preflight") or {})
     child = _validate_source(
         Path(str(child_payload.get("run_record_path") or "")),
@@ -566,6 +639,7 @@ def validate_admission(
         expected_action=action,
         expected_target_campaign_id=expected_target_campaign_id,
         expected_target_run_id=expected_target_run_id,
+        expected_target_output_root=canonical_output_root,
         allow_expired_request=_allow_expired_request,
     )
     if child != child_payload:
@@ -587,6 +661,7 @@ def validate_admission(
             expected_target_run_id=str(
                 child_request.get("parent_target_run_id") or ""
             ),
+            expected_target_output_root=None,
         )
         if (
             parent != parent_payload
@@ -615,6 +690,7 @@ def validate_admission(
             expected_actions=ORIGINAL_EXECUTION_ACTIONS,
             expected_target_campaign_id=expected_target_campaign_id,
             expected_target_run_id=expected_target_run_id,
+            expected_target_output_root=canonical_output_root,
             _allow_expired_request=True,
         )
         if original != original_payload:
@@ -650,22 +726,49 @@ def validate_admission(
         "requested_action": action,
         "target_campaign_id": expected_target_campaign_id,
         "target_run_id": expected_target_run_id,
+        "target_output_root": canonical_output_root,
         "repo_sha": expected_repo_sha,
         "recovery_kind": str(child["request"].get("recovery_kind") or ""),
         "incident_id": str(child["request"].get("incident_id") or ""),
     }
 
 
-def activate_admission(proof: dict[str, Any]) -> None:
+def activate_admission(
+    path: Path,
+    *,
+    trust_config_path: Path,
+    expected_admission_file_sha256: str,
+    expected_project_id: str,
+    expected_repo_sha: str,
+    expected_actions: Collection[str],
+    expected_target_campaign_id: str,
+    expected_target_run_id: str,
+    expected_target_output_root: str | Path,
+) -> dict[str, Any]:
+    """Atomically validate and activate one exact execution admission."""
+
     global _ACTIVE_ADMISSION
-    if proof.get("status") != "PROJECT_CONTROL_ADMISSION_ELIGIBLE":
-        raise ProjectControlDenied("cannot activate an ineligible admission")
     if _ACTIVE_ADMISSION is not None:
         raise ProjectControlDenied("another high-cost admission is already active")
+    proof = validate_admission(
+        path,
+        trust_config_path=trust_config_path,
+        expected_admission_file_sha256=expected_admission_file_sha256,
+        expected_project_id=expected_project_id,
+        expected_repo_sha=expected_repo_sha,
+        expected_actions=expected_actions,
+        expected_target_campaign_id=expected_target_campaign_id,
+        expected_target_run_id=expected_target_run_id,
+        expected_target_output_root=expected_target_output_root,
+    )
     _ACTIVE_ADMISSION = dict(proof)
+    return proof
 
 
-def consume_active_admission(expected_campaign_id: str) -> dict[str, Any]:
+def consume_active_admission(
+    expected_campaign_id: str,
+    expected_actions: Collection[str],
+) -> dict[str, Any]:
     global _ACTIVE_ADMISSION
     proof = _ACTIVE_ADMISSION
     _ACTIVE_ADMISSION = None
@@ -673,7 +776,20 @@ def consume_active_admission(expected_campaign_id: str) -> dict[str, Any]:
         raise ProjectControlDenied("DIRECT_HIGH_COST_MODULE_EXECUTION_FORBIDDEN")
     if proof.get("target_campaign_id") != expected_campaign_id:
         raise ProjectControlDenied("active admission campaign drift")
+    if proof.get("requested_action") not in set(expected_actions):
+        raise ProjectControlDenied("active admission action drift")
     return proof
+
+
+def verify_consumed_admission_target(
+    proof: dict[str, Any], *, output_root: str | Path
+) -> None:
+    """Bind parsed route arguments to the already-consumed execution proof."""
+
+    if proof.get("status") != "PROJECT_CONTROL_ADMISSION_ELIGIBLE":
+        raise ProjectControlDenied("consumed admission proof is ineligible")
+    if proof.get("target_output_root") != _canonical_output_root(output_root):
+        raise ProjectControlDenied("active admission output root drift")
 
 
 def clear_active_admission() -> None:
