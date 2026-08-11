@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from our_system_phase2.services import typed_temporal_program as temporal_module
 from our_system_phase2.services.real_market_validation import evaluate_panel_expression
 from our_system_phase2.services.typed_temporal_program import (
     TEMPORAL_PRIMITIVES,
@@ -195,6 +196,61 @@ def test_temporal_evaluation_is_input_order_invariant() -> None:
     expected = expected.sort_values(["code", "trade_time"]).reset_index(drop=True)
     observed = observed.sort_values(["code", "trade_time"]).reset_index(drop=True)
     pd.testing.assert_frame_equal(observed, expected)
+
+
+def test_wide_frame_canonicalization_uses_only_coordinates_and_preserves_result(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    narrow = _frame().sample(frac=1.0, random_state=23)
+    irrelevant = pd.DataFrame(
+        {
+            f"irrelevant_{index:03d}": np.full(len(narrow), float(index))
+            for index in range(192)
+        },
+        index=narrow.index,
+    )
+    wide = pd.concat([narrow, irrelevant], axis=1)
+
+    expected = evaluate_typed_temporal_primitive(
+        narrow,
+        "Slope",
+        [TemporalInput(narrow["x"], "numeric", narrow["trade_time"], 2)],
+        [3],
+        data_role="development",
+    )
+    observed_canonical_columns: list[tuple[str, ...]] = []
+    observed_canonical_bytes: list[int] = []
+    original = temporal_module._evaluate_temporal_primitive_canonical
+
+    def record_canonical_columns(
+        frame: pd.DataFrame,
+        name: str,
+        inputs: list[pd.Series],
+        params: tuple[int, ...],
+    ) -> pd.Series:
+        observed_canonical_columns.append(tuple(frame.columns))
+        observed_canonical_bytes.append(int(frame.memory_usage(deep=True).sum()))
+        return original(frame, name, inputs, params)
+
+    monkeypatch.setattr(
+        temporal_module,
+        "_evaluate_temporal_primitive_canonical",
+        record_canonical_columns,
+    )
+    observed = evaluate_typed_temporal_primitive(
+        wide,
+        "Slope",
+        [TemporalInput(wide["x"], "numeric", wide["trade_time"], 2)],
+        [3],
+        data_role="development",
+    )
+
+    assert observed_canonical_columns == [("code", "trade_time")]
+    assert observed_canonical_bytes[0] * 20 < int(wide.memory_usage(deep=True).sum())
+    assert observed.cache_key == expected.cache_key
+    assert observed.source_lag == expected.source_lag == 2
+    pd.testing.assert_series_equal(observed.values, expected.values)
+    pd.testing.assert_series_equal(observed.observable_at, expected.observable_at)
 
 
 def test_temporal_evaluation_rejects_duplicate_coordinates() -> None:

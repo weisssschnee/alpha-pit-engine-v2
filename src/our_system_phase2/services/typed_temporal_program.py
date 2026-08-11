@@ -539,9 +539,9 @@ def evaluate_typed_temporal_primitive(
     if coordinates.duplicated(["code", "trade_time"]).any():
         raise ValueError("duplicate temporal coordinates are forbidden")
     order = coordinates.sort_values(["code", "trade_time"], kind="mergesort")["_position"].to_numpy()
-    canonical_frame = frame.iloc[order].copy().reset_index(drop=True)
-    canonical_frame["code"] = coordinates.iloc[order]["code"].to_numpy()
-    canonical_frame["trade_time"] = coordinates.iloc[order]["trade_time"].to_numpy()
+    canonical_frame = coordinates.iloc[order][["code", "trade_time"]].reset_index(
+        drop=True
+    )
     canonical_inputs: list[TemporalInput] = []
     safe_values: list[pd.Series] = []
     row_time = pd.to_datetime(canonical_frame["trade_time"], errors="coerce", format="mixed")
