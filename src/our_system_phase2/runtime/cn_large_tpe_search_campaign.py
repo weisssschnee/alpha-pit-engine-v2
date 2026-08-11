@@ -5062,7 +5062,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 _NEW_CAMPAIGN_PROFILES = frozenset(
     {
         CAMPAIGN_PROFILE,
-        "cn_large_optuna_tpe_actual20000_v2",
         PRODUCTIVITY_MEDIUM_PROFILE,
         HYBRID_ONLY_TRANCHE_PROFILE,
         HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE,

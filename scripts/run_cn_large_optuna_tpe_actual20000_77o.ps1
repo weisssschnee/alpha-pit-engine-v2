@@ -17,6 +17,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+throw (
+    'RETIRED_CLOSED_CAMPAIGN_PROVENANCE_ONLY: ' +
+    'cn_large_optuna_tpe_actual20000_v2 is not a current launch authority'
+)
 $python = 'D:\ChengboRemote\venvs\alpha311\Scripts\python.exe'
 $deploymentManifestRoot = 'D:\ChengboRemote\runtime\manifests'
 $inputRoot = 'D:\ChengboRemote\runtime\cn_large_tpe_objective_v2_inputs_20260727'

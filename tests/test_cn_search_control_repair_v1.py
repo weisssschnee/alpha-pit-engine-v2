@@ -1213,7 +1213,6 @@ def test_current_77o_high_cost_wrappers_forward_project_control() -> None:
         "run_cn_hybrid_bounded_large_tranche_77o.ps1",
         "run_cn_hybrid_only_tranche_77o.ps1",
         "run_cn_hybrid_search_productivity_medium_77o.ps1",
-        "run_cn_large_optuna_tpe_actual20000_77o.ps1",
         "run_cn_winner_guided_large_search_77o.ps1",
         "run_cn_fixed_stratified_production_v0_77o.ps1",
     )
@@ -1330,7 +1329,6 @@ def test_successor_campaign_authorization_cannot_use_launch_admission(
     "profile",
     (
         "cn_large_optuna_tpe_availability_v3",
-        "cn_large_optuna_tpe_actual20000_v2",
         "cn_hybrid_search_productivity_medium_v1",
         "cn_hybrid_only_tranche_v1",
         "cn_hybrid_bounded_large_tranche_v1",
@@ -1474,3 +1472,12 @@ def test_winner_wrapper_does_not_advertise_unsafe_recovery() -> None:
         REPO / "scripts" / "run_cn_winner_guided_large_search_77o.ps1"
     ).read_text(encoding="utf-8-sig")
     assert "'RECOVERY'" not in text
+
+
+def test_closed_actual20000_wrapper_is_retired_before_execution() -> None:
+    text = (
+        REPO / "scripts" / "run_cn_large_optuna_tpe_actual20000_77o.ps1"
+    ).read_text(encoding="utf-8-sig")
+    retired = text.index("RETIRED_CLOSED_CAMPAIGN_PROVENANCE_ONLY")
+    assert retired < text.index("New-Item")
+    assert retired < text.index("'cn-large-tpe-search-campaign'")
