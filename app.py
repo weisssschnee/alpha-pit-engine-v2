@@ -19,6 +19,7 @@ from our_system_phase2.services.project_control_admission import (
     ACTION_RECOVERY,
     ACTION_RETRY,
     ACTION_SUCCESSOR,
+    ALLOWED_ACTIONS,
     PROJECT_ID,
     ProjectControlDenied,
     validate_admission,
@@ -148,24 +149,34 @@ def _git_head() -> str:
 def _validate_high_cost_route_admission(
     *,
     route: str,
+    requested_action: str,
+    target_run_id: str,
     admission_path: Path | None,
     admission_sha256: str,
 ) -> None:
     expected_actions = HIGH_COST_ROUTE_ACTIONS.get(route)
     if expected_actions is None:
         return
-    if admission_path is None or not admission_sha256:
+    if (
+        admission_path is None
+        or not admission_sha256
+        or not requested_action
+        or not target_run_id
+    ):
         raise ProjectControlDenied(
-            "high-cost route requires --project-control-admission and "
-            "--project-control-admission-sha256"
+            "high-cost route requires --requested-action, --target-run-id, "
+            "--project-control-admission and --project-control-admission-sha256"
         )
+    if requested_action not in expected_actions:
+        raise ProjectControlDenied("requested action is not valid for this route")
     validate_admission(
         admission_path,
         expected_admission_file_sha256=admission_sha256,
         expected_project_id=PROJECT_ID,
         expected_repo_sha=_git_head(),
-        expected_actions=expected_actions,
+        expected_actions={requested_action},
         expected_target_campaign_id=route,
+        expected_target_run_id=target_run_id,
     )
 
 
@@ -178,6 +189,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("route", choices=sorted(ROUTES))
     parser.add_argument("--allow-diagnostic", action="store_true")
+    parser.add_argument("--requested-action", choices=sorted(ALLOWED_ACTIONS), default="")
+    parser.add_argument("--target-run-id", default="")
     parser.add_argument("--project-control-admission", type=Path)
     parser.add_argument("--project-control-admission-sha256", default="")
     parsed = parser.parse_args(route_args)
@@ -197,6 +210,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         _validate_high_cost_route_admission(
             route=parsed.route,
+            requested_action=parsed.requested_action,
+            target_run_id=parsed.target_run_id,
             admission_path=parsed.project_control_admission,
             admission_sha256=parsed.project_control_admission_sha256,
         )

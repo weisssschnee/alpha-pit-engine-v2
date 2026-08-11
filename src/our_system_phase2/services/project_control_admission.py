@@ -244,6 +244,7 @@ def validate_admission(
     expected_repo_sha: str,
     expected_actions: Collection[str],
     expected_target_campaign_id: str,
+    expected_target_run_id: str,
 ) -> dict[str, Any]:
     """Consume and revalidate an immutable admission before route import."""
 
@@ -265,6 +266,8 @@ def validate_admission(
         raise ProjectControlDenied("requested action drift")
     if payload.get("target_campaign_id") != expected_target_campaign_id:
         raise ProjectControlDenied("target campaign drift")
+    if payload.get("target_run_id") != expected_target_run_id:
+        raise ProjectControlDenied("target run drift")
     _validate_action_shape(
         requested_action=action,
         target_campaign_id=str(payload.get("target_campaign_id") or ""),

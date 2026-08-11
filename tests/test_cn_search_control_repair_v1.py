@@ -202,7 +202,9 @@ def _materialize(
     return output
 
 
-def _validate(path: Path, *, action: str) -> dict:
+def _validate(
+    path: Path, *, action: str, target_run_id: str = "target-1"
+) -> dict:
     return validate_admission(
         path,
         expected_admission_file_sha256=sha256_file(path),
@@ -210,6 +212,7 @@ def _validate(path: Path, *, action: str) -> dict:
         expected_repo_sha=REPO_SHA,
         expected_actions={action},
         expected_target_campaign_id="cn-large-tpe-search-campaign",
+        expected_target_run_id=target_run_id,
     )
 
 
@@ -325,7 +328,11 @@ def test_technical_recovery_preserves_same_run_and_binds_incident(
         recovery_kind=TECHNICAL_RECOVERY,
         incident_id="incident-checkpoint-055",
     )
-    proof = _validate(admission, action=ACTION_RECOVERY)
+    proof = _validate(
+        admission,
+        action=ACTION_RECOVERY,
+        target_run_id="immutable-run-1",
+    )
     assert proof["recovery_kind"] == TECHNICAL_RECOVERY
 
     with pytest.raises(ProjectControlDenied, match="RECOVERY_TARGET_DRIFT"):
@@ -373,6 +380,7 @@ def test_receipt_project_run_and_repo_binding_drift_denies(tmp_path: Path) -> No
             expected_repo_sha=REPO_SHA,
             expected_actions={ACTION_LAUNCH},
             expected_target_campaign_id="cn-large-tpe-search-campaign",
+            expected_target_run_id="target-1",
         )
     with pytest.raises(ProjectControlDenied, match="repo SHA drift"):
         validate_admission(
@@ -382,6 +390,27 @@ def test_receipt_project_run_and_repo_binding_drift_denies(tmp_path: Path) -> No
             expected_repo_sha="c" * 40,
             expected_actions={ACTION_LAUNCH},
             expected_target_campaign_id="cn-large-tpe-search-campaign",
+            expected_target_run_id="target-1",
+        )
+    with pytest.raises(ProjectControlDenied, match="target run drift"):
+        validate_admission(
+            admission,
+            expected_admission_file_sha256=sha256_file(admission),
+            expected_project_id=PROJECT_ID,
+            expected_repo_sha=REPO_SHA,
+            expected_actions={ACTION_LAUNCH},
+            expected_target_campaign_id="cn-large-tpe-search-campaign",
+            expected_target_run_id="another-target-run",
+        )
+    with pytest.raises(ProjectControlDenied, match="requested action drift"):
+        validate_admission(
+            admission,
+            expected_admission_file_sha256=sha256_file(admission),
+            expected_project_id=PROJECT_ID,
+            expected_repo_sha=REPO_SHA,
+            expected_actions={ACTION_RETRY},
+            expected_target_campaign_id="cn-large-tpe-search-campaign",
+            expected_target_run_id="target-1",
         )
 
 
@@ -461,6 +490,10 @@ def test_high_cost_entry_consumes_valid_bound_admission(
     result = repo_app.main(
         [
             "cn-large-tpe-search-campaign",
+            "--requested-action",
+            ACTION_LAUNCH,
+            "--target-run-id",
+            "target-1",
             "--project-control-admission",
             str(admission),
             "--project-control-admission-sha256",

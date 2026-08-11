@@ -11,6 +11,10 @@ from scripts import build_cn_historical_challenge_split_manifest as split_builde
 from scripts import build_cn_portfolio_decoder_autopsy_v1 as v1
 from scripts import run_cn_finalist_replay_then_oos as replay
 from scripts import run_cn_fixed_survivor_forward_2026 as fixed10
+from our_system_phase2.services.evaluation_asset_authority import (
+    PERMANENT_DENY_ALREADY_SPENT,
+    EvaluationAssetDenied,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -87,6 +91,37 @@ def test_unopened_synthetic_historical_authorization_is_fail_closed(
         assert module.DATA_ROLE == "historical_challenge_report_only"
         assert module.READS_FIELD == "historical_challenge_reads"
         assert authorization["performance_rows_read_before_freeze"] == 0
+    finally:
+        monkeypatch.delenv("CN_FIXED10_RUN_MODE")
+        importlib.reload(module)
+
+
+def test_old_authorization_and_fresh_root_cannot_reopen_spent_2023(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("CN_FIXED10_RUN_MODE", "historical_challenge")
+    module = importlib.reload(fixed10)
+    fresh_output_root = tmp_path / "fresh-output"
+    try:
+        path = (
+            PROJECT_ROOT
+            / "runtime"
+            / "run_plans"
+            / "cn_historical_challenge_2023_authorization.json"
+        )
+        with pytest.raises(
+            EvaluationAssetDenied,
+            match=PERMANENT_DENY_ALREADY_SPENT,
+        ):
+            module._verify_authorization(
+                path,
+                expected_sha256=v1._sha256(path),
+                expected_selection_payload_sha256=(
+                    "7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77"
+                ),
+                expected_forward_split_sha256="not-used-for-historical-role",
+            )
+        assert not fresh_output_root.exists()
     finally:
         monkeypatch.delenv("CN_FIXED10_RUN_MODE")
         importlib.reload(module)
