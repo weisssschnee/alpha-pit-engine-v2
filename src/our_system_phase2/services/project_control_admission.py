@@ -61,7 +61,11 @@ PREPARED_OUTPUT_ROOT_ALLOWLISTS: dict[str, frozenset[str]] = {
     ),
 }
 CAMPAIGN_AUTHORIZATION_BOUND_ROUTES = frozenset(
-    {"cn-targeted-search-medium-campaign", "cn-large-tpe-search-campaign"}
+    {
+        "cn-targeted-search-medium-campaign",
+        "cn-large-tpe-search-campaign",
+        "cn-joint-program-search-v2-canary",
+    }
 )
 
 _ACTIVE_ADMISSION: dict[str, Any] | None = None

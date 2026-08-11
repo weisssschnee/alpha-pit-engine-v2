@@ -101,3 +101,67 @@ def verify_historical_challenge_destructive_use(
         "forward_b_state": "SEALED",
         "forward_b_access": "NOT_AUTHORIZED",
     }
+
+
+def verify_search_feedback_boundary(
+    *,
+    role_registry_path: Path,
+    access_started_path: Path,
+    outcome_path: Path,
+) -> dict[str, Any]:
+    """Verify the fail-closed search boundary without opening an asset.
+
+    Unlike destructive historical use, Search V2 requires the 2023 asset to
+    remain spent and Forward-B to remain sealed.  This function reads only the
+    committed authority metadata and never reads an evaluation dataset.
+    """
+
+    registry = _read_json(role_registry_path, "role_registry")
+    access = _read_json(access_started_path, "access_transition")
+    outcome = _read_json(outcome_path, "outcome")
+    if registry.get("default_deny") is not True:
+        raise EvaluationAssetDenied("EVALUATION_ROLE_REGISTRY_NOT_DEFAULT_DENY")
+    states = dict(registry.get("asset_states") or {})
+    historical = dict(states.get(HISTORICAL_ASSET_ID) or {})
+    forward_b = dict(states.get(FORWARD_B_ASSET_ID) or {})
+    access_decision = dict(outcome.get("access_decision") or {})
+    if (
+        str(historical.get("current_role") or "").lower() != "spent"
+        or int(historical.get("performance_rows_read") or 0) <= 0
+        or str(historical.get("status") or "")
+        != "spent_negative_no_retry_no_search_feedback"
+        or str(historical.get("result") or "").upper() != "NEGATIVE"
+        or str(historical.get("retry") or "").upper() != "FORBIDDEN"
+        or str(historical.get("search_feedback") or "").upper() != "FORBIDDEN"
+        or str(historical.get("promotion") or "").upper() != "FORBIDDEN"
+        or str(historical.get("permanent_deny") or "")
+        != PERMANENT_DENY_ALREADY_SPENT
+        or str(access.get("asset_id") or "") != HISTORICAL_ASSET_ID
+        or str(access.get("data_role_after_transition") or "").lower() != "spent"
+        or str(
+            access_decision.get("historical_challenge_2023_state") or ""
+        ).upper()
+        != "SPENT"
+    ):
+        raise EvaluationAssetDenied("HISTORICAL_2023_SPENT_BOUNDARY_DRIFT")
+    if (
+        str(forward_b.get("current_role") or "").lower() != "forward"
+        or int(forward_b.get("performance_rows_read") or 0) != 0
+        or str(access_decision.get("forward_b_state") or "").upper() != "SEALED"
+        or str(access_decision.get("forward_b_access") or "").upper()
+        != "NOT_AUTHORIZED"
+    ):
+        raise EvaluationAssetDenied("FORWARD_B_SEAL_DRIFT")
+    return {
+        "status": "SEARCH_FEEDBACK_BOUNDARY_CLOSED",
+        "historical_2023_state": "SPENT",
+        "historical_2023_result": "NEGATIVE",
+        "historical_2023_retry": "FORBIDDEN",
+        "historical_2023_search_feedback": "FORBIDDEN",
+        "forward_b_state": "SEALED",
+        "forward_b_search_feedback": "FORBIDDEN",
+        "validation_search_feedback": "FORBIDDEN_BY_DEFAULT_DENY",
+        "holdout_search_feedback": "FORBIDDEN_BY_DEFAULT_DENY",
+        "promotion_authority": "NOT_OWNED_BY_SEARCH_V2",
+        "financial_data_reads": 0,
+    }

@@ -1,0 +1,153 @@
+{
+  "schema_version": "cn_search_engine_v2_canary_authorization_v1",
+  "status": "SEARCH_ENGINE_V2_CANARY_FROZEN_NOT_RUN",
+  "campaign_id": "CN_JOINT_PROGRAM_SEARCH_ENGINE_V2_CANARY_V1",
+  "campaign_profile": "cn_joint_program_search_v2_prospective_512_v1",
+  "canary_status": "FROZEN_NOT_RUN",
+  "execution_authorized": true,
+  "authorized_host": "77O",
+  "project_control_required": true,
+  "project_control_route_id": "cn-joint-program-search-v2-canary",
+  "permitted_project_control_actions": [
+    "LAUNCH_HIGH_COST_CAMPAIGN",
+    "RETRY",
+    "RECOVERY"
+  ],
+  "frozen_governance_baseline_sha": "2d1f947b4d5a75b27810748da3c0e64f46286022",
+  "exact_live_repo_sha_required": true,
+  "main_record_count": 512,
+  "checkpoint_count": 64,
+  "records_per_checkpoint": 8,
+  "template_order": [
+    "BASE",
+    "BASE_TEMPORAL",
+    "BASE_MARKET",
+    "BASE_EVENT",
+    "BASE_TEMPORAL_MARKET",
+    "BASE_TEMPORAL_EVENT",
+    "BASE_MARKET_EVENT",
+    "BASE_TEMPORAL_MARKET_EVENT"
+  ],
+  "template_quotas": {
+    "BASE": 64,
+    "BASE_EVENT": 64,
+    "BASE_MARKET": 64,
+    "BASE_MARKET_EVENT": 64,
+    "BASE_TEMPORAL": 64,
+    "BASE_TEMPORAL_EVENT": 64,
+    "BASE_TEMPORAL_MARKET": 64,
+    "BASE_TEMPORAL_MARKET_EVENT": 64
+  },
+  "arm_quotas": {
+    "CONDITIONAL_UPLIFT_EXPLOIT": 168,
+    "NOVELTY_RESERVE": 56,
+    "UNIFORM_FRESH": 288
+  },
+  "enhanced_template_arm_quotas": {
+    "UNIFORM_FRESH": 32,
+    "CONDITIONAL_UPLIFT_EXPLOIT": 24,
+    "NOVELTY_RESERVE": 8
+  },
+  "ask_plan_sha256": "c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869",
+  "ask_plan_generator": "our_system_phase2.runtime.cn_joint_program_search_v2_canary:build_ask_plan_v1",
+  "search_engine_architecture": {
+    "absolute_economics_role": "ADMISSION_GATE_ONLY",
+    "conditional_enhancer_uplift_role": "PROGRAM_LEVEL_SEARCH_CREDIT",
+    "scalar_absolute_plus_uplift_reward": null,
+    "component_attribution": "COMPONENT_ATTRIBUTION_UNIDENTIFIED",
+    "formal_development_search_authority_replaced": false,
+    "lifecycle": "EXPERIMENTAL"
+  },
+  "matched_evaluator_contract": {
+    "evaluator_authority": "PHASE3CM_STREAMING_MULTICANDIDATE_EVALUATOR",
+    "result_record_schema": "cn_joint_program_phase_c_record_v0",
+    "matched_control_contract_id": "CANDIDATE_PROGRAM_V1_FULL_VS_BASE_MATCHED_CONTROL",
+    "portfolio_decoder_id": "TOPK_10_EQUAL",
+    "economic_fields_reused": [
+      "replay_status",
+      "blockers",
+      "primary.continuous_book_net_reward",
+      "primary.cumulative_net_return",
+      "primary.development_subwindows",
+      "primary.net_return_per_turnover",
+      "primary.mean_one_way_turnover",
+      "primary.fill_count",
+      "base_control",
+      "matched_net_reward_increment",
+      "matched_cumulative_return_increment"
+    ],
+    "new_evaluator_created": false
+  },
+  "prospective_success_gates": {
+    "decision_rule": "NONINFERIOR_ABSOLUTE_AND_SUPERIOR_CONDITIONAL_UPLIFT",
+    "tradeoff_between_heads_allowed": false,
+    "comparison": "CONDITIONAL_UPLIFT_EXPLOIT_VS_UNIFORM_FRESH",
+    "absolute_noninferiority": {
+      "margin": 0.0,
+      "required_exact_records_per_arm": {
+        "UNIFORM_FRESH": 224,
+        "CONDITIONAL_UPLIFT_EXPLOIT": 168
+      },
+      "minimum_global_records_per_arm": 128,
+      "minimum_records_per_template_per_arm": {
+        "UNIFORM_FRESH": 32,
+        "CONDITIONAL_UPLIFT_EXPLOIT": 24
+      },
+      "checks": {
+        "admission_rate_delta_minimum": 0.0,
+        "primary_reward_positive_rate_delta_minimum": 0.0,
+        "primary_return_positive_rate_delta_minimum": 0.0,
+        "stable_two_of_three_rate_delta_minimum": 0.0,
+        "blocker_rate_delta_maximum": 0.0,
+        "median_return_per_turnover_delta_minimum": 0.0
+      }
+    },
+    "conditional_superiority": {
+      "minimum_admitted_records_per_arm": 64,
+      "minimum_templates_with_eight_admitted_per_arm": 4,
+      "minimum_improved_templates": 4,
+      "template_improvement_requires_all_strict_checks": true,
+      "strict_checks": {
+        "matched_reward_increment_mean_delta_minimum_exclusive": 0.0,
+        "matched_reward_increment_median_delta_minimum_exclusive": 0.0,
+        "matched_return_increment_mean_delta_minimum_exclusive": 0.0,
+        "matched_return_increment_median_delta_minimum_exclusive": 0.0,
+        "cross_window_matched_consistency_delta_minimum_exclusive": 0.0
+      }
+    },
+    "insufficient_support_result": "FAIL_CLOSED_INSUFFICIENT_PROSPECTIVE_SUPPORT",
+    "post_read_gate_change_allowed": false,
+    "promotion_authorized": false
+  },
+  "development_feedback_provenance": {
+    "schema_version": "cn_development_feedback_provenance_v1",
+    "serialized_optimizer_state_imported": false,
+    "development_financial_observations_imported": false,
+    "development_observation_count": 0,
+    "candidate_results_imported": false,
+    "factor_statistics_imported": false,
+    "behavior_statistics_imported": false,
+    "template_classification_imported": false,
+    "manual_diagnosis_imported": true,
+    "objective_designed_after_parent_results": true,
+    "cross_campaign_development_feedback": true
+  },
+  "source_phase_b_outcome_path": "runtime/run_plans/cn_joint_program_rolling_search_v0_phase_b_outcome_20260809.json",
+  "source_phase_b_root": "D:\\ChengboRemote\\runtime\\cn_joint_program_rolling_search_v0_phase_b_blocker_safe_recovery_20260809_bd771fd_10w",
+  "source_phase_b_closure_file_sha256": "14623ebc131b84660bd131b11268e40433ea1f219d1ed77caff2eb6ab147106a",
+  "source_phase_b_closure_payload_sha256": "0765c684c3f67ab592eb1006dbd1a5dd6e96dad7825fef251ac0d4f6ee36f3cf",
+  "source_phase_b_financial_observations_imported": false,
+  "source_phase_c_financial_observations_imported": false,
+  "source_phase_d_financial_observations_imported": false,
+  "serialized_optimizer_state_imported": false,
+  "candidate_results_imported": false,
+  "financial_data_reads": 0,
+  "validation_reads": 0,
+  "holdout_reads": 0,
+  "historical_2023_reads": 0,
+  "forward_b_reads": 0,
+  "forward_2026_reads": 0,
+  "promotion_authorized": false,
+  "automatic_successor_authorized": false,
+  "authorization_payload_sha256": "3599805b30b8f3acded2264c4ead6578ddb76c36322672916ab11c3c6816c864"
+}

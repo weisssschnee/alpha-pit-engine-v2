@@ -493,6 +493,14 @@ def _schedule_record(
         "primary_compiled": compiler.compile(program).to_record(),
         "semantic_noop": False,
     }
+    for search_control_key in (
+        "matched_control_contract_id",
+        "canary_profile",
+        "absolute_admission_head_eligible",
+        "conditional_uplift_head_eligible",
+    ):
+        if search_control_key in ask:
+            record[search_control_key] = ask[search_control_key]
     if template_id == "BASE":
         legacy_control = legacy_candidate_program_v1(
             components["base"].control,
@@ -590,6 +598,16 @@ def _evaluate_record(record: Mapping[str, Any], target_path: str) -> dict[str, A
                 "campaign_local_bandit_feedback_eligible": bool(
                     str(record["template_id"]) != "BASE"
                 ),
+                **{
+                    key: record[key]
+                    for key in (
+                        "matched_control_contract_id",
+                        "canary_profile",
+                        "absolute_admission_head_eligible",
+                        "conditional_uplift_head_eligible",
+                    )
+                    if key in record
+                },
                 "formal_optimizer_feedback_write": "FORBIDDEN",
             }
         )

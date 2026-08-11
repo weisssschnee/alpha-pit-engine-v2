@@ -77,6 +77,7 @@ GENERATION_ARMS = frozenset(
         "UNIFORM_FRESH",
         "FACTORIZED_EXPLOIT",
         "REVISED_EXPLOIT",
+        "CONDITIONAL_UPLIFT_EXPLOIT",
         "NOVELTY_RESERVE",
     }
 )

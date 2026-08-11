@@ -2,7 +2,7 @@
 
 Updated: 2026-08-11
 
-Current state: `SEARCH_CONTROL_REPAIRED_JOINT_PROGRAM_PHASE_D_CLOSED_REVISED_ALLOCATOR_HELD_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
+Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_IMPLEMENTED_CANARY_FROZEN_NOT_RUN_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,70 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Search Engine V2 implemented and prospective 512 canary frozen without a financial run (2026-08-11)
+
+- ADR 0018 accepts an experimental two-head search-control design. Absolute
+  standalone economics is an admission gate only; exact Full-vs-Base enhancer
+  uplift becomes program/template-level search credit only after admission.
+  The two domains are not scalarized, standalone failure cannot be offset by
+  relative uplift, and strong Base economics cannot be credited to a useless
+  enhancer. Component attribution remains explicitly
+  `COMPONENT_ATTRIBUTION_UNIDENTIFIED`.
+- The implementation reuses Candidate Program V1, route-local proposal
+  machinery, compiler, matched-control construction, Phase3CM evaluation and
+  the existing checkpoint engine. New code is limited to admission,
+  conditional uplift, campaign-local hierarchical scheduling, a zero-financial
+  freeze and a thin runner adapter. The formal Hybrid TPE plus Availability
+  development-search authority is unchanged; Search V2 remains
+  `EXPERIMENTAL` and owns no economic, alpha, OOS, sealed-data or promotion
+  authority.
+- The self-hashed prospective plan freezes exactly 512 asks before any new
+  financial observation: 64 per each of eight templates. `BASE` has 64
+  `UNIFORM_FRESH`; each enhanced template has 32 `UNIFORM_FRESH`, 24
+  `CONDITIONAL_UPLIFT_EXPLOIT` and 8 `NOVELTY_RESERVE`, for exact totals
+  288/168/56. Checkpoints are template-local and fixed; no adaptive budget
+  reallocation, spillover or result-dependent schedule change is allowed.
+- Fresh-state provenance is explicit: zero imported Phase B/C/D financial
+  observations, zero development observations, no serialized optimizer state,
+  candidate results, factor statistics, behavior statistics or template
+  classification. Manual diagnosis and post-parent objective design are true,
+  so `cross_campaign_development_feedback=true` honestly describes adaptive
+  design without reused optimizer state.
+- Prospective decision gates are frozen as
+  `NONINFERIOR_ABSOLUTE_AND_SUPERIOR_CONDITIONAL_UPLIFT`: strict zero-margin
+  absolute noninferiority plus strictly positive conditional matched-uplift
+  improvement, minimum admitted support and at least four improved templates.
+  Neither side can compensate for failure of the other and insufficient
+  support fails closed. The future runner applies this rule mechanically to a
+  single manifest-bound feedback byte buffer; its formal V2 closure is written
+  only after the dual PASS/FAIL decision, so there is no pre-gate complete
+  artifact to misread.
+- Future execution has one physical route,
+  `cn-joint-program-search-v2-canary`, behind exact Project Control campaign,
+  run, checkout and output-root binding. Its canonical 77o launcher does not
+  preclaim a new output root and direct runner invocation denies. No Project
+  Control admission was materialized and the canary was not run. The
+  prefinancial freeze also rebinds the execution contract, development price,
+  development field manifest, registry and capacity to the accepted immutable
+  Phase B input metadata before any financial read.
+- Evaluation authority remains closed: 2023 is spent/negative/no-retry,
+  Forward-B is sealed, validation/holdout cannot feed search, OOS grade is
+  `NONE` and promotion remains `HOLD`. This implementation read only code,
+  governance, compact immutable outcome/provenance metadata and synthetic
+  fixtures; financial dataset reads were zero.
+
+Status summary:
+
+```text
+SEARCH_CONTROL_REPAIR = CLOSED
+PHASE_D = HOLD
+SEARCH_ENGINE_V2 = IMPLEMENTED / CANARY_FROZEN
+SEARCH_V2_CANARY = NOT_RUN
+FORWARD_B = SEALED
+OOS_GRADE = NONE
+PROMOTION = HOLD
+```
 
 ### Search-Control Repair V1 closed without a new financial run (2026-08-11)
 
