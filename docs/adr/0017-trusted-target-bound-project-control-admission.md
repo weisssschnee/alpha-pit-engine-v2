@@ -28,17 +28,22 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
 2. A trusted Harness bundle consists of sibling `run_record.json`,
    `task_spec.json` and `project_profile.json` files. The task specification
    embeds a self-hashed execution request binding the exact project, repository
-   SHA, action, campaign, target run and expiry. The run, task, profile and
-   request identities must agree. The admission binds the hashes of all three
-   source files plus the request payload.
+   SHA, action, campaign, target run, absolute output root and expiry. The run,
+   task, profile and request identities must agree. The admission binds the
+   hashes of all three source files, the generated execution context and the
+   request payload.
 3. The builder emits a deterministic task id from the request hash so a generic
    or edited Project Control result cannot be rebound after review. Expired
    preflight requests fail closed. Historical `POST_BATCH` results may be read
    only for lineage checks and do not independently authorize a child.
-4. `app.py` validates the immutable admission before route import and activates
-   a one-use, in-process capability for the exact route. Every high-cost module
-   consumes that capability as the first operation in `main()`. Direct module
-   invocation therefore denies before argument parsing or data access.
+4. `app.py` atomically revalidates the immutable admission before route import
+   and activates a one-use, in-process capability for the exact route and
+   action. Caller-created proof dictionaries cannot activate it. Every
+   high-cost module consumes the capability before argument parsing and then
+   compares the parsed output root with the admitted absolute output root
+   before creating directories or reading data. Direct invocation,
+   freeze-as-launch and same-admission/different-output invocation therefore
+   fail closed.
 5. An automatic successor requires both a parent `POST_BATCH=CONTINUE` bundle
    and a child `PREFLIGHT=PROCEED` bundle. The child request must name the exact
    parent Project Control run, campaign and target run.
@@ -61,6 +66,12 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
   data or invoking a search.
 - Existing closed economic evidence is unchanged and remains superior to any
   admission heuristic or control verdict.
+- The existing Harness has no cryptographic receipt-signing service. Its
+  configured runs root is therefore the authority-store trust boundary: this
+  bridge validates canonical location, full Harness bundle shape and bound
+  hashes, but cannot distinguish a Harness write from a malicious local writer
+  with authority-store permissions. Adding signatures or a distinct service
+  identity would be a Harness change outside this thin-bridge repair.
 
 ## Rollback
 
