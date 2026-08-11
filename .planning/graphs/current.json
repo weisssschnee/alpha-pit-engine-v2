@@ -22,6 +22,7 @@
           "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
           "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
           "runtime/run_plans/cn_project_control_trust_v1.json",
+          "runtime/run_plans/cn_search_engine_v2_prefinancial_repair_validation_20260812.json",
           "runtime/run_plans/cn_search_engine_v2_prospective_512_canary_v1.json",
           "runtime/run_plans/cn_search_engine_v2_prospective_512_independent_audit_20260811.json",
           "runtime/run_plans/cn_search_engine_v2_prospective_512_outcome_20260811.json",
@@ -32,10 +33,12 @@
           "scripts/audit_cn_joint_program_allocator_repair_freeze_v0.py",
           "scripts/audit_cn_joint_program_phase_d_freeze_v0.py",
           "scripts/audit_cn_joint_program_phase_d_v0.py",
+          "scripts/audit_cn_program_materialization_preflight_v1.py",
           "scripts/build_cn_project_control_execution_request.py",
           "scripts/freeze_cn_search_engine_v2_canary_plan.py",
           "scripts/materialize_cn_project_control_admission.py",
           "scripts/materialize_cn_search_preflight_authorization.py",
+          "scripts/prepare_cn_program_materialized_session_sidecar_v1.py",
           "scripts/prepare_cn_shared_control_dual_lane_77o.ps1",
           "scripts/prepare_cn_terminal_liquidity_search_continuity_77o.ps1",
           "scripts/run_cn_fixed_stratified_production_v0_77o.ps1",
@@ -92,94 +95,10 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "3c3e4e1c9e252076b61c2a6ec5231b2a3396747d"
+        "repo_head": "b8682af1dfccd80ab7fa8366b98a4fe9bf789ca2"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
-    },
-    {
-      "category": "DRIFT",
-      "code": "CRITICAL_NODE_ASSURANCE_FAILED",
-      "evidence": {
-        "component_id": "cn_joint_program_allocator_repair_canary_v0",
-        "validation": {
-          "checked_at": "2026-08-11T15:42:43.106907+00:00",
-          "evidence_ref": "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
-          "evidence_sha256": "00607AEBBE5B9977478F95F941D2BF199F56A4D59F905181C47ADA63FC73AC46",
-          "level": "FAILED",
-          "notes": [
-            "evidence SHA256 mismatch"
-          ],
-          "profile": "",
-          "result": "FAIL",
-          "verified_at_sha": null
-        }
-      },
-      "message": "Critical component assurance is failed or stale",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "CRITICAL_NODE_ASSURANCE_FAILED",
-      "evidence": {
-        "component_id": "cn_joint_program_phase_d_v0",
-        "validation": {
-          "checked_at": "2026-08-11T15:42:43.106907+00:00",
-          "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
-          "evidence_sha256": "6C1ECEB8B064BBBB04DA805E909878130F9AEC1B07695C7D1771D27BB1609408",
-          "level": "FAILED",
-          "notes": [
-            "evidence SHA256 mismatch"
-          ],
-          "profile": "",
-          "result": "FAIL",
-          "verified_at_sha": null
-        }
-      },
-      "message": "Critical component assurance is failed or stale",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "CRITICAL_EDGE_ASSURANCE_FAILED",
-      "evidence": {
-        "edge_id": "allocator_repair_canary_candidate_for_development_search_policy",
-        "validation": {
-          "checked_at": "2026-08-11T15:42:43.106907+00:00",
-          "evidence_ref": "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
-          "evidence_sha256": "00607AEBBE5B9977478F95F941D2BF199F56A4D59F905181C47ADA63FC73AC46",
-          "level": "FAILED",
-          "notes": [
-            "evidence SHA256 mismatch"
-          ],
-          "profile": "",
-          "result": "FAIL",
-          "verified_at_sha": null
-        }
-      },
-      "message": "Critical relationship assurance is failed or stale",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "CRITICAL_EDGE_ASSURANCE_FAILED",
-      "evidence": {
-        "edge_id": "joint_program_phase_d_not_qualified_for_development_search_policy",
-        "validation": {
-          "checked_at": "2026-08-11T15:42:43.106907+00:00",
-          "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
-          "evidence_sha256": "6C1ECEB8B064BBBB04DA805E909878130F9AEC1B07695C7D1771D27BB1609408",
-          "level": "FAILED",
-          "notes": [
-            "evidence SHA256 mismatch"
-          ],
-          "profile": "",
-          "result": "FAIL",
-          "verified_at_sha": null
-        }
-      },
-      "message": "Critical relationship assurance is failed or stale",
-      "severity": "WARN"
     }
   ],
   "edges": [
@@ -1423,9 +1342,9 @@
       "source": "forward_2026",
       "target": "formal_search",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
-        "evidence_sha256": "3EE4F3558E4523D0958D318DD943A817E4417DE7547F19CEA594FA12D35D4326",
+        "evidence_sha256": "7864C42732E3B3E6399F15C2569D7677589157930FA5A76CDF979944C3382246",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -1457,9 +1376,9 @@
       "source": "forward_2026",
       "target": "cross_epoch_memory",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
-        "evidence_sha256": "3EE4F3558E4523D0958D318DD943A817E4417DE7547F19CEA594FA12D35D4326",
+        "evidence_sha256": "7864C42732E3B3E6399F15C2569D7677589157930FA5A76CDF979944C3382246",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -1627,9 +1546,9 @@
       "source": "forward_b_2026",
       "target": "formal_search",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
-        "evidence_sha256": "83CB60864F16B73ECC4E51D4B2E198389A5C2BE50FA2A07F2F3A052B3D13B90B",
+        "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -1661,9 +1580,9 @@
       "source": "forward_b_2026",
       "target": "cross_epoch_memory",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
-        "evidence_sha256": "83CB60864F16B73ECC4E51D4B2E198389A5C2BE50FA2A07F2F3A052B3D13B90B",
+        "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -2049,15 +1968,15 @@
       "source": "cn_joint_program_allocator_repair_canary_v0",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
-        "evidence_sha256": "00607AEBBE5B9977478F95F941D2BF199F56A4D59F905181C47ADA63FC73AC46",
-        "level": "FAILED",
+        "evidence_sha256": "013166235CFC6B92D07C5D241B42ECCBBEB2D0462CAA5C106750B7937E768317",
+        "level": "PARTIAL",
         "notes": [
-          "evidence SHA256 mismatch"
+          "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
-        "result": "FAIL",
+        "result": "INSUFFICIENT_EVIDENCE",
         "verified_at_sha": null
       }
     },
@@ -2111,15 +2030,15 @@
       "source": "cn_joint_program_phase_d_v0",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
-        "evidence_sha256": "6C1ECEB8B064BBBB04DA805E909878130F9AEC1B07695C7D1771D27BB1609408",
-        "level": "FAILED",
+        "evidence_sha256": "5AD11E6A4B492F7CB7D5E03F0794D2FDF8E79DD97AE732D59D0D9A45E3C4DE4F",
+        "level": "PARTIAL",
         "notes": [
-          "evidence SHA256 mismatch"
+          "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
-        "result": "FAIL",
+        "result": "INSUFFICIENT_EVIDENCE",
         "verified_at_sha": null
       }
     },
@@ -2322,7 +2241,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-11T15:45:04.800098+00:00",
+  "generated_at": "2026-08-11T17:16:39.014085+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -5922,9 +5841,9 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json",
-        "evidence_sha256": "3EE4F3558E4523D0958D318DD943A817E4417DE7547F19CEA594FA12D35D4326",
+        "evidence_sha256": "7864C42732E3B3E6399F15C2569D7677589157930FA5A76CDF979944C3382246",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -6023,9 +5942,9 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
-        "evidence_sha256": "83CB60864F16B73ECC4E51D4B2E198389A5C2BE50FA2A07F2F3A052B3D13B90B",
+        "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
@@ -7193,15 +7112,15 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
-        "evidence_sha256": "00607AEBBE5B9977478F95F941D2BF199F56A4D59F905181C47ADA63FC73AC46",
-        "level": "FAILED",
+        "evidence_sha256": "013166235CFC6B92D07C5D241B42ECCBBEB2D0462CAA5C106750B7937E768317",
+        "level": "PARTIAL",
         "notes": [
-          "evidence SHA256 mismatch"
+          "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
-        "result": "FAIL",
+        "result": "INSUFFICIENT_EVIDENCE",
         "verified_at_sha": null
       },
       "visible_by_default": true
@@ -7253,15 +7172,15 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-11T15:42:43.106907+00:00",
+        "checked_at": "2026-08-11T17:12:33.565966+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
-        "evidence_sha256": "6C1ECEB8B064BBBB04DA805E909878130F9AEC1B07695C7D1771D27BB1609408",
-        "level": "FAILED",
+        "evidence_sha256": "5AD11E6A4B492F7CB7D5E03F0794D2FDF8E79DD97AE732D59D0D9A45E3C4DE4F",
+        "level": "PARTIAL",
         "notes": [
-          "evidence SHA256 mismatch"
+          "runtime assurance needs a completed matching trace with all contract bindings"
         ],
         "profile": "",
-        "result": "FAIL",
+        "result": "INSUFFICIENT_EVIDENCE",
         "verified_at_sha": null
       },
       "visible_by_default": true
@@ -7271,13 +7190,11 @@
       "authority": null,
       "authority_bindings": [],
       "claim_badges": [
-        "IMPLEMENTED",
-        "ROUTE_ENTRY_OBSERVED",
-        "PREFINANCIAL_REACHABILITY_FAILED",
+        "PREFINANCIAL_REACHABILITY_VERIFIED",
+        "READY_FOR_REPLACEMENT_CANARY",
         "ZERO_FINANCIAL_READS",
+        "CANARY_NOT_RUN",
         "NO_ECONOMIC_RESULT",
-        "HOLD_AND_DIAGNOSE",
-        "NO_OOS",
         "NO_PROMOTION"
       ],
       "color": "#f9a825",
@@ -7293,10 +7210,10 @@
         },
         {
           "bypass_forbidden": true,
-          "enforced_by": "self-hashed authorization, zero-financial freeze verifier and manifest-bound gate evaluator",
+          "enforced_by": "self-hashed authorization, existing Candidate Program materializer, independent manifest/cache audit, zero-financial freeze verifier and manifest-bound gate evaluator",
           "evidence_ref": "",
           "id": "search_v2_exact_fresh_prospective_512",
-          "rule": "The canary is frozen before financial observation at exactly 512 asks, 64 per template and exact arm totals 288 Uniform, 168 Conditional Uplift Exploit and 56 Novelty. It imports zero parent financial observations and no optimizer state; manual diagnosis, post-parent objective design and cross-campaign development feedback are disclosed. The unique admitted route entry failed closed before financial read because ctx_sent_uplimit_num was materializable but absent from the accepted field manifest. No economic gate result, retry, second canary or automatic continuation exists.",
+          "rule": "The design remains frozen before financial observation at exactly 512 asks, 64 per template and exact arm totals 288 Uniform, 168 Conditional Uplift Exploit and 56 Novelty. It imports zero parent financial observations and no optimizer state; manual diagnosis, post-parent objective design and cross-campaign development feedback are disclosed. After the historical admitted attempt failed before financial read, the existing materialization chain now resolves and independently verifies all 84 required physical leaves before final freeze. No replacement canary, economic gate result or automatic continuation exists.",
           "severity": "HARD",
           "type": "EVIDENCE"
         },
@@ -7315,43 +7232,43 @@
       "expires_at": "",
       "id": "cn_search_engine_v2_experimental",
       "kind": "experimental-search-control",
-      "label": "CN Search Engine V2 two-head canary held after prefinancial failure",
+      "label": "CN Search Engine V2 two-head design ready for separately authorized replacement canary",
       "lifecycle": "EXPERIMENTAL",
       "owner": "",
       "paths": [
         "src/our_system_phase2/runtime/cn_joint_program_search_v2_canary.py",
         "runtime/run_plans/cn_search_engine_v2_prospective_512_canary_v1.json",
-        "runtime/run_plans/cn_search_engine_v2_prospective_512_outcome_20260811.json",
-        "runtime/run_plans/cn_search_engine_v2_prospective_512_independent_audit_20260811.json",
-        "docs/adr/0018-search-engine-v2-two-head-prospective-canary.md"
+        "runtime/run_plans/cn_search_engine_v2_prefinancial_repair_validation_20260812.json"
       ],
       "promotion_requirements": [],
       "raw_node_ids": [],
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-11T15:45:04.800098+00:00",
-        "evidence_ref": "runtime/run_plans/cn_search_engine_v2_prospective_512_outcome_20260811.json",
-        "evidence_sha256": "AEB90FBF2ABC3B24937DE0B8765C379CED991CACC051D5A2C6C62D7799BCE11C",
+        "checked_at": "2026-08-11T17:16:39.014085+00:00",
+        "evidence_ref": "runtime/run_plans/cn_search_engine_v2_prefinancial_repair_validation_20260812.json",
+        "evidence_sha256": "835C858C2AC6E577560A0D70FB4F400FF818C82A07EB3C93532D68D9440DE043",
         "level": "PARTIAL",
-        "notes": [],
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
         "profile": "",
-        "result": "WARN",
-        "verified_at_sha": "3c3e4e1c9e252076b61c2a6ec5231b2a3396747d"
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": "b8682af1dfccd80ab7fa8366b98a4fe9bf789ca2"
       },
       "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "F1427FDBF618FFD89AF9CACBD93B085FD4608E3184B3DEE428867F51E3FE21DC"
+    "sha256": "581B004E2518CA2558521C058D89D6074E7087AF52ED58997680D9D232D9B30D"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
     {
       "id": "FIELD_INFORMATION_RESEARCH",
       "path": "profiles/field_information_research.json",
-      "sha256": "D0798A1DB70FEC6BAFA1C57106517BE2122B85DB663321C0A4A885AB317C028C"
+      "sha256": "AC08F3EFDF90737759136F5BF2ACDFBF8BE2752E3D7433FD28816DE4DAD77945"
     }
   ],
   "raw": {
@@ -7359,9 +7276,9 @@
     "edge_count": 20884,
     "node_count": 8091,
     "path": ".planning/graphs/graph.json",
-    "sha256": "A9062615C0299F4BE7DABACED0301F42C6EAFBA912C6133F6F110BECF4D70457"
+    "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "3c3e4e1c9e252076b61c2a6ec5231b2a3396747d",
+  "repo_head": "b8682af1dfccd80ab7fa8366b98a4fe9bf789ca2",
   "schema_version": 1,
   "semantic_authorities": [
     {
@@ -7449,7 +7366,7 @@
     "errors": 1,
     "runtime_edges": 0,
     "runtime_nodes": 0,
-    "warnings": 4
+    "warnings": 0
   },
   "trace": {
     "path": null,
