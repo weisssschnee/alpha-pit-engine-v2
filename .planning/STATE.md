@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-10
+Updated: 2026-08-11
 
-Current state: `JOINT_PROGRAM_ALLOCATOR_REPAIR_CANARY_DEVELOPMENT_QUALIFIED_PHASE_D_ELIGIBLE_NO_LAUNCH_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
+Current state: `JOINT_PROGRAM_PHASE_D_CLOSED_REVISED_ALLOCATOR_HELD_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,53 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Joint Program Phase D closed; revised allocator held without promotion (2026-08-11)
+
+- The prospective development-only Phase D campaign closed 64/64 immutable
+  checkpoints and 512/512 exact records. Checkpoints 001-054 were built at
+  exact pushed/deployed runner SHA
+  `7e41ddca36337ecc4451ff05648431632a54f940`; after a preserved
+  parallel-process failure and bounded single-record localization, checkpoints
+  055-064 and the root were recovered with fresh one-record child processes at
+  exact pushed/deployed finalizer SHA
+  `a1623f87b480c5b21c89868d00e8cd24c3475e46`. No incomplete or diagnostic
+  financial result was reused.
+- The independently verified root contains exactly 304 `UNIFORM_FRESH`, 96
+  `REVISED_EXPLOIT` and 112 `NOVELTY_RESERVE` asks, 109 productive records and
+  20 fail-closed replay blockers. Its closure file/payload SHA256 values are
+  `0fe0849702c7ca7e4be7d661a0dc7493df8859f98110d3da10afb0342408a985` /
+  `41671dbc1d1f116c3e0e979756aebe4995c109019168c1d8a43ae0deee99ada3`.
+  All artifact/self-hash/checkpoint chains, exact ordinals 0-511 and accounting
+  invariants passed; maximum accounting error was
+  `6.853952072560787e-09`. Validation, holdout, spent-2023, Forward-B and 2026
+  reads were all zero.
+- The independent final audit passed structure, frozen schedule, checkpoint and
+  bandit chains, controls, accounting, blocker taxonomy, recovery bindings,
+  memory telemetry and sealed-read boundaries. Audit file/payload SHA256 values
+  are `ef4569f5e58f4f52c98ff053e3628a2adb370a9c9eb9c192f75d8a73a3a96df1` /
+  `d24ce2e09339a780627572b804c9f2ff5242853ae7b0ca9038d2cca9ac7735e1`.
+  The fixed 24 GiB hard gate was absent as frozen; telemetry remained active and
+  minimum checkpoint-boundary free memory was 84,731,297,792 bytes.
+- Revised exploit beat uniform across the four compared templates on productive
+  rate (`+0.104167`), all-four-positive rate (`+0.041667`), primary reward and
+  return positive rates (`+0.229167` / `+0.208333`), three-window-positive rate
+  (`+0.260417`) and blocker rate (`-0.218750`). These are useful
+  development-only improvements, not an authority or OOS claim.
+- Four frozen gates failed: matched-return mean and median deltas were
+  `-0.111195` / `-0.210940`, median return per turnover delta was `-0.041295`,
+  and only two of four revised templates met the frozen improvement rule versus
+  the required three. `BASE_EVENT`, `BASE_MARKET_EVENT` and
+  `BASE_TEMPORAL_EVENT` all had negative matched-return mean deltas; only
+  `BASE_TEMPORAL` improved matched-return mean and median.
+- Decision: `HOLD_REVISED_ALLOCATOR_NO_PROMOTION` with research-bias status
+  `HOLD_RESEARCH` and OOS grade `NONE`. The revised allocator remains non-formal
+  evidence and does not replace the accepted development-search authority.
+  No automatic successor or promotion is authorized. Compact receipt:
+  `runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json`,
+  file/payload SHA256
+  `5ad11e6a4b492f7cb7d5e03f0794d2fdf8e79dd97ae732d59d0d9a45e3c4de4f` /
+  `abe6f638d1021a38b5872c9be5d1a1d3e7a775a760ed5ec27d4be53b1eb32182`.
 
 ### Joint Program allocator repair canary closed; Phase D eligible but not launched (2026-08-10)
 
@@ -2781,15 +2828,16 @@ remains unchanged. The compact receipt is
 ## Next action
 
 Do not rerun Phase A, the materialization preflight, the uniform Phase B pilot,
-Phase C, the allocator repair canary or any preserved recovery incident. The
-revised allocator is eligible for a separately authorized Phase D, but Phase D
-has not been launched and this workflow grants no launch authority. Any Phase D
-proposal must first freeze a fresh prospective confirmation with unchanged
-sealed-data and financial/resource authorities, fixed exploration floors,
-explicit matched-return downside gates and template-stratified stopping rules.
-Canary and Phase C financial records cannot be reused as new evidence;
-validation/holdout/spent-2023/Forward-B/2026 remain sealed, and no allocator or
-search-policy promotion is implied.
+Phase C, the allocator repair canary, Phase D or any preserved recovery or
+diagnostic incident. Phase D is closed and the revised allocator is held: its
+absolute-development and blocker improvements did not offset negative
+matched-return and turnover-efficiency deltas or insufficient per-template
+improvement breadth. Do not promote it, replace formal search policy, launch an
+automatic successor or reuse Phase C/canary/diagnostic/incomplete financial
+records. Any later experiment requires separate authorization and a fresh
+prospective freeze that changes the allocator objective, not these accepted
+records, to address matched-return downside, turnover efficiency and template
+heterogeneity. Validation/holdout/spent-2023/Forward-B/2026 remain sealed.
 
 Do not rebuild the registry, route compiler, DAG/evaluator, portfolio decoder or
 fixed-stratified scheduler around Candidate Program V1. The qualified V1 layer

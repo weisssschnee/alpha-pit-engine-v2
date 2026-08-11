@@ -13,101 +13,32 @@
       "evidence": {
         "changed_paths": [
           ".planning/STATE.md",
+          "runtime/run_plans/cn_alpha_node_resource_profiles_phase_d_v0.json",
           "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
+          "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
           "scripts/audit_cn_joint_program_allocator_repair_canary_v0.py",
           "scripts/audit_cn_joint_program_allocator_repair_freeze_v0.py",
+          "scripts/audit_cn_joint_program_phase_d_freeze_v0.py",
+          "scripts/audit_cn_joint_program_phase_d_v0.py",
           "scripts/run_cn_joint_program_allocator_repair_canary_77o.ps1",
           "scripts/run_cn_joint_program_allocator_repair_canary_v0.py",
           "scripts/run_cn_joint_program_phase_c_v0.py",
+          "scripts/run_cn_joint_program_phase_d_77o.ps1",
+          "scripts/run_cn_joint_program_phase_d_v0.py",
           "src/our_system_phase2/runtime/cn_joint_program_allocator_repair_canary_v0.py",
           "src/our_system_phase2/runtime/cn_joint_program_phase_c_v0.py",
+          "src/our_system_phase2/runtime/cn_joint_program_phase_d_v0.py",
           "src/our_system_phase2/services/candidate_program_proposal_v0.py",
           "src/our_system_phase2/services/program_allocator_repair_bandit_v0.py",
-          "tests/test_cn_joint_program_allocator_repair_canary_v0.py"
+          "src/our_system_phase2/services/typed_temporal_program.py",
+          "tests/test_cn_joint_program_allocator_repair_canary_v0.py",
+          "tests/test_cn_joint_program_phase_d_v0.py",
+          "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "3f15b474f3bb403c7fb1fcce7661c0287cc311f2"
+        "repo_head": "a1623f87b480c5b21c89868d00e8cd24c3475e46"
       },
       "message": "Raw graph predates non-overlay source changes",
-      "severity": "ERROR"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "fixed_split_authority",
-        "semantic_role": "split_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "cn_field_master_registry",
-        "semantic_role": "complete_field_universe_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "unified_capability_registry",
-        "semantic_role": "field_route_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "core_pack_development_discovery_contract",
-        "semantic_role": "development_discovery_proposal_root_ontology_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "pit_fundamental_fabric",
-        "semantic_role": "pit_fundamental_observable_episode_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "candidate_submission_receipt",
-        "semantic_role": "candidate_identity_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "SEMANTIC_AUTHORITY_CLASS_UNDECLARED",
-      "evidence": {
-        "component": "matched_control_pair_authority",
-        "semantic_role": "matched_pair_authority"
-      },
-      "message": "Semantic authority binding must declare FORMAL or NON_FORMAL",
-      "severity": "WARN"
-    },
-    {
-      "category": "DRIFT",
-      "code": "FORMAL_AUTHORITY_IS_EXPERIMENTAL",
-      "evidence": {
-        "component": "matched_train_feedback"
-      },
-      "message": "An EXPERIMENTAL component cannot hold a FORMAL authority binding",
       "severity": "ERROR"
     }
   ],
@@ -1923,6 +1854,68 @@
       }
     },
     {
+      "color": "#f9a825",
+      "contract": null,
+      "critical": false,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "joint_program_phase_d_derived_from_allocator_repair_canary",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "derived_from",
+      "required": false,
+      "source": "cn_joint_program_phase_d_v0",
+      "target": "cn_joint_program_allocator_repair_canary_v0",
+      "validation": {
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
+        "evidence_ref": "",
+        "evidence_sha256": null,
+        "level": "NOT_REQUIRED",
+        "notes": [],
+        "profile": "",
+        "result": "NOT_REQUIRED",
+        "verified_at_sha": null
+      }
+    },
+    {
+      "color": "#f9a825",
+      "contract": {
+        "bypass_forbidden": true,
+        "enforced_by": "Phase D final audit and authority-slot promotion gate",
+        "evidence_ref": "",
+        "id": "joint_program_phase_d_no_allocator_promotion",
+        "rule": "The accepted Phase D run closed development evidence but failed four frozen economic and breadth gates; it cannot promote the revised allocator, replace formal search policy, open sealed data or launch an automatic successor.",
+        "severity": "HARD",
+        "type": "BOUNDARY"
+      },
+      "critical": true,
+      "declared": true,
+      "declared_evidence_type": "",
+      "evidence": "DECLARED",
+      "forbidden": false,
+      "id": "joint_program_phase_d_not_qualified_for_development_search_policy",
+      "lifecycle": "EXPERIMENTAL",
+      "line_style": "dotted",
+      "relation": "not_qualified_for",
+      "required": false,
+      "source": "cn_joint_program_phase_d_v0",
+      "target": "cn_development_search_policy",
+      "validation": {
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
+        "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
+        "evidence_sha256": "5AD11E6A4B492F7CB7D5E03F0794D2FDF8E79DD97AE732D59D0D9A45E3C4DE4F",
+        "level": "PARTIAL",
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
+        "profile": "",
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": null
+      }
+    },
+    {
       "color": "#c62828",
       "contract": {
         "bypass_forbidden": true,
@@ -1991,7 +1984,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-10T09:19:25.031699+00:00",
+  "generated_at": "2026-08-11T07:17:48.483504+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -2070,7 +2063,7 @@
       "authority_bindings": [
         {
           "authoritative_component": "fixed_split_authority",
-          "authority_class": "UNCLASSIFIED",
+          "authority_class": "",
           "semantic_role": "split_authority"
         }
       ],
@@ -2118,7 +2111,7 @@
       "required": false,
       "semantic_role": "split_authority",
       "validation": {
-        "checked_at": "2026-08-10T09:17:56.149741+00:00",
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_AND_CANDIDATE_PARALLEL_REPORT.md",
         "evidence_sha256": "54B02559B2B30A2A9F3952030D8C0946D7CE5E92C478EF8B66C6B3645EB9E192",
         "level": "STATIC_VERIFIED",
@@ -2140,7 +2133,7 @@
       "authority_bindings": [
         {
           "authoritative_component": "cn_field_master_registry",
-          "authority_class": "UNCLASSIFIED",
+          "authority_class": "",
           "semantic_role": "complete_field_universe_authority"
         }
       ],
@@ -2192,7 +2185,7 @@
       "required": true,
       "semantic_role": "complete_field_universe_authority",
       "validation": {
-        "checked_at": "2026-08-10T09:17:56.149741+00:00",
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
         "evidence_ref": "tests/test_cn_field_master_registry.py",
         "evidence_sha256": "74DEB4BF6685D4ACE8F0818B26C8852A4A9F1A6AEDD57D7B36A2F46CFBB38F42",
         "level": "STATIC_VERIFIED",
@@ -2214,7 +2207,7 @@
       "authority_bindings": [
         {
           "authoritative_component": "unified_capability_registry",
-          "authority_class": "UNCLASSIFIED",
+          "authority_class": "",
           "semantic_role": "field_route_authority"
         }
       ],
@@ -2292,7 +2285,7 @@
       "required": true,
       "semantic_role": "field_route_authority",
       "validation": {
-        "checked_at": "2026-08-10T09:17:56.149741+00:00",
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
         "evidence_ref": "runtime/field_registry/cn_unified_capability_registry_v3_20260717/unified_capability_registry.json",
         "evidence_sha256": "4855AE00D975C5E05066CF21F73C6FA3DC08A15280DD9AD145D5EA5F30B1CF7F",
         "level": "STATIC_VERIFIED",
@@ -2486,7 +2479,8 @@
         "204 FUNDAMENTAL",
         "6 CHIP",
         "EXPLORATORY",
-        "NOT SEARCH AUTHORITY"
+        "NOT SEARCH AUTHORITY",
+        "NO PERFORMANCE"
       ],
       "color": "#f9a825",
       "contracts": [],
@@ -2534,7 +2528,7 @@
       "required": true,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-10T09:17:56.149741+00:00",
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
         "evidence_ref": "",
         "evidence_sha256": null,
         "level": "NOT_REQUIRED",
@@ -2646,7 +2640,7 @@
       "authority_bindings": [
         {
           "authoritative_component": "core_pack_development_discovery_contract",
-          "authority_class": "UNCLASSIFIED",
+          "authority_class": "",
           "semantic_role": "development_discovery_proposal_root_ontology_authority"
         }
       ],
@@ -2794,7 +2788,7 @@
       "required": true,
       "semantic_role": "development_discovery_proposal_root_ontology_authority",
       "validation": {
-        "checked_at": "2026-08-10T09:17:56.149741+00:00",
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
         "evidence_ref": "runtime/run_plans/cn_core_pack_authority_smoke_20260722_receipt.json",
         "evidence_sha256": "80D89B1C5AFD4438F0BCAC4D994DBFD73D26E24A74A5A60B52D3B39F2F612FA9",
         "level": "STATIC_VERIFIED",
@@ -3104,7 +3098,7 @@
       "authority_bindings": [
         {
           "authoritative_component": "pit_fundamental_fabric",
-          "authority_class": "UNCLASSIFIED",
+          "authority_class": "",
           "semantic_role": "pit_fundamental_observable_episode_authority"
         }
       ],
@@ -3266,7 +3260,7 @@
       "required": false,
       "semantic_role": "pit_fundamental_observable_episode_authority",
       "validation": {
-        "checked_at": "2026-08-10T09:17:56.149741+00:00",
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
         "evidence_ref": "tests/test_pit_fundamental_fabric.py",
         "evidence_sha256": "20617E5E750049057A210DDE3451559B55388D7AD869605D0E9839E461A24769",
         "level": "STATIC_VERIFIED",
@@ -4613,7 +4607,7 @@
       "authority_bindings": [
         {
           "authoritative_component": "candidate_submission_receipt",
-          "authority_class": "UNCLASSIFIED",
+          "authority_class": "",
           "semantic_role": "candidate_identity_authority"
         }
       ],
@@ -4675,7 +4669,7 @@
       "required": false,
       "semantic_role": "candidate_identity_authority",
       "validation": {
-        "checked_at": "2026-08-10T09:17:56.149741+00:00",
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
         "evidence_ref": "reports/cn_matched_control_candidate_parallel_20260715/CN_MATCHED_CONTROL_CONTRACT.json",
         "evidence_sha256": "115218107C43C1B7CB9FB3E0039DA8261CB45E07CF4177915B21172DDA69632D",
         "level": "STATIC_VERIFIED",
@@ -4697,7 +4691,7 @@
       "authority_bindings": [
         {
           "authoritative_component": "matched_control_pair_authority",
-          "authority_class": "UNCLASSIFIED",
+          "authority_class": "",
           "semantic_role": "matched_pair_authority"
         }
       ],
@@ -4805,7 +4799,7 @@
       "required": false,
       "semantic_role": "matched_pair_authority",
       "validation": {
-        "checked_at": "2026-08-10T09:17:56.149741+00:00",
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
         "evidence_ref": "tests/test_pair_native_feedback_all_routes.py",
         "evidence_sha256": "EB5CE3343FAED6159142C5FB28FEA1C78B657801484A8F0F3996184994E78BF5",
         "level": "STATIC_VERIFIED",
@@ -5027,7 +5021,9 @@
         "MINUTE SAMPLE QUALIFIED",
         "4.97X SAMPLE SPEED",
         "PAIR DELTA != STANDALONE SORTINO",
-        "WEAK NOT SEALED OOS"
+        "WEAK NOT SEALED OOS",
+        "NO PROMOTION",
+        "A-SHARE TRADABILITY UNPROVEN"
       ],
       "color": "#2e7d32",
       "contracts": [
@@ -5277,7 +5273,7 @@
       "required": false,
       "semantic_role": "active_development_evaluation_implementation",
       "validation": {
-        "checked_at": "2026-08-10T09:17:56.149741+00:00",
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
         "evidence_ref": "tests/test_cn_large_tpe_search_campaign.py",
         "evidence_sha256": "766418E2F69E660790D95552AA5C4D2DB44CD4A36D0C5F746710B8D45A7DE823",
         "level": "STATIC_VERIFIED",
@@ -6241,11 +6237,71 @@
         "verified_at_sha": null
       },
       "visible_by_default": true
+    },
+    {
+      "active_authority": false,
+      "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "DEVELOPMENT CLOSED",
+        "REVISED ALLOCATOR HOLD",
+        "NO OOS",
+        "NO PROMOTION"
+      ],
+      "color": "#f9a825",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "Phase D closure, checkpoint recovery binding and independent final audit",
+          "evidence_ref": "",
+          "id": "joint_program_phase_d_exact_prospective_development_evidence",
+          "rule": "Phase D evidence is admissible only from the exact frozen 512-record development schedule, 64 immutable checkpoint and bandit chains, unchanged execution and financial authorities, explicit recovery bindings, no incomplete or diagnostic reuse and zero sealed reads.",
+          "severity": "HARD",
+          "type": "EVIDENCE"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "Phase D outcome receipt and development-search authority-slot promotion gate",
+          "evidence_ref": "",
+          "id": "joint_program_phase_d_revised_allocator_hold",
+          "rule": "Phase D failed frozen matched-return mean, matched-return median, turnover-efficiency and minimum improved-template gates. The revised allocator remains non-formal and cannot replace development search policy, launch an automatic successor, consume sealed data or promote candidates.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        }
+      ],
+      "critical": true,
+      "evidence": "DECLARED",
+      "expires_at": "",
+      "id": "cn_joint_program_phase_d_v0",
+      "kind": "experimental-search",
+      "label": "CN Joint Program Phase D revised allocator confirmation",
+      "lifecycle": "EXPERIMENTAL",
+      "owner": "",
+      "paths": [
+        "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json"
+      ],
+      "promotion_requirements": [],
+      "raw_node_ids": [],
+      "required": false,
+      "semantic_role": "",
+      "validation": {
+        "checked_at": "2026-08-11T07:17:48.483504+00:00",
+        "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
+        "evidence_sha256": "5AD11E6A4B492F7CB7D5E03F0794D2FDF8E79DD97AE732D59D0D9A45E3C4DE4F",
+        "level": "PARTIAL",
+        "notes": [
+          "runtime assurance needs a completed matching trace with all contract bindings"
+        ],
+        "profile": "",
+        "result": "INSUFFICIENT_EVIDENCE",
+        "verified_at_sha": null
+      },
+      "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "ACF3CAE7A29BE6E909944E92D6DB523E47385DA615D39641212FD86821B01F20"
+    "sha256": "BEC62E262BEB007F07A7753FCC119D91E4ED780B68DA6616C7321BC625806293"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -6262,7 +6318,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "3f15b474f3bb403c7fb1fcce7661c0287cc311f2",
+  "repo_head": "a1623f87b480c5b21c89868d00e8cd24c3475e46",
   "schema_version": 1,
   "semantic_authorities": [
     {
@@ -6272,17 +6328,17 @@
     },
     {
       "authoritative_component": "candidate_submission_receipt",
-      "authority_class": "UNCLASSIFIED",
+      "authority_class": "",
       "semantic_role": "candidate_identity_authority"
     },
     {
       "authoritative_component": "cn_field_master_registry",
-      "authority_class": "UNCLASSIFIED",
+      "authority_class": "",
       "semantic_role": "complete_field_universe_authority"
     },
     {
       "authoritative_component": "core_pack_development_discovery_contract",
-      "authority_class": "UNCLASSIFIED",
+      "authority_class": "",
       "semantic_role": "development_discovery_proposal_root_ontology_authority"
     },
     {
@@ -6297,7 +6353,7 @@
     },
     {
       "authoritative_component": "unified_capability_registry",
-      "authority_class": "UNCLASSIFIED",
+      "authority_class": "",
       "semantic_role": "field_route_authority"
     },
     {
@@ -6307,12 +6363,12 @@
     },
     {
       "authoritative_component": "matched_control_pair_authority",
-      "authority_class": "UNCLASSIFIED",
+      "authority_class": "",
       "semantic_role": "matched_pair_authority"
     },
     {
       "authoritative_component": "pit_fundamental_fabric",
-      "authority_class": "UNCLASSIFIED",
+      "authority_class": "",
       "semantic_role": "pit_fundamental_observable_episode_authority"
     },
     {
@@ -6322,7 +6378,7 @@
     },
     {
       "authoritative_component": "fixed_split_authority",
-      "authority_class": "UNCLASSIFIED",
+      "authority_class": "",
       "semantic_role": "split_authority"
     },
     {
@@ -6336,16 +6392,16 @@
       "semantic_role": "typed_candidate_program_representation"
     }
   ],
-  "status": "FAIL",
+  "status": "STALE",
   "strict_mode": false,
   "strict_ready": false,
   "summary": {
-    "current_edges": 58,
-    "current_nodes": 38,
-    "errors": 2,
+    "current_edges": 60,
+    "current_nodes": 39,
+    "errors": 1,
     "runtime_edges": 0,
     "runtime_nodes": 0,
-    "warnings": 7
+    "warnings": 0
   },
   "trace": {
     "path": null,

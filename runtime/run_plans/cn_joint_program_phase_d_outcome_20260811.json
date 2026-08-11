@@ -1,0 +1,81 @@
+{
+  "accounting_invariants": "PASS",
+  "audit_repo_sha": "a1623f87b480c5b21c89868d00e8cd24c3475e46",
+  "bias_scope": {
+    "adaptive_budget_reallocation": false,
+    "allocator_canary_financial_records_reused": false,
+    "automatic_promotion_allowed": false,
+    "development_only": true,
+    "oos_claim_allowed": false,
+    "oos_grade": "NONE",
+    "phase_c_financial_records_reused": false,
+    "research_bias_decision": "HOLD_RESEARCH"
+  },
+  "checkpoint_count": 64,
+  "checkpoint_recovery": true,
+  "closure_file_sha256": "0fe0849702c7ca7e4be7d661a0dc7493df8859f98110d3da10afb0342408a985",
+  "closure_payload_sha256": "41671dbc1d1f116c3e0e979756aebe4995c109019168c1d8a43ae0deee99ada3",
+  "decision": "HOLD_REVISED_ALLOCATOR_NO_PROMOTION",
+  "decision_basis": {
+    "all_four_positive_rate_delta_vs_uniform": 0.04166666666666667,
+    "blocked_rate_delta_vs_uniform": -0.21875,
+    "failed_frozen_gates": [
+      "matched_return_increment_mean_delta",
+      "matched_return_increment_median_delta",
+      "median_return_per_turnover_delta",
+      "minimum_improved_revised_templates"
+    ],
+    "improved_revised_template_count": 2,
+    "matched_return_increment_mean_delta_vs_uniform": -0.11119460040877902,
+    "matched_return_increment_median_delta_vs_uniform": -0.2109400932891045,
+    "median_return_per_turnover_delta_vs_uniform": -0.04129545410254945,
+    "primary_return_positive_rate_delta_vs_uniform": 0.20833333333333331,
+    "primary_reward_positive_rate_delta_vs_uniform": 0.22916666666666666,
+    "productive_rate_delta_vs_uniform": 0.10416666666666666,
+    "three_window_positive_rate_delta_vs_uniform": 0.26041666666666663
+  },
+  "decision_cautions": {
+    "BASE_EVENT_matched_return_mean_delta": -0.12674967808434137,
+    "BASE_MARKET_EVENT_matched_return_mean_delta": -0.21190716251105957,
+    "BASE_TEMPORAL_EVENT_matched_return_mean_delta": -0.2295921550451246,
+    "qualified_matched_return_template": "BASE_TEMPORAL",
+    "revised_exploit_primary_return_median": -0.027642203182413505,
+    "revised_exploit_productive_count": 15,
+    "revised_exploit_productive_rate": 0.15625
+  },
+  "final_audit_file_sha256": "ef4569f5e58f4f52c98ff053e3628a2adb370a9c9eb9c192f75d8a73a3a96df1",
+  "final_audit_payload_sha256": "d24ce2e09339a780627572b804c9f2ff5242853ae7b0ca9038d2cca9ac7735e1",
+  "final_audit_root": "D:\\ChengboRemote\\runtime\\cn_joint_program_phase_d_final_audit_20260811_a1623f8",
+  "generation_arm_counts": {
+    "NOVELTY_RESERVE": 112,
+    "REVISED_EXPLOIT": 96,
+    "UNIFORM_FRESH": 304
+  },
+  "minimum_checkpoint_boundary_free_memory_bytes": 84731297792,
+  "next_action": {
+    "authorization": "NO_AUTOMATIC_SUCCESSOR_OR_PROMOTION",
+    "objective": "Hold the revised allocator. Any later experiment must be separately authorized and redesign the objective around matched-return downside, turnover efficiency and per-template heterogeneity before a fresh prospective freeze.",
+    "prohibited": [
+      "promote the revised allocator or replace formal development search policy",
+      "reuse Phase C, canary, diagnostic or incomplete financial results as new evidence",
+      "launch an automatic successor campaign",
+      "read validation, holdout, spent-2023, Forward-B or 2026 data"
+    ]
+  },
+  "outcome_payload_sha256": "abe6f638d1021a38b5872c9be5d1a1d3e7a775a760ed5ec27d4be53b1eb32182",
+  "output_root": "D:\\ChengboRemote\\runtime\\cn_joint_program_phase_d_20260810_7e41ddc_10w",
+  "productive_count": 109,
+  "record_count": 512,
+  "recovery_finalizer_repo_sha": "a1623f87b480c5b21c89868d00e8cd24c3475e46",
+  "replay_blocked_count": 20,
+  "runner_repo_sha": "7e41ddca36337ecc4451ff05648431632a54f940",
+  "schema_version": "cn_joint_program_phase_d_outcome_v0",
+  "sealed_reads": {
+    "forward_2026": 0,
+    "forward_b": 0,
+    "holdout": 0,
+    "spent_2023": 0,
+    "validation": 0
+  },
+  "status": "PHASE_D_CLOSED_REVISED_ALLOCATOR_HELD"
+}
