@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 import app as repo_app
+from our_system_phase2.services import project_control_admission as project_control
 from our_system_phase2.services.development_feedback_provenance import (
     build_development_feedback_provenance,
 )
@@ -530,7 +531,7 @@ def test_successor_requires_matching_parent_lineage_and_continue(
 
 
 def test_recovery_requires_original_admission_same_run_and_incident(
-    tmp_path: Path,
+    monkeypatch, tmp_path: Path,
 ) -> None:
     trust = _trust_config(tmp_path)
     original_control = _run_record(
@@ -601,6 +602,52 @@ def test_recovery_requires_original_admission_same_run_and_incident(
             action=ACTION_RECOVERY,
             child=drift,
             target_run_id="new-run",
+        )
+
+    target_output_root = Path(
+        json.loads(original_admission.read_text(encoding="utf-8"))[
+            "target_output_root"
+        ]
+    )
+    monkeypatch.setattr(project_control, "CANONICAL_TRUST_CONFIG", trust)
+    monkeypatch.setattr(
+        project_control, "_clean_repository_head", lambda _path: REPO_SHA
+    )
+    original_proof = activate_admission(
+        original_admission,
+        expected_admission_file_sha256=sha256_file(original_admission),
+        expected_actions={ACTION_LAUNCH},
+        expected_target_campaign_id="cn-large-tpe-search-campaign",
+        expected_target_run_id="immutable-run-1",
+        expected_target_output_root=target_output_root,
+    )
+    consume_active_admission(
+        "cn-large-tpe-search-campaign", {ACTION_LAUNCH}
+    )
+    project_control.clear_active_admission()
+    assert original_proof["target_output_root"] == str(target_output_root)
+
+    recovery_proof = activate_admission(
+        recovery,
+        expected_admission_file_sha256=sha256_file(recovery),
+        expected_actions={ACTION_RECOVERY},
+        expected_target_campaign_id="cn-large-tpe-search-campaign",
+        expected_target_run_id="immutable-run-1",
+        expected_target_output_root=target_output_root,
+    )
+    consume_active_admission(
+        "cn-large-tpe-search-campaign", {ACTION_RECOVERY}
+    )
+    project_control.clear_active_admission()
+    assert recovery_proof["incident_id"] == "incident-checkpoint-055"
+    with pytest.raises(ProjectControlDenied, match="already consumed"):
+        activate_admission(
+            recovery,
+            expected_admission_file_sha256=sha256_file(recovery),
+            expected_actions={ACTION_RECOVERY},
+            expected_target_campaign_id="cn-large-tpe-search-campaign",
+            expected_target_run_id="immutable-run-1",
+            expected_target_output_root=target_output_root,
         )
 
 
@@ -807,8 +854,10 @@ def test_high_cost_entry_consumes_valid_target_bound_admission(
 
         return admitted_main
 
-    monkeypatch.setattr(repo_app, "PROJECT_CONTROL_TRUST_CONFIG", trust)
-    monkeypatch.setattr(repo_app, "_git_head", lambda: REPO_SHA)
+    monkeypatch.setattr(project_control, "CANONICAL_TRUST_CONFIG", trust)
+    monkeypatch.setattr(
+        project_control, "_clean_repository_head", lambda _path: REPO_SHA
+    )
     monkeypatch.setattr(repo_app, "_load_main", admitted_import)
     assert (
         repo_app.main(
@@ -850,3 +899,30 @@ def test_high_cost_entry_consumes_valid_target_bound_admission(
         )
     assert exc.value.code == 2
     assert loaded == ["cn-large-tpe-search-campaign"]
+
+    with pytest.raises(SystemExit) as exc:
+        repo_app.main(
+            [
+                "cn-large-tpe-search-campaign",
+                "--requested-action",
+                ACTION_LAUNCH,
+                "--target-run-id",
+                "target-1",
+                "--project-control-admission",
+                str(admission),
+                "--project-control-admission-sha256",
+                sha256_file(admission),
+                "--",
+                "--output-root",
+                str(target_output_root),
+            ]
+        )
+    assert exc.value.code == 2
+    assert loaded == ["cn-large-tpe-search-campaign"]
+    marker = (
+        target_output_root
+        / ".project_control_execution"
+        / "consumptions"
+        / f"{sha256_file(admission)}.json"
+    )
+    assert marker.is_file()

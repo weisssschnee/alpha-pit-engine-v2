@@ -5,12 +5,17 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Collection
 
 
 PROJECT_ID = "alpha_pit_true1min_engine_evalreset_20260711"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+CANONICAL_TRUST_CONFIG = (
+    REPO_ROOT / "runtime" / "run_plans" / "cn_project_control_trust_v1.json"
+)
 ADMISSION_SCHEMA_VERSION = "cn_project_control_execution_admission_v1"
 EXECUTION_REQUEST_SCHEMA_VERSION = "cn_project_control_execution_request_v1"
 TRUST_SCHEMA_VERSION = "cn_project_control_trust_v1"
@@ -730,16 +735,102 @@ def validate_admission(
         "repo_sha": expected_repo_sha,
         "recovery_kind": str(child["request"].get("recovery_kind") or ""),
         "incident_id": str(child["request"].get("incident_id") or ""),
+        "original_admission_file_sha256": str(
+            child["request"].get("original_admission_file_sha256") or ""
+        ),
     }
+
+
+def _clean_repository_head(repository_path: Path) -> str:
+    status = subprocess.run(
+        ["git", "-C", str(repository_path), "status", "--porcelain", "--untracked-files=all"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    if status.stdout.strip():
+        raise ProjectControlDenied(
+            "high-cost route requires the canonical repository to be clean"
+        )
+    completed = subprocess.run(
+        ["git", "-C", str(repository_path), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout.strip()
+
+
+def _write_exclusive_json(path: Path, payload: dict[str, Any], label: str) -> None:
+    try:
+        with path.open("x", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    except FileExistsError as exc:
+        raise ProjectControlDenied(f"{label} already consumed") from exc
+
+
+def _consume_admission_durably(proof: dict[str, Any]) -> None:
+    output_root = Path(str(proof["target_output_root"]))
+    control_root = output_root / ".project_control_execution"
+    identity_path = control_root / "execution_identity.json"
+    action = str(proof["requested_action"])
+    if action == ACTION_RECOVERY:
+        if not output_root.is_dir() or not identity_path.is_file():
+            raise ProjectControlDenied("recovery target has no original execution identity")
+        _, identity = _read_json(identity_path, "original execution identity")
+        if (
+            identity.get("project_id") != proof["project_id"]
+            or identity.get("repo_sha") != proof["repo_sha"]
+            or identity.get("target_campaign_id") != proof["target_campaign_id"]
+            or identity.get("target_run_id") != proof["target_run_id"]
+            or identity.get("root_admission_file_sha256")
+            != proof["original_admission_file_sha256"]
+        ):
+            raise ProjectControlDenied("recovery original execution identity drift")
+    else:
+        try:
+            output_root.mkdir(parents=True, exist_ok=False)
+        except FileExistsError as exc:
+            raise ProjectControlDenied(
+                "new execution requires a fresh admitted output root"
+            ) from exc
+        control_root.mkdir()
+        _write_exclusive_json(
+            identity_path,
+            {
+                "schema_version": "cn_project_control_execution_identity_v1",
+                "project_id": proof["project_id"],
+                "repo_sha": proof["repo_sha"],
+                "target_campaign_id": proof["target_campaign_id"],
+                "target_run_id": proof["target_run_id"],
+                "target_output_root": proof["target_output_root"],
+                "root_action": action,
+                "root_admission_file_sha256": proof["admission_file_sha256"],
+            },
+            "execution identity",
+        )
+    consumption_root = control_root / "consumptions"
+    consumption_root.mkdir(exist_ok=True)
+    _write_exclusive_json(
+        consumption_root / f"{proof['admission_file_sha256']}.json",
+        {
+            "schema_version": "cn_project_control_admission_consumption_v1",
+            "consumed_at": datetime.now(timezone.utc).isoformat(),
+            "admission_file_sha256": proof["admission_file_sha256"],
+            "admission_payload_sha256": proof["admission_payload_sha256"],
+            "requested_action": action,
+            "target_campaign_id": proof["target_campaign_id"],
+            "target_run_id": proof["target_run_id"],
+            "target_output_root": proof["target_output_root"],
+        },
+        "Project Control admission",
+    )
 
 
 def activate_admission(
     path: Path,
     *,
-    trust_config_path: Path,
     expected_admission_file_sha256: str,
-    expected_project_id: str,
-    expected_repo_sha: str,
     expected_actions: Collection[str],
     expected_target_campaign_id: str,
     expected_target_run_id: str,
@@ -750,17 +841,21 @@ def activate_admission(
     global _ACTIVE_ADMISSION
     if _ACTIVE_ADMISSION is not None:
         raise ProjectControlDenied("another high-cost admission is already active")
+    trust = load_trust_config(CANONICAL_TRUST_CONFIG)
+    repository_path = Path(str(trust["repository_path"]))
+    expected_repo_sha = _clean_repository_head(repository_path)
     proof = validate_admission(
         path,
-        trust_config_path=trust_config_path,
+        trust_config_path=CANONICAL_TRUST_CONFIG,
         expected_admission_file_sha256=expected_admission_file_sha256,
-        expected_project_id=expected_project_id,
+        expected_project_id=PROJECT_ID,
         expected_repo_sha=expected_repo_sha,
         expected_actions=expected_actions,
         expected_target_campaign_id=expected_target_campaign_id,
         expected_target_run_id=expected_target_run_id,
         expected_target_output_root=expected_target_output_root,
     )
+    _consume_admission_durably(proof)
     _ACTIVE_ADMISSION = dict(proof)
     return proof
 

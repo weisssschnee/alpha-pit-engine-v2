@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import subprocess
 import sys
 from collections.abc import Callable
 from importlib import import_module
@@ -20,14 +19,9 @@ from our_system_phase2.services.project_control_admission import (
     ACTION_RETRY,
     ACTION_SUCCESSOR,
     ALLOWED_ACTIONS,
-    PROJECT_ID,
     ProjectControlDenied,
     activate_admission,
     clear_active_admission,
-)
-
-PROJECT_CONTROL_TRUST_CONFIG = (
-    REPO / "runtime" / "run_plans" / "cn_project_control_trust_v1.json"
 )
 
 ROUTES: dict[str, str] = {
@@ -143,26 +137,6 @@ def _load_main(route: str) -> Callable[..., int | None]:
     return main
 
 
-def _git_head() -> str:
-    status = subprocess.run(
-        ["git", "-C", str(REPO), "status", "--porcelain", "--untracked-files=all"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    if status.stdout.strip():
-        raise ProjectControlDenied(
-            "high-cost route requires a clean working tree bound to its repo SHA"
-        )
-    completed = subprocess.run(
-        ["git", "-C", str(REPO), "rev-parse", "HEAD"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return completed.stdout.strip()
-
-
 def _explicit_output_root(passthrough: list[str]) -> Path:
     values: list[str] = []
     for index, value in enumerate(passthrough):
@@ -206,10 +180,7 @@ def _validate_high_cost_route_admission(
     output_root = _explicit_output_root(passthrough)
     return activate_admission(
         admission_path,
-        trust_config_path=PROJECT_CONTROL_TRUST_CONFIG,
         expected_admission_file_sha256=admission_sha256,
-        expected_project_id=PROJECT_ID,
-        expected_repo_sha=_git_head(),
         expected_actions={requested_action},
         expected_target_campaign_id=route,
         expected_target_run_id=target_run_id,
@@ -253,7 +224,7 @@ def main(argv: list[str] | None = None) -> int:
             admission_path=parsed.project_control_admission,
             admission_sha256=parsed.project_control_admission_sha256,
         )
-    except (ProjectControlDenied, subprocess.CalledProcessError) as exc:
+    except (ProjectControlDenied, OSError) as exc:
         parser.error(f"project-control admission denied before route import: {exc}")
 
     try:
