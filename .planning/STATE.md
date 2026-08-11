@@ -20,7 +20,7 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 - Accepted ADRs 0016 and 0017 and implementation commits
   `0247cbbc466b60287a77ebcd03672a9df6afad5a` and
-  `3d852d551dd436b4f316db637913591031854d9a` reconcile the execution layer
+  `2a807ba8ae7d38bb717eb6565cd85ef23fb8a63e` reconcile the execution layer
   with already observed facts. The 2023 historical challenge is permanently
   `spent`, economically `NEGATIVE`, and denied with
   `PERMANENT_DENY_ALREADY_SPENT`; its older unopened authorization remains
@@ -32,20 +32,29 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   bind the exact project, repository, clean repo SHA, action, campaign, target
   run, absolute output root, expiry, control receipt, task/profile/context files
   and hashes. Activation internally fixes the canonical trust config, derives
-  the live clean repository HEAD and revalidates the immutable admission rather
-  than accepting caller-supplied trust/SHA/proof values. Each route consumes a
+  the actually executing checkout, selects its allowlisted local-or-77o Harness
+  authority-store root, derives that checkout's live clean HEAD, and revalidates
+  the immutable admission rather than accepting caller-supplied
+  trust/repository/SHA/proof values. Current 77o launch wrappers forward the
+  exact target run, admission and file hash; the immutable Harness bundle must
+  first be mirrored into the fixed 77o authority-store path or execution denies.
+  Each route consumes a
   one-use capability
   before argument parsing and rechecks the parsed output root before data
   access. Before route import, a durable exclusive consumption record is written
-  at the admitted output root: new freeze/launch/successor/retry requires a fresh
-  root, and recovery requires the original root identity and its own unused
+  at the admitted output root: new freeze/launch/successor/retry requires an
+  absent root or only route-qualified launcher control metadata; the gate then
+  adds its internal control directory before business execution. Recovery
+  requires the original root identity and its own unused
   admission. Direct invocation, replay and freeze-as-launch therefore deny.
   Successors require
   exact parent lineage,
   parent `POST_BATCH=CONTINUE` and child `PREFLIGHT=PROCEED`; technical recovery
   requires the original eligible admission for the same target plus an incident
   binding. Project Control owns execution admission only and is forbidden from
-  deciding economics or selecting alpha.
+  deciding economics or selecting alpha. Routes without implemented same-run
+  resume semantics fail closed rather than advertising recovery;
+  fixed-stratified exposes launch, successor and retry only.
 - The existing Harness emits no cryptographic receipt signature. Its configured
   runs root is the explicit authority-store trust boundary: canonical location,
   full bundle shape and all bound hashes are verified, while a malicious local
