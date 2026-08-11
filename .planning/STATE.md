@@ -20,7 +20,7 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 - Accepted ADRs 0016 and 0017 and implementation commits
   `0247cbbc466b60287a77ebcd03672a9df6afad5a` and
-  `6b130dd73daa52ee67d55c8192f1c5373c2adbc5` reconcile the execution layer
+  `44a4450c0fd84b06a11642e6d454e252cfc68946` reconcile the execution layer
   with already observed facts. The 2023 historical challenge is permanently
   `spent`, economically `NEGATIVE`, and denied with
   `PERMANENT_DENY_ALREADY_SPENT`; its older unopened authorization remains
@@ -30,13 +30,21 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 - Canonical high-cost `app.py` routes now consume an immutable Project Control
   admission before route import. Its trusted Harness bundle and task request
   bind the exact project, repository, clean repo SHA, action, campaign, target
-  run, expiry, control receipt, task/profile files and hashes. Each route module
-  also consumes a one-use in-process capability before argument parsing or data
-  access, so direct invocation denies. Successors require exact parent lineage,
+  run, absolute output root, expiry, control receipt, task/profile/context files
+  and hashes. Activation revalidates the immutable admission rather than
+  accepting a caller-created proof. Each route consumes a one-use capability
+  before argument parsing and rechecks the parsed output root before data
+  access, so direct invocation and freeze-as-launch deny. Successors require
+  exact parent lineage,
   parent `POST_BATCH=CONTINUE` and child `PREFLIGHT=PROCEED`; technical recovery
   requires the original eligible admission for the same target plus an incident
   binding. Project Control owns execution admission only and is forbidden from
   deciding economics or selecting alpha.
+- The existing Harness emits no cryptographic receipt signature. Its configured
+  runs root is the explicit authority-store trust boundary: canonical location,
+  full bundle shape and all bound hashes are verified, while a malicious local
+  writer already holding authority-store permissions remains outside this thin
+  bridge's detectable threat boundary.
 - Phase C and allocator-repair seed writers and readers now distinguish serialized
   optimizer-state import from development financial observations, candidate
   results, behavior/template statistics, manual diagnosis, and whether the new
@@ -51,8 +59,8 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 - The accepted overlay and deterministic CURRENT projection now state the
   repaired boundaries. RAW remains at
   `f649507ec3002161735085dde3f16fd2b1a379bc`; therefore CURRENT is explicitly
-  `STALE`, not strict-ready, and the new required Project-Control-to-search
-  precondition is reported as absent from RAW. RAW/CURRENT are advisory until a
+  `STALE` and not strict-ready even though the required Project-Control-to-search
+  precondition is deterministically projected. RAW/CURRENT are advisory until a
   later reliable RAW refresh; no freshness or runtime assurance is fabricated.
 
 ### Joint Program Phase D closed; revised allocator held without promotion (2026-08-11)
