@@ -22,11 +22,17 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
 ## Decision
 
 1. The project owns a self-hashed trust configuration that fixes the exact
-   project id, repository path and canonical Harness runs root. Run records
-   outside that root are untrusted even if their JSON shape and verdict look
-   valid. Activation fixes this canonical config internally and derives the
-   live clean repository HEAD itself; callers cannot substitute a trust config,
-   project identity or expected code SHA.
+   project id and an allowlisted deployment-to-Harness-store mapping. Local G:
+   uses the existing Harness authority store; 77o uses the fixed
+   `D:\ChengboRemote\runtime\cn_project_control_authority_store` mirror. Run
+   records outside those roots are untrusted even if their JSON shape and
+   verdict look valid. Activation fixes this canonical config internally,
+   derives the executing checkout from the service module, requires that path
+   to match one deployment, and derives that checkout's live clean HEAD itself;
+   callers cannot substitute a trust config, repository, project identity or
+   expected code SHA. Before an authorized 77o execution, the control-plane
+   operator must copy the exact immutable Harness bundle and materialize the
+   admission inside the pinned 77o authority store; an absent mirror denies.
 2. A trusted Harness bundle consists of sibling `run_record.json`,
    `task_spec.json` and `project_profile.json` files. The task specification
    embeds a self-hashed execution request binding the exact project, repository
@@ -48,7 +54,12 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
    fail closed.
 5. Activation atomically creates a durable control record at the admitted
    output root before route import. A new freeze, launch, successor or retry
-   requires a fresh output root. Every admission hash has one exclusive
+   requires either an absent root or a route-qualified root containing only
+   launcher control metadata such as `deployment_binding.json`, redirected
+   logs and a resource-lease directory. Activation adds the internal
+   `.project_control_execution` directory before business execution. The
+   fixed-stratified route freshness check explicitly treats that directory as
+   control metadata rather than business output. Every admission hash has one exclusive
    consumption marker, so the same admission cannot be replayed by another
    process. A failed import spends that entrance conservatively; later work
    requires an explicitly authorized retry or recovery.
@@ -61,6 +72,9 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
    original admission hash, and the recovery admission itself is consumed only
    once. A changed campaign, target run, repository SHA, output root or original
    admission is a new execution and is denied.
+   A route without implemented same-run resume semantics does not advertise
+   `RECOVERY`; fixed-stratified production therefore exposes launch, successor
+   and retry only instead of pretending that a nonempty root can be resumed.
 8. Project Control remains admission-only authority. Economic results,
    evaluator evidence and the accepted research authority remain decisive.
    This decision grants no search, retry, promotion, OOS or sealed-data access.
@@ -70,6 +84,8 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
 - A caller cannot manufacture authority from an arbitrary JSON file, receipt
   hash or generic `PROCEED` verdict.
 - Canonical entry and direct-module entry share one fail-closed physical seam.
+- Current 77o wrappers forward the target run, admission and immutable file hash;
+  fixed-stratified does not advertise unsupported recovery semantics.
 - LAUNCH/SUCCESSOR cannot be replayed as an unlabelled retry or recovery, even
   from another process using the same output root.
 - Successor and recovery are provable continuations, not alternative names for

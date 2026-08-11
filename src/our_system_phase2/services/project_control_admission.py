@@ -39,6 +39,26 @@ ORIGINAL_EXECUTION_ACTIONS = {
 }
 TECHNICAL_RECOVERY = "TECHNICAL_RECOVERY_OF_ALREADY_AUTHORIZED_RUN"
 
+# The qualified 77o wrappers create only these non-financial launch-control
+# artifacts before app.py can consume the admission. Business output remains
+# forbidden until after the durable control directory is claimed.
+PREPARED_OUTPUT_ROOT_ALLOWLISTS: dict[str, frozenset[str]] = {
+    "cn-targeted-search-medium-campaign": frozenset(
+        {"deployment_binding.json", "campaign.stdout.log", "campaign.stderr.log"}
+    ),
+    "cn-large-tpe-search-campaign": frozenset(
+        {
+            "deployment_binding.json",
+            "campaign.stdout.log",
+            "campaign.stderr.log",
+            "resource_leases",
+        }
+    ),
+    "cn-fixed-stratified-production-v0": frozenset(
+        {"deployment_binding.json"}
+    ),
+}
+
 _ACTIVE_ADMISSION: dict[str, Any] | None = None
 
 
@@ -104,6 +124,7 @@ def load_trust_config(
     path: Path,
     *,
     expected_project_id: str = PROJECT_ID,
+    runtime_repository_path: Path | None = None,
 ) -> dict[str, Any]:
     resolved, payload = _read_json(path, "Project Control trust config")
     _self_hashed_payload(
@@ -121,19 +142,127 @@ def load_trust_config(
         != "UNAVAILABLE_IN_EXISTING_HARNESS"
     ):
         raise ProjectControlDenied("Project Control trust model drift")
-    trusted_root = Path(str(payload.get("trusted_harness_runs_root") or "")).resolve()
-    repository_path = Path(str(payload.get("repository_path") or "")).resolve()
-    if not trusted_root.is_dir():
-        raise ProjectControlDenied(f"trusted Harness runs root missing: {trusted_root}")
-    if not repository_path.is_dir():
-        raise ProjectControlDenied(f"trusted repository path missing: {repository_path}")
+    configured = list(payload.get("deployments") or ())
+    if not configured:
+        configured = [
+            {
+                "deployment_id": "canonical",
+                "repository_path": payload.get("repository_path"),
+                "trusted_harness_runs_root": payload.get(
+                    "trusted_harness_runs_root"
+                ),
+            }
+        ]
+    deployments: list[dict[str, str]] = []
+    for item in configured:
+        deployment = dict(item or {})
+        deployment_id = str(deployment.get("deployment_id") or "")
+        trusted_root_value = str(
+            deployment.get("trusted_harness_runs_root") or ""
+        )
+        repository_value = str(deployment.get("repository_path") or "")
+        repository_prefix_value = str(
+            deployment.get("repository_root_prefix") or ""
+        )
+        if (
+            not deployment_id
+            or not Path(trusted_root_value).is_absolute()
+            or bool(repository_value) == bool(repository_prefix_value)
+        ):
+            raise ProjectControlDenied("Project Control deployment trust drift")
+        deployments.append(
+            {
+                "deployment_id": deployment_id,
+                "trusted_harness_runs_root": str(
+                    Path(trusted_root_value).resolve()
+                ),
+                "repository_path": (
+                    str(Path(repository_value).resolve())
+                    if repository_value
+                    else ""
+                ),
+                "repository_root_prefix": (
+                    str(Path(repository_prefix_value).resolve())
+                    if repository_prefix_value
+                    else ""
+                ),
+            }
+        )
+    if len({item["deployment_id"] for item in deployments}) != len(deployments):
+        raise ProjectControlDenied("Project Control deployment id drift")
+
+    active_deployment: dict[str, str] | None = None
+    if runtime_repository_path is not None:
+        runtime_repository = Path(runtime_repository_path).resolve()
+        for deployment in deployments:
+            exact = deployment["repository_path"]
+            prefix = deployment["repository_root_prefix"]
+            if exact and runtime_repository == Path(exact):
+                active_deployment = deployment
+                break
+            if prefix:
+                try:
+                    runtime_repository.relative_to(Path(prefix))
+                except ValueError:
+                    continue
+                active_deployment = deployment
+                break
+        if active_deployment is None:
+            raise ProjectControlDenied(
+                "executing repository is outside canonical deployment trust"
+            )
+        active_root = Path(active_deployment["trusted_harness_runs_root"])
+        if not active_root.is_dir():
+            raise ProjectControlDenied(
+                f"trusted Harness runs root missing: {active_root}"
+            )
+        if not runtime_repository.is_dir():
+            raise ProjectControlDenied(
+                f"executing repository path missing: {runtime_repository}"
+            )
+    elif not any(
+        Path(item["trusted_harness_runs_root"]).is_dir()
+        for item in deployments
+    ):
+        raise ProjectControlDenied("all trusted Harness runs roots are missing")
     return {
         **payload,
         "trust_config_path": str(resolved),
         "trust_config_file_sha256": sha256_file(resolved),
-        "trusted_harness_runs_root": str(trusted_root),
-        "repository_path": str(repository_path),
+        "deployments": deployments,
+        "source_deployments": (
+            [active_deployment]
+            if active_deployment is not None
+            else deployments
+        ),
+        "active_deployment": active_deployment,
+        "repository_path": (
+            str(Path(runtime_repository_path).resolve())
+            if runtime_repository_path is not None
+            else str(payload.get("repository_path") or "")
+        ),
+        "trusted_harness_runs_root": (
+            active_deployment["trusted_harness_runs_root"]
+            if active_deployment is not None
+            else str(payload.get("trusted_harness_runs_root") or "")
+        ),
     }
+
+
+def _repository_is_allowlisted(path: Path, trust: dict[str, Any]) -> bool:
+    resolved = path.resolve()
+    for deployment in list(trust["deployments"]):
+        exact = str(deployment.get("repository_path") or "")
+        prefix = str(deployment.get("repository_root_prefix") or "")
+        if exact and resolved == Path(exact):
+            return True
+        if prefix:
+            try:
+                resolved.relative_to(Path(prefix))
+            except ValueError:
+                continue
+            return True
+    return False
 
 
 def _parse_expiry(value: str) -> datetime:
@@ -242,11 +371,16 @@ def _load_harness_bundle(
     allow_expired_request: bool = False,
 ) -> dict[str, Any]:
     resolved, record = _read_json(run_record_path, "Harness run record")
-    trusted_root = Path(str(trust["trusted_harness_runs_root"]))
-    try:
-        relative = resolved.relative_to(trusted_root)
-    except ValueError as exc:
-        raise ProjectControlDenied("Harness run record is outside trusted runs root") from exc
+    relative: Path | None = None
+    for deployment in list(trust["source_deployments"]):
+        trusted_root = Path(str(deployment["trusted_harness_runs_root"]))
+        try:
+            relative = resolved.relative_to(trusted_root)
+        except ValueError:
+            continue
+        break
+    if relative is None:
+        raise ProjectControlDenied("Harness run record is outside trusted runs root")
     if resolved.name != "run_record.json" or len(relative.parts) != 3:
         raise ProjectControlDenied("Harness run record path shape drift")
     run_root = resolved.parent
@@ -304,12 +438,13 @@ def _load_harness_bundle(
         or request.get("project_id") != trust["project_id"]
     ):
         raise ProjectControlDenied("project identity drift")
-    repository_path = Path(str(trust["repository_path"]))
     source_worktree = Path(
         str(dict(record.get("worktree") or {}).get("source_worktree") or "")
     ).resolve()
     profile_repository = Path(str(profile.get("repository_path") or "")).resolve()
-    if source_worktree != repository_path or profile_repository != repository_path:
+    if not _repository_is_allowlisted(
+        source_worktree, trust
+    ) or not _repository_is_allowlisted(profile_repository, trust):
         raise ProjectControlDenied("Harness repository binding drift")
     if record.get("code_base_sha") != request.get("repo_sha"):
         raise ProjectControlDenied("Harness record/request repo SHA drift")
@@ -597,12 +732,14 @@ def validate_admission(
     expected_target_run_id: str,
     expected_target_output_root: str | Path,
     _allow_expired_request: bool = False,
+    _runtime_repository_path: Path | None = None,
 ) -> dict[str, Any]:
     """Consume and revalidate a trusted, immutable admission before route import."""
 
     trust = load_trust_config(
         trust_config_path,
         expected_project_id=expected_project_id,
+        runtime_repository_path=_runtime_repository_path,
     )
     resolved, payload = _read_json(path, "project-control admission")
     if sha256_file(resolved) != str(expected_admission_file_sha256).lower():
@@ -697,6 +834,7 @@ def validate_admission(
             expected_target_run_id=expected_target_run_id,
             expected_target_output_root=canonical_output_root,
             _allow_expired_request=True,
+            _runtime_repository_path=_runtime_repository_path,
         )
         if original != original_payload:
             raise ProjectControlDenied("original execution admission binding drift")
@@ -769,9 +907,13 @@ def _write_exclusive_json(path: Path, payload: dict[str, Any], label: str) -> No
         raise ProjectControlDenied(f"{label} already consumed") from exc
 
 
+def _durable_control_root(output_root: Path) -> Path:
+    return output_root.resolve() / ".project_control_execution"
+
+
 def _consume_admission_durably(proof: dict[str, Any]) -> None:
     output_root = Path(str(proof["target_output_root"]))
-    control_root = output_root / ".project_control_execution"
+    control_root = _durable_control_root(output_root)
     identity_path = control_root / "execution_identity.json"
     action = str(proof["requested_action"])
     if action == ACTION_RECOVERY:
@@ -788,13 +930,36 @@ def _consume_admission_durably(proof: dict[str, Any]) -> None:
         ):
             raise ProjectControlDenied("recovery original execution identity drift")
     else:
+        campaign_id = str(proof["target_campaign_id"])
+        prepared_allowlist = PREPARED_OUTPUT_ROOT_ALLOWLISTS.get(campaign_id)
+        if output_root.exists():
+            observed = (
+                {path.name for path in output_root.iterdir()}
+                if output_root.is_dir()
+                else set()
+            )
+            if (
+                prepared_allowlist is None
+                or "deployment_binding.json" not in observed
+                or not observed.issubset(prepared_allowlist)
+            ):
+                raise ProjectControlDenied(
+                    "new execution requires a fresh or control-metadata-only "
+                    "admitted output root"
+                )
+        else:
+            try:
+                output_root.mkdir(parents=True, exist_ok=False)
+            except FileExistsError as exc:
+                raise ProjectControlDenied(
+                    "new execution requires a fresh admitted output root"
+                ) from exc
         try:
-            output_root.mkdir(parents=True, exist_ok=False)
+            control_root.mkdir(exist_ok=False)
         except FileExistsError as exc:
             raise ProjectControlDenied(
-                "new execution requires a fresh admitted output root"
+                "target output identity is already claimed"
             ) from exc
-        control_root.mkdir()
         _write_exclusive_json(
             identity_path,
             {
@@ -841,8 +1006,11 @@ def activate_admission(
     global _ACTIVE_ADMISSION
     if _ACTIVE_ADMISSION is not None:
         raise ProjectControlDenied("another high-cost admission is already active")
-    trust = load_trust_config(CANONICAL_TRUST_CONFIG)
-    repository_path = Path(str(trust["repository_path"]))
+    repository_path = REPO_ROOT.resolve()
+    load_trust_config(
+        CANONICAL_TRUST_CONFIG,
+        runtime_repository_path=repository_path,
+    )
     expected_repo_sha = _clean_repository_head(repository_path)
     proof = validate_admission(
         path,
@@ -854,6 +1022,7 @@ def activate_admission(
         expected_target_campaign_id=expected_target_campaign_id,
         expected_target_run_id=expected_target_run_id,
         expected_target_output_root=expected_target_output_root,
+        _runtime_repository_path=repository_path,
     )
     _consume_admission_durably(proof)
     _ACTIVE_ADMISSION = dict(proof)

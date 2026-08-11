@@ -387,6 +387,7 @@ def test_fresh_root_allows_only_runner_deployment_binding(
     root = tmp_path / "run"
     root.mkdir()
     (root / "deployment_binding.json").write_text("{}", encoding="utf-8")
+    (root / ".project_control_execution").mkdir()
     require_fresh_output_root_v0(root)
 
     (root / "stale.json").write_text("{}", encoding="utf-8")
@@ -587,3 +588,8 @@ def test_remote_wrapper_uses_windows_powershell51_safe_manifest_fallback() -> No
     assert "$manifestWorkspace = if ($manifest.workspace)" in wrapper
     assert "$manifestSha = [string](" not in wrapper
     assert "$manifestWorkspace = [string](" not in wrapper
+    assert "[string]$ProjectControlAdmission" in wrapper
+    assert "[string]$ProjectControlAdmissionSha256" in wrapper
+    assert "[string]$TargetRunId" in wrapper
+    assert "'--requested-action', $RequestedAction" in wrapper
+    assert "'--project-control-admission', $resolvedAdmission" in wrapper

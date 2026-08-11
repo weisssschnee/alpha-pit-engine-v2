@@ -219,7 +219,7 @@ def require_fresh_output_root_v0(output_root: Path) -> None:
     root = Path(output_root).resolve()
     if not root.is_dir() or {
         path.name for path in root.iterdir()
-    } != {"deployment_binding.json"}:
+    } != {"deployment_binding.json", ".project_control_execution"}:
         raise FileExistsError("fixed-stratified production root is not fresh")
 
 
@@ -1842,7 +1842,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def main(argv: Sequence[str] | None = None) -> int:
     admission = consume_active_admission(
         "cn-fixed-stratified-production-v0",
-        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY", "RECOVERY"},
+        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY"},
     )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--preflight-root", type=Path, required=True)

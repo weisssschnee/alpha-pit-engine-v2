@@ -7,6 +7,13 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$OutputRoot,
     [Parameter(Mandatory = $true)]
+    [string]$TargetRunId,
+    [Parameter(Mandatory = $true)]
+    [string]$ProjectControlAdmission,
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ProjectControlAdmissionSha256,
+    [Parameter(Mandatory = $true)]
     [string]$CampaignAuthorization,
     [switch]$PreflightOnly
 )
@@ -70,6 +77,10 @@ $split = (
 
 $resolvedRepo = [IO.Path]::GetFullPath($Repo)
 $resolvedRoot = [IO.Path]::GetFullPath($OutputRoot)
+$resolvedAdmission = [IO.Path]::GetFullPath($ProjectControlAdmission)
+if (-not (Test-Path -LiteralPath $resolvedAdmission -PathType Leaf)) {
+    throw "project-control admission missing: $resolvedAdmission"
+}
 $resolvedAuthorization = [IO.Path]::GetFullPath($CampaignAuthorization)
 if (-not $resolvedRepo.StartsWith(
     'D:\ChengboRemote\workspace\',
@@ -320,7 +331,14 @@ $env:JOBLIB_MULTIPROCESSING = '0'
 
 $campaignArgs = @(
     (Join-Path $resolvedRepo 'app.py'),
-    'cn-large-tpe-search-campaign', '--',
+    'cn-large-tpe-search-campaign',
+    '--requested-action', 'LAUNCH_HIGH_COST_CAMPAIGN',
+    '--target-run-id', $TargetRunId,
+    '--project-control-admission', $resolvedAdmission,
+    '--project-control-admission-sha256', (
+        $ProjectControlAdmissionSha256.ToLowerInvariant()
+    ),
+    '--',
     '--campaign-authorization', $resolvedAuthorization,
     '--registry',
     (Join-Path $resolvedRepo (

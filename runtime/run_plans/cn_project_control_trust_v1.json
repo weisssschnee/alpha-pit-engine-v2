@@ -3,7 +3,19 @@
   "project_id": "alpha_pit_true1min_engine_evalreset_20260711",
   "repository_path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711",
   "trusted_harness_runs_root": "G:\\CodexData\\codex-control-plane-runs",
+  "deployments": [
+    {
+      "deployment_id": "local_audit_g",
+      "repository_path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711",
+      "trusted_harness_runs_root": "G:\\CodexData\\codex-control-plane-runs"
+    },
+    {
+      "deployment_id": "validation_77o",
+      "repository_root_prefix": "D:\\ChengboRemote\\workspace",
+      "trusted_harness_runs_root": "D:\\ChengboRemote\\runtime\\cn_project_control_authority_store"
+    }
+  ],
   "trust_model": "HARNESS_RUNS_ROOT_IS_AUTHORITY_STORE",
   "cryptographic_receipt_signature": "UNAVAILABLE_IN_EXISTING_HARNESS",
-  "trust_payload_sha256": "f02a3d9db8f717249e1c4dc8d03bd986702e8bed9039302f99803772caab7903"
+  "trust_payload_sha256": "a382d9779ae7234e53186e2858345a7d824ab357d95fc5c9852367e5b32447b8"
 }

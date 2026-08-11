@@ -116,7 +116,7 @@ HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
         {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
     ),
     "cn-fixed-stratified-production-v0": frozenset(
-        {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+        {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY}
     ),
 }
 

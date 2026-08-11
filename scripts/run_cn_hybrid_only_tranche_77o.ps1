@@ -6,6 +6,13 @@ param(
     [string]$RepoSha,
     [Parameter(Mandatory = $true)]
     [string]$OutputRoot,
+    [Parameter(Mandatory = $true)]
+    [string]$TargetRunId,
+    [Parameter(Mandatory = $true)]
+    [string]$ProjectControlAdmission,
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ProjectControlAdmissionSha256,
     [switch]$PreflightOnly
 )
 
@@ -30,6 +37,10 @@ $split = 'D:\ChengboRemote\workspace\cn_phase3cm_1024_sidecar_closure_0aba8c5\ru
 
 $resolvedRepo = [IO.Path]::GetFullPath($Repo)
 $resolvedRoot = [IO.Path]::GetFullPath($OutputRoot)
+$resolvedAdmission = [IO.Path]::GetFullPath($ProjectControlAdmission)
+if (-not (Test-Path -LiteralPath $resolvedAdmission -PathType Leaf)) {
+    throw "project-control admission missing: $resolvedAdmission"
+}
 if (-not $resolvedRepo.StartsWith(
     'D:\ChengboRemote\workspace\',
     [StringComparison]::OrdinalIgnoreCase
@@ -203,7 +214,14 @@ $env:JOBLIB_MULTIPROCESSING = '0'
 
 $campaignArgs = @(
     (Join-Path $resolvedRepo 'app.py'),
-    'cn-large-tpe-search-campaign', '--',
+    'cn-large-tpe-search-campaign',
+    '--requested-action', 'LAUNCH_HIGH_COST_CAMPAIGN',
+    '--target-run-id', $TargetRunId,
+    '--project-control-admission', $resolvedAdmission,
+    '--project-control-admission-sha256', (
+        $ProjectControlAdmissionSha256.ToLowerInvariant()
+    ),
+    '--',
     '--campaign-authorization',
     (Join-Path $resolvedRepo 'runtime\run_plans\cn_hybrid_only_tranche_v1_authorization.json'),
     '--registry',

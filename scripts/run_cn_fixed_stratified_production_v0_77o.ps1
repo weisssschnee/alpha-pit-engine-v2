@@ -10,6 +10,20 @@ param(
     [string]$PreflightRoot,
     [Parameter(Mandatory = $true)]
     [string]$OutputRoot,
+    [Parameter(Mandatory = $true)]
+    [ValidateSet(
+        'LAUNCH_HIGH_COST_CAMPAIGN',
+        'SUCCESSOR_CAMPAIGN',
+        'RETRY'
+    )]
+    [string]$RequestedAction,
+    [Parameter(Mandatory = $true)]
+    [string]$TargetRunId,
+    [Parameter(Mandatory = $true)]
+    [string]$ProjectControlAdmission,
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ProjectControlAdmissionSha256,
     [ValidateSet('VALIDATION_EXCLUSIVE_32')]
     [string]$NodeResourceProfile = 'VALIDATION_EXCLUSIVE_32',
     [string]$NodeResourceCapacity = (
@@ -45,6 +59,7 @@ $resolvedRepo = [IO.Path]::GetFullPath($Repo)
 $resolvedManifest = [IO.Path]::GetFullPath($DeploymentManifest)
 $resolvedPreflight = [IO.Path]::GetFullPath($PreflightRoot)
 $resolvedRoot = [IO.Path]::GetFullPath($OutputRoot)
+$resolvedAdmission = [IO.Path]::GetFullPath($ProjectControlAdmission)
 $resolvedStateRoot = [IO.Path]::GetFullPath($NodeResourceStateRoot)
 $resolvedNodeCapacity = if ([IO.Path]::IsPathRooted($NodeResourceCapacity)) {
     [IO.Path]::GetFullPath($NodeResourceCapacity)
@@ -85,6 +100,7 @@ if (Test-Path -LiteralPath $resolvedRoot) {
 foreach ($path in @(
     $python,
     $resolvedManifest,
+    $resolvedAdmission,
     $resolvedPreflight,
     $resolvedNodeCapacity,
     $resolvedStateRoot,
@@ -238,7 +254,14 @@ $env:JOBLIB_MULTIPROCESSING = '0'
 
 $commandArgs = @(
     (Join-Path $resolvedRepo 'app.py'),
-    'cn-fixed-stratified-production-v0', '--',
+    'cn-fixed-stratified-production-v0',
+    '--requested-action', $RequestedAction,
+    '--target-run-id', $TargetRunId,
+    '--project-control-admission', $resolvedAdmission,
+    '--project-control-admission-sha256', (
+        $ProjectControlAdmissionSha256.ToLowerInvariant()
+    ),
+    '--',
     '--preflight-root', $resolvedPreflight,
     '--registry',
     (Join-Path $resolvedRepo (

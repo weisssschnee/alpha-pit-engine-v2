@@ -301,6 +301,7 @@ def _materialize(
     trust_config: Path,
     action: str,
     child: Path,
+    campaign_id: str = "cn-large-tpe-search-campaign",
     target_run_id: str = "target-1",
     parent: Path | None = None,
 ) -> Path:
@@ -315,7 +316,7 @@ def _materialize(
             trust_config_path=trust_config,
         ),
         requested_action=action,
-        target_campaign_id="cn-large-tpe-search-campaign",
+        target_campaign_id=campaign_id,
         target_run_id=target_run_id,
         repo_sha=REPO_SHA,
         parent_post_batch_run_record_path=parent,
@@ -842,6 +843,73 @@ def test_high_cost_entry_denies_before_route_import(monkeypatch) -> None:
     assert imported is False
 
 
+def test_activation_binds_code_derived_deployment_repo_and_store(
+    monkeypatch, tmp_path: Path
+) -> None:
+    remote_repo = (tmp_path / "remote" / "workspace" / "deployed-repo").resolve()
+    remote_repo.mkdir(parents=True)
+    remote_store = (tmp_path / "remote" / "authority-store").resolve()
+    remote_store.mkdir(parents=True)
+    payload = {
+        "schema_version": TRUST_SCHEMA_VERSION,
+        "project_id": PROJECT_ID,
+        "repository_path": str(REPO),
+        "trusted_harness_runs_root": str(remote_store),
+        "deployments": [
+            {
+                "deployment_id": "local-audit",
+                "repository_path": str(REPO),
+                "trusted_harness_runs_root": str(remote_store),
+            },
+            {
+                "deployment_id": "remote-validation",
+                "repository_root_prefix": str(remote_repo.parent),
+                "trusted_harness_runs_root": str(remote_store),
+            },
+        ],
+        "trust_model": "HARNESS_RUNS_ROOT_IS_AUTHORITY_STORE",
+        "cryptographic_receipt_signature": "UNAVAILABLE_IN_EXISTING_HARNESS",
+    }
+    payload["trust_payload_sha256"] = _stable_hash(payload)
+    trust = _write_json(tmp_path / "deployment-trust.json", payload)
+    target_output_root = (tmp_path / "target-output").resolve()
+    child = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="deployment-control",
+        target_output_root=target_output_root,
+    )
+    admission = _materialize(
+        tmp_path,
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        child=child,
+    )
+    observed_repositories: list[Path] = []
+
+    def clean_head(path: Path) -> str:
+        observed_repositories.append(path.resolve())
+        return REPO_SHA
+
+    monkeypatch.setattr(project_control, "CANONICAL_TRUST_CONFIG", trust)
+    monkeypatch.setattr(project_control, "REPO_ROOT", remote_repo)
+    monkeypatch.setattr(project_control, "_clean_repository_head", clean_head)
+    activate_admission(
+        admission,
+        expected_admission_file_sha256=sha256_file(admission),
+        expected_actions={ACTION_LAUNCH},
+        expected_target_campaign_id="cn-large-tpe-search-campaign",
+        expected_target_run_id="target-1",
+        expected_target_output_root=target_output_root,
+    )
+    consume_active_admission(
+        "cn-large-tpe-search-campaign", {ACTION_LAUNCH}
+    )
+    project_control.clear_active_admission()
+
+    assert observed_repositories == [remote_repo]
+
+
 def test_high_cost_entry_consumes_valid_target_bound_admission(
     monkeypatch, tmp_path: Path
 ) -> None:
@@ -940,8 +1008,7 @@ def test_high_cost_entry_consumes_valid_target_bound_admission(
     assert exc.value.code == 2
     assert loaded == ["cn-large-tpe-search-campaign"]
     marker = (
-        target_output_root
-        / ".project_control_execution"
+        project_control._durable_control_root(target_output_root)
         / "consumptions"
         / (
             json.loads(admission.read_text(encoding="utf-8"))[
@@ -951,3 +1018,157 @@ def test_high_cost_entry_consumes_valid_target_bound_admission(
         )
     )
     assert marker.is_file()
+
+
+def test_fixed_stratified_admission_preserves_binding_only_freshness(
+    monkeypatch, tmp_path: Path
+) -> None:
+    trust = _trust_config(tmp_path)
+    target_output_root = (tmp_path / "fixed-output").resolve()
+    target_output_root.mkdir()
+    (target_output_root / "deployment_binding.json").write_text(
+        "{}\n", encoding="utf-8"
+    )
+    child = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="fixed-entry-control",
+        campaign_id="cn-fixed-stratified-production-v0",
+        target_output_root=target_output_root,
+    )
+    admission = _materialize(
+        tmp_path,
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        child=child,
+        campaign_id="cn-fixed-stratified-production-v0",
+    )
+    monkeypatch.setattr(project_control, "CANONICAL_TRUST_CONFIG", trust)
+    monkeypatch.setattr(
+        project_control, "_clean_repository_head", lambda _path: REPO_SHA
+    )
+
+    proof = activate_admission(
+        admission,
+        expected_admission_file_sha256=sha256_file(admission),
+        expected_actions={ACTION_LAUNCH},
+        expected_target_campaign_id="cn-fixed-stratified-production-v0",
+        expected_target_run_id="target-1",
+        expected_target_output_root=target_output_root,
+    )
+    consume_active_admission(
+        "cn-fixed-stratified-production-v0", {ACTION_LAUNCH}
+    )
+    project_control.clear_active_admission()
+
+    assert {path.name for path in target_output_root.iterdir()} == {
+        "deployment_binding.json",
+        ".project_control_execution",
+    }
+    marker = (
+        project_control._durable_control_root(target_output_root)
+        / "consumptions"
+        / f"{proof['admission_payload_sha256']}.json"
+    )
+    assert marker.is_file()
+
+
+def test_prepared_77o_metadata_root_is_claimed_but_business_output_denies(
+    monkeypatch, tmp_path: Path
+) -> None:
+    trust = _trust_config(tmp_path)
+    monkeypatch.setattr(project_control, "CANONICAL_TRUST_CONFIG", trust)
+    monkeypatch.setattr(
+        project_control, "_clean_repository_head", lambda _path: REPO_SHA
+    )
+
+    prepared_root = (tmp_path / "prepared-output").resolve()
+    prepared_root.mkdir()
+    (prepared_root / "deployment_binding.json").write_text(
+        "{}\n", encoding="utf-8"
+    )
+    (prepared_root / "campaign.stdout.log").write_text("", encoding="utf-8")
+    prepared_child = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="prepared-control",
+        target_output_root=prepared_root,
+    )
+    prepared_admission = _materialize(
+        tmp_path / "prepared",
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        child=prepared_child,
+    )
+    activate_admission(
+        prepared_admission,
+        expected_admission_file_sha256=sha256_file(prepared_admission),
+        expected_actions={ACTION_LAUNCH},
+        expected_target_campaign_id="cn-large-tpe-search-campaign",
+        expected_target_run_id="target-1",
+        expected_target_output_root=prepared_root,
+    )
+    consume_active_admission(
+        "cn-large-tpe-search-campaign", {ACTION_LAUNCH}
+    )
+    project_control.clear_active_admission()
+    assert project_control._durable_control_root(prepared_root).is_dir()
+
+    stale_root = (tmp_path / "stale-output").resolve()
+    stale_root.mkdir()
+    (stale_root / "deployment_binding.json").write_text(
+        "{}\n", encoding="utf-8"
+    )
+    (stale_root / "candidate_results.json").write_text(
+        "{}\n", encoding="utf-8"
+    )
+    stale_child = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="stale-control",
+        target_output_root=stale_root,
+        target_run_id="target-stale",
+    )
+    stale_admission = _materialize(
+        tmp_path / "stale",
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        child=stale_child,
+        target_run_id="target-stale",
+    )
+    with pytest.raises(ProjectControlDenied, match="control-metadata-only"):
+        activate_admission(
+            stale_admission,
+            expected_admission_file_sha256=sha256_file(stale_admission),
+            expected_actions={ACTION_LAUNCH},
+            expected_target_campaign_id="cn-large-tpe-search-campaign",
+            expected_target_run_id="target-stale",
+            expected_target_output_root=stale_root,
+        )
+
+
+def test_current_77o_high_cost_wrappers_forward_project_control() -> None:
+    wrappers = (
+        "run_cn_slow_cross_sectional_evaluated384_77o.ps1",
+        "run_cn_hybrid_bounded_large_tranche_77o.ps1",
+        "run_cn_hybrid_only_tranche_77o.ps1",
+        "run_cn_hybrid_search_productivity_medium_77o.ps1",
+        "run_cn_large_optuna_tpe_actual20000_77o.ps1",
+        "run_cn_winner_guided_large_search_77o.ps1",
+        "run_cn_fixed_stratified_production_v0_77o.ps1",
+    )
+    for name in wrappers:
+        text = (REPO / "scripts" / name).read_text(encoding="utf-8-sig")
+        assert "--target-run-id" in text, name
+        assert "--project-control-admission" in text, name
+        assert "--project-control-admission-sha256" in text, name
+
+
+def test_fixed_stratified_does_not_advertise_unsupported_recovery() -> None:
+    text = (
+        REPO / "scripts" / "run_cn_fixed_stratified_production_v0_77o.ps1"
+    ).read_text(encoding="utf-8-sig")
+    assert ACTION_RECOVERY not in repo_app.HIGH_COST_ROUTE_ACTIONS[
+        "cn-fixed-stratified-production-v0"
+    ]
+    assert "'RECOVERY'" not in text
