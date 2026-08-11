@@ -1,0 +1,148 @@
+{
+  "schema_version": "cn_search_engine_v2_prospective_512_independent_audit_v1",
+  "status": "SEARCH_V2_PREFINANCIAL_FAILURE_INDEPENDENTLY_CONFIRMED",
+  "audit_role": "INDEPENDENT_OF_PRODUCER_SUMMARY",
+  "audit_method": "Recomputed the exact ask plan and materialization resolution directly from the frozen authorization, accepted Phase B component pool, accepted field manifest and registry at the execution SHA. No producer closure or financial result was trusted because neither exists.",
+  "start_repo_sha": "292fac0fb8af9310648aa030ae62642bb23b2fe8",
+  "execution_repo_sha": "292fac0fb8af9310648aa030ae62642bb23b2fe8",
+  "project_control": {
+    "run_id": "96bdf8c2-aaab-4e8b-9cd8-9bc02dce2271",
+    "request_payload_sha256": "b7d88f6f598eff8cf6ccc58d25c32f9aab0a0bd12c733841385161b9a9c8a2db",
+    "admission_file_sha256": "b451401d6640e00cebe3debc94dc5405798ed1847770b69f1c60944fa59acf93",
+    "admission_payload_sha256": "abd7522e94294e3b7e6a020dd0d5cdd6f16c65289c6edcf2a8889f92bff2961b",
+    "requested_action": "LAUNCH_HIGH_COST_CAMPAIGN",
+    "target_run_id": "cn_search_engine_v2_canary_20260811_292fac0",
+    "target_output_root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_canary_20260811_292fac0",
+    "consumed_at": "2026-08-11T15:26:05.532944+00:00",
+    "execution_identity_file_sha256": "138911f3a795865cdd3ee5a3b20a7d68adeeba8d70cc85ebb6037d9106c8e322",
+    "admission_consumption_file_sha256": "801423b74008bb47bdcde64b801b65c59931f4ab19b05e096c7371c6f97390d1"
+  },
+  "execution": {
+    "host": "DESKTOP-77OPJ6F",
+    "job_id": "searchv2job_20260811_232327_292fac0",
+    "job_started_at": "2026-08-11T15:26:05.2742260Z",
+    "job_ended_at": "2026-08-11T15:26:07.7583494Z",
+    "job_exit_code": 1,
+    "job_status_file_sha256": "b316d8fd8e2a81737775cec79af81563cde0288dbb9dd4d41a90ba34671e5d92",
+    "job_log_file_sha256": "592e7f09768dbad43bfb784428218aa5bcd447ae2facef3f125cf1eccde3edac",
+    "output_root_file_count": 2,
+    "prefinancial_freeze_file_count": 0,
+    "run_root_created": false,
+    "producer_closure_created": false,
+    "unique_economic_route_entry_count": 1,
+    "automatic_successor_or_second_canary_launched": false
+  },
+  "transport_history": {
+    "pre_admission_transport_failure_count": 3,
+    "economic_route_entries_from_transport_failures": 0,
+    "financial_reads_from_transport_failures": 0,
+    "incident_files": [
+      {
+        "incident_id": "SEARCH_V2_PRE_ADMISSION_TRANSPORT_20260811T224432_724AD0",
+        "file_sha256": "a58c04a58ec31bf246898a07933bcf33116958b16523faaad6cea18d102330d6"
+      },
+      {
+        "incident_id": "SEARCH_V2_PRE_ADMISSION_TRANSPORT_20260811T224739_500461",
+        "file_sha256": "dc29d12cb40774996db407744fa546daac09eb42e08556d2ba40bea34988f12a"
+      },
+      {
+        "incident_id": "SEARCH_V2_PRE_ADMISSION_TRANSPORT_20260811T231158_292FAC0",
+        "file_sha256": "4698aaf4f1a5d4802a16104e49ddcc8aa4e5af213ab1afc39ba548b402ae98be"
+      }
+    ]
+  },
+  "ask_schedule_recomputation": {
+    "ask_plan_sha256": "c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869",
+    "authorization_hash_match": true,
+    "record_count": 512,
+    "checkpoint_count": 64,
+    "records_per_checkpoint": 8,
+    "template_quotas": {
+      "BASE": 64,
+      "BASE_EVENT": 64,
+      "BASE_MARKET": 64,
+      "BASE_MARKET_EVENT": 64,
+      "BASE_TEMPORAL": 64,
+      "BASE_TEMPORAL_EVENT": 64,
+      "BASE_TEMPORAL_MARKET": 64,
+      "BASE_TEMPORAL_MARKET_EVENT": 64
+    },
+    "total_arm_quotas": {
+      "CONDITIONAL_UPLIFT_EXPLOIT": 168,
+      "NOVELTY_RESERVE": 56,
+      "UNIFORM_FRESH": 288
+    },
+    "enhanced_arm_quotas": {
+      "CONDITIONAL_UPLIFT_EXPLOIT": 168,
+      "NOVELTY_RESERVE": 56,
+      "UNIFORM_FRESH": 224
+    },
+    "all_schedule_checks_passed": true
+  },
+  "materialization_recomputation": {
+    "materialization_plan_sha256": "64797c12c3313760170a9cdd525a9ced4a943483cba8b6af20d3b13d7e9b90cd",
+    "component_count": 112,
+    "required_physical_leaf_count": 84,
+    "available_required_field_count": 83,
+    "missing_required_field_ids": [
+      "ctx_sent_uplimit_num"
+    ],
+    "affected_component_ids": [
+      "833a45b02186b1f2e1ac433e29ceff11a4bfbb2aa569de593a5cab3dc1ea15f0",
+      "87756f9542ca38b5ba5a2d2f5605c7c67e7e5c249661a4919825e82f4733810e"
+    ],
+    "required_equals_materializable": true,
+    "unsupported_required_fields": [],
+    "freeze_contract_requires_already_materialized_fields": true,
+    "canonical_failure": "Search V2 freeze has unresolved materialization fields"
+  },
+  "chain_checkers": {
+    "exact_checkout_and_cleanliness": "PASS",
+    "project_control_request_admission_identity": "PASS",
+    "one_time_admission_consumption": "PASS",
+    "frozen_authorization_and_ask_schedule": "PASS",
+    "phase_b_source_authority_binding": "PASS",
+    "registry_manifest_capacity_binding": "PASS",
+    "prefinancial_materialization_reachability": "FAIL",
+    "checkpoint_chain": "NOT_REACHED",
+    "scheduler_chain": "NOT_REACHED",
+    "selection_chain": "NOT_REACHED",
+    "feedback_chain": "NOT_REACHED",
+    "matched_control_chain": "NOT_REACHED",
+    "accounting_chain": "NOT_REACHED",
+    "producer_closure_chain": "NOT_REACHED",
+    "artifact_manifest_chain": "NOT_REACHED",
+    "sealed_read_boundary": "PASS_ZERO_READS",
+    "existing_recovery_contract_eligibility": "DENIED_CORRECTLY_INCOMPLETE_FREEZE"
+  },
+  "remote_diagnostic": {
+    "path": "D:\\ChengboRemote\\runtime\\run_health_incidents\\20260811T232607_search_v2_prefinancial_materialization_failure\\diagnostic_audit.json",
+    "file_sha256": "08547900e0ce4e767ec0834ad71e1b15449d93cc532caeaf12aea5236870f5ec",
+    "payload_sha256": "5d5e191b171a4e1f10c5f7cad80369c7e6a710afb9822849f20631cd147a4331",
+    "audit_script_sha256": "45155c348fda8a347ff31abfae1ed57f99b512461cb52cc2d086b15ad6b2a80d"
+  },
+  "remote_incident": {
+    "path": "D:\\ChengboRemote\\runtime\\run_health_incidents\\20260811T232607_search_v2_prefinancial_materialization_failure\\incident.json",
+    "file_sha256": "f25ac514c0bd757cafecd430c9dc74eafeea63eefe5179ba8fb9155153841b70"
+  },
+  "prospective_gate": {
+    "decision_rule": "NONINFERIOR_ABSOLUTE_AND_SUPERIOR_CONDITIONAL_UPLIFT",
+    "gate_contract_sha256": "3d3cb195c8cb4b97f4d8a6004f37c54647d89952806026617393ba9fa7839132",
+    "evaluated": false,
+    "result": "NOT_EVALUABLE_PREFINANCIAL_FAILURE",
+    "economic_conclusion": "NONE"
+  },
+  "decision": "HOLD_AND_DIAGNOSE_SEARCH_V2",
+  "decision_basis": "The only admitted canary reached the exact route but failed before the first financial read because one required physical leaf was materializable yet absent from the accepted field manifest. No economic record, checkpoint, producer closure or gate result exists.",
+  "recovery_eligible_under_existing_contract": false,
+  "recovery_ineligibility_reason": "RECOVERY_REQUIRES_A_COMPLETE_VERIFIABLE_PREFINANCIAL_FREEZE",
+  "read_counts": {
+    "financial_data_reads": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "audit_payload_sha256": "2a3c7e5086f9dd7dbb0f493fd24db9694634cff32244e6da7f322768f6c8bc9f"
+}

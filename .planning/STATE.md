@@ -2,7 +2,7 @@
 
 Updated: 2026-08-11
 
-Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_IMPLEMENTED_CANARY_FROZEN_NOT_RUN_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_PREFINANCIAL_FAILED_HOLD_DIAGNOSE_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,13 +16,41 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
-### Search Engine V2 implemented and prospective 512 canary frozen without a financial run (2026-08-11)
+### Search Engine V2 unique 512 canary failed closed before financial read; hold and diagnose (2026-08-11)
+
+- The unique admitted canary reached the canonical 77o route at execution commit
+  `292fac0fb8af9310648aa030ae62642bb23b2fe8`, consumed Project Control
+  admission file SHA
+  `b451401d6640e00cebe3debc94dc5405798ed1847770b69f1c60944fa59acf93`
+  for target run `cn_search_engine_v2_canary_20260811_292fac0`, then failed
+  closed during prefinancial materialization resolution. Job
+  `searchv2job_20260811_232327_292fac0` created only the execution identity and
+  one-time consumption receipt; the prefinancial freeze contains zero files,
+  the run root was never created, and no producer closure or artifact manifest
+  exists.
+- Independent recomputation in
+  `runtime/run_plans/cn_search_engine_v2_prospective_512_independent_audit_20260811.json`
+  reproduced the exact 512 ask hash, 64 checkpoints, eight 64-record template
+  quotas and 288/168/56 arm totals. It also reproduced the actual blocker:
+  84 physical leaves are required, 83 are present in the accepted field
+  manifest, and `ctx_sent_uplimit_num` is absent for two components even though
+  the materialization plan classifies the leaf as materializable. The current
+  freeze contract requires all leaves already materialized and therefore
+  denies before the first financial read.
+- The compact outcome
+  `runtime/run_plans/cn_search_engine_v2_prospective_512_outcome_20260811.json`
+  records `HOLD_AND_DIAGNOSE_SEARCH_V2`. This is a reachability failure, not an
+  economic PASS or FAIL: record count and checkpoint count are zero, the frozen
+  dual gate was not evaluated, and no automatic retry, recovery, second canary,
+  successor, promotion or authority transition is authorized. Existing
+  recovery is inapplicable because it requires a complete verifiable
+  prefinancial freeze.
 
 - Code/ADR/frozen-plan authority is commit
   `3ea8091796910da8172b9134f186ef57c725e93a`. The curated CURRENT projection
   now contains experimental node `cn_search_engine_v2_experimental` with
-  `STATIC_VERIFIED / PASS` evidence and explicit `NOT_RUN / NO_RUNTIME_ASSURANCE`
-  badges. RAW remains intentionally `STALE / RAW_GRAPH_SOURCE_CHANGED`; this
+  static implementation evidence plus the later prefinancial runtime failure
+  evidence. RAW remains intentionally `STALE / RAW_GRAPH_SOURCE_CHANGED`; this
   task did not perform or require a full RAW rebuild.
 - ADR 0018 accepts an experimental two-head search-control design. Absolute
   standalone economics is an admission gate only; exact Full-vs-Base enhancer
@@ -51,36 +79,37 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   classification. Manual diagnosis and post-parent objective design are true,
   so `cross_campaign_development_feedback=true` honestly describes adaptive
   design without reused optimizer state.
-- Prospective decision gates are frozen as
+- Prospective decision gates remain frozen as
   `NONINFERIOR_ABSOLUTE_AND_SUPERIOR_CONDITIONAL_UPLIFT`: strict zero-margin
   absolute noninferiority plus strictly positive conditional matched-uplift
   improvement, minimum admitted support and at least four improved templates.
   Neither side can compensate for failure of the other and insufficient
-  support fails closed. The future runner applies this rule mechanically to a
-  single manifest-bound feedback byte buffer; its formal V2 closure is written
-  only after the dual PASS/FAIL decision, so there is no pre-gate complete
-  artifact to misread.
-- Future execution has one physical route,
+  support fails closed. The runner can apply this rule only to a complete
+  manifest-bound feedback byte buffer; this attempt never produced such a
+  buffer, so the gate correctly has no result.
+- Execution used the single physical route,
   `cn-joint-program-search-v2-canary`, behind exact Project Control campaign,
   run, checkout and output-root binding. Its canonical 77o launcher does not
-  preclaim a new output root and direct runner invocation denies. No Project
-  Control admission was materialized and the canary was not run. The
-  prefinancial freeze also rebinds the execution contract, development price,
-  development field manifest, registry and capacity to the accepted immutable
-  Phase B input metadata before any financial read.
+  preclaim a new output root and direct runner invocation denies. The consumed
+  admission and durable root identity prove exact route entry; the freeze then
+  rebound the execution contract, development field manifest, registry,
+  capacity and immutable Phase B source metadata before denying on the missing
+  accepted field. Three earlier transport-only failures remained before route
+  entry with absent output root and zero reads; they did not create additional
+  economic runs.
 - Evaluation authority remains closed: 2023 is spent/negative/no-retry,
   Forward-B is sealed, validation/holdout cannot feed search, OOS grade is
-  `NONE` and promotion remains `HOLD`. This implementation read only code,
-  governance, compact immutable outcome/provenance metadata and synthetic
-  fixtures; financial dataset reads were zero.
+  `NONE` and promotion remains `HOLD`. Financial, validation, holdout,
+  historical-2023, Forward-B and forward-2026 reads were all zero.
 
 Status summary:
 
 ```text
 SEARCH_CONTROL_REPAIR = CLOSED
 PHASE_D = HOLD
-SEARCH_ENGINE_V2 = IMPLEMENTED / CANARY_FROZEN
-SEARCH_V2_CANARY = NOT_RUN
+SEARCH_ENGINE_V2 = IMPLEMENTED / PREFINANCIAL_REACHABILITY_FAILED
+SEARCH_V2_CANARY = ROUTE_ENTERED / ZERO_FINANCIAL_READS / NO_ECONOMIC_RESULT
+SEARCH_V2_DECISION = HOLD_AND_DIAGNOSE
 FORWARD_B = SEALED
 OOS_GRADE = NONE
 PROMOTION = HOLD

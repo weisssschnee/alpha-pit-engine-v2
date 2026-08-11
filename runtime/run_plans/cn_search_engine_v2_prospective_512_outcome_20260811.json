@@ -1,0 +1,78 @@
+{
+  "schema_version": "cn_search_engine_v2_prospective_512_outcome_v1",
+  "status": "SEARCH_V2_CANARY_PREFINANCIAL_FAILED_ZERO_READS",
+  "decision": "HOLD_AND_DIAGNOSE_SEARCH_V2",
+  "start_repo_sha": "292fac0fb8af9310648aa030ae62642bb23b2fe8",
+  "execution_repo_sha": "292fac0fb8af9310648aa030ae62642bb23b2fe8",
+  "project_control_run_id": "96bdf8c2-aaab-4e8b-9cd8-9bc02dce2271",
+  "project_control_request_payload_sha256": "b7d88f6f598eff8cf6ccc58d25c32f9aab0a0bd12c733841385161b9a9c8a2db",
+  "project_control_admission_file_sha256": "b451401d6640e00cebe3debc94dc5405798ed1847770b69f1c60944fa59acf93",
+  "project_control_admission_payload_sha256": "abd7522e94294e3b7e6a020dd0d5cdd6f16c65289c6edcf2a8889f92bff2961b",
+  "target_run_id": "cn_search_engine_v2_canary_20260811_292fac0",
+  "output_root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_canary_20260811_292fac0",
+  "job_id": "searchv2job_20260811_232327_292fac0",
+  "execution_identity_file_sha256": "138911f3a795865cdd3ee5a3b20a7d68adeeba8d70cc85ebb6037d9106c8e322",
+  "admission_consumption_file_sha256": "801423b74008bb47bdcde64b801b65c59931f4ab19b05e096c7371c6f97390d1",
+  "economic_canary_completed": false,
+  "record_count": 0,
+  "checkpoint_count": 0,
+  "producer_closure_created": false,
+  "artifact_manifest_created": false,
+  "prospective_gate": {
+    "decision_rule": "NONINFERIOR_ABSOLUTE_AND_SUPERIOR_CONDITIONAL_UPLIFT",
+    "evaluated": false,
+    "result": "NOT_EVALUABLE_PREFINANCIAL_FAILURE",
+    "economic_conclusion": "NONE"
+  },
+  "failure": {
+    "stage": "PREFINANCIAL_FREEZE_MATERIALIZATION_RESOLUTION",
+    "canonical_error": "Search V2 freeze has unresolved materialization fields",
+    "required_physical_leaf_count": 84,
+    "available_required_field_count": 83,
+    "missing_required_field_ids": [
+      "ctx_sent_uplimit_num"
+    ],
+    "affected_component_count": 2,
+    "recovery_eligible_under_existing_contract": false
+  },
+  "frozen_schedule_recomputation": {
+    "status": "PASS",
+    "ask_plan_sha256": "c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869",
+    "authorized_record_count": 512,
+    "authorized_checkpoint_count": 64,
+    "authorized_total_arm_quotas": {
+      "CONDITIONAL_UPLIFT_EXPLOIT": 168,
+      "NOVELTY_RESERVE": 56,
+      "UNIFORM_FRESH": 288
+    }
+  },
+  "independent_audit_path": "runtime/run_plans/cn_search_engine_v2_prospective_512_independent_audit_20260811.json",
+  "independent_audit_file_sha256": "30accf1163740802b02e535a22cea8d3b2212c7b22b59200abdb856687b3777e",
+  "independent_audit_payload_sha256": "2a3c7e5086f9dd7dbb0f493fd24db9694634cff32244e6da7f322768f6c8bc9f",
+  "remote_incident_file_sha256": "f25ac514c0bd757cafecd430c9dc74eafeea63eefe5179ba8fb9155153841b70",
+  "transport_only_failure_count": 3,
+  "unique_economic_route_entry_count": 1,
+  "automatic_successor_or_second_canary_launched": false,
+  "promotion_authorized": false,
+  "formal_development_search_authority_replaced": false,
+  "oos_grade": "NONE",
+  "read_counts": {
+    "financial_data_reads": 0,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0
+  },
+  "next_action": {
+    "authorization": "NO_AUTOMATIC_RERUN_RECOVERY_SUCCESSOR_OR_PROMOTION",
+    "objective": "Hold Search Engine V2 and separately repair the prefinancial reachability mismatch for ctx_sent_uplimit_num without changing the frozen economic semantics; any later prospective execution requires a new explicit decision and authority.",
+    "prohibited": [
+      "reinterpret the prefinancial failure as an economic PASS or FAIL",
+      "reuse the consumed admission or incomplete root as financial evidence",
+      "launch a retry, second canary, successor or promotion in this workflow",
+      "read validation, holdout, spent-2023, Forward-B or 2026 data"
+    ]
+  },
+  "outcome_payload_sha256": "257a7c9051d81610f24f79cef460b69ce80ec7fb2611416ab4e5cc9384408c7b"
+}
