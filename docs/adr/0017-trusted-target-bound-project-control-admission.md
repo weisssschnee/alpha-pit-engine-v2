@@ -24,7 +24,9 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
 1. The project owns a self-hashed trust configuration that fixes the exact
    project id, repository path and canonical Harness runs root. Run records
    outside that root are untrusted even if their JSON shape and verdict look
-   valid.
+   valid. Activation fixes this canonical config internally and derives the
+   live clean repository HEAD itself; callers cannot substitute a trust config,
+   project identity or expected code SHA.
 2. A trusted Harness bundle consists of sibling `run_record.json`,
    `task_spec.json` and `project_profile.json` files. The task specification
    embeds a self-hashed execution request binding the exact project, repository
@@ -44,14 +46,22 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
    before creating directories or reading data. Direct invocation,
    freeze-as-launch and same-admission/different-output invocation therefore
    fail closed.
-5. An automatic successor requires both a parent `POST_BATCH=CONTINUE` bundle
+5. Activation atomically creates a durable control record at the admitted
+   output root before route import. A new freeze, launch, successor or retry
+   requires a fresh output root. Every admission hash has one exclusive
+   consumption marker, so the same admission cannot be replayed by another
+   process. A failed import spends that entrance conservatively; later work
+   requires an explicitly authorized retry or recovery.
+6. An automatic successor requires both a parent `POST_BATCH=CONTINUE` bundle
    and a child `PREFLIGHT=PROCEED` bundle. The child request must name the exact
    parent Project Control run, campaign and target run.
-6. Technical recovery requires a trusted recovery preflight for the same
+7. Technical recovery requires a trusted recovery preflight for the same
    target, an immutable incident file binding, and the original validated
-   execution admission for that target. A changed campaign, target run,
-   repository SHA or original admission is a new execution and is denied.
-7. Project Control remains admission-only authority. Economic results,
+   execution admission for that target. Its output-root identity must name the
+   original admission hash, and the recovery admission itself is consumed only
+   once. A changed campaign, target run, repository SHA, output root or original
+   admission is a new execution and is denied.
+8. Project Control remains admission-only authority. Economic results,
    evaluator evidence and the accepted research authority remain decisive.
    This decision grants no search, retry, promotion, OOS or sealed-data access.
 
@@ -60,6 +70,8 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
 - A caller cannot manufacture authority from an arbitrary JSON file, receipt
   hash or generic `PROCEED` verdict.
 - Canonical entry and direct-module entry share one fail-closed physical seam.
+- LAUNCH/SUCCESSOR cannot be replayed as an unlabelled retry or recovery, even
+  from another process using the same output root.
 - Successor and recovery are provable continuations, not alternative names for
   a new run.
 - Synthetic tests can verify the entire control path without reading financial
