@@ -1,0 +1,63 @@
+{
+  "absolute_admission_and_conditional_uplift_separate": true,
+  "arm_quotas": {
+    "CONDITIONAL_UPLIFT_EXPLOIT": 168,
+    "NOVELTY_RESERVE": 56,
+    "UNIFORM_FRESH": 288
+  },
+  "ask_count": 512,
+  "ask_plan_sha256": "c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869",
+  "authorization_ask_plan_sha256": "c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869",
+  "available_after_materialization": 84,
+  "canary_run": false,
+  "final_missing_required_field_ids": [],
+  "financial_evaluation_executed": false,
+  "financial_reads": 0,
+  "host": "DESKTOP-77OPJ6F",
+  "lag_applied_exactly_once": true,
+  "materialized_added_field_ids": [
+    "ctx_sent_uplimit_num"
+  ],
+  "materialized_manifest_cache_independent_audit_sha256": "3cd44ad238be04925961365e2b828ebd0f37487547eebbd073f5b91619c73757",
+  "materialized_manifest_cache_independent_audit_status": "PROGRAM_MATERIALIZATION_INDEPENDENT_AUDIT_PASS",
+  "prefinancial_closure_file_sha256": "5ade112f9fd30ce492a6541886e37b7e75394ef50870d1e33be379e34dcadb8e",
+  "prefinancial_closure_payload_sha256": "158499d77553bf91beaf133f0ff607f0b104f32adae3527854ec2bb5fcb162ae",
+  "prefinancial_root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_prefinancial_repair_20260812_40fc36a",
+  "project_control_admission_requested_or_consumed": false,
+  "prospective_gates_equal_authorization": true,
+  "prospective_gates_sha256": "3d3cb195c8cb4b97f4d8a6004f37c54647d89952806026617393ba9fa7839132",
+  "read_counts": {
+    "development_observation_count": 0,
+    "forward_2026_reads": 0,
+    "forward_b_reads": 0,
+    "historical_2023_reads": 0,
+    "holdout_reads": 0,
+    "label_rows_read": 0,
+    "market_price_rows_read": 0,
+    "validation_reads": 0
+  },
+  "receipt_sha256": "0824153a2e50d36554bc133860df57e2dc40acab848a05022140b43de224190b",
+  "repo_sha": "40fc36aa432fac3d40bd39d869c0ee7e9ceccee7",
+  "required_physical_leaves": 84,
+  "scalar_absolute_plus_uplift_reward": null,
+  "scheduler_policy_id": "PROGRAM_TEMPLATE_HIERARCHICAL_TWO_HEAD_V1",
+  "scheduler_version": "cn_search_v2_scheduler_v1",
+  "schema_version": "cn_search_v2_prefinancial_repair_validation_v1",
+  "source_available_required_field_count": 83,
+  "source_missing_required_field_ids": [
+    "ctx_sent_uplimit_num"
+  ],
+  "source_required_physical_leaf_count": 84,
+  "status": "READY_FOR_REPLACEMENT_PROSPECTIVE_512_CANARY",
+  "template_quotas": {
+    "BASE": 64,
+    "BASE_EVENT": 64,
+    "BASE_MARKET": 64,
+    "BASE_MARKET_EVENT": 64,
+    "BASE_TEMPORAL": 64,
+    "BASE_TEMPORAL_EVENT": 64,
+    "BASE_TEMPORAL_MARKET": 64,
+    "BASE_TEMPORAL_MARKET_EVENT": 64
+  },
+  "unresolved": 0
+}

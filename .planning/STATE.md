@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-11
+Updated: 2026-08-12
 
-Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_PREFINANCIAL_FAILED_HOLD_DIAGNOSE_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_PREFINANCIAL_REPAIR_CLOSED_READY_FOR_REPLACEMENT_PROSPECTIVE_512_CANARY_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,7 +16,65 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
-### Search Engine V2 unique 512 canary failed closed before financial read; hold and diagnose (2026-08-11)
+### Search Engine V2 prefinancial materialization repair closed; replacement canary ready but not launched (2026-08-12)
+
+- The source-only repair at code authority
+  `40fc36aa432fac3d40bd39d869c0ee7e9ceccee7` changes only the existing
+  prefinancial materialization chain. Search V2 now compiles its 84 physical
+  leaves, builds the existing Candidate Program materialization schedule,
+  invokes `prepare_cn_program_materialized_session_sidecar_v1.py` for legally
+  materializable missing leaves, independently verifies the completed
+  manifest/cache, and only then performs the final prefinancial freeze.
+  Unsupported or unresolved leaves still fail closed.
+- The original accepted Phase B sidecar was generated from a 64-record schedule
+  whose compiled programs required 83 fields. The wider Search V2 Phase C
+  component pool requires 84. The old freeze detected
+  `ctx_sent_uplimit_num` as legally materializable but raised on
+  `missing_required_field_ids` before dispatching the existing materializer.
+  This ordering mismatch, rather than a new field or economic semantic, was the
+  reachability defect.
+- On 77o, the exact clean code authority completed a zero-financial preflight at
+  `D:\ChengboRemote\runtime\cn_search_engine_v2_prefinancial_repair_20260812_40fc36a`.
+  It closed `required_physical_leaves=84`, source available `83`,
+  `available_after_materialization=84`, and `unresolved=0`. The only added field
+  was `ctx_sent_uplimit_num`; the existing
+  `MARKET_SESSION_PRELAGGED_BROADCAST` adapter materialized it from the existing
+  pre-lagged market/session source with market scope, same-session broadcast and
+  exactly one lag. Independent full manifest/cache audit status is
+  `PROGRAM_MATERIALIZATION_INDEPENDENT_AUDIT_PASS` with SHA256
+  `3cd44ad238be04925961365e2b828ebd0f37487547eebbd073f5b91619c73757`.
+- The frozen plan was not edited: 512 asks, eight template quotas of 64,
+  288/168/56 arm totals and ask-plan SHA256
+  `c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869`
+  remain exact. Prospective-gate SHA256 remains
+  `3d3cb195c8cb4b97f4d8a6004f37c54647d89952806026617393ba9fa7839132`;
+  scheduler/admission/conditional-uplift/evaluator semantics are unchanged.
+- The canonical validation receipt is
+  `runtime/run_plans/cn_search_engine_v2_prefinancial_repair_validation_20260812.json`
+  with self-hash
+  `0824153a2e50d36554bc133860df57e2dc40acab848a05022140b43de224190b`.
+  Financial evaluation and all financial, label, validation, holdout, 2023,
+  Forward-B, 2026 and development-observation reads are zero. `canary_run=false`
+  and no Project Control admission was requested or consumed. The resulting
+  state is `READY_FOR_REPLACEMENT_PROSPECTIVE_512_CANARY`; this repair neither
+  requests nor launches that separately controlled canary and grants no
+  promotion or economic authority.
+
+Current status summary:
+
+```text
+SEARCH_CONTROL_REPAIR = CLOSED
+PHASE_D = HOLD
+SEARCH_ENGINE_V2 = IMPLEMENTED / PREFINANCIAL_REACHABILITY_VERIFIED
+SEARCH_V2_PREFLIGHT = 84 REQUIRED / 84 AVAILABLE / 0 UNRESOLVED
+SEARCH_V2_CANARY = NOT_REQUESTED / NOT_LAUNCHED
+SEARCH_V2_DECISION = READY_FOR_REPLACEMENT_PROSPECTIVE_512_CANARY
+FORWARD_B = SEALED
+OOS_GRADE = NONE
+PROMOTION = HOLD
+```
+
+### Search Engine V2 unique 512 canary failed closed before financial read; historical attempt (2026-08-11)
 
 - The unique admitted canary reached the canonical 77o route at execution commit
   `292fac0fb8af9310648aa030ae62642bb23b2fe8`, consumed Project Control
@@ -102,7 +160,7 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   `NONE` and promotion remains `HOLD`. Financial, validation, holdout,
   historical-2023, Forward-B and forward-2026 reads were all zero.
 
-Status summary:
+Historical status summary:
 
 ```text
 SEARCH_CONTROL_REPAIR = CLOSED
