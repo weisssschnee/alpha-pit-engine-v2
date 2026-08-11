@@ -2,7 +2,7 @@
 
 Updated: 2026-08-11
 
-Current state: `JOINT_PROGRAM_PHASE_D_CLOSED_REVISED_ALLOCATOR_HELD_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
+Current state: `SEARCH_CONTROL_REPAIRED_JOINT_PROGRAM_PHASE_D_CLOSED_REVISED_ALLOCATOR_HELD_HISTORICAL_CHALLENGE_NEGATIVE_FORWARD_B_SEALED_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,34 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Search-Control Repair V1 closed without a new financial run (2026-08-11)
+
+- Accepted ADR 0016 and implementation commits
+  `0247cbbc466b60287a77ebcd03672a9df6afad5a` and
+  `c32ab7fed18474ddc800c26633c9c6f921aed166` reconcile the execution layer
+  with already observed facts. The 2023 historical challenge is permanently
+  `spent`, economically `NEGATIVE`, and denied with
+  `PERMANENT_DENY_ALREADY_SPENT`; its older unopened authorization remains
+  immutable historical evidence and cannot authorize a retry. The destructive
+  launcher checks this authority before archive hashing, output creation, data
+  conversion, or financial computation.
+- Canonical high-cost `app.py` routes now consume an immutable Project Control
+  admission before route import. The admission binds the exact project, clean
+  repo SHA, action, campaign, target run, control receipt and file hash.
+  Successors additionally require parent `POST_BATCH=CONTINUE` plus child
+  `PREFLIGHT=PROCEED`; technical recovery is restricted to the same authorized
+  target run and an incident binding. Project Control owns execution admission
+  only and is explicitly forbidden from deciding economics or selecting alpha.
+- Phase C and allocator-repair seed artifacts now distinguish serialized
+  optimizer-state import from development financial observations, candidate
+  results, behavior/template statistics, manual diagnosis, and whether the new
+  objective was designed after parent results. Existing optimizer objectives,
+  scorers, candidate formulas and evaluator semantics were not changed.
+- This repair performed no search, financial replay, validation, OOS,
+  historical-2023, Forward-B or 2026 data read. Forward-B remains sealed and
+  not authorized; Phase D remains valid adaptive development evidence with OOS
+  grade `NONE`, held without promotion or automatic successor.
 
 ### Joint Program Phase D closed; revised allocator held without promotion (2026-08-11)
 
