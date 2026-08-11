@@ -20,7 +20,7 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 - Accepted ADRs 0016 and 0017 and implementation commits
   `0247cbbc466b60287a77ebcd03672a9df6afad5a` and
-  `2a807ba8ae7d38bb717eb6565cd85ef23fb8a63e` reconcile the execution layer
+  `bc8d1fb29a9eb6c8798b43bbdc4528f97d552830` reconcile the execution layer
   with already observed facts. The 2023 historical challenge is permanently
   `spent`, economically `NEGATIVE`, and denied with
   `PERMANENT_DENY_ALREADY_SPENT`; its older unopened authorization remains
