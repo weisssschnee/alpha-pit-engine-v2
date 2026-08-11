@@ -1,0 +1,7 @@
+{
+  "schema_version": "cn_project_control_trust_v1",
+  "project_id": "alpha_pit_true1min_engine_evalreset_20260711",
+  "repository_path": "G:\\Project_V7_Rotation\\alpha_pit_true1min_engine_evalreset_20260711",
+  "trusted_harness_runs_root": "G:\\CodexData\\codex-control-plane-runs",
+  "trust_payload_sha256": "e355ba41c16cd599f6f0b744a89cfce6b2aa70bc2c3d7a4210a7586f9b894182"
+}

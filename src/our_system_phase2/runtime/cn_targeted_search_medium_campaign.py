@@ -23,6 +23,10 @@ from typing import Any, Mapping, Sequence
 import pandas as pd
 import pyarrow.parquet as pq
 
+from our_system_phase2.services.project_control_admission import (
+    consume_active_admission,
+)
+
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
     AUTHORIZED_HOST,
     REPO,
@@ -2800,6 +2804,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    consume_active_admission("cn-targeted-search-medium-campaign")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--campaign-profile",

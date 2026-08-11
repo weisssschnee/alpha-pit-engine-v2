@@ -26,6 +26,7 @@ from our_system_phase2.services.candidate_program_proposal_v0 import (
 )
 from our_system_phase2.services.development_feedback_provenance import (
     build_development_feedback_provenance,
+    verify_or_classify_development_feedback,
 )
 from our_system_phase2.services.program_allocator_repair_bandit_v0 import (
     BANDIT_POLICY_ID,
@@ -205,8 +206,8 @@ def build_initial_bandit_v0(
                     factor_statistics_imported=False,
                     behavior_statistics_imported=False,
                     template_classification_imported=True,
-                    manual_diagnosis_imported=False,
-                    objective_designed_after_parent_results=False,
+                    manual_diagnosis_imported=True,
+                    objective_designed_after_parent_results=True,
                 )
             ),
         }
@@ -612,9 +613,9 @@ def verify_prefinancial_freeze_v0(root: Path) -> dict[str, Any]:
         or max(base_counts.values()) > math.ceil(BASE_RECORDS / len(pools["base"]))
     ):
         raise ValueError("allocator-repair BASE reservoir diversity drift")
-    ProgramAllocatorRepairBanditV0.restore(
-        phase_c._read_json(root / "initial_bandit_state.json")
-    )
+    initial_bandit_state = phase_c._read_json(root / "initial_bandit_state.json")
+    ProgramAllocatorRepairBanditV0.restore(initial_bandit_state)
+    feedback_rows = phase_c._read_jsonl(root / "phase_b_feedback_seed.jsonl")
     materialization = phase_c._read_json(root / "phase_c_materialization_plan.json")
     phase_c.verify_phase_c_component_materialization_plan_v0(materialization)
     if materialization["missing_required_field_ids"]:
@@ -643,7 +644,16 @@ def verify_prefinancial_freeze_v0(root: Path) -> dict[str, Any]:
         )
     ):
         raise PermissionError("allocator-repair freeze records prohibited reads")
-    return closure
+    provenance = verify_or_classify_development_feedback(
+        feedback_rows=feedback_rows,
+        initial_bandit_observations=int(initial_bandit_state["observations"]),
+        contract_provenance=contract.get("development_feedback_provenance"),
+        access_provenance=access.get("development_feedback_provenance"),
+        behavior_statistics_imported=False,
+        manual_diagnosis_imported=True,
+        objective_designed_after_parent_results=True,
+    )
+    return {**closure, "development_feedback_provenance_projection": provenance}
 
 
 def main(argv: Sequence[str] | None = None) -> int:

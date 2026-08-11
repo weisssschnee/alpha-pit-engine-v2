@@ -55,6 +55,7 @@ from our_system_phase2.services.candidate_program_v1 import (
 )
 from our_system_phase2.services.development_feedback_provenance import (
     build_development_feedback_provenance,
+    verify_or_classify_development_feedback,
 )
 from our_system_phase2.services.program_factorized_bandit_v0 import (
     BANDIT_POLICY_ID,
@@ -1261,7 +1262,9 @@ def verify_phase_c_prefinancial_freeze_v0(root: Path) -> dict[str, Any]:
         > math.ceil(BASE_RECORDS / len(pools["base"]))
     ):
         raise ValueError("Phase C BASE parity repetition contract drift")
-    ProgramFactorizedBanditV0.restore(_read_json(root / "initial_bandit_state.json"))
+    initial_bandit_state = _read_json(root / "initial_bandit_state.json")
+    ProgramFactorizedBanditV0.restore(initial_bandit_state)
+    feedback_rows = _read_jsonl(root / "phase_b_feedback_seed.jsonl")
     fixtures = _read_jsonl(root / "phase_c_template_compile_fixtures.jsonl")
     if [row["template_id"] for row in fixtures] != list(TEMPLATE_ORDER):
         raise ValueError("Phase C compile fixture template coverage drift")
@@ -1293,7 +1296,16 @@ def verify_phase_c_prefinancial_freeze_v0(root: Path) -> dict[str, Any]:
         )
     ):
         raise PermissionError("Phase C prefinancial freeze records prohibited reads")
-    return closure
+    provenance = verify_or_classify_development_feedback(
+        feedback_rows=feedback_rows,
+        initial_bandit_observations=int(initial_bandit_state["observations"]),
+        contract_provenance=contract.get("development_feedback_provenance"),
+        access_provenance=access.get("development_feedback_provenance"),
+        behavior_statistics_imported=True,
+        manual_diagnosis_imported=False,
+        objective_designed_after_parent_results=False,
+    )
+    return {**closure, "development_feedback_provenance_projection": provenance}
 
 
 def main(argv: Sequence[str] | None = None) -> int:

@@ -27,6 +27,10 @@ from typing import Any
 
 import pyarrow.parquet as pq
 
+from our_system_phase2.services.project_control_admission import (
+    consume_active_admission,
+)
+
 from our_system_phase2.runtime.phase3bl_bk_priority_signal_materialization import (
     DEFAULT_SHARD_ROOT,
     _discover_panels,
@@ -1657,6 +1661,7 @@ def _render_md(summary: dict[str, Any]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    consume_active_admission("phase3cp-real-cm-small-loop")
     parser = argparse.ArgumentParser()
     parser.add_argument("--co-root", type=Path, default=DEFAULT_CO_ROOT)
     parser.add_argument("--arm-budget-table", type=Path)

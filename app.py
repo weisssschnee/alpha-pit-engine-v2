@@ -22,7 +22,13 @@ from our_system_phase2.services.project_control_admission import (
     ALLOWED_ACTIONS,
     PROJECT_ID,
     ProjectControlDenied,
+    activate_admission,
+    clear_active_admission,
     validate_admission,
+)
+
+PROJECT_CONTROL_TRUST_CONFIG = (
+    REPO / "runtime" / "run_plans" / "cn_project_control_trust_v1.json"
 )
 
 ROUTES: dict[str, str] = {
@@ -97,7 +103,13 @@ RETIRED_ROUTES: dict[str, str] = {
 # consume material search budget.  The admission is checked before route import,
 # so a denial cannot initialize an evaluator, read market data, or create output.
 HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
+    "phase3cp-real-cm-small-loop": frozenset(
+        {ACTION_FREEZE, ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+    ),
     "phase3cf-large-search-prelaunch": frozenset({ACTION_FREEZE}),
+    "cn-iterative-search-v1-canary": frozenset(
+        {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+    ),
     "cn-targeted-search-medium-campaign": frozenset(
         {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
     ),
@@ -153,10 +165,10 @@ def _validate_high_cost_route_admission(
     target_run_id: str,
     admission_path: Path | None,
     admission_sha256: str,
-) -> None:
+) -> dict[str, object] | None:
     expected_actions = HIGH_COST_ROUTE_ACTIONS.get(route)
     if expected_actions is None:
-        return
+        return None
     if (
         admission_path is None
         or not admission_sha256
@@ -169,8 +181,9 @@ def _validate_high_cost_route_admission(
         )
     if requested_action not in expected_actions:
         raise ProjectControlDenied("requested action is not valid for this route")
-    validate_admission(
+    return validate_admission(
         admission_path,
+        trust_config_path=PROJECT_CONTROL_TRUST_CONFIG,
         expected_admission_file_sha256=admission_sha256,
         expected_project_id=PROJECT_ID,
         expected_repo_sha=_git_head(),
@@ -208,7 +221,7 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     try:
-        _validate_high_cost_route_admission(
+        admission_proof = _validate_high_cost_route_admission(
             route=parsed.route,
             requested_action=parsed.requested_action,
             target_run_id=parsed.target_run_id,
@@ -218,15 +231,20 @@ def main(argv: list[str] | None = None) -> int:
     except (ProjectControlDenied, subprocess.CalledProcessError) as exc:
         parser.error(f"project-control admission denied before route import: {exc}")
 
-    main_func = _load_main(parsed.route)
+    if admission_proof is not None:
+        activate_admission(admission_proof)
     try:
-        result = main_func(passthrough)
-    except TypeError as exc:
-        if passthrough:
-            raise
-        if "positional" not in str(exc) and "argument" not in str(exc):
-            raise
-        result = main_func()
+        main_func = _load_main(parsed.route)
+        try:
+            result = main_func(passthrough)
+        except TypeError as exc:
+            if passthrough:
+                raise
+            if "positional" not in str(exc) and "argument" not in str(exc):
+                raise
+            result = main_func()
+    finally:
+        clear_active_admission()
     return int(result or 0)
 
 

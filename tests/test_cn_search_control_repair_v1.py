@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import ast
+import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
 import app as repo_app
-
 from our_system_phase2.services.development_feedback_provenance import (
     build_development_feedback_provenance,
 )
@@ -23,7 +24,10 @@ from our_system_phase2.services.project_control_admission import (
     ACTION_SUCCESSOR,
     PROJECT_ID,
     TECHNICAL_RECOVERY,
+    TRUST_SCHEMA_VERSION,
     ProjectControlDenied,
+    build_execution_request,
+    consume_active_admission,
     materialize_admission,
     project_control_receipt_sha256,
     sha256_file,
@@ -31,8 +35,19 @@ from our_system_phase2.services.project_control_admission import (
 )
 
 
+REPO = Path(__file__).resolve().parents[1]
 REPO_SHA = "a" * 40
 PARENT_SHA = "b" * 40
+
+
+def _stable_hash(payload: dict) -> str:
+    encoded = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def _write_json(path: Path, payload: dict) -> Path:
@@ -44,16 +59,104 @@ def _write_json(path: Path, payload: dict) -> Path:
     return path
 
 
-def _run_record(
-    path: Path,
+def _trust_config(root: Path) -> Path:
+    trusted_root = root / "trusted-runs"
+    trusted_root.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": TRUST_SCHEMA_VERSION,
+        "project_id": PROJECT_ID,
+        "repository_path": str(REPO),
+        "trusted_harness_runs_root": str(trusted_root),
+    }
+    payload["trust_payload_sha256"] = _stable_hash(payload)
+    return _write_json(root / "trust.json", payload)
+
+
+def _request(
     *,
+    action: str,
+    campaign_id: str,
+    target_run_id: str,
+    repo_sha: str,
+    expires_at: str = "2099-01-01T00:00:00+00:00",
+    parent_project_control_run_id: str = "",
+    parent_target_campaign_id: str = "",
+    parent_target_run_id: str = "",
+    recovery_kind: str = "",
+    recovery_of_target_run_id: str = "",
+    original_admission_path: str = "",
+    original_admission_file_sha256: str = "",
+    incident_id: str = "",
+    incident_path: str = "",
+    incident_file_sha256: str = "",
+) -> dict:
+    return build_execution_request(
+        requested_action=action,
+        target_campaign_id=campaign_id,
+        target_run_id=target_run_id,
+        repo_sha=repo_sha,
+        expires_at=expires_at,
+        parent_project_control_run_id=parent_project_control_run_id,
+        parent_target_campaign_id=parent_target_campaign_id,
+        parent_target_run_id=parent_target_run_id,
+        recovery_kind=recovery_kind,
+        recovery_of_target_run_id=recovery_of_target_run_id,
+        original_admission_path=original_admission_path,
+        original_admission_file_sha256=original_admission_file_sha256,
+        incident_id=incident_id,
+        incident_path=incident_path,
+        incident_file_sha256=incident_file_sha256,
+    )["execution_request"]
+
+
+def _run_record(
+    root: Path,
+    *,
+    trust_config: Path,
     run_id: str,
+    action: str = ACTION_LAUNCH,
+    campaign_id: str = "cn-large-tpe-search-campaign",
+    target_run_id: str = "target-1",
     repo_sha: str = REPO_SHA,
     preflight_verdict: str = "PROCEED",
     execution_allowed: bool = True,
     post_batch_verdict: str | None = None,
     continuation_allowed: bool | None = None,
+    expires_at: str = "2099-01-01T00:00:00+00:00",
+    **request_fields: str,
 ) -> Path:
+    trust = json.loads(trust_config.read_text(encoding="utf-8"))
+    request = _request(
+        action=action,
+        campaign_id=campaign_id,
+        target_run_id=target_run_id,
+        repo_sha=repo_sha,
+        expires_at=expires_at,
+        **request_fields,
+    )
+    task_id = f"cn-execution-{request['request_payload_sha256'][:24]}"
+    run_root = Path(trust["trusted_harness_runs_root"]) / task_id / run_id
+    task = {
+        "schema_version": 1,
+        "task_id": task_id,
+        "project_id": PROJECT_ID,
+        "objective": "synthetic bound execution request",
+        "background": "test",
+        "in_scope": [],
+        "out_of_scope": [],
+        "constraints": [],
+        "expected_artifacts": [],
+        "acceptance_checks": [],
+        "risk_level": "high",
+        "execution_mode": "read-only",
+        "stop_conditions": [],
+        "execution_request": request,
+    }
+    profile = {
+        "schema_version": 1,
+        "project_id": PROJECT_ID,
+        "repository_path": str(REPO),
+    }
     receipts = [
         {
             "phase": "PREFLIGHT",
@@ -61,7 +164,7 @@ def _run_record(
             "current_bottleneck": "search control drift",
             "reason_codes": ["AUTHORITY_REPAIR"],
             "evidence_references": [],
-            "next_required_decision": "",
+            "next_required_decision": "" if preflight_verdict == "PROCEED" else "stop",
             "recorded_at": "2026-08-11T00:00:00+00:00",
             "addresses_bottleneck": "YES",
             "expected_decision_change": "physical execution admission",
@@ -76,7 +179,9 @@ def _run_record(
                 "current_bottleneck": "search control drift",
                 "reason_codes": ["BATCH_REVIEW"],
                 "evidence_references": ["synthetic-evidence.json"],
-                "next_required_decision": "",
+                "next_required_decision": (
+                    "" if post_batch_verdict == "CONTINUE" else "stop"
+                ),
                 "recorded_at": "2026-08-11T01:00:00+00:00",
                 "deltas": {
                     "decision": "YES",
@@ -88,17 +193,24 @@ def _run_record(
                 "budget_burn": "synthetic",
             }
         )
-    payload = {
+    record = {
         "schema_version": 1,
         "run_id": run_id,
-        "task_id": f"task-{run_id}",
+        "task_id": task_id,
         "project_id": PROJECT_ID,
         "code_base_sha": repo_sha,
+        "worktree": {
+            "path": str(root / "synthetic-worktree"),
+            "branch": "synthetic",
+            "source_worktree": str(REPO),
+        },
         "automatic_execution_allowed": execution_allowed,
         "automatic_continuation_allowed": continuation_allowed,
         "project_control": receipts,
     }
-    return _write_json(path, payload)
+    _write_json(run_root / "task_spec.json", task)
+    _write_json(run_root / "project_profile.json", profile)
+    return _write_json(run_root / "run_record.json", record)
 
 
 def _asset_authority(
@@ -115,16 +227,10 @@ def _asset_authority(
             "asset_states": {
                 "historical_challenge_2023_b05e2ca0": {
                     "current_role": current_role,
-                    "status": (
-                        "spent_negative_no_retry"
-                        if current_role == "spent"
-                        else "authorized_unopened_fixed_ten_report_only"
-                    ),
                     "performance_rows_read": reads,
                 },
                 "forward_b_tdx_lc1_20260413_20260514_f69cc84f": {
                     "current_role": "forward",
-                    "status": "reserved_sealed_not_authorized_for_performance_access",
                     "performance_rows_read": 0,
                 },
             },
@@ -133,35 +239,20 @@ def _asset_authority(
     access = _write_json(
         root / "access.json",
         {
-            "status": (
-                "HISTORICAL_CHALLENGE_2023_ACCESS_STARTED_ASSET_SPENT"
-                if access_role == "spent"
-                else "HISTORICAL_CHALLENGE_2023_NOT_STARTED"
-            ),
+            "status": "SPENT" if access_role == "spent" else "UNOPENED",
             "asset_id": "historical_challenge_2023_b05e2ca0",
             "data_role_after_transition": access_role,
-            "forward_b_reads": 0,
         },
     )
     outcome = _write_json(
         root / "outcome.json",
         {
-            "status": (
-                "INDEPENDENT_AUDIT_PASS_FORWARD_B_REMAINS_SEALED"
-                if reads
-                else "NOT_RUN"
-            ),
             "access_decision": {
-                "historical_challenge_2023_state": (
-                    "SPENT" if reads else "UNOPENED"
-                ),
+                "historical_challenge_2023_state": "SPENT" if reads else "UNOPENED",
                 "forward_b_state": "SEALED",
                 "forward_b_access": "NOT_AUTHORIZED",
             },
-            "provenance": {
-                "historical_challenge_reads": reads,
-                "forward_b_reads": 0,
-            },
+            "provenance": {"historical_challenge_reads": reads},
         },
     )
     return registry, access, outcome
@@ -170,20 +261,21 @@ def _asset_authority(
 def _materialize(
     root: Path,
     *,
+    trust_config: Path,
     action: str,
     child: Path,
     target_run_id: str = "target-1",
     parent: Path | None = None,
-    recovery_of_target_run_id: str = "",
-    recovery_kind: str = "",
-    incident_id: str = "",
 ) -> Path:
     output = root / f"admission-{action.lower()}.json"
     materialize_admission(
         output_path=output,
+        trust_config_path=trust_config,
         project_control_run_record_path=child,
-        expected_project_control_receipt_sha256=(
-            project_control_receipt_sha256(child, "PREFLIGHT")
+        expected_project_control_receipt_sha256=project_control_receipt_sha256(
+            child,
+            "PREFLIGHT",
+            trust_config_path=trust_config,
         ),
         requested_action=action,
         target_campaign_id="cn-large-tpe-search-campaign",
@@ -191,22 +283,28 @@ def _materialize(
         repo_sha=REPO_SHA,
         parent_post_batch_run_record_path=parent,
         expected_parent_post_batch_receipt_sha256=(
-            project_control_receipt_sha256(parent, "POST_BATCH")
+            project_control_receipt_sha256(
+                parent,
+                "POST_BATCH",
+                trust_config_path=trust_config,
+            )
             if parent is not None
             else ""
         ),
-        recovery_kind=recovery_kind,
-        recovery_of_target_run_id=recovery_of_target_run_id,
-        incident_id=incident_id,
     )
     return output
 
 
 def _validate(
-    path: Path, *, action: str, target_run_id: str = "target-1"
+    path: Path,
+    *,
+    trust_config: Path,
+    action: str,
+    target_run_id: str = "target-1",
 ) -> dict:
     return validate_admission(
         path,
+        trust_config_path=trust_config,
         expected_admission_file_sha256=sha256_file(path),
         expected_project_id=PROJECT_ID,
         expected_repo_sha=REPO_SHA,
@@ -226,17 +324,16 @@ def test_unopened_synthetic_asset_reaches_pre_execution_check(tmp_path: Path) ->
         outcome_path=outcome,
     )
     assert proof["status"] == "ELIGIBLE_UNOPENED_SYNTHETIC"
-    assert proof["forward_b_state"] == "SEALED"
+    assert proof["forward_b_access"] == "NOT_AUTHORIZED"
 
 
-def test_spent_asset_is_permanently_denied_even_with_fresh_output_root(
+def test_spent_asset_is_permanently_denied_with_fresh_output_root(
     tmp_path: Path,
 ) -> None:
     registry, access, outcome = _asset_authority(
         tmp_path, current_role="spent", access_role="spent", reads=2_383_217
     )
     fresh_output_root = tmp_path / "fresh-output"
-    assert not fresh_output_root.exists()
     with pytest.raises(EvaluationAssetDenied, match=PERMANENT_DENY_ALREADY_SPENT):
         verify_historical_challenge_destructive_use(
             role_registry_path=registry,
@@ -246,11 +343,15 @@ def test_spent_asset_is_permanently_denied_even_with_fresh_output_root(
     assert not fresh_output_root.exists()
 
 
-def test_missing_or_non_proceed_preflight_denies(tmp_path: Path) -> None:
+def test_missing_untrusted_nonproceed_and_expired_preflight_deny(
+    tmp_path: Path,
+) -> None:
+    trust = _trust_config(tmp_path)
     missing = tmp_path / "missing.json"
-    with pytest.raises(ProjectControlDenied, match="receipt path"):
+    with pytest.raises(ProjectControlDenied, match="path missing"):
         materialize_admission(
-            output_path=tmp_path / "admission.json",
+            output_path=tmp_path / "missing-admission.json",
+            trust_config_path=trust,
             project_control_run_record_path=missing,
             expected_project_control_receipt_sha256="0" * 64,
             requested_action=ACTION_LAUNCH,
@@ -259,110 +360,219 @@ def test_missing_or_non_proceed_preflight_denies(tmp_path: Path) -> None:
             repo_sha=REPO_SHA,
         )
 
+    outside = _write_json(tmp_path / "outside.json", {"project_control": []})
+    with pytest.raises(ProjectControlDenied, match="outside trusted runs root"):
+        project_control_receipt_sha256(
+            outside,
+            "PREFLIGHT",
+            trust_config_path=trust,
+        )
+
     paused = _run_record(
-        tmp_path / "paused.json",
+        tmp_path,
+        trust_config=trust,
         run_id="paused",
         preflight_verdict="PAUSE",
         execution_allowed=False,
     )
     with pytest.raises(ProjectControlDenied, match="PREFLIGHT_PROCEED_REQUIRED"):
-        _materialize(tmp_path, action=ACTION_LAUNCH, child=paused)
+        _materialize(
+            tmp_path / "paused",
+            trust_config=trust,
+            action=ACTION_LAUNCH,
+            child=paused,
+        )
+
+    with pytest.raises(ProjectControlDenied, match="STALE"):
+        _run_record(
+            tmp_path,
+            trust_config=trust,
+            run_id="expired",
+            expires_at="2020-01-01T00:00:00+00:00",
+        )
 
 
 @pytest.mark.parametrize("action", [ACTION_FREEZE, ACTION_LAUNCH, ACTION_RETRY])
-def test_preflight_proceed_makes_new_action_eligible(
+def test_target_bound_preflight_proceed_is_eligible(
     tmp_path: Path, action: str
 ) -> None:
-    child = _run_record(tmp_path / f"{action}.json", run_id=f"child-{action}")
-    admission = _materialize(tmp_path, action=action, child=child)
-    proof = _validate(admission, action=action)
-    assert proof["status"] == "PROJECT_CONTROL_ADMISSION_ELIGIBLE"
+    trust = _trust_config(tmp_path)
+    child = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id=f"child-{action}",
+        action=action,
+    )
+    admission = _materialize(
+        tmp_path,
+        trust_config=trust,
+        action=action,
+        child=child,
+    )
+    proof = _validate(admission, trust_config=trust, action=action)
     assert proof["requested_action"] == action
 
 
-def test_successor_requires_parent_continue_and_child_preflight(tmp_path: Path) -> None:
-    child = _run_record(tmp_path / "child.json", run_id="child")
+def test_successor_requires_matching_parent_lineage_and_continue(
+    tmp_path: Path,
+) -> None:
+    trust = _trust_config(tmp_path)
     stopped = _run_record(
-        tmp_path / "stopped.json",
+        tmp_path,
+        trust_config=trust,
         run_id="parent-stopped",
+        action=ACTION_LAUNCH,
+        campaign_id="parent-campaign",
+        target_run_id="parent-run",
         repo_sha=PARENT_SHA,
         post_batch_verdict="PAUSE",
         continuation_allowed=False,
     )
+    child = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="child-successor",
+        action=ACTION_SUCCESSOR,
+        parent_project_control_run_id="parent-stopped",
+        parent_target_campaign_id="parent-campaign",
+        parent_target_run_id="parent-run",
+    )
     with pytest.raises(ProjectControlDenied, match="POST_BATCH_CONTINUE_REQUIRED"):
         _materialize(
-            tmp_path,
+            tmp_path / "stopped",
+            trust_config=trust,
             action=ACTION_SUCCESSOR,
             child=child,
             parent=stopped,
         )
 
     continued = _run_record(
-        tmp_path / "continued.json",
+        tmp_path,
+        trust_config=trust,
         run_id="parent-continued",
+        action=ACTION_LAUNCH,
+        campaign_id="parent-campaign",
+        target_run_id="parent-run",
         repo_sha=PARENT_SHA,
         post_batch_verdict="CONTINUE",
         continuation_allowed=True,
     )
-    admission = _materialize(
+    with pytest.raises(ProjectControlDenied, match="parent lineage drift"):
+        _materialize(
+            tmp_path / "unrelated",
+            trust_config=trust,
+            action=ACTION_SUCCESSOR,
+            child=child,
+            parent=continued,
+        )
+
+    bound_child = _run_record(
         tmp_path,
+        trust_config=trust,
+        run_id="bound-child",
         action=ACTION_SUCCESSOR,
-        child=child,
+        parent_project_control_run_id="parent-continued",
+        parent_target_campaign_id="parent-campaign",
+        parent_target_run_id="parent-run",
+    )
+    admission = _materialize(
+        tmp_path / "continued",
+        trust_config=trust,
+        action=ACTION_SUCCESSOR,
+        child=bound_child,
         parent=continued,
     )
-    assert _validate(admission, action=ACTION_SUCCESSOR)["parent_run_id"] == (
-        "parent-continued"
-    )
+    assert _validate(
+        admission,
+        trust_config=trust,
+        action=ACTION_SUCCESSOR,
+    )["parent_run_id"] == "parent-continued"
 
 
-def test_technical_recovery_preserves_same_run_and_binds_incident(
+def test_recovery_requires_original_admission_same_run_and_incident(
     tmp_path: Path,
 ) -> None:
-    child = _run_record(tmp_path / "original.json", run_id="control-original")
-    admission = _materialize(
+    trust = _trust_config(tmp_path)
+    original_control = _run_record(
         tmp_path,
-        action=ACTION_RECOVERY,
-        child=child,
+        trust_config=trust,
+        run_id="original-control",
+        action=ACTION_LAUNCH,
         target_run_id="immutable-run-1",
-        recovery_of_target_run_id="immutable-run-1",
+    )
+    original_admission = _materialize(
+        tmp_path / "original",
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        child=original_control,
+        target_run_id="immutable-run-1",
+    )
+    incident = _write_json(
+        tmp_path / "incident.json",
+        {"incident_id": "incident-checkpoint-055", "status": "OPEN"},
+    )
+    recovery_control = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="recovery-control",
+        action=ACTION_RECOVERY,
+        target_run_id="immutable-run-1",
         recovery_kind=TECHNICAL_RECOVERY,
+        recovery_of_target_run_id="immutable-run-1",
+        original_admission_path=str(original_admission),
+        original_admission_file_sha256=sha256_file(original_admission),
         incident_id="incident-checkpoint-055",
+        incident_path=str(incident),
+        incident_file_sha256=sha256_file(incident),
+    )
+    recovery = _materialize(
+        tmp_path / "recovery",
+        trust_config=trust,
+        action=ACTION_RECOVERY,
+        child=recovery_control,
+        target_run_id="immutable-run-1",
     )
     proof = _validate(
-        admission,
+        recovery,
+        trust_config=trust,
         action=ACTION_RECOVERY,
         target_run_id="immutable-run-1",
     )
-    assert proof["recovery_kind"] == TECHNICAL_RECOVERY
+    assert proof["incident_id"] == "incident-checkpoint-055"
 
-    with pytest.raises(ProjectControlDenied, match="RECOVERY_TARGET_DRIFT"):
+    drift = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="drift-recovery",
+        action=ACTION_RECOVERY,
+        target_run_id="new-run",
+        recovery_kind=TECHNICAL_RECOVERY,
+        recovery_of_target_run_id="new-run",
+        original_admission_path=str(original_admission),
+        original_admission_file_sha256=sha256_file(original_admission),
+        incident_id="incident-checkpoint-055",
+        incident_path=str(incident),
+        incident_file_sha256=sha256_file(incident),
+    )
+    with pytest.raises(ProjectControlDenied, match="target run drift"):
         _materialize(
             tmp_path / "drift",
+            trust_config=trust,
             action=ACTION_RECOVERY,
-            child=child,
+            child=drift,
             target_run_id="new-run",
-            recovery_of_target_run_id="immutable-run-1",
-            recovery_kind=TECHNICAL_RECOVERY,
-            incident_id="incident-checkpoint-055",
-        )
-
-    with pytest.raises(ProjectControlDenied, match="RECOVERY_KIND_FORBIDDEN"):
-        _materialize(
-            tmp_path / "new-campaign",
-            action=ACTION_RECOVERY,
-            child=child,
-            target_run_id="new-run",
-            recovery_of_target_run_id="immutable-run-1",
-            recovery_kind="NEW_RETRY_OR_NEW_CAMPAIGN",
-            incident_id="incident-checkpoint-055",
         )
 
 
-def test_receipt_project_run_and_repo_binding_drift_denies(tmp_path: Path) -> None:
-    child = _run_record(tmp_path / "child.json", run_id="child")
+def test_receipt_action_project_run_and_repo_binding_drift_denies(
+    tmp_path: Path,
+) -> None:
+    trust = _trust_config(tmp_path)
+    child = _run_record(tmp_path, trust_config=trust, run_id="child")
     with pytest.raises(ProjectControlDenied, match="receipt hash drift"):
         materialize_admission(
             output_path=tmp_path / "bad.json",
+            trust_config_path=trust,
             project_control_run_record_path=child,
             expected_project_control_receipt_sha256="f" * 64,
             requested_action=ACTION_LAUNCH,
@@ -370,64 +580,46 @@ def test_receipt_project_run_and_repo_binding_drift_denies(tmp_path: Path) -> No
             target_run_id="target-1",
             repo_sha=REPO_SHA,
         )
-
-    admission = _materialize(tmp_path, action=ACTION_LAUNCH, child=child)
-    with pytest.raises(ProjectControlDenied, match="project identity drift"):
-        validate_admission(
-            admission,
-            expected_admission_file_sha256=sha256_file(admission),
-            expected_project_id="another-project",
-            expected_repo_sha=REPO_SHA,
-            expected_actions={ACTION_LAUNCH},
-            expected_target_campaign_id="cn-large-tpe-search-campaign",
-            expected_target_run_id="target-1",
-        )
-    with pytest.raises(ProjectControlDenied, match="repo SHA drift"):
-        validate_admission(
-            admission,
-            expected_admission_file_sha256=sha256_file(admission),
-            expected_project_id=PROJECT_ID,
-            expected_repo_sha="c" * 40,
-            expected_actions={ACTION_LAUNCH},
-            expected_target_campaign_id="cn-large-tpe-search-campaign",
-            expected_target_run_id="target-1",
-        )
-    with pytest.raises(ProjectControlDenied, match="target run drift"):
-        validate_admission(
-            admission,
-            expected_admission_file_sha256=sha256_file(admission),
-            expected_project_id=PROJECT_ID,
-            expected_repo_sha=REPO_SHA,
-            expected_actions={ACTION_LAUNCH},
-            expected_target_campaign_id="cn-large-tpe-search-campaign",
-            expected_target_run_id="another-target-run",
-        )
-    with pytest.raises(ProjectControlDenied, match="requested action drift"):
-        validate_admission(
-            admission,
-            expected_admission_file_sha256=sha256_file(admission),
-            expected_project_id=PROJECT_ID,
-            expected_repo_sha=REPO_SHA,
-            expected_actions={ACTION_RETRY},
-            expected_target_campaign_id="cn-large-tpe-search-campaign",
-            expected_target_run_id="target-1",
-        )
+    admission = _materialize(
+        tmp_path,
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        child=child,
+    )
+    for kwargs, pattern in (
+        ({"expected_project_id": "another-project"}, "trust project drift"),
+        ({"expected_repo_sha": "c" * 40}, "repo SHA drift"),
+        ({"expected_actions": {ACTION_RETRY}}, "requested action drift"),
+        ({"expected_target_run_id": "another-run"}, "target run drift"),
+    ):
+        expected = {
+            "trust_config_path": trust,
+            "expected_admission_file_sha256": sha256_file(admission),
+            "expected_project_id": PROJECT_ID,
+            "expected_repo_sha": REPO_SHA,
+            "expected_actions": {ACTION_LAUNCH},
+            "expected_target_campaign_id": "cn-large-tpe-search-campaign",
+            "expected_target_run_id": "target-1",
+        }
+        expected.update(kwargs)
+        with pytest.raises(ProjectControlDenied, match=pattern):
+            validate_admission(admission, **expected)
 
 
 def test_false_serialized_state_does_not_erase_observation_feedback() -> None:
     provenance = build_development_feedback_provenance(
         serialized_optimizer_state_imported=False,
         development_financial_observations_imported=True,
-        development_observation_count=56,
+        development_observation_count=51,
         candidate_results_imported=True,
         factor_statistics_imported=False,
-        behavior_statistics_imported=False,
+        behavior_statistics_imported=True,
         template_classification_imported=True,
         manual_diagnosis_imported=False,
         objective_designed_after_parent_results=False,
     )
     assert provenance["serialized_optimizer_state_imported"] is False
-    assert provenance["development_financial_observations_imported"] is True
+    assert provenance["development_observation_count"] == 51
     assert provenance["cross_campaign_development_feedback"] is True
 
 
@@ -448,9 +640,7 @@ def test_no_feedback_provenance_requires_zero_observation_count() -> None:
 
 def test_2023_launcher_denies_before_archive_hash_or_output_creation() -> None:
     launcher = (
-        Path(__file__).resolve().parents[1]
-        / "scripts"
-        / "run_cn_fixed_survivor_historical_challenge_2023_77o.ps1"
+        REPO / "scripts" / "run_cn_fixed_survivor_historical_challenge_2023_77o.ps1"
     ).read_text(encoding="utf-8")
     gate = launcher.index("verify_cn_historical_challenge_admission.py")
     archive_hash = launcher.index("$archiveHash = Get-SharedReadSha256")
@@ -459,46 +649,87 @@ def test_2023_launcher_denies_before_archive_hash_or_output_creation() -> None:
     assert gate < archive_hash < output_create < conversion
 
 
+def test_every_high_cost_module_has_in_process_admission_gate() -> None:
+    for route, module_path in repo_app.ROUTES.items():
+        if route not in repo_app.HIGH_COST_ROUTE_ACTIONS:
+            continue
+        source_path = REPO / "src" / (module_path.replace(".", "/") + ".py")
+        source = source_path.read_text(encoding="utf-8")
+        module = ast.parse(source)
+        main = next(
+            node
+            for node in module.body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name == "main"
+        )
+        first = main.body[0]
+        assert isinstance(first, ast.Expr)
+        assert isinstance(first.value, ast.Call)
+        assert isinstance(first.value.func, ast.Name)
+        assert first.value.func.id == "consume_active_admission"
+        assert ast.literal_eval(first.value.args[0]) == route
+
+    with pytest.raises(
+        ProjectControlDenied, match="DIRECT_HIGH_COST_MODULE_EXECUTION_FORBIDDEN"
+    ):
+        consume_active_admission("cn-large-tpe-search-campaign")
+
+
 def test_high_cost_entry_denies_before_route_import(monkeypatch) -> None:
     imported = False
 
     def forbidden_import(_route: str):
         nonlocal imported
         imported = True
-        raise AssertionError("high-cost route imported before admission")
+        raise AssertionError("route imported before admission")
 
     monkeypatch.setattr(repo_app, "_load_main", forbidden_import)
     with pytest.raises(SystemExit) as exc:
-        repo_app.main(["cn-large-tpe-search-campaign"])
+        repo_app.main(["phase3cp-real-cm-small-loop"])
     assert exc.value.code == 2
     assert imported is False
 
 
-def test_high_cost_entry_consumes_valid_bound_admission(
+def test_high_cost_entry_consumes_valid_target_bound_admission(
     monkeypatch, tmp_path: Path
 ) -> None:
-    child = _run_record(tmp_path / "child.json", run_id="entry-control")
-    admission = _materialize(tmp_path, action=ACTION_LAUNCH, child=child)
+    trust = _trust_config(tmp_path)
+    child = _run_record(tmp_path, trust_config=trust, run_id="entry-control")
+    admission = _materialize(
+        tmp_path,
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        child=child,
+    )
     loaded: list[str] = []
 
     def admitted_import(route: str):
         loaded.append(route)
-        return lambda _passthrough: 0
 
+        def admitted_main(_passthrough):
+            proof = consume_active_admission(route)
+            assert proof["target_run_id"] == "target-1"
+            return 0
+
+        return admitted_main
+
+    monkeypatch.setattr(repo_app, "PROJECT_CONTROL_TRUST_CONFIG", trust)
     monkeypatch.setattr(repo_app, "_git_head", lambda: REPO_SHA)
     monkeypatch.setattr(repo_app, "_load_main", admitted_import)
-    result = repo_app.main(
-        [
-            "cn-large-tpe-search-campaign",
-            "--requested-action",
-            ACTION_LAUNCH,
-            "--target-run-id",
-            "target-1",
-            "--project-control-admission",
-            str(admission),
-            "--project-control-admission-sha256",
-            sha256_file(admission),
-        ]
+    assert (
+        repo_app.main(
+            [
+                "cn-large-tpe-search-campaign",
+                "--requested-action",
+                ACTION_LAUNCH,
+                "--target-run-id",
+                "target-1",
+                "--project-control-admission",
+                str(admission),
+                "--project-control-admission-sha256",
+                sha256_file(admission),
+            ]
+        )
+        == 0
     )
-    assert result == 0
     assert loaded == ["cn-large-tpe-search-campaign"]

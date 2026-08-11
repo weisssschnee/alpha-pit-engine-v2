@@ -24,6 +24,10 @@ from typing import Any, Iterable, Mapping, Sequence
 
 import pandas as pd
 
+from our_system_phase2.services.project_control_admission import (
+    consume_active_admission,
+)
+
 from our_system_phase2.runtime.phase3cn_feedback_memory_smoke import (
     build_iterative_feedback_views,
 )
@@ -1567,6 +1571,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    consume_active_admission("cn-iterative-search-v1-canary")
     parser = argparse.ArgumentParser()
     parser.add_argument("--synthetic-rules-only", action="store_true")
     parser.add_argument("--registry", type=Path)

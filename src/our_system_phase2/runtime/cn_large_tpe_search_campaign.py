@@ -26,6 +26,10 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 import pandas as pd
 
+from our_system_phase2.services.project_control_admission import (
+    consume_active_admission,
+)
+
 from our_system_phase2.runtime.cn_iterative_search_v1 import (
     _artifact,
     _batch_manifest,
@@ -5033,6 +5037,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    consume_active_admission("cn-large-tpe-search-campaign")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--campaign-authorization", type=Path, required=True

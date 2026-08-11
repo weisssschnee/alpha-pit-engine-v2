@@ -13,6 +13,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from our_system_phase2.services.project_control_admission import (
+    consume_active_admission,
+)
+
 
 REPO = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUT_ROOT = REPO / "runtime/phase3cf_reward_gated_large_search_prelaunch_20260618"
@@ -384,6 +388,7 @@ def build_prelaunch(
 
 
 def main(argv: list[str] | None = None) -> int:
+    consume_active_admission("phase3cf-large-search-prelaunch")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)

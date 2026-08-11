@@ -16,6 +16,10 @@ from typing import Any, Iterable, Mapping, Sequence
 
 import psutil
 
+from our_system_phase2.services.project_control_admission import (
+    consume_active_admission,
+)
+
 from our_system_phase2.runtime.cn_candidate_representation_v0_preflight import (
     CLOSURE_NAME as PREFLIGHT_CLOSURE_NAME,
     verify_candidate_representation_v0_preflight,
@@ -1835,6 +1839,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    consume_active_admission("cn-fixed-stratified-production-v0")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--preflight-root", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)

@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections import Counter
 from pathlib import Path
 
+import pytest
+
 from scripts import run_cn_joint_program_allocator_repair_canary_v0 as runner
 from scripts.audit_cn_joint_program_allocator_repair_canary_v0 import (
     arm_metrics_v0,
@@ -27,6 +29,10 @@ from our_system_phase2.services.candidate_program_proposal_v0 import (
 from our_system_phase2.services.program_allocator_repair_bandit_v0 import (
     ProgramAllocatorRepairBanditV0,
     allocator_outcome_from_record_v0,
+)
+from our_system_phase2.services.development_feedback_provenance import (
+    build_development_feedback_provenance,
+    verify_or_classify_development_feedback,
 )
 
 
@@ -165,6 +171,61 @@ def test_seed_ledgers_distinguish_state_from_development_observations() -> None:
         assert provenance["development_financial_observations_imported"] is True
         assert provenance["development_observation_count"] == 1
         assert provenance["cross_campaign_development_feedback"] is True
+    assert phase_c_ledger[0]["development_feedback_provenance"][
+        "objective_designed_after_parent_results"
+    ] is False
+    assert allocator_ledger[0]["development_feedback_provenance"][
+        "objective_designed_after_parent_results"
+    ] is True
+
+    aggregate = build_development_feedback_provenance(
+        serialized_optimizer_state_imported=False,
+        development_financial_observations_imported=True,
+        development_observation_count=1,
+        candidate_results_imported=True,
+        factor_statistics_imported=False,
+        behavior_statistics_imported=False,
+        template_classification_imported=True,
+        manual_diagnosis_imported=True,
+        objective_designed_after_parent_results=True,
+    )
+    proof = verify_or_classify_development_feedback(
+        feedback_rows=[dict(allocator_ledger[0])],
+        initial_bandit_observations=1,
+        contract_provenance=aggregate,
+        access_provenance=aggregate,
+        behavior_statistics_imported=False,
+        manual_diagnosis_imported=True,
+        objective_designed_after_parent_results=True,
+    )
+    assert proof["status"] == "EMBEDDED_V1_VERIFIED"
+
+    dishonest = dict(aggregate)
+    dishonest["development_observation_count"] = 0
+    with pytest.raises(ValueError, match="aggregate development feedback"):
+        verify_or_classify_development_feedback(
+            feedback_rows=[dict(allocator_ledger[0])],
+            initial_bandit_observations=1,
+            contract_provenance=dishonest,
+            access_provenance=dishonest,
+            behavior_statistics_imported=False,
+            manual_diagnosis_imported=True,
+            objective_designed_after_parent_results=True,
+        )
+
+    legacy = dict(allocator_ledger[0])
+    legacy.pop("development_feedback_provenance")
+    legacy_proof = verify_or_classify_development_feedback(
+        feedback_rows=[legacy],
+        initial_bandit_observations=1,
+        contract_provenance=None,
+        access_provenance=None,
+        behavior_statistics_imported=False,
+        manual_diagnosis_imported=True,
+        objective_designed_after_parent_results=True,
+    )
+    assert legacy_proof["status"] == "LEGACY_DERIVED_NON_AUTHORITATIVE"
+    assert legacy_proof["aggregate"]["cross_campaign_development_feedback"] is True
 
 
 def test_absolute_first_hierarchy_beats_matched_only_credit() -> None:
