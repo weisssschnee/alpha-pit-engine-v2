@@ -63,6 +63,7 @@ RUN_CONTRACT_SCHEMA = "cn_search_engine_v2_canary_run_contract_v1"
 ACCESS_SCHEMA = "cn_search_engine_v2_canary_access_v1"
 ARTIFACT_MANIFEST_SCHEMA = "cn_search_engine_v2_canary_artifacts_v1"
 PHASE_B_RESULT_CLOSURE_NAME = "CN_JOINT_PROGRAM_PHASE_B_COMPLETE.json"
+PREFINANCIAL_MATERIALIZATION_WORKERS = 4
 
 
 def _verify_self_hash(payload: Mapping[str, Any], field: str, label: str) -> None:
@@ -251,7 +252,7 @@ def build_prefinancial_freeze_v1(
             source_root=accepted_field_manifest_path.parent,
             bar_source_root=bar_source_root,
             output_root=materialized_root,
-            workers=EXECUTOR_WORKERS,
+            workers=PREFINANCIAL_MATERIALIZATION_WORKERS,
             minimum_free_memory_bytes=MINIMUM_FREE_MEMORY_BYTES,
             expected_records=phase_c.MATERIALIZATION_SCHEDULE_RECORDS,
             expected_template_quota=phase_c.MATERIALIZATION_RECORDS_PER_TEMPLATE,
@@ -431,6 +432,7 @@ def build_prefinancial_freeze_v1(
                     "schedule_file_sha256": phase_c._sha256(
                         materialization_schedule_path
                     ),
+                    "worker_count": PREFINANCIAL_MATERIALIZATION_WORKERS,
                 }
                 if program_materialization is not None
                 and program_materialization_audit is not None
