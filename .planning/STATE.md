@@ -18,6 +18,12 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ### Search Engine V2 implemented and prospective 512 canary frozen without a financial run (2026-08-11)
 
+- Code/ADR/frozen-plan authority is commit
+  `3ea8091796910da8172b9134f186ef57c725e93a`. The curated CURRENT projection
+  now contains experimental node `cn_search_engine_v2_experimental` with
+  `STATIC_VERIFIED / PASS` evidence and explicit `NOT_RUN / NO_RUNTIME_ASSURANCE`
+  badges. RAW remains intentionally `STALE / RAW_GRAPH_SOURCE_CHANGED`; this
+  task did not perform or require a full RAW rebuild.
 - ADR 0018 accepts an experimental two-head search-control design. Absolute
   standalone economics is an admission gate only; exact Full-vs-Base enhancer
   uplift becomes program/template-level search credit only after admission.
