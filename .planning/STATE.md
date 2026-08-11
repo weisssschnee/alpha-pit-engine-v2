@@ -20,7 +20,7 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 - Accepted ADRs 0016 and 0017 and implementation commits
   `0247cbbc466b60287a77ebcd03672a9df6afad5a` and
-  `44a4450c0fd84b06a11642e6d454e252cfc68946` reconcile the execution layer
+  `3d852d551dd436b4f316db637913591031854d9a` reconcile the execution layer
   with already observed facts. The 2023 historical challenge is permanently
   `spent`, economically `NEGATIVE`, and denied with
   `PERMANENT_DENY_ALREADY_SPENT`; its older unopened authorization remains
@@ -31,10 +31,16 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   admission before route import. Its trusted Harness bundle and task request
   bind the exact project, repository, clean repo SHA, action, campaign, target
   run, absolute output root, expiry, control receipt, task/profile/context files
-  and hashes. Activation revalidates the immutable admission rather than
-  accepting a caller-created proof. Each route consumes a one-use capability
+  and hashes. Activation internally fixes the canonical trust config, derives
+  the live clean repository HEAD and revalidates the immutable admission rather
+  than accepting caller-supplied trust/SHA/proof values. Each route consumes a
+  one-use capability
   before argument parsing and rechecks the parsed output root before data
-  access, so direct invocation and freeze-as-launch deny. Successors require
+  access. Before route import, a durable exclusive consumption record is written
+  at the admitted output root: new freeze/launch/successor/retry requires a fresh
+  root, and recovery requires the original root identity and its own unused
+  admission. Direct invocation, replay and freeze-as-launch therefore deny.
+  Successors require
   exact parent lineage,
   parent `POST_BATCH=CONTINUE` and child `PREFLIGHT=PROCEED`; technical recovery
   requires the original eligible admission for the same target plus an incident
