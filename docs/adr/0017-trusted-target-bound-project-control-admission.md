@@ -49,7 +49,15 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
    action. Caller-created proof dictionaries cannot activate it. Every
    high-cost module consumes the capability before argument parsing and then
    compares the parsed output root with the admitted absolute output root
-   before creating directories or reading data. Direct invocation,
+   before creating directories or reading data. The targeted and large-TPE
+   routes also read only campaign-authorization metadata at this seam and bind
+   the live absolute path, file hash, campaign id and profile to the immutable
+   Project Control request. Hashing and JSON parsing use one byte buffer, and
+   the same verified payload is passed into runtime authority binding without a
+   second path read. Successor or continuation profiles must carry
+   `SUCCESSOR_CAMPAIGN` (or technical recovery whose bound root lineage is still
+   a successor), so generic `LAUNCH`/`RETRY` and recovery of a rejected launch
+   cannot bypass parent lineage. Direct invocation,
    freeze-as-launch and same-admission/different-output invocation therefore
    fail closed.
 5. Activation atomically creates a durable control record at the admitted
@@ -86,6 +94,13 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
 - Canonical entry and direct-module entry share one fail-closed physical seam.
 - Current 77o wrappers forward the target run, admission and immutable file hash;
   fixed-stratified does not advertise unsupported recovery semantics.
+- Winner-guided and continuity wrappers forward the requested action, and the
+  route independently binds it to the exact immutable campaign authorization.
+- Zero-financial preflight requests derive the future
+  `qualification_authorization.json` bytes and hash without claiming the fresh
+  output root. One-shot preparation scripts stop at a machine-readable external
+  Project Control boundary; only a later separately admitted canonical launcher
+  call may create the planned authorization and start the route.
 - LAUNCH/SUCCESSOR cannot be replayed as an unlabelled retry or recovery, even
   from another process using the same output root.
 - Successor and recovery are provable continuations, not alternative names for

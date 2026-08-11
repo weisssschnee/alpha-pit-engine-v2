@@ -7,6 +7,7 @@ from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
     CHECKPOINT_BASE_TARGETS,
     CHECKPOINT_COUNT,
     CHECKPOINT_SCHEDULED_PAIRS,
+    LEGACY_CAMPAIGN_PROFILE,
     MAX_COMPLETED_DEVELOPMENT_MATCHED_PAIRS,
     MAX_RAW_ATTEMPTS,
     MAX_WALL_SECONDS,
@@ -36,6 +37,10 @@ import our_system_phase2.runtime.cn_targeted_search_medium_campaign as campaign_
 from scripts.build_cn_campaign_history_snapshot import build_snapshot
 from our_system_phase2.services.portfolio_behavior_archive import (
     PortfolioBehaviorArchive,
+)
+from our_system_phase2.services.project_control_admission import (
+    sha256_file,
+    verify_campaign_authorization_binding,
 )
 from our_system_phase2.services.unified_capability_registry import (
     UnifiedCapabilityRegistry,
@@ -980,6 +985,7 @@ def test_large_campaign_history_and_authorization_are_identity_only(
     authorization_path = tmp_path / "authorization.json"
     authorization = {
         "campaign_id": "TEST_FRESH_CAMPAIGN",
+        "campaign_profile": LEGACY_CAMPAIGN_PROFILE,
         "execution_authorized": True,
         "checkpoint_count": CHECKPOINT_COUNT,
         "checkpoint_scheduled_pairs": CHECKPOINT_SCHEDULED_PAIRS,
@@ -1020,6 +1026,42 @@ def test_large_campaign_history_and_authorization_are_identity_only(
         session_threads=2,
     )
     assert binding["status"] == "CAMPAIGN_EXECUTION_AUTHORIZED"
+    verified = verify_campaign_authorization_binding(
+        {
+            "campaign_authorization_path": str(authorization_path.resolve()),
+            "campaign_authorization_file_sha256": sha256_file(
+                authorization_path
+            ),
+            "target_campaign_instance_id": "TEST_FRESH_CAMPAIGN",
+            "target_campaign_profile": LEGACY_CAMPAIGN_PROFILE,
+        },
+        authorization_path,
+    )
+    authorization_path.write_text(
+        json.dumps(
+            {
+                **authorization,
+                "campaign_id": "SWAPPED_AFTER_PROJECT_CONTROL",
+            }
+        ),
+        encoding="utf-8",
+    )
+    verified_binding = _campaign_authorization_binding(
+        authorization_path=authorization_path,
+        history_manifest_path=manifest_output,
+        candidate_archive_path=candidate_output,
+        behavior_archive_path=behavior_output,
+        seed_base=1729,
+        active_threads=11,
+        session_threads=2,
+        verified_authorization=verified,
+    )
+    assert verified_binding["campaign_id"] == "TEST_FRESH_CAMPAIGN"
+    assert (
+        verified_binding["authorization"]["sha256"]
+        == verified.file_sha256
+    )
+    authorization_path.write_text(json.dumps(authorization), encoding="utf-8")
     with pytest.raises(RuntimeError, match="seed_base"):
         _campaign_authorization_binding(
             authorization_path=authorization_path,

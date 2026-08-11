@@ -24,7 +24,13 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 from our_system_phase2.services.project_control_admission import (
+    ACTION_LAUNCH,
+    ACTION_RECOVERY,
+    ACTION_RETRY,
+    ProjectControlDenied,
+    VerifiedCampaignAuthorization,
     consume_active_admission,
+    verify_campaign_authorization_binding,
     verify_consumed_admission_target,
 )
 
@@ -204,12 +210,26 @@ def _campaign_authorization_binding(
     active_threads: int,
     session_threads: int,
     profile: Mapping[str, Any] | None = None,
+    verified_authorization: VerifiedCampaignAuthorization | None = None,
 ) -> dict[str, Any]:
     authorization_path = Path(authorization_path).resolve()
     history_manifest_path = Path(history_manifest_path).resolve()
     candidate_archive_path = Path(candidate_archive_path).resolve()
     behavior_archive_path = Path(behavior_archive_path).resolve()
-    authorization = json.loads(authorization_path.read_text(encoding="utf-8"))
+    if verified_authorization is not None:
+        if verified_authorization.path != authorization_path:
+            raise RuntimeError("PROJECT_CONTROL_AUTHORIZATION_PATH_DRIFT")
+        authorization = dict(verified_authorization.payload)
+        authorization_artifact = {
+            "path": str(verified_authorization.path),
+            "sha256": verified_authorization.file_sha256,
+            "bytes": verified_authorization.byte_count,
+        }
+    else:
+        authorization = json.loads(
+            authorization_path.read_text(encoding="utf-8")
+        )
+        authorization_artifact = _artifact(authorization_path)
     history = json.loads(history_manifest_path.read_text(encoding="utf-8"))
     selected_profile = dict(profile or _campaign_profile(LEGACY_CAMPAIGN_PROFILE))
     expected = {
@@ -290,7 +310,7 @@ def _campaign_authorization_binding(
         "schema_version": "cn_campaign_authorization_binding_v1",
         "status": "CAMPAIGN_EXECUTION_AUTHORIZED",
         "campaign_id": campaign_id,
-        "authorization": _artifact(authorization_path),
+        "authorization": authorization_artifact,
         "historical_archive_manifest": _artifact(history_manifest_path),
         "historical_candidate_exact_archive": _artifact(candidate_archive_path),
         "historical_behavior_archive": _artifact(behavior_archive_path),
@@ -2028,6 +2048,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         active_threads=compute_threads["active_bar"],
         session_threads=compute_threads["stock_session"],
         profile=profile,
+        verified_authorization=getattr(
+            args, "_project_control_campaign_authorization", None
+        ),
     )
     campaign_id = str(campaign_authorization["campaign_id"])
     campaign_authorization_path = _write_json(
@@ -2804,10 +2827,34 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     return decision
 
 
+def require_project_control_action_for_campaign_authorization(
+    admission: Mapping[str, Any],
+    authorization_path: Path,
+    campaign_profile: str,
+) -> VerifiedCampaignAuthorization:
+    """Bind targeted-search execution to one launch-lineage authorization."""
+
+    verified = verify_campaign_authorization_binding(
+        admission, authorization_path
+    )
+    authorization = verified.payload
+    action = str(admission.get("requested_action") or "")
+    lineage_action = str(admission.get("execution_lineage_action") or action)
+    if (
+        str(authorization.get("campaign_profile") or "") != campaign_profile
+        or lineage_action not in {ACTION_LAUNCH, ACTION_RETRY}
+        or (action != ACTION_RECOVERY and action != lineage_action)
+    ):
+        raise ProjectControlDenied(
+            "Project Control action/campaign authorization lineage drift"
+        )
+    return verified
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     admission = consume_active_admission(
         "cn-targeted-search-medium-campaign",
-        {"LAUNCH_HIGH_COST_CAMPAIGN", "SUCCESSOR_CAMPAIGN", "RETRY", "RECOVERY"},
+        {"LAUNCH_HIGH_COST_CAMPAIGN", "RETRY", "RECOVERY"},
     )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -2840,6 +2887,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--session-threads", type=int, default=2)
     args = parser.parse_args(argv)
     verify_consumed_admission_target(admission, output_root=args.output_root)
+    verified_authorization = require_project_control_action_for_campaign_authorization(
+        admission, args.campaign_authorization, args.campaign_profile
+    )
+    setattr(
+        args,
+        "_project_control_campaign_authorization",
+        verified_authorization,
+    )
     result = run(args)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if str(result["status"]).startswith("CAMPAIGN_CLOSED") else 1

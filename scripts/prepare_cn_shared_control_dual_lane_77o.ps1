@@ -12,6 +12,16 @@ param(
     [string]$QualificationRoot,
     [Parameter(Mandatory = $true)]
     [string]$SearchPreflightRoot,
+    [Parameter(Mandatory = $true)]
+    [string]$ProjectControlTargetRunId,
+    [Parameter(Mandatory = $true)]
+    [string]$ProjectControlExpiresAt,
+    [Parameter(Mandatory = $true)]
+    [string]$ParentProjectControlRunId,
+    [Parameter(Mandatory = $true)]
+    [string]$ParentTargetCampaignId,
+    [Parameter(Mandatory = $true)]
+    [string]$ParentTargetRunId,
     [string]$PartialSearchRoot = (
         'D:\ChengboRemote\runtime\' +
         'cn_winner_guided_large_search_continuation_20260731_1025_' +
@@ -221,154 +231,50 @@ Invoke-CheckedPython (
   --history-manifest $historyManifest `
   --output $searchAuthorization
 
-& (Join-Path $repo 'scripts\run_cn_winner_guided_large_search_77o.ps1') `
-    -Repo $repo `
-    -RepoSha $RepoSha `
-    -OutputRoot $searchPreflight `
-    -CampaignAuthorization $searchAuthorization `
-    -CandidateArchive $candidateArchive `
-    -BehaviorArchive $behaviorArchive `
-    -WinnerGuide $winnerGuide `
-    -HistoryManifest $historyManifest `
-    -NodeResourceProfile 'SEARCH_DUAL_24' `
-    -NodeResourceCapacity $capacity `
-    -NodeResourceStateRoot $NodeResourceStateRoot `
-    -PreflightOnly
-if ($LASTEXITCODE -ne 0) {
-    throw "search zero-financial preflight failed: $LASTEXITCODE"
-}
-$supplyPath = Join-Path $searchPreflight 'fresh_exact_supply_preflight.json'
-$supply = Get-Content -LiteralPath $supplyPath -Raw | ConvertFrom-Json
-if ([string]$supply.status -ne 'PASS') {
-    throw 'search fresh exact supply is not PASS'
-}
-Assert-ZeroSealedReads $supply 'search supply preflight'
-
-$capability = Join-Path $qualification 'stock_session_capability.json'
-$splitHash = (Get-FileHash -LiteralPath $split -Algorithm SHA256).Hash.ToLowerInvariant()
-Invoke-CheckedPython (
-    Join-Path $repo 'scripts\build_cn_stock_session_field_capability.py'
-) --source-root $minuteRelease `
-  --candidate-table (Join-Path $validationCampaign 'candidate_ledger.parquet') `
-  --registry $registry `
-  --split-manifest $split `
-  --split-manifest-hash $splitHash `
-  --output $capability `
-  --max-shards 16
-$capabilityPayload = Get-Content -LiteralPath $capability -Raw |
-    ConvertFrom-Json
-if ([string]$capabilityPayload.status -ne 'ZERO_FINANCIAL_CAPABILITY_CLOSED') {
-    throw 'execution-clock capability did not close'
-}
-Assert-ZeroSealedReads $capabilityPayload 'execution capability'
-
-$cohort = Join-Path $qualification 'new_keep_review_32'
-Invoke-CheckedPython (
-    Join-Path $repo 'scripts\freeze_cn_productive_keep_review_cohort.py'
-) --campaign-root $validationCampaign `
-  --output-root $cohort `
-  --cohort-pairs 32 `
-  --exclude-cohort-root $priorCohort `
-  --execution-capability-manifest $capability
-$cohortVerification = Join-Path $qualification (
-    'new_keep_review_32_verification.json'
+$futureAuthorization = Join-Path $searchPreflight (
+    'qualification_authorization.json'
+)
+$projectControlRequest = Join-Path $generatedAuthorityRoot (
+    'cn_shared_control_dual_project_control_request_' +
+    $RepoSha.Substring(0, 7) + '.json'
 )
 Invoke-CheckedPython (
-    Join-Path $repo 'scripts\verify_cn_productive_keep_review_cohort.py'
-) --campaign-root $validationCampaign `
-  --selection-root $cohort `
-  --receipt $cohortVerification
-$cohortManifestPath = Join-Path $cohort 'keep_review_manifest.json'
-$cohortManifest = Get-Content -LiteralPath $cohortManifestPath -Raw |
-    ConvertFrom-Json
-$cohortSummaryPath = Join-Path $cohort 'keep_review_summary.json'
-$cohortSummary = Get-Content -LiteralPath $cohortSummaryPath -Raw |
-    ConvertFrom-Json
-if ([int]$cohortSummary.selected_pairs -ne 32 -or
-    [int]$cohortSummary.selected_candidate_members -ne 64) {
-    throw 'new validation cohort is not exactly 32 pairs / 64 members'
-}
-Assert-ZeroSealedReads $cohortManifest 'new cohort manifest'
-Assert-ZeroSealedReads $cohortSummary 'new cohort summary'
-
-$authority = Join-Path $qualification 'finalist_input_authority_32'
-Invoke-CheckedPython (
-    Join-Path $repo 'scripts\freeze_cn_finalist_input_authority.py'
-) --repo-root $repo `
-  --cohort-root $cohort `
-  --release-root $minuteRelease `
-  --output-root $authority `
-  --session-authority-manifest $sessionManifest `
-  --repo-sha $RepoSha
-$authorityVerification = Join-Path $qualification (
-    'finalist_input_authority_32_verification'
-)
-Invoke-CheckedPython (
-    Join-Path $repo 'scripts\verify_cn_finalist_input_authority.py'
-) --output-root $authority --verification-root $authorityVerification
-$authorityManifestPath = Join-Path $authority (
-    'finalist_input_authority_manifest.json'
-)
-$authorityManifest = Get-Content -LiteralPath $authorityManifestPath -Raw |
-    ConvertFrom-Json
-if ([string]$authorityManifest.status -ne 'FINALIST_INPUT_AUTHORITY_READY') {
-    throw 'new finalist input authority is not READY'
-}
-Assert-ZeroSealedReads $authorityManifest 'finalist input authority'
-
-$resourceAfter = Invoke-CheckedPython (
-    Join-Path $repo 'scripts\manage_cn_node_resource_lease.py'
-) status --state-root $NodeResourceStateRoot --capacity-manifest $capacity |
-    Select-Object -Last 1 | ConvertFrom-Json
-if ([int]$resourceAfter.active_lease_count -ne 0 -or
-    [int]$resourceAfter.active_cpu_threads -ne 0) {
-    throw 'shared resource state is not empty after qualification'
-}
-
-$closure = [ordered]@{
-    schema_version = 'cn_shared_control_dual_lane_qualification_closure_v1'
-    status = 'ZERO_FINANCIAL_DUAL_LANE_QUALIFICATION_PASS'
-    repo_sha = $RepoSha
-    deployment_manifest = $deployment
-    deployment_manifest_sha256 = (
-        Get-FileHash -LiteralPath $deployment -Algorithm SHA256
+    Join-Path $repo 'scripts\build_cn_project_control_execution_request.py'
+) --output $projectControlRequest `
+  --action 'SUCCESSOR_CAMPAIGN' `
+  --target-campaign-id 'cn-large-tpe-search-campaign' `
+  --target-run-id $ProjectControlTargetRunId `
+  --target-output-root $searchPreflight `
+  --repo-sha $RepoSha `
+  --expires-at $ProjectControlExpiresAt `
+  --campaign-authorization-path $futureAuthorization `
+  --preflight-authorization-source $searchAuthorization `
+  --parent-project-control-run-id $ParentProjectControlRunId `
+  --parent-target-campaign-id $ParentTargetCampaignId `
+  --parent-target-run-id $ParentTargetRunId
+$boundaryReceipt = [ordered]@{
+    schema_version = 'cn_project_control_external_boundary_v1'
+    status = 'AWAITING_EXTERNAL_PROJECT_CONTROL_ADMISSION'
+    requested_action = 'SUCCESSOR_CAMPAIGN'
+    target_run_id = $ProjectControlTargetRunId
+    target_output_root = $searchPreflight
+    source_campaign_authorization = $searchAuthorization
+    future_campaign_authorization = $futureAuthorization
+    execution_request = $projectControlRequest
+    execution_request_sha256 = (
+        Get-FileHash -LiteralPath $projectControlRequest -Algorithm SHA256
     ).Hash.ToLowerInvariant()
-    dual_lane_contract = $contract
-    dual_lane_contract_sha256 = (
-        Get-FileHash -LiteralPath $contract -Algorithm SHA256
-    ).Hash.ToLowerInvariant()
-    history_receipt = Join-Path $historyRoot 'partial_history_receipt.json'
-    search_authorization = $searchAuthorization
-    search_preflight_root = $searchPreflight
-    search_supply_preflight = $supplyPath
-    execution_capability_manifest = $capability
-    new_cohort_root = $cohort
-    new_cohort_manifest = $cohortManifestPath
-    new_cohort_verification = $cohortVerification
-    finalist_input_authority_root = $authority
-    finalist_input_authority_manifest = $authorityManifestPath
-    finalist_input_authority_verification = $authorityVerification
-    search_profile = 'SEARCH_DUAL_24'
-    validation_profile = 'VALIDATION_DUAL_8'
-    total_cpu_threads = 32
-    search_formal_asks = 9216
-    validation_pairs = 32
-    reward_rows_imported = 0
-    optimizer_state_imported = $false
-    scheduler_state_imported = $false
+    canonical_launcher = 'scripts\run_cn_winner_guided_large_search_77o.ps1'
+    next_step = 'OBTAIN_EXTERNAL_ADMISSION_THEN_CALL_CANONICAL_LAUNCHER'
     financial_reads = 0
-    validation_reads = 0
     holdout_reads = 0
     forward_2026_reads = 0
-    resource_active_leases_after = [int]$resourceAfter.active_lease_count
-    resource_active_cpu_threads_after = [int]$resourceAfter.active_cpu_threads
-    execution_authorized = $true
 }
-$closurePath = Join-Path $qualification 'qualification_closure.json'
-$closure | ConvertTo-Json -Depth 6 |
-    Set-Content -LiteralPath $closurePath -Encoding UTF8
-$closureHash = (
-    Get-FileHash -LiteralPath $closurePath -Algorithm SHA256
-).Hash.ToLowerInvariant()
-Write-Output "QUALIFICATION_CLOSURE=$closurePath"
-Write-Output "QUALIFICATION_CLOSURE_SHA256=$closureHash"
+$boundaryReceiptPath = Join-Path $qualification (
+    'project_control_external_boundary.json'
+)
+$boundaryReceipt | ConvertTo-Json -Depth 6 |
+    Set-Content -LiteralPath $boundaryReceiptPath -Encoding UTF8
+Write-Output "PROJECT_CONTROL_REQUEST=$projectControlRequest"
+Write-Output "PROJECT_CONTROL_BOUNDARY=$boundaryReceiptPath"
+return

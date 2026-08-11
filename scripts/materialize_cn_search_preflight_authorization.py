@@ -37,6 +37,28 @@ def materialize_authorization(source: Path) -> dict[str, Any]:
     return payload
 
 
+def authorization_bytes(payload: dict[str, Any]) -> bytes:
+    return (
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+
+
+def planned_authorization_binding(
+    source: Path, future_output: Path
+) -> dict[str, str]:
+    """Derive exact future preflight metadata without creating its output root."""
+
+    payload = materialize_authorization(source)
+    return {
+        "campaign_authorization_path": str(Path(future_output).resolve()),
+        "campaign_authorization_file_sha256": hashlib.sha256(
+            authorization_bytes(payload)
+        ).hexdigest(),
+        "target_campaign_instance_id": str(payload.get("campaign_id") or ""),
+        "target_campaign_profile": str(payload.get("campaign_profile") or ""),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
@@ -44,10 +66,7 @@ def main() -> int:
     args = parser.parse_args()
     payload = materialize_authorization(args.source)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    args.output.write_bytes(authorization_bytes(payload))
     print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
     return 0
 

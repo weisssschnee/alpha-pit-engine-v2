@@ -8,6 +8,13 @@ from pathlib import Path
 import pytest
 
 import app as repo_app
+from our_system_phase2.runtime.cn_large_tpe_search_campaign import (
+    require_project_control_action_for_campaign_authorization,
+)
+from our_system_phase2.runtime.cn_targeted_search_medium_campaign import (
+    require_project_control_action_for_campaign_authorization
+    as require_targeted_project_control_action,
+)
 from our_system_phase2.services import project_control_admission as project_control
 from our_system_phase2.services.development_feedback_provenance import (
     build_development_feedback_provenance,
@@ -34,7 +41,13 @@ from our_system_phase2.services.project_control_admission import (
     project_control_receipt_sha256,
     sha256_file,
     validate_admission,
+    verify_campaign_authorization_binding,
     verify_consumed_admission_target,
+)
+from scripts.materialize_cn_search_preflight_authorization import (
+    authorization_bytes,
+    materialize_authorization,
+    planned_authorization_binding,
 )
 
 
@@ -85,6 +98,10 @@ def _request(
     target_output_root: Path,
     repo_sha: str,
     expires_at: str = "2099-01-01T00:00:00+00:00",
+    campaign_authorization_path: str = "",
+    campaign_authorization_file_sha256: str = "",
+    target_campaign_instance_id: str = "",
+    target_campaign_profile: str = "",
     parent_project_control_run_id: str = "",
     parent_target_campaign_id: str = "",
     parent_target_run_id: str = "",
@@ -103,6 +120,12 @@ def _request(
         target_output_root=target_output_root,
         repo_sha=repo_sha,
         expires_at=expires_at,
+        campaign_authorization_path=campaign_authorization_path,
+        campaign_authorization_file_sha256=(
+            campaign_authorization_file_sha256
+        ),
+        target_campaign_instance_id=target_campaign_instance_id,
+        target_campaign_profile=target_campaign_profile,
         parent_project_control_run_id=parent_project_control_run_id,
         parent_target_campaign_id=parent_target_campaign_id,
         parent_target_run_id=parent_target_run_id,
@@ -134,6 +157,40 @@ def _run_record(
     **request_fields: str,
 ) -> Path:
     trust = json.loads(trust_config.read_text(encoding="utf-8"))
+    if (
+        campaign_id
+        in {
+            "cn-large-tpe-search-campaign",
+            "cn-targeted-search-medium-campaign",
+        }
+        and "campaign_authorization_path" not in request_fields
+    ):
+        if campaign_id == "cn-targeted-search-medium-campaign":
+            profile = "slow_cross_sectional_evaluated384"
+        elif action == ACTION_SUCCESSOR:
+            profile = "cn_full_compute_successor_search_v1"
+        else:
+            profile = "cn_winner_guided_large_search_v1"
+        campaign_instance_id = f"synthetic-{target_run_id}"
+        authorization_path = _write_json(
+            root
+            / "synthetic-campaign-authorizations"
+            / f"{target_run_id}.json",
+            {
+                "campaign_id": campaign_instance_id,
+                "campaign_profile": profile,
+            },
+        ).resolve()
+        request_fields.update(
+            {
+                "campaign_authorization_path": str(authorization_path),
+                "campaign_authorization_file_sha256": sha256_file(
+                    authorization_path
+                ),
+                "target_campaign_instance_id": campaign_instance_id,
+                "target_campaign_profile": profile,
+            }
+        )
     request = _request(
         action=action,
         campaign_id=campaign_id,
@@ -1168,6 +1225,234 @@ def test_current_77o_high_cost_wrappers_forward_project_control() -> None:
         assert "output root must be fresh" in text, name
 
 
+def test_campaign_bound_route_rejects_unbound_project_control_request(
+    tmp_path: Path,
+) -> None:
+    trust = _trust_config(tmp_path)
+    child = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="unbound-campaign",
+        campaign_authorization_path="",
+    )
+    with pytest.raises(
+        ProjectControlDenied, match="campaign authorization binding is required"
+    ):
+        _materialize(
+            tmp_path,
+            trust_config=trust,
+            action=ACTION_LAUNCH,
+            child=child,
+        )
+
+
+def test_successor_campaign_authorization_cannot_use_launch_admission(
+    tmp_path: Path,
+) -> None:
+    successor = _write_json(
+        tmp_path / "successor-authorization.json",
+        {
+            "campaign_id": "successor-campaign-1",
+            "campaign_profile": "cn_full_compute_successor_search_v1",
+        },
+    )
+    successor_proof = {
+        "campaign_authorization_path": str(successor.resolve()),
+        "campaign_authorization_file_sha256": sha256_file(successor),
+        "target_campaign_instance_id": "successor-campaign-1",
+        "target_campaign_profile": "cn_full_compute_successor_search_v1",
+    }
+    with pytest.raises(ProjectControlDenied, match="lineage drift"):
+        require_project_control_action_for_campaign_authorization(
+            {"requested_action": ACTION_LAUNCH, **successor_proof}, successor
+        )
+    with pytest.raises(ProjectControlDenied, match="lineage drift"):
+        require_project_control_action_for_campaign_authorization(
+            {"requested_action": ACTION_RETRY, **successor_proof}, successor
+        )
+    require_project_control_action_for_campaign_authorization(
+        {"requested_action": ACTION_SUCCESSOR, **successor_proof}, successor
+    )
+    require_project_control_action_for_campaign_authorization(
+        {
+            "requested_action": ACTION_RECOVERY,
+            "execution_lineage_action": ACTION_SUCCESSOR,
+            **successor_proof,
+        },
+        successor,
+    )
+    with pytest.raises(ProjectControlDenied, match="lineage drift"):
+        require_project_control_action_for_campaign_authorization(
+            {
+                "requested_action": ACTION_RECOVERY,
+                "execution_lineage_action": ACTION_LAUNCH,
+                **successor_proof,
+            },
+            successor,
+        )
+
+    other_successor = _write_json(
+        tmp_path / "other-successor-authorization.json",
+        {
+            "campaign_id": "successor-campaign-2",
+            "campaign_profile": "cn_full_compute_successor_search_v1",
+        },
+    )
+    with pytest.raises(ProjectControlDenied, match="outside the reviewed request"):
+        require_project_control_action_for_campaign_authorization(
+            {"requested_action": ACTION_SUCCESSOR, **successor_proof},
+            other_successor,
+        )
+
+    launch = _write_json(
+        tmp_path / "launch-authorization.json",
+        {
+            "campaign_id": "launch-campaign-1",
+            "campaign_profile": "cn_winner_guided_large_search_v1",
+        },
+    )
+    launch_proof = {
+        "campaign_authorization_path": str(launch.resolve()),
+        "campaign_authorization_file_sha256": sha256_file(launch),
+        "target_campaign_instance_id": "launch-campaign-1",
+        "target_campaign_profile": "cn_winner_guided_large_search_v1",
+    }
+    require_project_control_action_for_campaign_authorization(
+        {"requested_action": ACTION_LAUNCH, **launch_proof}, launch
+    )
+    with pytest.raises(ProjectControlDenied, match="lineage drift"):
+        require_project_control_action_for_campaign_authorization(
+            {"requested_action": ACTION_SUCCESSOR, **launch_proof}, launch
+        )
+
+
+@pytest.mark.parametrize(
+    "profile",
+    (
+        "cn_large_optuna_tpe_availability_v3",
+        "cn_large_optuna_tpe_actual20000_v2",
+        "cn_hybrid_search_productivity_medium_v1",
+        "cn_hybrid_only_tranche_v1",
+        "cn_hybrid_bounded_large_tranche_v1",
+        "cn_winner_guided_large_search_v1",
+    ),
+)
+def test_current_large_launch_profiles_are_classified(
+    tmp_path: Path, profile: str
+) -> None:
+    authorization = _write_json(
+        tmp_path / f"{profile}.json",
+        {"campaign_id": f"launch-{profile}", "campaign_profile": profile},
+    )
+    proof = {
+        "requested_action": ACTION_LAUNCH,
+        "campaign_authorization_path": str(authorization.resolve()),
+        "campaign_authorization_file_sha256": sha256_file(authorization),
+        "target_campaign_instance_id": f"launch-{profile}",
+        "target_campaign_profile": profile,
+    }
+    require_project_control_action_for_campaign_authorization(
+        proof, authorization
+    )
+
+
+def test_targeted_campaign_authorization_is_exactly_bound_to_launch_lineage(
+    tmp_path: Path,
+) -> None:
+    authorization = _write_json(
+        tmp_path / "targeted-authorization.json",
+        {
+            "campaign_id": "targeted-campaign-1",
+            "campaign_profile": "slow_cross_sectional_evaluated384",
+        },
+    )
+    proof = {
+        "campaign_authorization_path": str(authorization.resolve()),
+        "campaign_authorization_file_sha256": sha256_file(authorization),
+        "target_campaign_instance_id": "targeted-campaign-1",
+        "target_campaign_profile": "slow_cross_sectional_evaluated384",
+    }
+    require_targeted_project_control_action(
+        {"requested_action": ACTION_LAUNCH, **proof},
+        authorization,
+        "slow_cross_sectional_evaluated384",
+    )
+    require_targeted_project_control_action(
+        {
+            "requested_action": ACTION_RECOVERY,
+            "execution_lineage_action": ACTION_LAUNCH,
+            **proof,
+        },
+        authorization,
+        "slow_cross_sectional_evaluated384",
+    )
+    with pytest.raises(ProjectControlDenied, match="lineage drift"):
+        require_targeted_project_control_action(
+            {"requested_action": ACTION_SUCCESSOR, **proof},
+            authorization,
+            "slow_cross_sectional_evaluated384",
+        )
+
+    swapped = _write_json(
+        tmp_path / "swapped-targeted-authorization.json",
+        {
+            "campaign_id": "targeted-campaign-2",
+            "campaign_profile": "slow_cross_sectional_evaluated384",
+        },
+    )
+    with pytest.raises(ProjectControlDenied, match="outside the reviewed request"):
+        verify_campaign_authorization_binding(proof, swapped)
+
+
+def test_preflight_authorization_binding_is_plannable_without_claiming_root(
+    tmp_path: Path,
+) -> None:
+    source_payload = {
+        "campaign_id": "planned-campaign-1",
+        "campaign_profile": "cn_full_compute_successor_search_v1",
+        "execution_authorized": True,
+        "financial_campaign_authorized": True,
+    }
+    source_payload["resource_topology_authorization_sha256"] = _stable_hash(
+        source_payload
+    )
+    source = _write_json(tmp_path / "source-authorization.json", source_payload)
+    future = tmp_path / "fresh-root" / "qualification_authorization.json"
+    binding = planned_authorization_binding(source, future)
+    assert not future.parent.exists()
+    assert binding["campaign_authorization_path"] == str(future.resolve())
+    assert binding["target_campaign_instance_id"] == "planned-campaign-1"
+    assert (
+        binding["target_campaign_profile"]
+        == "cn_full_compute_successor_search_v1"
+    )
+
+    payload = materialize_authorization(source)
+    future.parent.mkdir()
+    future.write_bytes(authorization_bytes(payload))
+    assert sha256_file(future) == binding["campaign_authorization_file_sha256"]
+
+
+def test_successor_prepare_wrappers_stop_at_external_project_control() -> None:
+    for name in (
+        "prepare_cn_shared_control_dual_lane_77o.ps1",
+        "prepare_cn_terminal_liquidity_search_continuity_77o.ps1",
+    ):
+        text = (REPO / "scripts" / name).read_text(encoding="utf-8-sig")
+        boundary = text.index("AWAITING_EXTERNAL_PROJECT_CONTROL_ADMISSION")
+        stop = text.index("\nreturn\n", boundary)
+        assert boundary < stop, name
+        assert (
+            "& (Join-Path $repo 'scripts\\run_cn_winner_guided_large_search_77o.ps1')"
+            not in text
+        )
+        assert not text[stop + len("\nreturn\n") :].strip()
+        before_stop = text[:stop]
+        assert "--preflight-authorization-source $searchAuthorization" in before_stop
+        assert "--action 'SUCCESSOR_CAMPAIGN'" in before_stop
+        assert "ProjectControlAdmission" not in before_stop
+
+
 def test_fixed_stratified_does_not_advertise_unsupported_recovery() -> None:
     text = (
         REPO / "scripts" / "run_cn_fixed_stratified_production_v0_77o.ps1"
@@ -1175,4 +1460,17 @@ def test_fixed_stratified_does_not_advertise_unsupported_recovery() -> None:
     assert ACTION_RECOVERY not in repo_app.HIGH_COST_ROUTE_ACTIONS[
         "cn-fixed-stratified-production-v0"
     ]
+    assert "'RECOVERY'" not in text
+
+
+def test_targeted_route_does_not_advertise_unsupported_successor() -> None:
+    assert ACTION_SUCCESSOR not in repo_app.HIGH_COST_ROUTE_ACTIONS[
+        "cn-targeted-search-medium-campaign"
+    ]
+
+
+def test_winner_wrapper_does_not_advertise_unsafe_recovery() -> None:
+    text = (
+        REPO / "scripts" / "run_cn_winner_guided_large_search_77o.ps1"
+    ).read_text(encoding="utf-8-sig")
     assert "'RECOVERY'" not in text

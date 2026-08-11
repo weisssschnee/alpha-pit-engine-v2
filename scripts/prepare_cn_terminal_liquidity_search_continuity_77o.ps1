@@ -6,6 +6,11 @@ param(
     [Parameter(Mandatory = $true)][string]$QualificationRoot,
     [Parameter(Mandatory = $true)][string]$SearchPreflightRoot,
     [Parameter(Mandatory = $true)][string]$ClassificationRoot,
+    [Parameter(Mandatory = $true)][string]$ProjectControlTargetRunId,
+    [Parameter(Mandatory = $true)][string]$ProjectControlExpiresAt,
+    [Parameter(Mandatory = $true)][string]$ParentProjectControlRunId,
+    [Parameter(Mandatory = $true)][string]$ParentTargetCampaignId,
+    [Parameter(Mandatory = $true)][string]$ParentTargetRunId,
     [string]$ClosedSearchRoot = (
         'D:\ChengboRemote\runtime\' +
         'cn_winner_guided_large_search_continuous_dual_' +
@@ -202,101 +207,50 @@ Invoke-CheckedPython (
   --history-manifest $historyManifest `
   --output $searchAuthorization
 
-& (Join-Path $repo 'scripts\run_cn_winner_guided_large_search_77o.ps1') `
-    -Repo $repo `
-    -RepoSha $RepoSha `
-    -OutputRoot $searchPreflight `
-    -CampaignAuthorization $searchAuthorization `
-    -CandidateArchive $candidateArchive `
-    -BehaviorArchive $behaviorArchive `
-    -WinnerGuide $winnerGuide `
-    -HistoryManifest $historyManifest `
-    -NodeResourceProfile 'SEARCH_DUAL_24' `
-    -NodeResourceCapacity $capacity `
-    -NodeResourceStateRoot $NodeResourceStateRoot `
-    -PreflightOnly
-if ($LASTEXITCODE -ne 0) {
-    throw "search zero-financial preflight failed: $LASTEXITCODE"
-}
-$supplyPath = Join-Path $searchPreflight 'fresh_exact_supply_preflight.json'
-$supply = Get-Content -LiteralPath $supplyPath -Raw | ConvertFrom-Json
-if ([string]$supply.status -ne 'PASS') {
-    throw 'search fresh exact supply is not PASS'
-}
-Assert-ZeroDataReads $supply 'search supply preflight'
-$expectedFresh = @{
-    SLOW_TEMPORAL_CHANGE = 177
-    SLOW_CROSS_SECTIONAL_LEVEL = 54
-    FIRSTN_PATH = 365
-}
-foreach ($routeId in $expectedFresh.Keys) {
-    $property = $supply.route_rows.PSObject.Properties[$routeId]
-    if (
-        $null -eq $property -or
-        [int]$property.Value.fresh_exact -ne [int]$expectedFresh[$routeId]
-    ) {
-        throw "refreshed exact supply drift: $routeId"
-    }
-}
-
-$historyReceipt = Get-Content -LiteralPath (
-    Join-Path $historyRoot 'partial_history_receipt.json'
-) -Raw | ConvertFrom-Json
-Assert-ZeroDataReads $historyReceipt 'history refresh'
-$receipt = [ordered]@{
-    schema_version = 'cn_terminal_liquidity_search_continuity_preflight_v1'
-    status = 'PASS_ZERO_FINANCIAL_READY_FOR_DUAL_LAUNCH'
-    repo_sha = $RepoSha
-    contract = $contract
-    contract_sha256 = (
-        Get-FileHash -LiteralPath $contract -Algorithm SHA256
+$futureAuthorization = Join-Path $searchPreflight (
+    'qualification_authorization.json'
+)
+$projectControlRequest = Join-Path $generatedRoot (
+    'cn_terminal_liquidity_project_control_request_' +
+    $RepoSha.Substring(0, 7) + '.json'
+)
+Invoke-CheckedPython (
+    Join-Path $repo 'scripts\build_cn_project_control_execution_request.py'
+) --output $projectControlRequest `
+  --action 'SUCCESSOR_CAMPAIGN' `
+  --target-campaign-id 'cn-large-tpe-search-campaign' `
+  --target-run-id $ProjectControlTargetRunId `
+  --target-output-root $searchPreflight `
+  --repo-sha $RepoSha `
+  --expires-at $ProjectControlExpiresAt `
+  --campaign-authorization-path $futureAuthorization `
+  --preflight-authorization-source $searchAuthorization `
+  --parent-project-control-run-id $ParentProjectControlRunId `
+  --parent-target-campaign-id $ParentTargetCampaignId `
+  --parent-target-run-id $ParentTargetRunId
+$boundaryReceipt = [ordered]@{
+    schema_version = 'cn_project_control_external_boundary_v1'
+    status = 'AWAITING_EXTERNAL_PROJECT_CONTROL_ADMISSION'
+    requested_action = 'SUCCESSOR_CAMPAIGN'
+    target_run_id = $ProjectControlTargetRunId
+    target_output_root = $searchPreflight
+    source_campaign_authorization = $searchAuthorization
+    future_campaign_authorization = $futureAuthorization
+    execution_request = $projectControlRequest
+    execution_request_sha256 = (
+        Get-FileHash -LiteralPath $projectControlRequest -Algorithm SHA256
     ).Hash.ToLowerInvariant()
-    history_manifest = $historyManifest
-    history_manifest_sha256 = (
-        Get-FileHash -LiteralPath $historyManifest -Algorithm SHA256
-    ).Hash.ToLowerInvariant()
-    search_authorization = $searchAuthorization
-    search_authorization_sha256 = (
-        Get-FileHash -LiteralPath $searchAuthorization -Algorithm SHA256
-    ).Hash.ToLowerInvariant()
-    search_supply_preflight = $supplyPath
-    search_supply_preflight_sha256 = (
-        Get-FileHash -LiteralPath $supplyPath -Algorithm SHA256
-    ).Hash.ToLowerInvariant()
-    classification_closure = Join-Path $classification 'CLASSIFICATION_COMPLETE.json'
-    classification_closure_sha256 = (
-        Get-FileHash -LiteralPath (
-            Join-Path $classification 'CLASSIFICATION_COMPLETE.json'
-        ) -Algorithm SHA256
-    ).Hash.ToLowerInvariant()
-    search_formal_asks = 184
-    search_route_mix = [ordered]@{
-        SLOW_TEMPORAL_CHANGE = 144
-        SLOW_CROSS_SECTIONAL_LEVEL = 40
-        FIRSTN_PATH = 0
-        MARKET_REGIME_CONDITION = 0
-        DISCLOSURE_EVENT = 0
-    }
-    search_threads = 24
-    diagnostic_threads = 8
-    total_threads = 32
+    canonical_launcher = 'scripts\run_cn_winner_guided_large_search_77o.ps1'
+    next_step = 'OBTAIN_EXTERNAL_ADMISSION_THEN_CALL_CANONICAL_LAUNCHER'
     financial_reads = 0
-    validation_reads = 0
     holdout_reads = 0
     forward_2026_reads = 0
-    reward_rows_imported = 0
-    optimizer_state_imported = $false
-    scheduler_state_imported = $false
-    classification_feedback_to_search = $false
 }
-$receiptJson = $receipt | ConvertTo-Json -Depth 8
-$receiptHash = [Security.Cryptography.SHA256]::HashData(
-    [Text.Encoding]::UTF8.GetBytes($receiptJson)
+$boundaryReceiptPath = Join-Path $qualification (
+    'project_control_external_boundary.json'
 )
-$receipt['receipt_payload_sha256'] = [Convert]::ToHexString(
-    $receiptHash
-).ToLowerInvariant()
-$receipt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (
-    Join-Path $qualification 'qualification_receipt.json'
-) -Encoding UTF8
-$receipt | ConvertTo-Json -Depth 8
+$boundaryReceipt | ConvertTo-Json -Depth 6 |
+    Set-Content -LiteralPath $boundaryReceiptPath -Encoding UTF8
+Write-Output "PROJECT_CONTROL_REQUEST=$projectControlRequest"
+Write-Output "PROJECT_CONTROL_BOUNDARY=$boundaryReceiptPath"
+return

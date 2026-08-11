@@ -7,6 +7,13 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$OutputRoot,
     [Parameter(Mandatory = $true)]
+    [ValidateSet(
+        'LAUNCH_HIGH_COST_CAMPAIGN',
+        'SUCCESSOR_CAMPAIGN',
+        'RETRY'
+    )]
+    [string]$RequestedAction,
+    [Parameter(Mandatory = $true)]
     [string]$TargetRunId,
     [Parameter(Mandatory = $true)]
     [string]$ProjectControlAdmission,
@@ -379,7 +386,7 @@ $env:JOBLIB_MULTIPROCESSING = '0'
 $campaignArgs = @(
     (Join-Path $resolvedRepo 'app.py'),
     'cn-large-tpe-search-campaign',
-    '--requested-action', 'LAUNCH_HIGH_COST_CAMPAIGN',
+    '--requested-action', $RequestedAction,
     '--target-run-id', $TargetRunId,
     '--project-control-admission', $resolvedAdmission,
     '--project-control-admission-sha256', (

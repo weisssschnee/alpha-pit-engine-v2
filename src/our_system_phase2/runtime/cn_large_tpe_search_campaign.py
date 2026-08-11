@@ -27,7 +27,14 @@ import numpy as np
 import pandas as pd
 
 from our_system_phase2.services.project_control_admission import (
+    ACTION_LAUNCH,
+    ACTION_RECOVERY,
+    ACTION_RETRY,
+    ACTION_SUCCESSOR,
+    ProjectControlDenied,
+    VerifiedCampaignAuthorization,
     consume_active_admission,
+    verify_campaign_authorization_binding,
     verify_consumed_admission_target,
 )
 
@@ -1749,8 +1756,20 @@ def _authorization_binding(
     node_resource_profile: str | None = None,
     node_resource_capacity_sha256: str | None = None,
     preflight_only: bool = False,
+    verified_authorization: VerifiedCampaignAuthorization | None = None,
 ) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    if verified_authorization is not None:
+        if verified_authorization.path != path.resolve():
+            raise RuntimeError("PROJECT_CONTROL_AUTHORIZATION_PATH_DRIFT")
+        payload = dict(verified_authorization.payload)
+        authorization_artifact = {
+            "path": str(verified_authorization.path),
+            "sha256": verified_authorization.file_sha256,
+            "bytes": verified_authorization.byte_count,
+        }
+    else:
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+        authorization_artifact = _artifact(path)
     profile = str(payload.get("campaign_profile") or "")
     runtime_spec = _campaign_runtime_spec(profile)
     authorization_gate = (
@@ -2065,7 +2084,7 @@ def _authorization_binding(
                 )
             )
         ),
-        "authorization": _artifact(path),
+        "authorization": authorization_artifact,
         "historical_candidate_archive": _artifact(candidate_archive),
         "historical_behavior_archive": _artifact(behavior_archive),
         "historical_archive_manifest": _artifact(history_manifest),
@@ -3498,6 +3517,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             node_resource_binding.get("capacity_manifest_sha256") or ""
         ),
         preflight_only=bool(args.preflight_only),
+        verified_authorization=getattr(
+            args, "_project_control_campaign_authorization", None
+        ),
     )
     node_resource_binding_path = _write_json(
         output_root
@@ -5037,6 +5059,57 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     return decision
 
 
+_NEW_CAMPAIGN_PROFILES = frozenset(
+    {
+        CAMPAIGN_PROFILE,
+        "cn_large_optuna_tpe_actual20000_v2",
+        PRODUCTIVITY_MEDIUM_PROFILE,
+        HYBRID_ONLY_TRANCHE_PROFILE,
+        HYBRID_BOUNDED_LARGE_TRANCHE_PROFILE,
+        WINNER_GUIDED_LARGE_SEARCH_PROFILE,
+    }
+)
+_SUCCESSOR_CAMPAIGN_PROFILES = frozenset(
+    {
+        "cn_winner_guided_continuation_search_v1",
+        "cn_shared_control_winner_guided_search_v1",
+        "cn_continuous_shared_control_winner_guided_search_v1",
+        "cn_continuous_shared_control_winner_guided_search_v2",
+        "cn_terminal_liquidity_search_continuity_v1",
+        "cn_primary_absolute_economic_search_continuity_v1",
+        "cn_full_compute_successor_search_v1",
+    }
+)
+
+
+def require_project_control_action_for_campaign_authorization(
+    admission: Mapping[str, Any], authorization_path: Path
+) -> VerifiedCampaignAuthorization:
+    """Prevent a successor authorization from being executed as a new launch."""
+
+    verified = verify_campaign_authorization_binding(
+        admission, authorization_path
+    )
+    authorization = verified.payload
+    profile = str(authorization.get("campaign_profile") or "")
+    action = str(admission.get("requested_action") or "")
+    lineage_action = str(admission.get("execution_lineage_action") or action)
+    if profile in _NEW_CAMPAIGN_PROFILES:
+        allowed_lineages = {ACTION_LAUNCH, ACTION_RETRY}
+    elif profile in _SUCCESSOR_CAMPAIGN_PROFILES:
+        allowed_lineages = {ACTION_SUCCESSOR}
+    else:
+        raise ProjectControlDenied("campaign authorization profile is unclassified")
+    if (
+        lineage_action not in allowed_lineages
+        or (action != ACTION_RECOVERY and action != lineage_action)
+    ):
+        raise ProjectControlDenied(
+            "Project Control action/campaign authorization lineage drift"
+        )
+    return verified
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     admission = consume_active_admission(
         "cn-large-tpe-search-campaign",
@@ -5094,6 +5167,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--preflight-only", action="store_true")
     args = parser.parse_args(argv)
     verify_consumed_admission_target(admission, output_root=args.output_root)
+    verified_authorization = require_project_control_action_for_campaign_authorization(
+        admission, args.campaign_authorization
+    )
+    setattr(
+        args,
+        "_project_control_campaign_authorization",
+        verified_authorization,
+    )
     result = run(args)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0

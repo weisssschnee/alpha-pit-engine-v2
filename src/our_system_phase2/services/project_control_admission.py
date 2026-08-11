@@ -6,9 +6,10 @@ import hashlib
 import json
 import re
 import subprocess
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Collection
+from typing import Any, Collection, Mapping
 
 
 PROJECT_ID = "alpha_pit_true1min_engine_evalreset_20260711"
@@ -59,12 +60,25 @@ PREPARED_OUTPUT_ROOT_ALLOWLISTS: dict[str, frozenset[str]] = {
         {"deployment_binding.json"}
     ),
 }
+CAMPAIGN_AUTHORIZATION_BOUND_ROUTES = frozenset(
+    {"cn-targeted-search-medium-campaign", "cn-large-tpe-search-campaign"}
+)
 
 _ACTIVE_ADMISSION: dict[str, Any] | None = None
 
 
 class ProjectControlDenied(PermissionError):
     """Raised before a high-cost route can import or execute."""
+
+
+@dataclass(frozen=True)
+class VerifiedCampaignAuthorization:
+    """One byte-exact campaign authorization read at the admission seam."""
+
+    path: Path
+    file_sha256: str
+    byte_count: int
+    payload: dict[str, Any]
 
 
 def _stable_hash(payload: dict[str, Any]) -> str:
@@ -307,6 +321,23 @@ def _validate_request_shape(
         str(request.get("target_output_root") or "")
     ):
         raise ProjectControlDenied("execution target output root drift")
+    authorization_fields = (
+        "campaign_authorization_path",
+        "campaign_authorization_file_sha256",
+        "target_campaign_instance_id",
+        "target_campaign_profile",
+    )
+    authorization_values = [str(request.get(field) or "") for field in authorization_fields]
+    if any(authorization_values):
+        if not all(authorization_values):
+            raise ProjectControlDenied("campaign authorization binding incomplete")
+        authorization_path = Path(authorization_values[0])
+        if (
+            not authorization_path.is_absolute()
+            or str(authorization_path.resolve()) != authorization_values[0]
+            or not re.fullmatch(r"[0-9a-f]{64}", authorization_values[1])
+        ):
+            raise ProjectControlDenied("campaign authorization binding invalid")
     if not allow_expired and _parse_expiry(
         str(request.get("expires_at") or "")
     ) <= datetime.now(timezone.utc):
@@ -322,6 +353,10 @@ def build_execution_request(
     target_output_root: str | Path,
     repo_sha: str,
     expires_at: str,
+    campaign_authorization_path: str | Path = "",
+    campaign_authorization_file_sha256: str = "",
+    target_campaign_instance_id: str = "",
+    target_campaign_profile: str = "",
     parent_project_control_run_id: str = "",
     parent_target_campaign_id: str = "",
     parent_target_run_id: str = "",
@@ -344,6 +379,16 @@ def build_execution_request(
         "target_output_root": _canonical_output_root(target_output_root),
         "repo_sha": str(repo_sha),
         "expires_at": str(expires_at),
+        "campaign_authorization_path": (
+            _canonical_output_root(campaign_authorization_path)
+            if str(campaign_authorization_path)
+            else ""
+        ),
+        "campaign_authorization_file_sha256": str(
+            campaign_authorization_file_sha256
+        ).lower(),
+        "target_campaign_instance_id": str(target_campaign_instance_id),
+        "target_campaign_profile": str(target_campaign_profile),
         "parent_project_control_run_id": str(parent_project_control_run_id),
         "parent_target_campaign_id": str(parent_target_campaign_id),
         "parent_target_run_id": str(parent_target_run_id),
@@ -615,6 +660,18 @@ def materialize_admission(
         expected_target_output_root=None,
     )
     request = dict(child["request"])
+    if str(target_campaign_id) in CAMPAIGN_AUTHORIZATION_BOUND_ROUTES and not all(
+        str(request.get(field) or "")
+        for field in (
+            "campaign_authorization_path",
+            "campaign_authorization_file_sha256",
+            "target_campaign_instance_id",
+            "target_campaign_profile",
+        )
+    ):
+        raise ProjectControlDenied(
+            "target campaign authorization binding is required"
+        )
     parent = None
     if action == ACTION_SUCCESSOR:
         if parent_post_batch_run_record_path is None:
@@ -788,6 +845,7 @@ def validate_admission(
     if child != child_payload:
         raise ProjectControlDenied("project-control preflight binding drift")
     parent_run_id = None
+    execution_lineage_action = action
     if action == ACTION_SUCCESSOR:
         parent_payload = dict(payload.get("project_control_parent_post_batch") or {})
         child_request = dict(child["request"])
@@ -839,6 +897,21 @@ def validate_admission(
         )
         if original != original_payload:
             raise ProjectControlDenied("original execution admission binding drift")
+        execution_lineage_action = str(
+            original.get("execution_lineage_action")
+            or original.get("requested_action")
+            or ""
+        )
+        if any(
+            str(request.get(field) or "") != str(original.get(field) or "")
+            for field in (
+                "campaign_authorization_path",
+                "campaign_authorization_file_sha256",
+                "target_campaign_instance_id",
+                "target_campaign_profile",
+            )
+        ):
+            raise ProjectControlDenied("recovery campaign authorization drift")
         incident_payload = dict(payload.get("recovery_incident") or {})
         _validate_file_binding(
             str(incident_payload.get("incident_path") or ""),
@@ -868,6 +941,7 @@ def validate_admission(
         "parent_run_id": parent_run_id,
         "project_id": expected_project_id,
         "requested_action": action,
+        "execution_lineage_action": execution_lineage_action,
         "target_campaign_id": expected_target_campaign_id,
         "target_run_id": expected_target_run_id,
         "target_output_root": canonical_output_root,
@@ -876,6 +950,18 @@ def validate_admission(
         "incident_id": str(child["request"].get("incident_id") or ""),
         "original_admission_file_sha256": str(
             child["request"].get("original_admission_file_sha256") or ""
+        ),
+        "campaign_authorization_path": str(
+            child["request"].get("campaign_authorization_path") or ""
+        ),
+        "campaign_authorization_file_sha256": str(
+            child["request"].get("campaign_authorization_file_sha256") or ""
+        ),
+        "target_campaign_instance_id": str(
+            child["request"].get("target_campaign_instance_id") or ""
+        ),
+        "target_campaign_profile": str(
+            child["request"].get("target_campaign_profile") or ""
         ),
     }
 
@@ -928,6 +1014,13 @@ def _consume_admission_durably(proof: dict[str, Any]) -> None:
             or identity.get("target_run_id") != proof["target_run_id"]
             or identity.get("root_admission_file_sha256")
             != proof["original_admission_file_sha256"]
+            or identity.get("root_action") != proof["execution_lineage_action"]
+            or identity.get("campaign_authorization_file_sha256")
+            != proof["campaign_authorization_file_sha256"]
+            or identity.get("target_campaign_instance_id")
+            != proof["target_campaign_instance_id"]
+            or identity.get("target_campaign_profile")
+            != proof["target_campaign_profile"]
         ):
             raise ProjectControlDenied("recovery original execution identity drift")
     else:
@@ -972,6 +1065,13 @@ def _consume_admission_durably(proof: dict[str, Any]) -> None:
                 "target_output_root": proof["target_output_root"],
                 "root_action": action,
                 "root_admission_file_sha256": proof["admission_file_sha256"],
+                "campaign_authorization_file_sha256": proof[
+                    "campaign_authorization_file_sha256"
+                ],
+                "target_campaign_instance_id": proof[
+                    "target_campaign_instance_id"
+                ],
+                "target_campaign_profile": proof["target_campaign_profile"],
             },
             "execution identity",
         )
@@ -988,6 +1088,12 @@ def _consume_admission_durably(proof: dict[str, Any]) -> None:
             "target_campaign_id": proof["target_campaign_id"],
             "target_run_id": proof["target_run_id"],
             "target_output_root": proof["target_output_root"],
+            "execution_lineage_action": proof["execution_lineage_action"],
+            "campaign_authorization_file_sha256": proof[
+                "campaign_authorization_file_sha256"
+            ],
+            "target_campaign_instance_id": proof["target_campaign_instance_id"],
+            "target_campaign_profile": proof["target_campaign_profile"],
         },
         "Project Control admission",
     )
@@ -1055,6 +1161,42 @@ def verify_consumed_admission_target(
         raise ProjectControlDenied("consumed admission proof is ineligible")
     if proof.get("target_output_root") != _canonical_output_root(output_root):
         raise ProjectControlDenied("active admission output root drift")
+
+
+def verify_campaign_authorization_binding(
+    proof: Mapping[str, Any], authorization_path: str | Path
+) -> VerifiedCampaignAuthorization:
+    """Bind the live campaign authorization to the reviewed request payload."""
+
+    resolved = Path(authorization_path).expanduser().resolve()
+    try:
+        raw = resolved.read_bytes()
+        observed_file_sha256 = hashlib.sha256(raw).hexdigest()
+        authorization = json.loads(raw.decode("utf-8-sig"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ProjectControlDenied(
+            "campaign authorization is unreadable before financial execution"
+        ) from exc
+    if not isinstance(authorization, dict):
+        raise ProjectControlDenied("campaign authorization is invalid")
+    if (
+        str(proof.get("campaign_authorization_path") or "") != str(resolved)
+        or str(proof.get("campaign_authorization_file_sha256") or "")
+        != observed_file_sha256
+        or str(proof.get("target_campaign_instance_id") or "")
+        != str(authorization.get("campaign_id") or "")
+        or str(proof.get("target_campaign_profile") or "")
+        != str(authorization.get("campaign_profile") or "")
+    ):
+        raise ProjectControlDenied(
+            "campaign authorization is outside the reviewed request"
+        )
+    return VerifiedCampaignAuthorization(
+        path=resolved,
+        file_sha256=observed_file_sha256,
+        byte_count=len(raw),
+        payload=dict(authorization),
+    )
 
 
 def clear_active_admission() -> None:

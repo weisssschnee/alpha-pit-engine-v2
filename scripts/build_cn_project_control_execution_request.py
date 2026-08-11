@@ -15,6 +15,9 @@ from our_system_phase2.services.project_control_admission import (  # noqa: E402
     ALLOWED_ACTIONS,
     build_execution_request,
 )
+from materialize_cn_search_preflight_authorization import (  # noqa: E402
+    planned_authorization_binding,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -28,6 +31,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--target-output-root", type=Path, required=True)
     parser.add_argument("--repo-sha", required=True)
     parser.add_argument("--expires-at", required=True)
+    parser.add_argument("--campaign-authorization-path", type=Path)
+    parser.add_argument("--preflight-authorization-source", type=Path)
+    parser.add_argument("--campaign-authorization-file-sha256", default="")
+    parser.add_argument("--target-campaign-instance-id", default="")
+    parser.add_argument("--target-campaign-profile", default="")
     parser.add_argument("--parent-project-control-run-id", default="")
     parser.add_argument("--parent-target-campaign-id", default="")
     parser.add_argument("--parent-target-run-id", default="")
@@ -39,6 +47,36 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--incident-path", default="")
     parser.add_argument("--incident-file-sha256", default="")
     args = parser.parse_args(argv)
+    if args.preflight_authorization_source:
+        if not args.campaign_authorization_path:
+            parser.error(
+                "--preflight-authorization-source requires the future "
+                "--campaign-authorization-path"
+            )
+        if any(
+            (
+                args.campaign_authorization_file_sha256,
+                args.target_campaign_instance_id,
+                args.target_campaign_profile,
+            )
+        ):
+            parser.error(
+                "preflight authorization hash/identity fields are derived, "
+                "not caller supplied"
+            )
+        authorization_binding = planned_authorization_binding(
+            args.preflight_authorization_source,
+            args.campaign_authorization_path,
+        )
+    else:
+        authorization_binding = {
+            "campaign_authorization_path": args.campaign_authorization_path or "",
+            "campaign_authorization_file_sha256": (
+                args.campaign_authorization_file_sha256
+            ),
+            "target_campaign_instance_id": args.target_campaign_instance_id,
+            "target_campaign_profile": args.target_campaign_profile,
+        }
     payload = build_execution_request(
         requested_action=args.action,
         target_campaign_id=args.target_campaign_id,
@@ -46,6 +84,7 @@ def main(argv: list[str] | None = None) -> int:
         target_output_root=args.target_output_root,
         repo_sha=args.repo_sha,
         expires_at=args.expires_at,
+        **authorization_binding,
         parent_project_control_run_id=args.parent_project_control_run_id,
         parent_target_campaign_id=args.parent_target_campaign_id,
         parent_target_run_id=args.parent_target_run_id,
