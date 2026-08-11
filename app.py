@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
 import sys
 from collections.abc import Callable
 from importlib import import_module
@@ -11,6 +12,17 @@ REPO = Path(__file__).resolve().parent
 SRC = REPO / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
+
+from our_system_phase2.services.project_control_admission import (
+    ACTION_FREEZE,
+    ACTION_LAUNCH,
+    ACTION_RECOVERY,
+    ACTION_RETRY,
+    ACTION_SUCCESSOR,
+    PROJECT_ID,
+    ProjectControlDenied,
+    validate_admission,
+)
 
 ROUTES: dict[str, str] = {
     "phase3bp-true1min-search-algorithm-smoke": "our_system_phase2.runtime.phase3bp_true1min_search_algorithm_smoke",
@@ -80,6 +92,22 @@ RETIRED_ROUTES: dict[str, str] = {
     ),
 }
 
+# These are the canonical execution entrances whose normal purpose can freeze or
+# consume material search budget.  The admission is checked before route import,
+# so a denial cannot initialize an evaluator, read market data, or create output.
+HIGH_COST_ROUTE_ACTIONS: dict[str, frozenset[str]] = {
+    "phase3cf-large-search-prelaunch": frozenset({ACTION_FREEZE}),
+    "cn-targeted-search-medium-campaign": frozenset(
+        {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+    ),
+    "cn-large-tpe-search-campaign": frozenset(
+        {ACTION_FREEZE, ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+    ),
+    "cn-fixed-stratified-production-v0": frozenset(
+        {ACTION_LAUNCH, ACTION_SUCCESSOR, ACTION_RETRY, ACTION_RECOVERY}
+    ),
+}
+
 
 def _split_route_args(argv: list[str]) -> tuple[list[str], list[str]]:
     if "--" not in argv:
@@ -97,6 +125,50 @@ def _load_main(route: str) -> Callable[..., int | None]:
     return main
 
 
+def _git_head() -> str:
+    status = subprocess.run(
+        ["git", "-C", str(REPO), "status", "--porcelain", "--untracked-files=all"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    if status.stdout.strip():
+        raise ProjectControlDenied(
+            "high-cost route requires a clean working tree bound to its repo SHA"
+        )
+    completed = subprocess.run(
+        ["git", "-C", str(REPO), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout.strip()
+
+
+def _validate_high_cost_route_admission(
+    *,
+    route: str,
+    admission_path: Path | None,
+    admission_sha256: str,
+) -> None:
+    expected_actions = HIGH_COST_ROUTE_ACTIONS.get(route)
+    if expected_actions is None:
+        return
+    if admission_path is None or not admission_sha256:
+        raise ProjectControlDenied(
+            "high-cost route requires --project-control-admission and "
+            "--project-control-admission-sha256"
+        )
+    validate_admission(
+        admission_path,
+        expected_admission_file_sha256=admission_sha256,
+        expected_project_id=PROJECT_ID,
+        expected_repo_sha=_git_head(),
+        expected_actions=expected_actions,
+        expected_target_campaign_id=route,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     raw_args = list(sys.argv[1:] if argv is None else argv)
     route_args, passthrough = _split_route_args(raw_args)
@@ -106,6 +178,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("route", choices=sorted(ROUTES))
     parser.add_argument("--allow-diagnostic", action="store_true")
+    parser.add_argument("--project-control-admission", type=Path)
+    parser.add_argument("--project-control-admission-sha256", default="")
     parsed = parser.parse_args(route_args)
 
     if parsed.route in RETIRED_ROUTES and not parsed.allow_diagnostic:
@@ -119,6 +193,15 @@ def main(argv: list[str] | None = None) -> int:
             f"[diagnostic-retired-route] {parsed.route}: {RETIRED_ROUTES[parsed.route]}",
             file=sys.stderr,
         )
+
+    try:
+        _validate_high_cost_route_admission(
+            route=parsed.route,
+            admission_path=parsed.project_control_admission,
+            admission_sha256=parsed.project_control_admission_sha256,
+        )
+    except (ProjectControlDenied, subprocess.CalledProcessError) as exc:
+        parser.error(f"project-control admission denied before route import: {exc}")
 
     main_func = _load_main(parsed.route)
     try:

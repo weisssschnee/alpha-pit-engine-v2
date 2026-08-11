@@ -133,6 +133,25 @@ if (
 ) {
     throw 'Historical-challenge deployment manifest binding drift'
 }
+$historicalAdmissionVerifier = Join-Path $resolvedRepo (
+    'scripts\verify_cn_historical_challenge_admission.py'
+)
+$historicalRoleRegistry = Join-Path $resolvedRepo (
+    'runtime\run_plans\evaluation_data_roles_v1.json'
+)
+$historicalAccessStarted = Join-Path $resolvedRepo (
+    'runtime\run_plans\cn_historical_challenge_2023_access_started.json'
+)
+$historicalOutcome = Join-Path $resolvedRepo (
+    'runtime\run_plans\cn_fixed10_historical_challenge_2023_outcome_20260806.json'
+)
+$historicalAdmissionOutput = @(& $python $historicalAdmissionVerifier `
+    --role-registry $historicalRoleRegistry `
+    --access-started $historicalAccessStarted `
+    --outcome $historicalOutcome 2>&1)
+if ($LASTEXITCODE -ne 0) {
+    throw (($historicalAdmissionOutput | Out-String).Trim())
+}
 if ((Get-FileHash -Algorithm SHA256 -LiteralPath $resolvedAuthorization).Hash.ToLowerInvariant() -ne $AuthorizationSha256) {
     throw 'Historical challenge authorization hash drift'
 }

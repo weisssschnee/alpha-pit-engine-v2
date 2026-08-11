@@ -24,6 +24,9 @@ from our_system_phase2.runtime.cn_joint_program_phase_b_v0 import (
 from our_system_phase2.services.candidate_program_proposal_v0 import (
     ProgramProposalReceiptV0,
 )
+from our_system_phase2.services.development_feedback_provenance import (
+    build_development_feedback_provenance,
+)
 from our_system_phase2.services.program_allocator_repair_bandit_v0 import (
     BANDIT_POLICY_ID,
     BANDIT_VERSION,
@@ -193,6 +196,19 @@ def build_initial_bandit_v0(
             "phase_c_financial_result_used": False,
             "validation_feedback_used": False,
             "cross_campaign_state_imported": False,
+            "development_feedback_provenance": (
+                build_development_feedback_provenance(
+                    serialized_optimizer_state_imported=False,
+                    development_financial_observations_imported=observed,
+                    development_observation_count=int(observed),
+                    candidate_results_imported=True,
+                    factor_statistics_imported=False,
+                    behavior_statistics_imported=False,
+                    template_classification_imported=True,
+                    manual_diagnosis_imported=False,
+                    objective_designed_after_parent_results=False,
+                )
+            ),
         }
         ledger_row["feedback_seed_record_sha256"] = stable_hash(ledger_row)
         ledger.append(ledger_row)
@@ -323,6 +339,19 @@ def build_prefinancial_freeze_v0(
     }
     if reserved_contract_keys.intersection(parent_evidence):
         raise ValueError("allocator-repair additional parent evidence overrides authority")
+    development_feedback_provenance = build_development_feedback_provenance(
+        serialized_optimizer_state_imported=False,
+        development_financial_observations_imported=(
+            int(initial_bandit["observations"]) > 0
+        ),
+        development_observation_count=int(initial_bandit["observations"]),
+        candidate_results_imported=True,
+        factor_statistics_imported=False,
+        behavior_statistics_imported=False,
+        template_classification_imported=True,
+        manual_diagnosis_imported=True,
+        objective_designed_after_parent_results=True,
+    )
     contract = phase_c._self_hashed(
         {
             "schema_version": RUN_CONTRACT_SCHEMA,
@@ -397,6 +426,7 @@ def build_prefinancial_freeze_v0(
             "blocked_risk_observation": True,
             "bandit_feedback_source": BANDIT_FEEDBACK_SOURCE,
             "cross_campaign_optimizer_state_import": False,
+            "development_feedback_provenance": development_feedback_provenance,
             "route_local_tpe_authority_unchanged": True,
             "portfolio_decoder_id": "TOPK_10_EQUAL",
             "resource_profile": RESOURCE_PROFILE,
@@ -441,6 +471,7 @@ def build_prefinancial_freeze_v0(
             "phase_b_development_feedback_seeded": True,
             "phase_c_financial_feedback_seeded": False,
             "cross_campaign_optimizer_state_imported": False,
+            "development_feedback_provenance": development_feedback_provenance,
         },
         "access_ledger_sha256",
     )

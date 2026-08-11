@@ -40,6 +40,9 @@ from our_system_phase2.services.a_share_executable_replay import (
     _prepare_sessions,
     run_a_share_long_only_replay,
 )
+from our_system_phase2.services.evaluation_asset_authority import (
+    verify_historical_challenge_destructive_use,
+)
 
 
 EXPECTED_PAIR_COUNT = 10
@@ -232,7 +235,27 @@ def _verify_authorization(
     expected_sha256: str,
     expected_selection_payload_sha256: str,
     expected_forward_split_sha256: str,
+    role_registry_path: Path | None = None,
+    access_started_path: Path | None = None,
+    outcome_path: Path | None = None,
 ) -> dict[str, Any]:
+    if RUN_MODE == "historical_challenge":
+        run_plans = PROJECT_ROOT / "runtime" / "run_plans"
+        verify_historical_challenge_destructive_use(
+            role_registry_path=(
+                role_registry_path
+                or run_plans / "evaluation_data_roles_v1.json"
+            ),
+            access_started_path=(
+                access_started_path
+                or run_plans / "cn_historical_challenge_2023_access_started.json"
+            ),
+            outcome_path=(
+                outcome_path
+                or run_plans
+                / "cn_fixed10_historical_challenge_2023_outcome_20260806.json"
+            ),
+        )
     path = path.resolve()
     if v1._sha256(path) != expected_sha256:
         raise RuntimeError(f"{RUN_MODE} authorization file hash drift")

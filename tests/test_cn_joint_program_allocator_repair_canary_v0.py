@@ -14,6 +14,10 @@ from our_system_phase2.runtime.cn_joint_program_allocator_repair_canary_v0 impor
     EXPECTED_RECORDS,
     TEMPLATE_ORDER,
     build_ask_plan_v0,
+    build_initial_bandit_v0,
+)
+from our_system_phase2.runtime.cn_joint_program_phase_c_v0 import (
+    build_phase_c_initial_bandit_v0,
 )
 from our_system_phase2.services.candidate_program_proposal_v0 import (
     PROGRAM_JOIN_POLICY_ID,
@@ -128,6 +132,39 @@ def test_blocker_is_zero_credit_risk_observation_and_roundtrips() -> None:
     assert restored.observations == 1
     score = restored.score_receipt(_receipt(0))
     assert score["allocator_signal_available"] is False
+
+
+def test_seed_ledgers_distinguish_state_from_development_observations() -> None:
+    receipt = _receipt(0)
+    schedule = [
+        {"main_record_ordinal": 0, "proposal_receipt": receipt.to_record()}
+    ]
+    result = _record()
+    result.update(
+        {
+            "main_record_ordinal": 0,
+            "template_id": "BASE_TEMPORAL",
+            "record_payload_sha256": "1" * 64,
+        }
+    )
+    result["primary"]["behavior_identity"] = "behavior-1"
+
+    phase_c_state, phase_c_ledger = build_phase_c_initial_bandit_v0(
+        phase_b_schedule=schedule,
+        phase_b_results=[result],
+    )
+    allocator_state, allocator_ledger = build_initial_bandit_v0(
+        phase_b_schedule=schedule,
+        phase_b_results=[result],
+    )
+    assert phase_c_state["observations"] == 1
+    assert allocator_state["observations"] == 1
+    for row in (phase_c_ledger[0], allocator_ledger[0]):
+        provenance = row["development_feedback_provenance"]
+        assert provenance["serialized_optimizer_state_imported"] is False
+        assert provenance["development_financial_observations_imported"] is True
+        assert provenance["development_observation_count"] == 1
+        assert provenance["cross_campaign_development_feedback"] is True
 
 
 def test_absolute_first_hierarchy_beats_matched_only_credit() -> None:

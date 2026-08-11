@@ -16,7 +16,9 @@ from scripts import run_cn_fixed_survivor_forward_2026 as fixed10
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_historical_authorization_and_role_are_fail_closed(monkeypatch) -> None:
+def test_unopened_synthetic_historical_authorization_is_fail_closed(
+    monkeypatch, tmp_path: Path
+) -> None:
     monkeypatch.setenv("CN_FIXED10_RUN_MODE", "historical_challenge")
     module = importlib.reload(fixed10)
     try:
@@ -26,6 +28,50 @@ def test_historical_authorization_and_role_are_fail_closed(monkeypatch) -> None:
             / "run_plans"
             / "cn_historical_challenge_2023_authorization.json"
         )
+        role_registry_path = tmp_path / "roles.json"
+        access_started_path = tmp_path / "access.json"
+        outcome_path = tmp_path / "outcome.json"
+        role_registry_path.write_text(
+            json.dumps(
+                {
+                    "default_deny": True,
+                    "asset_states": {
+                        "historical_challenge_2023_b05e2ca0": {
+                            "current_role": "challenge",
+                            "performance_rows_read": 0,
+                        },
+                        "forward_b_tdx_lc1_20260413_20260514_f69cc84f": {
+                            "current_role": "forward",
+                            "performance_rows_read": 0,
+                        },
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        access_started_path.write_text(
+            json.dumps(
+                {
+                    "asset_id": "historical_challenge_2023_b05e2ca0",
+                    "status": "AUTHORIZED_UNOPENED",
+                    "data_role_after_transition": "challenge",
+                }
+            ),
+            encoding="utf-8",
+        )
+        outcome_path.write_text(
+            json.dumps(
+                {
+                    "access_decision": {
+                        "historical_challenge_2023_state": "UNOPENED",
+                        "forward_b_state": "SEALED",
+                        "forward_b_access": "NOT_AUTHORIZED",
+                    },
+                    "provenance": {"historical_challenge_reads": 0},
+                }
+            ),
+            encoding="utf-8",
+        )
         authorization = module._verify_authorization(
             path,
             expected_sha256=v1._sha256(path),
@@ -33,6 +79,9 @@ def test_historical_authorization_and_role_are_fail_closed(monkeypatch) -> None:
                 "7cfc2e454da7ae7561b57979db8010324422cd87ca3eef42167809400d59ef77"
             ),
             expected_forward_split_sha256="not-used-for-historical-role",
+            role_registry_path=role_registry_path,
+            access_started_path=access_started_path,
+            outcome_path=outcome_path,
         )
         assert module.EVALUATION_ROLE == "historical_challenge"
         assert module.DATA_ROLE == "historical_challenge_report_only"

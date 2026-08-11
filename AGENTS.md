@@ -40,6 +40,12 @@ Disallowed by default:
 
 - Set `PYTHONPATH=src` before running.
 - Use `app.py` routes; do not add broad historical routes casually.
+- High-cost freeze, launch, successor, retry, and technical-recovery actions
+  must enter through an `app.py` route that consumes a Project Control
+  admission bound to the exact project, repo SHA, action, campaign and run.
+  Calling an underlying script directly is not authorization for a new
+  high-cost execution. Project Control governs admission only; it cannot
+  select alpha or overrule observed economic results.
 - Treat BZ fragment replay as a diagnostic slice replay, not the search reward.
 - Treat the qualified Phase3CM streaming evaluator as engineering capability,
   not authorization for strict Stage A or formal search.

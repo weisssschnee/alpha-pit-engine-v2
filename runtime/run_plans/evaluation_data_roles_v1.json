@@ -1,5 +1,5 @@
 {
-  "registry_version": "evaluation_data_roles_v1_20260805",
+  "registry_version": "evaluation_data_roles_v1_20260811",
   "effective_date": "2026-08-05",
   "default_deny": true,
   "roles": {
@@ -13,10 +13,8 @@
       "may_update_search_memory_or_scheduler": true
     },
     "challenge": {
-      "assigned_assets": [
-        "historical_challenge_2023_b05e2ca0"
-      ],
-      "status": "fixed_cohort_report_only_authorized_unopened",
+      "assigned_assets": [],
+      "status": "no_unopened_challenge_asset_historical_2023_spent",
       "automated_optimizer_access": "forbidden",
       "candidate_level_access": "batch_gate_only_after_hypothesis_freeze",
       "may_update_search_memory_or_scheduler": false
@@ -31,10 +29,11 @@
       "assigned_assets": [
         "phase3ga_true1min_2024_2025_global_split_manifest.csv:validation",
         "phase3ga_true1min_2024_2025_global_split_manifest.csv:holdout",
-        "separate_2026_true1min_asset"
+        "separate_2026_true1min_asset",
+        "historical_challenge_2023_b05e2ca0"
       ],
-      "date_count": 184,
-      "reason": "2025 validation and holdout were inspected; the 63-session 2026 asset was burned when the authorized fixed-ten attempt opened row coordinates before an infrastructure guard failure",
+      "known_date_count_excluding_historical_2023": 184,
+      "reason": "2025 validation and holdout were inspected; the 63-session 2026 asset was burned when the authorized fixed-ten attempt opened row coordinates before an infrastructure guard failure; the fixed-ten 2023 challenge later completed with a negative result and is permanently spent",
       "allowed_access": "forensic_or_aggregate_reporting_only",
       "candidate_selection_or_feature_design": "forbidden",
       "may_update_search_memory_or_scheduler": false
@@ -59,10 +58,17 @@
       "evidence": "runtime/run_plans/cn_fixed10_forward_2026_spent_failure_receipt.json"
     },
     "historical_challenge_2023_b05e2ca0": {
-      "current_role": "challenge",
-      "status": "authorized_unopened_fixed_ten_report_only",
-      "performance_rows_read": 0,
-      "contract": "runtime/run_plans/cn_historical_challenge_2023_authorization.json"
+      "current_role": "spent",
+      "status": "spent_negative_no_retry_no_search_feedback",
+      "performance_rows_read": 2383217,
+      "result": "NEGATIVE",
+      "retry": "FORBIDDEN",
+      "search_feedback": "FORBIDDEN",
+      "promotion": "FORBIDDEN",
+      "permanent_deny": "PERMANENT_DENY_ALREADY_SPENT",
+      "historical_authorization": "runtime/run_plans/cn_historical_challenge_2023_authorization.json",
+      "access_transition": "runtime/run_plans/cn_historical_challenge_2023_access_started.json",
+      "outcome": "runtime/run_plans/cn_fixed10_historical_challenge_2023_outcome_20260806.json"
     },
     "forward_b_tdx_lc1_20260413_20260514_f69cc84f": {
       "current_role": "forward",
