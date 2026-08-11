@@ -17,7 +17,6 @@
           "app.py",
           "docs/adr/0016-search-control-execution-admission-and-spent-asset-deny.md",
           "docs/adr/0017-trusted-target-bound-project-control-admission.md",
-          "graphify_maintain.tmp",
           "runtime/run_plans/cn_alpha_node_resource_profiles_phase_d_v0.json",
           "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
           "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
@@ -63,7 +62,7 @@
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "6b130dd73daa52ee67d55c8192f1c5373c2adbc5"
+        "repo_head": "72a3dfd54b2a623115963fa8569306f264803db4"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -2089,7 +2088,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-11T10:07:46.428466+00:00",
+  "generated_at": "2026-08-11T10:10:47.535646+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -5707,9 +5706,9 @@
       "claim_badges": [
         "SPENT",
         "NEGATIVE",
-        "NO RETRY",
-        "NO SEARCH FEEDBACK",
-        "NO PROMOTION"
+        "NO_RETRY",
+        "NO_SEARCH_FEEDBACK",
+        "NO_PROMOTION"
       ],
       "color": "#c62828",
       "contracts": [
@@ -5742,7 +5741,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-11T09:35:26.439865+00:00",
+        "checked_at": "2026-08-11T10:10:47.535646+00:00",
         "evidence_ref": "tests/test_cn_search_control_repair_v1.py",
         "evidence_sha256": "93428B82300B758E7FC217014B12B95823BA60108362BE4637BE58E6CA7248FE",
         "level": "STATIC_VERIFIED",
@@ -5758,10 +5757,9 @@
       "authority": null,
       "authority_bindings": [],
       "claim_badges": [
-        "SEALED",
-        "PERFORMANCE UNOPENED",
-        "NOT AUTHORIZED",
-        "EXPLICIT REPLAN REQUIRED"
+        "SEALED_UNSPENT",
+        "NOT_AUTHORIZED",
+        "EXPLICIT_REPLAN_REQUIRED"
       ],
       "color": "#c62828",
       "contracts": [
@@ -5791,7 +5789,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-11T09:29:04.956157+00:00",
+        "checked_at": "2026-08-11T10:10:47.535646+00:00",
         "evidence_ref": "runtime/run_plans/cn_forward_b_reservation_20260805.json",
         "evidence_sha256": "D8D97930973F19EFC3932D6A7F48ADFCC101A9D381AA5F657D941960EB6B81B7",
         "level": "STATIC_VERIFIED",
@@ -6523,11 +6521,10 @@
       "authority": null,
       "authority_bindings": [],
       "claim_badges": [
-        "DEVELOPMENT CLOSED",
-        "ADAPTIVE DEVELOPMENT",
-        "REVISED ALLOCATOR HOLD",
-        "OOS NONE",
-        "NO PROMOTION"
+        "PHASE_D_CLOSED",
+        "VALID_BUT_ADAPTIVE_DEVELOPMENT",
+        "HOLD_REVISED_ALLOCATOR_NO_PROMOTION",
+        "OOS_NONE"
       ],
       "color": "#f9a825",
       "contracts": [
@@ -6566,7 +6563,7 @@
       "required": false,
       "semantic_role": "",
       "validation": {
-        "checked_at": "2026-08-11T09:29:04.956157+00:00",
+        "checked_at": "2026-08-11T10:10:47.535646+00:00",
         "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
         "evidence_sha256": "5AD11E6A4B492F7CB7D5E03F0794D2FDF8E79DD97AE732D59D0D9A45E3C4DE4F",
         "level": "PARTIAL",
@@ -6582,7 +6579,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "0B2E45339C2030183F063AA75D6217403EFA0099ACB4AA6636AA7C430790D87D"
+    "sha256": "06002EAFA3D6451D95034101DA98F24D1227DCE980DE786B41E140C73E49B871"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -6599,7 +6596,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "6b130dd73daa52ee67d55c8192f1c5373c2adbc5",
+  "repo_head": "72a3dfd54b2a623115963fa8569306f264803db4",
   "schema_version": 1,
   "semantic_authorities": [
     {

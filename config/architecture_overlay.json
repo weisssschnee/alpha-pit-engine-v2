@@ -1045,7 +1045,7 @@
         "runtime/run_plans/cn_historical_challenge_2023_authorization.json"
       ],
       "critical": true,
-      "claim_badges": ["SPENT", "NEGATIVE", "NO RETRY", "NO SEARCH FEEDBACK", "NO PROMOTION"],
+      "claim_badges": ["SPENT", "NEGATIVE", "NO_RETRY", "NO_SEARCH_FEEDBACK", "NO_PROMOTION"],
       "contracts": [
         {
           "id": "historical_challenge_permanent_spent_deny",
@@ -1070,7 +1070,7 @@
       "lifecycle": "FORBIDDEN",
       "paths": ["runtime/run_plans/cn_forward_b_reservation_20260805.json"],
       "critical": true,
-      "claim_badges": ["SEALED", "PERFORMANCE UNOPENED", "NOT AUTHORIZED", "EXPLICIT REPLAN REQUIRED"],
+      "claim_badges": ["SEALED_UNSPENT", "NOT_AUTHORIZED", "EXPLICIT_REPLAN_REQUIRED"],
       "contracts": [
         {
           "id": "forward_b_sealed_until_replan",
@@ -1439,7 +1439,7 @@
         "evidence_ref": "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
         "evidence_sha256": "5ad11e6a4b492f7cb7d5e03f0794d2fdf8e79dd97ae732d59d0d9a45e3c4de4f"
       },
-      "claim_badges": ["DEVELOPMENT CLOSED", "ADAPTIVE DEVELOPMENT", "REVISED ALLOCATOR HOLD", "OOS NONE", "NO PROMOTION"]
+      "claim_badges": ["PHASE_D_CLOSED", "VALID_BUT_ADAPTIVE_DEVELOPMENT", "HOLD_REVISED_ALLOCATOR_NO_PROMOTION", "OOS_NONE"]
     }
   ],
   "edges": [
