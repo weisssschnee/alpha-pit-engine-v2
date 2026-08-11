@@ -40,7 +40,7 @@ def _verify_hash(payload: Mapping[str, Any], field: str, label: str) -> None:
         raise ValueError(f"{label} self-hash drift")
 
 
-def audit(root: Path, output: Path) -> dict[str, Any]:
+def audit(root: Path, output: Path | None = None) -> dict[str, Any]:
     root = Path(root).resolve()
     closure_path = root / "PROGRAM_MATERIALIZATION_PREFLIGHT_V1.json"
     closure = _read(closure_path)
@@ -53,6 +53,12 @@ def audit(root: Path, output: Path) -> dict[str, Any]:
         raise ValueError("program materialization lag-once gate did not pass")
     if not bool(closure.get("all_required_fields_information_qualified")):
         raise ValueError("program materialization information coverage did not pass")
+    if (
+        closure.get("unexpected_unbound_added_fields")
+        or closure.get("wrong_scope_fields")
+        or closure.get("wrong_clock_fields")
+    ):
+        raise ValueError("program materialization closure contains semantic drift")
     if bool(closure.get("financial_evaluation_executed")) or any(
         int(closure.get(key) or 0)
         for key in (
@@ -78,12 +84,41 @@ def audit(root: Path, output: Path) -> dict[str, Any]:
     ):
         raise ValueError("program materialized sidecar authority drift")
     required = set(str(value) for value in closure["required_physical_leaf_ids"])
+    added = set(str(value) for value in closure["added_field_ids"])
     if not required <= set(str(value) for value in manifest["fields"]):
         raise ValueError("program materialized sidecar schema coverage drift")
+    source_manifest_binding = dict(manifest["source_manifest"])
+    source_manifest_path = Path(str(source_manifest_binding["path"])).resolve()
+    source_manifest = _read(source_manifest_path)
+    _verify_hash(source_manifest, "manifest_hash", "program materialization source manifest")
+    if (
+        not source_manifest_path.is_file()
+        or _sha256(source_manifest_path)
+        != str(source_manifest_binding["file_sha256"])
+        or str(source_manifest["manifest_hash"])
+        != str(source_manifest_binding["payload_sha256"])
+        or set(str(value) for value in manifest["fields"])
+        - set(str(value) for value in source_manifest["fields"])
+        != added
+    ):
+        raise ValueError("program materialization source-manifest identity drift")
+    bar_manifest_binding = dict(manifest["bar_source_manifest"])
+    bar_manifest_path = Path(str(bar_manifest_binding["path"])).resolve()
+    if (
+        not bar_manifest_path.is_file()
+        or _sha256(bar_manifest_path) != str(bar_manifest_binding["file_sha256"])
+    ):
+        raise ValueError("program materialization bar-source identity drift")
+    bar_manifest = _read(bar_manifest_path)
+    if bar_manifest.get("forbidden_roles_present") or bool(
+        bar_manifest.get("forward_2026_present")
+    ):
+        raise PermissionError("program materialization bar source is not development-only")
     shards = list(manifest.get("shards") or ())
     if len(shards) != int(manifest.get("source_shard_count") or -1):
         raise ValueError("program materialized sidecar shard count drift")
     rows = 0
+    market_digests: dict[str, set[str]] = {}
     for shard in shards:
         path = Path(str(shard["output_path"])).resolve()
         if not path.is_relative_to(root):
@@ -95,8 +130,61 @@ def audit(root: Path, output: Path) -> dict[str, Any]:
         ):
             raise ValueError(f"program materialized sidecar shard drift: {path}")
         rows += int(shard["rows"])
+        receipt_path = Path(str(shard["materialization_receipt_path"])).resolve()
+        if (
+            not receipt_path.is_relative_to(root)
+            or _sha256(receipt_path)
+            != str(shard["materialization_receipt_sha256"])
+        ):
+            raise ValueError("program materialization receipt binding drift")
+        receipt = _read(receipt_path)
+        _verify_hash(receipt, "receipt_sha256", "program materialization receipt")
+        if (
+            set(str(value) for value in receipt["materialized_field_ids"]) != added
+            or str(receipt["source"]["path"]) != str(shard["source_path"])
+            or str(receipt["source"]["sha256"]) != str(shard["source_sha256"])
+            or str(receipt["output"]["path"]) != str(shard["output_path"])
+            or str(receipt["output"]["sha256"]) != str(shard["output_sha256"])
+            or int(receipt["output"]["rows"]) != int(shard["rows"])
+        ):
+            raise ValueError("program materialization receipt identity/shape drift")
+        for adapter_id, raw_evidence in dict(receipt["adapter_evidence"]).items():
+            evidence = dict(raw_evidence)
+            if bool(evidence.get("lag_reapplied")):
+                raise ValueError("program materialization reapplied source lag")
+            evidence_source = Path(str(evidence["source"])).resolve()
+            if (
+                not evidence_source.is_file()
+                or not evidence_source.is_relative_to(bar_manifest_path.parent)
+                or _sha256(evidence_source) != str(evidence["source_sha256"])
+            ):
+                raise ValueError("program materialization adapter source identity drift")
+            if adapter_id == "MARKET_SESSION_PRELAGGED_BROADCAST":
+                if (
+                    evidence.get("entity_scope") != "MARKET"
+                    or evidence.get("join_policy")
+                    != "same_session_1500_broadcast_of_pre_lagged_market_state"
+                    or any(
+                        int(value) > 1
+                        for value in dict(
+                            evidence["maximum_intraday_cross_sectional_unique_values"]
+                        ).values()
+                    )
+                ):
+                    raise ValueError("program materialization market-broadcast drift")
+                fields_key = "|".join(sorted(str(value) for value in evidence["fields"]))
+                market_digests.setdefault(fields_key, set()).add(
+                    str(evidence["session_value_digest"])
+                )
     if rows != int(manifest["sidecar_rows"]):
         raise ValueError("program materialized sidecar row count drift")
+    inconsistent_market = {
+        key: sorted(values) for key, values in market_digests.items() if len(values) != 1
+    }
+    if inconsistent_market:
+        raise ValueError(
+            f"program materialization market source differs across shards: {inconsistent_market}"
+        )
 
     plan_path = Path(closure["materialization_plan"]["path"]).resolve()
     plan = _read(plan_path)
@@ -169,7 +257,7 @@ def audit(root: Path, output: Path) -> dict[str, Any]:
         "information_qualified_field_count": int(
             information["required_field_count"]
         ),
-        "added_field_ids": list(closure["added_field_ids"]),
+        "added_field_ids": sorted(added),
         "template_fixture_count": int(fixtures["template_count"]),
         "required_equals_materializable_equals_program_covered": True,
         "lag_applied_exactly_once": True,
@@ -181,12 +269,13 @@ def audit(root: Path, output: Path) -> dict[str, Any]:
         "forward_2026_reads": 0,
     }
     payload["audit_sha256"] = stable_hash(payload)
-    output = Path(output).resolve()
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    if output is not None:
+        output = Path(output).resolve()
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     return payload
 
 

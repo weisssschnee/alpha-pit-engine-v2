@@ -7,6 +7,15 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from scripts.audit_cn_program_materialization_preflight_v1 import (
+    audit as audit_program_materialization,
+)
+from scripts.prepare_cn_program_materialized_session_sidecar_v1 import (
+    ARTIFACT_MANIFEST_NAME as PROGRAM_ARTIFACT_MANIFEST_NAME,
+    SOURCE_MANIFEST_NAME as PROGRAM_FIELD_MANIFEST_NAME,
+    prepare as prepare_program_materialization,
+)
+
 from our_system_phase2.runtime import cn_joint_program_phase_c_v0 as phase_c
 from our_system_phase2.runtime.cn_joint_program_phase_b_v0 import (
     CACHE_CAP_BYTES,
@@ -142,6 +151,8 @@ def build_prefinancial_freeze_v1(
     phase_b_outcome_path: Path,
     registry_path: Path,
     accepted_field_manifest_path: Path,
+    information_metrics_path: Path,
+    bar_source_root: Path,
     node_resource_capacity_path: Path,
     repo_sha: str,
     authorization: Mapping[str, Any],
@@ -155,6 +166,8 @@ def build_prefinancial_freeze_v1(
     phase_b_outcome_path = phase_b_outcome_path.resolve()
     registry_path = registry_path.resolve()
     accepted_field_manifest_path = accepted_field_manifest_path.resolve()
+    information_metrics_path = information_metrics_path.resolve()
+    bar_source_root = bar_source_root.resolve()
     node_resource_capacity_path = node_resource_capacity_path.resolve()
 
     phase_b_freeze, phase_b_outcome, phase_b_input = _verify_phase_b_source_authority(
@@ -203,14 +216,78 @@ def build_prefinancial_freeze_v1(
         field_manifest=field_manifest,
         phase_b_input=phase_b_input,
     )
-    materialization = phase_c.build_phase_c_component_materialization_plan_v0(
+    source_materialization = phase_c.build_phase_c_component_materialization_plan_v0(
         component_rows=component_rows,
         registry=registry,
         available_fields=available_fields,
     )
+    phase_c.verify_phase_c_component_materialization_plan_v0(source_materialization)
+    source_materialization_path = phase_c._write_json(
+        root / "phase_c_materialization_plan_before.json", source_materialization
+    )
+
+    final_field_manifest_path = accepted_field_manifest_path
+    final_field_manifest = field_manifest
+    final_available_fields = available_fields
+    materialization_schedule_path: Path | None = None
+    program_materialization: dict[str, Any] | None = None
+    program_materialization_audit: dict[str, Any] | None = None
+    program_materialization_audit_path: Path | None = None
+    if source_materialization["missing_required_field_ids"]:
+        if accepted_field_manifest_path.name != PROGRAM_FIELD_MANIFEST_NAME:
+            raise ValueError("Search V2 accepted field manifest has no reusable sidecar layout")
+        materialization_schedule = phase_c.build_phase_c_materialization_schedule_v0(
+            registry=registry,
+            pools=pools,
+        )
+        materialization_schedule_path = phase_c._write_jsonl(
+            root / "phase_c_materialization_schedule.jsonl", materialization_schedule
+        )
+        materialized_root = root / "materialized_session_sidecar"
+        program_materialization = prepare_program_materialization(
+            schedule_path=materialization_schedule_path,
+            registry_path=registry_path,
+            information_metrics_path=information_metrics_path,
+            source_root=accepted_field_manifest_path.parent,
+            bar_source_root=bar_source_root,
+            output_root=materialized_root,
+            workers=EXECUTOR_WORKERS,
+            minimum_free_memory_bytes=MINIMUM_FREE_MEMORY_BYTES,
+            expected_records=phase_c.MATERIALIZATION_SCHEDULE_RECORDS,
+            expected_template_quota=phase_c.MATERIALIZATION_RECORDS_PER_TEMPLATE,
+        )
+        final_field_manifest_path = materialized_root / PROGRAM_FIELD_MANIFEST_NAME
+        program_materialization_audit_path = (
+            root / "program_materialization_independent_audit.json"
+        )
+        program_materialization_audit = audit_program_materialization(
+            materialized_root, program_materialization_audit_path
+        )
+        final_field_manifest, final_available_fields = phase_c._manifest_available_fields(
+            final_field_manifest_path
+        )
+        if (
+            set(program_materialization["required_physical_leaf_ids"])
+            != set(source_materialization["required_physical_leaf_ids"])
+            or set(program_materialization["added_field_ids"])
+            != set(source_materialization["missing_required_field_ids"])
+            or set(program_materialization_audit["added_field_ids"])
+            != set(source_materialization["missing_required_field_ids"])
+        ):
+            raise RuntimeError("Search V2 producer/component materialization identity drift")
+
+    materialization = phase_c.build_phase_c_component_materialization_plan_v0(
+        component_rows=component_rows,
+        registry=registry,
+        available_fields=final_available_fields,
+    )
     phase_c.verify_phase_c_component_materialization_plan_v0(materialization)
     if materialization["missing_required_field_ids"]:
         raise ValueError("Search V2 freeze has unresolved materialization fields")
+    required_fields = set(materialization["required_physical_leaf_ids"])
+    available_after_materialization = required_fields & set(final_available_fields)
+    if required_fields != set(source_materialization["required_physical_leaf_ids"]):
+        raise RuntimeError("Search V2 required physical leaf identity drift")
 
     asks = list(build_ask_plan_v1())
     initial_scheduler = SearchV2SchedulerV1.fresh(
@@ -271,12 +348,19 @@ def build_prefinancial_freeze_v1(
             ),
             "registry_path": str(registry_path),
             "registry_file_sha256": phase_c._sha256(registry_path),
-            "accepted_field_manifest_path": str(accepted_field_manifest_path),
-            "accepted_field_manifest_file_sha256": phase_c._sha256(
+            "source_accepted_field_manifest_path": str(accepted_field_manifest_path),
+            "source_accepted_field_manifest_file_sha256": phase_c._sha256(
                 accepted_field_manifest_path
             ),
-            "accepted_field_manifest_payload_sha256": str(
+            "source_accepted_field_manifest_payload_sha256": str(
                 field_manifest["manifest_hash"]
+            ),
+            "accepted_field_manifest_path": str(final_field_manifest_path),
+            "accepted_field_manifest_file_sha256": phase_c._sha256(
+                final_field_manifest_path
+            ),
+            "accepted_field_manifest_payload_sha256": str(
+                final_field_manifest["manifest_hash"]
             ),
             "node_resource_capacity_path": str(node_resource_capacity_path),
             "node_resource_capacity_file_sha256": phase_c._sha256(
@@ -298,6 +382,61 @@ def build_prefinancial_freeze_v1(
             ),
             "materialization_plan_payload_sha256": str(
                 materialization["plan_sha256"]
+            ),
+            "source_materialization_plan_file_sha256": phase_c._sha256(
+                source_materialization_path
+            ),
+            "source_materialization_plan_payload_sha256": str(
+                source_materialization["plan_sha256"]
+            ),
+            "required_physical_leaf_count": len(required_fields),
+            "available_after_materialization_count": len(
+                available_after_materialization
+            ),
+            "unresolved_required_field_count": len(
+                materialization["missing_required_field_ids"]
+            ),
+            "materialized_missing_field_ids": list(
+                source_materialization["missing_required_field_ids"]
+            ),
+            "program_materialization": (
+                {
+                    "closure_path": str(
+                        Path(str(program_materialization["closure_path"])).resolve()
+                    ),
+                    "closure_file_sha256": str(
+                        program_materialization["closure_file_sha256"]
+                    ),
+                    "closure_payload_sha256": str(
+                        program_materialization["closure_sha256"]
+                    ),
+                    "artifact_manifest_path": str(
+                        final_field_manifest_path.parent
+                        / PROGRAM_ARTIFACT_MANIFEST_NAME
+                    ),
+                    "artifact_manifest_file_sha256": phase_c._sha256(
+                        final_field_manifest_path.parent
+                        / PROGRAM_ARTIFACT_MANIFEST_NAME
+                    ),
+                    "independent_audit_path": str(
+                        program_materialization_audit_path
+                    ),
+                    "independent_audit_file_sha256": phase_c._sha256(
+                        program_materialization_audit_path
+                    ),
+                    "independent_audit_payload_sha256": str(
+                        program_materialization_audit["audit_sha256"]
+                    ),
+                    "schedule_path": str(materialization_schedule_path),
+                    "schedule_file_sha256": phase_c._sha256(
+                        materialization_schedule_path
+                    ),
+                }
+                if program_materialization is not None
+                and program_materialization_audit is not None
+                and program_materialization_audit_path is not None
+                and materialization_schedule_path is not None
+                else None
             ),
             "main_record_count": EXPECTED_RECORDS,
             "checkpoint_count": CHECKPOINT_COUNT,
@@ -390,10 +529,21 @@ def build_prefinancial_freeze_v1(
         fixture_path,
         feedback_path,
         state_path,
+        source_materialization_path,
         materialization_path,
         contract_path,
         access_path,
     ]
+    if program_materialization is not None:
+        artifacts.extend(
+            [
+                materialization_schedule_path,
+                Path(str(program_materialization["closure_path"])),
+                final_field_manifest_path,
+                final_field_manifest_path.parent / PROGRAM_ARTIFACT_MANIFEST_NAME,
+                program_materialization_audit_path,
+            ]
+        )
     manifest = phase_c._self_hashed(
         {
             "schema_version": ARTIFACT_MANIFEST_SCHEMA,
@@ -415,6 +565,11 @@ def build_prefinancial_freeze_v1(
             "reservoir_record_count": len(reservoir),
             "initial_scheduler_observations": 0,
             "initial_conditional_uplift_observations": 0,
+            "required_physical_leaf_count": len(required_fields),
+            "available_after_materialization_count": len(
+                available_after_materialization
+            ),
+            "unresolved_required_field_count": 0,
             "artifact_manifest": phase_c._artifact(manifest_path, root=root),
             "artifact_count": len(manifest["artifacts"]),
             "financial_evaluation_executed": False,
@@ -503,4 +658,50 @@ def verify_prefinancial_freeze_v1(root: Path) -> dict[str, Any]:
     phase_c.verify_phase_c_component_materialization_plan_v0(materialization)
     if materialization["missing_required_field_ids"]:
         raise ValueError("Search V2 materialization coverage drift")
+    source_materialization = _read_json(
+        root / "phase_c_materialization_plan_before.json"
+    )
+    phase_c.verify_phase_c_component_materialization_plan_v0(source_materialization)
+    required = set(materialization["required_physical_leaf_ids"])
+    if (
+        required != set(source_materialization["required_physical_leaf_ids"])
+        or int(contract.get("required_physical_leaf_count") or -1) != len(required)
+        or int(contract.get("available_after_materialization_count") or -1)
+        != len(required)
+        or int(contract.get("unresolved_required_field_count") or -1) != 0
+        or int(closure.get("required_physical_leaf_count") or -1) != len(required)
+        or int(closure.get("available_after_materialization_count") or -1)
+        != len(required)
+        or int(closure.get("unresolved_required_field_count") or -1) != 0
+    ):
+        raise ValueError("Search V2 materialization count/identity drift")
+    final_manifest_path = Path(str(contract["accepted_field_manifest_path"])).resolve()
+    final_manifest, final_available = phase_c._manifest_available_fields(
+        final_manifest_path
+    )
+    if (
+        final_manifest_path.parent != root / "materialized_session_sidecar"
+        or phase_c._sha256(final_manifest_path)
+        != str(contract["accepted_field_manifest_file_sha256"])
+        or str(final_manifest["manifest_hash"])
+        != str(contract["accepted_field_manifest_payload_sha256"])
+        or not required <= set(final_available)
+    ):
+        raise ValueError("Search V2 materialized field-manifest binding drift")
+    program_binding = dict(contract.get("program_materialization") or {})
+    if not program_binding:
+        raise ValueError("Search V2 required materialization evidence is absent")
+    audit_path = Path(str(program_binding["independent_audit_path"])).resolve()
+    stored_audit = _read_json(audit_path)
+    verified_audit = audit_program_materialization(
+        final_manifest_path.parent, None
+    )
+    if (
+        stored_audit != verified_audit
+        or phase_c._sha256(audit_path)
+        != str(program_binding["independent_audit_file_sha256"])
+        or str(verified_audit["audit_sha256"])
+        != str(program_binding["independent_audit_payload_sha256"])
+    ):
+        raise ValueError("Search V2 independent materialization audit drift")
     return closure

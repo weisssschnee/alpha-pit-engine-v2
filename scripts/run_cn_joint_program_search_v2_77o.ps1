@@ -27,11 +27,16 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$AcceptedFieldManifest,
     [Parameter(Mandatory = $true)]
+    [string]$BarSourceRoot,
+    [Parameter(Mandatory = $true)]
     [string]$NodeResourceCapacity,
     [Parameter(Mandatory = $true)]
     [string]$OutputRoot,
     [string]$CampaignAuthorization = (
         'runtime\run_plans\cn_search_engine_v2_prospective_512_canary_v1.json'
+    ),
+    [string]$InformationMetrics = (
+        'runtime\cn_full_field_information_research_v1_20260717\capability_information_metrics.json'
     ),
     [string]$RootFinalizationRecoveryFromRepoSha = '',
     [string]$RootFinalizationIncident = '',
@@ -52,6 +57,11 @@ $resolvedAuthorization = if ([IO.Path]::IsPathRooted($CampaignAuthorization)) {
     [IO.Path]::GetFullPath($CampaignAuthorization)
 } else {
     [IO.Path]::GetFullPath((Join-Path $resolvedRepo $CampaignAuthorization))
+}
+$resolvedInformationMetrics = if ([IO.Path]::IsPathRooted($InformationMetrics)) {
+    [IO.Path]::GetFullPath($InformationMetrics)
+} else {
+    [IO.Path]::GetFullPath((Join-Path $resolvedRepo $InformationMetrics))
 }
 
 if ($env:COMPUTERNAME -ne 'DESKTOP-77OPJ6F') {
@@ -96,6 +106,8 @@ $requiredPaths = @(
     [IO.Path]::GetFullPath($TrainPriceRoot),
     [IO.Path]::GetFullPath($Registry),
     [IO.Path]::GetFullPath($AcceptedFieldManifest),
+    $resolvedInformationMetrics,
+    [IO.Path]::GetFullPath($BarSourceRoot),
     [IO.Path]::GetFullPath($NodeResourceCapacity),
     (Join-Path $resolvedRepo 'app.py')
 )
@@ -120,6 +132,8 @@ $routeArgs = @(
     '--train-price-root', [IO.Path]::GetFullPath($TrainPriceRoot),
     '--registry', [IO.Path]::GetFullPath($Registry),
     '--accepted-field-manifest', [IO.Path]::GetFullPath($AcceptedFieldManifest),
+    '--information-metrics', $resolvedInformationMetrics,
+    '--bar-source-root', [IO.Path]::GetFullPath($BarSourceRoot),
     '--node-resource-capacity', [IO.Path]::GetFullPath($NodeResourceCapacity),
     '--output-root', $resolvedOutput,
     '--executor-workers', $ExecutorWorkers

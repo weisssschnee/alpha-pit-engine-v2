@@ -61,6 +61,7 @@ from our_system_phase2.services.unified_capability_registry import (
 
 
 SOURCE_MANIFEST_NAME = "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
+BAR_SOURCE_MANIFEST_NAME = "development_only_release_manifest.json"
 PLAN_NAME = "PROGRAM_MATERIALIZATION_PLAN_V1.json"
 INFORMATION_COVERAGE_NAME = "PROGRAM_INFORMATION_COVERAGE_V1.json"
 FIXTURE_NAME = "PROGRAM_MATERIALIZATION_TEMPLATE_FIXTURES_V1.json"
@@ -157,6 +158,16 @@ def _validate_source_manifest(source_root: Path) -> tuple[dict[str, Any], Path]:
     shards = list(manifest.get("shards") or ())
     if len(shards) != int(manifest.get("source_shard_count") or -1) or not shards:
         raise ValueError("source sidecar shard cardinality drift")
+    return manifest, path
+
+
+def _validate_bar_source_manifest(bar_source_root: Path) -> tuple[dict[str, Any], Path]:
+    path = Path(bar_source_root).resolve() / BAR_SOURCE_MANIFEST_NAME
+    manifest = _read_json(path)
+    if manifest.get("forbidden_roles_present") or bool(
+        manifest.get("forward_2026_present")
+    ):
+        raise PermissionError("bar context source contains forbidden or sealed roles")
     return manifest, path
 
 
@@ -429,6 +440,7 @@ def prepare(
         expected_template_quota=expected_template_quota,
     )
     source_manifest, source_manifest_path = _validate_source_manifest(source_root)
+    _, bar_source_manifest_path = _validate_bar_source_manifest(bar_source_root)
     available_fields = set(str(value) for value in source_manifest.get("fields") or ())
     plan = resolve_program_materialization_plan_v1(
         records,
@@ -563,6 +575,10 @@ def prepare(
                 "file_sha256": _sha256(source_manifest_path),
                 "payload_sha256": source_manifest["manifest_hash"],
             },
+            "bar_source_manifest": {
+                "path": str(bar_source_manifest_path),
+                "file_sha256": _sha256(bar_source_manifest_path),
+            },
             "program_materialization_plan": {
                 "path": str(plan_path),
                 "file_sha256": _sha256(plan_path),
@@ -646,6 +662,7 @@ def prepare(
                 "registry_hash": registry.registry_hash,
             },
             "source_manifest": manifest["source_manifest"],
+            "bar_source_manifest": manifest["bar_source_manifest"],
             "output_manifest": {
                 "path": str(manifest_path),
                 "file_sha256": _sha256(manifest_path),

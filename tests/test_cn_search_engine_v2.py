@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -280,6 +281,57 @@ def test_shared_evaluator_adapter_preserves_frozen_matched_control_contract() ->
     assert search_v2_runner.ENGINE_CLOSURE_NAME != search_v2_runner.CLOSURE_NAME
     with pytest.raises(PermissionError, match="Direct Search V2 runner invocation"):
         search_v2_runner.main([])
+
+
+def test_runner_consumes_the_freeze_bound_materialized_field_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    admitted_root = tmp_path / "admitted"
+    materialized_root = admitted_root / "prefinancial_freeze" / "materialized_session_sidecar"
+    materialized_root.mkdir(parents=True)
+    (admitted_root / "prefinancial_freeze" / "phase_c_run_contract.json").write_text(
+        json.dumps(
+            {
+                "accepted_field_manifest_path": str(
+                    materialized_root
+                    / "CN_DEVELOPMENT_TIME_MAJOR_EXECUTION_LAYOUT_V2.json"
+                )
+            }
+        ),
+        encoding="utf-8",
+    )
+    args = SimpleNamespace(
+        output_root=admitted_root,
+        phase_b_freeze_root=tmp_path / "phase-b-freeze",
+        registry=tmp_path / "registry.json",
+        accepted_field_manifest=tmp_path / "source-manifest.json",
+        information_metrics=tmp_path / "information.json",
+        bar_source_root=tmp_path / "bars",
+        node_resource_capacity=tmp_path / "capacity.json",
+        train_field_root=tmp_path / "old-field-root",
+    )
+    monkeypatch.setattr(search_v2_runner, "build_prefinancial_freeze_v1", lambda **_: {})
+    monkeypatch.setattr(search_v2_runner, "verify_prefinancial_freeze_v1", lambda _root: {})
+    observed: dict[str, Path] = {}
+
+    def _run(run_args):
+        observed["train_field_root"] = run_args.train_field_root
+        return {"status": "SYNTHETIC_PASS"}
+
+    monkeypatch.setattr(search_v2_runner, "run", _run)
+    result = search_v2_runner.run_authorized_canary(
+        args,
+        admission={
+            "requested_action": "LAUNCH_HIGH_COST_CAMPAIGN",
+            "repo_sha": "a" * 40,
+        },
+        authorization={
+            "source_phase_b_outcome_path": "runtime/run_plans/synthetic.json",
+            "source_phase_b_root": str(tmp_path / "phase-b-result"),
+        },
+    )
+    assert result == {"status": "SYNTHETIC_PASS"}
+    assert observed["train_field_root"] == materialized_root.resolve()
 
 
 def test_gate_reads_one_manifest_bound_feedback_byte_buffer(tmp_path: Path) -> None:
@@ -589,6 +641,8 @@ def test_project_control_and_asset_boundaries_cover_search_v2() -> None:
     assert "--project-control-admission" in launcher
     assert "--project-control-admission-sha256" in launcher
     assert "--campaign-authorization" in launcher
+    assert "--information-metrics" in launcher
+    assert "--bar-source-root" in launcher
 
     with pytest.raises(EvaluationAssetDenied):
         verify_historical_challenge_destructive_use(

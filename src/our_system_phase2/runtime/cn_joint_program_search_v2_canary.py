@@ -521,6 +521,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--train-price-root", type=Path, required=True)
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--accepted-field-manifest", type=Path, required=True)
+    parser.add_argument("--information-metrics", type=Path, required=True)
+    parser.add_argument("--bar-source-root", type=Path, required=True)
     parser.add_argument("--node-resource-capacity", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--root-finalization-recovery-from-repo-sha")

@@ -455,6 +455,8 @@ def run_authorized_canary(
             phase_b_outcome_path=phase_b_outcome,
             registry_path=args.registry,
             accepted_field_manifest_path=args.accepted_field_manifest,
+            information_metrics_path=args.information_metrics,
+            bar_source_root=args.bar_source_root,
             node_resource_capacity_path=args.node_resource_capacity,
             repo_sha=str(admission["repo_sha"]),
             authorization=authorization,
@@ -464,6 +466,10 @@ def run_authorized_canary(
     run_args.phase_c_freeze_root = freeze_root
     run_args.output_root = run_root
     run_args.builder_commit_sha = str(admission["repo_sha"])
+    run_contract = engine._read_json(freeze_root / "phase_c_run_contract.json")
+    run_args.train_field_root = Path(
+        str(run_contract["accepted_field_manifest_path"])
+    ).resolve().parent
     return run(run_args)
 
 
