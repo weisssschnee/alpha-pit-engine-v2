@@ -51,6 +51,7 @@ PREPARED_OUTPUT_ROOT_ALLOWLISTS: dict[str, frozenset[str]] = {
             "deployment_binding.json",
             "campaign.stdout.log",
             "campaign.stderr.log",
+            "qualification_authorization.json",
             "resource_leases",
         }
     ),

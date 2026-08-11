@@ -166,7 +166,14 @@ if ($authorization.campaign_profile -notin @(
 )) {
     throw "campaign profile drift"
 }
-New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
+if (Test-Path -LiteralPath $resolvedRoot) {
+    $existing = @(Get-ChildItem -LiteralPath $resolvedRoot -Force)
+    if ($existing.Count -ne 0) {
+        throw "output root must be fresh: $resolvedRoot"
+    }
+} else {
+    New-Item -ItemType Directory -Path $resolvedRoot | Out-Null
+}
 $effectiveAuthorization = $resolvedAuthorization
 if ($PreflightOnly) {
     $effectiveAuthorization = Join-Path $resolvedRoot (

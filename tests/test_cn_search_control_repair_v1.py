@@ -1088,6 +1088,9 @@ def test_prepared_77o_metadata_root_is_claimed_but_business_output_denies(
         "{}\n", encoding="utf-8"
     )
     (prepared_root / "campaign.stdout.log").write_text("", encoding="utf-8")
+    (prepared_root / "qualification_authorization.json").write_text(
+        "{}\n", encoding="utf-8"
+    )
     prepared_child = _run_record(
         tmp_path,
         trust_config=trust,
@@ -1162,6 +1165,7 @@ def test_current_77o_high_cost_wrappers_forward_project_control() -> None:
         assert "--target-run-id" in text, name
         assert "--project-control-admission" in text, name
         assert "--project-control-admission-sha256" in text, name
+        assert "output root must be fresh" in text, name
 
 
 def test_fixed_stratified_does_not_advertise_unsupported_recovery() -> None:

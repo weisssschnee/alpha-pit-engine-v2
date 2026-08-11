@@ -127,7 +127,14 @@ foreach ($path in $requiredPaths) {
     }
 }
 
-New-Item -ItemType Directory -Force -Path $resolvedRoot | Out-Null
+if (Test-Path -LiteralPath $resolvedRoot) {
+    $existing = @(Get-ChildItem -LiteralPath $resolvedRoot -Force)
+    if ($existing.Count -ne 0) {
+        throw "output root must be fresh: $resolvedRoot"
+    }
+} else {
+    New-Item -ItemType Directory -Path $resolvedRoot | Out-Null
+}
 [ordered]@{
     schema_version = 'cn_hybrid_search_productivity_medium_deployment_v1'
     repo_sha = $RepoSha
