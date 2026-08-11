@@ -812,7 +812,7 @@ def _consume_admission_durably(proof: dict[str, Any]) -> None:
     consumption_root = control_root / "consumptions"
     consumption_root.mkdir(exist_ok=True)
     _write_exclusive_json(
-        consumption_root / f"{proof['admission_file_sha256']}.json",
+        consumption_root / f"{proof['admission_payload_sha256']}.json",
         {
             "schema_version": "cn_project_control_admission_consumption_v1",
             "consumed_at": datetime.now(timezone.utc).isoformat(),

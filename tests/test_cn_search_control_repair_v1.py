@@ -649,6 +649,26 @@ def test_recovery_requires_original_admission_same_run_and_incident(
             expected_target_run_id="immutable-run-1",
             expected_target_output_root=target_output_root,
         )
+    reformatted_recovery = tmp_path / "recovery-reformatted.json"
+    reformatted_recovery.write_text(
+        json.dumps(
+            json.loads(recovery.read_text(encoding="utf-8")),
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    assert sha256_file(reformatted_recovery) != sha256_file(recovery)
+    with pytest.raises(ProjectControlDenied, match="already consumed"):
+        activate_admission(
+            reformatted_recovery,
+            expected_admission_file_sha256=sha256_file(reformatted_recovery),
+            expected_actions={ACTION_RECOVERY},
+            expected_target_campaign_id="cn-large-tpe-search-campaign",
+            expected_target_run_id="immutable-run-1",
+            expected_target_output_root=target_output_root,
+        )
 
 
 def test_receipt_action_project_run_and_repo_binding_drift_denies(
@@ -923,6 +943,11 @@ def test_high_cost_entry_consumes_valid_target_bound_admission(
         target_output_root
         / ".project_control_execution"
         / "consumptions"
-        / f"{sha256_file(admission)}.json"
+        / (
+            json.loads(admission.read_text(encoding="utf-8"))[
+                "admission_payload_sha256"
+            ]
+            + ".json"
+        )
     )
     assert marker.is_file()
