@@ -18,9 +18,9 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ### Search-Control Repair V1 closed without a new financial run (2026-08-11)
 
-- Accepted ADR 0016 and implementation commits
+- Accepted ADRs 0016 and 0017 and implementation commits
   `0247cbbc466b60287a77ebcd03672a9df6afad5a` and
-  `c32ab7fed18474ddc800c26633c9c6f921aed166` reconcile the execution layer
+  `6b130dd73daa52ee67d55c8192f1c5373c2adbc5` reconcile the execution layer
   with already observed facts. The 2023 historical challenge is permanently
   `spent`, economically `NEGATIVE`, and denied with
   `PERMANENT_DENY_ALREADY_SPENT`; its older unopened authorization remains
@@ -28,21 +28,32 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   launcher checks this authority before archive hashing, output creation, data
   conversion, or financial computation.
 - Canonical high-cost `app.py` routes now consume an immutable Project Control
-  admission before route import. The admission binds the exact project, clean
-  repo SHA, action, campaign, target run, control receipt and file hash.
-  Successors additionally require parent `POST_BATCH=CONTINUE` plus child
-  `PREFLIGHT=PROCEED`; technical recovery is restricted to the same authorized
-  target run and an incident binding. Project Control owns execution admission
-  only and is explicitly forbidden from deciding economics or selecting alpha.
-- Phase C and allocator-repair seed artifacts now distinguish serialized
+  admission before route import. Its trusted Harness bundle and task request
+  bind the exact project, repository, clean repo SHA, action, campaign, target
+  run, expiry, control receipt, task/profile files and hashes. Each route module
+  also consumes a one-use in-process capability before argument parsing or data
+  access, so direct invocation denies. Successors require exact parent lineage,
+  parent `POST_BATCH=CONTINUE` and child `PREFLIGHT=PROCEED`; technical recovery
+  requires the original eligible admission for the same target plus an incident
+  binding. Project Control owns execution admission only and is forbidden from
+  deciding economics or selecting alpha.
+- Phase C and allocator-repair seed writers and readers now distinguish serialized
   optimizer-state import from development financial observations, candidate
   results, behavior/template statistics, manual diagnosis, and whether the new
-  objective was designed after parent results. Existing optimizer objectives,
-  scorers, candidate formulas and evaluator semantics were not changed.
+  objective was designed after parent results. Readers fail closed on dishonest
+  or partial embedded provenance and label closed legacy artifacts as explicit
+  non-authoritative projections. Existing optimizer objectives, scorers,
+  candidate formulas and evaluator semantics were not changed.
 - This repair performed no search, financial replay, validation, OOS,
   historical-2023, Forward-B or 2026 data read. Forward-B remains sealed and
   not authorized; Phase D remains valid adaptive development evidence with OOS
   grade `NONE`, held without promotion or automatic successor.
+- The accepted overlay and deterministic CURRENT projection now state the
+  repaired boundaries. RAW remains at
+  `f649507ec3002161735085dde3f16fd2b1a379bc`; therefore CURRENT is explicitly
+  `STALE`, not strict-ready, and the new required Project-Control-to-search
+  precondition is reported as absent from RAW. RAW/CURRENT are advisory until a
+  later reliable RAW refresh; no freshness or runtime assurance is fabricated.
 
 ### Joint Program Phase D closed; revised allocator held without promotion (2026-08-11)
 
@@ -152,7 +163,10 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   templates retain exact per-template quotas 28/24/12, while all 64 BASE
   parity asks remain uniform. The campaign-local bandit chain is intact across
   all 64 checkpoints: 512 feedback records, 421 updates, 51 initial and 472
-  final observations, zero validation feedback and zero cross-campaign import.
+  final observations, zero validation feedback and zero serialized optimizer
+  state import. The 51 initial observations were reconstructed from Phase-B
+  development financial results, so cross-campaign development feedback is
+  explicitly `true`; this is adaptive development, not fresh confirmation.
 - Exact replay closure is 482 complete and 30 fail-closed blocked records.
   All blocked rows are `CORPORATE_ACTION_FRACTIONAL_SHARES`, carry no search
   score or matched economic claim and remain excluded from economic summaries.
