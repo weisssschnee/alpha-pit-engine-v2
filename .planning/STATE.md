@@ -20,7 +20,9 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 - Accepted ADRs 0016 and 0017 and implementation commits
   `0247cbbc466b60287a77ebcd03672a9df6afad5a` and
-  `bc8d1fb29a9eb6c8798b43bbdc4528f97d552830` reconcile the execution layer
+  `bc8d1fb29a9eb6c8798b43bbdc4528f97d552830`, with exact campaign-authority
+  closure at `b41c532818cde6e4a523773abefc2cee57dc56aa` and closed-launcher retirement
+  at `4d86772a8ea65f36dde2923bde66ff0d7bf5be7b`, reconcile the execution layer
   with already observed facts. The 2023 historical challenge is permanently
   `spent`, economically `NEGATIVE`, and denied with
   `PERMANENT_DENY_ALREADY_SPENT`; its older unopened authorization remains
@@ -51,10 +53,19 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   exact parent lineage,
   parent `POST_BATCH=CONTINUE` and child `PREFLIGHT=PROCEED`; technical recovery
   requires the original eligible admission for the same target plus an incident
-  binding. Project Control owns execution admission only and is forbidden from
-  deciding economics or selecting alpha. Routes without implemented same-run
+  binding. Targeted and winner-guided routes bind the live authorization path,
+  hash, campaign id and profile to the reviewed request, then reuse that same
+  byte-verified payload without reopening the file. Winner-guided
+  successor/continuation profiles also preserve successor lineage across
+  recovery, so generic launch, unbound retry and recovery of a rejected launch
+  cannot bypass parent control. Preparation one-shots stop before the external
+  admission boundary. Project Control owns execution admission only and is
+  forbidden from deciding economics or selecting alpha. Routes without implemented same-run
   resume semantics fail closed rather than advertising recovery;
   fixed-stratified exposes launch, successor and retry only.
+  The completed `cn_large_optuna_tpe_actual20000_v2` wrapper is explicitly
+  retired as historical provenance because it is not a current runtime profile;
+  Project Control cannot reopen it as a new launch.
 - The existing Harness emits no cryptographic receipt signature. Its configured
   runs root is the explicit authority-store trust boundary: canonical location,
   full bundle shape and all bound hashes are verified, while a malicious local

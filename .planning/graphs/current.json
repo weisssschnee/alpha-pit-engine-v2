@@ -30,6 +30,9 @@
           "scripts/audit_cn_joint_program_phase_d_v0.py",
           "scripts/build_cn_project_control_execution_request.py",
           "scripts/materialize_cn_project_control_admission.py",
+          "scripts/materialize_cn_search_preflight_authorization.py",
+          "scripts/prepare_cn_shared_control_dual_lane_77o.ps1",
+          "scripts/prepare_cn_terminal_liquidity_search_continuity_77o.ps1",
           "scripts/run_cn_fixed_stratified_production_v0_77o.ps1",
           "scripts/run_cn_fixed_survivor_forward_2026.py",
           "scripts/run_cn_fixed_survivor_historical_challenge_2023_77o.ps1",
@@ -69,13 +72,14 @@
           "tests/test_cn_joint_program_allocator_repair_canary_v0.py",
           "tests/test_cn_joint_program_phase_d_v0.py",
           "tests/test_cn_search_control_repair_v1.py",
+          "tests/test_cn_targeted_search_medium_campaign.py",
           "tests/test_evaluation_ledgers.py",
           "tests/test_nextgen_dark_development_canary.py",
           "tests/test_runtime_authority_convergence.py",
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "bc8d1fb29a9eb6c8798b43bbdc4528f97d552830"
+        "repo_head": "4d86772a8ea65f36dde2923bde66ff0d7bf5be7b"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -1438,10 +1442,10 @@
       "color": "#2e7d32",
       "contract": {
         "bypass_forbidden": true,
-        "enforced_by": "service-pinned deployment trust/live HEAD, durable marker, app.py activation and route-local capability",
+        "enforced_by": "service-pinned deployment trust/live HEAD, durable marker, deterministic preflight binding, app.py activation and route-local exact authorization/lineage checks",
         "evidence_ref": "",
         "id": "high_cost_route_consumes_bound_admission",
-        "rule": "A high-cost route may import only after deployment-mapped canonical trust/live-HEAD validation accepts an exact project/action/campaign/run/output-root/expiry Harness request and durably spends its immutable payload hash at that output root. New execution roots must be absent or contain only qualified launcher control metadata; recovery must match the original root identity. The route consumes a one-use capability for the admitted action and rechecks its parsed output root before data access. This is an execution precondition and does not alter the accepted development search policy.",
+        "rule": "A high-cost route may import only after deployment-mapped canonical trust/live-HEAD validation accepts an exact project/action/campaign/run/output-root/expiry Harness request and durably spends its immutable payload hash at that output root. Campaign routes additionally bind the live authorization path/hash/id/profile; new execution roots must be absent or contain only qualified launcher control metadata; recovery must match the original root identity and lineage; successor/continuation profiles cannot be relabelled as launch or unbound retry. The route consumes a one-use capability for the admitted action and rechecks its parsed output root before data access. Preparation one-shots stop before the external admission boundary. This is an execution precondition and does not alter the accepted development search policy.",
         "severity": "HARD",
         "type": "ADMISSION"
       },
@@ -1458,14 +1462,14 @@
       "source": "cn_project_control_execution_admission",
       "target": "cn_development_search_policy",
       "validation": {
-        "checked_at": "2026-08-11T11:23:37.166898+00:00",
+        "checked_at": "2026-08-11T12:06:36.431801+00:00",
         "evidence_ref": "tests/test_cn_search_control_repair_v1.py",
-        "evidence_sha256": "598A87FBCFFA7A1C705F56658DC093689AB34E76CAF1C441EED665A9461372EE",
+        "evidence_sha256": "03E2495E2D879F41F452E94A35643DE44D80B060B26CA63B824DAABB32FDFFF9",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "bc8d1fb29a9eb6c8798b43bbdc4528f97d552830"
+        "verified_at_sha": "4d86772a8ea65f36dde2923bde66ff0d7bf5be7b"
       }
     },
     {
@@ -2091,7 +2095,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-11T11:23:37.166898+00:00",
+  "generated_at": "2026-08-11T12:06:36.431801+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -5850,8 +5854,8 @@
       "authority": {
         "path": "src/our_system_phase2/services/project_control_admission.py",
         "repo_ref": "",
-        "sha256": "816DF457107D29BB9272F43C5851CB284F7A7987CDD0C74420C826682CCEB31C",
-        "verified_sha": "bc8d1fb29a9eb6c8798b43bbdc4528f97d552830"
+        "sha256": "DF00A09389B1A948C7DC06DE9CD1D3972A955E3723F64F9D4395DCB31BD9A6A8",
+        "verified_sha": "4d86772a8ea65f36dde2923bde66ff0d7bf5be7b"
       },
       "authority_bindings": [
         {
@@ -5866,6 +5870,9 @@
         "LIVE CLEAN HEAD",
         "TARGET REQUEST",
         "OUTPUT ROOT BOUND",
+        "EXACT CAMPAIGN AUTHORITY",
+        "SINGLE-BUFFER AUTH",
+        "EXTERNAL PREFLIGHT BOUNDARY",
         "DURABLE SINGLE CONSUMPTION",
         "REVALIDATED ACTIVATION",
         "ONE-USE ROUTE GATE",
@@ -5878,7 +5885,7 @@
           "enforced_by": "canonical trust/live-HEAD validation, durable output-root consumption, app.py pre-import gate and route-local capability",
           "evidence_ref": "",
           "id": "project_control_bound_preimport_admission",
-          "rule": "A canonical high-cost freeze, launch, successor, retry or technical-recovery route must consume an immutable Project Control admission derived from the deployment's allowlisted Harness authority-store root and a non-stale task request bound to the exact project, clean repo SHA, action, campaign, target run and absolute output root. Activation internally pins the canonical trust config, derives the actually executing checkout, selects its local-or-77o authority-store mapping, derives that checkout's live clean HEAD and revalidates the full Harness bundle instead of accepting caller trust/repository/SHA/proof values. It durably spends the admission at the output root before route import: new actions require an absent root or only route-qualified launcher control metadata, while recovery requires the original root identity and its own unused incident-bound admission. The route then consumes a one-use capability for the exact action and rechecks its parsed output root before data access. A successor additionally requires exact parent lineage, parent POST_BATCH CONTINUE and child PREFLIGHT PROCEED.",
+          "rule": "A canonical high-cost freeze, launch, successor, retry or technical-recovery route must consume an immutable Project Control admission derived from the deployment's allowlisted Harness authority-store root and a non-stale task request bound to the exact project, clean repo SHA, action, campaign, target run and absolute output root. Activation internally pins the canonical trust config, derives the actually executing checkout, selects its local-or-77o authority-store mapping, derives that checkout's live clean HEAD and revalidates the full Harness bundle instead of accepting caller trust/repository/SHA/proof values. It durably spends the admission at the output root before route import: new actions require an absent root or only route-qualified launcher control metadata, while recovery requires the original root identity and its own unused incident-bound admission. The route then consumes a one-use capability for the exact action, rechecks its parsed output root, binds the live campaign-authorization path/hash/id/profile from one byte buffer to the reviewed request, reuses that verified payload without reopening the file, and preserves successor/continuation lineage across recovery before data access. A successor additionally requires exact parent lineage, parent POST_BATCH CONTINUE and child PREFLIGHT PROCEED; preparation one-shots stop before this external admission boundary.",
           "severity": "HARD",
           "type": "ADMISSION"
         },
@@ -5922,6 +5929,10 @@
         "src/our_system_phase2/runtime/cn_fixed_stratified_production_v0.py",
         "runtime/run_plans/cn_project_control_trust_v1.json",
         "scripts/build_cn_project_control_execution_request.py",
+        "scripts/materialize_cn_search_preflight_authorization.py",
+        "scripts/prepare_cn_shared_control_dual_lane_77o.ps1",
+        "scripts/prepare_cn_terminal_liquidity_search_continuity_77o.ps1",
+        "scripts/run_cn_winner_guided_large_search_77o.ps1",
         "docs/adr/0016-search-control-execution-admission-and-spent-asset-deny.md",
         "docs/adr/0017-trusted-target-bound-project-control-admission.md"
       ],
@@ -5931,6 +5942,18 @@
         "app_load_main",
         "app_main",
         "app_split_route_args",
+        "scripts_materialize_cn_search_preflight_authorization",
+        "scripts_materialize_cn_search_preflight_authorization_main",
+        "scripts_materialize_cn_search_preflight_authorization_materialize_authorization",
+        "scripts_materialize_cn_search_preflight_authorization_rationale_1",
+        "scripts_materialize_cn_search_preflight_authorization_stable_hash",
+        "scripts_prepare_cn_shared_control_dual_lane_77o",
+        "scripts_prepare_cn_shared_control_dual_lane_77o_assert_zerosealedreads",
+        "scripts_prepare_cn_shared_control_dual_lane_77o_invoke_checkedpython",
+        "scripts_prepare_cn_terminal_liquidity_search_continuity_77o",
+        "scripts_prepare_cn_terminal_liquidity_search_continuity_77o_assert_zerodatareads",
+        "scripts_prepare_cn_terminal_liquidity_search_continuity_77o_invoke_checkedpython",
+        "scripts_run_cn_winner_guided_large_search_77o",
         "src_our_system_phase2_runtime_cn_b1s_development_canary",
         "src_our_system_phase2_runtime_cn_b1s_development_canary_adaptive_comparison",
         "src_our_system_phase2_runtime_cn_b1s_development_canary_adaptive_research_diagnostics",
@@ -6352,14 +6375,14 @@
       "required": false,
       "semantic_role": "high_cost_execution_admission_authority",
       "validation": {
-        "checked_at": "2026-08-11T11:23:37.166898+00:00",
+        "checked_at": "2026-08-11T12:06:36.431801+00:00",
         "evidence_ref": "tests/test_cn_search_control_repair_v1.py",
-        "evidence_sha256": "598A87FBCFFA7A1C705F56658DC093689AB34E76CAF1C441EED665A9461372EE",
+        "evidence_sha256": "03E2495E2D879F41F452E94A35643DE44D80B060B26CA63B824DAABB32FDFFF9",
         "level": "STATIC_VERIFIED",
         "notes": [],
         "profile": "",
         "result": "PASS",
-        "verified_at_sha": "bc8d1fb29a9eb6c8798b43bbdc4528f97d552830"
+        "verified_at_sha": "4d86772a8ea65f36dde2923bde66ff0d7bf5be7b"
       },
       "visible_by_default": true
     },
@@ -7019,7 +7042,7 @@
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "6A9596BD344F33D0EDC0111131E71ED3AEC0E3DFCE9EC17B8FF5E2433DF68E02"
+    "sha256": "9B828846E9BB1BDDB71C0D134303ACD9D8F56D9305A6B3BA983806C59A6B0BD7"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7036,7 +7059,7 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "bc8d1fb29a9eb6c8798b43bbdc4528f97d552830",
+  "repo_head": "4d86772a8ea65f36dde2923bde66ff0d7bf5be7b",
   "schema_version": 1,
   "semantic_authorities": [
     {
