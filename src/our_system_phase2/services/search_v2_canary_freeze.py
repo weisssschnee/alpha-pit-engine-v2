@@ -77,6 +77,10 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
+def _int_or_missing(payload: Mapping[str, Any], key: str) -> int:
+    return int(payload[key]) if key in payload else -1
+
+
 def _verify_phase_b_field_manifest_binding(
     *,
     accepted_field_manifest_path: Path,
@@ -597,7 +601,7 @@ def verify_prefinancial_freeze_v1(root: Path) -> dict[str, Any]:
         closure.get("schema_version") != FREEZE_SCHEMA
         or closure.get("status") != FREEZE_STATUS
         or int(closure.get("main_record_count") or 0) != EXPECTED_RECORDS
-        or int(closure.get("initial_scheduler_observations") or -1) != 0
+        or _int_or_missing(closure, "initial_scheduler_observations") != 0
         or bool(closure.get("financial_evaluation_executed"))
         or bool(closure.get("canary_run"))
     ):
@@ -632,7 +636,7 @@ def verify_prefinancial_freeze_v1(root: Path) -> dict[str, Any]:
     _verify_self_hash(contract, "run_contract_sha256", "Search V2 run contract")
     if (
         contract.get("decision_gates") != PROSPECTIVE_SUCCESS_GATES
-        or int(contract.get("development_observation_count") or -1) != 0
+        or _int_or_missing(contract, "development_observation_count") != 0
         or bool(contract.get("serialized_optimizer_state_imported"))
         or bool(contract.get("development_financial_observations_imported"))
         or contract.get("scalar_absolute_plus_uplift_reward") is not None
@@ -667,14 +671,14 @@ def verify_prefinancial_freeze_v1(root: Path) -> dict[str, Any]:
     required = set(materialization["required_physical_leaf_ids"])
     if (
         required != set(source_materialization["required_physical_leaf_ids"])
-        or int(contract.get("required_physical_leaf_count") or -1) != len(required)
-        or int(contract.get("available_after_materialization_count") or -1)
+        or _int_or_missing(contract, "required_physical_leaf_count") != len(required)
+        or _int_or_missing(contract, "available_after_materialization_count")
         != len(required)
-        or int(contract.get("unresolved_required_field_count") or -1) != 0
-        or int(closure.get("required_physical_leaf_count") or -1) != len(required)
-        or int(closure.get("available_after_materialization_count") or -1)
+        or _int_or_missing(contract, "unresolved_required_field_count") != 0
+        or _int_or_missing(closure, "required_physical_leaf_count") != len(required)
+        or _int_or_missing(closure, "available_after_materialization_count")
         != len(required)
-        or int(closure.get("unresolved_required_field_count") or -1) != 0
+        or _int_or_missing(closure, "unresolved_required_field_count") != 0
     ):
         raise ValueError("Search V2 materialization count/identity drift")
     final_manifest_path = Path(str(contract["accepted_field_manifest_path"])).resolve()

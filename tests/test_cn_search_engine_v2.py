@@ -334,6 +334,11 @@ def test_runner_consumes_the_freeze_bound_materialized_field_root(
     assert observed["train_field_root"] == materialized_root.resolve()
 
 
+def test_prefinancial_verifier_preserves_explicit_zero_counts() -> None:
+    assert search_v2_freeze._int_or_missing({"count": 0}, "count") == 0
+    assert search_v2_freeze._int_or_missing({}, "count") == -1
+
+
 def test_gate_reads_one_manifest_bound_feedback_byte_buffer(tmp_path: Path) -> None:
     feedback_path = tmp_path / "phase_c_bandit_feedback_ledger.jsonl"
     feedback_path.write_text('{"synthetic":true}\n', encoding="utf-8")
