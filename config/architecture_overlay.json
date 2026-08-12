@@ -1463,7 +1463,7 @@
     },
     {
       "id": "cn_search_engine_v2_experimental",
-      "label": "CN Search Engine V2 replacement canary system-interrupted with no economic result",
+      "label": "CN Search Engine V2 replacement canary complete with negative economic result",
       "kind": "experimental-search-control",
       "lifecycle": "EXPERIMENTAL",
       "paths": [
@@ -1486,7 +1486,7 @@
         {
           "id": "search_v2_exact_fresh_prospective_512",
           "type": "EVIDENCE",
-          "rule": "The design remained frozen at exactly 512 asks, 64 per template and exact arm totals 288 Uniform, 168 Conditional Uplift Exploit and 56 Novelty. It imported zero parent financial observations and no optimizer state; manual diagnosis, post-parent objective design and cross-campaign development feedback are disclosed. The authorized replacement route passed the repaired 84-of-84 prefinancial freeze, but 77o became unreachable after the last observed 56-record prefix. The incomplete prefix has no economic gate result and authorizes no automatic recovery, rerun or continuation.",
+          "rule": "The design remained frozen at exactly 512 asks, 64 per template and exact arm totals 288 Uniform, 168 Conditional Uplift Exploit and 56 Novelty. It imported zero parent financial observations and no optimizer state; manual diagnosis, post-parent objective design and cross-campaign development feedback are disclosed. The authorized replacement route passed the repaired 84-of-84 prefinancial freeze and closed all 64 immutable checkpoints. Root-finalization-only recovery recomputed no checkpoint. The frozen economic gate returned FAIL with zero improved templates and authorizes no retry, successor or continuation.",
           "severity": "HARD",
           "enforced_by": "self-hashed authorization, existing Candidate Program materializer, independent manifest/cache audit, zero-financial freeze verifier and manifest-bound gate evaluator",
           "bypass_forbidden": true
@@ -1501,13 +1501,13 @@
         }
       ],
       "validation": {
-        "level": "PARTIAL",
-        "result": "WARN",
+        "level": "RUNTIME_VERIFIED",
+        "result": "PASS",
         "evidence_ref": "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_outcome_20260812.json",
-        "evidence_sha256": "616457324e2aa3c65caa147ab11c402b84dc045e1418843db294b1f8df3b4aa0",
-        "verified_at_sha": "c3fd823489fc8298f613eceeea245191b04e802c"
+        "evidence_sha256": "392c0c1a007975421660c139fe6d9a2f25ca972ff275f88565467d682bd75401",
+        "verified_at_sha": "b180fffeee2dde493ac241a1701628e1c4e8d95e"
       },
-      "claim_badges": ["PREFINANCIAL_84_OF_84_VERIFIED", "REPLACEMENT_CANARY_SYSTEM_INTERRUPTED", "56_OF_512_LAST_OBSERVED", "FINAL_AUDIT_BLOCKED_NODE_UNREACHABLE", "NO_ECONOMIC_RESULT", "NO_AUTOMATIC_RECOVERY", "NO_PROMOTION"]
+      "claim_badges": ["PREFINANCIAL_84_OF_84_VERIFIED", "512_OF_512_COMPLETE", "FROZEN_GATE_FAIL", "ZERO_IMPROVED_TEMPLATES", "RESTRICTED_READS_ZERO", "STOP_CONTINUATION", "NO_PROMOTION"]
     }
   ],
   "edges": [
