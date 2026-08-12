@@ -1463,13 +1463,15 @@
     },
     {
       "id": "cn_search_engine_v2_experimental",
-      "label": "CN Search Engine V2 two-head design ready for separately authorized replacement canary",
+      "label": "CN Search Engine V2 replacement canary system-interrupted with no economic result",
       "kind": "experimental-search-control",
       "lifecycle": "EXPERIMENTAL",
       "paths": [
         "src/our_system_phase2/runtime/cn_joint_program_search_v2_canary.py",
         "runtime/run_plans/cn_search_engine_v2_prospective_512_canary_v1.json",
-        "runtime/run_plans/cn_search_engine_v2_prefinancial_repair_validation_20260812.json"
+        "runtime/run_plans/cn_search_engine_v2_prefinancial_repair_validation_20260812.json",
+        "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_outcome_20260812.json",
+        "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_independent_audit_20260812.json"
       ],
       "critical": true,
       "contracts": [
@@ -1484,7 +1486,7 @@
         {
           "id": "search_v2_exact_fresh_prospective_512",
           "type": "EVIDENCE",
-          "rule": "The design remains frozen before financial observation at exactly 512 asks, 64 per template and exact arm totals 288 Uniform, 168 Conditional Uplift Exploit and 56 Novelty. It imports zero parent financial observations and no optimizer state; manual diagnosis, post-parent objective design and cross-campaign development feedback are disclosed. After the historical admitted attempt failed before financial read, the existing materialization chain now resolves and independently verifies all 84 required physical leaves before final freeze. No replacement canary, economic gate result or automatic continuation exists.",
+          "rule": "The design remained frozen at exactly 512 asks, 64 per template and exact arm totals 288 Uniform, 168 Conditional Uplift Exploit and 56 Novelty. It imported zero parent financial observations and no optimizer state; manual diagnosis, post-parent objective design and cross-campaign development feedback are disclosed. The authorized replacement route passed the repaired 84-of-84 prefinancial freeze, but 77o became unreachable after the last observed 56-record prefix. The incomplete prefix has no economic gate result and authorizes no automatic recovery, rerun or continuation.",
           "severity": "HARD",
           "enforced_by": "self-hashed authorization, existing Candidate Program materializer, independent manifest/cache audit, zero-financial freeze verifier and manifest-bound gate evaluator",
           "bypass_forbidden": true
@@ -1499,13 +1501,13 @@
         }
       ],
       "validation": {
-        "level": "RUNTIME_VERIFIED",
-        "result": "PASS",
-        "evidence_ref": "runtime/run_plans/cn_search_engine_v2_prefinancial_repair_validation_20260812.json",
-        "evidence_sha256": "835c858c2ac6e577560a0d70fb4f400ff818c82a07eb3c93532d68d9440de043",
-        "verified_at_sha": "b8682af1dfccd80ab7fa8366b98a4fe9bf789ca2"
+        "level": "PARTIAL",
+        "result": "WARN",
+        "evidence_ref": "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_outcome_20260812.json",
+        "evidence_sha256": "616457324e2aa3c65caa147ab11c402b84dc045e1418843db294b1f8df3b4aa0",
+        "verified_at_sha": "c3fd823489fc8298f613eceeea245191b04e802c"
       },
-      "claim_badges": ["PREFINANCIAL_REACHABILITY_VERIFIED", "READY_FOR_REPLACEMENT_CANARY", "ZERO_FINANCIAL_READS", "CANARY_NOT_RUN", "NO_ECONOMIC_RESULT", "NO_PROMOTION"]
+      "claim_badges": ["PREFINANCIAL_84_OF_84_VERIFIED", "REPLACEMENT_CANARY_SYSTEM_INTERRUPTED", "56_OF_512_LAST_OBSERVED", "FINAL_AUDIT_BLOCKED_NODE_UNREACHABLE", "NO_ECONOMIC_RESULT", "NO_AUTOMATIC_RECOVERY", "NO_PROMOTION"]
     }
   ],
   "edges": [
