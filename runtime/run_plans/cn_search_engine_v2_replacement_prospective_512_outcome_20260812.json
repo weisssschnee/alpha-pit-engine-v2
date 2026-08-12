@@ -1,0 +1,92 @@
+{
+  "schema_version": "cn_search_engine_v2_replacement_prospective_512_outcome_v1",
+  "status": "SEARCH_V2_REPLACEMENT_CANARY_SYSTEM_INTERRUPTED_NO_ECONOMIC_RESULT",
+  "decision": "HOLD_SYSTEM_INCIDENT_NO_ECONOMIC_GATE",
+  "start_repo_sha": "1b91c8874188bc75bb26f1763d90ecc279734f35",
+  "execution_repo_sha": "1b91c8874188bc75bb26f1763d90ecc279734f35",
+  "project_control_run_id": "3456d3ee-5e81-4086-9b9b-e3de510e31e9",
+  "project_control_request_payload_sha256": "a46a1e80421d323438138ae2eb12755a28d305f553205760022ebdc1f9e7b3bf",
+  "project_control_admission_file_sha256": "2c2c43b696d8f1ed4c7e554310503d2f7d2da3b28b8304944a91b20137bb16ce",
+  "project_control_admission_payload_sha256": "29543a8e17431c65fcbcda57a209a2d33559fb049abab45f4ac42a37961ed2de",
+  "target_run_id": "cn_search_engine_v2_replacement_canary_20260812_1b91c88",
+  "output_root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_canary_replacement_20260812_1b91c88",
+  "job_id": "lanjob_20260812_094249_5d2882",
+  "internal_job_id": "searchv2job_20260812_1b91c88_replacement_transport3",
+  "economic_canary_completed": false,
+  "last_observed_closed_record_count": 56,
+  "last_observed_closed_checkpoint_count": 7,
+  "last_observed_inflight_checkpoint": "checkpoint_008",
+  "producer_closure_verified": false,
+  "final_artifact_manifest_verified": false,
+  "prospective_gate": {
+    "decision_rule": "NONINFERIOR_ABSOLUTE_AND_SUPERIOR_CONDITIONAL_UPLIFT",
+    "gate_contract_sha256": "3d3cb195c8cb4b97f4d8a6004f37c54647d89952806026617393ba9fa7839132",
+    "evaluated": false,
+    "result": "NOT_EVALUABLE_INCOMPLETE_SYSTEM_INCIDENT",
+    "economic_conclusion": "NONE"
+  },
+  "system_incident": {
+    "stage": "FINANCIAL_EXECUTION_AFTER_CHECKPOINT_007",
+    "host": "DESKTOP-77OPJ6F",
+    "last_observed_at": "2026-08-12T10:02:31.7644567+08:00",
+    "node_unreachable_confirmed_at": "2026-08-12T10:21:34.5780858+08:00",
+    "last_observed_free_physical_bytes": 45931937792,
+    "frozen_minimum_free_physical_bytes": 25769803776,
+    "last_observed_terminal_status": "ABSENT",
+    "classification": "NODE_OR_NODE_LINK_UNREACHABLE_TERMINAL_STATE_UNKNOWN",
+    "economic_interpretation": "NONE"
+  },
+  "prefinancial_freeze": {
+    "status": "PASS",
+    "required_physical_leaf_count": 84,
+    "available_after_materialization_count": 84,
+    "unresolved_required_field_count": 0,
+    "closure_sha256": "94c28e5d1117904e80c255b5ef01b8cbf8f5d3e4681fc5910e4129ee1b7c9c44",
+    "artifact_manifest_sha256": "7c42148769203d9ca0fc4c2fc4a4404a12eb489b9aaa8da53dc49e5d341876da"
+  },
+  "frozen_schedule_recomputation": {
+    "status": "PASS_UNCHANGED",
+    "ask_plan_sha256": "c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869",
+    "authorization_payload_sha256": "3599805b30b8f3acded2264c4ead6578ddb76c36322672916ab11c3c6816c864",
+    "authorized_record_count": 512,
+    "authorized_checkpoint_count": 64,
+    "authorized_total_arm_quotas": {
+      "CONDITIONAL_UPLIFT_EXPLOIT": 168,
+      "NOVELTY_RESERVE": 56,
+      "UNIFORM_FRESH": 288
+    }
+  },
+  "independent_audit_path": "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_independent_audit_20260812.json",
+  "independent_audit_file_sha256": "8c309e83d480a3044b963feda657960cd504c8e889a6fb0df2b8087040772af4",
+  "independent_audit_payload_sha256": "b115e40b1bcb1d003ae18105661e29462566a1005f66851bb2f435f8a58a48f5",
+  "pre_entry_transport_failure_count": 2,
+  "unique_economic_route_entry_count": 1,
+  "automatic_recovery_successor_or_second_canary_launched": false,
+  "promotion_authorized": false,
+  "formal_development_search_authority_replaced": false,
+  "oos_grade": "NONE",
+  "read_audit": {
+    "development_financial_execution_started": true,
+    "last_observed_closed_development_record_count": 56,
+    "restricted_reads_at_prefinancial_freeze": {
+      "validation_reads": 0,
+      "historical_2023_reads": 0,
+      "forward_b_reads": 0,
+      "forward_2026_reads": 0
+    },
+    "final_restricted_read_counts": "NOT_AUDITABLE_NODE_UNREACHABLE",
+    "restricted_read_violation_observed": false
+  },
+  "next_action": {
+    "authorization": "NO_AUTOMATIC_RECOVERY_RERUN_SUCCESSOR_OR_PROMOTION",
+    "objective": "Hold Search V2. Any technical recovery must first regain the original 77o root, verify execution identity, incident and durable checkpoint lineage, then obtain a separate explicit recovery decision and exact Project Control admission.",
+    "prohibited": [
+      "interpret the incomplete 56-record prefix as an economic PASS or FAIL",
+      "launch a second replacement canary or successor",
+      "reuse or overwrite the original output root outside the recovery contract",
+      "read validation, holdout, spent-2023, Forward-B or 2026 data",
+      "promote Search V2 or replace the formal development-search authority"
+    ]
+  },
+  "outcome_payload_sha256": "8acfba250ba51912b407af8e13b0409f55af6fb498b76504764327346b53707b"
+}

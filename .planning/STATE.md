@@ -2,7 +2,7 @@
 
 Updated: 2026-08-12
 
-Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_PREFINANCIAL_REPAIR_CLOSED_READY_FOR_REPLACEMENT_PROSPECTIVE_512_CANARY_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_REPLACEMENT_CANARY_SYSTEM_INTERRUPTED_NO_ECONOMIC_RESULT_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -15,6 +15,60 @@ Generated CURRENT: `.planning/graphs/current.json`
 Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn_field_master_registry_v1.json`
 
 ## Current accepted capabilities
+
+### Search Engine V2 authorized replacement canary system-interrupted; no economic gate (2026-08-12)
+
+- The explicitly authorized replacement canary consumed one exact Project
+  Control `LAUNCH_HIGH_COST_CAMPAIGN` admission at execution SHA
+  `1b91c8874188bc75bb26f1763d90ecc279734f35` for target run
+  `cn_search_engine_v2_replacement_canary_20260812_1b91c88` on 77o. The two
+  earlier detached-task transport failures occurred before target-root creation
+  or admission consumption; exactly one economic route entry exists.
+- The repaired prefinancial chain passed on the actual admitted route with 84
+  required physical leaves, 84 available after materialization and zero
+  unresolved leaves. The frozen 512 ask plan, eight quotas of 64, 288/168/56
+  arm totals, ask-plan SHA256
+  `c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869`
+  and gate SHA256
+  `3d3cb195c8cb4b97f4d8a6004f37c54647d89952806026617393ba9fa7839132`
+  remained unchanged.
+- The last durable observation closed 7/64 checkpoints and 56/512 development
+  records, with `checkpoint_008` inflight and about 42.8 GiB free physical
+  memory, above the frozen 24 GiB minimum. The 77o node then became unreachable
+  while the LAN gateway remained reachable. No terminal status, producer
+  closure, final artifact manifest or complete access ledger could be read.
+  Therefore the incomplete prefix is neither an economic PASS nor FAIL and the
+  frozen dual gate is not evaluable.
+- At the final prefinancial freeze, validation, spent-2023, Forward-B and 2026
+  reads were zero, and no restricted-read violation was observed before contact
+  was lost. Development financial evaluation did start and 56 durable records
+  were observed, so this outcome does not claim zero financial reads. Final
+  restricted-read counts remain unauditable until the original node/root is
+  recovered.
+- The compact outcome is
+  `runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_outcome_20260812.json`;
+  its independent audit is
+  `runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_independent_audit_20260812.json`.
+  Search V2 remains experimental. No automatic recovery, rerun, successor,
+  promotion or formal authority replacement is authorized. Any technical
+  recovery must first verify the original root, execution identity, incident
+  and checkpoint lineage, then receive a separate explicit decision and exact
+  Project Control recovery admission.
+
+Current status summary:
+
+```text
+SEARCH_CONTROL_REPAIR = CLOSED
+PHASE_D = HOLD
+SEARCH_ENGINE_V2 = IMPLEMENTED / PREFINANCIAL_84_OF_84_PASS
+SEARCH_V2_REPLACEMENT_CANARY = ONE ROUTE ENTRY / 56 OF 512 LAST OBSERVED / SYSTEM INTERRUPTED
+SEARCH_V2_ECONOMIC_GATE = NOT EVALUABLE / NO ECONOMIC RESULT
+SEARCH_V2_DECISION = HOLD_SYSTEM_INCIDENT
+RECOVERY = NOT AUTHORIZED
+FORWARD_B = SEALED
+OOS_GRADE = NONE
+PROMOTION = HOLD
+```
 
 ### Search Engine V2 prefinancial materialization repair closed; replacement canary ready but not launched (2026-08-12)
 

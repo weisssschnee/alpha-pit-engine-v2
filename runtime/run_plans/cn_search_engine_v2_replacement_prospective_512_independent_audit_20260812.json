@@ -1,0 +1,109 @@
+{
+  "schema_version": "cn_search_engine_v2_replacement_prospective_512_independent_audit_v1",
+  "status": "SEARCH_V2_REPLACEMENT_CANARY_INDEPENDENT_AUDIT_BLOCKED_NODE_UNREACHABLE",
+  "audit_role": "INDEPENDENT_OF_PRODUCER_SUMMARY",
+  "audit_scope": "Verified the exact admitted checkout, frozen authorization, final prefinancial freeze and the last observable durable run prefix. The 77o node became unreachable before terminal closure, so the complete checkpoint chain, final access ledgers, producer closure, artifact manifest and prospective gate could not be independently recomputed.",
+  "start_repo_sha": "1b91c8874188bc75bb26f1763d90ecc279734f35",
+  "execution_repo_sha": "1b91c8874188bc75bb26f1763d90ecc279734f35",
+  "project_control": {
+    "run_id": "3456d3ee-5e81-4086-9b9b-e3de510e31e9",
+    "request_payload_sha256": "a46a1e80421d323438138ae2eb12755a28d305f553205760022ebdc1f9e7b3bf",
+    "preflight_receipt_sha256": "9514c2cf1013966c86efa8f45ff9bc9d1426f014a99260623deff2974f0fde42",
+    "admission_file_sha256": "2c2c43b696d8f1ed4c7e554310503d2f7d2da3b28b8304944a91b20137bb16ce",
+    "admission_payload_sha256": "29543a8e17431c65fcbcda57a209a2d33559fb049abab45f4ac42a37961ed2de",
+    "requested_action": "LAUNCH_HIGH_COST_CAMPAIGN",
+    "target_run_id": "cn_search_engine_v2_replacement_canary_20260812_1b91c88",
+    "target_output_root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_canary_replacement_20260812_1b91c88",
+    "automatic_recovery_or_successor_authorized": false
+  },
+  "deployment": {
+    "host": "DESKTOP-77OPJ6F",
+    "workspace": "D:\\ChengboRemote\\workspace\\alpha_pit_search_v2_1b91c88_20260812",
+    "deployment_manifest_sha256": "286d8a761728990046d60c9b0a12b3a580c3038b852a3d23e75184ffd539bb24",
+    "campaign_authorization_file_sha256": "915f735636cf5cdef41cb148d97dbe5c952a99a729b3eca826420ef6f39409dd",
+    "exact_clean_checkout_verified_before_launch": true
+  },
+  "execution": {
+    "canonical_job_id": "lanjob_20260812_094249_5d2882",
+    "internal_job_id": "searchv2job_20260812_1b91c88_replacement_transport3",
+    "unique_economic_route_entry_count": 1,
+    "pre_entry_transport_failure_count": 2,
+    "pre_entry_transport_failures_consumed_admission": false,
+    "pre_entry_transport_failures_created_target_root": false,
+    "last_observed_at": "2026-08-12T10:02:31.7644567+08:00",
+    "last_observed_closed_checkpoint_count": 7,
+    "last_observed_closed_record_count": 56,
+    "last_observed_inflight_checkpoint": "checkpoint_008",
+    "last_observed_free_physical_bytes": 45931937792,
+    "frozen_minimum_free_physical_bytes": 25769803776,
+    "terminal_status_observed": false,
+    "node_unreachable_confirmed_at": "2026-08-12T10:21:34.5780858+08:00",
+    "node_unreachable_observation": "Gateway 192.168.3.1 remained reachable while DESKTOP-77OPJ6F at 192.168.3.93 did not answer ICMP or TCP/22 for more than 15 minutes.",
+    "process_terminal_state": "UNKNOWN_NODE_UNREACHABLE",
+    "automatic_recovery_or_second_canary_launched": false
+  },
+  "prefinancial_freeze": {
+    "status": "SEARCH_ENGINE_V2_CANARY_PREFINANCIAL_FREEZE_COMPLETE",
+    "required_physical_leaf_count": 84,
+    "available_after_materialization_count": 84,
+    "unresolved_required_field_count": 0,
+    "closure_sha256": "94c28e5d1117904e80c255b5ef01b8cbf8f5d3e4681fc5910e4129ee1b7c9c44",
+    "artifact_manifest_sha256": "7c42148769203d9ca0fc4c2fc4a4404a12eb489b9aaa8da53dc49e5d341876da",
+    "financial_evaluation_started_at_freeze": false,
+    "restricted_read_counts_at_freeze": {
+      "validation_reads": 0,
+      "historical_2023_reads": 0,
+      "forward_b_reads": 0,
+      "forward_2026_reads": 0
+    }
+  },
+  "ask_schedule_recomputation": {
+    "ask_plan_sha256": "c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869",
+    "authorization_payload_sha256": "3599805b30b8f3acded2264c4ead6578ddb76c36322672916ab11c3c6816c864",
+    "record_count": 512,
+    "checkpoint_count": 64,
+    "records_per_checkpoint": 8,
+    "template_count": 8,
+    "records_per_template": 64,
+    "total_arm_quotas": {
+      "CONDITIONAL_UPLIFT_EXPLOIT": 168,
+      "NOVELTY_RESERVE": 56,
+      "UNIFORM_FRESH": 288
+    },
+    "frozen_identity_unchanged": true
+  },
+  "chain_checkers": {
+    "exact_checkout_and_cleanliness": "PASS_AT_LAUNCH",
+    "project_control_request_admission_identity": "PASS",
+    "one_time_admission_consumption": "PASS_ROUTE_ENTERED_ONCE",
+    "frozen_authorization_and_ask_schedule": "PASS",
+    "prefinancial_materialization_reachability": "PASS_84_OF_84",
+    "checkpoint_chain": "PREFIX_OBSERVED_NOT_INDEPENDENTLY_REVERIFIED",
+    "scheduler_chain": "INCOMPLETE_NOT_AUDITABLE",
+    "selection_chain": "INCOMPLETE_NOT_AUDITABLE",
+    "feedback_chain": "INCOMPLETE_NOT_AUDITABLE",
+    "matched_control_chain": "INCOMPLETE_NOT_AUDITABLE",
+    "accounting_chain": "INCOMPLETE_NOT_AUDITABLE",
+    "producer_closure_chain": "NOT_REACHED_OR_NOT_OBSERVABLE",
+    "artifact_manifest_chain": "NOT_REACHED_OR_NOT_OBSERVABLE",
+    "final_restricted_read_ledger": "NOT_AUDITABLE_NODE_UNREACHABLE"
+  },
+  "prospective_gate": {
+    "decision_rule": "NONINFERIOR_ABSOLUTE_AND_SUPERIOR_CONDITIONAL_UPLIFT",
+    "gate_contract_sha256": "3d3cb195c8cb4b97f4d8a6004f37c54647d89952806026617393ba9fa7839132",
+    "evaluated": false,
+    "result": "NOT_EVALUABLE_INCOMPLETE_SYSTEM_INCIDENT",
+    "economic_conclusion": "NONE"
+  },
+  "decision": "HOLD_SYSTEM_INCIDENT_NO_ECONOMIC_GATE",
+  "decision_basis": "The authorized replacement reached a valid 84-of-84 prefinancial freeze and closed an observable 56-record prefix, but the 77o node became unreachable before terminal closure. An incomplete prefix cannot produce the frozen gate result or Search V2 economic authority.",
+  "recovery_eligibility": "REQUIRES_SEPARATE_DECISION_AND_ORIGINAL_ROOT_INCIDENT_VERIFICATION",
+  "read_audit": {
+    "development_financial_execution_started": true,
+    "last_observed_closed_record_count": 56,
+    "restricted_reads_at_prefinancial_freeze": 0,
+    "final_restricted_read_counts": "NOT_AUDITABLE_NODE_UNREACHABLE",
+    "no_restricted_read_violation_observed_before_loss_of_contact": true
+  },
+  "audit_payload_sha256": "b115e40b1bcb1d003ae18105661e29462566a1005f66851bb2f435f8a58a48f5"
+}
