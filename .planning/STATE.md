@@ -1,8 +1,8 @@
 # CN true1min Current State
 
-Updated: 2026-08-12
+Updated: 2026-08-13
 
-Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_REPLACEMENT_CANARY_SYSTEM_INTERRUPTED_NO_ECONOMIC_RESULT_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `SEARCH_CONTROL_REPAIR_CLOSED_PHASE_D_HOLD_SEARCH_ENGINE_V2_REPLACEMENT_CANARY_COMPLETE_NEGATIVE_STOP_CONTINUATION_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -16,14 +16,14 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ## Current accepted capabilities
 
-### Search Engine V2 authorized replacement canary system-interrupted; no economic gate (2026-08-12)
+### Search Engine V2 replacement canary complete; frozen economic gate FAIL (2026-08-13)
 
 - The explicitly authorized replacement canary consumed one exact Project
   Control `LAUNCH_HIGH_COST_CAMPAIGN` admission at execution SHA
   `1b91c8874188bc75bb26f1763d90ecc279734f35` for target run
   `cn_search_engine_v2_replacement_canary_20260812_1b91c88` on 77o. The two
   earlier detached-task transport failures occurred before target-root creation
-  or admission consumption; exactly one economic route entry exists.
+  or admission consumption; exactly one economic search route entry exists.
 - The repaired prefinancial chain passed on the actual admitted route with 84
   required physical leaves, 84 available after materialization and zero
   unresolved leaves. The frozen 512 ask plan, eight quotas of 64, 288/168/56
@@ -32,28 +32,34 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   and gate SHA256
   `3d3cb195c8cb4b97f4d8a6004f37c54647d89952806026617393ba9fa7839132`
   remained unchanged.
-- The last durable observation closed 7/64 checkpoints and 56/512 development
-  records, with `checkpoint_008` inflight and about 42.8 GiB free physical
-  memory, above the frozen 24 GiB minimum. The 77o node then became unreachable
-  while the LAN gateway remained reachable. No terminal status, producer
-  closure, final artifact manifest or complete access ledger could be read.
-  Therefore the incomplete prefix is neither an economic PASS nor FAIL and the
-  frozen dual gate is not evaluable.
-- At the final prefinancial freeze, validation, spent-2023, Forward-B and 2026
-  reads were zero, and no restricted-read violation was observed before contact
-  was lost. Development financial evaluation did start and 56 durable records
-  were observed, so this outcome does not claim zero financial reads. Final
-  restricted-read counts remain unauditable until the original node/root is
-  recovered.
+- After 77o returned, read-only audit found that the original process had in
+  fact closed all 64 immutable checkpoints and 512 records before terminal root
+  assembly failed on a JSON list/tuple container mismatch. A separately bound
+  `ENGINE_ROOT_FINALIZATION_ONLY` Project Control `RECOVERY` admission ran at
+  repair SHA `bc77bfa3fc3ed309392bc0c82afada877e5677f2`, preserved the original
+  execution identity SHA, recomputed no checkpoint and launched no second
+  canary or successor.
+- Independent audit verified all 64 checkpoint manifest links, 896 checkpoint
+  artifact hashes, exact record ordinals 0 through 511, no inflight state, all
+  77 final artifact hashes, producer/access-ledger self hashes and the original
+  dual-SHA recovery identity. Validation, holdout, spent-2023, Forward-B and
+  2026 reads are all zero.
+- The frozen prospective gate is a real `FAIL`: Conditional Uplift Exploit kept
+  positive within-program Full-vs-Base uplift, but compared with Uniform Fresh
+  it had lower admission, higher blocker, lower positive-return/reward rates
+  and lower conditional matched-uplift consistency/mean. Five templates had
+  sufficient support but zero templates satisfied the predeclared improvement
+  contract. The negative development result is valid and high-information; it
+  does not authorize changing the observed gate, another Search V2 batch,
+  validation/OOS access, promotion or formal search-authority replacement.
 - The compact outcome is
   `runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_outcome_20260812.json`;
   its independent audit is
   `runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_independent_audit_20260812.json`.
-  Search V2 remains experimental. No automatic recovery, rerun, successor,
-  promotion or formal authority replacement is authorized. Any technical
-  recovery must first verify the original root, execution identity, incident
-  and checkpoint lineage, then receive a separate explicit decision and exact
-  Project Control recovery admission.
+  Search V2 remains experimental and is not qualified to replace Hybrid TPE
+  plus Availability. Project Control POST_BATCH is
+  `STOP_SEARCH_V2_CONTINUATION_HOLD_PROMOTION`; no automatic retry, successor,
+  promotion or formal authority replacement is authorized.
 
 Current status summary:
 
@@ -61,10 +67,10 @@ Current status summary:
 SEARCH_CONTROL_REPAIR = CLOSED
 PHASE_D = HOLD
 SEARCH_ENGINE_V2 = IMPLEMENTED / PREFINANCIAL_84_OF_84_PASS
-SEARCH_V2_REPLACEMENT_CANARY = ONE ROUTE ENTRY / 56 OF 512 LAST OBSERVED / SYSTEM INTERRUPTED
-SEARCH_V2_ECONOMIC_GATE = NOT EVALUABLE / NO ECONOMIC RESULT
-SEARCH_V2_DECISION = HOLD_SYSTEM_INCIDENT
-RECOVERY = NOT AUTHORIZED
+SEARCH_V2_REPLACEMENT_CANARY = COMPLETE / 64 CHECKPOINTS / 512 RECORDS
+SEARCH_V2_ECONOMIC_GATE = FAIL / 0 IMPROVED TEMPLATES
+SEARCH_V2_DECISION = STOP CONTINUATION / HOLD PROMOTION
+RECOVERY = CLOSED / ROOT FINALIZATION ONLY / NO CHECKPOINT RECOMPUTATION
 FORWARD_B = SEALED
 OOS_GRADE = NONE
 PROMOTION = HOLD

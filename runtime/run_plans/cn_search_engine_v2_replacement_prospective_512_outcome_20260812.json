@@ -1,41 +1,33 @@
 {
   "schema_version": "cn_search_engine_v2_replacement_prospective_512_outcome_v1",
-  "status": "SEARCH_V2_REPLACEMENT_CANARY_SYSTEM_INTERRUPTED_NO_ECONOMIC_RESULT",
-  "decision": "HOLD_SYSTEM_INCIDENT_NO_ECONOMIC_GATE",
+  "status": "SEARCH_V2_REPLACEMENT_CANARY_COMPLETE_NEGATIVE_ECONOMIC_RESULT",
+  "decision": "STOP_SEARCH_V2_CONTINUATION_HOLD_PROMOTION",
   "start_repo_sha": "1b91c8874188bc75bb26f1763d90ecc279734f35",
   "execution_repo_sha": "1b91c8874188bc75bb26f1763d90ecc279734f35",
+  "root_finalizer_repo_sha": "bc77bfa3fc3ed309392bc0c82afada877e5677f2",
   "project_control_run_id": "3456d3ee-5e81-4086-9b9b-e3de510e31e9",
-  "project_control_request_payload_sha256": "a46a1e80421d323438138ae2eb12755a28d305f553205760022ebdc1f9e7b3bf",
   "project_control_admission_file_sha256": "2c2c43b696d8f1ed4c7e554310503d2f7d2da3b28b8304944a91b20137bb16ce",
   "project_control_admission_payload_sha256": "29543a8e17431c65fcbcda57a209a2d33559fb049abab45f4ac42a37961ed2de",
+  "root_finalization_recovery": {
+    "scope": "ENGINE_ROOT_FINALIZATION_ONLY",
+    "project_control_run_id": "26230aa3-0070-49e3-83a2-764b86493fca",
+    "project_control_admission_file_sha256": "7cc13c8147bd029abae767b7bd8ad11624ff17d67cf4b7b656a895806a37dbe4",
+    "project_control_admission_payload_sha256": "154fcfc3ea389de477481456105f48861d3d1f74502fe520271921647b9cbe11",
+    "incident_file_sha256": "dbaa928bcd2c16d48c917ce0b58baae3fbebfde53c806d9eb5f64ef34cb14d99",
+    "checkpoint_recomputation_authorized": false,
+    "job_id": "lanjob_20260813_045638_78db5b",
+    "exit_code": 0
+  },
   "target_run_id": "cn_search_engine_v2_replacement_canary_20260812_1b91c88",
   "output_root": "D:\\ChengboRemote\\runtime\\cn_search_engine_v2_canary_replacement_20260812_1b91c88",
-  "job_id": "lanjob_20260812_094249_5d2882",
-  "internal_job_id": "searchv2job_20260812_1b91c88_replacement_transport3",
-  "economic_canary_completed": false,
-  "last_observed_closed_record_count": 56,
-  "last_observed_closed_checkpoint_count": 7,
-  "last_observed_inflight_checkpoint": "checkpoint_008",
-  "producer_closure_verified": false,
-  "final_artifact_manifest_verified": false,
-  "prospective_gate": {
-    "decision_rule": "NONINFERIOR_ABSOLUTE_AND_SUPERIOR_CONDITIONAL_UPLIFT",
-    "gate_contract_sha256": "3d3cb195c8cb4b97f4d8a6004f37c54647d89952806026617393ba9fa7839132",
-    "evaluated": false,
-    "result": "NOT_EVALUABLE_INCOMPLETE_SYSTEM_INCIDENT",
-    "economic_conclusion": "NONE"
-  },
-  "system_incident": {
-    "stage": "FINANCIAL_EXECUTION_AFTER_CHECKPOINT_007",
-    "host": "DESKTOP-77OPJ6F",
-    "last_observed_at": "2026-08-12T10:02:31.7644567+08:00",
-    "node_unreachable_confirmed_at": "2026-08-12T10:21:34.5780858+08:00",
-    "last_observed_free_physical_bytes": 45931937792,
-    "frozen_minimum_free_physical_bytes": 25769803776,
-    "last_observed_terminal_status": "ABSENT",
-    "classification": "NODE_OR_NODE_LINK_UNREACHABLE_TERMINAL_STATE_UNKNOWN",
-    "economic_interpretation": "NONE"
-  },
+  "economic_canary_completed": true,
+  "record_count": 512,
+  "checkpoint_count": 64,
+  "checkpoint_artifact_count_verified": 896,
+  "final_artifact_count_verified": 77,
+  "final_artifact_manifest_file_sha256": "c5fb258ef46ab0813d7ce6a2db71af7c3f94213176b29295fb84b5f30356c132",
+  "producer_closure_file_sha256": "36315af8ae3a6a82b70bb6ed754412dd303c0e027f7bcabcfa4ac79c2bc7302f",
+  "producer_closure_payload_sha256": "4d3be8714b845ba8324c011e49d0ebc7d0a1c09d17d8ce4c111c229e912dae71",
   "prefinancial_freeze": {
     "status": "PASS",
     "required_physical_leaf_count": 84,
@@ -44,49 +36,95 @@
     "closure_sha256": "94c28e5d1117904e80c255b5ef01b8cbf8f5d3e4681fc5910e4129ee1b7c9c44",
     "artifact_manifest_sha256": "7c42148769203d9ca0fc4c2fc4a4404a12eb489b9aaa8da53dc49e5d341876da"
   },
-  "frozen_schedule_recomputation": {
+  "frozen_design": {
     "status": "PASS_UNCHANGED",
     "ask_plan_sha256": "c6952d41524257077be5c0052196d02269e368cc82600560e41e664101397869",
-    "authorization_payload_sha256": "3599805b30b8f3acded2264c4ead6578ddb76c36322672916ab11c3c6816c864",
-    "authorized_record_count": 512,
-    "authorized_checkpoint_count": 64,
-    "authorized_total_arm_quotas": {
+    "gate_contract_sha256": "3d3cb195c8cb4b97f4d8a6004f37c54647d89952806026617393ba9fa7839132",
+    "record_count": 512,
+    "checkpoint_count": 64,
+    "records_per_template": 64,
+    "arm_quotas": {
       "CONDITIONAL_UPLIFT_EXPLOIT": 168,
       "NOVELTY_RESERVE": 56,
       "UNIFORM_FRESH": 288
     }
   },
-  "independent_audit_path": "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_independent_audit_20260812.json",
-  "independent_audit_file_sha256": "8c309e83d480a3044b963feda657960cd504c8e889a6fb0df2b8087040772af4",
-  "independent_audit_payload_sha256": "b115e40b1bcb1d003ae18105661e29462566a1005f66851bb2f435f8a58a48f5",
-  "pre_entry_transport_failure_count": 2,
-  "unique_economic_route_entry_count": 1,
-  "automatic_recovery_successor_or_second_canary_launched": false,
+  "observed_economics": {
+    "productive_count": 254,
+    "behavior_unique": 387,
+    "enhanced_replay_complete": 436,
+    "replay_blocked_count": 16,
+    "base_parity_pass": 60,
+    "base_parity_blocked": 4,
+    "absolute": {
+      "CONDITIONAL_UPLIFT_EXPLOIT": {
+        "records": 168,
+        "admission_rate": 0.6071428571428571,
+        "blocker_rate": 0.047619047619047616,
+        "primary_return_positive_rate": 0.6309523809523809,
+        "primary_reward_positive_rate": 0.6964285714285714,
+        "median_return_per_turnover": 0.8274187951846588,
+        "stable_two_of_three_rate": 0.6607142857142857
+      },
+      "UNIFORM_FRESH": {
+        "records": 224,
+        "admission_rate": 0.6205357142857143,
+        "blocker_rate": 0.008928571428571428,
+        "primary_return_positive_rate": 0.7008928571428571,
+        "primary_reward_positive_rate": 0.7633928571428571,
+        "median_return_per_turnover": 0.6907116977038684,
+        "stable_two_of_three_rate": 0.6607142857142857
+      }
+    },
+    "conditional": {
+      "CONDITIONAL_UPLIFT_EXPLOIT": {
+        "admitted_records": 102,
+        "matched_return_increment_mean": 0.2008360792093991,
+        "matched_reward_increment_mean": 1.215750209618481,
+        "cross_window_matched_consistency_mean": 0.5751633986928104
+      },
+      "UNIFORM_FRESH": {
+        "admitted_records": 139,
+        "matched_return_increment_mean": 0.21298475944810408,
+        "matched_reward_increment_mean": 1.2757311915605534,
+        "cross_window_matched_consistency_mean": 0.5947242206235012
+      }
+    }
+  },
+  "prospective_gate": {
+    "decision_rule": "NONINFERIOR_ABSOLUTE_AND_SUPERIOR_CONDITIONAL_UPLIFT",
+    "evaluated": true,
+    "result": "FAIL",
+    "supported_templates": 5,
+    "improved_templates": 0,
+    "absolute_noninferiority": false,
+    "conditional_superiority": false,
+    "economic_conclusion": "Conditional Uplift Exploit retained positive within-program uplift but did not outperform Uniform Fresh on the frozen absolute and conditional comparison. Search V2 is not qualified to replace the current development-search policy."
+  },
+  "read_audit": {
+    "development_financial_execution_completed": true,
+    "validation_reads": 0,
+    "holdout_reads": 0,
+    "historical_2023_reads": 0,
+    "forward_b_reads": 0,
+    "forward_2026_reads": 0,
+    "restricted_read_violation": false
+  },
+  "automatic_successor_or_phase_d_launched": false,
   "promotion_authorized": false,
   "formal_development_search_authority_replaced": false,
   "oos_grade": "NONE",
-  "read_audit": {
-    "development_financial_execution_started": true,
-    "last_observed_closed_development_record_count": 56,
-    "restricted_reads_at_prefinancial_freeze": {
-      "validation_reads": 0,
-      "historical_2023_reads": 0,
-      "forward_b_reads": 0,
-      "forward_2026_reads": 0
-    },
-    "final_restricted_read_counts": "NOT_AUDITABLE_NODE_UNREACHABLE",
-    "restricted_read_violation_observed": false
-  },
+  "independent_audit_path": "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_independent_audit_20260812.json",
   "next_action": {
-    "authorization": "NO_AUTOMATIC_RECOVERY_RERUN_SUCCESSOR_OR_PROMOTION",
-    "objective": "Hold Search V2. Any technical recovery must first regain the original 77o root, verify execution identity, incident and durable checkpoint lineage, then obtain a separate explicit recovery decision and exact Project Control admission.",
+    "authorization": "STOP_SEARCH_V2_CONTINUATION_HOLD_PROMOTION",
+    "objective": "Accept the complete negative development result. Do not spend another Search V2 batch or alter the frozen gate after seeing the result.",
     "prohibited": [
-      "interpret the incomplete 56-record prefix as an economic PASS or FAIL",
-      "launch a second replacement canary or successor",
-      "reuse or overwrite the original output root outside the recovery contract",
+      "launch a Search V2 successor, retry, replacement canary or Phase D from this result",
+      "reinterpret positive within-program uplift as superiority over Uniform Fresh",
+      "change the frozen gate, asks, quotas, scheduler or evaluator after observing the result",
       "read validation, holdout, spent-2023, Forward-B or 2026 data",
       "promote Search V2 or replace the formal development-search authority"
     ]
   },
-  "outcome_payload_sha256": "8acfba250ba51912b407af8e13b0409f55af6fb498b76504764327346b53707b"
+  "outcome_payload_sha256": "6e081f871a59147e26294e2291424b80246e6e328e869e957116bb7de1a63878"
 }
