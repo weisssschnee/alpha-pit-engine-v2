@@ -39,6 +39,9 @@ ORIGINAL_EXECUTION_ACTIONS = {
     ACTION_RETRY,
 }
 TECHNICAL_RECOVERY = "TECHNICAL_RECOVERY_OF_ALREADY_AUTHORIZED_RUN"
+SOURCE_REPAIR_RECOVERY_SCOPES = {
+    ("cn-joint-program-search-v2-canary", "ENGINE_ROOT_FINALIZATION_ONLY")
+}
 
 # The qualified 77o wrappers create only these non-financial launch-control
 # artifacts before app.py can consume the admission. Business output remains
@@ -317,6 +320,9 @@ def _validate_request_shape(
         raise ProjectControlDenied("unsupported requested action")
     if not re.fullmatch(r"[0-9a-f]{40}", repo_sha):
         raise ProjectControlDenied("execution request repo SHA invalid")
+    original_repo_sha = str(request.get("original_repo_sha") or "")
+    if original_repo_sha and not re.fullmatch(r"[0-9a-f]{40}", original_repo_sha):
+        raise ProjectControlDenied("original execution repo SHA invalid")
     if not str(request.get("target_campaign_id") or "") or not str(
         request.get("target_run_id") or ""
     ):
@@ -368,6 +374,8 @@ def build_execution_request(
     recovery_of_target_run_id: str = "",
     original_admission_path: str = "",
     original_admission_file_sha256: str = "",
+    original_repo_sha: str = "",
+    recovery_scope: str = "",
     incident_id: str = "",
     incident_path: str = "",
     incident_file_sha256: str = "",
@@ -402,6 +410,8 @@ def build_execution_request(
         "original_admission_file_sha256": str(
             original_admission_file_sha256
         ),
+        "original_repo_sha": str(original_repo_sha),
+        "recovery_scope": str(recovery_scope),
         "incident_id": str(incident_id),
         "incident_path": str(incident_path),
         "incident_file_sha256": str(incident_file_sha256),
@@ -635,6 +645,32 @@ def _validate_file_binding(path_value: str, sha_value: str, label: str) -> Path:
     return path
 
 
+def _validate_source_repair_recovery(
+    *,
+    target_campaign_id: str,
+    request: Mapping[str, Any],
+    current_repo_sha: str,
+    incident_path: Path,
+) -> str:
+    original_repo_sha = str(request.get("original_repo_sha") or current_repo_sha)
+    if original_repo_sha == current_repo_sha:
+        return original_repo_sha
+    recovery_scope = str(request.get("recovery_scope") or "")
+    if (target_campaign_id, recovery_scope) not in SOURCE_REPAIR_RECOVERY_SCOPES:
+        raise ProjectControlDenied("cross-SHA recovery scope forbidden")
+    _, incident = _read_json(incident_path, "recovery incident")
+    if (
+        str(incident.get("checkpoint_builder_repo_sha") or "")
+        != original_repo_sha
+        or str(incident.get("recovery_scope") or "") != recovery_scope
+        or bool(incident.get("checkpoint_recomputation_authorized"))
+        or int(incident.get("closed_checkpoint_count") or 0) != 64
+        or int(incident.get("closed_record_count") or 0) != 512
+    ):
+        raise ProjectControlDenied("source-repair recovery incident drift")
+    return original_repo_sha
+
+
 def materialize_admission(
     *,
     output_path: Path,
@@ -719,6 +755,12 @@ def materialize_admission(
             str(request.get("original_admission_file_sha256") or ""),
             "original execution admission",
         )
+        original_repo_sha = _validate_source_repair_recovery(
+            target_campaign_id=str(target_campaign_id),
+            request=request,
+            current_repo_sha=str(repo_sha),
+            incident_path=incident_path,
+        )
         original = validate_admission(
             original_path,
             trust_config_path=trust_config_path,
@@ -726,7 +768,7 @@ def materialize_admission(
                 request["original_admission_file_sha256"]
             ),
             expected_project_id=PROJECT_ID,
-            expected_repo_sha=str(repo_sha),
+            expected_repo_sha=original_repo_sha,
             expected_actions=ORIGINAL_EXECUTION_ACTIONS,
             expected_target_campaign_id=str(target_campaign_id),
             expected_target_run_id=str(target_run_id),
@@ -747,6 +789,8 @@ def materialize_admission(
             "recovery_of_target_run_id",
             "original_admission_path",
             "original_admission_file_sha256",
+            "original_repo_sha",
+            "recovery_scope",
             "incident_id",
             "incident_path",
             "incident_file_sha256",
@@ -891,7 +935,7 @@ def validate_admission(
                 request["original_admission_file_sha256"]
             ),
             expected_project_id=expected_project_id,
-            expected_repo_sha=expected_repo_sha,
+            expected_repo_sha=str(request.get("original_repo_sha") or expected_repo_sha),
             expected_actions=ORIGINAL_EXECUTION_ACTIONS,
             expected_target_campaign_id=expected_target_campaign_id,
             expected_target_run_id=expected_target_run_id,
@@ -901,6 +945,14 @@ def validate_admission(
         )
         if original != original_payload:
             raise ProjectControlDenied("original execution admission binding drift")
+        original_repo_sha = _validate_source_repair_recovery(
+            target_campaign_id=expected_target_campaign_id,
+            request=request,
+            current_repo_sha=expected_repo_sha,
+            incident_path=Path(str(request["incident_path"])),
+        )
+        if original_repo_sha != str(original.get("repo_sha") or ""):
+            raise ProjectControlDenied("original execution repo SHA drift")
         execution_lineage_action = str(
             original.get("execution_lineage_action")
             or original.get("requested_action")
@@ -950,6 +1002,12 @@ def validate_admission(
         "target_run_id": expected_target_run_id,
         "target_output_root": canonical_output_root,
         "repo_sha": expected_repo_sha,
+        "original_repo_sha": (
+            str(child["request"].get("original_repo_sha") or expected_repo_sha)
+            if action == ACTION_RECOVERY
+            else expected_repo_sha
+        ),
+        "recovery_scope": str(child["request"].get("recovery_scope") or ""),
         "recovery_kind": str(child["request"].get("recovery_kind") or ""),
         "incident_id": str(child["request"].get("incident_id") or ""),
         "original_admission_file_sha256": str(
@@ -1013,7 +1071,7 @@ def _consume_admission_durably(proof: dict[str, Any]) -> None:
         _, identity = _read_json(identity_path, "original execution identity")
         if (
             identity.get("project_id") != proof["project_id"]
-            or identity.get("repo_sha") != proof["repo_sha"]
+            or identity.get("repo_sha") != proof["original_repo_sha"]
             or identity.get("target_campaign_id") != proof["target_campaign_id"]
             or identity.get("target_run_id") != proof["target_run_id"]
             or identity.get("root_admission_file_sha256")
@@ -1093,6 +1151,9 @@ def _consume_admission_durably(proof: dict[str, Any]) -> None:
             "target_run_id": proof["target_run_id"],
             "target_output_root": proof["target_output_root"],
             "execution_lineage_action": proof["execution_lineage_action"],
+            "repo_sha": proof["repo_sha"],
+            "original_repo_sha": proof["original_repo_sha"],
+            "recovery_scope": proof["recovery_scope"],
             "campaign_authorization_file_sha256": proof[
                 "campaign_authorization_file_sha256"
             ],

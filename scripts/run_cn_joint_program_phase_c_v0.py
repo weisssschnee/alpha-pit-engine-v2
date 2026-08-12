@@ -1311,7 +1311,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             },
             "recovery_binding_sha256",
         )
-        recovery_binding_path = root / "root_finalization_recovery_binding.json"
+        recovery_binding_path = (
+            root
+            / "root_finalization_recovery_attempts"
+            / f"{recovery_binding['recovery_binding_sha256']}.json"
+        )
         if recovery_binding_path.is_file():
             if _read_json(recovery_binding_path) != recovery_binding:
                 raise RuntimeError("Phase C root-finalization recovery receipt drift")
@@ -1840,6 +1844,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         *checkpoint_manifests,
     ]
+    legacy_recovery_binding = root / "root_finalization_recovery_binding.json"
+    if recovery_binding_path is not None and legacy_recovery_binding.is_file():
+        root_artifacts.append(legacy_recovery_binding)
     manifest = _self_hashed(
         {
             "schema_version": "cn_joint_program_phase_c_artifact_manifest_v0",

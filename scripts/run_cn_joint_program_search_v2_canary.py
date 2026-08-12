@@ -466,6 +466,19 @@ def run_authorized_canary(
     run_args.phase_c_freeze_root = freeze_root
     run_args.output_root = run_root
     run_args.builder_commit_sha = str(admission["repo_sha"])
+    if action == ACTION_RECOVERY:
+        recovery_from_sha = str(
+            args.root_finalization_recovery_from_repo_sha or ""
+        )
+        if (
+            str(admission.get("recovery_scope") or "")
+            != "ENGINE_ROOT_FINALIZATION_ONLY"
+            or recovery_from_sha
+            != str(admission.get("original_repo_sha") or "")
+        ):
+            raise ProjectControlDenied(
+                "Search V2 root-finalization recovery source binding drift"
+            )
     run_contract = engine._read_json(freeze_root / "phase_c_run_contract.json")
     run_args.train_field_root = Path(
         str(run_contract["accepted_field_manifest_path"])

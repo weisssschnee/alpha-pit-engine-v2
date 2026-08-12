@@ -78,8 +78,14 @@ reinterpret observed economics, choose an alpha or grant sealed-data access.
    target, an immutable incident file binding, and the original validated
    execution admission for that target. Its output-root identity must name the
    original admission hash, and the recovery admission itself is consumed only
-   once. A changed campaign, target run, repository SHA, output root or original
-   admission is a new execution and is denied.
+   once. A changed campaign, target run, output root or original admission is a
+   new execution and is denied. The Search V2 route has one narrower
+   source-repair exception: `ENGINE_ROOT_FINALIZATION_ONLY` may bind the original
+   immutable-checkpoint builder SHA separately from the current clean finalizer
+   SHA. Both SHAs, the exact route/scope and the incident are immutable request
+   fields; the exception cannot evaluate a candidate, recompute a checkpoint,
+   change an ask, or authorize another route. All other cross-SHA recovery is
+   denied.
    A route without implemented same-run resume semantics does not advertise
    `RECOVERY`; fixed-stratified production therefore exposes launch, successor
    and retry only instead of pretending that a nonempty root can be resumed.

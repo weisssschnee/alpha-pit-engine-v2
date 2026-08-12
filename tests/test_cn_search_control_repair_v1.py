@@ -109,6 +109,8 @@ def _request(
     recovery_of_target_run_id: str = "",
     original_admission_path: str = "",
     original_admission_file_sha256: str = "",
+    original_repo_sha: str = "",
+    recovery_scope: str = "",
     incident_id: str = "",
     incident_path: str = "",
     incident_file_sha256: str = "",
@@ -133,6 +135,8 @@ def _request(
         recovery_of_target_run_id=recovery_of_target_run_id,
         original_admission_path=original_admission_path,
         original_admission_file_sha256=original_admission_file_sha256,
+        original_repo_sha=original_repo_sha,
+        recovery_scope=recovery_scope,
         incident_id=incident_id,
         incident_path=incident_path,
         incident_file_sha256=incident_file_sha256,
@@ -162,11 +166,14 @@ def _run_record(
         in {
             "cn-large-tpe-search-campaign",
             "cn-targeted-search-medium-campaign",
+            "cn-joint-program-search-v2-canary",
         }
         and "campaign_authorization_path" not in request_fields
     ):
         if campaign_id == "cn-targeted-search-medium-campaign":
             profile = "slow_cross_sectional_evaluated384"
+        elif campaign_id == "cn-joint-program-search-v2-canary":
+            profile = "cn_joint_program_search_v2_prospective_512_v1"
         elif action == ACTION_SUCCESSOR:
             profile = "cn_full_compute_successor_search_v1"
         else:
@@ -360,6 +367,7 @@ def _materialize(
     child: Path,
     campaign_id: str = "cn-large-tpe-search-campaign",
     target_run_id: str = "target-1",
+    repo_sha: str = REPO_SHA,
     parent: Path | None = None,
 ) -> Path:
     output = root / f"admission-{action.lower()}.json"
@@ -375,7 +383,7 @@ def _materialize(
         requested_action=action,
         target_campaign_id=campaign_id,
         target_run_id=target_run_id,
-        repo_sha=REPO_SHA,
+        repo_sha=repo_sha,
         parent_post_batch_run_record_path=parent,
         expected_parent_post_batch_receipt_sha256=(
             project_control_receipt_sha256(
@@ -396,6 +404,8 @@ def _validate(
     trust_config: Path,
     action: str,
     target_run_id: str = "target-1",
+    repo_sha: str = REPO_SHA,
+    campaign_id: str = "cn-large-tpe-search-campaign",
 ) -> dict:
     target_output_root = json.loads(path.read_text(encoding="utf-8"))[
         "target_output_root"
@@ -405,9 +415,9 @@ def _validate(
         trust_config_path=trust_config,
         expected_admission_file_sha256=sha256_file(path),
         expected_project_id=PROJECT_ID,
-        expected_repo_sha=REPO_SHA,
+        expected_repo_sha=repo_sha,
         expected_actions={action},
-        expected_target_campaign_id="cn-large-tpe-search-campaign",
+        expected_target_campaign_id=campaign_id,
         expected_target_run_id=target_run_id,
         expected_target_output_root=target_output_root,
     )
@@ -726,6 +736,145 @@ def test_recovery_requires_original_admission_same_run_and_incident(
             expected_target_campaign_id="cn-large-tpe-search-campaign",
             expected_target_run_id="immutable-run-1",
             expected_target_output_root=target_output_root,
+        )
+
+
+def test_search_v2_root_finalization_recovery_binds_original_and_repair_shas(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    original_sha = REPO_SHA
+    repair_sha = "b" * 40
+    trust = _trust_config(tmp_path)
+    original_control = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="original-search-v2",
+        action=ACTION_LAUNCH,
+        campaign_id="cn-joint-program-search-v2-canary",
+        target_run_id="immutable-search-v2-run",
+        repo_sha=original_sha,
+    )
+    original_admission = _materialize(
+        tmp_path / "original-search-v2",
+        trust_config=trust,
+        action=ACTION_LAUNCH,
+        child=original_control,
+        campaign_id="cn-joint-program-search-v2-canary",
+        target_run_id="immutable-search-v2-run",
+        repo_sha=original_sha,
+    )
+    incident = _write_json(
+        tmp_path / "root-finalization-incident.json",
+        {
+            "incident_id": "root-finalization-only",
+            "status": "OPEN",
+            "checkpoint_builder_repo_sha": original_sha,
+            "recovery_scope": "ENGINE_ROOT_FINALIZATION_ONLY",
+            "checkpoint_recomputation_authorized": False,
+            "closed_checkpoint_count": 64,
+            "closed_record_count": 512,
+        },
+    )
+    recovery_control = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="source-repair-recovery",
+        action=ACTION_RECOVERY,
+        campaign_id="cn-joint-program-search-v2-canary",
+        target_run_id="immutable-search-v2-run",
+        repo_sha=repair_sha,
+        recovery_kind=TECHNICAL_RECOVERY,
+        recovery_of_target_run_id="immutable-search-v2-run",
+        original_admission_path=str(original_admission),
+        original_admission_file_sha256=sha256_file(original_admission),
+        original_repo_sha=original_sha,
+        recovery_scope="ENGINE_ROOT_FINALIZATION_ONLY",
+        incident_id="root-finalization-only",
+        incident_path=str(incident),
+        incident_file_sha256=sha256_file(incident),
+    )
+    recovery = _materialize(
+        tmp_path / "source-repair-recovery",
+        trust_config=trust,
+        action=ACTION_RECOVERY,
+        child=recovery_control,
+        campaign_id="cn-joint-program-search-v2-canary",
+        target_run_id="immutable-search-v2-run",
+        repo_sha=repair_sha,
+    )
+    proof = _validate(
+        recovery,
+        trust_config=trust,
+        action=ACTION_RECOVERY,
+        target_run_id="immutable-search-v2-run",
+        repo_sha=repair_sha,
+        campaign_id="cn-joint-program-search-v2-canary",
+    )
+    assert proof["repo_sha"] == repair_sha
+    assert proof["original_repo_sha"] == original_sha
+    assert proof["recovery_scope"] == "ENGINE_ROOT_FINALIZATION_ONLY"
+
+    target_output_root = Path(proof["target_output_root"])
+    monkeypatch.setattr(project_control, "CANONICAL_TRUST_CONFIG", trust)
+    monkeypatch.setattr(
+        project_control, "_clean_repository_head", lambda _path: original_sha
+    )
+    activate_admission(
+        original_admission,
+        expected_admission_file_sha256=sha256_file(original_admission),
+        expected_actions={ACTION_LAUNCH},
+        expected_target_campaign_id="cn-joint-program-search-v2-canary",
+        expected_target_run_id="immutable-search-v2-run",
+        expected_target_output_root=target_output_root,
+    )
+    consume_active_admission(
+        "cn-joint-program-search-v2-canary", {ACTION_LAUNCH}
+    )
+    project_control.clear_active_admission()
+    monkeypatch.setattr(
+        project_control, "_clean_repository_head", lambda _path: repair_sha
+    )
+    recovery_proof = activate_admission(
+        recovery,
+        expected_admission_file_sha256=sha256_file(recovery),
+        expected_actions={ACTION_RECOVERY},
+        expected_target_campaign_id="cn-joint-program-search-v2-canary",
+        expected_target_run_id="immutable-search-v2-run",
+        expected_target_output_root=target_output_root,
+    )
+    assert recovery_proof["original_repo_sha"] == original_sha
+    consume_active_admission(
+        "cn-joint-program-search-v2-canary", {ACTION_RECOVERY}
+    )
+    project_control.clear_active_admission()
+
+    forbidden_control = _run_record(
+        tmp_path,
+        trust_config=trust,
+        run_id="forbidden-cross-sha-recovery",
+        action=ACTION_RECOVERY,
+        campaign_id="cn-joint-program-search-v2-canary",
+        target_run_id="immutable-search-v2-run",
+        repo_sha=repair_sha,
+        recovery_kind=TECHNICAL_RECOVERY,
+        recovery_of_target_run_id="immutable-search-v2-run",
+        original_admission_path=str(original_admission),
+        original_admission_file_sha256=sha256_file(original_admission),
+        original_repo_sha=original_sha,
+        recovery_scope="CHECKPOINT_RECOMPUTATION",
+        incident_id="root-finalization-only",
+        incident_path=str(incident),
+        incident_file_sha256=sha256_file(incident),
+    )
+    with pytest.raises(ProjectControlDenied, match="cross-SHA recovery scope"):
+        _materialize(
+            tmp_path / "forbidden-cross-sha-recovery",
+            trust_config=trust,
+            action=ACTION_RECOVERY,
+            child=forbidden_control,
+            campaign_id="cn-joint-program-search-v2-canary",
+            target_run_id="immutable-search-v2-run",
+            repo_sha=repair_sha,
         )
 
 

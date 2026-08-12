@@ -152,6 +152,10 @@ class AbsoluteEconomicAdmission:
         )
 
     def to_record(self) -> dict[str, Any]:
+        metrics = dict(self.metrics)
+        metrics["development_window_ids"] = list(
+            metrics.get("development_window_ids") or ()
+        )
         return {
             "policy_id": self.policy_id,
             "record_payload_sha256": self.record_payload_sha256,
@@ -160,6 +164,6 @@ class AbsoluteEconomicAdmission:
             "control_program_id": self.control_program_id,
             "admitted": self.admitted,
             "failure_reasons": list(self.failure_reasons),
-            "metrics": dict(self.metrics),
+            "metrics": metrics,
             "enhancer_credit": None if not self.admitted else "SEPARATE_STAGE_REQUIRED",
         }

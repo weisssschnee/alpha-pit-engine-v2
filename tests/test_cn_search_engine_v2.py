@@ -162,6 +162,7 @@ def test_absolute_admission_reuses_authoritative_fields_as_a_gate() -> None:
     assert admission.metrics["primary_continuous_book_net_reward"] == 0.25
     assert admission.metrics["positive_development_window_count"] == 2
     assert "matched_net_reward_increment" not in admission.metrics
+    assert json.loads(json.dumps(admission.to_record())) == admission.to_record()
 
 
 @pytest.mark.parametrize(
