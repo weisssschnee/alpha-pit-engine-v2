@@ -671,6 +671,14 @@ def _validate_source_repair_recovery(
     return original_repo_sha
 
 
+def _original_admission_trust_config(original_path: Path) -> Path:
+    _, payload = _read_json(original_path, "original execution admission")
+    trust_path = Path(str(payload.get("trust_config_path") or "")).resolve()
+    if not trust_path.is_file():
+        raise ProjectControlDenied("original execution trust config missing")
+    return trust_path
+
+
 def materialize_admission(
     *,
     output_path: Path,
@@ -763,7 +771,7 @@ def materialize_admission(
         )
         original = validate_admission(
             original_path,
-            trust_config_path=trust_config_path,
+            trust_config_path=_original_admission_trust_config(original_path),
             expected_admission_file_sha256=str(
                 request["original_admission_file_sha256"]
             ),
@@ -930,7 +938,7 @@ def validate_admission(
         )
         original = validate_admission(
             original_path,
-            trust_config_path=trust_config_path,
+            trust_config_path=_original_admission_trust_config(original_path),
             expected_admission_file_sha256=str(
                 request["original_admission_file_sha256"]
             ),
