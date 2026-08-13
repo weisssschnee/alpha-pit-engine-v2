@@ -1526,7 +1526,7 @@
                           {
                               "id":  "program_tournament_shared_search_core",
                               "type":  "BOUNDARY",
-                              "rule":  "Uniform, Hybrid TPE and Structured Surrogate consume one exact fixed-dimensional typed Program space and reuse the existing Candidate Program compiler, materializer, matched Full/Base evaluator, Absolute Admission, admitted-only Conditional Uplift and Availability boundary. Whole-Program uplift cannot be broadcast to components.",
+                              "rule":  "Uniform, Hybrid TPE and Structured Surrogate consume one exact fixed-dimensional typed Program space and reuse the existing Candidate Program compiler, materializer, matched Full/Base evaluator, Absolute Admission, admitted-only Conditional Uplift and Availability boundary. Hybrid TPE samples only legal exact Programs with no global fallback; Structured Surrogate compares the full eligible set. Whole-Program uplift cannot be broadcast to components.",
                               "severity":  "HARD",
                               "enforced_by":  "ProgramSearchOptimizerAdapter, program_structural_genes_v1 and independent call-path checker",
                               "bypass_forbidden":  true
@@ -1552,11 +1552,11 @@
                            "level":  "STATIC_VERIFIED",
                            "result":  "PASS",
                            "evidence_ref":  "scripts/check_cn_program_optimizer_tournament_path_v1.py",
-                           "verified_at_sha":  "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
+                           "verified_at_sha":  "30897b429f6eac4035dc2ca91f10d196e5233f35"
                        },
         "claim_badges":  [
                              "REQUESTABLE_NOT_RUN",
-                             "THREE_SHARED_SPACE_ARMS",
+                             "PROJECTION_FAIRNESS_P0_PASS",
                              "ZERO_OLD_OBSERVATION_IMPORT",
                              "NO SEALED READS",
                              "NO AUTHORITY CHANGE",
@@ -1952,7 +1952,7 @@
                            "level":  "STATIC_VERIFIED",
                            "result":  "PASS",
                            "evidence_ref":  "scripts/check_cn_program_optimizer_tournament_freeze_v1.py",
-                           "verified_at_sha":  "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
+                           "verified_at_sha":  "30897b429f6eac4035dc2ca91f10d196e5233f35"
                        }
     },
     {
@@ -1975,7 +1975,7 @@
                            "level":  "STATIC_VERIFIED",
                            "result":  "PASS",
                            "evidence_ref":  "tests/test_cn_search_control_repair_v1.py",
-                           "verified_at_sha":  "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
+                           "verified_at_sha":  "30897b429f6eac4035dc2ca91f10d196e5233f35"
                        }
     },
     {
@@ -1998,7 +1998,7 @@
                            "level":  "STATIC_VERIFIED",
                            "result":  "PASS",
                            "evidence_ref":  "scripts/check_cn_program_optimizer_tournament_path_v1.py",
-                           "verified_at_sha":  "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
+                           "verified_at_sha":  "30897b429f6eac4035dc2ca91f10d196e5233f35"
                        }
     }
   ]
