@@ -15,6 +15,7 @@ from our_system_phase2.services.program_search_optimizer_v1 import (
     UniformProgramSearchAdapter,
     program_availability_entries_v1,
     program_optimizer_lane_v1,
+    program_tpe_lane_id_v1,
 )
 from our_system_phase2.services.search_v2_admission import (
     AbsoluteEconomicAdmission,
@@ -177,11 +178,65 @@ def test_mixed_template_role_slots_are_one_fixed_conditional_space() -> None:
     assert tuple(entries[0].genes) == tuple(entries[1].genes)
     assert entries[0].genes["event__episode_type"] == "__INACTIVE__"
     assert entries[1].genes["temporal__primitive"] == "__INACTIVE__"
-    lane = program_optimizer_lane_v1(entries)["CN_TYPED_PROGRAM_GENE_SPACE_V1"]
-    assert lane["ordered_categories_by_slot"]["program_template_id"] == [
-        "BASE_TEMPORAL",
-        "BASE_EVENT",
-    ]
+    lanes = program_optimizer_lane_v1(entries)
+    assert set(lanes) == {
+        program_tpe_lane_id_v1("BASE_TEMPORAL"),
+        program_tpe_lane_id_v1("BASE_EVENT"),
+    }
+    assert all(
+        set(lane["ordered_categories_by_slot"])
+        == {"skeleton_id", "gene_surface_id", "program_exact_identity"}
+        for lane in lanes.values()
+    )
+    assert {
+        identity
+        for lane in lanes.values()
+        for identity in lane["ordered_categories_by_slot"][
+            "program_exact_identity"
+        ]
+    } == {entry.exact_identity for entry in entries}
+
+
+def test_hybrid_tpe_projects_only_to_nearest_legal_exact_without_global_fallback() -> None:
+    entries = program_availability_entries_v1(_space_rows(48))
+    first = HybridTPEProgramSearchAdapter(
+        entries=entries,
+        seen_exact_identities=(),
+        seed=101,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+    ).ask(
+        checkpoint_id="checkpoint_001",
+        count=1,
+        required_program_template_id="BASE_TEMPORAL",
+    )[0]
+    raw_identity = str(
+        first["acquisition"]["projection"]["raw_exact_identity"]
+    )
+    adapter = HybridTPEProgramSearchAdapter(
+        entries=entries,
+        seen_exact_identities=(raw_identity,),
+        seed=101,
+        n_startup_trials=2,
+        n_ei_candidates=8,
+    )
+    asked = adapter.ask(
+        checkpoint_id="checkpoint_001",
+        count=1,
+        required_program_template_id="BASE_TEMPORAL",
+    )[0]
+    projection = asked["acquisition"]["projection"]
+    stats = adapter.projection_statistics()
+    assert projection["mode"] == (
+        "FULL_LEGAL_SET_MINIMUM_STRUCTURAL_DISTANCE_V1"
+    )
+    assert projection["raw_exact_identity"] == raw_identity
+    assert projection["actual_exact_identity"] == asked["exact_identity"]
+    assert projection["intent_preserved"] is True
+    assert projection["global_fallback"] is False
+    assert stats["legal_projection_count"] == 1
+    assert stats["global_fallback_count"] == 0
+    assert asked["exact_identity"] in {entry.exact_identity for entry in entries}
 
 
 def test_program_genes_accept_legal_zero_free_gene_component(
@@ -373,3 +428,56 @@ def test_structured_surrogate_generalizes_and_distinguishes_unseen_programs() ->
         exploration_beta=0.5,
     )
     assert restored.predict_acquisition([temporal.genes, event.genes]) == predictions
+
+
+def test_surrogate_scores_full_eligible_set_and_is_input_order_invariant(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    entries = program_availability_entries_v1(_space_rows())
+    adapter = StructuredSurrogateProgramSearchAdapter(
+        entries=entries,
+        seen_exact_identities=(),
+        seed=107,
+        cold_start_asks=8,
+        candidate_pool_size=7,
+        n_estimators=16,
+        min_samples_leaf=1,
+    )
+    eligible = tuple(
+        entry
+        for entry in entries
+        if entry.genes["program_template_id"] == "BASE_TEMPORAL"
+    )
+    observed_sizes: list[int] = []
+    original = adapter._acquisition_rows
+
+    def recording(rows):
+        observed_sizes.append(len(rows))
+        return original(rows)
+
+    monkeypatch.setattr(adapter, "_acquisition_rows", recording)
+    asked = adapter.ask(
+        checkpoint_id="checkpoint_001",
+        count=4,
+        required_program_template_id="BASE_TEMPORAL",
+    )
+    assert observed_sizes == [len(eligible)]
+    assert len(eligible) > adapter.candidate_pool_size
+
+    reversed_adapter = StructuredSurrogateProgramSearchAdapter(
+        entries=tuple(reversed(entries)),
+        seen_exact_identities=(),
+        seed=107,
+        cold_start_asks=8,
+        candidate_pool_size=7,
+        n_estimators=16,
+        min_samples_leaf=1,
+    )
+    reversed_asked = reversed_adapter.ask(
+        checkpoint_id="checkpoint_001",
+        count=4,
+        required_program_template_id="BASE_TEMPORAL",
+    )
+    assert [row["exact_identity"] for row in reversed_asked] == [
+        row["exact_identity"] for row in asked
+    ]

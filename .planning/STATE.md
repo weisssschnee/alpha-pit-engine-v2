@@ -44,6 +44,15 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
   `86d9bce8f7bdc75e55c791b6e101ec4beefe093e346abfc39c76ee1c30f354e0`.
   The source reservoir/component/Registry hashes and the rebuilt space hash
   must match before any economic evaluator can start.
+- Projection Fairness P0 is repaired without changing that Program universe or
+  economic design. Hybrid TPE now samples only template-conditional legal exact
+  Program identities and uses a full-legal-set minimum structural-distance
+  projection only when the exact is unavailable; global fallback is zero.
+  Structured Surrogate always scores every eligible remaining Program and uses
+  its configured pool size only as an inference batch. A zero-financial stress
+  covered all 3,616 legal entries, 224 TPE actual asks plus depletion, and full
+  surrogate eligible-set comparison; Project Control was not requested and the
+  tournament remains not run, pending external review.
 - The route is requestable only through exact campaign-authorization-bound
   Project Control and the canonical 77o wrapper. No Project Control admission
   was requested or consumed and no tournament was started. New financial and

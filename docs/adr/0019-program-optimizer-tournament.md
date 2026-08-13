@@ -33,12 +33,19 @@ structured Program surrogate.
    official Optuna `TPESampler` with multivariate, group, constant-liar,
    Availability, real trials, transcripts and restore. Admission is a native
    constraint. Conditional uplift is a finite objective only for admitted
-   whole Programs; no Full-program credit is broadcast to components.
+   whole Programs; no Full-program credit is broadcast to components. The TPE
+   lane is template-conditional over frozen legal exact Program identities,
+   with normalized structural-gene Hamming distance supplied to the official
+   categorical model. An unavailable exact draw may project only to the
+   minimum-distance entry in the full eligible legal set; first-entry and
+   global fallback are forbidden and the raw-to-evaluated binding is recorded.
 4. `STRUCTURED_SURROGATE_PROGRAM` uses deterministic sklearn ExtraTrees. A
    classifier estimates admission feasibility; a regressor is trained only on
    admitted conditional uplift. Frozen one-hot hierarchical encoding,
    per-tree dispersion, cold start and feasibility-times-positive-uplift UCB
-   provide acquisition, ask/tell and exact snapshot/restore.
+   provide acquisition, ask/tell and exact snapshot/restore. Every eligible
+   remaining Program is compared at each ask; `candidate_pool_size` is only an
+   inference-batch bound and cannot truncate the comparison universe.
 5. Freeze one prospective staged tournament: 32 Base parity records; equal
    Stage 0 and Stage 1 support for all three optimizer arms; then an automatic
    frozen Wilson one-sided 95% futility decision. Uniform always receives its

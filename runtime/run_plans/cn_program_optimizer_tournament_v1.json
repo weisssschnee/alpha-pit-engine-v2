@@ -1,7 +1,7 @@
 {
   "absolute_admission_contract": "CN_SEARCH_V2_ABSOLUTE_ECONOMIC_ADMISSION_V1",
   "ask_tell_contract": "ProgramSearchOptimizerAdapter->CandidateProgram->FullBaseEvaluator->AbsoluteAdmission->ConditionalUplift->ProgramOptimizerObservationV1",
-  "authorization_payload_sha256": "00a885a2721ab4d58345009520d0984484acb981980334a5f66737dd6bc2273d",
+  "authorization_payload_sha256": "99430779f9b80651da1928a90e3cfc0df2357a750fb8837da5c5cd0f195685fd",
   "authorized_host": "DESKTOP-77OPJ6F",
   "automatic_successor_authorized": false,
   "base_parity_records": 32,
@@ -102,6 +102,7 @@
   "source_search_v2_authorization_path": "runtime/run_plans/cn_search_engine_v2_prospective_512_canary_v1.json",
   "status": "PROGRAM_OPTIMIZER_TOURNAMENT_FROZEN_NOT_RUN",
   "surrogate_policy": {
+    "candidate_pool_semantics": "INFERENCE_BATCH_SIZE_ONLY_FULL_ELIGIBLE_SET_ALWAYS_SCORED",
     "candidate_pool_size": 256,
     "cold_start_asks": 24,
     "exploration_beta": 1.0,
@@ -122,12 +123,16 @@
   ],
   "tournament_status": "FROZEN_NOT_RUN",
   "tpe_policy": {
+    "categorical_distance": "NORMALIZED_HAMMING_OVER_FULL_FROZEN_PROGRAM_GENES_V1",
     "constant_liar": true,
     "constraints_enabled": true,
+    "global_fallback_allowed": false,
     "group": true,
+    "legal_program_representation": "TEMPLATE_CONDITIONAL_EXACT_IDENTITY_CATEGORY_V1",
     "multivariate": true,
     "n_ei_candidates": 64,
-    "n_startup_trials": 24
+    "n_startup_trials": 24,
+    "unavailable_exact_projection": "FULL_LEGAL_SET_MINIMUM_STRUCTURAL_DISTANCE_V1"
   },
   "uniform_policy": {
     "implementation": "RouteLocalAvailabilityController.reserve_exact",

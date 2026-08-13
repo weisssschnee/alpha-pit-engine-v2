@@ -12,7 +12,7 @@ import hashlib
 import json
 import math
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from our_system_phase2.services.source_route_sampling_phase_v0 import (
     source_sampling_phase_v0,
@@ -150,6 +150,9 @@ class RouteConditionalTPESearchAdapter:
         group: bool = True,
         constant_liar: bool = True,
         constraints_enabled: bool = False,
+        categorical_distance_func: Mapping[
+            str, Callable[[Any, Any], float]
+        ] | None = None,
     ) -> None:
         if not lane_spaces:
             raise ValueError(f"route has no optimizer lanes: {route_id}")
@@ -169,6 +172,9 @@ class RouteConditionalTPESearchAdapter:
         self.group = bool(group)
         self.constant_liar = bool(constant_liar)
         self.constraints_enabled = bool(constraints_enabled)
+        self.categorical_distance_func = dict(
+            categorical_distance_func or {}
+        )
         self.policy_id = (
             "official_optuna_tpe_conditional_typed_grammar_v1"
             if self.multivariate and self.group
@@ -194,6 +200,9 @@ class RouteConditionalTPESearchAdapter:
             constant_liar=self.constant_liar,
             constraints_func=(
                 _admission_constraints if self.constraints_enabled else None
+            ),
+            categorical_distance_func=(
+                self.categorical_distance_func or None
             ),
         )
         self._study = optuna.create_study(
@@ -226,6 +235,9 @@ class RouteConditionalTPESearchAdapter:
             "group": self.group,
             "constant_liar": self.constant_liar,
             "constraints_enabled": self.constraints_enabled,
+            "categorical_distance_parameter_names": sorted(
+                self.categorical_distance_func
+            ),
             "constraint_semantics": (
                 "ABSOLUTE_ADMISSION_FEASIBILITY_SEPARATE_FROM_CONDITIONAL_OBJECTIVE"
                 if self.constraints_enabled
@@ -390,6 +402,7 @@ class RouteConditionalTPESearchAdapter:
         expected_genes: Mapping[str, str] | None = None,
         metadata: Mapping[str, Any] | None = None,
         record_ask_kind: bool = True,
+        fixed_skeleton_id: str | None = None,
     ) -> dict[str, Any]:
         """Ask one native TPE trial while retaining batch ask/tell coverage."""
 
@@ -398,6 +411,14 @@ class RouteConditionalTPESearchAdapter:
             if ask_ordinal is None
             else int(ask_ordinal)
         )
+        if fixed_skeleton_id is not None:
+            skeleton_id = str(fixed_skeleton_id)
+            if skeleton_id not in self.lanes:
+                raise ValueError("OPTUNA_FIXED_SKELETON_OUTSIDE_LANES")
+            self._study.enqueue_trial(
+                {"skeleton_id": skeleton_id},
+                user_attrs={"conditional_lane_fixed": True},
+            )
         trial = self._study.ask()
         genes, pair_compatible = self._sample_genes(trial)
         if expected_genes is not None:
@@ -416,7 +437,13 @@ class RouteConditionalTPESearchAdapter:
             ask_ordinal=ordinal,
             genes=genes,
             pair_compatible=pair_compatible,
-            ask_kind=("TPE_NATIVE_DRAW" if record_ask_kind else None),
+            ask_kind=(
+                "TPE_NATIVE_CONDITIONAL_LANE_DRAW"
+                if record_ask_kind and fixed_skeleton_id is not None
+                else "TPE_NATIVE_DRAW"
+                if record_ask_kind
+                else None
+            ),
             metadata=metadata,
         )
 
@@ -788,6 +815,9 @@ class RouteConditionalTPESearchAdapter:
         group: bool = True,
         constant_liar: bool = True,
         constraints_enabled: bool = False,
+        categorical_distance_func: Mapping[
+            str, Callable[[Any, Any], float]
+        ] | None = None,
     ) -> "RouteConditionalTPESearchAdapter":
         adapter = cls(
             route_id=route_id,
@@ -799,6 +829,7 @@ class RouteConditionalTPESearchAdapter:
             group=group,
             constant_liar=constant_liar,
             constraints_enabled=constraints_enabled,
+            categorical_distance_func=categorical_distance_func,
         )
         complete = adapter._optuna.trial.TrialState.COMPLETE
         pruned = adapter._optuna.trial.TrialState.PRUNED
@@ -924,6 +955,9 @@ class RouteConditionalTPESearchAdapter:
         group: bool = True,
         constant_liar: bool = True,
         constraints_enabled: bool = False,
+        categorical_distance_func: Mapping[
+            str, Callable[[Any, Any], float]
+        ] | None = None,
     ) -> "RouteConditionalTPESearchAdapter":
         adapter = cls(
             route_id=route_id,
@@ -935,6 +969,7 @@ class RouteConditionalTPESearchAdapter:
             group=group,
             constant_liar=constant_liar,
             constraints_enabled=constraints_enabled,
+            categorical_distance_func=categorical_distance_func,
         )
         for transcript in transcripts:
             asked = list(transcript.get("asked") or ())
@@ -977,6 +1012,12 @@ class RouteConditionalTPESearchAdapter:
                         )
                     )
                 else:
+                    fixed_skeleton_id = (
+                        str(dict(source["genes"])["skeleton_id"])
+                        if ask_kind
+                        == "TPE_NATIVE_CONDITIONAL_LANE_DRAW"
+                        else None
+                    )
                     actual.append(
                         adapter.ask_trial(
                             checkpoint_id=str(
@@ -986,6 +1027,7 @@ class RouteConditionalTPESearchAdapter:
                             expected_genes=dict(source["genes"]),
                             metadata=metadata,
                             record_ask_kind=bool(ask_kind),
+                            fixed_skeleton_id=fixed_skeleton_id,
                         )
                     )
             expected_ids = [

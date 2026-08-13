@@ -257,6 +257,11 @@ def test_source_sampling_phase_preserves_existing_startup_threshold() -> None:
         trial_number=512,
         n_startup_trials=512,
     ) == "TPE_GUIDED"
+    assert source_sampling_phase_v0(
+        optimizer_ask_kind="TPE_NATIVE_CONDITIONAL_LANE_DRAW",
+        trial_number=512,
+        n_startup_trials=512,
+    ) == "TPE_GUIDED"
 
     adapter = RouteConditionalTPESearchAdapter(
         route_id="TEST_ROUTE",

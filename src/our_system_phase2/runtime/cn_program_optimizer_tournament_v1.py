@@ -79,11 +79,24 @@ TPE_CONFIG = {
     "group": True,
     "constant_liar": True,
     "constraints_enabled": True,
+    "legal_program_representation": (
+        "TEMPLATE_CONDITIONAL_EXACT_IDENTITY_CATEGORY_V1"
+    ),
+    "categorical_distance": (
+        "NORMALIZED_HAMMING_OVER_FULL_FROZEN_PROGRAM_GENES_V1"
+    ),
+    "unavailable_exact_projection": (
+        "FULL_LEGAL_SET_MINIMUM_STRUCTURAL_DISTANCE_V1"
+    ),
+    "global_fallback_allowed": False,
 }
 SURROGATE_CONFIG = {
     "implementation": "sklearn.ensemble.ExtraTreesClassifier+ExtraTreesRegressor",
     "cold_start_asks": 24,
     "candidate_pool_size": 256,
+    "candidate_pool_semantics": (
+        "INFERENCE_BATCH_SIZE_ONLY_FULL_ELIGIBLE_SET_ALWAYS_SCORED"
+    ),
     "n_estimators": 256,
     "min_samples_leaf": 2,
     "exploration_beta": 1.0,

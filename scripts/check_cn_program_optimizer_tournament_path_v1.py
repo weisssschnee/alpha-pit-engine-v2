@@ -3,11 +3,23 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def stable_hash(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
 
 
 def _names(path: Path) -> tuple[set[str], set[str]]:
@@ -42,6 +54,15 @@ def check() -> dict[str, object]:
     optimizer_imports, optimizer_calls = _names(optimizer)
     phase_c_imports, phase_c_calls = _names(phase_c)
     route_imports, route_calls = _names(route)
+    optimizer_text = optimizer.read_text(encoding="utf-8")
+    report_path = (
+        ROOT
+        / "runtime/run_plans/"
+        "cn_program_optimizer_projection_fairness_p0_report.json"
+    )
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report_body = dict(report)
+    report_hash = str(report_body.pop("report_sha256", ""))
     checks = {
         "route_imports_runner_only_after_authority_checks": (
             "verify_campaign_authorization_binding" in route_calls
@@ -87,6 +108,26 @@ def check() -> dict[str, object]:
             and "tell_population" in optimizer_calls
             and "enqueue_fixed_trial" in optimizer_calls
         ),
+        "tpe_samples_only_legal_template_conditional_exact_programs": all(
+            token in optimizer_text
+            for token in (
+                "TEMPLATE_CONDITIONAL_EXACT_IDENTITY_CATEGORY_V1",
+                "program_exact_identity",
+                "NORMALIZED_HAMMING_OVER_FULL_FROZEN_PROGRAM_GENES_V1",
+                "FULL_LEGAL_SET_MINIMUM_STRUCTURAL_DISTANCE_V1",
+            )
+        ),
+        "tpe_has_no_first_or_global_fallback_path": (
+            "replacement = candidates[0]" not in optimizer_text
+            and "replacement = remaining[0]" not in optimizer_text
+            and "emit_global_fallback" not in optimizer_text
+        ),
+        "surrogate_scores_full_eligible_set_in_inference_batches": (
+            "remaining[: self.candidate_pool_size]" not in optimizer_text
+            and "self._acquisition_rows(remaining)" in optimizer_text
+            and "INFERENCE_BATCH_SIZE_ONLY_FULL_ELIGIBLE_SET_ALWAYS_SCORED"
+            in optimizer_text
+        ),
         "program_genes_enter_existing_candidate_program_engine": (
             "program_structural_genes_v1" in phase_c.read_text(encoding="utf-8")
             and "compose" in phase_c_calls
@@ -101,6 +142,16 @@ def check() -> dict[str, object]:
                 "P_ADMISSION_TIMES_POSITIVE_UPLIFT_UCB",
                 "def restore",
             )
+        ),
+        "projection_fairness_stress_report_is_self_hashed_and_zero_financial": (
+            bool(report_hash)
+            and report_hash == stable_hash(report_body)
+            and report.get("status") == "PASS"
+            and int(report.get("program_space_entry_count", 0)) == 3616
+            and int(report.get("legal_tpe_lane_exact_coverage", 0)) == 3616
+            and int(report.get("global_fallback_count", -1)) == 0
+            and int(report.get("financial_reads", -1)) == 0
+            and report.get("tournament") == "NOT_RUN"
         ),
     }
     result = {

@@ -14,7 +14,11 @@ def source_sampling_phase_v0(
         raise ValueError("n_startup_trials must remain positive")
     if str(optimizer_ask_kind) == "AVAILABILITY_FIXED_ENQUEUED":
         return "AVAILABILITY_FIXED"
-    if str(optimizer_ask_kind) not in {"", "TPE_NATIVE_DRAW"}:
+    if str(optimizer_ask_kind) not in {
+        "",
+        "TPE_NATIVE_DRAW",
+        "TPE_NATIVE_CONDITIONAL_LANE_DRAW",
+    }:
         raise ValueError(f"unknown route optimizer ask kind: {optimizer_ask_kind}")
     return (
         "STARTUP_RANDOM"
