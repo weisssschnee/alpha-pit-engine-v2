@@ -55,6 +55,8 @@ def check() -> dict[str, object]:
     phase_c_imports, phase_c_calls = _names(phase_c)
     route_imports, route_calls = _names(route)
     optimizer_text = optimizer.read_text(encoding="utf-8")
+    runner_text = runner.read_text(encoding="utf-8")
+    wrapper_text = wrapper.read_text(encoding="utf-8")
     report_path = (
         ROOT
         / "runtime/run_plans/"
@@ -72,7 +74,7 @@ def check() -> dict[str, object]:
             )
         ),
         "canonical_77o_wrapper_binds_project_control_and_fresh_root": all(
-            token in wrapper.read_text(encoding="utf-8")
+            token in wrapper_text
             for token in (
                 "cn-program-optimizer-tournament-v1",
                 "ProjectControlAdmissionSha256",
@@ -82,19 +84,27 @@ def check() -> dict[str, object]:
             )
         ),
         "runner_uses_common_contract": (
-            "ProgramOptimizerTournamentV1" in runner.read_text(encoding="utf-8")
-            and "ProgramOptimizerObservationV1" in runner.read_text(encoding="utf-8")
+            "ProgramOptimizerTournamentV1" in runner_text
+            and "ProgramOptimizerObservationV1" in runner_text
             and "tell" in runner_calls
         ),
         "runner_reuses_phase_c_evaluator": (
             "scripts" in runner_imports
-            and "run_cn_joint_program_phase_c_v0 as engine" in runner.read_text(
-                encoding="utf-8"
+            and "run_cn_joint_program_phase_c_v0 as engine" in runner_text
+            and "run_cn_joint_program_search_v2_canary" not in runner_text
+            and "engine._evaluate_record =" not in runner_text
+            and "def _evaluate_record" in phase_c.read_text(encoding="utf-8")
+        ),
+        "execution_surface_import_smoke_precedes_project_control_route": (
+            "import app" in wrapper_text
+            and "import our_system_phase2.runtime.cn_program_optimizer_tournament_v1"
+            in wrapper_text
+            and "import scripts.run_cn_program_optimizer_tournament_v1"
+            in wrapper_text
+            and wrapper_text.index(
+                "import scripts.run_cn_program_optimizer_tournament_v1"
             )
-            and "run_cn_joint_program_search_v2_canary" in runner.read_text(
-                encoding="utf-8"
-            )
-            and "_evaluate_record" in runner.read_text(encoding="utf-8")
+            < wrapper_text.index("& $python @routeArgs")
         ),
         "runner_reuses_admission_and_uplift": (
             "AbsoluteEconomicAdmission" in runner.read_text(encoding="utf-8")

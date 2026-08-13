@@ -19,9 +19,6 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts import run_cn_joint_program_phase_c_v0 as engine
-from scripts.run_cn_joint_program_search_v2_canary import (
-    _evaluate_record,
-)
 from our_system_phase2.runtime.cn_program_optimizer_tournament_v1 import (
     BATCH_ID,
     CAMPAIGN_ID,
@@ -445,7 +442,6 @@ def _configure_engine() -> None:
     engine._build_catalog = _build_catalog
     engine._select_checkpoint = _select_checkpoint
     engine._feedback_update = _feedback_update
-    engine._evaluate_record = _evaluate_record
     engine._verify_checkpoint = _verify_checkpoint
     engine.STATUS = STATUS
     engine.CLOSURE_NAME = CLOSURE_NAME

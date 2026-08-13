@@ -106,6 +106,22 @@ foreach ($path in $requiredPaths) {
     }
 }
 
+$env:PYTHONPATH = (Join-Path $resolvedRepo 'src')
+Push-Location $resolvedRepo
+try {
+    & $python -c @'
+import app
+import our_system_phase2.runtime.cn_program_optimizer_tournament_v1
+import scripts.run_cn_program_optimizer_tournament_v1
+'@
+    $importExitCode = $LASTEXITCODE
+} finally {
+    Pop-Location
+}
+if ($importExitCode -ne 0) {
+    throw "Program tournament execution-surface import failed with exit code $importExitCode"
+}
+
 $routeArgs = @(
     (Join-Path $resolvedRepo 'app.py'),
     'cn-program-optimizer-tournament-v1',
@@ -128,7 +144,6 @@ $routeArgs = @(
     '--executor-workers', $ExecutorWorkers
 )
 
-$env:PYTHONPATH = (Join-Path $resolvedRepo 'src')
 & $python @routeArgs
 if ($LASTEXITCODE -ne 0) {
     throw "Program tournament runner failed with exit code $LASTEXITCODE"

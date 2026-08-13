@@ -2,7 +2,7 @@
 
 Updated: 2026-08-13
 
-Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_INCOMPLETE_IMPORT_FAIL_CLOSED_ZERO_RECORDS_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
+Current state: `PROGRAM_OPTIMIZER_TOURNAMENT_PREFINANCIAL_IMPORT_REPAIRED_PENDING_EXTERNAL_REVIEW_PRIOR_ATTEMPT_ZERO_RECORDS_SEARCH_V2_NEGATIVE_PRESERVED_FORMAL_HYBRID_AUTHORITY_UNCHANGED_FORWARD_B_SEALED_OOS_NONE_HOLD_PROMOTION`
 
 Mission authority: `.planning/PROJECT.md`
 
@@ -18,6 +18,15 @@ Complete field authority: `runtime/field_registry/cn_field_master_registry_v1/cn
 
 ### Program-level multi-optimizer tournament attempted once; incomplete before prefinancial freeze (2026-08-13)
 
+- The prefinancial runner import defect is now repaired without changing any
+  frozen economic contract. The Tournament runner retains Phase C's native
+  `_evaluate_record`, whose implementation continues to call the existing
+  Phase B evaluator; the stale Search V2 import and monkeypatch are removed.
+  The canonical 77o wrapper now smoke-imports `app`, the Project Control
+  Tournament runtime and the final runner before it invokes the route that can
+  consume an admission. Focused and relevant regression tests, frozen identity,
+  fairness/path and compile checks pass. No admission was requested by this
+  repair, and retry remains unauthorized pending external review.
 - The single externally authorized execution consumed one new exact-target Project
   Control `LAUNCH_HIGH_COST_CAMPAIGN` admission on `DESKTOP-77OPJ6F` for run
   `cn_program_optimizer_tournament_20260813_320e57d` at reviewed execution SHA
@@ -80,7 +89,7 @@ Current status summary:
 
 ```text
 PROGRAM_SEARCH_CORE = IMPLEMENTED / STATIC_AND_SYNTHETIC_VERIFIED
-TOURNAMENT = ONE_ATTEMPT / INCOMPLETE_IMPORT_FAILURE / ZERO_RECORDS
+TOURNAMENT = PRIOR_ATTEMPT_INCOMPLETE / IMPORT_REPAIRED / RETRY_NOT_AUTHORIZED
 ARMS = UNIFORM_CONTROL / HYBRID_TPE_PROGRAM / STRUCTURED_SURROGATE_PROGRAM
 MAXIMUM_BUDGET = 536
 OLD_FINANCIAL_OBSERVATIONS_IMPORTED = 0

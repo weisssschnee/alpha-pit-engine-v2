@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+import subprocess
+import sys
+
 from our_system_phase2.runtime.cn_program_optimizer_tournament_v1 import (
     AUTHORIZATION_STATUS,
     MAXIMUM_TOTAL_RECORDS,
@@ -24,6 +29,38 @@ from our_system_phase2.services.program_search_optimizer_v1 import (
     UNIFORM_CONTROL,
     program_availability_entries_v1,
 )
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _import_smoke(statement: str) -> subprocess.CompletedProcess[str]:
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(ROOT / "src")
+    return subprocess.run(
+        [sys.executable, "-c", statement],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_execution_runner_import_smoke() -> None:
+    result = _import_smoke(
+        "import scripts.run_cn_program_optimizer_tournament_v1"
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_project_control_tournament_entry_import_smoke() -> None:
+    result = _import_smoke(
+        "import app; "
+        "import our_system_phase2.runtime.cn_program_optimizer_tournament_v1; "
+        "import scripts.run_cn_program_optimizer_tournament_v1"
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def _entries():
