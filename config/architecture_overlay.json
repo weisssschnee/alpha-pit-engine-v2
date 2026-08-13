@@ -1508,6 +1508,60 @@
         "verified_at_sha": "b180fffeee2dde493ac241a1701628e1c4e8d95e"
       },
       "claim_badges": ["PREFINANCIAL_84_OF_84_VERIFIED", "512_OF_512_COMPLETE", "FROZEN_GATE_FAIL", "ZERO_IMPROVED_TEMPLATES", "RESTRICTED_READS_ZERO", "STOP_CONTINUATION", "NO_PROMOTION"]
+    },
+    {
+        "id":  "cn_program_optimizer_tournament_v1_experimental",
+        "label":  "CN Program optimizer tournament V1 frozen and not run",
+        "kind":  "experimental-search-control",
+        "lifecycle":  "EXPERIMENTAL",
+        "paths":  [
+                      "src/our_system_phase2/runtime/cn_program_optimizer_tournament_v1.py",
+                      "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
+                      "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
+                      "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
+                      "docs/adr/0019-program-optimizer-tournament.md"
+                  ],
+        "critical":  true,
+        "contracts":  [
+                          {
+                              "id":  "program_tournament_shared_search_core",
+                              "type":  "BOUNDARY",
+                              "rule":  "Uniform, Hybrid TPE and Structured Surrogate consume one exact fixed-dimensional typed Program space and reuse the existing Candidate Program compiler, materializer, matched Full/Base evaluator, Absolute Admission, admitted-only Conditional Uplift and Availability boundary. Whole-Program uplift cannot be broadcast to components.",
+                              "severity":  "HARD",
+                              "enforced_by":  "ProgramSearchOptimizerAdapter, program_structural_genes_v1 and independent call-path checker",
+                              "bypass_forbidden":  true
+                          },
+                          {
+                              "id":  "program_tournament_frozen_racing",
+                              "type":  "ADMISSION",
+                              "rule":  "One target-bound Project Control admission may run only the self-hashed maximum 536-record design: equal Stage 0/1 support, automatic frozen Wilson futility, a permanent Uniform Stage-2 floor, no manual post-result reallocation, no Stage-1 exact replay, no winner-takes-all and no successor.",
+                              "severity":  "HARD",
+                              "enforced_by":  "program tournament authorization, freeze builder, racing decision and canonical 77o launcher",
+                              "bypass_forbidden":  true
+                          },
+                          {
+                              "id":  "program_tournament_nonformal_zero_import",
+                              "type":  "BOUNDARY",
+                              "rule":  "The frozen tournament imports zero old financial observations, optimizer state or candidate results; current implementation and synthetic evidence authorize no economic claim, formal-authority replacement, validation, holdout, spent-2023, Forward-B, OOS, promotion or automatic successor.",
+                              "severity":  "HARD",
+                              "enforced_by":  "ADR 0019, authorization provenance, Evaluation Asset authority and Project Control",
+                              "bypass_forbidden":  true
+                          }
+                      ],
+        "validation":  {
+                           "level":  "STATIC_VERIFIED",
+                           "result":  "PASS",
+                           "evidence_ref":  "scripts/check_cn_program_optimizer_tournament_path_v1.py",
+                           "verified_at_sha":  "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
+                       },
+        "claim_badges":  [
+                             "REQUESTABLE_NOT_RUN",
+                             "THREE_SHARED_SPACE_ARMS",
+                             "ZERO_OLD_OBSERVATION_IMPORT",
+                             "NO SEALED READS",
+                             "NO AUTHORITY CHANGE",
+                             "NO PROMOTION"
+                         ]
     }
   ],
   "edges": [
@@ -1869,6 +1923,83 @@
     {"semantic_role": "candidate_execution_clock_capability_authority", "authoritative_component": "candidate_execution_clock_capability", "authority_class": "FORMAL", "decision_ref": "docs/adr/0012-shared-node-alpha-compute-control-plane.md"},
     {"semantic_role": "finalist_execution_evidence_authority", "authoritative_component": "a_share_finalist_replay_contract", "authority_class": "FORMAL", "decision_ref": "docs/adr/0013-primary-absolute-economics-and-terminal-exposure-finalist-admission.md"},
     {"semantic_role": "high_cost_execution_admission_authority", "authoritative_component": "cn_project_control_execution_admission", "authority_class": "FORMAL", "decision_ref": "docs/adr/0017-trusted-target-bound-project-control-admission.md"},
-    {"semantic_role": "typed_candidate_program_representation", "authoritative_component": "cn_typed_candidate_program_v1", "authority_class": "NON_FORMAL", "decision_ref": "docs/adr/0015-typed-candidate-program-representation.md"}
+    {"semantic_role": "typed_candidate_program_representation", "authoritative_component": "cn_typed_candidate_program_v1", "authority_class": "NON_FORMAL", "decision_ref": "docs/adr/0015-typed-candidate-program-representation.md"},
+    {
+        "id":  "program_tournament_derived_from_search_v2_diagnosis",
+        "source":  "cn_program_optimizer_tournament_v1_experimental",
+        "target":  "cn_search_engine_v2_experimental",
+        "relation":  "derived_from_manual_diagnosis",
+        "lifecycle":  "EXPERIMENTAL",
+        "required":  false
+    },
+    {
+        "id":  "program_tournament_candidate_for_development_search_policy",
+        "source":  "cn_program_optimizer_tournament_v1_experimental",
+        "target":  "cn_development_search_policy",
+        "relation":  "candidate_for",
+        "lifecycle":  "EXPERIMENTAL",
+        "required":  false,
+        "critical":  true,
+        "contract":  {
+                         "id":  "program_tournament_no_silent_authority_replacement",
+                         "type":  "BOUNDARY",
+                         "rule":  "Implementation, frozen authorization, static tests or a future tournament result cannot replace formal Hybrid TPE plus Availability without a separate accepted promotion decision and Authority Binding transition.",
+                         "severity":  "HARD",
+                         "enforced_by":  "ADR 0019 and development-search authority slot",
+                         "bypass_forbidden":  true
+                     },
+        "validation":  {
+                           "level":  "STATIC_VERIFIED",
+                           "result":  "PASS",
+                           "evidence_ref":  "scripts/check_cn_program_optimizer_tournament_freeze_v1.py",
+                           "verified_at_sha":  "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
+                       }
+    },
+    {
+        "id":  "project_control_admission_to_program_tournament",
+        "source":  "cn_project_control_execution_admission",
+        "target":  "cn_program_optimizer_tournament_v1_experimental",
+        "relation":  "precondition_for_prospective_tournament_execution",
+        "lifecycle":  "ACTIVE",
+        "required":  false,
+        "critical":  true,
+        "contract":  {
+                         "id":  "program_tournament_consumes_exact_bound_admission",
+                         "type":  "ADMISSION",
+                         "rule":  "Any Program tournament execution must consume one exact clean-checkout, action, campaign authorization/profile, run and fresh output-root Project Control admission before route import; direct runner invocation and RECOVERY are forbidden.",
+                         "severity":  "HARD",
+                         "enforced_by":  "app.py, project_control_admission.py, route-local consume and canonical 77o launcher",
+                         "bypass_forbidden":  true
+                     },
+        "validation":  {
+                           "level":  "STATIC_VERIFIED",
+                           "result":  "PASS",
+                           "evidence_ref":  "tests/test_cn_search_control_repair_v1.py",
+                           "verified_at_sha":  "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
+                       }
+    },
+    {
+        "id":  "program_tournament_reuses_phase3cm_matched_evaluation",
+        "source":  "cn_program_optimizer_tournament_v1_experimental",
+        "target":  "phase3cm_streaming_multicandidate_evaluator",
+        "relation":  "reuses_existing_matched_full_vs_base_evaluation",
+        "lifecycle":  "EXPERIMENTAL",
+        "required":  false,
+        "critical":  true,
+        "contract":  {
+                         "id":  "program_tournament_no_second_evaluator",
+                         "type":  "BOUNDARY",
+                         "rule":  "The tournament may change only Program proposal optimization. It reuses existing compilation, materialization, exact Full/Base evaluation and TOPK_10_EQUAL semantics and cannot create a second financial evaluator.",
+                         "severity":  "HARD",
+                         "enforced_by":  "run_cn_program_optimizer_tournament_v1 thin adapter and independent call-path checker",
+                         "bypass_forbidden":  true
+                     },
+        "validation":  {
+                           "level":  "STATIC_VERIFIED",
+                           "result":  "PASS",
+                           "evidence_ref":  "scripts/check_cn_program_optimizer_tournament_path_v1.py",
+                           "verified_at_sha":  "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
+                       }
+    }
   ]
 }

@@ -18,16 +18,20 @@
           "docs/adr/0016-search-control-execution-admission-and-spent-asset-deny.md",
           "docs/adr/0017-trusted-target-bound-project-control-admission.md",
           "docs/adr/0018-search-engine-v2-two-head-prospective-canary.md",
+          "docs/adr/0019-program-optimizer-tournament.md",
           "runtime/run_plans/cn_alpha_node_resource_profiles_phase_d_v0.json",
           "runtime/run_plans/cn_joint_program_allocator_repair_canary_outcome_20260810.json",
           "runtime/run_plans/cn_joint_program_phase_d_outcome_20260811.json",
+          "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
           "runtime/run_plans/cn_project_control_trust_v1.json",
+          "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
           "runtime/run_plans/cn_search_engine_v2_prefinancial_repair_validation_20260812.json",
           "runtime/run_plans/cn_search_engine_v2_prospective_512_canary_v1.json",
           "runtime/run_plans/cn_search_engine_v2_prospective_512_independent_audit_20260811.json",
           "runtime/run_plans/cn_search_engine_v2_prospective_512_outcome_20260811.json",
           "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_independent_audit_20260812.json",
           "runtime/run_plans/cn_search_engine_v2_replacement_prospective_512_outcome_20260812.json",
+          "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
           "runtime/run_plans/evaluation_access_ledger_v1.csv",
           "runtime/run_plans/evaluation_data_roles_v1.json",
           "runtime/run_plans/oos_burn_ledger_v1.csv",
@@ -37,6 +41,8 @@
           "scripts/audit_cn_joint_program_phase_d_v0.py",
           "scripts/audit_cn_program_materialization_preflight_v1.py",
           "scripts/build_cn_project_control_execution_request.py",
+          "scripts/check_cn_program_optimizer_tournament_freeze_v1.py",
+          "scripts/check_cn_program_optimizer_tournament_path_v1.py",
           "scripts/freeze_cn_search_engine_v2_canary_plan.py",
           "scripts/materialize_cn_project_control_admission.py",
           "scripts/materialize_cn_search_preflight_authorization.py",
@@ -57,6 +63,8 @@
           "scripts/run_cn_joint_program_search_v2_77o.ps1",
           "scripts/run_cn_joint_program_search_v2_canary.py",
           "scripts/run_cn_large_optuna_tpe_actual20000_77o.ps1",
+          "scripts/run_cn_program_optimizer_tournament_77o.ps1",
+          "scripts/run_cn_program_optimizer_tournament_v1.py",
           "scripts/run_cn_slow_cross_sectional_evaluated384_77o.ps1",
           "scripts/run_cn_winner_guided_large_search_77o.ps1",
           "scripts/validate_evaluation_ledgers.py",
@@ -69,6 +77,7 @@
           "src/our_system_phase2/runtime/cn_joint_program_phase_d_v0.py",
           "src/our_system_phase2/runtime/cn_joint_program_search_v2_canary.py",
           "src/our_system_phase2/runtime/cn_large_tpe_search_campaign.py",
+          "src/our_system_phase2/runtime/cn_program_optimizer_tournament_v1.py",
           "src/our_system_phase2/runtime/cn_targeted_search_medium_campaign.py",
           "src/our_system_phase2/runtime/nextgen_dark_development_canary.py",
           "src/our_system_phase2/runtime/phase3cf_large_search_prelaunch.py",
@@ -76,13 +85,19 @@
           "src/our_system_phase2/services/candidate_program_proposal_v0.py",
           "src/our_system_phase2/services/development_feedback_provenance.py",
           "src/our_system_phase2/services/evaluation_asset_authority.py",
+          "src/our_system_phase2/services/optuna_tpe_search_adapter.py",
           "src/our_system_phase2/services/program_allocator_repair_bandit_v0.py",
+          "src/our_system_phase2/services/program_optimizer_tournament_v1.py",
+          "src/our_system_phase2/services/program_search_optimizer_v1.py",
+          "src/our_system_phase2/services/program_tournament_freeze_v1.py",
           "src/our_system_phase2/services/project_control_admission.py",
+          "src/our_system_phase2/services/route_local_availability.py",
           "src/our_system_phase2/services/search_v2_admission.py",
           "src/our_system_phase2/services/search_v2_canary_freeze.py",
           "src/our_system_phase2/services/search_v2_conditional_uplift.py",
           "src/our_system_phase2/services/search_v2_scheduler.py",
           "src/our_system_phase2/services/typed_temporal_program.py",
+          "tests/test_candidate_program_proposal_v0.py",
           "tests/test_cn_b1s_development_canary.py",
           "tests/test_cn_fixed_stratified_production_v0.py",
           "tests/test_cn_historical_challenge_2023.py",
@@ -93,11 +108,14 @@
           "tests/test_cn_targeted_search_medium_campaign.py",
           "tests/test_evaluation_ledgers.py",
           "tests/test_nextgen_dark_development_canary.py",
+          "tests/test_optuna_tpe_search_adapter.py",
+          "tests/test_program_optimizer_tournament_v1.py",
+          "tests/test_program_search_optimizer_v1.py",
           "tests/test_runtime_authority_convergence.py",
           "tests/test_typed_temporal_program.py"
         ],
         "raw_sha": "f649507ec3002161735085dde3f16fd2b1a379bc",
-        "repo_head": "b180fffeee2dde493ac241a1701628e1c4e8d95e"
+        "repo_head": "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
       },
       "message": "Raw graph predates non-overlay source changes",
       "severity": "ERROR"
@@ -2243,7 +2261,7 @@
       }
     }
   ],
-  "generated_at": "2026-08-12T21:59:32.030790+00:00",
+  "generated_at": "2026-08-13T06:31:53.347392+00:00",
   "kind": "current-architecture",
   "legend": {
     "evidence_line_styles": {
@@ -7262,11 +7280,84 @@
         "verified_at_sha": "b180fffeee2dde493ac241a1701628e1c4e8d95e"
       },
       "visible_by_default": true
+    },
+    {
+      "active_authority": false,
+      "authority": null,
+      "authority_bindings": [],
+      "claim_badges": [
+        "REQUESTABLE_NOT_RUN",
+        "THREE_SHARED_SPACE_ARMS",
+        "ZERO_OLD_OBSERVATION_IMPORT",
+        "NO SEALED READS",
+        "NO AUTHORITY CHANGE",
+        "NO PROMOTION"
+      ],
+      "color": "#f9a825",
+      "contracts": [
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "ProgramSearchOptimizerAdapter, program_structural_genes_v1 and independent call-path checker",
+          "evidence_ref": "",
+          "id": "program_tournament_shared_search_core",
+          "rule": "Uniform, Hybrid TPE and Structured Surrogate consume one exact fixed-dimensional typed Program space and reuse the existing Candidate Program compiler, materializer, matched Full/Base evaluator, Absolute Admission, admitted-only Conditional Uplift and Availability boundary. Whole-Program uplift cannot be broadcast to components.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "program tournament authorization, freeze builder, racing decision and canonical 77o launcher",
+          "evidence_ref": "",
+          "id": "program_tournament_frozen_racing",
+          "rule": "One target-bound Project Control admission may run only the self-hashed maximum 536-record design: equal Stage 0/1 support, automatic frozen Wilson futility, a permanent Uniform Stage-2 floor, no manual post-result reallocation, no Stage-1 exact replay, no winner-takes-all and no successor.",
+          "severity": "HARD",
+          "type": "ADMISSION"
+        },
+        {
+          "bypass_forbidden": true,
+          "enforced_by": "ADR 0019, authorization provenance, Evaluation Asset authority and Project Control",
+          "evidence_ref": "",
+          "id": "program_tournament_nonformal_zero_import",
+          "rule": "The frozen tournament imports zero old financial observations, optimizer state or candidate results; current implementation and synthetic evidence authorize no economic claim, formal-authority replacement, validation, holdout, spent-2023, Forward-B, OOS, promotion or automatic successor.",
+          "severity": "HARD",
+          "type": "BOUNDARY"
+        }
+      ],
+      "critical": true,
+      "evidence": "DECLARED",
+      "expires_at": "",
+      "id": "cn_program_optimizer_tournament_v1_experimental",
+      "kind": "experimental-search-control",
+      "label": "CN Program optimizer tournament V1 frozen and not run",
+      "lifecycle": "EXPERIMENTAL",
+      "owner": "",
+      "paths": [
+        "src/our_system_phase2/runtime/cn_program_optimizer_tournament_v1.py",
+        "runtime/run_plans/cn_program_optimizer_tournament_v1.json",
+        "runtime/run_plans/cn_search_core_vnext_capability_lineage_audit_v1.json",
+        "runtime/run_plans/cn_search_v2_512_retrospective_autopsy_v1.json",
+        "docs/adr/0019-program-optimizer-tournament.md"
+      ],
+      "promotion_requirements": [],
+      "raw_node_ids": [],
+      "required": false,
+      "semantic_role": "",
+      "validation": {
+        "checked_at": "2026-08-13T06:31:53.347392+00:00",
+        "evidence_ref": "scripts/check_cn_program_optimizer_tournament_path_v1.py",
+        "evidence_sha256": "3EDAFFF7716903309D96701A998D22BFC8F3F0FBBA86CA45FDB3518C3C027B1C",
+        "level": "STATIC_VERIFIED",
+        "notes": [],
+        "profile": "",
+        "result": "PASS",
+        "verified_at_sha": "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9"
+      },
+      "visible_by_default": true
     }
   ],
   "overlay": {
     "path": "config/architecture_overlay.json",
-    "sha256": "69B48FAE46741234B4AB2625D3F88243FF8B8D8F40C2AEEBF5FA5042AEA43091"
+    "sha256": "0485C01FE5BC7DCDC8D5A6B0C136B8AB6C1682CDB06B2C91A0BB278C3E3423E7"
   },
   "profile_id": "FIELD_INFORMATION_RESEARCH",
   "profiles": [
@@ -7283,9 +7374,29 @@
     "path": ".planning/graphs/graph.json",
     "sha256": "E4A778E8A8265FFAF1E5F91B74E16F6A7FC70314B694D558896FA274CE1B863F"
   },
-  "repo_head": "b180fffeee2dde493ac241a1701628e1c4e8d95e",
+  "repo_head": "96cc1e55e22e1993d5da3eeee9ecfe78f92455b9",
   "schema_version": 1,
   "semantic_authorities": [
+    {
+      "authoritative_component": "",
+      "authority_class": "",
+      "semantic_role": ""
+    },
+    {
+      "authoritative_component": "",
+      "authority_class": "",
+      "semantic_role": ""
+    },
+    {
+      "authoritative_component": "",
+      "authority_class": "",
+      "semantic_role": ""
+    },
+    {
+      "authoritative_component": "",
+      "authority_class": "",
+      "semantic_role": ""
+    },
     {
       "authoritative_component": "candidate_execution_clock_capability",
       "authority_class": "FORMAL",
@@ -7367,7 +7478,7 @@
   "strict_ready": false,
   "summary": {
     "current_edges": 66,
-    "current_nodes": 41,
+    "current_nodes": 42,
     "errors": 1,
     "runtime_edges": 0,
     "runtime_nodes": 0,
